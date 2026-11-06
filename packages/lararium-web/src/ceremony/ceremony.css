@@ -1,0 +1,10 @@
+:root { color-scheme: dark; }
+body { margin: 0; font: 15px/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace; background: #0d0f14; color: #c9d1d9; }
+main { max-width: 34rem; margin: 8vh auto; padding: 0 1.25rem; }
+h1 { font-size: 1.2rem; font-weight: 600; }
+.pub { color: #768390; word-break: break-all; margin: 0.2rem 0; }
+.pub .k { display: inline-block; min-width: 7rem; }
+input { display: block; width: 100%; box-sizing: border-box; min-height: 44px; margin: 0.6rem 0; padding: 0.5rem 0.7rem; border-radius: 8px; border: 1px solid #30363d; background: #0d1117; color: #c9d1d9; font: inherit; font-size: 16px; }
+.acts { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+button { min-height: 44px; padding: 0 0.9rem; border-radius: 8px; border: 1px solid #30363d; background: #1b2029; color: #c9d1d9; font: inherit; cursor: pointer; }
+[hidden] { display: none !important; }

@@ -20,11 +20,12 @@ declare const __LAR_WALK_DOOR__: boolean;
  */
 import { createLoafBuffer } from "./loaf-buffer.js";
 import {
-  DAEMON_SURFACE_ID, requestDurableStorage, storageFloorReport, vesselLockName, type CustodyAnswer, type HearthFloorRead,
+  DAEMON_SURFACE_ID, requestDurableStorage, storageFloorReport, vesselLockName, type HearthFloorRead,
 } from "@lararium/browser/page";
 import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./phone-seat.js";
-import { standVesselPort, VesselRefused, type VesselPort } from "./vessel-port.js";
-import type { VesselAskQuestion, VesselStatus } from "./vessel-protocol.js";
+import { standVesselPort, VesselRefused, type VesselAsk, type VesselPort } from "./vessel-port.js";
+import type { VesselStatus } from "./vessel-protocol.js";
+import { openCeremony, standCeremonyBroker } from "./ceremony-page.js";
 import type { GenesisSeed } from "@lararium/mesh";
 import { LAR_WHOLE_VALUE_MAX_CHARS } from "@lararium/mesh/lar-camera";
 import { readHearthFloorCard } from "@lararium/mesh/hearth-floor-pins";
@@ -117,38 +118,47 @@ function reportFirstPaint(): void {
 
 /**
  * THIS TAB'S CUSTODY DOOR (operator ruling 2026-10-18: each browser tab asks for its own unlock, and the shared holder
- * carries no unlock between tabs). The vessel worker raises the ask; one small form on the page asks the person, and the
- * answer crosses back on the vessel port for the one act, never entering a tiddler, a verb's arguments, a URL or storage.
- * "Not now" answers null. INTERIM, CLOSED BY SLICE 1b: the ceremony document takes this form off the surface page.
+ * carries no unlock between tabs; the ceremony, operator ruling 2026-11-05: "Approve"). The vessel worker raises the ask;
+ * the page paints its public words and one button, and the button opens the clean ceremony document, which takes the
+ * secret and sends its bytes down its own brokered port to the vessel worker. The page paints no secret form and holds
+ * no byte of a route. The broker stands at the floor, with no secret held.
  */
-function askCustody(question: VesselAskQuestion): Promise<CustodyAnswer> {
-  return new Promise((resolve) => {
-    const form = document.createElement("form");
-    form.className = "custody-ask";
-    form.dataset["ask"] = question.kind;
-    const say = document.createElement("div");
-    say.textContent =
-      question.kind === "unlock" ? `Unlock this browser's vessel (attempt ${String(question.attempt)} of ${String(question.of)})${question.notes.length ? ` — ${question.notes.join("; ")}` : ""}`
-        : question.kind === "bind-first" ? "Bind a passphrase to this browser before it holds a face's secrets. Keep it: nothing here recovers it."
-          : question.kind === "ward" ? `Enter this face's passphrase for one ward act (${question.act}).`
-            : "Enter this browser's passphrase to clear it. Its secrets will then rest in the clear in this browser's storage.";
-    const pass = document.createElement("input");
-    pass.type = "password"; pass.autocomplete = question.kind === "bind-first" ? "new-password" : "current-password"; pass.required = true;
-    const again = question.kind === "bind-first" ? document.createElement("input") : null;
-    if (again) { again.type = "password"; again.autocomplete = "new-password"; again.required = true; again.placeholder = "again"; }
-    const go = document.createElement("button"); go.type = "submit"; go.textContent = question.kind === "clear" ? "clear" : question.kind === "bind-first" ? "bind" : "unlock";
-    const not = document.createElement("button"); not.type = "button"; not.textContent = "not now";
-    const done = (answer: CustodyAnswer): void => { pass.value = ""; if (again) again.value = ""; form.remove(); resolve(answer); };
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      if (again && again.value !== pass.value) { say.textContent = "The two passphrases differ; type them again."; again.value = ""; return; }
-      done({ kind: "passphrase", passphrase: pass.value });
+const ceremonyBroker = standCeremonyBroker();
+
+function paintAsk(ask: VesselAsk, vessel: VesselPort): void {
+  const notice = document.createElement("div");
+  notice.className = "ceremony-ask";
+  notice.dataset["ask"] = ask.kind;
+  notice.dataset["askId"] = ask.askId;
+  const say = document.createElement("div");
+  say.textContent =
+    ask.kind === "unlock" ? `This browser's vessel asks for its unlock (${ask.act}${ask.words ? `, ${ask.words}` : ""}).`
+      : ask.kind === "bind-first" ? "This browser's vessel asks for a first passphrase before it holds a face's secrets."
+        : ask.kind === "ward" ? `This face asks for its passphrase for one ward act (${ask.act}).`
+          : "This browser's vessel asks for its passphrase to clear its custody.";
+  const go = document.createElement("button");
+  go.type = "button"; go.className = "ceremony-open"; go.textContent = "open the unlock ceremony";
+  const refuse = (refusal: string): void => {
+    vessel.ceremonyRefused(ask.askId, refusal);
+    notice.dataset["refusal"] = refusal;
+    say.textContent = `The unlock ceremony cannot stand here: ${refusal}.`;
+    go.remove();
+  };
+  go.addEventListener("click", () => {
+    void ceremonyBroker.then((broker) => {
+      if ("refusal" in broker) { refuse(broker.refusal); return; }
+      openCeremony(ask.askId, broker.worker, (port) => vessel.ceremonyPort(ask.askId, port));
+      go.textContent = "the ceremony stands in its own window";
     });
-    not.addEventListener("click", () => done(null));
-    form.append(say, pass, ...(again ? [again] : []), go, not);
-    document.body.prepend(form);
-    pass.focus();
   });
+  notice.append(say, go);
+  document.body.prepend(notice);
+  // A page that stands no broker refuses at once, by name, and offers no form of its own.
+  void ceremonyBroker.then((broker) => { if ("refusal" in broker) refuse(broker.refusal); });
+}
+
+function settleAsk(askId: string): void {
+  for (const notice of document.querySelectorAll<HTMLElement>(".ceremony-ask")) if (notice.dataset["askId"] === askId) notice.remove();
 }
 
 
@@ -521,10 +531,8 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
       const line = seedRestLine(status);
       if (line) { seedLine = line; paintSeed?.(); }
     },
-    onAsk: async (question) => {
-      const answer = await askCustody(question);
-      return question.kind === "ward" ? (answer?.kind === "passphrase" ? answer.passphrase : null) : answer;
-    },
+    onAsk: (ask) => paintAsk(ask, vessel),
+    onAskSettled: settleAsk,
     onEnded: (why, stage) => {
       ended({ why, stage });
       // A vessel that stood and then ended says so; the retry builds a fresh worker.
@@ -558,6 +566,8 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
   const result = outcome.v;
   // A harness-only door, compiled out of every default build.
   if (__LAR_WALK_DOOR__) (window as Window & { __larRestartDaemonIsland?: (reason: string) => Promise<{ restarts: number; leg: string }> }).__larRestartDaemonIsland = (reason: string) => vessel.restartDaemonIsland(reason);
+  // and the walk's ward act: one ward act over `bytes`, its passphrase asked through the ceremony like every ward act.
+  if (__LAR_WALK_DOOR__) (window as Window & { __larWalkWardAct?: (bytes: number[]) => Promise<{ key: string; signature: string }> }).__larWalkWardAct = (bytes: number[]) => vessel.walkWardAct(Uint8Array.from(bytes));
   pendingAdmit = null;
   // Identity custody stays in the browser vessel. The web surface renders the public receipt the vessel reported.
   const did = result.did;

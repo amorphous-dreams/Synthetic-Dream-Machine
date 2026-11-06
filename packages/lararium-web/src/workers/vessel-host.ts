@@ -7,16 +7,20 @@
  * The islands (daemon, wiki) spawn nested from this worker. The shared holder (`?holder`) runs in a SharedWorker, which a
  * dedicated worker cannot construct, so this thread asks the page to build it (`spawn`) and bridges its transferred port;
  * the page never reads that port. The holder dissolves in slice 4.
+ *
+ * Every custody and ward ask rides the ceremony door (`ceremony-door.ts`): the page hears the ask's public words and opens
+ * the ceremony document, and the answer arrives on the ceremony's own brokered port, never on the page's.
  */
 declare const __LAR_WALK_DOOR__: boolean;
 import {
   openBrowserVessel, standBrowserCustody, readBrowserCustody, readBrowserSeedWrap, loadBrowserActivePersona,
-  parseAdmitCarriage, toAdmitCarriage,
+  parseAdmitCarriage, toAdmitCarriage, readBrowserCustodyPasskeys, browserWardSign,
   browserFleetJoinRequest, browserFleetJoinLand, browserFleetJoinSettle, browserFleetJoinAbandon, BrowserFleetJoinRefused,
-  type BrowserVesselResult, type CustodyAnswer, type PageLife,
+  type BrowserVesselResult, type CustodyAnswer, type CustodyAsk, type PageLife,
 } from "@lararium/browser";
 import { didFromVerifyingKey, parseMeshPeer, type MeshPeer } from "@lararium/mesh";
-import type { PageToVessel, SeedRest, VesselAskQuestion, VesselError, VesselStatus, VesselToPage } from "../vessel-protocol.js";
+import type { PageToVessel, SeedRest, VesselError, VesselStatus, VesselToPage } from "../vessel-protocol.js";
+import { CeremonyRefused, standCeremonyDoor } from "./ceremony-door.js";
 
 export interface VesselScope {
   postMessage(msg: VesselToPage, transfer?: Transferable[]): void;
@@ -25,27 +29,30 @@ export interface VesselScope {
 const errorOf = (err: unknown): VesselError => ({
   name: err instanceof Error ? err.name : "Error",
   message: err instanceof Error ? err.message : String(err),
-  ...(err instanceof BrowserFleetJoinRefused ? { refusal: err.refusal } : {}),
+  ...(err instanceof BrowserFleetJoinRefused || err instanceof CeremonyRefused ? { refusal: err.refusal } : {}),
 });
 
 /** Serve one page: the caller feeds every page message, in order, to the returned `receive`. */
 export function serveVessel(scope: VesselScope): { receive(msg: PageToVessel): void } {
   const post = (msg: VesselToPage, transfer: Transferable[] = []): void => scope.postMessage(msg, transfer);
-  const answers = new Map<string, (answer: unknown) => void>();
   const spawns = new Map<string, (answer: Extract<PageToVessel, { t: "spawned" }>) => void>();
   const lifeListeners = new Set<(life: PageLife) => void>();
   let opened: (result: BrowserVesselResult) => void;
   const vessel = new Promise<BrowserVesselResult>((resolve) => { opened = resolve; });
   let booted = false;
 
-  const ask = (act: string, question: VesselAskQuestion): Promise<unknown> => {
-    const askId = crypto.randomUUID();
-    return new Promise((resolve) => {
-      answers.set(askId, resolve);
-      post({ t: "ask", askId, kind: question.kind, act, question });
-    });
+  let idbName = "lares:vessel";
+  const door = standCeremonyDoor(post);
+  const wordsOf = (question: CustodyAsk | { readonly kind: "clear" }): string =>
+    question.kind === "unlock" ? `attempt ${String(question.attempt)} of ${String(question.of)}${question.notes.length ? ` — ${question.notes.join("; ")}` : ""}` : "";
+  /** A custody ask: the ceremony offers a passkey route beside the passphrase wherever a passkey pin stands. */
+  const askCustody = (act: string) => async (question: CustodyAsk | { readonly kind: "clear" }): Promise<CustodyAnswer> =>
+    door.ask({ kind: question.kind, act, words: wordsOf(question), passkeys: question.kind === "bind-first" ? [] : await readBrowserCustodyPasskeys(idbName) });
+  /** A ward ask: a passphrase alone, for one act. A declined ask answers empty, and the ward then refuses `ward-needs-fresh-unlock`. */
+  const askWard = async (act: string): Promise<string> => {
+    const route = await door.ask({ kind: "ward", act });
+    return route?.kind === "passphrase" ? route.passphrase : "";
   };
-  const askCustody = (act: string) => async (question: VesselAskQuestion): Promise<CustodyAnswer> => (await ask(act, question)) as CustodyAnswer;
   const status = (s: VesselStatus): void => post({ t: "status", status: s });
   const reply = (callId: string, work: () => Promise<unknown>): void => {
     void work().then((value) => post({ t: "reply", callId, ok: true, value }), (err: unknown) => post({ t: "reply", callId, ok: false, error: errorOf(err) }));
@@ -97,7 +104,7 @@ export function serveVessel(scope: VesselScope): { receive(msg: PageToVessel): v
     try {
       result = await openBrowserVessel({
         askCustody: askCustody("vessel"),
-        ...(b.wardAsk ? { askWardRoute: async (act: string) => String((await ask(act, { kind: "ward", act })) ?? "") } : {}),
+        askWardRoute: askWard,
         hostId: b.hostId,
         wikiId: b.wikiId,
         idbName: b.idbName,
@@ -151,7 +158,6 @@ export function serveVessel(scope: VesselScope): { receive(msg: PageToVessel): v
     },
   };
 
-  let idbName = "lares:vessel";
   return {
     receive(msg: PageToVessel): void {
       switch (msg.t) {
@@ -161,7 +167,8 @@ export function serveVessel(scope: VesselScope): { receive(msg: PageToVessel): v
           idbName = msg.boot.idbName;
           void boot(msg).catch((err: unknown) => post({ t: "ended", why: `boot failed: ${err instanceof Error ? err.message : String(err)}`, stage: "open" }));
           return;
-        case "answer": { const resolve = answers.get(msg.askId); answers.delete(msg.askId); resolve?.(msg.answer); return; }
+        case "ceremony:port": door.port(msg.askId, msg.port); return;
+        case "ceremony:refused": door.refused(msg.askId, msg.refusal); return;
         case "spawned": { const settle = spawns.get(msg.spawnId); spawns.delete(msg.spawnId); settle?.(msg); return; }
         case "page:life": for (const listener of lifeListeners) listener(msg.life); return;
         case "control-event": void vessel.then((v) => v.sendControlEvent(msg.surface, msg.ev)); return;
@@ -184,6 +191,12 @@ export function serveVessel(scope: VesselScope): { receive(msg: PageToVessel): v
           // A harness-only door, compiled out of every default build.
           if (!(typeof __LAR_WALK_DOOR__ !== "undefined" && __LAR_WALK_DOOR__)) { post({ t: "reply", callId: msg.callId, ok: false, error: { name: "Error", message: "walk-door-absent" } }); return; }
           reply(msg.callId, async () => { const v = await vessel; return { ...(await v.restartDaemonIsland(msg.reason)), leg: await v.daemon.syncLegReady() }; });
+          return;
+        case "walk:ward":
+          // A harness-only door, compiled out of every default build: one ward act over the founding face's root, its
+          // passphrase asked through the ceremony exactly as the promote board's acts ask it.
+          if (!(typeof __LAR_WALK_DOOR__ !== "undefined" && __LAR_WALK_DOOR__)) { post({ t: "reply", callId: msg.callId, ok: false, error: { name: "Error", message: "walk-door-absent" } }); return; }
+          reply(msg.callId, async () => { await vessel; return browserWardSign(idbName, 0, await askWard("a walk ward act"), msg.bytes); });
           return;
       }
     },

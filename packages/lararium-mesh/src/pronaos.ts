@@ -183,7 +183,7 @@ export interface ValidatePronaosRouteInventoryOptions {
 const CID_SEGMENT = /^[^/\\?#%\s]+$/;
 const OPAQUE_VALUE = /^\S+$/;
 const SHA256 = /^[0-9a-f]{64}$/;
-const ARTIFACT_FILE = /^(?:index\.html|manifest\.webmanifest|assets\/[A-Za-z0-9._-]+\.(?:m?js|css|wasm))$/;
+const ARTIFACT_FILE = /^(?:index\.html|manifest\.webmanifest|ceremony\.html|ceremony-broker\.js|assets\/[A-Za-z0-9._-]+\.(?:m?js|css|wasm))$/;
 
 function fail(message: string): never {
   throw new TypeError(`[pronaos] ${message}`);
@@ -274,7 +274,7 @@ function validateRefusals(refusals: PronaosRefusalPolicy): void {
 
 function validateArtifactPath(path: unknown): asserts path is string {
   validatePath(path);
-  if (path !== "/" && path !== "/manifest.webmanifest" && !/^\/assets\/[A-Za-z0-9._-]+\.(?:m?js|css|wasm)$/.test(path)) {
+  if (path !== "/" && path !== "/manifest.webmanifest" && !Object.hasOwn(PRONAOS_FIXED_WEB_ROUTES, path) && !/^\/assets\/[A-Za-z0-9._-]+\.(?:m?js|css|wasm)$/.test(path)) {
     fail(`artifact path is outside the finite Web surface: ${path}`);
   }
 }
@@ -360,6 +360,15 @@ export function deliverPublicArtifact(
   };
 }
 
+/**
+ * The fixed-name web routes beside `/` and the manifest: the unlock ceremony's document and its port broker (a service
+ * worker, whose script URL stays stable across builds). Both answer `no-store`.
+ */
+export const PRONAOS_FIXED_WEB_ROUTES: Readonly<Record<string, { readonly file: string; readonly contentType: string }>> = Object.freeze({
+  "/ceremony.html": { file: "ceremony.html", contentType: "text/html; charset=utf-8" },
+  "/ceremony-broker.js": { file: "ceremony-broker.js", contentType: "application/javascript" },
+});
+
 /** Validate the operator-held Web build receipt without touching a filesystem. */
 export function validatePronaosArtifactRecord(record: PronaosArtifactRecord): void {
   if (!record || record.schema !== "lararium-pronaos-artifact/v1" || !Array.isArray(record.routes)) {
@@ -380,10 +389,12 @@ export function validatePronaosArtifactRecord(record: PronaosArtifactRecord): vo
     if (entry.path === "/manifest.webmanifest" && entry.file !== "manifest.webmanifest") {
       fail("manifest route must be manifest.webmanifest");
     }
+    const fixed = PRONAOS_FIXED_WEB_ROUTES[entry.path];
+    if (fixed && entry.file !== fixed.file) fail(`${entry.path} route must be ${fixed.file}`);
     const expectedType = entry.path === "/" ? "text/html; charset=utf-8" :
-      entry.path === "/manifest.webmanifest" ? "application/manifest+json" :
+      entry.path === "/manifest.webmanifest" ? "application/manifest+json" : fixed ? fixed.contentType :
       entry.path.endsWith(".css") ? "text/css" : entry.path.endsWith(".wasm") ? "application/wasm" : "application/javascript";
-    const expectedCache = entry.path === "/" || entry.path === "/manifest.webmanifest" ? "no-store" : "immutable";
+    const expectedCache = entry.path === "/" || entry.path === "/manifest.webmanifest" || fixed ? "no-store" : "immutable";
     if (entry.contentType !== expectedType) fail(`artifact ${entry.path} must use ${expectedType}`);
     if (entry.cache !== expectedCache) fail(`artifact ${entry.path} must use ${expectedCache}`);
     if (typeof entry.sha256 !== "string" || !SHA256.test(entry.sha256)) {

@@ -109,6 +109,22 @@ export function buildPronaosProjection(
     const route = `/assets/${referenced[1]}`;
     if (!entries.has(route)) fail(`index.html references an unlisted asset: ${route}`);
   }
+  // THE UNLOCK CEREMONY'S TWO FIXED ROUTES: its document and its port broker, each held to its receipt like the index.
+  const fixedOf = (path: string, label: string): Uint8Array | undefined => {
+    const entry = entries.get(path);
+    if (!entry) return undefined;
+    const bytes = exactFile(webRoot, entry.file, label);
+    if (createHash("sha256").update(bytes).digest("hex") !== entry.sha256) fail(`${label} does not match artifact receipt`);
+    return bytes;
+  };
+  const ceremonyBytes = fixedOf("/ceremony.html", "ceremony.html");
+  const brokerBytes = fixedOf("/ceremony-broker.js", "ceremony-broker.js");
+  if (ceremonyBytes) {
+    for (const referenced of new TextDecoder().decode(ceremonyBytes).matchAll(/\/assets\/([A-Za-z0-9._-]+)/g)) {
+      const route = `/assets/${referenced[1]}`;
+      if (!entries.has(route)) fail(`ceremony.html references an unlisted asset: ${route}`);
+    }
+  }
 
   const assets = new Map<string, PronaosFile>();
   for (const entry of inputs.artifactRecord.routes) {
@@ -134,6 +150,8 @@ export function buildPronaosProjection(
     index: file(indexBytes, "text/html; charset=utf-8"),
     assets,
     ...(manifestBytes ? { manifest: file(manifestBytes, "application/manifest+json") } : {}),
+    ...(ceremonyBytes ? { ceremony: file(ceremonyBytes, "text/html; charset=utf-8") } : {}),
+    ...(brokerBytes ? { ceremonyBroker: file(brokerBytes, "application/javascript") } : {}),
     genesisSeed: file(seedBytes, "application/json"),
     cas,
   };

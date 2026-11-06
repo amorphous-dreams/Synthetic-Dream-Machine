@@ -5,7 +5,7 @@
  *
  * A browser leaf holds a passphrase or paper slot before it holds a persona root. `secretMintDue`
  * asks for the first slot before the mint; the mint refuses `no-custody-slot` without one.
- * This module names no passkey kind: the passkey road stays with the operator.
+ * A first slot binds a passphrase or a paper sheet; a passkey binds only beside one (`browser-custody.ts`).
  *
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-boot-custody
  */
@@ -59,6 +59,8 @@ export async function standBrowserCustody(opts: StandBrowserCustodyOptions): Pro
     if (!opts.secretMintDue) return { reading: "clear" };
     const route = await opts.ask({ kind: "bind-first", why: "face-secret-mint-due" });
     if (route === null) return { reading: "declined" };
+    // A FIRST SLOT NEVER STANDS ON A PASSKEY ALONE: the tree's first route is a passphrase or a paper sheet.
+    if (route.kind === "passkey") throw new Error("keyslot: passkey-alone-refused");
     try {
       const bound = await sealBrowserKeystore(opts.idbName, route);
       return { reading: "bound", slot: bound.slot, unsettled: bound.unsettled };

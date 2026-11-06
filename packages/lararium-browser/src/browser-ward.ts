@@ -1,21 +1,28 @@
 /**
- * browser-ward — THE PAGE'S DOOR TO ONE WARD ACT (seat-harness#/the-ward): the face root signs in a per-act worker, fresh from the
- * passphrase a person typed for this act, and the page's own unlock never takes part.
+ * browser-ward — THE VESSEL'S DOOR TO ONE WARD ACT (seat-harness#/the-ward): the face root signs in a per-act worker, fresh from the
+ * passphrase a person typed for this act, and the vessel's own unlock never takes part.
  *
  * The door reads the keystore's slot tree and the root's sealed row as raw bytes (it opens nothing), spawns one worker, hands the
  * request over a MessagePort, reads one answer and terminates the worker. The answer holds the root's public key and one signature.
- * `readBrowserCustody(...).unlocked` reads the same before, during and after: the act never touches the page's held key.
+ * `readBrowserCustody(...).unlocked` reads the same before, during and after: the act never touches the vessel's held key.
  *
- * Residuals, named: the page passes the typed passphrase over the port (a page script reads what the page's dialog collects); and
- * the browser root still rests under the keystore's tree key, so a page that holds the keystore unlocked reads the root by the
- * vessel's own doors. The ward here binds the daemon realm's bound acts (a daemon or kahua commit, a kāpae-lower), which sign
+ * The passphrase arrives from the unlock ceremony's clean document, down its own brokered port to the vessel worker, which
+ * hands it to the act's worker; the surface page never holds it (browser-vessel-lift#/the-ceremony). Residual, named: the
+ * browser root still rests under the keystore's tree key, so a vessel that holds the keystore unlocked reads the root by its
+ * own doors, and a passkey slot in that tree refuses every ward act `ward-passkey-refused` (the ward opens no tree a passkey
+ * widened) until the root moves under a ward key of its own. The ward here binds the daemon realm's bound acts (a daemon or kahua commit, a kāpae-lower), which sign
  * through this door alone; moving the browser root under a ward key of its own stays owed.
  */
 import { browserKeystoreCustodyIo, CUSTODY_TREE_ROW, sealedCarrierOf } from "./browser-custody.js";
 import type { WardActAnswer, WardActRequest } from "./ward-core.js";
 
 /** One worker for one act. The default spawns `ward.worker.ts`; a witness passes a spawn that runs the pure core in-process. */
-export interface WardWorkerHandle { postMessage(msg: unknown, transfer: Transferable[]): void; terminate(): void }
+export interface WardWorkerHandle {
+  postMessage(msg: unknown, transfer: Transferable[]): void;
+  terminate(): void;
+  /** A worker that fails to stand raises `error`: the act then refuses `ward-worker-failed` rather than wait on an answer that never comes. */
+  addEventListener?(type: "error", listener: (e: Event) => void): void;
+}
 export type WardWorkerSpawn = () => WardWorkerHandle;
 
 const defaultSpawn: WardWorkerSpawn = () => new Worker(new URL("./ward.worker.js", import.meta.url), { type: "module" });
@@ -52,6 +59,10 @@ async function browserWardSignOnce(idbName: string, handleIndex: number, passphr
   const channel = new MessageChannel();
   try {
     const answer = await new Promise<WardActAnswer>((resolve) => {
+      worker.addEventListener?.("error", (e: Event) => {
+        console.error("[ward] the ward act's worker failed to stand:", (e as ErrorEvent).message ?? "error");
+        resolve({ refused: "ward-worker-failed" });
+      });
       channel.port1.onmessage = (m: MessageEvent) => resolve(m.data as WardActAnswer);
       worker.postMessage(null, [channel.port2]);
       channel.port1.postMessage(request);

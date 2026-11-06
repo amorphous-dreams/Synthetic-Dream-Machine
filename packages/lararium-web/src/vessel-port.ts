@@ -8,9 +8,13 @@
 import type { BrowserConnectionListener, BrowserConnectionSnapshot, HearthFloorRead, PageLife, ProjectionSurfaceFrame } from "@lararium/browser/page";
 import type { LarMsg_ControlEvent, LarMsg_ControlResult } from "@lararium/mesh";
 import type { PortTransportDoors } from "./port-transport.js";
+import type { CeremonyAskKind } from "./ceremony-protocol.js";
 import type {
-  JoinAnswerReply, JoinOfferReply, PageToVessel, VesselAskQuestion, VesselBoot, VesselError, VesselStatus, VesselToPage,
+  JoinAnswerReply, JoinOfferReply, PageToVessel, VesselBoot, VesselError, VesselStatus, VesselToPage,
 } from "./vessel-protocol.js";
+
+/** An ask as the page hears it: public words alone. The page opens the ceremony document for it and takes no answer. */
+export interface VesselAsk { readonly askId: string; readonly kind: CeremonyAskKind; readonly act: string; readonly words: string }
 
 /** The worker's side the page reads: a message road, and the platform's own termination. */
 export interface VesselWorkerLike {
@@ -36,8 +40,10 @@ export interface VesselPortHandlers {
   onControlResult?(surface: string, result: LarMsg_ControlResult): void;
   onPortMessage?(binding: string, islandKey: string, msg: unknown): void;
   onStatus?(status: VesselStatus): void;
-  /** The vessel asks the person: the answer travels back on this port (interim; slice 1b moves it to the ceremony document). */
-  onAsk?(question: VesselAskQuestion, act: string): Promise<unknown>;
+  /** The vessel asks the person: the page opens the ceremony document, and the answer travels ceremony to vessel, never here. */
+  onAsk?(ask: VesselAsk): void;
+  /** The ask closed (answered, declined or refused): the page takes its notice down. */
+  onAskSettled?(askId: string): void;
   onEnded?(why: string, stage: "custody" | "open"): void;
   /** The holder's SharedWorker, built on the page because a dedicated worker cannot build one. */
   spawnHolder?(url: string, name: string): { readonly port: MessagePort; onError(listener: () => void): void } | null;
@@ -67,9 +73,8 @@ export function standVesselPort(worker: VesselWorkerLike, handlers: VesselPortHa
         handlers.onPortMessage?.(msg.binding, "", { type: "transport:refused", reason: msg.reason, binding: msg.binding });
         if (msg.opening && msg.portId) handlers.onPortMessage?.(msg.binding, "", { type: "port:gone", portId: msg.portId, reason: msg.reason, binding: msg.binding });
         return;
-      case "ask":
-        void (handlers.onAsk?.(msg.question, msg.act) ?? Promise.resolve(null)).then((answer) => post({ t: "answer", askId: msg.askId, answer: answer as never }));
-        return;
+      case "ask": handlers.onAsk?.({ askId: msg.askId, kind: msg.kind, act: msg.act, words: msg.words }); return;
+      case "ask:settled": handlers.onAskSettled?.(msg.askId); return;
       case "status":
         if (msg.status.connection) { connection = msg.status.connection; for (const l of connectionListeners) l(connection); }
         handlers.onStatus?.(msg.status);
@@ -96,6 +101,10 @@ export function standVesselPort(worker: VesselWorkerLike, handlers: VesselPortHa
   return {
     hello(boot: VesselBoot): void { post({ t: "hello", tabSession: crypto.randomUUID(), boot }); },
     pageLife(life: PageLife): void { post({ t: "page:life", life }); },
+    /** One end of a ceremony's channel, transferred to the vessel unread; the page keeps neither end. */
+    ceremonyPort(askId: string, port: MessagePort): void { post({ t: "ceremony:port", askId, port }, [port]); },
+    /** The page could not open the ceremony for this ask: the vessel's ask rejects with the name. */
+    ceremonyRefused(askId: string, refusal: string): void { post({ t: "ceremony:refused", askId, refusal }); },
     sendControlEvent(surface: string, ev: LarMsg_ControlEvent): void { post({ t: "control-event", surface, ev }); },
     setActiveSurface(surface: string): void { post({ t: "set-surface", surface }); },
     /** The mirror's port road: a placement crosses at once, and a refusal returns as the binding's own message. */
@@ -108,6 +117,8 @@ export function standVesselPort(worker: VesselWorkerLike, handlers: VesselPortHa
     joinOffer: (text: string, abandonPending: boolean) => call<JoinOfferReply>((callId) => ({ t: "join:offer", callId, text, abandonPending })),
     joinAnswer: (text: string) => call<JoinAnswerReply>((callId) => ({ t: "join:answer", callId, text })),
     restartDaemonIsland: (reason: string) => call<{ restarts: number; leg: string }>((callId) => ({ t: "walk:restart", callId, reason })),
+    /** A harness-only door (the walk build): one ward act over `bytes`, its passphrase asked through the ceremony. */
+    walkWardAct: (bytes: Uint8Array) => call<{ key: string; signature: string }>((callId) => ({ t: "walk:ward", callId, bytes })),
     /** The crossing as the vessel last reported it. */
     connectionState: {
       getSnapshot(): BrowserConnectionSnapshot { return connection ?? { status: "local" }; },

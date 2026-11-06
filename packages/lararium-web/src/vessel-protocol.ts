@@ -13,7 +13,9 @@
  *   onCoherence                       vessel → page  `coherence`
  *   onPortMessage                     vessel → page  `port-msg` (a placement the vessel refused: `port:refused`)
  *   onRest                            vessel → page  `status{rest}`
- *   askCustody / askWardRoute         vessel → page  `ask{askId, kind, act, question}`; page → vessel `answer{askId}`
+ *   askCustody / askWardRoute         vessel → page  `ask{askId, kind, act, words}` and `ask:settled{askId}`; page → vessel
+ *                                     `ceremony:port{askId, port}` (one end of the ceremony's channel, transferred, never read)
+ *                                     or `ceremony:refused{askId, refusal}`
  *   pageLife                          page → vessel  `page:life`
  *   sendControlEvent                  page → vessel  `control-event`
  *   setActiveSurface                  page → vessel  `set-surface`
@@ -24,14 +26,13 @@
  *   the holder's SharedWorker         vessel → page  `spawn{role}`; page → vessel `spawned{port}` (transferred, never read)
  *   a boot that stops                 vessel → page  `ended{why}`
  *
- * INTERIM, CLOSED BY SLICE 1b: until the ceremony document stands, the `answer` to a custody or ward ask travels page to
- * vessel on this port, carrying the passphrase the page's own form took.
- * Slice 1b moves the answer to the ceremony document's own brokered port, and this port then carries no answer bytes.
+ * THIS PORT CARRIES NO ANSWER BYTES. The answer to a custody or ward ask travels from the ceremony document down its own
+ * brokered port (`ceremony-protocol.ts`) straight to this vessel worker; the page mints that port's channel and keeps neither end.
  */
 import type {
-  BootCustodyVerdict, BrowserConnectionSnapshot, CoherenceFrameWithRev, CustodyAnswer, CustodyAsk, HearthFloorRead, PageLife,
-  ProjectionSurfaceFrame,
+  BootCustodyVerdict, BrowserConnectionSnapshot, CoherenceFrameWithRev, PageLife, ProjectionSurfaceFrame,
 } from "@lararium/browser/page";
+import type { CeremonyAskKind } from "./ceremony-protocol.js";
 import type { FloorAnchor, GenesisSeed, LarMsg_ControlEvent, LarMsg_ControlResult, VesselRestState } from "@lararium/mesh";
 
 /** What the page hands the vessel worker to boot on: public inputs alone (URLs, the served seed, the arrival's carriage). */
@@ -53,12 +54,7 @@ export interface VesselBoot {
   readonly admitCarriage?: string;
   /** The `?mesh=` carry-in: the leaf's coordinate seed and the raw peer list the vessel worker reads (`parseMeshPeer`). */
   readonly meshLeaf?: { readonly coordSeed: string; readonly peers: string };
-  /** The page answers ward asks: absent, every ward act refuses `ward-needs-fresh-unlock` by name. */
-  readonly wardAsk?: boolean;
 }
-
-/** The question a custody ask carries: public words alone (an attempt count, a note), never a route or a key. */
-export type VesselAskQuestion = CustodyAsk | { readonly kind: "clear" } | { readonly kind: "ward"; readonly act: string };
 
 /** The seed's resting state, named and never its bytes. */
 export type SeedRest = "absent" | "wrapped-prf" | "wrapped-passphrase" | "open";
@@ -88,7 +84,8 @@ export type JoinAnswerReply = { readonly kind: "landed"; readonly carriage: stri
 
 export type PageToVessel =
   | { readonly t: "hello"; readonly tabSession: string; readonly boot: VesselBoot }
-  | { readonly t: "answer"; readonly askId: string; readonly answer: CustodyAnswer | string | null }
+  | { readonly t: "ceremony:port"; readonly askId: string; readonly port: MessagePort }
+  | { readonly t: "ceremony:refused"; readonly askId: string; readonly refusal: string }
   | { readonly t: "control-event"; readonly surface: string; readonly ev: LarMsg_ControlEvent }
   | { readonly t: "set-surface"; readonly surface: string }
   | { readonly t: "port:place"; readonly surface: string; readonly binding: string; readonly msg: unknown }
@@ -99,7 +96,8 @@ export type PageToVessel =
   | { readonly t: "join:offer"; readonly callId: string; readonly text: string; readonly abandonPending: boolean }
   | { readonly t: "join:answer"; readonly callId: string; readonly text: string }
   | { readonly t: "spawned"; readonly spawnId: string; readonly port?: MessagePort; readonly refused?: string }
-  | { readonly t: "walk:restart"; readonly callId: string; readonly reason: string };
+  | { readonly t: "walk:restart"; readonly callId: string; readonly reason: string }
+  | { readonly t: "walk:ward"; readonly callId: string; readonly bytes: Uint8Array };
 
 export type VesselToPage =
   | { readonly t: "phase"; readonly phase: string }
@@ -108,7 +106,8 @@ export type VesselToPage =
   | { readonly t: "coherence"; readonly frame: CoherenceFrameWithRev }
   | { readonly t: "port-msg"; readonly binding: string; readonly islandKey: string; readonly msg: unknown }
   | { readonly t: "port:refused"; readonly binding: string; readonly reason: string; readonly opening: boolean; readonly portId?: string }
-  | { readonly t: "ask"; readonly askId: string; readonly kind: "unlock" | "bind-first" | "clear" | "ward"; readonly act: string; readonly question: VesselAskQuestion }
+  | { readonly t: "ask"; readonly askId: string; readonly kind: CeremonyAskKind; readonly act: string; readonly words: string }
+  | { readonly t: "ask:settled"; readonly askId: string }
   | { readonly t: "status"; readonly status: VesselStatus }
   | { readonly t: "reply"; readonly callId: string; readonly ok: true; readonly value: unknown }
   | { readonly t: "reply"; readonly callId: string; readonly ok: false; readonly error: VesselError }

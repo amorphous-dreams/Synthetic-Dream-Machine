@@ -39,8 +39,9 @@
  * blocking prompt stands.
  *
  * ── PIN KINDS ────────────────────────────────────────────────────────────────────────────────────
- * A slot binds the mesh's built kinds: a passphrase, or a paper sheet the person holds. A passkey slot joins only
- * after its PRF derivation gets measured on the person's own devices, and never alone; no passkey kind stands here.
+ * A slot binds the mesh's built kinds: a passphrase, a paper sheet the person holds, or a passkey (a WebAuthn PRF output
+ * over the pin's salt, the ceremony document's custody route). A passkey never stands as the tree's only route: a first
+ * seal under a passkey alone refuses `passkey-alone-refused`, and a passkey slot binds beside a passphrase or paper slot.
  *
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-custody
  */
@@ -470,14 +471,27 @@ async function readBrowserCustodyHeld(idbName: string): Promise<BrowserCustodySt
   };
 }
 
-function pinOf(route: Credential): PinSpec {
+/** A route a slot binds under: a credential, where a passkey also names the PRF salt its output answered. */
+export type CustodyBindRoute =
+  | Exclude<Credential, { readonly kind: "passkey" }>
+  | { readonly kind: "passkey"; readonly credentialId: Uint8Array; readonly prfSalt: Uint8Array; readonly prfOutput: Uint8Array };
+
+function pinOf(route: CustodyBindRoute): PinSpec {
   if (route.kind === "passphrase") return { kind: "passphrase", passphrase: route.passphrase };
   if (route.kind === "paper") return { kind: "paper", confirmed: confirmHeldPaper(route.sheets) };
-  throw new Error(`[browser-custody] a slot binds a passphrase or a paper sheet; got "${String((route as { kind: unknown }).kind)}"`);
+  if (route.kind === "passkey") return { kind: "passkey", credentialId: route.credentialId, prfSalt: route.prfSalt, prfOutput: route.prfOutput };
+  throw new Error(`[browser-custody] a slot binds a passphrase, a paper sheet or a passkey; got "${String((route as { kind: unknown }).kind)}"`);
+}
+
+/** The passkey pins' public halves (credential id and PRF salt), for the ceremony's assertion. A clear or unreadable tree names none. */
+export async function readBrowserCustodyPasskeys(idbName: string): Promise<readonly { readonly credentialId: Uint8Array; readonly prfSalt: Uint8Array }[]> {
+  const reading = decodeSlotTree(await browserKeystoreCustodyIo(idbName).read(CUSTODY_TREE_ROW).catch(() => null));
+  if (reading.reading !== "readable") return [];
+  return reading.tree.slots.flatMap((s) => s.pins.flatMap((p) => p.kind === "passkey" ? [{ credentialId: p.credentialId.slice(), prfSalt: p.prfSalt.slice() }] : []));
 }
 
 /** Prove `route` opens `tree`'s encoded bytes to `treeKey` through `slotId`, before the tree lands anywhere. */
-async function proveRouteOpens(tree: SlotTree, treeKey: TreeKey, route: Credential, slotId: string): Promise<void> {
+async function proveRouteOpens(tree: SlotTree, treeKey: TreeKey, route: CustodyBindRoute, slotId: string): Promise<void> {
   const back = decodeSlotTree(encodeSlotTree(tree));
   if (back.reading !== "readable") throw new Error("[browser-custody] the bound slot tree does not read back; nothing was written");
   const opened = await openTreeKey(back.tree, [route], nobleKdf);
@@ -540,7 +554,7 @@ async function settleClearRows(idbName: string, treeKey: TreeKey): Promise<{ mov
  * tree before the tree lands; the tree lands before any row moves; each row moves only after its seal reads back
  * and opens. An empty keystore seals too, so the slot stands before the first mint. Leaves this page unlocked.
  */
-export async function sealBrowserKeystore(idbName: string, route: Credential): Promise<{ readonly slot: string; readonly sealed: readonly string[]; readonly unsettled: readonly UnsettledRow[] }> {
+export async function sealBrowserKeystore(idbName: string, route: CustodyBindRoute): Promise<{ readonly slot: string; readonly sealed: readonly string[]; readonly unsettled: readonly UnsettledRow[] }> {
   return withCustodyActLock(idbName, "exclusive", async () => {
     const io = browserKeystoreCustodyIo(idbName);
     if ((await io.read(CUSTODY_TREE_ROW)) !== null) throw new BrowserCustodyRefused("already-sealed", idbName);
@@ -591,7 +605,7 @@ function heldOrRefuse(idbName: string): TreeKey {
 }
 
 /** Bind one more slot under `route`, over the tree key this page holds. The route reopens the new tree before it lands. */
-export async function bindBrowserCustodySlot(idbName: string, route: Credential): Promise<{ readonly slot: string }> {
+export async function bindBrowserCustodySlot(idbName: string, route: CustodyBindRoute): Promise<{ readonly slot: string }> {
   return withCustodyActLock(idbName, "exclusive", async () => {
     const treeKey = heldOrRefuse(idbName);
     const io = browserKeystoreCustodyIo(idbName);

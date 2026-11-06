@@ -42,15 +42,17 @@ export {
   openVesselIdb, idbGet, idbPut, idbDelete, idbKeys,
   readBrowserSeedWrap, writeBrowserSeedWrap, loadBrowserActivePersona, SEED_WRAP_STORE,
 } from "./browser-vessel-identity.js";
-// BROWSER CUSTODY: a passphrase or paper slot wraps the keystore's device seed and Keyhive Archives; the
+// BROWSER CUSTODY: a passphrase, paper or passkey slot (a passkey never alone) wraps the keystore's device seed and Keyhive Archives; the
 // clear-password act asks through the confirm door.
 export {
   sealBrowserKeystore, unlockBrowserCustody, lockBrowserCustody, readBrowserCustody, bindBrowserCustodySlot,
-  unbindBrowserCustodySlot, clearBrowserCustody, BrowserCustodyRefused, CLEAR_CUSTODY_QUESTION,
+  unbindBrowserCustodySlot, clearBrowserCustody, BrowserCustodyRefused, CLEAR_CUSTODY_QUESTION, readBrowserCustodyPasskeys,
 } from "./browser-custody.js";
 export type {
-  BrowserCustodyStatus, BrowserCustodyUnlock, BrowserCustodyClear, BrowserCustodyRefusalReading, ConfirmDoor,
+  CustodyBindRoute, BrowserCustodyStatus, BrowserCustodyUnlock, BrowserCustodyClear, BrowserCustodyRefusalReading, ConfirmDoor,
 } from "./browser-custody.js";
+// ONE WARD ACT: the face root signs in a per-act worker, fresh from the passphrase the ceremony took for it.
+export { browserWardSign, BrowserWardRefused } from "./browser-ward.js";
 // THE BOOT'S CUSTODY STEP: each tab asks the person for its own unlock, or for a first slot before a face secret mints.
 export { standBrowserCustody } from "./browser-boot-custody.js";
 export type { CustodyAsk, CustodyAnswer, BootCustodyVerdict, StandBrowserCustodyOptions } from "./browser-boot-custody.js";

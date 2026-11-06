@@ -208,7 +208,7 @@ async function writeBootKeys(idbName: string, writes: BootKeyWrites): Promise<vo
 
 export interface BrowserVesselOptions extends LarariumVesselOptions {
   /**
-   * THE WARD'S DIALOG (seat-harness#/the-ward): the page asks the person for the face's passphrase for ONE ward act (a daemon or
+   * THE WARD'S ASK (seat-harness#/the-ward): the unlock ceremony asks the person for the face's passphrase for ONE ward act (a daemon or
    * kahua commit, a kāpae-lower) and answers it; the passphrase goes to a per-act ward worker and nothing keeps it. Absent, every
    * ward act in this browser refuses `ward-needs-fresh-unlock` by name.
    */
@@ -1388,7 +1388,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           const wiring = promoteWiringRef;
           const handle = await repo.find<LarDoc>(provenPromoteUrl as AutomergeUrl);
           const boardFace = { group: wornGroup, grant: (key: string) => promoteFace.read()?.grant(key) ?? false, device: (key: string) => devices.has(key) };
-          /** One ward act's signer: the page's dialog asks the passphrase for this act, and the ward worker signs under it. */
+          /** One ward act's signer: the ceremony asks the passphrase for this act, and the ward worker signs under it. */
           const wardRootSignerOf = async (act: string) => {
             if (!opts.askWardRoute) throw new BrowserWardRefused("ward-needs-fresh-unlock");
             return browserWardSigner(idbName, FOUNDING_PERSONA_INDEX, await opts.askWardRoute(act));
