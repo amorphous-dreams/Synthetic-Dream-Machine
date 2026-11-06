@@ -9,6 +9,7 @@ import { lockBrowserCustody, readBrowserCustody, sealBrowserKeystore } from "../
 import { generateOrLoadBrowserPersonaRoot } from "../src/browser-vessel-identity.js";
 import { runWardAct } from "../src/ward-core.js";
 import { browserWardSign, BrowserWardRefused, type WardWorkerSpawn } from "../src/browser-ward.js";
+import entrySource from "../src/ward.worker.ts?raw";
 
 const PASS = "the browser face's route";
 const fresh = () => `lares:ward-${globalThis.crypto.randomUUID()}`;
@@ -70,5 +71,34 @@ describe("the browser ward spends attempts (S2 cold read, P3)", () => {
     await expect(browserWardSign(idbName, 0, PASS, new Uint8Array([1]), spawnCore(idbName, seen))).rejects.toMatchObject({ reading: "ward-attempts-spent" });
     const other = await wardedBrowser();
     expect((await browserWardSign(other.idbName, 0, PASS, new Uint8Array([1]), spawnCore(other.idbName, seen))).signature).toMatch(/^[0-9a-f]+$/);
+  });
+});
+
+/** The runtime imports an entry evaluates before its own body (type-only imports erase). */
+const runtimeImportsOf = (source: string): string[] =>
+  [...source.matchAll(/^import\s+(?!type\s)[^;]*?from\s+"([^"]+)";?/gms)].map((m) => m[1]!);
+
+describe("the ward worker hears its act (the built page)", () => {
+  // A bundled module worker evaluates its static imports first; the mesh's wasm init awaits at top level there, and a message the
+  // page posts meanwhile reaches no listener and drops, so the act never answers. The entry stands its listener with nothing loaded.
+  test("RED: the worker entry evaluates no runtime import before its listener stands; CONTROL: it reaches the ward core by a dynamic import", () => {
+    expect(runtimeImportsOf(entrySource)).toEqual([]);
+    expect(entrySource).toMatch(/await import\("\.\/ward-core\.js"\)/);
+  });
+
+  test("RED: a ward worker that fails to load refuses `ward-worker-failed` by name at once, never hangs; CONTROL: a worker that answers signs", async () => {
+    const { idbName } = await wardedBrowser();
+    const failing: WardWorkerSpawn = () => {
+      const handle: ReturnType<WardWorkerSpawn> = {
+        postMessage() { queueMicrotask(() => handle.onerror?.(new ErrorEvent("error"))); },
+        terminate() { /* nothing stands */ },
+      };
+      return handle;
+    };
+    const hung = new Promise<string>((r) => setTimeout(() => r("hung"), 3000));
+    const read = await Promise.race([browserWardSign(idbName, 0, PASS, new Uint8Array([1]), failing).then(() => "signed", (e: { reading?: string }) => e.reading ?? "unnamed"), hung]);
+    expect(read).toBe("ward-worker-failed");
+    const seen = { answers: [] as unknown[], unlockedDuring: [] as boolean[] };
+    await expect(browserWardSign(idbName, 0, PASS, new Uint8Array([1]), spawnCore(idbName, seen))).resolves.toMatchObject({ signature: expect.any(String) });
   });
 });
