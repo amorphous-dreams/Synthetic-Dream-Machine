@@ -160,6 +160,7 @@ const settle = async (ok: () => boolean): Promise<void> => { for (let i = 0; i <
 test("RED: the owner's page asks its vessel to mint a follower's port and takes the minted end unread — CONTROL: a refusal mints null, another want's reply settles nothing", async () => {
   const { worker, sent, say } = fakeWorker();
   const port = standVesselPort(worker, {}, { locks: null });
+  say({ t: "greeting", ownerEpoch: "e1", sessionId: "s1", lifetimeLock: "lares:vessel-session:s1" });
   const minted = port.mintPort("w1", "tab-b");
   expect(sent.at(-1)?.msg, "the want crosses as a typed message").toEqual({ t: "port:want", wantId: "w1", tabSession: "tab-b" });
   const refused = port.mintPort("w2", "tab-c");
@@ -172,6 +173,22 @@ test("RED: the owner's page asks its vessel to mint a follower's port and takes 
   expect(w2, "CONTROL: w1's reply settles w2 not at all").toBe("open");
   say({ t: "port:minted", wantId: "w2", refused: "session-unadmitted" } as VesselToPage);
   await expect(refused, "CONTROL: a refused want mints nothing").resolves.toBeNull();
+  port2.close();
+});
+
+test("RED: a want that arrives before the vessel greets this page waits for the greeting and then crosses — CONTROL: a want after the greeting crosses at once", async () => {
+  const { worker, sent, say } = fakeWorker();
+  const port = standVesselPort(worker, {}, { locks: null });
+  const early = port.mintPort("w-early", "tab-c");
+  await tick();
+  expect(sent.some((x) => x.msg.t === "port:want"), "no session stands yet, so the want waits and the vessel refuses nothing").toBe(false);
+  say({ t: "greeting", ownerEpoch: "e1", sessionId: "s1", lifetimeLock: "lares:vessel-session:s1" });
+  expect(sent.at(-1)?.msg, "the greeting releases the held want").toEqual({ t: "port:want", wantId: "w-early", tabSession: "tab-c" });
+  const { port1, port2 } = new MessageChannel();
+  say({ t: "port:minted", wantId: "w-early", port: port1 } as VesselToPage);
+  await expect(early).resolves.toBe(port1);
+  void port.mintPort("w-late", "tab-d");
+  expect(sent.at(-1)?.msg, "CONTROL: after the greeting a want crosses at once").toEqual({ t: "port:want", wantId: "w-late", tabSession: "tab-d" });
   port2.close();
 });
 
