@@ -37,6 +37,9 @@ runBrowserSovereignWorker((manifest) => {
     // identities, over IndexedDB shelves of its own, and its roll takes this island's seat rolls.
     ...(key ? { sealedStore: idbSealedStoreShore(sealedStoreDbName(key)) } : {}),
     sessionProof: sessionsOnVessel,
+    // THE DOCUMENT STORE'S DOOR (sealed-store#/owed): the vessel worker's Repo seals each save through the holder here,
+    // under the ask its book holds for the session that booked the change, and opens each value it hydrates.
+    docStoreDoor: { post: port.post, listen: (cb: (msg: unknown) => void) => { port.listen(cb); return () => {}; } },
     // ONE SEED SITE: `makeDaemonBehavior` runs the cap-gated `seedDaemonProtocol` in onEa, so the daemon
     // protocol seed (Ui+Persona+Circle+Flow) stands identically on either boot. This ts-only browser vessel
     // passes HULLS_TS_ONLY → it seeds crystal alone, and its onBoot carries the projection mount.

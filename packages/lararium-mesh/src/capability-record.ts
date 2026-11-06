@@ -47,6 +47,10 @@ export interface CapabilityRecord {
   dyad?: DyadReader | undefined;
   custodyWrite?: CustodyWriter | undefined;
   sessionSign?: SessionSignDoor | undefined;
+  /** The vessel's document store door (`sealed-rest.ts`): attached to each daemon island's port as it spawns, so the
+   *  vessel's Repo seals and opens through the holder there, and the island asks the vessel for a bag's live document.
+   *  The answer is the detach. Absent → the vessel's sealed rest reaches no island. */
+  docStore?: ((port: { post(msg: unknown): void; listen(cb: (msg: unknown) => void): () => void }) => () => void) | undefined;
 }
 
 // ── THE ANSWERS, vessel side ────────────────────────────────────────────────────────────────────────
@@ -110,7 +114,8 @@ export const RECORD_ASKS = ["cas:want", "receipt:request", "dyad:ask", "custody:
  */
 export function answerIslandAsks(port: { post(msg: unknown): void; listen(cb: (msg: unknown) => void): () => void }, caps: CapabilityRecord): () => void {
   const reply = (msg: unknown): void => { try { port.post(msg); } catch { /* the island went away: nothing to answer */ } };
-  return port.listen((raw) => {
+  const detachDocStore = caps.docStore?.(port) ?? (() => {});
+  const stop = port.listen((raw) => {
     const m = raw as { type?: unknown; requestId?: unknown; [k: string]: unknown } | null;
     if (!m || typeof m.requestId !== "string") return;
     const requestId = m.requestId;
@@ -143,4 +148,5 @@ export function answerIslandAsks(port: { post(msg: unknown): void; listen(cb: (m
         return;
     }
   });
+  return () => { stop(); detachDocStore(); };
 }

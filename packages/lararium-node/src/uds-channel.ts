@@ -99,6 +99,9 @@ export interface UdsChannelOptions {
    * Absent → no call books, and every sealed act the island answers refuses `signer-unavailable`.
    */
   readonly signers?: SessionSignBook;
+  /** The lock ritual's first move, before a session's signer drops (sealed-store#/owed, R2): the vessel flushes its Repo
+   *  and its sealed rest, so every save the session booked lands sealed under it. Absent → the signer drops at once. */
+  readonly beforeSignerDrops?: (signer: UdsSessionSigner) => Promise<void>;
   /** The daemon's warm daemon doc handle (result.daemon.daemonHandle). */
   readonly daemonHandle: DocHandle<LarDoc>;
   /** The daemon composite with its attached working layer established as default writable. */
@@ -954,6 +957,12 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   const inFlight = new Set<Socket>();
   const table = new SessionTable(ownerEpoch);
   let closing = false;
+  /** Flush, then drop: a session's signer leaves only after every save it booked rested sealed. */
+  const flushThenDrop = async (signer: UdsSessionSigner | undefined): Promise<void> => {
+    if (!signer) return;
+    try { await opts.beforeSignerDrops?.(signer); } catch { /* a refused flush keeps its changes in memory; the drop still lands */ }
+    signer.drop();
+  };
   const sessionSockets = new Map<Socket, { binding: SessionBinding; sessionId?: string; hand?: Hand; anchor?: SessionAnchor; supply?: UdsSessionSupply; signer?: UdsSessionSigner }>();
   const sessionTurns = new Map<Socket, Promise<void>>();
   const sessionReply = (sock: Socket, answer: Record<string, unknown>): void => {
@@ -968,7 +977,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       sessionSockets.set(sock, state);
       sock.once("close", () => {
         if (state?.sessionId) table.close(state.sessionId);
-        state?.signer?.drop();
+        void flushThenDrop(state?.signer);
         sessionSockets.delete(sock);
         sessionTurns.delete(sock);
       });
@@ -1054,9 +1063,10 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     if (frame["op"] !== "session:close" && await anchorLeft(sock, state, requestId)) return;
     if (frame["op"] === "session:close") {
       table.close(checked.session.sessionId);
-      state.signer?.drop();
+      const leaving = state.signer;
       delete state.signer;
       delete state.sessionId;
+      await flushThenDrop(leaving);
       sessionReply(sock, { kind: "session:closed" });
       sock.end();
       return;
@@ -1210,7 +1220,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         return { ok: true, target: { face: supplied.supply.face, profile: supplied.supply.profile, supply: supplied.supply } };
       },
       writeIntent: writeSwitchAct,
-      fence: async () => { state.signer?.drop(); delete state.signer; delete state.supply; },
+      fence: async () => { const leaving = state.signer; delete state.signer; delete state.supply; await flushThenDrop(leaving); },
       commit: async (session, target) => {
         if (gone()) return { ok: false, refusal: "session-closed" };
         const minted = await target.supply.mint({ table, binding: state.binding, session });
@@ -1424,7 +1434,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       closing = true;
       for (const [sock, state] of sessionSockets) {
         if (state.sessionId) table.close(state.sessionId);
-        state.signer?.drop();
+        await flushThenDrop(state.signer);
         sock.end();
       }
       if (!idle()) await new Promise<void>((resolve) => { drained = resolve; });

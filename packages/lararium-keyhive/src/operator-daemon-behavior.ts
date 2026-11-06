@@ -84,6 +84,15 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
    *  verb a session places refuses `signer-unavailable`, and the holder counts no record. No vessel key and no daemon
    *  key signs in its place. */
   sessionProof?: IslandSessionProof;
+  /** `docStoreDoor` — the port the vessel's document store asks across (sealed-store#/owed): the vessel's Repo hands
+   *  this island a body to seal under the ask its session sign book booked for the session that wrote the change, and
+   *  a reference to open; the island answers addresses and bodies, never a key, on this port alone. Absent → the
+   *  vessel's sealed rest reaches no holder, and every seal it asks refuses by its own patience. */
+  docStoreDoor?: { post(msg: unknown): void; listen(cb: (msg: unknown) => void): () => void };
+  /** `freshBase` — the document store's cut of a from-now admission's fresh base (`@lararium/mesh` `freshBasePort`),
+   *  over the bag's live document as the vessel's Repo holds it. Absent → every from-now admission refuses
+   *  `fresh-base-unavailable`. */
+  freshBase?: import("@lararium/mesh").ContentKeyHolderPorts["freshBase"];
   /** `countedRaises` — the raises the vessel's own ledger counts on one fleet's board, asked of the vessel's own
    *  fold. Absent → a raise counts where this island's own count answered it (each roll its seat took, each
    *  kept roll handed back under the vessel's receipt). */
@@ -137,7 +146,7 @@ import { persistArchiveFloor } from "./archive-floor-write.js";
 import { replicaHeads, hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, holdsKahuReach, isSystemCanonBag, realmStandingDocUrl, materializeFaceWorkingDoc } from "@lararium/mesh";
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
 import { readLeaseUnderFace, daemonLayerOf, type LeaseFrontier } from "./lease-frontier.js";
-import { readFace } from "@lararium/mesh";
+import { readFace, answerDocStoreAsks } from "@lararium/mesh";
 import { makeSlotDocResolver, type SlotDocResolver } from "./slot-doc-resolver.js";
 import { type FaceJoinSummons } from "./face-join.js";
 import { answerFleetSeatDuties, type FleetSeatFacts } from "./fleet-seat-duties.js";
@@ -215,7 +224,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // The face archive writer stays on the island shore.
   const {
     persistVeilArchive, shore, events, journalAppend,
-    bagTier, askReceipt, dyadReading, readDyadFromBoard, dyadLedger, restDyadLedger, sealedStore, sessionProof, countedRaises, kahuCabal, ...daemonExtra
+    bagTier, askReceipt, dyadReading, readDyadFromBoard, dyadLedger, restDyadLedger, sealedStore, sessionProof, docStoreDoor, freshBase, countedRaises, kahuCabal, ...daemonExtra
   } = extra;
   const daemonAuth = manifest.daemonAuth;
   let clearGate!: () => void;
@@ -306,6 +315,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // THE CONTENT-KEY HOLDER, seated beside the face identity (sealed-store#/the-store). Bare
   // content keys live in it, in this island's memory alone: no verb answers one, and none crosses the port.
   let contentKeys: ContentKeySeat | null = null;
+  /** The document store's door, answered while this island stands (one subscription; a re-wire replaces it). */
+  let stopDocStoreDoor: (() => void) | null = null;
   /** The vessel's own verified face chain, as the last session reading carried it; null before any session asked. */
   let ownChain: SessionOwnChain | null = null;
   /** The vessel's counted raises and its unanswered ones on the face's fleet board, as the last session reading
@@ -950,6 +961,18 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         if (typeof bag !== "string" || bag.length === 0) throw new Error(`[daemon] ${verb}: \`bag\` required — a private body seals under its own bag's content key.`);
         return bag;
       };
+      // THE DOCUMENT STORE'S DOOR (sealed-store#/owed): the vessel's Repo seals each save here under the session that
+      // booked its change, through the ask the vessel's book holds for it, and opens each value for hydration. The
+      // answers ride the port alone and carry addresses and bodies, never a key; no outcome rests in the daemon wiki.
+      stopDocStoreDoor?.();
+      stopDocStoreDoor = docStoreDoor ? answerDocStoreAsks(docStoreDoor, {
+        seal: async ({ bagId, values, ask }) => {
+          if (!contentKeys) return { refusal: "sealed-store-unavailable" } as never;
+          const signer = await sessionOf(ask.verb, { invocation: { requestId: ask.requestId }, local: true });
+          return contentKeys.sealValues({ bagId, values, signer });
+        },
+        open: async (args) => (contentKeys ? contentKeys.holder.openValue(args) : { refusal: "holder-locked" } as never),
+      }) : null;
       registry.register("sealed-seal", async (args, context) => {
         const seat = holderFor("sealed-seal");
         const bag = bagOf("sealed-seal", args);
@@ -1260,6 +1283,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           // THE VESSEL'S OWN FOLD: a shore that injects `countedRaises` names them; else the last session reading's.
           countedRaises: countedRaises && fleetRoot ? () => countedRaises(fleetRoot) : () => ownCounted,
           unansweredRaises: () => ownUnanswered,
+          ...(freshBase ? { freshBase } : {}),
           // THE SEAT'S STANDING READS THE VESSEL'S OWN CHAIN, as the last session reading carried it: before any
           // session asked, no writer stands. A seat roll names no session, so it takes no signer and stays owed by
           // name; a session's own act signs through the door its verb reads (`sessionOf`, below).

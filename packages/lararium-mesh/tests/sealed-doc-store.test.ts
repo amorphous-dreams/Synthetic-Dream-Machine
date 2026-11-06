@@ -53,7 +53,9 @@ function storeFor(v: Vessel, inner: StorageAdapterInterface, over: { sealed?: (d
     inner,
     bagOf: (documentId) => (over.sealed ?? (() => true))(documentId) ? { bagId: BAG, face: over.bagFace ?? own } : null,
     sessionFace: () => (over.sessionFace === undefined ? own : over.sessionFace),
-    seal: (args) => v.holder.sealValues({ ...args, signer: over.signer ?? v.signer }),
+    // R2: the vessel's own session booked every change these vectors write.
+    sessionOf: () => ({ id: "the-writing-session", subject: own }),
+    seal: ({ bagId, values }) => v.holder.sealValues({ bagId, values, signer: over.signer ?? v.signer }),
     open: (args) => v.holder.openValue(args),
   });
 }

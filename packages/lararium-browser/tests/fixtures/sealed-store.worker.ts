@@ -75,7 +75,9 @@ scope.addEventListener("message", (event) => {
         inner: new IndexedDBStorageAdapter(msg.docDb),
         bagOf: (documentId) => (documentId === control ? null : { bagId: BAG, face }),
         sessionFace: () => face,
-        seal: (args) => holder.sealValues({ ...args, signer: s }),
+        // R2: this worker's own session booked every change it writes.
+        sessionOf: () => ({ id: "the-worker-session", subject: face }),
+        seal: ({ bagId, values }) => holder.sealValues({ bagId, values, signer: s }),
         open: (args) => holder.openValue(args),
       });
       const repo = new Repo({ storage: store(), network: [] });

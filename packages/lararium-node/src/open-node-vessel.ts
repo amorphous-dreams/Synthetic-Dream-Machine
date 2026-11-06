@@ -17,7 +17,8 @@
  * in sovereign islands (daemon + wiki). FPI-5 (trim tab): all Node-specific code lives here.
  */
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
-import { WardRefused } from "@lararium/mesh";
+import { WardRefused, composeSealedRest, docStorePortCell, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, type SealedBag, type BookedSession } from "@lararium/mesh";
+import * as A from "@automerge/automerge";
 
 /** A summoned panel verb's ward: the ref the CLI parked, spent only on the verb and arguments it was bound to. */
 function takeSummonedWard(raw: unknown): WardCredential | undefined {
@@ -158,6 +159,7 @@ import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHear
 import { composeDialPresentation } from "./dial-presentation.js";
 import { dialAnchorCell, nodeSessionDoor } from "./uds-session-door.js";
 import { SessionSignBook } from "./session-sign-door.js";
+import { faceProofSubjectRef } from "@lararium/mesh/face-proof-subjects";
 import type { UdsSessionDoor } from "./uds-channel.js";
 import { hexToBytes as carriageHexToBytes, type MeshPalaceDoc, type FlowPullResult } from "@lararium/mesh";
 import { gateReadingsFor, layStatementOn, flowFloorPinAt, vesselCarriagePull } from "./herm-carriage.js";
@@ -599,6 +601,9 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   /** The session sign door's book, the LIFT's own: the UDS seat books each session call, and the daemon island signs
    *  through the door this lift seated on its record (`islandCaps.sessionSign`). */
   sessionSigns: SessionSignBook;
+  /** The lock ritual's first move for one session (sealed-store#/owed, R2): flush the Repo and the sealed rest, so every
+   *  save that session booked lands sealed, then drop its bookings. The UDS seat awaits it before the signer drops. */
+  sealedRestLock: (signer: object) => Promise<void>;
 }
 
 /** A composed Herm (wiki-less): the daemon immune core + a served meshpalace FLOW-map, no pool. */
@@ -678,6 +683,8 @@ interface NodeBootPrep {
   /** What this composition lends a backup bundle's cut: the mounted face, its own edge's shadow, the island's memory section and the board's key history. */
   backupDoor:      BackupDoor;
   sessionDoor:     UdsSessionDoor;
+  /** The sealed rest's lock for one session's signer: the Repo and the rest flush, then its bookings drop. */
+  sealedRestLock:  (signer: object) => Promise<void>;
   /** THE SESSION SIGN LIFT, built and seated by the lift alone: each call stands a fresh book and its door over this
    *  prep's chain and fleet fold, and stands nothing itself. The Lararium lift seats `door` on `islandCaps.sessionSign`
    *  and owns `down`; a herm never calls it, so a herm's record signs nothing (`session-sign-door.ts`). */
@@ -830,7 +837,52 @@ async function prepareNodeBootOn(
   // custody root answers (below). A dial its gate verified opens a sealed session; the registry hands each opened
   // session to the Repo's adapter as one socket (`gate-sync-server`), so no frame reaches the Repo before the
   // gate's verdict left.
-  const storage = new DurableNodeFSStorageAdapter(storageDir);
+  // THE SEALED REST (sealed-store#/owed, R1 · R2): the document store's own rest for a sealed bag, under this Repo. The
+  // worn face's wiki bags rest sealed under each bag's content key through the holder in the daemon island (the door
+  // carries a body and a sealed value, never a key); cleartext rests only in the disk projection and the live wiki in
+  // memory. A bag maps sealed only while the face's Nexus chain stands, since only a Nexus-anchored session signs a
+  // sealed record. Every change books the session whose call stands as it lands (`SessionSignBook`'s hold), each save
+  // signs under the session that booked it, a save no session booked waits `save-unbooked` in memory until the next
+  // session's call books it, and a session's signer drops only after the Repo and the rest flush (`beforeSignerDrops`).
+  type NodeSaveSession = BookedSession & { readonly id: string };
+  const sealedCells: { face: () => string | null; bags: () => readonly string[]; catalog: () => LarDoc | undefined; book: SessionSignBook | null } = {
+    face: () => null, bags: () => [], catalog: () => undefined, book: null,
+  };
+  const sealedBagOf = (documentId: string): SealedBag | null => {
+    const face = sealedCells.face();
+    if (face === null) return null;
+    const catalog = sealedCells.catalog();
+    for (const bagId of sealedCells.bags()) if (tiddlerText(ownEntry(catalog?.tiddlers, bagId)) === `automerge:${documentId}`) return { bagId, face };
+    return null;
+  };
+  const sealedDocOf = (bagId: string): string | null => {
+    const url = tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId));
+    return url && url.startsWith("automerge:") ? url.slice("automerge:".length) : null;
+  };
+  const sessionIds = new WeakMap<object, string>();
+  let sessionSeq = 0;
+  const saveSessionOf = (session: BookedSession): NodeSaveSession => {
+    let id = sessionIds.get(session.signer);
+    if (id === undefined) { id = `node-session-${++sessionSeq}`; sessionIds.set(session.signer, id); }
+    return { ...session, id };
+  };
+  const docStorePort = docStorePortCell(async (bagId) => {
+    const documentId = sealedDocOf(bagId);
+    const handle = documentId ? (repo.handles as Record<string, { isReady(): boolean; doc(): unknown } | undefined>)[documentId] : undefined;
+    return handle?.isReady() ? A.save(handle.doc() as A.Doc<unknown>) : null;
+  });
+  islandCaps.docStore = (port) => docStorePort.attach(port);
+  const sealedRest = composeSealedRest<NodeSaveSession>({
+    inner: new DurableNodeFSStorageAdapter(storageDir),
+    bagOf: sealedBagOf,
+    sessionFace: () => sealedCells.face(),
+    door: vesselDocStoreDoor<NodeSaveSession>(() => docStorePort.port(), {
+      book: (ask, verb, session) => sealedCells.book?.hold(ask, verb, session) ?? (() => {}),
+      patienceMs: 30_000, idPrefix: `docstore-${process.pid}`,
+    }),
+    flushRepo: async () => { await repo.flush(); },
+    onHeld: ({ documentId }) => console.log(`[sealed-rest] save-unbooked: ${documentId.slice(0, 12)}… waits in memory for a session to book it`),
+  });
   // THE FLOOR PIN SET (house ruling "The admit's gate pin": a floor route's full pin travels through an authenticated
   // relation): each sovereign session hears, at open, the floor pins this
   // hearth stands at the Nexus that seated it, the same pins the floor gates below derive (`hearthFloorPins`).
@@ -1100,7 +1152,7 @@ async function prepareNodeBootOn(
   // then no peer reads as the house's own.
   let houseIslands: { has(peerId: string): boolean } = new Set<string>();
   const repo = new Repo({
-    storage,
+    storage: sealedRest.store,
     // THE PROTOTYPE-KEY SHORE: a sync message carrying a `__proto__` key never reaches the Repo.
     network: [shoreInbound(network)],
     // Two rings: WS peers (outside) must have passed a face gate; the
@@ -1189,8 +1241,22 @@ async function prepareNodeBootOn(
   islandCaps.receipt = (documentIds, heads) => receiptInStore(repo, documentIds, { ready: daemonVmStood.then(() => daemonVm.syncLegReady()), onClose: onReceiptClose }, heads);
   stood.push({ what: "the receipt capability", down: () => { delete islandCaps.receipt; for (const close of [...receiptClosers]) close(); receiptClosers.clear(); } });
   // The Repo stands down after everything that writes through it: it flushes, then closes its storage and network.
-  stood.push({ what: "the Repo", down: async () => { await repo.flush(); await repo.shutdown(); } });
+  stood.push({ what: "the Repo", down: async () => {
+    await repo.flush();
+    await sealedRest.store.flush();
+    // A save no session booked never rests clear: one still waiting at the stand-down leaves with the process, by name.
+    const waiting = sealedRest.store.waiting();
+    if (waiting > 0) console.log(`[sealed-rest] save-unbooked: ${waiting} save(s) no session booked leave with this process, never written clear`);
+    await repo.shutdown();
+  } });
   houseIslands = islandPeersOf(repo);
+  // R2's booking: a change to a sealed bag's document books the session whose call stands as it lands.
+  repo.on("document", ({ handle }) => {
+    handle.on("change", () => {
+      const standing = sealedCells.book?.standing()[0];
+      if (standing) sealedRest.wrote(handle.documentId, saveSessionOf(standing));
+    });
+  });
   emit("repo-open");
 
   // ── 2. Catalog — local-first rendezvous anchor (catalog-url file) ───────────
@@ -1823,8 +1889,15 @@ async function prepareNodeBootOn(
   // took yet, so the holder counts removal versions and owed rolls across a restart.
   // A vessel that wears a face folds that face's fleet off its device edge's root and its own atom; a piece still unread
   // refuses the fold by name (road `T35`). Only a faceless vessel reads unread.
+  sealedCells.face = () => { const c = dialAnchor.chain(); return c ? faceProofSubjectRef(c.scope as never) : null; };
   const liftSessionSign = (): SessionSignLift => {
-    const book = new SessionSignBook();
+    // A call of a session books here, and the sealed rest seals every save that waited for one under it (R2); the
+    // document store's own seal books here too, and books nothing further.
+    const book = new SessionSignBook({ onHold: (session, verb) => {
+      if (verb === DOCSTORE_SEAL_VERB) return;
+      void sealedRest.rebook(saveSessionOf(session)).catch((e: unknown) => console.log(`[sealed-rest] a waiting save stays in memory: ${e instanceof Error ? e.message : String(e)}`));
+    } });
+    sealedCells.book = book;
     return {
       book,
       door: book.door(() => dialAnchor.chain(), async () => fleetRaisesOf({
@@ -2212,6 +2285,8 @@ async function prepareNodeBootOn(
   // Daemon VM — sovereign daemon island + the operator's authn/z home. `slot` ABSENT (herm) →
   // registerBags omits the user-wiki bags (the decouple); the daemon's OWN bag still mounts.
   const openDaemon = async ({ assembly, slot }: { assembly: VesselCoreAssembly; slot?: VesselWikiSlot }): Promise<VesselDaemonVm> => {
+    // R1: the worn face's wiki bags rest sealed, each document by the catalog's name for it.
+    sealedCells.catalog = () => assembly.catalogHandle.doc() as LarDoc | undefined;
     catalogForViews = () => assembly.catalogHandle.doc() as LarDoc | undefined;
     const daemonDoc = (await readDaemonDoc()).doc();
     // At the FLOOR no key is held, custody refuses `CustodyLocked`, and the vessel boots faceless (no pin rests in the clear).
@@ -2768,6 +2843,8 @@ async function prepareNodeBootOn(
       if (raised !== standingAnchor) { await keepFaceAnchorOfGroup(raised); standingAnchor = raised; }
     }
     const faceLit = activeAtom !== null && atomSeed !== null;
+    // R1: the bags the sealed rest seals, the worn face's own wiki bags, only while that face stands lit and proved.
+    sealedCells.bags = () => (faceLit && personaGroupId && wornFaceProved && slot ? [slot.wikiBagId, slot.workingBagId, slot.draftBagId] : []);
     const workingFloorAnchor = workingFloorAnchorOf({ place: placeAid });
     // A sibling's planes need their own face proof before registration; joinedFaceAuth hands each sibling the vessel ground alone.
     const siblingKel = sovereign ? makePersonaKelRingHolder({ repo, nexusPubkey }) : null;
@@ -3769,6 +3846,7 @@ async function prepareNodeBootOn(
     // island's memory section under the vessel's own signed ask, and the face's key history off the local board.
     sessionDoor: nodeSessionDoor({ pin: dialAnchor.pin, sealHome, onLog: (line) => console.log(`[session] ${line}`) }),
     liftSessionSign,
+    sealedRestLock: async (signer) => { await sealedRest.lock(sessionIds.get(signer) ?? "no-session-booked-here"); },
     backupDoor: {
       wornFace: () => litFace,
       ownEdgeShadowed: async () => {
@@ -3960,6 +4038,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     hostingDoor:      p.hostingDoor,
     sessionDoor:     p.sessionDoor,
     sessionSigns:    sessionSign.book,
+    sealedRestLock:  p.sealedRestLock,
     backupDoor:      p.backupDoor,
     oracleDocUrl:     result.assembly.islandHandle.url,
     larariumDocUrl:   result.assembly.larariumHandle?.url ?? null,

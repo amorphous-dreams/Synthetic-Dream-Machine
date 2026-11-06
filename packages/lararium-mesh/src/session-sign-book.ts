@@ -41,6 +41,14 @@ interface Booking { readonly verb: string; readonly session: BookedSession }
 
 export class SessionSignBook {
   readonly #held = new Map<string, Booking>();
+  readonly #onHold: ((session: BookedSession, verb: string) => void) | undefined;
+
+  /** `onHold` hears each session as a call of its books here: the vessel's sealed rest books the changes that session
+   *  writes and seals the saves that waited for one (sealed-store#/owed, R2). */
+  constructor(opts: { readonly onHold?: (session: BookedSession, verb: string) => void } = {}) { this.#onHold = opts.onHold; }
+
+  /** The sessions whose calls stand booked now, each once. */
+  standing(): BookedSession[] { return [...new Set([...this.#held.values()].map((b) => b.session))]; }
 
   /** Book one call a session placed; the returned release drops this booking alone. An id already booked keeps its
    *  first booking: a second call under it (a retry, a sibling socket of the same face) books nothing, so no later
@@ -49,6 +57,7 @@ export class SessionSignBook {
     if (this.#held.has(requestId)) return () => {};
     const booking: Booking = { verb, session };
     this.#held.set(requestId, booking);
+    try { this.#onHold?.(session, verb); } catch { /* a listener's fault never unbooks the call */ }
     return () => { if (this.#held.get(requestId) === booking) this.#held.delete(requestId); };
   }
 

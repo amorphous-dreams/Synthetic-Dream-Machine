@@ -23,7 +23,9 @@ import type { PortIslandToVesselMsg, VesselRestState } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import { Repo }                              from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter }           from "@automerge/automerge-repo-storage-indexeddb";
-import { shoreStorage } from "@lararium/mesh";
+import { shoreStorage, composeSealedRest, docStorePortCell, vesselDocStoreDoor, type SealedBag } from "@lararium/mesh";
+import { faceProofSubjectRef } from "@lararium/mesh/face-proof-subjects";
+import * as A from "@automerge/automerge";
 import type { DocHandle, AutomergeUrl, PeerId } from "@automerge/automerge-repo";
 import {
   emptyLarDoc, storedLarRecord,
@@ -582,8 +584,41 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     if (!fleetShadows || fleetShadows.frontier.status !== "known") return true;   // widening waits on the fleet's signed frontier
     return fleetShadows.readings.get(deviceEdgeId(fleetShadows.root, key))?.stands === true;
   };
+  // THE SEALED REST (sealed-store#/owed, R1 · R2), as the node composes its own: the worn face's wiki bags rest sealed
+  // under each bag's content key through the holder in the daemon island (the door carries a body and a sealed value,
+  // never a key); cleartext rests only in the disk projection and the live wiki in memory. A bag maps sealed only while
+  // the face's Nexus session stands lifted. Every change books the vessel's own unlocked session while it stands (a
+  // tab's own session record waits on the lift's third slice), a save no session booked waits `save-unbooked` in memory
+  // until the next lift books it, and the lock flushes the Repo and the rest before the lift drops its signer.
+  type BrowserSaveSession = { readonly id: string; readonly subject: string };
+  const sealedCells: { face: () => string | null; bags: () => readonly string[]; catalog: () => LarDoc | undefined; session: BrowserSaveSession | null; hold: ((ask: string, verb: string) => () => void) | null } = {
+    face: () => null, bags: () => [], catalog: () => undefined, session: null, hold: null,
+  };
+  const sealedBagOf = (documentId: string): SealedBag | null => {
+    const face = sealedCells.face();
+    if (face === null) return null;
+    const catalog = sealedCells.catalog();
+    for (const bagId of sealedCells.bags()) if (tiddlerText(ownEntry(catalog?.tiddlers, bagId)) === `automerge:${documentId}`) return { bagId, face };
+    return null;
+  };
+  const docStorePort = docStorePortCell(async (bagId) => {
+    const url = tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId));
+    const handle = url && url.startsWith("automerge:") ? (repo.handles as Record<string, { isReady(): boolean; doc(): unknown } | undefined>)[url.slice("automerge:".length)] : undefined;
+    return handle?.isReady() ? A.save(handle.doc() as A.Doc<unknown>) : null;
+  });
+  const sealedRest = composeSealedRest<BrowserSaveSession>({
+    inner: shoreStorage(new IndexedDBStorageAdapter(`${idbName}:repo`)),
+    bagOf: sealedBagOf,
+    sessionFace: () => sealedCells.face(),
+    door: vesselDocStoreDoor<BrowserSaveSession>(() => docStorePort.port(), {
+      book: (ask, verb) => sealedCells.hold?.(ask, verb) ?? (() => {}),
+      patienceMs: 30_000, idPrefix: `docstore-${idbName}`,
+    }),
+    flushRepo: async () => { await repo.flush(); },
+    onHeld: ({ documentId }) => console.log(`[sealed-rest] save-unbooked: ${documentId.slice(0, 12)}… waits in memory for a session to book it`),
+  });
   const repo = new Repo({
-    storage:     shoreStorage(new IndexedDBStorageAdapter(`${idbName}:repo`)),
+    storage: sealedRest.store,
     // The verdict seats on announce AND access (the announce-only lie the node measured in
     // share-policy-is-access.test.ts); `browserShareConfig` composes it through mesh's one law.
     // The gate rides by READER: it arms at the spore crossing below, after this Repo stands.
@@ -595,6 +630,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     }),
   });
   held.stood.push({ what: "repo", down: () => repo.shutdown() });
+  // R2's booking: a change to a sealed bag's document books the vessel's unlocked session while it stands.
+  repo.on("document", ({ handle }) => {
+    handle.on("change", () => { if (sealedCells.session) sealedRest.wrote(handle.documentId, sealedCells.session); });
+  });
   emit("repo-open");
 
   // ── Keypair (WebCrypto substrate) + founding (the personaGroup capability) ───
@@ -1520,14 +1559,32 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // joined face's Nexus session stands; the lock takes both back and drops the session's signer. A vessel at its
       // floor carries neither, and its island's `session:sign` answers `signer-unavailable` by name.
       const islandCaps = composeBrowserIslandCaps({ repo, cas: readCasBlobFromOpfs });
+      islandCaps.docStore = (port) => docStorePort.attach(port);
       if (facePresentation !== null) {
         const certificate = facePresentation.certificate;
         const lift = liftBrowserIslandCaps(islandCaps, {
           session: { signer: facePresentation.signer, chain: { scope: certificate.scope, vesselFaceKey: certificate.vesselFaceKey } },
           custodyWrite: (_carrier, bytes) => saveBrowserVeilArchive(idbName, wornGroup, bytes),
         });
-        held.stood.push({ what: "the island's lift", down: () => lift.drop() });
-        held.stood.push({ what: "the lift's lock", down: onBrowserCustodyLock(idbName, () => lift.drop()) });
+        // R1 · R2: while the lift stands, the worn face's wiki bags map sealed and the vessel's session books each change;
+        // every save that waited for a session seals under it now.
+        const face = faceProofSubjectRef(certificate.scope as never);
+        const session: BrowserSaveSession = { id: `browser-session-${crypto.randomUUID()}`, subject: face };
+        sealedCells.face = () => face;
+        sealedCells.bags = () => [slot.wikiBagId, slot.workingBagId, slot.draftBagId];
+        sealedCells.catalog = () => catalogHandle.doc() as LarDoc | undefined;
+        sealedCells.hold = (ask, verb) => lift.hold(ask, verb);
+        sealedCells.session = session;
+        void sealedRest.rebook(session).catch((e: unknown) => console.log(`[sealed-rest] a waiting save stays in memory: ${e instanceof Error ? e.message : String(e)}`));
+        // THE LOCK FLUSHES FIRST: every pending save lands sealed under the lift's session, then the lift drops its signer.
+        const lockThenDrop = async (): Promise<void> => {
+          sealedCells.session = null;
+          try { await sealedRest.lock(); } catch { /* a refused flush keeps its changes in memory */ }
+          sealedCells.hold = null;
+          lift.drop();
+        };
+        held.stood.push({ what: "the island's lift", down: lockThenDrop });
+        held.stood.push({ what: "the lift's lock", down: onBrowserCustodyLock(idbName, () => { void lockThenDrop(); }) });
       }
       const openOnce = (pluginCids: readonly string[]) => openBrowserDaemonVm({
         caps: islandCaps,

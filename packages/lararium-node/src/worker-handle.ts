@@ -155,6 +155,7 @@ export function nodeWorkerHandle(w: Worker, opts: { readonly island: IslandClass
     attachReceipt(w, caps);
     attachCustodyWrite(w, caps);
     attachSessionSignDoor(w, caps);
+    attachDocStore(w, caps);
   } else if (opts.island === "wiki") {
     attachCas(w, caps);
     attachRefusals(w, caps);
@@ -192,3 +193,18 @@ export function nodeSpawnWikiWorker(url: string | URL, caps: CapabilityRecord, w
 export function nodeSpawnSessionWorker(url: string | URL, caps?: CapabilityRecord, workerData?: unknown): VesselWorkerHandle {
   return nodeWorkerHandle(new Worker(url, workerData !== undefined ? { workerData } : undefined), { island: "session", ...(caps ? { caps } : {}) });
 }
+
+// THE DOCUMENT STORE'S DOOR, vessel side (`@lararium/mesh` `sealed-rest.ts`). The vessel's Repo seals and opens through
+// the holder in its DAEMON island, so the record's `docStore` member attaches to that island's channel as it spawns, and
+// detaches when the island goes. A record that carries none attaches nothing.
+function attachDocStore(w: Worker, caps: CapabilityRecord): void {
+  const docStore = caps.docStore;
+  if (!docStore) return;
+  const detach = docStore({
+    post: (msg) => w.postMessage(msg),
+    listen: (cb) => { w.on("message", cb); return () => { w.off("message", cb); }; },
+  });
+  w.once("exit", () => detach());
+}
+
+

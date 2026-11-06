@@ -12,7 +12,7 @@ import { mountDiskProjection, mountedDiskProjector } from "./island-behaviors.js
 import { answerShore } from "./shore-verb.js";
 import type { IslandContext } from "@lararium/tw5";
 import { makeBagTierReader } from "./vessel-bag-tier.js";
-import { HULLS_FULL, type JournalCursor, type JournalEntry, type JournalKind } from "@lararium/mesh";
+import { HULLS_FULL, freshBasePort, islandLiveDocDoor, type JournalCursor, type JournalEntry, type JournalKind } from "@lararium/mesh";
 import { runReconcileCadence } from "./sensorium-lifecycle-verbs.js";
 import { islandStorageDirOf, nodeSealedStoreShore } from "./sealed-store-island.js";
 import { fileJournal } from "./vessel-journal-file.js";
@@ -35,6 +35,13 @@ const dyadOnVessel = parentPort ? vesselDyadAsker(parentPort) : null;
 // THE SESSION SIGN DOOR: this island holds no session key. It names the invocation a session placed, and the vessel's
 // main thread answers from that session: its certificate, its proof subject, the vessel's own chain, each signature.
 const sessionsOnVessel = parentPort ? vesselSessionDoor(parentPort) : null;
+// THE DOCUMENT STORE'S DOOR (sealed-store#/owed): the vessel's Repo seals each save through the holder here, under the
+// session that booked the change, and opens each value it hydrates. The island asks the vessel for a bag's live
+// document across the same port to cut a from-now admission's fresh base.
+const vesselPort = parentPort
+  ? { post: (msg: unknown) => parentPort!.postMessage(msg), listen: (cb: (msg: unknown) => void) => { parentPort!.on("message", cb); return () => { parentPort!.off("message", cb); }; } }
+  : null;
+const liveOnVessel = vesselPort ? islandLiveDocDoor(vesselPort, { patienceMs: 30_000, idPrefix: `docstore-live-${process.pid}` }) : null;
 
 const JOURNAL_KINDS: ReadonlySet<JournalKind> = new Set(["bag-projected"]);
 
@@ -82,6 +89,8 @@ runSovereignWorker((manifest) => {
     // none, and its `sealed-*` verbs refuse by name.
     ...(islandStorageDir !== null ? { sealedStore: nodeSealedStoreShore(islandStorageDir) } : {}),
     ...(sessionsOnVessel ? { sessionProof: sessionsOnVessel } : {}),
+    ...(vesselPort ? { docStoreDoor: vesselPort } : {}),
+    ...(liveOnVessel ? { freshBase: freshBasePort(liveOnVessel) } : {}),
     ...(sealOnVessel ? {
       persistVeilArchive: (bytes: Uint8Array) => sealOnVessel("veil", bytes),
     } : {}),

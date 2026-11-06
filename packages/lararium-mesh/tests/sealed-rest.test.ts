@@ -125,7 +125,8 @@ describe("R1: a private bag's change rests sealed through the door", () => {
     expect(doc.doc().note).toBe(SECRET);
     expect(restsClear(inner, clear.documentId, `${SECRET}-clear`)).toBe(true);
     // No booking outlives its seal.
-    expect(r.asks.size).toBe(0);
+    await r.rest.store.flush();
+    expect([...r.asks.keys()]).toEqual([]);
     await repo.shutdown();
     a.restart();
     const again = standRest(a, inner, { sealed: (id) => id !== control });
