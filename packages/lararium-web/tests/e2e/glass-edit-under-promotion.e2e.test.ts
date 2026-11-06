@@ -6,6 +6,7 @@
  *
  *   P1 — RED: open a new tiddler's editor while the mirror reads skinny, set its title, type into the body, let the
  *        promotion land, type on: every key sits in the body, the title stays as set, and focus stays in the body.
+ *   P1b — RED: the same open editor reads focus in the body before and after the promotion lands, with the first words kept.
  *   P2 — CONTROL: the same held promotion with no editor open: it lands and the full mirror paints the story.
  */
 import { mkdtempSync, writeFileSync } from "node:fs";
@@ -80,6 +81,15 @@ async function focusIn(p: Page): Promise<string> {
   });
 }
 
+/** Open a new tiddler's editor under the skinny mirror, set its title, type the first words, and check where the editor stands. */
+async function openEditorAndTypeBefore(p: Page): Promise<void> {
+  await wiki(p).evaluate((h) => (h.shadowRoot!.querySelector('button[title="Create a new tiddler"]') as HTMLElement).click());
+  await wiki(p).locator("input.tc-titlebar").fill(TITLE);
+  await bodyEditor(p).pressSequentially(BEFORE, { delay: 5 });
+  expect(await focusIn(p), "focus sits in the body before the promotion").toBe("body");
+  expect(await p.locator("#mirror").getAttribute("data-lar-mirror"), "the editor stands under a skinny mirror").toBe("skinny");
+}
+
 beforeAll(async () => {
   scratch = mkdtempSync(join(stageDir(), "glass-edit-under-promotion-"));
   hearth = await openStaged({
@@ -103,19 +113,13 @@ afterAll(async () => {
 });
 
 describe("the mirror's promotion never takes a person's typing", () => {
-  test("P1 — RED: the promotion lands mid-typing in an open editor: the keys stay in the body, the title keeps what was set, focus stays", async () => {
+  test("P1 — RED: the promotion lands mid-typing in an open editor: the keys stay in the body, the title holds, focus stays", async () => {
     expect(url, "the hearth printed its URL").toMatch(/^https?:/);
     const context = await browser!.newContext();
     await armTestCustody(context, "glass-edit-under-promotion-p1");
     const page = await openSkinny(context);
-    await wiki(page).evaluate((h) => (h.shadowRoot!.querySelector('button[title="Create a new tiddler"]') as HTMLElement).click());
-    await wiki(page).locator("input.tc-titlebar").fill(TITLE);
-    await bodyEditor(page).pressSequentially(BEFORE, { delay: 5 });
-    expect(await focusIn(page), "focus sits in the body before the promotion").toBe("body");
-    expect(await page.locator("#mirror").getAttribute("data-lar-mirror"), "the editor stands under a skinny mirror").toBe("skinny");
+    await openEditorAndTypeBefore(page);
     await promote(page);
-    // barrier: the mirror reads data-lar-mirror="full", the promotion's landing promote() waits for, and two frames paint after it
-    expect(await focusIn(page), "the promotion leaves focus in the body").toBe("body");
     // The keys go wherever the page's focus sits, as a person's would.
     await page.keyboard.type(AFTER, { delay: 5 });
     // barrier: the body editor's value reads every typed key, the page's own answer to the last keystroke
@@ -123,6 +127,18 @@ describe("the mirror's promotion never takes a person's typing", () => {
     expect(await focusIn(page), "focus stays in the body").toBe("body");
     expect(await wiki(page).locator("input.tc-titlebar").inputValue(), "the title stays as set").toBe(TITLE);
     expect(await bodyEditor(page).inputValue(), "every key sits in the body, in order").toBe(BEFORE + AFTER);
+    await context.close();
+  });
+
+  test("P1b — RED: the editor opens under a skinny mirror with focus in the body, and the promotion leaves focus there", async () => {
+    const context = await browser!.newContext();
+    await armTestCustody(context, "glass-edit-under-promotion-p1b");
+    const page = await openSkinny(context);
+    await openEditorAndTypeBefore(page);
+    await promote(page);
+    // barrier: the mirror reads data-lar-mirror="full", the promotion's landing promote() waits for, and two frames paint after it
+    expect(await focusIn(page), "the promotion leaves focus in the body").toBe("body");
+    expect(await bodyEditor(page).inputValue(), "the keys typed while skinny stay in the body").toBe(BEFORE);
     await context.close();
   });
 
