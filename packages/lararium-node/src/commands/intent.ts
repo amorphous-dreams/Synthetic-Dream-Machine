@@ -21,7 +21,7 @@ import { loadFaceAtomOfGroup } from "../face-atom-store.js";
 import { loadPersonaGroupRootSeed } from "../node-vessel-identity.js";
 import { fleetFaceChainForVessel } from "../fleet-lineage.js";
 import { FaceNotNamed } from "../face-selector.js";
-import { unlockedFaceOrdinals } from "../custody-seat.js";
+import { unlockedFaceOrdinals, withWardKeyCustody } from "../custody-seat.js";
 import { readVesselEdgeBoard } from "../edge-board.js";
 
 export class IntentRefused extends Error { override name = "IntentRefused"; }
@@ -68,7 +68,14 @@ export function answerRefusal(asked: ReturnType<typeof askShown>, signer: string
   return null;
 }
 
-/** Sign one answer to an ask. The door signs no ward answer the plane would count as nothing: it refuses before it signs. */
+/**
+ * Sign one answer to an ask. The door signs no ward answer the plane would count as nothing: it refuses before it signs.
+ *
+ * THE CO-SIGNER OPENS ITS WARD (seat-harness#/the-swarm-slices): an approve of a ward act signs only inside a fresh unlock of this
+ * device's OWN ward for the face, opened from its own human route for this one act and zeroed when the act settles; a passkey never
+ * opens it. A joinee holds no face root, yet its ward stands: the join request founds the face's custody, and that founding binds
+ * the ward beside it. A deny releases nothing and an answer to any other ask is no ward act, so neither asks a route.
+ */
 export async function signIntentAnswer(input: {
   readonly group: string; readonly signer: IntentSigner; readonly ask: string; readonly executor: string; readonly deny: boolean;
   readonly asked: ReturnType<typeof askShown>;
@@ -77,7 +84,9 @@ export async function signIntentAnswer(input: {
 }): Promise<SignedIntentEntry> {
   const refusal = answerRefusal(input.asked, input.signer.key, input.executor, input.deny);
   if (refusal) throw new IntentRefused(refusal);
-  return buildAnswer({ group: input.group, signer: input.signer, ask: input.ask, executor: input.executor, verdict: input.deny ? "deny" : "approve", refs: [input.ask] });
+  const sign = () => buildAnswer({ group: input.group, signer: input.signer, ask: input.ask, executor: input.executor, verdict: input.deny ? "deny" : "approve", refs: [input.ask] });
+  if (!input.asked?.cosign || input.deny) return sign();
+  return withWardKeyCustody({ ordinal: input.face }, input.ward, () => sign(), `the co-sign approve of ${input.asked.verb}`);
 }
 
 export interface IntentCommandOptions {

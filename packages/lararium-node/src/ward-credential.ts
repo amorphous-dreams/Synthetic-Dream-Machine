@@ -137,6 +137,8 @@ const WARD_VERBS: ReadonlySet<string> = new Set([
   "nexus-admit-take",
 ]);
 export function storeVerbNeedsWard(verb: string, args: Readonly<Record<string, unknown>>): boolean {
+  // A co-signing device's approve opens its own ward for the face (seat-harness#/the-swarm-slices); a deny releases nothing.
+  if (verb === "intent-answer") return args["deny"] !== true;
   if (verb === "promote-commit") return isWardBoundWiki(typeof args["wiki"] === "string" && args["wiki"].length > 0 ? args["wiki"] : "daemon");
   // A realm hand signs as its leaf at that realm; only the holder's own act signs with the face root.
   if (verb === "edge-kapae") return typeof args["realm"] !== "string";
@@ -146,9 +148,10 @@ export function storeVerbNeedsWard(verb: string, args: Readonly<Record<string, u
 /**
  * The ward acts a co-sign gate holds (seat-harness#/the-swarm-slices): the gate's judgement needs no root, so the row runs first
  * with no route, and the route gets asked only where the act will run (its signer names `ward-needs-fresh-unlock`). On a face of
- * two devices with no answer, nobody types a passphrase only to read `ward-awaiting-cosign`.
+ * two devices with no answer, nobody types a passphrase only to read `ward-awaiting-cosign`. An answer runs first too: only an
+ * approve of a ward act opens the co-signing device's ward, so an answer to any other ask asks no route.
  */
-const GATED_WARD_VERBS: ReadonlySet<string> = new Set(["kapae-lower", "swarm-cap-set", "swarm-go-issue"]);
+const GATED_WARD_VERBS: ReadonlySet<string> = new Set(["kapae-lower", "swarm-cap-set", "swarm-go-issue", "intent-answer"]);
 export function storeVerbGatesFirst(verb: string): boolean { return GATED_WARD_VERBS.has(verb); }
 
 // ── the seated gatherer: a person at this process's terminal ─────────────────────────────────────────────────────────────
