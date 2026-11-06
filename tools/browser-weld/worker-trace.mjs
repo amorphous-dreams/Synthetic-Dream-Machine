@@ -2,14 +2,24 @@
  * The weld's worker trace: what crosses the page's worker boundary, summarized to protocol identifiers alone
  * (never projection bodies or input values).
  *
+ * The page's one Worker stands the vessel (main.ts), so the trace reads the vessel's envelope and the wire message inside it;
+ * dispatch and frame pair by the surface the envelope names.
+ *
  * `summarizeWireMessage` stands self-contained (no closure, no import) because the init script carries it into the
  * page by its source text.
  */
 export function summarizeWireMessage(data) {
   if (!data || typeof data !== "object") return { type: typeof data };
-  const msg = data;
+  // The page's one Worker stands the vessel: an act goes up as { t: "control-event", surface, ev }, a frame comes back
+  // as { t: "frame", frame } (vessel-protocol.ts). The wire message rides inside; the envelope names the surface.
+  const envelope = typeof data.t === "string" ? data.t : "";
+  const inner = envelope === "control-event" ? data.ev : envelope === "frame" ? data.frame : envelope === "control-result" ? data.result : null;
+  const msg = inner && typeof inner === "object" ? inner : data;
+  const surface = typeof data.surface === "string" ? data.surface : typeof msg.surface === "string" ? msg.surface : "";
   const payload = msg.payload && typeof msg.payload === "object" ? msg.payload : null;
   return {
+    envelope,
+    surface,
     type: typeof msg.type === "string" ? msg.type : "",
     renderId: typeof msg.renderId === "string" ? msg.renderId : "",
     action: typeof msg.action === "string" ? msg.action : "",

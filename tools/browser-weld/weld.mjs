@@ -60,7 +60,7 @@ const traceSince = (page, mark) => page.evaluate((from) => window.__weldWorkerTr
 const traceHas = (events, wanted) => events.some((event) =>
   Object.entries(wanted).every(([key, value]) => event[key] === value));
 const traceTail = (events) => events.slice(-4).map((event) =>
-  [event.direction, event.workerId, event.wikiUri, event.type, event.renderId, event.listenable]
+  [event.direction, event.workerId, event.envelope, event.surface || event.wikiUri, event.type, event.renderId, event.listenable]
     .filter(Boolean).join(":"),
 ).join(" | ");
 
@@ -211,7 +211,7 @@ const main = async () => {
         event.direction === "to-worker" && event.type === "lar:control-event" && event.renderId === recentId);
       const sentRecent = !!recentDispatch;
       const projectedRecent = !!recentDispatch && traceHas(restoredTrace, {
-        direction: "from-worker", workerId: recentDispatch.workerId, wikiUri: recentDispatch.wikiUri,
+        direction: "from-worker", workerId: recentDispatch.workerId, surface: recentDispatch.surface,
         type: "lar:frame",
       });
       if (restored && restoredClick && sentRecent && projectedRecent) {
@@ -257,7 +257,7 @@ const main = async () => {
       event.direction === "to-worker" && event.type === "lar:control-event" && event.renderId === sidebarBefore.renderId);
     const hideSent = !!sidebarDispatch;
     const sidebarProjection = !!sidebarDispatch && traceHas(sidebarTrace, {
-      direction: "from-worker", workerId: sidebarDispatch.workerId, wikiUri: sidebarDispatch.wikiUri,
+      direction: "from-worker", workerId: sidebarDispatch.workerId, surface: sidebarDispatch.surface,
       type: "lar:frame",
     });
     if (hideClicked && hideSent && sidebarProjection && hidden) {
@@ -308,7 +308,7 @@ const main = async () => {
     const inputDispatch = inputTrace.find((event) =>
       event.direction === "to-worker" && event.type === "lar:control-event" && event.action === "lar:sense");
     const inputProjection = !!inputDispatch && traceHas(inputTrace, {
-      direction: "from-worker", workerId: inputDispatch.workerId, wikiUri: inputDispatch.wikiUri,
+      direction: "from-worker", workerId: inputDispatch.workerId, surface: inputDispatch.surface,
       type: "lar:frame",
     });
     if (seen && inputDispatch && inputProjection) {
