@@ -15,7 +15,7 @@
  * this browser's admission carries) over (the answer, the ask's digest, the fleet frontier this leaf read). A passkey route refuses
  * `ward-passkey-refused`; a deny and an answer to any other ask open no ward.
  */
-import { browserWardKeySign, type WardWorkerSpawn } from "./browser-ward.js";
+import { browserWardKeySign, type WardAskKind } from "./browser-ward.js";
 import type { WardRoute } from "./ward-core.js";
 import {
   answerRefusal, askShown, buildAnswer, buildWardedAnswer, type SignedIntentEntry,
@@ -92,8 +92,7 @@ export async function browserWardAnswer(input: {
   readonly idbName: string; readonly group: string; readonly atom: IntentSigner; readonly port: WardCosignPort;
   readonly ask: string; readonly executor: string; readonly deny: boolean;
   /** The page's dialog: the route the person types for this one act. */
-  readonly route: (act: string) => Promise<BrowserWardRoute>;
-  readonly spawn?: WardWorkerSpawn;
+  readonly route: (act: string, kind: WardAskKind) => Promise<BrowserWardRoute>;
 }): Promise<SignedIntentEntry> {
   const view = input.port.view();
   const asked = view ? askShown(view, input.ask) : null;
@@ -105,10 +104,10 @@ export async function browserWardAnswer(input: {
   } else {
     const frontier = input.port.frontier();
     if (frontier === null) throw new WardRefused("ward-cosign-frontier-unknown", "this leaf reads no known fleet frontier, so its approve names none");
-    const route = await input.route(`the co-sign approve of ${asked.verb}`);
+    const route = await input.route(`the co-sign approve of ${asked.verb}`, "open");
     if (typeof route !== "string" && route.kind === "passkey") throw new WardRefused("ward-passkey-refused", "the ward opens to human routes alone (a passphrase, a paper sheet); a passkey rides an authenticator vendor's registry");
     entry = await buildWardedAnswer({ group: input.group, signer: input.atom, ask: input.ask, detail: String(asked.detail ?? ""), executor: input.executor, frontier,
-      wardSign: async (bytes) => (await browserWardKeySign(input.idbName, input.group, route as WardRoute, bytes, input.spawn)).signature });
+      wardSign: async (bytes) => (await browserWardKeySign(input.idbName, input.group, route as WardRoute, bytes)).signature });
   }
   await input.port.write(entry);
   return entry;

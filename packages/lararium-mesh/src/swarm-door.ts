@@ -24,7 +24,7 @@ export const SWARM_VERB_HAND_CODES: Readonly<Record<string, string>> = {
 
 export type SwarmRequest =
   | { readonly action: "show"; readonly branch?: string; readonly head?: string }
-  /** `supersede`: the hand starts an unavailable line again, citing its dangling heads; on a line that folds it refuses. */
+  /** `supersede`: the hand starts an unavailable or braked line again, citing its dangling heads; on a line that folds clear it refuses. */
   | { readonly action: "cap-set"; readonly value: unknown; readonly supersede?: boolean }
   | { readonly action: "share-set"; readonly lane: string; readonly value: unknown; readonly supersede?: boolean }
   /** `after`: the cid of the go this one follows at the branch (`show` names it), null for the branch's first. One issue names one
@@ -85,7 +85,7 @@ export async function swarmCommand(req: SwarmRequest, deps: SwarmDoorDeps): Prom
     const follows = chain ? (chain.tips.length === 1 ? chain.tips[0]!.cid : null) : undefined;
     const forks = chain && chain.tips.length > 1 ? chain.tips.map((g) => g.cid) : undefined;
     return {
-      cap: r.cap, ok: r.ok, ...(r.refusal ? { refusal: r.refusal } : {}), shares: Object.fromEntries([...r.shares].sort(([a], [b]) => a.localeCompare(b))), refused: r.refused.length,
+      cap: r.cap, ok: r.ok, ...(r.refusal ? { refusal: r.refusal } : {}), ...(r.capBraked ? { braked: { cap: "refused-tip" as const } } : {}), shares: Object.fromEntries([...r.shares].sort(([a], [b]) => a.localeCompare(b))), refused: r.refused.length,
       ...(r.unavailable.cap || r.unavailable.shares.size > 0 ? { unavailable: {
         ...(r.unavailable.cap ? { cap: r.unavailable.cap } : {}),
         shares: Object.fromEntries([...r.unavailable.shares].sort(([a], [b]) => a.localeCompare(b))),
@@ -116,8 +116,12 @@ export async function swarmCommand(req: SwarmRequest, deps: SwarmDoorDeps): Prom
     });
   }
   const r = await reading();
-  /** The parents a write cites: the line's heads where it folds; on an unavailable line, a hand's supersede alone, citing its dangling heads. */
-  const parentsOf = (line: string, unavailable: string | undefined, heads: string[], dangling: string[], supersede: boolean | undefined): { parents: string[]; supersede?: true } => {
+  /**
+   * The parents a write cites: the line's heads where it folds; on an unavailable line, a hand's supersede alone, citing its dangling
+   * heads. A BRAKED line (a refused tip holds it at its tightest) folds, so a write extends its heads, and a hand's supersede may root it again.
+   */
+  const parentsOf = (line: string, unavailable: string | undefined, heads: string[], dangling: string[], supersede: boolean | undefined, braked = false): { parents: string[]; supersede?: true } => {
+    if (braked && supersede) return { parents: dangling, supersede: true };
     if (unavailable === undefined) {
       if (supersede) throw new SwarmRefused("swarm-supersede-unneeded", `the ${line} line folds; a supersede starts only a line that cannot`);
       return { parents: heads };
@@ -128,7 +132,7 @@ export async function swarmCommand(req: SwarmRequest, deps: SwarmDoorDeps): Prom
   if (req.action === "cap-set") {
     const refusal = swarmCapRefusal(req.value, r.raw);
     if (refusal) throw new SwarmRefused(refusal, `the cap ${String(req.value)} cannot stand against the shares the board holds`);
-    const line = parentsOf("cap", r.unavailable.cap, r.capHeads(), r.capDangling(), req.supersede);
+    const line = parentsOf("cap", r.unavailable.cap, r.capHeads(), r.capDangling(), req.supersede, r.capBraked);
     const value = req.value as number;
     // The co-sign names the value and the line it extends: a line that moved after the answer asks again.
     const capHead = swarmCapHead({ value, parents: line.parents, supersede: line.supersede === true });

@@ -44,6 +44,8 @@ export interface SwarmBoardTorn { readonly torn: true; readonly key: string }
 const object = (x: unknown): x is Record<string, unknown> => typeof x === "object" && x !== null && !Array.isArray(x);
 const str = (x: unknown): x is string => typeof x === "string";
 const hex = (x: unknown): x is string => str(x) && /^[0-9a-f]{64}$/.test(x);
+/** The refusals only the ward witness names: the act's bytes, signature, group and grant all read true. */
+const WARD_REFUSALS: ReadonlySet<SwarmBoardRefusal> = new Set<WardActRefusal>(["ward-act-uncosigned", "ward-issuer-aside", "ward-issuer-unknown"]);
 
 function shape(b: Record<string, unknown>): boolean {
   if (!str(b["group"]) || !Number.isSafeInteger(b["epoch"]) || (b["epoch"] as number) < 0) return false;
@@ -100,31 +102,42 @@ export function swarmBoardRecords(doc: LarDoc | undefined | null, group: string)
   return out;
 }
 
-interface Line { readonly acts: { readonly cid: string; readonly value: number; readonly parents: readonly string[]; readonly supersede: boolean }[] }
-type Fold = { value: number; heads: string[]; dangling: string[]; state: "settled" | "concurrent" | "unavailable"; unavailable?: SwarmLineUnavailable };
+interface LineAct { readonly cid: string; readonly value: number; readonly parents: readonly string[]; readonly supersede: boolean }
+interface Line { readonly acts: LineAct[] }
+type Fold = { value: number; heads: string[]; dangling: string[]; state: "settled" | "concurrent" | "unavailable"; unavailable?: SwarmLineUnavailable; braked?: true };
 /**
  * One line's reading: the heads' minimum, 0 where the line cannot fold, the heads a next act cites as its parents, and the DANGLING
  * heads (acts no other act cites) a supersede cites when the line cannot fold. A supersede act roots the line again: every act it
  * descends from leaves the fold, and its own parents need not stand.
+ *
+ * REFUSED acts (`refused`: signed by the grant, refused by the ward witness alone) never stand as heads. Where one stands as a tip
+ * (no standing act cites it, and no supersede drops it), the line reads BRAKED: its value reads the TIGHTEST of every act the line
+ * holds, the refused among them, never an older looser act the refusal uncovers. A supersede that cites the refused tip roots the
+ * line again, as it does any line.
  */
-function foldLine(line: Line): Fold {
-  const byCid = new Map(line.acts.map((a) => [a.cid, a] as const));
+function foldLine(line: Line, refused: readonly LineAct[] = []): Fold {
+  const byCid = new Map([...refused, ...line.acts].map((a) => [a.cid, a] as const));
   const dropped = new Set<string>();
   const drop = (cid: string): void => { if (dropped.has(cid)) return; dropped.add(cid); for (const p of byCid.get(cid)?.parents ?? []) drop(p); };
   for (const a of line.acts) if (a.supersede) for (const p of a.parents) drop(p);
   const live = line.acts.filter((a) => !dropped.has(a.cid));
-  const allCited = new Set(line.acts.flatMap((a) => a.parents));
-  const dangling = line.acts.filter((a) => !allCited.has(a.cid)).map((a) => a.cid).sort();
+  const allCited = new Set([...line.acts, ...refused].flatMap((a) => a.parents));
+  const dangling = [...line.acts, ...refused].filter((a) => !allCited.has(a.cid)).map((a) => a.cid).sort();
   const ids = new Set(live.map((a) => a.cid));
   if (live.some((a) => !a.supersede && a.parents.some((p) => !ids.has(p)))) return { value: 0, heads: [], dangling, state: "unavailable", unavailable: "parent-missing" };
   const cited = new Set(live.flatMap((a) => a.parents));
   const heads = live.filter((a) => !cited.has(a.cid));
   if (heads.length === 0) return { value: 0, heads: [], dangling, state: "unavailable", unavailable: "no-head" };
-  return { value: Math.min(...heads.map((h) => h.value)), heads: heads.map((h) => h.cid).sort(), dangling, state: heads.length > 1 ? "concurrent" : "settled" };
+  const shadow = refused.filter((r) => !dropped.has(r.cid));
+  const braked = shadow.some((r) => !cited.has(r.cid));
+  const value = braked ? Math.min(...[...live, ...shadow].map((a) => a.value)) : Math.min(...heads.map((h) => h.value));
+  return { value, heads: heads.map((h) => h.cid).sort(), dangling, state: heads.length > 1 ? "concurrent" : "settled", ...(braked ? { braked: true as const } : {}) };
 }
 
 export function readSwarmBoard(records: readonly unknown[], face: SwarmBoardFace) {
   const refused: { cid: string | null; refusal: SwarmBoardRefusal }[] = [], acts = new Map<string, SignedSwarmBoardAct>();
+  /** The caps the grant signed that the ward witness alone refused: they brake the cap line, and never stand on it. */
+  const wardRefusedCaps = new Map<string, LineAct>();
   for (const raw of records) {
     const r = readSwarmBoardAct(raw, face);
     if (r.ok) acts.set(r.cid, r.act);
@@ -133,6 +146,10 @@ export function readSwarmBoard(records: readonly unknown[], face: SwarmBoardFace
       let cid: string | null = null;
       try { if (object(raw) && object(raw["body"]) && str(raw["signer"])) cid = swarmBoardActCid(raw as unknown as SignedSwarmBoardAct); } catch { /* shape refused */ }
       refused.push({ cid, refusal: r.refusal });
+      if (cid !== null && WARD_REFUSALS.has(r.refusal)) {
+        const body = (raw as unknown as SignedSwarmBoardAct).body;
+        wardRefusedCaps.set(cid, { cid, value: body.value, parents: body.parents, supersede: body.supersede === true });
+      }
     }
   }
   refused.sort((a, b) => (a.cid ?? "").localeCompare(b.cid ?? "") || a.refusal.localeCompare(b.refusal));
@@ -142,7 +159,9 @@ export function readSwarmBoard(records: readonly unknown[], face: SwarmBoardFace
     if (act.body.act === "cap") capLine.acts.push(entry);
     else { const line = laneLines.get(act.body.lane) ?? { acts: [] }; line.acts.push(entry); laneLines.set(act.body.lane, line); }
   }
-  const capRead = capLine.acts.length > 0 ? foldLine(capLine) : null;
+  // A REFUSED CAP TIP BRAKES THE LINE: the cap reads the tightest cap the line ever held, never an older looser one (it fails toward
+  // the brake, as a lower and a go do). A line with no standing cap reads none, so a refused cap alone opens nothing.
+  const capRead = capLine.acts.length > 0 ? foldLine(capLine, [...wardRefusedCaps.values()].sort((a, b) => a.cid.localeCompare(b.cid))) : null;
   const cap = capRead === null ? null : capRead.value;
   const lanes = new Map([...laneLines].map(([lane, line]) => [lane, foldLine(line)] as const));
   const sum = [...lanes.values()].reduce((total, l) => total + l.value, 0);
@@ -161,6 +180,8 @@ export function readSwarmBoard(records: readonly unknown[], face: SwarmBoardFace
     shareHeads: (lane: string): string[] => lanes.get(lane)?.heads ?? [],
     /** The acts no other act cites: what a hand's supersede cites when the line cannot fold. */
     capDangling: (): string[] => capRead?.dangling ?? [],
+    /** Whether a cap the ward refused stands as the line's tip: the cap reads the line's tightest, and a hand's supersede roots it again. */
+    capBraked: capRead?.braked === true,
     shareDangling: (lane: string): string[] => lanes.get(lane)?.dangling ?? [],
     /** Each line that cannot fold, by its reason: a writer refuses onto it, a reader names it. */
     unavailable: {

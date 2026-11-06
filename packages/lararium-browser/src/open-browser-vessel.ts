@@ -1,5 +1,5 @@
 import { browserPromoteStores, browserPromoteCas } from "./browser-promoted-store.js";
-import { BrowserWardRefused, browserWardSigner } from "./browser-ward.js";
+import { browserWardBindRoute, BrowserWardRefused, browserWardSigner, type WardAskKind } from "./browser-ward.js";
 import type { WardRoute } from "./ward-core.js";
 import { holdDaemonVm, DaemonRestarting, KAPAE_EMERGENCY_REASON, type DaemonVmHolder } from "@lararium/tw5";
 /**
@@ -98,7 +98,7 @@ import { readWornPersonaMount }              from "@lararium/mesh";
 import { browserFaceFold, browserWardAnswer, browserWardCosignPort } from "./browser-ward-cosign.js";
 import {
   generateOrLoadBrowserVesselIdentity,
-  generateOrLoadBrowserPersonaRoot, loadBrowserPersonaRootSeed, wearBrowserPersona,
+  browserPersonaRootHeld, generateOrLoadBrowserPersonaRoot, loadBrowserPersonaRootSeed, wearBrowserPersona,
   listBrowserPersonaRoots, loadBrowserActivePersona,
   makeBrowserIdbPersonaVault, makeBrowserPersonaPetnameStore,
   openVesselIdb, idbGet, idbPut, loadBrowserPlaceKel,
@@ -211,9 +211,10 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
   /**
    * THE WARD'S DIALOG (seat-harness#/the-ward): the page asks the person for the face's passphrase for ONE ward act (a daemon or
    * kahua commit, a kāpae-lower, a face's founding or mint, a handle publish, burn or attest) and answers it; the passphrase goes
-   * to that one act and nothing keeps it. Absent, every ward act in this browser refuses `ward-needs-fresh-unlock` by name.
+   * to that one act and nothing keeps it. Absent, every ward act in this browser refuses `ward-needs-fresh-unlock` by name. The
+   * ask names its kind: `open` reads a standing ward, and a bind asks `bind` then `retype` and binds only where both match.
    */
-  askWardRoute?: (act: string) => Promise<string>;
+  askWardRoute?: (act: string, kind: WardAskKind) => Promise<string>;
   portPolicy?: PortPolicy;
   onPortMessage?: (binding: string, islandKey: string, msg: PortIslandToVesselMsg) => void;
   idbName?:        string;
@@ -516,7 +517,13 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   /** One ward act's route, asked of the page's ward dialog for this act alone; no dialog refuses by name. */
   const wardRouteFor = async (act: string): Promise<WardRoute> => {
     if (!opts.askWardRoute) throw new BrowserWardRefused("ward-needs-fresh-unlock", `${act} rides the face's ward, and this page offers no ward dialog`);
-    return opts.askWardRoute(act);
+    return opts.askWardRoute(act, "open");
+  };
+  /** The route a fresh ward BINDS over: asked twice alike (`bind`, `retype`), so a typo binds nothing (`ward-route-mismatch`). */
+  const wardBindRouteFor = async (act: string): Promise<WardRoute> => {
+    const ask = opts.askWardRoute;
+    if (!ask) throw new BrowserWardRefused("ward-needs-fresh-unlock", `${act} binds the face's ward, and this page offers no ward dialog`);
+    return browserWardBindRoute(ask, act);
   };
 
   emit("boot");
@@ -786,7 +793,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         throw new BrowserCustodyRefused("no-custody-slot", idbName, `persona-root-h${String(FOUNDING_PERSONA_INDEX)}`, `the founding asked for a first slot and read ${custody.reading}`);
       }
     }
-    const wardRoute: WardRoute = bornUnder ?? await wardRouteFor("found this browser's first face");
+    const founding = "found this browser's first face";
+    const wardRoute: WardRoute = bornUnder ?? (await browserPersonaRootHeld(idbName, FOUNDING_PERSONA_INDEX) ? await wardRouteFor(founding) : await wardBindRouteFor(founding));
     await generateOrLoadBrowserPersonaRoot(idbName, FOUNDING_PERSONA_INDEX, wardRoute);
     const signerSeed = await loadBrowserPersonaRootSeed(idbName, FOUNDING_PERSONA_INDEX, wardRoute);
     // THE ROOT SEED LEAVES THE ACT ZEROED: the ceremony signs once with it, and the bytes clear in the finally.
@@ -1429,7 +1437,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           wardAnswerHandler = async (args) => {
             if (typeof args["ask"] !== "string" || typeof args["executor"] !== "string") throw new BrowserWardRefused("ward-answer-malformed");
             const entry = await browserWardAnswer({ idbName, group: wornGroup, atom: wornAtom, port: await browserCosignPortOf(), ask: args["ask"], executor: args["executor"],
-              deny: args["deny"] === true, route: async (act) => { if (!opts.askWardRoute) throw new BrowserWardRefused("ward-needs-fresh-unlock"); return opts.askWardRoute(act); } });
+              deny: args["deny"] === true, route: async (act) => { if (!opts.askWardRoute) throw new BrowserWardRefused("ward-needs-fresh-unlock"); return opts.askWardRoute(act, "open"); } });
             return { verdict: entry.body["verdict"], signer: entry.signer };
           };
           const boardDoor = promoteBoardDoor({ group: wornGroup, face: boardFace, atom: wornAtom,
@@ -1761,7 +1769,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         const roster = await listBrowserPersonaRoots(idbName);
         const nextIndex = roster.length ? Math.max(...roster) + 1 : 0;
         // The new face is born under its own ward, bound over the route the person types for this mint.
-        const root = await generateOrLoadBrowserPersonaRoot(idbName, nextIndex, await wardRouteFor(`mint face h${String(nextIndex)}`));
+        const root = await generateOrLoadBrowserPersonaRoot(idbName, nextIndex, await wardBindRouteFor(`mint face h${String(nextIndex)}`));
         const petnames = await makeBrowserPersonaPetnameStore(idbName);
         await renameOwnPersona(petnames, nextIndex, `persona-h${nextIndex}`);
         void pushPersonaState();

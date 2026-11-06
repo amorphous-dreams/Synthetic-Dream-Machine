@@ -24,8 +24,8 @@ import {
   wardKeyPopImage,
   type VesselFaceTagDoor,
 } from "@lararium/mesh";
-import { readKeystoreRow, withCustodyRows } from "./browser-custody.js";
-import { browserWardKeyMint, browserWardKeyOf, browserWardKeySign, BrowserWardRefused, type WardWorkerSpawn } from "./browser-ward.js";
+import { browserKeystoreCustodyIo, readKeystoreRow, SEALED_ROW_PREFIX, withCustodyRows } from "./browser-custody.js";
+import { browserWardBindRoute, browserWardKeyMint, browserWardKeyOf, browserWardKeySign, BrowserWardRefused, type WardAskKind } from "./browser-ward.js";
 import type { WardRoute } from "./ward-core.js";
 import type { BrowserWardRoute } from "./browser-ward-cosign.js";
 
@@ -124,10 +124,15 @@ export const wardSignRow = (personaGroup: string): string => {
 
 /** The route a tag door asks for the face's ward key: the one the person types for this act. Its mint and every pop ride it. */
 export interface BrowserTagDoorWard {
-  /** The page's dialog: the route the person types for this one act. A passkey opens no ward (`ward-passkey-refused`). */
-  readonly route?: (act: string) => Promise<BrowserWardRoute | WardRoute>;
-  readonly spawn?: WardWorkerSpawn;
+  /**
+   * The page's dialog: the route the person types for this one act, asked by its kind. A MINT asks `bind` then `retype` and binds
+   * only where both match (`ward-route-mismatch` binds nothing); a pop under a standing key asks `open`. A passkey opens no ward.
+   */
+  readonly route?: (act: string, kind: WardAskKind) => Promise<BrowserWardRoute | WardRoute>;
 }
+
+/** The face's ward-key row from before the key moved under its own ward: the next tag ask sweeps it (alpha line, no shim). */
+const sweptWardSignRow = (personaGroup: string): string => `${SEALED_ROW_PREFIX}${wardSignRow(personaGroup)}`;
 
 /**
  * THE BROWSER VESSEL'S TAG DOOR: the blinded per-face tag one admission of this browser carries (`vessel-face-tag`).
@@ -137,8 +142,9 @@ export interface BrowserTagDoorWard {
  * first ask), the tag's signature and the ward key's POP (its own signature over (group, atom, ward key)), and zeroes the copies it
  * read. The key's public half reads off the plain row beside its ward, so naming the key opens no seed; the pop signs only inside a
  * ward act of this face (the per-act ward worker, opened from the route typed for it, zeroed after): the mint's own act where this ask
- * mints the key, a fresh one where the key stood. An ask with no route refuses `ward-needs-fresh-unlock`, a passkey
- * `ward-passkey-refused`.
+ * mints the key, a fresh one where the key stood. A mint asks its route twice (`bind`, `retype`) and binds only where both match.
+ * An ask with no route refuses `ward-needs-fresh-unlock`, a passkey `ward-passkey-refused`. Each ask sweeps the face's sealed
+ * ward-key row from before the key moved under its own ward.
  */
 export function browserVesselFaceTagDoor(idbName = "lares:vessel", ward: BrowserTagDoorWard = {}): VesselFaceTagDoor {
   return async (group, deviceKey) => {
@@ -152,17 +158,20 @@ export function browserVesselFaceTagDoor(idbName = "lares:vessel", ward: Browser
       return fresh;
     });
     try {
+      await browserKeystoreCustodyIo(idbName).remove(sweptWardSignRow(group));
       if (!ward.route) throw new BrowserWardRefused("ward-needs-fresh-unlock", "the face's ward key opens only inside a ward act, and this door offers no route");
+      const ask = ward.route;
       const stood = await browserWardKeyOf(idbName, group);
-      const route = await ward.route(stood ? "the admission's ward key proof" : "the face's ward key");
+      // A MINT BINDS ONLY OVER A ROUTE TYPED TWICE ALIKE; a proof under a standing key opens it once.
+      const route = stood ? await ask("the admission's ward key proof", "open") : await browserWardBindRoute(ask, "the face's ward key");
       const typed = route as WardRoute;
       // THE KEY HALF READS OFF PLAIN BYTES; the pop signs inside the ward act (the mint's own, or one fresh for this proof).
-      const minted = stood ? null : await browserWardKeyMint(idbName, group, deviceKey, typed, ward.spawn);
+      const minted = stood ? null : await browserWardKeyMint(idbName, group, deviceKey, typed);
       const key = minted?.key ?? stood ?? await browserWardKeyOf(idbName, group);
       if (!key) throw new BrowserWardRefused("ward-absent", "the face's ward key landed nowhere");
       const sign = async (bytes: Uint8Array): Promise<string> => {
         if (minted && constantTimeBytesEqual(bytes, wardKeyPopImage(group, deviceKey, key))) return minted.pop;
-        const signed = await browserWardKeySign(idbName, group, typed, bytes, ward.spawn);
+        const signed = await browserWardKeySign(idbName, group, typed, bytes);
         if (signed.key !== key) throw new BrowserWardRefused("ward-key-mismatch");
         return signed.signature;
       };

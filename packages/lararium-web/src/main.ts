@@ -25,6 +25,7 @@ import {
   browserFleetJoinRequest, browserFleetJoinLand, browserFleetJoinSettle, browserFleetJoinAbandon, BrowserFleetJoinRefused,
   DAEMON_SURFACE_ID, requestDurableStorage, storageFloorReport, readBrowserSeedWrap, loadBrowserActivePersona, vesselLockName,
   standBrowserCustody, readBrowserCustody, type CustodyAsk, type CustodyAnswer, type HearthFloorRead,
+  wardAskWords, type WardAskKind,
 } from "@lararium/browser";
 import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./phone-seat.js";
 import type { DeviceAdmitPayload } from "@lararium/keyhive";
@@ -150,18 +151,20 @@ function askCustody(question: CustodyAsk | { readonly kind: "clear" }): Promise<
 /**
  * THIS TAB'S WARD DIALOG (seat-harness#/the-ward): one small form asks the person for the face's passphrase for ONE ward act (a
  * founding or mint, a daemon or kahua commit, a kāpae-lower, a handle publish, burn or attest). The passphrase goes to that act
- * alone and never enters a tiddler, a verb's arguments, a URL or storage. "Not now" refuses the act by name.
+ * alone and never enters a tiddler, a verb's arguments, a URL or storage. "Not now" refuses the act by name. Its words follow the
+ * ask's kind: an `open` opens a standing ward, a `bind` binds a fresh one, and a `retype` asks the bind's passphrase once more.
  */
-function askWardRoute(act: string): Promise<string> {
+function askWardRoute(act: string, kind: WardAskKind): Promise<string> {
   return new Promise((resolve, reject) => {
     const form = document.createElement("form");
     form.className = "custody-ask";
     form.dataset["ask"] = "ward";
+    form.dataset["kind"] = kind;
     const say = document.createElement("div");
-    say.textContent = `Type this face's passphrase for one act: ${act}. It opens the face's root for this act alone.`;
+    say.textContent = wardAskWords(act, kind);
     const pass = document.createElement("input");
-    pass.type = "password"; pass.autocomplete = "current-password"; pass.required = true;
-    const go = document.createElement("button"); go.type = "submit"; go.textContent = "sign";
+    pass.type = "password"; pass.autocomplete = kind === "open" ? "current-password" : "new-password"; pass.required = true;
+    const go = document.createElement("button"); go.type = "submit"; go.textContent = kind === "open" ? "sign" : kind === "bind" ? "bind" : "confirm";
     const not = document.createElement("button"); not.type = "button"; not.textContent = "not now";
     const done = (): void => { form.remove(); };
     form.addEventListener("submit", (e) => { e.preventDefault(); const typed = pass.value; pass.value = ""; done(); resolve(typed); });

@@ -14,6 +14,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness#/the-swarm-slices
  */
 import { afterEach, expect, test } from "vitest";
+import { seatWardWorkerSpawn } from "../src/testing.js";
 import { ed25519SignerFromSeed, signingSeedFromHex, verifyEd25519, wardAnswerImage, wardKeyPopHolds, wardKeyPopImage, wardPublicKeyOf } from "@lararium/mesh";
 import { browserKeystoreCustodyIo, isCustodyRow, readKeystoreRow, sealBrowserKeystore, withCustodyRows } from "../src/browser-custody.js";
 import { browserVesselFaceTagDoor } from "../src/browser-face-atom.js";
@@ -27,7 +28,8 @@ const spawn = () => ({
   postMessage(_m: unknown, transfer: Transferable[]) { const port = transfer[0] as MessagePort; port.onmessage = async (m) => { acts.n++; port.postMessage(await runWardAct(m.data)); }; },
   terminate() {},
 });
-const WARD = { route: async () => PASS, spawn };
+seatWardWorkerSpawn(spawn);
+const WARD = { route: async () => PASS };
 
 const codeOf = (p: Promise<unknown>): Promise<string | undefined> =>
   p.then(() => undefined, (e: { reading?: string; message: string }) => e.reading ?? /^[a-z-]+/.exec(e.message)?.[0] ?? e.message);
@@ -80,7 +82,7 @@ test("RED: a tag door with no route mints the face's ward key and signs its pop 
   await sealBrowserKeystore(idbName, { kind: "passphrase", passphrase: PASS });
   const me = await keyed(82);
   expect(await codeOf(browserVesselFaceTagDoor(idbName)(G, me.key))).toBe("ward-needs-fresh-unlock");
-  expect(await codeOf(browserVesselFaceTagDoor(idbName, { route: async () => ({ kind: "passkey", credentialId: "c" }), spawn } as never)(G, me.key))).toBe("ward-passkey-refused");
+  expect(await codeOf(browserVesselFaceTagDoor(idbName, { route: async () => ({ kind: "passkey", credentialId: "c" }) } as never)(G, me.key))).toBe("ward-passkey-refused");
   acts.n = 0;
   const minted = await browserVesselFaceTagDoor(idbName, WARD)(G, me.key);
   expect(acts.n, "the mint and its pop ran inside one ward act").toBe(1);

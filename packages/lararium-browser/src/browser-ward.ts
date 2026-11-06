@@ -28,12 +28,53 @@ export { WARD_ATTEMPTS_PER_PAGE } from "./browser-ward-tree.js";
 export interface WardWorkerHandle { postMessage(msg: unknown, transfer: Transferable[]): void; terminate(): void }
 export type WardWorkerSpawn = () => WardWorkerHandle;
 
-const defaultSpawn: WardWorkerSpawn = () => new Worker(new URL("./ward.worker.js", import.meta.url), { type: "module" });
+const workerSpawn: WardWorkerSpawn = () => new Worker(new URL("./ward.worker.js", import.meta.url), { type: "module" });
+/** THE SPAWN SEAT: only the test-only entry (`@lararium/browser/testing`) seats another; no door takes a caller's spawn. */
+let seatedSpawn: WardWorkerSpawn | null = null;
+/** Seat the spawn every ward act of this page runs (null takes the worker back). The test-only entry alone re-exports it. */
+export function seatWardWorkerSpawnForTests(spawn: WardWorkerSpawn | null): void { seatedSpawn = spawn; }
+const defaultSpawn: WardWorkerSpawn = () => (seatedSpawn ?? workerSpawn)();
+
+/**
+ * THE KIND OF ONE WARD ASK: `open` reads a ward that stands, `bind` binds a fresh ward over the route typed for it, and `retype`
+ * asks that route once more, so a bind lands only over a route typed twice alike (a ward bound over a typo opens for nobody).
+ */
+export type WardAskKind = "open" | "bind" | "retype";
+/** The page's dialog: the route the person types for one act, asked by its kind. */
+export type WardRouteAsk<R> = (act: string, kind: WardAskKind) => Promise<R>;
+
+/** The words a ward dialog shows for one ask: a bind names a bind, an open names an open. */
+export function wardAskWords(act: string, kind: WardAskKind): string {
+  if (kind === "bind") return `This act will bind a passphrase for this face's ward: ${act}. Type the passphrase every later act of this face asks for.`;
+  if (kind === "retype") return `Type the same passphrase again, so the ward binds only over the one you meant: ${act}.`;
+  return `Type this face's passphrase to open its ward for one act: ${act}. It opens for this act alone.`;
+}
+
+/**
+ * The route one BIND rides: asked twice, `bind` then `retype`, and answered only where both match; a mismatch refuses
+ * `ward-route-mismatch`, so nothing binds. A paper sheet the person holds reads no typo and asks once; a passkey refuses by name.
+ */
+export async function browserWardBindRoute<R>(ask: WardRouteAsk<R>, act: string): Promise<R> {
+  const first = await ask(act, "bind");
+  let credential: ReturnType<typeof wardCredentialOf>;
+  try { credential = wardCredentialOf(first as WardRoute); } catch (e) { return refusedBy(e); }
+  if (credential.kind !== "passphrase") return first;
+  const again = await ask(act, "retype");
+  let second: ReturnType<typeof wardCredentialOf>;
+  try { second = wardCredentialOf(again as WardRoute); } catch (e) { return refusedBy(e); }
+  if (second.kind !== "passphrase" || second.passphrase !== credential.passphrase) {
+    throw new BrowserWardRefused("ward-route-mismatch", "the passphrase typed again differs from the first, so no ward binds");
+  }
+  return first;
+}
 
 const refusedBy = (e: unknown): never => {
   if (e instanceof WardRefused) throw new BrowserWardRefused(e.reading, e.message);
   throw e;
 };
+
+/** A face's ward key rows, a malformed face name refusing in this page's own class (`ward-key-unnamed`). */
+const signRowsOf = (group: string): ReturnType<typeof wardSignRowsOf> => { try { return wardSignRowsOf(group); } catch (e) { return refusedBy(e); } };
 
 /** Sign `bytes` as face `handleIndex`'s root in one ward act. A miss spends one of the page's attempts for this keystore. */
 export async function browserWardSign(idbName: string, handleIndex: number, route: WardRoute, bytes: Uint8Array, spawn: WardWorkerSpawn = defaultSpawn): Promise<{ readonly key: string; readonly signature: string }> {
@@ -44,7 +85,7 @@ export async function browserWardSign(idbName: string, handleIndex: number, rout
 
 /** The PUBLIC half of face `group`'s ward key on this browser, off plain bytes beside its ward (no seed opens), or null where none stands. */
 export async function browserWardKeyOf(idbName: string, group: string): Promise<string | null> {
-  const bytes = await browserKeystoreCustodyIo(idbName).read(wardSignRowsOf(group).key);
+  const bytes = await browserKeystoreCustodyIo(idbName).read(signRowsOf(group).key);
   if (bytes === null) return null;
   const key = new TextDecoder().decode(bytes);
   if (!/^[0-9a-f]{64}$/.test(key)) throw new BrowserWardRefused("ward-key-unreadable", "the face's ward key row reads malformed");
@@ -57,7 +98,7 @@ export async function browserWardKeyOf(idbName: string, group: string): Promise<
  */
 export async function browserWardKeySign(idbName: string, group: string, route: WardRoute, bytes: Uint8Array, spawn: WardWorkerSpawn = defaultSpawn): Promise<{ readonly key: string; readonly signature: string }> {
   try { wardCredentialOf(route); } catch (e) { refusedBy(e); }
-  const rows = wardSignRowsOf(group), io = browserKeystoreCustodyIo(idbName);
+  const rows = signRowsOf(group), io = browserKeystoreCustodyIo(idbName);
   const [tree, sealedSeed] = await Promise.all([io.read(rows.tree), io.read(rows.seed)]);
   if (tree === null || sealedSeed === null) throw new BrowserWardRefused("ward-absent", `face ${group} holds no ward key in this browser`);
   const request: WardKeyActRequest = { act: "ward-key-sign", group, tree, sealedSeed, route, bytes };
@@ -71,7 +112,7 @@ export async function browserWardKeySign(idbName: string, group: string, route: 
  */
 export async function browserWardKeyMint(idbName: string, group: string, deviceKey: string, route: WardRoute, spawn: WardWorkerSpawn = defaultSpawn): Promise<{ readonly key: string; readonly pop: string } | null> {
   try { wardCredentialOf(route); } catch (e) { refusedBy(e); }
-  const rows = wardSignRowsOf(group);
+  const rows = signRowsOf(group);
   const request: WardKeyMintRequest = { act: "ward-key-mint", group, deviceKey, route };
   const minted = await chargeWardAttempt(idbName, () => browserWardActOnce<WardKeyMintAnswer>(request, spawn)).catch(refusedBy);
   if ("refused" in minted) throw new BrowserWardRefused(minted.refused);

@@ -24,6 +24,10 @@
     },
     "./shared-holder-worker": {
       "import": "./dist/shared-holder.worker.js"
+    },
+    "./testing": {
+      "import": "./dist/testing.js",
+      "types": "./dist/testing.d.ts"
     }
   },
   "main": "./dist/index.js",

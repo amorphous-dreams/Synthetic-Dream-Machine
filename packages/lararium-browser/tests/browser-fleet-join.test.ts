@@ -14,6 +14,7 @@
  *   B7  two requests at once keep one pending join: the other answers it, or refuses `join-pending`
  */
 import { describe, expect, test } from "vitest";
+import { seatWardWorkerSpawn } from "../src/testing.js";
 import {
   admitCarriageCommit, custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, type GateBundlePin, faceKeyGrantImage, fleetJoinAnswerImage, fleetJoinOffer, sealAddressSecret,
   DOMAIN_ROOT, readFleetJoinRequest, vesselFaceTagFields, vesselFaceTagHolds, type FleetJoinOffer, type FleetJoinRequest, type VesselFaceKey,
@@ -35,8 +36,9 @@ const spawn = () => ({
   postMessage(_m: unknown, transfer: Transferable[]) { const port = transfer[0] as MessagePort; port.onmessage = async (m) => { port.postMessage(await runWardAct(m.data)); }; },
   terminate() {},
 });
+seatWardWorkerSpawn(spawn);
 /** A re-request of a face whose ward key already stood signs its pop through the ward under this route. */
-const FIXTURE_WARD = { route: async () => "browser fixture custody slot", spawn };
+const FIXTURE_WARD = { route: async () => "browser fixture custody slot" };
 /** The tag reads apart from the pop: these reads compare tags alone, so the pop's signer answers nothing. */
 const NO_POP = async (): Promise<string> => "";
 import { placeSignerFromSeed } from "@lararium/mesh";

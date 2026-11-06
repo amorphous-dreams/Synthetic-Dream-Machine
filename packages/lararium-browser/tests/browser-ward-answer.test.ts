@@ -12,6 +12,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness#/the-swarm-slices
  */
 import { expect, test } from "vitest";
+import { seatWardWorkerSpawn } from "../src/testing.js";
 import {
   buildAsks, buildIntent, faceIntentVerbs, intentEntryCid, intentEntryRecordsOfGroup, intentId, makeHandLineage, verifyEd25519, wardAnswerImage,
   cosignDigest, intentPlaneCosignPort, type LarDoc,
@@ -27,12 +28,13 @@ const spawn = () => ({
   postMessage(_m: unknown, transfer: Transferable[]) { const port = transfer[0] as MessagePort; port.onmessage = async (m) => { port.postMessage(await runWardAct(m.data)); }; },
   terminate() {},
 });
+seatWardWorkerSpawn(spawn);
 
 async function stand() {
   const idbName = `lares:answer-${globalThis.crypto.randomUUID()}`;
   await sealBrowserKeystore(idbName, { kind: "passphrase", passphrase: PASS });
   const issuer = await keyed(71), me = await keyed(72), root = await keyed(73);
-  const wardKey = (await browserVesselFaceTagDoor(idbName, { route: async () => PASS, spawn })(G, me.key)).wardKey;
+  const wardKey = (await browserVesselFaceTagDoor(idbName, { route: async () => PASS })(G, me.key)).wardKey;
   const doc = { tiddlers: {} } as LarDoc;
   const plane = { doc: () => doc, change: (fn: (d: LarDoc) => void) => fn(doc) };
   const lineage = makeHandLineage([{ epoch: 0, signers: [root.key], threshold: 1 }])!;
@@ -46,7 +48,7 @@ async function stand() {
   const answer = (extra: { deny?: boolean; ask?: string; route?: () => Promise<unknown> } = {}) => (cosign as unknown as {
     browserWardAnswer(input: unknown): Promise<{ readonly body: Record<string, unknown>; readonly signer: string }>;
   }).browserWardAnswer({ idbName, group: G, atom: me, port, ask: extra.ask ?? intentEntryCid(ask), executor: issuer.key, deny: extra.deny === true,
-    route: extra.route ?? (async () => PASS), spawn });
+    route: extra.route ?? (async () => PASS) });
   return { idbName, issuer, me, wardKey, doc, ask: intentEntryCid(ask), detail, answer };
 }
 
@@ -83,7 +85,7 @@ test("CONTROL: a deny asks no route and carries no ward; an ask this browser can
 
 test("RED: two faces of one browser present one ward key; CONTROL: a re-read of one face presents the same key", async () => {
   const s = await stand();
-  const door = browserVesselFaceTagDoor(s.idbName, { route: async () => PASS, spawn });
+  const door = browserVesselFaceTagDoor(s.idbName, { route: async () => PASS });
   const other = (await door("g-browser-other", s.me.key)).wardKey;
   expect(other).toMatch(/^[0-9a-f]{64}$/);
   expect(other).not.toBe(s.wardKey);
@@ -96,11 +98,11 @@ test("RED: the browser's tag door names a ward key it proves nothing of, and a r
   await sealBrowserKeystore(idbName, { kind: "passphrase", passphrase: PASS });
   const me = await keyed(74);
   const door = browserVesselFaceTagDoor as unknown as (idb: string, o?: unknown) => (g: string, a: string) => Promise<{ wardKey: string; wardPop?: string }>;
-  const minted = await door(idbName, { route: async () => PASS, spawn })(G, me.key);
+  const minted = await door(idbName, { route: async () => PASS })(G, me.key);
   expect(wardKeyPopHolds?.(G, me.key, minted)).toBe(true);
   expect(await codeOf(door(idbName)(G, me.key))).toBe("ward-needs-fresh-unlock");
-  expect(await codeOf(door(idbName, { route: async () => ({ kind: "passkey", credentialId: "c" }), spawn })(G, me.key))).toBe("ward-passkey-refused");
-  const reread = await door(idbName, { route: async () => PASS, spawn })(G, me.key);
+  expect(await codeOf(door(idbName, { route: async () => ({ kind: "passkey", credentialId: "c" }) } as never)(G, me.key))).toBe("ward-passkey-refused");
+  const reread = await door(idbName, { route: async () => PASS })(G, me.key);
   expect(reread.wardKey).toBe(minted.wardKey);
   expect(wardKeyPopHolds?.(G, me.key, reread)).toBe(true);
   // the nonsense control: the pop vouches for this atom alone
