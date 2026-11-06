@@ -11,6 +11,11 @@
  *       session, seals and reaches rest (the stand-down counts no waiting save, the disk holds no clear byte of it), and
  *       a restart reads it back.
  *
+ *   P2  RED: a lock drops the place session (session-sign-book: a lock, a close or a switch drops a session's signer):
+ *       the lock recomposes the vessel through its teardown, and after it the place session's signer reads dropped and
+ *       signs nothing. CONTROL beside it: before the lock, the same signer stands and signs. (A mint the stand-down
+ *       overtook seats nothing: tests/place-session-cell C2.)
+ *
  * Its control stands at the book (`@lararium/mesh` tests/place-anchor-seals A0): with no place standing (a floor, a
  * locked face), a place session's ask refuses and signs nothing, so its save waits, never written clear.
  *
@@ -90,5 +95,25 @@ describe("a sovereign node with no Nexus seals under its place session", () => {
     try {
       expect(await readBack(again), "the restart reads the sealed save back").toBe(SECRET);
     } finally { await withLarRoot(at.root, () => again.teardown()); }
+  }, 300_000);
+
+  test("P2 RED: the lock drops the place session's signer; before it, the same signer signs", async () => {
+    const at = await found();
+    const vessel = await open(at);
+    let down = false;
+    try {
+      const place = vessel.sessionSigns.seated().find((s) => s.anchor.kind === "place");
+      expect(place, "a sovereign node that dials nothing seats its worn face's place session").toBeDefined();
+      const signer = place!.signer;
+      // CONTROL: before the lock, the place session stands and signs.
+      expect(signer.dropped).toBe(false);
+      expect(await signer.sign("act", new Uint8Array([1, 2, 3]))).toHaveProperty("signature");
+      // THE LOCK: the vessel recomposes through its teardown.
+      await withLarRoot(at.root, () => vessel.teardown());
+      down = true;
+      expect(signer.dropped, "the lock drops the place session's signer").toBe(true);
+      expect(await signer.sign("act", new Uint8Array([1, 2, 3])), "a dropped signer signs nothing").toHaveProperty("refusal");
+      expect(vessel.sessionSigns.seated(), "no session stays seated").toEqual([]);
+    } finally { if (!down) await withLarRoot(at.root, () => vessel.teardown()); }
   }, 300_000);
 });
