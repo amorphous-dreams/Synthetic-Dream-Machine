@@ -12,8 +12,10 @@
  * ── ONE ACT, ONE UNLOCK ──────────────────────────────────────────────────────────────────────────
  * A ward act opens the ward key from the route typed for it, spends one of the page's ward attempts on a miss, opens the root,
  * and zeroes the key; nothing caches a route or a key between acts. A signing act runs in a per-act worker (`browser-ward.ts`).
- * An act whose mesh code derives from the seed (a handle's veiled key, the founding edge) opens it here, in the vessel's own
- * context, for that one act.
+ * An act whose mesh code derives from the seed (a handle's veiled key, the founding edge) opens it here, on the PAGE MAIN THREAD
+ * (`lararium-web/index.html` loads `src/main.ts`, which calls `openBrowserVessel` itself), for that one act. That stands as the gap
+ * road row `B1` owes: the browser vessel in its own worker, never the page. Founding also reuses the custody passphrase as the
+ * ward route, and that route lives as a page-closure string until its one sign.
  *
  * ── THE FOUNDING ─────────────────────────────────────────────────────────────────────────────────
  * A root mints only under its ward: the mint binds a fresh ward key over the route the person gave for it, proves the route
@@ -83,7 +85,7 @@ async function openWardFresh(idbName: string, tree: SlotTree, credential: Creden
 }
 
 /**
- * Open face `handleIndex`'s root for ONE act in the vessel's own context, under a fresh unlock of its ward from `route`, then
+ * Open face `handleIndex`'s root for ONE act on the page main thread (road row `B1` owes the vessel's own worker), under a fresh unlock of its ward from `route`, then
  * zero the ward key. For an act whose mesh code derives from the seed; a signing act rides the per-act worker instead.
  */
 export async function openBrowserWardedRoot(idbName: string, handleIndex: number, route: WardRoute): Promise<{ readonly verifyingKey: string; readonly signingKey: string }> {

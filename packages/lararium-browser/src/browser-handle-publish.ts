@@ -50,8 +50,11 @@ export async function publishHandleBrowser(opts: {
   const idbName = opts.idbName ?? "lares:vessel";
   const owner = await readHandleOwnerBrowser({ handleIndex: opts.handleIndex, kelBoard: opts.kelBoard, idbName, verb: "publish" });
   const seed  = await loadPersonaRootSeed(await makeBrowserIdbPersonaVault(idbName, opts.ward), opts.handleIndex);
-  const store = await makeBrowserPublicHandleStore(idbName);
-  return publishHandleForFace({
-    owner, board: opts.board, seed, handleIndex: opts.handleIndex, glamour: opts.glamour, store,
-  });
+  // THE ROOT SEED LEAVES THE ACT ZEROED, whether the publish lands or refuses.
+  try {
+    const store = await makeBrowserPublicHandleStore(idbName);
+    return await publishHandleForFace({
+      owner, board: opts.board, seed, handleIndex: opts.handleIndex, glamour: opts.glamour, store,
+    });
+  } finally { seed.fill(0); }
 }

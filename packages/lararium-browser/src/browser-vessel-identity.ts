@@ -42,7 +42,7 @@ import {
 import type { SeedWrapRecord } from "./seed-wrap-prf.js";
 
 import { assertCanMint } from "./secure-context-gate.js";
-import { BrowserCustodyRefused, BrowserWardRefused, readBrowserCustody, readKeystoreRow, writeKeystoreRow } from "./browser-custody.js";
+import { BrowserCustodyRefused, BrowserWardRefused, browserKeystoreCustodyIo, readBrowserCustody, readKeystoreRow, writeKeystoreRow } from "./browser-custody.js";
 import { browserWardStands, mintBrowserWardedRoot, openBrowserWardedRoot, readBrowserPersonaRoster, type PersonaRosterLine } from "./browser-ward-tree.js";
 import type { WardRoute } from "./ward-core.js";
 const KEY_RECORD = "vessel-key";
@@ -523,6 +523,11 @@ export async function writeBrowserSeedWrap(idbName: string, handleIndex: number,
   // (seat-harness#/the-ward). A keystore whose slot tree stands holds its face root warded, so the wrap refuses by name.
   if ((await readBrowserCustody(idbName)).reading !== "clear") {
     throw new Error("ward-passkey-refused: this face's root rests warded under its human routes; a PRF wrap would open it by a passkey");
+  }
+  // A clear-password leaves the keystore reading clear while the face's ward rows stand: any `ward/h<N>/` row refuses the wrap too.
+  const wardPrefix = `ward/h${String(handleIndex)}/`;
+  if ((await browserKeystoreCustodyIo(idbName).list()).some((row) => row.startsWith(wardPrefix))) {
+    throw new BrowserWardRefused("seed-wrap-beside-ward", `a ward stands at h${String(handleIndex)}; a PRF wrap would open its root by a passkey`);
   }
   const db = await openVesselIdb(idbName);
   try { await idbPut(db, SEED_WRAP_STORE, personaRootKey(handleIndex), wrap); } finally { db.close(); }

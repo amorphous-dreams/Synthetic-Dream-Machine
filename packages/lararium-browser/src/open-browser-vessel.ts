@@ -788,19 +788,23 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     const wardRoute: WardRoute = bornUnder ?? await wardRouteFor("found this browser's first face");
     await generateOrLoadBrowserPersonaRoot(idbName, FOUNDING_PERSONA_INDEX, wardRoute);
     const signerSeed = await loadBrowserPersonaRootSeed(idbName, FOUNDING_PERSONA_INDEX, wardRoute);
-    await wearBrowserPersona(idbName, FOUNDING_PERSONA_INDEX);   // the selector points at the founded root
-    const f = await runFoundingCeremony({
-      repo,
-      placeVerifyingKey: vesselIdentity.verifyingKey,
-      vesselDisplayName:  displayName ?? "Browser Operator",
-      // The persona-root SIGNS (signerDid == the root DID, DISTINCT from deviceDid). The self-signed anon
-      // The root signer stays distinct from the place KEL seed.
-      binding: { mode: "self-stood", signerSeed },
-      hearthTrueName: "",          // hearth-agnostic: an anon is not yet bound to a place; it binds on upgrade
-      // The island this leaf stands in keys the KEL board. A FOUNDING leaf dials no anchor, so this resolves to
-      // its own key — a private nexus of one, the same value by a different derivation.
-      nexusPubkey,
-    });
+    // THE ROOT SEED LEAVES THE ACT ZEROED: the ceremony signs once with it, and the bytes clear in the finally.
+    let f: Awaited<ReturnType<typeof runFoundingCeremony>>;
+    try {
+      await wearBrowserPersona(idbName, FOUNDING_PERSONA_INDEX);   // the selector points at the founded root
+      f = await runFoundingCeremony({
+        repo,
+        placeVerifyingKey: vesselIdentity.verifyingKey,
+        vesselDisplayName:  displayName ?? "Browser Operator",
+        // The persona-root SIGNS (signerDid == the root DID, DISTINCT from deviceDid). The self-signed anon
+        // The root signer stays distinct from the place KEL seed.
+        binding: { mode: "self-stood", signerSeed },
+        hearthTrueName: "",          // hearth-agnostic: an anon is not yet bound to a place; it binds on upgrade
+        // The island this leaf stands in keys the KEL board. A FOUNDING leaf dials no anchor, so this resolves to
+        // its own key — a private nexus of one, the same value by a different derivation.
+        nexusPubkey,
+      });
+    } finally { signerSeed.fill(0); }
     // THE FACE'S ATOM RESTS BEFORE ITS BOOTSTRAP: the founding minted a random seed, and the face's own custody row keeps it.
     try { await keepBrowserFaceAtomSeed(idbName, f.personaGroupId, f.atomSeed); } finally { f.atomSeed.fill(0); }
     // THE FACE'S ADDRESS SECRET MINTS BESIDE ITS ATOM, so its working documents derive their addresses from the first boot.
