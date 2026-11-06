@@ -25,6 +25,7 @@
  */
 import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 import * as mesh from "../src/index.js";
 import { realmFeedPrefix } from "../src/cabal-realm.js";
@@ -577,4 +578,16 @@ describe("⑫ session, sealed rest and hosting launch gates", () => {
     expect(verifyWalkerGrant(publicOnly, grant)).toBe(true);
   });
 
+});
+
+// ════════════════════════════════════════════════════════════════════════════════════════════════
+// ⑬ THE PAGE HOLDS NO VESSEL — the browser vessel lift (lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift)
+// ════════════════════════════════════════════════════════════════════════════════════════════════
+describe("⑬ the page's main thread holds no vessel", () => {
+  test.skip("THE PAGE REACHES NO VESSEL MODULE — DEFERRED: the page's main thread holds the DOM, the projection sink, the mirror, the ask forms and Worker construction alone, so `packages/lararium-web/src/main.ts` reaches none of `@automerge/automerge-repo`, `@lararium/keyhive`, `browser-custody`, `browser-vessel-identity`, `ward-core`, `seed-wrap-prf` (a `?worker&url` import counts as not reached). `tools/page-entry-witness.mjs` walks the graph and names each reach with its chain; today `main.ts` reaches five through `@lararium/browser`'s index. Wakes when slice 2 moves `openBrowserVessel` onto the vessel worker's thread and `main.ts` talks to a `vesselPort`.", () => {
+    const repo = join(import.meta.dirname, "..", "..", "..");
+    const r = spawnSync(process.execPath, [join(repo, "tools", "page-entry-witness.mjs"), "--root", repo], { encoding: "utf8" });
+    expect(r.stdout).toMatch(/^page-entry: holds/);
+    expect(r.status).toBe(0);
+  });
 });
