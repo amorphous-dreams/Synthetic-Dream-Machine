@@ -15,7 +15,8 @@ const HAND: PromoteWho = { kind: "hand", id: "hand-1" }, SEAT: PromoteWho = { ki
 async function door(opts: { grantHeld?: boolean; pinned?: boolean } = {}) {
   const root = { key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(1)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(1)) };
   const atom = { key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(2)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(2)) };
-  const face = { group: GROUP, grant: (k: string) => k === root.key, device: (k: string) => k === atom.key };
+  // A face of one device: a lower reads on its own (the co-sign witness answers yes, as `wardActWitness` does for one device).
+  const face = { group: GROUP, grant: (k: string) => k === root.key, device: (k: string) => k === atom.key, ward: { accepts: () => true } };
   const acts: unknown[] = [];
   const d = promoteBoardDoor({
     group: GROUP, face, atom, epoch: () => 0,

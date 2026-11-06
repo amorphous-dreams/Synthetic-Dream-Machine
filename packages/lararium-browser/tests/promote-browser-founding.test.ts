@@ -82,7 +82,8 @@ describe("a one-device browser fleet lowers a kāpae under the fresh unlock alon
     const root = await generateOrLoadBrowserPersonaRoot(idbName, 0);
     lockBrowserCustody(idbName);
     const atom = { key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(4)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(4)) };
-    const face = { group: GROUP, grant: (k: string) => k === root.verifyingKey, device: (k: string) => k === atom.key };
+    // A face of one device: a lower reads on its own (the co-sign witness answers yes, as `wardActWitness` does for one device).
+    const face = { group: GROUP, grant: (k: string) => k === root.verifyingKey, device: (k: string) => k === atom.key, ward: { accepts: () => true } };
     const spawn = () => ({
       postMessage(_m: unknown, transfer: Transferable[]) { const port = transfer[0] as MessagePort; port.onmessage = async (m) => { port.postMessage(await runWardAct(m.data)); }; },
       terminate() {},

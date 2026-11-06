@@ -5,7 +5,7 @@ import type { Repo } from "@automerge/automerge-repo";
 import {
   faceRecordsOf, kahuaActRecords, kahuaPlaneUrl,
   promoteActRecords, promoteBoardDoor, promoteCommand, promotePlaneUrl, promotions, promoteWikiItems,
-  readKahuaStage, readPromoteBoard, writePromoteAct, PromoteRefused, type LarDoc, type PromoteCommandRequest,
+  readKahuaStage, readPromoteBoard, writePromoteAct, PromoteRefused, cosignPortWitness, type LarDoc, type PromoteCommandRequest,
 } from "@lararium/mesh";
 import { loadFaceFold, nodeWardCosignPortOf, IntentRefused, type FaceFold } from "./intent.js";
 import { nodePromoteCas, nodePromoteStores } from "../promoted-store.js";
@@ -47,7 +47,8 @@ export async function runPromoteVerb(opts: {
       return readKahuaStage(kahuaActRecords(stage.doc(), group), foldFace).list()
         .flatMap(item => item.heads.map(head => ({ title: head.title, text: head.text, fields: head.fields, revision: head.cid, origin: head.origin })));
     },
-    board: async () => readPromoteBoard(await board.records(), boardFace), cas: nodePromoteCas(opts.casDir, signer.key),
+    // The board reads under the co-sign witness: on a face of two devices, a lower stands only beside its spent co-sign.
+    board: async () => readPromoteBoard(await board.records(), { ...boardFace, ward: cosignPortWitness(await nodeWardCosignPortOf(opts.repo, loaded)) }), cas: nodePromoteCas(opts.casDir, signer.key),
     // THE WARD: a daemon or kahua commit signs its row as the face root, opened fresh under this act's route; boot reads the grant.
     wardSigner: () => wardRootSigner(index, opts.ward, `a commit in ${wiki}`), face: { grant: (key: string) => face.currentSigner(key) },
   });

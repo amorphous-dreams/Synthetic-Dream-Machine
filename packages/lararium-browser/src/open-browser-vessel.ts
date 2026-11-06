@@ -25,7 +25,7 @@ import { IndexedDBStorageAdapter }           from "@automerge/automerge-repo-sto
 import { shoreStorage } from "@lararium/mesh";
 import type { DocHandle, AutomergeUrl, PeerId } from "@automerge/automerge-repo";
 import {
-  emptyLarDoc, storedLarRecord,
+  emptyLarDoc, storedLarRecord, cosignPortWitness, WARD_WITNESS_CLOSED,
   CATALOG_DOC_URI, DAEMON_BAG_ID,
   ENGINE_CORE_ID,
   resolveRecipePluginCids, offeringAnnouncesFromDoc, type OfferingLookup,
@@ -1370,10 +1370,29 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         provenPromoteUrl = await adoptPromoteBoard({ repo, group: wornGroup, projection: proof.projection });
         const promoteFace = liveKahuaFace({ group: wornGroup, prefix: personaKelPrefix, bootChain: personaKelChain, anchor: faceAnchor, board: repo.find(personaKelBoardDocUrl(nexusPubkey)) });
         const devices = new Set(proof.projection.devices);
+        // THE PORT FOLDS THE WORN FACE AT EACH ACT (node parity: the node loads its face per act): the persona plane and the admit
+        // bundle as they stand now, under the KEL as it stands now, so a second device admitted since boot holds the lower.
+        const liveKelChain = () => personaKelChainForPrefix(kelBoard.doc(), personaKelPrefix);
+        const browserCosignPortOf = async () => {
+          const intents = await repo.find<LarDoc>(wornIntentsUrl as AutomergeUrl);
+          return browserWardCosignPort({ group: wornGroup, atom: wornAtom, plane: intents, flush: () => repo.flush(),
+            fold: browserFaceFold({ records: () => faceRecordsOf([heldDocOf(repo, wornPlaneUrl), heldDocOf(repo, social.daemonUrl)], wornGroup),
+              chain: liveKelChain, group: wornGroup, anchor: pinned, deviceKey: wornAtom.key, ...(wornEdge ? { edge: wornEdge } : {}),
+              planes: { persona: wornPlaneUrl, intents: wornIntentsUrl } }),
+            lineage: () => { const lineage = readFace(liveKelChain())?.lineage; if (!lineage) throw new Error("[lararium-browser] the worn face's KEL folds no lineage"); return lineage; },
+            fleet: () => fleetShadows });
+        };
         promoteWiringRef = provenPromoteUrl ? promoteWiring({
           repo, group: wornGroup, boardUrl: provenPromoteUrl, stageUrl: provenKahuaUrl,
           foldFace: () => { const f = promoteFace.read(); return { group: wornGroup, grant: f ? f.grant : () => false }; },
-          boardFace: () => { const f = promoteFace.read(); return { group: wornGroup, grant: f ? f.grant : () => false, device: (k) => devices.has(k) }; },
+          // THE BOARD READS UNDER THE CO-SIGN WITNESS: on a face of two devices, a lower stands only beside its spent co-sign; a fold
+          // that no longer proves stands no lower, so the brake holds (seat-harness#/the-swarm-slices).
+          boardFace: async () => {
+            const f = promoteFace.read();
+            let ward = WARD_WITNESS_CLOSED;
+            try { ward = cosignPortWitness(await browserCosignPortOf()); } catch { /* the brake holds */ }
+            return { group: wornGroup, grant: f ? f.grant : () => false, device: (k) => devices.has(k), ward };
+          },
           stores: browserPromoteStores(idbName, wornGroup), cas: browserPromoteCas(),
           wikiItems: promoteWikiItems({ repo, catalog: () => assembly.catalogHandle.doc() }), restart: restartWikiIsland,
           onArrive: async () => { await pushPromoteSnapshot?.(); },
@@ -1385,18 +1404,6 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           const wiring = promoteWiringRef;
           const handle = await repo.find<LarDoc>(provenPromoteUrl as AutomergeUrl);
           const boardFace = { group: wornGroup, grant: (key: string) => promoteFace.read()?.grant(key) ?? false, device: (key: string) => devices.has(key) };
-          // THE PORT FOLDS THE WORN FACE AT EACH ACT (node parity: the node loads its face per act): the persona plane and the admit
-          // bundle as they stand now, under the KEL as it stands now, so a second device admitted since boot holds the lower.
-          const liveKelChain = () => personaKelChainForPrefix(kelBoard.doc(), personaKelPrefix);
-          const browserCosignPortOf = async () => {
-            const intents = await repo.find<LarDoc>(wornIntentsUrl as AutomergeUrl);
-            return browserWardCosignPort({ group: wornGroup, atom: wornAtom, plane: intents, flush: () => repo.flush(),
-              fold: browserFaceFold({ records: () => faceRecordsOf([heldDocOf(repo, wornPlaneUrl), heldDocOf(repo, social.daemonUrl)], wornGroup),
-                chain: liveKelChain, group: wornGroup, anchor: pinned, deviceKey: wornAtom.key, ...(wornEdge ? { edge: wornEdge } : {}),
-                planes: { persona: wornPlaneUrl, intents: wornIntentsUrl } }),
-              lineage: () => { const lineage = readFace(liveKelChain())?.lineage; if (!lineage) throw new Error("[lararium-browser] the worn face's KEL folds no lineage"); return lineage; },
-              fleet: () => fleetShadows });
-          };
           /** One ward act's signer: the page's dialog asks the passphrase for this act, and the ward worker signs under it. */
           const wardRootSignerOf = async (act: string) => {
             if (!opts.askWardRoute) throw new BrowserWardRefused("ward-needs-fresh-unlock");

@@ -86,6 +86,19 @@ export function intentPlaneCosignPort(input: {
 
 export type { WardCosignAct } from "./ward-cosign.js";
 
+/**
+ * An effect that finds its own act already resting (it ran, and its outcome never landed: a crash between the two). The effect
+ * throws it before it signs anything, the gate lands the outcome the act owed, and the replay refuses `ward-act-already-run`.
+ */
+export class WardActAlreadyRun extends WardRefused {
+  constructor(verb: string, head: string) { super("ward-act-already-run", `${verb} at ${head} ran already; its outcome lands now, and nothing runs again`); }
+}
+
+/** The door's own check of an act its gate just decided: the act lands, and its readers read it beside its outcome. Never a reader's witness. */
+export const WARD_GATE_DECIDED: WardActWitness = { accepts: () => true };
+/** A witness over a plane that cannot be read: no ward act stands. */
+export const WARD_WITNESS_CLOSED: WardActWitness = { accepts: () => false };
+
 /** The readers' witness over the gate's own port: the same plane, roster and standing the gate reads, fresh at each call. */
 export function cosignPortWitness(port: WardCosignPort): WardActWitness {
   return wardActWitness({ group: port.group, devices: () => port.devices(), view: () => port.view(), standing: (atom) => port.standing(atom) });
@@ -100,7 +113,8 @@ export function wardCosignIntentId(port: Pick<WardCosignPort, "group" | "request
 
 /**
  * Gate one ward act. `effect` runs only where the judge answers `none` or an approved co-sign; an approved act lands its outcome
- * after the effect, so a failed effect (a wrong route, a moved board) leaves the intent unspent for the hand's retry.
+ * after the effect, so a failed effect (a wrong route, a moved board) leaves the intent unspent for the hand's retry. The readers read
+ * the act only beside that outcome (`wardActWitness`), so the outcome, never the effect's bytes, makes the act stand.
  */
 export async function wardCosignGate<T>(port: WardCosignPort, act: WardCosignAct, effect: () => Promise<T>): Promise<T> {
   const { id, digest, args } = wardCosignIntentId(port, act);
@@ -114,8 +128,13 @@ export async function wardCosignGate<T>(port: WardCosignPort, act: WardCosignAct
   const verdict = judgeCosign({ view: view ?? EMPTY_VIEW, intentId: id, requester, projection: { devices }, standing: port.standing, digest });
   if (verdict.need === "none") return effect();
   if (verdict.approved) {
-    const done = await effect();
-    await port.write(await buildOutcome({ group: port.group, signer: port.requester, cause: id, result: { status: "done", act: act.verb, digest, cosigner: verdict.cosigner, answer: verdict.answer } }));
+    const outcome = async () => port.write(await buildOutcome({ group: port.group, signer: port.requester, cause: id, result: { status: "done", act: act.verb, digest, cosigner: verdict.cosigner, answer: verdict.answer } }));
+    let done: T;
+    // The effect lands first and its outcome after it: every reader reads the act only beside that outcome, so a crash between the
+    // two leaves the act unread, and the replay finds it standing (`WardActAlreadyRun`), lands the outcome it owed, and runs nothing.
+    try { done = await effect(); }
+    catch (e) { if (e instanceof WardActAlreadyRun) await outcome(); throw e; }
+    await outcome();
     return done;
   }
   const awaiting = (askCid: string): never => { throw new WardRefused("ward-awaiting-cosign", askCid); };

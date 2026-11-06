@@ -6,7 +6,8 @@
  * shape, domain, face group, signature, the title the body belongs at, and the role of the signer. Any failure reads as refused, and the
  * caller treats a refused record as absent, so a read fails closed.
  *
- *   go/<branch>                a go binds a branch and a head; signed by the face's hand; spent once (`go-spent/<go cid>`, the vessel's witness)
+ *   go/<branch>                a go binds a branch, a head and the go it follows there (`after`: that go's cid, null for the branch's
+ *                              first); signed by the face's hand; read only beside its co-sign; spent once (`go-spent/<go cid>`, the vessel's witness)
  *   lane/<lane>/state          a lead's lane state, signed under the lead's own seat name
  *   roster/<seat>              a seat's spend reading, signed by the VESSEL as witness, never by the measured lead
  *   receipt/<tree>             a check seat's verdict over a tree, signed by the VESSEL
@@ -20,6 +21,7 @@ import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
 import { SWARM_ACT_DOMAIN } from "./domains.js";
 import { verifyEd25519 } from "./ed25519-door.js";
 import { SWARM_URI_PREFIX } from "./lar-uris.js";
+import type { WardActWitness } from "./ward-cosign.js";
 
 export { SWARM_URI_PREFIX } from "./lar-uris.js";
 
@@ -92,7 +94,8 @@ export const swarmReceiptTitle = (tree: string): string => `${SWARM_URI_PREFIX}r
 /** The fields a swarm record rests under: its text, and the mark that no mirror projects it. */
 export const swarmRecordFields = (text: string): Record<string, string> => ({ text, "disk-projection": "no" });
 
-export interface SwarmGoBody { readonly act: "go"; readonly group: string; readonly branch: string; readonly head: string; readonly nonce: string }
+/** `after` names the go this one follows at the branch's title (its cid), or null for the branch's first: one issue, one go. */
+export interface SwarmGoBody { readonly act: "go"; readonly group: string; readonly branch: string; readonly head: string; readonly after: string | null }
 export interface SwarmGoSpentBody { readonly act: "go-spent"; readonly group: string; readonly branch: string; readonly head: string; readonly go: string }
 export interface SwarmLaneStateBody { readonly act: "lane-state"; readonly group: string; readonly lane: string; readonly seat: string; readonly state: Readonly<Record<string, string | number | boolean | null>> }
 export interface SwarmRosterBody { readonly act: "roster"; readonly group: string; readonly seat: string; readonly model: string; readonly mode: string; readonly reading: number; readonly ceiling: number; readonly outcome: string }
@@ -110,7 +113,7 @@ const hex = (x: unknown, n: number): boolean => typeof x === "string" && new Reg
 function shape(b: Record<string, unknown>): boolean {
   if (!str(b["group"])) return false;
   switch (b["act"]) {
-    case "go": return str(b["branch"]) && str(b["head"]) && hex(b["nonce"], 32);
+    case "go": return str(b["branch"]) && str(b["head"]) && (b["after"] === null || hex(b["after"], 64));
     case "go-spent": return str(b["branch"]) && str(b["head"]) && hex(b["go"], 64);
     case "lane-state": return str(b["lane"]) && str(b["seat"]) && object(b["state"]) && Object.values(b["state"]).every((v) => v === null || ["string", "number", "boolean"].includes(typeof v));
     case "roster": return str(b["seat"]) && str(b["model"]) && str(b["mode"]) && count(b["reading"]) && count(b["ceiling"]) && str(b["outcome"]);
@@ -167,21 +170,29 @@ export function verifySwarmRecord(text: string | null, title: string, trust: Swa
 export async function putSwarmAct(wiki: SwarmWikiPort, title: string, act: SignedSwarmAct): Promise<void> { await wiki.write(title, JSON.stringify(act)); }
 export async function readSwarmRecord(wiki: SwarmWikiPort, title: string, trust: SwarmTrust, group: string) { return verifySwarmRecord(await wiki.read(title), title, trust, group); }
 
-/** A go for one branch at one head: standing where it verifies, names that head, and no spend of it rests. */
-export async function readGo(wiki: SwarmWikiPort, at: { readonly branch: string; readonly head: string }, trust: SwarmTrust, group: string):
-  Promise<{ ok: true; act: SignedSwarmAct; cid: string } | { ok: false; refusal: SwarmReadRefusal | "head-mismatch" | "spent" }> {
+/** The head a go's co-sign names: its branch, its head and the go it follows. */
+export const swarmGoHead = (go: { readonly branch: string; readonly head: string; readonly after: string | null }): string =>
+  sha256HexBytesSync(canonicalJsonBytes({ branch: go.branch, head: go.head, after: go.after }));
+
+/**
+ * A go for one branch at one head: standing where it verifies, names that head, stands beside its co-sign (`ward`: on a face of
+ * two devices, a go the root signed outside the door refuses `ward-act-uncosigned`), and no spend of it rests.
+ */
+export async function readGo(wiki: SwarmWikiPort, at: { readonly branch: string; readonly head: string }, trust: SwarmTrust, group: string, ward: WardActWitness):
+  Promise<{ ok: true; act: SignedSwarmAct; cid: string } | { ok: false; refusal: SwarmReadRefusal | "head-mismatch" | "ward-act-uncosigned" | "spent" }> {
   const read = await readSwarmRecord(wiki, swarmGoTitle(at.branch), trust, group);
   if (!read.ok) return read;
   const body = read.act.body as SwarmGoBody;
   if (body.branch !== at.branch || body.head !== at.head) return { ok: false, refusal: "head-mismatch" };
+  if (!ward.accepts({ verb: "ward-push-go", wiki: "daemon", head: swarmGoHead(body) })) return { ok: false, refusal: "ward-act-uncosigned" };
   // Any row at the spend title blocks the go, signed or not: a forged spend fails closed.
   if ((await wiki.read(swarmGoSpentTitle(read.cid))) !== null) return { ok: false, refusal: "spent" };
   return read;
 }
 
 /** Spend a go: the vessel writes one spend record, claimed atomically, so a second spend of the same go refuses `swarm-go-spent`. */
-export async function spendGo(wiki: SwarmWikiPort, at: { readonly branch: string; readonly head: string }, trust: SwarmTrust, group: string, spender: SwarmSignerPort): Promise<{ go: string }> {
-  const go = await readGo(wiki, at, trust, group);
+export async function spendGo(wiki: SwarmWikiPort, at: { readonly branch: string; readonly head: string }, trust: SwarmTrust, group: string, spender: SwarmSignerPort, ward: WardActWitness): Promise<{ go: string }> {
+  const go = await readGo(wiki, at, trust, group, ward);
   if (!go.ok) throw new SwarmRefused(`swarm-go-${go.refusal}`, `the go for "${at.branch}" at ${at.head} does not stand (${go.refusal})`);
   if (!trust.vessel(spender.key.toLowerCase())) throw new SwarmRefused("swarm-spend-role", "the vessel alone spends a go");
   const spent = await signSwarmAct({ act: "go-spent", group, branch: at.branch, head: at.head, go: go.cid }, spender);

@@ -31,7 +31,8 @@ test("WITNESS: the gate decides through `judgeCosign` and never calls `mayAct`; 
 
 test("WITNESS: each co-signed ward act's door runs the gate: the kāpae lower, the house cap and the push go; the share stays ungated", () => {
   const board = code(src("../src/promote-board-door.ts")), swarm = code(src("../src/swarm-door.ts"));
-  expect(board).toMatch(/wardCosignGate\(await ports\.cosign\(\), \{ verb: "ward-kapae-lower"/);
+  expect(board).toMatch(/const port = await ports\.cosign\(\);/);
+  expect(board).toMatch(/wardCosignGate\(port, \{ verb: "ward-kapae-lower"/);
   expect(swarm).toMatch(/verb: "ward-house-cap"/);
   expect(swarm).toMatch(/verb: "ward-push-go"/);
   expect(swarm).not.toMatch(/ward-lane-share/);
@@ -51,4 +52,12 @@ test("WITNESS: the browser's co-sign port folds the worn face's persona plane at
   expect(body).not.toMatch(/proof\.projection/);
   // the nonsense control: the boot's own proof still stands in the vessel, so the instrument reads the right text
   expect(vessel).toMatch(/proof\.projection/);
+});
+
+test("WITNESS: each reader of a ward act's effect asks the co-sign witness: the board's lower, the house cap, the go; CONTROL: a raise and a share read without it", () => {
+  const board = code(src("../src/promote-board.ts")), swarm = code(src("../src/swarm-board.ts")), go = code(src("../src/swarm-tiddlers.ts"));
+  expect(board).toMatch(/!raw\.body\.raised && !face\.ward\.accepts\(\{ verb: "ward-kapae-lower"/);
+  expect(swarm).toMatch(/act\.body\.act === "cap" && !face\.ward\.accepts\(\{ verb: "ward-house-cap"/);
+  expect(go).toMatch(/!ward\.accepts\(\{ verb: "ward-push-go"/);
+  expect(swarm).not.toMatch(/act === "share" && !face\.ward/);
 });

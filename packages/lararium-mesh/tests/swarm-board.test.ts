@@ -17,7 +17,8 @@ const keyed = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new
 
 async function fixture() {
   const root = await keyed(1), outsider = await keyed(3);
-  const face = { group: GROUP, grant: (k: string) => k === root.key };
+  // A face of one device: a cap reads on its own (the co-sign witness answers yes, as `wardActWitness` does for one device).
+  const face = { group: GROUP, grant: (k: string) => k === root.key, ward: { accepts: () => true } };
   const cap = (value: number, parents: string[] = [], by = root) => signSwarmCap({ group: GROUP, epoch: 0, value, parents }, by);
   const share = (lane: string, value: number, parents: string[] = [], by = root) => signSwarmShare({ group: GROUP, epoch: 0, lane, value, parents }, by);
   const cid = swarmBoardActCid;

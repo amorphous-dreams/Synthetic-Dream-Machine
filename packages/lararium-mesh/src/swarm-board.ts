@@ -20,6 +20,7 @@ import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
 import { SWARM_ACT_DOMAIN } from "./domains.js";
 import { verifyEd25519 } from "./ed25519-door.js";
 import { storedLarRecord } from "./stored-record.js";
+import type { WardActWitness } from "./ward-cosign.js";
 
 export const SWARM_BOARD_PREFIX = "lar:///ha.ka.ba/dreamnet/swarm-act/";
 interface Base { readonly kind: typeof SWARM_ACT_DOMAIN; readonly group: string; readonly epoch: number; readonly value: number; readonly parents: readonly string[]; readonly supersede?: true }
@@ -28,8 +29,13 @@ export interface SwarmShareBody extends Base { readonly act: "share"; readonly l
 export type SwarmBoardBody = SwarmCapBody | SwarmShareBody;
 export interface SignedSwarmBoardAct { readonly body: SwarmBoardBody; readonly signer: string; readonly sig: string }
 type Signer = { readonly key: string; readonly sign: (bytes: Uint8Array) => Promise<string> };
-export interface SwarmBoardFace { readonly group: string; readonly grant: (key: string) => boolean }
-export type SwarmBoardRefusal = "torn" | "shape" | "domain" | "group" | "signature" | "grant";
+/**
+ * The face the board reads under. `ward` holds every reader to the co-sign: the house cap is a ward act, so on a face of two
+ * devices a cap stands only beside its spent co-sign (seat-harness#/the-swarm-slices), and one the root signed outside the door
+ * refuses `ward-act-uncosigned`. A lane share rides the fresh unlock alone.
+ */
+export interface SwarmBoardFace { readonly group: string; readonly grant: (key: string) => boolean; readonly ward: WardActWitness }
+export type SwarmBoardRefusal = "torn" | "shape" | "domain" | "group" | "signature" | "grant" | "ward-act-uncosigned";
 /** Why a line folds to nothing. */
 export type SwarmLineUnavailable = "parent-missing" | "no-head";
 /** The entry a torn board record rides as, so the reader names it among the refused. */
@@ -67,8 +73,13 @@ export function readSwarmBoardAct(raw: unknown, face: SwarmBoardFace): { ok: tru
   try { if (!verifyEd25519(raw["sig"], canonicalJsonBytes(raw["body"]), raw["signer"])) return { ok: false, refusal: "signature" }; } catch { return { ok: false, refusal: "signature" }; }
   if (!face.grant(raw["signer"])) return { ok: false, refusal: "grant" };
   const act = raw as unknown as SignedSwarmBoardAct;
+  if (act.body.act === "cap" && !face.ward.accepts({ verb: "ward-house-cap", wiki: "daemon", head: swarmCapHead(act.body) })) return { ok: false, refusal: "ward-act-uncosigned" };
   return { ok: true, act, cid: swarmBoardActCid(act) };
 }
+
+/** The head a cap's co-sign names: its value and the line it extends (the parents, sorted, and whether it supersedes). */
+export const swarmCapHead = (body: { readonly value: number; readonly parents: readonly string[]; readonly supersede?: true | boolean }): string =>
+  sha256HexBytesSync(canonicalJsonBytes({ value: body.value, parents: [...body.parents].sort(), supersede: body.supersede === true }));
 
 export const swarmBoardKey = (group: string, cid: string): string => `${SWARM_BOARD_PREFIX}${encodeURIComponent(group)}/${cid}`;
 export function writeSwarmBoardAct(draft: LarDoc, act: SignedSwarmBoardAct): void {

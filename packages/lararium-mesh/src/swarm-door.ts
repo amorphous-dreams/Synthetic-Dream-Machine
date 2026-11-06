@@ -8,14 +8,13 @@
  * With no standing daemon wiki every act, `show` too, refuses by name and writes nothing: no flat-file fallback.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
-import { readSwarmBoard, signSwarmCap, signSwarmShare, swarmBoardActCid, type SignedSwarmBoardAct, type SwarmBoardFace } from "./swarm-board.js";
+import { readSwarmBoard, readSwarmBoardAct, signSwarmCap, signSwarmShare, swarmBoardActCid, swarmCapHead, type SignedSwarmBoardAct, type SwarmBoardFace } from "./swarm-board.js";
 import {
-  SwarmRefused, putSwarmAct, readGo, signSwarmAct, swarmCapRefusal, swarmGoTitle, swarmShareRefusal, swarmShareTitle,
-  type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort,
+  SwarmRefused, putSwarmAct, readGo, readSwarmRecord, signSwarmAct, swarmCapRefusal, swarmGoHead, swarmGoTitle, swarmShareRefusal, swarmShareTitle,
+  type SwarmGoBody, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort,
 } from "./swarm-tiddlers.js";
-import { wardCosignGate, type WardCosignAct, type WardCosignPort } from "./ward-cosign-gate.js";
+import { cosignPortWitness, WARD_GATE_DECIDED, WardActAlreadyRun, wardCosignGate, type WardCosignAct, type WardCosignPort } from "./ward-cosign-gate.js";
 import { WardRefused } from "./ward-slots.js";
-import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
 
 /** The verbs only a hand runs, by the code each refuses under. `swarm-show` stays open to a seat. */
 export const SWARM_VERB_HAND_CODES: Readonly<Record<string, string>> = {
@@ -27,11 +26,14 @@ export type SwarmRequest =
   /** `supersede`: the hand starts an unavailable line again, citing its dangling heads; on a line that folds it refuses. */
   | { readonly action: "cap-set"; readonly value: unknown; readonly supersede?: boolean }
   | { readonly action: "share-set"; readonly lane: string; readonly value: unknown; readonly supersede?: boolean }
-  | { readonly action: "go-issue"; readonly branch: string; readonly head: string };
+  /** `after`: the cid of the go this one follows at the branch (`show` names it), null for the branch's first. One issue names one
+   *  go, so a fresh go for one head asks afresh, and a replay of an approved go names the same intent and refuses spent. */
+  | { readonly action: "go-issue"; readonly branch: string; readonly head: string; readonly after: string | null };
 
 export interface SwarmDoorDeps {
   readonly group: string;
-  readonly face: SwarmBoardFace;
+  /** The face the door signs under; its board reads compose the co-sign witness from `cosign` at each act. */
+  readonly face: Omit<SwarmBoardFace, "ward">;
   readonly signer: SwarmSignerPort;
   readonly trust: SwarmTrust;
   readonly epoch: () => number;
@@ -48,33 +50,49 @@ async function gated<T>(deps: SwarmDoorDeps, act: WardCosignAct, effect: () => P
   try { return await wardCosignGate(await deps.cosign(), act, effect); }
   catch (e) { if (e instanceof WardRefused) throw new SwarmRefused(e.reading, e.message.slice(e.reading.length + 2)); throw e; }
 }
-const headOf = (value: unknown): string => sha256HexBytesSync(canonicalJsonBytes(value));
 
-const nonce = (): string => Array.from(globalThis.crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, "0")).join("");
+/** The go standing at a branch's title as its bytes verify, co-signed or not: the go a fresh issue names as the one it follows. */
+async function standingGo(wiki: SwarmWikiPort, branch: string, deps: SwarmDoorDeps): Promise<{ readonly cid: string; readonly body: SwarmGoBody } | null> {
+  const read = await readSwarmRecord(wiki, swarmGoTitle(branch), deps.trust, deps.group);
+  return read.ok ? { cid: read.cid, body: read.act.body as SwarmGoBody } : null;
+}
 
 export async function swarmCommand(req: SwarmRequest, deps: SwarmDoorDeps): Promise<Record<string, unknown>> {
   const wiki = deps.wiki;
   if (!wiki) throw new SwarmRefused("swarm-no-daemon", "no standing daemon: swarm controls need the founded wiki");
-  const reading = async () => readSwarmBoard(await deps.board.records(), deps.face);
+  // Every read of the board and the go names the co-sign witness over the face's plane, read at this act.
+  const witness = async () => {
+    try { return cosignPortWitness(await deps.cosign()); }
+    catch (e) { if (e instanceof WardRefused) throw new SwarmRefused(e.reading, e.message.slice(e.reading.length + 2)); throw e; }
+  };
+  const reading = async () => readSwarmBoard(await deps.board.records(), { ...deps.face, ward: await witness() });
   if (req.action === "show") {
     const r = await reading();
-    const go = req.branch !== undefined && req.head !== undefined ? await readGo(wiki, { branch: req.branch, head: req.head }, deps.trust, deps.group) : undefined;
+    const at = req.branch !== undefined && req.head !== undefined ? { branch: req.branch, head: req.head } : undefined;
+    const go = at ? await readGo(wiki, at, deps.trust, deps.group, await witness()) : undefined;
+    const follows = at ? (await standingGo(wiki, at.branch, deps))?.cid ?? null : undefined;
     return {
       cap: r.cap, ok: r.ok, ...(r.refusal ? { refusal: r.refusal } : {}), shares: Object.fromEntries([...r.shares].sort(([a], [b]) => a.localeCompare(b))), refused: r.refused.length,
       ...(r.unavailable.cap || r.unavailable.shares.size > 0 ? { unavailable: {
         ...(r.unavailable.cap ? { cap: r.unavailable.cap } : {}),
         shares: Object.fromEntries([...r.unavailable.shares].sort(([a], [b]) => a.localeCompare(b))),
       } } : {}),
-      ...(go ? { go: go.ok ? { standing: true } : { standing: false, refusal: go.refusal } } : {}),
+      // `after`: the go a fresh issue at this branch names as the one it follows.
+      ...(go ? { go: { ...(go.ok ? { standing: true } : { standing: false, refusal: go.refusal }), after: follows ?? null } } : {}),
     };
   }
   if (deps.who.kind !== "hand") throw new SwarmRefused("swarm-needs-hand", "a hand must decide");
   if (!deps.face.grant(deps.signer.key.toLowerCase())) throw new SwarmRefused("swarm-signer-not-grant", "the signer holds no grant of this face");
   if (req.action === "go-issue") {
     if (typeof req.branch !== "string" || req.branch.length === 0 || typeof req.head !== "string" || req.head.length === 0) throw new SwarmRefused("swarm-go-malformed", "a go names a branch and a head");
-    const branch = req.branch, head = req.head;
-    return gated(deps, { verb: "ward-push-go", wiki: "daemon", head: headOf({ branch, head }) }, async () => {
-      const act = await signSwarmAct({ act: "go", group: deps.group, branch, head, nonce: nonce() }, deps.signer);
+    if (req.after !== null && !(typeof req.after === "string" && /^[0-9a-f]{64}$/.test(req.after))) throw new SwarmRefused("swarm-go-malformed", "a go names the go it follows at its branch (`after`, a cid), or null for the branch's first");
+    const branch = req.branch, head = req.head, after = req.after;
+    return gated(deps, { verb: "ward-push-go", wiki: "daemon", head: swarmGoHead({ branch, head, after }) }, async () => {
+      const standing = await standingGo(wiki, branch, deps);
+      // A REPLAY RUNS NOTHING: this very go (its branch, head and `after`) already stands, its outcome never landed; the gate lands it.
+      if (standing && standing.body.head === head && standing.body.after === after) throw new WardActAlreadyRun("ward-push-go", swarmGoHead({ branch, head, after }));
+      if ((standing?.cid ?? null) !== after) throw new SwarmRefused("swarm-go-after-moved", `the go at "${branch}" moved since this issue named the one it follows; name ${standing?.cid ?? "null"}`);
+      const act = await signSwarmAct({ act: "go", group: deps.group, branch, head, after }, deps.signer);
       await putSwarmAct(wiki, swarmGoTitle(branch), act);
       return { branch, head };
     });
@@ -95,7 +113,14 @@ export async function swarmCommand(req: SwarmRequest, deps: SwarmDoorDeps): Prom
     const line = parentsOf("cap", r.unavailable.cap, r.capHeads(), r.capDangling(), req.supersede);
     const value = req.value as number;
     // The co-sign names the value and the line it extends: a line that moved after the answer asks again.
-    return gated(deps, { verb: "ward-house-cap", wiki: "daemon", head: headOf({ value, parents: [...line.parents].sort(), supersede: line.supersede === true }) }, async () => {
+    const capHead = swarmCapHead({ value, parents: line.parents, supersede: line.supersede === true });
+    return gated(deps, { verb: "ward-house-cap", wiki: "daemon", head: capHead }, async () => {
+      // A REPLAY RUNS NOTHING: a cap of this value on this very line already rests on the board, its outcome never landed.
+      const ran = (await deps.board.records()).some((raw) => {
+        const read = readSwarmBoardAct(raw, { ...deps.face, ward: WARD_GATE_DECIDED });
+        return read.ok && read.act.body.act === "cap" && swarmCapHead(read.act.body) === capHead;
+      });
+      if (ran) throw new WardActAlreadyRun("ward-house-cap", capHead);
       const act = await signSwarmCap({ group: deps.group, epoch: deps.epoch(), value, ...line }, deps.signer);
       await deps.board.land(act);
       return { cap: value, cid: swarmBoardActCid(act) };

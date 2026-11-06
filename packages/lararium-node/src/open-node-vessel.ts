@@ -232,7 +232,7 @@ import { readKeptHearthFloorPins }               from "./hearth-floor-pin-store.
 import type { FlowGateArgs, FlowReadGate }  from "./flow-read-face.js";
 import {
   deriveGateBundle, sovereignGateRoot, floorGateRoot, sovereignRoute, floorRoute, storedWithdrawals, memoryBackedWithdrawals,
-  SOVEREIGN_SYNC_ROUTE, FLOW_SOCKET_ROUTE,
+  SOVEREIGN_SYNC_ROUTE, FLOW_SOCKET_ROUTE, cosignPortWitness, WARD_WITNESS_CLOSED,
   type GateBundle, type GateSession, type GateSessionTable,
 } from "@lararium/mesh";
 import { placeCarriedNexuses, unionReadings }      from "./vessel-raise.js";
@@ -2372,7 +2372,14 @@ async function prepareNodeBootOn(
           promoteWiringRef = wornPromote ? promoteWiring({
             repo, group: personaGroupId, boardUrl: wornPromote, stageUrl: wornKahua?.url ?? null,
             foldFace: () => { const f = promoteFace.read(); return { group: personaGroupId, grant: f ? f.grant : () => false }; },
-            boardFace: () => { const f = promoteFace.read(); return { group: personaGroupId, grant: f ? f.grant : () => false, device: (k) => devices.has(k) }; },
+            // THE BOARD READS UNDER THE CO-SIGN WITNESS: on a face of two devices, a lower stands only beside its spent co-sign; a fold
+            // that cannot be read stands no lower, so the brake holds (seat-harness#/the-swarm-slices).
+            boardFace: async () => {
+              const f = promoteFace.read();
+              let ward = WARD_WITNESS_CLOSED;
+              try { ward = cosignPortWitness(await loadNodeWardCosignPort(repo, catalogHandle.url, { group: personaGroupId })); } catch { /* the brake holds */ }
+              return { group: personaGroupId, grant: f ? f.grant : () => false, device: (k) => devices.has(k), ward };
+            },
             stores: nodePromoteStores(personaGroupId), cas: nodePromoteCas(cidDir, promoteHolder),
             wikiItems: promoteWikiItems({ repo, catalog: () => assembly.catalogHandle.doc() }), restart: restartWikiIsland,
             onArrive: async () => { await pushPromoteSnapshot?.(); },
