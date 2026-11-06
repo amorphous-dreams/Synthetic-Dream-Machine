@@ -899,7 +899,8 @@ export class ContentKeyHolder {
    * Mint the version a from-now admission owes: a successor that opens a new span, wrapped for the readers the
    * key group holds now, the newcomer among them. `act` names the admission act this vessel verified; `history`
    * declares the new span. The newcomer receives this version alone. The span's fresh base belongs to the
-   * document store, which cuts it before a document change seals under the new version.
+   * document store, which cuts it before a document change seals under the new version. The same act entered again
+   * mints nothing: it answers the version that act opened, and cuts that span's fresh base where a stop left none.
    */
   admitFromNow(args: { readonly bagId: string; readonly act: string; readonly history: HistoryDeclaration; readonly signer: RecordSigner | null }): Promise<readonly MintOutcome[] | HolderRefusal> {
     return this.#inTurn<readonly MintOutcome[]>(async () => {
@@ -912,6 +913,15 @@ export class ContentKeyHolder {
       const minted: MintOutcome[] = [];
       let met: HolderRefusal = refuse("no-head-held");
       for (const line of lines) {
+        // THE SAME ACT ENTERED AGAIN (its causal id, never a clock): the version it opened stands, so no second one
+        // mints. Where a stop left that span without its fresh base, the base cuts now, once, and the span opens.
+        const entered = this.#openedBy(line, args.act);
+        if (entered !== null) {
+          const out = await this.#reopen(bag, line, entered, args.signer);
+          if (isRefusal(out)) return out;
+          minted.push(out);
+          continue;
+        }
         const planned = planAdmissionFromNow(line.lineage, { act: args.act, held: this.#usable(line), history: args.history, ownEdgeShadowed: false });
         if (!("plan" in planned)) { met = refuse(planned.refusal === "no-head-held" ? "no-head-held" : "count-refused", planned.refusal); continue; }
         const out = await this.#mint(bag, line, planned.plan, args.signer, []);
@@ -920,6 +930,29 @@ export class ContentKeyHolder {
       }
       return minted.length > 0 ? minted : met;
     });
+  }
+
+  /** The counted version one admission act opened its span with, in one founding; null where that act opened none. */
+  #openedBy(line: Line, act: string): KeyVersionId | null {
+    for (const id of line.records.keys()) {
+      const fact = line.lineage.fact(id);
+      if (fact !== null && fact.span === id && fact.cause.kind === "admission" && fact.cause.act === act) return id;
+    }
+    return null;
+  }
+
+  /** Open the span an admission's version opened: cut its fresh base where none stands, under that version's own key. */
+  async #reopen(bag: Bag, line: Line, version: KeyVersionId, signer: RecordSigner): Promise<MintOutcome | HolderRefusal> {
+    const key = line.keys.get(version);
+    const record = line.records.get(version);
+    if (key === undefined || record === undefined) return refuse("no-head-held");
+    const outcome: MintOutcome = { keyVersion: version, founding: line.locator, unserved: [...record.private.unserved] };
+    if (await this.#freshBaseStands(bag, line, version)) return outcome;
+    const base = this.#ports.freshBase === undefined ? null : readFreshBase(await this.#ports.freshBase({ bagId: bag.bagId, founding: line.locator, keyVersion: version }));
+    if (base === null) return refuse("fresh-base-unavailable");
+    if (this.#locked) return refuse("holder-locked");
+    const cut = await this.#restFreshBase(bag, line, version, key, version, base, signer);
+    return cut === true ? outcome : cut;
   }
 
   // ── The hand-over ─────────────────────────────────────────────────────────────────────────────
