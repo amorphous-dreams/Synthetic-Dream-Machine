@@ -143,6 +143,14 @@ export function storeVerbNeedsWard(verb: string, args: Readonly<Record<string, u
   return WARD_VERBS.has(verb);
 }
 
+/**
+ * The ward acts a co-sign gate holds (seat-harness#/the-swarm-slices): the gate's judgement needs no root, so the row runs first
+ * with no route, and the route gets asked only where the act will run (its signer names `ward-needs-fresh-unlock`). On a face of
+ * two devices with no answer, nobody types a passphrase only to read `ward-awaiting-cosign`.
+ */
+const GATED_WARD_VERBS: ReadonlySet<string> = new Set(["kapae-lower", "swarm-cap-set", "swarm-go-issue"]);
+export function storeVerbGatesFirst(verb: string): boolean { return GATED_WARD_VERBS.has(verb); }
+
 // ── the seated gatherer: a person at this process's terminal ─────────────────────────────────────────────────────────────
 
 /**
