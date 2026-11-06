@@ -184,15 +184,26 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
   };
   /** The face's documents this resolver registered, so one process registers each once. */
   const registered = new Set<string>();
-  const faceWorking = async (slug: string, mint: boolean): Promise<SlotDoc> => {
+  // The face's documents resolved before its seat landed: the seat's lift registers each through the face door.
+  const awaitingSeat = new Set<string>();
+  const faceWorking = async (slug: string, mint: boolean, seatStands = true): Promise<SlotDoc> => {
     const url = await faceWorkingUrl(slug);
     if (mint) {
       if (!args.faceWorkingDoc) throw new WorkingSlotRefusal("no-working-door", "this resolver cannot materialize a derived document");
       const handle = await args.faceWorkingDoc(url, slug);
       await args.repo.flush([handle.documentId]);
-      if (args.faceDoor && !registered.has(url)) { await args.faceDoor.mint(url, "admin"); registered.add(url); }
+      if (!seatStands) awaitingSeat.add(url);
+      else if (args.faceDoor && !registered.has(url)) { await args.faceDoor.mint(url, "admin"); registered.add(url); awaitingSeat.delete(url); }
     }
     return { url, reach: "face" };
+  };
+  /** A face stands lit here (its address secret served) though its seat may not have landed. */
+  const faceLit = async (): Promise<boolean> => {
+    if (!args.personaGroupId || !args.faceAddressSecret) return false;
+    const secret = await args.faceAddressSecret();
+    if (!secret) return false;
+    secret.fill(0);
+    return true;
   };
   /** The working FLOOR doc: keyed by the floor's own anchor in the catalog registry; minted on absent. */
   const workingFloor = async (slug: string, mint: boolean): Promise<string | null> => {
@@ -219,6 +230,10 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
   };
   const workingDoc = async (slug: string, mint: boolean): Promise<SlotDoc | null> => {
     if (await seated()) return faceWorking(slug, mint);
+    // THE SEAT-TO-LIFT GAP (sealed-store#/owed): a lit face whose seat has not landed writes its working slot straight into
+    // its own derived document, which the vessel's map seals under that face, never into a floor document the lift would
+    // later carry. The face door registers it at the seat (`liftFloor`). Only a faceless floor rests a working floor.
+    if (await faceLit()) return faceWorking(slug, mint, false);
     const url = await workingFloor(slug, mint);
     return url ? { url, reach: "vessel-only" } : null;
   };
@@ -272,6 +287,11 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
     draft: async (slug) => (await slotDoc(slug, "draft"))!,
     liftFloor: async () => {
       if (!args.faceDoor || !args.personaGroupId || !(await seated())) return { moved: [], finished: [], skipped: [], skippedDocs: [] };   // no seat, nothing to lift into
+      // The face's working documents a lit face wrote before its seat register now, once each.
+      for (const url of [...awaitingSeat]) {
+        if (!registered.has(url)) { await args.faceDoor.mint(url, "admin"); registered.add(url); }
+        awaitingSeat.delete(url);
+      }
       const repo = args.repo as unknown as Partial<LiftRepo>;
       if (typeof repo.find !== "function" || typeof repo.delete !== "function") throw new Error("slot-doc: the lift needs a repo that finds and deletes documents");
       // THE SECRET STANDS FIRST: the face's address secret must stand before the lift's first step, or the lift refuses by

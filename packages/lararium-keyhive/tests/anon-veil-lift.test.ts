@@ -68,7 +68,7 @@ function resolverFor(v: Vessel, face: { seated: () => boolean; door: FaceBagDoor
     catalog: makeCatalogAccessor(v.repo, v.catalogUrl),
     vesselDid: () => DID, mintedByHex: () => mintedBy,
     floorAnchor: () => anchor, faceWorkingDoc: (url, label) => materializeFaceWorkingDoc(v.repo, url as never, label),
-    ...(face ? { personaGroupId: face.group, faceSeated: async () => face.seated(), faceDoor: face.door, faceAddressSecret: async () => SECRET() } : {}),
+    ...(face ? { personaGroupId: face.group, faceSeated: async () => face.seated(), faceDoor: face.door, faceAddressSecret: async () => (face.seated() ? SECRET() : null) } : {}),
   });
 }
 
@@ -228,7 +228,7 @@ describe("the anon-veil lift on join", () => {
     const stuck = makeSlotDocResolver({
       repo: silent as unknown as Repo, daemonStore: v.daemon, keyhive: v.kh, catalog: makeCatalogAccessor(v.repo, v.catalogUrl),
       vesselDid: () => DID, mintedByHex: () => MINTED_BY, floorAnchor: () => PLACE, faceWorkingDoc: (url, label) => materializeFaceWorkingDoc(v.repo, url as never, label),
-      personaGroupId: a.face.group, faceSeated: async () => a.face.seated(), faceDoor: a.face.door, faceAddressSecret: async () => SECRET(), liftReadBoundMs: 100,
+      personaGroupId: a.face.group, faceSeated: async () => a.face.seated(), faceDoor: a.face.door, faceAddressSecret: async () => (a.face.seated() ? SECRET() : null), liftReadBoundMs: 100,
     });
     const warned: string[] = [];
     const warn = console.warn; console.warn = (...m: unknown[]) => { warned.push(m.join(" ")); };
@@ -308,7 +308,7 @@ describe("the anon-veil lift on join", () => {
         repo: silent as unknown as Repo, daemonStore: v.daemon, keyhive: v.kh, catalog: makeCatalogAccessor(v.repo, v.catalogUrl),
         vesselDid: () => DID, mintedByHex: () => MINTED_BY, floorAnchor: () => PLACE,
         faceWorkingDoc: (url, label) => { opened.push(url); return materializeFaceWorkingDoc(v.repo, url as never, label); },
-        personaGroupId: a.face.group, faceSeated: async () => a.face.seated(), faceDoor: a.face.door, faceAddressSecret: async () => SECRET(), liftReadBoundMs: 100,
+        personaGroupId: a.face.group, faceSeated: async () => a.face.seated(), faceDoor: a.face.door, faceAddressSecret: async () => (a.face.seated() ? SECRET() : null), liftReadBoundMs: 100,
       }).liftFloor();
     } finally { console.warn = warn; }
     expect(first.moved, "the silent working floor does not move").not.toContain(wikiWorkingFloorKey("garden", PLACE));
@@ -339,7 +339,7 @@ describe("the anon-veil lift on join", () => {
       first = await makeSlotDocResolver({
         repo: stuckFlush as unknown as Repo, daemonStore: v.daemon, keyhive: v.kh, catalog: makeCatalogAccessor(v.repo, v.catalogUrl),
         vesselDid: () => DID, mintedByHex: () => MINTED_BY, floorAnchor: () => PLACE, faceWorkingDoc: (url, label) => materializeFaceWorkingDoc(v.repo, url as never, label),
-        personaGroupId: a.face.group, faceSeated: async () => a.face.seated(), faceDoor: a.face.door, faceAddressSecret: async () => SECRET(), liftReadBoundMs: 100,
+        personaGroupId: a.face.group, faceSeated: async () => a.face.seated(), faceDoor: a.face.door, faceAddressSecret: async () => (a.face.seated() ? SECRET() : null), liftReadBoundMs: 100,
       }).liftFloor();
     } finally { console.warn = warn; }
     expect(hung, "the flush was asked and never answered").toBeGreaterThan(0);
