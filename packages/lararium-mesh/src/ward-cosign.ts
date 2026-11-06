@@ -29,7 +29,7 @@ export function cosignDigest(parts: { readonly act: string; readonly face: strin
 export type CosignRefusal =
   | "not-a-ward-intent" | "wrong-requester" | "void" | "spent" | "awaiting-ask" | "ask-signer" | "digest-mismatch"
   | "awaiting-answer" | "contested" | "denied" | "self-answer" | "signer-not-in-face" | "answerer-aside" | "answerer-not-standing"
-  | "executor-mismatch";
+  | "executor-mismatch" | "requester-unknown" | "requester-aside" | "requester-not-in-face" | "frontier-unknown" | "requester-may-not-act";
 export type CosignVerdict =
   | { readonly need: "none" }
   | { readonly need: "cosign"; readonly approved: true; readonly cosigner: string; readonly answer: string }
@@ -78,6 +78,14 @@ export function judgeCosign(input: {
   if (standing === "aside") return refuse("answerer-aside");
   if (standing !== "stands") return refuse("answerer-not-standing");
   if (String(answer.entry.body["executor"] ?? "").toLowerCase() !== requester) return refuse("executor-mismatch");
-  if (!mayAct(input.view, input.intentId, requester).act) return refuse("awaiting-answer");
+  // The answer counts: whatever the effect door still refuses names the requester's own side, never a wait.
+  const may = mayAct(input.view, input.intentId, requester);
+  if (!may.act) {
+    if (may.reason === "unknown-frontier") return refuse(input.standing(requester) === "unknown" ? "requester-unknown" : "frontier-unknown");
+    if (may.reason === "atom-aside") return refuse("requester-aside");
+    if (may.reason === "not-audience") return refuse("requester-not-in-face");
+    if (may.reason === "spent" || may.reason === "void") return refuse(may.reason);
+    return refuse("requester-may-not-act");
+  }
   return { need: "cosign", approved: true, cosigner: signer, answer: answer.cid };
 }
