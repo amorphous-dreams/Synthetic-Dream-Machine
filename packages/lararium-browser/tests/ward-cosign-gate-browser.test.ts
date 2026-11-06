@@ -20,11 +20,12 @@ const spawn = () => ({
 
 wardCosignTable({
   name: "browser", acts: ["lower"],
-  port: ({ group, atom, plane, devices, lineage, aside }) => browserWardCosignPort({ group, atom, plane,
-    projection: () => ({ devices, cids: ["admit"], admissions: devices.map((deviceKey) => ({ deviceKey, cid: "admit" })) }) as never,
+  port: ({ group, atom, plane, devices, lineage, aside, unknown, frontier }) => browserWardCosignPort({ group, atom, plane,
+    fold: () => ({ devices, cids: ["admit"], admissions: devices.map((deviceKey) => ({ deviceKey, cid: "admit" })) }) as never,
     lineage: () => lineage,
-    fleet: () => ({ root: ROOT, frontier: { status: "known" } as never,
-      readings: new Map([...aside].map((k) => [deviceEdgeId(ROOT, k), { stands: true, raiseCids: [] } as never])) }),
+    fleet: () => ({ root: ROOT, frontier: { status: frontier.known ? "known" : "unknown" } as never,
+      readings: new Map([...[...aside].map((k) => [deviceEdgeId(ROOT, k), { stands: true, raiseCids: [] } as never] as const),
+        ...[...unknown].map((k) => [deviceEdgeId(ROOT, k), { stands: false, raiseCids: ["owed-a-roll"] } as never] as const)]) }),
   }),
   // The face root as the browser opens it: sealed under the keystore, signing in the per-act ward worker from the typed passphrase.
   root: async () => {

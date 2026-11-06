@@ -8,6 +8,11 @@
  * Reds: a self-answer never approves; a digest mismatch, an aside answerer and a contested pair refuse; a replay after the
  * outcome refuses `spent`; two devices and a peer that never answers stay `ward-awaiting-cosign` across a thousand retries.
  * Controls: a second device's approval lands the act; a one-device fleet lands on the unlock alone.
+ *
+ * The gate's own causes, each by name: a fleet frontier that does not read `known` refuses `ward-cosign-frontier-unknown` on one
+ * device and on two (an admission may not have synced); a second device admitted after the port stood counts at the act; a requester
+ * whose own standing reads `unknown` refuses `ward-cosign-requester-unknown` once the answer landed; a plane that drops the act's
+ * intent refuses `ward-cosign-intent-dropped` and writes nothing more on a retry.
  */
 import { describe, expect, test } from "vitest";
 import type { LarDoc } from "../src/base-doc.js";
@@ -33,6 +38,10 @@ export interface CosignVessel {
   port(input: {
     readonly group: string; readonly atom: Signer; readonly plane: { doc(): LarDoc; change(fn: (d: LarDoc) => void): void };
     readonly devices: readonly string[]; readonly lineage: HandLineage; readonly aside: ReadonlySet<string>;
+    /** Atoms whose standing reads `unknown` (a raise owed a roll). */
+    readonly unknown: ReadonlySet<string>;
+    /** The fleet's signed frontier as the vessel reads it now. */
+    readonly frontier: { readonly known: boolean };
   }): WardCosignPort;
   /** The face root as this vessel holds it: its key (the grant the fixture names) and a signer opened fresh for one lower. */
   root(fallback: Signer): Promise<{ readonly key: string; signer(): Promise<Signer> }>;
@@ -47,8 +56,8 @@ async function stand(vessel: CosignVessel, kind: "lower" | "cap" | "go", devices
   const lineage = makeHandLineage([{ epoch: 0, signers: [root.key], threshold: 1 }])!;
   const planeDoc = { tiddlers: {} } as LarDoc;
   const plane = { doc: () => planeDoc, change: (fn: (d: LarDoc) => void) => fn(planeDoc) };
-  const aside = new Set<string>();
-  const port = vessel.port({ group: GROUP, atom: a, plane, devices, lineage, aside });
+  const aside = new Set<string>(), unknown = new Set<string>(), frontier = { known: true };
+  const port = vessel.port({ group: GROUP, atom: a, plane, devices, lineage, aside, unknown, frontier });
   const entries = () => intentEntryRecordsOfGroup(planeDoc, GROUP) as SignedIntentEntry[];
   const write = (e: SignedIntentEntry) => writeIntentEntry(planeDoc, e);
   const hand = { kind: "hand" as const, id: a.key };
@@ -84,7 +93,7 @@ async function stand(vessel: CosignVessel, kind: "lower" | "cap" | "go", devices
     expect(err?.code).toBe("ward-awaiting-cosign");
     return /ward-awaiting-cosign: ([0-9a-f]{64})/.exec(err!.message)![1]!;
   };
-  return { a, b, c, root, port, entries, write, run, landed, act, answer, firstAsk, aside, rows };
+  return { a, b, c, root, port, entries, write, run, landed, act, answer, firstAsk, aside, unknown, frontier, devices, rows };
 }
 
 const codeOf = async (p: Promise<unknown>): Promise<string | undefined> => p.then(() => undefined, (e: { code?: string; reading?: string }) => e.code ?? e.reading ?? String(e));
@@ -94,7 +103,7 @@ export function soloCosign(group: string, atom: Signer): WardCosignPort {
   const doc = { tiddlers: {} } as LarDoc;
   const lineage = makeHandLineage([{ epoch: 0, signers: [atom.key], threshold: 1 }])!;
   return intentPlaneCosignPort({ group, requester: atom, verbs: faceIntentVerbs(), plane: { doc: () => doc, change: (fn) => fn(doc) },
-    face: () => ({ devices: [atom.key], rosterCids: ["admit"], admittedAt: new Map([[atom.key, "admit"]]), lineage }), standing: () => "stands" });
+    face: () => ({ devices: [atom.key], rosterCids: ["admit"], admittedAt: new Map([[atom.key, "admit"]]), lineage }), standing: () => "stands", frontier: () => "known" });
 }
 
 export function wardCosignTable(vessel: CosignVessel): void {
@@ -176,6 +185,53 @@ export function wardCosignTable(vessel: CosignVessel): void {
           s.aside.add(s.b.key);
           expect(await codeOf(s.run())).toBe("ward-cosign-answerer-aside");
           expect(s.landed()).toBe(false);
+        });
+
+        test("RED: a fleet frontier that does not read `known` refuses `ward-cosign-frontier-unknown` on one device and on two, running and writing nothing; CONTROL: the frontier read known lowers one device on the unlock alone", async () => {
+          for (const n of [1, 2] as const) {
+            const s = await stand(vessel, kind, n);
+            s.frontier.known = false;
+            expect(await codeOf(s.run())).toBe("ward-cosign-frontier-unknown");
+            expect(s.landed()).toBe(false);
+            expect(s.entries()).toHaveLength(0);
+          }
+          const s = await stand(vessel, kind, 1);
+          await s.run();
+          expect(s.landed()).toBe(true);
+        });
+
+        test("RED: a face that stood with one device and admits a second before the act waits on `ward-awaiting-cosign`; CONTROL: before the admission the act lands alone", async () => {
+          const s = await stand(vessel, kind, 1);
+          (s.devices as string[]).push(s.b.key);
+          await s.firstAsk();
+          expect(s.landed()).toBe(false);
+          const solo = await stand(vessel, kind, 1);
+          await solo.run();
+          expect(solo.landed()).toBe(true);
+        });
+
+        test("RED: the second device approved, and the requester's own standing reads `unknown`: the gate names `ward-cosign-requester-unknown`, never a wait; CONTROL: standing again, the act lands", async () => {
+          const s = await stand(vessel, kind, 2);
+          const ask = await s.firstAsk();
+          await s.answer(s.b, ask);
+          s.unknown.add(s.a.key);
+          expect(await codeOf(s.run())).toBe("ward-cosign-requester-unknown");
+          expect(s.landed()).toBe(false);
+          s.unknown.delete(s.a.key);
+          await s.run();
+          expect(s.landed()).toBe(true);
+        });
+
+        test("RED: a plane that drops the act's intent (two bodies under its id) refuses `ward-cosign-intent-dropped` and writes nothing, retry after retry; CONTROL: the plane without the copy asks", async () => {
+          const s = await stand(vessel, kind, 2);
+          const { args, digest } = wardCosignIntentId(s.port, s.act());
+          for (const ref of ["e", "f"]) s.write(await buildIntent({ group: GROUP, signer: s.a, verb: s.act().verb, args, nonce: digest, audience: { mode: "asks" }, verbs: faceIntentVerbs(), refs: [ref.repeat(64)] }));
+          const before = s.entries().length;
+          for (let i = 0; i < 3; i++) expect(await codeOf(s.run())).toBe("ward-cosign-intent-dropped");
+          expect(s.entries()).toHaveLength(before);
+          expect(s.landed()).toBe(false);
+          const control = await stand(vessel, kind, 2);
+          await control.firstAsk();
         });
 
         test("RED: a contested pair refuses: one device approves, another denies", async () => {

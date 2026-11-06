@@ -12,9 +12,9 @@ import { wardCosignTable } from "./ward-cosign-table.js";
 
 wardCosignTable({
   name: "mesh", acts: ["lower", "cap", "go"],
-  port: ({ group, atom, plane, devices, lineage, aside }) => intentPlaneCosignPort({ group, requester: atom, verbs: faceIntentVerbs(), plane,
+  port: ({ group, atom, plane, devices, lineage, aside, unknown, frontier }) => intentPlaneCosignPort({ group, requester: atom, verbs: faceIntentVerbs(), plane,
     face: () => ({ devices, rosterCids: ["admit"], admittedAt: new Map(devices.map((d) => [d, "admit"])), lineage }),
-    standing: (k) => (aside.has(k) ? "aside" : "stands") }),
+    standing: (k) => (aside.has(k) ? "aside" : unknown.has(k) ? "unknown" : "stands"), frontier: () => (frontier.known ? "known" : "unknown") }),
   root: async (key) => ({ key: key.key, signer: async () => key }),
 });
 
@@ -36,8 +36,19 @@ test("WITNESS: each co-signed ward act's door runs the gate: the kāpae lower, t
   expect(swarm).toMatch(/verb: "ward-push-go"/);
   expect(swarm).not.toMatch(/ward-lane-share/);
   // each vessel composition hands its door the port
-  expect(code(src("../../lararium-node/src/commands/promote.ts"))).toMatch(/cosign: \(\) => nodeWardCosignPort\(/);
-  expect(code(src("../../lararium-node/src/commands/swarm.ts"))).toMatch(/cosign: \(\) => nodeWardCosignPort\(/);
-  expect(code(src("../../lararium-node/src/open-node-vessel.ts"))).toMatch(/cosign: async \(\) => nodeWardCosignPort\(/);
+  expect(code(src("../../lararium-node/src/commands/promote.ts"))).toMatch(/cosign: \(\) => nodeWardCosignPortOf\(/);
+  expect(code(src("../../lararium-node/src/commands/swarm.ts"))).toMatch(/cosign: \(\) => nodeWardCosignPortOf\(/);
+  expect(code(src("../../lararium-node/src/open-node-vessel.ts"))).toMatch(/cosign: \(\) => loadNodeWardCosignPort\(/);
   expect(code(src("../../lararium-browser/src/open-browser-vessel.ts"))).toMatch(/cosign: browserCosignPortOf,/);
+});
+
+test("WITNESS: the browser's co-sign port folds the worn face's persona plane at each act, never the boot's proof; CONTROL: the instrument finds the boot proof where it stands", () => {
+  const vessel = code(src("../../lararium-browser/src/open-browser-vessel.ts"));
+  const start = vessel.indexOf("const browserCosignPortOf = async () =>");
+  expect(start).toBeGreaterThan(-1);
+  const body = vessel.slice(start, vessel.indexOf("};", start));
+  expect(body).toMatch(/fold: browserFaceFold\(/);
+  expect(body).not.toMatch(/proof\.projection/);
+  // the nonsense control: the boot's own proof still stands in the vessel, so the instrument reads the right text
+  expect(vessel).toMatch(/proof\.projection/);
 });
