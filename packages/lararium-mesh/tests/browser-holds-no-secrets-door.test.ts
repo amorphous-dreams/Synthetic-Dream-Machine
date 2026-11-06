@@ -36,7 +36,8 @@ describe("no browser module holds a secrets-store door", () => {
     expect(secretsDoorsIn(`port.post({ verb: "reach-vault:stand" });`)).not.toEqual([]);
     expect(secretsDoorsIn(`route("secrets:onboard", handler);`)).not.toEqual([]);
     expect(secretsDoorsIn("await secretsRegistry.register(docId);")).not.toEqual([]);
-    expect(secretsDoorsIn("await registry.initialize(); // over makeFaceSecretsRegistry")).not.toEqual([]);
+    expect(secretsDoorsIn("await faceSecrets.initialize();")).not.toEqual([]);
     expect(secretsDoorsIn("export async function makeBrowserIdbPersonaVault() {}")).toEqual([]);
+    expect(secretsDoorsIn("await bagRegistry.register(bag);")).toEqual([]); // a bag registry stands no secrets store
   });
 });
