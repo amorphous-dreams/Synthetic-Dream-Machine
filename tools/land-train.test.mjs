@@ -118,6 +118,71 @@ const run = (w, over, opts = {}, only) => {
 };
 const originRef = (w, ref) => sh(w.origin, "rev-parse", ref);
 
+// Only the span has a run for the anchor; every other SHA/branch combination reads unread.
+function spanOnlyAnchor(w, anchor) {
+  const consulted = [];
+  return { consulted, verdict: async (branch, sha) => {
+    consulted.push([branch, sha]);
+    return { ci: branch === SPAN && sha === anchor ? "green" : "unread", heldOut: "unread" };
+  } };
+}
+
+test("G59 RED: a mem-only merge head carries the ancestor's span CI", async () => {
+  const w = world(["a"]), anchor = w.heads.a;
+  sh(w.work, "checkout", "-q", `${SPAN}--a`);
+  sh(w.work, "checkout", "-q", "-b", "mem-side");
+  w.commit(w.work, "bags/g59/side.mem", "side\n", "side mem");
+  sh(w.work, "checkout", "-q", `${SPAN}--a`);
+  const middle = w.commit(w.work, "bags/g59/main.mem", "main\n", "main mem");
+  sh(w.work, "merge", "--no-ff", "--no-edit", "-q", "mem-side");
+  w.heads.a = sh(w.work, "rev-parse", "HEAD");
+  assert.equal(sh(w.work, "diff", "--name-only", `${middle}..${w.heads.a}`), "bags/g59/side.mem");
+  assert.deepEqual(sh(w.work, "diff", "--name-only", `${anchor}..${w.heads.a}`).split("\n"), ["bags/g59/main.mem", "bags/g59/side.mem"]);
+  sh(w.work, "push", "-q", "origin", `${SPAN}--a`);
+  sh(w.work, "checkout", "-q", SPAN);
+  const readings = spanOnlyAnchor(w, anchor);
+  const r = await run(w, { verdict: readings.verdict }, { plan: true }, ["a"]);
+  assert.equal(r.code, 0, r.out);
+  assert.ok(readings.consulted.some(([branch, sha]) => branch === SPAN && sha === anchor), "the green span run at the ancestor was consulted");
+});
+
+test("G59 CONTROL: a non-mem first-parent change blocks the span CI carry", async () => {
+  const w = world(["a"]), anchor = w.heads.a;
+  sh(w.work, "checkout", "-q", `${SPAN}--a`);
+  w.commit(w.work, "code.txt", "code\n", "code change");
+  w.heads.a = w.commit(w.work, "bags/g59/head.mem", "head\n", "mem head");
+  assert.deepEqual(sh(w.work, "diff", "--name-only", `${anchor}..${w.heads.a}`).split("\n"), ["bags/g59/head.mem", "code.txt"]);
+  sh(w.work, "push", "-q", "origin", `${SPAN}--a`);
+  sh(w.work, "checkout", "-q", SPAN);
+  const readings = spanOnlyAnchor(w, anchor);
+  const r = await run(w, { verdict: readings.verdict }, { plan: true }, ["a"]);
+  assert.equal(r.code, 8, r.out);
+  assert.match(r.out, /LANE NOT GREEN: a/);
+  assert.match(r.out, /ci unread/);
+  assert.ok(readings.consulted.some(([branch, sha]) => branch === `${SPAN}--a` && sha === w.heads.a), "the unread head was consulted");
+});
+
+test("G59 carries a green ancestor run from any branch, but not across an ignored non-mem commit", async () => {
+  const w = world(["a"]), anchor = w.heads.a;
+  sh(w.work, "checkout", "-q", `${SPAN}--a`);
+  w.heads.a = w.commit(w.work, "bags/g59/head.mem", "head\n", "mem head");
+  sh(w.work, "push", "-q", "origin", `${SPAN}--a`);
+  sh(w.work, "checkout", "-q", SPAN);
+  const verdict = async () => ({ ci: "unread", heldOut: "unread" });
+  const ciRuns = async (sha) => sha === anchor ? [{ headSha: sha, headBranch: "another-branch", event: "push", status: "completed", conclusion: "success" }] : [];
+  const carried = await run(w, { verdict, ciRuns }, { plan: true }, ["a"]);
+  assert.equal(carried.code, 0, carried.out);
+
+  sh(w.work, "checkout", "-q", `${SPAN}--a`);
+  w.commit(w.work, "notes.md", "notes\n", "ignored non-mem");
+  w.heads.a = w.commit(w.work, "bags/g59/next.mem", "next\n", "next mem");
+  sh(w.work, "push", "-q", "origin", `${SPAN}--a`);
+  sh(w.work, "checkout", "-q", SPAN);
+  const blocked = await run(w, { verdict, ciRuns }, { plan: true }, ["a"]);
+  assert.equal(blocked.code, 8, blocked.out);
+  assert.match(blocked.out, /ci unread/);
+});
+
 test("CONTROL: a recorded clean batch of two lanes lands as chained commits whose last tree is the train's tree", async () => {
   const w = world();
   const r = await run(w);

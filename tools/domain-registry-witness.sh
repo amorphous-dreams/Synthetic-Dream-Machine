@@ -33,7 +33,7 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 
 python3 - <<'PY'
-import pathlib, re, sys
+import pathlib, re, subprocess, sys
 
 REG = pathlib.Path("packages/lararium-mesh/src/domains.ts")
 if not REG.exists():
@@ -127,12 +127,12 @@ ALLOW = {
 }
 
 stray, allowed = [], []
-files = []
-for ext in ("*.ts", "*.mjs", "*.js", "*.py"):
-    files += pathlib.Path("packages").rglob(ext)
+files = [pathlib.Path(p) for p in subprocess.check_output(
+    ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z", "--", "packages"]
+).decode().split("\0") if p]
 for p in sorted(set(files)):
     s = str(p)
-    if "/dist" in s or "/node_modules/" in s or "generated" in s or p == REG:
+    if p.suffix not in (".ts", ".mjs", ".js", ".py") or not p.is_file() or "/dist" in s or "/node_modules/" in s or "generated" in s or p == REG:
         continue
     for i, line in enumerate(p.read_text(errors="replace").splitlines(), 1):
         if COMMENT.match(line):
@@ -153,8 +153,8 @@ for (ap, pre), _w in ALLOW.items():
 # `delegation-edge` sat here exactly once: minted from a module filename, while that module takes its
 # domain as a PARAMETER and callers pass fleet-proof or dyad-binding. A registry that accretes unused
 # entries stops being a map of what the house signs.
-srcdirs = [q for q in pathlib.Path("packages").rglob("*.ts")
-           if "/dist/" not in str(q) and q != REG and "/src/" in str(q)]
+srcdirs = [q for q in set(files) if q.suffix == ".ts" and q.is_file()
+           and "/dist/" not in str(q) and q != REG and "/src/" in str(q)]
 # A name a comment mentions signs nothing: only code lines count as a use.
 blob = "\n".join(line for q in srcdirs for line in q.read_text(errors="replace").splitlines() if not COMMENT.match(line))
 unused = [e for e, _n in names if not re.search(rf"\b{e}\b", blob)]
