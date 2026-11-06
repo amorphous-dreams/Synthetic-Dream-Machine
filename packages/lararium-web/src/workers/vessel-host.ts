@@ -20,7 +20,8 @@
  * results without a known sender) reaches every admitted session wearing the lit vessel's face over its own port. Control
  * results with a known sender return to that session alone. A session admitted after the light hears the shown surface
  * whole from the frames already sent, folded (`foldLarFrame`), over its own port alone: one tab's arrival moves no epoch,
- * so no other tab's act answers stale-target. Port traffic rides its binding
+ * so no other tab's act answers stale-target. The fold lives no longer than the lit vessel: the lock and each new light
+ * retire both. Port traffic rides its binding
  * to its opening session alone; another session's place refuses `binding-not-owned`. Session loss closes only its own bindings.
  * INBOUND SURFACE ACTS WEAR THE LIT FACE: a control event, a surface switch, a place and a mirror read from a session admitted
  * for another face refuse `face-not-worn` and reach nothing of the vessel; a control event under an eventId still pending refuses.
@@ -93,6 +94,12 @@ export function standVesselHost(env: VesselHostEnv = {}) {
     shownFrames.set(at, foldLarFrame(shownFrames.get(at), frame));
   };
   const controlSenders = new Map<string, Conn>();
+  /** The light the vessel's surface callbacks belong to: a vessel the lock closed calls back under none, so it reaches no
+   *  session and no fold. */
+  let lightNow: object | null = null;
+  /** THE FOLD LIVES NO LONGER THAN THE LIT VESSEL: the lock and every new light retire the lit vessel, its lighter and its
+   *  fold together, so a relight (another face on the same surface slug) hands no late session what the last vessel showed. */
+  const retire = (): void => { lightNow = null; litVessel = null; litBy = null; shownFrames.clear(); };
 
   // A session never sees a surface its face does not wear.
   const wearsLitFace = (conn: Conn): boolean =>
@@ -159,6 +166,10 @@ export function standVesselHost(env: VesselHostEnv = {}) {
     const conn = conns.get(first.sessionId);
     const b = firstBoot;
     if (!conn || !b) throw new VesselSessionRefused("unknown-session");
+    retire();
+    const mine = {};
+    lightNow = mine;
+    const ofThisLight = <A extends unknown[]>(f: (...args: A) => void) => (...args: A): void => { if (lightNow === mine) f(...args); };
     lighting = conn;
     litBy = first.sessionId;
     if (b.sharedHolderUrl) standHolderSpawn((msg) => conn.post(msg));
@@ -178,22 +189,22 @@ export function standVesselHost(env: VesselHostEnv = {}) {
       workerScriptUrl: new URL(b.workerScriptUrl),
       ...(b.sharedHolderUrl ? { sharedHolderUrl: new URL(b.sharedHolderUrl) } : {}),
       pageLife: (listener) => { lifeListeners.add(listener); return () => { lifeListeners.delete(listener); }; },
-      onRest: (rest) => surfaceFanout({ t: "status", status: { rest } }),
-      onPhase: (phase) => surfaceFanout({ t: "phase", phase }),
-      onFrame: (frame) => { holdFrame(frame); surfaceFanout({ t: "frame", frame }); },
-      onControlResult: (surfaceId, result) => {
+      onRest: ofThisLight((rest) => surfaceFanout({ t: "status", status: { rest } })),
+      onPhase: ofThisLight((phase) => surfaceFanout({ t: "phase", phase })),
+      onFrame: ofThisLight((frame) => { holdFrame(frame); surfaceFanout({ t: "frame", frame }); }),
+      onControlResult: ofThisLight((surfaceId, result) => {
         const sender = controlSenders.get(result.eventId);
         controlSenders.delete(result.eventId);
         const msg = { t: "control-result", surface: surfaceId, result } as const;
         if (sender) sender.post(msg);
         else surfaceFanout(msg);
-      },
-      onCoherence: (frame) => surfaceFanout({ t: "coherence", frame }),
-      onPortMessage: (binding, islandKey, msg) => {
+      }),
+      onCoherence: ofThisLight((frame) => surfaceFanout({ t: "coherence", frame })),
+      onPortMessage: ofThisLight((binding, islandKey, msg) => {
         const owner = bindings.get(binding);
         const target = owner ? conns.get(owner) : undefined;
         if (target && wearsLitFace(target)) target.post({ t: "port-msg", binding, islandKey, msg });
-      },
+      }),
       ...(b.relayUrl ? { relayUrl: b.relayUrl } : {}),
       ...(b.floorCard ? { floorCard: b.floorCard } : {}),
       ...(b.floorAnchor ? { floorAnchor: b.floorAnchor } : {}),
@@ -201,6 +212,9 @@ export function standVesselHost(env: VesselHostEnv = {}) {
       ...(b.meshLeaf ? { meshLeaf: { coordSeed: b.meshLeaf.coordSeed, peers: b.meshLeaf.peers.split(",").map((s) => parseMeshPeer(s.trim())).filter((p): p is MeshPeer => p !== null) } } : {}),
     });
     litVessel = result;
+    } catch (err) {
+      if (lightNow === mine) retire();
+      throw err;
     } finally { lighting = null; }
     result.connectionState.subscribe((connection) => { for (const c of conns.values()) if (c.session?.admission === "admitted") statusTo(c, { connection }); });
     // A landed fleet join leaves its pending row once the vessel stands on its admit.
@@ -222,7 +236,9 @@ export function standVesselHost(env: VesselHostEnv = {}) {
         lit: async (face) => { if (!litVessel) throw new VesselSessionRefused("signer-unavailable"); return litVessel.faceProviders.lit(face); },
         drop: async (face, why) => litVessel?.faceProviders.drop(face, why),
       },
-      onFloor: (s, floor) => { if (floor === "floor") { litVessel = null; shownFrames.clear(); } statusTo(conns.get(s.sessionId), { floor }); },
+      // The lock retires the lit vessel and its fold itself: its last session's close leaves no session to hear the floor.
+      onLocked: () => retire(),
+      onFloor: (s, floor) => statusTo(conns.get(s.sessionId), { floor }),
       onDrop: (s, why) => {
         const conn = conns.get(s.sessionId);
         if (conn) conn.session = null;

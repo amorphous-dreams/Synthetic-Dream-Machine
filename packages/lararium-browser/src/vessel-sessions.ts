@@ -192,6 +192,8 @@ export interface VesselHouseOptions<V extends LitVessel> {
   readonly providers?: FaceProviderDoor;
   /** Hear each session's floor reading as it moves. */
   readonly onFloor?: (session: VesselSession, floor: VesselFloorState) => void;
+  /** Hear the lock land, once per lock, whether or not any session stands to hear its floor: the vessel stands down. */
+  readonly onLocked?: (report: VesselLockReport) => void;
   /** Hear each session drop, with why. */
   readonly onDrop?: (session: VesselSession, why: string) => void;
   /** Ping a session at each sweep; any message it sends back counts as heard. */
@@ -359,8 +361,10 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
       for (const h of holders) { try { await h.lock(); } catch (e) { console.warn("[vessel-sessions] a content-key holder refused its lock:", e); } }
       const treeKeysOverwritten = (await overwriteBrowserCustody(opts.idbName)) ? 1 : 0;
       overwriteEveryFaceCustody(opts.idbName);
+      const report = { treeKeysOverwritten, contentKeyHolders: holders.length, actsEnded, vesselDown, why };
+      opts.onLocked?.(report);
       setFloor("floor");
-      return { treeKeysOverwritten, contentKeyHolders: holders.length, actsEnded, vesselDown, why };
+      return report;
     })();
     try { return await locking; } finally { locking = null; }
   };
