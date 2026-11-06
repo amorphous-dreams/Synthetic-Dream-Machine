@@ -325,7 +325,7 @@ Keyhive keeps the PersonaGroup's private membership and its content keys. The fa
 
 * a joined vessel keeps using the certificate it holds, under the face key the Nexus already admitted;
 * ''nobody new joins'': no certificate issues, and a wiped device cannot return;
-* ''nobody leaves at a gate'': the face key signs every withdrawal, so no withdrawal gets signed, and a vessel set aside keeps the certificate a gate accepts;
+* ''nobody leaves by withdrawal'': the face key signs every withdrawal, so no withdrawal gets signed; removal still wins at every reader that sees it (operator, 2026-11-06, approving the house's defaults): a gate or reader whose own fleet frontier counts a vessel set aside refuses that vessel's certificate and its outcomes alike, and one whose frontier has not yet counted the set-aside accepts against its last verified view (#/causal-withdrawal);
 * no authority expires by the passage of time, and absence supplies none.
 
 The design names that unavailability and does not cure it. A recovery authority that could act for an absent root holder would take its own ruling.
@@ -394,6 +394,6 @@ The design names that unavailability and does not cure it. A recovery authority 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;qWFvd95co_zUC93sO_YLq-S93EQhewaFRM7dTtmPyQg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iYyAzZzBNHwAEL5WVrECBZh9p33Sn6WIhffOSSfMwvA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

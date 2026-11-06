@@ -58,7 +58,7 @@ Wave B builds three roadmap rows as ONE joint lane, since each needs the others 
 # ''The scout census first.'' The lead's first act reads, writes nothing: every site where a session, a registry or a sealer reaches more than one face (a union), on node and browser alike, named by file and line, sorted by what inherits shape from what. The Sol scouts the node half and the Copilot the browser holder, in parallel and read-only, and each cross-reads the other's census; the lead merges one census before any build.
 # ''The isolation red, on real routes'' (`K15`'s own red, now past the row level): unlock face A alone, bypass every router, session and UI, and try to open and replace face B's occupied rows with every key A holds; each open fails and B's bytes stand unchanged. Its control: the same act as B, unlocked, opens.
 # ''One face per session, no union'' (`K15` step 3): each session and registry routes by its one face; a union site from the census reads red until it routes by face. Control: a single-face vessel reads byte-identical before and after.
-# ''The asker seals'' (`F6` slice three, ruling (a′)): the Repo lives in the holder, and a sealed write goes to the asking tab's face sealer, under that face's row-class key. Red: a write from face A's tab reaches a sealer that holds B's key. Control: A's write opens under A.
+# ''The asker's session seals'' (`F6` slice three, ruling (a′); operator, 2026-11-06, approving the house's defaults): the Repo lives in the holder, and a sealed write goes to the asking session's face sealer, on the vessel worker's thread, under that face's row-class key, while that face's session stands unlocked. When the asker cannot answer, another admitted, unlocked session of the same face takes the seal; once no session of that face stands unlocked, the takeover refuses and the write waits as `seal-awaits-session`. Red: a write from face A's tab reaches a sealer that holds B's key; a takeover with no unlocked session of A seals anything. Control: A's write opens under A, and a second unlocked session of A takes the seal its asker cannot answer.
 # ''The admit guard'' (`B1`): the holder answers a port only for a session it admitted. Red: an unadmitted port asks for a sealed body and receives anything but a refusal by name. Control: an admitted port of the same face receives its body.
 # ''The last session locks'' (`B1`): the last session of a face to close locks that face's hive. Red: after the last close, a sealed read under that face opens. Control: while another session of that face stands, it still opens.
 
@@ -116,6 +116,6 @@ The lane law stands at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controlle
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;zdG84MsbVjJzkkw_MpS5-VwVHVrSa8UoJrPSHUe-6Aw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;y9tQi64S3lKfMTWwGMS8RGqY3itSpB_JchRmmsg-oQg`>>
 
 <<^ code=`&#x0004;` to=`?`>>
