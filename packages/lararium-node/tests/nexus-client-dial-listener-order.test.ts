@@ -4,9 +4,8 @@
  * already stand, or the dialer's join lands on a socket nothing listens to and the dialing Repo never gains the peer.
  *
  * The witness HOLDS the order with the product's own events, never a sleep: the dialed Repo's storage-id load waits on
- * a barrier; the barrier opens on the first frame the gate's socket emits (the dialer's join) — so the listener
- * installs strictly AFTER the gate opened and the join arrived. A frame emitted while no `message` listener stands is
- * LOST (EventEmitter replays nothing). Control: same rig, barrier already open — the listener precedes the gate.
+ * a barrier; the barrier opens after the gate opens the session, before the adapter connects. The gate holds the channel until
+ * the adapter installs its listener, so queued frames reach the socket only after handoff. Control: the barrier starts open.
  *
  * Gate: lar:///ha.ka.ba/lararium/node/nexus-client-dial/listener.order.holds
  */
@@ -44,9 +43,10 @@ class HeldIdStorage extends DurableNodeFSStorageAdapter {
 
 class ProbedServerAdapter extends NodeWSServerAdapter {
   readonly connected = deferred();
+  didConnect = false;
   override isReady(): boolean { return true; }
   override whenReady(): Promise<void> { return Promise.resolve(); }
-  override connect(...a: Parameters<NodeWSServerAdapter["connect"]>): void { super.connect(...a); this.connected.open(); }
+  override connect(...a: Parameters<NodeWSServerAdapter["connect"]>): void { super.connect(...a); this.didConnect = true; this.connected.open(); }
 }
 
 describe("G56 — the dialed server adapter's listener stands before the dialer's frames reach the gate socket", () => {
@@ -62,9 +62,11 @@ describe("G56 — the dialed server adapter's listener stands before the dialer'
   const mk = (): string => { const d = mkdtempSync(join(tmpdir(), "lar-g56-")); dirs.push(d); return d; };
 
   /** Stand dialed node B by hand (the rig's shape) with its storage-id behind `barrier`; return the instruments. */
-  async function standB(barrier: Promise<void>, onFirstFrame: () => void) {
-    const gateSync = gateSyncServer();
-    const registry = gateSessionRegistry((channel, session) => gateSync.onOpen(channel, session));
+  async function standB(barrier: Promise<void>, onSessionOpen: () => void) {
+    const ready = deferred();
+    const gateSync = gateSyncServer({ adapterConnected: ready.promise });
+    let connectedAtOpen = false;
+    const registry = gateSessionRegistry((channel, session) => { connectedAtOpen = serverNetwork.didConnect; gateSync.onOpen(channel, session); onSessionOpen(); });
     const w = await world({ sessions: registry.table });
     const server = faceGateServer();
     server.stand({ gate: w.gate, pin: w.pin });
@@ -79,11 +81,12 @@ describe("G56 — the dialed server adapter's listener stands before the dialer'
       gateOpened.open();
       const emit = socket.emit.bind(socket) as (ev: string, ...a: unknown[]) => boolean;
       (socket as { emit: unknown }).emit = (ev: string, ...a: unknown[]): boolean => {
-        if (ev === "message") { if (socket.listenerCount("message") === 0) lost.push("message"); onFirstFrame(); }
+        if (ev === "message") { if (socket.listenerCount("message") === 0) lost.push("message"); }
         return emit(ev, ...a);
       };
     });
     const serverNetwork = new ProbedServerAdapter(gateSync.wss as never);
+    void serverNetwork.connected.promise.then(ready.open);
     const repo = new Repo({ network: [serverNetwork], storage: new HeldIdStorage(mk(), barrier) });
     const close = async (): Promise<void> => {
       barrier.then(() => undefined);
@@ -91,13 +94,13 @@ describe("G56 — the dialed server adapter's listener stands before the dialer'
       server.close(); registry.close(); gateSync.close();
       await new Promise<void>((resolve) => http.close(() => resolve()));
     };
-    return { w, repo, url: `ws://127.0.0.1:${port}/ws`, lost, gateOpened, serverNetwork, close };
+    return { w, repo, url: `ws://127.0.0.1:${port}/ws`, lost, gateOpened, serverNetwork, connectedAtOpen: () => connectedAtOpen, close };
   }
 
   async function cross(hold: boolean): Promise<{ lost: string[]; gained: Promise<void> }> {
     const gate = deferred();
     const barrier = hold ? gate.promise : Promise.resolve();
-    const b = await standB(barrier, () => gate.open());      // the first frame at the gate socket opens the barrier
+    const b = await standB(barrier, () => gate.open());      // session open releases storage, after the gate has accepted the channel
     closers.push(() => { gate.open(); void b.close(); });
     const a = await standGatedNode({ storageDir: mk(), nexus: "nexus-a.synthetic" });
     nodes.push(a);
@@ -111,6 +114,7 @@ describe("G56 — the dialed server adapter's listener stands before the dialer'
     closers.push(() => dial.stop());
     await b.gateOpened.promise;                  // the gate seated the dialer
     await b.serverNetwork.connected.promise;     // the server adapter's listener has stood
+    if (hold) expect(b.connectedAtOpen()).toBe(false);
     const gained = new Promise<void>((resolve) => {
       const holds = (): boolean => b.repo.peers.includes(a.repo.peerId as (typeof b.repo.peers)[number]);
       const on = (): void => { if (holds()) { b.repo.networkSubsystem.off("peer", on); resolve(); } };
@@ -119,9 +123,10 @@ describe("G56 — the dialed server adapter's listener stands before the dialer'
     return { lost: b.lost, gained };
   }
 
-  test("RED (demonstrated order): gate opens and the join arrives BEFORE the server adapter's listener stands → no frame may be lost", async () => {
-    const { lost } = await cross(true);
+  test("held storage: the gate opens before the listener stands → no frame lost and the Repo gains the dialer", async () => {
+    const { lost, gained } = await cross(true);
     expect(lost).toEqual([]);
+    await gained;
   }, 12_000);
 
   test("CONTROL (normal order): the listener stands before the gate opens → no frame lost and the dialed Repo gains the dialer", async () => {

@@ -331,8 +331,14 @@ export function parseFormVector(document: string): SparseFormVector | null {
  * doc relay deadlocks silently (no reply, not even doc-unavailable).
  */
 class ListeningWSServerAdapter extends NodeWSServerAdapter {
+  private resolveConnected!: () => void;
+  readonly connected = new Promise<void>((resolve) => { this.resolveConnected = resolve; });
   override isReady(): boolean { return true; }
   override whenReady(): Promise<void> { return Promise.resolve(); }
+  override connect(...args: Parameters<NodeWSServerAdapter["connect"]>): void {
+    super.connect(...args);
+    this.resolveConnected();
+  }
 }
 /** Title of the social bootstrap plugin tiddler baked by lararium:init. */
 export const SOCIAL_BOOTSTRAP_PLUGIN_TITLE = "lar:///ha.ka.ba/lararium/bootstrap/social";
@@ -835,13 +841,16 @@ async function prepareNodeBootOn(
   // THE FLOOR PIN SET (house ruling "The admit's gate pin": a floor route's full pin travels through an authenticated
   // relation): each sovereign session hears, at open, the floor pins this
   // hearth stands at the Nexus that seated it, the same pins the floor gates below derive (`hearthFloorPins`).
-  const gateSync = gateSyncServer({ floorPins: async (nexus) => hearthFloorPins(nexus, await vesselFloorKeyDoor()), floorProof: hearthFloorProof });
+  let adapterConnected!: () => void;
+  const adapterReady = new Promise<void>((resolve) => { adapterConnected = resolve; });
+  const gateSync = gateSyncServer({ adapterConnected: adapterReady, floorPins: async (nexus) => hearthFloorPins(nexus, await vesselFloorKeyDoor()), floorProof: hearthFloorProof });
   const syncSessions = gateSessionRegistry((channel, session) => gateSync.onOpen(channel, session));
   const gateServer = faceGateServer({
     onRefuse: (path, refusal) => console.warn(`[lar-gate] an upgrade on ${path.slice(0, 24)}… refused before any 101 (${refusal})`),
   });
   stood.push({ what: "the sync gates", down: () => { gateServer.close(); syncSessions.close(); gateSync.close(); } });
   const network  = new ListeningWSServerAdapter(gateSync.wss as unknown as typeof wss);
+  void network.connected.then(adapterConnected);
   const peerIdentifierMap = new Map<string, string>();
   // The self-slot CLASS map — peerId → the class the keyholder vouched at admission. Populated in the
   // SAME microtask as peerIdentifierMap so that by the time the outer admission gate sees a peer in
