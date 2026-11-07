@@ -31,6 +31,7 @@ import { isFaceScopedBag } from "./persona-scope.js";
 import type { VesselWorkerHandle, VesselIslandHost } from "./vessel-host.js";
 import {
   isIslandToVesselMsg,
+  isTeardownFault,
   mkManifest,
   mkTeardown,
   mkWikiPlaceVerb,
@@ -824,8 +825,8 @@ export class VesselIslandPoolCore {
         expectedType: "teardown:ack",
         timeoutMs:    HANDSHAKE_TIMEOUT_MS,
         // The island answers its teardown either way: an ack, or a fault by name (`teardown-fault: …`) that ends the
-        // handshake at once, unacked.
-        rejectOnTypes:  ["fault"],
+        // handshake at once, unacked. Another fault crossing meanwhile (a late slot fault) ends nothing: the flush still runs.
+        rejectOn:       isTeardownFault,
         subscribe:      (h) => workerSlot.worker.listen(h),
         subscribeError: (h) => workerSlot.worker.onError(h),
         send: () => workerSlot.worker.post(mkTeardown()),

@@ -1141,6 +1141,14 @@ export function isVesselToIslandMsg(v: unknown): v is VesselToIslandMsg {
     .includes(v.type as Exclude<VesselToIslandMsg["type"], "receipt:close" | "wiki:request-drain" | SensoriumSignalType | typeof LAR_CONTROL_EVENT | typeof LAR_RESEND | PortVesselToIslandMsg["type"]>) || isSensoriumSignalType(v.type);
 }
 
+/** The prefix an island's teardown fault carries (`answerTeardown`): the one fault that answers a teardown. */
+export const TEARDOWN_FAULT = "teardown-fault:";
+
+/** True for the island's named answer to its teardown, never for another fault (a late slot fault) that crosses meanwhile. */
+export function isTeardownFault(v: IslandToVesselMsg): boolean {
+  return v.type === "fault" && typeof (v as { error?: unknown }).error === "string" && (v as { error: string }).error.startsWith(TEARDOWN_FAULT);
+}
+
 export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
   if (!_hasType(v)) return false;
   if (v.type === "receipt:asks-done") return Object.keys(v).length === 1;

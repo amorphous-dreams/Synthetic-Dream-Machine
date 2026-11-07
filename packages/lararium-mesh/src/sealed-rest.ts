@@ -149,9 +149,12 @@ function asker<A extends { requestId: string }>(port: Port, answerType: string, 
   const pending = new Map<string, (answer: A | null | typeof ISLAND_SILENT) => void>();
   let silent = false;
   const settleAll = (answer: null | typeof ISLAND_SILENT): void => { const settles = [...pending.values()]; pending.clear(); for (const settle of settles) settle(answer); };
-  port.gone?.(() => settleAll(null));
+  port.gone?.(() => { silent = false; settleAll(null); });
   port.listen((raw) => {
     const m = raw as { type?: unknown; requestId?: unknown } | null;
+    // A FRESH DOOR MEANS A FRESH LATCH: the island's holder says it answers (a re-stood door on the same port, a fresh
+    // holder standing where a wedged one stood), and that word lifts the lapse, so a rebook reaches the holder now standing.
+    if (m?.type === "docstore:answering") { silent = false; return; }
     if (!m || m.type !== answerType || typeof m.requestId !== "string") return;
     silent = false;   // the island speaks again: a late answer to a lapsed ask still proves it answers
     const settle = pending.get(m.requestId);

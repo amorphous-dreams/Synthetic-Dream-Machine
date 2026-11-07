@@ -89,6 +89,8 @@ export interface AwaitIslandMsgOpts<T extends IslandToVesselMsg> {
    * of spending the silence budget on a corpse.
    */
   rejectOnTypes?: readonly IslandToVesselMsg["type"][];
+  /** A narrower rejection: the message this predicate names settles the wait by rejection (a teardown's own fault, never any fault). */
+  rejectOn?: (msg: IslandToVesselMsg) => boolean;
   /** Register a message handler; return its unsubscribe. */
   subscribe: (handler: (raw: unknown) => void) => () => void;
   /** Optionally register an error handler; return its unsubscribe. */
@@ -166,7 +168,7 @@ export function awaitIslandMsg<T extends IslandToVesselMsg>(opts: AwaitIslandMsg
     offs.push(opts.subscribe((raw) => {
       if (!isIslandToVesselMsg(raw)) return;
       lastHeardAt = mono();
-      if (opts.rejectOnTypes?.includes(raw.type)) {
+      if (opts.rejectOnTypes?.includes(raw.type) || opts.rejectOn?.(raw) === true) {
         cleanup();
         const detail = (raw as { error?: string }).error;
         reject(new Error(

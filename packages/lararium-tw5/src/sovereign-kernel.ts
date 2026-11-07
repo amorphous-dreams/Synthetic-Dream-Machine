@@ -50,6 +50,7 @@ import {
   mkFault,
   isVesselToIslandMsg,
   mkTeardownAck,
+  TEARDOWN_FAULT,
   makeIslandRepo,
   replicaHeads,
   sha256HexBytesSync,
@@ -87,7 +88,7 @@ import { PLANE_LABELS } from "@lararium/mesh/plane-labels";
 export async function answerTeardown(run: () => Promise<void>, post: (msg: IslandToVesselMsg) => void, wikiUri: () => string): Promise<void> {
   try { await run(); }
   catch (err) {
-    post(mkFault(wikiUri(), `teardown-fault: the island could not tear down: ${err instanceof Error ? err.message : String(err)}`));
+    post(mkFault(wikiUri(), `${TEARDOWN_FAULT} the island could not tear down: ${err instanceof Error ? err.message : String(err)}`));
     return;
   }
   post(mkTeardownAck());
