@@ -97,6 +97,7 @@ export async function assemblePersonaGroupRing(input: PersonaGroupRingInput): Pr
           selfVerifyingKey: joineeVesselKey,
           groupId: group,
           personaKel: input.personaKel,
+          dyad: (key) => input.deviceAside(key) ? "aside" : "clear",
         });
         return verdict.ok;
       },

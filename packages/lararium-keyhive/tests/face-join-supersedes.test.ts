@@ -36,6 +36,14 @@ function memoryStore() {
   return { store, records, state };
 }
 
+/** The founder's anchor-pinned persona lineage: an inception under ROOT's op-key (1-of-1 self-recovery). */
+async function founderLineage() {
+  const { ed25519VerifyingKeyFromSeed, deriveSelfRecoveryKey, mintPersonaInception, sealKeySetHash } = await import("@lararium/mesh");
+  const selfRecovery = await deriveSelfRecoveryKey(ROOT);
+  const inception = mintPersonaInception(`0x${await ed25519VerifyingKeyFromSeed(ROOT)}`, sealKeySetHash([selfRecovery.verifyingKey], 1));
+  return { prefix: inception.prefix, chain: [inception] };
+}
+
 async function stand() {
   const founder = await provider(7);
   const joinee = await provider(106);
@@ -45,17 +53,18 @@ async function stand() {
   const card = new TextDecoder().decode(await joinee.contactCard());
   const summons = (force: boolean) => ({ kind: "face-join/v1" as const, contactCard: card, deviceEdge: joineeEdge, ...(force ? { force: true } : {}) });
   const ctx: FaceJoinContext = { personaRootDid: founderEdge.personaRootDid, hearthTrueName: HEARTH, personaGroupId: group.groupId, dyad: () => "clear", leaseEpoch: 0 };
+  const founderProof = { personaKel: await founderLineage(), dyad: (_key: string) => "clear" as const };
   const operations = memoryStore();
   const plane = memoryStore();
   const input = (s: ReturnType<typeof summons>) => ({
-    provider: founder, summons: s, ctx, founderEdge,
+    provider: founder, summons: s, ctx, founderEdge, founderProof,
     fence: { intentId: JSON.stringify(s), pinnedAtom: founderEdge.deviceVerifyingKey, ownAtom: founderEdge.deviceVerifyingKey },
     signGrant: (bytes: Uint8Array) => faceAtomKeyFromSeed(seedOf(7), group.groupId).sign(bytes),
     atomSeed: seedOf(7),
     operationStore: operations.store,
     grantPlane: { store: plane.store, heads: () => [String(plane.records.size)] },
   });
-  return { summons, input, operations, plane, ctxRoot: ctx.personaRootDid };
+  return { summons, input, operations, plane, ctxRoot: ctx.personaRootDid, founderProof };
 }
 
 const standingGrant = (records: Map<string, LarTiddlerRecord>): { serial: number; text: string } => {
@@ -132,8 +141,8 @@ describe("a face's grant orders by its serial", () => {
     expect(standing.serial, "the fresh issue stands over the forgery").toBeLessThan(999);
     // The joinee's kit reads the record with the same law: the standing record verifies for the joinee.
     const joineeKey = String(fresh["joineeAgentIdHex"]).replace(/^0x/i, "").slice(-64);
-    const verdict = await verifyFaceGrantRecord(standing, { personaRootDid: t.ctxRoot, selfVerifyingKey: joineeKey, groupId: String(standing["groupId"]) });
+    const verdict = await verifyFaceGrantRecord(standing, { personaRootDid: t.ctxRoot, selfVerifyingKey: joineeKey, groupId: String(standing["groupId"]), ...t.founderProof });
     expect(verdict).toEqual({ ok: true });
-    expect(await verifyFaceGrantRecord({ ...real, serial: 999 }, { personaRootDid: t.ctxRoot, selfVerifyingKey: joineeKey, groupId: String(standing["groupId"]) }), "CONTROL: the forgery does not verify").toMatchObject({ ok: false });
+    expect(await verifyFaceGrantRecord({ ...real, serial: 999 }, { personaRootDid: t.ctxRoot, selfVerifyingKey: joineeKey, groupId: String(standing["groupId"]), ...t.founderProof }), "CONTROL: the forgery does not verify").toMatchObject({ ok: false });
   });
 });

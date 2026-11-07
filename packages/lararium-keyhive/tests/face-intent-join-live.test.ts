@@ -46,7 +46,8 @@ describe("a face-join request rides the intents plane to the pinned hearth", () 
     const shared = plane(), verbs = faceIntentVerbs(), grants = memoryStore();
     const ctx: FaceJoinContext = { personaRootDid: founderEdge.personaRootDid, hearthTrueName: HEARTH, personaGroupId: group.groupId, dyad: () => "clear", leaseEpoch: 0 };
     const effectFor = (own: string, ops: ReturnType<typeof memoryStore>) => async (args: unknown, at: { intentId: string; pinnedAtom: string }) =>
-      runFaceJoinOperation({ provider: hearth, summons: (args as { summons: never }).summons, ctx, founderEdge, fence: { intentId: at.intentId, pinnedAtom: at.pinnedAtom, ownAtom: own },
+      runFaceJoinOperation({ provider: hearth, summons: (args as { summons: never }).summons, ctx, founderEdge,
+        founderProof: { personaKel: { prefix: inception.prefix, chain: [inception] }, dyad: () => "clear" }, fence: { intentId: at.intentId, pinnedAtom: at.pinnedAtom, ownAtom: own },
         signGrant: async (bytes) => h1.sign(bytes), atomSeed: seedOf(7), operationStore: ops.store, grantPlane: { store: grants.store, heads: () => [String(grants.records.size)] } });
     const base = { group: group.groupId, plane: shared.handle, personaRecords: () => log, kelChain: () => [inception], standing: () => "stands" as const, verbs, log: () => {} };
     const ops1 = memoryStore(), ops2 = memoryStore();

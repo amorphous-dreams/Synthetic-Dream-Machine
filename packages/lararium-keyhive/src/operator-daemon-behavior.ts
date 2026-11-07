@@ -29,7 +29,7 @@ import {
   makeCabalRealmReactors,
   makeIntentViewReactor, runLocalVerb, INTENT_VIEW_CAP, SEED_OFF_DISK,
 } from "@lararium/tw5";
-import { ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, leaseEpochPrefix, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, type ChangeOrigin } from "@lararium/mesh";
+import { ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor, VerbTable } from "@lararium/tw5";
 import type { IslandMsg_Manifest, JoinedFaceAuth } from "@lararium/mesh";
 import { boardDyadReader, intentDoorStandings } from "./board-dyad-reader.js";
@@ -131,7 +131,7 @@ export type DyadReader = (fleetRootDid: string, deviceVerifyingKey: string) => i
  * The dyad's reader a gate asks through, or a refusal by name. A gate that binds or seats a device reads that
  * device's standing first; with no reader composed it cannot read one, and it never reads the absence as `clear`.
  */
-export function requireDyadReader(reader: DyadReader | undefined, gate: "the Binding Gate" | "the join gate" | "the content-key seat" | "the seat summons"): DyadReader {
+export function requireDyadReader(reader: DyadReader | undefined, gate: "the Binding Gate" | "the join gate" | "the grant founder" | "the content-key seat" | "the seat summons"): DyadReader {
   if (!reader) {
     throw new Error(
       `[daemon] DyadReaderAbsent: ${gate} reads a device's standing off the vessel's own fold of its fleet board, and this island ` +
@@ -908,6 +908,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             // twice (before and after the card binds) and must read one answer.
             const joineeKey = typeof summons.deviceEdge?.deviceVerifyingKey === "string" ? summons.deviceEdge.deviceVerifyingKey : "";
             const joineeDyad = await requireDyadReader(dyadReader(ctx), "the join gate")(ownEdge.personaRootDid, joineeKey);
+            // THE FOUNDER'S OWN STANDING, read apart from the joinee's: the grant this hearth signs carries its authority.
+            const founderDyad = await requireDyadReader(dyadReader(ctx), "the grant founder")(ownEdge.personaRootDid, ownEdge.deviceVerifyingKey);
+            if (!daemonAuth.personaKel) throw new Error("[daemon] face-join: founder persona-KEL proof unavailable — no seat moves");
+            const founderKel = daemonAuth.personaKel;
             if (!facePlane) throw new Error("[daemon] face-join: the face's PersonaGroup plane is unresolved");
             const planeHandle = await facePlane.find(personaBagIdFor(faceGroup()));
             if (!planeHandle) throw new Error("[daemon] face-join: the face's PersonaGroup plane is unresolved");
@@ -928,6 +932,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
                 reseal: daemonAuth.registerBags,
               },
               founderEdge: ownEdge, signGrant: faceAtom().sign, atomSeed: meshHexToBytes(daemonAuth.atom!.seed),
+              founderProof: { personaKel: founderKel, dyad: (key) => key.toLowerCase() === ownEdge.deviceVerifyingKey.toLowerCase() ? founderDyad : "unknown" },
               operationStore,
               grantPlane: { store: new AutomergeDocStore(planeHandle, personaBagIdFor(faceGroup())), heads: () => planeHandle.heads() },
               fence: { intentId: at.intentId, pinnedAtom: at.pinnedAtom, ownAtom: faceAtom().key },
@@ -1358,14 +1363,14 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const seat = contentKeys;
         keyhive.whenDisposed(() => { seat.lock(); if (contentKeys === seat) contentKeys = null; });
       }
-      // Grant and lease arrivals drive the joinee's single serialized seat act.
+      // Grant arrivals and founder-proof wakes drive the joinee's single serialized seat act.
       if (daemonAuth.personaGroupId && daemonAuth.deviceEdge && daemonAuth.personaKel && kh && ctx.catalogUrl) {
         const group = daemonAuth.personaGroupId;
         const edge = daemonAuth.deviceEdge;
         const veil = kh;
         const catalog = makeCatalogAccessor(ctx.repo, ctx.catalogUrl, ctx.faceCatalogUrl);
         faceSeat = makeFaceSeat({
-          group, leasePrefix: leaseEpochPrefix(group), selfVerifyingKey: edge.deviceVerifyingKey, personaRootDid: edge.personaRootDid,
+          group, selfVerifyingKey: edge.deviceVerifyingKey, personaRootDid: edge.personaRootDid,
           personaKel: daemonAuth.personaKel,
           knowsAgent: (agent) => veil.knowsAgent(agent),
           grants: async () => {
@@ -1382,7 +1387,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             }
             return found;
           },
-          readLease: () => readLeaseEpoch(ctx.composite),
+          // The founder's standing, off this vessel's own fold of the face's fleet board: no reader composed reads nothing as clear.
+          founderStanding: async (key) => requireDyadReader(dyadReader(ctx), "the grant founder")(edge.personaRootDid, key),
           verify: verifyFaceGrantRecord,
           ingest: async (record) => { await absorbCapEvents(veil, new DaemonEventStore({ daemon: ctx.composite, face: daemonAuth.personaGroupId! }), record.capEvents.map(base64ToBytes)); },
           lift: async () => {

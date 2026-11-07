@@ -25,7 +25,8 @@
  * THAT record off the vessel's own storage through a throwaway repo: the bootstrap names the plane, and the read
  * waits CAUSALLY — until the stored plane's history holds `recordHeads` — then reads the record AS OF those heads,
  * so a later join's overwrite never answers for an earlier one. The record must verify under the root that
- * signed the joinee's edge, and its recomputed CID must equal `recordCid`. The view is held to the record as a
+ * signed the joinee's edge and under its founder's standing (the hearth's persona-KEL and the founder's dyad, read as
+ * the daemon reads them), and its recomputed CID must equal `recordCid`. The view is held to the record as a
  * CONTROL: its digest and count match the record's array, or, unbounded, its array equals the record's.
  *
  * None of these vectors asserts RECOVERY. A summons returns a seat and public ops, never prekey secrets, so a
@@ -34,12 +35,20 @@
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { Repo, type AutomergeUrl, type UrlHeads } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
-import { targetInstance, type LarInstance, awaitRendezvous, vesselStorageDir, bootDocUrl } from "../harness/instance.js";
+import { targetInstance, type LarInstance, awaitRendezvous, vesselStorageDir, bootDocUrl, awaitOwnGateKey } from "../harness/instance.js";
 import { KeyhiveProvider } from "../../packages/lararium-keyhive/src/keyhive-provider.js";
 import {
   verifyFaceGrantRecord, faceGrantRecordCid, faceGrantTitle, FACE_GRANT_PREFIX, type FaceGrantRecord,
 } from "../../packages/lararium-keyhive/src/face-grant-record.js";
 import { personaBagIdFor } from "../../packages/lararium-mesh/src/persona-scope.js";
+import { boardDyadReader } from "../../packages/lararium-keyhive/src/board-dyad-reader.js";
+import { personaKelBoardDocUrl } from "../../packages/lararium-mesh/src/deterministic-doc.js";
+import { personaKelChainsFromBoard } from "../../packages/lararium-mesh/src/persona-kel-board.js";
+import { readFace } from "../../packages/lararium-mesh/src/face-reading.js";
+import { nodeNexusIsland } from "../../packages/lararium-node/src/nexus-standing.js";
+import type { EdgeStanding } from "../../packages/lararium-mesh/src/edge-kapae.js";
+import type { PersonaKelEvent } from "../../packages/lararium-mesh/src/persona-kel.js";
+import type { LarDoc } from "../../packages/lararium-mesh/src/base-doc.js";
 import { readBootTiddlers } from "../../packages/lararium-node/src/vessel-private.js";
 import { bootFacePlanes } from "../../packages/lararium-node/src/boot-face-planes.js";
 import { plainField, plainRecordOrNull } from "../../packages/lararium-mesh/src/stored-value.js";
@@ -52,7 +61,7 @@ import { testVesselTagDoor } from "../../packages/lararium-mesh/tests/vessel-tag
 import { createPrivateKey, sign as edSign } from "node:crypto";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 
 let lar: LarInstance;
 let dataDir = "";
@@ -138,16 +147,42 @@ async function recordedGrant(g: Record<string, unknown>): Promise<FaceGrantRecor
   expect(rec!, "the grant record carries a wall-clock stamp").not.toHaveProperty("issuedAt");
   // Nor does the founder's edge it carries: the lease is the edge's only decay.
   expect(Object.keys(rec!.founderEdge).filter((k) => /^(issuedAt|expiresAt)$/.test(k)), "the founder's edge carries a wall-clock stamp").toEqual([]);
+  // The verifier takes a grant only under its founder's authority (anchor-pinned lineage + remove-wins standing, lease-end
+  // road M6), so the verify carries the proof the live hearth holds, read as its daemon reads it.
+  const root = (edge as DeviceDelegationTiddler).personaRootDid;
   const verdict = await verifyFaceGrantRecord(rec, {
-    personaRootDid: (edge as DeviceDelegationTiddler).personaRootDid, selfVerifyingKey: joineeKey, groupId: rec!.groupId,
+    personaRootDid: root, selfVerifyingKey: joineeKey, groupId: rec!.groupId,
+    ...(await founderProof(root, rec!.founderEdge.deviceVerifyingKey)),
   });
-  expect(verdict, "the grant record does not verify as signed under the hearth's root").toEqual({ ok: true });
+  expect(verdict, "the grant record does not verify as signed under the hearth's root and its founder's standing").toEqual({ ok: true });
   expect(rec!.capEvents.length).toBeGreaterThan(0);
 
   // CONTROL — the view carries the record's digest. A bounded summary names the record's array by its sha256 over
   // canonical JSON and by its count; an unbounded one IS the record's array.
   expect(g["capEventsCount"], "the outcome counts the record's cap events").toBe(rec!.capEvents.length);
   return rec!;
+}
+
+/**
+ * THE FOUNDER'S PROOF, read off the hearth's OWN storage the way its daemon reads it before it signs a grant: the persona-KEL
+ * chain on the KEL board of the island the boot resolves (`nodeNexusIsland` over this root's seal home and bootstrap) that
+ * incepts at the hearth's root, and
+ * the founder device's standing folded off the fleet's edge board under that chain's lineage (`boardDyadReader`). The grant
+ * verifier refuses without both, so the e2e verify carries them; a missing chain or board reads as a named failure.
+ */
+async function founderProof(personaRootDid: string, founderKey: string): Promise<{ personaKel: { prefix: string; chain: PersonaKelEvent[] }; dyad: (key: string) => EdgeStanding }> {
+  const vessel = vesselStorageDir(lar);
+  const island = nodeNexusIsland({ ownVesselKey: await awaitOwnGateKey(lar), sealHome: join(dirname(vessel), "nexus"), bootstrapPath: join(vessel, "social-bootstrap.json") });
+  const repo = new Repo({ storage: new NodeFSStorageAdapter(vesselStorageDir(lar)) });
+  try {
+    const board = await repo.find<LarDoc>(personaKelBoardDocUrl(island));
+    const root = personaRootDid.toLowerCase();
+    const found = [...personaKelChainsFromBoard(board.doc()).entries()].find(([, chain]) => chain[0]?.opKeyDid.toLowerCase() === root);
+    if (!found) throw new Error(`the hearth's persona-KEL board (island ${island.slice(0, 16)}…) carries no chain incepting at ${root.slice(0, 18)}…`);
+    const [prefix, chain] = found;
+    const standing = await boardDyadReader(repo, undefined, undefined, undefined, undefined, undefined, readFace(chain)?.lineage ?? null)(personaRootDid, founderKey);
+    return { personaKel: { prefix, chain }, dyad: (key) => key.toLowerCase() === founderKey.toLowerCase() ? standing : "unknown" };
+  } finally { await repo.shutdown().catch(() => {}); }
 }
 
 /** The key this hearth's own face signs under, read off its daemon doc: the delegate of its own device edge (its atom). */

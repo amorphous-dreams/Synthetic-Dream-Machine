@@ -15,7 +15,7 @@ import { join } from "node:path";
 import {
   buildDeviceDelegation, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, hexToBytes,
   deriveSelfRecoveryKey, sealKeySetHash, mintPersonaInception, personaRotationSigningBytes, mintPersonaRotation,
-  enrolmentDigestOf, personaEventCidOf, type PersonaKelEvent,
+  enrolmentDigestOf, personaEventCidOf, DEVICE_DELEGATION_DOMAIN, DEVICE_ATOM_COUNTERSIGN_DOMAIN, type DeviceDelegationTiddler, type PersonaKelEvent,
 } from "@lararium/mesh";
 import { faceGrantTitle, faceGrantRecordCid, signFaceGrantRecord, verifyFaceGrantRecord, type FaceGrantRecord } from "../src/face-grant-record.js";
 
@@ -62,6 +62,31 @@ async function personaKel(rotateTo: Uint8Array | null): Promise<{ prefix: string
   return { prefix: inception.prefix, chain };
 }
 
+/** The two proofs a joinee holds of its founder's authority: the anchor-pinned lineage and a remove-wins reading. */
+const CLEAR = (_key: string) => "clear" as const;
+async function proofOf(personaRootDid: string, extra: Record<string, unknown> = {}) {
+  return { personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP, personaKel: await personaKel(null), dyad: CLEAR, ...extra };
+}
+
+/** Two rotations from one inception, each signed by the self-recovery key to a DIFFERENT fresh op-key: duplicity. */
+async function forkedKel(): Promise<{ prefix: string; chain: PersonaKelEvent[] }> {
+  const rootDid = `0x${await ed25519VerifyingKeyFromSeed(ROOT_SEED)}`;
+  const selfRecovery = await deriveSelfRecoveryKey(ROOT_SEED);
+  const inception = mintPersonaInception(rootDid, sealKeySetHash([selfRecovery.verifyingKey], 1));
+  const chain: PersonaKelEvent[] = [inception];
+  for (const seed of [new Uint8Array(32).fill(31), new Uint8Array(32).fill(32)]) {
+    const freshOpKeyDid = `0x${await ed25519VerifyingKeyFromSeed(seed)}`;
+    const sig = await ed25519SignerFromSeed(hexToBytes(selfRecovery.signingKey))(personaRotationSigningBytes(inception, freshOpKeyDid));
+    const rotated = await mintPersonaRotation({
+      head: inception, freshOpKeyDid, recoveryRoster: [selfRecovery.verifyingKey], recoveryThreshold: 1,
+      rotationSigs: [{ signer: selfRecovery.verifyingKey, sig }],
+    });
+    if (!rotated.ok) throw new Error(rotated.reason);
+    chain.push(rotated.event);
+  }
+  return { prefix: inception.prefix, chain };
+}
+
 async function grantFor(overrides: Partial<FaceGrantRecord> = {}, rootSeed = ROOT_SEED, boundEpoch = 0): Promise<FaceGrantRecord> {
   const edge = await founderEdge(rootSeed, boundEpoch);
   const unsigned = {
@@ -83,10 +108,10 @@ describe("the later grant — a signed record the joinee verifies offline", () =
     expect(faceGrantTitle(GROUP, `0x${JOINEE_KEY}`)).toContain(JOINEE_KEY);
   });
 
-  test("a record the founder signed, under the pinned root, naming this joinee and group → taken", async () => {
+  test("a record the founder signed, under the pinned lineage with its dyad standing, naming this joinee and group → taken", async () => {
     const rec = await grantFor();
     const edge = await founderEdge();
-    const v = await verifyFaceGrantRecord(rec, { personaRootDid: edge.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP });
+    const v = await verifyFaceGrantRecord(rec, await proofOf(edge.personaRootDid));
     expect(v.ok).toBe(true);
   });
 
@@ -94,7 +119,7 @@ describe("the later grant — a signed record the joinee verifies offline", () =
     const rec = await grantFor();
     const tampered = { ...rec, capEvents: [...rec.capEvents, "Zm9yZ2Vk"] };
     const edge = await founderEdge();
-    const v = await verifyFaceGrantRecord(tampered, { personaRootDid: edge.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP });
+    const v = await verifyFaceGrantRecord(tampered, await proofOf(edge.personaRootDid));
     expect(v.ok).toBe(false);
     if (!v.ok) expect(v.reason).toMatch(/signature/i);
   });
@@ -102,7 +127,7 @@ describe("the later grant — a signed record the joinee verifies offline", () =
   test("CONTROL: a founder edge ANOTHER root signed (an unpublished seal) → refused", async () => {
     const rec = await grantFor({}, OTHER_ROOT);
     const pinned = await founderEdge();   // the joinee pins ROOT_SEED's did
-    const v = await verifyFaceGrantRecord(rec, { personaRootDid: pinned.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP });
+    const v = await verifyFaceGrantRecord(rec, await proofOf(pinned.personaRootDid));
     expect(v.ok).toBe(false);
     if (!v.ok) expect(v.reason).toMatch(/edge|root/i);
   });
@@ -151,7 +176,7 @@ describe("the later grant — a signed record the joinee verifies offline", () =
     const rec = await grantFor();
     expect(Object.keys(rec)).not.toContain("issuedAt");
     const edge = await founderEdge();
-    const ctx = { personaRootDid: edge.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP };
+    const ctx = await proofOf(edge.personaRootDid);
     expect(await verifyFaceGrantRecord(rec, ctx)).toEqual({ ok: true });
     const moved = await verifyFaceGrantRecord({ ...rec, reKeyed: !rec.reKeyed }, ctx);
     expect(moved.ok).toBe(false);
@@ -178,7 +203,7 @@ describe("the later grant — a signed record the joinee verifies offline", () =
     const kel = await personaKel(FRESH_OP_SEED);
     const rec = await grantFor();                       // edge signed by ROOT_SEED — the superseded op-key
     const pinned = await founderEdge();
-    const v = await verifyFaceGrantRecord(rec, { personaRootDid: pinned.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP, personaKel: kel });
+    const v = await verifyFaceGrantRecord(rec, { personaRootDid: pinned.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP, personaKel: kel, dyad: CLEAR });
     expect(v.ok).toBe(false);
     if (!v.ok) expect(v.reason).toMatch(/head|KEL/i);
   });
@@ -187,7 +212,7 @@ describe("the later grant — a signed record the joinee verifies offline", () =
     const kel = await personaKel(FRESH_OP_SEED);
     const rec = await grantFor({}, FRESH_OP_SEED);      // edge re-issued under the seated op-key
     const pinned = await founderEdge();
-    const v = await verifyFaceGrantRecord(rec, { personaRootDid: pinned.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP, personaKel: kel });
+    const v = await verifyFaceGrantRecord(rec, { personaRootDid: pinned.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP, personaKel: kel, dyad: CLEAR });
     expect(v.ok, v.ok ? "" : v.reason).toBe(true);
   });
 
@@ -195,7 +220,7 @@ describe("the later grant — a signed record the joinee verifies offline", () =
     const kel = await personaKel(null);
     const rec = await grantFor();
     const pinned = await founderEdge();
-    const v = await verifyFaceGrantRecord(rec, { personaRootDid: pinned.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP, personaKel: kel });
+    const v = await verifyFaceGrantRecord(rec, { personaRootDid: pinned.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP, personaKel: kel, dyad: CLEAR });
     expect(v.ok, v.ok ? "" : v.reason).toBe(true);
   });
 
@@ -203,57 +228,70 @@ describe("the later grant — a signed record the joinee verifies offline", () =
     const kel = await personaKel(null);
     const rec = await grantFor({}, OTHER_ROOT);
     const other = await founderEdge(OTHER_ROOT);        // the joinee pinned OTHER_ROOT; the chain incepts at ROOT_SEED
-    const v = await verifyFaceGrantRecord(rec, { personaRootDid: other.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP, personaKel: kel });
+    const v = await verifyFaceGrantRecord(rec, { personaRootDid: other.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP, personaKel: kel, dyad: CLEAR });
     expect(v.ok).toBe(false);
   });
 
-  // ── THE FOUNDER LEASES TOO — Option 1's third door ──────────────────────────────────────────────────────
-  // The founder's OWN device edge carries a `boundEpoch` like any other device. If the PersonaGroup has
-  // rolled its lease since the founder's edge minted, a joinee holding the fresh `expectedEpoch` must
-  // refuse to take the grant on a stale-leased edge — even though the signature and the KEL-head walk both
-  // check clean.
-  describe("★ the founder's own edge fences on the lease epoch too (expectedEpoch) ★", () => {
-    test("RED-FIRST, pinned-root path — a founder edge bound BELOW the joinee's known epoch is DENIED; AT it, TAKEN", async () => {
-      const pinned = await founderEdge(ROOT_SEED, 1);         // the pin the joinee verifies against, at epoch 1
-      const staleRec = await grantFor({}, ROOT_SEED, 1);      // the record's own founder edge also at epoch 1
-      const denied = await verifyFaceGrantRecord(staleRec, {
-        personaRootDid: pinned.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP,
-        expectedEpoch: 3,       // the group has since rolled to epoch 3
-      });
-      expect(denied.ok).toBe(false);
-      if (!denied.ok) expect(denied.reason).toMatch(/lease stale|edge refused/i);
-
-      const currentRec = await grantFor({}, ROOT_SEED, 3);    // re-minted at the current epoch
-      const admitted = await verifyFaceGrantRecord(currentRec, {
-        personaRootDid: pinned.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP,
-        expectedEpoch: 3,
-      });
-      expect(admitted.ok, admitted.ok ? "" : admitted.reason).toBe(true);
+  // ── THE FOUNDER STANDS, OR NOTHING GRANTS ────────────────────────────────────────────────────────────
+  // Recut from the retired lease fence (stable-founding-road#/rulings, the face lease's end state): the founder's own
+  // authority reads off its anchor-pinned lineage and its device-face dyad, never an epoch. Each refusal names its
+  // proof; a refusal for proof the joinee lacks reads `pending` (it judges nothing final), a set-aside founder does not.
+  describe("★ the founder's own standing decides, never its lease epoch ★", () => {
+    test("RED-FIRST: a founder edge bound at ANY epoch grants while its dyad stands; CONTROL: the same record refuses once the founder is set aside", async () => {
+      for (const epoch of [0, 1, 3]) {
+        const rec = await grantFor({}, ROOT_SEED, epoch);
+        const ctx = await proofOf(rec.founderEdge.personaRootDid);
+        const v = await verifyFaceGrantRecord(rec, ctx);
+        expect(v.ok, v.ok ? "" : v.reason).toBe(true);
+        expect(await verifyFaceGrantRecord(rec, { ...ctx, dyad: () => "aside" as const })).toEqual({ ok: false, reason: "founder device set aside" });
+      }
     });
 
-    test("RED-FIRST, KEL-head path — the same fence applies when the joinee walks the KEL", async () => {
+    test("the house's lawful readings stand (clear · owing · returned); aside refuses final; unknown refuses pending, by name", async () => {
+      const rec = await grantFor();
+      const ctx = await proofOf(rec.founderEdge.personaRootDid);
+      for (const lawful of ["clear", "owing", "returned"] as const) {
+        expect((await verifyFaceGrantRecord(rec, { ...ctx, dyad: () => lawful })).ok, lawful).toBe(true);
+      }
+      const aside = await verifyFaceGrantRecord(rec, { ...ctx, dyad: () => "aside" as const });
+      expect(aside).toEqual({ ok: false, reason: "founder device set aside" });
+      const unknown = await verifyFaceGrantRecord(rec, { ...ctx, dyad: () => "unknown" as const });
+      expect(unknown).toMatchObject({ ok: false, pending: true, reason: expect.stringMatching(/founder dyad standing unknown/) });
+    });
+
+    test("absent proof refuses by name and pending: no lineage, no dyad reading; CONTROL: both present → taken", async () => {
+      const rec = await grantFor();
+      const { personaKel: _kel, ...noKel } = await proofOf(rec.founderEdge.personaRootDid);
+      const { dyad: _dyad, ...noDyad } = await proofOf(rec.founderEdge.personaRootDid);
+      expect(await verifyFaceGrantRecord(rec, noKel)).toEqual({ ok: false, reason: "founder persona-KEL proof unavailable", pending: true });
+      expect(await verifyFaceGrantRecord(rec, noDyad)).toEqual({ ok: false, reason: "founder dyad standing proof unavailable", pending: true });
+      expect(await verifyFaceGrantRecord(rec, await proofOf(rec.founderEdge.personaRootDid))).toEqual({ ok: true });
+    });
+
+    test("the reading asked is the FOUNDER's dyad, never the joinee's: a clear joinee beside a set-aside founder refuses", async () => {
+      const rec = await grantFor();
+      const asked: string[] = [];
+      const dyad = (key: string) => { asked.push(key); return key === JOINEE_KEY ? "clear" as const : "aside" as const; };
+      const v = await verifyFaceGrantRecord(rec, await proofOf(rec.founderEdge.personaRootDid, { dyad }));
+      expect(v).toEqual({ ok: false, reason: "founder device set aside" });
+      expect(asked).toEqual([rec.founderEdge.deviceVerifyingKey]);
+    });
+
+    test("a FORKED lineage refuses by name, whatever the dyad reads; CONTROL: the unforked chain takes the same record", async () => {
+      const rec = await grantFor();
+      const forked = await forkedKel();
+      const v = await verifyFaceGrantRecord(rec, await proofOf(rec.founderEdge.personaRootDid, { personaKel: forked }));
+      expect(v.ok).toBe(false);
+      if (!v.ok) expect(v.reason).toMatch(/^founder lineage forked: the persona-KEL forks at seq 1/);
+      expect((await verifyFaceGrantRecord(rec, await proofOf(rec.founderEdge.personaRootDid))).ok).toBe(true);
+    });
+
+    test("a chain carrying an event under another prefix refuses: the anchor pins one lineage", async () => {
+      const rec = await grantFor();
       const kel = await personaKel(null);
-      const pinned = await founderEdge(ROOT_SEED, 1);
-      const staleRec = await grantFor({}, ROOT_SEED, 1);
-      const denied = await verifyFaceGrantRecord(staleRec, {
-        personaRootDid: pinned.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP,
-        personaKel: kel, expectedEpoch: 3,
-      });
-      expect(denied.ok).toBe(false);
-
-      const currentRec = await grantFor({}, ROOT_SEED, 3);
-      const admitted = await verifyFaceGrantRecord(currentRec, {
-        personaRootDid: pinned.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP,
-        personaKel: kel, expectedEpoch: 3,
-      });
-      expect(admitted.ok, admitted.ok ? "" : admitted.reason).toBe(true);
-    });
-
-    test("omitting expectedEpoch skips the lease fence (unchanged prior behavior)", async () => {
-      const pinned = await founderEdge(ROOT_SEED, 0);
-      const rec = await grantFor({}, ROOT_SEED, 0);   // would fail ANY expectedEpoch > 0, but none is supplied
-      const v = await verifyFaceGrantRecord(rec, { personaRootDid: pinned.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP });
-      expect(v.ok).toBe(true);
+      const stray = { ...kel.chain[0]!, prefix: "stray-prefix" } as PersonaKelEvent;
+      const v = await verifyFaceGrantRecord(rec, await proofOf(rec.founderEdge.personaRootDid, { personaKel: { prefix: kel.prefix, chain: [...kel.chain, stray] } }));
+      expect(v).toMatchObject({ ok: false, reason: expect.stringMatching(/prefix other than the pinned one/) });
     });
   });
 });
@@ -270,10 +308,44 @@ describe("a grant record under a persona-KEL with a junk event beside it", () =>
     const junk: PersonaKelEvent = { ...core, eventCid: personaEventCidOf(core), recoveryRoster: [], recoveryThreshold: 0, rotationSigs: [] };
     const rec = await grantFor();
     const edge = await founderEdge();
-    const ctx = { personaRootDid: edge.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP };
+    const ctx = { personaRootDid: edge.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP, dyad: CLEAR };
     const planted = await verifyFaceGrantRecord(rec, { ...ctx, personaKel: { prefix: kel.prefix, chain: [...kel.chain, junk] } });
     expect(planted).toMatchObject({ ok: true, unreadable: expect.stringMatching(/do not verify and move nothing/) });
     const clean = await verifyFaceGrantRecord(rec, { ...ctx, personaKel: kel });
     expect(clean).toEqual({ ok: true });
+  });
+});
+
+// Retirement contract: the local, verified fleet reading travels with the consuming grant reader.
+describe("face grant standing replaces the face lease", () => {
+  test("RED: a fresh-epoch founder set aside by the remove-wins reading cannot grant; CONTROL: clear stands", async () => {
+    const rec = await grantFor({}, ROOT_SEED, 3);
+    const kel = await personaKel(null);
+    const base = { personaRootDid: rec.founderEdge.personaRootDid, selfVerifyingKey: JOINEE_KEY,
+      groupId: GROUP, personaKel: kel };
+    const clear = { ...base, dyad: (_key: string) => "clear" as const };
+    const aside = { ...base, dyad: (_key: string) => "aside" as const };
+    expect((await verifyFaceGrantRecord(rec, clear)).ok).toBe(true);
+    expect((await verifyFaceGrantRecord(rec, aside)).ok).toBe(false);
+  });
+
+  test("RED: a signed clear founder edge with no epoch grants; CONTROL: a changed signature refuses", async () => {
+    const old = await founderEdge();
+    const { boundEpoch: _discard, signature: _rootSig, atomSignature: _atomSig, ...fields } = old;
+    // Proposed epoch-free signed shape: the same domain and identity fields, with the epoch component removed.
+    const proof = `${DEVICE_DELEGATION_DOMAIN}|${fields.personaRootDid}|${fields.deviceDid}|${fields.deviceVerifyingKey}|${fields.hearthTrueName}`;
+    const signature = await ed25519SignerFromSeed(ROOT_SEED)(new TextEncoder().encode(proof));
+    const atomSignature = await ed25519SignerFromSeed(FOUNDER_SEED)(new TextEncoder().encode(`${DEVICE_ATOM_COUNTERSIGN_DOMAIN}|${proof}|${signature}`));
+    const edge = { ...fields, signature, atomSignature } as DeviceDelegationTiddler;
+    const rec = await grantFor({ founderEdge: edge });
+    const kel = await personaKel(null);
+    const ctx = { personaRootDid: edge.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP,
+      personaKel: kel, dyad: (_key: string) => "clear" as const };
+    // A minted-shape edge reaches the grant signature check, so the changed signature refuses there by name.
+    const control = await grantFor();
+    expect((await verifyFaceGrantRecord(control, ctx)).ok).toBe(true);
+    expect(await verifyFaceGrantRecord({ ...control, sig: "0".repeat(128) }, ctx))
+      .toMatchObject({ ok: false, reason: "the record's signature fails under the founder's licensed key" });
+    expect((await verifyFaceGrantRecord(rec, ctx)).ok).toBe(true);
   });
 });
