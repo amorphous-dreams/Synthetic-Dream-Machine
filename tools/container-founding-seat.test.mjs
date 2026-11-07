@@ -20,6 +20,16 @@ test('later witness calls use the same guard and retain existing Node options', 
   }
 });
 
+
+test('a compose preload passes through the standalone helper once', () => {
+  const result = spawnSync('sh', ['tools/test-container-route.sh', 'sh', '-c', 'printf "%s" "$NODE_OPTIONS"'], {
+    encoding: 'utf8', env: { ...process.env, NODE_OPTIONS: `--trace-warnings ${seat}`,
+      LAR_STAGE_DIR: '/state', LARES_TEST_FOUNDING: '1' },
+  });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout, `--trace-warnings ${seat}`);
+});
+
 test('a staged mesh founding refuses without the seat; the same founding succeeds with the import', () => {
   const root = mkdtempSync(join(tmpdir(), 'mesh-founding-control-'));
   const env = { ...process.env, NODE_OPTIONS: '', LAR_ROOT: root };
@@ -55,7 +65,8 @@ test('every container staged founding calls the one guarded harness route', () =
   const mesh = read('docker-compose.mesh.yml');
   assert.match(mesh, /x-test-founding: &test-founding\n  LAR_STAGE_DIR: "\/state"\n  LARES_TEST_FOUNDING: "1"/);
   assert.equal((mesh.match(/<<: \*test-founding/g) ?? []).length, 5, 'both hearths and all three Herm foundings inherit the same test signal');
-  assert.doesNotMatch(mesh, /NODE_OPTIONS:/, 'no process-wide seat in the compose');
+  assert.match(mesh, /LARES_TEST_FOUNDING: "1"\n  NODE_OPTIONS: "--import=file:\/\/\/app\/tools\/test-ward-route.mjs"/, 'scenario CLI acts inherit the shared test seat');
+  assert.equal((mesh.match(/NODE_OPTIONS:/g) ?? []).length, 1, 'one anchor seats every mesh CLI process');
   for (const file of ['Dockerfile', 'docker-compose.yml', 'docker-compose.surface.yml']) {
     assert.doesNotMatch(read(file), /LARES_TEST_FOUNDING|test-container-route|test-ward-route/);
   }

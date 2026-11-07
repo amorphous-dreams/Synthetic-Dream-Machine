@@ -38,10 +38,12 @@
 
 name: dreamnet-mesh
 
-# Only disposable mesh foundings opt into the guarded process-local test route.
+# This disposable mesh supplies the explicit test route to founding AND later scenario CLI acts.
+# The preload seats only CLI processes on marked roots; daemons receive no route.
 x-test-founding: &test-founding
   LAR_STAGE_DIR: "/state"
   LARES_TEST_FOUNDING: "1"
+  NODE_OPTIONS: "--import=file:///app/tools/test-ward-route.mjs"
 
 x-herm: &herm
   image: "${LARES_HARNESS_IMAGE:?name the built image by digest — tools/harness-image.sh prints it}"

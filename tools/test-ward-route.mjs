@@ -24,6 +24,8 @@ const cli = /lares-cli[\\/](?:dist[\\/]src[\\/]bin[\\/]lares\.js|bin[\\/]lares\.
 const rootFlag = (() => { const a = process.argv; const i = a.findIndex((x) => x === "--root" || x.startsWith("--root=")); return i < 0 ? undefined : a[i].startsWith("--root=") ? a[i].slice(7) : a[i + 1]; })();
 const root = rootFlag ?? process.env.LAR_ROOT;
 const storageOverride = process.argv.some((x) => x === "--storage" || x.startsWith("--storage="));
-if (cli && !storageOverride && root && existsSync(join(root, ".lar-test-scratch"))) {
+// A container staging branch must also opt in through its test-only compose signal.
+const containerHarness = !process.env.LAR_STAGE_DIR || process.env.LARES_TEST_FOUNDING === "1";
+if (containerHarness && cli && !storageOverride && root && existsSync(join(root, ".lar-test-scratch"))) {
   seatHarnessRoutes(await import(new URL("../packages/lararium-node/dist/src/index.js", import.meta.url).href));
 }
