@@ -203,7 +203,7 @@ export function vesselDocStoreDoor<S extends SaveSession>(port: () => Port | nul
   };
 }
 
-/** Island → vessel: the island's holder answers the door from now (`docstore:answering`), or no longer
+/** Island → vessel: the island's holder answers the door (`docstore:answering`), or falls silent
  *  (`docstore:silent`). The vessel's cell asks only an island that answers: a door with none refuses at once by name. */
 export interface DocStoreMsg_Answering { readonly type: "docstore:answering" }
 export interface DocStoreMsg_Silent { readonly type: "docstore:silent" }
