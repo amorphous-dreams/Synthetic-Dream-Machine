@@ -304,7 +304,12 @@ describe("face grant standing replaces the face lease", () => {
     const kel = await personaKel(null);
     const ctx = { personaRootDid: edge.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP,
       personaKel: kel, dyad: (_key: string) => "clear" as const };
-    expect((await verifyFaceGrantRecord({ ...rec, sig: "0".repeat(128) }, ctx)).ok).toBe(false);
+    // Use an edge today's verifier accepts so this control reaches the grant signature check.
+    // Migrate this control to the epoch-free edge when the reader accepts that shape.
+    const control = await grantFor();
+    expect((await verifyFaceGrantRecord(control, ctx)).ok).toBe(true);
+    expect(await verifyFaceGrantRecord({ ...control, sig: "0".repeat(128) }, ctx))
+      .toMatchObject({ ok: false, reason: "the record's signature fails under the founder's licensed key" });
     expect((await verifyFaceGrantRecord(rec, ctx)).ok).toBe(true);
   });
 });
