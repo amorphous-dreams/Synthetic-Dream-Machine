@@ -32,6 +32,8 @@ import { DOMAIN_ROOT, RECOVERY_CONTACT_REGISTRATION_DOMAIN, RECOVERY_CONTACT_POS
  *   kind "guardian-enrolment"       -> "recovery-contact-enrolment"    (the typed event: its bytes, cid and every cid after)
  *   party "guardian"                -> "recovery-contact"              (a face-log view's signed party; FACE_LOG_VIEW_DOMAIN is unchanged, so an old-party view now fails the reader)
  *   the enrolment event               gains enrolCount 3 and enrolThreshold 2 in its signed bytes, and every later rotation and veto on that log carries them forward (the KEL verifier decides the 2-of-3 law; the reveal decides the set)
+ * The bare persona-kel domain re-mints the enrolment bytes and addresses, the possession bytes (which bind the prefix),
+ * and the rotation address.
  * Before the cut: enrolment bytes 47251fe4…, event cid pkel1-9d0bab85…, possession bytes ec416f4b…, registration
  * phrase aster-wind-mesa, card phrases dawn-opal-wave · vine-anchor-crest · mesa-heron-wind, rotation cid pkel2-8f47d2af….
  */
@@ -68,8 +70,8 @@ describe("the weld: enrolment, the seed-share card and the recovery rotation, by
     expect(r.recoveryContactSetHash).toBe(sealKeySetHash(keys, 2));
     expect(r.event.kind).toBe(RECOVERY_CONTACT_ENROLMENT_KIND);
     expect(r.event.nextRecoverySetHash).toBe(r.recoveryContactSetHash);
-    expect(digest(personaEnrolmentSigningBytes(inception, r.recoveryContactSetHash))).toBe("64076fdc9e30ac6ff89c75b6bdffa608bab30fb2f3b6a8a1b5ed1553304c3d97");
-    expect(r.event.eventCid).toBe("pkel1-45383898cb24551d3c319c30082574f65954013889e794bd00758a1b7e49a915");
+    expect(digest(personaEnrolmentSigningBytes(inception, r.recoveryContactSetHash))).toBe("fe608c79599e71b687979161a73d59fb935e639fcf6f43d39cb8c2dcfb2b537d");
+    expect(r.event.eventCid).toBe("pkel1-3ef4850c7f3716b82d65ec4dee8ef4e11089769a277cb66772bc0c09a6fdc594");
     expect((await verifyPersonaKelFull([inception, r.event])).ok).toBe(true);
   });
 
@@ -88,7 +90,7 @@ describe("the weld: enrolment, the seed-share card and the recovery rotation, by
 
   test("the possession and registration handshakes: bytes and phrases", async () => {
     const { inception, keys } = await faceAndOffers();
-    expect(digest(recoveryContactPossessionBytes(inception.prefix, keys[0]!))).toBe("d76e18830311ff10be4b53d3d917093867f9f7e42bb99f5d2529011586049b45");
+    expect(digest(recoveryContactPossessionBytes(inception.prefix, keys[0]!))).toBe("eb6dccbff0bc977a6140b4740778f174878e4449efc1a7b9b6704cb8cf3a0bf7");
     const card = recoveryContactRegistrationCard("contact-a", keys[0]!, "Aki");
     expect(card.label).toBe("Recovery-contact-A (Aki)");
     expect(card.confirmPhrase).toBe("cinder-ember-brook");
@@ -116,7 +118,7 @@ describe("the weld: enrolment, the seed-share card and the recovery rotation, by
     expect(rot.ok).toBe(true);
     if (!rot.ok) return;
     expect(rot.event.prefix).toBe(inception.prefix);
-    expect(rot.event.eventCid).toBe("pkel2-6326b3816bff606d924759a88a61ed63c4ea8d4be8c301a7b1b861aa2a29f0ed");
+    expect(rot.event.eventCid).toBe("pkel2-45a7f2fa6e45af16e682cb39df501da6cd73ee3564bc61eb252cf994570cc2d8");
     expect((await verifyPersonaKelFull([inception, r.event, rot.event])).ok).toBe(true);
     const one = await attestAndRotate({
       head: r.event, freshOpKeyDid: fresh, recoveryContactKeys: keys, recoveryThreshold: 2,

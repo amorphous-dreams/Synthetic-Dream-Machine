@@ -256,10 +256,10 @@ describe("what a board writer reaches", () => {
   });
 });
 
-describe("an event that names no kind keeps the bytes it held", () => {
-  // Content addresses read off the encoder before the typed enrolment landed (88e0fedbe): an inception, a provisional
+describe("an event that names no kind keeps its bare-domain vectors", () => {
+  // Content addresses re-minted under the bare persona-kel domain: an inception, a provisional
   // self-recovery rotation and the veto that kills it, from fixed seeds.
-  test("★ an inception, a rotation and a veto address as they always addressed ★", async () => {
+  test("★ an inception, a rotation and a veto address under the bare domain ★", async () => {
     const { inception, selfPub } = await oneOfOne();
     const fresh = await didOf(SEEDS.opB);
     const sig = await signerOf(SEEDS.self)(personaRotationSigningBytes(inception, fresh, inception.nextRecoverySetHash, true));
@@ -269,9 +269,9 @@ describe("an event that names no kind keeps the bytes it held", () => {
     });
     if (!rot.ok) throw new Error(rot.reason);
     const veto = await mintVeto({ contested: rot.event, standing: inception, sign: signerOf(SEEDS.opA) });
-    expect(inception.eventCid).toBe("pkel0-c8c52547cf4f765ee7f88763e58b7d501817759289cf996688c6a25e4cd36502");
-    expect(rot.event.eventCid).toBe("pkel1-629b961525e810e19c84303d518ec15c5d6bf3d3ff0d2b1580c636caf9c133d7");
-    expect(veto.eventCid).toBe("pkel1-eef28d1afdd4efde09179c14c444e059d63a67fa2de28a7665b8825875553126");
+    expect(inception.eventCid).toBe("pkel0-a767cb8dcff285f01ea69d692b9980c817dffc91f2478489f554ebde5700fa98");
+    expect(rot.event.eventCid).toBe("pkel1-3f0112bf3c5b925158582887de5cc0cc8070f2f6ffc9c4bebc654a2424d64914");
+    expect(veto.eventCid).toBe("pkel1-b96798509312b9c66f4373f68566802da01b3354296342b5f7a786882dce79db");
   });
 });
 
