@@ -109,6 +109,7 @@ export function installRootServices(tw: Tw): void {
   const notify = (title: string, variables = "{}"): void => {
     const record = NOTIFY_PREFIX + next();
     wiki.addTiddler({ title: record, text: title, "lar-variables": variables });
+    // PACING: this only dismisses the displayed notification after its configured duration.
     setTimeout(() => wiki.deleteTiddler(record), tw.config?.preferences?.notificationDuration ?? 3000);
   };
 
