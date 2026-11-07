@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 /** Prepare a detached checkout from inputs, then compile its generated package outputs. */
-import { copyFileSync, cpSync, existsSync, lstatSync, mkdirSync, readFileSync, readlinkSync, readdirSync, realpathSync, rmSync, statSync, symlinkSync } from 'node:fs';
+import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, readlinkSync, readdirSync, realpathSync, rmSync, statSync, symlinkSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { assertDisk } from './disk-guard.mjs';
 import { wasmStampBody } from './stamp-build.mjs';
+import { treeSharedInodes } from './module-inodes.mjs';
 
 export const USAGE = 'usage: provision-worktree.mjs <empty-dir>';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -53,25 +54,11 @@ function copyTree(from, to) {
     else copyFileSync(a, b);
   }
 }
-/** Module farms a workspace install writes: the root, every top-level workspace dir, every package. */
-function moduleFarms(destination) {
-  const dirs = base => existsSync(base) ? readdirSync(base, { withFileTypes: true }).filter(e => e.isDirectory() && !e.name.startsWith('.') && e.name !== 'node_modules').map(e => e.name) : [];
-  return ['node_modules', ...dirs(destination).filter(d => d !== 'packages').map(d => `${d}/node_modules`), ...dirs(join(destination, 'packages')).map(d => `packages/${d}/node_modules`)]
-    .filter(rel => existsSync(join(destination, rel)) && lstatSync(join(destination, rel)).isDirectory());
-}
-function* filesUnder(path) {
-  for (const entry of readdirSync(path, { withFileTypes: true })) {
-    const child = join(path, entry.name);
-    if (entry.isDirectory()) yield* filesUnder(child);
-    else if (entry.isFile()) yield child;
-  }
-}
 /** A lane shares no writable inode with the store, the main checkout or another lane: a regular file under a module farm
- *  carrying a second link refuses by name. */
+ *  carrying a second link refuses by name (the one walk the test door and the launcher also run). */
 function assertNoSharedInodes(destination) {
-  const shared = [];
-  for (const rel of moduleFarms(destination)) for (const file of filesUnder(join(destination, rel))) if (lstatSync(file).nlink > 1) shared.push(relative(destination, file));
-  if (shared.length) throw new Error(`${shared.length} node_modules file(s) share an inode with another tree (a hardlink import): ${shared.slice(0, 5).join(', ')}${shared.length > 5 ? ', ...' : ''}`);
+  const refusal = treeSharedInodes(destination);
+  if (refusal) throw new Error(refusal);
 }
 function* linksUnder(path) {
   if (!existsSync(path)) return;

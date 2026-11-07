@@ -3,10 +3,11 @@ import { killGroup } from './launch-codex.mjs';
 import { exportTree } from './tree-export.mjs';
 import { openHeldSync, readHeld } from './held-dir.mjs';
 import { createHash, createHmac } from 'node:crypto';
-import { closeSync, constants as FS, existsSync, fchmodSync, fstatSync, mkdirSync, openSync, readdirSync, readFileSync, realpathSync, rmdirSync, rmSync, statSync, unlinkSync } from 'node:fs';
+import { closeSync, constants as FS, existsSync, fchmodSync, fstatSync, lstatSync, mkdirSync, openSync, readdirSync, readFileSync, realpathSync, rmdirSync, rmSync, statSync, unlinkSync } from 'node:fs';
 import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { sharedModuleFiles, sharedInodeRefusal } from './module-inodes.mjs';
 
 const GIT = '/usr/bin/git';
 const TAR = '/usr/bin/tar';
@@ -166,7 +167,7 @@ function hideCredentials() {
  * nothing: the installer gets exactly the directories that were opened. `.npmrc` is read through the held worktree handle with
  * O_NOFOLLOW before the wall opens (a symlink there refuses by name).
  */
-export async function runInstallSeat({ worktree, worktreeHeld, gitDir, installer, storeDir, cacheDir, iso, protect = [], env, extraRw = [], bwrap = HAVE_BWRAP }) {
+export async function runInstallSeat({ worktree, worktreeHeld, gitDir, installer, storeDir, cacheDir, iso, protect = [], env, extraRw = [], bwrap = HAVE_BWRAP, silenceSeconds = 120 }) {
   void env;
   const label = worktree ?? "the held worktree";
   if (!bwrap || !HAVE_BWRAP) return { ok: false, output: `no wall available: refusing to run the install of ${installer} in ${label} unwalled` };
@@ -232,8 +233,21 @@ export async function runInstallSeat({ worktree, worktreeHeld, gitDir, installer
       '--cache-dir',
       cacheDir,
     ];
-    const ran = spawnSync(BWRAP, args, { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe', ...fds] });
-    return { ok: ran.status === 0, output: capOutput(`${ran.stdout ?? ''}${ran.stderr ?? ''}${ran.error ? String(ran.error) : ''}`) };
+    const ran = await new Promise(resolve => {
+      const child = spawn(BWRAP, args, { detached: true, stdio: ['ignore', 'pipe', 'pipe', ...fds] });
+      let output = '', silent = false, timer;
+      // LIVENESS: `silenceSeconds` (120 by default) without stdout or stderr ends the install as refused, so a stalled installer
+      // (a lane dependency naming a FIFO, a wedged open) never holds the one broker; pnpm reports progress while it works.
+      const resetSilence = () => { clearTimeout(timer); timer = setTimeout(() => { silent = true; try { killGroup(child.pid, 'SIGKILL'); } catch (error) { if (error.code !== 'ESRCH') child.kill('SIGKILL'); } }, silenceSeconds * 1000); };
+      resetSilence();
+      const append = chunk => { resetSilence(); output += chunk; if (output.length > 16 * 1024 * 1024) output = output.slice(-CAP * 2); };
+      child.stdout.setEncoding('utf8'); child.stderr.setEncoding('utf8');
+      child.stdout.on('data', append); child.stderr.on('data', append);
+      child.on('error', error => { clearTimeout(timer); resolve({ error, output, silent }); });
+      child.on('close', (code, signal) => { clearTimeout(timer); resolve({ code, signal, output, silent }); });
+    });
+    if (ran.silent) return { ok: false, output: capOutput(`refused: install liveness: silent ${silenceSeconds}s; ${ran.output}`) };
+    return { ok: ran.code === 0, output: capOutput(`${ran.output}${ran.error ? String(ran.error) : ''}${ran.signal ? `signal ${ran.signal}` : ''}`) };
   } finally { for (const h of opened) h.close(); }
 }
 
@@ -351,13 +365,22 @@ export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
     };
     const realDirs = rel => { const fd = openFarm(rel); if (fd === null) return []; try { return readdirSync(`/proc/self/fd/${fd}`, { withFileTypes: true }).filter(e => e.isDirectory() && !e.name.startsWith('.') && e.name !== 'node_modules').map(e => e.name); } finally { closeSync(fd); } };
     const farms = ['node_modules', ...realDirs('.').filter(d => d !== 'packages').map(d => `${d}/node_modules`), ...realDirs('packages').map(d => `packages/${d}/node_modules`)];
+    // A symlinked root farm would resolve inside the wall's own view, past the read-only bind: refuse it by name.
+    try { if (!lstatSync(`/proc/self/fd/${worktreeHeld.fd}/node_modules`).isDirectory()) return refuse('root node_modules must be a real directory'); }
+    catch (error) { if (error.code !== 'ENOENT') throw error; }
     for (const rel of farms) { const fd = openFarm(rel); if (fd !== null) moduleFds.push({ rel, fd }); }
+    // The wall never rests on how the tree was installed: a module file sharing an inode with another tree (the store, the
+    // main checkout, another lane) refuses by name before any code runs, since a read-only bind fences paths, not inodes.
+    const shared = sharedInodeRefusal(sharedModuleFiles(moduleFds.map(({ rel, fd }) => ({ rel, dir: `/proc/self/fd/${fd}` }))));
+    if (shared) return refuse(shared);
     // The build stamps (node_modules/.lares-build) bind WRITABLE over the read-only root farm: the wall's build -> stamp step
-    // records what its dist came from, at the trust of the dist it built (both lane-owned output, neither tooling).
+    // records what its dist came from, at the trust of the dist it built (both lane-owned output, neither tooling). The stamp
+    // dir opens relative to the held root farm, never by a second walk from the worktree.
     if (moduleFds[0]?.rel === 'node_modules') {
       try { mkdirSync(`/proc/self/fd/${moduleFds[0].fd}/.lares-build`); } catch (error) { if (error.code !== 'EEXIST') throw error; }
-      const fd = openFarm('node_modules/.lares-build');
-      if (fd === null) return refuse('node_modules/.lares-build must be a real directory');
+      let fd;
+      try { fd = openSync(`/proc/self/fd/${moduleFds[0].fd}/.lares-build`, FS.O_RDONLY | FS.O_DIRECTORY | FS.O_NOFOLLOW); }
+      catch (error) { if (['ELOOP', 'ENOTDIR'].includes(error.code)) return refuse('node_modules/.lares-build must be a real directory'); throw error; }
       stampFds.push({ rel: 'node_modules/.lares-build', fd });
     }
     const boundFds = [...moduleFds, ...stampFds];

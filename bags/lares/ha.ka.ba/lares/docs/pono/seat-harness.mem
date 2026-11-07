@@ -56,7 +56,7 @@ A seat names its lineage, model, effort, mode, wall, seat directory under `~/.la
 <<~ ahu slot=`#/the-lead`>>
 !! The lead ~ fresh per step, never one long session
 
-''The measured controller recipe'' (2026-11-06: G54 #177 and slot-wake #178 both landed). Provision with `node tools/provision-worktree.mjs <lane-root>/wt`, switch at its base with `git switch -c <branch>`, and run `pnpm build`. Write `<lane-root>/state.json` with `head`, `owed`, `seats`, `worktrees`, `next` and `step`; validate with `tools/lane-state.mjs` `readState`. Write a `--checks` JSON with a structural no-conflict-markers check, then start `node tools/commit-relay.mjs --lane-root … --worktree … --branch … --launcher <main-tree/tools/launch-codex.mjs> --checks … --remote-url …` in the harness's background mode.
+''The measured controller recipe'' (2026-11-06: G54 #177 and slot-wake #178 both landed). Provision with `node tools/provision-worktree.mjs <lane-root>/wt`, switch at its base with `git switch -c <branch>`, and run `pnpm build`. Write `<lane-root>/state.json` with `head`, `owed`, `seats`, `worktrees`, `next` and `step`; validate with `tools/lane-state.mjs` `readState`. Write a `--checks` JSON with a structural no-conflict-markers check, then start `node tools/commit-relay.mjs --lane-root … --worktree … --branch … --launcher <main-tree/tools/launch-codex.mjs> --checks … --remote-url …` in the harness's background mode. The install door also takes `--installer <the real pnpm, with node beside it> --store-dir <the pnpm store> --cache-dir <the pnpm metadata cache>`; the relay refuses an install by naming each flag it lacks, and a corepack shim cannot run inside the install wall.
 
 Launch each step with `node tools/launch-codex.mjs --lead-step --lane-root … --model gpt-6.1-terra --effort medium --worktree …`. Between steps the controller reads `relay/res-NNN.json`, trues `head`, and writes `next` with the session's two attribution trailers and the house subject `lar:///ha.ka.ba/<pkg>/<area>/<w1.w2.w3> — summary`. The lead has no git or network: the controller runs `node tools/pre-push-gate.mjs` and the lane's tests outside the wall (empty stderr inside the wall came from that wall), then `node tools/push-go.mjs --lane-root … --branch … --head … --remote-url …`; the next lead step requests the push through the broker. The controller opens the PR, writes the land message before the wait, reads CI, writes a SHIP for a security-class lane, lands, stops the broker and removes the worktree.
 
@@ -223,6 +223,6 @@ This carrier gains its standing sections and rewrites the broker bullets and the
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;EVqYweEeaR605rVjo_YvI7cake8CngXCiCkp9pG-zT4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mUk6ywSDYKQkIBouSt3GXhfMZhp2JQdRiShnzwTWRxo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

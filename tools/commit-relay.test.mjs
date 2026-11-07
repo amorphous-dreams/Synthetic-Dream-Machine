@@ -1,7 +1,7 @@
 import { test, afterEach } from 'node:test';
 import { wallTest } from './wall-test.mjs';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync, symlinkSync, chmodSync, readdirSync, linkSync, renameSync, realpathSync, statSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync, symlinkSync, chmodSync, readdirSync, linkSync, renameSync, realpathSync, statSync, truncateSync } from 'node:fs';
 import { createServer } from 'node:net';
 import os from 'node:os';
 import { createHash, randomBytes } from 'node:crypto';
@@ -43,7 +43,8 @@ console.log('SEAT-LAUNCHED 123');
   const relayEnv = { ...process.env, HOME: home, PATH: `${bin}:${process.env.PATH}` };
   const checksFile = path.join(root, 'checks.json'); writeFileSync(checksFile, JSON.stringify([{ name: 'true', argv: ['/usr/bin/true'] }]));
   const storeDir = path.join(root, 'store'); mkdirSync(storeDir);
-  const brokerArgs = ['--installer', path.join(bin, 'pnpm'), '--store-dir', storeDir, '--checks', checksFile, '--author-name', 'Relay', '--author-email', 'relay@example.invalid'];
+  const cacheDir = path.join(root, 'cache'); mkdirSync(cacheDir);
+  const brokerArgs = ['--installer', path.join(bin, 'pnpm'), '--store-dir', storeDir, '--cache-dir', cacheDir, '--checks', checksFile, '--author-name', 'Relay', '--author-email', 'relay@example.invalid'];
   const run = () => { const r = spawnSync(process.execPath, [script, '--lane-root', lane, '--worktree', wt, '--branch', 'relay-test', '--launcher', launcher, ...brokerArgs, '--remote-url', remote, '--once'], { encoding: 'utf8', env: relayEnv }); assert.equal(r.status, 0, r.stderr); return r; };
   const response = id => JSON.parse(readFileSync(path.join(lane, 'relay', `res-${id}.json`), 'utf8'));
   const go = value => { ensureGo(); writeFileSync(goFile, value); };
@@ -488,6 +489,28 @@ test('a FIFO planted at a request name refuses by name and never stalls the brok
   assert.doesNotMatch(control.output, /not a regular file/);
 });
 
+test('RED: a request file over 1 MiB refuses by size before any read; CONTROL a regular request beside it answers', () => {
+  const x = setup();
+  x.request('1', { kind: 'push' });
+  const big = path.join(x.lane, 'relay', 'req-2.json'); writeFileSync(big, ''); truncateSync(big, 2 * 1024 * 1024); // sparse: no disk spent
+  x.run();
+  const refused = x.response('2');
+  assert.equal(refused.ok, false); assert.match(refused.output, /req-2\.json: 2097152 bytes, over the 1048576-byte request limit/);
+  assert.match(x.response('1').output, /go/i, 'CONTROL: the regular request reached its door');
+});
+
+test('RED: the install door names each missing flag; CONTROL a configured relay reaches the install seat', () => {
+  const x = setup(), dest = path.join(x.lane, 'builder');
+  x.request('1', { kind: 'worktree', path: dest, branch: 'relay-test-build', base: 'HEAD' }); x.run();
+  const bare = x.brokerArgs.filter((arg, i, all) => !['--cache-dir', '--store-dir'].includes(arg) && !['--cache-dir', '--store-dir'].includes(all[i - 1]));
+  x.request('2', { kind: 'install', path: dest });
+  const r = spawnSync(process.execPath, [script, '--lane-root', x.lane, '--worktree', x.wt, '--branch', 'relay-test', '--launcher', x.launcher, ...bare, '--remote-url', x.remote, '--once'], { encoding: 'utf8', env: x.relayEnv });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(x.response('2').output, /install is not configured: the relay needs --store-dir, --cache-dir/);
+  x.request('3', { kind: 'install', path: dest }); x.run();
+  assert.doesNotMatch(x.response('3').output, /not configured/, 'CONTROL: the configured relay reaches the seat');
+});
+
 test('P1-5 the trusted launcher must sit outside the scratch tree entirely', () => {
   const x = setup();
   const inScratch = path.join(x.lane, 'wt', 'launcher.mjs'); writeFileSync(inScratch, '// planted');
@@ -630,6 +653,22 @@ test('P1 the install wall binds the HELD worktree: a parent swapped after the ho
   assert.deepEqual(readdirSync(outside), [], 'nothing reached the swapped path target');
   assert.equal(readFileSync(path.join(moved, 'bound-marker'), 'utf8'), 'BOUND\n', 'the install ran in the held directory');
   held.close();
+});
+
+wallTest('RED: a silent installer ends on the named liveness bound and refuses; CONTROL a chatty installer completes', async () => {
+  const x = brokerFixture();
+  const wt = path.join(x.root, 'wt-live'); mkdirSync(wt);
+  const cache = path.join(x.root, 'cache-live'), store = path.join(x.root, 'store-live'); mkdirSync(cache); mkdirSync(store);
+  const bin = path.join(x.root, 'bin-live'); mkdirSync(bin);
+  const seat = { worktree: wt, gitDir: x.ctx.gitDir, installer: path.join(bin, 'pnpm'), storeDir: store, cacheDir: cache, iso: x.iso, protect: [], silenceSeconds: 2 };
+  writeFileSync(path.join(bin, 'pnpm'), '#!/bin/sh\necho progress\n', { mode: 0o755 });
+  const done = await runInstallSeat(seat);
+  assert.equal(done.ok, true, JSON.stringify(done)); assert.match(done.output, /progress/);
+  writeFileSync(path.join(bin, 'pnpm'), '#!/bin/sh\nexec sleep 600\n', { mode: 0o755 });
+  const t0 = Date.now();
+  const hung = await runInstallSeat(seat);
+  assert.equal(hung.ok, false); assert.match(hung.output, /refused: install liveness: silent 2s/);
+  assert.ok(Date.now() - t0 < 30000, 'the bound ended the wait');
 });
 
 test('P1 a symlinked .npmrc refuses by name BEFORE any read: an outside file with a hostile key is never opened', async () => {

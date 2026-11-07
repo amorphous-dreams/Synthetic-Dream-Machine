@@ -1,6 +1,6 @@
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, symlinkSync, renameSync, existsSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, symlinkSync, renameSync, existsSync, copyFileSync, linkSync } from 'node:fs';
 import { execFileSync, spawnSync } from 'node:child_process';
 import path from 'node:path';
 import os from 'node:os';
@@ -144,7 +144,7 @@ test('RED: the door self-test runs a named vitest file in a scratch tree and lea
   assert.ok(existsSync(path.join(wt, 'node_modules', '.lares-build', 'pkg', 'door-vitest')));
   const after = checkoutDistSnapshot();
   const moved = Object.keys(before).filter(file => after[file] !== before[file]);
-  assert.deepEqual(moved.slice(0, 5), [], `${moved.length} checkout dist file(s) rewritten by a self-test`);
+  assert.deepEqual(moved.slice(0, 5), [], `${moved.length} checkout dist or stamp file(s) rewritten by a self-test`);
 });
 
 test('C1 package directory symlink outside the worktree refuses without disclosing its target', () => {
@@ -227,6 +227,29 @@ test('C3 a worktree gitlink stays read-only inside the test namespace', () => {
   assert.equal(result.fail, 1); assert.notEqual(result.exitCode, 0);
   assert.match(result.logTail, /EACCES|EROFS|permission denied|read-only file system/i);
   assert.equal(readFileSync(path.join(x.wt, '.git'), 'utf8'), `gitdir: ${gitDir}\n`);
+});
+
+test('RED: a tree whose node_modules shares an inode with another tree refuses by name before any code runs; CONTROL a copied module file runs', () => {
+  const x = fixture();
+  const outside = path.join(x.home, 'store-file'); writeFileSync(outside, 'shared tooling\n');
+  mkdirSync(path.join(x.wt, 'packages/demo/node_modules/dep'), { recursive: true });
+  copyFileSync(outside, path.join(x.wt, 'packages/demo/node_modules/dep/index.js'));
+  const control = x.run(request(['ok.test.mjs']));
+  assert.equal(control.ok, true, JSON.stringify(control));
+  rmSync(path.join(x.wt, 'packages/demo/node_modules/dep/index.js')); linkSync(outside, path.join(x.wt, 'packages/demo/node_modules/dep/index.js'));
+  const refused = x.run(request(['ok.test.mjs']));
+  assert.equal(refused.ok, false);
+  assert.match(refused.output, /refused: 1 node_modules file\(s\) share an inode .*packages\/demo\/node_modules\/dep\/index\.js/);
+  assert.equal(readFileSync(outside, 'utf8'), 'shared tooling\n');
+});
+
+test('RED: a symlinked root node_modules refuses by name (it would escape the read-only bind); CONTROL no node_modules at all runs', () => {
+  const x = fixture();
+  const control = x.run(request(['ok.test.mjs']));
+  assert.equal(control.ok, true, JSON.stringify(control));
+  const farm = path.join(x.home, 'farm'); mkdirSync(farm); symlinkSync(farm, path.join(x.wt, 'node_modules'));
+  const refused = x.run(request(['ok.test.mjs']));
+  assert.equal(refused.ok, false); assert.match(refused.output, /root node_modules must be a real directory/);
 });
 
 test('C5 test code cannot write node_modules inside the wall (root and package farms read-only); CONTROL dist/ still writes', () => {

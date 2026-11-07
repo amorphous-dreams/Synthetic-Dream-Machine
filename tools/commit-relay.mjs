@@ -48,12 +48,18 @@ const worktreeHeld = await openHeld(worktree, scratch); // the commit door reads
 // O_NONBLOCK lets a FIFO (or any special file) planted at a request name open without waiting on a writer; the kind check then
 // refuses it by name before a read, so a planted pipe never stalls the one broker. A directory keeps its EISDIR for gitDirOf.
 const kindOf = st => st.isFIFO() ? 'fifo' : st.isSocket() ? 'socket' : st.isCharacterDevice() ? 'character device' : st.isBlockDevice() ? 'block device' : 'special file';
+// A request or gitlink file reads whole into memory, so its size bounds before the read: a sparse multi-GiB request costs a
+// lead no disk and would otherwise cost the broker its memory.
+const READ_LIMIT = 1024 * 1024;
 async function readHeldAsync(held, name) {
-  const fh = await fsOpen(held.at(name), FSC.O_RDONLY | FSC.O_NOFOLLOW | FSC.O_NONBLOCK);
+  let fh;
+  try { fh = await fsOpen(held.at(name), FSC.O_RDONLY | FSC.O_NOFOLLOW | FSC.O_NONBLOCK); }
+  catch (error) { if (error.code === 'ENXIO') throw new Error(`${name}: not a regular file (ENXIO: a socket or a device without a reader)`); throw error; }
   try {
     const st = await fh.stat();
     if (st.isDirectory()) throw Object.assign(new Error(`EISDIR: ${name} is a directory`), { code: 'EISDIR' });
     if (!st.isFile()) throw new Error(`${name}: not a regular file (${kindOf(st)})`);
+    if (st.size > READ_LIMIT) throw new Error(`${name}: ${st.size} bytes, over the ${READ_LIMIT}-byte request limit`);
     return await fh.readFile('utf8');
   } finally { await fh.close(); }
 }
@@ -127,7 +133,8 @@ async function handle(request) {
     return { ok: gone.ok, output: cap(gone.output) };
   }
   if (request.kind === 'install') {
-    if (!options.installer || !options['store-dir'] || !options['cache-dir']) throw new Error('install is not configured');
+    const missing = ['installer', 'store-dir', 'cache-dir'].filter(flag => !options[flag]).map(flag => `--${flag}`);
+    if (missing.length) throw new Error(`install is not configured: the relay needs ${missing.join(', ')}`);
     const stage = made.get(path.resolve(String(request.path)));
     const held = stage ? openHeldSync(stage, stageRoot) : openLaneDir(request.path); // the worktree opens ONCE here; the wall binds this fd, never a pathname
     const ctx = await brokerCtx();
@@ -176,4 +183,5 @@ async function poll() {
     }
   }
 }
+// PACING: the relay dir is re-read every 5 s; a request waits at most one pause, and the pause bounds the broker's own spend.
 do { await poll(); if (!options.once) await new Promise(resolve => setTimeout(resolve, 5000)); } while (!options.once);
