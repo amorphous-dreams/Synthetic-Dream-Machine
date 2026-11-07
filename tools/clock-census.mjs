@@ -22,6 +22,12 @@ function testFile(file) { return /(?:^|\/)tests?\//.test(file) || /(?:^|[.\/-])(
 function seeded(file, text) {
   return EXCEPTIONS.find(e => e.rule === 'clock' && e.file === file && text.includes(e.match) && /(?:bounds? only|own liveness|own child process timeout|own completion time)/i.test(e.reason));
 }
+// A NAMED LIVENESS BOUND (the product-waits ruling: a clock stays only where no event can say never): a comment on the
+// wait's own line, or the comment line just above it, names LIVENESS.
+function namedLiveness(lines, line) {
+  const own = lines[line - 1], above = (lines[line - 2] ?? '').trim();
+  return /\/\/.*\bLIVENESS\b/.test(own) || (/^(?:\/\/|\*|\/\*)/.test(above) && /\bLIVENESS\b/.test(above));
+}
 export function scanText(file, source) {
   // Preserve offsets and line breaks while blanking comments and strings. Strings
   // cannot carry a clock decision, but parentheses in them must not end calls.
@@ -36,6 +42,10 @@ export function scanText(file, source) {
     seen.add(key);
     const text = lines[line - 1].trim();
     const exception = seeded(file, text);
+    if (!exception && category === 'PRODUCT-WAIT' && namedLiveness(lines, line)) {
+      found.push({ file, line, category: 'LIVENESS', kind, review: false, text });
+      return;
+    }
     found.push({ file, line, category: exception ? (/runner|child process/i.test(exception.reason) ? 'HARNESS' : 'LIVENESS') : category, kind, review: !exception, text });
   }
   const defaultCategory = test ? 'TEST-WAIT' : file.startsWith('tools/') ? 'HARNESS' : 'PRODUCT-WAIT';

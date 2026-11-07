@@ -463,6 +463,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       if (livenessMs !== undefined) {
         void workerEa.then(() => {
           if (settled) return;
+          // LIVENESS (ISLAND_ASK_LIVENESS_MS): an island wedged while alive says nothing, and no event can say never.
           timer = setTimeout(() => {
             if (_pending.delete(requestId)) reject(new Error(`LIVENESS: the island stood alive and answered no ${requestId} within its ${livenessMs}ms liveness bound`));
           }, livenessMs);
