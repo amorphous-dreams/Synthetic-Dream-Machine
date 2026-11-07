@@ -726,6 +726,39 @@ test("P1-4 findRollout remembers the rollouts whose prompt carries another marke
   assert.equal(findRollout(home, { marker: "SEAT-MARKER mine", before: new Set(), seen }), mine);
 });
 
+test("P27 findRollout reads the seat's OWN prompt past Codex's injected context: an AGENTS.md project doc as the first user message never decides; CONTROL another seat's prompt, a marker quoted in a brief's body, or an echoed marker never binds", () => {
+  const home = mkdtempSync(join(tmpdir(), "rollouts-")), dir = join(home, ".codex", "sessions", "2026", "11", "07"); mkdirSync(dir, { recursive: true });
+  // the shape a fresh worktree's rollout measured (codex-cli 0.166.0): developer context, then ONE user message carrying the project doc and the environment, then the turn, then the brief
+  const injected = [
+    cevent({ type: "session_meta", payload: { cwd: "/wt" } }),
+    cevent({ type: "response_item", payload: { type: "message", role: "developer", content: [{ type: "input_text", text: "You are Codex" }] } }),
+    cevent({ type: "response_item", payload: { type: "message", role: "user", content: [{ type: "input_text", text: "# AGENTS.md instructions for /wt\n\n<INSTRUCTIONS>\nthe house seed\n</INSTRUCTIONS>" }, { type: "input_text", text: "<environment_context>\n  <cwd>/wt</cwd>\n</environment_context>" }], internal_chat_message_metadata_passthrough: { content_item_metadata: [{ provenance: { type: "agents_md" } }, { provenance: { type: "harness" } }] } } }),
+    cevent({ type: "turn_context", payload: { cwd: "/wt" } }),
+  ];
+  const prompt = (text) => cevent({ type: "response_item", payload: { type: "message", role: "user", content: [{ type: "input_text", text }] } });
+  const put = (name, lines) => { const f = join(dir, name); writeFileSync(f, `${lines.join("\n")}\n`); return f; };
+  const before = new Set();
+  const mine = put("rollout-mine.jsonl", [...injected, prompt("SEAT-MARKER mine\n\nthe brief"), tc(5)]);
+  assert.equal(findRollout(home, { marker: "SEAT-MARKER mine", before }), mine, "the brief behind the project doc binds its seat");
+  rmSync(mine);
+  const seen = new Set();
+  const pending = put("rollout-pending.jsonl", injected);
+  assert.equal(findRollout(home, { marker: "SEAT-MARKER mine", before, seen }), null);
+  assert.ok(!seen.has(pending), "injected context alone, the prompt not yet written, reads as not yet, never decided");
+  const other = put("rollout-other.jsonl", [...injected, prompt("SEAT-MARKER other\n\nSEAT-MARKER mine quoted in the body"), cevent({ type: "response_item", payload: { type: "function_call_output", output: "SEAT-MARKER mine" } }), tc(5)]);
+  assert.equal(findRollout(home, { marker: "SEAT-MARKER mine", before, seen }), null, "CONTROL another seat's prompt never binds, nor a marker in its body or its tool output");
+  assert.ok(seen.has(other), "another seat's prompt decides: never re-read");
+  const plain = put("rollout-plain.jsonl", [...injected, prompt("an operator's own session"), cevent({ type: "response_item", payload: { type: "function_call_output", output: "SEAT-MARKER mine" } }), tc(5)]);
+  assert.equal(findRollout(home, { marker: "SEAT-MARKER mine", before, seen }), null, "CONTROL a session with no seat prompt never binds, an echo in its tool output included");
+  assert.ok(seen.has(plain), "a turn that answered with no seat prompt ahead of it decides: never re-read");
+  const quoted = put("rollout-quoted.jsonl", [injected[0], prompt("# AGENTS.md instructions for /wt\n\n<INSTRUCTIONS>\nSEAT-MARKER mine\n</INSTRUCTIONS>")]);
+  assert.equal(findRollout(home, { marker: "SEAT-MARKER mine", before, seen }), null, "CONTROL a project doc that quotes the marker never binds: only a prompt's FIRST line names its seat");
+  assert.ok(!seen.has(quoted), "injected context decides nothing");
+  rmSync(pending); rmSync(other); rmSync(plain); rmSync(quoted);
+  const late = put("rollout-late.jsonl", [...injected, prompt("SEAT-MARKER mine\n\nthe brief")]);
+  assert.equal(findRollout(home, { marker: "SEAT-MARKER mine", before, seen }), late, "the prompt written on a later tick binds");
+});
+
 test("P1-4 a STALE reading never resets the blind counter: token events stop while the seat lives and the supervisor stops it at the blind limit", async () => {
   const seatDir = mkdtempSync(join(tmpdir(), "stale-"));
   const signals = []; let up = true, n = 0;

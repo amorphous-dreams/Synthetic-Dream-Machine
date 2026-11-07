@@ -117,16 +117,34 @@ export function listRollouts(home) {
   return out;
 }
 
-/** The text of a rollout event's user-prompt field, or null when the event holds no user prompt. */
-function promptText(event) {
+/** The text items of a rollout event's user-prompt field (a list, possibly empty), or null when the event holds no user prompt. */
+function promptTexts(event) {
   const p = event?.payload;
   if (!p) return null;
-  if (p.type === "user_message") return typeof p.message === "string" ? p.message : JSON.stringify(p.message ?? "");
-  if (p.type === "message" && p.role === "user") return JSON.stringify(p.content ?? "");
+  if (p.type === "user_message") return typeof p.message === "string" ? [p.message] : [];
+  if (p.type === "message" && p.role === "user") return Array.isArray(p.content) ? p.content.map((c) => c?.text).filter((t) => typeof t === "string") : [];
   return null;
 }
 
-/** Whether the rollout at `file` holds `marker` in its FIRST user-prompt event (true or false), or null while no complete prompt event stands yet: lines parse as JSONL events, no byte cap, an echoed copy in tool output never counts; a file with no complete prompt event yet reads as not yet. */
+/** Whether an event shows a turn answered or ended: a token count, an assistant message, a completed or aborted task (harness items such as a developer tool list never count). */
+function answers(event) {
+  const p = event?.payload;
+  if (!p) return false;
+  if (event.type === "event_msg") return p.type === "token_count" || p.type === "task_complete" || p.type === "turn_aborted";
+  return event.type === "response_item" && p.type === "message" && p.role === "assistant";
+}
+
+const SEAT_PROMPT = "SEAT-MARKER ";
+
+/**
+ * Whether the rollout at `file` names `marker`'s seat (true or false), or null while that stands undecided. The launcher
+ * writes the marker as the FIRST line of the seat's prompt, so the seat prompt reads as the first user-prompt text item
+ * whose first line opens with `SEAT-MARKER `; it decides, true only when that line equals the marker. Every other user
+ * text item (Codex's AGENTS.md project doc, its environment context, any harness block, a doc quoting a marker) decides
+ * nothing, so the lookup holds no list of Codex's injection headers. An event showing the model answering with no seat
+ * prompt ahead of it decides false (a session that no seat launched). Lines parse as JSONL events, no byte cap; an echoed
+ * copy in tool output never counts; a file with no complete seat prompt and no answer yet reads as not yet.
+ */
 function rolloutHoldsMarker(file, marker) {
   const fd = openSync(file, "r");
   try {
@@ -143,14 +161,18 @@ function rolloutHoldsMarker(file, marker) {
         tail = tail.subarray(nl + 1);
         if (!line.trim()) continue;
         let event; try { event = JSON.parse(line); } catch { continue; }
-        const text = promptText(event);
-        if (text !== null) return text.includes(marker);
+        const texts = promptTexts(event);
+        if (texts === null) { if (answers(event)) return false; continue; }
+        for (const text of texts) {
+          const first = text.split("\n", 1)[0].trim();
+          if (first.startsWith(SEAT_PROMPT)) return first === marker;
+        }
       }
     }
   } finally { closeSync(fd); }
 }
 
-/** The rollout of one seat: among the files NOT in `before` (the set the launcher listed ahead of the spawn), the one whose first user-prompt event carries the seat's own marker. The marker rides the prompt, so a rollout names its seat. */
+/** The rollout of one seat: among the files NOT in `before` (the set the launcher listed ahead of the spawn), the one whose seat prompt (the first user text opening with `SEAT-MARKER `, past any injected context) carries the seat's own marker on its first line. The marker rides the prompt, so a rollout names its seat. */
 export function findRollout(home, { marker, before, seen = new Set() }) {
   for (const p of listRollouts(home)) {
     if (before.has(p) || seen.has(p)) continue;
