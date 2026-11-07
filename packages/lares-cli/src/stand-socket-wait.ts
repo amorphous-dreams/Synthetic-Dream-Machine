@@ -33,3 +33,32 @@ export async function awaitVerbSocket(w: VerbSocketWait): Promise<{ outcome: Ver
     await w.sleep(500);
   }
 }
+
+export interface BootPhaseWait {
+  readonly readAttestation: () => string;
+  readonly childExited: () => boolean;
+  readonly now: () => number;
+  readonly sleep: (ms: number) => Promise<void>;
+  /** The LIVENESS span: log silence this long, with no ready line, fault or exit, reads as stalled. */
+  readonly silenceMs: number;
+}
+export type BootPhaseOutcome = "ready" | "fault" | "exited" | "silent";
+
+/**
+ * The boot phase: a spawned node's log says `vessel-ready` or `fatal:`, or the child exits. Log growth renews the
+ * silence span (a heavy corpus replay writes as it goes); no fixed ceiling bounds a boot that keeps making progress.
+ */
+export async function awaitBootPhase(w: BootPhaseWait): Promise<BootPhaseOutcome> {
+  let seenLen = 0;
+  let silentSince = w.now();
+  for (;;) {
+    const tail = w.readAttestation();
+    if (/fatal:/.test(tail)) return "fault";
+    if (tail.includes("vessel-ready")) return "ready";
+    if (w.childExited()) return "exited";
+    if (tail.length > seenLen) { seenLen = tail.length; silentSince = w.now(); }
+    // LIVENESS: a node that writes nothing, never reports ready and never exits says nothing more; no event can say never.
+    if (w.now() - silentSince >= w.silenceMs) return "silent";
+    await w.sleep(200);
+  }
+}

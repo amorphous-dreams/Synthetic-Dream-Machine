@@ -28,7 +28,7 @@ import { engineHeldByHost } from "../port-control.js";
 import { standingPath, standingVerdict } from "@lararium/mesh/rendezvous-path";
 import { larRoot, larBootstrapPath, larDataDir, larCasDir, vesselDid } from "../env.js";
 import { udsAlive } from "../local-connector.js";
-import { awaitVerbSocket } from "../stand-socket-wait.js";
+import { awaitBootPhase, awaitVerbSocket } from "../stand-socket-wait.js";
 import { readVesselStanding, conditionOk } from "../vessel-condition.js";
 import { emit } from "../render.js";
 import { summaryOutput } from "../verb-result.js";
@@ -280,30 +280,19 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
       const readAttestation = (): string => {
         try { return readFileSync(log, "utf8").slice(startOffset); } catch { return ""; }
       };
-      // The sd_notify WATCHDOG idiom: a healthy boot that keeps WRITING to the log is making
-      // progress, however long the corpus/keyhive replay runs — so extend the window whenever
-      // the log grows, and fail only on a genuine STALL (no output for the idle span) or the
-      // absolute ceiling. The adaptive window holds a slow-but-live boot instead of false-timing
-      // it at a fixed 15s deadline. (The real CPU cost is paced/deferred separately; this stops the watcher lying.)
-      // This door's own liveness patience — never a safety verdict — reads a monotonic clock,
-      // so an adversarial or operator wall-clock set-back/set-forward changes neither how long
-      // this wait actually ran nor when it gives up.
-      const IDLE_MS = 30_000; // headroom for a silent heavy stretch (Automerge corpus materialize)
-      const hardCap = performance.now() + 180_000;
-      let idleDeadline = performance.now() + IDLE_MS;
-      let seenLen = 0;
-      let phase: "starting" | "ready" | "fault" = "starting";
-      while (performance.now() < idleDeadline && performance.now() < hardCap) {
-        const tail = readAttestation();
-        if (/fatal:/.test(tail)) { phase = "fault"; break; }
-        if (tail.includes("vessel-ready")) { phase = "ready"; break; }
-        if (tail.length > seenLen) { seenLen = tail.length; idleDeadline = performance.now() + IDLE_MS; } // progress → extend
-        await sleep(200);
-      }
+      // The boot ends on the node's own events: `vessel-ready`, `fatal:` or the child's exit. A healthy boot that keeps
+      // WRITING to the log is making progress however long the corpus/keyhive replay runs, so log growth renews the
+      // silence span; no fixed ceiling cuts a live boot. Only a node silent for the whole span reaches the bound.
+      const booted = await awaitBootPhase({
+        readAttestation, childExited: () => childExited, now: () => performance.now(), sleep,
+        silenceMs: 30_000, // LIVENESS: headroom for a silent heavy stretch (Automerge corpus materialize)
+      });
+      let phase: "starting" | "ready" | "fault" = booted === "ready" ? "ready" : booted === "fault" ? "fault" : "starting";
       // `vessel-ready` is attested BEFORE the daemon-keyhive gates settle, so a gate
       // fault (e.g. the Binding Gate) surfaces as a LATE `fatal:`. After a ready attestation,
       // settle and re-read for that late fault — never report up for a node that died.
       if (phase === "ready") {
+        // LIVENESS: no event says the keyhive gates settled after `vessel-ready`; the late-fault read waits this span.
         await sleep(1500);
         if (/fatal:/.test(readAttestation())) phase = "fault";
       }
