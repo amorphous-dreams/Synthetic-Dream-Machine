@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { makeSharedHolderCore, type HolderIsland, type HolderPort } from "../src/shared-holder-core.js";
-import { HOLDER_ROUTES } from "../src/holder-routes.js";
+import { HOLDER_ROUTES, OWNER_ONLY_KINDS } from "../src/holder-routes.js";
 import { admitPort, faceFixture, fakePort, type FakePort } from "./holder-session-fixture.js";
 import type { IslandToVesselMsg } from "../../lararium-mesh/src/island-protocol";
 
@@ -14,7 +14,7 @@ const islandKinds = [
   "docstore:sealed", "docstore:opened", "docstore:live", "docstore:slot",
 ] as const satisfies readonly IslandToVesselMsg["type"][];
 
-function harness(grant = false) {
+function harness(grant = false, clear = true) {
   const islandListeners = new Set<(message: unknown) => void>();
   const islandPosts: unknown[] = [];
   const drops: Array<{ kind: string; reason: string }> = [];
@@ -31,7 +31,7 @@ function harness(grant = false) {
     spawnIsland: (_group, personaRoot, edgeDigest) => {
       gate = { edgeDigest, personaRoot };
       // The island's Binding Gate clears for the edge the first session presented.
-      queueMicrotask(() => { for (const l of islandListeners) l({ type: "gate:clear", ...gate }); });
+      if (clear) queueMicrotask(() => { for (const l of islandListeners) l({ type: "gate:clear", ...gate }); });
       return island;
     },
     onDrop: (kind, reason) => drops.push({ kind, reason }),
@@ -41,8 +41,85 @@ function harness(grant = false) {
   const face = faceFixture("face:T");
   const admit = async (tab: FakePort): Promise<void> => { await admitPort(tab, await face); };
   const fromIsland = (message: unknown) => { for (const listener of islandListeners) listener(message); };
-  return { core, port, admit, islandPosts, fromIsland, drops };
+  const listening = (): boolean => islandListeners.size > 0;
+  return { core, port, admit, islandPosts, fromIsland, drops, listening, face };
 }
+
+const turns = async (n = 32): Promise<void> => { for (let i = 0; i < n; i++) await new Promise((resolve) => setTimeout(resolve, 0)); };
+const refusals = (tab: FakePort): string[] => tab.received.filter((m) => (m as { kind?: string }).kind === "holder:refused").map((m) => (m as { cause: string }).cause);
+const postedKinds = (posts: unknown[]): string[] => posts.map((m) => (m as { type: string }).type);
+
+describe("the holder refuses vessel-only kinds from a non-owner tab", () => {
+  test("every owner-only kind, forged at a second admitted tab, reaches no island and is refused by name — CONTROL: the owner's same kinds cross", async () => {
+    const h = harness(); const owner = h.port(); const other = h.port();
+    await h.core.connect(owner.endpoint); await h.core.connect(other.endpoint); await h.admit(owner); await h.admit(other);
+    owner.send({ type: "manifest", wikiUri: "wiki:a" });
+    const forged = [...OWNER_ONLY_KINDS, "sensorium:recall"];
+    expect(forged).toEqual(expect.arrayContaining(["teardown", "hooanu", "receipt:close", "receipt:issued", "cas:block", "daemon:face-lit"]));
+    const before = h.islandPosts.length;
+    for (const type of forged) other.send({ type, requestId: `forged-${type}`, wikiUri: "wiki:a" });
+    expect(postedKinds(h.islandPosts.slice(before)), "no forged kind reaches the island").toEqual([]);
+    const causes = refusals(other);
+    expect(causes).toHaveLength(forged.length);
+    expect(causes.filter((cause) => /owner-only-kind/.test(cause))).toHaveLength(forged.length - 1);
+    expect(causes.some((cause) => /island-owned/.test(cause)), "a forged manifest meets the owned island").toBe(true);
+    // CONTROL: the owner's own kinds cross (the manifest already crossed; a close waits for asks-done, below).
+    const crossing = forged.filter((type) => type !== "manifest" && type !== "receipt:close");
+    for (const type of crossing) owner.send({ type, requestId: `owner-${type}`, wikiUri: "wiki:a" });
+    expect(postedKinds(h.islandPosts.slice(before))).toEqual(crossing);
+    // A session's own kinds still cross from the second tab.
+    other.send({ type: "wiki:place-verb", requestId: "verb" });
+    expect(postedKinds(h.islandPosts).at(-1)).toBe("wiki:place-verb");
+  });
+});
+
+describe("F7: the island's asks-done always meets an event", () => {
+  test("the owner hears asks-done, and only then may its receipt:close cross — CONTROL: a close before asks-done is refused by name", async () => {
+    const h = harness(); const owner = h.port();
+    await h.core.connect(owner.endpoint); await h.admit(owner);
+    owner.send({ type: "manifest", wikiUri: "wiki:a" });
+    owner.send({ type: "receipt:close" });
+    expect(postedKinds(h.islandPosts)).not.toContain("receipt:close");
+    expect(refusals(owner).some((cause) => /receipt-close-unasked/.test(cause))).toBe(true);
+    h.fromIsland({ type: "receipt:asks-done" });
+    expect((owner.received.at(-1) as { type?: string }).type).toBe("receipt:asks-done");
+    owner.send({ type: "receipt:close" });
+    expect(postedKinds(h.islandPosts).filter((type) => type === "receipt:close")).toHaveLength(1);
+  });
+
+  test("while the house proves the face, asks-done reaches the claimant and its close crosses", async () => {
+    const h = harness(false, false); const claimant = h.port();
+    await h.core.connect(claimant.endpoint);
+    void h.admit(claimant);
+    for (let i = 0; i < 50 && !h.listening(); i++) await turns(1);
+    expect(h.listening()).toBe(true);
+    claimant.send({ type: "manifest", wikiUri: "wiki:a" });
+    h.fromIsland({ type: "receipt:asks-done" });
+    expect(claimant.received.some((m) => (m as { type?: string }).type === "receipt:asks-done"), "the claimant hears it").toBe(true);
+    claimant.send({ type: "receipt:close" });
+    expect(postedKinds(h.islandPosts)).toContain("receipt:close");
+  });
+
+  test("with no owner left mid-teardown, the holder closes the island's receipts on asks-done", async () => {
+    const h = harness(); const owner = h.port(); const other = h.port();
+    await h.core.connect(owner.endpoint); await h.core.connect(other.endpoint); await h.admit(owner); await h.admit(other);
+    owner.send({ type: "manifest", wikiUri: "wiki:a" });
+    h.core.disconnect(owner.endpoint);
+    h.fromIsland({ type: "receipt:asks-done" });
+    expect(postedKinds(h.islandPosts).filter((type) => type === "receipt:close")).toHaveLength(1);
+  });
+
+  test("an owner that leaves after asks-done but before its close leaves the holder to close them, once", async () => {
+    const h = harness(); const owner = h.port(); const other = h.port();
+    await h.core.connect(owner.endpoint); await h.core.connect(other.endpoint); await h.admit(owner); await h.admit(other);
+    owner.send({ type: "manifest", wikiUri: "wiki:a" });
+    h.fromIsland({ type: "receipt:asks-done" });
+    expect(postedKinds(h.islandPosts)).not.toContain("receipt:close");
+    h.core.disconnect(owner.endpoint);
+    h.core.disconnect(other.endpoint);
+    expect(postedKinds(h.islandPosts).filter((type) => type === "receipt:close")).toHaveLength(1);
+  });
+});
 
 describe("shared holder routing keeps every island answer on its binding", () => {
   test("hello gives each port a distinct session in one owner epoch", async () => {
