@@ -1090,8 +1090,6 @@ export class VesselIslandPoolCore {
     wikiId: string, worker: VesselWorkerHandle, view: SessionDocumentView | null, standing: SurfaceStanding, surface: IslandKeyParts | null,
   ): void {
     const settlement = receiptSettlement(() => { try { worker.post({ type: "receipt:close" }); } catch { /* the worker already left */ } });
-    // One settle waits per island at a time: a second ask while one waits answers false at once, so an island
-    // cannot stack waiters on the owner by asking for heads that never arrive.
     worker.listen((raw: unknown) => {
       if (!isIslandToVesselMsg(raw)) return;
       if (raw.type === "receipt:asks-done") { settlement.asksDone(); return; }
@@ -1115,6 +1113,10 @@ export class VesselIslandPoolCore {
         });
         return;
       }
+      // ONE VIEW SETTLE WAITS PER ISLAND AT A TIME (`standing.settling`): a second ask while one waits answers false at once, so a
+      // session island cannot stack waiters on the owner by asking for heads that never arrive. RECEIPT asks below hold no such cap:
+      // they run concurrently by ruling (L29), one answer per owed write, bounded by the island's owed titles, each ending on its
+      // heads, its stall rounds, the peer's leave, or the round's close.
       if (raw.type === "view:settle") {
         const ask = raw as IslandMsg_ViewSettle;
         if (typeof ask.requestId !== "string") return;
