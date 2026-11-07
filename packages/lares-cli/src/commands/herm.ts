@@ -82,6 +82,7 @@ export async function cmdHerm(args: ParsedArgs): Promise<number> {
     let idleDeadline = performance.now() + IDLE_MS;
     let seenLen = 0;
     let phase: "starting" | "ready" | "fault" = "starting";
+    // LIVENESS: a spawned herm can stop writing attestation without exiting.
     while (performance.now() < idleDeadline && performance.now() < hardCap) {
       const tail = readAttestation();
       if (/fatal:/.test(tail)) { phase = "fault"; break; }
