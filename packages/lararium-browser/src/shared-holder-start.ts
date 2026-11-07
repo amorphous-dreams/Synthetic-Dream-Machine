@@ -1,7 +1,7 @@
 import { refuseBufferedPorts, type ConnectBuffer } from "./connect-buffer.js";
 import { Repo } from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
-import { shoreStorage } from "@lararium/mesh";
+import { shoreStorage, isTeardownFault, type IslandToVesselMsg } from "@lararium/mesh";
 import { attachMessageChannelSync } from "@lararium/mesh";
 import { makeHolderRuntime } from "./shared-holder-runtime.js";
 import type { BrowserIslandScope } from "./browser-sovereign-island-model.js";
@@ -75,14 +75,15 @@ export function inPageIsland(startIsland: (scope: BrowserIslandScope) => void): 
     post: (msg, transfer) => port1.postMessage(msg, (transfer ?? []) as Transferable[]),
     listen: (cb) => { listeners.add(cb); return () => listeners.delete(cb); },
     onError: (cb) => { errors.add(cb); return () => errors.delete(cb); },
-    // The island answers its teardown either way (the kernel's answerTeardown): an ack, or a fault by name.
-    // Either answer finishes it; no clock decides.
+    // The island answers its teardown either way (the kernel's answerTeardown): an ack, or its fault by name
+    // (`teardown-fault: …`). Either answer finishes it; another fault crossing meanwhile (a late slot fault) finishes
+    // nothing, so the island's flush runs. No clock decides.
     terminate: () => {
       let finished = false;
       const finish = () => { if (finished) return; finished = true; for (const cb of stop) cb(); port1.close(); port2.close(); };
       port1.addEventListener("message", (event) => {
-        const type = (event.data as { type?: string })?.type;
-        if (type === "teardown:ack" || type === "fault") finish();
+        const msg = event.data as { type?: string } | null;
+        if (msg?.type === "teardown:ack" || (msg !== null && isTeardownFault(msg as IslandToVesselMsg))) finish();
       });
       port1.postMessage({ type: "teardown" });
     },

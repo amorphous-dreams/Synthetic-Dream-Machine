@@ -47,9 +47,12 @@ export async function awaitPage(page, pageFn, arg, { livenessMs, what }) {
 export const WITNESS_LIVENESS_MS = 8_000;
 
 /**
- * Wait for a product witness or terminal failure. A missing frame after an applied act, or an unknown render id the
- * worker never answers, has no terminal signal, so every witness keeps the LIVENESS bound, and its lapse names itself.
- * Answers true when the witness arrived, false on a terminal signal, a closed page or the named lapse.
+ * Wait for a product witness or terminal failure. An unknown render id ends on its correlated `lar:control-result`
+ * alone: every refusal on the return leg reaches the page as a result carrying its reason, so a console line stands as
+ * testimony beside it (the weld's console capture keeps it), never as the verdict. `stale-target` answers the probe; an
+ * `applied` or a refusal by another reason (a misrouted probe) reads false.
+ * Register this wait before dispatching the unknown probe so an answer that lands before evaluate returns cannot escape it.
+ * Silence on that probe throws a harness liveness error, never a W3 verdict. Other witnesses answer false on lapse.
  */
 export async function waitForWitness(page, kind, mark, renderId, value, { livenessMs = WITNESS_LIVENESS_MS, log = console.log } = {}) {
   let onError, onConsole, timer;
@@ -60,14 +63,15 @@ export async function waitForWitness(page, kind, mark, renderId, value, { livene
     };
     page.on("pageerror", onError);
     page.on("console", onConsole);
-    // LIVENESS: a frame that never lands, or a render id never answered, raises no terminal signal.
+    // LIVENESS: only a page that supplies neither a verdict nor a named refusal exhausts this harness bound.
     timer = setTimeout(() => {
-      log(`  LIVENESS: the ${kind} witness — the page stood alive and painted neither its witness nor a refusal within ${livenessMs}ms`);
-      resolve(false);
+      const message = `LIVENESS: the ${kind} witness — the page stood alive and painted neither its witness nor a refusal within ${livenessMs}ms`;
+      log(`  ${message}`);
+      resolve(kind === "unknown" ? { silent: message } : false);
     }, livenessMs);
   });
   try {
-    return await Promise.race([
+    const outcome = await Promise.race([
       terminal,
       page.waitForFunction(({ kind, mark, renderId, value }) => {
         const events = window.__weldWorkerTrace?.events.slice(mark) ?? [];
@@ -79,9 +83,9 @@ export async function waitForWitness(page, kind, mark, renderId, value, { livene
             (mirror?.startsWith("none:") && mirror !== "none:mirror-inputs-absent")) return { arrived: false };
         const dispatch = events.find((e) => e.direction === "to-worker" && e.type === "lar:control-event" &&
           (renderId ? e.renderId === renderId : e.action === "lar:sense"));
-        const answered = dispatch && events.some((e) => e.direction === "from-worker" && e.workerId === dispatch.workerId &&
-          e.surface === dispatch.surface && e.type === "lar:control-result" && e.renderId === renderId);
-        if (kind === "unknown") return answered ? { arrived: true } : false;
+        const answered = dispatch && events.find((e) => e.direction === "from-worker" && e.workerId === dispatch.workerId &&
+          e.surface === dispatch.surface && e.type === "lar:control-result" && e.eventId === dispatch.eventId && e.renderId === renderId);
+        if (kind === "unknown") return answered ? { arrived: answered.status === "stale-target" } : false;
         const pane = document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection");
         const tab = (title) => pane?.querySelector(`button[data-lar-rid][data-tab-title="${title}"]`);
         const reveal = pane?.querySelector(".tc-sidebar-header > .tc-reveal");
@@ -96,7 +100,10 @@ export async function waitForWitness(page, kind, mark, renderId, value, { livene
         // PACING: the page polls its own DOM each frame; the race's terminal arm or the LIVENESS bound above ends it.
       }, { kind, mark, renderId, value }, { timeout: 0 }).then((h) => h.jsonValue()).then((r) => r.arrived),
     ]);
-  } catch {
+    if (outcome?.silent) throw new Error(outcome.silent);
+    return outcome;
+  } catch (error) {
+    if (kind === "unknown" && String(error?.message).startsWith("LIVENESS:")) throw error;
     return false; // page closed
   } finally {
     clearTimeout(timer);

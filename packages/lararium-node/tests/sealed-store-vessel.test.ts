@@ -209,18 +209,18 @@ describe("a private body seals on a real founded vessel, end to end", () => {
     expect(session.asks).toEqual([{ requestId: "r1", verb: "sealed-seal" }]);
   }, 120_000);
 
-  test("A PLACE SESSION REACHES NO SEALED STORE: the vessel answers `session-anchor-place`, and nothing seals or opens", async () => {
+  test("A PLACE SESSION WITH NO PLACE STANDING REACHES NO SEALED STORE: the vessel's book answers `signer-unavailable`, and nothing seals or opens", async () => {
     const root = scratch();
     const st = await standFoundedIsland(teardown);
     const own = await stand(st, root, { session: await proof() });
     const sealed = await own.run("sealed-seal", { bag: BAG, text: BODY });
     await own.dispose();
-    const place = await stand(st, root, { session: await proof(() => ({ refusal: "session-anchor-place" })) });
+    const place = await stand(st, root, { session: await proof(() => ({ refusal: "signer-unavailable" })) });
     const before = tree(sealedStoreDir(root)).length;
     for (const [verb, args] of [["sealed-seal", { bag: BAG, text: "x" }], ["sealed-open", { bag: BAG, ref: sealed["ref"] }], ["sealed-reading", { bag: BAG }]] as const) {
       const err = await place.run(verb, args as never).catch((e: unknown) => e);
       expect(isVerbRefusal(err), verb).toBe(true);
-      expect((err as { reason: string }).reason, verb).toBe("session-anchor-place");
+      expect((err as { reason: string }).reason, verb).toBe("signer-unavailable");
     }
     expect(tree(sealedStoreDir(root)).length).toBe(before);
   }, 120_000);

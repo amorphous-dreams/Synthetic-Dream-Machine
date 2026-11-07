@@ -12,18 +12,19 @@ describe("kernel teardown order", () => {
     const body = source.slice(source.indexOf("async function _handleTeardown"));
     const deliver = body.indexOf("await _adaptor.awaitWikiDispatch()");
     const unhook = body.indexOf("_bridgeUnsub?.()");
-    const stop = body.indexOf("await _adaptor.stop()");
+    const stop = body.indexOf("await _adaptor.stop(");
     expect(deliver).toBeGreaterThan(-1);
     expect(deliver).toBeLessThan(unhook);
     expect(unhook).toBeLessThan(stop);
   });
 
-  test("the receipt capability closes BEFORE the adaptor stops, so a flight hung on a quiet connected peer's receipt ends (no timer decides)", () => {
+  test("the adaptor drains before the receipt capability closes normally", () => {
     const source = readFileSync(new URL("../src/sovereign-kernel.ts", import.meta.url), "utf8");
     const body = source.slice(source.indexOf("async function _handleTeardown"));
-    const close = body.indexOf("_receipt?.close()");
-    const stop = body.indexOf("await _adaptor.stop()");
+    const close = body.indexOf("receipt?.close()");
+    const stop = body.indexOf("await _adaptor.stop(");
     expect(close).toBeGreaterThan(-1);
-    expect(close, "the capability closes ahead of the stop that awaits the Drain").toBeLessThan(stop);
+    expect(stop).toBeGreaterThan(-1);
+    expect(stop).toBeLessThan(close);
   });
 });

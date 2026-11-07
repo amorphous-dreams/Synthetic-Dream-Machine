@@ -1021,3 +1021,29 @@ describe("a restart and its queued follow-up never wait on restart listeners", (
     expect(seen).toEqual(["a#1", "b#2"]);
   });
 });
+
+describe("the shutting island's leg stays readable through its settlement round (two-phase-boot T5: the receipt answer read daemon-down mid-shutdown)", () => {
+  test("syncLegReady answers from the island while its shutdown runs; CONTROL: every other door refuses daemon-down, and after disposal the leg refuses too", async () => {
+    const vm = fakeVm();
+    const gate = deferred<void>();
+    let during: { leg?: string; place?: string } = {};
+    let held!: ReturnType<typeof holdDaemonVm>;
+    (vm as { shutdown: () => Promise<{ acked: boolean }> }).shutdown = async () => {
+      // The island's teardown asks its receipts: the vessel's answer reads the island's leg through the facade.
+      during.leg = await held.vm.syncLegReady();
+      try { held.vm.placeVerb({ origin: "channel", verb: "x", args: {} } as never); } catch (e) { during.place = (e as Error).message; }
+      await gate.promise;
+      return { acked: true };
+    };
+    held = holdDaemonVm({ vm, reopen: async () => fakeVm() });
+    const down = held.vm.shutdown();
+    gate.resolve();
+    await down;
+    expect(during.leg, "the shutting island's leg answers its own settlement round").toBe(`leg-${vm.id}`);
+    expect(during.place).toMatch(/daemon-down/);
+    // The window after the shutdown settled and before disposal: the island acked and left, so its leg reads daemon-down.
+    await expect(held.vm.syncLegReady()).rejects.toThrow(/daemon-down/);
+    held.vm.dispose();
+    await expect(held.vm.syncLegReady()).rejects.toThrow(/daemon-down/);
+  });
+});

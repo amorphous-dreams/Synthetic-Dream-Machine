@@ -1,3 +1,4 @@
+import type { FloorWikiRefusal } from "./catalog-view.js";
 import type { LarTiddlerStore } from "./tiddler-store.js";
 import type { Repo } from "@automerge/automerge-repo";
 import type { CompositeStore } from "./composite-store.js";
@@ -14,7 +15,7 @@ export type LarOpenPhase =
   | "island-ready"   // island (system bag) resolved — may arrive async
   | "wiki-ready"     // wiki DocHandle resolved
   | "draft-ready"    // wiki-drafts DocHandle resolved
-  | "vessel-ready"   // LarVessel constructed, CompositeStore wired
+  | "vessel-ready"   // the vessel's island record composed, CompositeStore wired
   | "tw5-booted"     // TW5Engine.boot() resolved
   | "corpus-ready"   // corpus bags attached (fires once all initial corpora loaded)
   | "live";          // island pool attached, vessel sovereign
@@ -65,7 +66,10 @@ export interface VesselResult<TPool, TDaemon> {
   store:            CompositeStore;
   daemon:           TDaemon;
   activeWikiId:     string;
-  activeWikiSource: "boot-arg" | "daemon-marker";
+  /** Who chose the mounted wiki: the boot's own ask, the daemon's active-wiki marker, or the floor (`FLOOR_WIKI`, standing in for a wiki that waits). */
+  activeWikiSource: "boot-arg" | "daemon-marker" | "floor";
+  /** The wiki this composition refused by name and stands in for on its floor wiki, waiting on a face (`wiki-awaits-face`); null where none waits. */
+  wikiAwaitsFace:   FloorWikiRefusal | null;
   wikiDocUrl:       string;
   catalogHandleUrl: string;
   /**

@@ -277,7 +277,7 @@ export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
   if (!HAVE_BWRAP) return refuse('no test wall available');
 
   // Resolve the nearest package for each file through the held worktree; one vitest invocation has one package cwd.
-  let packageDir = '.', vitestPath;
+  let packageDir = '.', vitestPath, build;
   if (runner === 'vitest') {
     const packages = [];
     for (const file of files) {
@@ -301,7 +301,7 @@ export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
     }
     if (packages.some(pkg => pkg.dir !== packages[0].dir)) return refuse('files belong to different packages');
     packageDir = packages[0].dir;
-    try { JSON.parse(packages[0].packageData); }
+    try { build = JSON.parse(packages[0].packageData).scripts?.build; if (build !== undefined && typeof build !== 'string') throw new Error('invalid build'); }
     catch { return refuse('package.json unreadable'); }
     vitestPath = path.join(packageDir, 'node_modules/vitest/vitest.mjs');
   }
@@ -347,6 +347,30 @@ export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
     mkdirSync(scratchHeld.at('home'));
     mkdirSync(scratchHeld.at('lar-root'));
     const bin = path.dirname(node);
+    // One wall owns build -> stamp -> test. A failed build never reaches Vitest or earns a fresh stamp.
+    // Positional argv carries the manifest script and test names; no filename enters shell source.
+    const packageTest = `
+      const { spawnSync } = require('node:child_process');
+      const { writeFileSync } = require('node:fs');
+      const [build, packageDir, vitest, ...files] = process.argv.slice(1);
+      if (build) {
+        const built = spawnSync('/bin/sh', ['-c', build], { stdio: 'inherit' });
+        if (built.error) console.error(built.error.message);
+        if (built.status !== 0) process.exit(built.status || 1);
+        if (/^packages\\/[^/]+$/.test(packageDir)) {
+          const stamped = spawnSync(process.execPath, ['/work/tools/stamp-build.mjs', '/work', '--pkg', packageDir.slice(9)], { stdio: 'inherit' });
+          if (stamped.error) console.error(stamped.error.message);
+          if (stamped.status !== 0) process.exit(stamped.status || 1);
+        }
+      }
+      writeFileSync('/scratch/build-ok', 'built'); // broker-owned: wall-side script; /scratch binds scratchHeld.fd, never a host pathname
+      // node_modules reads read-only here, so every vite/vitest write it would take lands in /scratch or nowhere: the config
+      // loads through the runner (no .vite-temp bundle), results keep no cache, the module cache lives under /scratch.
+      const tested = spawnSync(process.execPath, [vitest, 'run', '--reporter=json', '--outputFile=/scratch/vitest.json', '--reporter=dot',
+        '--configLoader', 'runner', '--no-cache', '--fsModuleCachePath', '/scratch/vitest-cache', '--root', process.cwd(), ...files], { stdio: 'inherit' });
+      if (tested.error) console.error(tested.error.message);
+      process.exit(tested.status ?? 1);
+    `;
     const args = [
       '--die-with-parent', '--new-session', '--unshare-pid', '--unshare-ipc', '--unshare-net', '--clearenv',
       '--ro-bind', '/usr', '/usr', '--symlink', 'usr/bin', '/bin',
@@ -357,14 +381,11 @@ export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
       '--bind-fd', '3', '/work', '--ro-bind-fd', '5', '/work/.git', '--bind-fd', '4', '/scratch',
       ...moduleFds.flatMap(({ rel }, i) => ['--ro-bind-fd', String(6 + i), path.posix.join('/work', rel)]),
       '--chdir', path.posix.join('/work', packageDir),
-      '--setenv', 'PATH', `${bin}:/usr/bin:/bin`, '--setenv', 'HOME', '/scratch/home',
+      '--setenv', 'PATH', `${path.posix.join('/work', packageDir, 'node_modules/.bin')}:/work/node_modules/.bin:${bin}:/usr/bin:/bin`, '--setenv', 'HOME', '/scratch/home',
       '--setenv', 'LAR_ROOT', '/scratch/lar-root', '--setenv', 'TMPDIR', '/tmp', '--setenv', 'LC_ALL', 'C',
       ...(runner === 'node'
         ? [node, '--test', '--test-reporter=tap', '--', ...files.map(f => path.posix.join('/work', f))]
-        : [node, path.posix.join('/work', vitestPath), 'run', '--reporter=json', '--outputFile=/scratch/vitest.json', '--reporter=dot',
-          // node_modules reads read-only here, so every vite/vitest write it would take lands in /scratch or nowhere: the config
-          // loads through the runner (no .vite-temp bundle), results keep no cache, the module cache lives under /scratch.
-          '--configLoader', 'runner', '--no-cache', '--fsModuleCachePath', '/scratch/vitest-cache', '--root', path.posix.join('/work', packageDir), '--', ...files.map(f => path.posix.join('/work', f))]),
+        : [node, '-e', packageTest, '--', build ?? '', packageDir, path.posix.join('/work', vitestPath), ...files.map(f => path.posix.join('/work', f))]),
     ];
     const result = await new Promise(resolve => {
       const child = spawn(BWRAP, args, { detached: true, stdio: ['ignore', 'pipe', 'pipe', worktreeHeld.fd, scratchHeld.fd, gitFd, ...moduleFds.map(m => m.fd)] });
@@ -382,6 +403,10 @@ export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
     const childRefuse = message => ({ ok: false, exitCode: result.code ?? null, output: `refused: ${message}; exitCode: ${result.code ?? 'null'}; stderr tail: ${result.stderrTail.toString('utf8')}` });
     if (result.silent) return childRefuse('liveness: silent 30s');
     if (result.error || result.signal || result.code === null || result.overflow) return childRefuse(`test execution failed: ${result.error?.message ?? result.signal ?? 'output overflow'}`);
+    if (runner === 'vitest') {
+      try { readHeld(scratchHeld, 'build-ok'); }
+      catch (error) { return { ok: false, exitCode: result.code, output: `refused: package build or stamp failed before tests; ${error.message}; ${result.output.slice(-8192)}` }; }
+    }
     let pass, fail, skip, total;
     try {
       if (runner === 'node') {

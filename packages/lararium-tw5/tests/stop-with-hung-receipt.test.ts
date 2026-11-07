@@ -1,7 +1,7 @@
 /**
  * A flight hung on a receipt a quiet, connected peer never answers ends when the receipt capability closes: the shore's stop() then
- * returns, the title stays unsaved (never acked), and no timer decided anything. The kernel closes the capability BEFORE it stops the
- * adaptor (kernel-teardown-order pins the order).
+ * returns, the title stays unsaved (never acked), and no timer decided anything. In the kernel the vessel's `receipt:close` (after the
+ * island's `receipt:asks-done`) or the sync port closing plays the close; the kernel's own close follows stop (kernel-teardown-order).
  */
 import { describe, expect, test } from "vitest";
 import { makeReceiptCapability } from "../src/receipt.js";

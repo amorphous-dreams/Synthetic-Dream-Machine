@@ -95,9 +95,11 @@ export class WikiStoreAdapter {
    *  event loop is not held for a whole-corpus fold at each change. */
   constructor(store: CompositeStore, reader: WikiCorpusReader = compositeCorpusReader(store)) { this.reader = reader; }
 
-  /** The causal-stamped snapshot projection over the island's OWN resolved surface. */
+  /** The causal-stamped snapshot projection over the island's OWN resolved surface. A reader that folds in slices
+   *  folds here in slices, so the cold seed gives the island's loop back and a person's act never waits it out. */
   async snapshot(): Promise<WikiSensoriumSnapshot> {
     const docs = await this.reader.docs();
+    if (this.reader.foldPaced) return projectWikiSensoriumOfFold(await this.reader.foldPaced(docs));
     return this.reader.fold
       ? projectWikiSensoriumOfFold(this.reader.fold(docs))
       : projectWikiSensoriumOfDocs(docs, this.reader.stalkOf);

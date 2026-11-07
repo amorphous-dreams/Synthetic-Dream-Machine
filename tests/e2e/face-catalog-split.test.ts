@@ -3,14 +3,15 @@
  * U1): the floor's catalog names public rows alone, the lit face's own catalog names that face's rows, and a locked vessel
  * boots and serves on the floor with no face row to read.
  *
- *   S1 — a lit vessel CREATEs a user bag: the face's own catalog names it, and the floor's catalog, decoded off its rest,
- *        names no face-class row at all (POSITIVE FIRST: the floor decodes to its public rows)
+ *   S1 — a lit vessel CREATEs a user bag: the floor's catalog, decoded off its rest, names no face-class row at all
+ *        (POSITIVE FIRST: the floor decodes to its public rows); the face's own catalog rests at its shard SEALED: it
+ *        decodes to no clear row, and the opened reader (tools/opened-store.mjs) reads the bag's row there
  *   S2 — CONTROL, the floor: the same root restarts LOCKED, reaches live, opens no face's catalog and binds its rendezvous
  *   S3 — the locked floor's catalog, decoded at rest after its boot, still names no face-class row: nothing at the floor
  *        wrote one
  *
- * One staged vessel; scratch LAR_ROOT; no LAR_BAGS. A lone vessel dials no Nexus, so its face catalog rests as its face's
- * map leaves it (sealed only under a Nexus-anchored session: the restart run covers the seal).
+ * One staged vessel; scratch LAR_ROOT; no LAR_BAGS. A lone vessel dials no Nexus, yet its worn face stands at its own
+ * place: the place session seals the face's catalog from boot (session-contract#/the-hands), so its rest reads sealed.
  */
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import { cpSync, mkdtempSync, statSync } from "node:fs";
@@ -20,6 +21,7 @@ import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import { awaitRendezvous, bootDocUrl, openStaged, stagedTarget, vesselStorageDir, type LarInstance } from "../harness/instance.js";
 import { catalogRowHalf } from "../../packages/lararium-mesh/src/catalog-view.js";
+import { openedStoredApart } from "../../tools/opened-store.mjs";
 
 const BAG = `lar:///ha.ka.ba/bags/split-${process.pid}`;
 let A: LarInstance | null = null;
@@ -54,7 +56,7 @@ beforeAll(async () => {
 afterAll(async () => { await A?.stop(); });
 
 describe.skipIf(!stagedTarget)("the catalog splits by face on a running node vessel", () => {
-  test("S1 — a lit vessel's user bag rests in the face's own catalog; the floor's names no face-class row", async () => {
+  test("S1 — a lit vessel's user bag rests in the face's own catalog, sealed; the floor's names no face-class row", async () => {
     const mint = await A!.cli(["act", "CREATE", "--bag", BAG, "--yes", "--json"]);
     expect(mint.json?.["ok"], said(mint)).toBe(true);
     const faceUrl = faceCatalogOf(A!);
@@ -68,8 +70,16 @@ describe.skipIf(!stagedTarget)("the catalog splits by face on a running node ves
     expect(floor?.length ?? 0, "POSITIVE: the floor decodes to its public rows").toBeGreaterThan(0);
     expect(floor!.filter((t) => catalogRowHalf(t) === "face")).toEqual([]);
     expect(floor).not.toContain(BAG);
+    // barrier: the face's catalog rests at its own shard (a scan of nothing proves nothing), and rests sealed.
     const face = await titlesAtRest(store, faceUrl!);
-    expect(face, "the face's catalog names the bag its CREATE made").toContain(BAG);
+    expect(face, `the face catalog's rest at ${faceUrl}`).not.toBeNull();
+    expect(face, "the face catalog decodes to no clear row at rest").toEqual([]);
+    // The vessel's own reading opens it: the sealed catalog names the bag the face minted.
+    const opened = await openedStoredApart(root);
+    const faceId = faceUrl!.replace(/^automerge:/, "");
+    expect(opened.sealedIds, "the face catalog rests sealed").toContain(faceId);
+    const faceDoc = opened.docs.find((d) => d.id === faceId)?.doc as { tiddlers?: Record<string, unknown> } | undefined;
+    expect(Object.keys(faceDoc?.tiddlers ?? {}), "the opened face catalog names the bag").toContain(BAG);
   }, 240_000);
 
   test("S2 — CONTROL: the same root restarts locked, reaches live, opens no face catalog and binds its rendezvous", async () => {

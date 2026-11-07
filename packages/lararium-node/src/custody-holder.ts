@@ -186,6 +186,11 @@ export interface CustodyHolder {
   adopt(treeKey: TreeKey): Promise<void>;
   lock(): Promise<void>;
   isUnlocked(): boolean;
+  /**
+   * Hear each time a key this holder holds opens (an unlock, an adoption, a face's own unlock): a reader that refused
+   * while the key rested unopened asks again on this event, never on a timer. Returns the unsubscribe.
+   */
+  onOpened?(listener: () => void): () => void;
   attemptsLeft(): number;
   openedSlot(): string | null;
   readRow(home: CustodyHome, file: string): Promise<RowReading>;
@@ -320,6 +325,8 @@ export function makeCustodyHolder(a: {
   let unlockChain: Promise<unknown> = Promise.resolve();
   let accepting = true;
   const active = new Set<Promise<unknown>>();
+  const openedListeners = new Set<() => void>();
+  const keyOpened = (): void => { for (const listener of [...openedListeners]) { try { listener(); } catch { /* a listener's fault never reaches the holder */ } } };
 
   const enqueueUnlock = (credentials: readonly Credential[]): Promise<HolderUnlock> => {
     const run = unlockChain.then(() => doUnlock(credentials), () => doUnlock(credentials));
@@ -350,6 +357,7 @@ export function makeCustodyHolder(a: {
     sk = result.sk;
     root = custodyRootFromBytes(opened.opened);
     slot = result.slot;
+    keyOpened();
     // The node key opens alone: no face key hangs from it. A face opens by its own unlock (`unlockFace`, `unlockFaces`).
     return { reading: "opens", slot };
   };
@@ -664,6 +672,7 @@ export function makeCustodyHolder(a: {
       }
     }
     faces.set(fcid, { fck: opened.fck, slot: opened.slot, ordinal });
+    keyOpened();
     return { reading: "opens", fcid, ordinal, slot: opened.slot };
   };
   const doUnlockFaces = async (credentials: readonly Credential[]): Promise<FaceUnlock[]> => {
@@ -723,6 +732,7 @@ export function makeCustodyHolder(a: {
     sk = null;                       // the serving tree opens under its own route, never under the node key handed in
     root = custodyRootFromBytes(opened.opened);
     slot = null;
+    keyOpened();
   };
 
   const asReading = (standing: { readonly reading: string; readonly plaintext?: Uint8Array }): RowReading =>
@@ -758,6 +768,7 @@ export function makeCustodyHolder(a: {
   return {
     homes: a.homes,
     unlock: enqueueUnlock,
+    onOpened(listener) { openedListeners.add(listener); return () => { openedListeners.delete(listener); }; },
     proves(credentials) {
       const run = unlockChain.then(() => doProve(credentials), () => doProve(credentials));
       unlockChain = run.catch(() => undefined);

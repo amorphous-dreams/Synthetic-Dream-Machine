@@ -15,8 +15,8 @@ export LARES_HARNESS_IMAGE
 docker run --rm --user "$(id -u):$(id -g)" --tmpfs /tmp:mode=1777 \
   --mount "type=bind,source=$DIR,target=/state" \
   --mount "type=bind,source=$ROOT/tools,target=/app/tools,readonly" \
-  --env LAR_ROOT=/state --env LAR_STAGE_DIR=/state \
+  --env LAR_ROOT=/state --env LAR_STAGE_DIR=/state --env LARES_TEST_FOUNDING=1 \
   --entrypoint sh "$LARES_HARNESS_IMAGE" -ec \
-  'node tools/test-scratch-marker.mjs /state && node tools/seed-test-custody.mjs /state && node packages/lares-cli/dist/src/bin/lares.js vessel found --skip-build'
+  '. tools/test-container-route.sh && node tools/test-scratch-marker.mjs /state && node tools/seed-test-custody.mjs /state && test_container_route node packages/lares-cli/dist/src/bin/lares.js vessel found --skip-build'
 
 echo "[found] ✓ product image founded a Lararium at $DIR"

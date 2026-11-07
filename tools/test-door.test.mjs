@@ -5,6 +5,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath } from 'node:url';
+import { openHeldSync, readHeld } from './held-dir.mjs';
 
 // Controller runs: this integration fixture spawns git, the relay and a walled test child.
 const relay = fileURLToPath(new URL('./commit-relay.mjs', import.meta.url));
@@ -162,6 +163,28 @@ test('C1 malformed package.json refuses by name without echoing its contents', (
   assert.ok(!JSON.stringify(result).includes(secret.slice(0, 10)));
 });
 
+test('RED: held result reads refuse FIFOs without blocking; CONTROL regular files read', () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), 'held-results-')); roots.push(root);
+  const heldModule = new URL('./held-dir.mjs', import.meta.url).href;
+  for (const name of ['build-ok', 'vitest.json']) {
+    const file = path.join(root, name);
+    execFileSync('/usr/bin/mkfifo', [file]);
+    const child = spawnSync(process.execPath, ['--input-type=module', '-e', `
+      import { openHeldSync, readHeld } from ${JSON.stringify(heldModule)};
+      const held = openHeldSync(process.argv[1], process.argv[1]);
+      try { readHeld(held, process.argv[2]); process.exitCode = 1; }
+      catch (error) { console.log(error.message); }
+      finally { held.close(); }
+    `, root, name], { encoding: 'utf8', timeout: 1500 });
+    assert.equal(child.error, undefined, 'FIFO read must return before the probe timeout');
+    assert.equal(child.status, 0, child.stderr); assert.match(child.stdout, /not a regular file/);
+    rmSync(file); writeFileSync(file, 'control');
+  }
+  const held = openHeldSync(root, root);
+  try { assert.equal(readHeld(held, 'build-ok'), 'control'); assert.equal(readHeld(held, 'vitest.json'), 'control'); }
+  finally { held.close(); }
+});
+
 test('C2 silent hanging test receives a liveness refusal', () => {
   const x = fixture();
   // The fallback ends the pre-cure run, so controller proof cannot wedge the relay forever.
@@ -227,3 +250,4 @@ test('C4 vitest report with zero total tests refuses by name', () => {
   const result = x.run({ kind: 'test', runner: 'vitest', files: ['empty.test.mjs'] });
   assert.equal(result.ok, false); assert.match(result.output, /no tests ran/i);
 });
+

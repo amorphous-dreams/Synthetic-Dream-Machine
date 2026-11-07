@@ -69,6 +69,37 @@ export function catalogRowHalf(title: string, row?: StoredLarRecord | null): Cat
   return "face";
 }
 
+/** The wiki a vessel that wears no face stands on: the `lares` bag's own wiki, a floor row. */
+export const FLOOR_WIKI = "lares";
+
+/**
+ * A VESSEL THAT WEARS NO FACE BOOTS NO USER WIKI (the sealing scope): before a face lights, a wiki whose canon bag rests on
+ * a face's half (`catalogRowHalf`) reads sealed to a face no session wears, so its documents neither load nor rest. And
+ * every boot rests at the floor (stable-founding-road#/cold-start): the floor STANDS, since a floor that ended its process
+ * over a wiki would leave its operator no unlock door. So either shore refuses THAT wiki by name, stands on `FLOOR_WIKI`,
+ * and names the waiting wiki where the page and the CLI read it, never on the island's mount silence. `source` names who
+ * chose the wiki: the boot's own ask (`boot-arg`) or the daemon's active-wiki marker.
+ */
+export class FloorWikiRefusal extends Error {
+  override readonly name = "FloorWikiRefusal";
+  readonly reason = "wiki-awaits-face";
+  constructor(readonly wikiId: string, readonly source: string) {
+    super(`wiki-awaits-face: wiki ${wikiId} (named by ${source}) awaits your face: lares vault unlock — a vessel that wears no face boots no user wiki, so it stands on its floor wiki (${FLOOR_WIKI})`);
+  }
+}
+
+/** The refusal of `wikiId` by name (`FloorWikiRefusal`) when no face is worn and its canon bag's catalog row rests on a face's half; else null. */
+export function facelessWikiWaits(input: {
+  readonly wikiId: string;
+  readonly source: string;
+  readonly wikiBagId: string;
+  readonly faceWorn: boolean;
+  readonly catalog: Readonly<Record<string, StoredLarRecord>> | undefined;
+}): FloorWikiRefusal | null {
+  if (input.faceWorn) return null;
+  return catalogRowHalf(input.wikiBagId, input.catalog?.[input.wikiBagId] ?? null) === "face" ? new FloorWikiRefusal(input.wikiId, input.source) : null;
+}
+
 export type FaceCatalogRefusalReason = "secret-malformed" | "face-catalog-foreign";
 
 /** A face catalog that the presented face's secret does not name. */

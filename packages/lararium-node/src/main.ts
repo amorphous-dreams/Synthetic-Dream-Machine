@@ -1,7 +1,7 @@
 /**
  * Lararium Node Vessel — local-first relay + TW5 engine entrypoint.
  *
- * Boots one LarVessel per configured wiki, wires a WebSocket relay for
+ * Composes an island record for each configured wiki, wires a WebSocket relay for
  * browser vessels to sync through, and attaches a LarDiskProjector so
  * the bags/ tree stays in sync with the Automerge store.
  *
@@ -469,6 +469,7 @@ async function main(): Promise<void> {
     // board's key history (custody#/the-cut).
     backup: (face, bundleKey, ward) => cutFaceBundle({ face, bundleKey, door: composition?.backup ?? null, ward }),
     standing: () => composition?.standing ?? "recomposing",
+    wikiAwaits: () => composition?.wikiAwaits ?? null,
     onLog: (line) => console.log(`[custody] ${line}`),
   });
 
@@ -541,6 +542,8 @@ interface StandingComposition {
   readonly hosting?: SealedActContext["hosting"];
   /** What this composition lends a backup bundle's cut. */
   readonly backup?: BackupDoor;
+  /** The wiki this composition stands in for on its floor wiki, waiting on a face (its `wiki-awaits-face` line); absent or null where none waits. */
+  readonly wikiAwaits?: string | null;
 }
 
 /** The floor every vessel stands on: the daemon immune core and a served FLOW-map, no wiki, no pool. */
@@ -653,10 +656,10 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
   // The socket is the vessel's own claim on its store, bound before its Repo opened; the channel serves it.
   // THE DISPATCHER STANDS BEFORE THE CHANNEL SERVES. The herm branch mounts no wiki, so nothing else
   // awaits the daemon island's `ea`; a verb placed ahead of it commits and no dispatcher runs it.
-  await herm.daemon.workerEa;
-  // A BOOT MILESTONE the supervisor reads (`stand-socket-wait.ts` BOOT_MILESTONES): the daemon island's `ea` stands.
+  // The composition returned standing on its working layer (open-node-vessel's composer mounts it, slice 5b).
+  // A BOOT MILESTONE the supervisor reads (`stand-socket-wait.ts` BOOT_MILESTONES): the daemon island's `ea` stands (the composer
+  // awaited it before it returned).
   console.log(`[herm] phase → daemon-ea`);
-  await herm.daemon.mountHostWorkingLayer();
   publishStanding(storageDir, standing, faceLit);
   front.attach(makeUdsSeat({
     daemonHandle: herm.daemon.daemonHandle,
@@ -783,11 +786,11 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   // Same rendezvous law as the herm branch above: derived from the resolved substrate dir, sited where a
   // logout cannot reach it (operator ruling — a lararium serves as civic infrastructure).
   // The socket is the vessel's own claim on its store (`claimStore`), bound before its Repo opened; the channel serves it.
-  // The daemon island's working layer stands before the channel serves: receipts land in it.
-  await result.daemon.workerEa;
-  // A BOOT MILESTONE the supervisor reads (`stand-socket-wait.ts` BOOT_MILESTONES): the daemon island's `ea` stands.
+  // The daemon island's working layer stands before the channel serves: receipts land in it. The composer mounted it before
+  // `openNodeVessel` returned (slice 5b), so the channel serves on it.
+  // A BOOT MILESTONE the supervisor reads (`stand-socket-wait.ts` BOOT_MILESTONES): the daemon island's `ea` stands (the composer
+  // awaited it before it returned).
   console.log(`[lararium] phase → daemon-ea`);
-  await result.daemon.mountHostWorkingLayer();
   // WHAT THIS VESSEL STANDS AS, published beside the socket that serves it. A standing is decided at
   // boot from the face found then, so a caller holding a face lit AFTERWARD has no way to see the
   // mismatch — and `stand` attaches to a floor and a hearth alike. Written here, once the channel
@@ -985,6 +988,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     walk: result.walkDial,
     hosting: result.hostingDoor,
     backup: result.backupDoor,
+    wikiAwaits: result.wikiAwaitsFace?.message ?? null,
   };
 }
 

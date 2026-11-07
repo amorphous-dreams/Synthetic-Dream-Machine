@@ -97,7 +97,7 @@ if [ "${HERM_MESH_ROLL:-0}" = 1 ]; then
   card=$($COMPOSE logs --no-color lararium-a 2>&1 | grep -oE 'staged seed card: [0-9a-f-]+' | tail -1 | cut -d' ' -f4)
   [ -n "$before" ] && [ -n "$card" ] || refused "lararium-a" "opening head and staged seed card" "$before"
   # The card enters the staged test root's own rite. Its code never prints in the witness log.
-  out=$($COMPOSE exec -T lararium-a $LARES nexus seal rotate --cold-key "$card" --threshold 1 --json 2>&1) \
+  out=$($COMPOSE exec -T lararium-a sh tools/test-container-route.sh $LARES nexus seal rotate --cold-key "$card" --threshold 1 --json 2>&1) \
     || refused "lararium-a" "nexus seal rotate" "$out"
   unset card
   after=$(printf '%s' "$out" | grep -oE '"sealEpochCid":"(nexus|epoch)-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)

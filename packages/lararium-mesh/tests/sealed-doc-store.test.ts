@@ -6,6 +6,7 @@
  * inner adapter, so a vector reads every byte the document store hands to rest.
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed (step three) · lar:///ha.ka.ba/lares/api/pono/session-contract#/the-document-view
  */
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import * as A from "@automerge/automerge";
 import { Repo, type AutomergeUrl, type Chunk, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
@@ -14,7 +15,7 @@ import { faceProofSubjectRef, sessionSignatureImage } from "../src/face-proof-su
 import { SEALED_CHUNK_MARK } from "../src/sealed-chunk.js";
 import type { RecordSigner } from "../src/sealed-records.js";
 import {
-  SEALED_DOCUMENT_REFUSALS, SealedDocumentRefusal, SealedDocumentStore, cutFreshBase, logicalRefOf, readsAsFreshBase,
+  SEALED_DOCUMENT_REFUSALS, SealedDocumentRefusal, SealedDocumentStore, cutFreshBase, logicalRefOf, readsAsFreshBase, wornAtOf,
 } from "../src/sealed-doc-store.js";
 import { carry, introduce, said, verifies, vessel, world, type Vessel } from "./content-key-fixture.js";
 import { chain, signHex } from "./face-proof-fixture.js";
@@ -132,8 +133,166 @@ describe("step three: hydration answers to the session's face", () => {
   });
 });
 
+// ONE FACE, TWO ANCHORS (session-contract#/the-hands): a vessel that wears its face at its place and later dials a Nexus
+// names that face by two proof subjects. A value its place session sealed reads after the map names the face by its
+// Nexus subject, and a save its place session booked still seals there (meme-realm-bag ⑮b: a founder that dialed a
+// relation's Nexus stood again and found its face's catalog and draft slot `writer-face-foreign`, so unavailable).
+describe("one face at two anchors: the store reads the face by every subject the vessel's own chain names", () => {
+  const PLACE = "lar:///ha.ka.ba/@test/subjects/place-of-the-worn-face";
+  it("W1 — a value the worn face's place session sealed reads at its Nexus subject; another face's writer still refuses", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const inner = memoryAdapter();
+    const key = ["doc-anchor", "incremental", "c1"];
+    await storeFor(a, inner).save(key, A.save(A.change(A.init<{ note?: string }>(), (d) => { d.note = SECRET; })));
+    const own = faceProofSubjectRef(a.chain.scope);
+    // The manifest names the place subject as its writer: the place session sealed it.
+    const readAs = (writer: string, wornAt?: (face: string, subject: string) => boolean): SealedDocumentStore => new SealedDocumentStore({
+      inner,
+      bagOf: () => ({ bagId: BAG, face: own }),
+      sessionFace: () => own,
+      sessionOf: () => ({ id: "the-writing-session", subject: own }),
+      seal: ({ bagId, values }) => a.holder.sealValues({ bagId, values, signer: a.signer }),
+      open: async (args) => { const opened = await a.holder.openValue(args); return "refusal" in opened ? opened : { ...opened, writer }; },
+      ...(wornAt ? { wornAt } : {}),
+    });
+    const loaded = await readAs(PLACE, (face, subject) => face === own && subject === PLACE).load(key);
+    expect(loaded).toBeInstanceOf(Uint8Array);
+    expect(A.load<{ note?: string }>(loaded!).note).toBe(SECRET);
+    // CONTROL: the worn face's other subject reads only where the vessel names it; another face's writer refuses.
+    expect(await refusalOf(() => readAs(PLACE).load(key))).toBe("writer-face-foreign");
+    const other = faceProofSubjectRef((await chain("b", "nexus-test-one")).scope);
+    expect(await refusalOf(() => readAs(other, (face, subject) => face === own && subject === PLACE).load(key))).toBe("writer-face-foreign");
+  });
+
+  it("W2 — a save the place session booked seals after the map names the face by its Nexus subject; another face's session refuses", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const inner = memoryAdapter();
+    const own = faceProofSubjectRef(a.chain.scope);
+    const bookedBy = (subject: string, wornAt?: (face: string, s: string) => boolean): SealedDocumentStore => new SealedDocumentStore({
+      inner,
+      bagOf: () => ({ bagId: BAG, face: own }),
+      sessionFace: () => own,
+      sessionOf: () => ({ id: "the-place-session", subject }),
+      seal: ({ bagId, values }) => a.holder.sealValues({ bagId, values, signer: a.signer }),
+      open: (args) => a.holder.openValue(args),
+      ...(wornAt ? { wornAt } : {}),
+    });
+    const change = A.save(A.change(A.init<{ note?: string }>(), (d) => { d.note = SECRET; }));
+    expect(await refusalOf(() => bookedBy(PLACE, (face, s) => face === own && s === PLACE).save(["doc-place", "incremental", "c1"], change))).toBe("ANSWERED");
+    expect(restsClear(inner, "doc-place", SECRET)).toBe(false);
+    expect([...inner.bytes.keys()].some((k) => k.startsWith("doc-place"))).toBe(true);
+    // CONTROL: unnamed, the same booking refuses by name, and another face's session refuses under the same port.
+    expect(await refusalOf(() => bookedBy(PLACE).save(["doc-place", "incremental", "c2"], change))).toBe("session-face-foreign");
+    const other = faceProofSubjectRef((await chain("b", "nexus-test-one")).scope);
+    expect(await refusalOf(() => bookedBy(other, (face, s) => face === own && s === PLACE).save(["doc-place", "incremental", "c3"], change))).toBe("session-face-foreign");
+  });
+});
+
+// THE PORT TAKES THE BAG'S FACE (`wornAt(face, subject)`): the worn subject names the worn face alone. A bag of another
+// face never passes the writer check through the worn subject, whichever anchor sealed the value.
+describe("wornAtOf: the worn subject passes the worn face's bags alone", () => {
+  const PLACE = "lar:///ha.ka.ba/@test/subjects/place-of-the-worn-face";
+  const NEXUS = "lar:///ha.ka.ba/@test/subjects/nexus-of-the-worn-face";
+  const WORN = "lar:///ha.ka.ba/@test/subjects/the-worn-face";
+  const OTHER = "lar:///ha.ka.ba/@test/subjects/another-face";
+  it("W3 — the port answers true for the worn face at its place or dial subject, and false for any other face's bag", () => {
+    const port = wornAtOf(() => WORN, () => [PLACE, NEXUS]);
+    expect(port(WORN, PLACE)).toBe(true);
+    expect(port(WORN, NEXUS)).toBe(true);
+    // CONTROL: a bag of a different face does not pass through the worn subject; an unnamed subject refuses.
+    expect(port(OTHER, PLACE)).toBe(false);
+    expect(port(OTHER, NEXUS)).toBe(false);
+    expect(port(WORN, OTHER)).toBe(false);
+    // A vessel that wears no face (floor, locked) passes nothing; a dial not yet composed names no second anchor.
+    expect(wornAtOf(() => null, () => [PLACE])(WORN, PLACE)).toBe(false);
+    expect(wornAtOf(() => WORN, () => [PLACE, null])(WORN, NEXUS)).toBe(false);
+  });
+
+  it("W4 — a bag of another face refuses a value the worn face's place session sealed, under the real port", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const b = await vessel(w, "b");
+    const inner = memoryAdapter();
+    const key = ["doc-foreign-bag", "incremental", "c1"];
+    const ownFace = faceProofSubjectRef(a.chain.scope);
+    const foreignFace = faceProofSubjectRef(b.chain.scope);
+    await storeFor(a, inner).save(key, A.save(A.change(A.init<{ note?: string }>(), (d) => { d.note = SECRET; })));
+    const readUnder = (bagFace: string): SealedDocumentStore => new SealedDocumentStore({
+      inner,
+      bagOf: () => ({ bagId: BAG, face: bagFace }),
+      sessionFace: () => ownFace,
+      sessionOf: () => ({ id: "the-writing-session", subject: ownFace }),
+      seal: ({ bagId, values }) => a.holder.sealValues({ bagId, values, signer: a.signer }),
+      open: async (args) => { const opened = await a.holder.openValue(args); return "refusal" in opened ? opened : { ...opened, writer: PLACE }; },
+      wornAt: wornAtOf(() => ownFace, () => [PLACE]),
+    });
+    expect(await refusalOf(() => readUnder(ownFace).load(key))).toBe("ANSWERED");
+    expect(["writer-face-foreign", "session-face-foreign"]).toContain(await refusalOf(() => readUnder(foreignFace).load(key)));
+  });
+});
+
+// THE FLIP, LIVE (Luna P3): a founder's place session writes, the dial composes and the map face flips to the Nexus
+// subject, and the same vessel reads and writes on. The real port stands (`wornAtOf`); the restart leg rides the node e2e
+// meme-realm-bag ⑮b (dial first, then the place-written value).
+describe("one face across the anchor flip: place write -> Nexus dial -> read and write", () => {
+  const PLACE = "lar:///ha.ka.ba/@test/subjects/place-of-the-flip";
+  const NEXUS = "lar:///ha.ka.ba/@test/subjects/nexus-of-the-flip";
+  it("W5 — a value the place session sealed reads after the map face flips to the Nexus subject, and the place session's next save seals there", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const inner = memoryAdapter();
+    let face = PLACE;                                  // the map face: the place subject until the dial composes
+    let dialed: string | null = null;
+    const store = new SealedDocumentStore({
+      inner,
+      bagOf: () => ({ bagId: BAG, face }),
+      sessionFace: () => face,
+      sessionOf: () => ({ id: "the-place-session", subject: PLACE }),
+      seal: ({ bagId, values }) => a.holder.sealValues({ bagId, values, signer: a.signer }),
+      open: async (args) => { const opened = await a.holder.openValue(args); return "refusal" in opened ? opened : { ...opened, writer: PLACE }; },
+      wornAt: wornAtOf(() => face, () => [PLACE, dialed]),
+    });
+    const key = ["doc-flip", "incremental", "c1"];
+    await store.save(key, A.save(A.change(A.init<{ note?: string }>(), (d) => { d.note = SECRET; })));
+    expect(A.load<{ note?: string }>((await store.load(key))!).note).toBe(SECRET);
+    // THE DIAL COMPOSES: the map face flips to the Nexus subject.
+    face = NEXUS; dialed = NEXUS;
+    expect(A.load<{ note?: string }>((await store.load(key))!).note).toBe(SECRET);
+    const second = ["doc-flip", "incremental", "c2"];
+    await store.save(second, A.save(A.change(A.init<{ note?: string }>(), (d) => { d.note = SECRET; })));
+    expect(restsClear(inner, "doc-flip", SECRET)).toBe(false);
+    expect(A.load<{ note?: string }>((await store.load(second))!).note).toBe(SECRET);
+    // CONTROL (another face's bag never passes through the worn subject) stands in W3/W4.
+  });
+});
+
+// THE BROWSER NEEDS NO PORT (browser founder dial, measured at open-browser-vessel.ts): its one session names the face
+// by ONE subject (the lift's certificate scope), no place session books beside it, and a dial never flips the map face.
+// A browser that grew a second anchor would meet `writer-face-foreign` as the node did (⑮b), so this pin reds first.
+describe("the browser vessel names its face by one subject", () => {
+  const src = readFileSync(new URL("../../lararium-browser/src/open-browser-vessel.ts", import.meta.url), "utf8")
+    .replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
+  it("B1 — the sealed rest carries no wornAt, the map face and the session subject are one value, and nothing reassigns the face from a dial", () => {
+    expect(src).toMatch(/composeSealedRest</);
+    expect(src).toMatch(/const sealedBagOf = \(documentId: string\): SealedBag \| null => sealedMap\.bagOf\(documentId\)/);
+    expect(src).toMatch(/composeSealedRest<BrowserSaveSession>\(\{[\s\S]*?bagOf: sealedBagOf,[\s\S]*?sessionFace: \(\) => sealedCells\.face\(\),/);
+    expect(src).not.toMatch(/\bwornAt\b/);
+    expect(src).toMatch(/const face = faceProofSubjectRef\(certificate\.scope as never\);/);
+    expect(src).toMatch(/subject: face \}/);
+    // `sealedCells.face` is set once on the lift and cleared on the lock, never from a dial.
+    expect([...src.matchAll(/sealedCells\.face = /g)].length).toBe(2);
+    expect(src).not.toMatch(/sealedCells\.face = [^;]*dial/i);
+  });
+  it("B0 — CONTROL: the instrument finds wornAt where it stands (the node composer)", () => {
+    const node = readFileSync(new URL("../../lararium-node/src/open-node-vessel.ts", import.meta.url), "utf8");
+    expect(node).toMatch(/\bwornAt\b/);
+  });
+});
+
 describe("step three: one manifest for each write batch", () => {
-  it("a batch rests under one manifest, and each manifest cites every manifest its writer verified", async () => {
+  it("a batch rests under one manifest, and each manifest cites the heads of what its writer verified", async () => {
     const w = world();
     const a = await vessel(w, "a");
     const b = await vessel(w, "b");
@@ -150,11 +309,11 @@ describe("step three: one manifest for each write batch", () => {
     const secondBody = (await a.store.record("manifest", second.manifest))[0]!.body;
     expect(secondBody.parents).toEqual([first.manifest]);
     expect(secondBody.entries[0]!.parents).toEqual([first.values[2]!.address]);
-    // b verifies both of a's manifests on receipt, and its own batch cites both.
+    // b verifies both of a's manifests on receipt; the second cites the first, so b's batch cites the second alone.
     await carry(a, b, BAG);
     const third = await b.holder.sealValues({ bagId: BAG, values: [change(5)], signer: b.signer });
     if ("refusal" in third) throw new Error(said(third));
-    expect((await b.store.record("manifest", third.manifest))[0]!.body.parents).toEqual([first.manifest, second.manifest].sort());
+    expect((await b.store.record("manifest", third.manifest))[0]!.body.parents).toEqual([second.manifest]);
     // CONTROL: a manifest b never verified (a's later batch) stays uncited by b's next batch.
     const fourth = await a.holder.sealValues({ bagId: BAG, values: [change(6)], signer: a.signer });
     if ("refusal" in fourth) throw new Error(said(fourth));
@@ -162,6 +321,27 @@ describe("step three: one manifest for each write batch", () => {
     if ("refusal" in fifth) throw new Error(said(fifth));
     expect((await b.store.record("manifest", fifth.manifest))[0]!.body.parents).not.toContain(fourth.manifest);
     expect((await b.store.record("manifest", fifth.manifest))[0]!.body.parents).toContain(third.manifest);
+  });
+
+  it("H1 — a manifest that arrives after b's heads stood counted joins them: b's next batch cites it (receive is the arrival door)", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const b = await vessel(w, "b");
+    introduce(a, b);
+    const change = (n: number) => ({ role: "change" as const, ref: logicalRefOf(["doc", "incremental", `c${n}`]), parents: [], plaintext: utf8Bytes(`change ${n}`) });
+    const first = await a.holder.sealValues({ bagId: BAG, values: [change(1)], signer: a.signer });
+    if ("refusal" in first) throw new Error(said(first));
+    await carry(a, b, BAG);
+    const second = await b.holder.sealValues({ bagId: BAG, values: [change(2)], signer: b.signer });   // b's heads stand counted now
+    if ("refusal" in second) throw new Error(said(second));
+    const later = await a.holder.sealValues({ bagId: BAG, values: [change(3)], signer: a.signer });
+    if ("refusal" in later) throw new Error(said(later));
+    await carry(a, b, BAG);                                                                                // arrives through receive()
+    const third = await b.holder.sealValues({ bagId: BAG, values: [change(4)], signer: b.signer });
+    if ("refusal" in third) throw new Error(said(third));
+    const parents = (await b.store.record("manifest", third.manifest))[0]!.body.parents;
+    expect(parents).toContain(later.manifest);
+    expect(parents).toContain(second.manifest);
   });
 });
 

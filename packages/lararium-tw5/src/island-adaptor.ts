@@ -75,13 +75,13 @@ import { toLarTiddlerRecord, isVolatileVmUri, draftsOffLive, parallelDraftTitle 
 import { maskedExecAll } from "@lararium/memetic-frame";
 import { BAG_PATHS_CONFIG, routeBag, type RouteVerdict } from "./bag-cascade.js";
 import type { TW5Engine } from "./tw5-vm.js";
-import { ReceiptCapabilityUnavailable, type ReceiptCapability } from "./receipt.js";
+import { ReceiptCapabilityUnavailable, type ReceiptCapability, type ReceiptHold } from "./receipt.js";
 import type { LaresTw5Extension } from "./types/lares-globals.js";
 import { splitBodyTiddler, quoteblockFence } from "./deserializer.js";
 import { KAHEA_REF_RE } from "./meme-ast/ahu-scan.js";
 import { LandedLedger, same, sameWithStamp } from "./landed-ledger.js";
 import { WaveLanding } from "./wave-landing.js";
-import { Drain, macrotask, type DrainOutcome } from "./drain.js";
+import { Drain, macrotask, type DrainOutcome, type DrainSettling } from "./drain.js";
 import {
   DRAFT_BASE_BAG, DRAFT_BASE_HEADS, contentKey, draftBaseFields, readDraftBase, withoutDraftBase,
   type DraftBase, type DraftEntry,
@@ -249,7 +249,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   /** The removals acts registered, by removed title; each rides the Drain behind its target. */
   private readonly actRemovals = new Map<string, ActRemoval>();
   /** The rest holds of the acts this change dispatch began; they rest with what the dispatch marked. */
-  private readonly actHolds: Array<{ hold: { done(slots: readonly string[] | null): void }; members: readonly string[] }> = [];
+  private readonly actHolds: Array<{ hold: ReceiptHold; members: readonly string[] }> = [];
   /** Parallel-draft persistence in flight. */
   private readonly surfacings = new Set<Promise<void>>();
 
@@ -347,7 +347,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     void this._whenAllRested().then(() => {
       for (const { hold, members } of holds) {
         const bags = [...new Set([...members, ...marked])].filter((title) => !this.drain.owes(title)).map((title) => this.lastWriteBag.get(title));
-        hold.done([...new Set(bags.filter((bag): bag is string => bag !== undefined))]);
+        // A member the drain still owes was refused: the act's verdict reads false and names it, never `applied`.
+        const owed = members.filter((title) => this.drain.owes(title));
+        void hold.done([...new Set(bags.filter((bag): bag is string => bag !== undefined))], owed.length > 0 ? { titles: owed, refused: true } : { titles: members });
       }
     });
   }
@@ -446,28 +448,30 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   }
 
   /**
-   * THE DRAIN'S ONE WRITE: the title's flush, then its DURABLE receipt. A refusal anywhere keeps the title owed in the drain, and a
-   * rename's source waiting behind this target returns to the wiki.
+   * THE DRAIN'S ONE WRITE: the title's flush SUBMITS, and its DURABLE receipt SETTLES beside the next title's write (`settled`). A
+   * refusal anywhere keeps the title owed in the drain, a refused receipt raises the title's unsaved alert by name, and a rename's
+   * source waiting behind this target returns to the wiki.
    */
-  private async _drainWrite(title: string): Promise<void> {
+  private async _drainWrite(title: string): Promise<DrainSettling> {
     try { await this._flushHand(title); }
     catch (error) { this._restoreSourcesOf(title); throw error; }
-    try { await this._ackDurably([title]); }
-    catch (error) {
+    const settled = this._ackDurably([title]).catch((error: unknown) => {
       this.failedAtTeardown.set(title, error);
       this._raiseUnsaved(title, this.lastWriteBag.get(title), error);
       this._restoreSourcesOf(title);
       throw error;
-    }
+    });
+    return { settled };
   }
 
   /** The projection receipt checks the snapshot handed to the store by this pass. */
   recoveryAtRest: ((bag: string, title: string, fields: Record<string, unknown> | null) => Promise<void>) | null = null;
 
-  private async _ackDurably(fired: readonly string[]): Promise<void> {
+  /** The written titles' durable receipt. Its ask leaves in this call's own turn (the capability counts it asking until it posts). */
+  private _ackDurably(fired: readonly string[]): Promise<void> {
     const receipt = this.caps.receipt;
     const written = [...new Set(fired.map((title) => this.lastWriteBag.get(title)).filter((bag): bag is string => bag !== undefined))];
-    if (!receipt && this.receiptRequired && written.length > 0) throw new ReceiptCapabilityUnavailable();
+    if (!receipt && this.receiptRequired && written.length > 0) return Promise.reject(new ReceiptCapabilityUnavailable());
     // A bag the island holds no replica of (the vessel's own temp plane) names no heads here: the store call that wrote it already answered.
     const slots = receipt ? written.filter((bag) => receipt.holds?.(bag) ?? true) : written;
     const checks = fired.flatMap((title) => {
@@ -476,10 +480,12 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     });
     // Attach rejection handling immediately while the storage receipt remains in flight.
     const projection = Promise.allSettled(checks);
-    if (receipt && slots.length > 0) await receipt.ack(slots);
-    const outcomes = await projection;
-    const failed = outcomes.find((outcome): outcome is PromiseRejectedResult => outcome.status === "rejected");
-    if (failed) throw failed.reason;
+    const durable = receipt && slots.length > 0 ? receipt.ack(slots) : Promise.resolve();
+    return durable.then(async () => {
+      const outcomes = await projection;
+      const failed = outcomes.find((outcome): outcome is PromiseRejectedResult => outcome.status === "rejected");
+      if (failed) throw failed.reason;
+    });
   }
   /** The titles waiting for a write (owed, not in flight at their latest state, not parked behind an act's target). */
   pendingTitles(): string[] { return this.drain.pending(); }
@@ -951,12 +957,26 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     return () => this.stop();
   }
 
-  async stop(): Promise<void> {
+  /**
+   * `submitted` fires once the shore will ask the vessel for no further receipt: every owed write has submitted, every removal behind a
+   * target has followed its target's receipt, and every act's receipt ask has left. The kernel then sends `receipt:asks-done`.
+   * Resolves with the titles that never reached durable storage (a refused write or receipt), by name; an empty list means every
+   * owed title rests.
+   */
+  async stop(submitted?: () => void): Promise<string[]> {
     await this.landing?.stop();
-    // The drain closes: every owed title leaves (a refused one tries once more), and a failure answers by name rather than hanging.
-    await this._drainNow(true);
+    // An act whose dispatch end never reached the shore rests with the drain like any other: its receipt asks before the door shuts.
+    if (this.actHolds.length > 0) this.dispatchEnded();
+    // The drain closes: every owed title leaves, a title refused before the close tries once more, and a failure answers by name rather
+    // than hanging. A demanded title whose receipt refuses after `receipt:asks-done` writes again but can ask nothing (the vessel has
+    // closed its receipts): it ends owed and unsaved by name.
+    const closing = this._drainNow(true);
+    if (submitted) void this._whenSubmitted().then(submitted);
+    await closing;
     await Promise.allSettled([...this.surfacings]);
     for (const [title, error] of this.failedAtTeardown) console.warn(`[island-adaptor] teardown write for "${title}" failed: ${String(error)}`);
+    // A title the closed drain still holds never rested (its write or its receipt refused, or a removal behind a refused target).
+    const unsaved = [...new Set([...this.failedAtTeardown.keys(), ...this.drain.titles()])].filter((title) => !neverPersists(title));
     this.failedAtTeardown.clear();
     // The door leaves with the shore that installed it, and only that one.
     const lares = (this.tw5.$tw as unknown as LaresTw5Extension).lares;
@@ -982,6 +1002,16 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     this.drain = this._newDrain();
     this._unsubscribe?.();
     this._unsubscribe = null;
+    return unsaved;
+  }
+
+  /** The closed drain's last write has submitted and no act's receipt ask waits to leave; a receipt answer that frees new work asks again. */
+  private async _whenSubmitted(): Promise<void> {
+    for (;;) {
+      await this.drain.whenSubmitted();
+      await this.caps.receipt?.asked();
+      if (this.drain.submittedNow()) return;
+    }
   }
 
   private readonly failedAtTeardown = new Map<string, unknown>();

@@ -72,7 +72,7 @@ uri-path      = "ha.ka.ba/lararium/mesh/dreamnet-prior-art"
 ''Design Decisions:''
 * ''Causal ordering via vector clocks'' (Lamport counters embedded in actor IDs): No wall clock trust required.
 * ''Conflict representation, not resolution'': Automerge retains both concurrent values as a conflict object. Application chooses which to display; the CRDT never silently drops writes.
-* ''Actor IDs'': Each Automerge peer carries a unique actor ID. The specified `KeyhiveIdentitySlot.deriveActorId` derives an actor ID from its identity's DID, and no production call site invokes it; nothing derives a key from an actor ID (`packages/lararium-keyhive/src/keyhive-identity-slot.ts`).
+* ''Actor IDs'': Each Automerge peer carries a unique actor ID. No identity-derived actor id stands; nothing derives a key from an actor ID.
 * ''automerge-repo'': Higher-level layer providing storage adapters (IndexedDB, filesystem) and network adapters (BroadcastChannel, WebSocket, WebRTC).
 
 ''Contrast with DreamNet:''
@@ -666,6 +666,6 @@ The UCAN spec explicitly flags the confinement problem: certificate capabilities
 
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/content-resolution`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;P4IUVu832mvSsm6Wkye1GAJ_dbt17O4zkXKIrFAjrcM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;v4PX0EBW9yTAEcgHM-YUHfUIYG7i4a5OVBn7LpKRk5U`>>
 
 <<^ code=`&#x0004;` to=`?`>>

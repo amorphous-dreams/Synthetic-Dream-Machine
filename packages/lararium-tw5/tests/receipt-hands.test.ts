@@ -91,3 +91,64 @@ describe.skipIf(wikiSkip)(`the receipt capability covers the hands a confirm lea
     }
   }, 120_000);
 });
+
+describe.skipIf(wikiSkip)(`receipt stand-down reports an owed title${skipNote}`, () => {
+  test("teardown submits two independent owed hands before either receipt answers", async () => {
+    const r = await shoreRig({ boundary: new ManualBoundary() });
+    const titles = ["lar:///test.receipt.submit/first", "lar:///test.receipt.submit/second"];
+    await r.adaptor.armSeedCheckpoint();
+    const asks: string[] = [];
+    const receipt = makeReceiptCapability({
+      post: (message) => { if (message.type === "receipt:request") asks.push(message.requestId); },
+      handles: () => new Map(Object.entries(r.handles)),
+    });
+    r.adaptor.caps = { receipt };
+    r.adaptor.receiptRequired = true;
+    try {
+      for (const title of titles) r.wiki.addTiddler(new r.Tiddler({ title, text: title }));
+      await afterDispatch();
+      const stopping = r.adaptor.stop();
+      try {
+        await turns(64);
+        expect(asks, "both asks leave before either answer").toHaveLength(2);
+        for (const requestId of asks) receipt.answer({ type: "receipt:issued", requestId, issued: true });
+        await stopping;
+        for (const title of titles) {
+          expect(r.wiki.getTiddler(`$:/temp/lares/alert/unsaved/${title}`)).toBeUndefined();
+        }
+      } finally { receipt.close(); await stopping; }
+    } finally {
+      receipt.close();
+      r.unbridge();
+      await r.repo.shutdown();
+    }
+  }, 120_000);
+
+  test("a title whose receipt closes during teardown remains named as unsaved", async () => {
+    const r = await shoreRig({ boundary: new ManualBoundary() });
+    const title = "lar:///test.receipt.stand-down/owed";
+    await r.adaptor.armSeedCheckpoint();
+    let asked!: () => void;
+    const request = new Promise<void>((resolve) => { asked = resolve; });
+    const receipt = makeReceiptCapability({
+      post: (message) => { if (message.type === "receipt:request") asked(); },
+      handles: () => new Map(Object.entries(r.handles)),
+    });
+    r.adaptor.caps = { receipt };
+    r.adaptor.receiptRequired = true;
+    try {
+      r.wiki.addTiddler(new r.Tiddler({ title, text: "still owed" }));
+      await afterDispatch();
+      const stopping = r.adaptor.stop();
+      await asked;
+      receipt.close();
+      await stopping;
+      const alert = r.wiki.getTiddler(`$:/temp/lares/alert/unsaved/${title}`);
+      expect(alert?.fields).toMatchObject({ "alert-kind": "unsaved-hand", "hand-title": title });
+    } finally {
+      receipt.close();
+      r.unbridge();
+      await r.repo.shutdown();
+    }
+  }, 120_000);
+});

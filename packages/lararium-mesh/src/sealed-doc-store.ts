@@ -67,15 +67,34 @@ export interface SaveSession {
 /** What the store's seal answers: the address of each value it sealed, or a refusal by name. */
 export type SealedValueAddresses = Pick<SealedValues, "values">;
 
+/**
+ * The `wornAt` port for a vessel that wears one face at more than one anchor: it answers true only when `face` (the
+ * bag's face) names the face this vessel wears now, and `subject` names that face at one of the anchors the vessel's
+ * own chain holds (its place, the dial's Nexus). A bag of another face never passes through the worn subject; a vessel
+ * that wears no face passes nothing. `anchors` reads fresh at each ask: a dial composes and stands down.
+ */
+export function wornAtOf(
+  worn: () => string | null,
+  anchors: () => ReadonlyArray<string | null>,
+): (face: string, subject: string) => boolean {
+  return (face, subject) => face === worn() && anchors().some((anchor) => anchor !== null && anchor === subject);
+}
+
 export interface SealedDocumentPorts {
   /** The engine-facing rest this store wraps: an unsealed bag's values pass straight to it. */
   readonly inner: StorageAdapterInterface;
   /** The bag a document belongs to and that bag's face (`faceProofSubjectRef`); null: the bag rests unsealed. A public
    *  or crossroads bag names its published lookup (`published`): it rests sealed under the key that lookup derives, and
    *  opens for whoever holds it, with no session, no face and no holder (`published-bag-key`). */
-  bagOf(documentId: string): { readonly bagId: string; readonly face: string; readonly published?: PublishedLookup } | null;
+  bagOf(documentId: string): { readonly bagId: string; readonly face: string | null; readonly published?: PublishedLookup } | null;
   /** The face the session wears (`faceProofSubjectRef`); null where no session stands. */
   sessionFace(): string | null;
+  /** ONE FACE, TWO ANCHORS (session-contract#/the-hands): does `subject` name `face` (the bag's face) at another anchor
+   *  the vessel's own chain names (its place, while a dial names the face by its Nexus subject; the dial's Nexus, while
+   *  it stands at its place)? The port answers true only for the face the vessel wears (`wornAtOf`): a bag of any other
+   *  face never passes through the worn subject. A session that face's other anchor booked seals for the bag, and a
+   *  value it sealed opens. Absent: the bag's face reads by one subject. */
+  wornAt?(face: string, subject: string): boolean;
   /** The session that booked the latest change of a document (R2), reading the save's own bytes where it hands them
    *  (the change's writer, T4); null: no session booked it, and its save waits. */
   sessionOf(documentId: string, data?: Uint8Array): SaveSession | null;
@@ -113,7 +132,7 @@ const AUTOMERGE_MAGIC = [0x85, 0x6f, 0x4a, 0x83] as const;
 const readsClear = (bytes: Uint8Array): boolean => AUTOMERGE_MAGIC.every((b, i) => bytes[i] === b);
 const readsSealed = (bytes: Uint8Array): boolean => SEALED_CHUNK_MARK.every((b, i) => bytes[i] === b);
 type PublicBag = { readonly bagId: string; readonly published: PublishedLookup };
-const isPublic = (bag: { readonly published?: PublishedLookup } | null): bag is PublicBag & { readonly face: string } => bag?.published !== undefined;
+const isPublic = (bag: { readonly published?: PublishedLookup } | null): bag is PublicBag & { readonly face: string | null } => bag?.published !== undefined;
 const nameOf = (key: StorageKey): string => key.join("\u0000");
 
 /** The logical reference a storage key names inside its bag. */
@@ -212,7 +231,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     const clear = (await this.#ports.inner.loadRange([documentId])).filter((c): c is Chunk & { data: Uint8Array } => ROLES[c.key[1] ?? ""] !== undefined && c.data !== undefined && readsClear(c.data));
     if (clear.length === 0) return false;
     const session = this.#ports.sessionOf(documentId);
-    if (session === null || session.subject !== bag.face) return false;
+    if (session === null || !this.#wears(bag.face, session.subject)) return false;
     this.#classedSealed.add(documentId);
     this.#swept.delete(documentId);
     await this.#inTurn(() => this.#sweep(bag, documentId, clear[0]!.data, session));
@@ -228,7 +247,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     for (const [name, { key, data }] of [...this.#waiting]) {
       const bag = this.#bagOf(key);
       const session = this.#ports.sessionOf(key[0]!, data);
-      if (bag === null || isPublic(bag) || session === null || session.subject !== bag.face) continue;
+      if (bag === null || isPublic(bag) || session === null || !this.#wears(bag.face, session.subject)) continue;
       try { await this.#inTurn(() => this.#seal(bag, key, data, session)); }
       catch (error) { if (error instanceof SealedDocumentRefusal) continue; throw error; }
       this.#waiting.delete(name);
@@ -242,7 +261,12 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     return sealed;
   }
 
-  #bagOf(key: StorageKey): { readonly bagId: string; readonly face: string; readonly published?: PublishedLookup } | null {
+  /** Does `subject` name `face`, the bag's own face: its own subject, or the worn face's subject at another anchor? */
+  #wears(face: string | null, subject: string): boolean {
+    return face !== null && (subject === face || (this.#ports.wornAt?.(face, subject) ?? false));
+  }
+
+  #bagOf(key: StorageKey): { readonly bagId: string; readonly face: string | null; readonly published?: PublishedLookup } | null {
     return key.length >= 1 && typeof key[0] === "string" ? this.#ports.bagOf(key[0]) : null;
   }
   #heldOf(documentId: string): Map<string, SealedAddress> {
@@ -250,10 +274,10 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     if (!held) { held = new Map(); this.#held.set(documentId, held); }
     return held;
   }
-  /** The face gate, before any byte or name moves. */
-  #face(bag: { readonly face: string }): string {
+  /** The face gate, before any byte or name moves. A sealed bag no lit face wears yet opens for no one. */
+  #face(bag: { readonly face: string | null }): string {
     const face = this.#ports.sessionFace();
-    if (face === null) throw new SealedDocumentRefusal("session-absent");
+    if (face === null || bag.face === null) throw new SealedDocumentRefusal("session-absent");
     if (face !== bag.face) throw new SealedDocumentRefusal("session-face-foreign");
     return face;
   }
@@ -275,6 +299,13 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     if (!isPublic(bag) && typeof key[0] === "string") this.#classedSealed.add(key[0]);
     const role = ROLES[key[1] ?? ""];
     if (role === undefined) return;
+    // A SEALED BAG NO FACE WEARS YET (the floor, before its face lights): its save waits in memory, never clear, until
+    // the face lights and a session books it.
+    if (!isPublic(bag) && bag.face === null) {
+      this.#waiting.set(nameOf(key), { key: [...key], data: Uint8Array.from(data) });
+      this.#ports.onHeld?.({ refusal: "save-unmapped", documentId: key[0]! });
+      return;
+    }
     // A PUBLIC BAG RESTS SEALED UNDER ITS PUBLISHED KEY: the sealed value itself rests, and no session signs it.
     if (isPublic(bag)) {
       const out = sealPublished({ bagId: bag.bagId, lookup: bag.published, role, ref: logicalRefOf(key), plaintext: data });
@@ -288,7 +319,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
       this.#ports.onHeld?.({ refusal: "save-unbooked", documentId: key[0]! });
       return;
     }
-    if (session.subject !== bag.face) throw new SealedDocumentRefusal("session-face-foreign");
+    if (!this.#wears(bag.face, session.subject)) throw new SealedDocumentRefusal("session-face-foreign");
     // A SEAL THE HOLDER CANNOT ANSWER KEEPS ITS CHANGE: the save waits in memory, readable, and the next reseal seals it.
     try { await this.#inTurn(() => this.#seal(bag, key, data, session)); }
     catch (error) {
@@ -394,7 +425,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     }
     const opened = await this.#ports.open({ bagId: bag.bagId, role, ref: logicalRefOf(key) });
     if ("refusal" in opened) throw new SealedDocumentRefusal(opened.refusal, opened.cause);
-    if (opened.writer !== face) { opened.plaintext.fill(0); throw new SealedDocumentRefusal("writer-face-foreign"); }
+    if (!this.#wears(face, opened.writer)) { opened.plaintext.fill(0); throw new SealedDocumentRefusal("writer-face-foreign"); }
     this.#heldOf(key[0]!).set(nameOf(key), opened.address);
     return opened.plaintext;
   }

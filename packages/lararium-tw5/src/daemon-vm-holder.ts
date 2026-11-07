@@ -57,6 +57,8 @@ export function holdDaemonVm<P = void>(o: {
   let replaying = false;   // true while a re-opened island takes its registrations
   let restarting: Promise<{ restarts: number }> | undefined;
   let shutdown: Promise<{ acked: boolean }> | undefined;
+  /** A direct shutdown began: the island still stands until it acks, and its leg answers its own settlement round. */
+  let shuttingDown = false;
   const registrations = new Map<string, (vm: DaemonVmCore) => void | Promise<void>>();
   const asyncMethods = new Set(["mountHostWorkingLayer", "syncLegReady", "runAsFace", "lightFace", "dropFace", "registerFaceBags", "worldlineCompare", "worldlineTrajectory", "resolveBinding"]);
   const registrationMethods = new Set(["mountMainVerbs", "onEvictRequest", "onResidencyOp", "onWikiAlert", "onFrame", "onControlResult", "onVerbEvent"]);
@@ -94,8 +96,11 @@ export function holdDaemonVm<P = void>(o: {
         if (state !== "ready") return Promise.reject(new DaemonRestarting(state === "down" ? "daemon-down" : "daemon-restarting"));
         state = "down";
         innerClosed = true;
+        shuttingDown = true;
         try { shutdown = Promise.resolve(inner.shutdown(budgetMs)); }
         catch (err) { shutdown = Promise.reject(err); }
+        // The island acked (or its budget cut it) and left: its leg reads daemon-down from here.
+        void shutdown.finally(() => { shuttingDown = false; }).catch(() => undefined);
         return shutdown;
       };
       if (key === "dispose") return () => {
@@ -115,6 +120,10 @@ export function holdDaemonVm<P = void>(o: {
       if (asyncMethods.has(key)) return (...args: unknown[]) => {
         // The vessel's receipt answer asks the island's leg while the island mounts its replayed layers: that readiness read answers from the new VM.
         if (key === "syncLegReady" && replaying) return Promise.resolve(invoke(key, args));
+        // The SHUTTING island still asks its receipts (its settlement round, L29) and its leg stands until it acks: the
+        // vessel's receipt answer reads that leg through here, so a shutdown in flight lets the read through. A disposed
+        // island has no leg, and every other door still refuses daemon-down.
+        if (key === "syncLegReady" && shuttingDown && !disposed) return Promise.resolve(invoke(key, args));
         try { check(); } catch (err) { return Promise.reject(err); }   // an async door refuses by rejecting
         const generation = restarts;
         return new Promise((resolve, reject) => {

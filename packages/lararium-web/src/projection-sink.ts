@@ -133,6 +133,9 @@ export const LAR_REFUSAL_WORDS: Readonly<Partial<Record<LarRefusal, string>>> = 
   "continuous-event-refused": "This event streams continuously and cannot cross this surface.",
   "pointer-capture-refused": "Pointer capture cannot cross this surface.",
   "reserved-chord": "This shortcut belongs to the browser or system.",
+  "surface-unknown": "This control's surface no longer stands in this vessel. Your action has not applied.",
+  "event-malformed": "This action did not read whole and has not applied. Try it again.",
+  "receipt-refused": "Your change stands on this page, but the vessel did not keep it in its store. It has not saved yet.",
 };
 const wordsFor = (reason: LarRefusal, bound: number): string =>
   reason === "input-too-long"

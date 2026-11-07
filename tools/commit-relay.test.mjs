@@ -44,7 +44,7 @@ console.log('SEAT-LAUNCHED 123');
   const checksFile = path.join(root, 'checks.json'); writeFileSync(checksFile, JSON.stringify([{ name: 'true', argv: ['/usr/bin/true'] }]));
   const storeDir = path.join(root, 'store'); mkdirSync(storeDir);
   const brokerArgs = ['--installer', path.join(bin, 'pnpm'), '--store-dir', storeDir, '--checks', checksFile, '--author-name', 'Relay', '--author-email', 'relay@example.invalid'];
-  const run = () => { const r = spawnSync(process.execPath, [script, '--lane-root', lane, '--worktree', wt, '--branch', 'relay-test', '--launcher', launcher, ...brokerArgs, '--remote-url', remote, '--once'], { encoding: 'utf8', env: relayEnv }); assert.equal(r.status, 0, r.stderr); };
+  const run = () => { const r = spawnSync(process.execPath, [script, '--lane-root', lane, '--worktree', wt, '--branch', 'relay-test', '--launcher', launcher, ...brokerArgs, '--remote-url', remote, '--once'], { encoding: 'utf8', env: relayEnv }); assert.equal(r.status, 0, r.stderr); return r; };
   const response = id => JSON.parse(readFileSync(path.join(lane, 'relay', `res-${id}.json`), 'utf8'));
   const go = value => { ensureGo(); writeFileSync(goFile, value); };
   const goText = (branch, head, dest = remote) => `${laneId(lane)}\n${branch}\n${head}\n${dest}\n`;
@@ -656,4 +656,16 @@ test('ACCESS WITNESS: no fs call in the four broker files names a non-held path;
   assert.deepEqual(offenders, []);
   for (const planted of ["const x = await readFile(join(worktree, '.npmrc'), 'utf8');", "if (existsSync(npmrc)) {", "args.push('--bind', worktree, worktree); realpathSync(worktree);"]) assert.ok(calls.test(planted) && !ok.test(planted), `the scan reads a planted pathname access: ${planted}`);
   assert.ok(!calls.test("const st = await fh.stat();"), 'a method on a held fd handle is not a pathname access');
+});
+
+test('RED: a receipt planted during a request reports the clash and processes the next request', () => {
+  const x = setup(), seat = path.join(x.lane, 'seat'); mkdirSync(seat);
+  const planted = path.join(x.lane, 'relay', 'res-1.json');
+  writeFileSync(x.launcher, `import { writeFileSync } from 'node:fs'; writeFileSync(${JSON.stringify(planted)}, 'planted'); console.log('launched');`);
+  x.request('1', { kind: 'launch', seatDir: seat, model: 'gpt-6.1-terra', effort: 'high', mode: 'read' });
+  x.request('2', { kind: 'unknown' });
+  const result = x.run();
+  assert.match(result.stderr, /receipt-clash.*res-1.json/);
+  assert.equal(readFileSync(planted, 'utf8'), 'planted');
+  assert.match(x.response('2').output, /unknown kind/);
 });

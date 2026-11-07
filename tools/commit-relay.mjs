@@ -168,7 +168,12 @@ async function poll() {
     let answer;
     try { answer = await handle(JSON.parse(await readHeldAsync(relay, name))); }
     catch (error) { answer = { ok: false, output: cap(`refused: ${error.message}`) }; }
-    await writeFile(relay.at(`res-${id}.json`), JSON.stringify(answer) + '\n', { flag: 'wx' });
+    try { await writeFile(relay.at(`res-${id}.json`), JSON.stringify(answer) + '\n', { flag: 'wx' }); }
+    catch (error) {
+      if (error.code !== 'EEXIST') throw error;
+      // A lane can plant an answer while the act runs. Preserve it and keep the relay alive.
+      console.error(`refused: receipt-clash res-${id}.json; request handled, existing file preserved`);
+    }
   }
 }
 do { await poll(); if (!options.once) await new Promise(resolve => setTimeout(resolve, 5000)); } while (!options.once);

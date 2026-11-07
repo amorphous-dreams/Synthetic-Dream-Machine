@@ -8,7 +8,7 @@ import { holdDaemonVm, DaemonRestarting, KAPAE_EMERGENCY_REASON, type DaemonVmHo
  * A thin RECIPE over the composable vessel keel — the BROWSER
  * carries the SAME capabilities as node; only the SUBSTRATE differs. The browser must NOT
  * drift thin via easy-path shortcuts (coreless boot, no residency manager, no corpus, a
- * LarVessel wrapper) — it holds the full keel. Genuine browser
+ * bypassed island record) — it composes the record through the one composer and holds the full keel. Genuine browser
  * substrate (the ONLY divergence): IndexedDB storage, WebCrypto keys, founding-via-ceremony
  * (vs node's lares-init), Web Worker spawn, NO WS-server inbound gate (a browser cannot
  * listen on a socket), genesis-via-bytes/IDB/OPFS/peer. Capabilities held in common: the
@@ -24,7 +24,7 @@ import type { PortIslandToVesselMsg, VesselRestState } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import { Repo }                              from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter }           from "@automerge/automerge-repo-storage-indexeddb";
-import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, vesselDocStoreDoor, type SealedBag } from "@lararium/mesh";
+import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, sealedBagMap, vesselDocStoreDoor, type SealedBag } from "@lararium/mesh";
 import { faceProofSubjectRef } from "@lararium/mesh/face-proof-subjects";
 import * as A from "@automerge/automerge";
 import type { DocHandle, AutomergeUrl, PeerId } from "@automerge/automerge-repo";
@@ -60,7 +60,8 @@ import {
 import { browserGatePins, type BrowserFacePresentation, dialDeadlines, fileFloorCard, fileOwnHearthPins, hearthNameOf, flowNexusFor } from "./browser-gate-pins.js";
 import { readHearthFloor, type HearthFloorRead } from "./browser-floor-read.js";
 import { composeBrowserFacePresentation } from "./browser-face-presentation.js";
-import { composeBrowserIslandCaps, liftBrowserIslandCaps } from "./browser-island-caps.js";
+import { browserIslandReceipt, browserSessionLift } from "./browser-island-caps.js";
+import { composeVessel, islandFloorStack, islandLiftStack, larVesselOf } from "@lararium/mesh";
 import { admittedCanonDocs, hearthCanonDocIds, hearthCrossingOf, provenCrossingPlanes, seatHearthCanon, type HearthCanonDocs } from "./hearth-canon.js";
 import { makeSurfaceReturnLeg, type ReturnLegVerdict } from "./surface-return-leg.js";
 import { readLarControlResult, readLarFrame, type LarMsg_ControlEvent, type LarMsg_ControlResult, type LarMsg_Frame, ownEntry } from "@lararium/mesh";
@@ -141,6 +142,7 @@ import { sweepOrphanBrowserWards } from "./browser-ward-tree.js";
 import { guardedBoot, takeDownBoot, BootTeardownRefusal, type BootHold } from "./guarded-boot.js";
 import { attachSharedHolder, holderWorkerHandle, houseName } from "./shared-holder.js";
 import { browserSpawnWorker } from "./worker-handle.js";
+import { daemonIslandDown } from "./daemon-island-down.js";
 import { shoreInbound } from "@lararium/mesh";
 // ── Bootstrap artifact (IDB-persisted) ──────────────────────────────────────────
 
@@ -662,6 +664,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   const sealedMap = sealedBagMap({
     face: () => sealedCells.face(),
     bags: () => sealedCells.bags(),
+    catalog: () => sealedCells.catalog(),
     docsOf: (bagId) => [sealedCells.mounted(bagId), ...(slotDocsNamed.get(bagId) ?? []), documentIdOfUrl(tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId)))],
   });
   const sealedBagOf = (documentId: string): SealedBag | null => sealedMap.bagOf(documentId);
@@ -678,6 +681,16 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       sealedRest.store.mapMoved();
       const session = sealedCells.session;
       if (session !== null) void sealedRest.sealMapped(documentId, session).catch(() => { /* it seals at its next booked save */ });
+    },
+    // THE ISLAND'S DOOR STANDS (`docstore:answering`), each time it stands (a re-stood door tells again): a hydration waiting
+    // on it reads again, and every save of the standing session's face that waited in memory seals under it now; a rebook
+    // seals idempotently. No clock re-asks.
+    onReady: () => {
+      sealedRest.store.mapMoved();
+      const session = sealedCells.session;
+      if (session === null) return;
+      void sealedRest.rebook(session).catch(() => { /* each keeps waiting, never clear, for the next session */ });
+      for (const named of slotDocsNamed.values()) for (const documentId of named) void sealedRest.sealMapped(documentId, session).catch(() => { /* it seals at its next booked save */ });
     },
   });
   const docStoreDoor = vesselDocStoreDoor<BrowserSaveSession>(() => docStorePort.port(), {
@@ -1018,8 +1031,11 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // Every vessel class inherits this read verbatim; the pattern integrity is the ONE door.
   // The daemon doc AS THIS BOOT READS IT, kept for the sibling channel's enrolment seal and lease epoch below.
   let bootDaemonDoc: LarDoc | undefined;
+  // The live daemon doc, for the sibling channel's lease reader (read at every licensing act, never once at boot).
+  let daemonDocHandle: DocHandle<LarDoc> | undefined;
   try {
     const dhandle = await repo.find<LarDoc>(social.daemonUrl as never);
+    daemonDocHandle = dhandle;
     bootDaemonDoc = dhandle.doc();
     const dyads = vesselDyads(dhandle.doc());
     if (social.deviceEdge && dyads.length === 0) {
@@ -1127,6 +1143,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   let bootedAtomKey: string | null = null;
   let wikiSense!:  WikiSenseSupervisor;   // set in wireVerbs (post-daemon)
   let slotActiveWikiId = "";
+  let wikiAwaitsFace: FloorWikiRefusal | null = null;   // captured in wikiSlot
   // R4 — the Crossroads board this vessel materializes ONCE, read by every later per-island
   // plugin-offering resolution (the daemon VM's own recipe, and the pool's resolver). Mirrors
   // node's `crossroadsOfferingsHandle`.
@@ -1325,13 +1342,19 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       ...(onPhase ? { onPhase } : {}),
     },
 
-    wikiSlot: (_assembly: VesselCoreAssembly): VesselWikiSlot => {
+    wikiSlot: (assembly: VesselCoreAssembly): VesselWikiSlot => {
       const sel = selectActiveWikiSlug(wikiId, undefined);
-      slotActiveWikiId = sel.slug;
-      activeSurfaceId  = sel.slug;   // the pinned wiki owns #projection at boot; summon flips it live
-      const facets = recipeHostFacets(slugFromUri(sel.slug));
+      // A page that wears no face boots no user wiki (the sealing scope), and its floor stands all the same: it refuses THAT
+      // wiki by name before the wiki mounts, stands on its floor wiki, and names the one that waits on the page's status.
+      wikiAwaitsFace = facelessWikiWaits({ wikiId: sel.slug, source: sel.source, wikiBagId: recipeHostFacets(slugFromUri(sel.slug)).wikiBagId,
+        faceWorn: facePresentation !== null, catalog: (assembly.catalogHandle.doc() as LarDoc | undefined)?.tiddlers });
+      if (wikiAwaitsFace) console.log(`[vessel] ${wikiAwaitsFace.message}`);
+      const slug = wikiAwaitsFace ? FLOOR_WIKI : sel.slug;
+      slotActiveWikiId = slug;
+      activeSurfaceId  = slug;   // the pinned wiki owns #projection at boot; summon flips it live
+      const facets = recipeHostFacets(slugFromUri(slug));
       return {
-        activeWikiId: sel.slug, wikiSlug: facets.wikiSlug,
+        activeWikiId: slug, wikiSlug: facets.wikiSlug,
         wikiKey: facets.wikiKey, wikiBagId: facets.wikiBagId,
         draftBagId: facets.draftBagId, workingBagId: facets.workingBagId,
       };
@@ -1681,23 +1704,31 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         await fleetRead;
       }
       let replayManifest: (() => { msg: IslandMsg_Manifest; transfer: MessagePort[] }) | null = null;
-      // THE CAPABILITY RECORD this vessel hands its daemon island (slice 5a), composed as the node composes its own:
-      // receipt and cas at construction (the island reads its own fleet board, so no dyad member stands), and the
-      // LIFT on unlock. The lift seats `custodyWrite` and `sessionSign` while this vessel's custody stands open and a
-      // joined face's Nexus session stands; the lock takes both back and drops the session's signer. A vessel at its
-      // floor carries neither, and its island's `session:sign` answers `signer-unavailable` by name.
-      const islandCaps = composeBrowserIslandCaps({ repo, cas: readCasBlobFromOpfs });
+      // THE CAPABILITY RECORD this vessel hands its daemon island, composed through the ONE composer the node composes
+      // through (slice 5b, @lararium/mesh lar-vessel): the FLOOR stack at construction (receipt, cas, the document store
+      // door and the sealed-rest reading; the island reads its own fleet board, so no dyad member stands), and the LIFT
+      // as a nested stack on unlock. The lift seats `custodyWrite` and `sessionSign` while this vessel's custody stands
+      // open and a joined face's Nexus session stands; its dispose IS the lock: both leave the record and the session's
+      // signer drops. A vessel at its floor carries neither, and its island's `session:sign` answers `signer-unavailable`.
+      const islandFloor = await composeVessel(islandFloorStack({
+        receipt: browserIslandReceipt(repo),
+        cas: readCasBlobFromOpfs,
+        docStore: (port) => docStorePort.attach(port),
+        // V2: the daemon island's own store rests no document this rest seals (`islandRestGuard`).
+        restsSealed: (documentId) => sealedRest.restsSealed(documentId),
+      }));
+      const islandVessel = larVesselOf(islandFloor);
+      const islandCaps = islandVessel.record;
+      held.stood.push({ what: "the island's floor", down: () => islandFloor.dispose() });
       // The lift's lock-and-flush, once a lift stands: the stand-down runs it again ahead of the daemon worker (P2-3).
       let flushLift: (() => Promise<void>) | null = null;
-      islandCaps.docStore = (port) => docStorePort.attach(port);
-      // V2: the daemon island's own store rests no document this rest seals (`islandRestGuard`).
-      islandCaps.restsSealed = (documentId) => sealedRest.restsSealed(documentId);
       if (facePresentation !== null) {
         const certificate = facePresentation.certificate;
-        const lift = liftBrowserIslandCaps(islandCaps, {
-          session: { signer: facePresentation.signer, chain: { scope: certificate.scope, vesselFaceKey: certificate.vesselFaceKey } },
-          custodyWrite: (_carrier, bytes) => saveBrowserVeilArchive(idbName, wornGroup, bytes),
-        });
+        const lift = browserSessionLift(
+          { signer: facePresentation.signer, chain: { scope: certificate.scope, vesselFaceKey: certificate.vesselFaceKey } },
+          (_carrier, bytes) => saveBrowserVeilArchive(idbName, wornGroup, bytes),
+        );
+        const lifted = await composeVessel(islandLiftStack(islandVessel, lift.lift));
         // R1 · R2: while the lift stands, the worn face's wiki bags map sealed and the vessel's session books each change;
         // every save that waited for a session seals under it now.
         const face = faceProofSubjectRef(certificate.scope as never);
@@ -1724,7 +1755,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           sealedCells.bags = () => [];
           sealedCells.hold = null;
           docStoreDoor.lock();
-          lift.drop();
+          await lifted.dispose();
         };
         flushLift = lockThenDrop;
         held.stood.push({ what: "the island's lift", down: lockThenDrop });
@@ -1779,7 +1810,11 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // The emergency on a shared-holder tab fails CLOSED through the tab's own door: it detaches from the holder (session:close, its port closed) and stands daemon-down; each tab acts on its own arrival, and the shared island ends with its last tab.
       failClosed: holder?.kind === "attached" ? (vm) => vm.dispose() : undefined });
       daemon = daemonHolder.vm;
-      held.stood.push({ what: "daemon worker", down: () => daemon.dispose() });
+      // THE ISLAND TEARS DOWN ON ITS OWN ANSWER (L29 mirror): its settlement round runs before the floor stands down (the floor,
+      // pushed earlier, comes down after it). LIVENESS: the shutdown's budget (the daemon core's own wedged-worker cut) sits a
+      // second inside the step's teardown budget, so a worker wedged alive is terminated before the step reads as stuck.
+      const daemonDownBudgetMs = Math.max(1, (opts.teardownBudgetMs ?? 5_000) - 1_000);
+      held.stood.push({ what: "daemon worker", down: () => daemonIslandDown(daemon, { attached: holder?.kind === "attached", budgetMs: daemonDownBudgetMs }) });
       // THE FLUSH PRECEDES THE ISLAND'S GOING (P2-3): the stand-down runs backward, so this step, pushed after the daemon
       // worker's, locks and flushes while the island still answers the document store's door.
       held.stood.push({ what: "the lift's flush", down: async () => { await flushLift?.(); } });
@@ -1834,14 +1869,16 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         if (!seal) {
           console.warn("[sibling] this face holds no PersonaGroup secret sealed to this device — its enrolment delivered none, so no sibling channel stands.");
         } else {
+          // THE LEASE READER: the face reading over the live daemon doc's lease slots, read at every licensing act, so a
+          // roll that lands after the channel stood refuses an edge bound below it at the next act.
           const leasePrefix = leaseEpochPrefix(group);
-          const leaseSlots = Object.entries(bootDaemonDoc?.tiddlers ?? {})
+          const leaseSlotsNow = (): Array<string | null> => Object.entries((daemonDocHandle?.doc() ?? bootDaemonDoc)?.tiddlers ?? {})
             .filter(([title]) => title.startsWith(leasePrefix)).map(([, rec]) => tiddlerText(rec));
           siblings = await standSiblingChannel({
             repo, herms: siblingHerms, nexusPubkey, personaKelPrefix,
             deviceKey: wornAtom.key, sign: wornAtom.sign,
             enrolment: { edge: siblingEdge, seal }, open: wornAtom.opener,
-            expectedEpoch: readFace(daemonAuth.personaKel.chain, faceAnchor)?.leaseEpoch(group, leaseSlots) ?? 0,
+            expectedEpoch: () => readFace(daemonAuth.personaKel.chain, faceAnchor)?.leaseEpoch(group, leaseSlotsNow()) ?? null,
             onRefusal: (r) => console.warn(`[sibling] ${siblingRefusalLine(r)}`),
           });
         }
@@ -2219,6 +2256,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     daemonSurfaceId: DAEMON_SURFACE_ID,
     daemon: () => daemon,
     pool:   () => vmManager,
+    // A refused act answers on the same rail an island's answer rides, so the page hears every act it relayed.
+    answer: (surface, result) => onControlResult?.(surface, result),
   });
 
   // The connection snapshot carries the actual mounted document alongside the crossing verdict, so a
@@ -2244,7 +2283,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     store: result.assembly.composite,
     daemon,
     activeWikiId:     slotActiveWikiId,
-    activeWikiSource: "boot-arg",
+    activeWikiSource: wikiAwaitsFace ? "floor" : "boot-arg",
+    wikiAwaitsFace,
     wikiDocUrl:       result.wikiHandle.url,
     catalogHandleUrl: catalogHandle.url,
     daemonDocUrl:     social.daemonUrl,
