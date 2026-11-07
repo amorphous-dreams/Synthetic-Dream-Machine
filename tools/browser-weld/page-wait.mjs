@@ -47,9 +47,11 @@ export async function awaitPage(page, pageFn, arg, { livenessMs, what }) {
 export const WITNESS_LIVENESS_MS = 8_000;
 
 /**
- * Wait for a product witness or terminal failure. An unknown render id ends on its correlated stale-target result
- * or the worker's exact named refusal (a missing camera scope can refuse without posting a result).
- * Register this wait before dispatching the unknown probe so a synchronous console refusal cannot escape it.
+ * Wait for a product witness or terminal failure. An unknown render id ends on its correlated `lar:control-result`
+ * alone: every refusal on the return leg reaches the page as a result carrying its reason, so a console line stands as
+ * testimony beside it (the weld's console capture keeps it), never as the verdict. `stale-target` answers the probe; an
+ * `applied` or a refusal by another reason (a misrouted probe) reads false.
+ * Register this wait before dispatching the unknown probe so an answer that lands before evaluate returns cannot escape it.
  * Silence on that probe throws a harness liveness error, never a W3 verdict. Other witnesses answer false on lapse.
  */
 export async function waitForWitness(page, kind, mark, renderId, value, { livenessMs = WITNESS_LIVENESS_MS, log = console.log } = {}) {
@@ -57,7 +59,6 @@ export async function waitForWitness(page, kind, mark, renderId, value, { livene
   const terminal = new Promise((resolve) => {
     onError = () => resolve(false);
     onConsole = (message) => {
-      if (kind === "unknown" && message.text() === `[wiki-worker] stale-target: ${renderId}`) resolve(true);
       if (/\[daemon-island:fault\]|\[mirror\] stand refused:/.test(message.text())) resolve(false);
     };
     page.on("pageerror", onError);

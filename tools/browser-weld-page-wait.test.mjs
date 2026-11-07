@@ -60,12 +60,13 @@ test("a silent page ends the unknown probe as a harness liveness error, never a 
   assert.match(lines.join("\n"), /LIVENESS: the unknown witness/);
 });
 
-test('unknown render id ends on its named stale-target refusal even when no result can return', async () => {
+test("RED: the unknown probe reads the control-result alone; the worker's console line ends nothing", async () => {
+  // Every refusal on the return leg reaches the page as a lar:control-result carrying its reason, so a console line
+  // stands as testimony beside it, never as the W3 verdict. A page that only logs the refusal stays silent here.
   const page = fakePage(() => undefined);
-  const waiting = waitForWitness(page, 'unknown', 0, 'ghost', undefined, { livenessMs: 500 });
-  page.fire('console', { text: () => '[wiki-worker] stale-target: someone-else' });
+  const waiting = waitForWitness(page, 'unknown', 0, 'ghost', undefined, { livenessMs: 80, log: () => {} });
   page.fire('console', { text: () => '[wiki-worker] stale-target: ghost' });
-  assert.equal(await waiting, true);
+  await assert.rejects(waiting, /LIVENESS: the unknown witness/);
   assert.equal(page.listening('console'), 0);
 });
 
@@ -88,6 +89,7 @@ test('unknown probe reads the real page predicate and correlates the verdict by 
   };
   assert.equal(await evaluate([up, result('ask-1', 'stale-target')]), true);
   assert.equal(await evaluate([up, result('ask-1', 'applied')]), false, 'an unknown id must never apply');
+  assert.equal(await evaluate([up, result('ask-1', 'refused')]), false, 'a refusal by another reason names a misrouted probe, not a stale target');
   await assert.rejects(evaluate([up, result('other-ask', 'stale-target')]), /LIVENESS:/, 'another request cannot answer the probe');
 });
 

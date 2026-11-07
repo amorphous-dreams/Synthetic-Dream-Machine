@@ -2219,6 +2219,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     daemonSurfaceId: DAEMON_SURFACE_ID,
     daemon: () => daemon,
     pool:   () => vmManager,
+    // A refused act answers on the same rail an island's answer rides, so the page hears every act it relayed.
+    answer: (surface, result) => onControlResult?.(surface, result),
   });
 
   // The connection snapshot carries the actual mounted document alongside the crossing verdict, so a

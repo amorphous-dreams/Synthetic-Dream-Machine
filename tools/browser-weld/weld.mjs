@@ -211,7 +211,10 @@ const main = async () => {
       } else if (!traceHas(unknownTrace, { direction: "to-worker", type: "lar:control-event", renderId: unknownId })) {
         bad("W3 unknown-rid-drop", `unknown render id never reached a worker boundary — ${traceTail(unknownTrace)}`);
       } else if (!unknownAnswered || unknownChanged || traceHas(unknownTrace, { direction: "worker-error" })) {
-        bad("W3 unknown-rid-drop", `unknown render id lacked a stale-target refusal, changed the named tab state or raised a worker error — ${traceTail(unknownTrace)}`);
+        // The answer names its own reason: a refusal by another word (surface-unknown, event-malformed) says where it went.
+        const answer = unknownTrace.find((event) => event.direction === "from-worker" && event.type === "lar:control-result" && event.renderId === unknownId);
+        const answered = answer ? `answered ${answer.status}${answer.reason ? `: ${answer.reason}` : ""}` : "no control-result";
+        bad("W3 unknown-rid-drop", `unknown render id ${answered}, changed the named tab state or raised a worker error — ${traceTail(unknownTrace)}`);
       } else {
         ok("W3 unknown-rid-drop", "unknown render id crossed the host boundary and left Open/Recent unchanged");
       }

@@ -186,7 +186,9 @@ export type LarRefusal =
   | "route-unresolved" | "unsupported-control" | "binding-unavailable" | "page-action-unavailable"
   | "continuous-event-refused" | "pointer-capture-refused" | "reserved-chord"
   | "activation-required" | "unknown-request"
-  | "unclaimed" | "actor-not-spawned" | "superseded" | "cap-refused";
+  | "unclaimed" | "actor-not-spawned" | "superseded" | "cap-refused"
+  // The vessel's return leg: an act naming a surface the vessel holds no island for, or one the contract's reader refuses.
+  | "surface-unknown" | "event-malformed";
 
 export type LarResultStatus = "applied" | "stale-target" | "refused";
 

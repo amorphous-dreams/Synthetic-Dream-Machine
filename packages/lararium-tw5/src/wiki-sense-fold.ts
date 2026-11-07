@@ -185,6 +185,16 @@ export class IncrementalCorpusFold {
 
   /** A full first read seeds the index; later reads touch only changed stalks and threshold owners. */
   update(docs: readonly WikiSenseDoc[], stalkOf: (doc: WikiSenseDoc) => DocStalk = (doc) => deriveDocStalk(senseBodyOf(doc.fields))): CorpusFold {
+    const run = this.steps(docs, stalkOf);
+    for (;;) { const step = run.next(); if (step.done) return step.value; }
+  }
+
+  /**
+   * The same update as resumable steps: it pauses after each title it touches, so a host can give its loop back
+   * between slices (a cold seed over a whole corpus otherwise holds the island's loop for seconds, and every act a
+   * person makes waits behind it). The index stands mid-update while paused: one update runs on it at a time.
+   */
+  *steps(docs: readonly WikiSenseDoc[], stalkOf: (doc: WikiSenseDoc) => DocStalk = (doc) => deriveDocStalk(senseBodyOf(doc.fields))): Generator<void, CorpusFold, void> {
     const oldStop = Math.max(2, this.byTitle.size / 2);
     const incoming = new Set(docs.map((doc) => doc.title));
     const moved = new Set<string>();
@@ -201,7 +211,7 @@ export class IncrementalCorpusFold {
       this.form.delete(title);
       moved.add(title);
     };
-    for (const title of this.byTitle.keys()) if (!incoming.has(title)) remove(title);
+    for (const title of [...this.byTitle.keys()]) if (!incoming.has(title)) { remove(title); yield; }
     for (const doc of docs) {
       const body = senseBodyOf(doc.fields);
       const old = this.byTitle.get(doc.title);
@@ -226,6 +236,7 @@ export class IncrementalCorpusFold {
         this.setFrequency(shingle, (this.freq.get(shingle) ?? 0) + 1);
         changedShingles.add(shingle);
       }
+      yield;
     }
     const stop = Math.max(2, this.byTitle.size / 2);
     // A title's form changes only when its own set moves, a shingle's df moves, or N moves
@@ -249,6 +260,7 @@ export class IncrementalCorpusFold {
         if (df >= 2 && df <= stop) { recurring = 1; break; }
       }
       this.form.set(title, recurring);
+      yield;
     }
     return { docs: docs.map((doc) => this.byTitle.get(doc.title)!), shingleDocFreq: this.freq, formByTitle: this.form };
   }
