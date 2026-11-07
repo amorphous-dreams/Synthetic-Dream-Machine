@@ -267,6 +267,20 @@ export function heldOutGate({ covered, state, inFlight }, landsPast, m = 3) {
   return { pause: false };
 }
 
+/** Read and wait on the same held-out relation before either a train or a direct land. */
+async function awaitHeldOutGate({ span, SP, git, say, m }, ops) {
+  for (;;) {
+    const held = await ops.heldOut(span);
+    const past = held.covered && isAncestor(git, held.covered, SP)
+      ? git(["rev-list", "--first-parent", `${held.covered}..${SP}`]).split("\n").filter(Boolean).filter((c) => git(["log", "-1", "--format=%s", c]).includes(LAND_SUBJECT)).length
+      : held.covered ? Infinity : 0;
+    const gate = heldOutGate(held, past, m);
+    if (!gate.pause || !gate.wait) return { held, gate };
+    say(gate.why);
+    await ops.wait();
+  }
+}
+
 // ── the land ─────────────────────────────────────────────────────────────────────────────────────────────────
 const HOME_SCRATCH = () => join(userInfo().homedir, ".lares-scratch");
 const defaultQueue = () => join(HOME_SCRATCH(), "train", "queue");
@@ -420,7 +434,7 @@ export async function landTrain({ name = "train", specs = [], plan = false, loca
     // so no train run would measure it; its land is the lane merged over the span head, the SHIP law reading what lands.
     const memDirect = !direct && lanes.length === 1 && onlyMemPaths(lanes[0].paths);
     if (direct || memDirect || local) {
-      const r = await landLocal({ name, lanes, plan, span, direct, memDirect, d, table: v.table, shipDir }, ops);
+      const r = await landLocal({ name, lanes, plan, span, direct, memDirect, d, table: v.table, shipDir, m }, ops);
       if (r.code !== 0 || plan) return r;
       for (const l of lanes) settleEntry(queueDir, l, "done");
       return tally(lanes.map((l) => l.suffix).join(" ")) ?? r;
@@ -474,14 +488,14 @@ function trainRefs(git, span) {
 }
 
 /** DIRECT and --local: the land written before the push, from the lane tree or the local battery's merge trees. */
-async function landLocal({ name, lanes, plan, span, direct, memDirect = false, d, table, shipDir }, ops) {
+async function landLocal({ name, lanes, plan, span, direct, memDirect = false, d, table, shipDir, m }, ops) {
   const { say, git, stop, env, SP } = d;
   if (direct || memDirect) {
-    const held = await ops.heldOut(span);
-    if (held.state === "red") {
+    const { held, gate } = await awaitHeldOutGate({ span, SP, git, say, m }, ops);
+    if (gate.pause) {
       const lane = lanes[0];
-      const own = direct ? await ops.verdict(`${span}--${lane.suffix}`, lane.head) : null;
-      if (own?.heldOut !== "green") return stop(15, `HELD-OUT RED at ${short(held.covered)}: DIRECT land refuses`, "pono: cure the span's held-out red first; the held-out lane lands DIRECT only over its own green cells");
+      const own = held.state === "red" ? await ops.verdict(`${span}--${lane.suffix}`, lane.head) : null;
+      if (own?.heldOut !== "green") return stop(15, gate.why, held.state === "red" ? "pono: cure the span's held-out red first; the held-out lane lands DIRECT only over its own green cells" : null);
       say(`DIRECT over a red span held-out: the lane's own held-out at ${lane.head} reads green`);
     }
   }
@@ -818,17 +832,7 @@ async function landQueue({ lanes, plan, span, k, depth, m, queueDir, shipDir, ta
     // Build: the first train on the span after the held-out gate; one more on its head while depth allows.
     while (queue.length && (trains.length === 0 || trains.length + ops.spanRuns(span).length < depth)) {
       if (trains.length === 0) {
-        let gate;
-        for (;;) {
-          const h = await ops.heldOut(span);
-          const past = h.covered && isAncestor(git, h.covered, SP)
-            ? git(["rev-list", "--first-parent", `${h.covered}..${SP}`]).split("\n").filter(Boolean).filter((c) => git(["log", "-1", "--format=%s", c]).includes(LAND_SUBJECT)).length
-            : h.covered ? Infinity : 0;
-          gate = heldOutGate(h, past, m);
-          if (!gate.pause || !gate.wait) break;
-          say(gate.why);
-          await ops.wait();
-        }
+        const { gate } = await awaitHeldOutGate({ span, SP, git, say, m }, ops);
         if (gate.pause) return finish(15, gate.why);
       }
       const base = trains.at(-1)?.head ?? SP;
