@@ -24,6 +24,7 @@
 import * as A from "@automerge/automerge";
 import { isValidDocumentId, type Chunk, type Repo, type StorageAdapterInterface } from "@automerge/automerge-repo";
 import type { DocumentValue, HolderRefusal, OpenedValue } from "./content-key-holder.js";
+import { DOCUMENT_HANG_BOUND_MS } from "./find-or-throw.js";
 import { readSealedAddress } from "./sealed-chunk.js";
 import { SealedDocumentStore, type SaveSession, type SealedValueAddresses } from "./sealed-doc-store.js";
 import type { CompositeStore } from "./composite-store.js";
@@ -129,24 +130,40 @@ export const DOCSTORE_SEAL_VERB = "docstore-seal";
  *  exited, its cell detached it): every ask still waiting on that peer answers then, by name. */
 interface Port { post(msg: unknown): void; listen(cb: (msg: unknown) => void): () => void; gone?(cb: () => void): () => void }
 
-/** One request/answer pair over a port. The ask waits on its answer, and no clock ends it: the peer's departure
- *  (`gone`) answers every ask still waiting as `null`, as does a post the port refuses. */
-function asker<A extends { requestId: string }>(port: Port, answerType: string, opts: { readonly idPrefix: string }) {
-  const pending = new Map<string, (answer: A | null) => void>();
-  port.gone?.(() => { const settles = [...pending.values()]; pending.clear(); for (const settle of settles) settle(null); });
+/** The answer an ask reads when its island stood alive and said nothing within the door's LIVENESS bound. */
+const ISLAND_SILENT = Symbol("island-silent");
+
+/**
+ * One request/answer pair over a port. The ask ends on its answer; on the peer's departure (`gone`) or a post the port
+ * refuses, each answering `null`; or on the LIVENESS bound, answering `ISLAND_SILENT`. An island that exits or detaches
+ * says so, but one wedged while alive says nothing and no event can say never, so the bound ends that ask by name (the
+ * house shape of daemon-vm-core's ISLAND_ASK_LIVENESS_MS). A lapse is news about the island, not the ask: every ask
+ * still waiting on it answers `ISLAND_SILENT` at once, and so does every later ask, until the island answers anything
+ * again. So a queue of seals behind a wedged island spends one bound, never one per seal. An ask whose peer dies with
+ * the asker (island → vessel) carries no bound: its peer's death ends the island too.
+ */
+function asker<A extends { requestId: string }>(port: Port, answerType: string, opts: { readonly idPrefix: string; readonly livenessMs?: number }) {
+  const pending = new Map<string, (answer: A | null | typeof ISLAND_SILENT) => void>();
+  let silent = false;
+  const settleAll = (answer: null | typeof ISLAND_SILENT): void => { const settles = [...pending.values()]; pending.clear(); for (const settle of settles) settle(answer); };
+  port.gone?.(() => settleAll(null));
   port.listen((raw) => {
     const m = raw as { type?: unknown; requestId?: unknown } | null;
     if (!m || m.type !== answerType || typeof m.requestId !== "string") return;
+    silent = false;   // the island speaks again: a late answer to a lapsed ask still proves it answers
     const settle = pending.get(m.requestId);
     if (!settle) return;
     pending.delete(m.requestId);
     settle(m as unknown as A);
   });
   let seq = 0;
-  return (msg: Record<string, unknown>): Promise<A | null> => new Promise((resolve) => {
+  return (msg: Record<string, unknown>): Promise<A | null | typeof ISLAND_SILENT> => new Promise((resolve) => {
+    if (silent) { resolve(ISLAND_SILENT); return; }
     const requestId = `${opts.idPrefix}-${++seq}`;
-    pending.set(requestId, resolve);
-    try { port.post({ ...msg, requestId }); } catch { pending.delete(requestId); resolve(null); }
+    // LIVENESS: an island wedged while alive says nothing, and no event can say never; the lapse refuses by name.
+    const timer = opts.livenessMs === undefined ? undefined : setTimeout(() => { if (pending.has(requestId)) { silent = true; settleAll(ISLAND_SILENT); } }, opts.livenessMs);
+    pending.set(requestId, (answer) => { clearTimeout(timer); resolve(answer); });
+    try { port.post({ ...msg, requestId }); } catch { pending.delete(requestId); clearTimeout(timer); resolve(null); }
   });
 }
 
@@ -158,7 +175,10 @@ function asker<A extends { requestId: string }>(port: Port, answerType: string, 
 export function vesselDocStoreDoor<S extends SaveSession>(port: () => Port | null, opts: {
   readonly book: (ask: string, verb: string, session: S) => () => void;
   readonly idPrefix: string;
+  /** The LIVENESS bound an ask waits on an island that stands alive and says nothing (default DOCUMENT_HANG_BOUND_MS). */
+  readonly livenessMs?: number;
 }): Pick<ConstructorParameters<typeof SealedDocumentStore>[0], "seal" | "open"> & { lock(): void } {
+  const livenessMs = opts.livenessMs ?? DOCUMENT_HANG_BOUND_MS;
   let bound: Port | null = null;
   let seal: ReturnType<typeof asker<DocStoreMsg_Sealed>> | null = null;
   let open: ReturnType<typeof asker<DocStoreMsg_Opened>> | null = null;
@@ -167,8 +187,8 @@ export function vesselDocStoreDoor<S extends SaveSession>(port: () => Port | nul
     if (p === null) return false;
     if (p !== bound) {
       bound = p;
-      seal = asker<DocStoreMsg_Sealed>(p, "docstore:sealed", { idPrefix: `${opts.idPrefix}-seal` });
-      open = asker<DocStoreMsg_Opened>(p, "docstore:opened", { idPrefix: `${opts.idPrefix}-open` });
+      seal = asker<DocStoreMsg_Sealed>(p, "docstore:sealed", { idPrefix: `${opts.idPrefix}-seal`, livenessMs });
+      open = asker<DocStoreMsg_Opened>(p, "docstore:opened", { idPrefix: `${opts.idPrefix}-open`, livenessMs });
     }
     return true;
   };
@@ -183,6 +203,7 @@ export function vesselDocStoreDoor<S extends SaveSession>(port: () => Port | nul
       try {
         const answer = await seal!({ type: "docstore:seal", ask, verb: DOCSTORE_SEAL_VERB, bagId, values, ...(peer !== undefined ? { peer } : {}) });
         if (answer === null) return { refusal: "signer-unavailable", cause: "the daemon island went before it answered the seal" } as HolderRefusal;
+        if (answer === ISLAND_SILENT) return { refusal: "signer-unavailable", cause: `LIVENESS: the daemon island stood alive and answered no seal within its ${livenessMs}ms liveness bound` } as HolderRefusal;
         if (typeof answer.refusal === "string") return { refusal: answer.refusal, ...(answer.cause ? { cause: answer.cause } : {}) } as HolderRefusal;
         const sealed = (answer.values ?? []).map((v) => ({ role: v.role, ref: v.ref, address: readSealedAddress(v.address) }));
         if (sealed.length !== values.length || sealed.some((v) => v.address === null)) return { refusal: "seal-refused", cause: "the island answered no address" } as HolderRefusal;
@@ -193,6 +214,7 @@ export function vesselDocStoreDoor<S extends SaveSession>(port: () => Port | nul
       if (!ready()) return { refusal: "holder-locked", cause: "no daemon island answers the document store's door" } as HolderRefusal;
       const answer = await open!({ type: "docstore:open", bagId, role, ref });
       if (answer === null) return { refusal: "holder-locked", cause: "the daemon island went before it answered the open" } as HolderRefusal;
+      if (answer === ISLAND_SILENT) return { refusal: "holder-locked", cause: `LIVENESS: the daemon island stood alive and answered no open within its ${livenessMs}ms liveness bound` } as HolderRefusal;
       if (typeof answer.refusal === "string") return { refusal: answer.refusal, ...(answer.cause ? { cause: answer.cause } : {}) } as HolderRefusal;
       const address = readSealedAddress(answer.address);
       if (!(answer.plaintext instanceof Uint8Array) || address === null || typeof answer.writer !== "string" || typeof answer.changeWriter !== "string" || typeof answer.keyVersion !== "string") {
@@ -252,7 +274,7 @@ export function islandLiveDocDoor(port: Port, opts: { readonly idPrefix: string 
   const ask = asker<DocStoreMsg_Lived>(port, "docstore:lived", opts);
   return async (bagId) => {
     const answer = await ask({ type: "docstore:live", bagId });
-    return answer !== null && answer.bytes instanceof Uint8Array ? answer.bytes : null;
+    return answer !== null && answer !== ISLAND_SILENT && answer.bytes instanceof Uint8Array ? answer.bytes : null;
   };
 }
 

@@ -457,6 +457,100 @@ describe("P2-1: a seal the door cannot answer keeps its change", () => {
   });
 });
 
+describe("F1: a lock always drops the signer, whatever its island says", () => {
+  /** A door over an island that stands, says it answers, and then never answers a seal: alive and wedged. */
+  const wedgedDoor = async (livenessMs: number) => {
+    const channel = new MessageChannel();
+    const vesselSide = portOf(channel.port1), islandSide = portOf(channel.port2);
+    const cell = docStorePortCell(async () => null);
+    cell.attach(vesselSide);
+    const heard: { type?: string; requestId?: string }[] = [];
+    islandSide.listen((raw) => { heard.push(raw as { type?: string; requestId?: string }); });
+    islandSide.post({ type: "docstore:answering" });
+    await settle(50);
+    const door = vesselDocStoreDoor<Session>(() => cell.port(), { book: () => () => {}, idPrefix: "wedged", livenessMs });
+    return { door, islandSide, heard };
+  };
+  const value = { role: "change" as const, ref: "ef".repeat(32), parents: [], plaintext: utf8Bytes(SECRET) };
+
+  it("RED: a seal to an island alive and silent refuses by name after its LIVENESS bound; every later seal refuses at once, until the island speaks again (control)", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const session: Session = { id: "s-a", subject: faceProofSubjectRef(a.chain.scope), signer: a.signer };
+    const { door, islandSide, heard } = await wedgedDoor(150);
+    const first = await door.seal({ bagId: BAG, values: [value], session });
+    expect(first).toMatchObject({ refusal: "signer-unavailable", cause: expect.stringMatching(/^LIVENESS: /) });
+    // a lapse is news about the island: the next seal spends no second bound and never reaches the wedged island
+    const posted = heard.length;
+    const t0 = performance.now();
+    expect(await door.seal({ bagId: BAG, values: [value], session })).toMatchObject({ refusal: "signer-unavailable", cause: expect.stringMatching(/^LIVENESS: /) });
+    expect(performance.now() - t0).toBeLessThan(100);
+    expect(heard.length).toBe(posted);
+    // CONTROL: the island answers the lapsed ask late; it speaks again, so the next seal reaches it and reads its answer
+    const lapsed = heard.find((m) => m.type === "docstore:seal")!;
+    islandSide.listen((raw) => {
+      const m = raw as { type?: string; requestId?: string };
+      if (m.type === "docstore:seal") islandSide.post({ type: "docstore:sealed", requestId: m.requestId, refusal: "seal-refused", cause: "the island answers again" });
+    });
+    islandSide.post({ type: "docstore:sealed", requestId: lapsed.requestId, refusal: "seal-refused" });
+    await settle(50);
+    expect(await door.seal({ bagId: BAG, values: [value], session })).toMatchObject({ refusal: "seal-refused", cause: "the island answers again" });
+  });
+
+  it("RED: the lock ritual over a wedged island ends and the signer drops; the change stays in memory, reports save-unsealed by name, and no byte rests", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const own = faceProofSubjectRef(a.chain.scope);
+    const session: Session = { id: "s-a", subject: own, signer: a.signer };
+    const inner = memoryAdapter();
+    const held: string[] = [];
+    const { door } = await wedgedDoor(150);
+    let repo: Repo | null = null;
+    const rest = composeSealedRest<Session>({
+      inner, bagOf: () => ({ bagId: BAG, face: own }), sessionFace: () => own, door,
+      flushRepo: async () => { await repo?.flush(); }, onHeld: (h) => held.push(h.refusal),
+    });
+    repo = new Repo({ storage: rest.store, network: [] });
+    const doc = repo.create<{ note?: string }>();
+    rest.wrote(doc.documentId, session);
+    doc.change((d) => { d.note = SECRET; });
+    // the lock ritual as the node runs it (sealedRestLock, then flushThenDrop's drop)
+    let dropped = false;
+    const ritual = (async () => {
+      try { await rest.rebook(session); } catch { /* it keeps waiting */ }
+      try { await rest.lock(session.id); } catch { /* the drop still lands */ }
+      dropped = true;
+    })();
+    await Promise.race([ritual, settle(3_000)]);
+    expect(dropped).toBe(true);
+    expect(held).toContain("save-unsealed");
+    expect(rest.store.waiting(doc.documentId)).toBeGreaterThan(0);
+    expect(restsAny(inner, doc.documentId)).toBe(false);
+    expect(doc.doc().note).toBe(SECRET);
+  });
+
+  it("CONTROL: an answering island seals first, then the signer drops", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const inner = memoryAdapter();
+    const r = standRest(a, inner);
+    const session: Session = { id: "s-a", subject: r.own, signer: a.signer };
+    const repo = new Repo({ storage: r.rest.store, network: [] });
+    r.seat(repo);
+    const doc = repo.create<{ note?: string }>();
+    r.rest.wrote(doc.documentId, session);
+    doc.change((d) => { d.note = SECRET; });
+    let sealedAtDrop = -1;
+    try { await r.rest.rebook(session); } catch { /* it keeps waiting */ }
+    await r.rest.lock(session.id);
+    sealedAtDrop = r.sealedUnder.length;
+    expect(sealedAtDrop).toBeGreaterThan(0);
+    expect(restsAny(inner, doc.documentId)).toBe(true);
+    expect(restsClear(inner, doc.documentId, SECRET)).toBe(false);
+    await repo.shutdown();
+  });
+});
+
 describe("P2-2: the lock reaches the island's holder at once", () => {
   it("after the vessel posts its lock across the door, the island's holder holds no content key: an open refuses, and nothing seals", async () => {
     const w = world();
