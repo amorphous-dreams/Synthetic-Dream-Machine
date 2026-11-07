@@ -259,9 +259,6 @@ export class VerbTable {
   }
 }
 
-/** How long the gate waits for main to mount the wiki an act aims at. */
-const WIKI_MOUNT_BOUND_MS = 30_000;
-
 export interface VerbDispatcherOptions {
   readonly daemonVm:   TW5Engine;
   readonly daemon:    CompositeStore;
@@ -380,12 +377,13 @@ export class VerbDispatcher {
   /**
    * W27: an act aimed at a wiki no island mounts asks the vessel to mount it, and refuses by name when the mount cannot
    * stand. It follows the fence and the verifier's own `bag not registered` (see clearRouted), so only a presenter the
-   * fence admits and the verifier otherwise clears can ask one. Main answers `wiki-switch` the way `ensureActive` does.
+   * fence admits and the verifier otherwise clears can ask one. Main answers `wiki-switch` the way `ensureActive` does,
+   * and that mount ends on the island's answer, its fault or the pool's named liveness bound, so the gate waits on main's
+   * answer and no clock gives up on it.
    */
   private async mountAimedWiki(slug: string, invocation: Verb): Promise<void> {
     const refuse = (cause: string): Error => Object.assign(new Error(`wiki-mount-refused: ${cause}`), { reason: "wiki-mount-refused" });
     if (!this.opts.routeFn) throw refuse(`no-route: ${slug} has no island to ask`);
-    let timer: ReturnType<typeof setTimeout> | undefined;
     const abandon = new AbortController();
     try {
       // The ask rides its own correlation id: a caller's request id never names a mount.
@@ -393,15 +391,13 @@ export class VerbDispatcher {
         requestId: `wiki-mount:${globalThis.crypto.randomUUID()}`, title: `wiki-mount:${slug}`, action: "wiki-switch", args: { slug }, requestedBy: invocation.requestedBy,
         targets: [], batchMode: "best-effort", status: "pending", requestedAt: invocation.requestedAt,
       } as Verb, abandon.signal);
-      const bound = new Promise<never>((_, reject) => { timer = setTimeout(() => reject(refuse(`mount-timeout: ${slug} did not answer within ${WIKI_MOUNT_BOUND_MS}ms`)), WIKI_MOUNT_BOUND_MS); });
-      const answer = await Promise.race([asked, bound]);
+      const answer = await asked;
       if (answer["active"] !== true) throw refuse(`${String(answer["cause"] ?? "not-active")}: ${String(answer["detail"] ?? slug)}`);
     } catch (cause) {
       if ((cause as { reason?: string }).reason === "wiki-mount-refused") throw cause;
       throw refuse(cause instanceof Error ? cause.message : String(cause));
     } finally {
-      if (timer) clearTimeout(timer);
-      abandon.abort();   // an ask the gate stopped waiting on drops its entry in the router (a settled ask has none left)
+      abandon.abort();   // a settled ask has no entry left in the router; the abort drops any that stands
     }
   }
 

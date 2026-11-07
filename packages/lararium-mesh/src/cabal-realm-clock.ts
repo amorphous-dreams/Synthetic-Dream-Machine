@@ -35,6 +35,7 @@ import { canonicalJsonBytes } from "./crypto.js";
 import { tiddlerText, type LarDoc } from "./base-doc.js";
 import { realmFeedPrefix, realmFeedSlotUri, type CabalRealm } from "./cabal-realm.js";
 import { verifyEd25519 } from "./ed25519-door.js";
+import { REALM_FEED_DOMAIN } from "./domains.js";
 
 /** One maintainer's standing — the writer and how deep it has rolled the realm's feed. */
 export interface MaintainerStanding {
@@ -265,9 +266,6 @@ export function readRealmFeedSlot(text: string): RealmFeedSlotValue | null {
 }
 
 // ── SEALING THE WRITE PATH ────────────────────────────────────────────────────────────────────────
-
-/** Signing domain for a realm roll — kept distinct so a seal made here presents nowhere else. */
-const REALM_FEED_DOMAIN = "lar/realm-feed" as const;
 
 /**
  * The bytes a roll signs over — the realm, the writer and the epoch bound TOGETHER.

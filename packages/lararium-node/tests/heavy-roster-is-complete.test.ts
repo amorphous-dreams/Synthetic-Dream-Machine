@@ -151,7 +151,8 @@ describe("the serial heavy roster detects its own staleness", () => {
       `These suites stand a live resource and run in the PARALLEL project, which is the condition ` +
         `that produced the intermittent reds the heavy roster exists to cure. Add each to \`const heavy\` ` +
         `in vitest.config.ts, or list it in ALLOWED_LIGHT with the reason it stays parallel:\n` +
-        missing.map((m) => `  ${m.suite} — ${m.why.join(", ")}`).join("\n"),
+        missing.map((m) => `  ${m.suite} — ${m.why.join(", ")}`).join("\n") +
+        "\npono: add the file to its package vitest project, the serial roster when it stands a live resource",
     ).toEqual([]);
   });
 

@@ -122,6 +122,8 @@ test("WL2 CONTROL: a planted workflow without the caps reads every breach, and a
   assert.deepEqual(breaches("from-step.yml", fromStep), []);
 });
 
+// The pinned Playwright image supplies Node 26 for the browser cells; the other jobs pin Node 24.
+// The browser import boundary must keep product code compatible with Node 24.
 // THE BROWSER LIBRARIES COME IN THE IMAGE. `playwright install-deps` is an apt step; on a hosted runner it timed out at its five
 // minutes in the browser cells at least six times in one day. The pinned official image carries the libraries and the engines,
 // so no workflow runs the install, and EVERY image-bearing field in every workflow EQUALS the one pin the capability probe holds,
@@ -215,5 +217,89 @@ test("WL5 RED: pw-container.sh refuses every image but the capability probe's pi
     const r = run(bad);
     assert.equal(r.status, 2, `${bad} refuses`);
     assert.match(r.stderr, /refusing PW_IMAGE/);
+  }
+});
+
+// G55: package-closure witness. Overlay entries replace root-relative file contents; null removes one.
+// The witness lives separately so this test file can land first.
+const boundaryRoot = join(import.meta.dirname, "..");
+const webManifest = "packages/lararium-web/package.json";
+const fixtureDir = "packages/g55-fixture";
+const fixtureName = "@g55/closure-fixture";
+const originalWeb = JSON.parse(readFileSync(join(boundaryRoot, webManifest), "utf8"));
+const lock = readFileSync(join(boundaryRoot, "pnpm-lock.yaml"), "utf8");
+const withFixture = (range, dependency) => ({
+  [webManifest]: JSON.stringify({ ...originalWeb, devDependencies: { ...originalWeb.devDependencies, [fixtureName]: "workspace:*" } }),
+  [`${fixtureDir}/package.json`]: JSON.stringify({ name: fixtureName, version: "1.0.0", engines: { node: range }, dependencies: dependency ?? {} }),
+});
+async function boundaryWitness(overlay = {}) {
+  const law = await import("./browser-node-boundary.mjs");
+  return law.browserNodeBoundary({ root: boundaryRoot, overlay });
+}
+const refuses = (diagnostics, cell, name) => assert.ok(
+  diagnostics.some((d) => d.includes(cell) && d.includes(name)),
+  `expected refusal naming ${cell} and ${name}: ${JSON.stringify(diagnostics)}`,
+);
+
+test("G55 closure CONTROL: real closures and a Node 24 workspace dependency pass", async () => {
+  assert.deepEqual(await boundaryWitness(), []);
+  assert.deepEqual(await boundaryWitness(withFixture(">=24")), []);
+});
+
+test("G55 closure RED: a transitive workspace floor refuses by cell and package; removal restores control", async () => {
+  const planted = withFixture(">=24", { "@g55/leaf": "workspace:*" });
+  planted["packages/g55-leaf/package.json"] = JSON.stringify({ name: "@g55/leaf", version: "1.0.0", engines: { node: ">=26" } });
+  const diagnostics = await boundaryWitness(planted);
+  refuses(diagnostics, "web-tw5", "@g55/leaf");
+  refuses(diagnostics, "quick", "@g55/leaf");
+  assert.deepEqual(await boundaryWitness(), []);
+});
+
+test("G55 closure RED: third-party transitive floors refuse and Node 24 restores control", async () => {
+  // Insert a package and a snapshot edge into an existing direct dependency's resolved snapshot.
+  const manifest = JSON.parse(readFileSync(join(boundaryRoot, webManifest), "utf8"));
+  const dep = Object.keys(manifest.devDependencies).find((name) => name === "vite");
+  assert.ok(dep, "fixture needs a real direct third-party edge");
+  const add = (minimum) => lock.replace("\npackages:\n", `\npackages:\n\n  g55-fixture@1.0.0:\n    resolution: {integrity: sha512-fixture}\n    engines: {node: '>=${minimum}'}\n`)
+    .replace("\nsnapshots:\n", "\nsnapshots:\n\n  g55-fixture@1.0.0: {}\n")
+    .replace(/(\n  vite@[^\n]+:\n    dependencies:\n)/, "$1      g55-fixture: 1.0.0\n");
+  assert.notEqual(add(26), lock);
+  refuses(await boundaryWitness({ "pnpm-lock.yaml": add(26) }), "web-tw5", "g55-fixture");
+  assert.deepEqual(await boundaryWitness({ "pnpm-lock.yaml": add(24) }), []);
+  assert.deepEqual(await boundaryWitness(), []);
+});
+
+test("G55 closure RED: a package held only through a peer edge refuses by cell and package", async () => {
+  const peerFixture = (range) => {
+    const o = withFixture(">=24");
+    o[`${fixtureDir}/package.json`] = JSON.stringify({ name: fixtureName, version: "1.0.0", engines: { node: ">=24" }, peerDependencies: { "@g55/peer": "workspace:*" } });
+    o["packages/g55-peer/package.json"] = JSON.stringify({ name: "@g55/peer", version: "1.0.0", engines: { node: range } });
+    return o;
+  };
+  refuses(await boundaryWitness(peerFixture(">=26")), "web-tw5", "@g55/peer");
+  refuses(await boundaryWitness(peerFixture(">=26")), "quick", "@g55/peer");
+  assert.deepEqual(await boundaryWitness(peerFixture(">=24")), []);
+  // the lockfile walk: a snapshot's peerDependencies edge joins the closure
+  const peerLock = (minimum) => lock.replace("\npackages:\n", `\npackages:\n\n  g55-peer@1.0.0:\n    resolution: {integrity: sha512-fixture}\n    engines: {node: '>=${minimum}'}\n`)
+    .replace("\nsnapshots:\n", "\nsnapshots:\n\n  g55-peer@1.0.0: {}\n")
+    .replace(/(\n  vite@[^\n]+:\n)(    dependencies:\n)/, "$1    peerDependencies:\n      g55-peer: 1.0.0\n$2");
+  assert.notEqual(peerLock(26), lock);
+  refuses(await boundaryWitness({ "pnpm-lock.yaml": peerLock(26) }), "web-tw5", "g55-peer");
+  assert.deepEqual(await boundaryWitness({ "pnpm-lock.yaml": peerLock(24) }), []);
+  assert.deepEqual(await boundaryWitness(), []);
+});
+
+test("G55 closure RED: unresolvable transitive dependency names its cell and member", async () => {
+  const planted = withFixture(">=24", { "@g55/missing": "workspace:*" });
+  refuses(await boundaryWitness(planted), "web-tw5", "@g55/missing");
+  assert.deepEqual(await boundaryWitness(), []);
+});
+
+test("G55 policy RED: workflow header and image law declare the Node exception", () => {
+  const workflow = readFileSync(join(boundaryRoot, ".github/workflows/ci.yml"), "utf8").split(/^on:\s*$/m)[0];
+  const law = readFileSync(join(boundaryRoot, "tools/workflow-law.test.mjs"), "utf8").split("// G55: package-closure witness.")[0];
+  for (const [where, text] of [["workflow header", workflow], ["image law", law]]) {
+    assert.match(text, /Node\s*26[\s\S]{0,180}(?:pinned|Playwright)[\s\S]{0,180}Node\s*24|(?:pinned|Playwright)[\s\S]{0,180}Node\s*26[\s\S]{0,180}Node\s*24/i, `${where} must declare Node 26 in the pinned Playwright image and Node 24 for the other jobs`);
+    assert.match(text, /(?:other|remaining|non.browser)[\s\S]{0,80}(?:jobs|cells)|(?:jobs|cells)[\s\S]{0,80}(?:other|remaining|non.browser)/i, `${where} must identify the other jobs`);
   }
 });

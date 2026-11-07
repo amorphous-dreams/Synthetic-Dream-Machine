@@ -19,7 +19,7 @@
  *   · a session's end drops its surfaces alone, and a switch fences the earlier generation;
  *   · the island key never collides, whatever its parts spell.
  */
-import { describe, test, expect, afterEach } from "vitest";
+import { describe, test, expect, afterEach, vi } from "vitest";
 import * as ed from "@noble/ed25519";
 import * as A from "@automerge/automerge";
 import { Repo, type AutomergeUrl, type DocHandle, type PeerId } from "@automerge/automerge-repo";
@@ -336,7 +336,7 @@ describe("one function resolves a session's effective recipe at surface mount", 
 
 // ── The pool ────────────────────────────────────────────────────────────────────────────────────
 
-interface FakeIsland { manifest: IslandMsg_Manifest; posted: unknown[]; reply(msg: unknown): void; terminated: boolean }
+interface FakeIsland { manifest: IslandMsg_Manifest; posted: unknown[]; reply(msg: unknown): void; terminated: boolean; exit(why: string): void }
 interface HostOptions {
   fault?: (m: IslandMsg_Manifest) => boolean;
   /** Hold each island's `ea` until the test sends it. */
@@ -350,7 +350,8 @@ function islandHost(opts: HostOptions = {}): { host: VesselIslandHost; islands: 
   const host: VesselIslandHost = {
     spawnWorker(): VesselWorkerHandle {
       const listeners = new Set<(raw: unknown) => void>();
-      const island: FakeIsland = { manifest: null as unknown as IslandMsg_Manifest, posted: [], reply: (msg) => { for (const l of [...listeners]) l(msg); }, terminated: false };
+      const exiters = new Set<(why: string) => void>();
+      const island: FakeIsland = { manifest: null as unknown as IslandMsg_Manifest, posted: [], reply: (msg) => { for (const l of [...listeners]) l(msg); }, terminated: false, exit: (why) => { for (const x of [...exiters]) x(why); } };
       islands.push(island);
       return {
         post: (msg: unknown) => {
@@ -365,6 +366,7 @@ function islandHost(opts: HostOptions = {}): { host: VesselIslandHost; islands: 
         },
         listen: (h) => { listeners.add(h); return () => { listeners.delete(h); }; },
         onError: () => () => {},
+        onExit: (h) => { exiters.add(h); return () => { exiters.delete(h); }; },
         terminate: () => { island.terminated = true; },
       };
     },
@@ -981,6 +983,25 @@ describe("the island pool keys by the whole session key", () => {
     await quiet(50);
     expect(otherSettled).toBe(false);                                                    // control: the other island's call still waits
     await pool.closeSession("session-2");
+  });
+
+  test("a call parked on an island ends on the island's EXIT, and no clock ends it (never a handshake timeout)", async () => {
+    const v = vessel();
+    v.writeRecipe("catalog", { wikiSlug: SLUG, libraryBags: [SHARED_BAG] });
+    const { pool, islands } = poolOver(v);
+    const recipe = await resolved(inputOf(v, "player"));
+    const key = await pool.mountSurface({ sessionId: "session-1", generation: 0, surfaceId: "surface-a", recipe });
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    try {
+      let outcome = "parked";
+      void pool.placeWikiVerb(key, { verb: "slow-verb", args: {}, requestedBy: "test" }, { sessionId: "session-1", generation: 0 }).then(() => { outcome = "resolved"; }, (err: Error) => { outcome = err.message; });
+      await vi.advanceTimersByTimeAsync(120_000);
+      expect(outcome).toBe("parked");                                  // no clock answered for a verb on a live island
+      islands[0]!.exit("exit code 1");
+      await vi.advanceTimersByTimeAsync(0);
+      expect(outcome).toContain("exited");                             // the island's exit answers, by name
+    } finally { vi.useRealTimers(); }
+    await pool.closeSession("session-1");
   });
 
   test("failure accounting reads the whole key", async () => {

@@ -27,6 +27,7 @@ export function probePort(port: number, host = "127.0.0.1", timeoutMs = 250): Pr
   return new Promise((res) => {
     const sock = createConnection({ port, host });
     const done = (open: boolean): void => { sock.removeAllListeners(); sock.destroy(); res(open); };
+    // LIVENESS: a filtered or wedged listener may never connect or report an error.
     sock.setTimeout(timeoutMs);
     sock.once("connect", () => done(true));
     sock.once("error",   () => done(false));
@@ -77,6 +78,7 @@ export function portHolderPids(port: number): number[] {
   } catch { return []; }
 }
 
+// PACING: polls revisit holder and resource state; those observations or a declared budget settle the wait.
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
 /** `forced` is GONE (M3): this door never forced a stop, so the field never read true, and a reader
@@ -190,6 +192,7 @@ export async function stopIncumbent(
     // vessel's own UDS claim) decides; with none wired, the port probe decides.
     const stillHeld = pids.some(pidAlive) || (opts.holderAlive ? await opts.holderAlive(pids) : await probe(port));
     if (!stillHeld) return { stopped: true };
+    // PACING: grace triggers a report while holder exit continues to decide the wait.
     if (!warned && performance.now() >= graceDeadline) {
       warned = true;
       // NEVER RE-READ THE PORT PAST GRACE (H5′). `main.ts`'s own teardown closes the http listener — the
@@ -273,6 +276,7 @@ export async function waitForResourceBudgeted(
     if (await opts.probe()) return;
     const name = await opts.phase();
     if (name !== curName) { curName = name; curDeadline = performance.now() + (budgetOf.get(curName) ?? 0); }
+    // LIVENESS: a boot phase may stall without making the resource ready or advancing its phase.
     if (performance.now() >= curDeadline) throw new SlowBootTimeout(curName, resource, await opts.holderPids());
     await sleep(pollMs);
   }

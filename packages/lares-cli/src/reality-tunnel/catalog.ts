@@ -114,6 +114,7 @@ function claudeMcp(home: string, mcp: LaresMcpCommand): External {
       && JSON.stringify(sorted(s.env ?? {})) === JSON.stringify(sorted(mcp.env));
   };
   const run = (args: string[]): { ok: boolean; detail: string } => {
+    // LIVENESS: the external Claude CLI may hang without returning.
     const r = spawnSync("claude", args, { encoding: "utf8", timeout: 15_000 });
     return r.status === 0 ? { ok: true, detail: "" } : { ok: false, detail: String(r.stderr ?? r.error ?? "").trim().slice(0, 120) };
   };
@@ -151,6 +152,7 @@ function claudeMcp(home: string, mcp: LaresMcpCommand): External {
 const sorted = (env: Record<string, string>): Array<[string, string]> => Object.entries(env).sort(([a], [b]) => a.localeCompare(b));
 
 const hostDir: Record<string, string> = { claude: ".claude", codex: ".codex", copilot: ".copilot" };
+// LIVENESS: the external Claude version probe may hang without returning.
 const claudeCli = (): boolean => spawnSync("claude", ["--version"], { encoding: "utf8", timeout: 10_000 }).error === undefined;
 
 export interface HomeContext {

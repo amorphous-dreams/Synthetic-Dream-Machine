@@ -10,7 +10,7 @@ import { open as fsOpen } from 'node:fs/promises';
 import { constants as FSC } from 'node:fs';
 import { brokerRootPath, ensureBrokerRoot, ensureLaneDir, ensureStageRoot, laneId } from './broker-root.mjs';
 import { addWorktree, commitWithReceipt, pushWithGo, removeWorktree } from './seat-broker.mjs';
-import { runInstallSeat } from './seat-walls.mjs';
+import { runInstallSeat, runTestSeat } from './seat-walls.mjs';
 
 const args = process.argv.slice(2);
 const options = {};
@@ -91,8 +91,12 @@ try { for (const [k, v] of Object.entries(JSON.parse(await readFile(madeFile, 'u
 const saveMade = async () => { await mkdir(iso, { recursive: true }); await writeFile(madeFile, JSON.stringify(Object.fromEntries(made))); }; // broker-owned
 async function handle(request) {
   if (!request || typeof request !== 'object' || Array.isArray(request)) throw new Error('request must be an object');
-  const schemas = { commit: ['kind', 'paths', 'message', 'expectHead'], push: ['kind'], install: ['kind', 'path'], worktree: ['kind', 'path', 'branch', 'base'], 'worktree-remove': ['kind', 'path'], launch: ['kind', 'seatDir', 'model', 'effort', 'mode', 'worktree'] };
-  if (Object.hasOwn(schemas, request.kind) && Object.keys(request).some(key => !schemas[request.kind].includes(key))) throw new Error('unknown field');
+  const schemas = { test: ['kind', 'runner', 'files'], commit: ['kind', 'paths', 'message', 'expectHead'], push: ['kind'], install: ['kind', 'path'], worktree: ['kind', 'path', 'branch', 'base'], 'worktree-remove': ['kind', 'path'], launch: ['kind', 'seatDir', 'model', 'effort', 'mode', 'worktree'] };
+  if (Object.hasOwn(schemas, request.kind)) { const unknown = Object.keys(request).find(key => !schemas[request.kind].includes(key)); if (unknown) throw new Error(`unknown field ${unknown}`); }
+  if (request.kind === 'test') {
+    const held = openHeldSync(worktree, scratch); // broker-owned: the controller configured worktree
+    try { return await runTestSeat({ worktreeHeld: held, laneHeld, runner: request.runner, files: request.files }); } finally { held.close(); }
+  }
   if (request.kind === 'worktree') {
     const { target } = laneRel(request.path);
     if (typeof request.branch !== 'string' || !request.branch.startsWith(`${branch}-`) || git('check-ref-format', `refs/heads/${request.branch}`).status !== 0) throw new Error('invalid worktree branch');

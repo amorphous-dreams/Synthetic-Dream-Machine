@@ -177,7 +177,7 @@ describe("the vessel's doors answer by island class", () => {
     expect(wiki.said[1]).toMatchObject({ type: "cas:block", requestId: "hit", bytes: new Uint8Array([1]) });
   });
 
-  test("D4 — a session island reaches none of the three capabilities", async () => {
+  test("D4 — a session island reaches none of the capabilities, and every ask it posts answers refused by name (F3: none waits on silence)", async () => {
     const reached: string[] = [];
     const caps: CapabilityRecord = {
       custodyWrite: async () => { reached.push("custody"); },
@@ -186,11 +186,18 @@ describe("the vessel's doors answer by island class", () => {
       dyad: () => { reached.push("dyad"); return "clear"; },
     };
 
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const session = island();
     nodeWorkerHandle(session.worker, { island: "session", caps });
-    for (const ask of [custodyAsk("s1"), receiptAsk("s2"), casAsk("s3"), dyadAsk("s4")]) await session.ask(ask);
+    for (const ask of [custodyAsk("s1"), receiptAsk("s2"), casAsk("s3"), dyadAsk("s4"), { type: "session:sign", requestId: "s5", op: "sign", ask: "a", verb: "v", payload: new Uint8Array([1]) }]) await session.ask(ask);
     expect(reached).toEqual([]);
-    expect(session.said).toEqual([]);
+    // RED: before F3 a session island drew no answer, so its portTransit `cas:want` on a local miss waited forever.
+    expect(session.said.find((m) => m["requestId"] === "s1")).toMatchObject({ type: "custody:written", written: false });
+    expect(session.said.find((m) => m["requestId"] === "s2")).toMatchObject({ type: "receipt:issued", issued: false });
+    expect(session.said.find((m) => m["requestId"] === "s3")).toEqual({ type: "cas:block", requestId: "s3", bytes: null });
+    expect(session.said.find((m) => m["requestId"] === "s4")).toMatchObject({ type: "dyad:read", standing: "aside" });
+    expect(session.said.find((m) => m["requestId"] === "s5")).toMatchObject({ type: "session:signed", refusal: "signer-unavailable" });
+    expect(warn.mock.calls.some(([line]) => /CasRefused: a session island asked for the cas capability/.test(String(line)))).toBe(true);
 
     const daemon = island();
     nodeWorkerHandle(daemon.worker, { island: "daemon", caps });

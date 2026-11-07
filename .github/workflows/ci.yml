@@ -1,5 +1,8 @@
 name: CI
 
+# The pinned Playwright image supplies Node 26 for the browser cells; the other jobs pin Node 24.
+# The browser import boundary must keep product code compatible with Node 24.
+
 # Golden-principle gates for the Lararium monorepo, mapped to the project's
 # domains + models (web3 local-first · causal-islands · the meme graph).
 #

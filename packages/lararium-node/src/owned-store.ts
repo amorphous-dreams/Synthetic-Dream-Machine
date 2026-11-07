@@ -225,6 +225,7 @@ export async function claimStore(storageDir: string, opts: ClaimOptions = {}): P
       if (met === null) {
         // Nothing answers: the holder let go this instant, or a claimant reaps a dead holder's name.
         if ((err instanceof StoreReaping || err instanceof StoreHeldElsewhere) && ++reaping > REAP_PATIENCE) throw err;
+        // PACING: retries end on a holder response or the reaping attempt bound.
         await new Promise((r) => setTimeout(r, 5));
         continue;
       }

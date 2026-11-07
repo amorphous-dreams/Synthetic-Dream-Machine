@@ -45,6 +45,7 @@ export function detectCudaLibDirs(python: string | null): string[] {
     " for p in glob.glob(os.path.join(b,'*','lib','libcud*.so*')): dirs.add(os.path.dirname(p))\n" +
     "print('\\n'.join(sorted(dirs)))";
   try {
+    // LIVENESS: the external Python probe can hang without reporting an exit.
     const r = spawnSync(python, ["-c", probe], { timeout: 10_000, encoding: "utf8" });
     if (r.status !== 0 || !r.stdout) return (_cudaLibDirs = []);
     _cudaLibDirs = r.stdout.trim().split(/\r?\n/).map((s) => s.trim()).filter((s) => s && existsSync(s));

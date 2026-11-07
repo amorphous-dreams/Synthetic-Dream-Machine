@@ -87,7 +87,7 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
   /** `docStoreDoor` — the port the vessel's document store asks across (sealed-store#/owed): the vessel's Repo hands
    *  this island a body to seal under the ask its session sign book booked for the session that wrote the change, and
    *  a reference to open; the island answers addresses and bodies, never a key, on this port alone. Absent → the
-   *  vessel's sealed rest reaches no holder, and every seal it asks refuses by its own patience. */
+   *  vessel's sealed rest reaches no holder, and every seal it asks refuses at once by name (`holder-locked`). */
   docStoreDoor?: { post(msg: unknown): void; listen(cb: (msg: unknown) => void): () => void };
   /** `freshBase` — the document store's cut of a from-now admission's fresh base (`@lararium/mesh` `freshBasePort`),
    *  over the bag's live document as the vessel's Repo holds it. Absent → every from-now admission refuses
@@ -551,7 +551,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   };
   // THE HOLDER AND ITS DOOR STAND BEFORE ANY READ OF A SEALED DOCUMENT (the working-layer-first rule, red 3): the face's
   // catalog rests sealed, and the vessel opens its chunks only through this door, so a boot that read the catalog
-  // before its holder stood would wait on itself. The door says when it stands (`docstore:ready`), and the vessel's
+  // before its holder stood would wait on itself. The door says when it stands (`docstore:answering`), and the vessel's
   // asks cross only then.
   const standHolder = (ctx: IslandContext, keyhive: KeyhiveProvider): void => {
     // ── THE CONTENT-KEY HOLDER STANDS HERE, beside the face identity ──────────

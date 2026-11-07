@@ -28,6 +28,7 @@ import { engineHeldByHost } from "../port-control.js";
 import { standingPath, standingVerdict } from "@lararium/mesh/rendezvous-path";
 import { larRoot, larBootstrapPath, larDataDir, larCasDir, vesselDid } from "../env.js";
 import { udsAlive } from "../local-connector.js";
+import { awaitBootPhase, awaitVerbSocket } from "../stand-socket-wait.js";
 import { readVesselStanding, conditionOk } from "../vessel-condition.js";
 import { emit } from "../render.js";
 import { summaryOutput } from "../verb-result.js";
@@ -37,6 +38,7 @@ import { standPageEnv } from "../stand-page.js";
 import { foundIfAbsent, type FoundStep } from "../standup.js";
 import type { ParsedArgs } from "../parse-args.js";
 
+// PACING: boot evidence or its silence bound ends the wait; sleep spaces polls.
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
 /** This project's wing slug, from the session's cwd (matches the harvest wing). */
@@ -272,35 +274,26 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
         env: childEnv,
       });
       child.unref();
+      let childExited = false;
+      child.once("exit", () => { childExited = true; });
       started = true;
 
       const readAttestation = (): string => {
         try { return readFileSync(log, "utf8").slice(startOffset); } catch { return ""; }
       };
-      // The sd_notify WATCHDOG idiom: a healthy boot that keeps WRITING to the log is making
-      // progress, however long the corpus/keyhive replay runs — so extend the window whenever
-      // the log grows, and fail only on a genuine STALL (no output for the idle span) or the
-      // absolute ceiling. The adaptive window holds a slow-but-live boot instead of false-timing
-      // it at a fixed 15s deadline. (The real CPU cost is paced/deferred separately; this stops the watcher lying.)
-      // This door's own liveness patience — never a safety verdict — reads a monotonic clock,
-      // so an adversarial or operator wall-clock set-back/set-forward changes neither how long
-      // this wait actually ran nor when it gives up.
-      const IDLE_MS = 30_000; // headroom for a silent heavy stretch (Automerge corpus materialize)
-      const hardCap = performance.now() + 180_000;
-      let idleDeadline = performance.now() + IDLE_MS;
-      let seenLen = 0;
-      let phase: "starting" | "ready" | "fault" = "starting";
-      while (performance.now() < idleDeadline && performance.now() < hardCap) {
-        const tail = readAttestation();
-        if (/fatal:/.test(tail)) { phase = "fault"; break; }
-        if (tail.includes("vessel-ready")) { phase = "ready"; break; }
-        if (tail.length > seenLen) { seenLen = tail.length; idleDeadline = performance.now() + IDLE_MS; } // progress → extend
-        await sleep(200);
-      }
+      // The boot ends on the node's own events: `vessel-ready`, `fatal:` or the child's exit. Progress means a LATER boot
+      // milestone (`phase → <name>`, BOOT_MILESTONES): each one renews the silence span, however long the boot runs; a
+      // repeated or earlier milestone, or any other line, renews nothing. No fixed ceiling cuts a boot that keeps advancing.
+      const booted = await awaitBootPhase({
+        readAttestation, childExited: () => childExited, now: () => performance.now(), sleep,
+        silenceMs: 30_000, // LIVENESS: headroom for a silent heavy stretch (Automerge corpus materialize)
+      });
+      let phase: "starting" | "ready" | "fault" | "exited" = booted === "silent" ? "starting" : booted;
       // `vessel-ready` is attested BEFORE the daemon-keyhive gates settle, so a gate
       // fault (e.g. the Binding Gate) surfaces as a LATE `fatal:`. After a ready attestation,
       // settle and re-read for that late fault — never report up for a node that died.
       if (phase === "ready") {
+        // LIVENESS: no event says the keyhive gates settled after `vessel-ready`; the late-fault read waits this span.
         await sleep(1500);
         if (/fatal:/.test(readAttestation())) phase = "fault";
       }
@@ -320,14 +313,14 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
       // about the vessel stands correctly.
       let udsRefusal: string | null = null;
       if (phase === "ready") {
-        const sockDeadline = performance.now() + 120_000;
-        while (performance.now() < sockDeadline && !(await udsAlive())) {
-          const tail = readAttestation();
-          if (/fatal:/.test(tail)) { phase = "fault"; break; }
-          const refused = /uds error: (.+)/.exec(tail);
-          if (refused) { udsRefusal = refused[1]!.trim(); break; }
-          await sleep(500);
-        }
+        // The wait ends on the node's own events (connect, `fatal:`, `uds error:`, the child's exit); each later
+        // socket-stage milestone (tw5-booted, live, daemon-ea, verb-seat) renews the silence span, so a slow cold bind
+        // that keeps advancing is never cut by a fixed deadline.
+        const waited = await awaitVerbSocket({
+          alive: udsAlive, readAttestation, childExited: () => childExited, now: () => performance.now(), sleep, silenceMs: 120_000,
+        });
+        if (waited.outcome === "fault") phase = "fault";
+        else if (waited.outcome === "refused") udsRefusal = waited.refusal;
       }
       // ONE READING, FROM ONE PLACE. `readVesselStanding` folds what this supervisor OBSERVED into the
       // four-state condition the whole house reports in, and `ok` derives from that state — so the note
@@ -340,15 +333,17 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
         accepting: await udsAlive(),
         refusal:   udsRefusal,
       });
-      nodeUp = conditionOk(condition);
-      nodeNote = phase === "fault"
+      nodeUp = phase !== "exited" && conditionOk(condition);
+      nodeNote = phase === "exited"
+        ? `child exited before ready (pid ${child.pid ?? "?"}) — see ${log}`
+        : phase === "fault"
         // A BOOT FAULT KEEPS ITS OWN VOICE. The node writes a cure-naming line, and a report answering with a PATH sends the
         // operator to a file at the moment they least want a detour, while the caller downstream fails on
         // the symptom and buries the cause. The line that knows the answer belongs where the question got
         // asked, so it rides verbatim rather than through the condition's vocabulary.
         ? `started then attested a boot fault: ${fatalLine(readAttestation()) ?? "see " + log}`
         : condition.state === "rising" && phase !== "ready"
-          ? `starting detached (pid ${child.pid ?? "?"}); boot stalled (no log progress for 15s) — see ${log}`
+          ? `starting detached (pid ${child.pid ?? "?"}); boot stalled (no new boot milestone for 30s) — see ${log}`
           : `${condition.message} (pid ${child.pid ?? "?"})`
             + (condition.reason === "uds-refused" && /EINVAL/.test(udsRefusal ?? "")
                 ? "  (a Unix socket path caps near 108 bytes — LAR_ROOT sits too deep)" : "");

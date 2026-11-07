@@ -22,6 +22,7 @@ import { describe, expect, test } from "vitest";
 import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket";
 import { cbor } from "@automerge/automerge-repo/slim";
 import { HEARTH_FLOOR_PINS_SESSION_KIND, type GateBundlePin, type GateSession, type GateSessionChannel, type SealedMessage } from "@lararium/mesh";
+import { ListeningWSServerAdapter } from "../src/open-node-vessel.js";
 import { gateSyncServer, type GateSyncSocket } from "../src/gate-sync-server.js";
 
 function fakeChannel() {
@@ -168,5 +169,38 @@ describe("the gate sync server", () => {
       expect(c.channel.state).toBe("open");
     }
     withProof.close();
+  });
+
+  test("G56 CONTROL: the product adapter hands a held channel off once connect succeeds", async () => {
+    // CONTROL: a connect that succeeds settles `connected` and the held channel crosses to the socket.
+    const okServer = gateSyncServer();
+    const okAdapter = new ListeningWSServerAdapter(okServer.wss as never);
+    const okServer2 = gateSyncServer({ adapterConnected: okAdapter.connected });
+    const held = fakeChannel();
+    okServer2.onOpen(held.channel, session);
+    expect(okServer2.wss.clients.size).toBe(0);                 // held while the adapter has not connected
+    okAdapter.connect("server-peer" as never, {});
+    await okAdapter.connected;
+    await turn();
+    expect(held.channel.state).toBe("open");
+    expect(okServer2.wss.clients.size).toBe(1);
+    okServer2.close(); okServer.close();
+  });
+
+  test("G56 RED: a connect that throws rejects readiness and closes every held channel", async () => {
+    // RED: the adapter's connect throws; readiness rejects with that error and the held channel closes by the gate's own road.
+    const boom = new Error("connect refused");
+    const brokenWss = { on() { throw boom; }, off() { /* none */ }, clients: new Set() };
+    const adapter = new ListeningWSServerAdapter(brokenWss as never);
+    const gate = gateSyncServer({ adapterConnected: adapter.connected });
+    const a = fakeChannel(); const b = fakeChannel();
+    gate.onOpen(a.channel, session); gate.onOpen(b.channel, session);
+    expect(() => adapter.connect("server-peer" as never, {})).toThrow(boom);
+    await expect(adapter.connected).rejects.toBe(boom);
+    await turn();
+    expect(a.channel.state).toBe("closed");
+    expect(b.channel.state).toBe("closed");
+    expect(gate.wss.clients.size).toBe(0);
+    gate.close();
   });
 });

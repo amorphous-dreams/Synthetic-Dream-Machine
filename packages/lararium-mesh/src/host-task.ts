@@ -63,6 +63,7 @@ export function selectHostTaskYield(scope: HostTaskScope): HostTaskYield {
   }
   const setTimeout = scope.setTimeout;
   if (typeof setTimeout !== "function") throw new Error("host-task: this host offers no task queue (no setImmediate, scheduler.yield, MessageChannel or setTimeout)");
+  // PACING: this fallback yields to the host task queue without deciding readiness.
   return () => new Promise<void>((resolve) => { setTimeout(() => resolve(), 0); });
 }
 

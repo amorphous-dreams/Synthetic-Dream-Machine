@@ -10,7 +10,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/vessel-island-pool-core
  */
 
-import { describe, test, expect, afterEach } from "vitest";
+import { describe, test, expect, afterEach, vi } from "vitest";
 import { VesselIslandPool } from "../src/vessel-island-pool.js";
 import type { WikiMountSpec } from "@lararium/mesh";
 
@@ -41,7 +41,6 @@ describe("VesselIslandPool — mount intensity cap", () => {
       workerScriptUrl:      SILENT_FIXTURE_URL,
       mountSilenceMs:       200,
       maxMountFailures:     2,
-      mountFailureWindowMs: 60_000,
       resolvePluginCids:    NO_OFFERINGS,
     });
 
@@ -58,11 +57,30 @@ describe("VesselIslandPool — mount intensity cap", () => {
     expect(pool.tier(WIKI_ID)).toBeNull();
   }, 15_000);
 
+  test("the cap holds past any clock window: it clears on a success or the operator's remount, never on elapsed time", async () => {
+    pool = new VesselIslandPool({ caps: {},
+      workerScriptUrl:   SILENT_FIXTURE_URL,
+      mountSilenceMs:    200,
+      maxMountFailures:  1,
+      resolvePluginCids: NO_OFFERINGS,
+    });
+    await expect(pool.mountWiki(WIKI_ID, spec())).rejects.toThrow(/timeout waiting for ea/);
+    await expect(pool.mountWiki(WIKI_ID, spec())).rejects.toThrow(/mount intensity cap/);
+    // An hour of this process's local time passes: the cap still stands (a clock window reopened it).
+    const real = performance.now.bind(performance);
+    const spy = vi.spyOn(performance, "now").mockImplementation(() => real() + 3_600_000);
+    try {
+      await expect(pool.mountWiki(WIKI_ID, spec())).rejects.toThrow(/mount intensity cap/);
+      // CONTROL: the operator's remount forgets the ledger, and the mount tries afresh.
+      pool.forgetMountFailures(WIKI_ID);
+      await expect(pool.mountWiki(WIKI_ID, spec())).rejects.toThrow(/timeout waiting for ea/);
+    } finally { spy.mockRestore(); }
+  }, 15_000);
+
   test("a successful mount clears the failure history", async () => {
     pool = new VesselIslandPool({ caps: {},
       workerScriptUrl:      ECHO_FIXTURE_URL,
       maxMountFailures:     1,
-      mountFailureWindowMs: 60_000,
       resolvePluginCids:    NO_OFFERINGS,
     });
 

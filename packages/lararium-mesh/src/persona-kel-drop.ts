@@ -296,6 +296,7 @@ export function httpPersonaKelDropHerm(address: string, opts: { readonly deadlin
     gatePubKey: pinned.gatePubKey,
     pull: async (name) => {
       try {
+        // LIVENESS: a remote herm may leave the pull unanswered indefinitely.
         const res = await fetch(at(name), { signal: AbortSignal.timeout(deadline) });
         if (!res.ok) { await res.body?.cancel().catch(() => undefined); return []; }
         const text = await cappedText(res, PERSONA_KEL_DROP_BODY_CAP * PERSONA_KEL_DROP_READ_CAP);
@@ -310,6 +311,7 @@ export function httpPersonaKelDropHerm(address: string, opts: { readonly deadlin
     deposit: async (name, deposit) => {
       try {
         const res = await fetch(at(name), {
+          // LIVENESS: a remote herm may leave the deposit unanswered indefinitely.
           method: "POST", headers: { "content-type": "text/plain" }, body: JSON.stringify(deposit), signal: AbortSignal.timeout(deadline),
         });
         await res.body?.cancel().catch(() => undefined);

@@ -31,12 +31,14 @@ export class BootTeardownRefusal extends Error {
 export async function takeDownBoot(held: BootHold, budgetMs = 5_000): Promise<string[]> {
   const failed: string[] = [];
   for (const thing of [...held.stood].reverse()) {
-    // A teardown is bounded: a Repo over a store that never opened awaits a flush that never lands, and a boot that waits
-    // on it forever would hold the page. A thing that outlasts its budget reads as one that will not come down.
+    // A teardown ends on the step's own settle. A Repo over a store whose IndexedDB open stands blocked (another
+    // connection holds it, and `blocked` may yet clear) awaits a flush no event ends, and a boot that waits on it forever
+    // would hold the page. A thing that outlasts its budget reads as one that will not come down.
     let timer: ReturnType<typeof setTimeout> | undefined;
     try {
       await Promise.race([
         Promise.resolve().then(() => thing.down()),
+        // LIVENESS: a blocked store open says nothing more, and no event can say never.
         new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error(`${thing.what} outlasted its ${String(budgetMs)}ms teardown budget`)), budgetMs); }),
       ]);
     } catch { failed.push(thing.what); } finally { if (timer !== undefined) clearTimeout(timer); }

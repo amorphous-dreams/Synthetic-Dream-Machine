@@ -105,6 +105,7 @@ export function checkMempalaceIntegration(): IntegrationReport {
       const probe = spawnSync(
         py,
         ["-c", "import importlib.util as u, sys; sys.exit(0 if (u.find_spec('mempalace') and u.find_spec('chromadb')) else 1)"],
+        // LIVENESS: the external Python import probe may hang without exiting.
         { cwd: MEMPALACE_DIR, timeout: 10_000 },
       );
       if (probe.error === undefined) {
@@ -144,6 +145,7 @@ export function installMempalaceIntegration(): InstallStep[] {
 
   if (!mempalaceHolderPresent(MEMPALACE_DIR)) {
     try {
+      // LIVENESS: the external git network operation may hang without exiting.
       execFileSync("git", ["submodule", "update", "--init", "mempalace"], { cwd: repoRoot, stdio: "pipe", timeout: 120_000 });
       steps.push({ step: "submodule-init", ran: true, ok: mempalaceHolderPresent(MEMPALACE_DIR), detail: "git submodule update --init mempalace" });
     } catch (e) {
@@ -164,6 +166,7 @@ export function installMempalaceIntegration(): InstallStep[] {
     holderOk =
       spawnSync(py, ["-c", "import importlib.util as u,sys; sys.exit(0 if u.find_spec('chromadb') else 1)"], {
         cwd: MEMPALACE_DIR,
+        // LIVENESS: the external Python chromadb probe may hang without exiting.
         timeout: 10_000,
       }).status === 0;
   } catch {
@@ -171,6 +174,7 @@ export function installMempalaceIntegration(): InstallStep[] {
   }
   if (!holderOk) {
     try {
+      // LIVENESS: the external pip network operation may hang without exiting.
       execFileSync(py, ["-m", "pip", "install", "-e", "."], { cwd: MEMPALACE_DIR, stdio: "pipe", timeout: 600_000 });
       steps.push({ step: "pip-install", ran: true, ok: true, detail: `${py} -m pip install -e ./mempalace` });
     } catch (e) {

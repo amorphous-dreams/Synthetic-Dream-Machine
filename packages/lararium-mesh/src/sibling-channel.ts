@@ -669,6 +669,7 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
 
   #scheduleRedial(i: number): void {
     if (this.#stopped || this.#retries.has(i)) return;
+    // PACING: redials recur because a returning herm gives no event; readiness follows its response.
     this.#retries.set(i, setTimeout(() => { this.#retries.delete(i); void this.#dial([i]); }, this.#opts.retryInterval ?? 5000));
   }
 

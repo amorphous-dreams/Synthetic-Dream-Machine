@@ -176,6 +176,7 @@ export async function mountFlowReadFace(args: FlowGateArgs & {
     channel.send("session", new TextEncoder().encode(JSON.stringify(frame)));
     channel.send("sync", Uint8Array.from(snap.bytes));
     // The reader closes once it holds both; a reader that never does meets the linger. Anything it sends ends it.
+    // LIVENESS: an anonymous reader can stay silent without closing its channel.
     const linger = setTimeout(() => channel.close(), lingerMs);
     linger.unref?.();
     void channel.recv().catch(() => null).then(() => { clearTimeout(linger); channel.close(); });

@@ -20,18 +20,33 @@ import type { Locker } from "./engine.js";
 export const lockSocket = (lockPath: string): string =>
   join(tmpdir(), `lares-lock-${createHash("sha256").update(lockPath).digest("hex").slice(0, 16)}`);
 
-export async function acquireLock(lockPath: string): Promise<{ release(): Promise<void> }> {
+/**
+ * LIVENESS: a holder alive past this span reads as wedged and the wait refuses `NameHeld`. A write lock covers one
+ * read-modify-write of a settings file or one radius tend (milliseconds to a few seconds of file work); 30 s leaves a
+ * slow disk its turn while a hung writer still surfaces as a refusal. No event can say "this holder never lets go".
+ */
+export const LOCK_LIVENESS_MS = 30_000;
+
+const never = (): Promise<void> => new Promise(() => {});
+
+export interface AcquireLockOptions {
+  /** The wedged-holder bound (default {@link LOCK_LIVENESS_MS}). */
+  readonly livenessMs?: number;
+  /** The look's pacing port (a test passes one that never ends, so only the holder's release can hand the lock over). */
+  readonly pace?: (ms: number) => Promise<void>;
+}
+
+/** The wait ends on the holder's release (its connection closes, or its death unlinks the name), never on a paced retry. */
+export async function acquireLock(lockPath: string, opts: AcquireLockOptions = {}): Promise<{ release(): Promise<void> }> {
   const refuse = (): NameHeld => new NameHeld(`${lockPath} held by another writer; retry shortly`);
-  const socket = lockSocket(lockPath);
-  for (let i = 0; i < 50; i++) {
-    try { return await claimName(socket, { refuse }); }
-    catch (err) {
-      if (!(err instanceof NameHeld)) throw err;
-      // An async backoff never blocks the main thread (no Atomics.wait / SharedArrayBuffer).
-      await new Promise((r) => setTimeout(r, 100));
-    }
-  }
-  throw refuse();
+  const bound = new AbortController();
+  // LIVENESS: see LOCK_LIVENESS_MS.
+  const timer = setTimeout(() => bound.abort(), opts.livenessMs ?? LOCK_LIVENESS_MS);
+  try {
+    // The holder keeps every connection open until it releases (or dies), so a waiter's connection closing IS the
+    // release; the look carries no pacing clock of its own.
+    return await claimName(lockSocket(lockPath), { refuse, await: true, signal: bound.signal, onConnection: () => {}, pace: opts.pace ?? never });
+  } finally { clearTimeout(timer); }
 }
 
 const free = { release: async (): Promise<void> => {} };

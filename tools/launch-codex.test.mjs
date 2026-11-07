@@ -632,17 +632,35 @@ function liveSeat(stubBody, rolloutLines) {
   writeFileSync(join(seat, "prompt.txt"), "SEAT-MARKER live\n\nbrief"); writeFileSync(join(seat, "rollouts-before.json"), "[]");
   const roll = join(sess, "rollout-live.jsonl");
   writeFileSync(roll, rolloutLines(roll));
-  return { dir, home, seat, lane, bin, roll, env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, HOME: home } };
+  return { dir, home, seat, lane, bin, roll, env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, HOME: home, ROLL: roll } };
 }
 const userLine = () => `${cevent({ type: "response_item", payload: { type: "message", role: "user", content: [{ text: "SEAT-MARKER live\n\nbrief" }] } })}\n`;
 const cli = (L, extra = []) => { const fd = openSync(L.seat, "r"), lfd = openSync(L.lane, "r"); try { return spawnSync(process.execPath, [TOOL, "--supervise", "--held-fd", "3", "--lane-fd", "4", "--bsd-path", L.seat, "--ceiling", "100", "--mode", "read", "--marker", "SEAT-MARKER live", "--home", L.home, ...extra, "--", "exec"], { encoding: "utf8", timeout: 40000, env: L.env, stdio: ["ignore", "pipe", "pipe", fd, lfd] }); } finally { closeSync(fd); closeSync(lfd); } };
 
+function ceilingOutputSeat(delay = "") {
+  // Output precedes the token event that authorizes the supervisor to stop the group.
+  const body = `${delay}echo $$ > "$STUB_PID"\necho STUB-OUTPUT\ncat >> "$ROLL" <<'ROLLOUT'\n${userLine()}${tc(900)}\nROLLOUT\nsleep 60`;
+  const L = liveSeat(body, () => "");
+  L.env.STUB_PID = join(L.dir, "stub.pid");
+  try {
+    const r = cli(L); // Wait for the supervisor to exit before reading its files.
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(readFileSync(join(L.lane, "ceiling.md"), "utf8"), /900 total tokens/);
+    assert.match(readFileSync(join(L.lane, "run.log"), "utf8"), /STUB-OUTPUT/, "the child's output landed in run.log through the held fd");
+  } finally {
+    if (existsSync(L.env.STUB_PID)) {
+      const pid = Number(readFileSync(L.env.STUB_PID, "utf8").trim());
+      try { killGroup(pid, "SIGKILL"); } catch (e) { if (e.code !== "ESRCH") throw e; }
+    }
+  }
+}
+
 test("P1-3 a seat that sleeps past its ceiling is stopped by its parent: the supervisor kills its OWN child group and writes ceiling.md through the held directory (live, stub codex)", () => {
-  const L = liveSeat("echo STUB-OUTPUT\nsleep 60", () => `${userLine()}${tc(900)}\n`);
-  const r = cli(L);
-  assert.equal(r.status, 0, r.stderr);
-  assert.match(readFileSync(join(L.lane, "ceiling.md"), "utf8"), /900 total tokens/);
-  assert.match(readFileSync(join(L.lane, "run.log"), "utf8"), /STUB-OUTPUT/, "the child's output landed in run.log through the held fd");
+  ceilingOutputSeat();
+});
+
+test("P1-3 a slow stub emits output before its ceiling event", () => {
+  ceilingOutputSeat("sleep 1\n");
 });
 
 test("P1-4 findRollout parses JSONL events with no byte cap: a prompt past 256 KiB still binds; an echoed marker or a non-user event never does", () => {

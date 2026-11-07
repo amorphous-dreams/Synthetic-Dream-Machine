@@ -90,6 +90,7 @@ function opsOf(w, over = {}) {
   const ops = {
     git,
     verdict: async (branch, sha) => { calls.verdicts.push([branch, sha]); return { ci: "green", heldOut: "green" }; },
+    heldOut: async () => ({ covered: w.base, state: "green", inFlight: 0 }),
     disk: () => ({ cGb: 100, rootGb: 100 }),
     houseWorktrees: () => 1,
     spanRuns: () => [],
@@ -421,6 +422,119 @@ test("RED: the DIRECT land: a lane whose head holds the span head lands with no 
   // (measured on four DIRECT lands, 2026-11-01): the land waits on none.
   assert.deepEqual(calls.cancelled, []);
   assert.match(lines.join("\n"), /DIRECT-LANDED/);
+});
+
+test("RED: DIRECT admits the lane's own green held-out run at its exact head over a red span", async () => {
+  const w = world(["a"]), reads = [];
+  const r = await run(w, {
+    verdict: async (branch, sha) => {
+      reads.push([branch, sha]);
+      return { ci: "green", heldOut: branch === `${SPAN}--a` && sha === w.heads.a ? "green" : "red" };
+    },
+    heldOut: async () => ({ covered: w.base, state: "red", inFlight: 0 }),
+  }, { local: false }, ["a"]);
+  assert.equal(r.code, 0, r.out);
+  assert.ok(reads.some(([branch, sha]) => branch === `${SPAN}--a` && sha === w.heads.a));
+  assert.match(r.out, /held-out.*green.*(?:red|DIRECT)|(?:red|DIRECT).*held-out.*green/i);
+  assert.match(r.out, /DIRECT-LANDED/);
+  assert.equal(sh(w.work, "rev-parse", `${originRef(w, SPAN)}^{tree}`), sh(w.work, "rev-parse", `${w.heads.a}^{tree}`));
+});
+
+test("LUNA RED: DIRECT refuses when no completed held-out run exists, including an in-flight-only reading", async () => {
+  for (const inFlight of [0, 1]) {
+    const w = world(["a"]);
+    let reads = 0;
+    const r = await run(w, {
+      verdict: async () => ({ ci: "green", heldOut: "unread" }),
+      heldOut: async () => ({ covered: null, state: null, inFlight: reads++ === 0 ? inFlight : 0 }),
+    }, { local: false }, ["a"]);
+    assert.equal(r.code, 15, r.out);
+    assert.match(r.out, /HELD-OUT HAS NO COMPLETED RUN/);
+    if (inFlight) assert.ok(reads >= 2, "the in-flight run gets a wait before refusal");
+    assert.equal(originRef(w, SPAN), w.base);
+    assert.equal(originRef(w, `${SPAN}--a`), w.heads.a);
+  }
+});
+
+test("LUNA RED: DIRECT refuses a completed red with a run in flight unless its exact head reads green", async () => {
+  for (const own of ["unread", "green"]) {
+    const w = world(["a"]);
+    const r = await run(w, {
+      verdict: async (branch, sha) => ({ ci: "green", heldOut: branch === `${SPAN}--a` && sha === w.heads.a ? own : "unread" }),
+      heldOut: async () => ({ covered: w.base, state: "red", inFlight: 1 }),
+    }, { local: false }, ["a"]);
+    assert.equal(r.code, own === "green" ? 0 : 15, r.out);
+    assert.match(r.out, own === "green" ? /DIRECT-LANDED/ : /HELD-OUT RED/);
+    if (own !== "green") assert.equal(originRef(w, SPAN), w.base);
+  }
+});
+
+test("LUNA RED: DIRECT applies the held-out land limit; a green run within three lands admits it", async () => {
+  for (const count of [3, 4]) {
+    const w = world(["a"]);
+    for (let i = 1; i <= count; i++) w.commit(w.work, `past${i}.txt`, `${i}\n`, `land ${i} — merge PR #${i}: earlier`);
+    sh(w.work, "push", "-q", "origin", SPAN);
+    const span = originRef(w, SPAN);
+    sh(w.work, "checkout", "-q", `${SPAN}--a`);
+    sh(w.work, "merge", "-q", "--no-edit", SPAN);
+    w.heads.a = sh(w.work, "rev-parse", "HEAD");
+    sh(w.work, "push", "-q", "origin", `${SPAN}--a`);
+    sh(w.work, "checkout", "-q", SPAN);
+    const r = await run(w, { heldOut: async () => ({ covered: w.base, state: "green", inFlight: 0 }) }, { local: false }, ["a"]);
+    assert.equal(r.code, count === 3 ? 0 : 15, r.out);
+    assert.match(r.out, count === 3 ? /DIRECT-LANDED/ : /HELD-OUT LAGS: 4 lands past/);
+    if (count === 4) assert.equal(originRef(w, SPAN), span);
+  }
+});
+
+test("LUNA RED: mem-only DIRECT also refuses without a completed held-out run", async () => {
+  const w = world(["a"], { touch: () => "bags/x/note.mem" });
+  const span = spanAhead(w);
+  const r = await runQ(w, { over: { heldOut: async () => ({ covered: null, state: null, inFlight: 0 }) } });
+  assert.equal(r.code, 15, r.out);
+  assert.match(r.out, /HELD-OUT HAS NO COMPLETED RUN/);
+  assert.equal(originRef(w, SPAN), span);
+  assert.equal(originRef(w, `${SPAN}--a`), w.heads.a);
+});
+
+test("CONTROL: DIRECT refuses red span when only an older lane head has green held-out", async () => {
+  const w = world(["a"]), old = w.heads.a;
+  sh(w.work, "checkout", "-q", `${SPAN}--a`);
+  w.heads.a = w.commit(w.work, "next.txt", "next\n", "next lane head");
+  sh(w.work, "push", "-q", "origin", `${SPAN}--a`);
+  sh(w.work, "checkout", "-q", SPAN);
+  const r = await run(w, {
+    verdict: async (_branch, sha) => ({ ci: "green", heldOut: sha === old ? "green" : "unread" }),
+    heldOut: async () => ({ covered: w.base, state: "red", inFlight: 0 }),
+  }, { local: false }, ["a"]);
+  assert.equal(r.code, 15, r.out);
+  assert.match(r.out, /HELD-OUT RED/);
+  assert.equal(originRef(w, SPAN), w.base);
+  assert.equal(originRef(w, `${SPAN}--a`), w.heads.a);
+});
+
+test("RED: DIRECT refuses the span's newest completed red held-out run by name; CONTROL: green lands", async () => {
+  const w = world(["a"]);
+  const reads = [];
+  const r = await run(w, {
+    verdict: async () => ({ ci: "green", heldOut: "unread" }),
+    heldOut: async (span) => { reads.push(span); return { covered: w.base, state: "red", inFlight: 0 }; },
+  }, { local: false }, ["a"]);
+  assert.equal(r.code, 15, r.out);
+  assert.match(r.out, new RegExp(`HELD-OUT RED at ${w.base.slice(0, 9)}`));
+  assert.match(r.out, /pono: cure the span's held-out red first; the held-out lane lands DIRECT only over its own green cells/);
+  assert.deepEqual(reads, [SPAN]);
+  assert.equal(originRef(w, SPAN), w.base, "the red held-out run prevents the span push");
+  assert.equal(originRef(w, `${SPAN}--a`), w.heads.a, "the lane stays untouched");
+
+  const control = world(["a"]);
+  const green = await run(control, {
+    verdict: async () => ({ ci: "green", heldOut: "unread" }),
+    heldOut: async () => ({ covered: control.base, state: "green", inFlight: 0 }),
+  }, { local: false }, ["a"]);
+  assert.equal(green.code, 0, green.out);
+  assert.match(green.out, /DIRECT-LANDED/);
+  assert.notEqual(originRef(control, SPAN), control.base);
 });
 
 test("a single lane that lacks the span head is NOT direct: it takes the train", async () => {

@@ -44,9 +44,8 @@ import { fileURLToPath } from "node:url";
 
 export const RULES = ["version", "clock", "narration", "old-shape", "retired-test", "upgrade-delete", "canon-history", "canon-dated-history"];
 /** Today's measured open debt, per rule. RATCHET: each number may only ever come DOWN. */
-export const CEILINGS = { version: 58, clock: 53, narration: 163, "old-shape": 0, "retired-test": 6, "upgrade-delete": 0, "canon-history": 98, "canon-dated-history": 1 };
+export const CEILINGS = { version: 55, clock: 53, narration: 163, "old-shape": 0, "retired-test": 6, "upgrade-delete": 0, "canon-history": 98, "canon-dated-history": 1 };
 export const EXCEPTIONS = [
-  { rule: "version", file: "packages/lararium-mesh/src/domains.ts", match: "const frozen =", reason: "The frozen builder preserves live signing domain bytes under the domain registry witness." },
   { rule: "version", file: "packages/lararium-browser/src/browser-vessel-identity.ts", match: "const IDB_VERSION", reason: "IndexedDB's open call takes a numeric version argument; the browser API names it." },
   { rule: "clock", file: "packages/lararium-tw5/src/wiki-draft-handlers.ts", match: "const cutoffMs =", reason: "The prune-stale report lists idle drafts for a person to read; the clock picks what the report shows, never what leaves, since nothing here prunes (operator ruling 2026-10-18)." },
   { rule: "clock", file: "packages/lararium-tw5/src/wiki-draft-handlers.ts", match: "const daysIdle =", reason: "The prune-stale report shows each draft's idle days to a person; the reading decides nothing (operator ruling 2026-10-18)." },
@@ -56,7 +55,6 @@ export const EXCEPTIONS = [
   { rule: "clock", file: "tools/browser-weld-witness.test.mjs", match: "Date.now() < until", reason: "The test bounds only its own wait for a predicate." },
   { rule: "clock", file: "tools/browser-weld/c4-served-anchor-control.mjs", match: "Date.now() < until", reason: "The control bounds only its own wait for browser source records." },
   { rule: "clock", file: "tools/browser-weld/leaf-continuity.mjs", match: "Date.now() < until", reason: "The browser probe bounds only its own wait for a predicate." },
-  { rule: "clock", file: "tools/browser-weld/weld.mjs", match: "Date.now() > stop", reason: "The browser probe bounds only its own polling interval." },
   { rule: "clock", file: "tools/e2e-shards.mjs", match: "now = Date.now", reason: "Own liveness: the find budget gives up on the tool's own push." },
   { rule: "clock", file: "tools/burst-bisect.mjs", match: "now = Date.now", reason: "Own liveness: the find budget gives up on the tool's own lane push." },
   { rule: "clock", file: "tools/held-out-steps.mjs", match: "const left = deadline - Date.now()", reason: "The runner computes only its own child process timeout." },

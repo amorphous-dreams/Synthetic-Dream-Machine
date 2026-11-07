@@ -224,7 +224,12 @@ describe("a session surface through the node vessel's own parts", () => {
         { type: "receipt:request", fields: { documentIds: [v.faces.referee.working.documentId] } },
         { type: "custody:write", fields: { carrier: "archive", bytes: new Uint8Array([1, 2, 3]) } },
       ];
-      for (const ask of asks) expect(await v.probe(key, "caps", { ...ask, silentAfterMs: 600 })).toEqual({ answered: false });
+      // A session island reaches no capability, and since clock-sweep F3 (d98f1c576) each ask it posts answers refused BY
+      // NAME on its own request id (a cas miss, an unissued receipt, an unwritten custody row) instead of drawing silence:
+      // its asks keep no clock, so silence would wait forever. No window: each answer is its own event.
+      expect(await v.probe(key, "caps", asks[0]!)).toEqual({ answered: true, type: "cas:block", bytes: null });
+      expect(await v.probe(key, "caps", asks[1]!)).toEqual({ answered: true, type: "receipt:issued", bytes: null });
+      expect(await v.probe(key, "caps", asks[2]!)).toEqual({ answered: true, type: "custody:written", bytes: null });
       expect(reached).toEqual([]);
       // KNOWN POSITIVE: the same asks from an island mounted through the wiki door each draw an answer. A wiki
       // island reaches its record's `cas` alone; its custody write refuses by name and reaches no capability, and its

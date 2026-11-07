@@ -266,9 +266,9 @@ function mountAdmitSurface(verifyingKeyHex: string, vessel: VesselPort): void {
 
   // Copy where the platform grants a clipboard; SELECT where it does not (an insecure origin, an older
   // browser). A selected span is a thumb away from the OS copy affordance, so the path never dead-ends.
-  const copyFrom = (el: HTMLElement, btn: HTMLButtonElement): void => {
+  const copyFrom = (el: HTMLElement, btn: HTMLButtonElement, current: () => boolean): void => {
     const text = el.textContent ?? "";
-    const done = (label: string): void => { btn.textContent = label; setTimeout(() => { btn.textContent = btn.dataset["label"]!; }, 1400); };
+    const done = (label: string): void => { if (current()) btn.textContent = label; };
     void (async () => {
       try { await navigator.clipboard.writeText(text); done("copied ✓"); }
       catch {
@@ -282,7 +282,15 @@ function mountAdmitSurface(verifyingKeyHex: string, vessel: VesselPort): void {
     const btn = document.getElementById(btnId) as HTMLButtonElement | null;
     if (!btn) continue;
     btn.dataset["label"] = btn.textContent ?? "copy";
-    btn.addEventListener("click", () => copyFrom(srcEl, btn));
+    let generation = 0;
+    const restore = (): void => { generation++; btn.textContent = btn.dataset["label"]!; };
+    btn.addEventListener("pointerleave", restore);
+    btn.addEventListener("blur", restore);
+    btn.addEventListener("click", () => {
+      restore();
+      const copyGeneration = generation;
+      copyFrom(srcEl, btn, () => generation === copyGeneration);
+    });
   }
 
   if (!paste || !apply) return;

@@ -41,7 +41,7 @@ const sessionsOnVessel = parentPort ? vesselSessionDoor(parentPort) : null;
 const vesselPort = parentPort
   ? { post: (msg: unknown) => parentPort!.postMessage(msg), listen: (cb: (msg: unknown) => void) => { parentPort!.on("message", cb); return () => { parentPort!.off("message", cb); }; } }
   : null;
-const liveOnVessel = vesselPort ? islandLiveDocDoor(vesselPort, { patienceMs: 30_000, idPrefix: `docstore-live-${process.pid}` }) : null;
+const liveOnVessel = vesselPort ? islandLiveDocDoor(vesselPort, { idPrefix: `docstore-live-${process.pid}` }) : null;
 
 const JOURNAL_KINDS: ReadonlySet<JournalKind> = new Set(["bag-projected"]);
 

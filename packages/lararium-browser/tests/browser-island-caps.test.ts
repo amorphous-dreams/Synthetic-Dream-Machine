@@ -74,7 +74,7 @@ describe("slice 5b: the browser's island asks answer through its capability reco
     expect(floor.record.custodyWrite).toBeTypeOf("function");
     const w = wire();
     answerIslandAsks(w.vesselSide, floor.record);
-    const proof = islandSessionDoor(w.islandSide, { patienceMs: 5_000, idPrefix: "browser-island" });
+    const proof = islandSessionDoor(w.islandSide, { idPrefix: "browser-island" });
 
     // An ask no session booked borrows no signer, unlocked or not.
     expect(said(await proof.signer({ requestId: "call-unbooked", verb: "sealed-seal" }))).toBe("signer-unavailable");

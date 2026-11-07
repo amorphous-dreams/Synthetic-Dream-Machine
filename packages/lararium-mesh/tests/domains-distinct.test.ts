@@ -13,15 +13,15 @@ import { DOMAIN_ROOT } from "../src/domains.js";
 
 const ROOT = `${DOMAIN_ROOT}/`;
 
-/** The frozen set, sha256 over its sorted `EXPORT=string` rows. A move here re-keys live
- *  signatures and seals — it never reads as a refactor; only a deliberate retirement re-measures it. */
-const FROZEN_COUNT = 30;
-// The relay-gate row left with the relay's derivation (33 → 32): the weld below is the 33-row hash (0252fa0a…) minus that one row, re-measured.
-// Two frozen rows retired with the guardian rename (32 → 30): `guardian-registration` and `guardian-confirm` mint bare under their new names (`recovery-contact-registration`, `custodian-confirm`), a deliberate format cut; the weld below is the 32-row hash (3bbe945a…) minus those two rows, re-measured.
-const FROZEN_WELD = "2725abf58d8ec18e3740426f075ac6455d4d36ae87711890f0bad334adee5848";
-
 describe("the domain registry", () => {
   const named = Object.entries(domains).filter(([k, v]) => typeof v === "string" && /_(INFO|DOMAIN)$/.test(k) && k !== "DOMAIN_ROOT") as [string, string][];
+
+  test("no registered separation carries a version segment", () => {
+    const versioned = (value: string) => /\/v\d+(?:\/|$)/.test(value);
+    expect(`${ROOT}planted/v1`).toSatisfy(versioned);
+    expect(`${ROOT}bare-name`).not.toSatisfy(versioned);
+    expect(domains.ALL_DOMAINS.filter(versioned)).toEqual([]);
+  });
 
   test("carries more than a handful of separations", () => {
     expect(named.length).toBeGreaterThan(10);
@@ -35,20 +35,11 @@ describe("the domain registry", () => {
     }
   });
 
-  /** The NAME LAW: a separation is a well-formed name under the root — lowercase kebab segments, nothing
-   *  else. A frozen string keeps its opaque `/v1` tail; a new one carries no suffix at all. */
+  /** The NAME LAW: a separation carries lowercase kebab segments under the root. */
   const NAME = new RegExp(`^${ROOT.replace(/[/.]/g, "\\$&")}[a-z0-9-]+(/[a-z0-9-]+)*$`);
 
   test("every separation mints under the registry root as a well-formed name", () => {
     for (const [k, v] of named) expect(v, k).toMatch(NAME);
-  });
-
-  test("a version tail appears only on the FROZEN strings, and only as the one opaque `/v1`", () => {
-    const tailed = named.filter(([, v]) => /\/v\d+$/.test(v));
-    for (const [k, v] of tailed) expect(v.endsWith("/v1"), `${k} carries a counter other than the frozen /v1`).toBe(true);
-    // Every frozen string signs or derives live material, so the set may only shrink. A new domain that
-    // grew a tail would raise this count; a new domain mints bare.
-    expect(tailed.length).toBeLessThanOrEqual(FROZEN_COUNT);
   });
 
   test("the floor release mints bare under its own name, apart from the pointer and the acts a seat also signs (W26 slice 4)", () => {
@@ -71,26 +62,19 @@ describe("the domain registry", () => {
     expect(domains.GATE_VERDICT_DOMAIN).not.toMatch(/\/v\d+$/);
   });
 
-  test("WELD: the frozen strings hold byte-identical through the helper split", async () => {
-    const { createHash } = await import("node:crypto");
-    const frozenRows = named.filter(([, v]) => v.endsWith("/v1")).map(([k, v]) => `${k}=${v}`).sort();
-    expect(frozenRows.length).toBe(FROZEN_COUNT);
-    expect(createHash("sha256").update(frozenRows.join("\n")).digest("hex")).toBe(FROZEN_WELD);
-  });
-
   test("CONTROL: the name law refuses a malformed address", () => {
     expect(`${ROOT}Bad_Name`).not.toMatch(NAME);
     expect(`${ROOT}trailing/`).not.toMatch(NAME);
     expect("lar:///elsewhere/gate-verdict").not.toMatch(NAME);
   });
 
-  /** The TABLE derives from the declarations: every `mint`/`frozen` call lands in `ALL_DOMAINS`, in the
+  /** The TABLE derives from the declarations: every `mint` call lands in `ALL_DOMAINS`, in the
    *  order the registry declares it, so no declaration can be forgotten from the table. */
   test("ALL_DOMAINS holds every declared separation, in declaration order", async () => {
     const { readFileSync } = await import("node:fs");
     const { join } = await import("node:path");
     const src = readFileSync(join(import.meta.dirname, "..", "src", "domains.ts"), "utf8");
-    const declared = [...src.matchAll(/^export const (\w+) = (?:mint|frozen)\("[a-z0-9-]+"\);/gm)].map((m) => m[1]!);
+    const declared = [...src.matchAll(/^export const (\w+) = mint\("[a-z0-9-]+"\);/gm)].map((m) => m[1]!);
     expect(declared.length).toBe(named.length);
     expect(domains.ALL_DOMAINS).toEqual(declared.map((k) => (domains as Record<string, unknown>)[k]));
   });

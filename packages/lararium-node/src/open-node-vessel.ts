@@ -169,13 +169,12 @@ import { readKeptAdmitBundles } from "./admit-bundle.js";
 import { readCasBlobFromFs } from "./node-cas.js";
 import { makeSourceCapture, type SourceCapture } from "./capture/capture-source.js";
 import { VesselIslandPool, NODE_WIKI_ACTIVATION_CAP } from "./vessel-island-pool.js";
+import { wikiSwitchVerb } from "./wiki-switch-verb.js";
 import { runFlow } from "./flow-run.js";
 
 /** Node advertises a few rotatable wiki pins BESIDES the daemon bag (resource-rich vessel).
  *  The user's ONE-plus rotatable pin(s) ride this budget; the surface enforces it. */
 const NODE_WIKI_PIN_BUDGET = 3;
-/** How long a sealed document's load waits for its map at a restart (the dial composes, the slot resolver names it). */
-const SEALED_HYDRATION_PATIENCE_MS = 120_000;
 /** The daemon wiki's working slot: the outcome ledger and the receipt facts rest there (sealed-store#/owed, U1). */
 const DAEMON_WORKING_SLOT = wikiSlotUri("daemon", "working");
 
@@ -340,9 +339,16 @@ export function parseFormVector(document: string): SparseFormVector | null {
  * repo.find() at networkSubsystem.whenReady() and the island→main→island
  * doc relay deadlocks silently (no reply, not even doc-unavailable).
  */
-class ListeningWSServerAdapter extends NodeWSServerAdapter {
+export class ListeningWSServerAdapter extends NodeWSServerAdapter {
+  private resolveConnected!: () => void;
+  private rejectConnected!: (reason: unknown) => void;
+  readonly connected = new Promise<void>((resolve, reject) => { this.resolveConnected = resolve; this.rejectConnected = reject; });
   override isReady(): boolean { return true; }
   override whenReady(): Promise<void> { return Promise.resolve(); }
+  override connect(...args: Parameters<NodeWSServerAdapter["connect"]>): void {
+    try { super.connect(...args); } catch (error) { this.rejectConnected(error); throw error; }
+    this.resolveConnected();
+  }
 }
 /** Title of the social bootstrap plugin tiddler baked by lararium:init. */
 export const SOCIAL_BOOTSTRAP_PLUGIN_TITLE = "lar:///ha.ka.ba/lararium/bootstrap/social";
@@ -986,7 +992,7 @@ async function prepareNodeBootOn(
     return handle?.isReady() ? A.save(handle.doc() as A.Doc<unknown>) : null;
   }, {
     onSlot: onSlotNamed,
-    // THE ISLAND'S DOOR STANDS (`docstore:ready`): the map re-reads and the standing session's waiting saves seal, once.
+    // THE ISLAND'S DOOR STANDS (`docstore:answering`): the map re-reads and the standing session's waiting saves seal, once.
     onReady: () => rebookWaiting(standingSaveSession(), "the island's door stood"),
   });
   // THE CUSTODY KEY OPENED: a save the island refused `wrap-failed` while this vessel's key rested unopened (its wrap
@@ -1003,23 +1009,29 @@ async function prepareNodeBootOn(
     wornAt: (face, subject) => sealedCells.wornAt(face, subject),
     door: vesselDocStoreDoor<NodeSaveSession>(() => docStorePort.port(), {
       book: (ask, verb, session) => sealedCells.book?.hold(ask, verb, session) ?? (() => {}),
-      patienceMs: 30_000, idPrefix: `docstore-${process.pid}`,
+      idPrefix: `docstore-${process.pid}`,
     }),
     flushRepo: async () => { await repo.flush(); },
     onHeld: ({ refusal, documentId }) => console.log(`[sealed-rest] ${refusal}: ${documentId.slice(0, 12)}… waits in memory, never clear, until a session seals it`),
-    // A restart's hydration: a sealed document the engine asks for ahead of the dial waits for its map, never strands.
-    hydrationPatienceMs: SEALED_HYDRATION_PATIENCE_MS,
+    // A restart's hydration: a sealed document the engine asks for ahead of the dial waits for its map, never strands;
+    // the Repo's stand-down ends the wait by name.
+    hydrates: true,
   });
   // THE FLOOR PIN SET (house ruling "The admit's gate pin": a floor route's full pin travels through an authenticated
   // relation): each sovereign session hears, at open, the floor pins this
   // hearth stands at the Nexus that seated it, the same pins the floor gates below derive (`hearthFloorPins`).
-  const gateSync = gateSyncServer({ floorPins: async (nexus) => hearthFloorPins(nexus, await vesselFloorKeyDoor()), floorProof: hearthFloorProof });
+  let adapterConnected!: () => void;
+  let adapterFailed!: (reason: unknown) => void;
+  const adapterReady = new Promise<void>((resolve, reject) => { adapterConnected = resolve; adapterFailed = reject; });
+  const gateSync = gateSyncServer({ adapterConnected: adapterReady, floorPins: async (nexus) => hearthFloorPins(nexus, await vesselFloorKeyDoor()), floorProof: hearthFloorProof });
   const syncSessions = gateSessionRegistry((channel, session) => gateSync.onOpen(channel, session));
   const gateServer = faceGateServer({
     onRefuse: (path, refusal) => console.warn(`[lar-gate] an upgrade on ${path.slice(0, 24)}… refused before any 101 (${refusal})`),
   });
   stood.push({ what: "the sync gates", down: () => { gateServer.close(); syncSessions.close(); gateSync.close(); } });
   const network  = new ListeningWSServerAdapter(gateSync.wss as unknown as typeof wss);
+  adapterReady.catch(() => { /* the connect throw rides its own caller; the gate closes each held channel on this rejection */ });
+  network.connected.then(adapterConnected, adapterFailed);
   const peerIdentifierMap = new Map<string, string>();
   // The self-slot CLASS map — peerId → the class the keyholder vouched at admission. Populated in the
   // SAME microtask as peerIdentifierMap so that by the time the outer admission gate sees a peer in
@@ -1370,6 +1382,7 @@ async function prepareNodeBootOn(
     // A save no session booked never rests clear: one still waiting rests nowhere new, and its change returns by sync.
     const waiting = sealedRest.store.waiting();
     if (waiting > 0) console.log(`[sealed-rest] save-unbooked: ${waiting} save(s) no session could seal rest nowhere new; the replica that holds each change hands it back by sync after the next unlock`);
+    sealedRest.store.endHydration();
     await repo.shutdown();
   } });
   houseIslands = islandPeersOf(repo);
@@ -3897,15 +3910,7 @@ async function prepareNodeBootOn(
     // The LIVE chokepoint (distinct from boot-time `open-wiki`): a reference ACTIVATES
     // the grain (resolveWikiSpec wakes ANY registered wiki cold, single-flight). node is
     // headless — no #projection surface to flip — so a switch here is pure activation.
-    registry.register("wiki-switch", async (args) => {
-      // The slug rides as a structured `slug` arg — from the CLI / MCP, OR from a
-      // DOM-driven verse-event whose `arg-slug` field the reaction-router lifted into
-      // the args payload (#48 unified the DOM path onto the CLI's structured-args contract).
-      const slug = String(args["slug"] ?? "");
-      if (!slug) throw new Error("wiki-switch: `slug` required");
-      const active = await wikiActivation.ensureActive(slug);
-      return { verb: "wiki-switch", slug, active: active.ok, ...(!active.ok ? { cause: active.cause, detail: active.detail } : {}), held: [...wikiActivation.held()] };
-    });
+    registry.register("wiki-switch", (args) => wikiSwitchVerb(args, { activation: wikiActivation, pool: vmManager }));
     // wiki-hold / wiki-release — the ROTATABLE active-wiki pin (the switcher's pin
     // control), budget-enforced by the cap (the daemon bag always + pinBudget rotatable).
     // Distinct from the recipe-bag `pin-wiki`: this pins the wiki GRAIN in the collector.

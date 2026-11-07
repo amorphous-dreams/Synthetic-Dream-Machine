@@ -19,8 +19,7 @@
  * goes stale when that epoch rolls past it (the epoch is a LEASE, not a
  * targeted revoker — api/pono/convergent-mesh).
  *
- * Canonical signed string (opens on `DEVICE_DELEGATION_DOMAIN` for separation — a FROZEN
- * registry name, read whole: its `/v1` tail names nothing and no successor will exist;
+ * Canonical signed string (opens on `DEVICE_DELEGATION_DOMAIN` for separation — its registry name;
  * every field strict-charset so no `|` can shift a boundary):
  *   {DEVICE_DELEGATION_DOMAIN}|{personaRootDid}|{deviceDid}|{deviceVerifyingKey}|{hearthTrueName}|{boundEpoch}
  *

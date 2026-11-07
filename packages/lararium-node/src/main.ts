@@ -657,6 +657,9 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
   // THE DISPATCHER STANDS BEFORE THE CHANNEL SERVES. The herm branch mounts no wiki, so nothing else
   // awaits the daemon island's `ea`; a verb placed ahead of it commits and no dispatcher runs it.
   // The composition returned standing on its working layer (open-node-vessel's composer mounts it, slice 5b).
+  // A BOOT MILESTONE the supervisor reads (`stand-socket-wait.ts` BOOT_MILESTONES): the daemon island's `ea` stands (the composer
+  // awaited it before it returned).
+  console.log(`[herm] phase → daemon-ea`);
   publishStanding(storageDir, standing, faceLit);
   front.attach(makeUdsSeat({
     daemonHandle: herm.daemon.daemonHandle,
@@ -668,6 +671,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
     onLog: (line) => console.log(`[herm] ${line}`),
   }));
   console.log(`[herm] uds verb-channel on ${floor.storeClaim.socketPath} (perms 0600)`);
+  console.log(`[herm] phase → verb-seat`);
   await markReadyOnceStanding(readinessState, herm.daemon.workerEa);
 
   let hermShuttingDown = false;
@@ -784,6 +788,9 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   // The socket is the vessel's own claim on its store (`claimStore`), bound before its Repo opened; the channel serves it.
   // The daemon island's working layer stands before the channel serves: receipts land in it. The composer mounted it before
   // `openNodeVessel` returned (slice 5b), so the channel serves on it.
+  // A BOOT MILESTONE the supervisor reads (`stand-socket-wait.ts` BOOT_MILESTONES): the daemon island's `ea` stands (the composer
+  // awaited it before it returned).
+  console.log(`[lararium] phase → daemon-ea`);
   // WHAT THIS VESSEL STANDS AS, published beside the socket that serves it. A standing is decided at
   // boot from the face found then, so a caller holding a face lit AFTERWARD has no way to see the
   // mismatch — and `stand` attaches to a floor and a hearth alike. Written here, once the channel
@@ -819,6 +826,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     onLog: (line) => console.log(`[lararium] ${line}`),
   }));
   console.log(`[lararium] uds verb-channel on ${floor.storeClaim.socketPath} (perms 0600)`);
+  console.log(`[lararium] phase → verb-seat`);
   await markReadyOnceStanding(readinessState, result.daemon.workerEa);
 
   // Pre-warm the mempalace read holder so the FIRST recall / recall-into-wake skips
@@ -917,6 +925,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     // THE REPORT ARMS BEFORE THE FIRST STEP (M4c) — a hung main-flush now gets named too, never
     // left silent until islands/daemon even get a turn. It only ever REPORTS; the operator's own
     // second signal above is the sole cut.
+    // PACING: this only reports pending shutdown; completion or a second signal ends it.
     const pastBudget = setTimeout(() => {
       console.error(`[lararium] shutdown past its ${SHUTDOWN_BUDGET_MS}ms report budget — pending shutdown, still awaiting receipts from: ${[...running].join(", ") || "(none named)"}; done so far: ${spans.join(" · ") || "(none)"}; a second SIGINT/SIGTERM (or \`lares vessel stop --cut\`) cuts it now`);
     }, SHUTDOWN_BUDGET_MS);

@@ -75,9 +75,9 @@ describe("the dyad capability", () => {
     await expect(answerDyad(caps, { requestId: "good", fleetRoot: "fleet", deviceKey: "device" })).resolves.toMatchObject({ standing: "owing" }); // control
   });
 
-  test("D3 — correlation, timeout, invalid reply, and concurrent asks", async () => {
+  test("D3 — correlation, a failed post, invalid reply, and concurrent asks", async () => {
     const w = portPair();
-    const read = vesselDyadAsker(w.port, 30);
+    const read = vesselDyadAsker(w.port);
     const one = read("fleet-a", "device-a");
     const two = read("fleet-b", "device-b");
     const firstId = String(w.posted[0]?.["requestId"]);
@@ -90,9 +90,9 @@ describe("the dyad capability", () => {
     w.island.emit("message", { type: "dyad:read", requestId: secondId, standing: "owing" });
     w.island.emit("message", { type: "dyad:read", requestId: firstId, standing: "clear" });
     await expect(Promise.all([one, two])).resolves.toEqual(["clear", "owing"]); // control: each ask gets its own answer
-    await expect(vesselDyadAsker(portPair().port, 30)("fleet", "device")).resolves.toBe("aside");
+    await expect(vesselDyadAsker({ postMessage: () => { throw new Error("the port closed"); }, on: () => {} })("fleet", "device")).resolves.toBe("aside");
     const invalid = portPair();
-    const invalidRead = vesselDyadAsker(invalid.port, 30)("fleet", "device");
+    const invalidRead = vesselDyadAsker(invalid.port)("fleet", "device");
     invalid.island.emit("message", { type: "dyad:read", requestId: invalid.posted[0]?.["requestId"], standing: "fifth" });
     await expect(invalidRead).resolves.toBe("aside");
   });
@@ -115,7 +115,10 @@ describe("the dyad capability", () => {
     const session = fakeWorker();
     nodeWorkerHandle(session.worker, { island: "session", caps });
     await session.ask(ask("session-1"));
-    expect(session.said).toEqual([]);
+    // A session island reaches no dyad standing; since clock-sweep F3 (d98f1c576) its ask answers `aside` by name on the
+    // same request id instead of drawing silence (its asks keep no clock). `caps.dyad` answers "clear": `aside` proves
+    // the capability was never reached.
+    expect(session.said.map((m) => [m["type"], m["requestId"], m["standing"]])).toEqual([["dyad:read", "session-1", "aside"]]);
   });
 
   test("D5 — protocol guards accept only their dyad direction", () => {

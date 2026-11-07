@@ -33,6 +33,7 @@ export const heavy = [
   // real face gates + FLOW-map read-faces on four listeners: the gate-native herm relay
   "tests/herm-carriage-relay.test.ts",
   "tests/nexus-client-dial.test.ts",
+  "tests/nexus-client-dial-listener-order.test.ts",
   "tests/live-wire-node-crossing.test.ts",
   "tests/crossing-matrix.test.ts",
   "tests/sibling-channel-stand.test.ts",
@@ -50,6 +51,9 @@ export const heavy = [
   "tests/repo-in-island.test.ts",
   "tests/vessel-island-pool.test.ts",
   "tests/pool-mount-intensity.test.ts",
+  "tests/wiki-switch-remount.test.ts",
+  // stands a nested island over a real worker handle to prove exit ends the parked asks
+  "tests/worker-handle-exit.test.ts",
   "tests/surface-mount-vessel-path.test.ts",
   "tests/surface-mount-real-island.test.ts",
   "tests/verb-tiddler-dispatch.test.ts",

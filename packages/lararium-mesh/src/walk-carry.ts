@@ -89,6 +89,7 @@ type CarryTransport = Pick<WalkTransport, "sendSession" | "onSession">;
 function answerFor(transport: CarryTransport, kind: string, cid: string, withinMs: number, accept: (msg: LarSessionMsg) => Promise<boolean>): Promise<LarSessionMsg | null> {
   return new Promise((resolve, reject) => {
     let off: () => void = () => {};
+    // LIVENESS: a remote peer may never send the matching session frame.
     const timer = setTimeout(() => { off(); resolve(null); }, withinMs);
     off = transport.onSession((msg) => {
       if (msg.kind !== kind || (msg.body as { cid?: unknown } | null)?.cid !== cid) return;

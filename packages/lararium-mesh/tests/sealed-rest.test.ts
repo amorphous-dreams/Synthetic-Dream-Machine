@@ -8,14 +8,15 @@
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed
  */
 import { afterEach, describe, expect, it } from "vitest";
-import { Repo, type AutomergeUrl, type Chunk, type PeerId, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
+import { Repo, generateAutomergeUrl, parseAutomergeUrl, type AutomergeUrl, type Chunk, type PeerId, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
 import * as A from "@automerge/automerge";
 import { utf8Bytes } from "../src/crypto.js";
 import { faceProofSubjectRef, sessionSignatureImage } from "../src/face-proof-subjects.js";
 import type { RecordSigner } from "../src/sealed-records.js";
 import { SEALED_DOCUMENT_REFUSALS, SealedDocumentStore } from "../src/sealed-doc-store.js";
-import { announceSlotDoc, answerDocStoreAsks, composeSealedRest, docStorePortCell, islandRestGuard, sealedBagMap, vesselDocStoreDoor, type SealedRest } from "../src/sealed-rest.js";
+import { announceSlotDoc, answerDocStoreAsks, composeSealedRest, docStorePortCell, islandRestGuard, sealedBagMap, vesselDocStoreDoor, vesselRestAsker, type SealedRest } from "../src/sealed-rest.js";
+import { answerRestAsk } from "../src/capability-record.js";
 import { vessel, world, type Vessel } from "./content-key-fixture.js";
 import { chain, signHex } from "./face-proof-fixture.js";
 
@@ -62,7 +63,7 @@ async function signerOf(name: string): Promise<RecordSigner> {
 }
 
 /** One vessel's sealed rest over a MessageChannel door: the vessel's book of asks, and the island's holder behind it. */
-function standRest(a: Vessel, inner: StorageAdapterInterface, over: { sealed?: (documentId: string) => boolean; hydrationPatienceMs?: number } = {}) {
+function standRest(a: Vessel, inner: StorageAdapterInterface, over: { sealed?: (documentId: string) => boolean; hydrates?: boolean } = {}) {
   const own = faceProofSubjectRef(a.chain.scope);
   const channel = new MessageChannel();
   const vesselSide = portOf(channel.port1), islandSide = portOf(channel.port2);
@@ -85,10 +86,10 @@ function standRest(a: Vessel, inner: StorageAdapterInterface, over: { sealed?: (
     sessionFace: () => own,
     door: vesselDocStoreDoor<Session>(() => vesselSide, {
       book: (ask, verb, session) => { asks.set(ask, { verb, session }); return () => asks.delete(ask); },
-      patienceMs: 5_000, idPrefix: "test",
+      idPrefix: "test",
     }),
     flushRepo: async () => { await repo?.flush(); },
-    ...(over.hydrationPatienceMs !== undefined ? { hydrationPatienceMs: over.hydrationPatienceMs } : {}),
+    ...(over.hydrates === true ? { hydrates: true } : {}),
   });
   return { rest, own, sealedUnder, asks, seat: (r: Repo) => { repo = r; } };
 }
@@ -456,6 +457,100 @@ describe("P2-1: a seal the door cannot answer keeps its change", () => {
   });
 });
 
+describe("F1: a lock always drops the signer, whatever its island says", () => {
+  /** A door over an island that stands, says it answers, and then never answers a seal: alive and wedged. */
+  const wedgedDoor = async (livenessMs: number) => {
+    const channel = new MessageChannel();
+    const vesselSide = portOf(channel.port1), islandSide = portOf(channel.port2);
+    const cell = docStorePortCell(async () => null);
+    cell.attach(vesselSide);
+    const heard: { type?: string; requestId?: string }[] = [];
+    islandSide.listen((raw) => { heard.push(raw as { type?: string; requestId?: string }); });
+    islandSide.post({ type: "docstore:answering" });
+    await settle(50);
+    const door = vesselDocStoreDoor<Session>(() => cell.port(), { book: () => () => {}, idPrefix: "wedged", livenessMs });
+    return { door, islandSide, heard };
+  };
+  const value = { role: "change" as const, ref: "ef".repeat(32), parents: [], plaintext: utf8Bytes(SECRET) };
+
+  it("RED: a seal to an island alive and silent refuses by name after its LIVENESS bound; every later seal refuses at once, until the island speaks again (control)", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const session: Session = { id: "s-a", subject: faceProofSubjectRef(a.chain.scope), signer: a.signer };
+    const { door, islandSide, heard } = await wedgedDoor(150);
+    const first = await door.seal({ bagId: BAG, values: [value], session });
+    expect(first).toMatchObject({ refusal: "signer-unavailable", cause: expect.stringMatching(/^LIVENESS: /) });
+    // a lapse is news about the island: the next seal spends no second bound and never reaches the wedged island
+    const posted = heard.length;
+    const t0 = performance.now();
+    expect(await door.seal({ bagId: BAG, values: [value], session })).toMatchObject({ refusal: "signer-unavailable", cause: expect.stringMatching(/^LIVENESS: /) });
+    expect(performance.now() - t0).toBeLessThan(100);
+    expect(heard.length).toBe(posted);
+    // CONTROL: the island answers the lapsed ask late; it speaks again, so the next seal reaches it and reads its answer
+    const lapsed = heard.find((m) => m.type === "docstore:seal")!;
+    islandSide.listen((raw) => {
+      const m = raw as { type?: string; requestId?: string };
+      if (m.type === "docstore:seal") islandSide.post({ type: "docstore:sealed", requestId: m.requestId, refusal: "seal-refused", cause: "the island answers again" });
+    });
+    islandSide.post({ type: "docstore:sealed", requestId: lapsed.requestId, refusal: "seal-refused" });
+    await settle(50);
+    expect(await door.seal({ bagId: BAG, values: [value], session })).toMatchObject({ refusal: "seal-refused", cause: "the island answers again" });
+  });
+
+  it("RED: the lock ritual over a wedged island ends and the signer drops; the change stays in memory, reports save-unsealed by name, and no byte rests", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const own = faceProofSubjectRef(a.chain.scope);
+    const session: Session = { id: "s-a", subject: own, signer: a.signer };
+    const inner = memoryAdapter();
+    const held: string[] = [];
+    const { door } = await wedgedDoor(150);
+    let repo: Repo | null = null;
+    const rest = composeSealedRest<Session>({
+      inner, bagOf: () => ({ bagId: BAG, face: own }), sessionFace: () => own, door,
+      flushRepo: async () => { await repo?.flush(); }, onHeld: (h) => held.push(h.refusal),
+    });
+    repo = new Repo({ storage: rest.store, network: [] });
+    const doc = repo.create<{ note?: string }>();
+    rest.wrote(doc.documentId, session);
+    doc.change((d) => { d.note = SECRET; });
+    // the lock ritual as the node runs it (sealedRestLock, then flushThenDrop's drop)
+    let dropped = false;
+    const ritual = (async () => {
+      try { await rest.rebook(session); } catch { /* it keeps waiting */ }
+      try { await rest.lock(session.id); } catch { /* the drop still lands */ }
+      dropped = true;
+    })();
+    await Promise.race([ritual, settle(3_000)]);
+    expect(dropped).toBe(true);
+    expect(held).toContain("save-unsealed");
+    expect(rest.store.waiting(doc.documentId)).toBeGreaterThan(0);
+    expect(restsAny(inner, doc.documentId)).toBe(false);
+    expect(doc.doc().note).toBe(SECRET);
+  });
+
+  it("CONTROL: an answering island seals first, then the signer drops", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const inner = memoryAdapter();
+    const r = standRest(a, inner);
+    const session: Session = { id: "s-a", subject: r.own, signer: a.signer };
+    const repo = new Repo({ storage: r.rest.store, network: [] });
+    r.seat(repo);
+    const doc = repo.create<{ note?: string }>();
+    r.rest.wrote(doc.documentId, session);
+    doc.change((d) => { d.note = SECRET; });
+    let sealedAtDrop = -1;
+    try { await r.rest.rebook(session); } catch { /* it keeps waiting */ }
+    await r.rest.lock(session.id);
+    sealedAtDrop = r.sealedUnder.length;
+    expect(sealedAtDrop).toBeGreaterThan(0);
+    expect(restsAny(inner, doc.documentId)).toBe(true);
+    expect(restsClear(inner, doc.documentId, SECRET)).toBe(false);
+    await repo.shutdown();
+  });
+});
+
 describe("P2-2: the lock reaches the island's holder at once", () => {
   it("after the vessel posts its lock across the door, the island's holder holds no content key: an open refuses, and nothing seals", async () => {
     const w = world();
@@ -469,7 +564,7 @@ describe("P2-2: the lock reaches the island's holder at once", () => {
       open: (args) => locked ? Promise.resolve({ refusal: "holder-locked" } as never) : a.holder.openValue(args),
       lock: () => { locked = true; a.holder.lock(); },
     });
-    const door = vesselDocStoreDoor<Session>(() => vesselSide, { book: () => () => {}, patienceMs: 5_000, idPrefix: "lock-test" });
+    const door = vesselDocStoreDoor<Session>(() => vesselSide, { book: () => () => {}, idPrefix: "lock-test" });
     const session: Session = { id: "s-a", subject: own, signer: a.signer };
     const value = { role: "change" as const, ref: "ef".repeat(32), parents: [], plaintext: utf8Bytes(SECRET) };
     const sealed = await door.seal({ bagId: BAG, values: [value], session });
@@ -702,7 +797,7 @@ describe("V3: the slot resolver names each slot document it answers, and the map
 });
 
 describe("a restart's hydration: a sealed document's load waits for its map, never strands", () => {
-  it("a load before the bag maps waits and hydrates once the map moves; a load with no move inside its patience refuses by name (control)", async () => {
+  it("a load before the bag maps waits and hydrates once the map moves; a store that does not hydrate refuses by name (control)", async () => {
     const w = world();
     const a = await vessel(w, "a");
     const inner = memoryAdapter();
@@ -718,7 +813,7 @@ describe("a restart's hydration: a sealed document's load waits for its map, nev
     a.restart();
     // THE RESTART: the map stands only after the load began (the dial composes, the slot resolver names the document).
     let mapped = false;
-    const again = standRest(a, inner, { sealed: () => mapped, hydrationPatienceMs: 5_000 });
+    const again = standRest(a, inner, { sealed: () => mapped, hydrates: true });
     let loaded = false;
     const loading = again.rest.store.loadRange([doc.documentId]).then((chunks) => { loaded = true; return chunks; });
     await settle(100);
@@ -731,8 +826,8 @@ describe("a restart's hydration: a sealed document's load waits for its map, nev
     const repo2 = new Repo({ storage: again.rest.store, network: [] });
     expect((await repo2.find<{ note?: string }>(doc.documentId as unknown as AutomergeUrl)).doc().note).toBe(SECRET);
     await repo2.shutdown();
-    // CONTROL: no map ever stands inside the patience: the load refuses `bag-unmapped`, by name.
-    const third = standRest(a, inner, { sealed: () => false, hydrationPatienceMs: 200 });
+    // CONTROL: a store that does not hydrate, with no map standing: the load refuses `bag-unmapped` at once, by name.
+    const third = standRest(a, inner, { sealed: () => false });
     await expect(third.rest.store.loadRange([doc.documentId])).rejects.toMatchObject({ refusal: "bag-unmapped" });
   });
 });
@@ -747,7 +842,7 @@ describe("D1: the island's door stands before an ask crosses it, and its standin
     const stood = new Promise<void>((done) => { heard = done; });
     const cell = docStorePortCell(async () => null, { onReady: () => { ready++; heard(); } });
     cell.attach(portOf(channel.port1));
-    const door = vesselDocStoreDoor(() => cell.port(), { book: () => () => {}, patienceMs: 600_000, idPrefix: "d1" });
+    const door = vesselDocStoreDoor(() => cell.port(), { book: () => () => {}, idPrefix: "d1" });
     const session: Session = { id: "s-a", subject: faceProofSubjectRef(a.chain.scope), signer: a.signer };
     // THE ISLAND STANDS NO DOOR YET: the ask refuses by name now, and the vessel holds no port to post across.
     expect(cell.port()).toBeNull();
@@ -759,5 +854,161 @@ describe("D1: the island's door stands before an ask crosses it, and its standin
     await stood;
     expect(cell.port()).not.toBeNull();
     expect(ready).toBe(1);
+  });
+});
+
+// NO GLOBAL NOW (operator 2026-11-06: "No timeout"): each wait of the sealed rest ends on the event that settles it, the
+// answer or the peer's departure, and a hydrating load on its map's move or the rest's stand-down; no clock decides.
+describe("the sealed rest's waits end on their own events, never on a clock", () => {
+  it("the rest ask waits for the vessel's answer however late; a sealed answer reads sealed, and never reads unsealed on silence", async () => {
+    const channel = new MessageChannel();
+    const vesselSide = portOf(channel.port1), islandSide = portOf(channel.port2);
+    const answers = new Map<string, boolean>([["doc-sealed", true], ["doc-clear", false]]);
+    vesselSide.listen((raw) => {
+      const m = raw as { type?: string; requestId?: string; documentId?: string };
+      if (m.type !== "rest:ask") return;
+      // The vessel answers late: past any patience an island might once have held.
+      setTimeout(() => vesselSide.post({ type: "rest:answer", requestId: m.requestId, sealed: answers.get(m.documentId ?? "") === true }), 150);
+    });
+    const ask = vesselRestAsker(islandSide, { idPrefix: "late" });
+    let settled = false;
+    const sealed = ask("doc-sealed").then((v) => { settled = true; return v; });
+    await settle(50);
+    // barrier: no answer yet, and no clock read the silence as unsealed.
+    expect(settled).toBe(false);
+    expect(await sealed).toBe(true);
+    // CONTROL: a vessel that answers unsealed reads unsealed.
+    expect(await ask("doc-clear")).toBe(false);
+  });
+
+  it("the door's open waits for the island; the island's departure answers it by name at once", async () => {
+    const channel = new MessageChannel();
+    const silent = portOf(channel.port1);   // an island that answers the door, then never answers this ask: it stands, then goes
+    const cell = docStorePortCell(async () => null);
+    const detach = cell.attach(silent);
+    portOf(channel.port2).post({ type: "docstore:answering" });
+    await settle(50);
+    const door = vesselDocStoreDoor<Session>(() => cell.port(), { book: () => () => {}, idPrefix: "gone" });
+    let settled = false;
+    const opened = door.open({ bagId: BAG, role: "change", ref: "ab".repeat(32) }).then((v) => { settled = true; return v; });
+    await settle(50);
+    // barrier: the ask waits on the island, no clock answers it.
+    expect(settled).toBe(false);
+    detach();
+    expect(await opened).toMatchObject({ refusal: "holder-locked" });
+    // CONTROL: with no island attached the door refuses at once, by name.
+    expect(await door.open({ bagId: BAG, role: "change", ref: "cd".repeat(32) })).toMatchObject({ refusal: "holder-locked" });
+  });
+
+  it("a hydrating load with no map waits past any clock, and refuses by name when the rest stands down", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const inner = memoryAdapter();
+    const r = standRest(a, inner);
+    const session: Session = { id: "s-a", subject: r.own, signer: a.signer };
+    const repo = new Repo({ storage: r.rest.store, network: [] });
+    r.seat(repo);
+    const doc = repo.create<{ note?: string }>();
+    r.rest.wrote(doc.documentId, session);
+    doc.change((d) => { d.note = SECRET; });
+    await repo.flush();
+    await repo.shutdown();
+    a.restart();
+    const again = standRest(a, inner, { sealed: () => false, hydrates: true });
+    let refused: unknown = null;
+    const loading = again.rest.store.loadRange([doc.documentId]).then(() => "read", (e: unknown) => { refused = e; return "refused"; });
+    await settle(100);
+    // barrier: no map, no move, and no clock: the load still waits.
+    expect(refused).toBe(null);
+    await again.rest.standDown([]);
+    expect(await loading).toBe("refused");
+    expect(refused).toMatchObject({ refusal: "bag-unmapped" });
+    // CONTROL: a store that does not hydrate refuses at once, by name.
+    const plain = standRest(a, inner, { sealed: () => false });
+    await expect(plain.rest.store.loadRange([doc.documentId])).rejects.toMatchObject({ refusal: "bag-unmapped" });
+  });
+});
+
+describe("a fault or a refusal never lets a document rest clear", () => {
+  it("the vessel answers a faulted or malformed rest ask by its refusal, never unsealed; a sealed, unsealed or seal-less rest answers as it reads (control)", async () => {
+    const fault = await answerRestAsk({ restsSealed: async () => { throw new Error("the rest broke"); } }, { requestId: "r1", documentId: "doc-a" });
+    expect(fault).toEqual({ type: "rest:answer", requestId: "r1", refused: "rest-fault" });
+    const malformed = await answerRestAsk({ restsSealed: async () => false }, { requestId: "r2" });
+    expect(malformed).toEqual({ type: "rest:answer", requestId: "r2", refused: "ask-malformed" });
+    // CONTROL: an answering rest answers as it reads, and a vessel that seals no bag answers unsealed.
+    expect(await answerRestAsk({ restsSealed: async () => true }, { requestId: "r3", documentId: "doc-a" })).toEqual({ type: "rest:answer", requestId: "r3", sealed: true });
+    expect(await answerRestAsk({ restsSealed: async () => false }, { requestId: "r4", documentId: "doc-a" })).toEqual({ type: "rest:answer", requestId: "r4", sealed: false });
+    expect(await answerRestAsk({}, { requestId: "r5", documentId: "doc-a" })).toEqual({ type: "rest:answer", requestId: "r5", sealed: false });
+  });
+
+  it("the island's asker refuses a refused answer, a shapeless answer and a post that fails, each by name; a sealed answer still reads sealed (control)", async () => {
+    const channel = new MessageChannel();
+    const vesselSide = portOf(channel.port1), islandSide = portOf(channel.port2);
+    vesselSide.listen((raw) => {
+      const m = raw as { type?: string; requestId?: string; documentId?: string };
+      if (m.type !== "rest:ask") return;
+      if (m.documentId === "doc-fault") vesselSide.post({ type: "rest:answer", requestId: m.requestId, refused: "rest-fault" });
+      else if (m.documentId === "doc-shapeless") vesselSide.post({ type: "rest:answer", requestId: m.requestId });
+      else vesselSide.post({ type: "rest:answer", requestId: m.requestId, sealed: true });
+    });
+    const ask = vesselRestAsker(islandSide, { idPrefix: "refuse" });
+    await expect(ask("doc-fault")).rejects.toMatchObject({ refusal: "rest-fault" });
+    await expect(ask("doc-shapeless")).rejects.toMatchObject({ refusal: "answer-malformed" });
+    const broken = vesselRestAsker({ post: () => { throw new Error("the port closed"); }, listen: () => () => {} }, { idPrefix: "broken" });
+    await expect(broken("doc-a")).rejects.toMatchObject({ refusal: "vessel-unreached" });
+    // CONTROL: an answered ask reads as answered.
+    expect(await ask("doc-sealed")).toBe(true);
+  });
+
+  it("a rest ask that refuses leaves no byte in the island's store and refuses the load by name; an unsealed answer rests the bytes (control)", async () => {
+    const islandInner = memoryAdapter();
+    const docA = parseAutomergeUrl(generateAutomergeUrl()).documentId, docB = parseAutomergeUrl(generateAutomergeUrl()).documentId;
+    const refuse = Object.assign(new Error("refused"), { refusal: "rest-fault" });
+    const guard = islandRestGuard(islandInner, async () => { throw refuse; });
+    const bytes = Uint8Array.from(utf8Bytes(SECRET));
+    await expect(guard.save([docA, "snapshot", "h1"], bytes)).rejects.toMatchObject({ refusal: "rest-fault" });
+    expect(restsAny(islandInner, docA)).toBe(false);
+    await islandInner.save([docB, "snapshot", "h1"], bytes);
+    await expect(guard.load([docB, "snapshot", "h1"])).rejects.toMatchObject({ refusal: "rest-fault" });
+    await expect(guard.loadRange([docB])).rejects.toMatchObject({ refusal: "rest-fault" });
+    await expect(guard.loadRange([])).rejects.toMatchObject({ refusal: "rest-fault" });
+    // CONTROL: an unsealed answer rests and reads the bytes.
+    const open = islandRestGuard(islandInner, async () => false);
+    await open.save([docA, "snapshot", "h1"], bytes);
+    expect(restsClear(islandInner, docA, SECRET)).toBe(true);
+    expect(await open.load([docB, "snapshot", "h1"])).toEqual(bytes);
+  });
+
+  it("a key that names no document (the store's own `storage-adapter-id`) asks the vessel nothing and rests as written; a document's key still asks (control)", async () => {
+    const islandInner = memoryAdapter();
+    const asked: string[] = [];
+    const guard = islandRestGuard(islandInner, async (documentId) => { asked.push(documentId); throw Object.assign(new Error("refused"), { refusal: "rest-fault" }); });
+    const id = utf8Bytes("adapter-one");
+    await guard.save(["storage-adapter-id"], id);
+    expect(await guard.load(["storage-adapter-id"])).toEqual(id);
+    expect(asked).toEqual([]);
+    const doc = parseAutomergeUrl(generateAutomergeUrl()).documentId;
+    await expect(guard.save([doc, "snapshot", "h1"], id)).rejects.toMatchObject({ refusal: "rest-fault" });
+    expect(asked).toEqual([doc]);
+  });
+});
+
+describe("the floor's door never waits on a holder that never stood", () => {
+  it("an island attached at the floor that answers no door draws the open and the seal refused at once by name; once its holder answers, the open reaches it (control)", async () => {
+    const channel = new MessageChannel();
+    const vesselSide = portOf(channel.port1), islandSide = portOf(channel.port2);
+    const cell = docStorePortCell(async () => null);
+    cell.attach(vesselSide);
+    const door = vesselDocStoreDoor<Session>(() => cell.port(), { book: () => () => {}, idPrefix: "floor" });
+    let settled = false;
+    const opened = door.open({ bagId: BAG, role: "change", ref: "ab".repeat(32) }).then((v) => { settled = true; return v; });
+    await settle(50);
+    expect(settled).toBe(true);
+    expect(await opened).toMatchObject({ refusal: "holder-locked" });
+    expect(await door.seal({ bagId: BAG, values: [], session: { id: "s", subject: "x", signer: null as never }, peer: undefined } as never)).toMatchObject({ refusal: "signer-unavailable" });
+    // CONTROL: the island's holder stands and answers the door; the open reaches it.
+    answerDocStoreAsks(islandSide, { seal: async () => ({ refusal: "seal-refused" }) as never, open: async () => ({ refusal: "bag-unknown" }) as never });
+    await settle(50);
+    expect(await door.open({ bagId: BAG, role: "change", ref: "cd".repeat(32) })).toMatchObject({ refusal: "bag-unknown" });
   });
 });

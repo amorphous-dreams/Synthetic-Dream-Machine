@@ -31,3 +31,8 @@ if [ -n "${CI:-}" ] && [ -z "${LARES_DISK_MIN_ROOT_GB:-}" ]; then
 fi
 
 node tools/disk-guard.mjs
+rc=$?
+if [ "$rc" -ne 0 ]; then
+  echo 'pono: land or retire a lane worktree before provisioning another'
+fi
+exit "$rc"

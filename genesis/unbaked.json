@@ -1,0 +1,10 @@
+{
+  "format": "lararium-genesis-unbaked/v1",
+  "unbaked": [
+    {
+      "source": "packages/lararium-tw5/plugins/lares-memetic-wikitext.json",
+      "sha256": "729cbdfd1e0c3a02d20ff770139af6174ba130381ce25c3665717b9d16e4911a",
+      "why": "The root-layer.tid notification cure and its regenerated plugin projection run ahead of genesis; the next labelled genesis re-bake carries them."
+    }
+  ]
+}

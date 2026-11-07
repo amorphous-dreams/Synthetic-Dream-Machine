@@ -224,6 +224,7 @@ export class MemeProvider {
     if (existing) clearTimeout(existing.timer);
     const joined = joinWave(existing?.wave, wave);
 
+    // PACING: debounce coalesces changes for this URI before firing the joined wave.
     const timer = setTimeout(() => {
       this._pending.delete(uri);
       this._fire(uri, joined);

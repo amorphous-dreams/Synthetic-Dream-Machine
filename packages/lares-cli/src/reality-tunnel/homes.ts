@@ -24,9 +24,11 @@ const onWsl = (env: NodeJS.ProcessEnv): boolean => {
 
 /** Ask Windows for `%USERPROFILE%` and convert it to a WSL path; null when Windows does not answer. */
 function askWindows(): string | null {
+  // LIVENESS: Windows interop may hang without returning a profile.
   const echo = spawnSync("cmd.exe", ["/c", "echo", "%USERPROFILE%"], { encoding: "utf8", timeout: 4000, cwd: "/mnt/c" });
   const win = String(echo.stdout ?? "").trim();
   if (echo.status !== 0 || !win || win.includes("%")) return null;
+  // LIVENESS: the external WSL path helper may hang without returning.
   const conv = spawnSync("wslpath", ["-u", win], { encoding: "utf8", timeout: 2000 });
   const p = String(conv.stdout ?? "").trim();
   return conv.status === 0 && p ? p : null;

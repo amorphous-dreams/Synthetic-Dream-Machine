@@ -302,17 +302,13 @@ export interface VesselIslandPoolCoreOptions {
   mountSilenceMs?: number;
   /** Override the mount progress-stall budget in ms (default 3x silence). */
   mountStallMs?: number;
-  /** Mount failures tolerated per wiki inside the window before the cap trips. */
+  /** Mount failures tolerated per wiki in a row before the cap trips. */
   maxMountFailures?: number;
-  /** The intensity window in ms (OTP MaxR/MaxT discipline). */
-  mountFailureWindowMs?: number;
 }
 
-// The mount-failure window, the cold-slot `cooledAt`, and every failure timestamp below are
-// THIS PROCESS'S OWN local resource-pressure bookkeeping — never persisted, never compared
-// across a restart — so they read `performance.now()` rather than `Date.now()`: an adversarial
-// or operator wall-clock set-back/set-forward can neither reopen a mount intensity cap early
-// nor hold it closed past its real window.
+// The cold-slot `cooledAt` below is THIS PROCESS'S OWN local resource-pressure bookkeeping — never
+// persisted, never compared across a restart — so it reads `performance.now()` rather than `Date.now()`:
+// a wall-clock set-back/set-forward cannot move it.
 //
 // A SILENCE budget, not a mount deadline: the ea-wait re-arms on each island
 // breath (resetOnTypes), so a slow mount that keeps breathing never times out.
@@ -320,7 +316,6 @@ export interface VesselIslandPoolCoreOptions {
 // (MaxR/MaxT) bounds restart storms on a deterministically failing mount.
 const HANDSHAKE_TIMEOUT_MS        = 10_000;
 const MAX_MOUNT_FAILURES          = 3;
-const MOUNT_FAILURE_WINDOW_MS     = 60_000;
 
 export class VesselIslandPoolCore {
   private readonly _slots = new Map<string, Slot>();
@@ -366,12 +361,11 @@ export class VesselIslandPoolCore {
   private readonly _activatingSurfaces = new Map<string, { readonly parts: IslandKeyParts; view: SessionDocumentView | null }>();
   // True while `disposeAll` runs: a mount that lands meanwhile takes no slot.
   private _disposing = false;
-  // OTP intensity bookkeeping — per-wiki failure timestamps inside the window.
-  private readonly _mountFailures = new Map<string, number[]>();
+  // OTP intensity bookkeeping — per-wiki consecutive failure COUNT (no clock window); a clean mount or the operator's remount clears it.
+  private readonly _mountFailures = new Map<string, number>();
   private readonly _mountSilenceMs:       number;
   private readonly _mountStallMs:         number;
   private readonly _maxMountFailures:     number;
-  private readonly _mountFailureWindowMs: number;
 
   constructor(opts: VesselIslandPoolCoreOptions) {
     // M6 — no silent ignore. `resolvePluginCids` is REQUIRED in the type above; this runtime
@@ -402,7 +396,6 @@ export class VesselIslandPoolCore {
     this._mountSilenceMs       = opts.mountSilenceMs ?? HANDSHAKE_TIMEOUT_MS;
     this._mountStallMs         = opts.mountStallMs ?? 3 * this._mountSilenceMs;
     this._maxMountFailures     = opts.maxMountFailures ?? MAX_MOUNT_FAILURES;
-    this._mountFailureWindowMs = opts.mountFailureWindowMs ?? MOUNT_FAILURE_WINDOW_MS;
   }
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────
@@ -634,22 +627,26 @@ export class VesselIslandPoolCore {
     return this.has(wikiId);
   }
 
+  private _failuresOf(wikiId: string): number { return this._mountFailures.get(wikiId) ?? 0; }
+  private _countMountFailure(wikiId: string): void { this._mountFailures.set(wikiId, this._failuresOf(wikiId) + 1); }
+
+  /** The operator's remount: forget one grain's failure count so its next mount tries afresh. The cap clears on this
+   *  or on a clean mount, never on elapsed time. */
+  forgetMountFailures(wikiId: string): void { this._mountFailures.delete(wikiId); }
+
   /** The activation body proper — intensity gate → LRU evict → spawn → `ea`
    *  handshake → live slot. Runs under mountWiki's single-flight latch, so exactly
    *  one activation runs per grain at a time (single-owner preserved). */
   private async _activate(wikiId: string, plan: ActivationPlan, opts: { pinned?: boolean }): Promise<void> {
     const pinned = opts.pinned ?? false;
     // Intensity gate (MaxR/MaxT): a wiki that keeps failing its mount inside
-    // the window fails FAST and NAMED — never another full silence budget per
-    // attempt, never a restart storm. The window prunes itself; success clears.
-    const failures = (this._mountFailures.get(wikiId) ?? [])
-      .filter((t) => performance.now() - t < this._mountFailureWindowMs);
-    if (failures.length >= this._maxMountFailures) {
-      this._mountFailures.set(wikiId, failures);
+    // in a row fails FAST and NAMED — never another full silence budget per
+    // attempt, never a restart storm. Success or the operator's remount clears.
+    if (this._failuresOf(wikiId) >= this._maxMountFailures) {
       throw new Error(
         `[vessel-pool] mount intensity cap for ${wikiId} — ` +
-        `${failures.length} failures inside ${this._mountFailureWindowMs}ms; ` +
-        `retry after the window clears`,
+        `${this._failuresOf(wikiId)} failures in a row; ` +
+        `the operator's remount clears it (forgetMountFailures)`,
       );
     }
 
@@ -667,8 +664,7 @@ export class VesselIslandPoolCore {
     // no mount ever falls through to a flat, unresolved floor.
     const resolved = await plan.pluginCids();
     if (!resolved.ok) {
-      failures.push(performance.now());
-      this._mountFailures.set(wikiId, failures);
+      this._countMountFailure(wikiId);
       throw new Error(`[vessel-pool] ${wikiId} plugin resolution refused: ${resolved.error}`);
     }
     const pluginCids = resolved.pluginCids;
@@ -692,8 +688,7 @@ export class VesselIslandPoolCore {
           ...(plan.surface.mount.referencesContent ? { referencesContent: plan.surface.mount.referencesContent } : {}),
         });
       } catch (err) {
-        failures.push(performance.now());
-        this._mountFailures.set(wikiId, failures);
+        this._countMountFailure(wikiId);
         throw err;
       }
       // The fence reaches this view from here on, though no slot holds it yet.
@@ -764,8 +759,7 @@ export class VesselIslandPoolCore {
       worker.terminate();
       view?.close();
       mainPort.close();
-      failures.push(performance.now());
-      this._mountFailures.set(wikiId, failures);
+      this._countMountFailure(wikiId);
       throw err;
     }
 
@@ -829,6 +823,9 @@ export class VesselIslandPoolCore {
       await awaitIslandMsg<IslandMsg_TeardownAck>({
         expectedType: "teardown:ack",
         timeoutMs:    HANDSHAKE_TIMEOUT_MS,
+        // The island answers its teardown either way: an ack, or a fault by name (`teardown-fault: …`) that ends the
+        // handshake at once, unacked.
+        rejectOnTypes:  ["fault"],
         subscribe:      (h) => workerSlot.worker.listen(h),
         subscribeError: (h) => workerSlot.worker.onError(h),
         send: () => workerSlot.worker.post(mkTeardown()),
@@ -897,17 +894,20 @@ export class VesselIslandPoolCore {
     const requestId = crypto.randomUUID();
     const worker = slot.worker;
     return new Promise<Record<string, unknown>>((resolve, reject) => {
-      const timer = setTimeout(() => {
-        this._pendingWikiVerbs.delete(requestId);
-        reject(new Error(`[vessel-pool] wiki:place-verb timeout for ${wikiId}/${opts.verb}`));
-      }, HANDSHAKE_TIMEOUT_MS);
-      this._pendingWikiVerbs.set(requestId, {
-        key: wikiId,
-        resolve: (r) => { clearTimeout(timer); resolve(r); },
-        reject:  (e) => { clearTimeout(timer); reject(e); },
-      });
+      // The verb ends on the island's answer, its unmount (a lease that dropped), or its exit or error (`_failParkedVerbs`);
+      // no timer answers for a verb running long on a live island.
+      this._pendingWikiVerbs.set(requestId, { key: wikiId, resolve, reject });
       worker.post(mkWikiPlaceVerb({ ...opts, requestId }));
     });
+  }
+
+  /** The island went away on its own (exit or error): every call parked on it rejects by name. */
+  private _failParkedVerbs(wikiId: string, why: string): void {
+    for (const [requestId, pending] of [...this._pendingWikiVerbs]) {
+      if (pending.key !== wikiId) continue;
+      this._pendingWikiVerbs.delete(requestId);
+      pending.reject(new Error(`[vessel-pool] the island for ${wikiId} exited (${why}) with this call parked`));
+    }
   }
 
   /** Place one control event (an act, a sense, a write or a service answer) into the island that renders its
@@ -1185,7 +1185,9 @@ export class VesselIslandPoolCore {
         console.error(`[vessel-pool] island fault for ${wikiId}: ${(raw as { error: string }).error}`);
       }
     });
+    worker.onExit?.((why) => this._failParkedVerbs(wikiId, why));
     worker.onError((err) => {
+      this._failParkedVerbs(wikiId, `error: ${err.message}`);
       this._portDoor.releaseScope(wikiId);
       // A SESSION ISLAND THAT ERRED LEAVES THE HOUSE (road `P26`): its scoped view closes, so its leg's arrival unseats and
       // no gone island reads as standing in the arrival table.
