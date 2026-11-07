@@ -16,7 +16,7 @@ module-type: startup
  *     tm-modal · tm-show-switcher             a record under `$:/temp/lares/modal/`, painted by the root layer
  *                                             as an `aria-modal` dialog; its own close message removes it.
  *     tm-notify                               a record under `$:/temp/lares/notify/`, painted by the root layer,
- *                                             removed after the notification duration.
+ *                                             removed on dismissal or supersession.
  *     tm-scroll · tm-focus-selector           HINTS the frame carries: `$:/temp/lares/hint/{scroll,focus}` with a
  *                                             selector and a rising number, painted as `data-lar-scroll-to` /
  *                                             `data-lar-focus` beside `data-lar-hint`. The page scrolls and
@@ -69,7 +69,6 @@ interface Tw {
   wiki: Wiki;
   rootWidget?: { addEventListener(type: string, handler: (event: WidgetEvent) => boolean | void): void };
   hooks: { invokeHook(name: string, value: string[]): string[] };
-  config?: { preferences?: { notificationDuration?: number } };
   lares?: Record<string, unknown>;
   utils: { confirm(message: string, options: { type: string; title: string; widget: unknown; event: WidgetEvent }): boolean };
 }
@@ -106,11 +105,12 @@ export function installRootServices(tw: Tw): void {
   const alert = (kind: string, text: string): void => {
     wiki.addTiddler({ title: ALERT_REFUSED_PREFIX + kind, text, tags: ["$:/tags/Alert"], component: name, modified: new Date() });
   };
+  let activeNotification: string | undefined;
   const notify = (title: string, variables = "{}"): void => {
+    if (activeNotification) wiki.deleteTiddler(activeNotification);
     const record = NOTIFY_PREFIX + next();
     wiki.addTiddler({ title: record, text: title, "lar-variables": variables });
-    // PACING: this only dismisses the displayed notification after its configured duration.
-    setTimeout(() => wiki.deleteTiddler(record), tw.config?.preferences?.notificationDuration ?? 3000);
+    activeNotification = record;
   };
 
   /** Ask the surface for a door; the answer runs `then` with the status, and a refusal raises the kind's alert. */
