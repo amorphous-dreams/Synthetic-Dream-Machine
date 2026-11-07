@@ -24,6 +24,8 @@ import {
 } from "@lararium/node";
 import { OfflineCustodyRefused, seatOfflineCustody, TEST_ROUTE_PASSPHRASE, TEST_SCRATCH_MARKER } from "../src/offline-custody.js";
 import { dispatch } from "../src/bin/lares.js";
+import * as secretPrompt from "../src/prompt-secret.js";
+import * as custodyPrompt from "../src/custody-prompt.js";
 
 vi.setConfig({ testTimeout: 180_000, hookTimeout: 180_000 });
 
@@ -43,6 +45,8 @@ async function stage(passphrase: string, opts: { marked: boolean }): Promise<str
   const founded = await foundCustody({ io, homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase }] }] });
   const holder = makeCustodyHolder({ io, homes });
   await holder.adopt(founded.treeKey);
+  // The face must answer the same route as the vessel; the suite's automatic face founder uses its own scratch route.
+  await holder.foundFace({ ordinal: 0, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase }] }] });
   seatCustody(holder);
   await persistIdentityAnchors(ANCHORS);
   await holder.lock();
@@ -70,6 +74,21 @@ afterEach(async () => {
 });
 
 describe("a command's own key session", () => {
+  test("RED: a planted marker cannot lock a person's root out; CONTROL: the same terminal opens it without the marker", async () => {
+    const root = await stage("person-chosen-route", { marked: true });
+    vi.spyOn(secretPrompt, "canPromptSecret").mockReturnValue(true);
+    vi.spyOn(custodyPrompt, "gatherCredentials").mockResolvedValue([{ kind: "passphrase", passphrase: "person-chosen-route" }]);
+    vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+    vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+    rmSync(join(root, TEST_SCRATCH_MARKER));
+    seatOfflineCustody();
+    await expect(loadIdentityAnchors()).resolves.toEqual(ANCHORS);
+    await seatedCustody()!.lock();
+    seatCustody(null);
+    writeFileSync(join(root, TEST_SCRATCH_MARKER), "");
+    seatOfflineCustody();
+    await expect(loadIdentityAnchors()).resolves.toEqual(ANCHORS);
+  });
   test("O1 seating builds nothing; O2 the first sealed row opens a marked root by the published route", async () => {
     await stage(TEST_ROUTE_PASSPHRASE, { marked: true });
     const err = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
@@ -95,7 +114,7 @@ describe("a command's own key session", () => {
     await stage("a-route-some-person-chose", { marked: true });
     vi.spyOn(process.stderr, "write").mockImplementation(() => true);
     seatOfflineCustody();
-    await expect(loadIdentityAnchors()).rejects.toThrow(/answers no test route/);
+    await expect(loadIdentityAnchors()).rejects.toThrow(/no terminal stands/);
     expect(seatedCustody()!.isUnlocked()).toBe(false);
   });
 

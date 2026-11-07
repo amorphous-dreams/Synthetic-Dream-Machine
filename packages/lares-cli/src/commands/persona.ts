@@ -401,10 +401,10 @@ async function personaNew(args: ParsedArgs): Promise<number> {
     throw new UsageError("no face stands on this place yet — light it with `lares persona new 0 --name '<label>'` first.");
   }
   // A face that founds INSIDE a standing vessel takes its route over the custody door first (the route rides that frame alone).
-  if (!(index === 0 && faceStands()) && standing.reading === "vessel") await handFaceRouteToVessel(`h${index}`);
+  const faceRouteRef = !(index === 0 && faceStands()) && standing.reading === "vessel" ? await handFaceRouteToVessel(`h${index}`, "persona-new", { handleIndex: index }) : undefined;
   // THE EARLY READING GOES STALE ACROSS THE PROMPT above: the door probes AGAIN, so an unlock or lock started in another
   // shell meanwhile refuses by name instead of parking.
-  const founded = (await storeVerb("persona-new", { handleIndex: index })).output as unknown as FoundFaceResult;
+  const founded = (await storeVerb("persona-new", { handleIndex: index, ...(faceRouteRef ? { faceRouteRef } : {}) })).output as unknown as FoundFaceResult;
 
   // THE SPLIT RUNS IN THIS PROCESS ALONE (the guard above refused it beside a standing vessel): its shares
   // print to the person at this terminal and ride no door. THE PERSON HOLDS BOTH OFF-DEVICE SHARES BEFORE THE

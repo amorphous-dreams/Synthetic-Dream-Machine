@@ -32,13 +32,15 @@ export async function restoreTestCustody(root, { file, as, memory = false, passp
     throw err;
   }
   const { restoreFromBundle } = await import(pathToFileURL(resolve(here, "../packages/lares-cli/dist/src/vault-restore.js")).href);
+  const { faceRouteBindDigest } = await import(pathToFileURL(resolve(here, "../packages/lararium-node/dist/src/face-route.js")).href);
   let silent = false;
   const answer = await restoreFromBundle({
     file: resolve(file), credentials: [{ kind: "passphrase", passphrase }], memory, ...(as !== undefined ? { as } : {}),
     run: async (act, args) => {
       // The restored face takes a route of its own: the test route rides the custody door first, as a terminal's would.
-      if (!memory) await sendCustodyFrame(dir, { op: "face-route", slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }] }] });
-      const a = await sendCustodyFrame(dir, { op: "act", act, args });
+      const route = !memory ? await sendCustodyFrame(dir, { op: "face-route", purpose: "bundle.restore", argsDigest: faceRouteBindDigest("bundle.restore", args), slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }] }] }) : null;
+      if (!memory && typeof route?.ref !== "string") throw new Error("face-route-refused: test route was not parked");
+      const a = await sendCustodyFrame(dir, { op: "act", act, args: { ...args, ...(route ? { faceRouteRef: route.ref } : {}) } });
       if (a === null) { silent = true; return { result: { refused: "daemon-unreachable", message: "no vessel answers at this root's rendezvous name" }, via: "vessel" }; }
       if (a.status === "error") return { result: { refused: a.refusal?.reason ?? "refused", message: a.errorMessage ?? "the vessel refused the act" }, via: "vessel" };
       return { result: a.result ?? {}, via: "vessel" };

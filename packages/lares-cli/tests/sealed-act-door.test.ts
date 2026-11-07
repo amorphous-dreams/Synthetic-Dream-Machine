@@ -31,7 +31,7 @@
  *       the sealed row first, so a re-lit label reads over a name an older vessel left on the plane.
  *                                 control: with the rest `sealed`, the plane's name outranks the device's copy
  *   D8  RED: A SEAT'S KEY NEVER CROSSES THE DOOR. `lares nexus seal seat` beside a standing vessel sends an arming
- *       frame that carries no key and asks whether the read-back stands in; it takes public halves back, mints each
+ *       frame that carries no key; this CLI process holds the harness's explicit read-back seat. It takes public halves back, mints each
  *       chair's cold card in its own process, and opens no key session of its own. No frame carries a card.
  *                                 control: the charter the command wrote seats exactly the halves the door answered
  *   D9  RED: A CARRIED INVITE RIDES NO VERB. `lares walk`, `walk take` and `walk invite` beside a standing vessel
@@ -397,7 +397,6 @@ describe("a command beside a standing vessel", () => {
       key: Buffer.concat([Buffer.from("302e020100300506032b657004220420", "hex"), Buffer.alloc(32, 41 + keys.indexOf(seat))]), format: "der", type: "pkcs8" }))).toString("hex");
     const vessel = await standVessel({ unlocked: true, table: (act, args) => {
       if (act === "seat.arm-genesis") return { kahu: keys.map((verifyingKey, i) => ({ chairLabel: `Chair ${i}`, verifyingKey })), seatedKeys: keys, threshold: 2, superseded: [], minted: keys };
-      if (act === "seat.readback-stand-in") return { standIn: true };
       if (act === "seal.incept") { const { seat, image } = args as { seat: string; image: string }; return { signer: seat, sig: seatSign(seat, image) }; }
       return {};
     } });
@@ -405,11 +404,11 @@ describe("a command beside a standing vessel", () => {
     expect(r.code).toBe(0);
     expect(seatedCustody()?.isUnlocked() ?? false, "the command's own seat stays locked").toBe(false);
     const frames = vessel.frames as Array<{ act: string; args: Record<string, unknown> }>;
-    // The arming, the read-back stand-in, then one inception frame per seat: each carries the seat's public key and
-    // the image alone, after the cards read back.
-    expect(frames.map((f) => f.act)).toEqual(["seat.arm-genesis", "seat.readback-stand-in", "seal.incept", "seal.incept", "seal.incept"]);
-    for (const f of frames.slice(2)) expect(Object.keys(f.args).sort()).toEqual(["image", "seat"]);
-    expect(frames.slice(2).map((f) => f.args["seat"]).sort()).toEqual([...keys].sort());
+    // Read-back answers locally, without a daemon waiver query. After arming, each inception carries the seat's
+    // public key and image alone, after the cards read back.
+    expect(frames.map((f) => f.act)).toEqual(["seat.arm-genesis", "seal.incept", "seal.incept", "seal.incept"]);
+    for (const f of frames.slice(1)) expect(Object.keys(f.args).sort()).toEqual(["image", "seat"]);
+    expect(frames.slice(1).map((f) => f.args["seat"]).sort()).toEqual([...keys].sort());
     expect(frames[0]!.args).toEqual({});                                             // the arming takes no key and no commitment
     const printed = (JSON.parse(r.out.trim().split("\n").at(-1)!) as { data: { cards: Array<{ code: string }> } }).data.cards;
     expect(printed).toHaveLength(3);                                                 // one card per chair, printed by the command

@@ -45,7 +45,7 @@ import { CustodyRowUnavailable, type CustodyHolder, type HolderProof, type Holde
 import { BackupRefused, type FaceBundleCut } from "../src/face-bundle-cut.js";
 import { runSealedAct } from "../src/sealed-acts.js";
 import { mountedFaceOrdinal, setMountedFace } from "../src/node-vessel-identity.js";
-import { FaceRouteAbsent, gatherFaceRoute, parkFaceRoute, seatFaceRoute } from "../src/face-route.js";
+import { faceRouteBindDigest, FaceRouteAbsent, FaceRouteRefused, gatherFaceRoute, seatFaceRoute, withFaceRoute } from "../src/face-route.js";
 
 const RIGHT = "frames-test-passphrase-right";
 
@@ -419,23 +419,57 @@ describe("the custody door's backup frame", () => {
 });
 
 describe("the face-route frame", () => {
-  const ROUTE = { op: "face-route", slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: "face-route-secret" }] }] };
+  const DIGEST = faceRouteBindDigest("persona-new", { handleIndex: 1 });
+  const ROUTE = { op: "face-route", purpose: "persona-new", argsDigest: DIGEST, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: "face-route-secret" }] }] };
 
-  test("R1 — a parked route serves the next founding once; CONTROL: with nothing parked or seated the founding refuses by name", async () => {
-    seatFaceRoute(null); parkFaceRoute(null);
-    await expect(gatherFaceRoute("h1")).rejects.toBeInstanceOf(FaceRouteAbsent);
+  test("a route serves only its intended operation, once", async () => {
+    seatFaceRoute(null);
     const h = harness();
-    expect(await h.send(ROUTE).answer).toEqual({ op: "face-route", parked: true });
-    const slots = await gatherFaceRoute("h1");
-    expect(slots).toEqual(ROUTE.slots);
-    await expect(gatherFaceRoute("h2")).rejects.toBeInstanceOf(FaceRouteAbsent);
+    const answer = await h.send(ROUTE).answer;
+    const ref = (answer as { ref: string }).ref;
+    expect(ref).toMatch(/^[0-9a-f]{64}$/);
+    // Another founding, even at the same label, cannot consume the parked route.
+    await expect(gatherFaceRoute("h1")).rejects.toBeInstanceOf(FaceRouteAbsent);
+    await expect(withFaceRoute(ref, "bundle.restore", DIGEST, () => gatherFaceRoute("h1"))).rejects.toBeInstanceOf(FaceRouteRefused);
+    await expect(withFaceRoute(ref, "persona-new", DIGEST, () => gatherFaceRoute("h1"))).rejects.toBeInstanceOf(FaceRouteRefused);
+    const wrongIndex = (await h.send(ROUTE).answer as { ref: string }).ref;
+    await expect(withFaceRoute(wrongIndex, "persona-new", faceRouteBindDigest("persona-new", { handleIndex: 2 }), () => gatherFaceRoute("h2"))).rejects.toBeInstanceOf(FaceRouteRefused);
+    await expect(withFaceRoute(wrongIndex, "persona-new", DIGEST, () => gatherFaceRoute("h1"))).rejects.toBeInstanceOf(FaceRouteRefused);
+    // CONTROL: a fresh reference reaches its own operation and spends once.
+    const own = (await h.send(ROUTE).answer as { ref: string }).ref;
+    expect(await withFaceRoute(own, "persona-new", DIGEST, () => gatherFaceRoute("h1"))).toEqual(ROUTE.slots);
+    await expect(withFaceRoute(own, "persona-new", DIGEST, () => gatherFaceRoute("h1"))).rejects.toBeInstanceOf(FaceRouteRefused);
+    await expect(withFaceRoute(ref, "persona-new", DIGEST, () => gatherFaceRoute("h1"))).rejects.toBeInstanceOf(FaceRouteRefused);
+  });
+
+  test("a restore binds the same sealed bundle bytes and target at both ends", async () => {
+    seatFaceRoute(null);
+    const h = harness();
+    const body = Buffer.from("a sealed body");
+    const bind = faceRouteBindDigest("bundle.restore", { body: body.toString("base64"), as: 3 });
+    const park = async () => (await h.send({ ...ROUTE, purpose: "bundle.restore", argsDigest: bind }).answer as { ref: string }).ref;
+    const own = await park();
+    expect(await withFaceRoute(own, "bundle.restore", faceRouteBindDigest("bundle.restore", { body, as: 3 }), () => gatherFaceRoute("h3"))).toEqual(ROUTE.slots);
+    for (const args of [{ body: Buffer.from("another bundle"), as: 3 }, { body, as: 4 }]) {
+      const ref = await park();
+      await expect(withFaceRoute(ref, "bundle.restore", faceRouteBindDigest("bundle.restore", args), () => gatherFaceRoute("h3"))).rejects.toBeInstanceOf(FaceRouteRefused);
+      await expect(withFaceRoute(ref, "bundle.restore", bind, () => gatherFaceRoute("h3"))).rejects.toBeInstanceOf(FaceRouteRefused);
+    }
+    await expect(withFaceRoute(own, "bundle.restore", bind, () => gatherFaceRoute("h3"))).rejects.toBeInstanceOf(FaceRouteRefused);
+  });
+
+  test("abandoned routes fall out of bounded storage and refuse by name", async () => {
+    const h = harness();
+    const first = (await h.send(ROUTE).answer as { ref: string }).ref;
+    for (let i = 0; i < 4; i++) await h.send(ROUTE).answer;
+    await expect(withFaceRoute(first, "persona-new", DIGEST, () => gatherFaceRoute("h1"))).rejects.toBeInstanceOf(FaceRouteRefused);
   });
 
   test("R2 — a bad shape, a stray key or a paper pin refuses whole and parks nothing", async () => {
-    seatFaceRoute(null); parkFaceRoute(null);
+    seatFaceRoute(null);
     const h = harness();
     for (const bad of [
-      { op: "face-route" }, { op: "face-route", slots: [] }, { ...ROUTE, credentials: [] },
+      { op: "face-route" }, { op: "face-route", slots: [] }, { ...ROUTE, credentials: [] }, { ...ROUTE, argsDigest: undefined }, { ...ROUTE, argsDigest: "bad" },
       { op: "face-route", slots: [{ t: 1, pins: [{ kind: "paper", sheets: ["a"] }] }] },
       { op: "face-route", slots: [{ t: 0, pins: [{ kind: "passphrase", passphrase: "x" }] }] },
     ]) {
@@ -445,12 +479,11 @@ describe("the face-route frame", () => {
   });
 
   test("R3 — the log names that a route parked and never the route", async () => {
-    seatFaceRoute(null); parkFaceRoute(null);
+    seatFaceRoute(null);
     const h = harness();
     await h.send(ROUTE).answer;
     expect(h.logs.join("\n")).toContain("face-route: parked");
     expect(h.logs.join("\n")).not.toContain("face-route-secret");
-    parkFaceRoute(null);
   });
 });
 

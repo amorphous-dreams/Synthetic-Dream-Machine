@@ -6,6 +6,8 @@
  * with no binary entry and no terminal, so this file names the same when-needed seat with the suites' founding
  * route (`found-route`): at the first sealed row under a root it opens the custody a test founding sealed there,
  * or founds one when the suite reached a sealed row before any founding.
+ * The harness also explicitly seats cold-card read-back here for each test. Refusal controls clear that seat
+ * in their own scope; production loads no test setup and seats no stand-in.
  *
  * ── SCRATCH ROOTS ALONE ─────────────────────────────────────────────────────────────────────────
  * The opener refuses unless all three custody homes (identity, storage, seal) resolve under the operating system's
@@ -17,9 +19,9 @@
 import { mkdirSync, realpathSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, dirname, join, resolve, sep } from "node:path";
-import { beforeEach } from "vitest";
+import { afterEach, beforeEach } from "vitest";
 import {
-  FsCustodyIo, custodyTreeStands, foundCustody, makeCustodyHolder, seatCustodyWhenNeeded, seatWardGatherer, vesselCustodyHomes,
+  FsCustodyIo, custodyTreeStands, foundCustody, makeCustodyHolder, seatCustodyWhenNeeded, seatReadBackStandIn, seatWardGatherer, vesselCustodyHomes,
   type CustodyHolder,
 } from "@lararium/node";
 import { seatFaceAutoFounder } from "@lararium/node/testing";
@@ -85,6 +87,9 @@ async function openScratch(holder: CustodyHolder): Promise<void> {
 }
 
 function arm(): void {
+  // This test harness explicitly answers card read-back in the CLI process. A scratch marker or a custody
+  // passphrase grants no waiver. Refusal controls (D3, R4, readback-process-seat) clear this seat themselves.
+  seatReadBackStandIn(true);
   seatCustodyWhenNeeded(() => {
     const homes = vesselCustodyHomes();
     return makeCustodyHolder({ io: new FsCustodyIo(homes), homes });
@@ -93,3 +98,4 @@ function arm(): void {
 
 arm();
 beforeEach(arm);
+afterEach(() => { seatReadBackStandIn(false); });
