@@ -48,10 +48,14 @@ async function scenario(responsive: boolean) {
   fake.adaptor = {
     caps: {}, receiptRequired: false,
     awaitWikiDispatch: async () => {},
-    stop: async function () {
+    stop: async function (submitted?: () => void) {
       working.set(TITLE, VALUE);
+      const acknowledgement = fake.adaptor.caps.receipt.ack([SLOT]);
+      // Let the capability post its ask before announcing that this fake has submitted its hands.
+      await Promise.resolve();
+      submitted?.();
       try {
-        await fake.adaptor.caps.receipt.ack([SLOT]);
+        await acknowledgement;
         events.push("save-ack");
       } catch { events.push("save-refused"); }
     },
@@ -70,6 +74,10 @@ async function scenario(responsive: boolean) {
           events.push("receipt-issued");
           deliver({ type: "receipt:issued", requestId: message.requestId, issued: true });
         });
+      }
+      if ((message as { type: string }).type === "receipt:asks-done") {
+        events.push("receipt-asks-done");
+        queueMicrotask(() => { events.push("receipt-close"); deliver({ type: "receipt:close" }); });
       }
       if (message.type === "teardown:ack") { events.push("shutdown"); shutdown(); }
     },
@@ -90,11 +98,16 @@ describe("sovereign kernel teardown drains its queued write", () => {
     expect(events).toContain("receipt-issued");
     expect(events.indexOf("receipt-issued")).toBeLessThan(events.indexOf("shutdown"));
     expect(events).toContain("save-ack");
+    expect(events).toContain("receipt-asks-done");
+    expect(events.indexOf("receipt-asks-done")).toBeLessThan(events.indexOf("receipt-close"));
+    expect(events.indexOf("receipt-close")).toBeLessThan(events.indexOf("shutdown"));
     expect(reopen().get(TITLE)).toBe(VALUE);
   });
   test("CONTROL: a quiet vessel lets shutdown finish without acknowledging the unwritten save", async () => {
     const { events, reopen } = await scenario(false);
     expect(events).toContain("receipt-request");
+    expect(events).toContain("receipt-asks-done");
+    expect(events.indexOf("receipt-asks-done")).toBeLessThan(events.indexOf("receipt-close"));
     expect(events).toContain("save-refused");
     expect(events).toContain("shutdown");
     expect(events).not.toContain("save-ack");
@@ -105,8 +118,9 @@ describe("sovereign kernel teardown drains its queued write", () => {
 // Proposed vessel stand-down message: the cure may give this event another wire name, but it must
 // arrive independently of the teardown request so the responsive drain retains its receipt door.
 describe("vessel stand-down releases receipt waits", () => {
-  async function standDown(kind: "unfinished-act" | "parked-ask") {
+  async function standDown(kind: "unfinished-act" | "parked-ask" | "port-close") {
     let deliver!: (message: unknown) => void;
+    let closePort: (() => void) | undefined;
     let ready!: () => void;
     let acked = false;
     let refused = false;
@@ -126,7 +140,7 @@ describe("vessel stand-down releases receipt waits", () => {
     };
     const behavior: IslandBehavior = { onEa: async () => {}, onSignal: () => false, onHooAnu: async () => {} };
     runSovereignKernel(host, behavior, { caps: { receipt: true } });
-    const port = { addEventListener() {} } as unknown as IslandMsg_Manifest["syncPort"];
+    const port = { addEventListener(type: string, listener: () => void) { if (type === "close") closePort = listener; } } as unknown as IslandMsg_Manifest["syncPort"];
     deliver(mkManifest("lar:///test.kernel.drain/wiki", port, { wikiSlug: "daemon" }, { islandUrl: "automerge:oracle", workingUrl: "automerge:working" }, hash, { pluginCids: ["plugin"] }));
     await ea;
     // A clock that never fires: no advance can manufacture the vessel's stand-down.
@@ -135,12 +149,16 @@ describe("vessel stand-down releases receipt waits", () => {
       deliver(mkTeardown());
       for (let i = 0; i < 20; i++) await Promise.resolve();
       expect(acked).toBe(false);
-      deliver({ type: "receipt:close" });
+      if (kind === "port-close") {
+        expect(closePort, "the island observes its sync port closing").toBeDefined();
+        closePort?.();
+      } else deliver({ type: "receipt:close" });
       for (let i = 0; i < 50; i++) await Promise.resolve();
       expect(acked, "stand-down must reach teardown:ack without a timer").toBe(true);
-      if (kind === "parked-ask") expect(refused).toBe(true);
+      if (kind !== "unfinished-act") expect(refused).toBe(true);
     } finally { clock.mockRestore(); }
   }
   test("an act begun without done cannot hold teardown after vessel stand-down", async () => { await standDown("unfinished-act"); });
   test("a parked receipt refuses on vessel stand-down without a clock", async () => { await standDown("parked-ask"); });
+  test("a sync port closing mid-settle refuses the parked receipt without a clock", async () => { await standDown("port-close"); });
 });
