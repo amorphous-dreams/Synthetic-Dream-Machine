@@ -59,6 +59,16 @@ describe("awaitVerbSocket", () => {
     expect(out.outcome).toBe("silent");
     expect(r.now()).toBeLessThan(10_000);
   });
+
+  test("RED: changing retry counters do not renew socket progress", async () => {
+    const r = rig();
+    const out = await awaitVerbSocket({ ...r, silenceMs: 5_000,
+      alive: async () => r.now() >= 10_000,
+      readAttestation: () => Array.from({ length: 1 + Math.floor(r.now() / 500) }, (_, i) => `retry ${i}\n`).join(""),
+    });
+    expect(out.outcome).toBe("silent");
+    expect(r.now()).toBeLessThan(10_000);
+  });
 });
 
 describe("awaitBootPhase", () => {
@@ -90,6 +100,15 @@ describe("awaitBootPhase", () => {
     const r = rig();
     const out = await awaitBootPhase({ ...r, silenceMs: 5_000,
       readAttestation: () => r.now() >= 10_000 ? "vessel-ready" : "replaying\n".repeat(1 + Math.floor(r.now() / 200)),
+    });
+    expect(out).toBe("silent");
+    expect(r.now()).toBeLessThan(10_000);
+  });
+  test("RED: changing retry counters do not renew boot progress", async () => {
+    const r = rig();
+    const out = await awaitBootPhase({ ...r, silenceMs: 5_000,
+      readAttestation: () => r.now() >= 10_000 ? "vessel-ready" :
+        Array.from({ length: 1 + Math.floor(r.now() / 200) }, (_, i) => `retry ${i}\n`).join(""),
     });
     expect(out).toBe("silent");
     expect(r.now()).toBeLessThan(10_000);
