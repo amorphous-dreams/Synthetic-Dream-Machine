@@ -522,6 +522,7 @@
     "tests/working-layer-host-binding-bound.test.ts": 1,
     "tests/working-layer-host-composite.test.ts": 1,
     "tests/working-layer-records-off-disk.test.ts": 1,
+    "tests/worker-handle-exit.test.ts": 1,
     "tests/worldline-trajectory-source.test.ts": 1
   },
   "_node-unit-measured": "CI runs 41280151942, 41277876907 and 41277470751, mean per-file seconds of the node cell's JSON reports (floor 1); a heavy file runs serial, so the deal scales it by HEAVY_FACTOR"

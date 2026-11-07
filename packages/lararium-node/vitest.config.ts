@@ -52,6 +52,8 @@ export const heavy = [
   "tests/vessel-island-pool.test.ts",
   "tests/pool-mount-intensity.test.ts",
   "tests/wiki-switch-remount.test.ts",
+  // stands a nested island over a real worker handle to prove exit ends the parked asks
+  "tests/worker-handle-exit.test.ts",
   "tests/surface-mount-vessel-path.test.ts",
   "tests/surface-mount-real-island.test.ts",
   "tests/verb-tiddler-dispatch.test.ts",
