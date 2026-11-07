@@ -360,7 +360,7 @@ export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
       '--setenv', 'LAR_ROOT', '/scratch/lar-root', '--setenv', 'TMPDIR', '/tmp', '--setenv', 'LC_ALL', 'C',
       ...(runner === 'node'
         ? [node, '--test', '--test-reporter=tap', '--', ...files.map(f => path.posix.join('/work', f))]
-        : [node, '-e', packageTest, build ?? '', packageDir, path.posix.join('/work', vitestPath), ...files.map(f => path.posix.join('/work', f))]),
+        : [node, '-e', packageTest, '--', build ?? '', packageDir, path.posix.join('/work', vitestPath), ...files.map(f => path.posix.join('/work', f))]),
     ];
     const result = await new Promise(resolve => {
       const child = spawn(BWRAP, args, { detached: true, stdio: ['ignore', 'pipe', 'pipe', worktreeHeld.fd, scratchHeld.fd, gitFd] });
@@ -380,7 +380,7 @@ export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
     if (result.error || result.signal || result.code === null || result.overflow) return childRefuse(`test execution failed: ${result.error?.message ?? result.signal ?? 'output overflow'}`);
     if (runner === 'vitest') {
       try { readHeld(scratchHeld, 'build-ok'); }
-      catch { return { ok: false, exitCode: result.code, output: `refused: package build or stamp failed before tests; ${result.output.slice(-8192)}` }; }
+      catch (error) { return { ok: false, exitCode: result.code, output: `refused: package build or stamp failed before tests; ${error.message}; ${result.output.slice(-8192)}` }; }
     }
     let pass, fail, skip, total;
     try {

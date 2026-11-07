@@ -330,7 +330,7 @@ test("RED: the main checkout is the git common dir's parent, from a linked workt
   assert.equal(realReaders(base, linked).repo, realpathSync(main));
 });
 
-test("the pool walks back to the newest rollout carrying a readable rate_limits record", () => {
+test("CONTROL: the pool skips one newest recordless rollout to read its predecessor", () => {
   const home = mkdtempSync(join(tmpdir(), "rollouts-"));
   const dir = join(home, ".codex", "sessions", "2026", "10", "30"); mkdirSync(dir, { recursive: true });
   const old = join(dir, "rollout-old.jsonl"), fresh = join(dir, "rollout-new.jsonl");
@@ -1237,6 +1237,7 @@ test("lead law permits an event wait for its own receipt, bounded for a dead bro
   const law = leadLaw();
   assert.match(law, /own.*res-<id>\.json.*same step/);
   assert.match(law, /event wait.*file.*appear/);
+  assert.match(law, /tools\/wait-receipt\.mjs/);
   assert.match(law, /\/\/ LIVENESS:.*broker.*died/);
   assert.doesNotMatch(law, /read its.*on your next step/);
   assert.match(law, /never poll.*seat/);
@@ -1245,3 +1246,35 @@ test("lead law permits an event wait for its own receipt, bounded for a dead bro
   assert.match(broker, /own.*res-<id>.*same step/);
   assert.match(broker, /event wait.*LIVENESS:.*broker.*died/);
 });
+
+test("RED: the pool refuses two newer recordless rollouts; CONTROL one skip and newest record", () => {
+  const home = mkdtempSync(join(tmpdir(), "pool-bound-"));
+  const dir = join(home, ".codex", "sessions"); mkdirSync(dir, { recursive: true });
+  for (const [name, time, line] of [["old", 1000, rate(40)], ["new", 2000, '{}'], ["newest", 3000, '{}']]) {
+    const file = join(dir, `rollout-${name}.jsonl`); writeFileSync(file, line); utimesSync(file, time, time);
+  }
+  const readers = realReaders(home);
+  assert.throws(() => readers.rolloutLines(), /pool.*more than one.*rollout/i);
+  rmSync(join(dir, 'rollout-newest.jsonl'));
+  assert.equal(readPool(readers.rolloutLines()).used, 40);
+  writeFileSync(join(dir, 'rollout-new.jsonl'), rate(85));
+  assert.equal(readPool(readers.rolloutLines()).used, 85, 'a newest below-floor reading never falls back');
+  rmSync(home, { recursive: true, force: true });
+});
+
+test("RED: receipt event wait reads its own answer and refuses a dead broker within a code bound", async () => {
+  const { waitForReceipt } = await import('./wait-receipt.mjs');
+  const dir = mkdtempSync(join(tmpdir(), 'receipt-wait-'));
+  try {
+    const file = join(dir, 'res-001.json');
+    const pending = waitForReceipt(file, { timeoutMs: 1000 });
+    writeFileSync(file, ''); // Creation can precede a completed broker write.
+    writeFileSync(join(dir, 'res-other.json'), '{}');
+    const timer = setTimeout(() => writeFileSync(file, '{"ok":true}'), 30);
+    try { assert.deepEqual(await pending, { ok: true }); } finally { clearTimeout(timer); }
+    assert.deepEqual(await waitForReceipt(file), { ok: true }, 'CONTROL already arrived');
+    await assert.rejects(waitForReceipt(join(dir, 'res-002.json'), { timeoutMs: 30 }), /receipt-timeout.*broker.*died/);
+    await assert.rejects(waitForReceipt(file, { timeoutMs: Infinity }), /receipt-timeout-bound/);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+

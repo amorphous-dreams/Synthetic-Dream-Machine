@@ -87,8 +87,11 @@ export function openLogHeld(held, name) {
 /** Reads `name` from a held directory without following a symlink. */
 export function readHeld(held, name) {
   let fd;
-  try { fd = openSync(held.at(name), FSC.O_RDONLY | FSC.O_NOFOLLOW); } catch (error) { throw new Error(`${name}: ${error.code === "ELOOP" ? "a symlink stands at this name" : error.code ?? error.message}`); }
-  try { return readFileSync(fd, "utf8"); } finally { closeSync(fd); }
+  try { fd = openSync(held.at(name), FSC.O_RDONLY | FSC.O_NOFOLLOW | FSC.O_NONBLOCK); } catch (error) { throw new Error(`${name}: ${error.code === "ELOOP" ? "a symlink stands at this name" : error.code ?? error.message}`); }
+  try {
+    if (!fstatSync(fd).isFile()) throw new Error(`${name}: not a regular file`);
+    return readFileSync(fd, "utf8");
+  } finally { closeSync(fd); }
 }
 
 /** Makes a subdirectory inside a held one (an existing real directory passes; a symlink or file refuses). */

@@ -65,3 +65,17 @@ test('Vitest door rebuilds and stamps a source edit; a type error refuses before
   assert.equal(broken.ok, false, JSON.stringify(broken)); assert.match(broken.output, /error TS2322/);
   assert.doesNotMatch(broken.output, /Test Files/);
 });
+
+test('RED: a leading-dash build reaches the shell; CONTROL normal build reaches tests', async () => {
+  const x = vitestFixture();
+  const manifest = JSON.parse(readFileSync(path.join(x.pkg, 'package.json'), 'utf8'));
+  manifest.scripts.build = '--version';
+  writeFileSync(path.join(x.pkg, 'package.json'), JSON.stringify(manifest));
+  const dash = await x.run(['one']);
+  assert.equal(dash.ok, false, JSON.stringify(dash));
+  assert.match(dash.output, /Illegal option|invalid option|unrecognized option/i);
+  manifest.scripts.build = 'tsc -p tsconfig.json';
+  writeFileSync(path.join(x.pkg, 'package.json'), JSON.stringify(manifest));
+  const normal = await x.run(['one']);
+  assert.equal(normal.ok, true, JSON.stringify(normal)); assert.equal(normal.pass, 1);
+});
