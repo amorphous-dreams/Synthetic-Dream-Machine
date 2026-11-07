@@ -167,6 +167,8 @@ const main = async () => {
       // proves transport reached the worker boundary and the state must remain untouched.
       const unknownId = `weld-unknown-rid-${Date.now()}`;
       const unknownMark = await traceMark(page);
+      // Listen before dispatch: the worker may refuse the unknown target before evaluate returns.
+      const unknownAnswer = waitForWitness(page, "unknown", unknownMark, unknownId);
       const unknownSent = await page.evaluate((rid) => {
         const pane = document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection");
         if (!pane) return false;
@@ -178,7 +180,7 @@ const main = async () => {
         probe.remove();
         return true;
       }, unknownId);
-      const unknownAnswered = unknownSent && await waitForWitness(page, "unknown", unknownMark, unknownId);
+      const unknownAnswered = await unknownAnswer;
       const unknownTabs = await sidebarTabs(page);
       const unknownChanged = unknownTabs.open?.selected === false || unknownTabs.recent?.selected === true;
       const unknownTrace = await traceSince(page, unknownMark);
@@ -187,7 +189,7 @@ const main = async () => {
       } else if (!traceHas(unknownTrace, { direction: "to-worker", type: "lar:control-event", renderId: unknownId })) {
         bad("W3 unknown-rid-drop", `unknown render id never reached a worker boundary — ${traceTail(unknownTrace)}`);
       } else if (!unknownAnswered || unknownChanged || traceHas(unknownTrace, { direction: "worker-error" })) {
-        bad("W3 unknown-rid-drop", `unknown render id changed the named tab state or raised a worker error — ${traceTail(unknownTrace)}`);
+        bad("W3 unknown-rid-drop", `unknown render id lacked a stale-target refusal, changed the named tab state or raised a worker error — ${traceTail(unknownTrace)}`);
       } else {
         ok("W3 unknown-rid-drop", "unknown render id crossed the host boundary and left Open/Recent unchanged");
       }

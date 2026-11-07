@@ -72,6 +72,13 @@ test('every container staged founding calls the one guarded harness route', () =
   }
 });
 
+test('both held-out Herm cells seat their host reader founding and subsequent ward acts explicitly', () => {
+  const workflow = read('.github/workflows/held-out.yml');
+  const reader = workflow.slice(workflow.indexOf('            herm-mesh|herm-mesh-roll)'), workflow.indexOf('            mesh-scenarios)'));
+  assert.match(reader, /export NODE_OPTIONS="\$\{NODE_OPTIONS:\+\$NODE_OPTIONS \}--import=\$\(node --input-type=module/);
+  assert.ok(reader.indexOf('export NODE_OPTIONS=') < reader.indexOf('reader-found.log'), 'the one host harness preload covers founding and both witnesses');
+});
+
 // Execute the real boot branches with a recorder in place of Node. No daemon or Docker starts.
 for (const face of ['', 'keeper']) {
   for (const [staged, signal] of [[true, true], [true, false], [false, true], [false, false]]) {

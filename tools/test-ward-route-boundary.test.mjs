@@ -23,7 +23,7 @@ test('RED: a storage override outside the marked root seats no test route; CONTR
       return result.stdout.trim();
     };
     assert.equal(run(), 'seated');
-    assert.equal(run({ LAR_STAGE_DIR: root }), 'unseated', 'a staged container without test opt-in seats no scenario ward route');
+    assert.equal(run({ LAR_STAGE_DIR: root }), 'seated', 'an explicit harness import keeps its contract even when a non-container e2e stages its root');
     assert.equal(run({ LAR_STAGE_DIR: root, LARES_TEST_FOUNDING: '1' }), 'seated', 'the compose signal seats later CLI ward acts too');
     assert.equal(run({}, '--storage', join(temp, 'outside')), 'unseated');
   } finally {
