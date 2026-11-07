@@ -1136,7 +1136,7 @@ export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
   // refusal that names no reason, a host door the house never named, each vanishes before any handler.
   if (v.type === "daemon:face-settled") {
     const msg = v as Record<string, unknown>;
-    return typeof msg.atomKey === "string" && (msg.op === "lit" || msg.op === "dropped") && typeof msg.ok === "boolean" && (msg.reason === undefined || typeof msg.reason === "string");
+    return typeof msg.atomKey === "string" && (msg.op === "lit" || msg.op === "dropped" || msg.op === "bags") && typeof msg.ok === "boolean" && (msg.reason === undefined || typeof msg.reason === "string");
   }
   if (v.type === LAR_FRAME) return readLarFrame(v) !== null;
   if (v.type === LAR_CONTROL_RESULT) return readLarControlResult(v) !== null;
