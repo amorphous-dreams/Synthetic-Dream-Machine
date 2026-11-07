@@ -36,7 +36,7 @@ export function runGate(steps, run, say = console.log) {
     say(`── ${s.name}: ${rc === 0 ? "ok" : `RED exit ${rc}`} (${((performance.now() - t0) / 1000).toFixed(1)} s) ──`);
     if (rc !== 0) red.push(`${s.name} (exit ${rc})`);
   }
-  if (red.length) say(`PRE-PUSH GATE REFUSES: ${red.join(", ")}`);
+  if (red.length) say(`PRE-PUSH GATE REFUSES: ${red.join(", ")}\npono: cure that witness's finding, then run the gate again`);
   else say("PRE-PUSH GATE GREEN");
   return { code: red.length ? 1 : 0, red };
 }

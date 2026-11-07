@@ -33,7 +33,7 @@ import { fileURLToPath } from 'node:url';
 const SHELLS = new Set(['bash', 'sh', 'zsh', 'dash', 'ksh']);
 /** Git global options that take their value as the NEXT word when written bare. */
 const TAKES_VALUE = new Set(['-C', '-c', '--git-dir', '--work-tree', '--namespace', '--super-prefix', '--config-env', '--exec-path', '--list-cmds']);
-export const REASON = "stash-guard: refused — never `git stash` in any form, `stash list` included (lane law): the stash stack spans every worktree and session over this repository. Read the tree with git status, diff or log instead.";
+export const REASON = "stash-guard: refused — never `git stash` in any form, `stash list` included (lane law): the stash stack spans every worktree and session over this repository.\npono: read the tree with git status, git diff or git log";
 
 class Unreadable extends Error {}
 
