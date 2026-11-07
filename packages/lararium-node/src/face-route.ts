@@ -6,6 +6,8 @@
  * gathers the slots here. A CLI seats a terminal prompt; a test seats a fixed passphrase. With nothing seated the act
  * refuses by name and founds nothing, so no face ever rests under a route nobody gave.
  */
+import { AsyncLocalStorage } from "node:async_hooks";
+import { createHash, randomBytes } from "node:crypto";
 import { assertFoundingRoute } from "./custody-session.js";
 import type { SlotSpec } from "@lararium/mesh";
 import { bindFaceAskCustody, bindFaceCustody, faceStandingCustody, foundFaceCustody, retireFaceAskCustody } from "./custody-seat.js";
@@ -20,9 +22,43 @@ let gatherer: FaceRouteGatherer | null = null;
 export function faceRouteSeated(): boolean { return gatherer !== null; }
 export function seatFaceRoute(gather: FaceRouteGatherer | null): void { gatherer = gather; }
 
-let parked: readonly SlotSpec[] | null = null;
-/** Park the route the next face founding takes (one use): a CLI hands it over the custody door before a face founds inside a standing vessel. */
-export function parkFaceRoute(slots: readonly SlotSpec[] | null): void { parked = slots; }
+type RoutePurpose = "persona-new" | "bundle.restore";
+/** Bind the public identifying arguments; never hash a human route or a bundle key into this name. */
+export function faceRouteBindDigest(purpose: RoutePurpose, args: Readonly<Record<string, unknown>>): string {
+  // Both restore callers know the sealed body only inside their run callback. Canonicalize its bytes here,
+  // so the wire's base64 and the sealed act's decoded bytes bind the same bundle, including card restores.
+  // With no explicit `as`, only the receiving store can choose the next free index. For that unknown index,
+  // purpose + one-use + an unguessable ref stand; the known bundle bytes still bind at both ends.
+  const body = args["body"];
+  const bundle = purpose === "bundle.restore"
+    ? createHash("sha256").update(typeof body === "string" ? Buffer.from(body, "base64") : body as Uint8Array).digest("hex") : null;
+  return createHash("sha256").update(JSON.stringify(purpose === "persona-new"
+    ? { purpose, handleIndex: args["handleIndex"] ?? 0 }
+    : { purpose, bundle, as: args["as"] ?? null })).digest("hex");
+}
+const parked = new Map<string, { slots: readonly SlotSpec[]; purpose: RoutePurpose; digest: string }>();
+const operationRoute = new AsyncLocalStorage<{ slots: readonly SlotSpec[] | null }>();
+/** Park at most four abandoned routes, each behind a fresh one-use capability. */
+export function parkFaceRoute(slots: readonly SlotSpec[], purpose: RoutePurpose, digest: string): string {
+  const ref = randomBytes(32).toString("hex");
+  parked.set(ref, { slots, purpose, digest });
+  while (parked.size > 4) parked.delete(parked.keys().next().value!);
+  return ref;
+}
+export class FaceRouteRefused extends Error {
+  override readonly name = "FaceRouteRefused";
+  constructor() { super("face-route-refused: route reference absent, expired, spent, or for another operation or identifying arguments"); }
+}
+/** Spend the capability before the operation begins; async context isolates concurrent operations. */
+export async function withFaceRoute<T>(ref: string | undefined, purpose: RoutePurpose, digest: string, act: () => Promise<T>): Promise<T> {
+  if (ref === undefined) return act();
+  const entry = parked.get(ref);
+  parked.delete(ref); // Every presentation spends it, including a purpose or argument mismatch.
+  if (!entry || entry.purpose !== purpose || entry.digest !== digest) throw new FaceRouteRefused();
+  const scope = { slots: entry.slots as readonly SlotSpec[] | null };
+  try { return await operationRoute.run(scope, act); }
+  finally { scope.slots = null; }
+}
 
 export class FaceRouteAbsent extends Error {
   override readonly name = "FaceRouteAbsent";
@@ -35,8 +71,9 @@ export class FaceRouteAbsent extends Error {
 export type OnFaceRoute = (slots: readonly SlotSpec[]) => void;
 
 export async function gatherFaceRoute(label: string): Promise<readonly SlotSpec[]> {
-  const handed = parked;
-  parked = null;
+  const scoped = operationRoute.getStore();
+  const handed = scoped?.slots ?? null;
+  if (scoped) scoped.slots = null;
   if (!handed && !gatherer) throw new FaceRouteAbsent(label);
   const slots = handed ?? await gatherer!({ label });
   assertFoundingRoute(slots);

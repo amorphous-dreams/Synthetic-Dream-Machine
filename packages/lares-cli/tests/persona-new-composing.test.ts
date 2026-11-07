@@ -72,14 +72,14 @@ describe("a vessel that recomposes", () => {
     await listen((sock, line) => {
       const frame = JSON.parse(line) as { op?: string };
       if (frame.op === "custody") sock.write(JSON.stringify({ op: "custody", unlocked: true, composing: !ready, slot: "s", attemptsLeft: 3, standing: "herm" }) + "\n", () => sock.end());
-      else if (frame.op === "face-route") { ready = false; sock.write(JSON.stringify({ op: "face-route", parked: true }) + "\n", () => sock.end()); }
+      else if (frame.op === "face-route") { ready = false; sock.write(JSON.stringify({ op: "face-route", ref: "a".repeat(64) }) + "\n", () => sock.end()); }
       else verbLines += 1;
     });
     const route = await import("../src/face-route-prompt.js");
-    const handed = vi.spyOn(route, "handFaceRouteToVessel").mockImplementation(async () => { ready = false; });
+    const handed = vi.spyOn(route, "handFaceRouteToVessel").mockImplementation(async () => { ready = false; return "ref"; });
     const out = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
     const code = await cmdPersona({ command: "persona", positional: ["new", "0"], options: { name: "x" }, flags: { json: true } });
-    expect(handed).toHaveBeenCalled();                       // the early reading read ready, so the prompt ran
+    expect(handed).toHaveBeenCalledWith("h0", "persona-new", { handleIndex: 0 });                       // the early reading read ready, so the prompt ran
     expect(code).toBe(1);
     expect(out.mock.calls.map((c) => String(c[0])).join("")).toContain("vessel-composing");
     expect(verbLines).toBe(0);

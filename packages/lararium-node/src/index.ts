@@ -517,7 +517,7 @@ export { wardRootSigner } from "./ward-signer.js";
 export { faceDir, faceFileNames, faceFilePathSync, listFaceFiles, readFaceIndexSync } from "./face-index.js";
 export { bindFaceSlot, unbindFaceSlot, FaceTreeUnreadable } from "./face-slot-ops.js";
 export { openFaceTree } from "./face-custody.js";
-export { faceRouteSeated, seatFaceRoute, parkFaceRoute, gatherFaceRoute, ensureFaceCustodyOfGroup, ensureFaceCustodyOfAsk, FaceRouteAbsent } from "./face-route.js";
+export { faceRouteSeated, seatFaceRoute, faceRouteBindDigest, parkFaceRoute, gatherFaceRoute, ensureFaceCustodyOfGroup, ensureFaceCustodyOfAsk, FaceRouteAbsent } from "./face-route.js";
 export type { FaceRouteGatherer } from "./face-route.js";
 export type { CustodyHolder, HolderUnlock, RowReading } from "./custody-holder.js";
 export { custodyFrameHandler, isCustodyFrame } from "./custody-frames.js";

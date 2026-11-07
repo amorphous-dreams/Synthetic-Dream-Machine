@@ -20,7 +20,7 @@ import { cmdPersona } from "../src/commands/persona.js";
 import { setFoundingBundleRoute } from "../src/commands/found.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 import { larSealHome } from "../src/env.js";
-import { listPersonaRoots, readNexusDoc } from "@lararium/node";
+import { listPersonaRoots, readNexusDoc, seatReadBackStandIn } from "@lararium/node";
 import { NEXUS_AID_PATTERN, bindBundleRoutes, encodeFaceBundle, mintBundleKey, nexusAidOf, sealFaceBundleBody } from "@lararium/mesh";
 import { nativeKdf } from "@lararium/mesh/node";
 
@@ -36,6 +36,7 @@ describe("lares vessel found --hearth", () => {
   let prior: string | undefined;
   let wire: string[];
   beforeEach(() => {
+    seatReadBackStandIn(true); // Explicit harness authority for the positive founding/read-back controls.
     root = mkdtempSync(join(tmpdir(), "lares-found-hearth-door-"));
     prior = process.env["LAR_ROOT"];
     process.env["LAR_ROOT"] = root;
@@ -46,6 +47,7 @@ describe("lares vessel found --hearth", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
   afterEach(() => {
+    seatReadBackStandIn(false);
     vi.restoreAllMocks();
     if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;
     rmSync(root, { recursive: true, force: true });
@@ -73,6 +75,7 @@ describe("lares vessel found --hearth", () => {
   });
 
   test("D3 — off a staged root a JSON run refuses the card, seats no charter and founds no face", async () => {
+    seatReadBackStandIn(false);
     const errors: string[] = [];
     vi.mocked(console.error).mockImplementation((line: unknown) => { errors.push(String(line)); });
     expect(await cmdVessel(found({ name: "keeper" }, { hearth: true }))).not.toBe(0);
