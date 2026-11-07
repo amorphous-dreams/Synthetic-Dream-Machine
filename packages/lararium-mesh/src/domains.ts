@@ -63,6 +63,8 @@ export const DEVICE_DELEGATION_DOMAIN = mint("device-delegation");
 export const DEVICE_ATOM_COUNTERSIGN_DOMAIN = mint("device-atom-countersign");
 /** A face atom admits one tab to a holder by signing its fresh, port-bound challenge. */
 export const HOLDER_SESSION_DOMAIN = mint("holder-session");
+/** A founder signs the record granting a joinee a seat on the PersonaGroup plane. */
+export const FACE_GRANT_DOMAIN = mint("face-join-grant");
 /** The key and context a ceremony checkpoint seals under: the atom's seed through HKDF, so a re-entered founding or
  *  admit lands the end state it first reached. Apart from every other child of the atom seed. */
 export const FACE_CHECKPOINT_INFO = mint("face-checkpoint");

@@ -112,8 +112,6 @@ COMMENT = re.compile(r"^\s*(?:\*|/\*|//|#)")
 # The known strays: (path, literal prefix) → the act that registers it. Each signs live material under
 # its present spelling, so moving it re-keys that material — the re-found's work, not a lint fix.
 ALLOW = {
-    ("packages/lararium-keyhive/src/face-grant-record.ts",    "lares/face-join-grant/v1"):
-        "the face-join grant record's signing domain registers with the re-found",
     ("packages/lararium-mesh/src/cabal-realm-clock.ts",        "lar/realm-feed"):
         "the realm-roll seal's domain registers with the re-found",
     ("packages/lararium-mesh/src/wax-stamp.ts",                "lar-wax-stamp/v1|"):
