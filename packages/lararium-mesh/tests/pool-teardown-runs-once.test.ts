@@ -10,7 +10,7 @@
  */
 import { describe, test, expect } from "vitest";
 import { VesselIslandPoolCore } from "../src/vessel-island-pool-core.js";
-import { isVesselToIslandMsg, mkEa, mkTeardownAck } from "../src/island-protocol.js";
+import { isVesselToIslandMsg, mkEa, mkFault, mkTeardownAck } from "../src/island-protocol.js";
 import type { VesselIslandHost, VesselWorkerHandle } from "../src/vessel-host.js";
 import type { WikiMountSpec } from "../src/wiki-recipe.js";
 
@@ -44,10 +44,23 @@ function scriptedHost() {
     teardowns: () => teardowns,
     terminations: () => terminations,
     ack: () => { for (const l of [...listeners]) l(mkTeardownAck()); },
+    fault: () => { for (const l of [...listeners]) l(mkFault(WIKI_ID, "teardown-fault: the adaptor would not stop")); },
   };
 }
 
 describe("a wiki island's teardown handshake runs once", () => {
+  test("RED (clock-sweep): an island whose teardown answers a fault ends the handshake at once, unacked, never at its bound", async () => {
+    const island = scriptedHost();
+    const pool = new VesselIslandPoolCore({ host: island.host, resolvePluginCids: NO_OFFERINGS });
+    await pool.mountWiki(WIKI_ID, spec());
+    const unmount = pool.unmountWiki(WIKI_ID);
+    for (let turn = 0; turn < 8; turn++) await Promise.resolve();
+    expect(island.teardowns()).toBe(1);
+    island.fault();
+    expect(await unmount).toEqual({ wikiId: WIKI_ID, acked: false });
+    expect(island.terminations()).toBe(1);
+  }, 3_000);
+
   test("two unmounts in flight share one handshake: one teardown, one termination, one answer", async () => {
     const island = scriptedHost();
     const pool = new VesselIslandPoolCore({ host: island.host, resolvePluginCids: NO_OFFERINGS });

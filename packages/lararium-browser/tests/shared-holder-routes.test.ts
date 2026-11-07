@@ -11,7 +11,7 @@ const islandKinds = [
   "daemon:residency-op", "daemon:wiki-alert", "gate:clear", "gate:refused", "cas:want", "dyad:ask", "receipt:request", "rest:ask", "custody:write", "session:sign",
   "view:catalog", "view:content", "view:settle", "lar:frame", "lar:control-result", "lar:service",
   "port:snapshot", "port:changes", "port:reset", "port:written", "port:answer", "port:presence",
-  "docstore:sealed", "docstore:opened", "docstore:live", "docstore:slot",
+  "docstore:sealed", "docstore:opened", "docstore:live", "docstore:slot", "docstore:answering", "docstore:silent",
 ] as const satisfies readonly IslandToVesselMsg["type"][];
 
 function harness(grant = false) {

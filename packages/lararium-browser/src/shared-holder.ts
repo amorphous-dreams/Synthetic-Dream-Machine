@@ -111,6 +111,7 @@ export async function attachSharedHolder(args: {
     args.signal?.addEventListener("abort", floor, { once: true });
     if (args.signal?.aborted) floor();
     // A re-check, never a choice: a worker that is slow to greet is NAMED in the console while the house keeps waiting for it.
+    // PACING: warning only; greeting, error or abort ends the wait.
     const recheck = setTimeout(() => console.warn(`[shared-holder] the holder for house "${args.houseName}" has not greeted yet; still waiting on its own greeting or error`), 5_000);
     const clear = (): void => clearTimeout(recheck);
     port.addEventListener("message", function once(e: MessageEvent) {

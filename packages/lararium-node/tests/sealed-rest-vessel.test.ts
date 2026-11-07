@@ -74,7 +74,7 @@ async function stand() {
   const caps: CapabilityRecord = { sessionSign: book.door(() => own, async () => ({ read: true, counted: [], unanswered: [] })) };
   const sign = new MessageChannel();
   answerIslandAsks(portOf(sign.port1), caps);
-  const sessionProof = islandSessionDoor(portOf(sign.port2), { patienceMs: 5_000, idPrefix: "rest-vessel" });
+  const sessionProof = islandSessionDoor(portOf(sign.port2), { idPrefix: "rest-vessel" });
   // THE DOCUMENT STORE'S DOOR: the island answers it beside its holder.
   const door = new MessageChannel();
   const vesselSide = portOf(door.port1);
@@ -94,7 +94,7 @@ async function stand() {
     inner, bagOf: () => ({ bagId: BAG, face: subject }), sessionFace: () => subject,
     door: vesselDocStoreDoor<Session>(() => vesselSide, {
       book: (ask, verb, s) => book.hold(ask, verb, { signer: s.signer, anchor: { kind: "nexus" }, subject: s.subject }),
-      patienceMs: 30_000, idPrefix: "rest-vessel-door",
+      idPrefix: "rest-vessel-door",
     }),
     flushRepo: async () => { await repo?.flush(); },
   });

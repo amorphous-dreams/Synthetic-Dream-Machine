@@ -16,7 +16,7 @@ function wire() {
 async function islandAskers() {
   const module = await import("../src/sovereign-island-model.js").catch(() => null) as {
     portTransit?: (port: ReturnType<typeof wire>["port"]) => { fetchBlock(cid: string): Promise<Uint8Array | null> };
-    vesselReceiptAsker?: (port: ReturnType<typeof wire>["port"], patienceMs: number, gateClear: Promise<void>) => (ids: readonly string[]) => Promise<void>;
+    vesselReceiptAsker?: (port: ReturnType<typeof wire>["port"], gateClear: Promise<void>) => (ids: readonly string[]) => Promise<void>;
   } | null;
   expect(module?.portTransit, "the island exports its checked cas asker for a reply witness").toBeTypeOf("function");
   expect(module?.vesselReceiptAsker, "the island exports its receipt asker for a reply witness").toBeTypeOf("function");
@@ -47,7 +47,7 @@ describe("the sovereign island's reply integrity", () => {
     const w = wire();
     let clear!: () => void;
     const gateClear = new Promise<void>((resolve) => { clear = resolve; });
-    const receipt = vesselReceiptAsker!(w.port, 1_000, gateClear);
+    const receipt = vesselReceiptAsker!(w.port, gateClear);
     let durable = false;
     const pending = receipt(["doc-a"]).then(() => { durable = true; });
     const first = w.posted.at(-1)!;
@@ -68,7 +68,7 @@ describe("the sovereign island's reply integrity", () => {
   test("an issued receipt without the document named in its storage proof refuses", async () => {
     const { vesselReceiptAsker } = await islandAskers();
     const w = wire();
-    const receipt = vesselReceiptAsker!(w.port, 1_000, Promise.resolve());
+    const receipt = vesselReceiptAsker!(w.port, Promise.resolve());
     const pending = receipt(["doc-a"]);
     await expect.poll(() => w.posted.filter((message) => message.type === "receipt:request").length).toBe(2);
     const second = w.posted.at(-1)!;

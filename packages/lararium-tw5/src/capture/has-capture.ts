@@ -107,6 +107,7 @@ export function hasCapture(opts: CaptureCapOptions): IslandCap {
       // `performance.now()`, matching the engine's own default clock (`makeCaptureEngine`): an
       // adversarial or operator wall-clock jump can neither stall a flush forever (set-back)
       // nor flush early / collapse the backoff instantly (set-forward).
+      // PACING: ticks pace local flush and retry work; the engine decides when work is due.
       timer = setInterval(() => {
         e.tick(performance.now()).catch((err: unknown) => {
           console.warn(`[has-capture] tick flush failed — WAL/backoff will retry: ${err instanceof Error ? err.message : String(err)}`);

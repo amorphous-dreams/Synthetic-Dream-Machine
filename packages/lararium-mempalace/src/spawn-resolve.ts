@@ -48,6 +48,7 @@ export function laresVenvPython(): string {
 function holdsMempalace(python: string, submoduleRoot: string): boolean {
   try {
     const r = spawnSync(python, ["-c", "import mempalace"], {
+      // LIVENESS: the external interpreter can hang without reporting an exit.
       timeout: 20_000,
       stdio: "ignore",
       env: { ...process.env, PYTHONPATH: submoduleRoot },

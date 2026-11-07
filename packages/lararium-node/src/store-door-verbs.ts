@@ -55,9 +55,7 @@
  *
  * THE HOOK MAY RUN LONG, SO EVERY ROW AWAITS IT UNDER A BUDGET. `onRolled` now answers synchronously OR through
  * a promise — the refold itself still runs exactly once (`open-node-vessel.ts` serializes it), but a row that
- * fires it waits only up to `ON_ROLLED_BUDGET_MS` for a truthful answer. Past the budget the refold keeps
- * running in the background (never cancelled, never thrown into the row), and the row reports it `"pending"`
- * instead of guessing. A row that reads a boolean off this return, never off whether the hook merely EXISTS,
+ * fires it waits for the hook's own settle (no clock answers for it; the caller's socket wait bounds a wedged refold). A row that reads a boolean off this return, never off whether the hook merely EXISTS,
  * can never claim a live re-presentation it has no evidence for.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
@@ -146,8 +144,7 @@ export interface StoreDoorDeps {
    *
    * A caller MAY resolve `true` to claim it re-presented this write live, synchronously or through a promise.
    * Any other settlement (`false`, plain `void`, or a promise that resolves either) claims NOTHING about the
-   * outcome. Every row that fires this awaits it through `awaitOnRolled` (below), which bounds the wait by
-   * `ON_ROLLED_BUDGET_MS` and never lets a slow or rejected refold throw through the row that triggered it.
+   * outcome. Every row that fires this awaits it through `awaitOnRolled` (below), which waits for the hook's own settle and never lets a slow or rejected refold throw through the row that triggered it.
    */
   /** `ward`: the route of the act that rolled (a take's), carried to the re-present it asks for, as an argument (seat-harness#/the-ward). */
   readonly onRolled?:  (nexusAid?: string, ward?: WardCredential) => boolean | void | Promise<boolean | void>;
@@ -166,29 +163,15 @@ export interface StoreDoorDeps {
   readonly swarmWiki?: SwarmWikiPort;
 }
 
-/** How long a row waits for `onRolled`'s own truthful answer before reporting the refold `"pending"`. The
- *  refold itself is NEVER cancelled past this — only the row's own answer stops waiting on it. */
-export const ON_ROLLED_BUDGET_MS = Number(process.env["LAR_ON_ROLLED_BUDGET_MS"] ?? 3_000);
-
 /**
- * Await `onRolled`'s return under `ON_ROLLED_BUDGET_MS`. A sync return (or no hook at all) settles at once;
- * a promise that resolves `true` within the budget reads `true`; anything else that resolves within the
- * budget (including a throw) reads `false`; a promise still unsettled past the budget reads `"pending"` — the
- * hook keeps running, this call simply stops waiting on it and never lets its eventual rejection surface here.
+ * Await `onRolled`'s return to its OWN settle. A sync return (or no hook at all) settles at once; a promise that
+ * resolves `true` reads `true`; anything else (a resolve of any other value, or a throw) reads `false`. No timer answers
+ * for the hook: the refold ends on its serialized queue's settle, and a refold wedged alive leaves the caller's own
+ * socket wait to bound the verb. A late rejection never surfaces here.
  */
-export async function awaitOnRolled(call: boolean | void | Promise<boolean | void>): Promise<boolean | "pending"> {
+export async function awaitOnRolled(call: boolean | void | Promise<boolean | void>): Promise<boolean> {
   if (!(call instanceof Promise)) return call === true;
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  const pending = new Promise<"pending">((resolve) => { timer = setTimeout(() => resolve("pending"), ON_ROLLED_BUDGET_MS); });
-  try {
-    const settled = await Promise.race([call.then((v) => v === true).catch(() => false), pending]);
-    return settled;
-  } finally {
-    clearTimeout(timer);
-    // The refold keeps running even once we stop waiting on it; a late rejection must never become an
-    // unhandled rejection just because this call lost interest in its answer.
-    call.catch(() => { /* already reported, or never asked for — either way, swallowed here */ });
-  }
+  return call.then((v) => v === true).catch(() => false);
 }
 
 /** The door's rows, by name — each command's routed call names exactly one of these. */
@@ -562,9 +545,8 @@ function storeDoorRowsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       const r = await takeAdmitBundle({ sealHome, raw });
       // RE-PRESENT through the live hook when a vessel stands over this row; `storeDoorDirect` supplies none,
       // so a bundle taken with no vessel standing simply waits for the next boot's dial to present it.
-      // `represented` reads `awaitOnRolled`'s OWN bounded claim, never merely whether a vessel stands to call
-      // it: a vessel standing proves this row COULD try to re-present, not that it DID. Past the budget the
-      // refold keeps running unseen, and this reads `"pending"` rather than guessing either way.
+      // `represented` reads `awaitOnRolled`'s OWN claim, never merely whether a vessel stands to call
+      // it: a vessel standing proves this row COULD try to re-present, not that it DID.
       // A ROUTE THE WARD REFUSED answers by name (`reason`, e.g. `ward-dial-in-flight`), still failing closed: the bundle
       // stays kept, `represented` reads false, and the take never rides a wardless dial.
       let reason: string | undefined;

@@ -141,6 +141,7 @@ export async function probeDocLoad(
     let settled = false;
     const finish = (r: ProbeResult) => { if (!settled) { settled = true; resolve(r); } };
 
+    // LIVENESS: the load child can hang on slow storage without emitting an exit.
     const timer = setTimeout(() => {
       child.kill("SIGKILL");
       // This door's OWN patience ran out — liveness, never a verdict on the doc. Quarantine
@@ -220,6 +221,7 @@ function runCleanTailChild(storageDir: string, documentId: string, timeoutMs: nu
     let out = "";
     let settled = false;
     const finish = (r: CleanTailOutcome) => { if (!settled) { settled = true; resolve(r); } };
+    // LIVENESS: the clean-tail child can hang without emitting an exit.
     const timer = setTimeout(() => { child.kill("SIGKILL"); finish({ kind: "unresolved" }); }, timeoutMs);
     timer.unref?.();
     child.stdout.on("data", (d) => { out += d.toString(); });

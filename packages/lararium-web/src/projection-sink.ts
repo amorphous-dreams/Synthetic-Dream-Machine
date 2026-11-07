@@ -706,6 +706,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     composingFields.delete(src);
     compositionEndValue.set(src, (src as LiveControl).value);
     holdKeysAfterComposition = true;
+    // PACING: the next task releases the temporary key hold after composition ends.
     setTimeout(() => { holdKeysAfterComposition = false; }, 0);
     relayWholeValue(event, "sense", true);
   });
@@ -1117,6 +1118,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
       a.href = url;
       a.download = String(args["filename"] ?? "download.txt");
       a.click();
+      // PACING: defer URL cleanup to the next task so the download can start.
       setTimeout(() => URL.revokeObjectURL(url), 0);
     },
     print: () => { window.print(); },
@@ -1130,8 +1132,13 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     },
   };
   const doorFor = (kind: LarServiceKind): LarHostDoor | undefined => opts.doors?.[kind] ?? pageDoors[kind];
+  // LIVENESS: this window bounds how long an unspent act licenses a door. The token already spends once (one act opens one
+  // door) and a later act replaces it, but an act that no ask ever claims has no event that ends it
+  // (a cause outlives its click): only age separates the person's click from an unprompted island ask. It mirrors the browser's own transient
+  // activation, which gates the same doors (fullscreen, open, clipboard) on its own clock.
   const activeAct = (surface: string): boolean =>
     (navigator as Navigator & { userActivation?: { isActive: boolean } }).userActivation?.isActive === true
+    // LIVENESS: the act's freshness window, as above.
     || (activation !== null && activation.surface === surface && performance.now() - activation.at <= ACTIVATION_MS);
   /** Answer one ask on the document leg of the surface that asked, under the epoch the page holds for it. */
   const answerService = (ask: LarSurfaceService, status: "ok" | LarRefusal): void => {

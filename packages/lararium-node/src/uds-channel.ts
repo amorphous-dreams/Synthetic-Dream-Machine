@@ -839,6 +839,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         adaptive: adaptiveTimeoutMs(verb),
         floor: timeoutMs,
       });
+      // LIVENESS: a dispatched act may never return; its eventual outcome remains available to read.
       const timer = setTimeout(() => settle(() => reject(new VesselWaitExpired(verb, requestId, budget))), budget);
       const cleanup = () => { daemonHandle.off("change", onChange); unsubscribe(); clearTimeout(timer); };
       check(); // the outcome may already exist (idempotent re-submission)

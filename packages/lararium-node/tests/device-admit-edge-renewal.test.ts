@@ -107,8 +107,7 @@ let joinee: string;
 let daemonDoc: { tiddlers: Record<string, { text?: string }> };
 
 const repo = () => ({
-  findWithProgress: () => ({ whenReady: async () => ({ doc: () => daemonDoc }) }),
-  find: async (url: string) => planes.find(url as never),
+  find: async (url: string) => (url === "automerge:daemon" ? { url, doc: () => daemonDoc } : planes.find(url as never)),
   flush: async () => {},
 }) as never;
 const request = (nonce: string) => new TextEncoder().encode(JSON.stringify({ atomKey: joinee, nonce }));

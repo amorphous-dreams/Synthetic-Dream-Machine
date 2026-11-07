@@ -563,6 +563,7 @@ export function installCasSweep(opts: InstallCasSweepOptions): CasSweepInstalled
       opts.log(`[cas-sweep] tick faulted: ${(err as Error)?.message ?? err}`);
     } finally { inFlight = false; }
   };
+  // PACING: probes check the realm clock; its roll decides when a sweep runs.
   const timer = setInterval(() => { void probe(); }, probeMs);
   timer.unref?.();
   return { sweep, probeMs, stop: () => { stopped = true; clearInterval(timer); } };

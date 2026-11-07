@@ -68,6 +68,7 @@ export type VesselStanding =
 export function vesselStanding(dataDir?: string | null, waitMs = 5_000): Promise<VesselStanding> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const abort = new AbortController();
+  // LIVENESS: a socket holder may accept the frame and remain silent; the result records silence.
   const silent = new Promise<VesselStanding>((resolve) => { timer = setTimeout(() => { abort.abort(); resolve({ reading: "silent" }); }, waitMs); });
   const asked = sendCustodyFrame({ op: "custody" }, dataDir, abort.signal).then((a): VesselStanding =>
     (a !== null && a["op"] === "custody" ? { reading: "vessel", unlocked: a["unlocked"] === true, composing: a["composing"] === true } : { reading: "none" }));

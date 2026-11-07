@@ -15,11 +15,11 @@
       "sessionSign": "refused"
     },
     "node session": {
-      "cas": "silent",
-      "receipt": "silent",
-      "custodyWrite": "silent",
-      "dyad": "silent",
-      "sessionSign": "silent"
+      "cas": "refused",
+      "receipt": "refused",
+      "custodyWrite": "refused",
+      "dyad": "refused",
+      "sessionSign": "refused"
     },
     "web wiki": {
       "cas": "silent",
@@ -204,6 +204,8 @@
     "packages/lararium-node/src/worker-handle.ts: \"dyad:ask\"",
     "packages/lararium-node/src/worker-handle.ts: \"custody:write\"",
     "packages/lararium-node/src/worker-handle.ts: \"session:sign\"",
+    "packages/lararium-node/src/worker-handle.ts: \"cas:want\"",
+    "packages/lararium-node/src/worker-handle.ts: \"cas:block\"",
     "packages/lararium-node/src/worker-handle.ts: \"custody:write\"",
     "packages/lararium-node/src/worker-handle.ts: \"custody:written\"",
     "packages/lararium-node/src/worker-handle.ts: \"receipt:request\"",

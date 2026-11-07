@@ -186,6 +186,7 @@ export function timerGateDeadlines(opts: {
     throw new RangeError(`face-gate-server: the deadline's base names a whole number of milliseconds from one to ${GATE_DEADLINE_MAX_BASE_MS}`);
   }
   const random = opts.random ?? randomInt;
+  // LIVENESS: an outside peer can leave an upgrade unanswered indefinitely.
   const setTimer = opts.setTimer ?? ((lapse: () => void, ms: number) => setTimeout(lapse, ms));
   const clearTimer = opts.clearTimer ?? ((timer: unknown) => clearTimeout(timer as ReturnType<typeof setTimeout>));
   return {
@@ -368,6 +369,7 @@ export function faceGateServer<Outcome extends GateOutcome | IntentRelayOutcome 
   const follow = (ws: WebSocket): void => {
     answered.set(ws, true);
     ws.on("pong", () => { answered.set(ws, true); });
+    // LIVENESS: a silent peer may never close; missed pongs expose that silence.
     if (beat === null) { beat = setInterval(beatOnce, heartbeatMs); beat.unref?.(); }
   };
   // Upgrades claimed and not yet handed a socket: they count against the bound too.

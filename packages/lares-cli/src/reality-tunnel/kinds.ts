@@ -258,6 +258,7 @@ export const tomlHookForeign = (event: string, base: string) => (cur: string | n
 };
 
 /** Codex's `[[hooks.<event>]]`: one block carries the house's hook for `script`, at the resolved path. */
+// LIVENESS: the external harness ends a hung hook at this bound; a hung hook cannot signal that it will never finish.
 export const tomlHook = (event: string, base: string, script: string, timeout: number): Transform => (cur) => {
   const text = cur ?? "";
   if (tomlShapeForeign("hooks", "table")(cur)) return cur;

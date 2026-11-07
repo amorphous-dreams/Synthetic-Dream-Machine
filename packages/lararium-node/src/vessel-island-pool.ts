@@ -84,10 +84,8 @@ export interface VesselIslandPoolOptions {
   mountSilenceMs?: number;
   /** Override the mount progress-stall budget in ms (default 3x silence). */
   mountStallMs?: number;
-  /** Mount failures tolerated per wiki inside the window before the cap trips. */
+  /** Mount failures tolerated per wiki in a row before the cap trips. */
   maxMountFailures?: number;
-  /** The intensity window in ms (OTP MaxR/MaxT discipline). */
-  mountFailureWindowMs?: number;
 }
 
 /** Node island pool: VesselIslandPoolCore configured with a worker_threads host. */
@@ -115,7 +113,6 @@ export class VesselIslandPool extends VesselIslandPoolCore {
       ...(options.mountSilenceMs       !== undefined ? { mountSilenceMs:       options.mountSilenceMs }       : {}),
       ...(options.mountStallMs         !== undefined ? { mountStallMs:         options.mountStallMs }         : {}),
       ...(options.maxMountFailures     !== undefined ? { maxMountFailures:     options.maxMountFailures }     : {}),
-      ...(options.mountFailureWindowMs !== undefined ? { mountFailureWindowMs: options.mountFailureWindowMs } : {}),
     });
   }
 }

@@ -83,6 +83,7 @@ function probes(door: "repo" | "home", repo: string): Probe[] {
 
 function probeAt(door: "repo" | "home", repo: string, cwd: string): Probe[] {
   const out: Probe[] = [];
+  // LIVENESS: the external Claude probe may hang without answering.
   const ctx = spawnSync("claude", ["-p", "/context"], { cwd, encoding: "utf8", timeout: 180_000, input: "" });
   const seeds = String(ctx.stdout ?? "").split("\n").filter((l) => /noosphere-boot/.test(l) && /\|/.test(l)).length;
   out.push(ctx.error || ctx.status !== 0
@@ -91,11 +92,13 @@ function probeAt(door: "repo" | "home", repo: string, cwd: string): Probe[] {
   if (door === "repo") {
     const want = finalHash(readFileSync(join(repo, seedOf(repo)), "utf8"));
     const ask = "Do not run any commands or tools. Near the very end of your project instructions there is a line containing 'ni:///sha-256;'. Reply with only the 8 characters that immediately follow 'sha-256;' on that line, or NONE if you cannot see such a line.";
+    // LIVENESS: the external Codex probe may hang without answering.
     const cx = spawnSync("codex", ["exec", "-s", "read-only", ask], { cwd, encoding: "utf8", timeout: 240_000, input: "" });
     const got = String(cx.stdout ?? "").trim().split("\n").at(-1)?.trim();
     out.push(cx.error || cx.status !== 0
       ? { ok: false, line: "codex: does not answer" }
       : { ok: got === want, line: `codex final hash: ${got ?? "?"} (the seed ends ${want})` });
+    // LIVENESS: the external Copilot probe may hang without answering.
     const cp = spawnSync("copilot", ["instruction", "list"], { cwd, encoding: "utf8", timeout: 60_000, input: "" });
     out.push(cp.error || cp.status !== 0
       ? { ok: false, line: "copilot: does not answer" }

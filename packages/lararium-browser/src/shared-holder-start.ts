@@ -5,6 +5,7 @@ import { shoreStorage } from "@lararium/mesh";
 import { attachMessageChannelSync } from "@lararium/mesh";
 import { makeHolderRuntime } from "./shared-holder-runtime.js";
 import type { BrowserIslandScope } from "./browser-sovereign-island-model.js";
+import type { HolderIsland } from "./shared-holder-core.js";
 
 
 /** Starts the holder; a start that fails refuses every buffered and later port by name, then rethrows for the entry's log. */
@@ -36,39 +37,7 @@ async function startHolderOn(buffer: ConnectBuffer<MessagePort>): Promise<void> 
     holderLockName: `${lockName}:${sw.name}`,
     expectedHouseName: sw.name,
     locks: sw.navigator?.locks ?? null,
-    spawnIsland: () => {
-      const { port1, port2 } = new MessageChannel();
-      const errors = new Set<(error: Error) => void>();
-      const stop = new Set<() => void>();
-      const listeners = new Set<(raw: unknown) => void>();
-      port1.addEventListener("message", (event) => { for (const cb of listeners) cb(event.data); });
-      port1.addEventListener("messageerror", () => { for (const cb of errors) cb(new Error("island port messageerror")); });
-      port1.start();
-      const scope: BrowserIslandScope = {
-        post: (msg) => port2.postMessage(msg),
-        listen: (cb) => { port2.addEventListener("message", (event) => cb(event.data)); port2.start(); },
-        ready: () => port2.postMessage({ type: "ready" }),
-        onStop: (cb) => { stop.add(cb); },
-      };
-      try { startIsland(scope); }
-      catch (error) { port1.close(); port2.close(); throw error; }
-      return {
-        post: (msg, transfer) => port1.postMessage(msg, (transfer ?? []) as Transferable[]),
-        listen: (cb) => { listeners.add(cb); return () => listeners.delete(cb); },
-        onError: (cb) => { errors.add(cb); return () => errors.delete(cb); },
-        terminate: () => {
-          let finished = false;
-          const finish = () => { if (finished) return; finished = true; for (const cb of stop) cb(); port1.close(); port2.close(); };
-          const timer = setTimeout(finish, 5_000);
-          port1.addEventListener("message", (event) => {
-            if ((event.data as { type?: string })?.type !== "teardown:ack") return;
-            clearTimeout(timer);
-            finish();
-          });
-          port1.postMessage({ type: "teardown" });
-        },
-      };
-    },
+    spawnIsland: () => inPageIsland(startIsland),
     openRepo: (storeName) => {
       const repo = new Repo({ storage: shoreStorage(new IndexedDBStorageAdapter(storeName)) });
       return { shutdown: () => repo.shutdown(), attachSide: (port: MessagePort) => attachMessageChannelSync(repo, port) };
@@ -80,4 +49,42 @@ async function startHolderOn(buffer: ConnectBuffer<MessagePort>): Promise<void> 
     port.addEventListener("messageerror", () => core.disconnect(port));
     void core.connect(port);
   });
+}
+
+/**
+ * The holder's island, run in the SharedWorker's own thread over a MessageChannel, as a {@link HolderIsland}. Its
+ * terminate asks the island to tear down and finishes on the island's answer.
+ */
+export function inPageIsland(startIsland: (scope: BrowserIslandScope) => void): HolderIsland {
+  const { port1, port2 } = new MessageChannel();
+  const errors = new Set<(error: Error) => void>();
+  const stop = new Set<() => void>();
+  const listeners = new Set<(raw: unknown) => void>();
+  port1.addEventListener("message", (event) => { for (const cb of listeners) cb(event.data); });
+  port1.addEventListener("messageerror", () => { for (const cb of errors) cb(new Error("island port messageerror")); });
+  port1.start();
+  const scope: BrowserIslandScope = {
+    post: (msg) => port2.postMessage(msg),
+    listen: (cb) => { port2.addEventListener("message", (event) => cb(event.data)); port2.start(); },
+    ready: () => port2.postMessage({ type: "ready" }),
+    onStop: (cb) => { stop.add(cb); },
+  };
+  try { startIsland(scope); }
+  catch (error) { port1.close(); port2.close(); throw error; }
+  return {
+    post: (msg, transfer) => port1.postMessage(msg, (transfer ?? []) as Transferable[]),
+    listen: (cb) => { listeners.add(cb); return () => listeners.delete(cb); },
+    onError: (cb) => { errors.add(cb); return () => errors.delete(cb); },
+    // The island answers its teardown either way (the kernel's answerTeardown): an ack, or a fault by name.
+    // Either answer finishes it; no clock decides.
+    terminate: () => {
+      let finished = false;
+      const finish = () => { if (finished) return; finished = true; for (const cb of stop) cb(); port1.close(); port2.close(); };
+      port1.addEventListener("message", (event) => {
+        const type = (event.data as { type?: string })?.type;
+        if (type === "teardown:ack" || type === "fault") finish();
+      });
+      port1.postMessage({ type: "teardown" });
+    },
+  };
 }

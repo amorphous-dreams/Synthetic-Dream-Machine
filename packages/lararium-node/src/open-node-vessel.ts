@@ -168,13 +168,12 @@ import { readKeptAdmitBundles } from "./admit-bundle.js";
 import { readCasBlobFromFs } from "./node-cas.js";
 import { makeSourceCapture, type SourceCapture } from "./capture/capture-source.js";
 import { VesselIslandPool, NODE_WIKI_ACTIVATION_CAP } from "./vessel-island-pool.js";
+import { wikiSwitchVerb } from "./wiki-switch-verb.js";
 import { runFlow } from "./flow-run.js";
 
 /** Node advertises a few rotatable wiki pins BESIDES the daemon bag (resource-rich vessel).
  *  The user's ONE-plus rotatable pin(s) ride this budget; the surface enforces it. */
 const NODE_WIKI_PIN_BUDGET = 3;
-/** How long a sealed document's load waits for its map at a restart (the dial composes, the slot resolver names it). */
-const SEALED_HYDRATION_PATIENCE_MS = 120_000;
 /** The daemon wiki's working slot: the outcome ledger and the receipt facts rest there (sealed-store#/owed, U1). */
 const DAEMON_WORKING_SLOT = wikiSlotUri("daemon", "working");
 
@@ -973,12 +972,13 @@ async function prepareNodeBootOn(
     sessionFace: () => sealedCells.face(),
     door: vesselDocStoreDoor<NodeSaveSession>(() => docStorePort.port(), {
       book: (ask, verb, session) => sealedCells.book?.hold(ask, verb, session) ?? (() => {}),
-      patienceMs: 30_000, idPrefix: `docstore-${process.pid}`,
+      idPrefix: `docstore-${process.pid}`,
     }),
     flushRepo: async () => { await repo.flush(); },
     onHeld: ({ refusal, documentId }) => console.log(`[sealed-rest] ${refusal}: ${documentId.slice(0, 12)}… waits in memory, never clear, until a session seals it`),
-    // A restart's hydration: a sealed document the engine asks for ahead of the dial waits for its map, never strands.
-    hydrationPatienceMs: SEALED_HYDRATION_PATIENCE_MS,
+    // A restart's hydration: a sealed document the engine asks for ahead of the dial waits for its map, never strands;
+    // the Repo's stand-down ends the wait by name.
+    hydrates: true,
   });
   // THE FLOOR PIN SET (house ruling "The admit's gate pin": a floor route's full pin travels through an authenticated
   // relation): each sovereign session hears, at open, the floor pins this
@@ -1349,6 +1349,7 @@ async function prepareNodeBootOn(
     // A save no session booked never rests clear: one still waiting rests nowhere new, and its change returns by sync.
     const waiting = sealedRest.store.waiting();
     if (waiting > 0) console.log(`[sealed-rest] save-unbooked: ${waiting} save(s) no session could seal rest nowhere new; the replica that holds each change hands it back by sync after the next unlock`);
+    sealedRest.store.endHydration();
     await repo.shutdown();
   } });
   houseIslands = islandPeersOf(repo);
@@ -3782,15 +3783,7 @@ async function prepareNodeBootOn(
     // The LIVE chokepoint (distinct from boot-time `open-wiki`): a reference ACTIVATES
     // the grain (resolveWikiSpec wakes ANY registered wiki cold, single-flight). node is
     // headless — no #projection surface to flip — so a switch here is pure activation.
-    registry.register("wiki-switch", async (args) => {
-      // The slug rides as a structured `slug` arg — from the CLI / MCP, OR from a
-      // DOM-driven verse-event whose `arg-slug` field the reaction-router lifted into
-      // the args payload (#48 unified the DOM path onto the CLI's structured-args contract).
-      const slug = String(args["slug"] ?? "");
-      if (!slug) throw new Error("wiki-switch: `slug` required");
-      const active = await wikiActivation.ensureActive(slug);
-      return { verb: "wiki-switch", slug, active: active.ok, ...(!active.ok ? { cause: active.cause, detail: active.detail } : {}), held: [...wikiActivation.held()] };
-    });
+    registry.register("wiki-switch", (args) => wikiSwitchVerb(args, { activation: wikiActivation, pool: vmManager }));
     // wiki-hold / wiki-release — the ROTATABLE active-wiki pin (the switcher's pin
     // control), budget-enforced by the cap (the daemon bag always + pinBudget rotatable).
     // Distinct from the recipe-bag `pin-wiki`: this pins the wiki GRAIN in the collector.

@@ -86,12 +86,13 @@ export function ownChainStanding(chain: () => SessionOwnChain | null, bags: () =
  * THE SESSION SIGN DOOR, island side, over any port onto the vessel's thread (a `worker_threads` port, a Web Worker's
  * own scope). The island names the invocation a session placed; the vessel answers from that session: its certificate,
  * its proof subject and the vessel's own verified chain, and each signature on ask, signed on the vessel's thread
- * behind the owner's table. No answer inside `patienceMs` reads as a refusal by name, never as a signer: the island
- * holds no key to fall back on.
+ * behind the owner's table. The ask waits on the vessel's answer, and no clock reads silence as one: the vessel
+ * answers every ask (a missing door or a fault refuses by name), and the island dies with its vessel. A post that
+ * fails refuses at once by name, never as a signer: the island holds no key to fall back on.
  */
 export function islandSessionDoor(
   port: { post(msg: IslandMsg_SessionSign): void; listen(cb: (msg: unknown) => void): void },
-  opts: { readonly patienceMs: number; readonly idPrefix: string },
+  opts: { readonly idPrefix: string },
 ): IslandSessionProof {
   const pending = new Map<string, (answer: IslandMsg_SessionSigned | null) => void>();
   port.listen((raw: unknown) => {
@@ -105,11 +106,9 @@ export function islandSessionDoor(
   let seq = 0;
   const askVessel = (op: "read" | "sign" | "own", ask: SessionAsk, payload?: Uint8Array): Promise<IslandMsg_SessionSigned | null> => new Promise((resolve) => {
     const requestId = `${opts.idPrefix}-${++seq}`;
-    const timer = setTimeout(() => { pending.delete(requestId); resolve(null); }, opts.patienceMs);
-    (timer as { unref?: () => void }).unref?.();
-    pending.set(requestId, (answer) => { clearTimeout(timer); resolve(answer); });
+    pending.set(requestId, resolve);
     const msg: IslandMsg_SessionSign = { type: "session:sign", requestId, op, ask: ask.requestId, verb: ask.verb, ...(payload ? { payload } : {}) };
-    try { port.post(msg); } catch { pending.delete(requestId); clearTimeout(timer); resolve(null); }
+    try { port.post(msg); } catch { pending.delete(requestId); resolve(null); }
   });
   const strings = (v: unknown): string[] => (Array.isArray(v) ? v.filter((c): c is string => typeof c === "string") : []);
   return {

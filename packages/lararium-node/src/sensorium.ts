@@ -590,6 +590,7 @@ export class PalaceHolder {
     const budget = typeof opTimeoutMs === "number" && Number.isFinite(opTimeoutMs) && opTimeoutMs > 0
       ? opTimeoutMs : this.timeoutMs;
     return new Promise<unknown>((res, rej) => {
+      // LIVENESS: the Python holder can remain alive without answering this request.
       const timer = setTimeout(() => {
         this.pending.delete(id);
         rej(new Error(`${this.label} '${op}' timed out after ${budget}ms`));

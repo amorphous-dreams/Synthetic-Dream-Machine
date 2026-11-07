@@ -53,4 +53,7 @@ export const HOLDER_ROUTES = {
   "docstore:opened": "owner",
   "docstore:live": "owner",
   "docstore:slot": "owner",
+  // The island's holder names when it answers the door and when it stops, so a door with no holder refuses at once.
+  "docstore:answering": "owner",
+  "docstore:silent": "owner",
 } as const satisfies Record<IslandToVesselMsg["type"], HolderRoute>;

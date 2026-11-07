@@ -87,7 +87,7 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
   /** `docStoreDoor` — the port the vessel's document store asks across (sealed-store#/owed): the vessel's Repo hands
    *  this island a body to seal under the ask its session sign book booked for the session that wrote the change, and
    *  a reference to open; the island answers addresses and bodies, never a key, on this port alone. Absent → the
-   *  vessel's sealed rest reaches no holder, and every seal it asks refuses by its own patience. */
+   *  vessel's sealed rest reaches no holder, and every seal it asks refuses at once by name (`holder-locked`). */
   docStoreDoor?: { post(msg: unknown): void; listen(cb: (msg: unknown) => void): () => void };
   /** `freshBase` — the document store's cut of a from-now admission's fresh base (`@lararium/mesh` `freshBasePort`),
    *  over the bag's live document as the vessel's Repo holds it. Absent → every from-now admission refuses

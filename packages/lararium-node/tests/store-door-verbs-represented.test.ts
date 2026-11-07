@@ -1,17 +1,16 @@
 /**
  * store-door-verbs-represented.test.ts — `nexus-admit-take` reports `represented` TRUTHFULLY, and awaits an
- * ASYNC hook under `ON_ROLLED_BUDGET_MS` rather than reading a sync return alone.
+ * ASYNC hook to its own settle rather than reading a sync return alone.
  *
  * A vessel standing proves this row could TRY to re-present, never that it DID. `represented` therefore
- * reads the hook's own claim, and a hook still running past the budget reads `"pending"`, never a guess.
+ * reads the hook's own claim, and a hook still running is waited on (the caller's own socket wait is the LIVENESS bound).
  *
  * Proven:
  *   · a vessel stands (`onRolled` merely EXISTS and returns nothing): `represented: false`, because the
  *     hook gave no truthful claim.
  *   · `onRolled` returning `true` SYNCHRONOUSLY is read as `represented: true`.
  *   · `onRolled` returning a PROMISE that resolves `true` within the budget is read as `represented: true`.
- *   · `onRolled` returning a promise that never settles within the budget is read as `represented: "pending"`
- *     — never `true` (no evidence) and never `false` (the refold may yet land).
+ *   · `onRolled` returning a promise that settles late (past any clock) is read by its OWN settle: no timer answers for the hook.
  *   · no vessel standing (`storeDoorDirect`'s shape — `onRolled` absent) reads `represented: false`.
  */
 import { describe, expect, it, vi } from "vitest";
@@ -66,20 +65,27 @@ describe("nexus-admit-take — `represented` reads the hook's OWN claim (L2, F2-
     expect(out["represented"]).toBe(false);
   });
 
-  it("a PENDING hook — still unsettled past the budget — reads as represented: \"pending\", never guessed either way", async () => {
+  it("a SLOW hook reads its OWN settle, never a clock's \"pending\": the refold ending after 3 s still answers true", async () => {
     vi.useFakeTimers();
     try {
       let settle: (v: boolean) => void = () => {};
       const onRolled = vi.fn(() => new Promise<boolean>((resolve) => { settle = resolve; }));
       const rows = storeDoorReactors(baseDeps(onRolled));
-      const outP = rows["nexus-admit-take"]({ raw: "{}" }, {} as never);
-      await vi.advanceTimersByTimeAsync(3_000);
-      const out = await outP;
-      expect(out["represented"]).toBe("pending");
-      // The refold itself kept running; settling it late must never surface as an unhandled rejection or throw.
+      let out: Record<string, unknown> | undefined;
+      const outP = rows["nexus-admit-take"]({ raw: "{}" }, {} as never).then((o) => { out = o; });
+      await vi.advanceTimersByTimeAsync(30_000);
+      expect(out).toBeUndefined();                 // no clock answered for the hook
       settle(true);
-      await vi.advanceTimersByTimeAsync(0);
+      await outP;
+      expect(out?.["represented"]).toBe(true);
     } finally { vi.useRealTimers(); }
+  });
+
+  it("CONTROL: a hook that REJECTS reads represented false, and the rejection never surfaces", async () => {
+    const onRolled = vi.fn(async () => { throw new Error("refold fell"); });
+    const rows = storeDoorReactors(baseDeps(onRolled));
+    const out = await rows["nexus-admit-take"]({ raw: "{}" }, {} as never);
+    expect(out["represented"]).toBe(false);
   });
 
   it("no vessel standing (no hook at all) reads as NOT represented", async () => {

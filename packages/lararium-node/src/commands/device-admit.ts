@@ -20,7 +20,7 @@
 
 import type { WardCredential } from "../ward-credential.js";
 import { existsSync, readFileSync } from "fs";
-import { type AutomergeUrl, type Repo } from "@automerge/automerge-repo";
+import { type AutomergeUrl, type DocHandle, type Repo } from "@automerge/automerge-repo";
 import {
   DAEMON_BAG_ID, personaBagIdFor, PERSONA_KEL_PREFIX_TIDDLER,
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
@@ -29,7 +29,7 @@ import {
   faceAtomKeyFromSeed,
   leaseEpochPrefix, readFace,
   signPersonaAct, actCid, edgeBodyDigest, vesselFaceTagHolds, wardKeyPopHolds, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
-  tiddlerText, FLEET_HAND, AutomergeDocStore, type LarDoc, ownEntry} from "@lararium/mesh";
+  tiddlerText, FLEET_HAND, AutomergeDocStore, type LarDoc, ownEntry, findOrThrow, DOCUMENT_HANG_BOUND_MS} from "@lararium/mesh";
 import { makeCatalogAccessor } from "@lararium/tw5";
 import { larBootstrapPath, larSealHome } from "../vessel-paths.js";
 import { runDeviceAdmitEdge, type DeviceAdmitPayload } from "@lararium/keyhive";
@@ -224,6 +224,15 @@ export interface DeviceAdmitResult {
   readonly hearth: AdmitHearthReading;
 }
 
+/**
+ * The hearth's daemon doc, read on the document's own events: ready opens it, unavailable refuses by name at once. The
+ * one clock left rides mesh's `findOrThrow` at its hang bound (LIVENESS: a connected peer that stays silent says
+ * nothing), so no clock of the admit's own decides.
+ */
+export function openHearthDaemonDoc(repo: Repo, daemonUrl: string): Promise<DocHandle<LarDoc>> {
+  return findOrThrow(repo, daemonUrl, "the hearth's daemon doc", { timeoutMs: DOCUMENT_HANG_BOUND_MS });
+}
+
 export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAdmitResult> {
   const bootstrap  = larBootstrapPath();
 
@@ -276,15 +285,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
 
   // Open daemon doc to read cap events and the group pin.
   const repo        = opts.repo;
-  const progress    = repo.findWithProgress(daemonUrl as AutomergeUrl);
-  // automerge-repo 2.6: whenReady() resolves the handle when ready, rejects on
-  // unavailable; race it against a 5s timeout.
-  const daemonHandle = await Promise.race([
-    progress.whenReady(),
-    new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error("[lares fleet join answer] daemon doc not ready after 5s")), 5000),
-    ),
-  ]);
+  const daemonHandle = await openHearthDaemonDoc(repo, daemonUrl);
   const daemonDoc    = daemonHandle.doc();
   const tiddlerMap  = (daemonDoc as LarDoc | undefined)?.tiddlers ?? {};
 

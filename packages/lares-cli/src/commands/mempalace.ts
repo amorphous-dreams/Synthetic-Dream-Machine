@@ -75,6 +75,7 @@ function passthroughGuest(verb: string, inner: ParsedArgs): number {
   }
 }
 
+// PACING: process exit or the escalation bound ends each drain wait; sleep spaces polls.
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
 /** Snapshot the live topology, marking the WS-port holder(s) as the node vessel. */
@@ -237,6 +238,7 @@ async function drainHolders(opts: { select?: (p: PalaceProc) => boolean; graceMs
   // This door's own liveness patience before escalating — never a safety verdict — reads a
   // monotonic clock, so an adversarial or operator wall-clock jump changes neither grace window.
   const graceDeadline = performance.now() + graceMs;
+  // LIVENESS: external holders can ignore SIGTERM without exiting.
   while (performance.now() < graceDeadline) {
     if (holdersNow().length === 0) return { drained: [...drained], forced: [], remaining: [] };
     await sleep(pollMs);
@@ -246,6 +248,7 @@ async function drainHolders(opts: { select?: (p: PalaceProc) => boolean; graceMs
   const forced: number[] = [];
   for (const p of stubborn) { forced.push(p.pid); try { process.kill(p.pid, "SIGKILL"); } catch { /* gone */ } }
   const killDeadline = performance.now() + killMs;
+  // LIVENESS: an uninterruptible holder can remain after SIGKILL.
   while (performance.now() < killDeadline) {
     if (holdersNow().length === 0) return { drained: [...drained], forced, remaining: [] };
     await sleep(pollMs);

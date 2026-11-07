@@ -542,6 +542,7 @@ export async function prepareHostBootInstance(
     // switcher surfacing) threw `setImmediate is not defined`. Supply it (macrotask
     // parity, arg-forwarding), the same "last missing Node-ism" contract as global/
     // process/Buffer above, lent only where the host lacks it.
+    // PACING: the fallback yields a host task, without deciding readiness.
     lendGlobalIfAbsent(globalThis as Record<string, unknown>, "setImmediate", (fn: (...a: unknown[]) => void, ...args: unknown[]) => setTimeout(fn, 0, ...args));
     lendGlobalIfAbsent(globalThis as Record<string, unknown>, "clearImmediate", (id: ReturnType<typeof setTimeout>) => clearTimeout(id));
 

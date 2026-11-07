@@ -80,6 +80,19 @@ import type { IslandContext, IslandBehavior } from "./island-context.js";
 import { PLANE_LABELS } from "@lararium/mesh/plane-labels";
 
 /** Detach a failed writable shore before its scheduler task settles. */
+/**
+ * An island's teardown ALWAYS ANSWERS: `teardown:ack` once it came down, or a `fault` named `teardown-fault: …` when a
+ * step threw. The vessel's teardown wait ends on that answer, never on a clock.
+ */
+export async function answerTeardown(run: () => Promise<void>, post: (msg: IslandToVesselMsg) => void, wikiUri: () => string): Promise<void> {
+  try { await run(); }
+  catch (err) {
+    post(mkFault(wikiUri(), `teardown-fault: the island could not tear down: ${err instanceof Error ? err.message : String(err)}`));
+    return;
+  }
+  post(mkTeardownAck());
+}
+
 export async function guardWritableStand<T>(run: () => Promise<T>, detach: () => Promise<void>): Promise<T> {
   try { return await run(); }
   catch (error) {
@@ -169,7 +182,7 @@ export function runSovereignKernel(
     }
 
     if (raw.type === "teardown" || raw.type === "hooanu") {
-      void _handleTeardown();
+      void answerTeardown(_handleTeardown, _post, () => _activeWikiUri);
       return;
     }
 
@@ -204,6 +217,7 @@ export function runSovereignKernel(
       breathe();
     };
     breathe();
+    // PACING: this emits breaths; the vessel judges their progress and silence.
     const breathTimer = setInterval(() => breathe(), breathEveryMs);
     // Any throw during init (incl. a behavior.onEa gate failure, e.g.
     // bootDaemonKeyhive Gate A/B/C) posts fault so the vessel times out cleanly
@@ -240,6 +254,7 @@ export function runSovereignKernel(
   const SLOT_POLL_MS            = 250;
   const mono = (): number => performance.now();
   const defer = (): Promise<void> =>
+    // PACING: defer yields to the host task queue without deciding readiness.
     new Promise((res) => (typeof setImmediate === "function" ? setImmediate(res) : setTimeout(res, 0)));
   let _lastSyncHeardAt = mono();
   const _syncWakes = new Set<() => void>();
@@ -263,6 +278,7 @@ export function runSovereignKernel(
       absence:   (rejection) => rejection instanceof Error && /is unavailable/.test(rejection.message),
       now:       mono,
       lastHeard: () => _lastSyncHeardAt,
+      // LIVENESS: slot waits use this for peer-silence and hard-cap bounds as well as polling.
       sleep:     (ms) => new Promise((res) => setTimeout(res, ms)),
       defer,
       onWake: (wake) => {
@@ -586,7 +602,7 @@ export function runSovereignKernel(
     // "working never arrived over syncPort" gap. flush() resolves once the bytes
     // are durable. We await it BEFORE posting teardown:ack, so the vessel's
     // disposeAll() handshake only completes after every island's write is on disk
-    // (flush-then-force; the vessel's force-timer is the only escape if THIS jams).
+    // (flush-then-ack; answerTeardown acks once this body returns, or names a fault when a step throws).
     if (_repo) {
       try { await _repo.flush(); }
       catch (err) { console.warn(`[sovereign-kernel] teardown flush failed: ${String(err)}`); }
@@ -618,7 +634,5 @@ export function runSovereignKernel(
     try { await _repo?.shutdown(); } catch { /* teardown remains best-effort after flush */ }
     _repo      = null;
     _ownedRepo = null;
-
-    host.post(mkTeardownAck());
   }
 }

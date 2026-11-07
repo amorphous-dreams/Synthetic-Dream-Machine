@@ -93,26 +93,32 @@ function attachSessionSignDoor(w: Worker, caps: CapabilityRecord): void {
  *            logs once per worker: code a wiki loads never writes a row under the vessel key and never drives the
  *            vessel's store. Its dyad ask draws `aside` and logs the same way: a wiki never learns what a device's
  *            edge reads.
- *   session  a session's island. It reaches none of the four and draws no answer: it asks through its scoped
- *            view alone.
+ *   session  a session's island. It reaches none of the four: each ask it posts refuses by name on the same request
+ *            id, its `cas:want` answering a miss, so an ask it makes never waits on a vessel that will not answer
+ *            (the island's asks keep no clock).
  *
  * The class binds at the spawn and never moves: a worker carries no way to name itself another class.
  */
 export type IslandClass = "daemon" | "wiki" | "session";
 
-/** Answer a capability a wiki island may not use: the same reply shape the capability gives, refused by name, logged once. */
-function attachRefusals(w: Worker, caps: CapabilityRecord): void {
+/** Answer a capability an island of this class may not use: the same reply shape the capability gives, refused by name,
+ *  logged once. A session island reaches no member, so its `cas:want` answers a miss by name too. */
+function attachRefusals(w: Worker, caps: CapabilityRecord, island: "wiki" | "session" = "wiki"): void {
   const logged = new Set<string>();
   const once = (name: string, what: string): void => {
     if (logged.has(name)) return;
     logged.add(name);
-    console.warn(`[vessel-caps] ${name}: a wiki island asked for ${what}; only the daemon island reaches it. The ask refused and nothing ran.`);
+    console.warn(`[vessel-caps] ${name}: a ${island} island asked for ${what}; only the daemon island reaches it. The ask refused and nothing ran.`);
   };
   const reply = (msg: unknown): void => { try { w.postMessage(msg); } catch { /* the worker went away */ } };
   w.on("message", (raw: unknown) => {
     const m = raw as { type?: unknown; requestId?: unknown } | null;
     if (!m || typeof m !== "object" || typeof m.requestId !== "string") return;
-    if (m.type === "custody:write") {
+    if (m.type === "cas:want" && island === "session") {
+      once("CasRefused", "the cas capability");
+      const miss: IslandMsg_CasBlock = { type: "cas:block", requestId: m.requestId, bytes: null };
+      reply(miss);
+    } else if (m.type === "custody:write") {
       once("CustodyWriteRefused", "the custodyWrite capability");
       const refused: IslandMsg_CustodyWritten = {
         type: "custody:written", requestId: m.requestId, written: false,
@@ -173,12 +179,18 @@ export function nodeWorkerHandle(w: Worker, opts: { readonly island: IslandClass
     attachCas(w, caps);
     attachRefusals(w, caps);
     attachRestAsk(w, caps);
+  } else {
+    attachRefusals(w, {}, "session");
   }
   const post = w.postMessage.bind(w) as (msg: unknown, transfer?: unknown[]) => void;
   return {
     post:      (msg, transfer) => post(msg, transfer),
     listen:    (cb) => { w.on("message", cb); return () => { w.off("message", cb); }; },
     onError:   (cb) => { w.on("error",   cb); return () => { w.off("error",   cb); }; },
+    onExit:    (cb) => {
+      const fn = (code: number): void => cb(`the island exited (code ${String(code)})`);
+      w.on("exit", fn); return () => { w.off("exit", fn); };
+    },
     terminate: () => { void w.terminate(); },
     // The record the island holds, read at ask time: the pool answers a wiki island's receipt ask only where it grants one.
     grants:    () => ({ receipt: opts.island === "wiki" && caps.receipt !== undefined }),

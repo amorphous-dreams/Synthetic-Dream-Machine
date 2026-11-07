@@ -70,17 +70,21 @@ describe("the receipt capability", () => {
     await expect(vesselReceiptAsker(wired().port)(["doc-a"])).rejects.toThrow(/the store refused the save/);
   });
 
-  test("D3 — no answer inside the asker's patience rejects; an answer resolves", async () => {
+  test("D3 — the vessel's answer resolves the ask", async () => {
     caps.receipt = async () => {};
-    await expect(vesselReceiptAsker(wired({ answer: false }).port, 30)(["doc-a"])).rejects.toThrow(/no answer/);
-    await expect(vesselReceiptAsker(wired().port, 30)(["doc-a"])).resolves.toBeUndefined();
+    await expect(vesselReceiptAsker(wired().port)(["doc-a"])).resolves.toBeUndefined();
   });
 
-  test("D4 — an answer under another request id settles nothing", async () => {
+  test("D4 — an answer under another request id settles nothing; its own unissued answer rejects (control)", async () => {
     const w = wired({ answer: false });
-    const asking = vesselReceiptAsker(w.port, 60)(["doc-a"]);
+    let settled = false;
+    const asking = vesselReceiptAsker(w.port)(["doc-a"]).finally(() => { settled = true; });
+    asking.catch(() => {});
     w.island.emit("message", { type: "receipt:issued", requestId: "someone-else", issued: true });
-    await expect(asking).rejects.toThrow(/no answer/);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(settled).toBe(false);
+    w.island.emit("message", { type: "receipt:issued", requestId: (w.posted.at(-1) as { requestId?: string } | undefined)?.requestId, issued: false, why: "unissued" });
+    await expect(asking).rejects.toThrow(/unissued/);
   });
 
   test("D5 — the capability's act returns only after the store holds the document", async () => {

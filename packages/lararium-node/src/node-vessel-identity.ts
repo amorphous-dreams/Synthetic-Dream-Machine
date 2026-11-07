@@ -117,6 +117,7 @@ const exec = promisify(execFile);
 
 async function readOperatorDisplayName(): Promise<string | null> {
   try {
+    // LIVENESS: the external git process may hang without an exit event.
     const { stdout } = await exec("git", ["config", "--global", "user.name"], { timeout: 2_000 });
     return stdout.trim() || null;
   } catch { return null; /* git absent or user.name unset */ }

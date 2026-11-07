@@ -363,6 +363,7 @@ export async function hostingActOn(handle: HostingDocHandle, epochCid: string, w
     // A read that throws answers nothing for that change; the patience above still ends the wait.
     const look = (): void => { void find().then((act) => { if (act) done(act); }, () => undefined); };
     const onChange = (): void => look();
+    // LIVENESS: the peer may never sync the signed act; document changes can settle sooner.
     const timer = setTimeout(() => done(null), withinMs);
     handle.on("change", onChange);
     look();
