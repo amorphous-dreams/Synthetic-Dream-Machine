@@ -32,6 +32,8 @@ export const heavy = [
   "tests/browser-crossing.test.ts",
   // real face gates + FLOW-map read-faces on four listeners: the gate-native herm relay
   "tests/herm-carriage-relay.test.ts",
+  // a real worker thread: the herm's daemon door settles a receipt round (L29 mirror)
+  "tests/herm-daemon-settlement.test.ts",
   "tests/nexus-client-dial.test.ts",
   "tests/nexus-client-dial-listener-order.test.ts",
   "tests/live-wire-node-crossing.test.ts",
