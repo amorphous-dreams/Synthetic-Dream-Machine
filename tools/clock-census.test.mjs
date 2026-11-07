@@ -52,3 +52,14 @@ test('finds runner caps and multiline waits while ignoring comments', () => {
   ].join('\n'));
   assert.deepEqual(findings.map(f => [f.line, f.category]), [[2, 'HARNESS'], [3, 'HARNESS'], [4, 'TEST-WAIT']]);
 });
+
+test('a product wait whose line or the comment just above names LIVENESS reads as a named liveness bound', () => {
+  const file = 'packages/example/src/liveness.ts';
+  const findings = fixture(file, [
+    '// LIVENESS: an island wedged while alive says nothing, so this bound ends the ask.',
+    'timer = setTimeout(expire, bound);',
+    'const other = setTimeout(expire, 20);',
+    'const tail = setTimeout(expire, 20); // LIVENESS: a peer silent forever',
+  ].join('\n'));
+  assert.deepEqual(findings.map(f => [f.line, f.category, f.review]), [[2, 'LIVENESS', false], [3, 'PRODUCT-WAIT', true], [4, 'LIVENESS', false]]);
+});
