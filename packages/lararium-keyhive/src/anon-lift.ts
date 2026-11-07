@@ -134,6 +134,7 @@ async function boundedRead<T>(args: LiftArgs, url: string, waits: SkippedDoc["wa
   const waitedMs = args.readBoundMs ?? DOCUMENT_READY_TIMEOUT_MS;
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
+    // LIVENESS: a peer may never deliver the document; a later pass can retry the skipped read.
     const out = await Promise.race([read(), new Promise<typeof TIMED_OUT>((resolve) => { timer = setTimeout(() => resolve(TIMED_OUT), waitedMs); })]);
     if (out === TIMED_OUT) throw new FloorDocumentUnavailable(url, waits, waitedMs);
     return out;
