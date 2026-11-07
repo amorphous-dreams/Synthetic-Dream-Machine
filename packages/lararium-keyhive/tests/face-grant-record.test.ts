@@ -322,7 +322,7 @@ describe("face grant standing replaces the face lease", () => {
     const rec = await grantFor({}, ROOT_SEED, 3);
     const kel = await personaKel(null);
     const base = { personaRootDid: rec.founderEdge.personaRootDid, selfVerifyingKey: JOINEE_KEY,
-      groupId: GROUP, personaKel: kel, expectedEpoch: 3 };
+      groupId: GROUP, personaKel: kel };
     const clear = { ...base, dyad: (_key: string) => "clear" as const };
     const aside = { ...base, dyad: (_key: string) => "aside" as const };
     expect((await verifyFaceGrantRecord(rec, clear)).ok).toBe(true);
@@ -341,8 +341,7 @@ describe("face grant standing replaces the face lease", () => {
     const kel = await personaKel(null);
     const ctx = { personaRootDid: edge.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP,
       personaKel: kel, dyad: (_key: string) => "clear" as const };
-    // Use an edge today's verifier accepts so this control reaches the grant signature check.
-    // Migrate this control to the epoch-free edge when the reader accepts that shape.
+    // A minted-shape edge reaches the grant signature check, so the changed signature refuses there by name.
     const control = await grantFor();
     expect((await verifyFaceGrantRecord(control, ctx)).ok).toBe(true);
     expect(await verifyFaceGrantRecord({ ...control, sig: "0".repeat(128) }, ctx))

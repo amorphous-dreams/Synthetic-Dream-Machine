@@ -19,11 +19,10 @@
  * goes stale when that epoch rolls past it (the epoch is a LEASE, not a
  * targeted revoker — api/pono/convergent-mesh).
  *
- * During retirement, signature verification also reads the epoch-free signed
- * string ending at hearthTrueName. Minting and epoch-gated authority remain on
- * the legacy shape until their own slices land; an epoch-free signature alone
- * does not supply standing or an epoch witness.
- * Canonical legacy signed string (every field strict-charset so no `|` shifts a boundary):
+ * Signature verification reads two signed strings: the minted one ending at boundEpoch, and the
+ * epoch-free one ending at hearthTrueName. An epoch-free signature alone supplies no standing and
+ * no epoch witness; a caller that asks for the epoch reads it as unavailable.
+ * The minted signed string (every field strict-charset so no `|` shifts a boundary):
  *   {DEVICE_DELEGATION_DOMAIN}|{personaRootDid}|{deviceDid}|{deviceVerifyingKey}|{hearthTrueName}|{boundEpoch}
  *
  * NO CLOCK rides the edge — no issue instant, no expiry. It decays by its LEASE alone (`boundEpoch`
