@@ -115,7 +115,10 @@ describe("the dyad capability", () => {
     const session = fakeWorker();
     nodeWorkerHandle(session.worker, { island: "session", caps });
     await session.ask(ask("session-1"));
-    expect(session.said).toEqual([]);
+    // A session island reaches no dyad standing; since clock-sweep F3 (d98f1c576) its ask answers `aside` by name on the
+    // same request id instead of drawing silence (its asks keep no clock). `caps.dyad` answers "clear": `aside` proves
+    // the capability was never reached.
+    expect(session.said.map((m) => [m["type"], m["requestId"], m["standing"]])).toEqual([["dyad:read", "session-1", "aside"]]);
   });
 
   test("D5 — protocol guards accept only their dyad direction", () => {
