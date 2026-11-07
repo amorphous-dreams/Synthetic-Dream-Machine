@@ -1,4 +1,4 @@
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { exportTree } from './tree-export.mjs';
 import { openHeldSync, readHeld } from './held-dir.mjs';
 import { createHash, createHmac } from 'node:crypto';
@@ -221,4 +221,106 @@ export async function runInstallSeat({ worktree, worktreeHeld, gitDir, installer
     const ran = spawnSync(BWRAP, args, { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe', ...fds] });
     return { ok: ran.status === 0, output: capOutput(`${ran.stdout ?? ''}${ran.stderr ?? ''}${ran.error ? String(ran.error) : ''}`) };
   } finally { for (const h of opened) h.close(); }
+}
+
+/** Validate the test request before opening the execution boundary. */
+export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
+  if (!['node', 'vitest'].includes(runner)) return { ok: false, output: `refused: unknown runner ${String(runner)}` };
+  if (!Array.isArray(files) || files.length === 0 || files.some((f) => typeof f !== 'string' || !f)) return { ok: false, output: 'refused: nonempty named files required' };
+  for (const file of files) {
+    if (path.isAbsolute(file)) return { ok: false, output: `refused: absolute path ${file}` };
+    if (file.includes('\0') || file.startsWith('-')) return { ok: false, output: `refused: invalid file ${file}` };
+    if (file.split('/').includes('..')) return { ok: false, output: `refused: parent traversal ${file}` };
+    if (/[*?\[\]{}]/.test(file)) return { ok: false, output: `refused: glob ${file}` };
+  }
+  const refuse = message => ({ ok: false, output: `refused: ${message}` });
+  let root;
+  try {
+    root = realpathSync(worktreeHeld.at());
+    for (const file of files) {
+      const resolved = realpathSync(worktreeHeld.at(file));
+      if (!resolved.startsWith(`${root}${path.sep}`)) return refuse(`symlink leaves worktree: ${file}`);
+      if (!statSync(worktreeHeld.at(file)).isFile()) return refuse(`not a file: ${file}`);
+    }
+  } catch (error) { return refuse(`invalid file: ${error.message}`); }
+  if (!HAVE_BWRAP) return refuse('no test wall available');
+
+  // Resolve the nearest package for each file through the held worktree; one vitest invocation has one package cwd.
+  let packageDir = '.';
+  if (runner === 'vitest') {
+    const packages = [];
+    for (const file of files) {
+      let dir = path.dirname(path.normalize(file));
+      while (true) {
+        try {
+          const packageFile = path.join(dir, 'package.json');
+          const resolved = realpathSync(worktreeHeld.at(packageFile));
+          if (!resolved.startsWith(`${root}${path.sep}`)) return refuse(`symlink leaves worktree: ${packageFile}`);
+          if (statSync(worktreeHeld.at(packageFile)).isFile()) { packages.push(dir); break; }
+        } catch (error) { if (error.code !== 'ENOENT') return refuse(`package lookup: ${error.message}`); }
+        if (dir === '.') return refuse(`no package for ${file}`);
+        dir = path.dirname(dir);
+      }
+    }
+    if (packages.some(dir => dir !== packages[0])) return refuse('files belong to different packages');
+    packageDir = packages[0];
+  }
+
+  const nvm = path.join(os.userInfo().homedir, '.nvm');
+  const node = process.execPath;
+  if (!node.startsWith(`${nvm}${path.sep}`)) return refuse('Node toolchain outside ~/.nvm');
+  const scratch = await mkdtemp(laneHeld.at('test-seat-'));
+  let scratchHeld;
+  try {
+    scratchHeld = openHeldSync(scratch, laneHeld.at());
+    mkdirSync(scratchHeld.at('home'));
+    mkdirSync(scratchHeld.at('lar-root'));
+    const bin = path.dirname(node);
+    const args = [
+      '--die-with-parent', '--unshare-pid', '--unshare-net', '--clearenv',
+      '--ro-bind', '/usr', '/usr', '--symlink', 'usr/bin', '/bin',
+      '--symlink', 'usr/lib', '/lib', '--symlink', 'usr/lib64', '/lib64',
+      '--dir', '/etc', '--ro-bind', '/etc/ssl', '/etc/ssl',
+      '--tmpfs', '/tmp', '--dev', '/dev', '--proc', '/proc',
+      '--ro-bind', nvm, nvm,
+      '--bind-fd', '3', '/work', '--bind-fd', '4', '/scratch',
+      '--chdir', path.posix.join('/work', packageDir),
+      '--setenv', 'PATH', `${bin}:/usr/bin:/bin`, '--setenv', 'HOME', '/scratch/home',
+      '--setenv', 'LAR_ROOT', '/scratch/lar-root', '--setenv', 'TMPDIR', '/tmp', '--setenv', 'LC_ALL', 'C',
+      ...(runner === 'node'
+        ? [node, '--test', '--test-reporter=tap', '--', ...files.map(f => path.posix.join('/work', f))]
+        : [path.join(bin, 'pnpm'), 'exec', 'vitest', 'run', '--reporter=json', '--outputFile=/scratch/vitest.json', '--', ...files.map(f => path.posix.join('/work', f))]),
+    ];
+    const result = await new Promise(resolve => {
+      const child = spawn(BWRAP, args, { stdio: ['ignore', 'pipe', 'pipe', worktreeHeld.fd, scratchHeld.fd] });
+      let output = '', overflow = false;
+      const append = chunk => { output += chunk; if (output.length > 16 * 1024 * 1024) { overflow = true; output = output.slice(-8192); } };
+      child.stdout.setEncoding('utf8'); child.stderr.setEncoding('utf8');
+      child.stdout.on('data', append); child.stderr.on('data', append);
+      child.on('error', error => resolve({ error, output }));
+      child.on('close', (code, signal) => resolve({ code, signal, output, overflow }));
+    });
+    if (result.error || result.signal || result.code === null || result.overflow) return refuse(`test execution failed: ${result.error?.message ?? result.signal ?? 'output overflow'}`);
+    let pass, fail, skip;
+    try {
+      if (runner === 'node') {
+        const readCount = name => {
+          const matches = [...result.output.matchAll(new RegExp(`^# ${name} (\\d+)\\s*$`, 'gm'))];
+          if (matches.length !== 1) throw new Error(`missing or ambiguous ${name}`);
+          return Number(matches[0][1]);
+        };
+        const tests = readCount('tests');
+        pass = readCount('pass'); fail = readCount('fail'); skip = readCount('skipped');
+        if (!Number.isSafeInteger(tests) || tests < 0) throw new Error('invalid counts');
+      } else {
+        const report = JSON.parse(readHeld(scratchHeld, 'vitest.json'));
+        pass = report.numPassedTests; fail = report.numFailedTests; skip = report.numPendingTests;
+      }
+      if (![pass, fail, skip].every(n => Number.isSafeInteger(n) && n >= 0)) throw new Error('invalid counts');
+    } catch (error) { return refuse(`unparseable ${runner} output: ${error.message}`); }
+    return { ok: true, runner, files, pass, fail, skip, exitCode: result.code, logTail: result.output.slice(-8192) };
+  } finally {
+    scratchHeld?.close();
+    rmSync(laneHeld.at(path.basename(scratch)), { recursive: true, force: true });
+  }
 }
