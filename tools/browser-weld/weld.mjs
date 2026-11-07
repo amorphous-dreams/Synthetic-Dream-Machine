@@ -29,6 +29,27 @@ import { awaitPage, waitForWitness } from "./page-wait.mjs";
 const WEB = process.env.WELD_WEB_URL ?? "http://localhost:5173";
 
 let failures = 0, gaps = 0;
+
+/**
+ * THE CONSOLE CAPTURE: every line the page AND its workers write (a worker's line reaches the page's console event,
+ * named by its worker's script), and every page error. A red run prints the whole capture into the weld's log, which the
+ * held-out artifact keeps, so a refusal that reached only a console names the exit that swallowed an act.
+ */
+const consoleCapture = [];
+const CONSOLE_CAPTURE_MAX = 4_000;
+function captureConsole(page) {
+  const keep = (line) => { consoleCapture.push(line); if (consoleCapture.length > CONSOLE_CAPTURE_MAX) consoleCapture.shift(); };
+  page.on("console", (m) => {
+    const worker = m.worker();
+    const from = worker ? `worker ${worker.url().split("/").pop()}` : "page";
+    keep(`${from} ${m.type()}: ${m.text()}`);
+  });
+  page.on("pageerror", (e) => keep(`page pageerror: ${String(e)}`));
+}
+function printConsoleCapture() {
+  console.log(`\n  ── console capture (page + workers, ${consoleCapture.length} line(s), last ${CONSOLE_CAPTURE_MAX} kept) ──`);
+  for (const line of consoleCapture) console.log(`  | ${line}`);
+}
 const ok   = (n, m) => console.log(`  \x1b[32mok\x1b[0m       ${n} — ${m}`);
 const bad  = (n, m) => { failures++; console.log(`  \x1b[31mFAILED\x1b[0m   ${n} — ${m}`); };
 const gap  = (n, m) => { gaps++;     console.log(`  \x1b[33mgap\x1b[0m      ${n} — ${m}`); };
@@ -80,6 +101,7 @@ const main = async () => {
     const consoleErrors = [];
     page.on("console", (m) => { if (m.type() === "error") consoleErrors.push(m.text()); });
     page.on("pageerror", (e) => consoleErrors.push(String(e)));
+    captureConsole(page);
     await installWorkerTrace(page);
 
   console.log(`\n\x1b[1mBROWSER WELD — a tiddler edited in a browser, followed to the node's disk\x1b[0m`);
@@ -339,8 +361,9 @@ const main = async () => {
 };
 
 function finish() {
+  if (failures > 0) printConsoleCapture();
   console.log(`\n  ── ${failures} failed · ${gaps} gap(s) ──\n`);
   process.exitCode = failures > 0 ? 1 : 0;
 }
 
-main().catch((e) => { console.error("weld driver threw:", e); process.exitCode = 1; });
+main().catch((e) => { printConsoleCapture(); console.error("weld driver threw:", e); process.exitCode = 1; });
