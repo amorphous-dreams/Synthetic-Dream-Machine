@@ -253,8 +253,8 @@ export function runSovereignKernel(
   const SLOT_READY_HARD_CAP_MS  = 60_000;
   const SLOT_POLL_MS            = 250;
   const mono = (): number => performance.now();
-  // PACING: defer yields to the host task queue without deciding readiness.
   const defer = (): Promise<void> =>
+    // PACING: defer yields to the host task queue without deciding readiness.
     new Promise((res) => (typeof setImmediate === "function" ? setImmediate(res) : setTimeout(res, 0)));
   let _lastSyncHeardAt = mono();
   const _syncWakes = new Set<() => void>();

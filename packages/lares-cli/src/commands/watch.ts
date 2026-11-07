@@ -276,6 +276,7 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
 
   const scheduleDrain = (): void => {
     if (timer) clearTimeout(timer);
+    // PACING: debounce coalesces file changes before draining them.
     timer = setTimeout(kick, debounceMs);
   };
 
@@ -356,6 +357,7 @@ function cookieSelfTest(source: string, watcher: FSWatcher): Promise<boolean> {
       if (fn && fn.toString().includes(cookieName)) finish(true);
     };
     watcher.on("change", onChange);
+    // LIVENESS: a dead watch backend may never echo the cookie.
     const timeout = setTimeout(() => finish(false), COOKIE_TIMEOUT_MS);
     try { writeFileSync(cookiePath, "cookie"); } catch { finish(false); }
   });

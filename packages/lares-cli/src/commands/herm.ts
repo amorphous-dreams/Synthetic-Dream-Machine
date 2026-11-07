@@ -22,6 +22,7 @@ import { larRoot, larBootstrapPath, larDataDir, larCasDir } from "../env.js";
 import { emit } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
+// PACING: attestation or its silence bound ends the wait; sleep spaces the polls.
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
 export async function cmdHerm(args: ParsedArgs): Promise<number> {

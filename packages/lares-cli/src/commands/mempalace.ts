@@ -75,6 +75,7 @@ function passthroughGuest(verb: string, inner: ParsedArgs): number {
   }
 }
 
+// PACING: process exit or the escalation bound ends each drain wait; sleep spaces polls.
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
 /** Snapshot the live topology, marking the WS-port holder(s) as the node vessel. */

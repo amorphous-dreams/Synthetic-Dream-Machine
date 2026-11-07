@@ -38,6 +38,7 @@ import { standPageEnv } from "../stand-page.js";
 import { foundIfAbsent, type FoundStep } from "../standup.js";
 import type { ParsedArgs } from "../parse-args.js";
 
+// PACING: boot evidence or its silence bound ends the wait; sleep spaces polls.
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
 /** This project's wing slug, from the session's cwd (matches the harvest wing). */
