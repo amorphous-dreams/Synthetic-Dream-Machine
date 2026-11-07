@@ -21,6 +21,7 @@ import { rotateRelayGateSeed, fatalLine } from "@lararium/node";
 import { larRoot, larBootstrapPath, larDataDir, larCasDir } from "../env.js";
 import { emit } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
+import { awaitBootPhase } from "../stand-socket-wait.js";
 
 // PACING: attestation or its silence bound ends the wait; sleep spaces the polls.
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
@@ -73,30 +74,24 @@ export async function cmdHerm(args: ParsedArgs): Promise<number> {
       try { return readFileSync(log, "utf8").slice(startOffset); } catch { return ""; }
     };
     // Self-attested readiness (no web2 /health probe): the node writes `vessel-ready` on a live stand, `fatal:` on a
-    // boot fault. Adaptive window — extend while the log grows, fail only on a genuine stall or the ceiling.
-    // This door's own liveness patience (adaptive idle window + outer ceiling) — never a
-    // safety verdict — reads a monotonic clock, so an adversarial or operator wall-clock
-    // set-back/set-forward changes neither how long this wait actually ran nor when it gives up.
-    const IDLE_MS = 30_000;
-    const hardCap = performance.now() + 180_000;
-    let idleDeadline = performance.now() + IDLE_MS;
-    let seenLen = 0;
-    let phase: "starting" | "ready" | "fault" = "starting";
-    // LIVENESS: a spawned herm can stop writing attestation without exiting.
-    while (performance.now() < idleDeadline && performance.now() < hardCap) {
-      const tail = readAttestation();
-      if (/fatal:/.test(tail)) { phase = "fault"; break; }
-      if (tail.includes("vessel-ready")) { phase = "ready"; break; }
-      if (tail.length > seenLen) { seenLen = tail.length; idleDeadline = performance.now() + IDLE_MS; }
-      await sleep(200);
-    }
+    // boot fault. The same wait `vessel stand` runs: each later boot milestone renews the silence span, a repeated or
+    // earlier one renews nothing, and no fixed ceiling cuts a herm that keeps advancing.
+    let childExited = false;
+    child.once("exit", () => { childExited = true; });
+    const booted = await awaitBootPhase({
+      readAttestation, childExited: () => childExited, now: () => performance.now(), sleep,
+      silenceMs: 30_000, // LIVENESS: headroom for a silent heavy stretch between two milestones
+    });
+    const phase: "starting" | "ready" | "fault" = booted === "ready" || booted === "fault" ? booted : "starting";
     live = phase === "ready";
     note = phase === "ready"
       ? `started detached (pid ${child.pid ?? "?"}); attested vessel-ready`
       : phase === "fault"
         // A boot fault keeps its own voice: the node's `fatal:` line names the fault and any cure.
         ? `started then attested a boot fault: ${fatalLine(readAttestation()) ?? "see " + log}`
-        : `starting detached (pid ${child.pid ?? "?"}); boot stalled before vessel-ready — see ${log}`;
+        : booted === "exited"
+          ? `child exited before ready (pid ${child.pid ?? "?"}) — see ${log}`
+          : `starting detached (pid ${child.pid ?? "?"}); boot stalled before vessel-ready — see ${log}`;
 
     // Echo the node's OWN carriage crossroads lines (dial URLs + gate key) — the node computes the gate key from the
     // durable row (single source of truth), so the printed pin matches the relay without a

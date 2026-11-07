@@ -281,9 +281,9 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
       const readAttestation = (): string => {
         try { return readFileSync(log, "utf8").slice(startOffset); } catch { return ""; }
       };
-      // The boot ends on the node's own events: `vessel-ready`, `fatal:` or the child's exit. A healthy boot that keeps
-      // WRITING to the log is making progress however long the corpus/keyhive replay runs, so log growth renews the
-      // silence span; no fixed ceiling cuts a live boot. Only a node silent for the whole span reaches the bound.
+      // The boot ends on the node's own events: `vessel-ready`, `fatal:` or the child's exit. Progress means a LATER boot
+      // milestone (`phase → <name>`, BOOT_MILESTONES): each one renews the silence span, however long the boot runs; a
+      // repeated or earlier milestone, or any other line, renews nothing. No fixed ceiling cuts a boot that keeps advancing.
       const booted = await awaitBootPhase({
         readAttestation, childExited: () => childExited, now: () => performance.now(), sleep,
         silenceMs: 30_000, // LIVENESS: headroom for a silent heavy stretch (Automerge corpus materialize)
@@ -313,8 +313,9 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
       // about the vessel stands correctly.
       let udsRefusal: string | null = null;
       if (phase === "ready") {
-        // The wait ends on the node's own events (connect, `fatal:`, `uds error:`, the child's exit); a growing log
-        // renews the silence span, so a slow cold bind is never cut by a fixed deadline.
+        // The wait ends on the node's own events (connect, `fatal:`, `uds error:`, the child's exit); each later
+        // socket-stage milestone (tw5-booted, live, daemon-ea, verb-seat) renews the silence span, so a slow cold bind
+        // that keeps advancing is never cut by a fixed deadline.
         const waited = await awaitVerbSocket({
           alive: udsAlive, readAttestation, childExited: () => childExited, now: () => performance.now(), sleep, silenceMs: 120_000,
         });
@@ -342,7 +343,7 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
         // asked, so it rides verbatim rather than through the condition's vocabulary.
         ? `started then attested a boot fault: ${fatalLine(readAttestation()) ?? "see " + log}`
         : condition.state === "rising" && phase !== "ready"
-          ? `starting detached (pid ${child.pid ?? "?"}); boot stalled (no log progress for 15s) — see ${log}`
+          ? `starting detached (pid ${child.pid ?? "?"}); boot stalled (no new boot milestone for 30s) — see ${log}`
           : `${condition.message} (pid ${child.pid ?? "?"})`
             + (condition.reason === "uds-refused" && /EINVAL/.test(udsRefusal ?? "")
                 ? "  (a Unix socket path caps near 108 bytes — LAR_ROOT sits too deep)" : "");

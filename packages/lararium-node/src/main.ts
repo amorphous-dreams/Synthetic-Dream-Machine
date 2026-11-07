@@ -654,6 +654,8 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
   // THE DISPATCHER STANDS BEFORE THE CHANNEL SERVES. The herm branch mounts no wiki, so nothing else
   // awaits the daemon island's `ea`; a verb placed ahead of it commits and no dispatcher runs it.
   await herm.daemon.workerEa;
+  // A BOOT MILESTONE the supervisor reads (`stand-socket-wait.ts` BOOT_MILESTONES): the daemon island's `ea` stands.
+  console.log(`[herm] phase → daemon-ea`);
   await herm.daemon.mountHostWorkingLayer();
   publishStanding(storageDir, standing, faceLit);
   front.attach(makeUdsSeat({
@@ -666,6 +668,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
     onLog: (line) => console.log(`[herm] ${line}`),
   }));
   console.log(`[herm] uds verb-channel on ${floor.storeClaim.socketPath} (perms 0600)`);
+  console.log(`[herm] phase → verb-seat`);
   await markReadyOnceStanding(readinessState, herm.daemon.workerEa);
 
   let hermShuttingDown = false;
@@ -782,6 +785,8 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   // The socket is the vessel's own claim on its store (`claimStore`), bound before its Repo opened; the channel serves it.
   // The daemon island's working layer stands before the channel serves: receipts land in it.
   await result.daemon.workerEa;
+  // A BOOT MILESTONE the supervisor reads (`stand-socket-wait.ts` BOOT_MILESTONES): the daemon island's `ea` stands.
+  console.log(`[lararium] phase → daemon-ea`);
   await result.daemon.mountHostWorkingLayer();
   // WHAT THIS VESSEL STANDS AS, published beside the socket that serves it. A standing is decided at
   // boot from the face found then, so a caller holding a face lit AFTERWARD has no way to see the
@@ -818,6 +823,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     onLog: (line) => console.log(`[lararium] ${line}`),
   }));
   console.log(`[lararium] uds verb-channel on ${floor.storeClaim.socketPath} (perms 0600)`);
+  console.log(`[lararium] phase → verb-seat`);
   await markReadyOnceStanding(readinessState, result.daemon.workerEa);
 
   // Pre-warm the mempalace read holder so the FIRST recall / recall-into-wake skips
