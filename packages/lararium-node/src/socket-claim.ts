@@ -185,6 +185,7 @@ async function reapCorpse(path: string, seen: Stats, refuse: () => NameHeld, onR
       say("waits");
       let stranded = true;
       for (let i = 0; i < GRAVE_DEAD_PATIENCE; i++) {
+        // LIVENESS: a stranded reaper may never clear its grave; these looks bound that silence.
         await new Promise((r) => setTimeout(r, GRAVE_DEAD_INTERVAL_MS));
         if (!sameInode(statOf(path), seen)) { stranded = false; break; }
         if (await answers(path)) throw refuse();
@@ -209,6 +210,7 @@ async function reapCorpse(path: string, seen: Stats, refuse: () => NameHeld, onR
 export async function claimName(path: string, opts: ClaimNameOptions = {}): Promise<ClaimedName> {
   const refuse = opts.refuse ?? (() => new NameHeld(`${path} already has a holder answering — nothing claimed`));
   const pollMs = opts.pollMs ?? 50;
+  // PACING: holder release or abort ends the wait; this spaces the claim looks.
   const pace = opts.pace ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
   let reaping = 0;
   for (;;) {
@@ -218,6 +220,7 @@ export async function claimName(path: string, opts: ClaimNameOptions = {}): Prom
       if (opts.signal?.aborted) throw refuse();
       if (!(await answers(path))) {
         if (err instanceof NameReaping && ++reaping > REAP_PATIENCE) throw err;
+        // PACING: the reaping attempt count bounds retries; this only spaces them.
         await new Promise((r) => setTimeout(r, 5));
         continue;
       }

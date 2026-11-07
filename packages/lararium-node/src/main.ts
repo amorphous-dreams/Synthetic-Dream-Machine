@@ -916,6 +916,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     // THE REPORT ARMS BEFORE THE FIRST STEP (M4c) — a hung main-flush now gets named too, never
     // left silent until islands/daemon even get a turn. It only ever REPORTS; the operator's own
     // second signal above is the sole cut.
+    // PACING: this only reports pending shutdown; completion or a second signal ends it.
     const pastBudget = setTimeout(() => {
       console.error(`[lararium] shutdown past its ${SHUTDOWN_BUDGET_MS}ms report budget — pending shutdown, still awaiting receipts from: ${[...running].join(", ") || "(none named)"}; done so far: ${spans.join(" · ") || "(none)"}; a second SIGINT/SIGTERM (or \`lares vessel stop --cut\`) cuts it now`);
     }, SHUTDOWN_BUDGET_MS);

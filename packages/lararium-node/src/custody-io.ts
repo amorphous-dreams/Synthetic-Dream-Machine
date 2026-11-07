@@ -72,6 +72,7 @@ export class FsCustodyIo implements CustodyIo {
   constructor(readonly homes: CustodyHomes, opts: FsCustodyIoOptions = {}) {
     this.maxWaits = opts.maxWaits ?? 600;
     this.pollMs = opts.pollMs ?? 50;
+    // LIVENESS: the counted waits bound a live holder that may never release its claim.
     this.pace = opts.pace ?? ((ms) => new Promise<void>((r) => setTimeout(r, ms)));
   }
 
