@@ -3,14 +3,17 @@ import { FACE_GRANT_PREFIX, type FaceGrantRecord } from "../src/face-grant-recor
 import { makeFaceSeat, makeGroupDocListener, type GroupDocHandle } from "../src/face-seat.js";
 
 const group = "group";
-const leasePrefix = "lease/group/";
 const self = "abcd";
 const title = `${FACE_GRANT_PREFIX}${group}/${self}`;
-const grant = { sig: "signature", capEvents: [] } as unknown as FaceGrantRecord;
+const FOUNDER = "f0".repeat(32);
+const grant = { sig: "signature", capEvents: [], founderEdge: { deviceVerifyingKey: FOUNDER } } as unknown as FaceGrantRecord;
 function fixture() {
   let records: { title: string; record: FaceGrantRecord }[] = [];
   let known = false;
-  let lease = false;
+  let standing: "clear" | "aside" | "unknown" = "unknown";
+  let pendingOnce = false;
+  const asked: string[] = [];
+  const read: string[] = [];
   let ingests = 0;
   let lifts = 0;
   let verifies = 0;
@@ -21,18 +24,29 @@ function fixture() {
   let refuse = false;
   const logs: string[] = [];
   const seat = makeFaceSeat({
-    group, leasePrefix, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
+    group, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
     knowsAgent: async () => known,
     grants: async () => records,
-    readLease: async () => lease ? { kind: "epoch", n: 0 } : { kind: "unavailable", why: "no layer" },
-    verify: async () => { verifies++; return refuse ? { ok: false, reason: "refused" } : { ok: true }; },
+    founderStanding: async (key) => { asked.push(key); return standing; },
+    // Models the verifier's founder law: the reading it is handed for the founder's key decides, a set-aside founder refuses.
+    verify: async (_record, context) => {
+      verifies++;
+      const reading = context.dyad?.(FOUNDER);
+      read.push(`${reading}|${context.dyad?.("someone-else")}`);
+      if (pendingOnce) { pendingOnce = false; return { ok: false, reason: "founder persona-KEL proof unavailable", pending: true }; }
+      if (reading === "aside") return { ok: false, reason: "founder device set aside" };
+      return refuse ? { ok: false, reason: "refused" } : { ok: true };
+    },
     ingest: async () => { ingests++; if (failIngest) throw new Error("ingest"); known = true; },
     lift: async () => { lifts++; if (failLift) throw new Error("lift"); return { skipped: skipLift, ...(arrival ? { arrivals: [arrival] } : {}) }; },
     log: (message) => { logs.push(message); },
   });
   return {
     logs, seat, arrive: () => { records = [{ title, record: grant }]; },
-    leaseArrives: () => { lease = true; },
+    standingArrives: () => { standing = "clear"; },
+    founderAside: () => { standing = "aside"; },
+    pendingOnce: () => { pendingOnce = true; },
+    asked: () => asked, read: () => read,
     failIngest: (value: boolean) => { failIngest = value; },
     failLift: (value: boolean) => { failLift = value; },
     skipLift: (count: number) => { skipLift = count; },
@@ -45,7 +59,7 @@ function fixture() {
 
 describe("a causal face seat", () => {
   test("R1 grant arrival seats and lifts without a binding call; absent grant leaves the floor", async () => {
-    const f = fixture(); f.leaseArrives();
+    const f = fixture(); f.standingArrives();
     expect(await f.seat.run()).toBe(false);
     expect(f.counts().lifts).toBe(0);
     f.arrive(); f.seat.wake(); await f.seat.settled();
@@ -53,7 +67,7 @@ describe("a causal face seat", () => {
     expect(f.counts()).toEqual({ ingests: 1, lifts: 1, verifies: 1 });
   });
   test("O3 a lift that SKIPPED a silent floor record never latches: the next pass lifts again, and a clean lift latches (CONTROL)", async () => {
-    const f = fixture(); f.leaseArrives(); f.arrive(); f.skipLift(1);
+    const f = fixture(); f.standingArrives(); f.arrive(); f.skipLift(1);
     await f.seat.run(); await f.seat.settled();
     expect(f.counts().lifts).toBe(1);
     f.seat.wake(); await f.seat.settled();
@@ -65,7 +79,7 @@ describe("a causal face seat", () => {
     expect(f.counts().lifts, "a clean lift latches").toBe(3);
   });
   test("O3 the skipped floor document's own ARRIVAL wakes the seat: the lift runs again with no other wake", async () => {
-    const f = fixture(); f.leaseArrives(); f.arrive();
+    const f = fixture(); f.standingArrives(); f.arrive();
     let arrive!: () => void; f.arrival(new Promise<void>((resolve) => { arrive = resolve; })); f.skipLift(1);
     await f.seat.run(); await f.seat.settled();
     expect(f.counts().lifts).toBe(1);
@@ -74,49 +88,74 @@ describe("a causal face seat", () => {
     await new Promise((r) => setImmediate(r)); await f.seat.settled();
     expect(f.counts().lifts, "the arrival alone drew the second pass").toBe(2);
   });
-  test("R2 a grant waits unjudged for the daemon lease layer", async () => {
+  test("R2 a grant waits unjudged while its founder's standing reads unknown", async () => {
     const f = fixture(); f.arrive();
     await f.seat.run(); expect(f.counts().verifies).toBe(0);
-    f.leaseArrives(); f.seat.wake(); await f.seat.settled();
+    f.standingArrives(); f.seat.wake(); await f.seat.settled();
     expect(f.counts().ingests).toBe(1);
   });
-  test("R2 a grant pending on an absent layer wakes on any daemon-layer change; with none pending an unrelated change runs no act", async () => {
-    const idle = fixture(); idle.arrive(); idle.leaseArrives();
+  test("R2 a grant pending on its founder's standing wakes on any daemon-layer change; with none pending an unrelated change runs no act", async () => {
+    const idle = fixture(); idle.arrive(); idle.standingArrives();
     idle.seat.daemonChanged("unrelated/title"); await idle.seat.settled();
     expect(idle.counts().verifies).toBe(0);
     const f = fixture(); f.arrive();
     await f.seat.run(); expect(f.counts().verifies).toBe(0);
-    f.leaseArrives(); f.seat.daemonChanged("unrelated/title"); await f.seat.settled();
+    f.standingArrives(); f.seat.daemonChanged("unrelated/title"); await f.seat.settled();
     expect(f.counts().ingests).toBe(1);
   });
+  test("R7 the seat asks the FOUNDER's standing and hands the verify that reading alone; any other key reads unknown", async () => {
+    const f = fixture(); f.arrive(); f.standingArrives();
+    await f.seat.run(); await f.seat.settled();
+    expect(f.asked()).toEqual([FOUNDER]);
+    expect(f.read()).toEqual(["clear|unknown"]);
+    expect(f.counts().ingests).toBe(1);
+  });
+  test("R8 a set-aside founder's grant judges once and seats nothing; CONTROL: a standing founder's seats", async () => {
+    const f = fixture(); f.arrive(); f.founderAside();
+    await f.seat.run(); f.seat.wake(); await f.seat.settled(); await f.seat.run();
+    expect(f.counts()).toEqual({ ingests: 0, lifts: 0, verifies: 1 });
+    expect(f.seated()).toBe(false);
+    expect(f.logs.some((m) => /REFUSED .*founder device set aside/.test(m))).toBe(true);
+    const control = fixture(); control.arrive(); control.standingArrives();
+    await control.seat.run(); await control.seat.settled();
+    expect(control.seated()).toBe(true);
+  });
+  test("R9 a pending verdict (proof not yet held) never memoizes: the next pass takes the grant once the proof stands", async () => {
+    const f = fixture(); f.arrive(); f.standingArrives(); f.pendingOnce();
+    await f.seat.run(); await f.seat.settled();
+    expect(f.counts()).toEqual({ ingests: 0, lifts: 0, verifies: 1 });
+    expect(f.logs.some((m) => /grant pending .*persona-KEL proof unavailable/.test(m))).toBe(true);
+    f.seat.daemonChanged("any/title"); await f.seat.settled();
+    expect(f.counts()).toEqual({ ingests: 1, lifts: 1, verifies: 2 });
+  });
   test("R3 duplicate pulses coalesce and a pulse during a pass yields one trailing pass", async () => {
-    const f = fixture(); f.arrive(); f.leaseArrives();
+    const f = fixture(); f.arrive(); f.standingArrives();
     const running = f.seat.run();
     for (let i = 0; i < 8; i++) f.seat.wake();
     await running; await f.seat.settled();
     expect(f.counts()).toEqual({ ingests: 1, lifts: 1, verifies: 1 });
   });
   test("R4 an ingest fault leaves the signature open; a refusal judges once", async () => {
-    const f = fixture(); f.arrive(); f.leaseArrives(); f.failIngest(true);
+    const f = fixture(); f.arrive(); f.standingArrives(); f.failIngest(true);
     await f.seat.run(); expect(f.seated()).toBe(false);
     f.failIngest(false); await f.seat.run();
     expect(f.counts().ingests).toBe(2);
-    const refused = fixture(); refused.arrive(); refused.leaseArrives(); refused.refuse();
+    const refused = fixture(); refused.arrive(); refused.standingArrives(); refused.refuse();
     await refused.seat.run(); await refused.seat.run();
     expect(refused.counts().verifies).toBe(1);
   });
   test("R5 a restart with the veil already seated lifts once and ingests nothing", async () => {
     let lifts = 0; let ingests = 0;
     const seat = makeFaceSeat({
-      group, leasePrefix, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
-      knowsAgent: async () => true, grants: async () => [{ title, record: grant }], readLease: async () => ({ kind: "epoch", n: 0 }),
+      group, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
+      knowsAgent: async () => true, grants: async () => [{ title, record: grant }], founderStanding: async () => "clear",
       verify: async () => ({ ok: true }), ingest: async () => { ingests++; }, lift: async () => { lifts++; }, log: () => {},
     });
     await seat.run(); seat.wake(); await seat.run();
     expect({ lifts, ingests }).toEqual({ lifts: 1, ingests: 0 });
   });
   test("R5 a lift fault retries on the next act without another ingest", async () => {
-    const f = fixture(); f.arrive(); f.leaseArrives(); f.failLift(true);
+    const f = fixture(); f.arrive(); f.standingArrives(); f.failLift(true);
     await f.seat.run(); f.failLift(false); await f.seat.run();
     expect(f.counts()).toEqual({ ingests: 1, lifts: 2, verifies: 1 });
   });
@@ -143,8 +182,8 @@ test("R6 a lift inside the act completes while settlement points to that act", a
   let seat!: ReturnType<typeof makeFaceSeat>;
   let known = true;
   seat = makeFaceSeat({
-    group, leasePrefix, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
-    knowsAgent: async () => known, grants: async () => [], readLease: async () => ({ kind: "epoch", n: 0 }),
+    group, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
+    knowsAgent: async () => known, grants: async () => [], founderStanding: async () => "clear",
     verify: async () => ({ ok: true }), ingest: async () => { known = true; },
     lift: async () => { expect(await seat.seated()).toBe(true); }, log: () => {},
   });
@@ -189,13 +228,13 @@ test("R6 the resolver's lift never waits on the seat act", async () => {
 
 describe("the seat speaks its states", () => {
   test("S1 an unseated pass logs the pinned line once; two identical passes log one; no grant moves no binding", async () => {
-    const f = fixture(); f.leaseArrives();
+    const f = fixture(); f.standingArrives();
     await f.seat.run(); await f.seat.run(); f.seat.wake(); await f.seat.settled();
     expect(f.logs.filter(l => l.includes("pinned, not yet seated"))).toHaveLength(1);
     expect(f.logs.some(l => l.includes("grant record taken"))).toBe(false);
   });
   test("S2 a landed ingest logs the taken line with its counts and SEATED, and no pinned line", async () => {
-    const f = fixture(); f.leaseArrives();
+    const f = fixture(); f.standingArrives();
     await f.seat.run(); f.arrive(); await f.seat.run();
     const taken = f.logs.filter(l => l.includes("grant record taken"));
     expect(taken).toHaveLength(1);
@@ -206,8 +245,8 @@ describe("the seat speaks its states", () => {
   test("S3 a seated boot logs neither line", async () => {
     const logs: string[] = [];
     const seat = makeFaceSeat({
-      group, leasePrefix, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
-      knowsAgent: async () => true, grants: async () => [], readLease: async () => ({ kind: "epoch", n: 0 }),
+      group, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
+      knowsAgent: async () => true, grants: async () => [], founderStanding: async () => "clear",
       verify: async () => ({ ok: true }), ingest: async () => {}, lift: async () => {}, log: (m) => { logs.push(m); },
     });
     await seat.run();
@@ -216,8 +255,8 @@ describe("the seat speaks its states", () => {
   test("S4 an ingest that leaves the face unseated logs the still-unseated taken line once", async () => {
     const logs: string[] = [];
     const seat = makeFaceSeat({
-      group, leasePrefix, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
-      knowsAgent: async () => false, grants: async () => [{ title, record: grant }], readLease: async () => ({ kind: "epoch", n: 0 }),
+      group, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
+      knowsAgent: async () => false, grants: async () => [{ title, record: grant }], founderStanding: async () => "clear",
       verify: async () => ({ ok: true }), ingest: async () => {}, lift: async () => {}, log: (m) => { logs.push(m); },
     });
     await seat.run(); await seat.run();
@@ -302,8 +341,8 @@ describe("the lift stands off the ea path (Sol/P5: the seated verdict gates the 
     let known = true, lifts = 0;
     const logs: string[] = [];
     const seat = makeFaceSeat({
-      group, leasePrefix, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
-      knowsAgent: async () => known, grants: async () => [], readLease: async () => ({ kind: "epoch", n: 0 }),
+      group, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
+      knowsAgent: async () => known, grants: async () => [], founderStanding: async () => "clear",
       verify: async () => ({ ok: true }), ingest: async () => {}, lift: async () => { lifts++; await lift(); }, log: (m) => { logs.push(m); },
     });
     return { seat, logs, lifts: () => lifts };

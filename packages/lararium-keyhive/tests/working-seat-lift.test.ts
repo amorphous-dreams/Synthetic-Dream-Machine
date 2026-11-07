@@ -100,9 +100,9 @@ test("a pending grant, working attach and lift leave subsequent writes on the fa
   let seated = false, grant = false, liftError: unknown;
   let done!: () => void;
   const lifted = new Promise<void>(resolve => { done = resolve; });
-  const seat = makeFaceSeat({ group: "group", leasePrefix: "lease/", selfVerifyingKey: "self", personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
-    knowsAgent: async () => seated, grants: async () => grant ? [{ title: `${FACE_GRANT_PREFIX}group/self`, record: { sig: "sig", capEvents: [] } as never }] : [],
-    readLease: async () => ({ kind: "epoch", n: 0 }), verify: async () => ({ ok: true }), ingest: async () => { seated = true; },
+  const seat = makeFaceSeat({ group: "group", selfVerifyingKey: "self", personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
+    knowsAgent: async () => seated, grants: async () => grant ? [{ title: `${FACE_GRANT_PREFIX}group/self`, record: { sig: "sig", capEvents: [], founderEdge: { deviceVerifyingKey: "f0" } } as never }] : [],
+    founderStanding: async () => "clear", verify: async () => ({ ok: true }), ingest: async () => { seated = true; },
     lift: async () => { try { await liftVesselOnlyIntoFace({ repo: repo as never, daemonStore: composite, catalog: { handle: async () => catalog } as never,
       faceDoor: { mint: async () => ({ docId: "face" }) } as never, mintedByHex: "vessel", vesselDid: didFromVerifyingKey("ab".repeat(32)),
       traceOf: async () => null, working: { anchor, urlOf: async () => "face", open: async () => face,
@@ -192,8 +192,8 @@ test("a STALLED destination flush names the DESTINATION as waiting on rest, so t
     const results: Array<{ url: string; waits: string }[]> = [];
     // The daemon's mapping: an arrival waits on `whenReady`, a rest waits on a flush of the document.
     const seat = makeFaceSeat({
-      group: "g", leasePrefix: "lease/", selfVerifyingKey: "self", personaRootDid: "root",
-      knowsAgent: async () => true, grants: async () => [], readLease: async () => ({ kind: "epoch", n: 0 }), verify: async () => ({ ok: true }), ingest: async () => {},
+      group: "g", selfVerifyingKey: "self", personaRootDid: "root",
+      knowsAgent: async () => true, grants: async () => [], founderStanding: async () => "clear", verify: async () => ({ ok: true }), ingest: async () => {},
       lift: async () => {
         lifts++;
         const r = await liftVesselOnlyIntoFace(args);

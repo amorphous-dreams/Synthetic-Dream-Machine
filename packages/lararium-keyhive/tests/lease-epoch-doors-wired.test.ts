@@ -14,6 +14,8 @@
  * witness-free licensing, silently, with no red anywhere else (the behavioral tests in
  * `persona-kel.test.ts` / `face-grant-record.test.ts` / `boot-daemon-keyhive.test.ts` prove the PRIMITIVE
  * enforces the fence when asked; this proves each DOOR still asks).
+ *
+ * The face grant's doors left the lease (lease-end, road M6): their welds below pin the founder-standing proof instead.
  */
 import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
@@ -38,30 +40,35 @@ describe("the lease-epoch fence's wiring", () => {
     expect(src).toMatch(/bindingGateLease\.kind\s*===\s*"epoch"\s*\?\s*\{\s*expectedEpoch:\s*bindingGateLease\.n/);
   });
 
-  test("★ the joinee's grant-take reads the fresh lease and threads it into verifyFaceGrantRecord ★", () => {
+  // RECUT (lease-end, road M6): the grant path no longer asks the lease. The joinee's grant-take and the grant verifier read
+  // the FOUNDER's standing (its anchor-pinned persona lineage and its remove-wins dyad) instead; these welds keep each
+  // door asking for that proof, and keep the lease out of it, so a door that drops either regresses red here.
+  test("★ the joinee's grant-take reads the founder's standing through a required dyad reader and hands it to verifyFaceGrantRecord ★", () => {
     const daemon = KEYHIVE_SRC("operator-daemon-behavior.ts");
-    expect(daemon).toMatch(/readLease:\s*\(\)\s*=>\s*readLeaseEpoch\(ctx\.composite\)/);
+    expect(daemon).toMatch(/founderStanding:\s*async\s*\(key\)\s*=>\s*requireDyadReader\(dyadReader\(ctx\),\s*"the grant founder"\)\(edge\.personaRootDid,\s*key\)/);
     expect(daemon).toMatch(/verify:\s*verifyFaceGrantRecord/);
-    expect(KEYHIVE_SRC("face-seat.ts")).toMatch(/ports\.verify\(record,\s*\{[\s\S]{0,300}expectedEpoch:\s*lease\.n/);
+    const seat = KEYHIVE_SRC("face-seat.ts");
+    expect(seat).toMatch(/ports\.verify\(record,\s*\{[\s\S]{0,300}dyad:/);
+    expect(seat).not.toMatch(/expectedEpoch|readLease/);
   });
 
-  test("★ an unavailable lease frontier cannot make a face-grant record mutate the joinee ★", () => {
+  test("★ an unknown founder standing cannot make a face-grant record mutate the joinee ★", () => {
     const src = KEYHIVE_SRC("face-seat.ts");
-    const start = src.indexOf("const lease = await ports.readLease()");
+    const start = src.indexOf("await ports.founderStanding(");
     const end = src.indexOf("ports.verify(record", start);
     expect(start).toBeGreaterThanOrEqual(0);
     expect(end).toBeGreaterThan(start);
     const grantTake = src.slice(start, end);
-    expect(grantTake).toMatch(/if \(lease\.kind === "unavailable"\) \{[\s\S]{0,400}face-join grant pending[\s\S]{0,200}current lease frontier unavailable[\s\S]{0,80}continue/);
+    expect(grantTake).toMatch(/if \(standing === "unknown"\) \{[\s\S]{0,400}face-join grant pending[\s\S]{0,200}founder dyad standing unknown[\s\S]{0,80}continue/);
     expect(src.lastIndexOf("judged.add(record.sig)")).toBeGreaterThan(src.indexOf("await ports.ingest(record)"));
   });
 
-  test("★ face-grant-record.ts forwards ctx.expectedEpoch into BOTH the KEL-head and pinned-root verify paths ★", () => {
+  test("★ face-grant-record.ts carries no lease epoch: the founder's authority reads its pinned lineage and its standing ★", () => {
     const src = KEYHIVE_SRC("face-grant-record.ts");
-    expect(src).toMatch(/readonly expectedEpoch\?:\s*number/);
-    expect(src).toMatch(/freshnessOpts[\s\S]{0,300}expectedEpoch/);
-    expect(src).toMatch(/verifyEdgeAgainstPersonaKel\(r\.founderEdge,\s*chain,\s*freshnessOpts\)/);
-    expect(src).toMatch(/verifyDeviceDelegation\(r\.founderEdge,\s*ctx\.personaRootDid,\s*freshnessOpts\)/);
+    expect(src).not.toMatch(/expectedEpoch|freshnessOpts|verifyDeviceDelegation/);
+    expect(src).toMatch(/const authority = await verifyFounderAuthority\(r\.founderEdge,\s*ctx\)/);
+    expect(src).toMatch(/verifyEdgeAgainstPersonaKel\(founderEdge,\s*chain\)/);
+    expect(src).toMatch(/if \(!proof\.dyad\) return \{ ok: false, reason: "founder dyad standing proof unavailable", pending: true \}/);
   });
 
   test("★ ONE ROAD: every lease read goes through the island's own daemon layer, never the oracle registry ★", () => {
