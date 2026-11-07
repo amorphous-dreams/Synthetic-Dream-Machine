@@ -190,7 +190,7 @@ describe("one face at two anchors: the store reads the face by every subject the
 });
 
 describe("step three: one manifest for each write batch", () => {
-  it("a batch rests under one manifest, and each manifest cites every manifest its writer verified", async () => {
+  it("a batch rests under one manifest, and each manifest cites the heads of what its writer verified", async () => {
     const w = world();
     const a = await vessel(w, "a");
     const b = await vessel(w, "b");
@@ -207,11 +207,11 @@ describe("step three: one manifest for each write batch", () => {
     const secondBody = (await a.store.record("manifest", second.manifest))[0]!.body;
     expect(secondBody.parents).toEqual([first.manifest]);
     expect(secondBody.entries[0]!.parents).toEqual([first.values[2]!.address]);
-    // b verifies both of a's manifests on receipt, and its own batch cites both.
+    // b verifies both of a's manifests on receipt; the second cites the first, so b's batch cites the second alone.
     await carry(a, b, BAG);
     const third = await b.holder.sealValues({ bagId: BAG, values: [change(5)], signer: b.signer });
     if ("refusal" in third) throw new Error(said(third));
-    expect((await b.store.record("manifest", third.manifest))[0]!.body.parents).toEqual([first.manifest, second.manifest].sort());
+    expect((await b.store.record("manifest", third.manifest))[0]!.body.parents).toEqual([second.manifest]);
     // CONTROL: a manifest b never verified (a's later batch) stays uncited by b's next batch.
     const fourth = await a.holder.sealValues({ bagId: BAG, values: [change(6)], signer: a.signer });
     if ("refusal" in fourth) throw new Error(said(fourth));
