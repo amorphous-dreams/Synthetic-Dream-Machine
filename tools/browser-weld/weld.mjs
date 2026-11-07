@@ -24,6 +24,7 @@ import { chromium } from "playwright";
 // The published test route answers the custody form a fresh vessel raises (a harness door; never a person's passphrase).
 import { armTestCustody } from "../../packages/lararium-node/dist/probes/browser-test-custody.js";
 import { workerTraceInitScript } from "./worker-trace.mjs";
+import { awaitPage, waitForWitness } from "./page-wait.mjs";
 
 const WEB = process.env.WELD_WEB_URL ?? "http://localhost:5173";
 
@@ -31,57 +32,6 @@ let failures = 0, gaps = 0;
 const ok   = (n, m) => console.log(`  \x1b[32mok\x1b[0m       ${n} — ${m}`);
 const bad  = (n, m) => { failures++; console.log(`  \x1b[31mFAILED\x1b[0m   ${n} — ${m}`); };
 const gap  = (n, m) => { gaps++;     console.log(`  \x1b[33mgap\x1b[0m      ${n} — ${m}`); };
-
-/** Wait for a product witness or terminal failure. A missing frame after an applied act has no
- * terminal signal, so LIVENESS retains the existing 8s bound for the positive projection checks. */
-async function waitForWitness(page, kind, mark, renderId, value, liveness = false) {
-  let onError, onConsole, timer;
-  const terminal = new Promise((resolve) => {
-    onError = () => resolve(false);
-    onConsole = (message) => {
-      if (/\[daemon-island:fault\]|\[mirror\] stand refused:/.test(message.text())) resolve(false);
-    };
-    page.on("pageerror", onError);
-    page.on("console", onConsole);
-    if (liveness) timer = setTimeout(() => resolve(false), 8_000); // LIVENESS: no missing-frame verdict.
-  });
-  try {
-    return await Promise.race([
-      terminal,
-      page.waitForFunction(({ kind, mark, renderId, value }) => {
-        const events = window.__weldWorkerTrace?.events.slice(mark) ?? [];
-        const phase = [...document.querySelectorAll("#phases .phase")].find((p) => /refus|fault/i.test(p.textContent ?? ""));
-        const status = document.querySelector("#status");
-        const mirror = document.querySelector("#mirror")?.getAttribute("data-lar-mirror");
-        if (events.some((e) => e.direction === "worker-error") || phase || status?.classList.contains("err") ||
-            status?.classList.contains("warn") || document.querySelector(".ceremony-ask[data-refusal]") ||
-            (mirror?.startsWith("none:") && mirror !== "none:mirror-inputs-absent")) return { arrived: false };
-        const dispatch = events.find((e) => e.direction === "to-worker" && e.type === "lar:control-event" &&
-          (renderId ? e.renderId === renderId : e.action === "lar:sense"));
-        const answered = dispatch && events.some((e) => e.direction === "from-worker" && e.workerId === dispatch.workerId &&
-          e.surface === dispatch.surface && e.type === "lar:control-result" && e.renderId === renderId);
-        if (kind === "unknown") return answered ? { arrived: true } : false;
-        const pane = document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection");
-        const tab = (title) => pane?.querySelector(`button[data-lar-rid][data-tab-title="${title}"]`);
-        const reveal = pane?.querySelector(".tc-sidebar-header > .tc-reveal");
-        const arrived = kind === "recent" ? tab("$:/core/ui/SideBar/Open")?.getAttribute("aria-selected") === "false" &&
-            tab("$:/core/ui/SideBar/Recent")?.getAttribute("aria-selected") === "true" :
-          kind === "hidden" ? reveal?.hidden === true && !!pane?.querySelector(".tc-show-sidebar-btn[data-lar-rid]") :
-          kind === "shown" ? reveal?.hidden === false && !!pane?.querySelector(".tc-hide-sidebar-btn[data-lar-rid]") :
-          (pane?.innerHTML ?? "").includes(value);
-        const frame = dispatch && events.some((e) => e.direction === "from-worker" && e.workerId === dispatch.workerId &&
-          e.surface === dispatch.surface && e.type === "lar:frame");
-        return arrived && frame ? { arrived: true } : false;
-      }, { kind, mark, renderId, value }, { timeout: 0 }).then((h) => h.jsonValue()).then((r) => r.arrived),
-    ]);
-  } catch {
-    return false; // page closed
-  } finally {
-    clearTimeout(timer);
-    page.off("pageerror", onError);
-    page.off("console", onConsole);
-  }
-}
 
 /**
  * Install before navigation: workers are the actual browser→island boundary, not an inference from
@@ -149,35 +99,24 @@ const main = async () => {
   // ── W1 · the vessel boots to a live sovereign island ──────────────────────────────────────────
   // The web surface writes its own verdict into #status / #vessel. Reading ITS words rather than inferring
   // from the DOM keeps this vector honest about what the web surface itself claims. The wait ends on the
-  // page's own events, never on elapsed time: #vessel reports "live" (arrival), or the page paints a terminal
-  // signal (a refusing or faulting phase, an err or warn status, a ceremony refusal, a refused mirror stand)
-  // or raises a page error.
-  let pageError = null, onPageError;
-  const pageErrorSeen = new Promise((resolve) => {
-    onPageError = (error) => { pageError = `pageerror: ${error.message}`; resolve(pageError); };
-    page.on("pageerror", onPageError);
-  });
-  let w1;
-  try {
-    w1 = await Promise.race([
-      pageErrorSeen,
-      page.waitForFunction(() => {
-        const phase = [...document.querySelectorAll("#phases .phase")].find((p) => /refus|fault/i.test(p.textContent ?? ""));
-        if (phase) return `phase: ${phase.textContent}`;
-        const st = document.querySelector("#status");
-        if (st?.classList.contains("err") || st?.classList.contains("warn")) return `status: ${st.textContent}`;
-        const refusal = document.querySelector(".ceremony-ask[data-refusal]");
-        if (refusal) return `ceremony refusal: ${refusal.getAttribute("data-refusal")}`;
-        const mirror = document.querySelector("#mirror")?.getAttribute("data-lar-mirror");
-        if (mirror?.startsWith("none:") && mirror !== "none:mirror-inputs-absent") return `mirror: ${mirror}`;
-        return (document.getElementById("vessel")?.textContent ?? "").includes("live") ? "arrived" : false;
-      }, undefined, { timeout: 0 }).then((h) => h.jsonValue()),
-    ]);
-  } catch (e) {
-    w1 = `page closed: ${String(e).slice(0, 90)}`;
-  } finally {
-    page.off("pageerror", onPageError);
-  }
+  // page's own events: #vessel reports "live" (arrival), or the page paints a terminal signal (a refusing or
+  // faulting phase, an err or warn status, a ceremony refusal, a refused mirror stand) or raises a page error.
+  // The boot's phase list growing is its progress: each new phase renews the LIVENESS bound, so a slow boot that keeps
+  // advancing is never cut, and one alive and silent refuses by name.
+  const booted = await awaitPage(page, ({ seen }) => {
+    const phases = [...document.querySelectorAll("#phases .phase")];
+    const phase = phases.find((p) => /refus|fault/i.test(p.textContent ?? ""));
+    if (phase) return { done: `phase: ${phase.textContent}` };
+    const st = document.querySelector("#status");
+    if (st?.classList.contains("err") || st?.classList.contains("warn")) return { done: `status: ${st.textContent}` };
+    const refusal = document.querySelector(".ceremony-ask[data-refusal]");
+    if (refusal) return { done: `ceremony refusal: ${refusal.getAttribute("data-refusal")}` };
+    const mirror = document.querySelector("#mirror")?.getAttribute("data-lar-mirror");
+    if (mirror?.startsWith("none:") && mirror !== "none:mirror-inputs-absent") return { done: `mirror: ${mirror}` };
+    if ((document.getElementById("vessel")?.textContent ?? "").includes("live")) return { done: "arrived" };
+    return phases.length > seen ? { progress: phases.length } : false;
+  }, undefined, { livenessMs: 60_000, what: "the vessel boot" }); // LIVENESS: a boot alive and silent between two phases
+  const w1 = "refused" in booted ? booted.refused : booted.value;
   if (w1 === "arrived") ok("W1 vessel-boots", "the island reports live");
   else bad("W1 vessel-boots", `${w1} — the browser vessel never stood`);
 
@@ -185,34 +124,21 @@ const main = async () => {
   // Two facts, one seam: the frame arrived AND it is addressable. A pane with html but no
   // `data-lar-rid` is a render leg that landed with the return leg unbound, which is a different
   // defect from an empty pane and must not read the same.
-  // The page's refusal/fault signals terminate this wait as they do the boot wait. A
-  // closed page rejects waitForFunction; a page error settles the other race arm.
-  let projectionError;
-  const projectionFailed = new Promise((resolve) => {
-    projectionError = () => resolve(null);
-    page.on("pageerror", projectionError);
-  });
-  let html;
-  try {
-    html = await Promise.race([
-      projectionFailed,
-      page.waitForFunction(() => {
-        const h = document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection")?.innerHTML;
-        if (h) return { html: h };
-        const phase = [...document.querySelectorAll("#phases .phase")].find((p) => /refus|fault/i.test(p.textContent ?? ""));
-        const status = document.querySelector("#status");
-        const mirror = document.querySelector("#mirror")?.getAttribute("data-lar-mirror");
-        if (phase || status?.classList.contains("err") || status?.classList.contains("warn") ||
-            document.querySelector(".ceremony-ask[data-refusal]") ||
-            (mirror?.startsWith("none:") && mirror !== "none:mirror-inputs-absent")) return { html: null };
-        return false;
-      }, undefined, { timeout: 0 }).then((h) => h.jsonValue()).then((result) => result.html),
-    ]);
-  } catch {
-    html = null;
-  } finally {
-    page.off("pageerror", projectionError);
-  }
+  // The page's refusal/fault signals and a page error end this wait as they end the boot wait; a live vessel that
+  // never paints a frame refuses by name at the LIVENESS bound.
+  const projected = await awaitPage(page, () => {
+    const h = document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection")?.innerHTML;
+    if (h) return { done: h };
+    const phase = [...document.querySelectorAll("#phases .phase")].find((p) => /refus|fault/i.test(p.textContent ?? ""));
+    const status = document.querySelector("#status");
+    const mirror = document.querySelector("#mirror")?.getAttribute("data-lar-mirror");
+    if (phase || status?.classList.contains("err") || status?.classList.contains("warn") ||
+        document.querySelector(".ceremony-ask[data-refusal]") ||
+        (mirror?.startsWith("none:") && mirror !== "none:mirror-inputs-absent")) return { done: null };
+    return false;
+  }, undefined, { livenessMs: 30_000, what: "the projection's first frame" }); // LIVENESS: a live vessel that never paints a frame
+  if ("refused" in projected) console.log(`  ${projected.refused}`);
+  const html = "refused" in projected ? null : projected.value;
   if (!html) {
     bad("W2 projection-renders", "the projection shadow root stayed empty — no `lar:frame` applied");
   } else if (!html.includes("data-lar-rid")) {
@@ -288,7 +214,7 @@ const main = async () => {
 
       const restoredMark = await traceMark(page);
       const restoredClick = await clickRenderId(page, recentId);
-      const restored = restoredClick && await waitForWitness(page, "recent", restoredMark, recentId, null, true);
+      const restored = restoredClick && await waitForWitness(page, "recent", restoredMark, recentId, null);
       const restoredTrace = await traceSince(page, restoredMark);
       const recentDispatch = restoredTrace.find((event) =>
         event.direction === "to-worker" && event.type === "lar:control-event" && event.renderId === recentId);
@@ -330,7 +256,7 @@ const main = async () => {
     const sidebarMark = await traceMark(page);
     const errorCount = consoleErrors.length;
     const hideClicked = await clickRenderId(page, sidebarBefore.renderId);
-    const hidden = hideClicked && await waitForWitness(page, "hidden", sidebarMark, sidebarBefore.renderId, null, true);
+    const hidden = hideClicked && await waitForWitness(page, "hidden", sidebarMark, sidebarBefore.renderId, null);
     const sidebarTrace = await traceSince(page, sidebarMark);
     const sidebarDispatch = sidebarTrace.find((event) =>
       event.direction === "to-worker" && event.type === "lar:control-event" && event.renderId === sidebarBefore.renderId);
@@ -346,7 +272,7 @@ const main = async () => {
       if (showId) {
         const showMark = await traceMark(page);
         const showClicked = await clickRenderId(page, showId);
-        const shown = showClicked && await waitForWitness(page, "shown", showMark, showId, null, true);
+        const shown = showClicked && await waitForWitness(page, "shown", showMark, showId, null);
         if (!shown) bad("W3 sidebar-restores", "Show sidebar did not restore the W4 surface after a successful hide");
         else ok("W3 sidebar-restores", "Show sidebar restored the W4 surface");
       } else {
@@ -379,7 +305,7 @@ const main = async () => {
       el.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
       el.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
     }, typed);
-    const seen = await waitForWitness(page, "input", inputMark, null, typed, true);
+    const seen = await waitForWitness(page, "input", inputMark, null, typed);
     const inputTrace = await traceSince(page, inputMark);
     const inputDispatch = inputTrace.find((event) =>
       event.direction === "to-worker" && event.type === "lar:control-event" && event.action === "lar:sense");
