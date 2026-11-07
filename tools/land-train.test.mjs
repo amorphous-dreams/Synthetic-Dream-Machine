@@ -423,6 +423,29 @@ test("RED: the DIRECT land: a lane whose head holds the span head lands with no 
   assert.match(lines.join("\n"), /DIRECT-LANDED/);
 });
 
+test("RED: DIRECT refuses the span's newest completed red held-out run by name; CONTROL: green lands", async () => {
+  const w = world(["a"]);
+  const reads = [];
+  const r = await run(w, {
+    verdict: async () => ({ ci: "green", heldOut: "unread" }),
+    heldOut: async (span) => { reads.push(span); return { covered: w.base, state: "red", inFlight: 0 }; },
+  }, { local: false }, ["a"]);
+  assert.equal(r.code, 15, r.out);
+  assert.match(r.out, new RegExp(`HELD-OUT RED at ${w.base.slice(0, 9)}`));
+  assert.deepEqual(reads, [SPAN]);
+  assert.equal(originRef(w, SPAN), w.base, "the red held-out run prevents the span push");
+  assert.equal(originRef(w, `${SPAN}--a`), w.heads.a, "the lane stays untouched");
+
+  const control = world(["a"]);
+  const green = await run(control, {
+    verdict: async () => ({ ci: "green", heldOut: "unread" }),
+    heldOut: async () => ({ covered: control.base, state: "green", inFlight: 0 }),
+  }, { local: false }, ["a"]);
+  assert.equal(green.code, 0, green.out);
+  assert.match(green.out, /DIRECT-LANDED/);
+  assert.notEqual(originRef(control, SPAN), control.base);
+});
+
 test("a single lane that lacks the span head is NOT direct: it takes the train", async () => {
   const w = world(["a"]);
   const road = w.commit(w.work, "road.txt", "r\n", "span ahead — merge PR #0: an earlier land");
