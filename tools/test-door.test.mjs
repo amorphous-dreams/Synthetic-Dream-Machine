@@ -48,6 +48,13 @@ test('test door refuses a symlink escaping the worktree by name', () => {
   const result = x.run(request(['escape.test.mjs']));
   assert.equal(result.ok, false); assert.match(result.output, /symlink/i);
 });
+test('test door refuses a named file whose parent symlinks outside the worktree', () => {
+  const x = fixture(), outside = path.join(x.home, 'outside-parent');
+  mkdirSync(outside); writeFileSync(path.join(outside, 'sample.test.mjs'), '');
+  symlinkSync(outside, path.join(x.wt, 'linked-parent'));
+  const result = x.run(request(['linked-parent/sample.test.mjs']));
+  assert.equal(result.ok, false); assert.match(result.output, /symlink/i);
+});
 test('test door refuses an unknown runner by name', () => {
   const x = fixture(), result = x.run({ ...request(['ok.test.mjs']), runner: 'shell' });
   assert.equal(result.ok, false); assert.match(result.output, /unknown runner.*shell/i);
