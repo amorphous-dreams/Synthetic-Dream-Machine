@@ -69,7 +69,9 @@ test('vitest refuses when the test package has no local installation', () => {
   writeFileSync(path.join(x.wt, 'nested', 'package.json'), JSON.stringify({ name: 'nested-fixture' }));
   writeFileSync(path.join(x.wt, 'nested', 'sample.test.mjs'), '');
   const result = x.run({ kind: 'test', runner: 'vitest', files: ['nested/sample.test.mjs'] });
-  assert.equal(result.ok, false); assert.match(result.output, /vitest not installed for nested-fixture/);
+  assert.equal(result.ok, false);
+  assert.ok(Number.isInteger(result.exitCode) && result.exitCode !== 0);
+  assert.match(result.output, /stderr tail: [\s\S]*(?:Cannot find module|ERR_MODULE_NOT_FOUND)/);
 });
 test('a post-execution refusal carries the exit code and bounded stderr tail', () => {
   const x = fixture();

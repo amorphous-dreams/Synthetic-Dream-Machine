@@ -235,13 +235,40 @@ export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
     if (/[*?\[\]{}]/.test(file)) return { ok: false, output: `refused: glob ${file}` };
   }
   const refuse = message => ({ ok: false, output: `refused: ${message}` });
-  let root;
+  // Walk only from held directories; inspect an ENOTDIR component without following it.
+  const openWorktreeFile = (name, use) => {
+    const opened = [];
+    try {
+      let parent = worktreeHeld.fd;
+      const parts = name.split('/').filter(part => part && part !== '.');
+      if (!parts.length) throw Object.assign(new Error('not a file'), { code: 'ENOTDIR' });
+      for (const [index, part] of parts.entries()) {
+        let fd;
+        try {
+          fd = openSync(`/proc/self/fd/${parent}/${part}`, FS.O_RDONLY | FS.O_NOFOLLOW | FS.O_NONBLOCK | (index < parts.length - 1 ? FS.O_DIRECTORY : 0));
+        } catch (error) {
+          if (error.code === 'ENOTDIR') {
+            let probe;
+            try {
+              probe = openSync(`/proc/self/fd/${parent}/${part}`, 0x200000 | FS.O_NOFOLLOW); // Linux O_PATH
+              if (fstatSync(probe).isSymbolicLink()) error.code = 'ELOOP';
+            } catch {} finally { if (probe !== undefined) closeSync(probe); }
+          }
+          throw error;
+        }
+        opened.push(fd); parent = fd;
+      }
+      return use(parent, fstatSync(parent));
+    } finally { for (const fd of opened.reverse()) closeSync(fd); }
+  };
   try {
-    root = realpathSync(worktreeHeld.at());
     for (const file of files) {
-      const resolved = realpathSync(worktreeHeld.at(file));
-      if (!resolved.startsWith(`${root}${path.sep}`)) return refuse(`symlink leaves worktree: ${file}`);
-      if (!statSync(worktreeHeld.at(file)).isFile()) return refuse(`not a file: ${file}`);
+      try {
+        if (!openWorktreeFile(file, (_fd, stat) => stat.isFile())) return refuse(`not a file: ${file}`);
+      } catch (error) {
+        if (error.code === 'ELOOP') return refuse(`symlink: ${file}`);
+        throw error;
+      }
     }
   } catch (error) { return refuse(`invalid file: ${error.message}`); }
   if (!HAVE_BWRAP) return refuse('no test wall available');
@@ -255,21 +282,14 @@ export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
       while (true) {
         const packageFile = path.join(dir, 'package.json');
         try {
-          // Each component stays held while the next opens; no pathname component may follow a symlink.
-          const opened = [];
-          try {
-            let parent = worktreeHeld.fd;
-            const parts = packageFile.split('/').filter(part => part && part !== '.');
-            for (const [index, part] of parts.entries()) {
-              const fd = openSync(`/proc/self/fd/${parent}/${part}`, FS.O_RDONLY | FS.O_NOFOLLOW | (index < parts.length - 1 ? FS.O_DIRECTORY : 0));
-              opened.push(fd); parent = fd;
-            }
-            if (!fstatSync(parent).isFile()) return refuse('package.json unreadable');
-            const packageData = readFileSync(`/proc/self/fd/${parent}`, 'utf8');
-            packages.push({ dir, packageData });
-            break;
-          } finally { for (const fd of opened.reverse()) closeSync(fd); }
+          const packageData = openWorktreeFile(packageFile, (fd, stat) => {
+            if (!stat.isFile()) throw new Error('not a file');
+            return readFileSync(`/proc/self/fd/${fd}`, 'utf8');
+          });
+          packages.push({ dir, packageData });
+          break;
         } catch (error) {
+          if (error.code === 'ELOOP') return refuse(`symlink: ${packageFile}`);
           if (error.code !== 'ENOENT') return refuse('package.json unreadable');
         }
         if (dir === '.') return refuse(`no package for ${file}`);
@@ -278,18 +298,9 @@ export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
     }
     if (packages.some(pkg => pkg.dir !== packages[0].dir)) return refuse('files belong to different packages');
     packageDir = packages[0].dir;
-    let packageName = packageDir;
-    try { packageName = JSON.parse(packages[0].packageData).name || packageDir; }
+    try { JSON.parse(packages[0].packageData); }
     catch { return refuse('package.json unreadable'); }
     vitestPath = path.join(packageDir, 'node_modules/vitest/vitest.mjs');
-    try {
-      const resolved = realpathSync(worktreeHeld.at(vitestPath));
-      if (!resolved.startsWith(`${root}${path.sep}`)) return refuse(`symlink leaves worktree: ${vitestPath}`);
-      if (!statSync(worktreeHeld.at(vitestPath)).isFile()) return refuse(`vitest not installed for ${packageName}`);
-    } catch (error) {
-      if (error.code === 'ENOENT' || error.code === 'ENOTDIR') return refuse(`vitest not installed for ${packageName}`);
-      return refuse(`vitest lookup: ${error.message}`);
-    }
   }
 
   const nvm = path.join(os.userInfo().homedir, '.nvm');
