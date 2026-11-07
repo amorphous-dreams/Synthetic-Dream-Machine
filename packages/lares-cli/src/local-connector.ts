@@ -87,6 +87,7 @@ export async function udsAlive(dataDir?: string | null, timeoutMs = 1_500): Prom
       resolve(alive);
     };
     const sock = createConnection(path);
+    // LIVENESS: a bound but wedged socket may never connect or report an error.
     sock.setTimeout(timeoutMs);
     sock.once("connect", () => done(true));
     sock.once("error",   () => done(false));   // ECONNREFUSED on a stale inode → DOWN, never an error
@@ -208,6 +209,7 @@ export function whoHolds(dataDir?: string | null, timeoutMs = 1_500): Promise<Wh
       resolve(v);
     };
     const sock = createConnection(path);
+    // LIVENESS: a holder may accept the query and remain silent.
     sock.setTimeout(timeoutMs);
     sock.setEncoding("utf8");
     let buf = "";
@@ -317,6 +319,7 @@ function readOnlyQuery(op: ReadOnlyOp, requestId: string, opts: { dataDir?: stri
       clearTimeout(timer);
       fn();
     };
+    // LIVENESS: a daemon may never answer the receipt query; close and error settle separately.
     const timer = setTimeout(() => {
       settle(() => { try { sock.destroy(); } catch { /* already gone */ } resolve({ requestId, state: "unanswered" }); });
     }, patienceMs);
@@ -400,6 +403,7 @@ export async function invokeLocal(
     };
     const onAbort = (): void => settle(() => reject(new LocalInvocationAborted(`local verb "${verb}" aborted by its own caller`)));
     opts.signal?.addEventListener("abort", onAbort, { once: true });
+    // LIVENESS: a daemon may remain silent while the verb continues; reply or socket failure settles earlier.
     const timer = setTimeout(
       () => settle(() => reject(new LocalWaitExpired(verb, timeoutMs, requestId))),
       timeoutMs,
