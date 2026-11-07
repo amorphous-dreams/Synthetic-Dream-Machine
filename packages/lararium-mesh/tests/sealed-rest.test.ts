@@ -62,7 +62,7 @@ async function signerOf(name: string): Promise<RecordSigner> {
 }
 
 /** One vessel's sealed rest over a MessageChannel door: the vessel's book of asks, and the island's holder behind it. */
-function standRest(a: Vessel, inner: StorageAdapterInterface, over: { sealed?: (documentId: string) => boolean; hydrationPatienceMs?: number; hydrates?: boolean } = {}) {
+function standRest(a: Vessel, inner: StorageAdapterInterface, over: { sealed?: (documentId: string) => boolean; hydrates?: boolean } = {}) {
   const own = faceProofSubjectRef(a.chain.scope);
   const channel = new MessageChannel();
   const vesselSide = portOf(channel.port1), islandSide = portOf(channel.port2);
@@ -85,11 +85,10 @@ function standRest(a: Vessel, inner: StorageAdapterInterface, over: { sealed?: (
     sessionFace: () => own,
     door: vesselDocStoreDoor<Session>(() => vesselSide, {
       book: (ask, verb, session) => { asks.set(ask, { verb, session }); return () => asks.delete(ask); },
-      patienceMs: 5_000, idPrefix: "test",
+      idPrefix: "test",
     }),
     flushRepo: async () => { await repo?.flush(); },
-    ...(over.hydrationPatienceMs !== undefined ? { hydrationPatienceMs: over.hydrationPatienceMs } : {}),
-    ...(over.hydrates === true ? ({ hydrates: true } as {}) : {}),
+    ...(over.hydrates === true ? { hydrates: true } : {}),
   });
   return { rest, own, sealedUnder, asks, seat: (r: Repo) => { repo = r; } };
 }
@@ -470,7 +469,7 @@ describe("P2-2: the lock reaches the island's holder at once", () => {
       open: (args) => locked ? Promise.resolve({ refusal: "holder-locked" } as never) : a.holder.openValue(args),
       lock: () => { locked = true; a.holder.lock(); },
     });
-    const door = vesselDocStoreDoor<Session>(() => vesselSide, { book: () => () => {}, patienceMs: 5_000, idPrefix: "lock-test" });
+    const door = vesselDocStoreDoor<Session>(() => vesselSide, { book: () => () => {}, idPrefix: "lock-test" });
     const session: Session = { id: "s-a", subject: own, signer: a.signer };
     const value = { role: "change" as const, ref: "ef".repeat(32), parents: [], plaintext: utf8Bytes(SECRET) };
     const sealed = await door.seal({ bagId: BAG, values: [value], session });
@@ -703,7 +702,7 @@ describe("V3: the slot resolver names each slot document it answers, and the map
 });
 
 describe("a restart's hydration: a sealed document's load waits for its map, never strands", () => {
-  it("a load before the bag maps waits and hydrates once the map moves; a load with no move inside its patience refuses by name (control)", async () => {
+  it("a load before the bag maps waits and hydrates once the map moves; a store that does not hydrate refuses by name (control)", async () => {
     const w = world();
     const a = await vessel(w, "a");
     const inner = memoryAdapter();
@@ -719,7 +718,7 @@ describe("a restart's hydration: a sealed document's load waits for its map, nev
     a.restart();
     // THE RESTART: the map stands only after the load began (the dial composes, the slot resolver names the document).
     let mapped = false;
-    const again = standRest(a, inner, { sealed: () => mapped, hydrationPatienceMs: 5_000 });
+    const again = standRest(a, inner, { sealed: () => mapped, hydrates: true });
     let loaded = false;
     const loading = again.rest.store.loadRange([doc.documentId]).then((chunks) => { loaded = true; return chunks; });
     await settle(100);
@@ -732,8 +731,8 @@ describe("a restart's hydration: a sealed document's load waits for its map, nev
     const repo2 = new Repo({ storage: again.rest.store, network: [] });
     expect((await repo2.find<{ note?: string }>(doc.documentId as unknown as AutomergeUrl)).doc().note).toBe(SECRET);
     await repo2.shutdown();
-    // CONTROL: no map ever stands inside the patience: the load refuses `bag-unmapped`, by name.
-    const third = standRest(a, inner, { sealed: () => false, hydrationPatienceMs: 200 });
+    // CONTROL: a store that does not hydrate, with no map standing: the load refuses `bag-unmapped` at once, by name.
+    const third = standRest(a, inner, { sealed: () => false });
     await expect(third.rest.store.loadRange([doc.documentId])).rejects.toMatchObject({ refusal: "bag-unmapped" });
   });
 });
@@ -751,7 +750,7 @@ describe("the sealed rest's waits end on their own events, never on a clock", ()
       // The vessel answers late: past any patience an island might once have held.
       setTimeout(() => vesselSide.post({ type: "rest:answer", requestId: m.requestId, sealed: answers.get(m.documentId ?? "") === true }), 150);
     });
-    const ask = (vesselRestAsker as unknown as (port: unknown, opts: { idPrefix: string }) => (id: string) => Promise<boolean>)(islandSide, { idPrefix: "late" });
+    const ask = vesselRestAsker(islandSide, { idPrefix: "late" });
     let settled = false;
     const sealed = ask("doc-sealed").then((v) => { settled = true; return v; });
     await settle(50);
@@ -767,7 +766,7 @@ describe("the sealed rest's waits end on their own events, never on a clock", ()
     const silent = portOf(channel.port1);   // an island that never answers: it stands, then goes
     const cell = docStorePortCell(async () => null);
     const detach = cell.attach(silent);
-    const door = (vesselDocStoreDoor as unknown as (port: () => unknown, opts: { book: () => () => void; idPrefix: string }) => ReturnType<typeof vesselDocStoreDoor>)(() => cell.port(), { book: () => () => {}, idPrefix: "gone" });
+    const door = vesselDocStoreDoor<Session>(() => cell.port(), { book: () => () => {}, idPrefix: "gone" });
     let settled = false;
     const opened = door.open({ bagId: BAG, role: "change", ref: "ab".repeat(32) }).then((v) => { settled = true; return v; });
     await settle(50);

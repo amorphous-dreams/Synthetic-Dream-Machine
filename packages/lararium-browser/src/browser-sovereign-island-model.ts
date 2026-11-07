@@ -68,7 +68,7 @@ export function runBrowserSovereignWorker(
       else self.addEventListener("message", (e: MessageEvent) => cb(e.data));
       return () => {};
     },
-  }, { patienceMs: 30_000, idPrefix: `island-${Math.random().toString(36).slice(2, 10)}` });
+  }, { idPrefix: `island-${Math.random().toString(36).slice(2, 10)}` });
   const host: IslandHostShore = {
     post:    (msg: IslandToVesselMsg) => post(msg),
     listen:  (onMessage) => scope ? scope.listen(onMessage) : self.addEventListener("message", (e: MessageEvent) => onMessage(e.data)),

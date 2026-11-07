@@ -125,11 +125,15 @@ export interface DocStoreMsg_Lived { readonly type: "docstore:lived"; readonly r
 /** The verb a document store's seal books in the session sign book. */
 export const DOCSTORE_SEAL_VERB = "docstore-seal";
 
-interface Port { post(msg: unknown): void; listen(cb: (msg: unknown) => void): () => void }
+/** A door's port. `gone`, where the port carries it, tells each listener once that the peer behind it went (its island
+ *  exited, its cell detached it): every ask still waiting on that peer answers then, by name. */
+interface Port { post(msg: unknown): void; listen(cb: (msg: unknown) => void): () => void; gone?(cb: () => void): () => void }
 
-/** One request/answer pair over a port, with a patience past which the answer reads as `null`. */
-function asker<A extends { requestId: string }>(port: Port, answerType: string, opts: { readonly patienceMs: number; readonly idPrefix: string }) {
+/** One request/answer pair over a port. The ask waits on its answer, and no clock ends it: the peer's departure
+ *  (`gone`) answers every ask still waiting as `null`, as does a post the port refuses. */
+function asker<A extends { requestId: string }>(port: Port, answerType: string, opts: { readonly idPrefix: string }) {
   const pending = new Map<string, (answer: A | null) => void>();
+  port.gone?.(() => { const settles = [...pending.values()]; pending.clear(); for (const settle of settles) settle(null); });
   port.listen((raw) => {
     const m = raw as { type?: unknown; requestId?: unknown } | null;
     if (!m || m.type !== answerType || typeof m.requestId !== "string") return;
@@ -141,10 +145,8 @@ function asker<A extends { requestId: string }>(port: Port, answerType: string, 
   let seq = 0;
   return (msg: Record<string, unknown>): Promise<A | null> => new Promise((resolve) => {
     const requestId = `${opts.idPrefix}-${++seq}`;
-    const timer = setTimeout(() => { pending.delete(requestId); resolve(null); }, opts.patienceMs);
-    (timer as { unref?: () => void }).unref?.();
-    pending.set(requestId, (answer) => { clearTimeout(timer); resolve(answer); });
-    try { port.post({ ...msg, requestId }); } catch { pending.delete(requestId); clearTimeout(timer); resolve(null); }
+    pending.set(requestId, resolve);
+    try { port.post({ ...msg, requestId }); } catch { pending.delete(requestId); resolve(null); }
   });
 }
 
@@ -155,7 +157,7 @@ function asker<A extends { requestId: string }>(port: Port, answerType: string, 
  */
 export function vesselDocStoreDoor<S extends SaveSession>(port: () => Port | null, opts: {
   readonly book: (ask: string, verb: string, session: S) => () => void;
-  readonly patienceMs: number; readonly idPrefix: string;
+  readonly idPrefix: string;
 }): Pick<ConstructorParameters<typeof SealedDocumentStore>[0], "seal" | "open"> & { lock(): void } {
   let bound: Port | null = null;
   let seal: ReturnType<typeof asker<DocStoreMsg_Sealed>> | null = null;
@@ -165,8 +167,8 @@ export function vesselDocStoreDoor<S extends SaveSession>(port: () => Port | nul
     if (p === null) return false;
     if (p !== bound) {
       bound = p;
-      seal = asker<DocStoreMsg_Sealed>(p, "docstore:sealed", { patienceMs: opts.patienceMs, idPrefix: `${opts.idPrefix}-seal` });
-      open = asker<DocStoreMsg_Opened>(p, "docstore:opened", { patienceMs: opts.patienceMs, idPrefix: `${opts.idPrefix}-open` });
+      seal = asker<DocStoreMsg_Sealed>(p, "docstore:sealed", { idPrefix: `${opts.idPrefix}-seal` });
+      open = asker<DocStoreMsg_Opened>(p, "docstore:opened", { idPrefix: `${opts.idPrefix}-open` });
     }
     return true;
   };
@@ -180,7 +182,7 @@ export function vesselDocStoreDoor<S extends SaveSession>(port: () => Port | nul
       const release = opts.book(ask, DOCSTORE_SEAL_VERB, session as S);
       try {
         const answer = await seal!({ type: "docstore:seal", ask, verb: DOCSTORE_SEAL_VERB, bagId, values, ...(peer !== undefined ? { peer } : {}) });
-        if (answer === null) return { refusal: "signer-unavailable", cause: "the daemon island did not answer the seal" } as HolderRefusal;
+        if (answer === null) return { refusal: "signer-unavailable", cause: "the daemon island went before it answered the seal" } as HolderRefusal;
         if (typeof answer.refusal === "string") return { refusal: answer.refusal, ...(answer.cause ? { cause: answer.cause } : {}) } as HolderRefusal;
         const sealed = (answer.values ?? []).map((v) => ({ role: v.role, ref: v.ref, address: readSealedAddress(v.address) }));
         if (sealed.length !== values.length || sealed.some((v) => v.address === null)) return { refusal: "seal-refused", cause: "the island answered no address" } as HolderRefusal;
@@ -190,7 +192,7 @@ export function vesselDocStoreDoor<S extends SaveSession>(port: () => Port | nul
     async open({ bagId, role, ref }): Promise<OpenedValue | HolderRefusal> {
       if (!ready()) return { refusal: "holder-locked", cause: "no daemon island answers the document store's door" } as HolderRefusal;
       const answer = await open!({ type: "docstore:open", bagId, role, ref });
-      if (answer === null) return { refusal: "holder-locked", cause: "the daemon island did not answer the open" } as HolderRefusal;
+      if (answer === null) return { refusal: "holder-locked", cause: "the daemon island went before it answered the open" } as HolderRefusal;
       if (typeof answer.refusal === "string") return { refusal: answer.refusal, ...(answer.cause ? { cause: answer.cause } : {}) } as HolderRefusal;
       const address = readSealedAddress(answer.address);
       if (!(answer.plaintext instanceof Uint8Array) || address === null || typeof answer.writer !== "string" || typeof answer.changeWriter !== "string" || typeof answer.keyVersion !== "string") {
@@ -238,7 +240,7 @@ export function answerDocStoreAsks(port: Port, holder: {
 }
 
 /** The island asks the vessel for a bag's live document, as the vessel's Repo holds it in memory (the fresh base's cut). */
-export function islandLiveDocDoor(port: Port, opts: { readonly patienceMs: number; readonly idPrefix: string }): (bagId: string) => Promise<Uint8Array | null> {
+export function islandLiveDocDoor(port: Port, opts: { readonly idPrefix: string }): (bagId: string) => Promise<Uint8Array | null> {
   const ask = asker<DocStoreMsg_Lived>(port, "docstore:lived", opts);
   return async (bagId) => {
     const answer = await ask({ type: "docstore:live", bagId });
@@ -272,11 +274,20 @@ export function docStorePortCell(liveOf: (bagId: string) => Promise<Uint8Array |
   let current: Port | null = null;
   return {
     port: () => current,
-    attach(port) {
+    attach(island) {
+      // The island's departure is this port's `gone`: the detach (its worker exited, a new island took the door) tells
+      // every ask still waiting on it, so none waits on a clock.
+      const goneTo = new Set<() => void>();
+      const port: Port = { post: (msg) => island.post(msg), listen: (cb) => island.listen(cb), gone: (cb) => { goneTo.add(cb); return () => { goneTo.delete(cb); }; } };
       current = port;
-      const stop = answerLiveDocAsks(port, liveOf);
-      const stopSlots = opts.onSlot ? answerSlotNotices(port, opts.onSlot) : () => {};
-      return () => { stop(); stopSlots(); if (current === port) current = null; };
+      const stop = answerLiveDocAsks(island, liveOf);
+      const stopSlots = opts.onSlot ? answerSlotNotices(island, opts.onSlot) : () => {};
+      return () => {
+        stop(); stopSlots();
+        if (current === port) current = null;
+        const told = [...goneTo]; goneTo.clear();
+        for (const cb of told) { try { cb(); } catch { /* one listener's fault never holds the rest */ } }
+      };
     },
   };
 }
@@ -346,8 +357,9 @@ export function composeSealedRest<S extends SaveSession>(input: {
   readonly door: Pick<ConstructorParameters<typeof SealedDocumentStore>[0], "seal" | "open"> & { lock?(): void };
   readonly flushRepo: () => Promise<void>;
   readonly onHeld?: (held: { readonly refusal: "save-unbooked" | "save-unmapped" | "save-unsealed"; readonly documentId: string }) => void;
-  /** A restart's hydration: how long a sealed document's load waits for its map (`SealedDocumentStore.mapMoved`). */
-  readonly hydrationPatienceMs?: number;
+  /** A restart's hydration: a sealed document's load waits for its map (`SealedDocumentStore.mapMoved`) until the rest
+   *  stands down (`standDown`, or the store's own `endHydration`). */
+  readonly hydrates?: boolean;
 }): SealedRest<S> {
   const book = new SaveBook<S>();
   let watched: { readonly standing: () => S | null; readonly actorOf: (documentId: string) => string | null } | null = null;
@@ -373,7 +385,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
     waitOverSealed: true,
     seal: input.door.seal, open: input.door.open,
     ...(input.onHeld ? { onHeld: input.onHeld } : {}),
-    ...(input.hydrationPatienceMs !== undefined ? { hydrationPatienceMs: input.hydrationPatienceMs } : {}),
+    ...(input.hydrates === true ? { hydrates: true } : {}),
   });
   return {
     store, book,
@@ -412,6 +424,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
       await store.flush();
       try { await store.reseal(); } catch { /* it keeps waiting */ }
       book.drop();
+      store.endHydration();
       return store.waiting();
     },
     restsSealed: (documentId) => store.holdsSealed(documentId),
@@ -516,8 +529,9 @@ export function islandRestGuard(inner: StorageAdapterInterface, restsAtVessel: (
 }
 
 /** The island's side of the rest ask: post `rest:ask` over the island's port to its vessel and read `rest:answer` on the
- *  same request id. Silence past `patienceMs` reads unsealed, as a vessel that names no sealed bag does. */
-export function vesselRestAsker(port: { post(msg: unknown): void; listen(cb: (msg: unknown) => void): () => void }, opts: { readonly patienceMs: number; readonly idPrefix: string }): (documentId: string) => Promise<boolean> {
+ *  same request id. The ask waits on the answer, and no clock reads silence as unsealed: the vessel answers every ask
+ *  (`answerRestAsk`), and an island outlives no vessel. */
+export function vesselRestAsker(port: { post(msg: unknown): void; listen(cb: (msg: unknown) => void): () => void }, opts: { readonly idPrefix: string }): (documentId: string) => Promise<boolean> {
   const pending = new Map<string, (sealed: boolean) => void>();
   port.listen((raw) => {
     const m = raw as { type?: unknown; requestId?: unknown; sealed?: unknown } | null;
@@ -530,9 +544,7 @@ export function vesselRestAsker(port: { post(msg: unknown): void; listen(cb: (ms
   let seq = 0;
   return (documentId) => new Promise<boolean>((resolve) => {
     const requestId = `${opts.idPrefix}-rest-${++seq}`;
-    const timer = setTimeout(() => { pending.delete(requestId); resolve(false); }, opts.patienceMs);
-    (timer as { unref?: () => void }).unref?.();
-    pending.set(requestId, (sealed) => { clearTimeout(timer); resolve(sealed); });
-    try { port.post({ type: "rest:ask", requestId, documentId }); } catch { pending.delete(requestId); clearTimeout(timer); resolve(false); }
+    pending.set(requestId, resolve);
+    try { port.post({ type: "rest:ask", requestId, documentId }); } catch { pending.delete(requestId); resolve(false); }
   });
 }

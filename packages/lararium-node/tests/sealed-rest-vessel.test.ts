@@ -94,7 +94,7 @@ async function stand() {
     inner, bagOf: () => ({ bagId: BAG, face: subject }), sessionFace: () => subject,
     door: vesselDocStoreDoor<Session>(() => vesselSide, {
       book: (ask, verb, s) => book.hold(ask, verb, { signer: s.signer, anchor: { kind: "nexus" }, subject: s.subject }),
-      patienceMs: 30_000, idPrefix: "rest-vessel-door",
+      idPrefix: "rest-vessel-door",
     }),
     flushRepo: async () => { await repo?.flush(); },
   });

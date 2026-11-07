@@ -97,9 +97,10 @@ export interface SealedDocumentPorts {
   /** The holder's open of one value by its role and logical reference. */
   open(args: { readonly bagId: string; readonly role: DocumentValue["role"]; readonly ref: string }): Promise<OpenedValue | HolderRefusal>;
   /** A RESTART'S HYDRATION (a vessel's store): a load of a sealed document that refuses only because its map, its
-   *  session or its holder has not stood yet waits, up to this long, for the next `mapMoved` and reads again, so a
-   *  document the engine asks for ahead of its dial never strands unavailable. Absent or 0: it refuses at once. */
-  readonly hydrationPatienceMs?: number;
+   *  session or its holder has not stood yet waits for the next `mapMoved` and reads again, so a document the engine
+   *  asks for ahead of its dial never strands unavailable; `endHydration` (the rest stands down) ends every such wait
+   *  with its own refusal. No clock decides it. Absent or false: it refuses at once. */
+  readonly hydrates?: boolean;
 }
 
 /** The refusals a hydrating load waits out: each names a piece that stands later in a vessel's boot. */
@@ -163,20 +164,20 @@ export class SealedDocumentStore implements StorageAdapterInterface {
    *  hydrate reads again. */
   mapMoved(): void { const moved = this.#moved; this.#moved = SealedDocumentStore.#nextMove(); moved.resolve(); }
 
+  /** The rest stands down: no map, session or holder stands again for this store, so every load waiting to hydrate
+   *  refuses now by its own refusal, and a later load refuses at once. */
+  endHydration(): void { this.#hydrationEnded = true; this.mapMoved(); }
+  #hydrationEnded = false;
+
   async #hydrating<T>(read: () => Promise<T>): Promise<T> {
-    const patience = this.#ports.hydrationPatienceMs ?? 0;
-    const deadline = performance.now() + patience;
     for (;;) {
       const moved = this.#moved.promise;
       try { return await read(); }
       catch (error) {
         if (!(error instanceof SealedDocumentRefusal) || !HYDRATION_WAITS.has(error.refusal)) throw error;
-        const left = deadline - performance.now();
-        if (left <= 0) throw error;
-        let timer: ReturnType<typeof setTimeout> | undefined;
-        const outcome = await Promise.race([moved.then(() => "moved" as const), new Promise<"spent">((done) => { timer = setTimeout(() => done("spent"), left); })]);
-        clearTimeout(timer);
-        if (outcome === "spent") throw error;
+        if (this.#ports.hydrates !== true || this.#hydrationEnded) throw error;
+        await moved;
+        if (this.#hydrationEnded) throw error;
       }
     }
   }

@@ -682,7 +682,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   });
   const docStoreDoor = vesselDocStoreDoor<BrowserSaveSession>(() => docStorePort.port(), {
     book: (ask, verb) => sealedCells.hold?.(ask, verb) ?? (() => {}),
-    patienceMs: 30_000, idPrefix: `docstore-${idbName}`,
+    idPrefix: `docstore-${idbName}`,
   });
   const sealedRest = composeSealedRest<BrowserSaveSession>({
     inner: shoreStorage(new IndexedDBStorageAdapter(`${idbName}:repo`)),
@@ -691,8 +691,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     door: docStoreDoor,
     flushRepo: async () => { await repo.flush(); },
     onHeld: ({ refusal, documentId }) => console.log(`[sealed-rest] ${refusal}: ${documentId.slice(0, 12)}… waits in memory, never clear, until a session seals it`),
-    // A restart's hydration: a sealed document the engine asks for ahead of the lift waits for its map, never strands.
-    hydrationPatienceMs: 120_000,
+    // A restart's hydration: a sealed document the engine asks for ahead of the lift waits for its map, never strands;
+    // the Repo's stand-down ends the wait by name.
+    hydrates: true,
   });
   const repo = new Repo({
     storage: sealedRest.store,
@@ -706,7 +707,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       aside: (peerId) => siblingAside(peerId),
     }),
   });
-  held.stood.push({ what: "repo", down: () => repo.shutdown() });
+  held.stood.push({ what: "repo", down: () => { sealedRest.store.endHydration(); return repo.shutdown(); } });
   // R2's booking, by the change's own writer (T4): a change this replica made books the vessel's unlocked session while
   // it stands, and a peer's change books its peer writer and rests as received under that session.
   sealedRest.watch(repo, () => sealedCells.session);

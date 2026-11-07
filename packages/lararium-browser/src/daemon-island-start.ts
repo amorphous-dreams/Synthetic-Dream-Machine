@@ -26,7 +26,7 @@ const sessionsOnVessel = islandSessionDoor(port, { patienceMs: SESSION_ASK_PATIE
 // THE FRESH BASE (sealed-store#/owed, T6): a from-now admission cuts its fresh base off the bag's live document, which
 // this island asks of the vessel worker across the document store's door, as the node's island does.
 const docStorePort = { post: port.post, listen: (cb: (msg: unknown) => void) => { port.listen(cb); return () => {}; } };
-const liveOnVessel = islandLiveDocDoor(docStorePort, { patienceMs: SESSION_ASK_PATIENCE_MS, idPrefix: `docstore-live-${crypto.randomUUID()}` });
+const liveOnVessel = islandLiveDocDoor(docStorePort, { idPrefix: `docstore-live-${crypto.randomUUID()}` });
 runBrowserSovereignWorker((manifest) => {
   // Same-origin writes are accepted within one custody context: api/pono/session-contract.mem #/the-trust-line.
   const key = manifest.daemonAuth?.atom?.key;

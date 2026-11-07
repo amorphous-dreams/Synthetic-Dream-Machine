@@ -212,9 +212,6 @@ function _buildStorage(cfg: IslandStorageConfig | undefined, restsAtVessel: (doc
   return undefined;
 }
 
-/** The vessel answers a rest ask from its own Repo's rest; silence this long reads unsealed. */
-const REST_ASK_PATIENCE_MS = 30_000;
-
 // ── runSovereignWorker — node host shore over the shared kernel ──────────────
 
 export function runSovereignWorker(
@@ -243,7 +240,7 @@ export function runSovereignWorker(
   const restsAtVessel = vesselRestAsker({
     post: (msg) => port.postMessage(msg),
     listen: (cb) => { port.on("message", cb); return () => { port.off("message", cb); }; },
-  }, { patienceMs: REST_ASK_PATIENCE_MS, idPrefix: `island-${process.pid}-${Math.random().toString(36).slice(2, 8)}` });
+  }, { idPrefix: `island-${process.pid}-${Math.random().toString(36).slice(2, 8)}` });
 
   const host: IslandHostShore = {
     post:    (msg: IslandToVesselMsg) => port.postMessage(msg),
