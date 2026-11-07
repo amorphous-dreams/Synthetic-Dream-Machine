@@ -72,7 +72,7 @@ export function scanText(file, source) {
     const n = m[0].replace(/\s*\($/, ''), open = m.index + m[0].lastIndexOf('('), end = callEnd(open), body = code.slice(open + 1, end - 1);
     if (/^waitFor/.test(n)) {
       waits.push([open, end]);
-      if (/\btimeout\s*:\s*(?!0\s*[,}])[^,}\s]/.test(body)) add(m.index, 'timed wait', test ? 'TEST-WAIT' : 'PRODUCT-WAIT');
+      if (/\btimeout\s*:\s*(?!0\s*[,}])[^,}\s]/.test(body)) add(m.index, 'timed wait', defaultCategory);
     } else if (/^set(?:Timeout|Interval)$/.test(n)) add(m.index, n, defaultCategory);
     else if (n === 'until' && body.includes(',')) add(m.index, 'poll', defaultCategory);
     else if (/^AbortSignal/.test(n)) add(m.index, 'abort timeout', defaultCategory);
