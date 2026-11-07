@@ -22,7 +22,7 @@
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed
  */
 import * as A from "@automerge/automerge";
-import type { Chunk, Repo, StorageAdapterInterface } from "@automerge/automerge-repo";
+import { isValidDocumentId, type Chunk, type Repo, type StorageAdapterInterface } from "@automerge/automerge-repo";
 import type { DocumentValue, HolderRefusal, OpenedValue } from "./content-key-holder.js";
 import { readSealedAddress } from "./sealed-chunk.js";
 import { SealedDocumentStore, type SaveSession, type SealedValueAddresses } from "./sealed-doc-store.js";
@@ -503,7 +503,8 @@ export function islandRestGuard(inner: StorageAdapterInterface, restsAtVessel: (
   const sealed = new Set<string>();
   const sweeps = new Map<string, Promise<void>>();
   const isSealed = async (documentId: unknown): Promise<boolean> => {
-    if (typeof documentId !== "string" || documentId.length === 0) return false;
+    // A key that names no document (the store's own `storage-adapter-id`) holds no document's byte: it asks nothing.
+    if (typeof documentId !== "string" || !isValidDocumentId(documentId)) return false;
     if (!sealed.has(documentId)) {
       if (!(await restsAtVessel(documentId))) return false;
       sealed.add(documentId);
