@@ -16,6 +16,7 @@ import { faceProofSubjectRef, sessionSignatureImage } from "../src/face-proof-su
 import type { RecordSigner } from "../src/sealed-records.js";
 import { SEALED_DOCUMENT_REFUSALS, SealedDocumentStore } from "../src/sealed-doc-store.js";
 import { announceSlotDoc, answerDocStoreAsks, composeSealedRest, docStorePortCell, islandRestGuard, sealedBagMap, vesselDocStoreDoor, vesselRestAsker, type SealedRest } from "../src/sealed-rest.js";
+import { answerRestAsk } from "../src/capability-record.js";
 import { vessel, world, type Vessel } from "./content-key-fixture.js";
 import { chain, signHex } from "./face-proof-fixture.js";
 
@@ -804,5 +805,55 @@ describe("the sealed rest's waits end on their own events, never on a clock", ()
     // CONTROL: a store that does not hydrate refuses at once, by name.
     const plain = standRest(a, inner, { sealed: () => false });
     await expect(plain.rest.store.loadRange([doc.documentId])).rejects.toMatchObject({ refusal: "bag-unmapped" });
+  });
+});
+
+describe("a fault or a refusal never lets a document rest clear", () => {
+  it("the vessel answers a faulted or malformed rest ask by its refusal, never unsealed; a sealed, unsealed or seal-less rest answers as it reads (control)", async () => {
+    const fault = await answerRestAsk({ restsSealed: async () => { throw new Error("the rest broke"); } }, { requestId: "r1", documentId: "doc-a" });
+    expect(fault).toEqual({ type: "rest:answer", requestId: "r1", refused: "rest-fault" });
+    const malformed = await answerRestAsk({ restsSealed: async () => false }, { requestId: "r2" });
+    expect(malformed).toEqual({ type: "rest:answer", requestId: "r2", refused: "ask-malformed" });
+    // CONTROL: an answering rest answers as it reads, and a vessel that seals no bag answers unsealed.
+    expect(await answerRestAsk({ restsSealed: async () => true }, { requestId: "r3", documentId: "doc-a" })).toEqual({ type: "rest:answer", requestId: "r3", sealed: true });
+    expect(await answerRestAsk({ restsSealed: async () => false }, { requestId: "r4", documentId: "doc-a" })).toEqual({ type: "rest:answer", requestId: "r4", sealed: false });
+    expect(await answerRestAsk({}, { requestId: "r5", documentId: "doc-a" })).toEqual({ type: "rest:answer", requestId: "r5", sealed: false });
+  });
+
+  it("the island's asker refuses a refused answer, a shapeless answer and a post that fails, each by name; a sealed answer still reads sealed (control)", async () => {
+    const channel = new MessageChannel();
+    const vesselSide = portOf(channel.port1), islandSide = portOf(channel.port2);
+    vesselSide.listen((raw) => {
+      const m = raw as { type?: string; requestId?: string; documentId?: string };
+      if (m.type !== "rest:ask") return;
+      if (m.documentId === "doc-fault") vesselSide.post({ type: "rest:answer", requestId: m.requestId, refused: "rest-fault" });
+      else if (m.documentId === "doc-shapeless") vesselSide.post({ type: "rest:answer", requestId: m.requestId });
+      else vesselSide.post({ type: "rest:answer", requestId: m.requestId, sealed: true });
+    });
+    const ask = vesselRestAsker(islandSide, { idPrefix: "refuse" });
+    await expect(ask("doc-fault")).rejects.toMatchObject({ refusal: "rest-fault" });
+    await expect(ask("doc-shapeless")).rejects.toMatchObject({ refusal: "answer-malformed" });
+    const broken = vesselRestAsker({ post: () => { throw new Error("the port closed"); }, listen: () => () => {} }, { idPrefix: "broken" });
+    await expect(broken("doc-a")).rejects.toMatchObject({ refusal: "vessel-unreached" });
+    // CONTROL: an answered ask reads as answered.
+    expect(await ask("doc-sealed")).toBe(true);
+  });
+
+  it("a rest ask that refuses leaves no byte in the island's store and refuses the load by name; an unsealed answer rests the bytes (control)", async () => {
+    const islandInner = memoryAdapter();
+    const refuse = Object.assign(new Error("refused"), { refusal: "rest-fault" });
+    const guard = islandRestGuard(islandInner, async () => { throw refuse; });
+    const bytes = Uint8Array.from(utf8Bytes(SECRET));
+    await expect(guard.save(["doc-a", "snapshot", "h1"], bytes)).rejects.toMatchObject({ refusal: "rest-fault" });
+    expect(restsAny(islandInner, "doc-a")).toBe(false);
+    await islandInner.save(["doc-b", "snapshot", "h1"], bytes);
+    await expect(guard.load(["doc-b", "snapshot", "h1"])).rejects.toMatchObject({ refusal: "rest-fault" });
+    await expect(guard.loadRange(["doc-b"])).rejects.toMatchObject({ refusal: "rest-fault" });
+    await expect(guard.loadRange([])).rejects.toMatchObject({ refusal: "rest-fault" });
+    // CONTROL: an unsealed answer rests and reads the bytes.
+    const open = islandRestGuard(islandInner, async () => false);
+    await open.save(["doc-a", "snapshot", "h1"], bytes);
+    expect(restsClear(islandInner, "doc-a", SECRET)).toBe(true);
+    expect(await open.load(["doc-b", "snapshot", "h1"])).toEqual(bytes);
   });
 });
