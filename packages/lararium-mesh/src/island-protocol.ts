@@ -536,8 +536,10 @@ export interface DaemonMsg_VerbResult {
 }
 
 
-export interface DaemonMsg_FaceSettled { type: "daemon:face-settled"; atomKey: string; op: "lit" | "dropped" | "bags"; ok: boolean; reason?: string; }
-export const mkDaemonFaceSettled = (atomKey: string, op: "lit" | "dropped" | "bags", ok: boolean, reason?: string): DaemonMsg_FaceSettled => ({ type: "daemon:face-settled", atomKey, op, ok, ...(reason === undefined ? {} : { reason }) });
+/** The ops a face's settled answer names: the type and the door's runtime check both read this one tuple. */
+export const FACE_SETTLED_OPS = ["lit", "dropped", "bags"] as const;
+export interface DaemonMsg_FaceSettled { type: "daemon:face-settled"; atomKey: string; op: (typeof FACE_SETTLED_OPS)[number]; ok: boolean; reason?: string; }
+export const mkDaemonFaceSettled = (atomKey: string, op: DaemonMsg_FaceSettled["op"], ok: boolean, reason?: string): DaemonMsg_FaceSettled => ({ type: "daemon:face-settled", atomKey, op, ok, ...(reason === undefined ? {} : { reason }) });
 export const isDaemonFaceSettled = (v: IslandToVesselMsg): v is DaemonMsg_FaceSettled => v.type === "daemon:face-settled";
 
 export interface DaemonMsg_FaceLit { type: "daemon:face-lit"; entry: JoinedFaceAuth; }
@@ -1136,7 +1138,7 @@ export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
   // refusal that names no reason, a host door the house never named, each vanishes before any handler.
   if (v.type === "daemon:face-settled") {
     const msg = v as Record<string, unknown>;
-    return typeof msg.atomKey === "string" && (msg.op === "lit" || msg.op === "dropped" || msg.op === "bags") && typeof msg.ok === "boolean" && (msg.reason === undefined || typeof msg.reason === "string");
+    return typeof msg.atomKey === "string" && (FACE_SETTLED_OPS as readonly unknown[]).includes(msg.op) && typeof msg.ok === "boolean" && (msg.reason === undefined || typeof msg.reason === "string");
   }
   if (v.type === LAR_FRAME) return readLarFrame(v) !== null;
   if (v.type === LAR_CONTROL_RESULT) return readLarControlResult(v) !== null;
