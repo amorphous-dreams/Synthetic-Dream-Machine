@@ -16,6 +16,16 @@ let seat: SeatedScratchCustody | null = null;
 afterEach(async () => { await seat?.drop(); seat = null; seatFaceRoute(null); });
 
 describe("a face founds under the route it asks for", () => {
+  test("persona-new binds the integer the store row forwards, defaulting rejected values to h0", () => {
+    const zero = faceRouteBindDigest("persona-new", { handleIndex: 0 });
+    for (const handleIndex of [undefined, null, "1", true, 1.5, NaN, Infinity]) {
+      expect(faceRouteBindDigest("persona-new", { handleIndex })).toBe(zero);
+    }
+    expect(faceRouteBindDigest("persona-new", {})).toBe(zero);
+    expect(faceRouteBindDigest("persona-new", { handleIndex: 1 })).not.toBe(zero);
+    expect(faceRouteBindDigest("persona-new", { handleIndex: -1 })).not.toBe(zero);
+  });
+
   test("RED: with no route seated a founding refuses by name and writes no index, no tree, no row", async () => {
     seat = await seatScratchCustody("face-route");
     seatFaceRoute(null);

@@ -327,9 +327,11 @@ export async function armRoll(opts: { readonly cards: readonly Uint8Array[]; rea
 /** A harness explicitly seats its read-back stand-in in this process; disk markers grant no authority. */
 let readBackStandIn = false;
 export function seatReadBackStandIn(seated: boolean): void { readBackStandIn = seated; }
+/** Read this process's explicit harness seat without opening custody or asking another process. */
+export function readBackStandInSeated(): boolean { return readBackStandIn; }
 export async function readBackStandsIn(): Promise<boolean> {
   await openedCustody();
-  return readBackStandIn;
+  return readBackStandInSeated();
 }
 
 /** Which seat keys this vessel holds among `keys`, lower-case, in the order asked. Reads names alone. */

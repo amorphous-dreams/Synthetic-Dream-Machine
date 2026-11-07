@@ -32,8 +32,11 @@ export function faceRouteBindDigest(purpose: RoutePurpose, args: Readonly<Record
   const body = args["body"];
   const bundle = purpose === "bundle.restore"
     ? createHash("sha256").update(typeof body === "string" ? Buffer.from(body, "base64") : body as Uint8Array).digest("hex") : null;
+  // Match the store row's int() parsing and the founding's default to h0.
+  const index = args["handleIndex"];
+  const handleIndex = typeof index === "number" && Number.isInteger(index) ? index : 0;
   return createHash("sha256").update(JSON.stringify(purpose === "persona-new"
-    ? { purpose, handleIndex: args["handleIndex"] ?? 0 }
+    ? { purpose, handleIndex }
     : { purpose, bundle, as: args["as"] ?? null })).digest("hex");
 }
 const parked = new Map<string, { slots: readonly SlotSpec[]; purpose: RoutePurpose; digest: string }>();

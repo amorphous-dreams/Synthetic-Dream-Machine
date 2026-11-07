@@ -83,7 +83,6 @@ export async function openOfflineCustody(holder: CustodyHolder): Promise<void> {
     if (u.reading === "opens" || u.reading === "already-unlocked") { await holder.unlockFaces(route); return; }
     if (u.reading !== "no-slot-opens") throw refusal(u.reading);
     // A marker cannot deny a person their terminal route.
-
   }
   if (!canPromptSecret()) {
     throw new OfflineCustodyRefused(

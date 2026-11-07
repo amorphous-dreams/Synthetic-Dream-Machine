@@ -4,8 +4,8 @@
  * One printer serves every act that commits a chair's next key to a card: the seal rite's seat and roll, and the
  * Stable founding act (`lares vessel found --hearth`). A card a person mis-copies would freeze the chair at its
  * next roll, so the printer asks each one back on the terminal and the act writes nothing until every card reads
- * true. On a staged test root whose custody opens under the published test route the read-back stands in, and the
- * JSON answer carries each card's code; anywhere else the answer carries the digest and the confirm phrase alone.
+ * true. A harness can explicitly seat a read-back stand-in in this CLI process; then the JSON answer carries each
+ * card's code. With no seat the answer carries the digest and the confirm phrase alone.
  * Every seed zero-fills before the printer returns.
  */
 import { COLD_KEY_CARD_DEFAULT_FIELDS, coldKeyCardLines, coldKeyCode, coldKeyConfirm, coldKeySeedFromCode } from "@lararium/mesh";
@@ -24,8 +24,8 @@ export class CardReadBackRefused extends Error {
 /**
  * Print each card and read it back. A card a person mis-copies would freeze the
  * chair at its next roll, so the rite asks each one back on the terminal and writes nothing until every card reads
- * true. On a staged test root whose custody opens under the published test route the read-back stands in, and the
- * JSON answer carries each card's code; anywhere else the answer carries the digest and the confirm phrase alone.
+ * true. A harness can explicitly seat a read-back stand-in in this CLI process; then the JSON answer carries each
+ * card's code. With no seat the answer carries the digest and the confirm phrase alone.
  * Every seed zero-fills before this returns.
  */
 export async function readBack(args: ParsedArgs, cards: readonly ColdCard[], generation: number, charterFingerprint: string): Promise<Array<Record<string, string>>> {
