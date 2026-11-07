@@ -94,6 +94,13 @@ export function createTxLedger(limit = 1024, inFlightLimit = 128) {
       states.delete(txId);
       return true;
     },
+    /** The vessel kept none of the transaction (its receipt refused or closed): it leaves the ledger whole, so a retry writes every family and asks afresh. */
+    unkept(txId: string): boolean {
+      const state = states.get(txId);
+      if (!state || state.answer) return false;
+      states.delete(txId);
+      return true;
+    },
     begin(txId: string, families: readonly string[], digest: string): { pending: string[]; answer?: WrittenAnswer } {
       if (!txId || !digest || families.length === 0 || new Set(families).size !== families.length) throw new RangeError("invalid-transaction");
       let state = states.get(txId);

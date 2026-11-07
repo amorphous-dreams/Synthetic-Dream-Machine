@@ -3,9 +3,12 @@
  *
  * OPERATOR RULING (2026-11-04): ONE store write in flight across the whole shore. A mark only records that a title owes the store its
  * latest state at a fresh generation; it never starts work. The pump takes ONE owed title, snapshots its generation at flight start,
- * issues ONE write, and awaits its DURABLE receipt (the write callback resolves only on the receipt capability's heads ack, plus the projector's
- * file-hash confirm for recovery files). The receipt raises `acked` to the snapshot; a generation marked during the flight stays owed,
- * so coalescing falls out of the generations: a title whose receipts cover its latest mark costs no write.
+ * and issues ONE write. A write SUBMITS, then SETTLES (L29 ruling, 2026-11-07): the write callback resolves once the store holds the
+ * title and may hand back `settled`, its DURABLE receipt (the receipt capability's heads ack, plus the projector's file-hash confirm for
+ * recovery files). The flight seat frees at submission, so the next title's write starts while earlier receipts still wait: independent
+ * receipt waits run concurrently, store writes never do. The title itself stays in flight until its receipt answers, so one title never
+ * carries two writes at once and its generations land in order. The receipt raises `acked` to the snapshot; a generation marked during
+ * the flight stays owed, so coalescing falls out of the generations: a title whose receipts cover its latest mark costs no write.
  *
  * A completion only moves state, then asks for the next turn through the ONE `schedule()` site, which yields to a macrotask
  * (`setImmediate` in node, a MessageChannel in a browser). A yield decides nothing, so it holds no clock. A failed write gives its waiters
@@ -14,6 +17,9 @@
  *
  * An act's removal rides a dependency edge (`markAfter`): it stays parked until the target's receipts cover the act's own generation,
  * then rides as an ordinary owed title. A removal behind a refused target reads that refusal as its own terminal outcome.
+ *
+ * `whenSubmitted()` answers once a closed drain will ask nothing more: no write submits, no owed title can fly, and no removal waits on
+ * a target whose receipt has yet to answer. Every receipt still out at that moment has asked; the teardown then tells the vessel so.
  *
  * Memory stays bounded by titles: one slot per owed title, at most two live waiters per title (the generation in flight and the latest; a newer mark settles a displaced generation `superseded`, a non-ack; a request for a generation the flight carries waits on the flight's waiter), and a slot leaves once its receipts cover it.
  * The pump is FAIR by generation: among the owed titles the oldest owed generation flies first, so a title re-marked during every one of its flights never starves another.
@@ -38,10 +44,13 @@ export type DrainOutcome =
 
 export interface DrainDeps {
   /** Write the title's latest state; resolves on its DURABLE receipt, rejects when none comes. */
-  write(title: string, gen: number): Promise<void>;
+  write(title: string, gen: number): Promise<void | DrainSettling>;
   /** Run `run` on a later macrotask. The default yields through `setImmediate` (node) or a MessageChannel (browser). */
   schedule?(run: () => void): void;
 }
+
+/** A submitted write's durable receipt, still to answer: the title stays in flight until it settles. */
+export interface DrainSettling { readonly settled: Promise<void> }
 
 interface Slot {
   readonly title: string;
@@ -61,6 +70,8 @@ interface Slot {
   retry: boolean;
   /** A write of this title was refused and none has been acknowledged since. */
   refused: boolean;
+  /** A lifecycle request arrived while this title's write flew: should that write fail, the request still stands for it. */
+  demanded: boolean;
   /** The dependency edge: this title waits until `target`'s receipts cover `generation`. */
   after: { readonly target: string; readonly generation: number } | null;
 }
@@ -93,17 +104,17 @@ export function macrotask(): (run: () => void) => void {
 }
 
 export class Drain {
-  readonly #write: (title: string, gen: number) => Promise<void>;
+  readonly #write: (title: string, gen: number) => Promise<void | DrainSettling>;
   readonly #schedule: (run: () => void) => void;
   readonly #slots = new Map<string, Slot>();
   readonly #blocked = new Set<Slot>();
   /** One waiter per (title or whole drain, generation); a call for a standing key shares it. */
   readonly #waiters = new Map<string, Waiter>();
-  /** THE one flight: the pump starts only when it reads null. */
+  /** THE one store write: the pump starts only when it reads null. It ends at submission; receipts settle beside it. */
   #flight: Promise<void> | null = null;
   #scheduled = false;
-  /** A lifecycle request arrived while the write flew: should that write fail, the request still stands for its title. */
-  #demanded = false;
+  /** Callers awaiting the closed drain's last ask. */
+  readonly #submitted = new Set<() => void>();
   #generation = 0;
   #closeGeneration: number | null = null;
   #abandonedFrom = 0;
@@ -123,7 +134,7 @@ export class Drain {
     this.#unblock();
     let slot = this.#slots.get(title);
     if (!slot) {
-      slot = { title, dirty: 0, acked: 0, owedFrom: 0, flying: 0, nextFrom: 0, blocked: null, retry: false, refused: false, after: null };
+      slot = { title, dirty: 0, acked: 0, owedFrom: 0, flying: 0, nextFrom: 0, blocked: null, retry: false, refused: false, demanded: false, after: null };
       this.#slots.set(title, slot);
     }
     slot.dirty = gen;
@@ -154,7 +165,7 @@ export class Drain {
   kick(opts: { readonly retry?: boolean; readonly demand?: boolean; readonly only?: string } = {}): void {
     const retry = opts.retry !== false;
     if (retry) this.#unblock(opts.only);
-    if (retry && opts.demand !== false && this.#flight !== null) this.#demanded = true;
+    if (retry && opts.demand !== false) for (const slot of this.#slots.values()) if (slot.flying !== 0) slot.demanded = true;
     this.#pump();
   }
 
@@ -174,6 +185,26 @@ export class Drain {
   close(): Promise<DrainOutcome> {
     if (this.#closeGeneration === null) this.#closeGeneration = this.#generation;
     return this.#wait(null, this.#closeGeneration, true);
+  }
+
+  /**
+   * Resolves once a closed drain will ask nothing more: no store write submits, no owed title can fly, and no removal waits on a target
+   * whose receipt still has to answer (a target refused or forgotten frees its removal without a write). An open drain never answers.
+   */
+  whenSubmitted(): Promise<void> {
+    if (this.submittedNow()) return Promise.resolve();
+    return new Promise<void>((resolve) => { this.#submitted.add(resolve); });
+  }
+
+  /** True when the drain is closed and every owed write it will make has submitted. */
+  submittedNow(): boolean {
+    if (this.#closeGeneration === null || this.#flight !== null || this.#pick() !== null) return false;
+    for (const slot of this.#slots.values()) {
+      if (slot.after === null || this.#edgeMet(slot.after)) continue;
+      const target = this.#slots.get(slot.after.target);
+      if (target && target.blocked === null && target.flying !== 0) return false;
+    }
+    return true;
   }
 
   /**
@@ -281,7 +312,7 @@ export class Drain {
     if (!slot) return;
     slot.after = null;
     slot.retry = false;
-    this.#demanded = false;
+    slot.demanded = false;
     slot.flying = slot.dirty;
     slot.nextFrom = 0;
     // The guard stands BEFORE the write starts: an async body runs synchronously to its first await, and a re-entrant request must read a flight.
@@ -291,9 +322,27 @@ export class Drain {
 
   async #fly(slot: Slot, gen: number): Promise<void> {
     let error: Error | null = null;
-    try { await this.#write(slot.title, gen); }
+    let settling: DrainSettling | void = undefined;
+    try { settling = await this.#write(slot.title, gen); }
     catch (fault) { error = fault instanceof Error ? fault : new Error(String(fault)); }
     this.#flight = null;
+    if (error !== null || !settling) { this.#land(slot, gen, error); return; }
+    // SUBMITTED: the store holds the title, its receipt still out. The seat frees for the next title; this one stays in flight.
+    void this.#awaitReceipt(slot, gen, settling.settled);
+    this.#settle();
+    this.#ask();
+  }
+
+  /** The submitted write's receipt answers (or refuses): the title lands. */
+  async #awaitReceipt(slot: Slot, gen: number, settled: Promise<void>): Promise<void> {
+    let error: Error | null = null;
+    try { await settled; }
+    catch (fault) { error = fault instanceof Error ? fault : new Error(String(fault)); }
+    this.#land(slot, gen, error);
+  }
+
+  /** A write's terminal word (its receipt, or the refusal before it): the title leaves flight. */
+  #land(slot: Slot, gen: number, error: Error | null): void {
     slot.flying = 0;
     if (error === null) {
       slot.acked = Math.max(slot.acked, gen);
@@ -303,10 +352,10 @@ export class Drain {
       slot.refused = true;
       // The title waits, owed, for the next request; a generation marked during the failed flight waits with it, never re-arming it.
       // A lifecycle request made during the flight already stands: the title retries once for it.
-      if (!this.#demanded) { slot.blocked = error; this.#blocked.add(slot); }
+      if (!slot.demanded) { slot.blocked = error; this.#blocked.add(slot); }
       else slot.retry = true;
     }
-    this.#demanded = false;
+    slot.demanded = false;
     slot.nextFrom = 0;
     if (slot.owedFrom === 0 && this.#slots.get(slot.title) === slot) this.#slots.delete(slot.title);
     this.#settle();
@@ -380,6 +429,11 @@ export class Drain {
     for (const [key, waiter] of this.#waiters) {
       const outcome = this.#outcome(waiter);
       if (outcome) { this.#waiters.delete(key); waiter.resolve(outcome); }
+    }
+    if (this.#submitted.size > 0 && this.submittedNow()) {
+      const answer = [...this.#submitted];
+      this.#submitted.clear();
+      for (const resolve of answer) resolve();
     }
   }
 }

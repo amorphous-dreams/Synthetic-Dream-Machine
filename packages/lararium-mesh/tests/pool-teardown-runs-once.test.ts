@@ -45,6 +45,7 @@ function scriptedHost() {
     terminations: () => terminations,
     ack: () => { for (const l of [...listeners]) l(mkTeardownAck()); },
     fault: () => { for (const l of [...listeners]) l(mkFault(WIKI_ID, "teardown-fault: the adaptor would not stop")); },
+    slotFault: () => { for (const l of [...listeners]) l(mkFault(WIKI_ID, "slot working unavailable — the Repo refused the ask")); },
   };
 }
 
@@ -59,6 +60,19 @@ describe("a wiki island's teardown handshake runs once", () => {
     island.fault();
     expect(await unmount).toEqual({ wikiId: WIKI_ID, acked: false });
     expect(island.terminations()).toBe(1);
+  }, 3_000);
+
+  test("F6: a late slot fault during teardown ends nothing; the island's ack still lands — CONTROL: the named teardown-fault above ends it unacked", async () => {
+    const island = scriptedHost();
+    const pool = new VesselIslandPoolCore({ host: island.host, resolvePluginCids: NO_OFFERINGS });
+    await pool.mountWiki(WIKI_ID, spec());
+    const unmount = pool.unmountWiki(WIKI_ID);
+    for (let turn = 0; turn < 8; turn++) await Promise.resolve();
+    island.slotFault();
+    for (let turn = 0; turn < 8; turn++) await Promise.resolve();
+    expect(island.terminations(), "a slot fault never cuts the island before its flush").toBe(0);
+    island.ack();
+    expect(await unmount).toEqual({ wikiId: WIKI_ID, acked: true });
   }, 3_000);
 
   test("two unmounts in flight share one handshake: one teardown, one termination, one answer", async () => {

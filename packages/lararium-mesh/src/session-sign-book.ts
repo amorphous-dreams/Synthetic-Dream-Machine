@@ -12,10 +12,11 @@
  *   · The signer holds the only copy of its secret: it signs here, and asks its owner's table before every signature.
  *     A lock, a close or a switch drops it, and the next signature refuses `signer-refused`; the island holds nothing
  *     to revoke.
- *   · Only a Nexus-anchored session signs a sealed record: a place session holds a place certificate, which no record
- *     carries, and answers `session-anchor-place`.
- *   · The answer carries the vessel's own verified face chain (public), from which the island reads who may write.
- *     No chain standing answers `signer-unavailable`.
+ *   · The book reads the session's (face, anchor), whatever the anchor: a Nexus session signs under its session
+ *     certificate, a place session under the place certificate its face's atom signed at the vessel's own place.
+ *   · The answer carries the vessel's own verified face chain (public), from which the island reads who may write. A
+ *     chain that names no standing at the session's anchor (no chain, or no place beside a Nexus) answers
+ *     `signer-unavailable`: a floor or a locked face signs nothing, and its save waits, never written clear.
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store
  */
@@ -97,10 +98,9 @@ export class SessionSignBook {
       const booking = this.#held.get(ask.ask);
       if (booking === undefined || booking.verb !== ask.verb) return { refusal: "signer-unavailable" };
       const { signer, anchor, subject } = booking.session;
-      if (anchor.kind !== "nexus") return { refusal: "session-anchor-place" };
       if (signer.dropped) return { refusal: "signer-refused" };
       const own = chain();
-      if (own === null) return { refusal: "signer-unavailable" };
+      if (own === null || !chainStandsAt(own, anchor.kind)) return { refusal: "signer-unavailable" };
       if (ask.op === "read") {
         // A fold that fails reads as nothing counted and nothing unanswered never: it refuses, and nothing seals.
         const read = await fold();
@@ -114,10 +114,16 @@ export class SessionSignBook {
   }
 }
 
+/** Does the vessel's own chain name a standing at this anchor: a Nexus scope, or its own place? */
+function chainStandsAt(chain: SessionOwnChain, anchor: "nexus" | "place"): boolean {
+  return anchor === "nexus" ? "scope" in chain : chain.place !== undefined;
+}
+
 /**
  * THE VESSEL'S OWN STANDING SESSION, seated in whichever book its lift stands (sealed-store#/owed, V6). A node vessel's
  * dial opens a session of its worn face at the Nexus it dials, as a browser's lift opens its own; while that session
- * stands, a change written with no call in flight books it, so `save-unbooked` waits only where no face stands unlocked.
+ * stands, a change written with no call in flight books it, so `save-unbooked` waits only where no face stands unlocked;
+ * a vessel that dials nothing seats its worn face's place session the same way.
  * `stand` seats the session (null: the dial cleared), replacing the one before; `book` moves the seat to the book a lift
  * stood (null: the lift left).
  */

@@ -17,7 +17,7 @@
  * in sovereign islands (daemon + wiki). FPI-5 (trim tab): all Node-specific code lives here.
  */
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
-import { WardRefused, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, type SealedBag, type BookedSession } from "@lararium/mesh";
+import { WardRefused, wornAtOf, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, type SealedBag, type BookedSession, type SessionOwnChain, preparePlaceFace, signAsFaceAtom } from "@lararium/mesh";
 import * as A from "@automerge/automerge";
 
 /** A summoned panel verb's ward: the ref the CLI parked, spent only on the verb and arguments it was bound to. */
@@ -59,7 +59,7 @@ import {
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   DEVICE_DELEGATION_SELF_TIDDLER, type DeviceDelegationTiddler,
   ENGINE_CORE_ID, BagStowage,
-  deriveRegisterBags, catalogNamedBags, wornFaceWikiBags, FACE_CATALOG_BAG_ID, faceViewBook, makeCatalogView, catalogViewOf, openFaceCatalog, faceCatalogDocUrl, liftFaceCatalogRows, standLitFaceCatalog, faceCatalogUrlOf, wikiSlotUri, personaBagIdFor, personaSiblingBagIds,
+  deriveRegisterBags, catalogNamedBags, wornFaceWikiBags, FACE_CATALOG_BAG_ID, faceViewBook, makeCatalogView, catalogViewOf, openFaceCatalog, faceCatalogDocUrl, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, liftFaceCatalogRows, standLitFaceCatalog, faceCatalogUrlOf, wikiSlotUri, personaBagIdFor, personaSiblingBagIds,
   coupleMesh, crystallize, guardHitl,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, foundingRoster, type NexusIdentityAt,
   climbNexusBoards, sha256HexBytesSync, RealmBoardGate,
@@ -84,7 +84,8 @@ import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, a
 import { answerReceiptWithHeads, workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, peerArrivals, admitGatePinDigest, ownEntry, plainField, CATALOG_ROW_TIER_FIELD } from "@lararium/mesh";
 import { makeBagTierReader } from "./vessel-bag-tier.js";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
-import type { CapabilityRecord } from "@lararium/mesh";
+import type { CapabilityRecord, CustodyWriter, DyadReader, LarVessel, ReceiptIssuer } from "@lararium/mesh";
+import { composeVessel, islandFloorStack, islandLiftStack, larVesselOf } from "@lararium/mesh";
 import {
   DaemonRestarting, ACTIVE_WIKI_URI,
   MemoryTiddlerStore,
@@ -160,7 +161,7 @@ import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHear
 import { certifyFounderAt, composeDialPresentation } from "./dial-presentation.js";
 import { dialAnchorCell, nodeSessionDoor } from "./uds-session-door.js";
 import { SessionSignBook } from "./session-sign-door.js";
-import { faceProofSubjectRef } from "@lararium/mesh/face-proof-subjects";
+import { faceProofSubjectRef, placeProofSubjectRef } from "@lararium/mesh/face-proof-subjects";
 import type { UdsSessionDoor } from "./uds-channel.js";
 import { hexToBytes as carriageHexToBytes, type MeshPalaceDoc, type FlowPullResult } from "@lararium/mesh";
 import { gateReadingsFor, layStatementOn, flowFloorPinAt, vesselCarriagePull } from "./herm-carriage.js";
@@ -232,7 +233,8 @@ import { gateMemoryRows }                        from "./gate-memory-rows.js";
 import { custodyGateDoor }                       from "./custody-seat.js";
 import { intentRelayService, type IntentRelayService } from "./intent-relay.js";
 import { resolveIntentRelayFace } from "./intent-relay-face.js";
-import { vesselFloorKeyDoor, loadPlaceKelChain, loadPlaceAid } from "./node-vessel-identity.js";
+import { vesselFloorKeyDoor, loadPlaceKelChain, loadPlaceAid, placeReadingWatch } from "./node-vessel-identity.js";
+import { placeSessionCell, type PlaceWorn } from "./place-session-cell.js";
 import { hearthFloorPins }                       from "./hearth-sovereign-pin.js";
 import { hearthFloorProof }                      from "./hearth-floor-claims.js";
 import { readKeptHearthFloorPins }               from "./hearth-floor-pin-store.js";
@@ -699,8 +701,17 @@ const blankMemeStore = (repo: Repo): (() => DocHandle<LarDoc>) =>
 
 /** The atoms + keel + boot closures both node cap-stacks compose over (built ONCE per boot). */
 interface NodeBootPrep {
-  /** THE CAPABILITY RECORD this vessel hands every island it constructs (daemon, wiki, session): one per vessel, never global. */
-  islandCaps: CapabilityRecord;
+  /** THE CAPABILITY RECORD this vessel hands every island it constructs (daemon, wiki, session): one per vessel, never global.
+   *  It reads `islandVessel.record`, composed at the floor (`islandFloorStack`). */
+  islandCaps: Readonly<CapabilityRecord>;
+  /** The record read as the one `LarVessel`: a lift composes over it (`islandLiftStack`), and its predicates read it. */
+  islandVessel: LarVessel;
+  /** The floor's own stand-down: every floor member leaves the record (a herm's dispose runs it; the teardown runs it too). */
+  disposeIslandFloor: () => Promise<void>;
+  /** The face a lifted composition's lift stands for, or null at the floor: only a sovereign composition lifts. */
+  liftFace: string | null;
+  /** The lift's custody write (sovereign only): the mounted face's veil archive row. */
+  liftCustodyWrite: CustodyWriter | undefined;
   /** The vessel's ONE runtime `cid/` dir, fixed at construction: every site that reads or serves the CAS reads this. */
   cidDir: string;
   restartWiki: (wiki: string) => Promise<void>;
@@ -776,11 +787,15 @@ interface NodeBootPrep {
   lightFace: (ordinal: number) => Promise<void>;
   dropFace: (ordinal: number) => Promise<void>;
   daemonVm:         () => DaemonVmCore;
+  /** The host working layer's mount (slice 5b, red 3): the composition awaits it before it returns, so no caller mounts. */
+  hostWorkingMounted: () => Promise<void>;
   restartDaemonIsland: (reason: string) => Promise<{ restarts: number }>;
   daemonIslandState: () => Promise<{ restarts: number; leg: string }>;
   eventBus:         () => LarEventBusImpl;
   slotActiveWikiId: () => string;
-  activeWikiSource: () => "boot-arg" | "daemon-marker";
+  activeWikiSource: () => "boot-arg" | "daemon-marker" | "floor";
+  /** The wiki this composition stands in for on its floor wiki, waiting on a face; null where none waits. */
+  wikiAwaitsFace:   () => FloorWikiRefusal | null;
   /** Stand down everything the prep and its closures stood, then the Repo; releases a floor the prep stood itself. */
   teardown: () => Promise<void>;
 }
@@ -824,10 +839,11 @@ async function prepareNodeBootOn(
   opts: NodeVesselOptions, placeClass: PlaceClass, floor: NodeFloor, stood: Stood, teardown: () => Promise<void>,
 ): Promise<NodeBootPrep> {
   const { wikiId, storageDir, wss, catalogUrl, onPhase, genesisDir, rootDir: rootDirOpt } = opts;
-  // THE CAPABILITY RECORD: ONE per vessel, made here at composition and handed to every island this vessel constructs.
-  // Each member stands below as its transport stands (`receipt`, `cas`, `dyad`, `custodyWrite`) and its teardown entry
-  // clears that member: an island reads the member off this record at ask time, and no other vessel ever sees it.
-  const islandCaps: CapabilityRecord = {};
+  // THE CAPABILITY RECORD: ONE per vessel, composed through the one composer (slice 5b, @lararium/mesh lar-vessel) and
+  // handed to every island this vessel constructs. Its floor members stand below as their transports stand (`docStore`,
+  // `restsSealed`, `receipt`, `cas`, `dyad`), and the floor stack composes them as one record before any island stands
+  // (`islandFloorStack`, below); the lift (`custodyWrite`, `sessionSign`) composes over it only on a lifted composition
+  // (`composeNodeVesselOn`). An island reads each member off this record at ask time, and no other vessel ever sees it.
   // THE UNLOCK ACT'S ROUTE, held for THIS composition's boot dial alone: a founder's first presentation at a scope issues its
   // certificate, a ward act, under the route the person typed for the unlock that stands this composition. It drops once that
   // dial settles; a later dial (a take's) carries its own act's route (seat-harness#/the-ward).
@@ -888,13 +904,15 @@ async function prepareNodeBootOn(
   // THE SEALED REST (sealed-store#/owed, R1 · R2): the document store's own rest for a sealed bag, under this Repo. The
   // worn face's wiki bags rest sealed under each bag's content key through the holder in the daemon island (the door
   // carries a body and a sealed value, never a key); cleartext rests only in the disk projection and the live wiki in
-  // memory. A bag maps sealed only while the face's Nexus chain stands, since only a Nexus-anchored session signs a
-  // sealed record. Every change books the session whose call stands as it lands (`SessionSignBook`'s hold), each save
-  // signs under the session that booked it, a save no session booked waits `save-unbooked` in memory until the next
-  // session's call books it, and a session's signer drops only after the Repo and the rest flush (`beforeSignerDrops`).
+  // memory. A bag maps sealed while the worn face stands proved (the face cell, below), and with no face lit every
+  // face-half row of the catalog maps sealed under no face. A session reads (face, anchor), whatever the anchor: a
+  // dialed Nexus's session signs, and with no dial the worn face's place session does, so a sovereign node's saves seal
+  // and rest at its own place. Every change books the session whose call stands as
+  // it lands (`SessionSignBook`'s hold), each save signs under the session that booked it, a save no session booked
+  // waits `save-unbooked` in memory until the next session's call books it, and a session's signer drops only after the Repo and the rest flush (`beforeSignerDrops`).
   type NodeSaveSession = BookedSession & { readonly id: string };
-  const sealedCells: { face: () => string | null; bags: () => readonly string[]; catalog: () => LarDoc | undefined; mounted: (bagId: string) => string | null; book: SessionSignBook | null } = {
-    face: () => null, bags: () => [], catalog: () => undefined, mounted: () => null, book: null,
+  const sealedCells: { face: () => string | null; wornAt: (face: string, subject: string) => boolean; bags: () => readonly string[]; catalog: () => LarDoc | undefined; mounted: (bagId: string) => string | null; book: SessionSignBook | null } = {
+    face: () => null, wornAt: () => false, bags: () => [], catalog: () => undefined, mounted: () => null, book: null,
   };
   // V3: each slot document the daemon island's resolver named, by bag (`announceSlotDoc`). A slot's document moves when
   // the seat lands (the floor's document gives way to the face's derived one), and each it ever named stays mapped.
@@ -907,6 +925,7 @@ async function prepareNodeBootOn(
   const sealedMap = sealedBagMap({
     face: () => sealedCells.face(),
     bags: () => sealedCells.bags(),
+    catalog: () => sealedCells.catalog(),
     docsOf: (bagId) => bagId === FACE_CATALOG_BAG_ID
       ? [faceCatalogDocId]
       : [sealedCells.mounted(bagId), ...(slotDocsNamed.get(bagId) ?? []), documentIdOfUrl(tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId)))],
@@ -924,6 +943,15 @@ async function prepareNodeBootOn(
     void sealedRest.sealMapped(documentId, session).then((sealed) => {
       if (sealed) console.log(`[sealed-rest] ${documentId.slice(0, 8)}… mapped sealed after it rested clear: its clear chunks sealed and left rest`);
     }, (e: unknown) => console.log(`[sealed-rest] ${documentId.slice(0, 8)}… keeps its clear chunks until its next booked save: ${e instanceof Error ? e.message : String(e)}`));
+  };
+  // WHAT WAITED ON A DOOR ASKS AGAIN, once per event (the island's door stood, the lift seated its door, the custody key
+  // opened): the map moves, so a hydration waiting on it reads again, and every save of `session`'s face that waits in
+  // memory seals under it now. No clock re-asks; an event that never comes leaves each save waiting by name, never clear.
+  const rebookWaiting = (session: BookedSession | null, why: string): void => {
+    sealedRest.store.mapMoved();
+    if (session === null) return;
+    void sealedRest.rebook(saveSessionOf(session)).catch((e: unknown) => console.log(`[sealed-rest] a waiting save stays in memory after ${why}: ${e instanceof Error ? e.message : String(e)}`));
+    for (const named of slotDocsNamed.values()) for (const documentId of named) sealNowMapped(documentId);
   };
   const onSlotNamed = (bagId: string, documentId: string): void => {
     // THE HOST'S WORKING LAYER FOLLOWS THE ISLAND'S: the outcome ledger rests in the daemon working slot, so the side that
@@ -962,14 +990,23 @@ async function prepareNodeBootOn(
     const documentId = sealedDocOf(bagId);
     const handle = documentId ? (repo.handles as Record<string, { isReady(): boolean; doc(): unknown } | undefined>)[documentId] : undefined;
     return handle?.isReady() ? A.save(handle.doc() as A.Doc<unknown>) : null;
-  }, { onSlot: onSlotNamed });
-  islandCaps.docStore = (port) => docStorePort.attach(port);
+  }, {
+    onSlot: onSlotNamed,
+    // THE ISLAND'S DOOR STANDS (`docstore:answering`): the map re-reads and the standing session's waiting saves seal, once.
+    onReady: () => rebookWaiting(standingSaveSession(), "the island's door stood"),
+  });
+  // THE CUSTODY KEY OPENED: a save the island refused `wrap-failed` while this vessel's key rested unopened (its wrap
+  // rests the face's Archive through custody) waits in memory, and seals again on the open, never on a timer.
+  const stopCustodyOpened = standingCustody()?.onOpened?.(() => rebookWaiting(standingSaveSession(), "the custody key opened")) ?? null;
+  stood.push({ what: "the custody open watch", down: () => { stopCustodyOpened?.(); } });
+  const docStoreDoor: NonNullable<CapabilityRecord["docStore"]> = (port) => docStorePort.attach(port);
   // V2: each island's own store rests no document this rest seals (`islandRestGuard`).
-  islandCaps.restsSealed = (documentId) => sealedRest.restsSealed(documentId);
+  const restsSealedDoor: NonNullable<CapabilityRecord["restsSealed"]> = (documentId) => sealedRest.restsSealed(documentId);
   const sealedRest = composeSealedRest<NodeSaveSession>({
     inner: new DurableNodeFSStorageAdapter(storageDir),
     bagOf: sealedBagOf,
     sessionFace: () => sealedCells.face(),
+    wornAt: (face, subject) => sealedCells.wornAt(face, subject),
     door: vesselDocStoreDoor<NodeSaveSession>(() => docStorePort.port(), {
       book: (ask, verb, session) => sealedCells.book?.hold(ask, verb, session) ?? (() => {}),
       idPrefix: `docstore-${process.pid}`,
@@ -1263,11 +1300,7 @@ async function prepareNodeBootOn(
     // relays daemon-island-minted docs (personal/draft bindings) to the wiki
     // island and its slot-resolve hangs at boot.
     //
-    // V5 SYMMETRY: this WS ring gates at the PEER (gate-passed vs not); the browser
-    // leaf gates at the DOC (a deny-by-default FederationGate, since a leaf cannot
-    // run a gate). Both are the same shore at two resolutions — the V5 KeyhiveIdentitySlot
-    // composes verifyCapability(docUrl, ability) as the INNER ring here (per-doc caps
-    // behind the per-peer admission), matching the browser's FederationGate call site.
+    // The node passes no identity slot; K23 retired it.
     //
     // ONE VERDICT, BOTH HOOKS. A bare `sharePolicy` fills automerge-repo's ANNOUNCE hook alone and leaves
     // ACCESS wide open, so a peer that REQUESTS a doc by id pulls it whatever the verdict said — and every
@@ -1340,8 +1373,8 @@ async function prepareNodeBootOn(
   // Repo and rests in its store — so no binding names a document a hard stop could leave unsaved.
   const receiptClosers = new Set<() => void>();
   const onReceiptClose = (fn: () => void): (() => void) => { receiptClosers.add(fn); return () => { receiptClosers.delete(fn); }; };
-  islandCaps.receipt = (documentIds, heads) => receiptInStore(repo, documentIds, { ready: daemonVmStood.then(() => daemonVm.syncLegReady()), onClose: onReceiptClose }, heads);
-  stood.push({ what: "the receipt capability", down: () => { delete islandCaps.receipt; for (const close of [...receiptClosers]) close(); receiptClosers.clear(); } });
+  const receiptDoor: ReceiptIssuer = (documentIds, heads) => receiptInStore(repo, documentIds, { ready: daemonVmStood.then(() => daemonVm.syncLegReady()), onClose: onReceiptClose }, heads);
+  stood.push({ what: "the receipt waits", down: () => { for (const close of [...receiptClosers]) close(); receiptClosers.clear(); } });
   // The Repo stands down after everything that writes through it: it flushes, then closes its storage and network.
   stood.push({ what: "the Repo", down: async () => {
     await repo.flush();
@@ -1673,7 +1706,7 @@ async function prepareNodeBootOn(
     onRefold:        () => {
       reverdict();
       void gateSweepOwner.refold().catch((err: unknown) => console.warn(`[lar-gate] the gate sweep did not run: ${err instanceof Error ? err.message : String(err)}`));
-      seatSettler?.onFold();
+      if (seatSettler) void (hostWorkingMounted ?? Promise.reject(new Error("no daemon island stands yet"))).then(() => seatSettler.onFold(), () => undefined);
     },
   });
   // THE SETTLE ON EVERY FOLD (kapae#/keys). A counted raise owes one key roll, and the fold itself sets the answer
@@ -1903,9 +1936,7 @@ async function prepareNodeBootOn(
   const casData: IslandCasData = { cidDir, corpusCasDir };
   const hermShore = hermCasTransitFromEnv();
   const resolveCid = makeNodeCasResolver({ cidDir, corpusCasDir, shore: hermShore });
-  islandCaps.cas = resolveCid;
-  // The capability's stand-down pushes in the next statement (T27): a boot that refuses on any await below leaves no `cas` behind.
-  stood.push({ what: "the cas capability", down: () => { delete islandCaps.cas; } });
+  // The floor stack carries `resolveCid` as the record's `cas` (below): a boot that refuses before it composes leaves no `cas` behind.
   if (hermShore) console.log(`[carriage] fetch door open — the herm shore · cid/ ${cidDir}`);
 
   // ── The CLIENT dial-out (Socket A, cleartext CRDT) — INERT until a peer sync URL + gate key ride the config ──
@@ -1991,11 +2022,54 @@ async function prepareNodeBootOn(
   // stands, it sits seated in the lift's book, so a change written with no CLI call in flight books it and seals, and a
   // save waits `save-unbooked` only where no face stands unlocked. A dial that clears unseats it.
   const dialSeat = standingSessionSeat();
+  // A SESSION READS (FACE, ANCHOR), AND THE ANCHOR READS A NEXUS OR THE PLACE (session-contract#/the-hands). A vessel that
+  // dials nothing still wears its face at its own place: its worn face's PLACE SESSION stands seated while no dial
+  // session does, so a change written with no call in flight books it and its save seals and rests. Held in memory for a
+  // later dial, it would not outlive a restart (stable-founding-road#/rulings, "A timer save signs under its session").
+  let dialSession: BookedSession | null = null;
+  // The worn face's place session (and the atom at this vessel's place its chain names), while that face stands lit and
+  // proved here; the stand-down drops it (place-session-cell).
+  const reseatStanding = (): void => { dialSeat.stand(dialSession ?? placeCell.session()); sealedRest.store.mapMoved(); };
   const standDialSession = (presentation: unknown): void => {
     const signer = (presentation as { signer?: BookedSession["signer"] } | null | undefined)?.signer;
     const chain = dialAnchor.chain();
-    dialSeat.stand(signer && chain ? { signer, anchor: { kind: "nexus" }, subject: faceProofSubjectRef(chain.scope as never) } : null);
-    sealedRest.store.mapMoved();
+    dialSession = signer && chain ? { signer, anchor: { kind: "nexus" }, subject: faceProofSubjectRef(chain.scope as never) } : null;
+    reseatStanding();
+  };
+  const placeReading = placeReadingWatch();
+  /** Mint the worn face's place session: its atom signs the session's certificate at this vessel's place, read afresh
+   *  from custody at the mint and overwritten after. */
+  const placeCell = placeSessionCell(async (worn) => {
+    const place = await placeReading();
+    const target = preparePlaceFace({
+      personaGroup: worn.group, atomKey: worn.atomKey, place, anchorHead: async () => (await placeReading()).head,
+      signAsAtom: async (image) => {
+        const seed = await loadFaceAtomOfGroup(worn.group);
+        if (seed === null) throw new Error("the face's atom row went before its place session minted");
+        try { return await signAsFaceAtom(seed, image); } finally { seed.fill(0); }
+      },
+    });
+    if (!("face" in target)) return { refusal: target.refusal };
+    const table = new SessionTable(`place-${globalThis.crypto.randomUUID()}`);
+    const binding = sessionBinding("socket");
+    const opened = table.open(binding, target.face, "face");
+    if (!opened.ok) return { refusal: opened.refusal };
+    const close = (): void => { table.close(opened.session.sessionId); };
+    const minted = await target.mint({ table, binding, session: opened.session });
+    if (!("signer" in minted)) { close(); return { refusal: "refusal" in minted ? String(minted.refusal) : "mint-refused" }; }
+    return {
+      session: { signer: minted.signer, anchor: { kind: "place" }, subject: placeProofSubjectRef(target.scope) },
+      scope: Object.freeze({ atomKey: target.scope.atomKey, place: target.scope.place }),
+      close,
+    };
+  }, reseatStanding);
+  const standPlaceSession = (worn: PlaceWorn | null): Promise<void> => placeCell.stand(worn);
+  /** The vessel's own chain at every anchor its worn face meets: the dial's Nexus while one stands, its place beside. */
+  const ownChain = (): SessionOwnChain | null => {
+    const nexus = dialAnchor.chain();
+    const placeScope = placeCell.scope();
+    if (nexus !== null) return placeScope ? { ...nexus, place: placeScope } : nexus;
+    return placeScope ? { place: placeScope } : null;
   };
   // THE SESSION SIGN DOOR (sealed-store#/the-store): the daemon island holds no session key. A session call books its
   // signer in a book, and the island's ask signs through it, under the vessel's own chain at the pin its dial composed at.
@@ -2004,24 +2078,44 @@ async function prepareNodeBootOn(
   // took yet, so the holder counts removal versions and owed rolls across a restart.
   // A vessel that wears a face folds that face's fleet off its device edge's root and its own atom; a piece still unread
   // refuses the fold by name (road `T35`). Only a faceless vessel reads unread.
-  sealedCells.face = () => { const c = dialAnchor.chain(); return c ? faceProofSubjectRef(c.scope as never) : null; };
+  // THE FACE CELL READS THE FACE THIS VESSEL PROVED, at the anchor its sessions meet it (`uds-session-door`): the dial's
+  // chain names the Nexus subject while a dial stands composed; with none, the worn face proved and lit stands at the
+  // vessel's own place, under its atom's place subject. A floor, a locked face or a face whose proof refused lights none.
+  let placeFace: string | null = null;
+  sealedCells.face = () => { const c = dialAnchor.chain(); return c ? faceProofSubjectRef(c.scope as never) : placeFace; };
+  // ONE FACE, TWO ANCHORS: the worn face proved at this vessel's place names its bags by the place subject until a dial
+  // composes, then by the dial's Nexus subject. A save its place session booked before the dial seals after it, and a
+  // value either anchor sealed opens at the other, across a restart whose dial stands again first (meme-realm-bag ⑮b).
+  // The port answers for the worn face alone (mesh `wornAtOf`): a bag of another face never passes through the worn subject.
+  sealedCells.wornAt = wornAtOf(() => sealedCells.face(), () => {
+    const c = dialAnchor.chain();
+    return [placeFace, c !== null ? faceProofSubjectRef(c.scope as never) : null];
+  });
   const liftSessionSign = (): SessionSignLift => {
     // A call of a session books here, and the sealed rest seals every save that waited for one under it (R2); the
     // document store's own seal books here too, and books nothing further.
+    // THE REBOOK WAITS ON THE DOOR: a session seated before the lift seats its door on the record (the place session
+    // stands with the face, ahead of the lift) rebooks once the door stands, so its waiting saves seal through it rather
+    // than meet an island that finds no door.
+    let doorSeated = false;
+    const rebookUnder = (session: BookedSession): void => rebookWaiting(session, "a session booked");
     const book = new SessionSignBook({ onHold: (session, verb) => {
-      if (verb === DOCSTORE_SEAL_VERB) return;
-      sealedRest.store.mapMoved();
-      void sealedRest.rebook(saveSessionOf(session)).catch((e: unknown) => console.log(`[sealed-rest] a waiting save stays in memory: ${e instanceof Error ? e.message : String(e)}`));
-      for (const named of slotDocsNamed.values()) for (const documentId of named) sealNowMapped(documentId);
+      if (verb === DOCSTORE_SEAL_VERB || !doorSeated) return;
+      rebookUnder(session);
     } });
     sealedCells.book = book;
     dialSeat.book(book);
     sealedRest.store.mapMoved();
     return {
       book,
-      door: book.door(() => dialAnchor.chain(), async () => fleetRaisesOf({
+      door: book.door(ownChain, async () => fleetRaisesOf({
         repo, worn: custodyGroup ? { fleetRoot: wornFleetRoot, atomKey: activeAtom?.key ?? null } : null,
       })),
+      seated: () => {
+        if (doorSeated) return;
+        doorSeated = true;
+        for (const session of book.seated()) rebookUnder(session);
+      },
     };
   };
   // Set when the vessel stands its dial down: a late dial still in flight then stands nothing.
@@ -2077,6 +2171,12 @@ async function prepareNodeBootOn(
   let daemonVm!:   DaemonVmCore;           // set in openDaemon
   let standDaemonVm: () => void = () => {};
   const daemonVmStood = new Promise<void>((resolve) => { standDaemonVm = resolve; });   // the receipt capability waits on the island's leg through it
+  // THE COMPOSER MOUNTS THE HOST WORKING LAYER ITSELF (slice 5b, red 3): once the daemon island answers verbs, the composition
+  // mounts the daemon working layer as the composite's default writable, and the vessel's own asks (the seat settle) wait on
+  // that mount, so no ask answers into a document the composite does not read yet. The composition returns only once it
+  // stands; a boot caller mounts nothing. A restart's mount replays through the holder before its facade turns ready.
+  let hostWorkingMounted: Promise<void> | null = null;
+  const mountHostWorking = (): Promise<void> => (hostWorkingMounted ??= daemonVm.workerEa.then(() => daemonVm.mountHostWorkingLayer()));
   let eventBus!:  LarEventBusImpl;         // set in makePool
   // R3 — the Crossroads board this vessel materializes ONCE (openDaemon), read by every later
   // per-island plugin-offering resolution (makePool's pool, and the daemon VM's own recipe).
@@ -2084,7 +2184,8 @@ async function prepareNodeBootOn(
   let bootstrap!: VesselBootstrap;         // captured in loadGenesis
   let personaSelves: PersonaSelvesPlane | null = null;   // the carried faces' planes, built at the first ask
   let slotActiveWikiId = "";               // captured in wikiSlot
-  let activeWikiSource: "boot-arg" | "daemon-marker" = "boot-arg";
+  let activeWikiSource: "boot-arg" | "daemon-marker" | "floor" = "boot-arg";
+  let wikiAwaitsFace: FloorWikiRefusal | null = null;   // captured in wikiSlot
   // The recall FORM leg holder — opened ONCE, lazily, shared by BOTH the dual recall fuse and the
   // worldline form pre-fetch (makeFormPalace ref-counts per canonical dir → one reference, never a
   // second process). Owned by the form provider impl below; closed implicitly at process exit / idle-reap.
@@ -2198,14 +2299,43 @@ async function prepareNodeBootOn(
   stood.push({ what: "the client dial",       down: async () => {
     dialStoodDown = true; nexusDial?.stop();
     try { await repo.flush(); await sealedRest.store.flush(); } catch { /* a save that refused keeps its change in memory */ }
-    dialAnchor.clear(); dialSeat.stand(null);
+    // The lock drops the place session (session-sign-book: a lock, a close or a switch drops it): its signer drops, its
+    // table closes, the chain names no place, and a mint still in flight seats nothing.
+    dialAnchor.clear(); placeCell.standDown(); dialSeat.stand(null);
   } });
   stood.push({ what: "the residency sweeper", down: () => { residency.stopSweeper(); } });
   stood.push({ what: "the event bus",         down: () => { (eventBus as LarEventBusImpl | undefined)?.stop(); } });
-  // THE ISLAND'S CAPABILITIES drop after the island shuts (T27): the teardown runs backward, so this entry, pushed before
-  // the island's, runs after it. `dyad` and `custodyWrite` stand below; an ask the island sends while it shuts still
-  // reads through them, and a boot refused before they stand clears nothing that stood.
-  stood.push({ what: "the island capabilities", down: () => { delete islandCaps.dyad; delete islandCaps.custodyWrite; } });
+  // ── THE DYAD DOOR (kapae#/reach) ─────────────────────────────────────────────────────────────
+  // The daemon island's gates ask what one device's edge reads on the worn fleet's board: the Binding Gate for
+  // this vessel's own seat, the join gate for the device a summons names. `openDaemon` folds the fleet its edge
+  // names BEFORE the island boots, so the island's first ask reads a landed fold. An ask that arrives while a
+  // board's change left the reading dark waits on the next fold, never on a clock, and a fold that fails
+  // answers `aside`. The door stands with the floor and drops at its teardown.
+  const dyadDoor: DyadReader = async (fleetRoot, deviceKey) => {
+    // A fold a board's move overtook publishes nothing, so the capability asks again; three folds each overtaken
+    // leave the reading dark, and a dark reading answers `aside`.
+    for (let tries = 0; tries < 3 && !shadowRing.fold(); tries++) {
+      try { await shadowRing.refold(); } catch { return "aside"; }
+    }
+    return shadowRing.deviceStanding(fleetRoot, deviceKey);
+  };
+  // THE FLOOR COMPOSES (slice 5b): one record through the one composer, before any island stands. Its stand-down runs
+  // after the islands shut (T27): the teardown runs backward, so this entry, pushed before the islands', runs after
+  // them, and an ask an island sends while it shuts still reads through the floor.
+  const islandFloor = await composeVessel(islandFloorStack({
+    receipt: receiptDoor, cas: resolveCid, dyad: dyadDoor, docStore: docStoreDoor, restsSealed: restsSealedDoor,
+  }));
+  const islandVessel = larVesselOf(islandFloor);
+  const islandCaps = islandVessel.record;
+  stood.push({ what: "the island's floor", down: () => islandFloor.dispose() });
+  // THE LIFT'S CUSTODY WRITE: a sovereign composition's island exports reach the sealed writer under the key this thread
+  // holds, into the mounted face's own row (`openDaemon` names it). The lift alone seats it; at the floor none stands, so an
+  // island's ask answers unwritten.
+  let custodyWriteGroup: string | null = null;
+  const liftCustodyWrite: CustodyWriter | undefined = sovereign
+    ? (_carrier, bytes) => custodyWriteGroup
+      ? sovereign.writeVeilArchive(bytes, custodyWriteGroup) : Promise.reject(new Error("face-not-named: the mounted face names no PersonaGroup"))
+    : undefined;
   stood.push({ what: "the daemon island",     down: async () => { await (daemonVm as DaemonVmCore | undefined)?.shutdown(); } });
   stood.push({ what: "the wiki islands",      down: async () => { await (vmManager as VesselIslandPool | undefined)?.disposeAll(); } });
 
@@ -2391,14 +2521,23 @@ async function prepareNodeBootOn(
   };
 
   // Active-wiki slot — slug from the daemon-doc marker (post-genesis).
-  const wikiSlot = async (_assembly: VesselCoreAssembly): Promise<VesselWikiSlot> => {
+  const wikiSlot = async (assembly: VesselCoreAssembly): Promise<VesselWikiSlot> => {
     const sel = selectActiveWikiSlug(wikiId, ownEntry((await readDaemonDoc()).doc()?.tiddlers, ACTIVE_WIKI_URI) ?? null);
-    activeWikiSource = sel.source;
-    slotActiveWikiId = sel.slug;
+    // A COMPOSITION THAT WEARS NO FACE BOOTS NO USER WIKI (the sealing scope): before a face lights (a floor, or a place
+    // that founded none), a wiki whose canon bag rests on a face's half reads sealed to a face no session wears, so its
+    // documents neither load nor rest. The floor STANDS all the same (every boot rests at the floor; its unlock door must
+    // answer): it refuses THAT wiki by name, before any island mounts it, stands on its floor wiki, and names the one
+    // that waits; the unlock's composition mounts it.
+    wikiAwaitsFace = facelessWikiWaits({ wikiId: sel.slug, source: sel.source, wikiBagId: recipeHostFacets(slugFromUri(sel.slug)).wikiBagId,
+      faceWorn: custodyGroup !== null, catalog: (assembly.catalogHandle.doc() as LarDoc | undefined)?.tiddlers });
+    if (wikiAwaitsFace) console.log(`[lararium] ${wikiAwaitsFace.message}`);
+    const slug = wikiAwaitsFace ? FLOOR_WIKI : sel.slug;
+    activeWikiSource = wikiAwaitsFace ? "floor" : sel.source;
+    slotActiveWikiId = slug;
     // The draft DOC is no facet of the slug — the daemon's slot-doc resolver names it at mount.
-    const facets = recipeHostFacets(slugFromUri(sel.slug));
+    const facets = recipeHostFacets(slugFromUri(slug));
     return {
-      activeWikiId: sel.slug,
+      activeWikiId: slug,
       wikiSlug:     facets.wikiSlug,
       wikiKey:      facets.wikiKey,
       wikiBagId:    facets.wikiBagId,
@@ -2497,23 +2636,11 @@ async function prepareNodeBootOn(
     // device's own key acts, and its id derives from the atom key the fleet board shows in the clear. It classes
     // `vessel-private` under the `device` owner, which no relation opens, from the device edge (readable at the floor).
     classDeviceLedgers(vesselPrivate, [deviceEdge?.deviceVerifyingKey, activeAtom?.key]);
-    // ── THE DYAD DOOR (kapae#/reach) ─────────────────────────────────────────────────────────────
-    // The daemon island's gates ask what one device's edge reads on the worn fleet's board: the Binding Gate for
-    // this vessel's own seat, the join gate for the device a summons names. The ring folds the fleet this edge
-    // names BEFORE the island boots, so the island's first ask reads a landed fold. An ask that arrives while a
-    // board's change left the reading dark waits on the next fold, never on a clock, and a fold that fails
-    // answers `aside`. The door stands with this composition and drops at its teardown.
+    // THE DYAD DOOR's fold (kapae#/reach): the ring folds the fleet this edge names BEFORE the island boots, so the
+    // island's first ask through the floor's `dyad` reads a landed fold.
     const edgeFleetRoot = deviceEdge?.personaRootDid?.trim().toLowerCase().replace(/^0x/, "") ?? null;
     if (edgeFleetRoot) wornFleetRoot = edgeFleetRoot;
     if (activeAtom) await shadowRing.refold();
-    islandCaps.dyad = async (fleetRoot, deviceKey) => {
-      // A fold a board's move overtook publishes nothing, so the capability asks again; three folds each overtaken
-      // leave the reading dark, and a dark reading answers `aside`.
-      for (let tries = 0; tries < 3 && !shadowRing.fold(); tries++) {
-        try { await shadowRing.refold(); } catch { return "aside"; }
-      }
-      return shadowRing.deviceStanding(fleetRoot, deviceKey);
-    };
     // ── THE RELATIONSHIPS THIS VESSEL HOLDS — read live at boot (dyad read path) ──────────────
     // `vesselDyads` reads the ceremony-minted slots, the ONLY source — a bare delegation edge
     // presents no dyad. The read only observes — but a FACE
@@ -3022,13 +3149,9 @@ async function prepareNodeBootOn(
         return null;
       })
       : null;
-    // THE CUSTODY WRITE CAPABILITY stands with a sovereign composition and drops at its teardown: the island's archive
-    // exports reach the sealed writer here, under the key this thread holds. At the floor no `custodyWrite` stands, so
-    // an island's ask answers unwritten.
-    if (sovereign) {
-      islandCaps.custodyWrite = (_carrier, bytes) => personaGroupId
-        ? sovereign.writeVeilArchive(bytes, personaGroupId) : Promise.reject(new Error("face-not-named: the mounted face names no PersonaGroup"));
-    }
+    // THE CUSTODY WRITE's row: the lift's `custodyWrite` (seated by `composeNodeVesselOn` on a sovereign composition)
+    // writes the mounted face's own veil archive row, named here.
+    custodyWriteGroup = personaGroupId ?? null;
     // THE ANCHOR THE DAEMON STANDS ON ALREADY CARRIES THE VERIFIED LEASE: this runs before the first open snapshots `standingAnchor`; a re-open snapshots the anchor the vessel holds now, so the
     // daemon's live join and grant reads floor under the anchor this boot raised, never an older copy (read 6, opening row 2).
     // The sealed frontier rises only on a VERIFIED observation (`lease-observation`): a signed advance from a key the KEL
@@ -3043,6 +3166,9 @@ async function prepareNodeBootOn(
     // R1: the bags the sealed rest seals, the worn face's own wiki bags and the daemon wiki's slots (U1's D half), only
     // while that face stands lit and proved; the face's hive registers each (`wornFaceWikiBags`).
     const faceWikiBags = wornFaceWikiBags({ slot, lit: faceLit && !!personaGroupId && wornFaceProved });
+    placeFace = faceLit && !!personaGroupId && wornFaceProved && activeAtom !== null && placeAid !== null
+      ? placeProofSubjectRef({ atomKey: activeAtom.key, place: placeAid } as never) : null;
+    await standPlaceSession(placeFace !== null && personaGroupId && activeAtom ? { group: personaGroupId, atomKey: activeAtom.key } : null);
     sealedCells.bags = () => faceWikiBags.sealed;
     sealedRest.store.mapMoved();
     const workingFloorAnchor = workingFloorAnchorOf({ place: placeAid });
@@ -3246,11 +3372,12 @@ async function prepareNodeBootOn(
       if (!seal) {
         console.warn("[sibling] this face holds no PersonaGroup secret sealed to this device — its enrolment delivered none, so no sibling channel stands.");
       } else {
-        const leaseSlots: Array<string | null> = [];
+        // THE LEASE READER: the face reading over the live daemon doc's lease slots, read at every licensing act, so a
+        // roll that lands after the channel stood refuses an edge bound below it at the next act.
+        const leaseHandle = await readDaemonDoc();
         const leasePrefix = leaseEpochPrefix(personaGroupId);
-        for (const [title, rec] of Object.entries(daemonDoc?.tiddlers ?? {})) {
-          if (title.startsWith(leasePrefix)) leaseSlots.push(tiddlerText(rec));
-        }
+        const leaseSlotsNow = (): Array<string | null> => Object.entries(leaseHandle.doc()?.tiddlers ?? {})
+          .filter(([title]) => title.startsWith(leasePrefix)).map(([, rec]) => tiddlerText(rec));
         siblings = await standSiblingChannel({
           repo, herms: siblingHerms, nexusPubkey, personaKelPrefix,
           deviceKey: activeAtom?.key ?? "", sign: (image) => {
@@ -3258,7 +3385,7 @@ async function prepareNodeBootOn(
             return activeAtom.sign(image);
           },
           enrolment: { edge: deviceEdge, seal }, open: activeAtom.opener,
-          expectedEpoch: readFace(personaKelChain ?? [], standingAnchor)?.leaseEpoch(personaGroupId, leaseSlots) ?? 0,
+          expectedEpoch: () => readFace(personaKelChain ?? [], standingAnchor)?.leaseEpoch(personaGroupId, leaseSlotsNow()) ?? null,
           onRefusal: (r) => console.warn(`[sibling] ${siblingRefusalLine(r)}`),
         });
       }
@@ -3871,7 +3998,8 @@ async function prepareNodeBootOn(
 
     // A raise this vessel counted before it last stopped still owes its roll: once the island answers verbs, the
     // settler reads the fold that landed at boot.
-    if (seatSettler) void daemonVm.workerEa.then(() => seatSettler.onFold(), () => undefined);
+    const mounted = mountHostWorking();
+    if (seatSettler) void mounted.then(() => seatSettler.onFold(), () => undefined);
   };
 
   const subscribeWorkerEventsToDaemon = (): void => {
@@ -4031,7 +4159,11 @@ async function prepareNodeBootOn(
   };
 
   return {
-    islandCaps,
+    islandCaps, islandVessel,
+    disposeIslandFloor: () => islandFloor.dispose(),
+    // A sovereign composition lifts its mounted face (by its PersonaGroup, else the place it stands as); the floor lifts none.
+    liftFace: sovereign ? (custodyGroup ?? "place") : null,
+    liftCustodyWrite,
     cidDir,
     repo, storeClaim, catalogHandle, placeSigner, nexusPubkey, floorGates, carriagePull, wornFace: wornGateFace,
     restartWiki: reloadWikiAfterVerb, promoteActs,
@@ -4137,11 +4269,13 @@ async function prepareNodeBootOn(
     realmStanding:    async () => (realmPlane ? await realmPlane.standing() : new Map()),
     lightFace: (ordinal) => lightFace(ordinal), dropFace,
     daemonVm:         () => daemonVm,
+    hostWorkingMounted: () => mountHostWorking(),
     restartDaemonIsland: (reason) => daemonHolder.restart(reason),
     daemonIslandState: async () => ({ restarts: daemonHolder.restarts, leg: await daemonVm.syncLegReady() }),
     eventBus:         () => eventBus,
     slotActiveWikiId: () => slotActiveWikiId,
     activeWikiSource: () => activeWikiSource,
+    wikiAwaitsFace:   () => wikiAwaitsFace,
     teardown,
   };
 }
@@ -4166,12 +4300,8 @@ export async function openNodeVessel(opts: NodeVesselOptions): Promise<NodeVesse
 export interface SessionSignLift {
   readonly book: SessionSignBook;
   readonly door: SessionSignDoor;
-}
-
-/** Seat a lift's session sign door on a record; the returned down removes it (only while it still names this door). */
-export function seatSessionSignLift(caps: CapabilityRecord, door: SessionSignDoor): () => void {
-  caps.sessionSign = door;
-  return () => { if (caps.sessionSign === door) delete caps.sessionSign; };
+  /** The lift seated the door on the record: every session seated before it rebooks its waiting saves now. */
+  readonly seated: () => void;
 }
 
 async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Promise<NodeVesselResult> {
@@ -4213,12 +4343,20 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
       return component;
     },
   }));
-  // THE LIFT SEATS ITS SESSION SIGN DOOR before the keel composes: every island reads `islandCaps` by reference at ask
-  // time, so a daemon island that stands inside the compose reaches it. The door drops with the role caps at teardown,
-  // and at once when the compose refuses (the caller's `p.teardown` runs no role cap).
+  // THE LIFT COMPOSES before the keel (slice 5b): a nested stack over the floor's record (`islandLiftStack`), seating
+  // `custodyWrite` and `sessionSign` only on a sovereign composition; every island reads `islandCaps` by reference at ask
+  // time, so a daemon island that stands inside the compose reaches it. The book stands either way (the UDS seat books
+  // into it); at the floor no door reaches the record, and an island's `session:sign` answers `signer-unavailable`.
+  // The lift's dispose IS the lock: it runs with the role caps at teardown, and at once when the compose refuses (the
+  // caller's `p.teardown` runs no role cap). Each session's signer drops at its own lock (`sealedRestLock`, the UDS seat).
   const sessionSign = p.liftSessionSign();
-  const sessionSignDown = seatSessionSignLift(p.islandCaps, sessionSign.door);
-  roleCaps.push(sessionSignDown);
+  if (p.liftFace !== null) {
+    const lifted = await composeVessel(islandLiftStack(p.islandVessel, {
+      face: p.liftFace, custodyWrite: p.liftCustodyWrite, sessionSign: sessionSign.door, drop: () => {},
+    }));
+    roleCaps.push(() => lifted.dispose());
+    sessionSign.seated();
+  }
   // THE COMPOSITION BOUNDARY: whatever refuses from here to the result (the keel, a duplicate porch route) drains every role cap
   // the lift stood, this door among them, before it rethrows; the caller's `p.teardown` runs no role cap.
   const drainRoleCaps = async (): Promise<void> => {
@@ -4237,10 +4375,13 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     roleCaps.push(() => porch.dispose());
   }
 
+  // NO EARLY READY: the composition returns standing on its working layer (red 3).
+  await p.hostWorkingMounted();
   return {
     islandCaps: p.islandCaps,
     activeWikiId: p.slotActiveWikiId(),
     activeWikiSource: p.activeWikiSource(),
+    wikiAwaitsFace: p.wikiAwaitsFace(),
     pool: result.pool, repo: p.repo,
     ports: {
       place: (surface, binding, msg) => surface === "daemon" || !result.pool.has(surface)
@@ -4274,6 +4415,10 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     // no-op when none stood, so no timer / client socket leaks past close.
     stopTick: () => { void result.pool.disposeAll(); void p.carriageRelay?.close(); p.nexusDial?.stop(); },
     teardown: async () => {
+      // THE FLUSH RUNS WHILE THE LIFT'S DOOR STANDS: every save in flight seals under the session that booked it before
+      // the role caps drain the lift (and its session sign door with it), so no last save meets an island that finds no
+      // door. The bookings stay: the stand-down's own flush (the Repo's, below) still reads them.
+      try { await p.repo.flush(); } catch (e) { console.log(`[lararium] teardown: the Repo's flush before the lift drops — ${e instanceof Error ? e.message : String(e)}`); }
       for (const down of roleCaps.splice(0).reverse()) {
         try { await down(); } catch (e) { console.log(`[lararium] teardown: a role cap — ${e instanceof Error ? e.message : String(e)}`); }
       }
@@ -4315,7 +4460,15 @@ async function composeNodeHermOn(
   // BANS (the antigen ring rides its carriage), so reading the WHO plane completes the pair: it recognises
   // the presenters those bans name. The cap cannot betray the asymmetry, because it holds no card to publish.
   const hermCrossroads = await materializeSharedLarDoc(p.repo, crossroadsDocUrl(p.nexusPubkey), "board:crossroads");
-  const herm = await composeHerm({
+  // A SOVEREIGN HERM CARRIES ITS FACE'S CUSTODY AND SIGNS NOTHING: on a sovereign composition its lift seats `custodyWrite`
+  // alone (the island's veil export seals through it), never a session sign; at the floor no lift stands. It composes before the
+  // island boots (the island reads the record at ask time); its dispose IS the lock, run first in the herm's own dispose.
+  const hermLift = p.liftFace !== null && p.liftCustodyWrite
+    ? await composeVessel(islandLiftStack(p.islandVessel, { face: p.liftFace, custodyWrite: p.liftCustodyWrite, drop: () => {} }))
+    : null;
+  let herm: Awaited<ReturnType<typeof composeHerm>>;
+  try {
+  herm = await composeHerm({
     extraCaps: [whoFaceCap({
       repo: p.repo, crossroadsHandle: hermCrossroads, nexusPubkey: p.nexusPubkey, residency: p.residency,
     })],
@@ -4364,6 +4517,7 @@ async function composeNodeHermOn(
     }),
     onLog:       (line) => console.log(`[herm] ${line}`),
   });
+  } catch (e) { await hermLift?.dispose(); throw e; }
   // A HERM CARRIES THE ANSWER AND SIGNS NOTHING: the same `/floor/<AID>` the hearth answers, from the board it replicates; its bulb
   // face already carries `/cas`, and the released-floor lane above lends it the head's blobs.
   const porch = mountFloorPorch({
@@ -4371,15 +4525,20 @@ async function composeNodeHermOn(
     nexusPubkey: p.nexusPubkey, casDir: p.cidDir, serveCas: false,
     onLog: (line) => console.log(`[herm] ${line}`),
   });
+  // NO EARLY READY: the herm reports live only once its working layer stands (red 3); the porch stands down if it refuses.
+  try { await p.hostWorkingMounted(); } catch (e) { await hermLift?.dispose(); porch.dispose(); await herm.vessel.dispose(); throw e; }
   p.emit("vessel-ready");
   p.emit("live");
 
   const dispose = async (): Promise<void> => {
+    await hermLift?.dispose();
     porch.dispose();
-    delete p.islandCaps.cas;         // the cas capability closes with the vessel — a late worker ask reads a miss
     await p.carriageRelay?.close();  // tear the crossroads down first (a no-op when none stood) — no WS server leak
     p.nexusDial?.stop();            // stop the client dial-out (Socket A) — a no-op when none stood
+    // THE FLOOR OUTLASTS ITS ISLAND (T27, as the hearth's teardown runs): the daemon island's settlement round asks receipts
+    // through the floor while it shuts, so the floor closes only after the island acked. A late worker ask then reads a miss.
     await p.daemonVm().shutdown();
+    await p.disposeIslandFloor();
     await herm.vessel.dispose();   // reverse build order → read-face disposes (clears the HTTP handler)
   };
   return {

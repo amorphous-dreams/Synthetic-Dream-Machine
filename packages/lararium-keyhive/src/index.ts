@@ -24,8 +24,6 @@ export type { IslandSessionProof, SessionAsk, SessionReading } from "./island-se
 export { islandSessionDoor } from "./island-session-proof.js";
 export type { ProviderChunkRest } from "./capability-provider.js";
 export { memoryProviderChunkRest } from "./capability-provider.js";
-// `KeyhiveIdentitySlot` stays out of this barrel: it stands specified in code, and no production path constructs it
-// (its header names the caller it waits on).
 export { packPersonaCrossing, applyPersonaCrossing } from "./persona-crossing.js";
 export type { PersonaCrossingBundle, CrossingContent, CrossingPlaintext } from "./persona-crossing.js";
 export { runFaceJoin, gateFaceJoin } from "./face-join.js";

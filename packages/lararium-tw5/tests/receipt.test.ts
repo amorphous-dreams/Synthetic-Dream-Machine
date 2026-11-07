@@ -22,6 +22,32 @@ function receiptRig(opts: { flushOwn?: () => Promise<void> } = {}) {
 }
 
 describe("the island's receipt capability", () => {
+  test("asked() waits while an act stands begun or a request waits on its own flush, and answers once the ask has posted — never on the vessel's answer; close answers it too", async () => {
+    let flushed!: () => void;
+    const d = receiptRig({ flushOwn: () => new Promise<void>((resolve) => { flushed = resolve; }) });
+    d.edit();
+    await expect(d.receipt.asked(), "control: nothing asking answers at once").resolves.toBeUndefined();
+    const act = d.receipt.begin();
+    let asked = false;
+    void d.receipt.asked().then(() => { asked = true; });
+    await settle();
+    expect(asked, "an act begun without done still has to ask").toBe(false);
+    act.done([SLOT]);
+    await settle();
+    expect(asked, "the request still waits on the island's own flush").toBe(false);
+    flushed();
+    await settle();
+    expect(d.posts).toHaveLength(1);
+    expect(asked, "the ask left; the vessel's answer is not awaited").toBe(true);
+    const stuck = d.receipt.begin();
+    let released = false;
+    void d.receipt.asked().then(() => { released = true; });
+    d.receipt.close();
+    await settle();
+    expect(released, "close answers asked() over an act that never finished").toBe(true);
+    stuck.done(null);
+  });
+
   test("RED: an act that wrote waits for receipt:issued, which names the document and its heads — CONTROL: an act that wrote nothing waits for nothing", async () => {
     const d = receiptRig();
     d.edit();
@@ -79,6 +105,31 @@ describe("the island's receipt capability", () => {
     warn.mockRestore();
   });
 
+  test("F2: an act's verdict reads false on a refused or closed receipt and names its titles unrested; held() carries it — CONTROL: an issued receipt reads true and a later rest clears the title", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const d = receiptRig();
+    d.edit();
+    const refused = d.receipt.begin();
+    const held = d.receipt.held()!;
+    const verdict = refused.done([SLOT], { titles: ["lar:///t/port/a"] });
+    await settle();
+    d.receipt.answer({ type: "receipt:issued", requestId: "r1", issued: false, why: "no copy" });
+    expect(await verdict).toBe(false);
+    expect(await held, "held() carries the refusal").toBe(false);
+    expect(d.receipt.unrested()).toEqual(["lar:///t/port/a"]);
+    const kept = d.receipt.begin();
+    const keptVerdict = kept.done([SLOT], { titles: ["lar:///t/port/a"] });
+    await settle();
+    d.receipt.answer({ type: "receipt:issued", requestId: "r2", issued: true });
+    expect(await keptVerdict, "control: an issued receipt reads true").toBe(true);
+    expect(d.receipt.unrested(), "control: the later rest clears the title").toEqual([]);
+    const cut = d.receipt.begin();
+    d.receipt.close();
+    expect(await cut.done([SLOT], { titles: ["lar:///t/port/b"] }), "a close before done reads false").toBe(false);
+    expect(d.receipt.unrested()).toEqual(["lar:///t/port/b"]);
+    warn.mockRestore();
+  });
+
   test("the island flushes its own store before it asks the vessel, and a capability that closes lets every wait go", async () => {
     const order: string[] = [];
     const d = receiptRig({ flushOwn: async () => { order.push("flush"); } });
@@ -123,6 +174,22 @@ describe.skipIf(wikiSkip)(`a control result waits on the receipt${skipNote}`, ()
     receipt.answer({ type: "receipt:issued", requestId: "r1", issued: true });
     await s.flush();
     expect(s.results.map((r) => r.status), "the vessel answered: the result leaves").toEqual(["applied", "applied"]);
+  }, 120_000);
+
+  test("F2: an act whose receipt the vessel refuses answers refused by name, never applied — CONTROL: the issued act above answers applied", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const handles = new Map([[SLOT, new Repo({ network: [] }).create<LarDoc>(emptyLarDoc())]]);
+    const receipt = makeReceiptCapability({ post: () => {}, handles: () => handles, mintId: () => "r9" });
+    s = await mountSurface(button, [], "lar:///test/projection-surface", receipt);
+    const { dispatchLarControlEvent } = await import("../src/tw5-projection.js");
+    const hold = receipt.begin();
+    dispatchLarControlEvent(s.event("go", { kind: "lar:act", action: "lar:click" }));
+    void hold.done([SLOT]);
+    await settle();
+    receipt.answer({ type: "receipt:issued", requestId: "r9", issued: false, why: "refused" });
+    await s.flush();
+    expect(s.results.map((r) => [r.status, r.reason])).toEqual([["refused", "receipt-refused"]]);
+    warn.mockRestore();
   }, 120_000);
 });
 

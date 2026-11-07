@@ -18,7 +18,8 @@
  *
  * ONE MANIFEST FOR EACH WRITE BATCH. A seal of a blob, or of a batch of document values (`sealValues`: changes and
  * checkpoints, each under its own logical reference with its own parent addresses), signs one manifest, and that
- * manifest cites every manifest this vessel verified under the same key version.
+ * manifest cites the heads of what this vessel verified under the same key version: the verified manifests no other
+ * verified manifest cites, which carry every one it read and keep a seal's work flat as the bag's ledger grows.
  *
  * A FROM-NOW ADMISSION OPENS ON A FRESH CHECKPOINT. The document store cuts the base (present values alone) under
  * the drawn version before any lockbox wraps; once the version's record rests the base seals there as a `fresh`
@@ -67,7 +68,7 @@ import {
   KeyLineage, LINEAGE_REFUSALS, factOfPlan, planAdmissionFromNow, planFounding, planJoin, planRemovalRolls, sameFact, versionsToHandOver, writeHead,
   type HistoryDeclaration, type KeyRollPlan, type KeyVersionFact, type RollerPorts, type RollOutcome,
 } from "./content-key-lineage.js";
-import { faceProofSubjectRef, type KeysHeldApart } from "./face-proof-subjects.js";
+import type { KeysHeldApart } from "./face-proof-subjects.js";
 import { openMemorySection, sealMemorySection, type MemoryEntry } from "./memory-section.js";
 import { wrapLockbox, openLockbox, type KeyParcel, type LockboxWrapShore, type ReaderId } from "./lockbox-wrap.js";
 import {
@@ -76,7 +77,7 @@ import {
 } from "./sealed-chunk.js";
 import {
   authorizeFromManifest, bagLocatorOf, entryLocatorOf, factOfRecord, indexRowsOf, joinProofOf, joinProven, readBagLocator, readRecord,
-  recordIdOf, signRecord,
+  recordIdOf, recordWriterSubject, signRecord,
   type BagLocator, type CheckpointBody, type HandOverBody, type KeyVersionBody, type KeyVersionPrivate, type LockboxRecord, type ManifestBody, type ManifestEntry,
   type RecordBodies, type RecordId, type RecordKind, type RecordPrivates, type RecordSigner, type SealedRecord, type VerifiedRecord,
   type WriterStanding,
@@ -240,7 +241,7 @@ export interface OpenedValue {
   readonly plaintext:  Uint8Array;
   readonly keyVersion: KeyVersionId;
   readonly address:    SealedAddress;
-  /** The face proof's subject reference of the manifest's writer (`faceProofSubjectRef`). */
+  /** The proof subject of the manifest's writer at its own anchor (`recordWriterSubject`). */
   readonly writer:     string;
   /** The change's own writer, as the manifest names it under its signature: `session:<session key>` or `peer:<actor>`. */
   readonly changeWriter: string;
@@ -286,6 +287,13 @@ interface Line {
   readonly carried:  Map<KeyVersionId, SealedRecord<"key-version">>;
   readonly why:      Map<KeyVersionId, string>;
   readonly manifests: Map<RecordId, VerifiedRecord<"manifest">>;
+  /** The heads of each version's manifests, once a seal asked: the verified manifests no other verified manifest
+   *  cites. A reading taken afresh (an arrival, a chain) starts with none and counts them once.
+   *  THE INVARIANT: a manifest reaches this vessel's rest by two doors only. Its own seal moves the counted heads
+   *  (`#rested`); a foreign one arrives through `receive()`, which takes the reading afresh, so the heads start empty and
+   *  count from rest at the next seal. No third door writes a manifest, so the cache never stands stale; a new door
+   *  MUST do one of the two (sealed-doc-store test H1 holds the arrival leg). */
+  readonly heads:    Map<KeyVersionId, Set<RecordId>>;
   /** A removal version stands in this founding's rest, verified under its own key, whether or not this reader's
    *  evidence counted it: the seat rolled here once (`holdsRemoval`). */
   rolled?: boolean;
@@ -332,7 +340,7 @@ export class ContentKeyHolder {
     this.#locked = true;
     for (const bag of this.#bags?.values() ?? []) for (const line of bag.lines.values()) {
       for (const key of line.keys.values()) key.fill(0);
-      line.keys.clear(); line.records.clear(); line.carried.clear(); line.manifests.clear(); line.why.clear();
+      line.keys.clear(); line.records.clear(); line.carried.clear(); line.manifests.clear(); line.heads.clear(); line.why.clear();
     }
     this.#bags?.clear();
     this.#bags = null;
@@ -399,7 +407,7 @@ export class ContentKeyHolder {
         let bag = bags.get(bagId);
         if (!bag) { bag = { bagId, lines: new Map() }; bags.set(bagId, bag); }
         let line = bag.lines.get(locator);
-        if (!line) { line = { locator, lineage: KeyLineage.empty(), keys: new Map(), records: new Map(), carried: new Map(), why: new Map(), manifests: new Map() }; bag.lines.set(locator, line); }
+        if (!line) { line = { locator, lineage: KeyLineage.empty(), keys: new Map(), records: new Map(), carried: new Map(), why: new Map(), manifests: new Map(), heads: new Map() }; bag.lines.set(locator, line); }
         if (line.keys.has(keyVersion)) key.fill(0); else line.keys.set(keyVersion, key);
       }
       const records = await store.records("key-version");
@@ -578,7 +586,7 @@ export class ContentKeyHolder {
     await this.#rest(() => this.#ports.values.write(sealed.chunk.address, sealed.chunk.sealed));
     const id = await this.#rest(() => store.putRecord(named.carried));
     await this.#rest(() => store.putIndexRows(indexRowsOf(named.verified)));
-    line.manifests.set(id, named.verified);
+    this.#rested(line, id, named.verified);
     await this.#rest(() => store.putRecord(record.carried));
     return true;
   }
@@ -601,15 +609,36 @@ export class ContentKeyHolder {
     return false;
   }
 
-  /** Every manifest this vessel verified under one version of one founding: the parents a new manifest cites. */
+  /**
+   * The parents a new manifest cites: the heads of what this vessel verified under one version of one founding, the
+   * verified manifests no other verified manifest cites. Each head names its own parents, so the heads carry every
+   * manifest the writer read, and a seal's work stays the same however long the ledger grows. The first seal of a
+   * reading counts the heads from rest once; each manifest this vessel rests then moves them (`#rested`).
+   */
   async #cited(bag: Bag, line: Line, key: ContentKey, keyVersion: KeyVersionId): Promise<RecordId[]> {
-    const ids = new Set<RecordId>();
-    for (const carried of await this.#ports.store.records("manifest")) {
-      if (carried.body.bag !== line.locator || carried.body.keyVersion !== keyVersion) continue;
-      const id = recordIdOf("manifest", carried.body);
-      if ((await this.#manifest(bag, line, key, id)) !== null) ids.add(id);
+    let heads = line.heads.get(keyVersion);
+    if (heads === undefined) {
+      const verified: VerifiedRecord<"manifest">[] = [];
+      for (const carried of await this.#ports.store.records("manifest")) {
+        if (carried.body.bag !== line.locator || carried.body.keyVersion !== keyVersion) continue;
+        const manifest = await this.#manifest(bag, line, key, recordIdOf("manifest", carried.body));
+        if (manifest !== null) verified.push(manifest);
+      }
+      const cited = new Set(verified.flatMap((manifest) => manifest.body.parents));
+      heads = new Set(verified.map((manifest) => manifest.id).filter((id) => !cited.has(id)));
+      line.heads.set(keyVersion, heads);
     }
-    return [...ids].sort(ascending);
+    return [...heads].sort(ascending);
+  }
+
+  /** A manifest this vessel rested and verified: it joins the reading, and where the heads stand counted it takes the
+   *  place of every head it cites. */
+  #rested(line: Line, id: RecordId, manifest: VerifiedRecord<"manifest">): void {
+    line.manifests.set(id, manifest);
+    const heads = line.heads.get(manifest.body.keyVersion);
+    if (heads === undefined) return;
+    for (const parent of manifest.body.parents) heads.delete(parent);
+    heads.add(id);
   }
 
   /** Found a bag: its first version, under a locator its own key derives. */
@@ -620,7 +649,7 @@ export class ContentKeyHolder {
     if (await this.#ports.ownEdgeShadowed(bagId)) return refuse("own-edge-shadowed");
     const key = mintContentKey(this.#ports.random);
     const bag = bags.get(bagId) ?? { bagId, lines: new Map<BagLocator, Line>() };
-    const line: Line = { locator: bagLocatorOf(key, bagId), lineage: KeyLineage.empty(), keys: new Map(), records: new Map(), carried: new Map(), why: new Map(), manifests: new Map() };
+    const line: Line = { locator: bagLocatorOf(key, bagId), lineage: KeyLineage.empty(), keys: new Map(), records: new Map(), carried: new Map(), why: new Map(), manifests: new Map(), heads: new Map() };
     const minted = await this.#mint(bag, line, planned.plan, signer, [], key);
     if (isRefusal(minted)) return minted;
     bag.lines.set(line.locator, line);
@@ -688,7 +717,7 @@ export class ContentKeyHolder {
       const id = await this.#rest(() => store.putRecord(signed.carried));
       await this.#rest(() => store.putIndexRows(indexRowsOf(signed.verified)));
       await this.#rest(() => this.#noteHead(line, at.head));
-      line.manifests.set(id, signed.verified);
+      this.#rested(line, id, signed.verified);
       return { body, manifest: id, founding: line.locator, ...(founded ? { founded } : {}), ...(at.joined ? { joined: at.joined } : {}) };
     });
   }
@@ -719,7 +748,7 @@ export class ContentKeyHolder {
 
   /**
    * Seal one write batch of document values (changes and checkpoints) into its bag, under ONE manifest that cites
-   * every manifest this vessel verified under the same version. Each checkpoint also signs a `continuation`
+   * the heads of what this vessel verified under the same version. Each checkpoint also signs a `continuation`
    * checkpoint record naming what it covers. A span an admission opened takes no change until its fresh checkpoint
    * stands (`fresh-base-unavailable`). The values rest, then each checkpoint record, the manifest and its index rows.
    */
@@ -769,7 +798,7 @@ export class ContentKeyHolder {
       const id = await this.#rest(() => store.putRecord(signed.carried));
       await this.#rest(() => store.putIndexRows(indexRowsOf(signed.verified)));
       await this.#rest(() => this.#noteHead(line, at.head));
-      line.manifests.set(id, signed.verified);
+      this.#rested(line, id, signed.verified);
       return {
         keyVersion: at.head, founding: line.locator, manifest: id, checkpoints: checkpointIds,
         values: sealed.map(({ value, address }) => ({ role: value.role, ref: value.ref, address })),
@@ -801,7 +830,7 @@ export class ContentKeyHolder {
           if (sealed === null) { met = refuse("value-absent"); continue; }
           const opened = openChunk({ key, context, sealed, authorized });
           if ("plaintext" in opened) {
-            return { plaintext: opened.plaintext, keyVersion, address: authorized.address, writer: faceProofSubjectRef(manifest.certificate.scope), changeWriter: manifest.private.writer };
+            return { plaintext: opened.plaintext, keyVersion, address: authorized.address, writer: recordWriterSubject(manifest.certificate), changeWriter: manifest.private.writer };
           }
           met = refuse("open-refused", opened.refusal);
         }
@@ -1157,7 +1186,7 @@ export class ContentKeyHolder {
           const bagId = name.slice(0, name.indexOf("\n")), locator = name.slice(name.indexOf("\n") + 1) as BagLocator;
           const bag: Bag = bags.get(bagId) ?? { bagId, lines: new Map() };
           const standing = bag.lines.get(locator);
-          const scratch: Line = { locator, lineage: KeyLineage.empty(), keys: new Map(standing?.keys ?? []), records: new Map(), carried: new Map(), why: new Map(), manifests: new Map() };
+          const scratch: Line = { locator, lineage: KeyLineage.empty(), keys: new Map(standing?.keys ?? []), records: new Map(), carried: new Map(), why: new Map(), manifests: new Map(), heads: new Map() };
           for (const at of indexes) {
             const version = entries[at]!.keyVersion as KeyVersionId;
             if (!scratch.keys.has(version)) scratch.keys.set(version, entries[at]!.key as ContentKey);

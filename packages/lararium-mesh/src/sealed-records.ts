@@ -33,8 +33,8 @@ import {
   SEALED_RECORD_AUTHORSHIP_DOMAIN,
 } from "./domains.js";
 import {
-  own, readSessionCertificate, readSessionSignature,
-  type FaceProofRefusalName, type KeysHeldApart, type SessionCertificate, type Signature,
+  faceProofSubjectRef, own, placeProofSubjectRef, readPlaceSessionCertificate, readPlaceSessionSignature, readSessionCertificate, readSessionSignature,
+  type FaceProofRefusalName, type KeysHeldApart, type PlaceSessionCertificate, type Read, type SessionCertificate, type Signature,
 } from "./face-proof-subjects.js";
 import { readActs, type HistoryDeclaration, type KeyCause, type KeyVersionFact } from "./content-key-lineage.js";
 import {
@@ -173,13 +173,33 @@ export interface SealedRecord<K extends RecordKind = RecordKind> {
   readonly body:   RecordBodies[K];
   readonly sealed: Uint8Array;
 }
+/**
+ * The certificate a record's writer carries: the session that signed it, at whichever anchor that session met its face
+ * (session-contract#/the-hands). A Nexus session's certificate stands beneath the vessel's face-scoped key; a place
+ * session's beneath the face's atom at the vessel's own place. The sealer reads (face, anchor) whatever the anchor.
+ */
+export type RecordCertificate = SessionCertificate | PlaceSessionCertificate;
+/** Is this certificate a place session's? It carries no face-scoped vessel key. */
+export function isPlaceCertificate(certificate: RecordCertificate): certificate is PlaceSessionCertificate {
+  return !("vesselFaceKey" in certificate);
+}
+/** The proof subject of the face that wrote under `certificate`, at its own anchor. */
+export function recordWriterSubject(certificate: RecordCertificate): string {
+  return isPlaceCertificate(certificate) ? placeProofSubjectRef(certificate.scope) : faceProofSubjectRef(certificate.scope);
+}
+/** Read a writer's certificate at either anchor: a place certificate names an atom and a place, and no vessel key. */
+function readRecordCertificate(value: unknown, apart: KeysHeldApart): Read<RecordCertificate> {
+  const place = typeof value === "object" && value !== null && !("vesselFaceKey" in value);
+  return place ? readPlaceSessionCertificate(value) : readSessionCertificate(value, apart);
+}
+
 /** A record a reader verified. Built by `readRecord` alone. */
 export interface VerifiedRecord<K extends RecordKind = RecordKind> {
   readonly kind:        K;
   readonly id:          RecordId;
   readonly body:        RecordBodies[K];
   readonly private:     RecordPrivates[K];
-  readonly certificate: SessionCertificate;
+  readonly certificate: RecordCertificate;
 }
 const VERIFIED = new WeakSet<object>();
 
@@ -379,7 +399,7 @@ const recordContext = (bagId: string, keyVersion: KeyVersionId, id: RecordId): S
 // ── Sign ────────────────────────────────────────────────────────────────────────────────────────
 /** What a record's writer signs with: one session's signer (`session-signer`), by its interface. */
 export interface RecordSigner {
-  readonly certificate: SessionCertificate;
+  readonly certificate: RecordCertificate;
   sign(purpose: "act", payload: Uint8Array): Promise<{ readonly signature: Signature } | { readonly refusal: string }>;
 }
 export const SIGN_RECORD_REFUSALS = ["record-malformed", "key-malformed", "key-mismatch", "signer-refused", "seal-refused"] as const;
@@ -411,7 +431,7 @@ export async function signRecord<K extends RecordKind>(args: {
 /** The reader's own reading of who may write a bag. It answers for the face certificate beneath the session
  *  certificate, for the face's withdrawal history, and for the face's standing in the bag. */
 export interface WriterStanding {
-  holdsWrite(args: { readonly certificate: SessionCertificate; readonly bagId: string }): boolean;
+  holdsWrite(args: { readonly certificate: RecordCertificate; readonly bagId: string }): boolean;
   /** The chain this standing reads writers under, named, or null where none stands yet: a reading taken then counts
    *  no writer, so a holder takes no reading and settles no roll on it. Absent: the standing reads alike always. */
   readonly chainOf?: () => string | null;
@@ -459,9 +479,12 @@ export function readRecord<K extends RecordKind>(kind: K, carried: unknown, read
     if (!isRecord(part) || !exactKeys(part, ["private", "certificate", "signature"])) return { refusal: "authorship-malformed" };
     const secret = readPrivate(kind, part["private"], body);
     if (secret === null) return { refusal: "authorship-malformed" };
-    const certificate = readSessionCertificate(part["certificate"], reader.apart ?? []);
+    const certificate = readRecordCertificate(part["certificate"], reader.apart ?? []);
     if (!own(certificate, "read")) return { refusal: "certificate-refused", cause: certificate.refusal };
-    const signature = readSessionSignature(certificate.read, "act", authorshipImage(kind, id, secret), part["signature"]);
+    const authorship = authorshipImage(kind, id, secret);
+    const signature = isPlaceCertificate(certificate.read)
+      ? readPlaceSessionSignature(certificate.read, "act", authorship, part["signature"])
+      : readSessionSignature(certificate.read, "act", authorship, part["signature"]);
     if (!own(signature, "read")) return { refusal: "signature-refused", cause: signature.refusal };
     if (reader.standing.holdsWrite({ certificate: certificate.read, bagId: reader.bagId }) !== true) return { refusal: "writer-not-capable" };
     // The readers built `body` and `secret` afresh from what they read, so no caller holds a way into them;

@@ -117,6 +117,31 @@ export async function answerRestAsk(caps: CapabilityRecord, ask: Partial<IslandM
   try { return { ...base, sealed: (await restsSealed(ask.documentId)) === true }; } catch { return { ...base, refused: "rest-fault" }; }
 }
 
+/**
+ * THE VESSEL'S HALF OF THE SETTLEMENT ROUND (L29, 2026-11-07). The vessel answers every receipt ask whenever asked, during the
+ * island's submit too. Once the island says `receipt:asks-done` and every answer still being made has posted, `close` runs ONCE
+ * (the vessel sends `receipt:close`). No clock: the island's own word and the answers end the round, and the vessel's force-kill
+ * stays the one liveness for a worker wedged alive. Each vessel door that answers receipts (the wiki pool, the node daemon worker,
+ * the browser daemon) holds one per island.
+ */
+export function receiptSettlement(close: () => void): { answering<T>(answer: Promise<T>): Promise<T>; asksDone(): void } {
+  let answering = 0;
+  let asked = false;
+  let closed = false;
+  const settle = (): void => {
+    if (!asked || answering !== 0 || closed) return;
+    closed = true;
+    close();
+  };
+  return {
+    answering(answer) {
+      answering++;
+      return answer.finally(() => { answering--; settle(); });
+    },
+    asksDone() { asked = true; settle(); },
+  };
+}
+
 /** The island-to-vessel kinds the record answers, each by the member of its own name. */
 export const RECORD_ASKS = ["cas:want", "receipt:request", "dyad:ask", "custody:write", "session:sign"] as const;
 
@@ -127,9 +152,12 @@ export const RECORD_ASKS = ["cas:want", "receipt:request", "dyad:ask", "custody:
  */
 export function answerIslandAsks(port: { post(msg: unknown): void; listen(cb: (msg: unknown) => void): () => void }, caps: CapabilityRecord): () => void {
   const reply = (msg: unknown): void => { try { port.post(msg); } catch { /* the island went away: nothing to answer */ } };
+  const settlement = receiptSettlement(() => reply({ type: "receipt:close" }));
   const detachDocStore = caps.docStore?.(port) ?? (() => {});
   const stop = port.listen((raw) => {
     const m = raw as { type?: unknown; requestId?: unknown; [k: string]: unknown } | null;
+    // The island's word reads whole, as at every island door: a type with any other key is no asks-done.
+    if (m?.type === "receipt:asks-done") { if (Object.keys(m).length === 1) settlement.asksDone(); return; }
     if (!m || typeof m.requestId !== "string") return;
     const requestId = m.requestId;
     switch (m.type) {
@@ -145,7 +173,8 @@ export function answerIslandAsks(port: { post(msg: unknown): void; listen(cb: (m
         const ids = m["documentIds"];
         if (!Array.isArray(ids) || !ids.every((id) => typeof id === "string")) return;
         const heads = m["heads"];
-        void answerReceipt(caps, { requestId, documentIds: ids, ...(heads && typeof heads === "object" ? { heads: heads as Record<string, string[]> } : {}) }).then(reply);
+        void settlement.answering(answerReceipt(caps, { requestId, documentIds: ids, ...(heads && typeof heads === "object" ? { heads: heads as Record<string, string[]> } : {}) })
+          .then(reply, () => reply({ type: "receipt:issued", requestId, issued: false })));
         return;
       }
       case "dyad:ask":

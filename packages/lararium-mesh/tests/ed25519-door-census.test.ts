@@ -139,7 +139,6 @@ describe("the census of Ed25519 verifiers", () => {
  * takes one.
  */
 const STILL_TAKES_A_VERIFIER: readonly string[] = [
-  "packages/lararium-keyhive/src/keyhive-identity-slot.ts",   // a token SEAL (sign and verify under one held key): no public key rides the call
   "packages/lararium-mesh/src/cabal-invite.ts",
   "packages/lararium-mesh/src/raise-challenge.ts",
   "packages/lararium-mesh/src/vouch-board.ts",

@@ -29,6 +29,9 @@ import { readSealedAddress } from "./sealed-chunk.js";
 import { SealedDocumentStore, type SaveSession, type SealedValueAddresses } from "./sealed-doc-store.js";
 import type { CompositeStore } from "./composite-store.js";
 import type { LarTiddlerStore } from "./tiddler-store.js";
+import type { LarDoc } from "./base-doc.js";
+import { catalogRowHalf } from "./catalog-view.js";
+import { isBagId } from "./lar-uris.js";
 
 // ── The book ────────────────────────────────────────────────────────────────────────────────────
 /** What a booking reads: the session whose seal a document's next save signs under, and who wrote its latest change. */
@@ -146,9 +149,12 @@ function asker<A extends { requestId: string }>(port: Port, answerType: string, 
   const pending = new Map<string, (answer: A | null | typeof ISLAND_SILENT) => void>();
   let silent = false;
   const settleAll = (answer: null | typeof ISLAND_SILENT): void => { const settles = [...pending.values()]; pending.clear(); for (const settle of settles) settle(answer); };
-  port.gone?.(() => settleAll(null));
+  port.gone?.(() => { silent = false; settleAll(null); });
   port.listen((raw) => {
     const m = raw as { type?: unknown; requestId?: unknown } | null;
+    // A FRESH DOOR MEANS A FRESH LATCH: the island's holder says it answers (a re-stood door on the same port, a fresh
+    // holder standing where a wedged one stood), and that word lifts the lapse, so a rebook reaches the holder now standing.
+    if (m?.type === "docstore:answering") { silent = false; return; }
     if (!m || m.type !== answerType || typeof m.requestId !== "string") return;
     silent = false;   // the island speaks again: a late answer to a lapsed ask still proves it answers
     const settle = pending.get(m.requestId);
@@ -265,6 +271,8 @@ export function answerDocStoreAsks(port: Port, holder: {
         (e) => reply({ type: "docstore:opened", requestId, ...refusal(e) }));
     }
   });
+  // THE DOOR STANDS NOW: the island answers its first ask only once it listens, so it says so, and the vessel's cell
+  // opens the port to the door on this word alone; at its unsubscribe it falls silent.
   reply({ type: "docstore:answering" } satisfies DocStoreMsg_Answering);
   return () => { stop(); reply({ type: "docstore:silent" } satisfies DocStoreMsg_Silent); };
 }
@@ -299,6 +307,8 @@ export function answerLiveDocAsks(port: Port, liveOf: (bagId: string) => Promise
 export function docStorePortCell(liveOf: (bagId: string) => Promise<Uint8Array | null>, opts: {
   /** V3: the island's slot resolver named `documentId` as `bagId`'s document (`announceSlotDoc`). */
   readonly onSlot?: (bagId: string, documentId: string) => void;
+  /** The attached island's door stood (`docstore:answering`): what waited on it (a hydration, a held save) asks again. */
+  readonly onReady?: () => void;
 } = {}): {
   readonly port: () => Port | null;
   readonly attach: (port: Port) => () => void;
@@ -315,7 +325,11 @@ export function docStorePortCell(liveOf: (bagId: string) => Promise<Uint8Array |
       const tell = (): void => { for (const cb of [...goneTo]) { try { cb(); } catch { /* one listener's fault never holds the rest */ } } };
       const stopAnswering = island.listen((raw) => {
         const type = (raw as { type?: unknown } | null)?.type;
-        if (type === "docstore:answering") current = port;
+        if (type === "docstore:answering") {
+          if (current === port) return;
+          current = port;
+          try { opts.onReady?.(); } catch { /* a listener's fault never reaches the island */ }
+        }
         else if (type === "docstore:silent" && current === port) { current = null; tell(); }
       });
       const stop = answerLiveDocAsks(island, liveOf);
@@ -352,8 +366,9 @@ export function answerSlotNotices(port: Port, onSlot: (bagId: string, documentId
 }
 
 // ── The composer ──────────────────────────────────────────────────────────────────────────────────
-/** A bag a document belongs to, and that bag's face (`faceProofSubjectRef`). */
-export interface SealedBag { readonly bagId: string; readonly face: string }
+/** A bag a document belongs to, and that bag's face (`faceProofSubjectRef`); a null face: the bag rests sealed and no face
+ *  that could wear it has lit, so its document opens for no one and its save waits in memory. */
+export interface SealedBag { readonly bagId: string; readonly face: string | null }
 
 export interface SealedRest<S extends SaveSession = SaveSession> {
   /** The storage adapter the Repo stands on. */
@@ -391,6 +406,9 @@ export function composeSealedRest<S extends SaveSession>(input: {
   readonly inner: StorageAdapterInterface;
   readonly bagOf: (documentId: string) => SealedBag | null;
   readonly sessionFace: () => string | null;
+  /** The worn face's subject at another anchor of the vessel's own chain (`SealedDocumentPorts.wornAt`): true only for
+   *  a bag of the face the vessel wears. */
+  readonly wornAt?: (face: string, subject: string) => boolean;
   readonly door: Pick<ConstructorParameters<typeof SealedDocumentStore>[0], "seal" | "open"> & { lock?(): void };
   readonly flushRepo: () => Promise<void>;
   readonly onHeld?: (held: { readonly refusal: "save-unbooked" | "save-unmapped" | "save-unsealed"; readonly documentId: string }) => void;
@@ -416,6 +434,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
   };
   const store = new SealedDocumentStore({
     inner: input.inner, bagOf: input.bagOf, sessionFace: input.sessionFace,
+    ...(input.wornAt ? { wornAt: input.wornAt } : {}),
     sessionOf,
     writerOf: (documentId) => book.writerOf(documentId),
     // P1: a vessel's rest keeps a document's sealed class across a map that drops; its save waits, never clear.
@@ -424,6 +443,9 @@ export function composeSealedRest<S extends SaveSession>(input: {
     ...(input.onHeld ? { onHeld: input.onHeld } : {}),
     ...(input.hydrates === true ? { hydrates: true } : {}),
   });
+  // A session names the bag's face by its own subject, or by the worn face's subject at another anchor.
+  const wears = (face: string | null | undefined, subject: string): boolean =>
+    typeof face === "string" && (subject === face || (input.wornAt?.(face, subject) ?? false));
   return {
     store, book,
     wrote(documentId, session) { if (input.bagOf(documentId) !== null) book.book(documentId, session); },
@@ -442,7 +464,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
     async rebook(session) {
       for (const id of store.waitingDocuments()) {
         const bag = input.bagOf(id);
-        if (bag !== null && bag.face === session.subject) book.seal(id, session);
+        if (bag !== null && wears(bag.face, session.subject)) book.seal(id, session);
       }
       return store.reseal();
     },
@@ -454,7 +476,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
     async standDown(standing) {
       for (const id of store.waitingDocuments()) {
         const face = input.bagOf(id)?.face;
-        const session = standing.find((s) => s.subject === face);
+        const session = standing.find((s) => wears(face, s.subject));
         if (session) book.seal(id, session);
       }
       try { await input.flushRepo(); } catch { /* a save that refused keeps its change in the store's memory */ }
@@ -467,7 +489,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
     restsSealed: (documentId) => store.holdsSealed(documentId),
     async sealMapped(documentId, session) {
       const bag = input.bagOf(documentId);
-      if (bag === null || bag.face !== session.subject) return false;
+      if (bag === null || !wears(bag.face, session.subject)) return false;
       if (book.of(documentId) === null) book.seal(documentId, session);
       return store.sealClearRest(documentId);
     },
@@ -480,18 +502,31 @@ export function composeSealedRest<S extends SaveSession>(input: {
  * row, but its working and draft slots resolve through the slot-doc resolver (the face's derived address, a binding
  * record) and no catalog row names them: the map reads the document each bag's mounted layer holds first, then the
  * catalog's row. `docsOf` answers a bag's candidate document ids in that order; an absent one reads null.
+ *
+ * BEFORE A FACE LIGHTS (the sealing scope, stable-founding-road #/rulings, 2026-11-06): every wiki content store rests
+ * sealed and the floor catalog names public bags alone, so with no face lit every bag row of `catalog` that rests on a
+ * face's half (`catalogRowHalf`: a user bag, a wiki, a slot binding) names a sealed bag whose face has not lit
+ * (`face: null`): its document neither loads nor rests clear. A public row (`cap-tier = public`) and the floor's own rows
+ * map no bag, and read as the engine wrote them.
  */
 export function sealedBagMap(input: {
   readonly face: () => string | null;
   readonly bags: () => readonly string[];
   readonly docsOf: (bagId: string) => readonly (string | null | undefined)[];
+  /** The catalog the vessel reads (the floor's, with a lit face's laid over it), or undefined before it stands. */
+  readonly catalog?: () => LarDoc | undefined;
 }): { bagOf(documentId: string): SealedBag | null; docOf(bagId: string): string | null } {
   const ids = (bagId: string): string[] => input.docsOf(bagId).filter((id): id is string => typeof id === "string" && id.length > 0);
   return {
     bagOf(documentId) {
       const face = input.face();
-      if (face === null) return null;
-      for (const bagId of input.bags()) if (ids(bagId).includes(documentId)) return { bagId, face };
+      if (face !== null) {
+        for (const bagId of input.bags()) if (ids(bagId).includes(documentId)) return { bagId, face };
+        return null;
+      }
+      for (const [title, row] of Object.entries(input.catalog?.()?.tiddlers ?? {})) {
+        if (isBagId(title) && catalogRowHalf(title, row) === "face" && ids(title).includes(documentId)) return { bagId: title, face: null };
+      }
       return null;
     },
     docOf: (bagId) => ids(bagId)[0] ?? null,

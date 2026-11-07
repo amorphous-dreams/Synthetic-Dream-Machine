@@ -27,7 +27,7 @@ import {
   faceAtomPublicKey, signAsFaceAtom, HANDLE_INDEX_CEILING, nexusAidOfPin, preparePlaceFace, type GateBundlePin, type JoinedFaceTarget, type PlaceReading,
 } from "@lararium/mesh";
 import type { Hand } from "@lararium/mesh/session-contract";
-import type { SessionOwnChain } from "@lararium/mesh";
+import type { NexusOwnChain } from "@lararium/mesh";
 import { HAND_PROFILES } from "@lararium/mesh/session-contract";
 import { CustodyLocked } from "./custody-holder.js";
 import { composeFaceTarget } from "./dial-presentation.js";
@@ -147,12 +147,12 @@ export function nodeSessionDoor(ports: NodeSessionDoorPorts): UdsSessionDoor {
 export function dialAnchorCell(): {
   readonly pin: () => GateBundlePin | null;
   /** This vessel's own verified face chain at the pin, read off the presentation that composed there; null with no pin. */
-  readonly chain: () => SessionOwnChain | null;
+  readonly chain: () => NexusOwnChain | null;
   readonly composed: (pin: GateBundlePin | null, presentation: unknown) => void;
   readonly clear: () => void;
 } {
   let pin: GateBundlePin | null = null;
-  let chain: SessionOwnChain | null = null;
+  let chain: NexusOwnChain | null = null;
   return Object.freeze({
     pin: () => pin,
     chain: () => chain,
@@ -165,7 +165,7 @@ export function dialAnchorCell(): {
 }
 
 /** The public chain a composed presentation carries: the face's scope and this vessel's face-scoped key there. */
-function chainOfPresentation(presentation: unknown): SessionOwnChain | null {
+function chainOfPresentation(presentation: unknown): NexusOwnChain | null {
   const certificate = (presentation as { certificate?: { scope?: { faceKey?: unknown; nexus?: unknown }; vesselFaceKey?: unknown } } | null)?.certificate;
   const faceKey = certificate?.scope?.faceKey, nexus = certificate?.scope?.nexus, vesselFaceKey = certificate?.vesselFaceKey;
   return typeof faceKey === "string" && typeof nexus === "string" && typeof vesselFaceKey === "string"

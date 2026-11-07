@@ -5,10 +5,10 @@
  *        own book, and dropping A's door (its record loses `sessionSign`) leaves B signing.
  *   D11  a daemon record without `sessionSign` refuses `signer-unavailable` by name on the same request id, and logs
  *        `SessionSignDoorRefused` once however often it asks.
- *   D12  a herm and a Lararium in one process: the herm's record (the floor) refuses by name while the Lararium's record
- *        (the floor with the lift seated on top, `seatSessionSignLift`) reaches its own book; the lift's down removes it.
+ *   D12  a herm floor and a Lararium floor composed through `islandFloorStack`; the Lararium's lift (`islandLiftStack`)
+ *        reaches its own book; the lift's dispose (the lock) removes the door, and a stale dispose after a newer lift leaves the newer door.
  *   D13  source witness: no process-global setter survives anywhere under packages/{src,tests} or tools, the shared
- *        prep seats no door, and the herm's compose names no session sign.
+ *        prep seats no door; the Lararium compose lifts through `islandLiftStack` over the prep's record; the herm's compose names no session sign.
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store
  */
@@ -16,10 +16,9 @@ import { EventEmitter } from "node:events";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { describe, expect, test, vi, afterEach } from "vitest";
-import type { CapabilityRecord } from "@lararium/mesh";
+import { composeVessel, islandFloorStack, islandLiftStack, larVesselOf, type CapabilityRecord } from "@lararium/mesh";
 import { nodeWorkerHandle } from "../src/worker-handle.js";
 import { SessionSignBook } from "../src/session-sign-door.js";
-import { seatSessionSignLift } from "../src/open-node-vessel.js";
 import type { UdsSessionSigner } from "../src/uds-channel.js";
 
 type Worker = Parameters<typeof nodeWorkerHandle>[0];
@@ -97,29 +96,32 @@ describe("session signing seats on the lift, per record", () => {
 
   test("D12 — a herm floor signs nothing while a Lararium in the same process signs through its lift; the lift's down removes the door", async () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
-    const hermCaps: CapabilityRecord = { cas: async () => null };   // the floor: no lift seated
-    const larCaps: CapabilityRecord = { cas: async () => null };    // the same floor, then the lift on top
+    const hermFloor = larVesselOf(await composeVessel(islandFloorStack({ cas: async () => null })));
+    const larFloor = larVesselOf(await composeVessel(islandFloorStack({ cas: async () => null })));
     const l = lift("lar", "req-1");
-    const down = seatSessionSignLift(larCaps, l.door);
+    const lifted = await composeVessel(islandLiftStack(larFloor, { face: "lar", sessionSign: l.door, drop: () => {} }));
     const herm = island(), lar = island();
-    nodeWorkerHandle(herm.worker, { island: "daemon", caps: hermCaps });
-    nodeWorkerHandle(lar.worker, { island: "daemon", caps: larCaps });
+    nodeWorkerHandle(herm.worker, { island: "daemon", caps: hermFloor.record });
+    nodeWorkerHandle(lar.worker, { island: "daemon", caps: larFloor.record });
 
     await herm.ask(signAsk("h1", "req-1"));
     await lar.ask(signAsk("l1", "req-1"));
     expect(answers(herm.said)).toEqual([["h1", "signer-unavailable"]]);
     expect(answers(lar.said)).toEqual([["l1", "sig-lar"]]);
-    expect(hermCaps.sessionSign).toBeUndefined();
+    expect(hermFloor.record.sessionSign).toBeUndefined();
 
-    down();
-    expect(larCaps.sessionSign).toBeUndefined();
+    await lifted.dispose();
+    expect(larFloor.record.sessionSign).toBeUndefined();
     await lar.ask(signAsk("l2", "req-1"));
     expect(answers(lar.said).at(-1)).toEqual(["l2", "signer-unavailable"]);
     // a down that runs after another lift re-seated the record leaves that newer door standing
     const again = lift("again", "req-2");
-    seatSessionSignLift(larCaps, again.door);
-    down();
-    expect(larCaps.sessionSign).toBe(again.door);
+    await composeVessel(islandLiftStack(larFloor, { face: "lar", sessionSign: again.door, drop: () => {} }));
+    await lifted.dispose();
+    // The lift seats its own fenced door (row B8), so the newer lift reads by what it answers, never by identity.
+    expect(larFloor.record.sessionSign).toBeDefined();
+    await lar.ask(signAsk("l3", "req-2"));
+    expect(answers(lar.said).at(-1)).toEqual(["l3", "sig-again"]);
   });
 });
 
@@ -162,6 +164,8 @@ describe("D13 — no ambient session sign door survives in source", () => {
     };
     expect(body("prepareNodeBootOn")).not.toMatch(/islandCaps\.sessionSign\s*=|seatSessionSignLift\(/);
     expect(body("composeNodeHermOn")).not.toMatch(/sessionSign/i);
-    expect(body("composeNodeVesselOn")).toMatch(/seatSessionSignLift\(p\.islandCaps/);
+    expect(body("composeNodeVesselOn")).toMatch(/islandLiftStack\(p\.islandVessel/);
+    expect(body("prepareNodeBootOn")).toMatch(/islandFloorStack\(/);
+    expect(src).not.toMatch(/seatSessionSignLift/);
   });
 });

@@ -53,7 +53,7 @@ describe("standSiblingChannel — the sibling dial ships SHUT by name", () => {
       repo, herms: [...herms], nexusPubkey: NEXUS, personaKelPrefix: inception.prefix,
       deviceKey: key, sign: ed25519SignerFromSeed(seed(55)),
       enrolment: await enrolDevice({ opSeed: seed(51), prefix: inception.prefix, deviceVerifyingKey: key, hearthTrueName: "", boundEpoch: 0 }),
-      open: groupSecretOpenerFromSeed(seed(55)), expectedEpoch: 0, onRefusal: (r) => refusals.push(r),
+      open: groupSecretOpenerFromSeed(seed(55)), expectedEpoch: () => 0, onRefusal: (r) => refusals.push(r),
     });
     return adapter;
   }

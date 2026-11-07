@@ -1,11 +1,9 @@
 /**
  * IdentitySlot — pluggable DID-based identity abstraction.
  *
- * Designed to be satisfied by three concrete implementations:
- *
- *   BlueskyIdentitySlot    — AT Protocol DID (did:plc or did:web:user.bsky.social)
- *   GitHubIdentitySlot     — OAuth token mapped to did:web:github.com/<username>
- *   KeyhiveIdentitySlot    — Keyhive convergent capabilities (Ink & Switch)
+ * Shaped for DID-backed providers (an AT Protocol DID, an OAuth handle mapped to did:web). No production
+ * implementation stands: the Keyhive slot retired with K23 (stable-founding-road), since a self-DID verifier
+ * binds no presenter; a slot that binds one joins a PROVED peer or session presenter to the share decision.
  *
  * STATUS NOTE: Keyhive runs
  * LIVE at the OPERATOR level (bootDaemonKeyhive Gates A/B/C, the sealed face gate,
@@ -15,15 +13,12 @@
  * only same-origin/in-process peers (a legitimate asymmetry, not an open hole). See
  * lararium-canonical-model #open-drift (point 4).
  *
- * The interface is intentionally narrow — only what LarVessel and the Automerge
- * sharePolicy need to function. Keyhive's full three-layer stack (convergent
+ * The interface is intentionally narrow — only what the federation gate's share decision needs. Keyhive's full three-layer stack (convergent
  * capabilities + Group CRDT + BeeKEM) slots in without changing the interface.
  *
  * DNS-based identity namespace:
  *   User identity is expressed as a DID — typically did:web:<handle> for
  *   Bluesky (e.g. did:web:user.bsky.social) or did:web:github.com/<user>.
- *   The DID's signing key is used to derive stable Automerge actor IDs and
- *   (future) to derive deterministic doc URLs per user namespace.
  *
  * URI convention:
  *   lar://did:web:user.bsky.social/wikis/garden
@@ -41,9 +36,6 @@
  *   Tiddlers with lar: URIs serve as the heleuma sync candidates; $:/ tiddlers do not.
  */
 
-/** Automerge-compatible actor ID — 16-byte UUID string, stable per vessel. */
-export type ActorId = string;
-
 /**
  * CapabilityToken — an opaque token proving access to a document.
  *
@@ -54,7 +46,7 @@ export type ActorId = string;
 export type CapabilityToken = string | null;
 
 /**
- * IdentitySlot — minimum surface LarVessel needs from an identity provider.
+ * IdentitySlot — minimum surface the federation gate's share decision needs from an identity provider.
  *
  * All methods are async so implementations can lazily fetch keys from
  * IndexedDB (browser) or a key file (node) without blocking construction.
@@ -62,13 +54,6 @@ export type CapabilityToken = string | null;
 export interface IdentitySlot {
   /** The vessel/operator DID — e.g. "did:web:user.bsky.social" or "did:plc:xxxxx". */
   readonly did: string;
-
-  /**
-   * Derive a stable Automerge actor ID from this identity's signing key.
-   * Must be deterministic: same key → same actorId across reboots.
-   * Typically: first 16 bytes of BLAKE3(signingPublicKey), formatted as UUID.
-   */
-  deriveActorId(): Promise<ActorId>;
 
   /**
    * Verify that this vessel holds a valid capability to access the given doc.

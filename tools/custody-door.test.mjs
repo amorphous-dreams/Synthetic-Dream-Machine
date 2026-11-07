@@ -3,7 +3,9 @@
 //
 //   K1  an unlock leaves the credential in NO receipt fact, outcome, document or log line: not its bytes, and not
 //       the digest a verb carrying it would have left.       control (the known positive): an ordinary verb's own
-//       request id and caller ARE found by the same search of the same documents and log
+//       request id and caller ARE found by the same search of the same documents and log. The documents rest SEALED,
+//       so the search reads what they HOLD: the reader opens them through the vessel itself, under the published test
+//       route (`openedStored`). The negative's known positive: a credential planted in a sealed document reads red.
 //   K2  a wrong credential answers `no-slot-opens`, holds nothing, and moves no private row.
 //                                                            control: the right one opens
 //   K3  unlock, lock, unlock: each unlock stands a fresh composition and the vessel answers a verb after each.
@@ -17,7 +19,7 @@ import "./test-ward-env.mjs";   // the CLI processes this test spawns take the h
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { cpSync, mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
+import { cpSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -26,6 +28,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { TEST_PASSPHRASE } from "./test-custody-route.mjs";
 import { custodyActLanded, sendCustodyFrame, unlockTestCustody } from "./unlock-test-custody.mjs";
 import { daemonStood } from "./daemon-stood.mjs";
+import { openedStored } from "./opened-store.mjs";
 
 const repo = fileURLToPath(new URL("../", import.meta.url));
 const cli = join(repo, "packages/lares-cli/dist/src/bin/lares.js");
@@ -98,33 +101,21 @@ function privateRows(node, root) {
   }
 }
 
-/** Every document the stopped vessel's store holds, as one JSON text, plus every file's raw bytes as latin1. */
+/** Every document the stopped vessel's store holds, OPENED through the vessel (`openedStored`), plus every file's raw bytes as latin1. */
 async function everythingStored(node, root) {
-  const prior = process.env.LAR_ROOT;
-  process.env.LAR_ROOT = root;
-  try {
-    const storageDir = node.larDataDir();
-    const { Repo } = await import(pathToFileURL(join(repo, "packages/lararium-node/node_modules/@automerge/automerge-repo/dist/index.js")).href);
-    const { DurableNodeFSStorageAdapter } = await import(pathToFileURL(join(repo, "packages/lararium-node/dist/src/durable-storage-adapter.js")).href);
-    const store = new Repo({ storage: new DurableNodeFSStorageAdapter(storageDir) });
-    let text = "";
-    let docs = 0;
-    for (const id of node.enumerateStoreDocs(storageDir)) {
-      try { const h = await store.find(`automerge:${id}`); text += JSON.stringify(h.doc()) + "\n"; docs += 1; } catch { /* a doc that will not load holds nothing readable */ }
+  // The shared opened reader (tools/opened-store.mjs): the vessel's own Repo reads each sealed rest as its plaintext.
+  const { docs: read, sealedIds, opened } = await openedStored(root, { node, hostId: "custody-door-reader" });
+  const text = read.map(({ doc }) => JSON.stringify(doc)).join("\n") + "\n";
+  const docs = read.length;
+  const raw = [];
+  const walk = (dir) => {
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      const at = join(dir, e.name);
+      if (e.isDirectory()) walk(at); else if (e.isFile()) raw.push(readFileSync(at).toString("latin1"));
     }
-    await store.shutdown();
-    const raw = [];
-    const walk = (dir) => {
-      for (const e of readdirSync(dir, { withFileTypes: true })) {
-        const at = join(dir, e.name);
-        if (e.isDirectory()) walk(at); else if (e.isFile()) raw.push(readFileSync(at).toString("latin1"));
-      }
-    };
-    walk(root);
-    return { text, docs, raw: raw.join("\n") };
-  } finally {
-    if (prior === undefined) delete process.env.LAR_ROOT; else process.env.LAR_ROOT = prior;
-  }
+  };
+  walk(root);
+  return { text, docs, sealedIds, opened, raw: raw.join("\n") };
 }
 
 test("the custody door opens the vessel key and leaves no trace of the credential", { timeout: 900_000 }, async () => {
@@ -181,8 +172,12 @@ test("the custody door opens the vessel key and leaves no trace of the credentia
     await vessel.stop();
     const stored = await everythingStored(node, root);
     assert.ok(stored.docs > 0, "the store's documents loaded (a search over nothing proves nothing)");
+    // The daemon's documents rest SEALED, and the search reads what they HOLD: the reader opened every one of them.
+    assert.ok(stored.sealedIds.length > 0, "the daemon's documents rest sealed (a raw read alone would read nothing)");
+    assert.equal(stored.opened, stored.sealedIds.length, "the reader opened every sealed document through the vessel");
     // CONTROL: the ordinary verb's own request id reads back from the same documents by the same search.
     assert.ok(stored.text.includes(KNOWN), "K1 control: an ordinary verb's request id rests in the daemon's documents");
+    console.log(`[K1] the reader opened ${stored.opened} sealed of ${stored.docs} documents; the request id rests ${stored.raw.includes(KNOWN) ? "in a clear byte too" : "in sealed documents alone"}`);
     // The leak class itself, shown present for a verb: a receipt fact under the verb's id carries a digest of its
     // input. A credential riding a verb would rest in exactly such a record.
     const factAt = stored.text.indexOf(`receipts/${KNOWN}`) >= 0 ? stored.text.indexOf(`receipts/${KNOWN}`) : stored.text.indexOf(KNOWN);
@@ -221,6 +216,23 @@ test("the custody door opens the vessel key and leaves no trace of the credentia
     await vessel.stop();
     vessel = await stand(root);
     assert.equal((await unlockTestCustody(root)).reading, "opens", "K4 control: a fresh boot opens on the first right try");
+    // ── K1's negative, shown live: a credential PLANTED in a sealed document reads red ───────────────────────
+    // The known positive for the negative: a stand-in credential written by an ordinary verb into the face's own wiki
+    // (its working slot, a face-half bag that rests sealed) reads back through the same reader and the same search,
+    // while no raw byte under the root carries it.
+    const PLANTED = `planted-credential-${createHash("sha256").update(root).digest("hex").slice(0, 16)}`;
+    const plantDir = mkdtempSync(join(tmpdir(), "lares-custody-door-plant-"));
+    try {
+      const plantPath = "t/custody-door/planted";
+      writeFileSync(join(plantDir, "planted.mem"), `<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///${plantPath}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${plantPath}"\n\`\`\`\n\n${PLANTED}\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`);
+      const plant = vessel.verb(["meme", "put", `lar:///${plantPath}`, "--recipe", "lares", "--file", join(plantDir, "planted.mem"), "--json"]);
+      assert.equal(plant.status, 0, `the plant lands through an ordinary verb: ${plant.stderr}${plant.stdout}`);
+    } finally { rmSync(plantDir, { recursive: true, force: true }); }
+    await vessel.stop();
+    vessel = null;
+    const planted = await everythingStored(node, root);
+    assert.equal(planted.raw.includes(PLANTED), false, "the planted credential rests sealed: no raw byte carries it");
+    assert.equal(planted.text.includes(PLANTED), true, "K1's negative reads red on a credential planted in a sealed document");
   } finally {
     await vessel?.stop();
     rmSync(root, { recursive: true, force: true });

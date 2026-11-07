@@ -37,7 +37,7 @@ import { defaultCryptoProvider } from "@lararium/mesh/crypto";
 import { validateSessionEnvelope, type SessionEnvelope } from "@lararium/mesh/session-contract";
 import { deviceEdgeDigest, verifyHolderSessionProof, type DeviceDelegationTiddler } from "@lararium/mesh/holder-session-proof";
 import { makePortDoor, type PortPolicy } from "@lararium/mesh/port-lease";
-import { HOLDER_ROUTES } from "./holder-routes.js";
+import { HOLDER_ROUTES, ownerOnlyKind } from "./holder-routes.js";
 import { TAB_REQUESTS } from "./holder-admission.js";
 
 type WireMessage = Record<string, unknown> & { type: string };
@@ -182,6 +182,10 @@ interface House {
   endClosed:      () => void;
   bootRequests:   Set<string>;
   manifestSent:   boolean;
+  /** The island said `receipt:asks-done`: the owner's `receipt:close` may now cross, and a house with no owner closes them itself. */
+  asksDone:       boolean;
+  /** The island's receipts have closed (the owner's close crossed, or the holder closed them for an absent owner). */
+  receiptClosed:  boolean;
   /** The first session, whose manifest boots the island; it hears the boot handshake while the island proves. */
   claimant:       HolderPort | null;
   readonly ports:    HolderPort[];
@@ -266,6 +270,17 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
     void shut.catch((error) => onDrop("repo:shutdown", error instanceof Error ? error.message : String(error)));
   };
 
+  /**
+   * THE SETTLEMENT ROUND NEVER STRANDS ON A MISSING OWNER (F7). The island said asks-done and no vessel tab stands to answer it
+   * (the owner left mid-teardown): no one can answer its receipts any more, so the holder, the vessel's agent at this door, closes
+   * them on that event. Every wait still out refuses, and its title reports unsaved by name. No clock decides it.
+   */
+  const closeIslandReceipts = (house: House): void => {
+    if (house.receiptClosed || !house.asksDone || !house.island) return;
+    house.receiptClosed = true;
+    try { house.island.post({ type: "receipt:close" }); } catch (error) { onDrop("receipt:close", error instanceof Error ? error.message : String(error)); }
+  };
+
   /** The island proved the face for the edge it names: serve the house, or end it for an edge no session presented. */
   const settleGate = (house: House, msg: WireMessage): void => {
     if (house.cleared) return;
@@ -295,6 +310,15 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
     const msg = wireMessage(raw);
     if (!msg) { onDrop("unknown", "invalid-message"); return; }
     if (msg.type === "gate:clear" || msg.type === "gate:refused") { settleGate(house, msg); return; }
+    if (msg.type === "receipt:asks-done") {
+      // The vessel that answers the island's receipts hears it: the owner once served, the claimant while the island proves.
+      house.asksDone = true;
+      const answerer = house.cleared ? house.owner : house.claimant;
+      if (answerer && ports.has(answerer)) { deliver(answerer, msg); return; }
+      onDrop(msg.type, house.cleared ? "no-owner" : "house-uncleared");
+      closeIslandReceipts(house);
+      return;
+    }
     const route = HOLDER_ROUTES[msg.type as keyof typeof HOLDER_ROUTES];
     if (!route) { onDrop(msg.type, "unknown-route"); return; }
     if (!house.cleared) {
@@ -396,7 +420,7 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
     const house: House = {
       key, group, root, state: "standing", repo: null, ready: Promise.resolve(), admitting: 0,
       island: null, unlisten: [], edgeDigest: null, cleared: false, served, serve, endServing, closed, endClosed,
-      bootRequests: new Set(), manifestSent: false, claimant: null,
+      bootRequests: new Set(), manifestSent: false, asksDone: false, receiptClosed: false, claimant: null,
       ports: [], sealers: new Set(), pending: new Map(), cameras: new Map(), queue: [], owner: null,
     };
     (house as { ready: Promise<void> }).ready = (async () => {
@@ -500,6 +524,15 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
       house.owner = port;
       house.manifestSent = true;
     }
+    // A VESSEL-ONLY KIND crosses from the owner alone (`HOLDER_SENDERS`, read off island-protocol's union): a second tab that
+    // forges the island's lifecycle or a capability answer is refused by name and changes nothing in the island.
+    if (msg.type !== "manifest" && ownerOnlyKind(msg.type) && house.owner !== port) { refuse(port, "owner-only-kind", msg.type); return; }
+    if (msg.type === "receipt:close") {
+      // The close answers the island's asks-done, and nothing earlier.
+      if (!house.asksDone) { refuse(port, "receipt-close-unasked", msg.type); return; }
+      if (house.receiptClosed) return;
+      house.receiptClosed = true;
+    }
     if ((msg.type === "lar:control-event" || msg.type === "lar:resend") && typeof msg.cameraId === "string") {
       house.cameras.set(msg.cameraId, port);
     }
@@ -550,7 +583,11 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
         closeHouse(house, house.ports.length > 0 ? "claimant-left" : null);
         return;
       }
-      if (house.owner === port) house.owner = null;
+      if (house.owner === port) {
+        house.owner = null;
+        // The owner left with the island's settlement round open: no one answers its receipts now (F7).
+        closeIslandReceipts(house);
+      }
       for (const [id, asking] of house.pending) if (asking.port === port) house.pending.delete(id);
       for (const [id, holder] of house.cameras) if (holder === port) house.cameras.delete(id);
       if (house.ports.length === 0 && house.admitting === 0) closeHouse(house, null);
@@ -614,7 +651,8 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
           const request = BOOT_REPLIES[msg.type];
           const key = typeof msg.requestId === "string" ? `${request}:${msg.requestId}` : "";
           const claimantBoot = port === house.claimant &&
-            (msg.type === "manifest" && !house.manifestSent || Boolean(request && house.bootRequests.has(key)));
+            (msg.type === "manifest" && !house.manifestSent || Boolean(request && house.bootRequests.has(key)) ||
+              (msg.type === "receipt:close" && house.asksDone));
           if (!claimantBoot) { refuse(port, "session-unadmitted", msg.type); return; }
           if (request) house.bootRequests.delete(key);
           forwardToIsland(house, port, msg, e);
