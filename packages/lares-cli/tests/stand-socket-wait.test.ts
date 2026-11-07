@@ -49,6 +49,16 @@ describe("awaitVerbSocket", () => {
     const out = await awaitVerbSocket({ ...rig(), silenceMs: 5_000 });
     expect(out.outcome).toBe("silent");
   });
+
+  test("RED: repeated log lines do not renew socket progress", async () => {
+    const r = rig();
+    const out = await awaitVerbSocket({ ...r, silenceMs: 5_000,
+      alive: async () => r.now() >= 10_000,
+      readAttestation: () => "replaying\n".repeat(1 + Math.floor(r.now() / 500)),
+    });
+    expect(out.outcome).toBe("silent");
+    expect(r.now()).toBeLessThan(10_000);
+  });
 });
 
 describe("awaitBootPhase", () => {
@@ -75,5 +85,13 @@ describe("awaitBootPhase", () => {
   });
   test("CONTROL: a silent, living boot ends as `silent` after the LIVENESS span", async () => {
     expect(await boot().wait(5_000)).toBe("silent");
+  });
+  test("RED: repeated log lines do not renew boot progress", async () => {
+    const r = rig();
+    const out = await awaitBootPhase({ ...r, silenceMs: 5_000,
+      readAttestation: () => r.now() >= 10_000 ? "vessel-ready" : "replaying\n".repeat(1 + Math.floor(r.now() / 200)),
+    });
+    expect(out).toBe("silent");
+    expect(r.now()).toBeLessThan(10_000);
   });
 });
