@@ -41,6 +41,7 @@ import { leadStepBrief, peekStep, writeState } from "./lane-state.mjs";
 import { heldBytes } from "./held-dir.mjs";
 import { brokerRootPath, checkGrantedRoots, checkBrokerRoot, checkBrokerRootSize, ensureBrokerRoot, newSeatDir } from "./broker-root.mjs";
 import { HAVE_BWRAP } from "./seat-walls.mjs";
+import { treeSharedInodes } from "./module-inodes.mjs";
 import { copyBack, heldOver, moveAside, removeHeldContents, mkdirHeld, openHeldSync, openLogHeld, readHeld, writeHeld } from "./held-dir.mjs";
 import { globalStampPath, packageStampPath, sourceDigest, workspacePackageDirs } from "./stamp-build.mjs";
 
@@ -347,6 +348,7 @@ export function realReaders(home = realHome(), repo = REPO) {
     modelsCache: () => { try { return readFileSync(join(home, ".codex", "models_cache.json"), "utf8"); } catch { return null; } },
     rolloutLines: () => { try { return newestRolloutLines(home); } catch (error) { if (error.refused) throw error; return null; } },
     distFresh: (wt) => { try { return distFresh(wt); } catch { return false; } },
+    sharedInodes: (wt) => { try { return treeSharedInodes(wt); } catch (error) { return `module farms unreadable: ${error.message}`; } },
     canon: () => readFileSync(join(repo, CANON), "utf8"),
   };
 }
@@ -378,6 +380,9 @@ export function preflight({ mode, model, seatDir, worktree, briefless }, readers
     if (real(worktree) === real(readers.repo)) throw refuse(`a ${role} never writes the main checkout`);
     try { checkGrantedRoots(scratch, [real(worktree)]); } catch (e) { throw refuse(e.message); }
     if (!real(worktree).startsWith(`${scratch}/`)) throw refuse(`a ${role} worktree must sit under ${scratch}/ (the house law; a granted root outside it could be an ancestor of the broker root): ${worktree}`);
+    // The wall never rests on how the tree was installed: a module file sharing an inode with another tree refuses by name.
+    const shared = readers.sharedInodes(worktree);
+    if (shared) throw refuse(`the ${role} worktree's ${shared}`);
     if (mode === "build" && !readers.distFresh(worktree)) throw refuse(`the worktree's dist is stale (or unreadable): the lead runs 'pnpm build' in ${worktree} before launching a build seat`);
   }
   return { pool: pool.summary };

@@ -2,7 +2,7 @@ import { test } from "node:test";
 import { wallTest } from "./wall-test.mjs";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { appendFileSync, closeSync, openSync, mkdtempSync, mkdirSync, readFileSync, realpathSync, rmSync, symlinkSync, utimesSync, writeFileSync } from "node:fs";
+import { appendFileSync, closeSync, copyFileSync, openSync, mkdtempSync, mkdirSync, readFileSync, realpathSync, rmSync, symlinkSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir, userInfo } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -30,6 +30,7 @@ function world(over = {}) {
     modelsCache: () => CACHE,
     rolloutLines: () => { calls.pool++; return [rate(40)]; },
     distFresh: () => true,
+    sharedInodes: () => null,
     bwrap: true,
     canon: () => readFileSync(CANON, "utf8"),
     ...over,
@@ -185,6 +186,18 @@ test("a stale dist refuses a build seat alone; read and research seats never ask
   refuses(w, {}, /dist is stale.*pnpm build/s);
   assert.ok(preflight(ask(w, { mode: "read" }), w.readers));
   assert.ok(preflight(ask(w, { mode: "research" }), w.readers));
+});
+
+test("RED: a lead or build worktree whose node_modules shares an inode with another tree refuses by name; CONTROL a copied file passes; read seats never ask", () => {
+  const w = world();
+  const outside = join(w.home, "store-file"); writeFileSync(outside, "shared tooling");
+  mkdirSync(join(w.wt, "node_modules", "pkg"), { recursive: true });
+  const readers = { ...w.readers, sharedInodes: realReaders(w.home, w.repo).sharedInodes };
+  copyFileSync(outside, join(w.wt, "node_modules", "pkg", "index.js"));
+  for (const mode of ["build", "lead"]) assert.ok(preflight(ask(w, { mode }), readers), `CONTROL: a copied module file passes a ${mode}`);
+  rmSync(join(w.wt, "node_modules", "pkg", "index.js")); linkSync(outside, join(w.wt, "node_modules", "pkg", "index.js"));
+  for (const mode of ["build", "lead"]) refuses(w, { mode }, /1 node_modules file\(s\) share an inode .*node_modules\/pkg\/index\.js.*re-provision/, readers);
+  assert.ok(preflight(ask(w, { mode: "read" }), { ...readers, sharedInodes: () => { throw new Error("a read seat must not walk the farms"); } }));
 });
 
 test("lead preflight lane passes stale", () => {

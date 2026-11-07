@@ -30,7 +30,8 @@
  */
 
 import { createHash } from "node:crypto";
-import { readdirSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { readdirSync, readFileSync, writeFileSync, mkdirSync, lstatSync, renameSync, rmSync } from "node:fs";
+import { randomBytes } from "node:crypto";
 import { join, dirname, resolve, relative } from "node:path";
 
 const REPO = resolve(process.argv[2] ?? ".");
@@ -43,6 +44,27 @@ export function globalStampPath(repo) {
 /** The one path a per-package stamp lives at, shared by every writer and every reader. */
 export function packageStampPath(repo, dir) {
   return join(resolve(repo), "node_modules", ".lares-build", "pkg", dir);
+}
+
+/**
+ * Write a stamp under `<repo>/node_modules/.lares-build` without following a planted link. Test-door code may write that
+ * dir, so a symlink standing at the stamp's name (or at any dir on its way) could aim an unwalled writer at a file outside:
+ * every dir from node_modules down must stand as a real directory, and the bytes land in a fresh temp file renamed over the
+ * name (rename replaces a link, never writes through it).
+ */
+export function writeStamp(repo, path, body) {
+  const base = join(resolve(repo), "node_modules");
+  const rel = relative(base, dirname(path));
+  if (rel.startsWith("..") || resolve(base, rel) !== dirname(path)) throw new Error(`a stamp lives under ${base}: ${path}`);
+  let dir = base;
+  for (const part of ["", ...(rel ? rel.split("/") : [])]) {
+    dir = part ? join(dir, part) : dir;
+    try { if (!lstatSync(dir).isDirectory()) throw new Error(`stamp path ${dir} is not a real directory (a symlink or file stands there)`); }
+    catch (error) { if (error.code !== "ENOENT") throw error; mkdirSync(dir); }
+  }
+  const temp = join(dirname(path), `.stamp-${process.pid}-${randomBytes(6).toString("hex")}`);
+  writeFileSync(temp, body, { flag: "wx" });
+  try { renameSync(temp, path); } catch (error) { rmSync(temp, { force: true }); throw error; }
 }
 
 /** Every `packages/<dir>` holding its own `package.json` — derived from the filesystem, never a hand list. */
@@ -62,9 +84,7 @@ export function workspacePackageDirs(repo) {
 /** Stamp one package's dist with a digest of its own source subtree. */
 export function stampPackage(repo, dir) {
   const digest = sourceDigest(join(resolve(repo), "packages", dir));
-  const path = packageStampPath(repo, dir);
-  mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, digest);
+  writeStamp(repo, packageStampPath(repo, dir), digest);
   return digest;
 }
 
@@ -150,9 +170,7 @@ export function stampWasm(repo, dir) {
   const wasms = grammarWasms(repo, dir);
   if (wasms.length !== 1) throw new Error(`packages/${dir} holds ${wasms.length} root wasm files; a wasm stamp binds exactly one`);
   const body = wasmStampBody(repo, dir, wasms[0]);
-  const path = wasmStampPath(repo, dir);
-  mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, body);
+  writeStamp(repo, wasmStampPath(repo, dir), body);
   return body;
 }
 
@@ -185,9 +203,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     console.log(`[stamp-build] ${dir} ${digest.slice(0, 16)}… — this package's dist now names the bytes it came from`);
   } else {
     const digest = sourceDigest(join(REPO, "packages"));
-    const stampPath = globalStampPath(REPO);
-    mkdirSync(dirname(stampPath), { recursive: true });
-    writeFileSync(stampPath, digest);
+    writeStamp(REPO, globalStampPath(REPO), digest);
     // The CLI gate's workspace-wide stamp stands as it always has; a per-package stamp is struck
     // alongside it for every package the tree currently holds, so a full build leaves BOTH readers
     // (the global gate and any package-scoped witness) with a fresh stamp to compare against.
