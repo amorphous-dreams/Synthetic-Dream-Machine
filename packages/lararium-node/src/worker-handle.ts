@@ -179,6 +179,10 @@ export function nodeWorkerHandle(w: Worker, opts: { readonly island: IslandClass
     post:      (msg, transfer) => post(msg, transfer),
     listen:    (cb) => { w.on("message", cb); return () => { w.off("message", cb); }; },
     onError:   (cb) => { w.on("error",   cb); return () => { w.off("error",   cb); }; },
+    onExit:    (cb) => {
+      const fn = (code: number): void => cb(`the island exited (code ${String(code)})`);
+      w.on("exit", fn); return () => { w.off("exit", fn); };
+    },
     terminate: () => { void w.terminate(); },
     // The record the island holds, read at ask time: the pool answers a wiki island's receipt ask only where it grants one.
     grants:    () => ({ receipt: opts.island === "wiki" && caps.receipt !== undefined }),

@@ -27,6 +27,12 @@ export interface VesselWorkerHandle {
   post(msg: unknown, transfer?: unknown[]): void;
   listen(onMessage: (raw: unknown) => void): () => void;
   onError(cb: (err: Error) => void): () => void;
+  /**
+   * The worker's EXIT, named: a worker that exits answers nothing further, so every ask waiting on it ends at once by
+   * name, never at a clock. A node worker names its exit code; a browser Worker gives no exit event, so its handle names
+   * the exit its own `terminate` makes. Returns an unsubscribe. A handle that declares none says nothing of an exit.
+   */
+  onExit?(cb: (why: string) => void): () => void;
   terminate(): void;
   /**
    * What the island's BOUND RECORD grants, read at ask time (a lift may stand a member late and drop it at teardown).

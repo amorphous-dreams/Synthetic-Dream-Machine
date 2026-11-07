@@ -182,10 +182,12 @@ export interface DaemonVmCoreOptions {
   workerScriptUrl: URL;
   /** Override the ea silence budget in ms (tests). */
   eaSilenceMs?:    number;
-  /** Bound on the host's ask for the daemon working binding; defaults to the document hang bound. */
-  hostBindingBoundMs?: number;
-  /** Bound on a face row's clearance ask (`runAsFace`); defaults to the document hang bound. */
-  gateBoundMs?: number;
+  /**
+   * The LIVENESS bound on the host's working-binding ask and a face row's clearance ask (`runAsFace`): it arms only once
+   * the island woke, and ends an ask an island that wedges while alive never answers. Defaults to
+   * {@link ISLAND_ASK_LIVENESS_MS}.
+   */
+  askLivenessMs?: number;
   /** Override the ea progress-stall budget in ms (default 3x silence). */
   eaStallMs?:      number;
 }
@@ -351,6 +353,14 @@ export interface DaemonVmCore {
   onVerbEvent: (fn: (e: { verb: string; args: Record<string, unknown>; origin: "channel" | "surface" | "content"; fromUri?: string; listenable?: string }) => void) => void;
 }
 
+/**
+ * LIVENESS, the one clock the daemon VM's island asks keep. An island that exits says so (the handle's `onExit`), and one
+ * that faults or errors says so too: each ends every waiting ask at once, by name. An island that wedges while alive
+ * says nothing, and no event can say never, so an ask that carries this bound ends after it, named LIVENESS. It arms only
+ * once the island woke: before that, the ea watchdog's breath bound holds the mount.
+ */
+export const ISLAND_ASK_LIVENESS_MS = DOCUMENT_HANG_BOUND_MS;
+
 /** The marker a hard `dispose` hands a teardown handshake that stands waiting. */
 class DisposedMidHandshake extends Error {
   constructor() { super("the daemon VM got disposed while its teardown handshake stood waiting"); }
@@ -438,17 +448,26 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   // this single piece instead of hand-rolling a pending-map each.
   let _askSeq = 0;
   const _pending = new Map<string, { resolve: (v: unknown) => void; reject: (e: Error) => void }>();
-  function askIsland<T>(prefix: string, makeMsg: (requestId: string) => unknown, boundMs?: number): Promise<T> {
+  function askIsland<T>(prefix: string, makeMsg: (requestId: string) => unknown, livenessMs?: number): Promise<T> {
     const requestId = `${prefix}-${++_askSeq}`;
     return new Promise<T>((resolve, reject) => {
-      // A bound names a HANG: it ends an ask no live worker will answer, and clears when the ask settles.
-      const timer = boundMs === undefined ? undefined : setTimeout(() => {
-        if (_pending.delete(requestId)) reject(new Error(`the island did not answer ${requestId} within ${boundMs}ms`));
-      }, boundMs);
+      // The ask ends on the island's answer, or on its fault, error or exit (failPendingAsks), each by name. A
+      // liveness bound (ISLAND_ASK_LIVENESS_MS) arms once the island woke, for the one island no event speaks for:
+      // one wedged while alive.
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      let settled = false;
       _pending.set(requestId, {
-        resolve: (v) => { clearTimeout(timer); resolve(v as T); },
-        reject:  (e) => { clearTimeout(timer); reject(e); },
+        resolve: (v) => { settled = true; clearTimeout(timer); resolve(v as T); },
+        reject:  (e) => { settled = true; clearTimeout(timer); reject(e); },
       });
+      if (livenessMs !== undefined) {
+        void workerEa.then(() => {
+          if (settled) return;
+          timer = setTimeout(() => {
+            if (_pending.delete(requestId)) reject(new Error(`LIVENESS: the island stood alive and answered no ${requestId} within its ${livenessMs}ms liveness bound`));
+          }, livenessMs);
+        }, () => { /* an island that never woke ends its asks through failPendingAsks */ });
+      }
       worker.post(makeMsg(requestId));
     });
   }
@@ -475,6 +494,14 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     if ((msg as { type?: string }).type === "fault") failPendingAsks(`the island faulted: ${(msg as { error?: string }).error ?? "no detail"}`);
   });
   worker.onError((err) => failPendingAsks(`the island errored: ${err instanceof Error ? err.message : String(err)}`));
+  // An island that exits says so: every ask still waiting ends at once, by name.
+  worker.onExit?.((why) => failPendingAsks(why));
+  /** The worker's error and exit, heard as one error door (an exit answers like an error: nothing follows it). */
+  const onErrorOrExit = (h: (err: Error) => void): (() => void) => {
+    const offError = worker.onError(h);
+    const offExit = worker.onExit?.((why) => h(new Error(why)));
+    return () => { offError(); offExit?.(); };
+  };
   function settleAsk(requestId: string, value: unknown, error?: string): void {
     const p = _pending.get(requestId);
     if (!p) return;
@@ -497,8 +524,10 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     resetOnTypes:    ["breath"],
     rejectOnTypes:   ["fault"],
     subscribe:       (h) => worker.listen(h),
-    subscribeError:  (h) => worker.onError(h),
+    subscribeError:  onErrorOrExit,
   }).then(() => undefined);
+  // An island that never woke answers no ask.
+  workerEa.catch((err: unknown) => failPendingAsks(`the island never woke: ${err instanceof Error ? err.message : String(err)}`));
   // Settle-safety: a dispose() mid-boot leaves the silence timer to fire after
   // the worker dies; this no-op handler keeps that late rejection from going
   // unhandled while real awaiters still receive it.
@@ -748,7 +777,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     try {
       binding = await askIsland<{ workingUrl: string }>("binding", (requestId) => mkDaemonResolveBindingRequest({
         requestId, fingerprint, recipeTrace, wikiSlug: "daemon",
-      }), opts.hostBindingBoundMs ?? DOCUMENT_HANG_BOUND_MS);
+      }), opts.askLivenessMs ?? ISLAND_ASK_LIVENESS_MS);
     } catch (cause) {
       throw new HostWorkingBindingRefusal(slot, cause);
     }
@@ -790,9 +819,10 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     runAsFace: async ({ verb, args, worn }) => {
       const registry = _registry;
       if (!registry) throw new Error(`[openDaemonVm] a face row ran before mountMainVerbs — verb="${verb}"`);
-      // A gate the island never answers ends by name within its bound, never a hang the session's act waits out.
+      // A gate ends on the island's answer or its exit, fault or error, by name; one wedged while alive ends at its
+      // LIVENESS bound, never a hang the session's act waits out.
       await askIsland<true>("gate", (requestId) => mkDaemonGateVerbRequest({ requestId, verb, args, requestedBy: worn.presenter }),
-        opts.gateBoundMs ?? DOCUMENT_HANG_BOUND_MS);
+        opts.askLivenessMs ?? ISLAND_ASK_LIVENESS_MS);
       const requestId = newRequestId();
       // The invocation never rests (no outcome follows it), so it carries no clock.
       return runLocalVerb({
@@ -875,7 +905,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
           // A hard `dispose` while this wait stands ends it at once, through the same door a worker
           // error takes: the wait drops its bound with it, and the handshake answers unacked.
           subscribeError: (h) => {
-            const off = worker.onError(h);
+            const off = onErrorOrExit(h);
             _cutDown = () => h(new DisposedMidHandshake());
             return () => { off(); _cutDown = null; };
           },
