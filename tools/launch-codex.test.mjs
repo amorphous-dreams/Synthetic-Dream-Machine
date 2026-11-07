@@ -645,6 +645,15 @@ test("P1-3 a seat that sleeps past its ceiling is stopped by its parent: the sup
   assert.match(readFileSync(join(L.lane, "run.log"), "utf8"), /STUB-OUTPUT/, "the child's output landed in run.log through the held fd");
 });
 
+// Controller proves: the preloaded ceiling can stop the child before its output lands.
+test("P1-3 RED a slow stub exposes the ceiling/output startup race", () => {
+  const L = liveSeat("sleep 1\necho STUB-OUTPUT\nsleep 60", () => `${userLine()}${tc(900)}\n`);
+  const r = cli(L);
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(readFileSync(join(L.lane, "ceiling.md"), "utf8"), /900 total tokens/);
+  assert.match(readFileSync(join(L.lane, "run.log"), "utf8"), /STUB-OUTPUT/, "controller proves: the supervisor can stop the stub before its output lands");
+});
+
 test("P1-4 findRollout parses JSONL events with no byte cap: a prompt past 256 KiB still binds; an echoed marker or a non-user event never does", () => {
   const home = mkdtempSync(join(tmpdir(), "rollouts-"));
   const dir = join(home, ".codex", "sessions", "2026", "11", "04"); mkdirSync(dir, { recursive: true });
