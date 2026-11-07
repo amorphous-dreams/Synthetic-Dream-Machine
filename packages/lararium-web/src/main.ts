@@ -268,6 +268,7 @@ function mountAdmitSurface(verifyingKeyHex: string, vessel: VesselPort): void {
   // browser). A selected span is a thumb away from the OS copy affordance, so the path never dead-ends.
   const copyFrom = (el: HTMLElement, btn: HTMLButtonElement): void => {
     const text = el.textContent ?? "";
+    // PACING: the timer restores the copy button label after its feedback display.
     const done = (label: string): void => { btn.textContent = label; setTimeout(() => { btn.textContent = btn.dataset["label"]!; }, 1400); };
     void (async () => {
       try { await navigator.clipboard.writeText(text); done("copied ✓"); }

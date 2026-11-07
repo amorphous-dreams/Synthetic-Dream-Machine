@@ -706,6 +706,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     composingFields.delete(src);
     compositionEndValue.set(src, (src as LiveControl).value);
     holdKeysAfterComposition = true;
+    // PACING: the next task releases the temporary key hold after composition ends.
     setTimeout(() => { holdKeysAfterComposition = false; }, 0);
     relayWholeValue(event, "sense", true);
   });
@@ -1117,6 +1118,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
       a.href = url;
       a.download = String(args["filename"] ?? "download.txt");
       a.click();
+      // PACING: defer URL cleanup to the next task so the download can start.
       setTimeout(() => URL.revokeObjectURL(url), 0);
     },
     print: () => { window.print(); },
