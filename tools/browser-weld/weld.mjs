@@ -26,26 +26,62 @@ import { armTestCustody } from "../../packages/lararium-node/dist/probes/browser
 import { workerTraceInitScript } from "./worker-trace.mjs";
 
 const WEB = process.env.WELD_WEB_URL ?? "http://localhost:5173";
-const SETTLE_MS = Number(process.env.WELD_SETTLE_MS ?? 15_000);
 
 let failures = 0, gaps = 0;
 const ok   = (n, m) => console.log(`  \x1b[32mok\x1b[0m       ${n} — ${m}`);
 const bad  = (n, m) => { failures++; console.log(`  \x1b[31mFAILED\x1b[0m   ${n} — ${m}`); };
 const gap  = (n, m) => { gaps++;     console.log(`  \x1b[33mgap\x1b[0m      ${n} — ${m}`); };
 
-/** Poll a predicate to a bound. Returns the value or null — never throws, so a vector reports rather than dies. */
-async function until(fn, ms = SETTLE_MS, every = 250) {
-  const stop = Date.now() + ms;
-  for (;;) {
-    try { const v = await fn(); if (v) return v; } catch { /* a not-yet-mounted surface is not an error */ }
-    if (Date.now() > stop) return null;
-    await new Promise((r) => setTimeout(r, every));
+/** Wait for a product witness or terminal failure. A missing frame after an applied act has no
+ * terminal signal, so LIVENESS retains the existing 8s bound for the positive projection checks. */
+async function waitForWitness(page, kind, mark, renderId, value, liveness = false) {
+  let onError, onConsole, timer;
+  const terminal = new Promise((resolve) => {
+    onError = () => resolve(false);
+    onConsole = (message) => {
+      if (/\[daemon-island:fault\]|\[mirror\] stand refused:/.test(message.text())) resolve(false);
+    };
+    page.on("pageerror", onError);
+    page.on("console", onConsole);
+    if (liveness) timer = setTimeout(() => resolve(false), 8_000); // LIVENESS: no missing-frame verdict.
+  });
+  try {
+    return await Promise.race([
+      terminal,
+      page.waitForFunction(({ kind, mark, renderId, value }) => {
+        const events = window.__weldWorkerTrace?.events.slice(mark) ?? [];
+        const phase = [...document.querySelectorAll("#phases .phase")].find((p) => /refus|fault/i.test(p.textContent ?? ""));
+        const status = document.querySelector("#status");
+        const mirror = document.querySelector("#mirror")?.getAttribute("data-lar-mirror");
+        if (events.some((e) => e.direction === "worker-error") || phase || status?.classList.contains("err") ||
+            status?.classList.contains("warn") || document.querySelector(".ceremony-ask[data-refusal]") ||
+            (mirror?.startsWith("none:") && mirror !== "none:mirror-inputs-absent")) return { arrived: false };
+        const dispatch = events.find((e) => e.direction === "to-worker" && e.type === "lar:control-event" &&
+          (renderId ? e.renderId === renderId : e.action === "lar:sense"));
+        const answered = dispatch && events.some((e) => e.direction === "from-worker" && e.workerId === dispatch.workerId &&
+          e.surface === dispatch.surface && e.type === "lar:control-result" && e.renderId === renderId);
+        if (kind === "unknown") return answered ? { arrived: true } : false;
+        const pane = document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection");
+        const tab = (title) => pane?.querySelector(`button[data-lar-rid][data-tab-title="${title}"]`);
+        const reveal = pane?.querySelector(".tc-sidebar-header > .tc-reveal");
+        const arrived = kind === "recent" ? tab("$:/core/ui/SideBar/Open")?.getAttribute("aria-selected") === "false" &&
+            tab("$:/core/ui/SideBar/Recent")?.getAttribute("aria-selected") === "true" :
+          kind === "hidden" ? reveal?.hidden === true && !!pane?.querySelector(".tc-show-sidebar-btn[data-lar-rid]") :
+          kind === "shown" ? reveal?.hidden === false && !!pane?.querySelector(".tc-hide-sidebar-btn[data-lar-rid]") :
+          (pane?.innerHTML ?? "").includes(value);
+        const frame = dispatch && events.some((e) => e.direction === "from-worker" && e.workerId === dispatch.workerId &&
+          e.surface === dispatch.surface && e.type === "lar:frame");
+        return arrived && frame ? { arrived: true } : false;
+      }, { kind, mark, renderId, value }, { timeout: 0 }).then((h) => h.jsonValue()).then((r) => r.arrived),
+    ]);
+  } catch {
+    return false; // page closed
+  } finally {
+    clearTimeout(timer);
+    page.off("pageerror", onError);
+    page.off("console", onConsole);
   }
 }
-
-/** The projected pane lives inside a shadow root; every read of it goes through this one accessor. */
-const paneHtml = (page) => page.evaluate(() =>
-  document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection")?.innerHTML ?? "");
 
 /**
  * Install before navigation: workers are the actual browser→island boundary, not an inference from
@@ -216,16 +252,15 @@ const main = async () => {
         probe.remove();
         return true;
       }, unknownId);
-      const unknownChanged = await until(async () => {
-        const tabs = await sidebarTabs(page);
-        return tabs.open?.selected === false || tabs.recent?.selected === true;
-      }, 8_000);
+      const unknownAnswered = unknownSent && await waitForWitness(page, "unknown", unknownMark, unknownId);
+      const unknownTabs = await sidebarTabs(page);
+      const unknownChanged = unknownTabs.open?.selected === false || unknownTabs.recent?.selected === true;
       const unknownTrace = await traceSince(page, unknownMark);
       if (!unknownSent) {
         bad("W3 unknown-rid-drop", "projection disappeared before the unknown render-id control could run");
       } else if (!traceHas(unknownTrace, { direction: "to-worker", type: "lar:control-event", renderId: unknownId })) {
         bad("W3 unknown-rid-drop", `unknown render id never reached a worker boundary — ${traceTail(unknownTrace)}`);
-      } else if (unknownChanged || traceHas(unknownTrace, { direction: "worker-error" })) {
+      } else if (!unknownAnswered || unknownChanged || traceHas(unknownTrace, { direction: "worker-error" })) {
         bad("W3 unknown-rid-drop", `unknown render id changed the named tab state or raised a worker error — ${traceTail(unknownTrace)}`);
       } else {
         ok("W3 unknown-rid-drop", "unknown render id crossed the host boundary and left Open/Recent unchanged");
@@ -236,10 +271,9 @@ const main = async () => {
       const droppedMark = await traceMark(page);
       await page.evaluate((rid) => { window.__weldWorkerTrace.dropDomEventRenderId = rid; }, recentId);
       const droppedClick = await clickRenderId(page, recentId);
-      const transitionedWhileDropped = await until(async () => {
-        const tabs = await sidebarTabs(page);
-        return tabs.open?.selected === false && tabs.recent?.selected === true;
-      }, 8_000);
+      // The trace drops synchronously during dispatch; no worker can answer this control.
+      const droppedTabs = await sidebarTabs(page);
+      const transitionedWhileDropped = droppedTabs.open?.selected === false && droppedTabs.recent?.selected === true;
       const droppedTrace = await traceSince(page, droppedMark);
       await page.evaluate(() => { window.__weldWorkerTrace.dropDomEventRenderId = null; });
       if (!droppedClick) {
@@ -254,10 +288,7 @@ const main = async () => {
 
       const restoredMark = await traceMark(page);
       const restoredClick = await clickRenderId(page, recentId);
-      const restored = await until(async () => {
-        const tabs = await sidebarTabs(page);
-        return tabs.open?.selected === false && tabs.recent?.selected === true ? tabs : null;
-      }, 8_000);
+      const restored = restoredClick && await waitForWitness(page, "recent", restoredMark, recentId, null, true);
       const restoredTrace = await traceSince(page, restoredMark);
       const recentDispatch = restoredTrace.find((event) =>
         event.direction === "to-worker" && event.type === "lar:control-event" && event.renderId === recentId);
@@ -299,11 +330,7 @@ const main = async () => {
     const sidebarMark = await traceMark(page);
     const errorCount = consoleErrors.length;
     const hideClicked = await clickRenderId(page, sidebarBefore.renderId);
-    const hidden = await until(async () => page.evaluate(() => {
-      const pane = document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection");
-      const reveal = pane?.querySelector(".tc-sidebar-header > .tc-reveal");
-      return reveal?.hidden === true && !!pane?.querySelector(".tc-show-sidebar-btn[data-lar-rid]");
-    }), 8_000);
+    const hidden = hideClicked && await waitForWitness(page, "hidden", sidebarMark, sidebarBefore.renderId, null, true);
     const sidebarTrace = await traceSince(page, sidebarMark);
     const sidebarDispatch = sidebarTrace.find((event) =>
       event.direction === "to-worker" && event.type === "lar:control-event" && event.renderId === sidebarBefore.renderId);
@@ -317,12 +344,9 @@ const main = async () => {
       const showId = await page.evaluate(() => document.getElementById("projection")?.shadowRoot
         ?.querySelector(".tc-show-sidebar-btn[data-lar-rid]")?.getAttribute("data-lar-rid") ?? null);
       if (showId) {
-        await clickRenderId(page, showId);
-        const shown = await until(async () => page.evaluate(() => {
-          const pane = document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection");
-          const reveal = pane?.querySelector(".tc-sidebar-header > .tc-reveal");
-          return reveal?.hidden === false && !!pane?.querySelector(".tc-hide-sidebar-btn[data-lar-rid]");
-        }), 8_000);
+        const showMark = await traceMark(page);
+        const showClicked = await clickRenderId(page, showId);
+        const shown = showClicked && await waitForWitness(page, "shown", showMark, showId, null, true);
         if (!shown) bad("W3 sidebar-restores", "Show sidebar did not restore the W4 surface after a successful hide");
         else ok("W3 sidebar-restores", "Show sidebar restored the W4 surface");
       } else {
@@ -355,7 +379,7 @@ const main = async () => {
       el.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
       el.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
     }, typed);
-    const seen = await until(async () => (await paneHtml(page)).includes(typed), 8_000);
+    const seen = await waitForWitness(page, "input", inputMark, null, typed, true);
     const inputTrace = await traceSince(page, inputMark);
     const inputDispatch = inputTrace.find((event) =>
       event.direction === "to-worker" && event.type === "lar:control-event" && event.action === "lar:sense");
