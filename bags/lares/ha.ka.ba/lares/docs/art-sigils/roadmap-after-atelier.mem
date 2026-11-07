@@ -1,0 +1,80 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/art-sigils/roadmap-after-atelier`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+uri-path = "ha.ka.ba/lares/docs/art-sigils/roadmap-after-atelier"
+title    = "lar:///ha.ka.ba/lares/docs/art-sigils/roadmap-after-atelier"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "draft implementation record for scored Art Sigils proposals and held decisions"
+status   = "draft"
+retain   = true
+```
+
+<<~ ahu slot=`#/bearing`>>
+! Art Sigils ~ After-Atelier Proposals and Landing Record
+
+This branch drafts companion memes and examples after a deliberate critique of the existing Art Sigils grammar. The operator requested a new branch and meme writing, not a merge or irreversible promotion. The eight-parameter `art()` nucleus and the existing `art-study`, `art-counterpoint`, and `art-facture` procedures remain unchanged.
+
+Reference: branch `feature/green-jello-dinosaur-5--art-sigils`, based on `feature/green-jello-dinosaur-5`. New memes retain `status = "draft"` until an explicit operator promotion.
+<<~/ahu>>
+
+<<~ ahu slot=`#/rubric`>>
+!! Rubric (judgment, not measured model fidelity)
+
+G gap severity (25%) · T transferability across worktypes (25%) · E observed evidence and source support (20%) · S semantic safety (15%) · M manageability (15%). Score = 5G + 5T + 4E + 3S + 3M, each factor 0–5. Scores rank proposal desirability, not operational dependencies.
+
+| Rank | Change | Score | Decision |
+|---|---|---:|---|
+| 1 | Diversify examples beyond concept boards | 97 | Draft |
+| 2 | Reference-input roles | 93 | Draft companion meme |
+| 3 | Distinguish alpha, artistic transparency and layer opacity | 92 | Draft spec amendment |
+| 4 | Artistic / artifact / execution contracts | 91 | Draft companion meme |
+| 5 | Human-in-the-loop reception QA | 90 | Draft companion meme |
+| 6 | Provenance and publication handoff | 88 | Draft companion meme |
+| 7 | Layer-composition contract | 86 | Draft companion meme |
+| 8 | Exact typography and verification | 83 | Draft spec note + example |
+| 9 | Extract specialist research | 74 | Deferred; no cut |
+| 10 | Consolidate repeated warnings | 63 | Deferred; preserve standalone meaning |
+| 11 | Add `art-layer()` to universal grammar | 57 | Rejected for now |
+
+These are authorial priority judgments. No performance study establishes the rank order.
+<<~/ahu>>
+
+<<~ ahu slot=`#/landing`>>
+!! New draft companions
+
+* [[Reference Roles|ha.ka.ba/lares/api/art-sigils/reference-roles]]
+* [[Artifact Contract|ha.ka.ba/lares/api/art-sigils/artifact-contract]]
+* [[Reception QA|ha.ka.ba/lares/api/art-sigils/reception-qa]]
+* [[Layer Composition|ha.ka.ba/lares/api/art-sigils/layer-composition]]
+* [[Provenance and Publication|ha.ka.ba/lares/api/art-sigils/provenance-publication]]
+
+New examples: [[Two — Photograph|ha.ka.ba/lares/docs/art-sigils/example-two-photograph]] · [[Three — Color Field|ha.ka.ba/lares/docs/art-sigils/example-three-color-field]] · [[Four — Transparent Veil|ha.ka.ba/lares/docs/art-sigils/example-four-transparent-veil]] · [[Five — Mixed Media|ha.ka.ba/lares/docs/art-sigils/example-five-mixed-media]] · [[Six — Exact Type|ha.ka.ba/lares/docs/art-sigils/example-six-exact-type]].
+
+These describe practice and acceptance criteria. They do not claim to have run actual art-model experiments, produced reference images, or verified execution in a live TW5 runtime.
+<<~/ahu>>
+
+<<~ ahu slot=`#/tests`>>
+!! Proposed acceptance tests before promotion
+
+* TW5 declarations remain untouched, and all invoked argument names match `art()` or the three optional existing Folio procedures.
+* Every compact Inscription source invocation remains at or under 1,024 characters; every extended Folio block at or under 6,000 characters.
+* References and external URLs remain outside transmitted image-facing blocks. Cross-links resolve to exact branch paths.
+* The new examples remain divergent in worktype and do not create unwanted default materials, figures, labels, backgrounds or composition boards.
+* The three transparency meanings and artistic/technical/reception records do not collapse together.
+* Rights, actual alpha and exact strings are never asserted from apparent visual resemblance alone.
+* A receiver may be unavailable; mark empirical test cases `unverified`, never claim they ran.
+* Source and target branch heads, changed files, and any build/test limitations are reported with provenance.
+
+The first wave is documentation and semantic test planning. Later empirical testing requires named receivers, controlled input conditions, appropriate source rights, and explicit operator direction.
+<<~/ahu>>
+
+<<~ ahu slot=`#/aftermath`>>
+No automatic promotion to stable doctrine. Deferred extraction and repetition cleanup stay outside this branch's scope pending their own judgment. The prose remains open to scrutiny, especially whether any companion contract becomes an unwanted workflow requirement.
+<<~/ahu>>
+
+<<^ code=`&#x0003;`>>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,44 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/art-sigils/example-six-exact-type`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+uri-path = "ha.ka.ba/lares/docs/art-sigils/example-six-exact-type"
+title    = "lar:///ha.ka.ba/lares/docs/art-sigils/example-six-exact-type"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "draft example separating typographic appearance from exact character verification"
+status   = "draft"
+retain   = true
+```
+
+<<~ ahu slot=`#/invitation`>>
+! Example Six ~ artistic lettering with exact output obligations
+
+```tiddlywiki
+<<art worktype=`minimal typographic poster` subject=`a short instruction to notice the present moment` read=`a quiet invitation, not an advertisement` imagery=`one large line of lettering above ample visual rest` treatment=`warm restrained ink impression with subtle letterpress-like edge character` composition=`one asymmetrically balanced line with generous margins` relation=`the text and unprinted space establish a deliberate pause` depiction-scope=`only the poster; no maker, photographed office, or metadata labels`>>
+```
+<<~/ahu>>
+
+<<~ ahu slot=`#/exact-text`>>
+The Art Sigil governs what the typography should do aesthetically. The separate artifact contract governs whether the exact required characters have been delivered:
+
+```toml
+[artifact]
+role = "typographic poster"
+exact_text = "NOTICE THE PRESENT."
+spelling_and_punctuation = "mandatory"
+layout = "line count and margins subject to artistic review"
+validation = "inspect visible letters and final export; deterministic typesetting may be required"
+```
+
+The receiver must not infer that an apparently legible generated string satisfies a literal text requirement. Exactness may be established by typesetting directly or by a verified downstream text plate. Merely describing a letterpress impression does not prove that a physical letterpress was used.
+<<~/ahu>>
+
+<<~ ahu slot=`#/noninheritance`>>
+Mandatory exact lettering is an artifact-specific requirement, not a universal need for printed text or a new ninth dimension of `art()`.
+<<~/ahu>>
+
+<<^ code=`&#x0003;`>>
+<<^ code=`&#x0004;` to=`?`>>

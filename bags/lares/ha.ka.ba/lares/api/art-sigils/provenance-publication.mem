@@ -1,0 +1,80 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/art-sigils/provenance-publication`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+uri-path = "ha.ka.ba/lares/api/art-sigils/provenance-publication"
+title    = "lar:///ha.ka.ba/lares/api/art-sigils/provenance-publication"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "draft companion for attribution, rights-bound inputs, and publication artifacts"
+status   = "draft"
+retain   = true
+```
+
+<<~ ahu slot=`#/bearing`>>
+! Provenance and Publication ~ custody across transformations
+
+An artistic source, a generated addition, an operator edit and a public derivative can share one final artifact without sharing authorship, rights or evidence. Publication is a distinct operation from creation. The Art Sigil's depicted scope governs the image-facing instruction; publication custody governs the records and credits traveling with the artifact.
+
+This companion does not grant permission or invent licensing terms. Where rights are uncertain, label them uncertain and hold publication or seek authorization when necessary.
+<<~/ahu>>
+
+<<~ ahu slot=`#/roles`>>
+!! Distinguish the contributors and their authority
+
+* `originating source` — work or data to which a derivative refers; record creator and original source where established.
+* `rights statement` — license, authorization, restrictions, attribution requirements, and the evidence supporting them. A file's availability alone grants no license.
+* `visual references` — methods, examples, photos, and other inputs; their contribution roles are defined by [[Reference Roles|ha.ka.ba/lares/api/art-sigils/reference-roles]].
+* `receiver contribution` — model or human-generated material; identify the action as generation, selection, interpretation, editing, typesetting or compositing as appropriate.
+* `operator decisions` — accepted changes, refusals, hand edits, publication and distribution. An assistant's recommendation is not operator approval.
+* `publication derivative` — a specific flattened/exported artifact with its dimensions, crop, color profile, embedded metadata (if any), and associated attribution and alt text.
+
+These roles may overlap. They are not exhaustive ownership claims.
+<<~/ahu>>
+
+<<~ ahu slot=`#/release-card`>>
+!! Release card ~ a companion record, not image-facing text
+
+```toml
+[work]
+title = "descriptive human title"
+source_id = "stable source reference or explicit unknown"
+original_creator = "verified name or unknown"
+permission = "documented scope and exact terms; not inferred"
+transforms = ["annotated derivative", "independent composite", "export"]
+editable_master = "path or identifier; preserve when authorized"
+publication_image = "path or identifier; inspected separately"
+credit = "actual required text and links, externally recorded"
+alt_text = "independent visual description, checked against actual image"
+platform_constraints = "actual known limits, crop policy, encoding"
+release_authority = "operator or explicitly designated rights holder"
+```
+
+Reproduce required credits and URLs accurately in every relevant publication context. Do not assume an image's caption, embedded metadata, and visible plaque travel together: platforms may separate them. If the legal or licensing conditions require accompanying text, verify the delivery workflow rather than relying on aesthetic credit treatment alone.
+<<~/ahu>>
+
+<<~ ahu slot=`#/text-and-alt`>>
+!! Typography, caption, alt text
+
+Exact strings belong in a verifiable text-delivery requirement, even if a separate Art Sigil describes their visual hierarchy. Generative lettering may be visually compelling and factually wrong. Inspect exact strings after final export.
+
+Alt text describes the actual image for its audience; it is not a substitute for source credit, and source credit is not a substitute for alt text. Both can accompany a public post. Avoid invented historical manufacturing claims when the visual result only simulates a print or painting.
+<<~/ahu>>
+
+<<~ ahu slot=`#/boundaries`>>
+!! Limits and aftermath
+
+* Artist-name resemblance does not establish authorship or a right to reproduce an artwork.
+* An authenticated permission statement should not silently broaden from a specific use to all future uses.
+* Source URLs remain outside the copyable Art Sigil unless a visible inscription itself is an intended pictorial feature.
+* Platform formatting, character limits, cropping and link previews belong to release QA, and should be checked against actual publication conditions.
+* A verified distribution artifact is not proof that it has been posted to an external account.
+* Where provenance has unresolved conflicts, keep them visible and seek a ruling rather than filling them with plausible invented details.
+
+The artistic and publication contracts may refer to the same work, but neither automatically authenticates the other.
+<<~/ahu>>
+
+<<^ code=`&#x0003;`>>
+<<^ code=`&#x0004;` to=`?`>>
