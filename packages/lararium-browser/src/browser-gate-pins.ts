@@ -68,6 +68,7 @@ export function flowNexusFor(baseUrl: string, relay: { readonly relayUrl: string
 export function dialDeadlines(ms = 15_000): { draw(lapse: () => void): { cancel(): void } } {
   return {
     draw(lapse) {
+      // LIVENESS: a silent hearth may never answer the dial, and no event says never.
       const timer = setTimeout(lapse, ms);
       return { cancel: () => clearTimeout(timer) };
     },

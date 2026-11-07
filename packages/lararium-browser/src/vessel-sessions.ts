@@ -440,6 +440,7 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
     const t = now();
     const stale: string[] = [];
     for (const [id, at] of heard) {
+      // LIVENESS: a silent session may never close; missed pings bound that silence.
       const n = t - at > opts.livenessBudgetMs ? (missed.get(id) ?? 0) + 1 : 0;
       missed.set(id, n);
       if (n >= (opts.sweepsPastBudget ?? 3)) stale.push(id);
@@ -449,6 +450,7 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
     return stale;
   };
   if (opts.livenessBudgetMs !== undefined && opts.now === undefined) {
+    // LIVENESS: a silent session may never close; this tick checks the ping silence bound.
     sweeper = setInterval(() => { void sweep(); }, Math.max(1_000, Math.floor(opts.livenessBudgetMs / 2)));
   }
 
