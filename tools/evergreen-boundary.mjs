@@ -56,7 +56,6 @@ export const EXCEPTIONS = [
   { rule: "clock", file: "tools/browser-weld-witness.test.mjs", match: "Date.now() < until", reason: "The test bounds only its own wait for a predicate." },
   { rule: "clock", file: "tools/browser-weld/c4-served-anchor-control.mjs", match: "Date.now() < until", reason: "The control bounds only its own wait for browser source records." },
   { rule: "clock", file: "tools/browser-weld/leaf-continuity.mjs", match: "Date.now() < until", reason: "The browser probe bounds only its own wait for a predicate." },
-  { rule: "clock", file: "tools/browser-weld/weld.mjs", match: "Date.now() > stop", reason: "The browser probe bounds only its own polling interval." },
   { rule: "clock", file: "tools/e2e-shards.mjs", match: "now = Date.now", reason: "Own liveness: the find budget gives up on the tool's own push." },
   { rule: "clock", file: "tools/burst-bisect.mjs", match: "now = Date.now", reason: "Own liveness: the find budget gives up on the tool's own lane push." },
   { rule: "clock", file: "tools/held-out-steps.mjs", match: "const left = deadline - Date.now()", reason: "The runner computes only its own child process timeout." },
