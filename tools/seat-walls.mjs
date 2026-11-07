@@ -246,7 +246,7 @@ export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
   if (!HAVE_BWRAP) return refuse('no test wall available');
 
   // Resolve the nearest package for each file through the held worktree; one vitest invocation has one package cwd.
-  let packageDir = '.';
+  let packageDir = '.', vitestPath;
   if (runner === 'vitest') {
     const packages = [];
     for (const file of files) {
@@ -264,6 +264,18 @@ export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
     }
     if (packages.some(dir => dir !== packages[0])) return refuse('files belong to different packages');
     packageDir = packages[0];
+    let packageName = packageDir;
+    try { packageName = JSON.parse(readFileSync(worktreeHeld.at(path.join(packageDir, 'package.json')), 'utf8')).name || packageDir; }
+    catch (error) { return refuse(`package lookup: ${error.message}`); }
+    vitestPath = path.join(packageDir, 'node_modules/vitest/vitest.mjs');
+    try {
+      const resolved = realpathSync(worktreeHeld.at(vitestPath));
+      if (!resolved.startsWith(`${root}${path.sep}`)) return refuse(`symlink leaves worktree: ${vitestPath}`);
+      if (!statSync(worktreeHeld.at(vitestPath)).isFile()) return refuse(`vitest not installed for ${packageName}`);
+    } catch (error) {
+      if (error.code === 'ENOENT' || error.code === 'ENOTDIR') return refuse(`vitest not installed for ${packageName}`);
+      return refuse(`vitest lookup: ${error.message}`);
+    }
   }
 
   const nvm = path.join(os.userInfo().homedir, '.nvm');
@@ -289,18 +301,19 @@ export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
       '--setenv', 'LAR_ROOT', '/scratch/lar-root', '--setenv', 'TMPDIR', '/tmp', '--setenv', 'LC_ALL', 'C',
       ...(runner === 'node'
         ? [node, '--test', '--test-reporter=tap', '--', ...files.map(f => path.posix.join('/work', f))]
-        : [path.join(bin, 'pnpm'), 'exec', 'vitest', 'run', '--reporter=json', '--outputFile=/scratch/vitest.json', '--', ...files.map(f => path.posix.join('/work', f))]),
+        : [node, path.posix.join('/work', vitestPath), 'run', '--reporter=json', '--outputFile=/scratch/vitest.json', '--root', path.posix.join('/work', packageDir), '--', ...files.map(f => path.posix.join('/work', f))]),
     ];
     const result = await new Promise(resolve => {
       const child = spawn(BWRAP, args, { stdio: ['ignore', 'pipe', 'pipe', worktreeHeld.fd, scratchHeld.fd] });
-      let output = '', overflow = false;
+      let output = '', stderrTail = Buffer.alloc(0), overflow = false;
       const append = chunk => { output += chunk; if (output.length > 16 * 1024 * 1024) { overflow = true; output = output.slice(-8192); } };
       child.stdout.setEncoding('utf8'); child.stderr.setEncoding('utf8');
-      child.stdout.on('data', append); child.stderr.on('data', append);
-      child.on('error', error => resolve({ error, output }));
-      child.on('close', (code, signal) => resolve({ code, signal, output, overflow }));
+      child.stdout.on('data', append); child.stderr.on('data', chunk => { append(chunk); stderrTail = Buffer.concat([stderrTail, Buffer.from(chunk)]).subarray(-2048); });
+      child.on('error', error => resolve({ error, output, stderrTail }));
+      child.on('close', (code, signal) => resolve({ code, signal, output, overflow, stderrTail }));
     });
-    if (result.error || result.signal || result.code === null || result.overflow) return refuse(`test execution failed: ${result.error?.message ?? result.signal ?? 'output overflow'}`);
+    const childRefuse = message => ({ ok: false, exitCode: result.code ?? null, output: `refused: ${message}; exitCode: ${result.code ?? 'null'}; stderr tail: ${result.stderrTail.toString('utf8')}` });
+    if (result.error || result.signal || result.code === null || result.overflow) return childRefuse(`test execution failed: ${result.error?.message ?? result.signal ?? 'output overflow'}`);
     let pass, fail, skip;
     try {
       if (runner === 'node') {
@@ -317,7 +330,7 @@ export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
         pass = report.numPassedTests; fail = report.numFailedTests; skip = report.numPendingTests;
       }
       if (![pass, fail, skip].every(n => Number.isSafeInteger(n) && n >= 0)) throw new Error('invalid counts');
-    } catch (error) { return refuse(`unparseable ${runner} output: ${error.message}`); }
+    } catch (error) { return childRefuse(`unparseable ${runner} output: ${error.message}`); }
     return { ok: true, runner, files, pass, fail, skip, exitCode: result.code, logTail: result.output.slice(-8192) };
   } finally {
     scratchHeld?.close();

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, symlinkSync } from 'node:fs';
 import { execFileSync, spawnSync } from 'node:child_process';
 import path from 'node:path';
+import os from 'node:os';
 import { fileURLToPath } from 'node:url';
 
 // Controller runs: this integration fixture spawns git, the relay and a walled test child.
@@ -55,6 +56,24 @@ test('test door refuses an unknown field by name', () => {
   const x = fixture(), result = x.run({ ...request(['ok.test.mjs']), extra: true });
   assert.equal(result.ok, false); assert.match(result.output, /unknown field.*extra/i);
 });
+test('vitest refuses when the test package has no local installation', () => {
+  const x = fixture();
+  mkdirSync(path.join(x.wt, 'nested'));
+  writeFileSync(path.join(x.wt, 'nested', 'package.json'), JSON.stringify({ name: 'nested-fixture' }));
+  writeFileSync(path.join(x.wt, 'nested', 'sample.test.mjs'), '');
+  const result = x.run({ kind: 'test', runner: 'vitest', files: ['nested/sample.test.mjs'] });
+  assert.equal(result.ok, false); assert.match(result.output, /vitest not installed for nested-fixture/);
+});
+test('a post-execution refusal carries the exit code and bounded stderr tail', () => {
+  const x = fixture();
+  mkdirSync(path.join(x.wt, 'node_modules', 'vitest'), { recursive: true });
+  writeFileSync(path.join(x.wt, 'package.json'), JSON.stringify({ name: 'broken-fixture' }));
+  writeFileSync(path.join(x.wt, 'node_modules', 'vitest', 'vitest.mjs'), "process.stderr.write('x'.repeat(3000) + ' END'); process.exitCode = 7;\n");
+  const result = x.run({ kind: 'test', runner: 'vitest', files: ['ok.test.mjs'] });
+  assert.equal(result.ok, false); assert.equal(result.exitCode, 7);
+  assert.match(result.output, /unparseable vitest output/); assert.match(result.output, /exitCode: 7; stderr tail: x+ END$/);
+  assert.ok(Buffer.byteLength(result.output.split('stderr tail: ')[1]) <= 2048);
+});
 test('docker socket stays absent inside the test namespace; a named control runs', () => {
   const x = fixture();
   writeFileSync(path.join(x.wt, 'socket.test.mjs'), `import { test } from 'node:test';
@@ -82,4 +101,23 @@ test('test door reports passing and failing tallies, with a passing control', ()
   const control = x.run(request([files[0]]));
   assert.equal(control.ok, true, JSON.stringify(control));
   assert.equal(control.fail, 0); assert.equal(control.exitCode, 0);
+});
+
+test('test door runs a named vitest file and reports its passing tally', () => {
+  const home = os.homedir();
+  const temp = mkdtempSync(path.join(home, 'test-door-vitest-'));
+  const lane = mkdtempSync(path.join(home, '.lares-scratch', 'test-door-vitest-'));
+  roots.push(temp, lane);
+  mkdirSync(path.join(lane, 'relay'));
+  const launcher = path.join(temp, 'launcher.mjs'); writeFileSync(launcher, '');
+  const checks = path.join(temp, 'checks.json'); writeFileSync(checks, '[]');
+  const wt = path.dirname(path.dirname(relay));
+  const files = ['packages/lararium-mesh/tests/dyad-atom.test.ts'];
+  writeFileSync(path.join(lane, 'relay', 'req-001.json'), JSON.stringify({ kind: 'test', runner: 'vitest', files }));
+  const child = spawnSync(process.execPath, [relay, '--lane-root', lane, '--worktree', wt, '--branch', 'test-door', '--launcher', launcher, '--remote-url', path.join(temp, 'remote'), '--checks', checks, '--once'], { encoding: 'utf8', env: { ...process.env, LARES_BROKER_ROOT: path.join(temp, 'broker') } });
+  assert.equal(child.status, 0, child.stderr);
+  const result = JSON.parse(readFileSync(path.join(lane, 'relay', 'res-001.json'), 'utf8'));
+  assert.equal(result.ok, true, JSON.stringify(result));
+  assert.equal(result.runner, 'vitest'); assert.deepEqual(result.files, files);
+  assert.ok(result.pass > 0); assert.equal(result.fail, 0); assert.equal(result.exitCode, 0);
 });
