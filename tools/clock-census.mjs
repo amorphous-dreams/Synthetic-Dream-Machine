@@ -28,6 +28,11 @@ function namedLiveness(lines, line) {
   const own = lines[line - 1], above = (lines[line - 2] ?? '').trim();
   return /\/\/.*\bLIVENESS\b/.test(own) || (/^(?:\/\/|\*|\/\*)/.test(above) && /\bLIVENESS\b/.test(above));
 }
+// PACING names a cadence whose completion comes from an event or liveness bound.
+function namedPacing(lines, line) {
+  const own = lines[line - 1], above = (lines[line - 2] ?? '').trim();
+  return /\/\/\s*PACING:\s*\S/.test(own) || /^\/\/\s*PACING:\s*\S/.test(above);
+}
 export function scanText(file, source) {
   // Preserve offsets and line breaks while blanking comments and strings. Strings
   // cannot carry a clock decision, but parentheses in them must not end calls.
@@ -42,6 +47,10 @@ export function scanText(file, source) {
     seen.add(key);
     const text = lines[line - 1].trim();
     const exception = seeded(file, text);
+    if (!exception && category === 'PRODUCT-WAIT' && namedPacing(lines, line)) {
+      found.push({ file, line, category: 'PACING', kind, review: false, text });
+      return;
+    }
     if (!exception && category === 'PRODUCT-WAIT' && namedLiveness(lines, line)) {
       found.push({ file, line, category: 'LIVENESS', kind, review: false, text });
       return;
