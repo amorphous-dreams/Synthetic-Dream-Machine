@@ -27,6 +27,7 @@
 #   HARBOR_IMAGE    the product image. Unset, the witness builds lares-surface:local from THIS tree on every run (the layer
 #                   cache makes an unchanged tree cheap), so a stale local tag never meets newer code. Set, the witness
 #                   reads that image as given, and builds it from the tree only when the tag stands absent.
+#   GIT_REV         the confirmed checkout revision to bake into a newly built image's revision label.
 set -eu
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
@@ -78,6 +79,17 @@ new_scratch() {
 # Open the standing vessel's key through the test door and print the daemon's answer.
 unlock_staged() { "$ROOT/tools/unlock-staged-container.sh" "$(compose ps -q lares)"; }
 
+# Reach the product's no-charter guard beyond the face-route prompt. The unlock
+# door already copied /app/tools; seat this route in the CLI process alone.
+persona_staged() {
+  docker cp "$ROOT/tools/test-ward-route.mjs" "$(compose ps -q lares):/app/tools/test-ward-route.mjs" >/dev/null
+  compose exec -T -e NODE_OPTIONS=--import=file:///app/tools/test-ward-route.mjs \
+    lares node packages/lares-cli/bin/lares.mjs persona "$@"
+}
+
+# A matching message proves refusal only when the command also exits nonzero.
+refusal_names() { [ "$1" -ne 0 ] && contains "$2" "$3"; }
+
 result() {
   label=$1; shift
   if "$@"; then printf 'PASS %s\n' "$label"
@@ -93,7 +105,7 @@ if [ -n "$(compose ps -a -q 2>/dev/null)" ]; then
   printf 'harbor-walk-witness: project %s already stands; pick another HARBOR_PROJECT\n' "$PROJECT" >&2; exit 2
 fi
 if [ -n "$BUILD_FROM_TREE" ] || ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
-  docker build -f "$ROOT/Dockerfile" --target serve -t "$IMAGE" "$ROOT"
+  docker build -f "$ROOT/Dockerfile" --target serve --build-arg "GIT_REV=${GIT_REV:-unknown}" -t "$IMAGE" "$ROOT"
 fi
 
 # The scanners prove themselves on a known positive before any leg trusts them.
@@ -102,13 +114,21 @@ not_contains 'live — wiki-less wayfarer' 'live — wiki:' || { printf 'harbor-
 
 printf '── leg 1: a face before up\n'
 new_scratch
+# Source membership gets captured when projection grants stand, before unlock.
+# Crossroads carries a public mirror on every hearth. Lares/lararium canon also
+# require Kahu admission; making a directory grants neither on this fresh house.
+mkdir -p "$SCRATCH_WORKSPACE/bags/crossroads"
 found_staged --hearth --name ci-face
 lares up
 floor=$(boot_log)
-refused=$(lares persona list --json 2>&1 || :)
+# A locked list may disclose public floor indices. Founding needs the key and
+# refuses before asking a face route, so it supplies the sovereign control.
+refused_rc=0
+refused=$(lares persona new 1 --name locked-probe --json 2>&1) || refused_rc=$?
 result 'leg 1: the boot rests at the floor holding no key'      contains "$floor" 'stands holding no vessel key'
 result 'leg 1: the floor composes no Lararium'                  not_contains "$floor" 'live — wiki:'
-result 'control: a sovereign verb at the floor names the unlock' contains "$refused" 'lares vault unlock'
+result 'control: a sovereign verb at the floor names the unlock' refusal_names "$refused_rc" "$refused" 'lares vault unlock'
+[ "$refused_rc" -ne 0 ] && contains "$refused" 'lares vault unlock' || printf 'floor control response (exit %s): %s\n' "$refused_rc" "$refused"
 before=$(started_at)
 opened=$(unlock_staged 2>&1 || :)
 result 'leg 1: the unlock opens the key onto a hearth'          contains "$opened" '"standing":"hearth"'
@@ -121,17 +141,19 @@ result 'leg 1: the unlock restarted no container'               test "$before" =
 result 'leg 1: the engine restarted nothing'                    test "$(docker inspect -f '{{.RestartCount}}' "$(compose ps -q lares)")" = 0
 # The mirror root splits by origin (operator ruling 2026-11-01): a canon bag whose source stands in the workspace projects
 # back there, while the house's private planes (the daemon wiki, the store, custody) land under the state mount alone.
-mkdir -p "$SCRATCH_WORKSPACE/bags/lares" "$SCRATCH_WORKSPACE/wikis/inbox/ha.ka.ba/lares/docs"
+mkdir -p "$SCRATCH_WORKSPACE/wikis/inbox/ha.ka.ba/lares/docs"
 sed -e 's#ha.ka.ba/lares/docs/stable-founding-road#ha.ka.ba/lares/docs/harbor-walk-probe#g' -e 's#docs/stable-founding-road.mem#docs/harbor-walk-probe.mem#' \
   "$ROOT/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem" > "$SCRATCH_WORKSPACE/wikis/inbox/ha.ka.ba/lares/docs/harbor-walk-probe.mem"
 lares meme normalize /workspace/wikis/inbox/ha.ka.ba/lares/docs/harbor-walk-probe.mem >/dev/null
-lares ingest --source /workspace/wikis/inbox/ha.ka.ba/lares/docs/harbor-walk-probe.mem --to lar:///ha.ka.ba/bags/lares --apply --yes >/dev/null
-projected="$SCRATCH_WORKSPACE/bags/lares/ha.ka.ba/lares/docs/harbor-walk-probe.mem"
+# Keep the settle answer visible: a record can land with no granted mirror.
+lares ingest --source /workspace/wikis/inbox/ha.ka.ba/lares/docs/harbor-walk-probe.mem --to lar:///ha.ka.ba/bags/crossroads --apply --yes
+projected="$SCRATCH_WORKSPACE/bags/crossroads/ha.ka.ba/lares/docs/harbor-walk-probe.mem"
 tries=0
 while [ ! -f "$projected" ] && [ "$tries" -lt 30 ]; do sleep 1; tries=$((tries + 1)); done   # the bound only bounds the wait
 result 'leg 1: a sourced canon bag projects back under /workspace/bags' test -f "$projected"
 result 'leg 1: the house writes no private plane under /workspace' test -z "$(find "$SCRATCH_WORKSPACE" -mindepth 1 \( -path "$SCRATCH_WORKSPACE/bags" -o -path "$SCRATCH_WORKSPACE/wikis" \) -prune -o -print -quit)$(find "$SCRATCH_WORKSPACE/bags" "$SCRATCH_WORKSPACE/wikis" -maxdepth 1 \( -name daemon -o -name kahua \) -print -quit)"
-got=$(lares meme get lar:///ha.ka.ba/lares/docs/harbor-walk-probe --recipe lares 2>&1 || :)
+# The daemon recipe explicitly includes the public crossroads library.
+got=$(lares meme get lar:///ha.ka.ba/lares/docs/harbor-walk-probe --recipe default 2>&1 || :)
 result "leg 1: the wiki's recipe resolves the carrier"          contains "$got" '"ok":true'
 drop_scratch
 
@@ -144,8 +166,10 @@ log=$(boot_log)
 result 'leg 2: the faceless unlock opens the key onto a herm'   contains "$opened" '"standing":"herm"'
 result 'leg 2: the faceless vessel stands as a herm'            contains "$log" 'live — wiki-less wayfarer'
 result 'leg 2: the faceless vessel composes no Lararium'        not_contains "$log" 'live — wiki:'
-faceless=$(lares persona new 0 --name ci-face 2>&1 || :)
-result 'leg 2: a face refuses on a place with no seed charter'  contains "$faceless" 'no seed charter stands here'
+faceless_rc=0
+faceless=$(persona_staged new 0 --name ci-face 2>&1) || faceless_rc=$?
+result 'leg 2: a face refuses on a place with no seed charter' refusal_names "$faceless_rc" "$faceless" 'no seed charter stands here'
+[ "$faceless_rc" -ne 0 ] && contains "$faceless" 'no seed charter stands here' || printf 'faceless control response (exit %s): %s\n' "$faceless_rc" "$faceless"
 lares vessel stop
 found_staged --hearth --name ci-face
 lares up
