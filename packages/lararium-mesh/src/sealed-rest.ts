@@ -495,8 +495,9 @@ export function documentIdOfUrl(url: string | null | undefined): string | null {
  * it. So an island asks the vessel before it rests a byte of a document, and a document the vessel holds sealed rests in
  * the island's memory alone: its change reaches the vessel by sync and seals there, and a restarted island finds it by
  * sync. The first answer that names a document sealed sweeps every clear chunk the island's store held of it (a copy
- * written before the document mapped sealed). A sealed answer holds for the island's life; an ask the vessel cannot
- * answer reads unsealed, as a vessel that names no sealed bag does.
+ * written before the document mapped sealed). A sealed answer holds for the island's life. An ask that refuses (the
+ * vessel's rest faulted, the post failed) refuses the store's act by name: the save rests no byte and the load reads
+ * none, and the next act asks again. Only a vessel's unsealed answer lets a byte rest.
  */
 export function islandRestGuard(inner: StorageAdapterInterface, restsAtVessel: (documentId: string) => Promise<boolean>): StorageAdapterInterface {
   const sealed = new Set<string>();
@@ -504,9 +505,7 @@ export function islandRestGuard(inner: StorageAdapterInterface, restsAtVessel: (
   const isSealed = async (documentId: unknown): Promise<boolean> => {
     if (typeof documentId !== "string" || documentId.length === 0) return false;
     if (!sealed.has(documentId)) {
-      let answer = false;
-      try { answer = await restsAtVessel(documentId); } catch { answer = false; }
-      if (!answer) return false;
+      if (!(await restsAtVessel(documentId))) return false;
       sealed.add(documentId);
     }
     let sweep = sweeps.get(documentId);
@@ -528,23 +527,35 @@ export function islandRestGuard(inner: StorageAdapterInterface, restsAtVessel: (
   };
 }
 
+/** A rest ask that refused, by name: the vessel's own refusal (`REST_ASK_REFUSALS`), an answer that carries no reading
+ *  (`answer-malformed`), or a post that never reached the vessel (`vessel-unreached`). */
+export class RestAskRefusal extends Error {
+  override readonly name = "RestAskRefusal";
+  constructor(readonly refusal: string, readonly documentId: string) {
+    super(`rest ask: ${refusal} for ${documentId}: no byte of it rests in the island's store`);
+  }
+}
+
 /** The island's side of the rest ask: post `rest:ask` over the island's port to its vessel and read `rest:answer` on the
  *  same request id. The ask waits on the answer, and no clock reads silence as unsealed: the vessel answers every ask
- *  (`answerRestAsk`), and an island outlives no vessel. */
+ *  (`answerRestAsk`), and an island outlives no vessel. A refused or shapeless answer, or a failed post, rejects by name
+ *  ({@link RestAskRefusal}); nothing but the vessel's own unsealed reading reads unsealed. */
 export function vesselRestAsker(port: { post(msg: unknown): void; listen(cb: (msg: unknown) => void): () => void }, opts: { readonly idPrefix: string }): (documentId: string) => Promise<boolean> {
-  const pending = new Map<string, (sealed: boolean) => void>();
+  const pending = new Map<string, { readonly documentId: string; resolve(sealed: boolean): void; reject(refusal: RestAskRefusal): void }>();
   port.listen((raw) => {
-    const m = raw as { type?: unknown; requestId?: unknown; sealed?: unknown } | null;
+    const m = raw as { type?: unknown; requestId?: unknown; sealed?: unknown; refused?: unknown } | null;
     if (!m || m.type !== "rest:answer" || typeof m.requestId !== "string") return;
-    const settle = pending.get(m.requestId);
-    if (!settle) return;
+    const ask = pending.get(m.requestId);
+    if (!ask) return;
     pending.delete(m.requestId);
-    settle(m.sealed === true);
+    if (typeof m.refused === "string") ask.reject(new RestAskRefusal(m.refused, ask.documentId));
+    else if (typeof m.sealed === "boolean") ask.resolve(m.sealed);
+    else ask.reject(new RestAskRefusal("answer-malformed", ask.documentId));
   });
   let seq = 0;
-  return (documentId) => new Promise<boolean>((resolve) => {
+  return (documentId) => new Promise<boolean>((resolve, reject) => {
     const requestId = `${opts.idPrefix}-rest-${++seq}`;
-    pending.set(requestId, resolve);
-    try { port.post({ type: "rest:ask", requestId, documentId }); } catch { pending.delete(requestId); resolve(false); }
+    pending.set(requestId, { documentId, resolve, reject });
+    try { port.post({ type: "rest:ask", requestId, documentId }); } catch { pending.delete(requestId); reject(new RestAskRefusal("vessel-unreached", documentId)); }
   });
 }

@@ -107,12 +107,14 @@ export async function answerSessionSign(caps: CapabilityRecord, ask: Partial<Isl
   } catch { return { ...base, refusal: ask.op === "sign" ? "signer-refused" : "signer-unavailable" }; }
 }
 
-/** Answer one `rest:ask`: no `restsSealed` standing, a malformed ask or a fault each read unsealed. */
+/** Answer one `rest:ask`. A vessel that stands no `restsSealed` seals no bag, so it answers unsealed; a malformed ask or
+ *  a fault of the rest answers its refusal by name, never unsealed. */
 export async function answerRestAsk(caps: CapabilityRecord, ask: Partial<IslandMsg_RestAsk> & { requestId: string }): Promise<IslandMsg_RestAnswer> {
   const base = { type: "rest:answer" as const, requestId: ask.requestId };
+  if (typeof ask.documentId !== "string" || ask.documentId.length === 0) return { ...base, refused: "ask-malformed" };
   const restsSealed = caps.restsSealed;
-  if (!restsSealed || typeof ask.documentId !== "string") return { ...base, sealed: false };
-  try { return { ...base, sealed: (await restsSealed(ask.documentId)) === true }; } catch { return { ...base, sealed: false }; }
+  if (!restsSealed) return { ...base, sealed: false };
+  try { return { ...base, sealed: (await restsSealed(ask.documentId)) === true }; } catch { return { ...base, refused: "rest-fault" }; }
 }
 
 /** The island-to-vessel kinds the record answers, each by the member of its own name. */
