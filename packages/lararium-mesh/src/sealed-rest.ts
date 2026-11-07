@@ -364,6 +364,8 @@ export function composeSealedRest<S extends SaveSession>(input: {
   readonly inner: StorageAdapterInterface;
   readonly bagOf: (documentId: string) => SealedBag | null;
   readonly sessionFace: () => string | null;
+  /** The worn face's subject at another anchor of the vessel's own chain (`SealedDocumentPorts.wornAt`). */
+  readonly wornAt?: (subject: string) => boolean;
   readonly door: Pick<ConstructorParameters<typeof SealedDocumentStore>[0], "seal" | "open"> & { lock?(): void };
   readonly flushRepo: () => Promise<void>;
   readonly onHeld?: (held: { readonly refusal: "save-unbooked" | "save-unmapped" | "save-unsealed"; readonly documentId: string }) => void;
@@ -388,6 +390,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
   };
   const store = new SealedDocumentStore({
     inner: input.inner, bagOf: input.bagOf, sessionFace: input.sessionFace,
+    ...(input.wornAt ? { wornAt: input.wornAt } : {}),
     sessionOf,
     writerOf: (documentId) => book.writerOf(documentId),
     // P1: a vessel's rest keeps a document's sealed class across a map that drops; its save waits, never clear.
@@ -396,6 +399,9 @@ export function composeSealedRest<S extends SaveSession>(input: {
     ...(input.onHeld ? { onHeld: input.onHeld } : {}),
     ...(input.hydrationPatienceMs !== undefined ? { hydrationPatienceMs: input.hydrationPatienceMs } : {}),
   });
+  // A session names the bag's face by its own subject, or by the worn face's subject at another anchor.
+  const wears = (face: string | null | undefined, subject: string): boolean =>
+    typeof face === "string" && (subject === face || (input.wornAt?.(subject) ?? false));
   return {
     store, book,
     wrote(documentId, session) { if (input.bagOf(documentId) !== null) book.book(documentId, session); },
@@ -414,7 +420,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
     async rebook(session) {
       for (const id of store.waitingDocuments()) {
         const bag = input.bagOf(id);
-        if (bag !== null && bag.face === session.subject) book.seal(id, session);
+        if (bag !== null && wears(bag.face, session.subject)) book.seal(id, session);
       }
       return store.reseal();
     },
@@ -426,7 +432,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
     async standDown(standing) {
       for (const id of store.waitingDocuments()) {
         const face = input.bagOf(id)?.face;
-        const session = standing.find((s) => s.subject === face);
+        const session = standing.find((s) => wears(face, s.subject));
         if (session) book.seal(id, session);
       }
       try { await input.flushRepo(); } catch { /* a save that refused keeps its change in the store's memory */ }
@@ -438,7 +444,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
     restsSealed: (documentId) => store.holdsSealed(documentId),
     async sealMapped(documentId, session) {
       const bag = input.bagOf(documentId);
-      if (bag === null || bag.face !== session.subject) return false;
+      if (bag === null || !wears(bag.face, session.subject)) return false;
       if (book.of(documentId) === null) book.seal(documentId, session);
       return store.sealClearRest(documentId);
     },

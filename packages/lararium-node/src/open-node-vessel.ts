@@ -905,8 +905,8 @@ async function prepareNodeBootOn(
   // it lands (`SessionSignBook`'s hold), each save signs under the session that booked it, a save no session booked
   // waits `save-unbooked` in memory until the next session's call books it, and a session's signer drops only after the Repo and the rest flush (`beforeSignerDrops`).
   type NodeSaveSession = BookedSession & { readonly id: string };
-  const sealedCells: { face: () => string | null; bags: () => readonly string[]; catalog: () => LarDoc | undefined; mounted: (bagId: string) => string | null; book: SessionSignBook | null } = {
-    face: () => null, bags: () => [], catalog: () => undefined, mounted: () => null, book: null,
+  const sealedCells: { face: () => string | null; wornAt: (subject: string) => boolean; bags: () => readonly string[]; catalog: () => LarDoc | undefined; mounted: (bagId: string) => string | null; book: SessionSignBook | null } = {
+    face: () => null, wornAt: () => false, bags: () => [], catalog: () => undefined, mounted: () => null, book: null,
   };
   // V3: each slot document the daemon island's resolver named, by bag (`announceSlotDoc`). A slot's document moves when
   // the seat lands (the floor's document gives way to the face's derived one), and each it ever named stays mapped.
@@ -1000,6 +1000,7 @@ async function prepareNodeBootOn(
     inner: new DurableNodeFSStorageAdapter(storageDir),
     bagOf: sealedBagOf,
     sessionFace: () => sealedCells.face(),
+    wornAt: (subject) => sealedCells.wornAt(subject),
     door: vesselDocStoreDoor<NodeSaveSession>(() => docStorePort.port(), {
       book: (ask, verb, session) => sealedCells.book?.hold(ask, verb, session) ?? (() => {}),
       patienceMs: 30_000, idPrefix: `docstore-${process.pid}`,
@@ -2069,6 +2070,13 @@ async function prepareNodeBootOn(
   // vessel's own place, under its atom's place subject. A floor, a locked face or a face whose proof refused lights none.
   let placeFace: string | null = null;
   sealedCells.face = () => { const c = dialAnchor.chain(); return c ? faceProofSubjectRef(c.scope as never) : placeFace; };
+  // ONE FACE, TWO ANCHORS: the worn face proved at this vessel's place names its bags by the place subject until a dial
+  // composes, then by the dial's Nexus subject. A save its place session booked before the dial seals after it, and a
+  // value either anchor sealed opens at the other, across a restart whose dial stands again first (meme-realm-bag ⑮b).
+  sealedCells.wornAt = (subject) => {
+    const c = dialAnchor.chain();
+    return subject === placeFace || (c !== null && subject === faceProofSubjectRef(c.scope as never));
+  };
   const liftSessionSign = (): SessionSignLift => {
     // A call of a session books here, and the sealed rest seals every save that waited for one under it (R2); the
     // document store's own seal books here too, and books nothing further.
