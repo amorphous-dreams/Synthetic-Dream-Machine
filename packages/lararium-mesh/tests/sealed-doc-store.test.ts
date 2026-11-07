@@ -14,7 +14,7 @@ import { faceProofSubjectRef, sessionSignatureImage } from "../src/face-proof-su
 import { SEALED_CHUNK_MARK } from "../src/sealed-chunk.js";
 import type { RecordSigner } from "../src/sealed-records.js";
 import {
-  SEALED_DOCUMENT_REFUSALS, SealedDocumentRefusal, SealedDocumentStore, cutFreshBase, logicalRefOf, readsAsFreshBase,
+  SEALED_DOCUMENT_REFUSALS, SealedDocumentRefusal, SealedDocumentStore, cutFreshBase, logicalRefOf, readsAsFreshBase, wornAtOf,
 } from "../src/sealed-doc-store.js";
 import { carry, introduce, said, verifies, vessel, world, type Vessel } from "./content-key-fixture.js";
 import { chain, signHex } from "./face-proof-fixture.js";
@@ -146,7 +146,7 @@ describe("one face at two anchors: the store reads the face by every subject the
     await storeFor(a, inner).save(key, A.save(A.change(A.init<{ note?: string }>(), (d) => { d.note = SECRET; })));
     const own = faceProofSubjectRef(a.chain.scope);
     // The manifest names the place subject as its writer: the place session sealed it.
-    const readAs = (writer: string, wornAt?: (subject: string) => boolean): SealedDocumentStore => new SealedDocumentStore({
+    const readAs = (writer: string, wornAt?: (face: string, subject: string) => boolean): SealedDocumentStore => new SealedDocumentStore({
       inner,
       bagOf: () => ({ bagId: BAG, face: own }),
       sessionFace: () => own,
@@ -155,13 +155,13 @@ describe("one face at two anchors: the store reads the face by every subject the
       open: async (args) => { const opened = await a.holder.openValue(args); return "refusal" in opened ? opened : { ...opened, writer }; },
       ...(wornAt ? { wornAt } : {}),
     });
-    const loaded = await readAs(PLACE, (subject) => subject === PLACE).load(key);
+    const loaded = await readAs(PLACE, (face, subject) => face === own && subject === PLACE).load(key);
     expect(loaded).toBeInstanceOf(Uint8Array);
     expect(A.load<{ note?: string }>(loaded!).note).toBe(SECRET);
     // CONTROL: the worn face's other subject reads only where the vessel names it; another face's writer refuses.
     expect(await refusalOf(() => readAs(PLACE).load(key))).toBe("writer-face-foreign");
     const other = faceProofSubjectRef((await chain("b", "nexus-test-one")).scope);
-    expect(await refusalOf(() => readAs(other, (subject) => subject === PLACE).load(key))).toBe("writer-face-foreign");
+    expect(await refusalOf(() => readAs(other, (face, subject) => face === own && subject === PLACE).load(key))).toBe("writer-face-foreign");
   });
 
   it("W2 — a save the place session booked seals after the map names the face by its Nexus subject; another face's session refuses", async () => {
@@ -169,7 +169,7 @@ describe("one face at two anchors: the store reads the face by every subject the
     const a = await vessel(w, "a");
     const inner = memoryAdapter();
     const own = faceProofSubjectRef(a.chain.scope);
-    const bookedBy = (subject: string, wornAt?: (s: string) => boolean): SealedDocumentStore => new SealedDocumentStore({
+    const bookedBy = (subject: string, wornAt?: (face: string, s: string) => boolean): SealedDocumentStore => new SealedDocumentStore({
       inner,
       bagOf: () => ({ bagId: BAG, face: own }),
       sessionFace: () => own,
@@ -179,13 +179,56 @@ describe("one face at two anchors: the store reads the face by every subject the
       ...(wornAt ? { wornAt } : {}),
     });
     const change = A.save(A.change(A.init<{ note?: string }>(), (d) => { d.note = SECRET; }));
-    expect(await refusalOf(() => bookedBy(PLACE, (s) => s === PLACE).save(["doc-place", "incremental", "c1"], change))).toBe("ANSWERED");
+    expect(await refusalOf(() => bookedBy(PLACE, (face, s) => face === own && s === PLACE).save(["doc-place", "incremental", "c1"], change))).toBe("ANSWERED");
     expect(restsClear(inner, "doc-place", SECRET)).toBe(false);
     expect([...inner.bytes.keys()].some((k) => k.startsWith("doc-place"))).toBe(true);
     // CONTROL: unnamed, the same booking refuses by name, and another face's session refuses under the same port.
     expect(await refusalOf(() => bookedBy(PLACE).save(["doc-place", "incremental", "c2"], change))).toBe("session-face-foreign");
     const other = faceProofSubjectRef((await chain("b", "nexus-test-one")).scope);
-    expect(await refusalOf(() => bookedBy(other, (s) => s === PLACE).save(["doc-place", "incremental", "c3"], change))).toBe("session-face-foreign");
+    expect(await refusalOf(() => bookedBy(other, (face, s) => face === own && s === PLACE).save(["doc-place", "incremental", "c3"], change))).toBe("session-face-foreign");
+  });
+});
+
+// THE PORT TAKES THE BAG'S FACE (`wornAt(face, subject)`): the worn subject names the worn face alone. A bag of another
+// face never passes the writer check through the worn subject, whichever anchor sealed the value.
+describe("wornAtOf: the worn subject passes the worn face's bags alone", () => {
+  const PLACE = "lar:///ha.ka.ba/@test/subjects/place-of-the-worn-face";
+  const NEXUS = "lar:///ha.ka.ba/@test/subjects/nexus-of-the-worn-face";
+  const WORN = "lar:///ha.ka.ba/@test/subjects/the-worn-face";
+  const OTHER = "lar:///ha.ka.ba/@test/subjects/another-face";
+  it("W3 — the port answers true for the worn face at its place or dial subject, and false for any other face's bag", () => {
+    const port = wornAtOf(() => WORN, () => [PLACE, NEXUS]);
+    expect(port(WORN, PLACE)).toBe(true);
+    expect(port(WORN, NEXUS)).toBe(true);
+    // CONTROL: a bag of a different face does not pass through the worn subject; an unnamed subject refuses.
+    expect(port(OTHER, PLACE)).toBe(false);
+    expect(port(OTHER, NEXUS)).toBe(false);
+    expect(port(WORN, OTHER)).toBe(false);
+    // A vessel that wears no face (floor, locked) passes nothing; a dial not yet composed names no second anchor.
+    expect(wornAtOf(() => null, () => [PLACE])(WORN, PLACE)).toBe(false);
+    expect(wornAtOf(() => WORN, () => [PLACE, null])(WORN, NEXUS)).toBe(false);
+  });
+
+  it("W4 — a bag of another face refuses a value the worn face's place session sealed, under the real port", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const b = await vessel(w, "b");
+    const inner = memoryAdapter();
+    const key = ["doc-foreign-bag", "incremental", "c1"];
+    const ownFace = faceProofSubjectRef(a.chain.scope);
+    const foreignFace = faceProofSubjectRef(b.chain.scope);
+    await storeFor(a, inner).save(key, A.save(A.change(A.init<{ note?: string }>(), (d) => { d.note = SECRET; })));
+    const readUnder = (bagFace: string): SealedDocumentStore => new SealedDocumentStore({
+      inner,
+      bagOf: () => ({ bagId: BAG, face: bagFace }),
+      sessionFace: () => ownFace,
+      sessionOf: () => ({ id: "the-writing-session", subject: ownFace }),
+      seal: ({ bagId, values }) => a.holder.sealValues({ bagId, values, signer: a.signer }),
+      open: async (args) => { const opened = await a.holder.openValue(args); return "refusal" in opened ? opened : { ...opened, writer: PLACE }; },
+      wornAt: wornAtOf(() => ownFace, () => [PLACE]),
+    });
+    expect(await refusalOf(() => readUnder(ownFace).load(key))).toBe("ANSWERED");
+    expect(["writer-face-foreign", "session-face-foreign"]).toContain(await refusalOf(() => readUnder(foreignFace).load(key)));
   });
 });
 
