@@ -5,7 +5,7 @@
  */
 import { createRequire } from "node:module";
 import { afterEach, expect, test } from "vitest";
-import { DAEMON_BAG_ID, emptyLarDoc, mkDaemonGateVerbResult, mkEa, type IslandMsg_Manifest, type LarDoc, type Repo as RepoType } from "@lararium/mesh";
+import { DAEMON_BAG_ID, emptyLarDoc, mkDaemonGateVerbResult, mkEa, mkFault, type IslandMsg_Manifest, type LarDoc, type Repo as RepoType } from "@lararium/mesh";
 import { openDaemonVmCore, type DaemonVmHost } from "../src/daemon-vm-core.js";
 import { VerbTable } from "../src/verb-dispatcher.js";
 
@@ -61,7 +61,7 @@ function open(answer: (msg: { requestId: string; verb: string; requestedBy: stri
   core.mountMainVerbs(registry);
   const exit = (why: string): void => { for (const h of [...exits]) h(why); };
   const wake = (): void => say(mkEa(DAEMON_BAG_ID));
-  return { core, ran, gates, exit, wake };
+  return { core, ran, gates, exit, wake, say };
 }
 
 test("RED (Sonnet's cold read, MED-1): a gate the island never answers ends runAsFace by name within its bound, and the row never runs", async () => {
@@ -99,4 +99,12 @@ test("RED (clock-sweep): the liveness bound arms only once the island woke; CONT
   expect(settled).toBe(false);
   wake();
   await expect(gating).rejects.toThrow(/LIVENESS/);
+}, 3_000);
+
+test("RED (clock-sweep): a teardown the island answers with a fault ends the shutdown at once, unacked, never at its budget", async () => {
+  const { core, say } = open(() => "silent");
+  const down = core.shutdown(2 ** 30);
+  await new Promise((resolve) => setTimeout(resolve, 10));
+  say(mkFault("lar:///ha.ka.ba/wikis/daemon", "teardown-fault: the adaptor would not stop"));
+  expect(await down).toEqual({ acked: false });
 }, 3_000);
