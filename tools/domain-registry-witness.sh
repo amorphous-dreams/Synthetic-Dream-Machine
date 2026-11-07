@@ -112,8 +112,6 @@ COMMENT = re.compile(r"^\s*(?:\*|/\*|//|#)")
 # The known strays: (path, literal prefix) → the act that registers it. Each signs live material under
 # its present spelling, so moving it re-keys that material — the re-found's work, not a lint fix.
 ALLOW = {
-    ("packages/lararium-mesh/src/wax-stamp.ts",                "lar-wax-stamp/v1|"):
-        "the wax-stamp signing preimage registers with the re-found",
     ("packages/lararium-mesh/src/holder-continuity.ts",        "lar-holder-continuity/v1|"):
         "the holder-continuity signing preimage registers with the re-found",
     ("packages/lararium-mesh/src/persistence-keel.ts",         "lar-witness/v1|"):

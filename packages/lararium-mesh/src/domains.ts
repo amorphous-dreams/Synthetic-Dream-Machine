@@ -120,6 +120,8 @@ export const CHARTER_INCEPTION_DOMAIN = mint("charter-inception");
 /** A branch's ABANDON: the quorum of a forked branch, at its own head, closes that branch for every reader who holds
  *  the record. Its own name: an abandon never verifies as a roll, an inception or a reunion. */
 export const CHARTER_ABANDON_DOMAIN = mint("charter-abandon");
+/** The artifact, epoch and time bound by a wax-stamp signature. */
+export const WAX_STAMP_DOMAIN = mint("wax-stamp");
 /** A REUNION: one image naming the scope AID, both held branch heads and the new seats, signed by each branch's
  *  quorum at its head over identical bytes. Its own name: a reunion never verifies as a roll. */
 export const CHARTER_REUNION_DOMAIN = mint("charter-reunion");
