@@ -59,8 +59,9 @@ test('heavy roster refusal teaches a procedure', () => {
     assert.equal(r.status, 1, r.stdout + r.stderr);
     const output = r.stdout + r.stderr;
     assert.match(output, /tests\/pono-fixture\.test\.ts/);
-    const message = output.match(/These suites stand a live resource[\s\S]*?(?=\n\n|\n\s*❯)/)?.[0];
-    assert.ok(message, output);
-    endsInPono(message);
+    // The refusal lists its suites, then a blank line, then its pono line: read from its start to the end of the run.
+    const at = output.indexOf('These suites stand a live resource');
+    assert.ok(at >= 0, output);
+    endsInPono(output.slice(at));
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
