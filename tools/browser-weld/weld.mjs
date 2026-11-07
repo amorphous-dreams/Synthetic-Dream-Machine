@@ -29,6 +29,27 @@ import { awaitPage, waitForWitness } from "./page-wait.mjs";
 const WEB = process.env.WELD_WEB_URL ?? "http://localhost:5173";
 
 let failures = 0, gaps = 0;
+
+/**
+ * THE CONSOLE CAPTURE: every line the page AND its workers write (a worker's line reaches the page's console event,
+ * named by its worker's script), and every page error. A red run prints the whole capture into the weld's log, which the
+ * held-out artifact keeps, so a refusal that reached only a console names the exit that swallowed an act.
+ */
+const consoleCapture = [];
+const CONSOLE_CAPTURE_MAX = 4_000;
+function captureConsole(page) {
+  const keep = (line) => { consoleCapture.push(line); if (consoleCapture.length > CONSOLE_CAPTURE_MAX) consoleCapture.shift(); };
+  page.on("console", (m) => {
+    const worker = m.worker();
+    const from = worker ? `worker ${worker.url().split("/").pop()}` : "page";
+    keep(`${from} ${m.type()}: ${m.text()}`);
+  });
+  page.on("pageerror", (e) => keep(`page pageerror: ${String(e)}`));
+}
+function printConsoleCapture() {
+  console.log(`\n  ── console capture (page + workers, ${consoleCapture.length} line(s), last ${CONSOLE_CAPTURE_MAX} kept) ──`);
+  for (const line of consoleCapture) console.log(`  | ${line}`);
+}
 const ok   = (n, m) => console.log(`  \x1b[32mok\x1b[0m       ${n} — ${m}`);
 const bad  = (n, m) => { failures++; console.log(`  \x1b[31mFAILED\x1b[0m   ${n} — ${m}`); };
 const gap  = (n, m) => { gaps++;     console.log(`  \x1b[33mgap\x1b[0m      ${n} — ${m}`); };
@@ -80,6 +101,7 @@ const main = async () => {
     const consoleErrors = [];
     page.on("console", (m) => { if (m.type() === "error") consoleErrors.push(m.text()); });
     page.on("pageerror", (e) => consoleErrors.push(String(e)));
+    captureConsole(page);
     await installWorkerTrace(page);
 
   console.log(`\n\x1b[1mBROWSER WELD — a tiddler edited in a browser, followed to the node's disk\x1b[0m`);
@@ -167,6 +189,8 @@ const main = async () => {
       // proves transport reached the worker boundary and the state must remain untouched.
       const unknownId = `weld-unknown-rid-${Date.now()}`;
       const unknownMark = await traceMark(page);
+      // Listen before dispatch: the worker may refuse the unknown target before evaluate returns.
+      const unknownAnswer = waitForWitness(page, "unknown", unknownMark, unknownId);
       const unknownSent = await page.evaluate((rid) => {
         const pane = document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection");
         if (!pane) return false;
@@ -178,7 +202,7 @@ const main = async () => {
         probe.remove();
         return true;
       }, unknownId);
-      const unknownAnswered = unknownSent && await waitForWitness(page, "unknown", unknownMark, unknownId);
+      const unknownAnswered = await unknownAnswer;
       const unknownTabs = await sidebarTabs(page);
       const unknownChanged = unknownTabs.open?.selected === false || unknownTabs.recent?.selected === true;
       const unknownTrace = await traceSince(page, unknownMark);
@@ -187,7 +211,10 @@ const main = async () => {
       } else if (!traceHas(unknownTrace, { direction: "to-worker", type: "lar:control-event", renderId: unknownId })) {
         bad("W3 unknown-rid-drop", `unknown render id never reached a worker boundary — ${traceTail(unknownTrace)}`);
       } else if (!unknownAnswered || unknownChanged || traceHas(unknownTrace, { direction: "worker-error" })) {
-        bad("W3 unknown-rid-drop", `unknown render id changed the named tab state or raised a worker error — ${traceTail(unknownTrace)}`);
+        // The answer names its own reason: a refusal by another word (surface-unknown, event-malformed) says where it went.
+        const answer = unknownTrace.find((event) => event.direction === "from-worker" && event.type === "lar:control-result" && event.renderId === unknownId);
+        const answered = answer ? `answered ${answer.status}${answer.reason ? `: ${answer.reason}` : ""}` : "no control-result";
+        bad("W3 unknown-rid-drop", `unknown render id ${answered}, changed the named tab state or raised a worker error — ${traceTail(unknownTrace)}`);
       } else {
         ok("W3 unknown-rid-drop", "unknown render id crossed the host boundary and left Open/Recent unchanged");
       }
@@ -337,8 +364,9 @@ const main = async () => {
 };
 
 function finish() {
+  if (failures > 0) printConsoleCapture();
   console.log(`\n  ── ${failures} failed · ${gaps} gap(s) ──\n`);
   process.exitCode = failures > 0 ? 1 : 0;
 }
 
-main().catch((e) => { console.error("weld driver threw:", e); process.exitCode = 1; });
+main().catch((e) => { printConsoleCapture(); console.error("weld driver threw:", e); process.exitCode = 1; });

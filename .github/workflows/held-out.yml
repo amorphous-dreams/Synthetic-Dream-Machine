@@ -262,6 +262,9 @@ jobs:
               # PEERS PROVE FIRST: a hop's oracle answers no stranger, so the witness dials as a READER
               # vessel founded in a scratch root. Its own attempt loop waits out the mesh coming up.
               reader_root="$(mktemp -d)"
+              # One explicit host-reader seat covers founding and later CLI ward acts for both Herm cells.
+              # The shared module still requires the CLI process, marked scratch root and no storage override.
+              export NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$(node --input-type=module -e 'import { pathToFileURL } from "node:url"; import { resolve } from "node:path"; console.log(pathToFileURL(resolve("tools/test-ward-route.mjs")).href)')"
               # A FOUNDING GATHERS ITS ROUTE FROM A TERMINAL, AND A RUNNER HOLDS NONE. The harness stages the
               # root as scratch and founds its custody through the test door first; the founding then meets a
               # standing slot tree and asks for no credential. The reader dials with the key file its founding

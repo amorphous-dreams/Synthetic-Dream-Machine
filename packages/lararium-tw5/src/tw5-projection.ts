@@ -594,9 +594,9 @@ function writeChoice(el: RidNode, keys: readonly string[]): void {
  * reaching for a blocking `confirm`, say) stops there, reads by name on the wiki's alert rail, and the act
  * still answers.
  */
-export function dispatchLarControlEvent(ev: LarMsg_ControlEvent): LarMsg_ControlResult | null {
+export function dispatchLarControlEvent(ev: LarMsg_ControlEvent, door?: (result: LarMsg_ControlResult) => void): LarMsg_ControlResult | null {
   const wiki = scopeFor(ev)?.wiki;
-  if (!wiki) return dispatchLarControlEventInner(ev);
+  if (!wiki) return dispatchLarControlEventInner(ev, door);
   const original = wiki.addTiddler;
   const stamps: Map<string, unknown> = wiki.__larSurfaceWrites ??= new Map();
   wiki.addTiddler = function(tiddler: any) {
@@ -606,10 +606,10 @@ export function dispatchLarControlEvent(ev: LarMsg_ControlEvent): LarMsg_Control
     if (typeof title === "string" && title.startsWith("lar:")) stamps.set(title, wiki.getTiddler(title));
     return result;
   };
-  try { return dispatchLarControlEventInner(ev); } finally { wiki.addTiddler = original; }
+  try { return dispatchLarControlEventInner(ev, door); } finally { wiki.addTiddler = original; }
 }
 
-function dispatchLarControlEventInner(ev: LarMsg_ControlEvent): LarMsg_ControlResult | null {
+function dispatchLarControlEventInner(ev: LarMsg_ControlEvent, door?: (result: LarMsg_ControlResult) => void): LarMsg_ControlResult | null {
   const scope = scopeFor(ev);
   const target = ev.renderId ?? ev.controlId ?? ev.affordanceId ?? "";
   const answer: Answer = (status, reason, want) => {
@@ -626,6 +626,8 @@ function dispatchLarControlEventInner(ev: LarMsg_ControlEvent): LarMsg_ControlRe
     const resting = scope && !sense && status === "applied" ? scope.receipt?.held() ?? null : null;
     if (scope && resting) void resting.then(() => scope.post(result));
     else if (scope) scope.post(result);
+    // No camera stands to carry it: the island's own door answers, so the page never waits on silence.
+    else if (door) door(result);
     else console.warn(`[wiki-worker] no camera stands to answer ${ev.eventId} (${ev.cameraId})`);
     return result;
   };

@@ -70,7 +70,9 @@ export function hasProjection(onBoot?: (ctx: IslandContext) => (() => void | Pro
       // rather than falling through to a cap that never expected it.
       if (type === LAR_CONTROL_EVENT) {
         const ev = readLarControlEvent(raw);
-        if (ev) dispatchLarControlEvent(ev);
+        // The island's own door answers an act no camera stands to carry (a camera torn down between the act and
+        // its arrival), so every act the page relayed hears its result.
+        if (ev) dispatchLarControlEvent(ev, ctx ? (result) => ctx.post(result as unknown as Parameters<IslandContext["post"]>[0]) : undefined);
         return true;
       }
       // The page asks a camera to paint itself whole: a surface switched to it, or attached late.

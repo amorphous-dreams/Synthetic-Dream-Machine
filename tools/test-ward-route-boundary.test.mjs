@@ -17,13 +17,15 @@ test('RED: a storage override outside the marked root seats no test route; CONTR
     const nodeIndex = pathToFileURL(resolve('packages/lararium-node/dist/src/index.js')).href;
     writeFileSync(cli, `import(${JSON.stringify(nodeIndex)}).then(n => console.log(n.wardGathererSeated() ? 'seated' : 'unseated'));\n`);
     const harness = pathToFileURL(resolve('tools/test-ward-route.mjs')).href;
-    const run = (...args) => {
-      const result = spawnSync(process.execPath, [`--import=${harness}`, cli, 'vessel', 'found', '--root', root, ...args], { encoding: 'utf8', env: { ...process.env, NODE_OPTIONS: '' } });
+    const run = (extraEnv = {}, ...args) => {
+      const result = spawnSync(process.execPath, [`--import=${harness}`, cli, 'vessel', 'found', '--root', root, ...args], { encoding: 'utf8', env: { ...process.env, NODE_OPTIONS: '', LAR_STAGE_DIR: '', LARES_TEST_FOUNDING: '', ...extraEnv } });
       assert.equal(result.status, 0, result.stderr);
       return result.stdout.trim();
     };
     assert.equal(run(), 'seated');
-    assert.equal(run('--storage', join(temp, 'outside')), 'unseated');
+    assert.equal(run({ LAR_STAGE_DIR: root }), 'seated', 'an explicit harness import keeps its contract even when a non-container e2e stages its root');
+    assert.equal(run({ LAR_STAGE_DIR: root, LARES_TEST_FOUNDING: '1' }), 'seated', 'the compose signal seats later CLI ward acts too');
+    assert.equal(run({}, '--storage', join(temp, 'outside')), 'unseated');
   } finally {
     rmSync(temp, { recursive: true, force: true });
   }

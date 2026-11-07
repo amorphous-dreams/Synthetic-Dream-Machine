@@ -49,7 +49,10 @@ services:
   seed:
     <<: *node
     profiles: [seed]
-    environment: *roots
+    environment:
+      <<: *roots
+      LAR_STAGE_DIR: /state
+      LARES_TEST_FOUNDING: "1"
     volumes:
       - state:/state
       - workspace:/workspace
@@ -62,9 +65,10 @@ services:
     entrypoint: ["sh", "-ec"]
     command:
       - >-
+        . tools/test-container-route.sh &&
         node tools/test-scratch-marker.mjs /state &&
         node tools/seed-test-custody.mjs /state &&
-        node packages/lares-cli/bin/lares.mjs vessel found --hearth --name "${BROWSER_CI_FACE:-ci-face}" --skip-build --root /state --genesis /app/genesis
+        test_container_route node packages/lares-cli/bin/lares.mjs vessel found --hearth --name "${BROWSER_CI_FACE:-ci-face}" --skip-build --root /state --genesis /app/genesis
     restart: "no"
 
   lares:
