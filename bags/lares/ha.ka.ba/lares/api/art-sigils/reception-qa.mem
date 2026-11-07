@@ -1,0 +1,84 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/art-sigils/reception-qa`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+uri-path = "ha.ka.ba/lares/api/art-sigils/reception-qa"
+title    = "lar:///ha.ka.ba/lares/api/art-sigils/reception-qa"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "draft workflow for technical verification, artistic critique, and situated reception"
+status   = "draft"
+retain   = true
+```
+
+<<~ ahu slot=`#/bearing`>>
+! Reception QA ~ observe before correcting
+
+Formal Analysis investigates what an image shows and what a viewer can defensibly infer. Reception QA asks an adjacent, narrower question: can the delivered artifact actually perform its assigned artistic and technical responsibilities in the intended viewing context? Both inspect evidence. Neither reverse-engineers an unknown original prompt from a finished picture.
+
+The operator's selection, modification, approval, refusal and stop condition remain authoritative. An automatic metric can reveal a mismatch but cannot unilaterally promote an artistic preference into the written Inscription.
+<<~/ahu>>
+
+<<~ ahu slot=`#/three-reads`>>
+!! Three independent readings
+
+* `Technical verification` — inspect dimensions, color-space tag, pixel alpha, file integrity, cropping, registration, editable structure, exact typography, and other explicitly required output properties. Test the required property, not a convenient proxy. Mark unsupported tests as `unverified`.
+* `Artistic fulfillment` — inspect worktype, hierarchy, primary read, treatment, relation, depiction-scope, preserved silence, and whether an unexpected addition helps or contradicts the source. Attractive drift can be valuable and still non-compliant.
+* `Situated reception` — inspect the artifact under relevant conditions: at native scale, at likely publication/display scale, in its actual composite, near/far or at differing viewing distances where those matter. No universal assumption that every artwork has a phone preview or singular focal point.
+
+Each judgment can be `fulfilled`, `deviated`, `failed` or `unverified`, with a short reason and evidence. Use independent judgments rather than one blended numeric success score.
+<<~/ahu>>
+
+<<~ ahu slot=`#/loop`>>
+!! Observe → compare → propose → intervene → inspect → hold
+
+1. Preserve the current source, exact receiving conditions, references and operator direction.
+2. Observe the delivered work before interpreting. State visible symptoms and their location, not the presumed model internals.
+3. Compare against the Art Sigil and any artifact contract separately; ask which commitment is at stake.
+4. Propose the smallest appropriate intervention: revise inscription, change input roles, re-run receiver, adjust a mask, re-register a layer, crop, typeset, or retain the departure.
+5. Render after intervention; compare a meaningful before/after under the same viewing conditions.
+6. Record accepted/rejected differences and preserve rollback. Stop when the operator's intended read and required properties are sufficiently fulfilled; avoid polishing away productive uncertainty.
+
+Where multiple changes are made simultaneously, describe them jointly; do not assign causal certainty to one of them without evidence. Selection among a few outputs documents preference, not population-level performance.
+<<~/ahu>>
+
+<<~ ahu slot=`#/test-cases`>>
+!! Reusable crucible cases
+
+| Case | Technical observation | Artistic question | Common false pass |
+|---|---|---|---|
+| Transparent component | Pixel alpha at designated empty regions; no opaque background | Does the layer leave intended space for the next image? | Looks translucent but every pixel is opaque |
+| Sparse abstract field | Canvas/support conforms to stated requirements | Are rhythm and intentional silence retained? | Adds a compulsory scene, central object or explanatory label |
+| Singular photograph | File and crop meet declared bounds | Does observed framing carry the intended read without fictionalizing evidence? | Attractive narrative inferred as maker fact |
+| Mixed-media comparison | Individual sources remain available or simulated status clear | Does each medium retain its distinct role? | Same synthetic paper texture applied everywhere |
+| Exact lettering | Compare required string against actual letters | Does typography support hierarchy? | Visually plausible but misspelled text |
+
+Cases are qualitative probes unless a controlled test plan provides representative receiver sampling. They do not assert anything about average model fidelity.
+<<~/ahu>>
+
+<<~ ahu slot=`#/record`>>
+!! Minimal observation record
+
+```toml
+[observation]
+art_invitation = "specific originating Inscription/Folio reference"
+artifact_contract = "optional contract or explicit absence"
+receiver_conditions = "known settings and input availability; unknowns marked"
+technical = "fulfilled / deviated / failed / unverified; evidence"
+artistic = "fulfilled / deviated / failed / unverified; evidence"
+situated = "fulfilled / deviated / failed / unverified; evidence"
+human_decision = "accept / revise / hold / reject; attribution to operator"
+rollback = "source asset or reversible edit, if any"
+```
+
+No renderer or image-analysis service may certify an operator's aesthetic satisfaction by itself. Critical return is testimony: useful to the next iteration, not automatic canon.
+<<~/ahu>>
+
+<<~ ahu slot=`#/aftermath`>>
+One test may reveal a practical limitation without warranting a universal rule. Record negative evidence. A stopping decision is as much a craft action as another edit.
+<<~/ahu>>
+
+<<^ code=`&#x0003;`>>
+<<^ code=`&#x0004;` to=`?`>>

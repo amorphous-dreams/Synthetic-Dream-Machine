@@ -1,0 +1,77 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/art-sigils/reference-roles`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+uri-path = "ha.ka.ba/lares/api/art-sigils/reference-roles"
+title    = "lar:///ha.ka.ba/lares/api/art-sigils/reference-roles"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "draft companion contract for reference inputs, authority boundaries, and non-depiction"
+status   = "draft"
+retain   = true
+```
+
+<<~ ahu slot=`#/bearing`>>
+! Reference Roles ~ a witness is not an emperor
+
+A reference helps an artist or receiver answer a particular question. Its presence does not authorize every use of its contents. The Art Sigil's eight dimensions remain the artistic nucleus; reference roles belong in the surrounding research or production register, outside the transmitted Inscription and copyable Folio.
+
+This companion elaborates the Semantic Specification's existing source/depiction and provenance bounds. It does not add a mandatory argument to `art()` or grant a model access to an attachment, URL, metadata field, or full-resolution pixel source it cannot actually read.
+<<~/ahu>>
+
+<<~ ahu slot=`#/roles`>>
+!! Role vocabulary ~ independently assignable
+
+A reference may carry several named roles, each with a bounded scope:
+
+* `visual-attractor` — offers pictorial methods, composition rhythms, color relations, or visible conventions; no automatic identity, geography, caption, or literal reproduction.
+* `depicted-subject` — identifies a form or appearance intended to enter the picture; it does not independently warrant an exact pose, likeness, or reproduction right.
+* `geometric-anchor` — supplies correspondence points, silhouette, crop, scale, or alignment for a specified region or operation; it does not become an artistic authority for unrelated regions.
+* `material-witness` — provides observed or represented support, medium, texture, light, or facture; distinguish physical manufacture from its image simulation.
+* `evidentiary-witness` — grounds a factual observation with a stated confidence and source; fictional setting and art direction do not inherit external facts without an explicit warrant.
+* `constraint-mask` — authorizes a region of inclusion, protection, or exclusion for a named operation; masks are not inherently visible artwork, nor evidence that the operation landed.
+* `critical-target` — a previous result against which change, error, or interpretation can be compared; preference does not retroactively make it an originating instruction.
+* `rights-and-provenance` — supplies attribution, provenance, permission, or publication conditions; it confers no rights beyond those actually documented.
+
+Role names are a small operational vocabulary, not an exhaustive ontology. An attached source can be a geometric anchor AND a material witness; its role for one operation does not automatically extend to the next.
+<<~/ahu>>
+
+<<~ ahu slot=`#/reference-card`>>
+!! Minimal reference card ~ descriptive, not executable TW5
+
+```toml
+[[reference]]
+handle = "source-A"
+role = ["geometric-anchor", "critical-target"]
+scope = "named silhouette and its framing"
+authority = "alignment only; no new content"
+depicted = false
+source = "operator-provided file; retain actual identifier separately"
+access = "pixels available to this receiver: verified / unverified"
+rights = "not established by file presence"
+```
+
+A card records a role at the moment of use, not an eternal property of the source. The receiver should state when an attachment or URI could not be accessed, and may not infer exact contents from its filename. A linked research URI can be available to a human but unavailable to the model; access and authority are different tests.
+<<~/ahu>>
+
+<<~ ahu slot=`#/priority`>>
+!! Authority and conflict
+
+* Explicit artistic intent governs what the work is asked to mean; an unassigned visual reference never silently overrides the authored read or depiction-scope.
+* Verified source facts govern only the facts they support. Fictional source canon governs fictional facts within its stated world, not the medium, tool, or rights of an outside photograph.
+* A geometric anchor may constrain shape while leaving palette and style delegated; a material witness may constrain surface while leaving subject unresolved.
+* If references contradict each other within their respective authorities, surface the contradiction. An attractive interpretation is not a new source of truth.
+* A reference's visual content is not automatically a request to depict the source itself, the photographer, studio apparatus, surrounding captions, or provenance text.
+* If permission, license, privacy, or identity is material, confirm it separately; a signed credit or watermark cannot be inferred from aesthetic resemblance.
+
+Hand-off to `artifact-contract` when the role entails an enforceable file constraint; to `reception-qa` when testing whether the reference achieved its specific purpose; to `provenance-publication` when the result is distributed.
+<<~/ahu>>
+
+<<~ ahu slot=`#/aftermath`>>
+The integrity to retain: a reference offers bounded testimony and authorized influence, not universal command. A receiver's inability to examine the reference must be recorded rather than silently invented.
+<<~/ahu>>
+
+<<^ code=`&#x0003;`>>
+<<^ code=`&#x0004;` to=`?`>>

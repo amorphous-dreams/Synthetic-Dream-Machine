@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/art-sigils/example-two-photograph`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+uri-path = "ha.ka.ba/lares/docs/art-sigils/example-two-photograph"
+title    = "lar:///ha.ka.ba/lares/docs/art-sigils/example-two-photograph"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "draft minimal single-photograph example, demonstrating delegated art dimensions"
+status   = "draft"
+retain   = true
+```
+
+<<~ ahu slot=`#/invitation`>>
+! Example Two ~ the photograph that needs no Folio
+
+A sparse Inscription can express a complete photographic invitation without selecting a camera, paper, crop, lighting recipe or supporting research board. Only subject and read need be specific; the other dimensions remain delegated to the canonical `art()` defaults.
+<<~/ahu>>
+
+<<~ ahu slot=`#/inscription`>>
+```tiddlywiki
+<<art worktype=`single observational photograph` subject=`an empty public bench after rainfall` read=`human presence suggested through absence, without inventing its occupants`>>
+```
+<<~/ahu>>
+
+<<~ ahu slot=`#/critical-reading`>>
+A successful interpretation may use the bench, wet surfaces, and surrounding quiet to suggest absence. It need not depict the photographer, a departed person, or the source photograph as an object inside another frame. Avoid inventing a specific place, person, or documentary provenance. Different lighting or lenses could fulfill the same invitation. If photographic evidence is claimed, the receiver's synthetic or actual-capture status must be named outside the sigil.
+<<~/ahu>>
+
+<<~ ahu slot=`#/noninheritance`>>
+Do not infer that benches, rain, documentary realism, human absence or a single central subject are defaults for `art()`. This case illustrates the value of omission, not a universal preference for sparsity.
+<<~/ahu>>
+
+<<^ code=`&#x0003;`>>
+<<^ code=`&#x0004;` to=`?`>>

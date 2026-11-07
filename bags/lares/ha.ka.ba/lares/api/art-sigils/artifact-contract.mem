@@ -1,0 +1,86 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/art-sigils/artifact-contract`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+uri-path = "ha.ka.ba/lares/api/art-sigils/artifact-contract"
+title    = "lar:///ha.ka.ba/lares/api/art-sigils/artifact-contract"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "draft companion for enforceable artifact requirements and observed output"
+status   = "draft"
+retain   = true
+```
+
+<<~ ahu slot=`#/bearing`>>
+! Artifact Contract ~ the score, the instrument, and the recording
+
+The Art Sigil specifies the artistic work a receiver is invited to make. A companion artifact contract specifies deliverable properties that can be checked or enforced, independent of aesthetic success. A receiver or workflow record states what was actually produced. None silently rewrites the others.
+
+This companion is optional. A speculative drawing or improvised performance needs no forced pixel manifest. When transparency, exact text, coordinate registration, dimensions, file structure, delivery or reproducibility materially matters, the obligation should be express rather than hidden in interpretive language.
+<<~/ahu>>
+
+<<~ ahu slot=`#/three-registers`>>
+!! Three distinct records
+
+* `Artistic invitation` — worktype, subject, read, imagery, treatment, composition, relation, depiction-scope, expressed by the existing `art()` call. It may deliberately withhold decisions.
+* `Artifact contract` — requirements: output category, supported media, dimensions or units, support/canvas, alpha behavior, spatial registration, color-space expectations, exact strings, file structure, validation requirements, rights-bearing attachments, allowed transformations. Requirements may be mandatory, preferred, delegated, or deliberately unset.
+* `Execution/reception record` — actual receiver, available controls, provided input references, generated or edited artifacts, transforms, checks, observed variances, unknowns, and human acceptance. It records evidence, not guessed latent operations.
+
+Aesthetic attraction, technical compliance, and preservation of provenance are independent judgments. A beautiful result may fail an alpha test; a mechanically valid file may fail the artistic read.
+<<~/ahu>>
+
+<<~ ahu slot=`#/sample`>>
+!! Example artifact contract ~ contextual data, not a new art procedure
+
+```toml
+[artifact]
+role = "transparent overlay for later compositing"
+format = "PNG with RGBA channels"
+canvas_px = [512, 512]
+pixel_alpha = "required: empty margins have alpha 0"
+color_space = "sRGB for exchange"
+layout = "full canvas; no automatic crop"
+preserve_sources = true
+
+[execution]
+receiver = "to be recorded at execution"
+inputs_verified = "unknown until inspected"
+result_file = "to be recorded after delivery"
+validation = ["dimensions", "alpha extrema", "visible crop", "human read"]
+discrepancies = "record; do not silently redefine the Art Sigil"
+```
+
+The fields are a descriptive example, not an executable TW5 macro or a required universal JSON/TOML schema. A photographic print, installation, sculpture or performance may instead specify physical scale, substrate, audience path, sequence, duration, or no file property at all.
+<<~/ahu>>
+
+<<~ ahu slot=`#/transparent`>>
+!! Transparency is three different statements
+
+1. `Artistic translucency` describes the apparent transmission of light through represented or simulated material.
+2. `Pixel alpha` is an actual deliverable channel and per-pixel property. A transparent-looking image can still be fully opaque.
+3. `Compositing opacity` is the strength applied to a layer during assembly. An RGBA image with opaque pixels can be composed at 30% layer opacity without changing its source alpha.
+
+A natural-language generator request cannot be treated as proof of exact alpha, typography, file dimensions or clipping. The production workflow may inspect, mask, crop, re-render or typeset, with those actions recorded as interventions rather than credited to the original model.
+<<~/ahu>>
+
+<<~ ahu slot=`#/boundaries`>>
+!! Keep the contract outside the art-facing call
+
+* Artistry describes desired relations; deterministic tools enforce those constraints they are capable of checking.
+* Never add universal output dimensions, palette, paper texture, angle, orientation, program name, or random seed to `art()` defaults.
+* A local technical requirement may demand non-negotiable accuracy while the surrounding artistic choices remain delegated.
+* Source identifiers and URLs belong in production/research/provenance records, not the copyable Inscription or Folio.
+* An observed deviation may be accepted by the operator, but that acceptance is an explicit ruling, not an automatic rewrite of the originating instruction.
+* The receiver's unavailable capabilities remain unknown or blocked; do not promise a transparent asset from a tool that can only return opaque images.
+
+Relation: [[Reference Roles|ha.ka.ba/lares/api/art-sigils/reference-roles]] · [[Reception QA|ha.ka.ba/lares/api/art-sigils/reception-qa]] · [[Layer Composition|ha.ka.ba/lares/api/art-sigils/layer-composition]].
+<<~/ahu>>
+
+<<~ ahu slot=`#/aftermath`>>
+A required artifact property must have a checkable meaning, a measured outcome where available, and a named person or procedure authorized to accept exceptions. The Art Sigil remains a portable invitation rather than becoming a production manifest.
+<<~/ahu>>
+
+<<^ code=`&#x0003;`>>
+<<^ code=`&#x0004;` to=`?`>>
