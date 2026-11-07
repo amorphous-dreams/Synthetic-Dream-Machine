@@ -413,3 +413,72 @@ describe("Drain", () => {
     expect((await Promise.all(asked)).map(kind)).toEqual(["acked", "acked", "acked"]);
   });
 });
+
+describe("Drain: SUBMIT then SETTLE (L29)", () => {
+  /** A store whose write submits at once and hands back its receipt, which the test answers. */
+  function settlingRig() {
+    const receipts: Array<{ title: string; resolve: () => void; reject: (e: Error) => void }> = [];
+    const submitted: string[] = [];
+    const drain = new Drain({
+      write: async (title) => {
+        submitted.push(title);
+        let resolve!: () => void; let reject!: (e: Error) => void;
+        const settled = new Promise<void>((y, n) => { resolve = y; reject = n; });
+        receipts.push({ title, resolve, reject });
+        return { settled };
+      },
+    });
+    return { drain, receipts, submitted };
+  }
+
+  test("independent titles submit before either receipt answers; one title never carries two writes at once", async () => {
+    const { drain, receipts, submitted } = settlingRig();
+    drain.mark("a"); drain.mark("b");
+    await settle(); await settle();
+    expect(submitted, "both store writes leave while both receipts wait").toEqual(["a", "b"]);
+    drain.mark("a");
+    await settle(); await settle();
+    expect(submitted, "a's second write waits on a's first receipt").toEqual(["a", "b"]);
+    receipts[0]!.resolve();
+    await settle(); await settle();
+    expect(submitted).toEqual(["a", "b", "a"]);
+    receipts[1]!.resolve(); receipts[2]!.resolve();
+    expect(kind(await drain.whenAcked())).toBe("acked");
+  });
+
+  test("whenSubmitted waits for a removal behind its target's receipt, never for the receipts themselves — CONTROL: an open drain never answers", async () => {
+    const { drain, receipts, submitted } = settlingRig();
+    let done = false;
+    void drain.whenSubmitted().then(() => { done = true; });
+    const target = drain.mark("target");
+    drain.markAfter("removal", "target", target);
+    await settle(); await settle();
+    expect(done, "control: an open drain is never submitted").toBe(false);
+    const closing = drain.close();
+    void drain.whenSubmitted().then(() => { done = true; });
+    await settle(); await settle();
+    expect(submitted).toEqual(["target"]);
+    expect(done, "the removal still has to ask").toBe(false);
+    receipts[0]!.resolve();
+    await settle(); await settle();
+    expect(submitted).toEqual(["target", "removal"]);
+    expect(done, "every write has asked; its receipt still waits").toBe(true);
+    receipts[1]!.reject(new Error("closed"));
+    expect(kind(await closing)).toBe("failed");
+  });
+
+  test("a refused target frees its removal from the submit wait without a write", async () => {
+    const { drain, receipts, submitted } = settlingRig();
+    const target = drain.mark("target");
+    drain.markAfter("removal", "target", target);
+    const closing = drain.close();
+    await settle(); await settle();
+    let done = false;
+    void drain.whenSubmitted().then(() => { done = true; });
+    receipts[0]!.reject(new Error("refused"));
+    await settle(); await settle();
+    expect(done).toBe(true);
+    expect(submitted).toEqual(["target"]);
+    expect(kind(await closing)).toBe("failed");
+  });
+});

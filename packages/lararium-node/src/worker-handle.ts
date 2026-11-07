@@ -4,7 +4,7 @@
  */
 
 import { Worker, MessageChannel } from "worker_threads";
-import { answerReceipt, answerDyad, answerCustodyWrite, answerSessionSign, answerRestAsk, type IslandMsg_RestAsk, type VesselWorkerHandle, type CapabilityRecord, type CustodyWriteCarrier, type IslandMsg_CasWant, type IslandMsg_CasBlock, type IslandMsg_DyadAsk, type IslandMsg_DyadRead, type IslandMsg_ReceiptRequest, type IslandMsg_ReceiptIssued, type IslandMsg_CustodyWrite, type IslandMsg_CustodyWritten, type IslandMsg_SessionSign, type IslandMsg_SessionSigned } from "@lararium/mesh";
+import { answerReceipt, receiptSettlement, answerDyad, answerCustodyWrite, answerSessionSign, answerRestAsk, type IslandMsg_RestAsk, type VesselWorkerHandle, type CapabilityRecord, type CustodyWriteCarrier, type IslandMsg_CasWant, type IslandMsg_CasBlock, type IslandMsg_DyadAsk, type IslandMsg_DyadRead, type IslandMsg_ReceiptRequest, type IslandMsg_ReceiptIssued, type IslandMsg_CustodyWrite, type IslandMsg_CustodyWritten, type IslandMsg_SessionSign, type IslandMsg_SessionSigned } from "@lararium/mesh";
 
 // The answers stand once on the mesh floor (`capability-record.ts`), so the node and the browser answer one ask alike.
 export { answerReceipt, answerDyad, answerCustodyWrite, answerSessionSign };
@@ -31,13 +31,17 @@ function attachCas(w: Worker, caps: CapabilityRecord): void {
 }
 
 function attachReceipt(w: Worker, caps: CapabilityRecord): void {
+  const settlement = receiptSettlement(() => { try { w.postMessage({ type: "receipt:close" }); } catch { /* the worker already left */ } });
   w.on("message", (raw: unknown) => {
     const m = raw as Partial<IslandMsg_ReceiptRequest> | null;
+    if ((raw as { type?: unknown } | null)?.type === "receipt:asks-done") { settlement.asksDone(); return; }
     if (!m || m.type !== "receipt:request" || typeof m.requestId !== "string" || !Array.isArray(m.documentIds)) return;
     if (!m.documentIds.every((id) => typeof id === "string")) return;
-    void answerReceipt(caps, { requestId: m.requestId, documentIds: m.documentIds, ...(m.heads && typeof m.heads === "object" ? { heads: m.heads } : {}) }).then((reply) => {
+    void settlement.answering(answerReceipt(caps, { requestId: m.requestId, documentIds: m.documentIds, ...(m.heads && typeof m.heads === "object" ? { heads: m.heads } : {}) }).then((reply) => {
       try { w.postMessage(reply); } catch { /* the worker went away — nothing to answer */ }
-    });
+    }, () => {
+      try { w.postMessage({ type: "receipt:issued", requestId: m.requestId, issued: false }); } catch { /* the worker already left */ }
+    }));
   });
 }
 

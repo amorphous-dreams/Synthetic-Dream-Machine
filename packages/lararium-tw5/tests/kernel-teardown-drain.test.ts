@@ -35,7 +35,7 @@ const core = new TextEncoder().encode("core");
 const hash = createHash("sha256").update(core).digest("hex");
 const plugin = new TextEncoder().encode('{"title":"plugin"}');
 
-async function scenario(responsive: boolean) {
+async function scenario(responsive: boolean, opts: { reportUnsaved?: boolean } = {}) {
   const disk = new Map<string, string>();
   const working = new Map<string, string>();
   const events: string[] = [];
@@ -57,7 +57,11 @@ async function scenario(responsive: boolean) {
       try {
         await acknowledgement;
         events.push("save-ack");
-      } catch { events.push("save-refused"); }
+        return [];
+      } catch {
+        events.push("save-refused");
+        return opts.reportUnsaved ? [TITLE] : [];
+      }
     },
   };
   const host: IslandHostShore = {
@@ -66,6 +70,7 @@ async function scenario(responsive: boolean) {
     resolveByCid: async (cid) => cid === hash ? core : plugin,
     post: (message: IslandToVesselMsg) => {
       if (message.type === "ea") ready();
+      if (message.type === "fault" && message.error.startsWith("teardown-fault:")) { events.push(`fault ${message.error}`); shutdown(); return; }
       if (message.type === "fault") throw new Error(message.error);
       if (message.type === "receipt:request") {
         events.push("receipt-request");
@@ -112,6 +117,15 @@ describe("sovereign kernel teardown drains its queued write", () => {
     expect(events).toContain("shutdown");
     expect(events).not.toContain("save-ack");
     expect(reopen().has(TITLE)).toBe(false);
+  });
+  test("a title the shore reports unsaved reaches the vessel by name in place of the ack — CONTROL: the responsive vessel's ack", async () => {
+    const { events } = await scenario(false, { reportUnsaved: true });
+    const fault = events.find((event) => event.startsWith("fault "));
+    expect(fault).toContain(JSON.stringify(TITLE));
+    expect(events).not.toContain("shutdown");
+    const control = await scenario(true, { reportUnsaved: true });
+    expect(control.events).toContain("shutdown");
+    expect(control.events.some((event) => event.startsWith("fault "))).toBe(false);
   });
 });
 

@@ -22,6 +22,32 @@ function receiptRig(opts: { flushOwn?: () => Promise<void> } = {}) {
 }
 
 describe("the island's receipt capability", () => {
+  test("asked() waits while an act stands begun or a request waits on its own flush, and answers once the ask has posted — never on the vessel's answer; close answers it too", async () => {
+    let flushed!: () => void;
+    const d = receiptRig({ flushOwn: () => new Promise<void>((resolve) => { flushed = resolve; }) });
+    d.edit();
+    await expect(d.receipt.asked(), "control: nothing asking answers at once").resolves.toBeUndefined();
+    const act = d.receipt.begin();
+    let asked = false;
+    void d.receipt.asked().then(() => { asked = true; });
+    await settle();
+    expect(asked, "an act begun without done still has to ask").toBe(false);
+    act.done([SLOT]);
+    await settle();
+    expect(asked, "the request still waits on the island's own flush").toBe(false);
+    flushed();
+    await settle();
+    expect(d.posts).toHaveLength(1);
+    expect(asked, "the ask left; the vessel's answer is not awaited").toBe(true);
+    const stuck = d.receipt.begin();
+    let released = false;
+    void d.receipt.asked().then(() => { released = true; });
+    d.receipt.close();
+    await settle();
+    expect(released, "close answers asked() over an act that never finished").toBe(true);
+    stuck.done(null);
+  });
+
   test("RED: an act that wrote waits for receipt:issued, which names the document and its heads — CONTROL: an act that wrote nothing waits for nothing", async () => {
     const d = receiptRig();
     d.edit();

@@ -60,6 +60,7 @@ import { facetsOfSurfaceRecipe, resolvedSlotsOf, type SurfaceRecipe } from "./su
 import { ORACLE_BAG } from "./wiki-recipe.js";
 import { verifyCidBytes } from "./cas-transit.js";
 import { answerReceiptWithHeads } from "./receipt-with-heads.js";
+import { receiptSettlement } from "./capability-record.js";
 import { makePortDoor, type PortPlacement, type PortPolicy } from "./port-lease.js";
 import { isPortKind, type PortIslandToVesselMsg } from "./record-port.js";
 import type { IslandGrants, IslandMsg_ReceiptRequest, IslandMsg_ViewCatalog, IslandMsg_ViewContent, IslandMsg_ViewSettle } from "./island-protocol.js";
@@ -1088,10 +1089,12 @@ export class VesselIslandPoolCore {
   private _wireWorkerListeners(
     wikiId: string, worker: VesselWorkerHandle, view: SessionDocumentView | null, standing: SurfaceStanding, surface: IslandKeyParts | null,
   ): void {
+    const settlement = receiptSettlement(() => { try { worker.post({ type: "receipt:close" }); } catch { /* the worker already left */ } });
     // One settle waits per island at a time: a second ask while one waits answers false at once, so an island
     // cannot stack waiters on the owner by asking for heads that never arrive.
     worker.listen((raw: unknown) => {
       if (!isIslandToVesselMsg(raw)) return;
+      if (raw.type === "receipt:asks-done") { settlement.asksDone(); return; }
       if (isPortKind(raw.type)) {
         const msg = raw as PortIslandToVesselMsg;
         const holder = this._portDoor.holderOf(wikiId, msg.portId);
@@ -1139,11 +1142,13 @@ export class VesselIslandPoolCore {
         const ask = raw as IslandMsg_ReceiptRequest;
         if (typeof ask.requestId !== "string") return;
         this._moveRest({ asked: this._restState.asked + 1 });
-        void answerReceiptWithHeads(this._mainRepo, ask, this._islandPeerOf.get(wikiId)).then((answer) => {
+        void settlement.answering(answerReceiptWithHeads(this._mainRepo, ask, this._islandPeerOf.get(wikiId)).then((answer) => {
           this._moveRest(answer.issued ? { rested: this._restState.rested + 1 } : answer.stalled ? { stalled: this._restState.stalled + 1 } : {});
           try { worker.post({ type: "receipt:issued", requestId: ask.requestId, ...answer }); }
           catch { /* the island went away: nothing to answer */ }
-        });
+        }, () => {
+          try { worker.post({ type: "receipt:issued", requestId: ask.requestId, issued: false }); } catch { /* the worker already left */ }
+        }));
         return;
       }
       if (raw.type === "view:content") {

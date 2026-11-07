@@ -12,7 +12,7 @@ describe("kernel teardown order", () => {
     const body = source.slice(source.indexOf("async function _handleTeardown"));
     const deliver = body.indexOf("await _adaptor.awaitWikiDispatch()");
     const unhook = body.indexOf("_bridgeUnsub?.()");
-    const stop = body.indexOf("await _adaptor.stop()");
+    const stop = body.indexOf("await _adaptor.stop(");
     expect(deliver).toBeGreaterThan(-1);
     expect(deliver).toBeLessThan(unhook);
     expect(unhook).toBeLessThan(stop);
@@ -22,7 +22,7 @@ describe("kernel teardown order", () => {
     const source = readFileSync(new URL("../src/sovereign-kernel.ts", import.meta.url), "utf8");
     const body = source.slice(source.indexOf("async function _handleTeardown"));
     const close = body.indexOf("receipt?.close()");
-    const stop = body.indexOf("await _adaptor.stop()");
+    const stop = body.indexOf("await _adaptor.stop(");
     expect(close).toBeGreaterThan(-1);
     expect(stop).toBeGreaterThan(-1);
     expect(stop).toBeLessThan(close);

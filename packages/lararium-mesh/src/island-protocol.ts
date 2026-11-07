@@ -746,6 +746,7 @@ export type VesselToIslandMsg =
   | IslandMsg_CasBlock
   | IslandMsg_DyadRead
   | IslandMsg_ReceiptIssued
+  | { type: "receipt:close" }
   | IslandMsg_RestAnswer
   | IslandMsg_CustodyWritten
   | IslandMsg_SessionSigned
@@ -1097,6 +1098,7 @@ export type IslandToVesselMsg =
   | IslandMsg_CasWant
   | IslandMsg_DyadAsk
   | IslandMsg_ReceiptRequest
+  | { type: "receipt:asks-done" }
   | IslandMsg_RestAsk
   | IslandMsg_CustodyWrite
   | IslandMsg_SessionSign
@@ -1120,6 +1122,7 @@ function _hasType(v: unknown): v is { type: string } {
 
 export function isVesselToIslandMsg(v: unknown): v is VesselToIslandMsg {
   if (!_hasType(v)) return false;
+  if (v.type === "receipt:close") return Object.keys(v).length === 1;
   if (v.type === "wiki:request-drain") return Object.keys(v).length === 1;
   // THE CAMERA'S KINDS READ WHOLE AT THE ISLAND DOOR, the one gate every island message passes (the sovereign
   // kernel's listen). A control event reads through the contract's own reader: two targets, an unknown
@@ -1129,11 +1132,12 @@ export function isVesselToIslandMsg(v: unknown): v is VesselToIslandMsg {
   if (v.type === LAR_RESEND) return readLarResend(v) !== null;
   if (isPortKind(v.type)) return readPortVesselMsg(v) !== null;   // the record port reads whole at the door too
   return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:face-lit", "daemon:face-drop", "daemon:face-bags", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:gate-verb-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "cas:block", "dyad:read", "receipt:issued", "rest:answer", "custody:written", "session:signed", "view:catalog-result", "view:content-result", "view:settled"] as const)
-    .includes(v.type as Exclude<VesselToIslandMsg["type"], "wiki:request-drain" | SensoriumSignalType | typeof LAR_CONTROL_EVENT | typeof LAR_RESEND | PortVesselToIslandMsg["type"]>) || isSensoriumSignalType(v.type);
+    .includes(v.type as Exclude<VesselToIslandMsg["type"], "receipt:close" | "wiki:request-drain" | SensoriumSignalType | typeof LAR_CONTROL_EVENT | typeof LAR_RESEND | PortVesselToIslandMsg["type"]>) || isSensoriumSignalType(v.type);
 }
 
 export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
   if (!_hasType(v)) return false;
+  if (v.type === "receipt:asks-done") return Object.keys(v).length === 1;
   // The camera's answers read whole at the vessel's door too: a frame whose key paints from two payloads, a
   // refusal that names no reason, a host door the house never named, each vanishes before any handler.
   if (v.type === "daemon:face-settled") {
@@ -1145,7 +1149,7 @@ export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
   if (v.type === LAR_SERVICE) return readLarService(v) !== null;
   if (isPortKind(v.type)) return readPortIslandMsg(v) !== null;
   return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "gate:clear", "gate:refused", "wiki:verb-result", "daemon:face-settled", "daemon:delegate-verb", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:gate-verb-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "receipt:request", "rest:ask", "custody:write", "session:sign", "view:catalog", "view:content", "view:settle", "docstore:sealed", "docstore:opened", "docstore:live", "docstore:slot"] as const).includes(
-    v.type as Exclude<IslandToVesselMsg["type"], LarIslandToVesselMsg["type"] | PortIslandToVesselMsg["type"]>,
+    v.type as Exclude<IslandToVesselMsg["type"], "receipt:asks-done" | LarIslandToVesselMsg["type"] | PortIslandToVesselMsg["type"]>,
   );
 }
 

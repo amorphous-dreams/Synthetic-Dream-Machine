@@ -39,6 +39,7 @@ export const HOLDER_ROUTES = {
   "cas:want": "owner",
   "dyad:ask": "owner",
   "receipt:request": "owner",
+  "receipt:asks-done": "owner",
   // V2: an island's rest ask reaches the vessel whose sealed rest answers it.
   "rest:ask": "owner",
   "custody:write": "owner",

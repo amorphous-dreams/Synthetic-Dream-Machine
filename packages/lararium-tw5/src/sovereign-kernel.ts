@@ -120,9 +120,6 @@ export interface IslandHostShore {
 // breath this often (plus a stage mark before each long stretch) so the
 // vessel's watchdog re-arms on breath and silence alone reads dead.
 const BREATH_INTERVAL_MS = 1_000;
-// LIVENESS: a connected vessel can stay alive without answering a receipt; leave time for its flush while
-// keeping this drain inside the browser holder's five-second teardown budget.
-const TEARDOWN_RECEIPT_BOUND_MS = 2_000;
 
 export function runSovereignKernel(
   host: IslandHostShore,
@@ -146,6 +143,7 @@ export function runSovereignKernel(
   let _ownedRepo: Repo | null                   = null;
   let _handles:   Map<string, DocHandle<LarDoc>> = new Map();
   let _receipt:   ReceiptCapability | null = null;
+  let _receiptDoorClosed = false;
   let _composite: CompositeStore | null = null;
   let _ctx:       IslandContext | null  = null;
   let _lazyUnsub: (() => void) | null   = null;
@@ -163,6 +161,7 @@ export function runSovereignKernel(
 
   host.listen((raw: unknown) => {
     if (!isVesselToIslandMsg(raw)) return;
+    if (raw.type === "receipt:close") { _receiptDoorClosed = true; _receipt?.close(); return; }
     if (_view?.settleAnswer(raw)) return;
     if (_receipt?.answer(raw)) return;
 
@@ -312,6 +311,9 @@ export function runSovereignKernel(
     // tap whichever face the platform holds (both coexist with the adapter's own).
     if (typeof tapPort.addEventListener === "function") tapPort.addEventListener("message", _markSyncHeard);
     else tapPort.on?.("message", _markSyncHeard);
+    const closeReceipts = (): void => { _receiptDoorClosed = true; _receipt?.close(); };
+    if (typeof tapPort.addEventListener === "function") tapPort.addEventListener("close", closeReceipts);
+    else tapPort.on?.("close", closeReceipts);
     // A SESSION ISLAND (`msg.view`) holds an EPHEMERAL replica on every platform: no storage adapter stands
     // behind its Repo whatever the host would offer, and its Repo announces the one peer ID its scoped view
     // admits. The vessel's owner alone persists.
@@ -505,6 +507,7 @@ export function runSovereignKernel(
                 handles: () => _handles,
                 flushOwn: async () => { await Promise.all([_ownedRepo?.flush(), _repo?.flush()]); },
               });
+              if (_receiptDoorClosed) _receipt?.close();
               adaptor.caps = { receipt: _receipt };
               adaptor.receiptRequired = opts?.caps?.receipt === true && view === null;
               // The bridge compares wiki notifications with the landed ledger and sends hands through the gate.
@@ -571,15 +574,26 @@ export function runSovereignKernel(
     if (_adaptor) await _adaptor.awaitWikiDispatch();
     _bridgeUnsub?.();
     _bridgeUnsub = null;
-    // Keep the receipt door open while stop drains owed titles and existing acts finish. Only the named
-    // liveness bound closes it early; close refuses parked and later asks rather than inventing a receipt.
+    // THE SETTLEMENT ROUND (L29, no island clock). The receipt door stays open while stop submits every owed write; the vessel
+    // answers each ask as it comes. Once every ask has left (owed writes, removals behind their targets, acts), the island says
+    // `receipt:asks-done`; the vessel answers what remains and sends `receipt:close`. That close, the sync port closing, or the worker
+    // leaving ends every wait still out: a refused wait leaves its title owed and named unsaved. A worker wedged alive meets the
+    // vessel's own force-kill, the one liveness.
     const receipt = _receipt;
-    const receiptBound = receipt ? setTimeout(() => receipt.close(), TEARDOWN_RECEIPT_BOUND_MS) : null;
+    let unsaved: readonly string[] = [];
+    let asksDone = false;
+    const announce = async (): Promise<void> => {
+      if (!receipt) return;
+      await receipt.asked();
+      if (asksDone || _receiptDoorClosed) return;
+      asksDone = true;
+      try { host.post({ type: "receipt:asks-done" }); } catch { /* the vessel went away: its close ends the waits */ }
+    };
     try {
-      if (_adaptor) await _adaptor.stop();
+      if (_adaptor) unsaved = (await _adaptor.stop(() => { void announce(); })) ?? [];
+      await announce();
       await receipt?.idle();
     } finally {
-      if (receiptBound !== null) clearTimeout(receiptBound);
       receipt?.close();
     }
     _adaptor = null;
@@ -628,6 +642,11 @@ export function runSovereignKernel(
     _repo      = null;
     _ownedRepo = null;
 
+    // Every durable step above ran. A title that never reached durable storage reaches the vessel BY NAME, never a silent ack.
+    if (unsaved.length > 0) {
+      host.post(mkFault(_activeWikiUri, `teardown-fault: unsaved at teardown: ${unsaved.map((title) => JSON.stringify(title)).join(", ")}`));
+      return;
+    }
     host.post(mkTeardownAck());
   }
 }

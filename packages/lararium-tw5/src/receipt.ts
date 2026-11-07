@@ -5,7 +5,10 @@
  * flushes it. The capability lets an act wait for that: the island names the heads it holds of the documents the act
  * wrote, the vessel issues `receipt:issued` once its own Repo holds them and has flushed them, and only then does the
  * act's `lar:control-result` leave. The wait rides the vessel's answer; closing the capability refuses every parked wait.
- * During teardown the kernel keeps it open for the drain, with a named liveness bound for a quiet vessel.
+ *
+ * TEARDOWN (L29 ruling, 2026-11-07) settles in one round and holds no clock: the island asks for every owed write and act, waits
+ * until each ask has left (`asked`), and tells the vessel `receipt:asks-done`; the vessel answers what remains and sends
+ * `receipt:close`. That close, the sync port closing, or the worker leaving closes this capability: every wait still out refuses.
  *
  * Canon: lar:///ha.ka.ba/lares/docs/pono/dreamdom#/what-a-sink-keeps
  */
@@ -27,6 +30,8 @@ export interface ReceiptCapability {
   held(): Promise<void> | null;
   /** Resolves once no act waits. */
   idle(): Promise<void>;
+  /** Resolves once no ask waits to leave: no act begun without its `done`, no request still before its post (or the capability closed). */
+  asked(): Promise<void>;
   /** Offer an inbound message; true when it carried a `receipt:issued` answer. */
   answer(raw: unknown): boolean;
   /** How many asks the vessel answered stalled: a receipt whose heads never arrived reads here by name, and its act's result still leaves. */
@@ -39,7 +44,7 @@ export interface ReceiptCapability {
   ack(slots: readonly string[]): Promise<void>;
   /** True when this island holds a replica of the bag's document (its heads can be named); a bag it holds none of is the vessel's alone. */
   holds(slot: string): boolean;
-  /** Release every parked wait. */
+  /** Release every parked request and unfinished act. */
   close(): void;
 }
 
@@ -53,10 +58,29 @@ export function makeReceiptCapability(deps: ReceiptCapabilityDeps): ReceiptCapab
   const mint = deps.mintId ?? (() => crypto.randomUUID());
   const parked = new Map<string, (ok: boolean) => void>();
   const waiting = new Set<Promise<void>>();
+  const releases = new Set<() => void>();
   let closed = false;
   let stalled = 0;
+  /** Asks still to leave: acts begun without `done`, and requests before their post. */
+  let asking = 0;
+  const askedWaiters = new Set<() => void>();
+  const leave = (): void => {
+    asking--;
+    if (asking > 0 && !closed) return;
+    const answer = [...askedWaiters];
+    askedWaiters.clear();
+    for (const resolve of answer) resolve();
+  };
 
   const request = async (slots: readonly string[]): Promise<boolean> => {
+    asking++;
+    let posted = false;
+    const left = (): void => { if (!posted) { posted = true; leave(); } };
+    try { return await requestAsking(slots, left); }
+    finally { left(); }
+  };
+
+  const requestAsking = async (slots: readonly string[], left: () => void): Promise<boolean> => {
     if (closed) return false;
     const held = deps.handles();
     const documentIds: string[] = [];
@@ -75,7 +99,9 @@ export function makeReceiptCapability(deps: ReceiptCapabilityDeps): ReceiptCapab
     return await new Promise<boolean>((resolve) => {
       parked.set(requestId, resolve);
       const ask: IslandMsg_ReceiptRequest = { type: "receipt:request", requestId, documentIds, heads };
-      deps.post(ask);
+      try { deps.post(ask); }
+      catch { parked.delete(requestId); resolve(false); }
+      left();
     });
   };
 
@@ -84,20 +110,28 @@ export function makeReceiptCapability(deps: ReceiptCapabilityDeps): ReceiptCapab
       let settle!: () => void;
       const wait = new Promise<void>((resolve) => { settle = resolve; });
       waiting.add(wait);
-      const release = (): void => { waiting.delete(wait); settle(); };
+      const release = (): void => { waiting.delete(wait); releases.delete(release); settle(); };
+      releases.add(release);
+      if (closed) release();
+      asking++;
       let finished = false;
       return {
         done(slots) {
           if (finished) return;
           finished = true;
-          if (!slots || slots.length === 0) { release(); return; }
+          if (!slots || slots.length === 0) { release(); leave(); return; }
+          // The request counts itself asking before the act stops counting, so `asked` never reads a gap between them.
           void request(slots).catch((error: unknown) => console.warn(`[receipt] a receipt request faulted: ${String(error)}`)).finally(release);
+          leave();
         },
       };
     },
     held: () => (waiting.size === 0 ? null : Promise.all([...waiting]).then(() => undefined)),
     async idle() {
       while (waiting.size > 0) await Promise.all([...waiting]);
+    },
+    async asked() {
+      while (asking > 0 && !closed) await new Promise<void>((resolve) => { askedWaiters.add(resolve); });
     },
     answer(raw) {
       if (typeof raw !== "object" || raw === null) return false;
@@ -120,6 +154,10 @@ export function makeReceiptCapability(deps: ReceiptCapabilityDeps): ReceiptCapab
       closed = true;
       for (const resolve of parked.values()) resolve(false);
       parked.clear();
+      for (const release of releases) release();
+      const answer = [...askedWaiters];
+      askedWaiters.clear();
+      for (const resolve of answer) resolve();
     },
   };
 }
