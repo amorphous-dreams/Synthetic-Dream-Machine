@@ -33,10 +33,12 @@
  * of protocol mints a NEW name; it never bumps a counter, because a counter claims an ordering — a global
  * now — that no two vessels share.
  *
- * Two mints follow from that. `mint` builds every NEW domain, bare. `frozen` reproduces the strings that
- * already sign live records and derive live keys: their trailing `/v1` names nothing, no successor will
- * ever exist, and it stays only because rewriting a domain re-keys every signature and seal minted under
- * it. A frozen string is an opaque name — read it whole, never parse its tail.
+ * Every signing domain and HKDF info carries a name without a version. `mint` declares each name
+ * under the shared root; the name alone separates its purpose.
+ *
+ * A record made under one name verifies or opens under that name alone: a signature, a sealed value or a
+ * derived key never crosses to another. Renaming a domain re-keys its records, and the alpha line carries
+ * no record across a rename; every CRDT doc re-genesises until the founding bake.
  *
  * ── HOW TO ADD ONE ──────────────────────────────────────────────────────────────────────────────
  * Add it HERE, exported, and use the export. `tools/domain-registry-witness.sh` refuses a duplicate, a
@@ -49,7 +51,7 @@
  *  exported so a witness reads it instead of re-spelling it. */
 export const DOMAIN_ROOT = "lar:///ha.ka.ba/lares/domain";
 
-/** Every address `mint` and `frozen` build, in declaration order — the source `ALL_DOMAINS` derives from. */
+/** Every address `mint` builds, in declaration order — the source `ALL_DOMAINS` derives from. */
 const declared: string[] = [];
 const declare = (address: string): string => { declared.push(address); return address; };
 
@@ -57,43 +59,45 @@ const declare = (address: string): string => { declared.push(address); return ad
  *  never built at a call site. */
 const mint = (name: string): string => declare(`${DOMAIN_ROOT}/${name}`);
 
-/** Reproduce a FROZEN domain address — a string already signing or deriving live material, kept byte-for-
- *  byte. Its `/v1` tail belongs to an opaque name and versions nothing. Never use it for a new domain. */
-const frozen = (name: string): string => declare(`${DOMAIN_ROOT}/${name}/v1`);
-
 // ── IDENTITY + DELEGATION ───────────────────────────────────────────────────────────────────────
 /** A device delegation: an operator root vouching one device into a PersonaGroup. */
-export const DEVICE_DELEGATION_DOMAIN = frozen("device-delegation");
+export const DEVICE_DELEGATION_DOMAIN = mint("device-delegation");
 /** The atom's countersignature over a device delegation: the atom signs the root's proof and the root's signature, so
  *  a root half never reads as a complete edge. */
 export const DEVICE_ATOM_COUNTERSIGN_DOMAIN = mint("device-atom-countersign");
 /** A face atom admits one tab to a holder by signing its fresh, port-bound challenge. */
 export const HOLDER_SESSION_DOMAIN = mint("holder-session");
+/** A retired holder key signs its successor and epoch for continuity. */
+export const HOLDER_CONTINUITY_DOMAIN = mint("holder-continuity");
+/** A witness signs an edge attesting a persisted claim. */
+export const WITNESS_DOMAIN = mint("witness");
+/** A founder signs the record granting a joinee a seat on the PersonaGroup plane. */
+export const FACE_GRANT_DOMAIN = mint("face-join-grant");
 /** The key and context a ceremony checkpoint seals under: the atom's seed through HKDF, so a re-entered founding or
  *  admit lands the end state it first reached. Apart from every other child of the atom seed. */
 export const FACE_CHECKPOINT_INFO = mint("face-checkpoint");
 /** A face operation record seals issued bytes under the acting atom seed on its PersonaGroup plane. */
 export const FACE_OPERATION_RECORD_INFO = mint("face-operation-record");
 /** A persona's key-event log entry — the inception/rotation chain at persona scale. */
-export const PERSONA_KEL_DOMAIN = frozen("persona-kel");
+export const PERSONA_KEL_DOMAIN = mint("persona-kel");
 /** The announced outward face: a self-certifying HandleCard. */
-export const HANDLE_CARD_DOMAIN = frozen("handle-card");
+export const HANDLE_CARD_DOMAIN = mint("handle-card");
 /** A Handle's key-event log entry — the SIBLING chain (burn · rotate · attest) whose prefix binds its
  *  owning persona at inception (identity-classes#the-handle-chain). */
-export const HANDLE_KEL_DOMAIN = frozen("handle-kel");
+export const HANDLE_KEL_DOMAIN = mint("handle-kel");
 /** A seat's display fingerprint: a short digest founders read aloud to check a seat key; never a signature. */
 export const SEAT_FINGERPRINT_DOMAIN = mint("seat-fingerprint");
 /** A fleet proof: one nym carried across a human's own vessels. */
-export const FLEET_PROOF_DOMAIN = frozen("fleet-proof");
+export const FLEET_PROOF_DOMAIN = mint("fleet-proof");
 /** The vessel×veil dyad, and the binding that names it. */
-export const DYAD_ID_DOMAIN = frozen("dyad-id");
-export const DYAD_BINDING_DOMAIN = frozen("dyad-binding");
+export const DYAD_ID_DOMAIN = mint("dyad-id");
+export const DYAD_BINDING_DOMAIN = mint("dyad-binding");
 /** The per-handle dyad VEIL derivation off the DEVICE tree: the veil derives from the vessel's
  *  own seed, scoped by PersonaGroup — never from the persona seed (persona-circle#the-vault). */
 /** The founder's SELF-RECOVERY leaf off the PERSONA tree: a 1-of-1 recovery key derived from the
  *  persona seed, pre-committed at inception so no prefix ever incepts unarmed — the multitude-of-one,
  *  NAMED, until a real recovery contact set grafts in (the seal-reserve founding rhyme). */
-export const PERSONA_SELF_RECOVERY_INFO = frozen("persona-self-recovery");
+export const PERSONA_SELF_RECOVERY_INFO = mint("persona-self-recovery");
 /** The Fork-B registration handshake — DELIBERATELY apart from CUSTODIAN_CONFIRM_DOMAIN: a bearer
  *  SHARE and a public REGISTRATION must never speak one phrase (the IdenTrust wrong-object cure). */
 export const RECOVERY_CONTACT_REGISTRATION_DOMAIN = mint("recovery-contact-registration");
@@ -102,7 +106,7 @@ export const RECOVERY_CONTACT_REGISTRATION_DOMAIN = mint("recovery-contact-regis
 export const RECOVERY_CONTACT_POSSESSION_DOMAIN = mint("recovery-contact-possession");
 /** The growth rite's crossing record: old quorum signs the handoff, new quorum the receipt, witnesses
  *  outside both sets attest the rite — the checkable form of the ceremony witness report. */
-export const RESERVE_TRANSITION_DOMAIN = frozen("reserve-transition");
+export const RESERVE_TRANSITION_DOMAIN = mint("reserve-transition");
 /** A charter epoch's ROLL: the revealed cold-key quorum signs the predecessor's cid, the seated key-set,
  *  its threshold and the next per-seat commitments — the KERI rotation event. Its own name: a roll must never verify
  *  as a crossing record, a roll anchor, or any carriage act. */
@@ -124,6 +128,8 @@ export const CHARTER_INCEPTION_DOMAIN = mint("charter-inception");
 /** A branch's ABANDON: the quorum of a forked branch, at its own head, closes that branch for every reader who holds
  *  the record. Its own name: an abandon never verifies as a roll, an inception or a reunion. */
 export const CHARTER_ABANDON_DOMAIN = mint("charter-abandon");
+/** The artifact, epoch and time bound by a wax-stamp signature. */
+export const WAX_STAMP_DOMAIN = mint("wax-stamp");
 /** A REUNION: one image naming the scope AID, both held branch heads and the new seats, signed by each branch's
  *  quorum at its head over identical bytes. Its own name: a reunion never verifies as a roll. */
 export const CHARTER_REUNION_DOMAIN = mint("charter-reunion");
@@ -193,18 +199,18 @@ export const WALK_CARRY_SEAL_INFO = mint("walk-carry-seal");
  *  own digest: each receipt holds a key that opens its own document and no other. */
 export const WALK_CARRY_DOCUMENT_INFO = mint("walk-carry-document");
 /** A cabal invite — the join axis, orthogonal to the carriage contract. */
-export const CABAL_INVITE_DOMAIN = frozen("cabal-invite");
+export const CABAL_INVITE_DOMAIN = mint("cabal-invite");
 
 // ── THE NEXUS: charter, carriage, immunity ──────────────────────────────────────────────────────
-export const NEXUS_DOC_DOMAIN = frozen("nexus-doc");
-export const KAPAE_ANTIGEN_DOMAIN = frozen("kapae-antigen");
-export const CARRIAGE_ENTRY_DOMAIN = frozen("carriage-entry");
-export const CARRIAGE_CONTRACT_DOMAIN = frozen("carriage-contract");
+export const NEXUS_DOC_DOMAIN = mint("nexus-doc");
+export const KAPAE_ANTIGEN_DOMAIN = mint("kapae-antigen");
+export const CARRIAGE_ENTRY_DOMAIN = mint("carriage-entry");
+export const CARRIAGE_CONTRACT_DOMAIN = mint("carriage-contract");
 /** A PLACE's own "I carry for this Nexus" seal — signed by its device-minted VESSEL key, never a persona
  *  root. Its OWN name rather than a flag on the contract domain: a carrier seal must never verify as a
  *  member's accepts-carriage token, nor that token as a carrier's, so the separation rides the name
  *  (heraldry#/the-herm-card). */
-export const CARRIAGE_CARRIER_DOMAIN = frozen("carriage-carrier");
+export const CARRIAGE_CARRIER_DOMAIN = mint("carriage-carrier");
 /** A SEAL ROLL's anchor on the carriage board: the NEW epoch's quorum names the epoch it closes, that epoch's
  *  public key-set, and the board's causal heads at the roll, so an admit already in those heads carries
  *  across the roll. Its own name: an anchor must never verify as a carriage act, nor an act as an anchor. */
@@ -268,9 +274,9 @@ export const SEAT_ROLL_DOMAIN = mint("seat-roll");
  *  Apart from `seat-roll`: an ask must never verify as a receipt. It crosses to nobody. */
 export const SEAT_DUTIES_ASK_DOMAIN = mint("seat-duties-ask");
 /** One hand's own stake on a joiner — a vouch admits nobody. */
-export const VOUCH_EDGE_DOMAIN = frozen("vouch-edge");
+export const VOUCH_EDGE_DOMAIN = mint("vouch-edge");
 /** The record that a re-anchoring happened, never what made it valid. */
-export const RE_ANCHORING_DOMAIN = frozen("re-anchoring");
+export const RE_ANCHORING_DOMAIN = mint("re-anchoring");
 /** A custodian's confirmation on a recovery card. */
 export const CUSTODIAN_CONFIRM_DOMAIN = mint("custodian-confirm");
 
@@ -484,7 +490,7 @@ export const GATE_VERDICT_DOMAIN = mint("gate-verdict");
 export const WAKING_FLOOR_ANNOUNCE_DOMAIN = mint("waking-floor-announce");
 /** A realm-bag REGISTRATION — the record a bag's stewards sign onto the realm's shared doc (`keptBy`,
  *  `readTier`, the doc url). Its own domain: a registration must never verify as any other signed thing. */
-export const REALM_BAG_DOMAIN = frozen("realm-bag");
+export const REALM_BAG_DOMAIN = mint("realm-bag");
 /** A quorum HANDLE's seal as a realm steward: the Handle's head key signs a realm record's digest under the
  *  chain state it stands at. Its own name, so a steward seal never verifies as a card, an attestation or a
  *  chain event, and none of those verifies as a seal. */
@@ -496,10 +502,10 @@ export const STEWARD_SEAL_DOMAIN = mint("steward-seal");
  * A GIFT, NEVER A QUORUM ACT: a taker verifies the blobs BY HASH against the declared region, so nothing
  * stands for a second hand to attest that the hash does not already settle. One signature, one announce.
  */
-export const PLUGIN_OFFERING_DOMAIN = frozen("plugin-offering");
+export const PLUGIN_OFFERING_DOMAIN = mint("plugin-offering");
 
 /** The public Crossroads projection of one immutable plugin offering. The signed offering remains the authority. */
-export const PLUGIN_OFFERING_ANNOUNCE_DOMAIN = frozen("plugin-offering-announce");
+export const PLUGIN_OFFERING_ANNOUNCE_DOMAIN = mint("plugin-offering-announce");
 
 /**
  * A TENDER'S PRESENTATION over an offering — the Lamplighters' half of the immune architecture.
@@ -508,7 +514,7 @@ export const PLUGIN_OFFERING_ANNOUNCE_DOMAIN = frozen("plugin-offering-announce"
  * tenders converging lowers nothing, and the quorum keeps its full k. Its own domain, so a presentation
  * can never be replayed as a verdict.
  */
-export const OFFERING_PRESENTATION_DOMAIN = frozen("offering-presentation");
+export const OFFERING_PRESENTATION_DOMAIN = mint("offering-presentation");
 
 /**
  * The quorum act that sets an offering aside — the condemning half, held by a kahu quorum alone.
@@ -516,35 +522,35 @@ export const OFFERING_PRESENTATION_DOMAIN = frozen("offering-presentation");
  * Its OWN domain, apart from `kapae-antigen`: that board shadows a PRESENTER, this one an OFFERING, and a
  * signature minted over one must never verify as the other.
  */
-export const OFFERING_KAPAE_DOMAIN = frozen("offering-kapae");
+export const OFFERING_KAPAE_DOMAIN = mint("offering-kapae");
 /** The crossroads-plane ANNOUNCE of a realm bag — that it exists and who keeps it, NEVER the doc. A different
  *  domain from the registration: a public announce must never stand in for a steward's signature. */
-export const REALM_BAG_ANNOUNCE_DOMAIN = frozen("realm-bag-announce");
+export const REALM_BAG_ANNOUNCE_DOMAIN = mint("realm-bag-announce");
 /** The persona-root seed WRAPPED at rest under a passkey PRF output (browser, opt-in). A NAME of its own,
  *  apart from every seal above: the PRF output is a cloud-synced-class secret and the wrap must never
  *  derive into an admit seal. */
-export const SEED_WRAP_PRF_INFO = frozen("seed-wrap-prf");
+export const SEED_WRAP_PRF_INFO = mint("seed-wrap-prf");
 
 // ── PLANES + SCOPES (HMAC name derivations) ─────────────────────────────────────────────────────
 /** One PersonaGroup's private plane name, derived from that group's own doc id. */
-export const PERSONA_SCOPE_INFO = frozen("persona-scope");
+export const PERSONA_SCOPE_INFO = mint("persona-scope");
 /** The per-circle hardened index — the key a persona presents to one circle. */
-export const CIRCLE_SCOPE_INFO = frozen("circle-scope");
+export const CIRCLE_SCOPE_INFO = mint("circle-scope");
 
 // ── ARTEFACTS + BOARDS ──────────────────────────────────────────────────────────────────────────
 /** The signed causal pointer to a served FLOW-map snapshot (the herm's relay face). Its own name: the floor's answer is the
  *  release (`floor-release`), so no pointer signs a floor, and a flow pointer verifies as nothing else. */
 export const FLOW_POINTER_DOMAIN = mint("flow-pointer");
 /** The deterministic plugin build's provenance. */
-export const PLUGIN_ATTESTATION_DOMAIN = frozen("plugin-attestation");
+export const PLUGIN_ATTESTATION_DOMAIN = mint("plugin-attestation");
 /** The Mu void marker — an immune-set refusal carrying no subject. */
-export const MU_VOID_DOMAIN = frozen("mu-void");
+export const MU_VOID_DOMAIN = mint("mu-void");
 /** A vessel's raise challenge — verifier-chosen freshness at the waking floor. */
-export const RAISE_CHALLENGE_DOMAIN = frozen("raise-challenge");
+export const RAISE_CHALLENGE_DOMAIN = mint("raise-challenge");
 /** The record a canon PROMOTION leaves behind — what crossed, by whom, from where, at which bytes. Its own
  *  name because it asserts CONTENT PROVENANCE and never authority: a cap delegation says who may write
  *  canon, and this says what was written (`docs/pono/canon-boundary#/the-promotion-boundary`). */
-export const PROMOTION_RECEIPT_DOMAIN = frozen("promotion-receipt");
+export const PROMOTION_RECEIPT_DOMAIN = mint("promotion-receipt");
 /** The seats' approval of one promotion: the EXACT bytes (hash), the purpose and the surface, under the
  *  chartered class the act takes. Its own name, apart from the receipt: the receipt records what crossed, and
  *  this carries the collective's authority for it (`lararium/mesh/kahu#/chartered-classes`). */
@@ -573,6 +579,8 @@ export const FACE_LEAF_BOND_DOMAIN = mint("face-leaf-bond");
 /** A face's ask to feed one realm as its leaf, signed by its atom over the one request it rides: a bond proves a past
  *  signing, and this proves the present hand, so no bond replays as a feed (`face-leaf-bond`). */
 export const REALM_FEED_ASK_DOMAIN = mint("realm-feed-ask");
+/** A realm maintenance roll binds the realm, feeding writer and epoch in its signed image. */
+export const REALM_FEED_DOMAIN = mint("realm-feed");
 /** The digest a ward co-sign ask names its act by: (act, face, wiki, head cid). Its own name, so no other digest reads as one. */
 export const WARD_COSIGN_DIGEST_DOMAIN = mint("ward-cosign-digest");
 /** What a co-signer's per-face ward key signs in its answer to a ward ask: (the answer, the ask's digest, the fleet frontier it read). */

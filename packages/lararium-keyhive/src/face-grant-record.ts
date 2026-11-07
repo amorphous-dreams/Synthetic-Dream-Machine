@@ -20,12 +20,10 @@
  */
 
 import {
-  canonicalJsonBytes, utf8Bytes, ed25519VerifyHex, sha256HexBytesSync, formatDigest, verifyDeviceDelegation, verifyEdgeAgainstPersonaKel,
+  canonicalJsonBytes, utf8Bytes, ed25519VerifyHex, sha256HexBytesSync, formatDigest, verifyDeviceDelegation, verifyEdgeAgainstPersonaKel, FACE_GRANT_DOMAIN,
   type DeviceDelegationTiddler, type PersonaKelEvent,
 } from "@lararium/mesh";
 
-/** The signing domain — a grant record's bytes never verify as any other signed thing. */
-const FACE_GRANT_DOMAIN = "lares/face-join-grant/v1";
 /** The title prefix under which grant records land on the PersonaGroup plane. */
 export const FACE_GRANT_PREFIX = "$:/lares/face-grant/";
 
