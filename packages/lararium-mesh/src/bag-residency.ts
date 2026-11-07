@@ -375,6 +375,10 @@ export class BagStowage {
   /** Start the background sweeper. Idempotent — calling twice is a no-op. */
   startSweeper(): void {
     if (this.sweeperTimer) return;
+    // Idle cooling reads a grain's silence, and no event says "idle" (the absence of a touch has no
+    // edge). The CAPACITY side already runs on events: enforceCap fires on every touch/load (above). This tick only
+    // frees handles that no one touched past `idle`; a missed tick delays a cooling, never a mount, seal or lock.
+    // LIVENESS: the tick below frees idle handles on a cadence; no event says "idle".
     this.sweeperTimer = setInterval(() => {
       void this.sweepOnce().catch((err) => {
         console.error("[residency] sweep crashed:", err);
