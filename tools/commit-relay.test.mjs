@@ -246,6 +246,7 @@ wallTest('PROOF 3 hostile lifecycle scripts and .npmrc: the broker has no instal
   assert.doesNotMatch(src, /pnpm|npm_config|submodule/, 'the relay carries no install or submodule code');
   const pnpmBin = path.join(x.root, 'bin'); mkdirSync(pnpmBin);
   const log = path.join(x.root, 'pnpm.log'), store = path.join(x.root, 'store'); mkdirSync(store);
+  const cache = path.join(x.root, 'cache'); mkdirSync(path.join(cache, 'v12', 'metadata-full'), { recursive: true }); writeFileSync(path.join(cache, 'v12', 'metadata-full', 'pkg.jsonl'), 'META');
   const probe = path.join(x.root, 'probe');
   writeFileSync(path.join(pnpmBin, 'pnpm'), `#!/bin/sh
 echo "ARGV $*" > "${log}"
@@ -255,9 +256,11 @@ touch "${x.wt}/.git/PWNED" 2>>"${log}" && echo GITWRITE >> "${log}"
 touch "${x.goFile}" 2>>"${log}" && echo GOWRITE >> "${log}"
 cat "${x.control}/secret" 2>/dev/null | grep -q CONTROLLER-SECRET && echo CTRLREAD >> "${log}"
 if touch "${store}/ok" 2>/dev/null; then echo STOREWRITE >> "${log}"; else echo STOREREFUSED >> "${log}"; fi
+grep -q META "${cache}/v12/metadata-full/pkg.jsonl" && echo CACHEREAD >> "${log}"
+if echo planted >> "${cache}/v12/metadata-full/pkg.jsonl" 2>/dev/null; then echo CACHEWRITE >> "${log}"; else echo CACHEREFUSED >> "${log}"; fi
 `, { mode: 0o755 });
   writeFileSync(path.join(x.wt, 'package.json'), JSON.stringify({ name: 'p', scripts: { postinstall: `touch ${probe}` } }));
-  const seat = { worktree: x.wt, gitDir: x.ctx.gitDir, installer: path.join(pnpmBin, 'pnpm'), storeDir: store, iso: x.iso, extraRw: [x.root], protect: [x.control] };
+  const seat = { worktree: x.wt, gitDir: x.ctx.gitDir, installer: path.join(pnpmBin, 'pnpm'), storeDir: store, cacheDir: cache, iso: x.iso, extraRw: [x.root], protect: [x.control] };
   for (const key of ['script-shell', 'node-options', 'prefix', '//registry.evil/:_authToken', 'hooks-path']) {
     writeFileSync(path.join(x.wt, '.npmrc'), `${key}=evil\n`);
     const refused = await runInstallSeat(seat);
@@ -271,7 +274,14 @@ if touch "${store}/ok" 2>/dev/null; then echo STOREWRITE >> "${log}"; else echo 
   assert.match(seen, /ARGV .*--ignore-scripts/); assert.match(seen, /--offline/); assert.match(seen, /--frozen-lockfile/);
   assert.doesNotMatch(seen, /NODE_OPTIONS|npm_config_script|GIT_DIR/, 'the poisoned environment never reaches the install');
   assert.doesNotMatch(seen, /STOREWRITE/, 'the shared store binds read-only'); assert.match(seen, /STOREREFUSED/, 'CONTROL: the store write was attempted and refused'); assert.match(seen, /--package-import-method=copy/); assert.match(seen, /--ignore-pnpmfile/);
-  assert.equal(existsSync(path.join(store, 'ok')), false, 'nothing landed in the store'); assert.doesNotMatch(seen, /CTRLREAD/, 'the controller dir reads as empty'); assert.doesNotMatch(seen, /GITWRITE|GOWRITE/, 'the install wrote neither git metadata nor the controller file');
+  assert.equal(existsSync(path.join(store, 'ok')), false, 'nothing landed in the store');
+  // The metadata cache binds read-only in the same shape: the offline supply-chain check reads it, nothing inside writes it;
+  // the store's index opens immutable (frozenStore), since a read-only store refuses pnpm's writable SQLite open.
+  assert.match(seen, /CACHEREAD/, 'CONTROL: the metadata cache reads inside the wall'); assert.doesNotMatch(seen, /CACHEWRITE/, 'the metadata cache binds read-only'); assert.match(seen, /CACHEREFUSED/);
+  assert.equal(readFileSync(path.join(cache, 'v12', 'metadata-full', 'pkg.jsonl'), 'utf8'), 'META', 'the cache bytes stand unchanged');
+  assert.match(seen, new RegExp(`--frozen-store .*--store-dir ${store} --cache-dir ${cache}`));
+  const noCache = await runInstallSeat({ ...seat, cacheDir: undefined });
+  assert.equal(noCache.ok, false); assert.match(noCache.output, /metadata cache dir/, 'a seat without the cache refuses by name'); assert.doesNotMatch(seen, /CTRLREAD/, 'the controller dir reads as empty'); assert.doesNotMatch(seen, /GITWRITE|GOWRITE/, 'the install wrote neither git metadata nor the controller file');
   assert.equal(existsSync(path.join(x.wt, '.git', 'PWNED')), false); assert.equal(existsSync(probe), false);
 });
 
@@ -610,11 +620,12 @@ test('P1 the install wall binds the HELD worktree: a parent swapped after the ho
   const lane = path.join(x.root, 'lane'), wt = path.join(lane, 'wt2'), outside = path.join(x.root, 'outside'), moved = path.join(lane, 'wt2-moved');
   mkdirSync(wt, { recursive: true }); mkdirSync(outside); writeFileSync(path.join(wt, '.npmrc'), 'registry=https://registry.npmjs.org/\n');
   const store = path.join(x.root, 'store2'); mkdirSync(store);
+  const cache = path.join(x.root, 'cache2'); mkdirSync(cache);
   const installer = path.join(x.root, 'inst'); mkdirSync(installer);
   writeFileSync(path.join(installer, 'pnpm'), '#!/bin/sh\necho BOUND > "$PWD/bound-marker"\n', { mode: 0o755 });
   const held = openHeldSync(wt, lane);
   renameSync(wt, moved); symlinkSync(outside, wt); // the swap, AFTER validation and the hold
-  const r = await runInstallSeat({ worktreeHeld: held, gitDir: x.ctx.gitDir, installer: path.join(installer, 'pnpm'), storeDir: store, iso: x.iso, protect: [x.control] });
+  const r = await runInstallSeat({ worktreeHeld: held, gitDir: x.ctx.gitDir, installer: path.join(installer, 'pnpm'), storeDir: store, cacheDir: cache, iso: x.iso, protect: [x.control] });
   assert.equal(r.ok, true, JSON.stringify(r));
   assert.deepEqual(readdirSync(outside), [], 'nothing reached the swapped path target');
   assert.equal(readFileSync(path.join(moved, 'bound-marker'), 'utf8'), 'BOUND\n', 'the install ran in the held directory');

@@ -166,7 +166,7 @@ function hideCredentials() {
  * nothing: the installer gets exactly the directories that were opened. `.npmrc` is read through the held worktree handle with
  * O_NOFOLLOW before the wall opens (a symlink there refuses by name).
  */
-export async function runInstallSeat({ worktree, worktreeHeld, gitDir, installer, storeDir, iso, protect = [], env, extraRw = [], bwrap = HAVE_BWRAP }) {
+export async function runInstallSeat({ worktree, worktreeHeld, gitDir, installer, storeDir, cacheDir, iso, protect = [], env, extraRw = [], bwrap = HAVE_BWRAP }) {
   void env;
   const label = worktree ?? "the held worktree";
   if (!bwrap || !HAVE_BWRAP) return { ok: false, output: `no wall available: refusing to run the install of ${installer} in ${label} unwalled` };
@@ -182,6 +182,7 @@ export async function runInstallSeat({ worktree, worktreeHeld, gitDir, installer
       }
     }
 
+    if (typeof cacheDir !== 'string' || !path.isAbsolute(cacheDir)) return { ok: false, output: 'install seat refused: the metadata cache dir must be an absolute path' };
     mkdirSync(path.join(iso, 'home'), { recursive: true }); // broker-owned
     mkdirSync(path.join(iso, 'tmp'), { recursive: true }); // broker-owned
     // A protected path reads as an empty read-only directory: the controller's go, key and receipts stay unreadable and unwritable.
@@ -203,6 +204,10 @@ export async function runInstallSeat({ worktree, worktreeHeld, gitDir, installer
       // The store binds READ-ONLY and the install copies out of it: a lane's node_modules shares no inode with the store, the
       // main checkout or another lane, and nothing inside the wall can rewrite a package every later install would trust.
       ...bind('--ro-bind-fd', hold(storeDir), storeDir),
+      // The metadata cache binds READ-ONLY in the same shape: an offline install verifies the lockfile against the supply-chain
+      // policy from these package documents, and nothing inside the wall can rewrite the metadata every later check would trust.
+      // pnpm's only cache write on this path (the lockfile-verified record) fails soft, so the next install re-verifies.
+      ...bind('--ro-bind-fd', hold(cacheDir), cacheDir),
       ...bind('--ro-bind-fd', hold(gitDir), gitDir),
       ...protect.flatMap((p) => bind('--ro-bind-fd', empty, p)),
       ...hideCredentials(),
@@ -219,8 +224,13 @@ export async function runInstallSeat({ worktree, worktreeHeld, gitDir, installer
       '--ignore-scripts',
       '--ignore-pnpmfile',
       '--package-import-method=copy',
+      // frozenStore opens the store's SQLite index immutable (read-only); without it pnpm opens index.db for writing and the
+      // read-only bind refuses (ERR_SQLITE_ERROR: unable to open database file).
+      '--frozen-store',
       '--store-dir',
       storeDir,
+      '--cache-dir',
+      cacheDir,
     ];
     const ran = spawnSync(BWRAP, args, { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe', ...fds] });
     return { ok: ran.status === 0, output: capOutput(`${ran.stdout ?? ''}${ran.stderr ?? ''}${ran.error ? String(ran.error) : ''}`) };
@@ -315,7 +325,7 @@ export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
   }
   const scratch = await mkdtemp(laneHeld.at('test-seat-'));
   let scratchHeld, gitFd;
-  const moduleFds = [];
+  const moduleFds = [], stampFds = [];
   try {
     try {
       gitFd = openSync(worktreeHeld.at('.git'), FS.O_RDONLY | FS.O_NOFOLLOW);
@@ -342,6 +352,15 @@ export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
     const realDirs = rel => { const fd = openFarm(rel); if (fd === null) return []; try { return readdirSync(`/proc/self/fd/${fd}`, { withFileTypes: true }).filter(e => e.isDirectory() && !e.name.startsWith('.') && e.name !== 'node_modules').map(e => e.name); } finally { closeSync(fd); } };
     const farms = ['node_modules', ...realDirs('.').filter(d => d !== 'packages').map(d => `${d}/node_modules`), ...realDirs('packages').map(d => `packages/${d}/node_modules`)];
     for (const rel of farms) { const fd = openFarm(rel); if (fd !== null) moduleFds.push({ rel, fd }); }
+    // The build stamps (node_modules/.lares-build) bind WRITABLE over the read-only root farm: the wall's build -> stamp step
+    // records what its dist came from, at the trust of the dist it built (both lane-owned output, neither tooling).
+    if (moduleFds[0]?.rel === 'node_modules') {
+      try { mkdirSync(`/proc/self/fd/${moduleFds[0].fd}/.lares-build`); } catch (error) { if (error.code !== 'EEXIST') throw error; }
+      const fd = openFarm('node_modules/.lares-build');
+      if (fd === null) return refuse('node_modules/.lares-build must be a real directory');
+      stampFds.push({ rel: 'node_modules/.lares-build', fd });
+    }
+    const boundFds = [...moduleFds, ...stampFds];
     scratchHeld = openHeldSync(scratch, laneHeld.at());
     if (inside(nodeVersionReal, realpathSync(scratchHeld.at()))) return refuse('Node toolchain inside scratch directory');
     mkdirSync(scratchHeld.at('home'));
@@ -380,6 +399,7 @@ export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
       '--ro-bind', nodeVersion, nodeVersion,
       '--bind-fd', '3', '/work', '--ro-bind-fd', '5', '/work/.git', '--bind-fd', '4', '/scratch',
       ...moduleFds.flatMap(({ rel }, i) => ['--ro-bind-fd', String(6 + i), path.posix.join('/work', rel)]),
+      ...stampFds.flatMap(({ rel }, i) => ['--bind-fd', String(6 + moduleFds.length + i), path.posix.join('/work', rel)]),
       '--chdir', path.posix.join('/work', packageDir),
       '--setenv', 'PATH', `${path.posix.join('/work', packageDir, 'node_modules/.bin')}:/work/node_modules/.bin:${bin}:/usr/bin:/bin`, '--setenv', 'HOME', '/scratch/home',
       '--setenv', 'LAR_ROOT', '/scratch/lar-root', '--setenv', 'TMPDIR', '/tmp', '--setenv', 'LC_ALL', 'C',
@@ -388,7 +408,7 @@ export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
         : [node, '-e', packageTest, '--', build ?? '', packageDir, path.posix.join('/work', vitestPath), ...files.map(f => path.posix.join('/work', f))]),
     ];
     const result = await new Promise(resolve => {
-      const child = spawn(BWRAP, args, { detached: true, stdio: ['ignore', 'pipe', 'pipe', worktreeHeld.fd, scratchHeld.fd, gitFd, ...moduleFds.map(m => m.fd)] });
+      const child = spawn(BWRAP, args, { detached: true, stdio: ['ignore', 'pipe', 'pipe', worktreeHeld.fd, scratchHeld.fd, gitFd, ...boundFds.map(m => m.fd)] });
       let output = '', stderrTail = Buffer.alloc(0), overflow = false, silent = false, timer;
       // LIVENESS: 30 seconds without stdout or stderr releases the single relay; active output resets the bound.
       const silenceSeconds = 30;
@@ -457,7 +477,7 @@ export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
     } catch { /* cleanup cannot replace the test answer */ }
     scratchHeld?.close();
     if (gitFd !== undefined) closeSync(gitFd);
-    for (const { fd } of moduleFds) closeSync(fd);
+    for (const { fd } of [...moduleFds, ...stampFds]) closeSync(fd);
     try { rmdirSync(laneHeld.at(path.basename(scratch))); } catch { /* cleanup cannot replace the test answer */ }
   }
 }
