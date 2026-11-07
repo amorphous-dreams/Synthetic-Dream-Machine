@@ -15,7 +15,7 @@ import { join } from "node:path";
 import {
   buildDeviceDelegation, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, hexToBytes,
   deriveSelfRecoveryKey, sealKeySetHash, mintPersonaInception, personaRotationSigningBytes, mintPersonaRotation,
-  enrolmentDigestOf, personaEventCidOf, type PersonaKelEvent,
+  enrolmentDigestOf, personaEventCidOf, DEVICE_DELEGATION_DOMAIN, DEVICE_ATOM_COUNTERSIGN_DOMAIN, type DeviceDelegationTiddler, type PersonaKelEvent,
 } from "@lararium/mesh";
 import { faceGrantTitle, faceGrantRecordCid, signFaceGrantRecord, verifyFaceGrantRecord, type FaceGrantRecord } from "../src/face-grant-record.js";
 
@@ -275,5 +275,36 @@ describe("a grant record under a persona-KEL with a junk event beside it", () =>
     expect(planted).toMatchObject({ ok: true, unreadable: expect.stringMatching(/do not verify and move nothing/) });
     const clean = await verifyFaceGrantRecord(rec, { ...ctx, personaKel: kel });
     expect(clean).toEqual({ ok: true });
+  });
+});
+
+// Retirement contract: the local, verified fleet reading travels with the consuming grant reader.
+// The extra context field deliberately reaches today's reader at runtime; it currently ignores it.
+describe("face grant standing replaces the face lease", () => {
+  test("RED: a fresh-epoch founder set aside by the remove-wins reading cannot grant; CONTROL: clear stands", async () => {
+    const rec = await grantFor({}, ROOT_SEED, 3);
+    const kel = await personaKel(null);
+    const base = { personaRootDid: rec.founderEdge.personaRootDid, selfVerifyingKey: JOINEE_KEY,
+      groupId: GROUP, personaKel: kel, expectedEpoch: 3 };
+    const clear = { ...base, dyad: (_key: string) => "clear" as const };
+    const aside = { ...base, dyad: (_key: string) => "aside" as const };
+    expect((await verifyFaceGrantRecord(rec, clear)).ok).toBe(true);
+    expect((await verifyFaceGrantRecord(rec, aside)).ok).toBe(false);
+  });
+
+  test("RED: a signed clear founder edge with no epoch grants; CONTROL: a changed signature refuses", async () => {
+    const old = await founderEdge();
+    const { boundEpoch: _discard, signature: _rootSig, atomSignature: _atomSig, ...fields } = old;
+    // Proposed epoch-free signed shape: the same domain and identity fields, with the epoch component removed.
+    const proof = `${DEVICE_DELEGATION_DOMAIN}|${fields.personaRootDid}|${fields.deviceDid}|${fields.deviceVerifyingKey}|${fields.hearthTrueName}`;
+    const signature = await ed25519SignerFromSeed(ROOT_SEED)(new TextEncoder().encode(proof));
+    const atomSignature = await ed25519SignerFromSeed(FOUNDER_SEED)(new TextEncoder().encode(`${DEVICE_ATOM_COUNTERSIGN_DOMAIN}|${proof}|${signature}`));
+    const edge = { ...fields, signature, atomSignature } as DeviceDelegationTiddler;
+    const rec = await grantFor({ founderEdge: edge });
+    const kel = await personaKel(null);
+    const ctx = { personaRootDid: edge.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP,
+      personaKel: kel, dyad: (_key: string) => "clear" as const };
+    expect((await verifyFaceGrantRecord({ ...rec, sig: "0".repeat(128) }, ctx)).ok).toBe(false);
+    expect((await verifyFaceGrantRecord(rec, ctx)).ok).toBe(true);
   });
 });
