@@ -23,6 +23,13 @@ const FROZEN_WELD = "2725abf58d8ec18e3740426f075ac6455d4d36ae87711890f0bad334ade
 describe("the domain registry", () => {
   const named = Object.entries(domains).filter(([k, v]) => typeof v === "string" && /_(INFO|DOMAIN)$/.test(k) && k !== "DOMAIN_ROOT") as [string, string][];
 
+  test("no registered separation carries a version segment", () => {
+    const versioned = (value: string) => /\/v\d+(?:\/|$)/.test(value);
+    expect(`${ROOT}planted/v1`).toSatisfy(versioned);
+    expect(`${ROOT}bare-name`).not.toSatisfy(versioned);
+    expect(domains.ALL_DOMAINS.filter(versioned)).toEqual([]);
+  });
+
   test("carries more than a handful of separations", () => {
     expect(named.length).toBeGreaterThan(10);
   });
