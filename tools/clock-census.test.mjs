@@ -63,3 +63,19 @@ test('a product wait whose line or the comment just above names LIVENESS reads a
   ].join('\n'));
   assert.deepEqual(findings.map(f => [f.line, f.category, f.review]), [[2, 'LIVENESS', false], [3, 'PRODUCT-WAIT', true], [4, 'LIVENESS', false]]);
 });
+
+test('only a PACING marker with a reason classifies a product wait as pacing', () => {
+  const findings = fixture('packages/example/src/pacing.ts', [
+    '// PACING: the event decides completion; this timer sets the poll cadence.',
+    'setTimeout(poll, 20);',
+    'setTimeout(poll, 30); // PACING: retry cadence until the event arrives',
+    'setTimeout(expire, 40);',
+    'setTimeout(expire, 50); // PACING:',
+    '// PACING:   ',
+    'setTimeout(expire, 60);',
+  ].join('\n'));
+  assert.deepEqual(findings.map(f => [f.line, f.category, f.review]), [
+    [2, 'PACING', false], [3, 'PACING', false], [4, 'PRODUCT-WAIT', true],
+    [5, 'PRODUCT-WAIT', true], [7, 'PRODUCT-WAIT', true],
+  ]);
+});
