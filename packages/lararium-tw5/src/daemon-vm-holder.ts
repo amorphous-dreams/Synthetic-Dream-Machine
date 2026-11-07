@@ -99,6 +99,8 @@ export function holdDaemonVm<P = void>(o: {
         shuttingDown = true;
         try { shutdown = Promise.resolve(inner.shutdown(budgetMs)); }
         catch (err) { shutdown = Promise.reject(err); }
+        // The island acked (or its budget cut it) and left: its leg reads daemon-down from here.
+        void shutdown.finally(() => { shuttingDown = false; }).catch(() => undefined);
         return shutdown;
       };
       if (key === "dispose") return () => {

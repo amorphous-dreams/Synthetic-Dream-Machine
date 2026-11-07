@@ -142,6 +142,7 @@ import { sweepOrphanBrowserWards } from "./browser-ward-tree.js";
 import { guardedBoot, takeDownBoot, BootTeardownRefusal, type BootHold } from "./guarded-boot.js";
 import { attachSharedHolder, holderWorkerHandle, houseName } from "./shared-holder.js";
 import { browserSpawnWorker } from "./worker-handle.js";
+import { daemonIslandDown } from "./daemon-island-down.js";
 import { shoreInbound } from "@lararium/mesh";
 // ── Bootstrap artifact (IDB-persisted) ──────────────────────────────────────────
 
@@ -1809,7 +1810,11 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // The emergency on a shared-holder tab fails CLOSED through the tab's own door: it detaches from the holder (session:close, its port closed) and stands daemon-down; each tab acts on its own arrival, and the shared island ends with its last tab.
       failClosed: holder?.kind === "attached" ? (vm) => vm.dispose() : undefined });
       daemon = daemonHolder.vm;
-      held.stood.push({ what: "daemon worker", down: () => daemon.dispose() });
+      // THE ISLAND TEARS DOWN ON ITS OWN ANSWER (L29 mirror): its settlement round runs before the floor stands down (the floor,
+      // pushed earlier, comes down after it). LIVENESS: the shutdown's budget (the daemon core's own wedged-worker cut) sits a
+      // second inside the step's teardown budget, so a worker wedged alive is terminated before the step reads as stuck.
+      const daemonDownBudgetMs = Math.max(1, (opts.teardownBudgetMs ?? 5_000) - 1_000);
+      held.stood.push({ what: "daemon worker", down: () => daemonIslandDown(daemon, { attached: holder?.kind === "attached", budgetMs: daemonDownBudgetMs }) });
       // THE FLUSH PRECEDES THE ISLAND'S GOING (P2-3): the stand-down runs backward, so this step, pushed after the daemon
       // worker's, locks and flushes while the island still answers the document store's door.
       held.stood.push({ what: "the lift's flush", down: async () => { await flushLift?.(); } });
