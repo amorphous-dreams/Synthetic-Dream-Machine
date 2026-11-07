@@ -832,6 +832,47 @@ describe("a restart's hydration: a sealed document's load waits for its map, nev
   });
 });
 
+type Port = { post(msg: unknown): void; listen(cb: (msg: unknown) => void): () => void };
+
+describe("F1 (merge read): a re-stood door lifts the lapse its wedged holder left", () => {
+  /** A port pair whose posts cross on a microtask, as a MessagePort's do. */
+  function pair(): [Port, Port] {
+    const a = new Set<(m: unknown) => void>(), b = new Set<(m: unknown) => void>();
+    const end = (mine: Set<(m: unknown) => void>, theirs: Set<(m: unknown) => void>): Port => ({
+      post: (m) => queueMicrotask(() => { for (const cb of [...theirs]) cb(m); }),
+      listen: (cb) => { mine.add(cb); return () => { mine.delete(cb); }; },
+    });
+    return [end(a, b), end(b, a)];
+  }
+  const session = { id: "s", subject: "x", signer: null as never } as unknown as Session;
+
+  it("wedge, lapse, re-stand on the same port: the rebook seals at the fresh holder — CONTROL: while the island stays silent the lapse still refuses at once and posts nothing", async () => {
+    const [vesselSide, islandSide] = pair();
+    let ready = 0;
+    const posted: string[] = [];
+    const cell = docStorePortCell(async () => null, { onReady: () => { ready++; } });
+    cell.attach({ post: (m) => { posted.push((m as { type: string }).type); vesselSide.post(m); }, listen: vesselSide.listen });
+    const door = vesselDocStoreDoor<Session>(() => cell.port(), { book: () => () => {}, idPrefix: "restand", livenessMs: 20 });
+    const stopWedged = answerDocStoreAsks(islandSide, { seal: () => new Promise(() => {}), open: () => new Promise(() => {}) } as never);
+    await settle(10);
+    expect(ready).toBe(1);
+    expect(await door.seal({ bagId: BAG, values: [], session } as never)).toMatchObject({ cause: expect.stringMatching(/^LIVENESS/) });
+    // CONTROL: the island stays silent; the latch refuses the next seal at once and posts nothing across.
+    posted.length = 0;
+    expect(await door.seal({ bagId: BAG, values: [], session } as never)).toMatchObject({ cause: expect.stringMatching(/^LIVENESS/) });
+    expect(posted).toEqual([]);
+    // The island re-stands its door on the same port: silent, then answering, from a fresh holder.
+    stopWedged();
+    answerDocStoreAsks(islandSide, { seal: async () => ({ values: [] }), open: async () => ({ refusal: "bag-unknown" }) } as never);
+    await settle(10);
+    expect(ready, "the re-stood door tells the vessel").toBe(2);
+    posted.length = 0;
+    const rebook = await door.seal({ bagId: BAG, values: [], session } as never);
+    expect(posted, "the rebook crosses to the fresh holder").toEqual(["docstore:seal"]);
+    expect(rebook).not.toMatchObject({ refusal: expect.anything() });
+  });
+});
+
 describe("D1: the island's door stands before an ask crosses it, and its standing re-drives what waited", () => {
   it("an attached port answers no ask until the island's door says it stands: an early ask refuses by name at once, never spends a patience; the door's ready event opens the port and tells the vessel once", async () => {
     const w = world();
