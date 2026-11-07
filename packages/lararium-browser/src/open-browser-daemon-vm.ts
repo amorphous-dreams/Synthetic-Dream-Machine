@@ -89,6 +89,29 @@ export interface BrowserVerbPlacementRequest {
   listenable?:  string;
 }
 
+/**
+ * A spawned daemon island asks through the record (`answerIslandAsks`), and its answers, the document store's door
+ * among them, leave with the island. A browser Worker gives no exit event, so the island's leaving reads off every event
+ * it does give, the way the daemon VM core ends its own asks: its `fault` frame, its error (a crash), its exit (the
+ * handle's own terminate). Each detaches the door's cell, so every seal or open still waiting refuses by name at once,
+ * and a later one refuses at once (no island answers the door).
+ */
+export function islandAskingThroughRecord(handle: VesselWorkerHandle, caps: CapabilityRecord): VesselWorkerHandle {
+  const stop = answerIslandAsks(handle, caps);
+  let ended = false;
+  const offs: Array<() => void> = [];
+  const end = (): void => {
+    if (ended) return;
+    ended = true;
+    for (const off of offs.splice(0)) off();
+    stop();
+  };
+  offs.push(handle.onError(() => end()));
+  if (handle.onExit) offs.push(handle.onExit(() => end()));
+  offs.push(handle.listen((raw) => { if ((raw as { type?: unknown } | null)?.type === "fault") end(); }));
+  return { ...handle, terminate: () => { end(); handle.terminate(); } };
+}
+
 export async function openBrowserDaemonVm(
   opts: BrowserDaemonVmOptions,
 ): Promise<DaemonVmCore> {
@@ -116,11 +139,7 @@ export async function openBrowserDaemonVm(
     newSyncChannel: browserNewSyncChannel,
     ...(ownedDocument ? { newOwnedSyncChannel: browserNewSyncChannel } : {}),
     // Each island this VM spawns asks through the record, and its answers leave with the worker.
-    spawnWorker:    (url) => {
-      const handle = (spawnWorker ?? browserSpawnWorker)(url);
-      const stop = answerIslandAsks(handle, caps);
-      return { ...handle, terminate: () => { stop(); handle.terminate(); } };
-    },
+    spawnWorker:    (url) => islandAskingThroughRecord((spawnWorker ?? browserSpawnWorker)(url), caps),
     awaitReady:     true,
     ...(onManifestReplay ? { onManifestReplay } : {}),
   };
