@@ -5,7 +5,9 @@
  */
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { runInNewContext } from "node:vm";
 import { awaitPage, waitForWitness } from "./browser-weld/page-wait.mjs";
+import { summarizeWireMessage } from "./browser-weld/worker-trace.mjs";
 
 /** A fake page: `waitForFunction` answers what `answer(call)` gives (a value, or never), honouring its timeout. */
 function fakePage(answer) {
@@ -49,13 +51,46 @@ test("CONTROL: a boot advancing through its phases renews the bound past it; a s
   assert.match((await awaitPage(stalls, () => false, undefined, { livenessMs: 50, what: "the vessel boot" })).refused, /^LIVENESS: the vessel boot/);
 });
 
-test("RED: the unknown render-id witness on a page that never answers ends false at its LIVENESS bound, named", async () => {
+test("a silent page ends the unknown probe as a harness liveness error, never a W3 verdict", async () => {
   const lines = [];
   const page = fakePage(() => undefined);
   const t0 = performance.now();
-  assert.equal(await waitForWitness(page, "unknown", 0, "rid", undefined, { livenessMs: 50, log: (l) => lines.push(l) }), false);
+  await assert.rejects(waitForWitness(page, "unknown", 0, "rid", undefined, { livenessMs: 50, log: (l) => lines.push(l) }), /LIVENESS: the unknown witness/);
   assert.ok(performance.now() - t0 < 2_000);
   assert.match(lines.join("\n"), /LIVENESS: the unknown witness/);
+});
+
+test("RED: the unknown probe reads the control-result alone; the worker's console line ends nothing", async () => {
+  // Every refusal on the return leg reaches the page as a lar:control-result carrying its reason, so a console line
+  // stands as testimony beside it, never as the W3 verdict. A page that only logs the refusal stays silent here.
+  const page = fakePage(() => undefined);
+  const waiting = waitForWitness(page, 'unknown', 0, 'ghost', undefined, { livenessMs: 80, log: () => {} });
+  page.fire('console', { text: () => '[wiki-worker] stale-target: ghost' });
+  await assert.rejects(waiting, /LIVENESS: the unknown witness/);
+  assert.equal(page.listening('console'), 0);
+});
+
+test('unknown probe reads the real page predicate and correlates the verdict by event id', async () => {
+  const up = { ...summarizeWireMessage({ t: 'control-event', surface: 'story', ev: {
+    type: 'lar:control-event', eventId: 'ask-1', renderId: 'ghost' } }), direction: 'to-worker', workerId: 'w1' };
+  const result = (eventId, status) => ({ ...summarizeWireMessage({ t: 'control-result', surface: 'story', result: {
+    type: 'lar:control-result', eventId, renderId: 'ghost', status } }), direction: 'from-worker', workerId: 'w1' });
+  const evaluate = async (events) => {
+    const page = fakePage(() => undefined);
+    page.waitForFunction = async (fn, arg) => {
+      const value = runInNewContext(`(${fn.toString()})(arg)`, {
+        arg, window: { __weldWorkerTrace: { events } },
+        document: { querySelectorAll: () => [], querySelector: () => null },
+      });
+      // Playwright keeps waiting when the predicate returns false.
+      return value ? { jsonValue: async () => value } : new Promise(() => {});
+    };
+    return waitForWitness(page, 'unknown', 0, 'ghost', undefined, { livenessMs: 50, log: () => {} });
+  };
+  assert.equal(await evaluate([up, result('ask-1', 'stale-target')]), true);
+  assert.equal(await evaluate([up, result('ask-1', 'applied')]), false, 'an unknown id must never apply');
+  assert.equal(await evaluate([up, result('ask-1', 'refused')]), false, 'a refusal by another reason names a misrouted probe, not a stale target');
+  await assert.rejects(evaluate([up, result('other-ask', 'stale-target')]), /LIVENESS:/, 'another request cannot answer the probe');
 });
 
 test("CONTROL: an answered witness reads true before its bound", async () => {

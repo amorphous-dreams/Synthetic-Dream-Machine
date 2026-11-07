@@ -26,6 +26,25 @@ export interface WikiCorpusReader {
   stalkOf?: (doc: WikiSenseDoc) => DocStalk;
   /** Persistent document-frequency index for repeated reads. */
   fold?: (docs: readonly WikiSenseDoc[]) => CorpusFold;
+  /** The same fold in slices: it gives the host's loop back between them, and one fold runs on the index at a time. */
+  foldPaced?: (docs: readonly WikiSenseDoc[]) => Promise<CorpusFold>;
+}
+
+/** How long one slice of a paced fold holds the loop before it gives it back (ms). */
+export const FOLD_SLICE_MS = 12;
+
+/**
+ * Give the host's loop back once: every task already queued (a person's act riding a worker message) runs before
+ * the fold resumes. A one-shot channel where the host carries one (no timer clamp, nothing left holding the loop
+ * open), else a zero timer.
+ */
+export function yieldToHost(): Promise<void> {
+  return new Promise<void>((resolve) => {
+    if (typeof MessageChannel !== "function") { setTimeout(resolve, 0); return; }
+    const { port1, port2 } = new MessageChannel();
+    port1.onmessage = () => { port1.close(); port2.close(); resolve(); };
+    port2.postMessage(null);
+  });
 }
 
 /** Lift ONE composite entry onto the sensed-entity shape — the WHOLE record, pass-through. The one
@@ -46,9 +65,22 @@ export function senseDocOfEntry(e: CompositeEntry): WikiSenseDoc {
  *  re-derives ONE stalk, not the whole corpus — the composite face's warm-refold cure (the VM face
  *  already rides TW5's getCacheForTiddler for the same law). A record's `changeId` names a title's
  *  lineage and survives an edit, so it never keys derived text. */
-export function compositeCorpusReader(store: CompositeStore): WikiCorpusReader {
+export function compositeCorpusReader(store: CompositeStore, opts: { readonly sliceMs?: number } = {}): WikiCorpusReader {
   const memo = new Map<string, { body: string; stalk: DocStalk }>();
   const index = new IncrementalCorpusFold();
+  const sliceMs = opts.sliceMs ?? FOLD_SLICE_MS;
+  /** The paced folds queue on the one index: each starts when the one before it ends. */
+  let flight: Promise<unknown> = Promise.resolve();
+  const paced = async (docs: readonly WikiSenseDoc[]): Promise<CorpusFold> => {
+    const run = index.steps(docs, reader.stalkOf!);
+    let sliceStart = performance.now();
+    for (;;) {
+      const step = run.next();
+      if (step.done) return step.value;
+      // PACING: the slice bound gives the loop back; it never decides what the fold reads.
+      if (performance.now() - sliceStart >= sliceMs) { await yieldToHost(); sliceStart = performance.now(); }
+    }
+  };
   const reader: WikiCorpusReader = {
     async docs(): Promise<readonly WikiSenseDoc[]> {
       const entries = await store.entries();
@@ -68,6 +100,11 @@ export function compositeCorpusReader(store: CompositeStore): WikiCorpusReader {
       return stalk;
     },
     fold: (docs) => index.update(docs, reader.stalkOf!),
+    foldPaced: (docs) => {
+      const run = flight.then(() => paced(docs));
+      flight = run.catch(() => {});
+      return run;
+    },
   };
   return reader;
 }
