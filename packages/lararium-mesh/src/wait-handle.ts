@@ -49,6 +49,7 @@ export async function waitHandle<T>(
   const progress = repo.findWithProgress<T>(url as AutomergeUrl);
   const ready = await Promise.race([
     progress.whenReady().then((h) => h).catch(() => null),
+    // LIVENESS: a peer-held document may never arrive; the fallback can still merge later.
     new Promise<null>((r) => setTimeout(() => r(null), Math.max(0, readyMs))),
   ]);
   if (ready) return ready;

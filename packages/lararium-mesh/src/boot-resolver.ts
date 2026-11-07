@@ -208,6 +208,7 @@ export async function resolveBootDoc<T>(
       }
     });
     q.whenReady().then((h) => { unsub(); finish(h as DocHandle<T>); }).catch(() => { /* settled via subscribe/timeout */ });
+    // LIVENESS: a peer holding the boot document may remain silent indefinitely.
     setTimeout(() => { unsub(); finish(null); }, deadlineMs);
   });
   if (handle) return handle;
