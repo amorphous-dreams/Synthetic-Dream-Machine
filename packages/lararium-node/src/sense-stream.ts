@@ -56,6 +56,7 @@ function runSignalHolder(
   try {
     const env = { ...process.env, PYTHONPATH: submoduleRoot + (process.env["PYTHONPATH"] ? `:${process.env["PYTHONPATH"]}` : ""), ...resolveHolderCapEnv(python) };
     const out = execFileSync(python, [script, verb, "--signal", ndjson], {
+      // LIVENESS: the external Python signal process may hang without an exit event.
       cwd: submoduleRoot, env, maxBuffer: 1 << 30, encoding: "utf8", timeout: 300_000,
     });
     const lines = out.trim().split(/\r?\n/).filter((l) => l.trim().startsWith("{"));

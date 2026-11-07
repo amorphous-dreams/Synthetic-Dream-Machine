@@ -108,6 +108,7 @@ export function initGuestMempalace(): PalaceSetupStep[] {
 
   if (!existsSync(cfgPath)) {
     try {
+      // LIVENESS: the external palace initializer may hang without an exit event.
       const r = spawnSync(mp, ["init", repoRoot, "--yes", "--no-llm"], { timeout: 180_000, encoding: "utf8" });
       const ok = r.status === 0 && existsSync(cfgPath);
       steps.push({
