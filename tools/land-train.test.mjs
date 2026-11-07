@@ -424,6 +424,38 @@ test("RED: the DIRECT land: a lane whose head holds the span head lands with no 
   assert.match(lines.join("\n"), /DIRECT-LANDED/);
 });
 
+test("RED: DIRECT admits the lane's own green held-out run at its exact head over a red span", async () => {
+  const w = world(["a"]), reads = [];
+  const r = await run(w, {
+    verdict: async (branch, sha) => {
+      reads.push([branch, sha]);
+      return { ci: "green", heldOut: branch === `${SPAN}--a` && sha === w.heads.a ? "green" : "red" };
+    },
+    heldOut: async () => ({ covered: w.base, state: "red", inFlight: 0 }),
+  }, { local: false }, ["a"]);
+  assert.equal(r.code, 0, r.out);
+  assert.ok(reads.some(([branch, sha]) => branch === `${SPAN}--a` && sha === w.heads.a));
+  assert.match(r.out, /held-out.*green.*(?:red|DIRECT)|(?:red|DIRECT).*held-out.*green/i);
+  assert.match(r.out, /DIRECT-LANDED/);
+  assert.equal(sh(w.work, "rev-parse", `${originRef(w, SPAN)}^{tree}`), sh(w.work, "rev-parse", `${w.heads.a}^{tree}`));
+});
+
+test("CONTROL: DIRECT refuses red span when only an older lane head has green held-out", async () => {
+  const w = world(["a"]), old = w.heads.a;
+  sh(w.work, "checkout", "-q", `${SPAN}--a`);
+  w.heads.a = w.commit(w.work, "next.txt", "next\n", "next lane head");
+  sh(w.work, "push", "-q", "origin", `${SPAN}--a`);
+  sh(w.work, "checkout", "-q", SPAN);
+  const r = await run(w, {
+    verdict: async (_branch, sha) => ({ ci: "green", heldOut: sha === old ? "green" : "unread" }),
+    heldOut: async () => ({ covered: w.base, state: "red", inFlight: 0 }),
+  }, { local: false }, ["a"]);
+  assert.equal(r.code, 15, r.out);
+  assert.match(r.out, /HELD-OUT RED/);
+  assert.equal(originRef(w, SPAN), w.base);
+  assert.equal(originRef(w, `${SPAN}--a`), w.heads.a);
+});
+
 test("RED: DIRECT refuses the span's newest completed red held-out run by name; CONTROL: green lands", async () => {
   const w = world(["a"]);
   const reads = [];
