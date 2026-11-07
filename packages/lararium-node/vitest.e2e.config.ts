@@ -17,8 +17,5 @@ export default defineConfig({
     env: { NODE_OPTIONS: [process.env["NODE_OPTIONS"], `--import=${pathToFileURL(join(import.meta.dirname, "..", "..", "tools", "test-ward-route.mjs")).href}`].filter(Boolean).join(" ") },
     include: ["tests/e2e/**/*.test.ts"],
     testTimeout: 60_000,
-    // A vessel's teardown flushes its sealed rest: the hook rides the test's own budget, not vitest's 10 s default (CI
-    // run 42343523452: seat-settle-before-mount S2's afterEach timed out at 10 s on a loaded runner; alone it passes in 26 s).
-    hookTimeout: 60_000,
   },
 });
