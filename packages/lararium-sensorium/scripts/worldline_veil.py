@@ -35,8 +35,8 @@ import json
 import os
 
 # The domain-separation tag — walls this HMAC use off from any OTHER use of the same local secret, so a
-# reused persona signing key leaks nothing about the signer (a versioned tag admits a later re-cut).
-_DOMAIN = b"lar:worldline-root:v1"
+# reused persona signing key leaks nothing about the signer.
+_DOMAIN = b"lar:worldline-root"
 
 # The truncation width: `wl-` + 16 hex = a 64-bit opaque handle (matches the local `_sha16` turn-key idiom).
 _ROOT_HEX_LEN = 16

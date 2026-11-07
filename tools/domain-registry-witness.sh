@@ -118,8 +118,6 @@ ALLOW = {
         "the holder-continuity signing preimage registers with the re-found",
     ("packages/lararium-mesh/src/persistence-keel.ts",         "lar-witness/v1|"):
         "the keel witness signing preimage registers with the re-found",
-    ("packages/lararium-sensorium/scripts/worldline_veil.py",  "lar:worldline-root:v1"):
-        "the worldline-root HMAC tag crosses into Python; it registers with the re-found",
 }
 
 stray, allowed = [], []
