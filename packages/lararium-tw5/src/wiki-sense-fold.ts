@@ -192,7 +192,10 @@ export class IncrementalCorpusFold {
   /**
    * The same update as resumable steps: it pauses after each title it touches, so a host can give its loop back
    * between slices (a cold seed over a whole corpus otherwise holds the island's loop for seconds, and every act a
-   * person makes waits behind it). The index stands mid-update while paused: one update runs on it at a time.
+   * person makes waits behind it). The index stands mid-update while paused: one update runs on it at a time, and no
+   * reader reaches it mid-update. Its one holder (compositeCorpusReader) keeps it private and answers only through
+   * `fold`/`foldPaced`, whose landed fold projects before the next paced fold starts; the VM's WikiSenseIndexer and the
+   * sensorium cap fold fresh through `foldCorpus` and never hold this index.
    */
   *steps(docs: readonly WikiSenseDoc[], stalkOf: (doc: WikiSenseDoc) => DocStalk = (doc) => deriveDocStalk(senseBodyOf(doc.fields))): Generator<void, CorpusFold, void> {
     const oldStop = Math.max(2, this.byTitle.size / 2);

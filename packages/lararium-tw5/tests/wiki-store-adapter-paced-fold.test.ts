@@ -72,4 +72,28 @@ describe("the cold coherence fold yields to the island's loop", () => {
     expect(a.readings).toEqual(cold.readings);
     expect(b.readings).toEqual(cold.readings);
   });
+
+  test("a snapshot whose fold lands while the next one waits reads its own full fold, never the next one's partial index", async () => {
+    // The returned fold carries the index's own frequency and form maps, so its projection must run before the next
+    // paced fold mutates them: the flight starts the next fold only after the landed fold's reader has projected.
+    const store = await buildFixtureIsland("w", seeds);
+    const reader = compositeCorpusReader(store, { sliceMs: 0 });
+    let read!: () => void;
+    const firstRead = new Promise<void>((resolve) => { read = resolve; });
+    const docs = reader.docs.bind(reader);
+    reader.docs = async () => { const out = await docs(); read(); return out; };
+    const adapter = new WikiStoreAdapter(store, reader);
+    const before = projectWikiSensorium(await store.entries());
+    const first = adapter.snapshot();
+    await firstRead;   // the first snapshot holds the old corpus; its fold runs in slices from here
+    const bag = store.storeForBag("w")!;
+    await bag.put({ tiddler: { title: "Carrier 0", text: "a lone body, shingles no other carrier shares at all" } }, { kind: "canon-hydrate", receipt: "paced" } as never);
+    await bag.put({ tiddler: { title: "Carrier 1", text: "zzqx vvkw unique words that recur nowhere else" } }, { kind: "canon-hydrate", receipt: "paced" } as never);
+    const second = adapter.snapshot();
+    const after = projectWikiSensorium(await store.entries());
+    const [a, b] = await Promise.all([first, second]);
+    expect(before.restrictions[1]!.value).not.toEqual(after.restrictions[1]!.value);   // CONTROL: the edits move the form plane
+    expect(a.restrictions.map((r) => [...r.value.entries()])).toEqual(before.restrictions.map((r) => [...r.value.entries()]));
+    expect(b.restrictions.map((r) => [...r.value.entries()])).toEqual(after.restrictions.map((r) => [...r.value.entries()]));
+  });
 });
