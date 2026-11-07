@@ -8,7 +8,7 @@
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed
  */
 import { afterEach, describe, expect, it } from "vitest";
-import { Repo, type AutomergeUrl, type Chunk, type PeerId, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
+import { Repo, generateAutomergeUrl, parseAutomergeUrl, type AutomergeUrl, type Chunk, type PeerId, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
 import * as A from "@automerge/automerge";
 import { utf8Bytes } from "../src/crypto.js";
@@ -841,19 +841,33 @@ describe("a fault or a refusal never lets a document rest clear", () => {
 
   it("a rest ask that refuses leaves no byte in the island's store and refuses the load by name; an unsealed answer rests the bytes (control)", async () => {
     const islandInner = memoryAdapter();
+    const docA = parseAutomergeUrl(generateAutomergeUrl()).documentId, docB = parseAutomergeUrl(generateAutomergeUrl()).documentId;
     const refuse = Object.assign(new Error("refused"), { refusal: "rest-fault" });
     const guard = islandRestGuard(islandInner, async () => { throw refuse; });
     const bytes = Uint8Array.from(utf8Bytes(SECRET));
-    await expect(guard.save(["doc-a", "snapshot", "h1"], bytes)).rejects.toMatchObject({ refusal: "rest-fault" });
-    expect(restsAny(islandInner, "doc-a")).toBe(false);
-    await islandInner.save(["doc-b", "snapshot", "h1"], bytes);
-    await expect(guard.load(["doc-b", "snapshot", "h1"])).rejects.toMatchObject({ refusal: "rest-fault" });
-    await expect(guard.loadRange(["doc-b"])).rejects.toMatchObject({ refusal: "rest-fault" });
+    await expect(guard.save([docA, "snapshot", "h1"], bytes)).rejects.toMatchObject({ refusal: "rest-fault" });
+    expect(restsAny(islandInner, docA)).toBe(false);
+    await islandInner.save([docB, "snapshot", "h1"], bytes);
+    await expect(guard.load([docB, "snapshot", "h1"])).rejects.toMatchObject({ refusal: "rest-fault" });
+    await expect(guard.loadRange([docB])).rejects.toMatchObject({ refusal: "rest-fault" });
     await expect(guard.loadRange([])).rejects.toMatchObject({ refusal: "rest-fault" });
     // CONTROL: an unsealed answer rests and reads the bytes.
     const open = islandRestGuard(islandInner, async () => false);
-    await open.save(["doc-a", "snapshot", "h1"], bytes);
-    expect(restsClear(islandInner, "doc-a", SECRET)).toBe(true);
-    expect(await open.load(["doc-b", "snapshot", "h1"])).toEqual(bytes);
+    await open.save([docA, "snapshot", "h1"], bytes);
+    expect(restsClear(islandInner, docA, SECRET)).toBe(true);
+    expect(await open.load([docB, "snapshot", "h1"])).toEqual(bytes);
+  });
+
+  it("a key that names no document (the store's own `storage-adapter-id`) asks the vessel nothing and rests as written; a document's key still asks (control)", async () => {
+    const islandInner = memoryAdapter();
+    const asked: string[] = [];
+    const guard = islandRestGuard(islandInner, async (documentId) => { asked.push(documentId); throw Object.assign(new Error("refused"), { refusal: "rest-fault" }); });
+    const id = utf8Bytes("adapter-one");
+    await guard.save(["storage-adapter-id"], id);
+    expect(await guard.load(["storage-adapter-id"])).toEqual(id);
+    expect(asked).toEqual([]);
+    const doc = parseAutomergeUrl(generateAutomergeUrl()).documentId;
+    await expect(guard.save([doc, "snapshot", "h1"], id)).rejects.toMatchObject({ refusal: "rest-fault" });
+    expect(asked).toEqual([doc]);
   });
 });
