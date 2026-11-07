@@ -1131,8 +1131,8 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
   };
   const doorFor = (kind: LarServiceKind): LarHostDoor | undefined => opts.doors?.[kind] ?? pageDoors[kind];
   // LIVENESS: this window bounds how long an unspent act licenses a door. The token already spends once (one act opens one
-  // door) and a later act replaces it, but an act that no ask ever claims has no event that says "this act no longer causes
-  // anything": only age separates the person's click from an unprompted island ask. It mirrors the browser's own transient
+  // door) and a later act replaces it, but an act that no ask ever claims has no event that ends it
+  // (a cause outlives its click): only age separates the person's click from an unprompted island ask. It mirrors the browser's own transient
   // activation, which gates the same doors (fullscreen, open, clipboard) on its own clock.
   const activeAct = (surface: string): boolean =>
     (navigator as Navigator & { userActivation?: { isActive: boolean } }).userActivation?.isActive === true
