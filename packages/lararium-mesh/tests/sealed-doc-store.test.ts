@@ -132,6 +132,63 @@ describe("step three: hydration answers to the session's face", () => {
   });
 });
 
+// ONE FACE, TWO ANCHORS (session-contract#/the-hands): a vessel that wears its face at its place and later dials a Nexus
+// names that face by two proof subjects. A value its place session sealed reads after the map names the face by its
+// Nexus subject, and a save its place session booked still seals there (meme-realm-bag ⑮b: a founder that dialed a
+// relation's Nexus stood again and found its face's catalog and draft slot `writer-face-foreign`, so unavailable).
+describe("one face at two anchors: the store reads the face by every subject the vessel's own chain names", () => {
+  const PLACE = "lar:///ha.ka.ba/@test/subjects/place-of-the-worn-face";
+  it("W1 — a value the worn face's place session sealed reads at its Nexus subject; another face's writer still refuses", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const inner = memoryAdapter();
+    const key = ["doc-anchor", "incremental", "c1"];
+    await storeFor(a, inner).save(key, A.save(A.change(A.init<{ note?: string }>(), (d) => { d.note = SECRET; })));
+    const own = faceProofSubjectRef(a.chain.scope);
+    // The manifest names the place subject as its writer: the place session sealed it.
+    const readAs = (writer: string, wornAt?: (subject: string) => boolean): SealedDocumentStore => new SealedDocumentStore({
+      inner,
+      bagOf: () => ({ bagId: BAG, face: own }),
+      sessionFace: () => own,
+      sessionOf: () => ({ id: "the-writing-session", subject: own }),
+      seal: ({ bagId, values }) => a.holder.sealValues({ bagId, values, signer: a.signer }),
+      open: async (args) => { const opened = await a.holder.openValue(args); return "refusal" in opened ? opened : { ...opened, writer }; },
+      ...(wornAt ? { wornAt } : {}),
+    });
+    const loaded = await readAs(PLACE, (subject) => subject === PLACE).load(key);
+    expect(loaded).toBeInstanceOf(Uint8Array);
+    expect(A.load<{ note?: string }>(loaded!).note).toBe(SECRET);
+    // CONTROL: the worn face's other subject reads only where the vessel names it; another face's writer refuses.
+    expect(await refusalOf(() => readAs(PLACE).load(key))).toBe("writer-face-foreign");
+    const other = faceProofSubjectRef((await chain("b", "nexus-test-one")).scope);
+    expect(await refusalOf(() => readAs(other, (subject) => subject === PLACE).load(key))).toBe("writer-face-foreign");
+  });
+
+  it("W2 — a save the place session booked seals after the map names the face by its Nexus subject; another face's session refuses", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const inner = memoryAdapter();
+    const own = faceProofSubjectRef(a.chain.scope);
+    const bookedBy = (subject: string, wornAt?: (s: string) => boolean): SealedDocumentStore => new SealedDocumentStore({
+      inner,
+      bagOf: () => ({ bagId: BAG, face: own }),
+      sessionFace: () => own,
+      sessionOf: () => ({ id: "the-place-session", subject }),
+      seal: ({ bagId, values }) => a.holder.sealValues({ bagId, values, signer: a.signer }),
+      open: (args) => a.holder.openValue(args),
+      ...(wornAt ? { wornAt } : {}),
+    });
+    const change = A.save(A.change(A.init<{ note?: string }>(), (d) => { d.note = SECRET; }));
+    expect(await refusalOf(() => bookedBy(PLACE, (s) => s === PLACE).save(["doc-place", "incremental", "c1"], change))).toBe("ANSWERED");
+    expect(restsClear(inner, "doc-place", SECRET)).toBe(false);
+    expect([...inner.bytes.keys()].some((k) => k.startsWith("doc-place"))).toBe(true);
+    // CONTROL: unnamed, the same booking refuses by name, and another face's session refuses under the same port.
+    expect(await refusalOf(() => bookedBy(PLACE).save(["doc-place", "incremental", "c2"], change))).toBe("session-face-foreign");
+    const other = faceProofSubjectRef((await chain("b", "nexus-test-one")).scope);
+    expect(await refusalOf(() => bookedBy(other, (s) => s === PLACE).save(["doc-place", "incremental", "c3"], change))).toBe("session-face-foreign");
+  });
+});
+
 describe("step three: one manifest for each write batch", () => {
   it("a batch rests under one manifest, and each manifest cites every manifest its writer verified", async () => {
     const w = world();
