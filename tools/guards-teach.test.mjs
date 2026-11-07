@@ -9,7 +9,8 @@ import { runGate } from './pre-push-gate.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const run = (cmd, args, options = {}) => spawnSync(cmd, args, { cwd: root, encoding: 'utf8', ...options });
-const endsInPono = (message) => assert.match(message.trimEnd(), /(?:^|\n)pono: \S[^\n]*$/);
+// A refusal carries its procedure on a line of its own; a runner may print diff lines after the message.
+const endsInPono = (message) => assert.match(message, /(?:^|\n)\s*pono: \S/);
 
 test('stash refusal teaches a procedure', () => {
   const r = run(process.execPath, ['tools/stash-guard.mjs'], { input: JSON.stringify({ tool_input: { command: 'git stash' }, cwd: root }) });
