@@ -90,6 +90,7 @@ function opsOf(w, over = {}) {
   const ops = {
     git,
     verdict: async (branch, sha) => { calls.verdicts.push([branch, sha]); return { ci: "green", heldOut: "green" }; },
+    heldOut: async () => ({ covered: w.base, state: "green", inFlight: 0 }),
     disk: () => ({ cGb: 100, rootGb: 100 }),
     houseWorktrees: () => 1,
     spanRuns: () => [],
@@ -432,6 +433,7 @@ test("RED: DIRECT refuses the span's newest completed red held-out run by name; 
   }, { local: false }, ["a"]);
   assert.equal(r.code, 15, r.out);
   assert.match(r.out, new RegExp(`HELD-OUT RED at ${w.base.slice(0, 9)}`));
+  assert.match(r.out, /pono: cure the span's held-out red first; the held-out lane lands DIRECT only over its own green cells/);
   assert.deepEqual(reads, [SPAN]);
   assert.equal(originRef(w, SPAN), w.base, "the red held-out run prevents the span push");
   assert.equal(originRef(w, `${SPAN}--a`), w.heads.a, "the lane stays untouched");

@@ -476,6 +476,10 @@ function trainRefs(git, span) {
 /** DIRECT and --local: the land written before the push, from the lane tree or the local battery's merge trees. */
 async function landLocal({ name, lanes, plan, span, direct, memDirect = false, d, table, shipDir }, ops) {
   const { say, git, stop, env, SP } = d;
+  if (direct || memDirect) {
+    const held = await ops.heldOut(span);
+    if (held.state === "red") return stop(15, `HELD-OUT RED at ${short(held.covered)}: DIRECT land refuses`, "pono: cure the span's held-out red first; the held-out lane lands DIRECT only over its own green cells");
+  }
   // --local keeps the road walk from the lanes' common base: the battery reads only shared packages, so every road commit
   // between that base and the span head must read GREEN on its own (a land carries its train's verdict).
   const baseSha = lanes.length === 1 ? lanes[0].base : git(["merge-base", "--octopus", ...lanes.map((l) => l.base)]);
