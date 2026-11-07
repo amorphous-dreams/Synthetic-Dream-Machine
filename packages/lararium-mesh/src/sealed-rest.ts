@@ -203,7 +203,13 @@ export function vesselDocStoreDoor<S extends SaveSession>(port: () => Port | nul
   };
 }
 
-/** The island's side of the door: the holder's seal (signed through the booked ask) and open. Returns the unsubscribe. */
+/** Island → vessel: the island's holder answers the door from now (`docstore:answering`), or no longer
+ *  (`docstore:silent`). The vessel's cell asks only an island that answers: a door with none refuses at once by name. */
+export interface DocStoreMsg_Answering { readonly type: "docstore:answering" }
+export interface DocStoreMsg_Silent { readonly type: "docstore:silent" }
+
+/** The island's side of the door: the holder's seal (signed through the booked ask) and open. It names that it answers
+ *  as it installs and that it stops at its unsubscribe. Returns the unsubscribe. */
 export function answerDocStoreAsks(port: Port, holder: {
   seal(args: { readonly bagId: string; readonly values: readonly DocumentValue[]; readonly ask: { readonly requestId: string; readonly verb: string }; readonly peer?: string }): Promise<SealedValueAddresses | HolderRefusal>;
   open(args: { readonly bagId: string; readonly role: DocumentValue["role"]; readonly ref: string }): Promise<OpenedValue | HolderRefusal>;
@@ -216,7 +222,7 @@ export function answerDocStoreAsks(port: Port, holder: {
     const name = typeof r?.reason === "string" ? r.reason : typeof r?.refusal === "string" ? r.refusal : "seal-refused";
     return { refusal: name, ...(typeof r?.message === "string" ? { cause: r.message } : {}) };
   };
-  return port.listen((raw) => {
+  const stop = port.listen((raw) => {
     const m = raw as { type?: unknown; requestId?: unknown; bagId?: unknown; ask?: unknown; verb?: unknown; values?: unknown; role?: unknown; ref?: unknown; peer?: unknown } | null;
     if (m?.type === "docstore:lock") { holder.lock?.(); return; }
     if (!m || typeof m.requestId !== "string" || typeof m.bagId !== "string") return;
@@ -237,6 +243,8 @@ export function answerDocStoreAsks(port: Port, holder: {
         (e) => reply({ type: "docstore:opened", requestId, ...refusal(e) }));
     }
   });
+  reply({ type: "docstore:answering" } satisfies DocStoreMsg_Answering);
+  return () => { stop(); reply({ type: "docstore:silent" } satisfies DocStoreMsg_Silent); };
 }
 
 /** The island asks the vessel for a bag's live document, as the vessel's Repo holds it in memory (the fresh base's cut). */
@@ -261,7 +269,9 @@ export function answerLiveDocAsks(port: Port, liveOf: (bagId: string) => Promise
 
 /**
  * The vessel's cell for its daemon island's port: the record's `docStore` member attaches each daemon island's port as
- * it spawns (the latest stands; an island that goes leaves none), and the door reads the port at ask time. The vessel
+ * it spawns (the latest stands; an island that goes leaves none), and the door reads the port at ask time. The port
+ * stands for the door only once its island's holder names that it answers (`docstore:answering`): at the floor, before
+ * a holder stands, every seal and open refuses at once by name and never waits on a holder that never stood. The vessel
  * answers the island's `docstore:live` over the same port.
  */
 export function docStorePortCell(liveOf: (bagId: string) => Promise<Uint8Array | null>, opts: {
@@ -279,14 +289,19 @@ export function docStorePortCell(liveOf: (bagId: string) => Promise<Uint8Array |
       // every ask still waiting on it, so none waits on a clock.
       const goneTo = new Set<() => void>();
       const port: Port = { post: (msg) => island.post(msg), listen: (cb) => island.listen(cb), gone: (cb) => { goneTo.add(cb); return () => { goneTo.delete(cb); }; } };
-      current = port;
+      // Each listener settles the asks waiting on this island; a holder that falls silent and answers again keeps them.
+      const tell = (): void => { for (const cb of [...goneTo]) { try { cb(); } catch { /* one listener's fault never holds the rest */ } } };
+      const stopAnswering = island.listen((raw) => {
+        const type = (raw as { type?: unknown } | null)?.type;
+        if (type === "docstore:answering") current = port;
+        else if (type === "docstore:silent" && current === port) { current = null; tell(); }
+      });
       const stop = answerLiveDocAsks(island, liveOf);
       const stopSlots = opts.onSlot ? answerSlotNotices(island, opts.onSlot) : () => {};
       return () => {
-        stop(); stopSlots();
+        stop(); stopSlots(); stopAnswering();
         if (current === port) current = null;
-        const told = [...goneTo]; goneTo.clear();
-        for (const cb of told) { try { cb(); } catch { /* one listener's fault never holds the rest */ } }
+        tell(); goneTo.clear();
       };
     },
   };
