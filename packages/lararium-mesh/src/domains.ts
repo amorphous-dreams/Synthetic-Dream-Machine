@@ -36,9 +36,9 @@
  * Every signing domain and HKDF info carries a name without a version. `mint` declares each name
  * under the shared root; the name alone separates its purpose.
  *
- * A rename re-keys every record made under the old name: a signature, a sealed value or a derived key
- * minted under it verifies or opens against nothing. No stored record survives a rename, by design: the
- * alpha line keeps no back-compat, and every CRDT doc re-genesises until the founding bake.
+ * A record made under one name verifies or opens under that name alone: a signature, a sealed value or a
+ * derived key never crosses to another. Renaming a domain re-keys its records, and the alpha line carries
+ * no record across a rename; every CRDT doc re-genesises until the founding bake.
  *
  * ── HOW TO ADD ONE ──────────────────────────────────────────────────────────────────────────────
  * Add it HERE, exported, and use the export. `tools/domain-registry-witness.sh` refuses a duplicate, a
