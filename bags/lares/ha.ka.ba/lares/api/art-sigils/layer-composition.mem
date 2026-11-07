@@ -8,77 +8,67 @@ uri-path = "ha.ka.ba/lares/api/art-sigils/layer-composition"
 title    = "lar:///ha.ka.ba/lares/api/art-sigils/layer-composition"
 type     = "text/memetic-wikitext+tiddlywiki"
 register = "Synthesis-Canon"
-role     = "draft compositing companion for independent image components and reversible interventions"
+role     = "optional reversible multi-component composition procedure"
 status   = "draft"
 retain   = true
 ```
 
 <<~ ahu slot=`#/bearing`>>
-! Layer Composition ~ the relation is part of the artwork
+! Layer Composition
 
-A layer may have no complete aesthetic read in isolation. It can exist to modify, reveal, interrupt, shade, register or protect another layer. The artistic invitation states the relationship; an optional artifact contract states enforceable geometry and channel requirements; the composition ledger records the actual operations and preserved sources.
+Use a layer stack where an artwork is built from independently controlled components. A layer can be valuable only in relation to the full composition. This companion does not add `art-layer()` or require every worktype to use layers.
 
-This is a discipline-specific companion, not a universal default. It does not create an `art-layer()` procedure or require paintings, textiles, installations, photographs and performances to behave like pixel stacks.
 <<~/ahu>>
 
 <<~ ahu slot=`#/roles`>>
-!! Layer roles are responsibilities, not style prescriptions
+!! Name component responsibilities
 
-* `source-bearing` — original keyline, photographed evidence, or other material that must remain traceable; edit on a derived layer when source preservation is required.
-* `underpainting` — color, atmosphere or support operating beneath another member of the image.
-* `glaze` — a field modifying contrast, color or local luminosity without claiming a freestanding subject.
-* `registration-plate` — a displaced or transformed copy of selected source features, where its misalignment may be deliberate.
-* `mask/protection` — controls an operation's spatial reach; presence in a file stack does not mean it should render visibly.
-* `attribution/typography` — exact letterforms or credits, sometimes requiring a separately verified text plate.
-* `diagnostic/backup` — comparison, recovery or hidden evidence; must not accidentally contribute to the publication image.
+* `source-bearing` — original material retained for provenance or editing.
+* `underpainting` — color, light or support beneath another component.
+* `glaze` — a partial color or luminance contribution.
+* `registration-plate` — transformed selection from a named source.
+* `mask/protection` — spatial inclusion, exclusion or shielding for an operation.
+* `typography/attribution` — literal lettering, credits or labels where appropriate.
+* `diagnostic/backup` — non-publication comparison and recovery assets.
 
-The same visual asset can change role between operations; name scope and responsibility at the relevant step. Never treat all layers as individually required to look complete.
+One component can hold multiple roles. Record whether each should render in the publication export.
+
 <<~/ahu>>
 
-<<~ ahu slot=`#/composition-ledger`>>
-!! Minimum composition ledger
+<<~ ahu slot=`#/ledger`>>
+!! Composition ledger
+
+For each component record source identity, role, bounds, canvas, visibility, order, transforms, masks, pixel alpha, blend mode, layer opacity and expected relation. Track actual transformations rather than implied ones.
 
 ```toml
 [[component]]
-handle = "color-field"
-role = "underpainting"
-source = "retained unchanged"
-canvas = "aligned to a named base"
-transformation = "specified separately; reproducible or documented"
-alpha = "actual per-pixel transparency, not artistic translucency"
-blend = "record actual blend operation and opacity"
-visibility = "visible / hidden / diagnostic"
-relationship = "adds atmosphere beneath the source, without replacing its linework"
+handle = "glaze-A"
+role = "glaze"
+source = "retained file reference"
+canvas = "named base canvas"
+transform = "documented"
+blend = "actual operation"
+opacity = "actual numeric value and scale"
+visibility = "publication / diagnostic / hidden"
+relation = "changes underlying hue without replacing subjects"
 ```
 
-For every composite distinguish: source pixel alpha, editor layer opacity, source-over/blend mathematics, stack order, offsets, masks, resampling, and output flattening. Different editors may display or round blends differently; independently computed previews are evidence for a comparison, not a guarantee of pixel-identical rendering everywhere.
-
-An editable file should preserve layer source references and dimensions; a flattened export should never be the sole surviving source unless the operator explicitly accepts that loss.
 <<~/ahu>>
 
-<<~ ahu slot=`#/registration`>>
-!! Registration and intervention
+<<~ ahu slot=`#/process`>>
+!! Operate reversibly
 
-A source-derived plate needs an explicit correspondence map: source selection, transform, coordinates, masks and whether transformations happen before or after regional cleanup. Preserve deliberate registration errors that carry the artistic read; remove unintended orphan fragments only where the evidence supports removing them.
+1. Preserve original pixels and working source assets when required.
+2. Apply transforms and masks to named derivatives; keep coordinate origins and order explicit.
+3. Verify each component's contribution in the assembled result. An isolated layer need not appear complete.
+4. Distinguish intentional registration shifts from orphan marks or accidental coverage.
+5. Inspect technical geometry and intended visual read independently.
+6. Preserve an editable master and separately name any flattened publication export.
 
-If several geometric regions need different treatment, record region-specific interventions instead of applying one universal global correction. Verify both technical coverage and situated visual coherence. A mathematically aligned edge can be the wrong artistic edge.
-<<~/ahu>>
+A composite preview may differ between renderers. When pixel equality matters, test the target renderer rather than assuming identical blend or color-management behavior.
 
-<<~ ahu slot=`#/reversibility`>>
-!! Backups, checks, and release
+See [[Artifact Contract|ha.ka.ba/lares/api/art-sigils/artifact-contract]] and [[Reception QA|ha.ka.ba/lares/api/art-sigils/reception-qa]].
 
-* Preserve original pixels where the commission or rights require it. Name every transformed derivative; keep a hidden original or a separable source rather than overwriting.
-* Record which source images and layers were changed, which were merely re-rendered, and which remain bit-identical.
-* Validate alpha and clipping in actual composite context; apparent transparency alone is insufficient.
-* Where feasible, deliver an editable multichannel/multilayer master plus a clearly named flattened publication export.
-* Use before/after views at scales relevant to the work, not one mandatory zoom level.
-* If flattening or destructive editing is unavoidable, record the boundary and obtain the operator's acceptance.
-
-Related: [[Artifact Contract|ha.ka.ba/lares/api/art-sigils/artifact-contract]] · [[Reception QA|ha.ka.ba/lares/api/art-sigils/reception-qa]] · [[Provenance and Publication|ha.ka.ba/lares/api/art-sigils/provenance-publication]].
-<<~/ahu>>
-
-<<~ ahu slot=`#/aftermath`>>
-The crucial relation is not `image A` plus `image B`, but the work performed by their encounter. Composition deserves its own craft discipline without colonizing the semantic nucleus.
 <<~/ahu>>
 
 <<^ code=`&#x0003;`>>
