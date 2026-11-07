@@ -22,3 +22,17 @@ test('ignores source-shaped directories in ignored output while detecting real s
     rmSync(fixture, { recursive: true, force: true });
   }
 });
+
+test('refuses versioned domain literals outside the registry by name', () => {
+  const fixture = mkdtempSync(resolve(root, 'packages/domain-witness-fixture-'));
+  try {
+    writeFileSync(resolve(fixture, 'stray.ts'), 'const tag = "lar-planted-versioned/v1";\n');
+    const result = spawnSync('bash', ['tools/domain-registry-witness.sh'], { cwd: root, encoding: 'utf8' });
+    assert.equal(result.status, 1, result.stdout + result.stderr);
+    for (const name of ['lar-planted-versioned/v1', 'lar-holder-continuity/v1', 'lar-wax-stamp/v1', 'lar-witness/v1', 'lares/face-join-grant/v1']) {
+      assert.match(result.stdout, new RegExp(`domain literal\\(s\\) written OUTSIDE the registry:[\\s\\S]*${name}`));
+    }
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+});
