@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, linkSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
 import { assertDestination, provision } from './provision-worktree.mjs';
@@ -256,13 +256,40 @@ test('a pnpm offline frozen install fills node_modules, and the source node_modu
     };
     provision({ guard: noGuard, source: f.source, destination: f.destination, run, log: line => f.logs.push(line) });
     const install = f.calls.filter(([cmd]) => cmd === 'pnpm');
-    assert.deepEqual(install.map(([, args, cwd]) => [args, cwd]), [[['install', '--offline', '--frozen-lockfile'], f.destination]]);
+    assert.deepEqual(install.map(([, args, cwd]) => [args, cwd]), [[['install', '--offline', '--frozen-lockfile', '--package-import-method=copy'], f.destination]]);
     assert.equal(existsSync(join(f.destination, 'node_modules/source-only-marker')), false);
-    assert.equal(f.logs.some(line => /INSTALLED node_modules/.test(line)), true);
+    assert.equal(f.logs.some(line => /INSTALLED node_modules by pnpm install .*--package-import-method=copy/.test(line)), true);
   } finally { f.close(); }
 });
 
-test('when pnpm cannot install offline, node_modules hardlinks from the source and links still relink', () => {
+test('an install that leaves a node_modules file sharing an inode refuses by name and removes the worktree; CONTROL a copy install passes', () => {
+  for (const shared of [true, false]) {
+    const f = fixture();
+    try {
+      f.put('node_modules/pkg/index.js', 'main checkout bytes');
+      const run = (cmd, args, cwd) => {
+        if (cmd === 'pnpm') {
+          for (const bin of ['tsc', 'tsx']) { mkdirSync(join(f.destination, 'node_modules/.bin'), { recursive: true }); writeFileSync(join(f.destination, 'node_modules/.bin', bin), 'bin'); }
+          mkdirSync(join(f.destination, 'packages/lararium-mesh/node_modules/pkg'), { recursive: true });
+          const into = join(f.destination, 'packages/lararium-mesh/node_modules/pkg/index.js');
+          if (shared) linkSync(join(f.source, 'node_modules/pkg/index.js'), into); // a hardlink import from a shared store
+          else writeFileSync(into, 'main checkout bytes');
+        }
+        return f.run(cmd, args, cwd);
+      };
+      const go = () => provision({ guard: noGuard, source: f.source, destination: f.destination, run, log: line => f.logs.push(line) });
+      if (shared) {
+        assert.throws(go, /1 node_modules file\(s\) share an inode .*packages\/lararium-mesh\/node_modules\/pkg\/index\.js/);
+        assert.equal(existsSync(f.destination), false, 'the refused worktree is removed');
+      } else {
+        go();
+        assert.equal(statSync(join(f.destination, 'packages/lararium-mesh/node_modules/pkg/index.js')).nlink, 1);
+      }
+    } finally { f.close(); }
+  }
+});
+
+test('when pnpm cannot install offline, node_modules copies from the source (no shared inode) and links still relink', () => {
   const f = fixture();
   try {
     f.put('node_modules/real-file.js', 'shared');
@@ -270,7 +297,12 @@ test('when pnpm cannot install offline, node_modules hardlinks from the source a
     symlinkSync(join(f.source, 'packages/lararium-mesh'), join(rootModules, 'mesh-link'));
     const run = (cmd, args, cwd) => { if (cmd === 'pnpm') throw new Error('ERR_PNPM_NO_OFFLINE_TARBALL'); return f.run(cmd, args, cwd); };
     provision({ guard: noGuard, source: f.source, destination: f.destination, run, log: line => f.logs.push(line) });
-    assert.equal(statSync(join(f.destination, 'node_modules/real-file.js')).ino, statSync(join(rootModules, 'real-file.js')).ino);
+    const copied = join(f.destination, 'node_modules/real-file.js'), original = join(rootModules, 'real-file.js');
+    assert.notEqual(statSync(copied).ino, statSync(original).ino, 'the lane file holds its own inode');
+    assert.equal(statSync(original).nlink, 1, 'the main checkout file gained no link');
+    writeFileSync(copied, 'lane rewrite');
+    assert.equal(readFileSync(original, 'utf8'), 'shared', 'CONTROL: the main checkout file still reads its original bytes');
+    assert.equal(f.logs.some(line => /COPIED node_modules from/.test(line)), true);
     assert.equal(readlinkSync(join(f.destination, 'node_modules/mesh-link')), relative(join(f.destination, 'node_modules'), join(f.destination, 'packages/lararium-mesh')));
     assert.equal(f.logs.some(line => /pnpm offline install refused.*ERR_PNPM_NO_OFFLINE_TARBALL/.test(line)), true);
   } finally { f.close(); }

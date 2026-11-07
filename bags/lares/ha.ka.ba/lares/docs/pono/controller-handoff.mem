@@ -76,7 +76,7 @@ A session reads this carrier and the roadmap alone; no note outside the reposito
 
 !!! Git
 * A git command that writes runs alone on its line. Never `git stash` in any form, `git stash list` included (a PreToolUse hook, `tools/stash-guard.mjs`, refuses any Bash call that reaches it, and `.codex/rules/stash.rules` forbids its prefix to Codex); never `--no-verify`; never touch `.git/config`; never push the span (`feature/green-jello-dinosaur-5`) or `main`, since a lane pushes its own lane branch; never `git worktree remove --force` on a lane worktree, since only the land script force-removes the train worktree it made.
-* A lead works in its own worktree (`node tools/provision-worktree.mjs <empty-dir>` provisions one: inputs copied, every package built and stamped, no link left pointing into the main tree), and checks `git config core.bare` reads `false` before and after.
+* A lead works in its own worktree (`node tools/provision-worktree.mjs <empty-dir>` provisions one: inputs copied, `node_modules` copied out of the pnpm store, never hardlinked, so the lane shares no writable inode with the store, the main checkout or another lane (the provision refuses by name a module file carrying a second link), every package built and stamped, no link left pointing into the main tree; the test door binds every `node_modules` read-only and the install seat binds the store read-only), and checks `git config core.bare` reads `false` before and after.
 * A lead commits on its lane branch in its own worktree after `pnpm build`: it confirms the built CLI answers, reads `git status --porcelain -- <paths>` and `git diff -- <paths>` showing only its lines, then commits with `git commit -F <msg> --only -- <paths>`. It never commits or reverts a line another hand wrote. A subject reads `lar:///ha.ka.ba/<pkg-or-bag>/<area>/<w1.w2.w3> — plain summary`; `-F`, never `-m`.
 
 !!! Refusals and waiting
@@ -161,6 +161,6 @@ A session can close and a fresh one boot from carriers; a ''live'' handoff lets 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;TnmJNQEkWYdXKYcu5Jn6QEmjh-0h7sC4Z-RbXoieqP4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ErnSI3Y91OOvPEPZY2WINxLc1rfjezCiTR5aAsvBmBk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

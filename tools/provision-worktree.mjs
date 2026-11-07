@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /** Prepare a detached checkout from inputs, then compile its generated package outputs. */
-import { copyFileSync, cpSync, existsSync, linkSync, lstatSync, mkdirSync, readFileSync, readlinkSync, readdirSync, realpathSync, rmSync, statSync, symlinkSync } from 'node:fs';
+import { copyFileSync, cpSync, existsSync, lstatSync, mkdirSync, readFileSync, readlinkSync, readdirSync, realpathSync, rmSync, statSync, symlinkSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -43,18 +43,35 @@ function copy(source, destination, rel, log, options = {}) {
   cpSync(from, to, { recursive: true, force: true, dereference: false, ...options });
   log(`COPIED ${rel} from ${from}`);
 }
-/** Mirror a tree with hardlinked files: a real file costs one inode, never a second copy of its bytes. */
-function hardlinkTree(from, to) {
+/** Mirror a tree with COPIED files: each lane file holds its own inode, so a write in one tree never reaches another. */
+function copyTree(from, to) {
   mkdirSync(to, { recursive: true });
   for (const entry of readdirSync(from, { withFileTypes: true })) {
     const a = join(from, entry.name), b = join(to, entry.name);
     if (entry.isSymbolicLink()) symlinkSync(readlinkSync(a), b);
-    else if (entry.isDirectory()) hardlinkTree(a, b);
-    else {
-      try { linkSync(a, b); }
-      catch { copyFileSync(a, b); } // a different filesystem or a refused link still yields the file
-    }
+    else if (entry.isDirectory()) copyTree(a, b);
+    else copyFileSync(a, b);
   }
+}
+/** Module farms a workspace install writes: the root, every top-level workspace dir, every package. */
+function moduleFarms(destination) {
+  const dirs = base => existsSync(base) ? readdirSync(base, { withFileTypes: true }).filter(e => e.isDirectory() && !e.name.startsWith('.') && e.name !== 'node_modules').map(e => e.name) : [];
+  return ['node_modules', ...dirs(destination).filter(d => d !== 'packages').map(d => `${d}/node_modules`), ...dirs(join(destination, 'packages')).map(d => `packages/${d}/node_modules`)]
+    .filter(rel => existsSync(join(destination, rel)) && lstatSync(join(destination, rel)).isDirectory());
+}
+function* filesUnder(path) {
+  for (const entry of readdirSync(path, { withFileTypes: true })) {
+    const child = join(path, entry.name);
+    if (entry.isDirectory()) yield* filesUnder(child);
+    else if (entry.isFile()) yield child;
+  }
+}
+/** A lane shares no writable inode with the store, the main checkout or another lane: a regular file under a module farm
+ *  carrying a second link refuses by name. */
+function assertNoSharedInodes(destination) {
+  const shared = [];
+  for (const rel of moduleFarms(destination)) for (const file of filesUnder(join(destination, rel))) if (lstatSync(file).nlink > 1) shared.push(relative(destination, file));
+  if (shared.length) throw new Error(`${shared.length} node_modules file(s) share an inode with another tree (a hardlink import): ${shared.slice(0, 5).join(', ')}${shared.length > 5 ? ', ...' : ''}`);
 }
 function* linksUnder(path) {
   if (!existsSync(path)) return;
@@ -156,21 +173,22 @@ export function provision({ source = ROOT, destination, run = defaultRun, log = 
   let rewritten = 0;
   let installed = false;
   try {
-    // The workspace's lockfile and the pnpm store already hold every package, so an offline frozen install hardlinks
-    // them into the new tree: no second copy of node_modules lands on the disk.
-    run('pnpm', ['install', '--offline', '--frozen-lockfile'], destination);
+    // The workspace's lockfile and the pnpm store already hold every package, so an offline frozen install fills the new
+    // tree without the network. It COPIES out of the store: a hardlink import would leave every lane, the main checkout and
+    // the store holding one owner-writable inode per file, so a write in any tree would rewrite the tooling of all of them.
+    run('pnpm', ['install', '--offline', '--frozen-lockfile', '--package-import-method=copy'], destination);
     installed = existsSync(join(destination, 'node_modules'));
-    if (installed) log('INSTALLED node_modules by pnpm install --offline --frozen-lockfile (hardlinks from the store)');
-    else log('pnpm install left no root node_modules; falling back to a hardlink copy');
+    if (installed) log('INSTALLED node_modules by pnpm install --offline --frozen-lockfile --package-import-method=copy (copies from the store)');
+    else log('pnpm install left no root node_modules; falling back to a copy from the source');
   } catch (error) {
-    log(`pnpm offline install refused: ${error.message.split('\n')[0]}; falling back to a hardlink copy`);
+    log(`pnpm offline install refused: ${error.message.split('\n')[0]}; falling back to a copy from the source`);
   }
   if (!installed) {
     for (const rel of modulePaths) {
       rmSync(join(destination, rel), { recursive: true, force: true });
       if (!existsSync(join(source, rel))) continue;
-      hardlinkTree(join(source, rel), join(destination, rel));
-      log(`HARDLINKED ${rel} from ${join(source, rel)}`);
+      copyTree(join(source, rel), join(destination, rel));
+      log(`COPIED ${rel} from ${join(source, rel)}`);
       const count = relinkModules(source, destination, rel);
       rewritten += count;
       log(`RELINKED ${count} symlinks in ${rel}`);
@@ -178,6 +196,7 @@ export function provision({ source = ROOT, destination, run = defaultRun, log = 
   }
   log(`RELINKED ${rewritten} node_modules symlinks`);
   assertNoSourceLinks(source, destination);
+  assertNoSharedInodes(destination);
   if (!existsSync(join(destination, 'node_modules'))) throw new Error('required input absent: root node_modules');
   for (const bin of ['tsc', 'tsx']) {
     if (!existsSync(join(destination, `node_modules/.bin/${bin}`)) && !existsSync(join(destination, `packages/lararium-tw5/node_modules/.bin/${bin}`))) {
