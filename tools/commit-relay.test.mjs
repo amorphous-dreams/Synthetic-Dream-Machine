@@ -246,7 +246,7 @@ wallTest('PROOF 3 hostile lifecycle scripts and .npmrc: the broker has no instal
   assert.doesNotMatch(src, /pnpm|npm_config|submodule/, 'the relay carries no install or submodule code');
   const pnpmBin = path.join(x.root, 'bin'); mkdirSync(pnpmBin);
   const log = path.join(x.root, 'pnpm.log'), store = path.join(x.root, 'store'); mkdirSync(store);
-  const cache = path.join(x.root, 'cache'); mkdirSync(path.join(cache, 'v12', 'metadata-full'), { recursive: true }); writeFileSync(path.join(cache, 'v12', 'metadata-full', 'pkg.jsonl'), 'META');
+  const cache = path.join(x.root, 'cache'); mkdirSync(path.join(cache, 'metadata'), { recursive: true }); writeFileSync(path.join(cache, 'metadata', 'pkg.jsonl'), 'META');
   const probe = path.join(x.root, 'probe');
   writeFileSync(path.join(pnpmBin, 'pnpm'), `#!/bin/sh
 echo "ARGV $*" > "${log}"
@@ -256,8 +256,8 @@ touch "${x.wt}/.git/PWNED" 2>>"${log}" && echo GITWRITE >> "${log}"
 touch "${x.goFile}" 2>>"${log}" && echo GOWRITE >> "${log}"
 cat "${x.control}/secret" 2>/dev/null | grep -q CONTROLLER-SECRET && echo CTRLREAD >> "${log}"
 if touch "${store}/ok" 2>/dev/null; then echo STOREWRITE >> "${log}"; else echo STOREREFUSED >> "${log}"; fi
-grep -q META "${cache}/v12/metadata-full/pkg.jsonl" && echo CACHEREAD >> "${log}"
-if echo planted >> "${cache}/v12/metadata-full/pkg.jsonl" 2>/dev/null; then echo CACHEWRITE >> "${log}"; else echo CACHEREFUSED >> "${log}"; fi
+grep -q META "${cache}/metadata/pkg.jsonl" && echo CACHEREAD >> "${log}"
+if echo planted >> "${cache}/metadata/pkg.jsonl" 2>/dev/null; then echo CACHEWRITE >> "${log}"; else echo CACHEREFUSED >> "${log}"; fi
 `, { mode: 0o755 });
   writeFileSync(path.join(x.wt, 'package.json'), JSON.stringify({ name: 'p', scripts: { postinstall: `touch ${probe}` } }));
   const seat = { worktree: x.wt, gitDir: x.ctx.gitDir, installer: path.join(pnpmBin, 'pnpm'), storeDir: store, cacheDir: cache, iso: x.iso, extraRw: [x.root], protect: [x.control] };
@@ -278,7 +278,7 @@ if echo planted >> "${cache}/v12/metadata-full/pkg.jsonl" 2>/dev/null; then echo
   // The metadata cache binds read-only in the same shape: the offline supply-chain check reads it, nothing inside writes it;
   // the store's index opens immutable (frozenStore), since a read-only store refuses pnpm's writable SQLite open.
   assert.match(seen, /CACHEREAD/, 'CONTROL: the metadata cache reads inside the wall'); assert.doesNotMatch(seen, /CACHEWRITE/, 'the metadata cache binds read-only'); assert.match(seen, /CACHEREFUSED/);
-  assert.equal(readFileSync(path.join(cache, 'v12', 'metadata-full', 'pkg.jsonl'), 'utf8'), 'META', 'the cache bytes stand unchanged');
+  assert.equal(readFileSync(path.join(cache, 'metadata', 'pkg.jsonl'), 'utf8'), 'META', 'the cache bytes stand unchanged');
   assert.match(seen, new RegExp(`--frozen-store .*--store-dir ${store} --cache-dir ${cache}`));
   const noCache = await runInstallSeat({ ...seat, cacheDir: undefined });
   assert.equal(noCache.ok, false); assert.match(noCache.output, /metadata cache dir/, 'a seat without the cache refuses by name'); assert.doesNotMatch(seen, /CTRLREAD/, 'the controller dir reads as empty'); assert.doesNotMatch(seen, /GITWRITE|GOWRITE/, 'the install wrote neither git metadata nor the controller file');
