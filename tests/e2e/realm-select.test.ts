@@ -19,14 +19,13 @@
  * answers for a peer, which waits on the wire train (`cabal-realm#/many-realms`, OWED).
  */
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { existsSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { openStaged, awaitRendezvous, foundStagedHearth, freePort, growStagedQuorum, type LarInstance } from "../harness/instance.js";
 import { seedUserBag } from "../harness/promote.js";
 import { censusOutcomeLinkage, OUTCOME_URI_PREFIX, plainValue, type LarDoc, type StoredTiddlers } from "../../packages/lararium-mesh/src/index.js";
 import { STORE_DOOR_FACE_ROWS } from "../../packages/lararium-node/src/store-door-verbs.js";
-import { ownedStore } from "../../packages/lararium-node/src/owned-store.js";
-import { larDataDir } from "../../packages/lararium-node/src/vessel-paths.js";
+import { openedStoredApart } from "../../tools/opened-store.mjs";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -166,35 +165,18 @@ describe.skipIf(gaps.length > 0)("★ many realms under one Nexus — a verb nam
     // lands in the daemon wiki's working slot (the daemon composite's default writable, at the face's derived address the
     // face fleet syncs), never in the daemon document, so a census of one named document reads nothing.
     await A!.stopDaemonOnly();
-    const priorRoot = process.env["LAR_ROOT"];
-    process.env["LAR_ROOT"] = A!.root;
-    let tiddlers: StoredTiddlers = {} as StoredTiddlers;
+    // The ledger rests SEALED under the face (sealed-store): a plain Repo over the raw rest reads a sealed pointer and no
+    // row, so the census reads every document the way the vessel opens it (tools/opened-store.mjs, in a child process).
+    const opened = await openedStoredApart(A!.root);
+    expect(opened.docs.length, "the store rests documents").toBeGreaterThan(0);
     let ledgerDocs = 0;
-    try {
-      const storageDir = larDataDir();
-      const ids: string[] = [];
-      for (const head of readdirSync(storageDir)) {
-        if (head.length !== 2 || !statSync(join(storageDir, head)).isDirectory()) continue;
-        for (const tail of readdirSync(join(storageDir, head))) ids.push(`${head}${tail}`);
-      }
-      expect(ids.length, "the store rests documents").toBeGreaterThan(0);
-      tiddlers = await ownedStore(storageDir, async (repo) => {
-        const out: Record<string, unknown> = {};
-        for (const id of ids) {
-          // A document that never opens here (a sealed rest, a torn one) holds nothing this census can read.
-          const doc = await Promise.race([
-            repo.find<LarDoc>(`automerge:${id}` as never).then((h) => h.doc(), () => undefined),
-            new Promise<undefined>((r) => setTimeout(() => r(undefined), 5_000)),
-          ]);
-          const rows = Object.entries(doc?.tiddlers ?? {}).filter(([t]) => t.startsWith(OUTCOME_URI_PREFIX));
-          if (rows.length > 0) ledgerDocs += 1;
-          for (const [t, r] of rows) out[t] = r;
-        }
-        return out as StoredTiddlers;
-      });
-    } finally {
-      if (priorRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorRoot;
+    const out: Record<string, unknown> = {};
+    for (const { doc } of opened.docs) {
+      const rows = Object.entries((doc as LarDoc | undefined)?.tiddlers ?? {}).filter(([t]) => t.startsWith(OUTCOME_URI_PREFIX));
+      if (rows.length > 0) ledgerDocs += 1;
+      for (const [t, r] of rows) out[t] = r;
     }
+    const tiddlers = out as StoredTiddlers;
     console.error(`realm-select MEASURE ledger: ${ledgerDocs} document(s) of the store hold outcomes`);
     const census = censusOutcomeLinkage(tiddlers, { socketOnly: STORE_DOOR_FACE_ROWS, keys: [leaf] });
     const verbs = Object.entries(tiddlers).filter(([t]) => t.startsWith(OUTCOME_URI_PREFIX)).map(([, r]) => String(plainValue(((r as { tiddler?: Record<string, unknown> }).tiddler ?? {})["verb"])));
