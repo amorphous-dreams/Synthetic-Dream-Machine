@@ -51,6 +51,7 @@ import { listSeatKeys, seatKeyFile, seatKeysOfFace, signAsSeat } from "../src/se
 import { SealedActRefused, runSealedAct, type SealedActContext } from "../src/sealed-acts.js";
 import { vesselCustodyHomes } from "../src/vault-carriers.js";
 import { larIdentityDir, larSealHome } from "../src/vessel-paths.js";
+import { seatReadBackStandIn } from "../src/seal-ceremony.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 import { chairSeed, seatChairs } from "./seat-fixture.js";
 
@@ -326,8 +327,10 @@ describe("the rite arms its heads behind the door", () => {
     seatCustody(holder);
     try {
       writeFileSync(join(root, ".lar-test-scratch"), "");
+      seatReadBackStandIn(true);
       expect(await act("seat.readback-stand-in")).toEqual({ standIn: true });
     } finally {
+      seatReadBackStandIn(false);
       await holder.lock();
       unseatCustody(holder);
       process.env["LAR_ROOT"] = prior;
@@ -351,6 +354,7 @@ describe("the rite arms its heads behind the door", () => {
       writeFileSync(join(root, ".lar-test-scratch"), "");
       expect(await act("seat.readback-stand-in")).toEqual({ standIn: false });
     } finally {
+      seatReadBackStandIn(false);
       await holder.lock();
       unseatCustody(holder);
       if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;

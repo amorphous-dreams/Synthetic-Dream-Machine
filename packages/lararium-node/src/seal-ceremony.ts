@@ -324,21 +324,12 @@ export async function armRoll(opts: { readonly cards: readonly Uint8Array[]; rea
   };
 }
 
-/** The marker a harness writes at a root it staged, and the route a staged root's custody founds under (both published). */
-const TEST_SCRATCH_MARKER = ".lar-test-scratch";
-const TEST_ROUTE_PASSPHRASE = "test-founding-passphrase";
-
-/**
- * WHETHER A CARD'S READ-BACK STANDS IN. A person reads each cold-key card back on a terminal before the charter moves;
- * a harness can type nothing, so on a STAGED test root the read-back stands in. A marker alone proves nothing: a
- * marker copied onto a root sealed under another passphrase stands in for nothing, so the custody this vessel holds
- * must also prove under the published test route. A miss there spends one unlock attempt, as any miss does.
- */
+/** A harness explicitly seats its read-back stand-in in this process; disk markers grant no authority. */
+let readBackStandIn = false;
+export function seatReadBackStandIn(seated: boolean): void { readBackStandIn = seated; }
 export async function readBackStandsIn(): Promise<boolean> {
-  const root = process.env["LAR_ROOT"];
-  if (!root || !existsSync(join(root, TEST_SCRATCH_MARKER))) return false;
-  const proof = await (await openedCustody()).proves([{ kind: "passphrase", passphrase: TEST_ROUTE_PASSPHRASE }]);
-  return proof.reading === "proves";
+  await openedCustody();
+  return readBackStandIn;
 }
 
 /** Which seat keys this vessel holds among `keys`, lower-case, in the order asked. Reads names alone. */

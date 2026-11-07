@@ -10,6 +10,7 @@ import { join } from "node:path";
 
 /** Seat the harness's published test route as a process's ward gatherer and new-face route, on the node package it hands in. */
 export function seatHarnessRoutes(node) {
+  node.seatReadBackStandIn(true);
   node.seatWardGatherer(async () => [{ kind: "passphrase", passphrase: "test-founding-passphrase" }]);
   // A face the staged CLI founds binds under the same published test route (its face tree and its ward); the binary keeps a
   // face route it finds seated, as it keeps the ward gatherer.
@@ -22,6 +23,7 @@ const cli = /lares-cli[\\/](?:dist[\\/]src[\\/]bin[\\/]lares\.js|bin[\\/]lares\.
 // The root a CLI reads: its `--root` flag (`--root /x` or `--root=/x`, as the CLI reads it), else LAR_ROOT.
 const rootFlag = (() => { const a = process.argv; const i = a.findIndex((x) => x === "--root" || x.startsWith("--root=")); return i < 0 ? undefined : a[i].startsWith("--root=") ? a[i].slice(7) : a[i + 1]; })();
 const root = rootFlag ?? process.env.LAR_ROOT;
-if (cli && root && existsSync(join(root, ".lar-test-scratch"))) {
+const storageOverride = process.argv.some((x) => x === "--storage" || x.startsWith("--storage="));
+if (cli && !storageOverride && root && existsSync(join(root, ".lar-test-scratch"))) {
   seatHarnessRoutes(await import(new URL("../packages/lararium-node/dist/src/index.js", import.meta.url).href));
 }

@@ -525,3 +525,5 @@ export { custodyFrameHandler, isCustodyFrame } from "./custody-frames.js";
 export { serveUdsFront, makeUdsSeat, type UdsFront, type UdsSessionDoor, type UdsSessionSupply, type SessionAnchor } from "./uds-channel.js";
 export type { CustodyFrame, CustodyAnswer, CustodyFrameDeps } from "./custody-frames.js";
 export { nodePromoteStores, nodePromoteCas, promotedFile, kapaeFile, PROMOTED_FILE, KAPAE_FILE } from "./promoted-store.js";
+
+export { seatReadBackStandIn } from "./seal-ceremony.js";
