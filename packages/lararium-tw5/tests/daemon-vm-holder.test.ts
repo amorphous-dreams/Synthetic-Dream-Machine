@@ -1041,6 +1041,8 @@ describe("the shutting island's leg stays readable through its settlement round 
     await down;
     expect(during.leg, "the shutting island's leg answers its own settlement round").toBe(`leg-${vm.id}`);
     expect(during.place).toMatch(/daemon-down/);
+    // The window after the shutdown settled and before disposal: the island acked and left, so its leg reads daemon-down.
+    await expect(held.vm.syncLegReady()).rejects.toThrow(/daemon-down/);
     held.vm.dispose();
     await expect(held.vm.syncLegReady()).rejects.toThrow(/daemon-down/);
   });
