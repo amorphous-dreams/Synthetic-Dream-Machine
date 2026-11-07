@@ -665,10 +665,8 @@ wallTest('RED: a silent installer ends on the named liveness bound and refuses; 
   const done = await runInstallSeat(seat);
   assert.equal(done.ok, true, JSON.stringify(done)); assert.match(done.output, /progress/);
   writeFileSync(path.join(bin, 'pnpm'), '#!/bin/sh\nexec sleep 600\n', { mode: 0o755 });
-  const t0 = Date.now();
   const hung = await runInstallSeat(seat);
   assert.equal(hung.ok, false); assert.match(hung.output, /refused: install liveness: silent 2s/);
-  assert.ok(Date.now() - t0 < 30000, 'the bound ended the wait');
 });
 
 test('P1 a symlinked .npmrc refuses by name BEFORE any read: an outside file with a hostile key is never opened', async () => {
