@@ -50,13 +50,11 @@ import type { IslandBehavior } from "@lararium/tw5";
 import { islandSessionDoor, type IslandSessionProof } from "@lararium/keyhive";
 import { casDirFromIslandStorageDir, readCasBlobFromFs, type IslandCasData } from "./node-cas.js";
 
-/** A worker's ask waits this long for the vessel's cas capability before it reads as a miss (PENDING, never a fault). */
-const CAS_WANT_TIMEOUT_MS = 20_000;
-
 /**
  * THE CAS CAPABILITY, worker side — a `CasTransitTransport` over the parent port. The worker holds no socket; the
  * vessel does. `discover` names the one holder it can reach (the vessel); `fetchBlock` posts `cas:want` and
- * awaits `cas:block` on the same requestId. No answer inside the window → null (a miss stays a miss).
+ * awaits `cas:block` on the same requestId. The vessel answers every want (a miss reads null), and the island dies
+ * with its vessel, so no clock reads silence as a miss.
  */
 export function portTransit(port: { postMessage(msg: unknown): void; on(ev: "message", fn: (m: unknown) => void): void }): CasTransitTransport {
   const pending = new Map<string, (bytes: Uint8Array | null) => void>();
@@ -74,10 +72,7 @@ export function portTransit(port: { postMessage(msg: unknown): void; on(ev: "mes
     fetchBlock(cid) {
       return new Promise<Uint8Array | null>((resolve, reject) => {
         const requestId = `cas-${process.pid}-${++seq}`;
-        const timer = setTimeout(() => { pending.delete(requestId); resolve(null); }, CAS_WANT_TIMEOUT_MS);
-        timer.unref?.();
         pending.set(requestId, (bytes) => {
-          clearTimeout(timer);
           if (bytes && !verifyCidBytes(bytes, cid)) reject(new Error(`CID mismatch for ${cid}`));
           else resolve(bytes);
         });
@@ -88,13 +83,13 @@ export function portTransit(port: { postMessage(msg: unknown): void; on(ev: "mes
   };
 }
 
-/** A worker's receipt ask waits this long on the vessel before it reads as unissued; the mint then records no pointer. */
-const VESSEL_ASK_PATIENCE_MS = 60_000;
+// THE ISLAND'S ASKS END ON THE VESSEL'S ANSWER. The vessel answers every ask (`capability-record.ts`: a missing member
+// or a fault answers by name), and the island dies with its vessel, so no clock reads silence as an answer.
 
-/** THE DYAD CAPABILITY, worker side. The vessel's live board answers each fleet/device pair; silence reads aside. */
+/** THE DYAD CAPABILITY, worker side. The vessel's live board answers each fleet/device pair; a post that fails reads
+ *  aside at once. */
 export function vesselDyadAsker(
   port: { postMessage(msg: unknown): void; on(ev: "message", fn: (m: unknown) => void): void },
-  patienceMs: number = VESSEL_ASK_PATIENCE_MS,
 ): (fleetRoot: string, deviceKey: string) => Promise<EdgeStanding> {
   const pending = new Map<string, (standing: EdgeStanding) => void>();
   port.on("message", (raw: unknown) => {
@@ -109,31 +104,28 @@ export function vesselDyadAsker(
   let seq = 0;
   return (fleetRoot, deviceKey) => new Promise<EdgeStanding>((resolve) => {
     const requestId = `dyad-${process.pid}-${++seq}`;
-    const timer = setTimeout(() => { pending.delete(requestId); resolve("aside"); }, patienceMs);
-    timer.unref?.();
-    pending.set(requestId, (standing) => { clearTimeout(timer); resolve(standing); });
+    pending.set(requestId, resolve);
     const ask: IslandMsg_DyadAsk = { type: "dyad:ask", requestId, fleetRoot, deviceKey };
-    try { port.postMessage(ask); } catch { pending.delete(requestId); clearTimeout(timer); resolve("aside"); }
+    try { port.postMessage(ask); } catch { pending.delete(requestId); resolve("aside"); }
   });
 }
 
 /**
  * THE SESSION SIGN DOOR, worker side (`island-session-proof.ts`). The island names the invocation a session placed; the
  * vessel answers from that session: its certificate, its proof subject and the vessel's own verified chain, and each
- * signature on ask, signed on the main thread behind the owner's table. No answer inside this side's patience reads
- * as a refusal by name, never as a signer: the island holds no key to fall back on.
+ * signature on ask, signed on the main thread behind the owner's table. The island holds no key to fall back on.
  */
-export function vesselSessionDoor(port: { postMessage(msg: unknown): void; on(ev: "message", fn: (m: unknown) => void): void }, patienceMs: number = VESSEL_ASK_PATIENCE_MS): IslandSessionProof {
-  return islandSessionDoor({ post: (msg) => port.postMessage(msg), listen: (cb) => { port.on("message", cb); } }, { patienceMs, idPrefix: `session-sign-${process.pid}` });
+export function vesselSessionDoor(port: { postMessage(msg: unknown): void; on(ev: "message", fn: (m: unknown) => void): void }): IslandSessionProof {
+  return islandSessionDoor({ post: (msg) => port.postMessage(msg), listen: (cb) => { port.on("message", cb); } }, { idPrefix: `session-sign-${process.pid}` });
 }
 
 /**
  * THE RECEIPT CAPABILITY, worker side. A worker's Repo keeps no store for a document it mints beside its own bag; the
  * vessel's Repo saves it. `receiptFromVessel` posts `receipt:request` and resolves on `receipt:issued` with `issued: true`;
- * an unissued answer, or none inside this side's own patience, rejects, so the caller records no pointer.
+ * an unissued answer rejects, so the caller records no pointer.
  */
-export function vesselReceiptAsker(port: { postMessage(msg: unknown): void; on(ev: "message", fn: (m: unknown) => void): void }, patienceMs: number = VESSEL_ASK_PATIENCE_MS, gateClear?: Promise<void>): (documentIds: readonly string[], gateForCall?: Promise<void>, heads?: Record<string, string[]>) => Promise<void> {
-  const pending = new Map<string, (answer: IslandMsg_ReceiptIssued | null) => void>();
+export function vesselReceiptAsker(port: { postMessage(msg: unknown): void; on(ev: "message", fn: (m: unknown) => void): void }, gateClear?: Promise<void>): (documentIds: readonly string[], gateForCall?: Promise<void>, heads?: Record<string, string[]>) => Promise<void> {
+  const pending = new Map<string, (answer: IslandMsg_ReceiptIssued) => void>();
   port.on("message", (raw: unknown) => {
     const m = raw as Partial<IslandMsg_ReceiptIssued> | null;
     if (!m || m.type !== "receipt:issued" || typeof m.requestId !== "string") return;
@@ -147,17 +139,14 @@ export function vesselReceiptAsker(port: { postMessage(msg: unknown): void; on(e
     let cancel = () => {};
     const promise = new Promise<void>((resolve, reject) => {
       const requestId = `receipt-${process.pid}-${++seq}`;
-      const timer = setTimeout(() => { pending.delete(requestId); settleWith(null); }, patienceMs);
-      timer.unref?.();
-      const settleWith = (answer: IslandMsg_ReceiptIssued | null): void => {
-        clearTimeout(timer);
-        const proof = answer?.proof?.documentIds;
-        if (answer?.issued === true && Array.isArray(proof) && proof.length === documentIds.length
+      const settleWith = (answer: IslandMsg_ReceiptIssued): void => {
+        const proof = answer.proof?.documentIds;
+        if (answer.issued === true && Array.isArray(proof) && proof.length === documentIds.length
           && documentIds.every((id, index) => proof[index] === id)) resolve();
-        else reject(new Error(`the vessel's store did not acknowledge ${documentIds.join(", ")} at rest (${answer ? answer.why ?? "missing storage proof" : "no answer"})`));
+        else reject(new Error(`the vessel's store did not acknowledge ${documentIds.join(", ")} at rest (${answer.why ?? "missing storage proof"})`));
       };
       pending.set(requestId, settleWith);
-      cancel = () => { pending.delete(requestId); clearTimeout(timer); };
+      cancel = () => { pending.delete(requestId); };
       const message: IslandMsg_ReceiptRequest = { type: "receipt:request", requestId, documentIds: [...documentIds], ...(heads ? { heads } : {}) };
       port.postMessage(message);
     });
@@ -176,10 +165,10 @@ export function vesselReceiptAsker(port: { postMessage(msg: unknown): void; on(e
 
 /**
  * THE CUSTODY WRITE CAPABILITY, worker side. Workers hold bytes to seal but never the vessel key; the vessel seals the
- * named carrier and answers on the same request id. A refusal or silence rejects without exposing the bytes.
+ * named carrier and answers on the same request id. A refusal rejects without exposing the bytes.
  */
-export function vesselCustodyWriter(port: { postMessage(msg: unknown): void; on(ev: "message", fn: (m: unknown) => void): void }, patienceMs: number = VESSEL_ASK_PATIENCE_MS): (carrier: CustodyWriteCarrier, bytes: Uint8Array) => Promise<void> {
-  const pending = new Map<string, (answer: IslandMsg_CustodyWritten | null) => void>();
+export function vesselCustodyWriter(port: { postMessage(msg: unknown): void; on(ev: "message", fn: (m: unknown) => void): void }): (carrier: CustodyWriteCarrier, bytes: Uint8Array) => Promise<void> {
+  const pending = new Map<string, (answer: IslandMsg_CustodyWritten) => void>();
   port.on("message", (raw: unknown) => {
     const m = raw as Partial<IslandMsg_CustodyWritten> | null;
     if (!m || m.type !== "custody:written" || typeof m.requestId !== "string") return;
@@ -191,12 +180,9 @@ export function vesselCustodyWriter(port: { postMessage(msg: unknown): void; on(
   let seq = 0;
   return (carrier, bytes) => new Promise<void>((resolve, reject) => {
     const requestId = `custody-${process.pid}-${++seq}`;
-    const timer = setTimeout(() => { pending.delete(requestId); settleWith(null); }, patienceMs);
-    timer.unref?.();
-    const settleWith = (answer: IslandMsg_CustodyWritten | null): void => {
-      clearTimeout(timer);
-      if (answer?.written === true) resolve();
-      else reject(new Error(`the vessel did not seal the ${carrier} carrier (${answer ? answer.why ?? "unwritten" : "no answer"})`));
+    const settleWith = (answer: IslandMsg_CustodyWritten): void => {
+      if (answer.written === true) resolve();
+      else reject(new Error(`the vessel did not seal the ${carrier} carrier (${answer.why ?? "unwritten"})`));
     };
     pending.set(requestId, settleWith);
     const ask: IslandMsg_CustodyWrite = { type: "custody:write", requestId, carrier, bytes };

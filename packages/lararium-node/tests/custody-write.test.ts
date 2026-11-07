@@ -54,18 +54,21 @@ describe("the custodyWrite capability", () => {
     await expect(vesselCustodyWriter(wired().port)("veil", new Uint8Array([4]))).rejects.toThrow(/the seal store refused the write/);
   });
 
-  test("W3 — no answer inside the writer's patience rejects; an answer resolves", async () => {
+  test("W3 — the vessel's answer resolves the write", async () => {
     caps.custodyWrite = async () => {};
-    const bytes = new Uint8Array([5]);
-    await expect(vesselCustodyWriter(wired({ answer: false }).port, 30)("veil", bytes)).rejects.toThrow(/no answer/);
-    await expect(vesselCustodyWriter(wired().port, 30)("veil", bytes)).resolves.toBeUndefined();
+    await expect(vesselCustodyWriter(wired().port)("veil", new Uint8Array([5]))).resolves.toBeUndefined();
   });
 
-  test("W4 — an answer under another request id settles nothing", async () => {
+  test("W4 — an answer under another request id settles nothing; its own refusal rejects (control)", async () => {
     const w = wired({ answer: false });
-    const asking = vesselCustodyWriter(w.port, 60)("veil", new Uint8Array([6]));
+    let settled = false;
+    const asking = vesselCustodyWriter(w.port)("veil", new Uint8Array([6])).finally(() => { settled = true; });
+    asking.catch(() => {});
     w.island.emit("message", { type: "custody:written", requestId: "someone-else", written: true });
-    await expect(asking).rejects.toThrow(/no answer/);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(settled).toBe(false);
+    w.island.emit("message", { type: "custody:written", requestId: (w.posted.at(-1) as { requestId?: string } | undefined)?.requestId, written: false, why: "refused" });
+    await expect(asking).rejects.toThrow(/refused/);
   });
 
   test("W5 — bad asks never reach the capability; only the veil does", async () => {
