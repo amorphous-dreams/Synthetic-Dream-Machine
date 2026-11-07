@@ -334,4 +334,27 @@ describe("the rite arms its heads behind the door", () => {
       rmSync(root, { recursive: true, force: true });
     }
   });
+
+  test("RED: even custody bound to the published route cannot let a marker substitute for a card read-back", async () => {
+    const root = mkdtempSync(join(tmpdir(), "lar-card-marker-"));
+    const prior = process.env["LAR_ROOT"];
+    process.env["LAR_ROOT"] = root;
+    const homes = vesselCustodyHomes();
+    mkdirSync(homes.identity, { recursive: true, mode: 0o700 });
+    const io = new FsCustodyIo(homes);
+    const founded = await foundCustody({ io, homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: "test-founding-passphrase" }] }] });
+    const holder = makeCustodyHolder({ io, homes });
+    await holder.adopt(founded.treeKey);
+    seatCustody(holder);
+    try {
+      expect(await act("seat.readback-stand-in")).toEqual({ standIn: false }); // CONTROL: no marker
+      writeFileSync(join(root, ".lar-test-scratch"), "");
+      expect(await act("seat.readback-stand-in")).toEqual({ standIn: false });
+    } finally {
+      await holder.lock();
+      unseatCustody(holder);
+      if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
 });

@@ -24,6 +24,8 @@ import {
 } from "@lararium/node";
 import { OfflineCustodyRefused, seatOfflineCustody, TEST_ROUTE_PASSPHRASE, TEST_SCRATCH_MARKER } from "../src/offline-custody.js";
 import { dispatch } from "../src/bin/lares.js";
+import * as secretPrompt from "../src/prompt-secret.js";
+import * as custodyPrompt from "../src/custody-prompt.js";
 
 vi.setConfig({ testTimeout: 180_000, hookTimeout: 180_000 });
 
@@ -70,6 +72,20 @@ afterEach(async () => {
 });
 
 describe("a command's own key session", () => {
+  test("RED: a planted marker cannot lock a person's root out; CONTROL: the same terminal opens it without the marker", async () => {
+    const root = await stage("person-chosen-route", { marked: true });
+    vi.spyOn(secretPrompt, "canPromptSecret").mockReturnValue(true);
+    vi.spyOn(custodyPrompt, "gatherCredentials").mockResolvedValue([{ kind: "passphrase", passphrase: "person-chosen-route" }]);
+    vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+    vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+    seatOfflineCustody();
+    expect(await loadIdentityAnchors()).toEqual(ANCHORS);
+    await seatedCustody()!.lock();
+    seatCustody(null);
+    rmSync(join(root, TEST_SCRATCH_MARKER));
+    seatOfflineCustody();
+    expect(await loadIdentityAnchors()).toEqual(ANCHORS);
+  });
   test("O1 seating builds nothing; O2 the first sealed row opens a marked root by the published route", async () => {
     await stage(TEST_ROUTE_PASSPHRASE, { marked: true });
     const err = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
