@@ -288,7 +288,11 @@ interface Line {
   readonly why:      Map<KeyVersionId, string>;
   readonly manifests: Map<RecordId, VerifiedRecord<"manifest">>;
   /** The heads of each version's manifests, once a seal asked: the verified manifests no other verified manifest
-   *  cites. A reading taken afresh (an arrival, a chain) starts with none and counts them once. */
+   *  cites. A reading taken afresh (an arrival, a chain) starts with none and counts them once.
+   *  THE INVARIANT: a manifest reaches this vessel's rest by two doors only. Its own seal moves the counted heads
+   *  (`#rested`); a foreign one arrives through `receive()`, which takes the reading afresh, so the heads start empty and
+   *  count from rest at the next seal. No third door writes a manifest, so the cache never stands stale; a new door
+   *  MUST do one of the two (sealed-doc-store test H1 holds the arrival leg). */
   readonly heads:    Map<KeyVersionId, Set<RecordId>>;
   /** A removal version stands in this founding's rest, verified under its own key, whether or not this reader's
    *  evidence counted it: the seat rolled here once (`holdsRemoval`). */

@@ -320,6 +320,27 @@ describe("step three: one manifest for each write batch", () => {
     expect((await b.store.record("manifest", fifth.manifest))[0]!.body.parents).not.toContain(fourth.manifest);
     expect((await b.store.record("manifest", fifth.manifest))[0]!.body.parents).toContain(third.manifest);
   });
+
+  it("H1 — a manifest that arrives after b's heads stood counted joins them: b's next batch cites it (receive is the arrival door)", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const b = await vessel(w, "b");
+    introduce(a, b);
+    const change = (n: number) => ({ role: "change" as const, ref: logicalRefOf(["doc", "incremental", `c${n}`]), parents: [], plaintext: utf8Bytes(`change ${n}`) });
+    const first = await a.holder.sealValues({ bagId: BAG, values: [change(1)], signer: a.signer });
+    if ("refusal" in first) throw new Error(said(first));
+    await carry(a, b, BAG);
+    const second = await b.holder.sealValues({ bagId: BAG, values: [change(2)], signer: b.signer });   // b's heads stand counted now
+    if ("refusal" in second) throw new Error(said(second));
+    const later = await a.holder.sealValues({ bagId: BAG, values: [change(3)], signer: a.signer });
+    if ("refusal" in later) throw new Error(said(later));
+    await carry(a, b, BAG);                                                                                // arrives through receive()
+    const third = await b.holder.sealValues({ bagId: BAG, values: [change(4)], signer: b.signer });
+    if ("refusal" in third) throw new Error(said(third));
+    const parents = (await b.store.record("manifest", third.manifest))[0]!.body.parents;
+    expect(parents).toContain(later.manifest);
+    expect(parents).toContain(second.manifest);
+  });
 });
 
 describe("step three: a from-now admission opens on a fresh checkpoint", () => {
