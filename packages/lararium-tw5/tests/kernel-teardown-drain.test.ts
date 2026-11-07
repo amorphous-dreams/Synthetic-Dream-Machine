@@ -101,3 +101,46 @@ describe("sovereign kernel teardown drains its queued write", () => {
     expect(reopen().has(TITLE)).toBe(false);
   });
 });
+
+// Proposed vessel stand-down message: the cure may give this event another wire name, but it must
+// arrive independently of the teardown request so the responsive drain retains its receipt door.
+describe("vessel stand-down releases receipt waits", () => {
+  async function standDown(kind: "unfinished-act" | "parked-ask") {
+    let deliver!: (message: unknown) => void;
+    let ready!: () => void;
+    let acked = false;
+    let refused = false;
+    const ea = new Promise<void>((resolve) => { ready = resolve; });
+    fake.handle = { documentId: "working-doc", doc: () => ({ blobs: {}, tiddlers: {} }) };
+    fake.adaptor = {
+      caps: {}, receiptRequired: false, awaitWikiDispatch: async () => {},
+      stop: async () => {
+        if (kind === "unfinished-act") { fake.adaptor.caps.receipt.begin(); return; }
+        try { await fake.adaptor.caps.receipt.ack([SLOT]); } catch { refused = true; }
+      },
+    };
+    const host: IslandHostShore = {
+      listen: (listener) => { deliver = listener; }, storage: () => undefined,
+      resolveByCid: async (cid) => cid === hash ? core : plugin,
+      post: (message) => { if (message.type === "ea") ready(); if (message.type === "teardown:ack") acked = true; },
+    };
+    const behavior: IslandBehavior = { onEa: async () => {}, onSignal: () => false, onHooAnu: async () => {} };
+    runSovereignKernel(host, behavior, { caps: { receipt: true } });
+    const port = { addEventListener() {} } as unknown as IslandMsg_Manifest["syncPort"];
+    deliver(mkManifest("lar:///test.kernel.drain/wiki", port, { wikiSlug: "daemon" }, { islandUrl: "automerge:oracle", workingUrl: "automerge:working" }, hash, { pluginCids: ["plugin"] }));
+    await ea;
+    // A clock that never fires: no advance can manufacture the vessel's stand-down.
+    const clock = vi.spyOn(globalThis, "setTimeout").mockImplementation((() => 1) as typeof setTimeout);
+    try {
+      deliver(mkTeardown());
+      for (let i = 0; i < 20; i++) await Promise.resolve();
+      expect(acked).toBe(false);
+      deliver({ type: "receipt:close" });
+      for (let i = 0; i < 50; i++) await Promise.resolve();
+      expect(acked, "stand-down must reach teardown:ack without a timer").toBe(true);
+      if (kind === "parked-ask") expect(refused).toBe(true);
+    } finally { clock.mockRestore(); }
+  }
+  test("an act begun without done cannot hold teardown after vessel stand-down", async () => { await standDown("unfinished-act"); });
+  test("a parked receipt refuses on vessel stand-down without a clock", async () => { await standDown("parked-ask"); });
+});

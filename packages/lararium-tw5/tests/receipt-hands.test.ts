@@ -91,3 +91,33 @@ describe.skipIf(wikiSkip)(`the receipt capability covers the hands a confirm lea
     }
   }, 120_000);
 });
+
+describe.skipIf(wikiSkip)(`receipt stand-down reports an owed title${skipNote}`, () => {
+  test("a title whose receipt closes during teardown remains named as unsaved", async () => {
+    const r = await shoreRig({ boundary: new ManualBoundary() });
+    const title = "lar:///test.receipt.stand-down/owed";
+    await r.adaptor.armSeedCheckpoint();
+    let asked!: () => void;
+    const request = new Promise<void>((resolve) => { asked = resolve; });
+    const receipt = makeReceiptCapability({
+      post: (message) => { if (message.type === "receipt:request") asked(); },
+      handles: () => new Map(Object.entries(r.handles)),
+    });
+    r.adaptor.caps = { receipt };
+    r.adaptor.receiptRequired = true;
+    try {
+      r.wiki.addTiddler(new r.Tiddler({ title, text: "still owed" }));
+      await afterDispatch();
+      const stopping = r.adaptor.stop();
+      await asked;
+      receipt.close();
+      await stopping;
+      const alert = r.wiki.getTiddler(`$:/temp/lares/alert/unsaved/${title}`);
+      expect(alert?.fields).toMatchObject({ "alert-kind": "unsaved-hand", "hand-title": title });
+    } finally {
+      receipt.close();
+      r.unbridge();
+      await r.repo.shutdown();
+    }
+  }, 120_000);
+});
