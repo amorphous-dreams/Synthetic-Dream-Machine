@@ -6,6 +6,7 @@
  * inner adapter, so a vector reads every byte the document store hands to rest.
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed (step three) · lar:///ha.ka.ba/lares/api/pono/session-contract#/the-document-view
  */
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import * as A from "@automerge/automerge";
 import { Repo, type AutomergeUrl, type Chunk, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
@@ -229,6 +230,62 @@ describe("wornAtOf: the worn subject passes the worn face's bags alone", () => {
     });
     expect(await refusalOf(() => readUnder(ownFace).load(key))).toBe("ANSWERED");
     expect(["writer-face-foreign", "session-face-foreign"]).toContain(await refusalOf(() => readUnder(foreignFace).load(key)));
+  });
+});
+
+// THE FLIP, LIVE (Luna P3): a founder's place session writes, the dial composes and the map face flips to the Nexus
+// subject, and the same vessel reads and writes on. The real port stands (`wornAtOf`); the restart leg rides the node e2e
+// meme-realm-bag ⑮b (dial first, then the place-written value).
+describe("one face across the anchor flip: place write -> Nexus dial -> read and write", () => {
+  const PLACE = "lar:///ha.ka.ba/@test/subjects/place-of-the-flip";
+  const NEXUS = "lar:///ha.ka.ba/@test/subjects/nexus-of-the-flip";
+  it("W5 — a value the place session sealed reads after the map face flips to the Nexus subject, and the place session's next save seals there", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const inner = memoryAdapter();
+    let face = PLACE;                                  // the map face: the place subject until the dial composes
+    let dialed: string | null = null;
+    const store = new SealedDocumentStore({
+      inner,
+      bagOf: () => ({ bagId: BAG, face }),
+      sessionFace: () => face,
+      sessionOf: () => ({ id: "the-place-session", subject: PLACE }),
+      seal: ({ bagId, values }) => a.holder.sealValues({ bagId, values, signer: a.signer }),
+      open: async (args) => { const opened = await a.holder.openValue(args); return "refusal" in opened ? opened : { ...opened, writer: PLACE }; },
+      wornAt: wornAtOf(() => face, () => [PLACE, dialed]),
+    });
+    const key = ["doc-flip", "incremental", "c1"];
+    await store.save(key, A.save(A.change(A.init<{ note?: string }>(), (d) => { d.note = SECRET; })));
+    expect(A.load<{ note?: string }>((await store.load(key))!).note).toBe(SECRET);
+    // THE DIAL COMPOSES: the map face flips to the Nexus subject.
+    face = NEXUS; dialed = NEXUS;
+    expect(A.load<{ note?: string }>((await store.load(key))!).note).toBe(SECRET);
+    const second = ["doc-flip", "incremental", "c2"];
+    await store.save(second, A.save(A.change(A.init<{ note?: string }>(), (d) => { d.note = SECRET; })));
+    expect(restsClear(inner, "doc-flip", SECRET)).toBe(false);
+    expect(A.load<{ note?: string }>((await store.load(second))!).note).toBe(SECRET);
+    // CONTROL (another face's bag never passes through the worn subject) stands in W3/W4.
+  });
+});
+
+// THE BROWSER NEEDS NO PORT (browser founder dial, measured at open-browser-vessel.ts): its one session names the face
+// by ONE subject (the lift's certificate scope), no place session books beside it, and a dial never flips the map face.
+// A browser that grew a second anchor would meet `writer-face-foreign` as the node did (⑮b), so this pin reds first.
+describe("the browser vessel names its face by one subject", () => {
+  const src = readFileSync(new URL("../../lararium-browser/src/open-browser-vessel.ts", import.meta.url), "utf8")
+    .replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
+  it("B1 — the sealed rest carries no wornAt, the map face and the session subject are one value, and nothing reassigns the face from a dial", () => {
+    expect(src).toMatch(/composeSealedRest</);
+    expect(src).not.toMatch(/\bwornAt\b/);
+    expect(src).toMatch(/const face = faceProofSubjectRef\(certificate\.scope as never\);/);
+    expect(src).toMatch(/subject: face \}/);
+    // `sealedCells.face` is set once on the lift and cleared on the lock, never from a dial.
+    expect([...src.matchAll(/sealedCells\.face = /g)].length).toBe(2);
+    expect(src).not.toMatch(/sealedCells\.face = [^;]*dial/i);
+  });
+  it("B0 — CONTROL: the instrument finds wornAt where it stands (the node composer)", () => {
+    const node = readFileSync(new URL("../../lararium-node/src/open-node-vessel.ts", import.meta.url), "utf8");
+    expect(node).toMatch(/\bwornAt\b/);
   });
 });
 
