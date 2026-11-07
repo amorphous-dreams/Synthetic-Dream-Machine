@@ -51,6 +51,7 @@ export const heavy = [
   "tests/repo-in-island.test.ts",
   "tests/vessel-island-pool.test.ts",
   "tests/pool-mount-intensity.test.ts",
+  "tests/wiki-switch-remount.test.ts",
   "tests/surface-mount-vessel-path.test.ts",
   "tests/surface-mount-real-island.test.ts",
   "tests/verb-tiddler-dispatch.test.ts",

@@ -168,6 +168,7 @@ import { readKeptAdmitBundles } from "./admit-bundle.js";
 import { readCasBlobFromFs } from "./node-cas.js";
 import { makeSourceCapture, type SourceCapture } from "./capture/capture-source.js";
 import { VesselIslandPool, NODE_WIKI_ACTIVATION_CAP } from "./vessel-island-pool.js";
+import { wikiSwitchVerb } from "./wiki-switch-verb.js";
 import { runFlow } from "./flow-run.js";
 
 /** Node advertises a few rotatable wiki pins BESIDES the daemon bag (resource-rich vessel).
@@ -3782,15 +3783,7 @@ async function prepareNodeBootOn(
     // The LIVE chokepoint (distinct from boot-time `open-wiki`): a reference ACTIVATES
     // the grain (resolveWikiSpec wakes ANY registered wiki cold, single-flight). node is
     // headless — no #projection surface to flip — so a switch here is pure activation.
-    registry.register("wiki-switch", async (args) => {
-      // The slug rides as a structured `slug` arg — from the CLI / MCP, OR from a
-      // DOM-driven verse-event whose `arg-slug` field the reaction-router lifted into
-      // the args payload (#48 unified the DOM path onto the CLI's structured-args contract).
-      const slug = String(args["slug"] ?? "");
-      if (!slug) throw new Error("wiki-switch: `slug` required");
-      const active = await wikiActivation.ensureActive(slug);
-      return { verb: "wiki-switch", slug, active: active.ok, ...(!active.ok ? { cause: active.cause, detail: active.detail } : {}), held: [...wikiActivation.held()] };
-    });
+    registry.register("wiki-switch", (args) => wikiSwitchVerb(args, { activation: wikiActivation, pool: vmManager }));
     // wiki-hold / wiki-release — the ROTATABLE active-wiki pin (the switcher's pin
     // control), budget-enforced by the cap (the daemon bag always + pinBudget rotatable).
     // Distinct from the recipe-bag `pin-wiki`: this pins the wiki GRAIN in the collector.

@@ -220,7 +220,7 @@ export async function cmdWikiSwitch(args: ParsedArgs): Promise<number> {
     return 2;
   }
   const did = await vesselDid();
-  const r = await call("wiki-switch", { slug }, did, { timeoutMs: 30_000 });
+  const r = await call("wiki-switch", { slug, remount: true }, did, { timeoutMs: 30_000 });
   if (r.status === "error") {
     console.error(`switch failed: ${r.errorMessage ?? "unknown"}`);
     return 4;
