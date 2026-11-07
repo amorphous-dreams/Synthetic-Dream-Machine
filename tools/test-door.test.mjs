@@ -66,3 +66,20 @@ test('docker socket absent', () => assert.equal(existsSync('/var/run/docker.sock
   assert.equal(result.ok, true, JSON.stringify(result));
   assert.equal(result.pass, 2); assert.equal(result.fail, 0); assert.equal(result.exitCode, 0);
 });
+
+test('test door reports passing and failing tallies, with a passing control', () => {
+  const x = fixture();
+  mkdirSync(path.join(x.wt, 'tally-fixture'));
+  writeFileSync(path.join(x.wt, 'tally-fixture', 'pass.test.mjs'), "import { test } from 'node:test'; test('passes', () => {});\n");
+  writeFileSync(path.join(x.wt, 'tally-fixture', 'fail.test.mjs'), "import { test } from 'node:test'; import assert from 'node:assert/strict'; test('fails', () => assert.fail('planted failure'));\n");
+  const files = ['tally-fixture/pass.test.mjs', 'tally-fixture/fail.test.mjs'];
+  const result = x.run(request(files));
+  assert.equal(result.ok, true, JSON.stringify(result));
+  assert.equal(result.runner, 'node'); assert.deepEqual(result.files, files);
+  assert.equal(result.pass, 1); assert.equal(result.fail, 1); assert.equal(result.skip, 0);
+  assert.notEqual(result.exitCode, 0);
+  assert.equal(typeof result.logTail, 'string'); assert.ok(result.logTail.length <= 16384);
+  const control = x.run(request([files[0]]));
+  assert.equal(control.ok, true, JSON.stringify(control));
+  assert.equal(control.fail, 0); assert.equal(control.exitCode, 0);
+});
