@@ -114,7 +114,7 @@ describe("a command's own key session", () => {
     await stage("a-route-some-person-chose", { marked: true });
     vi.spyOn(process.stderr, "write").mockImplementation(() => true);
     seatOfflineCustody();
-    await expect(loadIdentityAnchors()).rejects.toThrow(/answers no test route/);
+    await expect(loadIdentityAnchors()).rejects.toThrow(/no terminal stands/);
     expect(seatedCustody()!.isUnlocked()).toBe(false);
   });
 
