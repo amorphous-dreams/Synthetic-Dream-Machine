@@ -217,6 +217,7 @@ export function runSovereignKernel(
       breathe();
     };
     breathe();
+    // PACING: this emits breaths; the vessel judges their progress and silence.
     const breathTimer = setInterval(() => breathe(), breathEveryMs);
     // Any throw during init (incl. a behavior.onEa gate failure, e.g.
     // bootDaemonKeyhive Gate A/B/C) posts fault so the vessel times out cleanly
@@ -252,6 +253,7 @@ export function runSovereignKernel(
   const SLOT_READY_HARD_CAP_MS  = 60_000;
   const SLOT_POLL_MS            = 250;
   const mono = (): number => performance.now();
+  // PACING: defer yields to the host task queue without deciding readiness.
   const defer = (): Promise<void> =>
     new Promise((res) => (typeof setImmediate === "function" ? setImmediate(res) : setTimeout(res, 0)));
   let _lastSyncHeardAt = mono();
