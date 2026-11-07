@@ -149,7 +149,34 @@ const main = async () => {
   // Two facts, one seam: the frame arrived AND it is addressable. A pane with html but no
   // `data-lar-rid` is a render leg that landed with the return leg unbound, which is a different
   // defect from an empty pane and must not read the same.
-  const html = await until(async () => { const h = await paneHtml(page); return h && h.length > 0 ? h : null; });
+  // The page's refusal/fault signals terminate this wait as they do the boot wait. A
+  // closed page rejects waitForFunction; a page error settles the other race arm.
+  let projectionError;
+  const projectionFailed = new Promise((resolve) => {
+    projectionError = () => resolve(null);
+    page.on("pageerror", projectionError);
+  });
+  let html;
+  try {
+    html = await Promise.race([
+      projectionFailed,
+      page.waitForFunction(() => {
+        const h = document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection")?.innerHTML;
+        if (h) return { html: h };
+        const phase = [...document.querySelectorAll("#phases .phase")].find((p) => /refus|fault/i.test(p.textContent ?? ""));
+        const status = document.querySelector("#status");
+        const mirror = document.querySelector("#mirror")?.getAttribute("data-lar-mirror");
+        if (phase || status?.classList.contains("err") || status?.classList.contains("warn") ||
+            document.querySelector(".ceremony-ask[data-refusal]") ||
+            (mirror?.startsWith("none:") && mirror !== "none:mirror-inputs-absent")) return { html: null };
+        return false;
+      }, undefined, { timeout: 0 }).then((h) => h.jsonValue()).then((result) => result.html),
+    ]);
+  } catch {
+    html = null;
+  } finally {
+    page.off("pageerror", projectionError);
+  }
   if (!html) {
     bad("W2 projection-renders", "the projection shadow root stayed empty — no `lar:frame` applied");
   } else if (!html.includes("data-lar-rid")) {
