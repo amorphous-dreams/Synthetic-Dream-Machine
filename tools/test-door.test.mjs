@@ -1,6 +1,6 @@
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, symlinkSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, symlinkSync, renameSync } from 'node:fs';
 import { execFileSync, spawnSync } from 'node:child_process';
 import path from 'node:path';
 import os from 'node:os';
@@ -167,6 +167,19 @@ test('C3 test code cannot write into /work/.git', () => {
   assert.equal(result.ok, true, JSON.stringify(result));
   assert.equal(result.fail, 1); assert.notEqual(result.exitCode, 0);
   assert.match(result.logTail, /EACCES|EROFS|permission denied|read-only file system/i);
+});
+
+test('C3 a worktree gitlink stays read-only inside the test namespace', () => {
+  const x = fixture();
+  const gitDir = path.join(x.home, 'git-dir');
+  renameSync(path.join(x.wt, '.git'), gitDir);
+  writeFileSync(path.join(x.wt, '.git'), `gitdir: ${gitDir}\n`);
+  writeFileSync(path.join(x.wt, 'gitlink-write.test.mjs'), "import { test } from 'node:test'; import { writeFileSync } from 'node:fs'; test('write gitlink', () => writeFileSync('/work/.git', 'changed'));\n");
+  const result = x.run(request(['gitlink-write.test.mjs']));
+  assert.equal(result.ok, true, JSON.stringify(result));
+  assert.equal(result.fail, 1); assert.notEqual(result.exitCode, 0);
+  assert.match(result.logTail, /EACCES|EROFS|permission denied|read-only file system/i);
+  assert.equal(readFileSync(path.join(x.wt, '.git'), 'utf8'), `gitdir: ${gitDir}\n`);
 });
 
 test('C4 empty node test file refuses because no tests ran', () => {

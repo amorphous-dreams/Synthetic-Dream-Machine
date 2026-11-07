@@ -1,8 +1,9 @@
 import { spawn, spawnSync } from 'node:child_process';
+import { killGroup } from './launch-codex.mjs';
 import { exportTree } from './tree-export.mjs';
 import { openHeldSync, readHeld } from './held-dir.mjs';
 import { createHash, createHmac } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, realpathSync, rmSync, statSync } from 'node:fs';
+import { closeSync, constants as FS, existsSync, fchmodSync, fstatSync, mkdirSync, openSync, readdirSync, readFileSync, realpathSync, rmdirSync, rmSync, statSync, unlinkSync } from 'node:fs';
 import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -252,21 +253,34 @@ export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
     for (const file of files) {
       let dir = path.dirname(path.normalize(file));
       while (true) {
+        const packageFile = path.join(dir, 'package.json');
         try {
-          const packageFile = path.join(dir, 'package.json');
-          const resolved = realpathSync(worktreeHeld.at(packageFile));
-          if (!resolved.startsWith(`${root}${path.sep}`)) return refuse(`symlink leaves worktree: ${packageFile}`);
-          if (statSync(worktreeHeld.at(packageFile)).isFile()) { packages.push(dir); break; }
-        } catch (error) { if (error.code !== 'ENOENT') return refuse(`package lookup: ${error.message}`); }
+          // Each component stays held while the next opens; no pathname component may follow a symlink.
+          const opened = [];
+          try {
+            let parent = worktreeHeld.fd;
+            const parts = packageFile.split('/').filter(part => part && part !== '.');
+            for (const [index, part] of parts.entries()) {
+              const fd = openSync(`/proc/self/fd/${parent}/${part}`, FS.O_RDONLY | FS.O_NOFOLLOW | (index < parts.length - 1 ? FS.O_DIRECTORY : 0));
+              opened.push(fd); parent = fd;
+            }
+            if (!fstatSync(parent).isFile()) return refuse('package.json unreadable');
+            const packageData = readFileSync(`/proc/self/fd/${parent}`, 'utf8');
+            packages.push({ dir, packageData });
+            break;
+          } finally { for (const fd of opened.reverse()) closeSync(fd); }
+        } catch (error) {
+          if (error.code !== 'ENOENT') return refuse('package.json unreadable');
+        }
         if (dir === '.') return refuse(`no package for ${file}`);
         dir = path.dirname(dir);
       }
     }
-    if (packages.some(dir => dir !== packages[0])) return refuse('files belong to different packages');
-    packageDir = packages[0];
+    if (packages.some(pkg => pkg.dir !== packages[0].dir)) return refuse('files belong to different packages');
+    packageDir = packages[0].dir;
     let packageName = packageDir;
-    try { packageName = JSON.parse(readFileSync(worktreeHeld.at(path.join(packageDir, 'package.json')), 'utf8')).name || packageDir; }
-    catch (error) { return refuse(`package lookup: ${error.message}`); }
+    try { packageName = JSON.parse(packages[0].packageData).name || packageDir; }
+    catch { return refuse('package.json unreadable'); }
     vitestPath = path.join(packageDir, 'node_modules/vitest/vitest.mjs');
     try {
       const resolved = realpathSync(worktreeHeld.at(vitestPath));
@@ -281,40 +295,54 @@ export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
   const nvm = path.join(os.userInfo().homedir, '.nvm');
   const node = process.execPath;
   if (!node.startsWith(`${nvm}${path.sep}`)) return refuse('Node toolchain outside ~/.nvm');
+  const nodeVersion = path.dirname(path.dirname(node));
   const scratch = await mkdtemp(laneHeld.at('test-seat-'));
-  let scratchHeld;
+  let scratchHeld, gitFd;
   try {
+    try {
+      gitFd = openSync(worktreeHeld.at('.git'), FS.O_RDONLY | FS.O_NOFOLLOW);
+      const gitStat = fstatSync(gitFd);
+      if (!gitStat.isFile() && !gitStat.isDirectory()) return refuse('worktree .git must be a file or directory');
+    } catch (error) {
+      if (error.code === 'ENOENT') return refuse('worktree holds no .git');
+      return refuse('worktree .git unreadable');
+    }
     scratchHeld = openHeldSync(scratch, laneHeld.at());
     mkdirSync(scratchHeld.at('home'));
     mkdirSync(scratchHeld.at('lar-root'));
     const bin = path.dirname(node);
     const args = [
-      '--die-with-parent', '--unshare-pid', '--unshare-net', '--clearenv',
+      '--die-with-parent', '--new-session', '--unshare-pid', '--unshare-ipc', '--unshare-net', '--clearenv',
       '--ro-bind', '/usr', '/usr', '--symlink', 'usr/bin', '/bin',
       '--symlink', 'usr/lib', '/lib', '--symlink', 'usr/lib64', '/lib64',
       '--dir', '/etc', '--ro-bind', '/etc/ssl', '/etc/ssl',
       '--tmpfs', '/tmp', '--dev', '/dev', '--proc', '/proc',
-      '--ro-bind', nvm, nvm,
-      '--bind-fd', '3', '/work', '--bind-fd', '4', '/scratch',
+      '--ro-bind', nodeVersion, nodeVersion,
+      '--bind-fd', '3', '/work', '--ro-bind-fd', '5', '/work/.git', '--bind-fd', '4', '/scratch',
       '--chdir', path.posix.join('/work', packageDir),
       '--setenv', 'PATH', `${bin}:/usr/bin:/bin`, '--setenv', 'HOME', '/scratch/home',
       '--setenv', 'LAR_ROOT', '/scratch/lar-root', '--setenv', 'TMPDIR', '/tmp', '--setenv', 'LC_ALL', 'C',
       ...(runner === 'node'
         ? [node, '--test', '--test-reporter=tap', '--', ...files.map(f => path.posix.join('/work', f))]
-        : [node, path.posix.join('/work', vitestPath), 'run', '--reporter=json', '--outputFile=/scratch/vitest.json', '--root', path.posix.join('/work', packageDir), '--', ...files.map(f => path.posix.join('/work', f))]),
+        : [node, path.posix.join('/work', vitestPath), 'run', '--reporter=json', '--outputFile=/scratch/vitest.json', '--reporter=dot', '--root', path.posix.join('/work', packageDir), '--', ...files.map(f => path.posix.join('/work', f))]),
     ];
     const result = await new Promise(resolve => {
-      const child = spawn(BWRAP, args, { stdio: ['ignore', 'pipe', 'pipe', worktreeHeld.fd, scratchHeld.fd] });
-      let output = '', stderrTail = Buffer.alloc(0), overflow = false;
-      const append = chunk => { output += chunk; if (output.length > 16 * 1024 * 1024) { overflow = true; output = output.slice(-8192); } };
+      const child = spawn(BWRAP, args, { detached: true, stdio: ['ignore', 'pipe', 'pipe', worktreeHeld.fd, scratchHeld.fd, gitFd] });
+      let output = '', stderrTail = Buffer.alloc(0), overflow = false, silent = false, timer;
+      // LIVENESS: 30 seconds without stdout or stderr releases the single relay; active output resets the bound.
+      const silenceSeconds = 30;
+      const resetSilence = () => { clearTimeout(timer); timer = setTimeout(() => { silent = true; try { killGroup(child.pid, 'SIGKILL'); } catch (error) { if (error.code !== 'ESRCH') child.kill('SIGKILL'); } }, silenceSeconds * 1000); };
+      resetSilence();
+      const append = chunk => { resetSilence(); output += chunk; if (output.length > 16 * 1024 * 1024) { overflow = true; output = output.slice(-8192); } };
       child.stdout.setEncoding('utf8'); child.stderr.setEncoding('utf8');
       child.stdout.on('data', append); child.stderr.on('data', chunk => { append(chunk); stderrTail = Buffer.concat([stderrTail, Buffer.from(chunk)]).subarray(-2048); });
-      child.on('error', error => resolve({ error, output, stderrTail }));
-      child.on('close', (code, signal) => resolve({ code, signal, output, overflow, stderrTail }));
+      child.on('error', error => { clearTimeout(timer); resolve({ error, output, stderrTail, silent }); });
+      child.on('close', (code, signal) => { clearTimeout(timer); resolve({ code, signal, output, overflow, stderrTail, silent }); });
     });
     const childRefuse = message => ({ ok: false, exitCode: result.code ?? null, output: `refused: ${message}; exitCode: ${result.code ?? 'null'}; stderr tail: ${result.stderrTail.toString('utf8')}` });
+    if (result.silent) return childRefuse('liveness: silent 30s');
     if (result.error || result.signal || result.code === null || result.overflow) return childRefuse(`test execution failed: ${result.error?.message ?? result.signal ?? 'output overflow'}`);
-    let pass, fail, skip;
+    let pass, fail, skip, total;
     try {
       if (runner === 'node') {
         const readCount = name => {
@@ -323,17 +351,47 @@ export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
           return Number(matches[0][1]);
         };
         const tests = readCount('tests');
+        // Node counts an empty file's synthetic file subtest as one test.
+        const emptyFiles = [...result.output.matchAll(/^# Subtest: (\/work\/[^\r\n]+)\s*$/gm)].filter(match => files.some(file => path.posix.join('/work', file) === match[1])).length;
+        total = tests - emptyFiles;
         pass = readCount('pass'); fail = readCount('fail'); skip = readCount('skipped');
         if (!Number.isSafeInteger(tests) || tests < 0) throw new Error('invalid counts');
       } else {
         const report = JSON.parse(readHeld(scratchHeld, 'vitest.json'));
+        total = report.numTotalTests;
         pass = report.numPassedTests; fail = report.numFailedTests; skip = report.numPendingTests;
       }
-      if (![pass, fail, skip].every(n => Number.isSafeInteger(n) && n >= 0)) throw new Error('invalid counts');
+      if (![total, pass, fail, skip].every(n => Number.isSafeInteger(n) && n >= 0)) throw new Error('invalid counts');
     } catch (error) { return childRefuse(`unparseable ${runner} output: ${error.message}`); }
+    if (total === 0) return childRefuse('no tests ran');
+    // These tallies advise the requester; they never constitute a check receipt.
     return { ok: true, runner, files, pass, fail, skip, exitCode: result.code, logTail: result.output.slice(-8192) };
   } finally {
+    // Walk and remove through held directories; symlinks are unlinked, never opened.
+    const clearDir = fd => {
+      fchmodSync(fd, 0o700);
+      for (const name of readdirSync(`/proc/self/fd/${fd}`)) {
+        let child;
+        try {
+          child = openSync(`/proc/self/fd/${fd}/${name}`, FS.O_RDONLY | FS.O_DIRECTORY | FS.O_NOFOLLOW);
+        } catch (error) {
+          if (error.code === 'ENOTDIR' || error.code === 'ELOOP') {
+            try { unlinkSync(`/proc/self/fd/${fd}/${name}`); } catch { /* raced or unavailable */ }
+          }
+          continue;
+        }
+        try { clearDir(child); } catch { /* continue with other entries */ } finally { closeSync(child); }
+        try { rmdirSync(`/proc/self/fd/${fd}/${name}`); } catch { /* raced or not empty */ }
+      }
+    };
+    try {
+      if (scratchHeld) {
+        const fd = openSync(scratchHeld.at('.'), FS.O_RDONLY | FS.O_DIRECTORY | FS.O_NOFOLLOW);
+        try { clearDir(fd); } finally { closeSync(fd); }
+      }
+    } catch { /* cleanup cannot replace the test answer */ }
     scratchHeld?.close();
-    rmSync(laneHeld.at(path.basename(scratch)), { recursive: true, force: true });
+    if (gitFd !== undefined) closeSync(gitFd);
+    try { rmdirSync(laneHeld.at(path.basename(scratch))); } catch { /* cleanup cannot replace the test answer */ }
   }
 }
