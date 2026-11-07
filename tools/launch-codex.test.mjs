@@ -388,16 +388,18 @@ test("the floors by mode: a READ seat launches down to its own floor (0% while t
 });
 
 // ---- row 2: the pool-used ceilings by mode ----
-test("row 2: a lead refuses above 50% used, build and research above 60%, a read seat never; the refusal names the reading; CONTROL at the line passes", () => {
+test("row 2: lead, build and research seats run until 20% of the pool remains (a soft line at 80% used), a read seat to its own floor; just past the line refuses by name; CONTROL just inside the line passes", () => {
   const w = world();
   const at = (u) => ({ ...w.readers, rolloutLines: () => [rate(u)] });
-  refuses(w, { mode: "lead" }, /used 55\.0%.*lead.*50%/s, at(55));
-  assert.ok(preflight(ask(w, { mode: "lead" }), at(50)));
-  refuses(w, { mode: "build" }, /used 65\.0%.*build.*60%/s, at(65));
-  assert.ok(preflight(ask(w, { mode: "build" }), at(60)));
-  refuses(w, { mode: "research", worktree: undefined }, /used 61\.0%.*research.*60%/s, at(61));
-  assert.ok(preflight(ask(w, { mode: "read" }), at(79)));
-  refuses(w, { mode: "lead" }, /at or below its floor/, at(85)); // the 20%-left floor still speaks first
+  assert.ok(preflight(ask(w, { mode: "lead" }), at(55))); // refused under the old 50% lead line
+  assert.ok(preflight(ask(w, { mode: "build" }), at(65))); // refused under the old 60% build line
+  for (const mode of ["lead", "build"]) assert.ok(preflight(ask(w, { mode }), at(79.9)), `${mode} CONTROL inside the line`);
+  assert.ok(preflight(ask(w, { mode: "research", worktree: undefined }), at(79.9)), "research CONTROL inside the line");
+  for (const u of [80, 80.1, 81]) {
+    for (const mode of ["lead", "build"]) refuses(w, { mode }, /at or below its floor.*floor 20%/s, at(u));
+    refuses(w, { mode: "research", worktree: undefined }, /at or below its floor.*floor 20%/s, at(u));
+  }
+  assert.ok(preflight(ask(w, { mode: "read" }), at(95))); // a read seat spends to its own 0% floor
 });
 
 // ---- row 1: per-seat ceilings ----
