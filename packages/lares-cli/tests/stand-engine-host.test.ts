@@ -15,7 +15,7 @@ let base = "";
 const stopIncumbent = vi.fn(async () => undefined);
 const spawn = vi.fn((_command: string, _args: string[], options: { stdio: [string, number, number] }) => {
   writeSync(options.stdio[1], "vessel-ready\n");
-  return { pid: 123, unref: vi.fn() };
+  return { pid: 123, unref: vi.fn(), once: vi.fn() };
 });
 
 vi.mock("@lararium/mesh/node", () => ({ get repoRoot() { return base; } }));

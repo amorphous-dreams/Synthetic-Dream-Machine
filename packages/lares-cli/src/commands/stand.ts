@@ -28,6 +28,7 @@ import { engineHeldByHost } from "../port-control.js";
 import { standingPath, standingVerdict } from "@lararium/mesh/rendezvous-path";
 import { larRoot, larBootstrapPath, larDataDir, larCasDir, vesselDid } from "../env.js";
 import { udsAlive } from "../local-connector.js";
+import { awaitVerbSocket } from "../stand-socket-wait.js";
 import { readVesselStanding, conditionOk } from "../vessel-condition.js";
 import { emit } from "../render.js";
 import { summaryOutput } from "../verb-result.js";
@@ -272,6 +273,8 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
         env: childEnv,
       });
       child.unref();
+      let childExited = false;
+      child.once("exit", () => { childExited = true; });
       started = true;
 
       const readAttestation = (): string => {
@@ -320,14 +323,13 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
       // about the vessel stands correctly.
       let udsRefusal: string | null = null;
       if (phase === "ready") {
-        const sockDeadline = performance.now() + 120_000;
-        while (performance.now() < sockDeadline && !(await udsAlive())) {
-          const tail = readAttestation();
-          if (/fatal:/.test(tail)) { phase = "fault"; break; }
-          const refused = /uds error: (.+)/.exec(tail);
-          if (refused) { udsRefusal = refused[1]!.trim(); break; }
-          await sleep(500);
-        }
+        // The wait ends on the node's own events (connect, `fatal:`, `uds error:`, the child's exit); a growing log
+        // renews the silence span, so a slow cold bind is never cut by a fixed deadline.
+        const waited = await awaitVerbSocket({
+          alive: udsAlive, readAttestation, childExited: () => childExited, now: () => performance.now(), sleep, silenceMs: 120_000,
+        });
+        if (waited.outcome === "fault") phase = "fault";
+        else if (waited.outcome === "refused") udsRefusal = waited.refusal;
       }
       // ONE READING, FROM ONE PLACE. `readVesselStanding` folds what this supervisor OBSERVED into the
       // four-state condition the whole house reports in, and `ok` derives from that state — so the note
