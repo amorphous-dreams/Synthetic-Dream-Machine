@@ -19,8 +19,11 @@
  * goes stale when that epoch rolls past it (the epoch is a LEASE, not a
  * targeted revoker — api/pono/convergent-mesh).
  *
- * Canonical signed string (opens on `DEVICE_DELEGATION_DOMAIN` for separation — its registry name;
- * every field strict-charset so no `|` can shift a boundary):
+ * During retirement, signature verification also reads the epoch-free signed
+ * string ending at hearthTrueName. Minting and epoch-gated authority remain on
+ * the legacy shape until their own slices land; an epoch-free signature alone
+ * does not supply standing or an epoch witness.
+ * Canonical legacy signed string (every field strict-charset so no `|` shifts a boundary):
  *   {DEVICE_DELEGATION_DOMAIN}|{personaRootDid}|{deviceDid}|{deviceVerifyingKey}|{hearthTrueName}|{boundEpoch}
  *
  * NO CLOCK rides the edge — no issue instant, no expiry. It decays by its LEASE alone (`boundEpoch`
@@ -83,7 +86,7 @@ type ProofFields = Pick<
 
 function delegationProofBytes(d: ProofFields): Uint8Array {
   return new TextEncoder().encode(
-    `${DEVICE_DELEGATION_DOMAIN}|${d.personaRootDid}|${d.deviceDid}|${d.deviceVerifyingKey}|${d.hearthTrueName}|${d.boundEpoch}`,
+    `${DEVICE_DELEGATION_DOMAIN}|${d.personaRootDid}|${d.deviceDid}|${d.deviceVerifyingKey}|${d.hearthTrueName}${d.boundEpoch === undefined ? "" : `|${d.boundEpoch}`}`,
   );
 }
 
@@ -113,7 +116,7 @@ function fieldError(d: Partial<DeviceDelegationRootHalf>, complete = true): stri
   const device = acceptEd25519Key(d.deviceVerifyingKey);
   if (!device.ok) return `deviceVerifyingKey refuses at the Ed25519 door (${device.refusal})`;
   if (typeof d.hearthTrueName !== "string" || !TRUE_NAME_RE.test(d.hearthTrueName))                       return "hearthTrueName has illegal characters";
-  if (typeof d.boundEpoch !== "string" || !EPOCH_RE.test(d.boundEpoch))                 return "boundEpoch not a 1-15 digit decimal";
+  if (d.boundEpoch !== undefined && (typeof d.boundEpoch !== "string" || !EPOCH_RE.test(d.boundEpoch))) return "boundEpoch not a 1-15 digit decimal";
   if (typeof d.signature !== "string" || !SIG_RE.test(d.signature))                     return "signature not 64-byte lowercase hex";
   if (complete && (typeof (d as Partial<DeviceDelegationTiddler>).atomSignature !== "string" || !SIG_RE.test((d as Partial<DeviceDelegationTiddler>).atomSignature!))) return "atom countersignature missing";
   return null;
@@ -177,7 +180,8 @@ export async function buildDeviceDelegation(args: {
  * confused-deputy bait the verification swarm flagged; the pin is now a required argument.)
  *
  * Lease: pass `opts.expectedEpoch` (the face's verified signed lease epoch) to enforce
- * non-renewal; omit it to check signature + pin alone. Strict RFC8032 verify
+ * non-renewal; an epoch-free edge then refuses because it carries no lease proof.
+ * Omit it to check signature + pin alone, which does not establish standing. Strict RFC8032 verify
  * (`zip215:false`) → strongly-binding signatures (exclusive ownership; safe to key dedup on
  * canonical content, never on the malleable signature bytes).
  */
@@ -187,6 +191,11 @@ export async function verifyDeviceDelegation(
   opts?: { expectedEpoch?: number },
 ): Promise<{ ok: boolean; reason?: string }> {
   const evidence = await evaluateDeviceDelegation(edge, expectedOperatorDid, opts);
+  // Until standing replaces the lease at every authority gate, an epoch-free
+  // proof cannot satisfy a caller explicitly requesting the lease fence.
+  if (opts?.expectedEpoch !== undefined && evidence.state === "unavailable") {
+    return { ok: false, reason: evidence.reason };
+  }
   return evidence.cryptographicallyValid
     ? { ok: true }
     : { ok: false, ...(evidence.reason ? { reason: evidence.reason } : {}) };
@@ -195,7 +204,7 @@ export async function verifyDeviceDelegation(
 /**
  * Read the device edge with an explicit relation-scoped evidence state.
  *
- * `expectedEpoch` is the authority witness. When it is absent, a valid
+ * `expectedEpoch` is the interim lease witness. When it or the signed epoch is absent, a valid
  * signature is still reported as cryptographically valid, but the evidence is
  * `unavailable`; callers that mutate authority must choose a named local
  * refusal or pending path rather than treating omission as a current lease.
@@ -227,7 +236,7 @@ export async function evaluateDeviceDelegation(
   // pass expectedEpoch (the face's verified signed lease epoch the verifier holds) to enforce
   // the lease; omit to check signature + pin alone. The epoch is the edge's only decay.
   // Targeted revocation rides the Keyhive membership graph, never this counter.
-  if (opts?.expectedEpoch !== undefined) {
+  if (opts?.expectedEpoch !== undefined && edge.boundEpoch !== undefined) {
     const bound = Number(edge.boundEpoch);
     if (!Number.isFinite(bound))        return verdict("malformed", false, "unparseable boundEpoch");
     if (bound < opts.expectedEpoch)     return verdict("stale", false, "delegation lease stale (resource epoch rolled past boundEpoch)");
@@ -239,8 +248,8 @@ export async function evaluateDeviceDelegation(
     }
     const ok = verifyEd25519(edge.signature, delegationProofBytes(edge), verifyingKeyFromDid(edge.personaRootDid));
     if (!ok) return verdict("rejected", false, "signature mismatch");
-    return opts?.expectedEpoch === undefined
-      ? verdict("unavailable", true, "current resource epoch unavailable")
+    return opts?.expectedEpoch === undefined || edge.boundEpoch === undefined
+      ? verdict("unavailable", true, edge.boundEpoch === undefined ? "delegation lease proof unavailable" : "current resource epoch unavailable")
       : verdict("checked-valid", true);
   } catch (e) {
     return verdict("malformed", false, e instanceof Error ? e.message : "ed25519 verify threw");
