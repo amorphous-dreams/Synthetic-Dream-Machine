@@ -342,7 +342,7 @@ export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
           if (stamped.status !== 0) process.exit(stamped.status || 1);
         }
       }
-      writeFileSync('/scratch/build-ok', 'built');
+      writeFileSync('/scratch/build-ok', 'built'); // broker-owned: wall-side script; /scratch binds scratchHeld.fd, never a host pathname
       const tested = spawnSync(process.execPath, [vitest, 'run', '--reporter=json', '--outputFile=/scratch/vitest.json', '--reporter=dot', '--root', process.cwd(), ...files], { stdio: 'inherit' });
       if (tested.error) console.error(tested.error.message);
       process.exit(tested.status ?? 1);
