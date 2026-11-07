@@ -194,7 +194,7 @@ export async function verifyDeviceDelegation(
   // Until standing replaces the lease at every authority gate, an epoch-free
   // proof cannot satisfy a caller explicitly requesting the lease fence.
   if (opts?.expectedEpoch !== undefined && evidence.state === "unavailable") {
-    return { ok: false, reason: evidence.reason };
+    return { ok: false, ...(evidence.reason !== undefined ? { reason: evidence.reason } : {}) };
   }
   return evidence.cryptographicallyValid
     ? { ok: true }
