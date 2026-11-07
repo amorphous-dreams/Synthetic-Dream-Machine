@@ -15,7 +15,7 @@ import { utf8Bytes } from "../src/crypto.js";
 import { faceProofSubjectRef, sessionSignatureImage } from "../src/face-proof-subjects.js";
 import type { RecordSigner } from "../src/sealed-records.js";
 import { SEALED_DOCUMENT_REFUSALS, SealedDocumentStore } from "../src/sealed-doc-store.js";
-import { announceSlotDoc, answerDocStoreAsks, composeSealedRest, docStorePortCell, islandRestGuard, sealedBagMap, vesselDocStoreDoor, type SealedRest } from "../src/sealed-rest.js";
+import { announceSlotDoc, answerDocStoreAsks, composeSealedRest, docStorePortCell, islandRestGuard, sealedBagMap, vesselDocStoreDoor, vesselRestAsker, type SealedRest } from "../src/sealed-rest.js";
 import { vessel, world, type Vessel } from "./content-key-fixture.js";
 import { chain, signHex } from "./face-proof-fixture.js";
 
@@ -62,7 +62,7 @@ async function signerOf(name: string): Promise<RecordSigner> {
 }
 
 /** One vessel's sealed rest over a MessageChannel door: the vessel's book of asks, and the island's holder behind it. */
-function standRest(a: Vessel, inner: StorageAdapterInterface, over: { sealed?: (documentId: string) => boolean; hydrationPatienceMs?: number } = {}) {
+function standRest(a: Vessel, inner: StorageAdapterInterface, over: { sealed?: (documentId: string) => boolean; hydrationPatienceMs?: number; hydrates?: boolean } = {}) {
   const own = faceProofSubjectRef(a.chain.scope);
   const channel = new MessageChannel();
   const vesselSide = portOf(channel.port1), islandSide = portOf(channel.port2);
@@ -89,6 +89,7 @@ function standRest(a: Vessel, inner: StorageAdapterInterface, over: { sealed?: (
     }),
     flushRepo: async () => { await repo?.flush(); },
     ...(over.hydrationPatienceMs !== undefined ? { hydrationPatienceMs: over.hydrationPatienceMs } : {}),
+    ...(over.hydrates === true ? ({ hydrates: true } as {}) : {}),
   });
   return { rest, own, sealedUnder, asks, seat: (r: Repo) => { repo = r; } };
 }
@@ -734,5 +735,75 @@ describe("a restart's hydration: a sealed document's load waits for its map, nev
     // CONTROL: no map ever stands inside the patience: the load refuses `bag-unmapped`, by name.
     const third = standRest(a, inner, { sealed: () => false, hydrationPatienceMs: 200 });
     await expect(third.rest.store.loadRange([doc.documentId])).rejects.toMatchObject({ refusal: "bag-unmapped" });
+  });
+});
+
+// NO GLOBAL NOW (operator 2026-11-06: "No timeout"): each wait of the sealed rest ends on the event that settles it, the
+// answer or the peer's departure, and a hydrating load on its map's move or the rest's stand-down; no clock decides.
+describe("the sealed rest's waits end on their own events, never on a clock", () => {
+  it("the rest ask waits for the vessel's answer however late; a sealed answer reads sealed, and never reads unsealed on silence", async () => {
+    const channel = new MessageChannel();
+    const vesselSide = portOf(channel.port1), islandSide = portOf(channel.port2);
+    const answers = new Map<string, boolean>([["doc-sealed", true], ["doc-clear", false]]);
+    vesselSide.listen((raw) => {
+      const m = raw as { type?: string; requestId?: string; documentId?: string };
+      if (m.type !== "rest:ask") return;
+      // The vessel answers late: past any patience an island might once have held.
+      setTimeout(() => vesselSide.post({ type: "rest:answer", requestId: m.requestId, sealed: answers.get(m.documentId ?? "") === true }), 150);
+    });
+    const ask = (vesselRestAsker as unknown as (port: unknown, opts: { idPrefix: string }) => (id: string) => Promise<boolean>)(islandSide, { idPrefix: "late" });
+    let settled = false;
+    const sealed = ask("doc-sealed").then((v) => { settled = true; return v; });
+    await settle(50);
+    // barrier: no answer yet, and no clock read the silence as unsealed.
+    expect(settled).toBe(false);
+    expect(await sealed).toBe(true);
+    // CONTROL: a vessel that answers unsealed reads unsealed.
+    expect(await ask("doc-clear")).toBe(false);
+  });
+
+  it("the door's open waits for the island; the island's departure answers it by name at once", async () => {
+    const channel = new MessageChannel();
+    const silent = portOf(channel.port1);   // an island that never answers: it stands, then goes
+    const cell = docStorePortCell(async () => null);
+    const detach = cell.attach(silent);
+    const door = (vesselDocStoreDoor as unknown as (port: () => unknown, opts: { book: () => () => void; idPrefix: string }) => ReturnType<typeof vesselDocStoreDoor>)(() => cell.port(), { book: () => () => {}, idPrefix: "gone" });
+    let settled = false;
+    const opened = door.open({ bagId: BAG, role: "change", ref: "ab".repeat(32) }).then((v) => { settled = true; return v; });
+    await settle(50);
+    // barrier: the ask waits on the island, no clock answers it.
+    expect(settled).toBe(false);
+    detach();
+    expect(await opened).toMatchObject({ refusal: "holder-locked" });
+    // CONTROL: with no island attached the door refuses at once, by name.
+    expect(await door.open({ bagId: BAG, role: "change", ref: "cd".repeat(32) })).toMatchObject({ refusal: "holder-locked" });
+  });
+
+  it("a hydrating load with no map waits past any clock, and refuses by name when the rest stands down", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const inner = memoryAdapter();
+    const r = standRest(a, inner);
+    const session: Session = { id: "s-a", subject: r.own, signer: a.signer };
+    const repo = new Repo({ storage: r.rest.store, network: [] });
+    r.seat(repo);
+    const doc = repo.create<{ note?: string }>();
+    r.rest.wrote(doc.documentId, session);
+    doc.change((d) => { d.note = SECRET; });
+    await repo.flush();
+    await repo.shutdown();
+    a.restart();
+    const again = standRest(a, inner, { sealed: () => false, hydrates: true });
+    let refused: unknown = null;
+    const loading = again.rest.store.loadRange([doc.documentId]).then(() => "read", (e: unknown) => { refused = e; return "refused"; });
+    await settle(100);
+    // barrier: no map, no move, and no clock: the load still waits.
+    expect(refused).toBe(null);
+    await again.rest.standDown([]);
+    expect(await loading).toBe("refused");
+    expect(refused).toMatchObject({ refusal: "bag-unmapped" });
+    // CONTROL: a store that does not hydrate refuses at once, by name.
+    const plain = standRest(a, inner, { sealed: () => false });
+    await expect(plain.rest.store.loadRange([doc.documentId])).rejects.toMatchObject({ refusal: "bag-unmapped" });
   });
 });
