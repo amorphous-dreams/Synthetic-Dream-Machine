@@ -25,6 +25,12 @@ test('leaves an event-only wait with timeout disabled unreported', () => {
   assert.deepEqual(fixture('packages/example/tests/control.test.ts', "await page.waitForEvent('ready', { timeout: 0 });\n"), []);
 });
 
+test('timed page waits follow the file location', () => {
+  const source = 'await page.waitForFunction(() => ready, null, { timeout: 5000 });\n';
+  assert.deepEqual(fixture('tools/probe.mjs', source).map(f => f.category), ['HARNESS']);
+  assert.deepEqual(fixture('packages/example/src/probe.ts', source).map(f => f.category), ['PRODUCT-WAIT']);
+});
+
 test('inventories clock forms and leaves disabled timeout options quiet', () => {
   const file = 'packages/example/src/clock.ts';
   const findings = fixture(file, [
