@@ -36,6 +36,7 @@
 
 
 import { verifyEd25519 } from "./ed25519-door.js";
+import { WITNESS_DOMAIN } from "./domains.js";
 
 /** The 0..20 STANDING dial's floor/step/ceiling for a testimony's lifecycle. */
 export const STANDING_FLOOR = 3;    // born at the noise band — quiet, honest, not failed
@@ -153,13 +154,13 @@ export function witness(t: Testimony, edge: Witness): Testimony {
  * signature's — the seal proves possession of `signer`'s key and nothing more.
  */
 
-/** The version-tagged, strict `|`-delimited canonical bytes a witness edge signs (the wax-stamp proof shape). */
+/** The domain-separated, strict `|`-delimited canonical bytes a witness edge signs (the wax-stamp proof shape). */
 export function witnessProofBytes(
   claimCid: string,
   edge: Pick<Witness, "signer" | "frontier" | "polarity" | "tick">,
 ): Uint8Array {
   return new TextEncoder().encode(
-    `lar-witness/v1|${claimCid}|${edge.signer}|${edge.frontier}|${edge.polarity}|${edge.tick ?? ""}`,
+    `${WITNESS_DOMAIN}|${claimCid}|${edge.signer}|${edge.frontier}|${edge.polarity}|${edge.tick ?? ""}`,
   );
 }
 

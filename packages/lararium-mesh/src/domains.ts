@@ -65,6 +65,8 @@ export const DEVICE_ATOM_COUNTERSIGN_DOMAIN = mint("device-atom-countersign");
 export const HOLDER_SESSION_DOMAIN = mint("holder-session");
 /** A retired holder key signs its successor and epoch for continuity. */
 export const HOLDER_CONTINUITY_DOMAIN = mint("holder-continuity");
+/** A witness signs an edge attesting a persisted claim. */
+export const WITNESS_DOMAIN = mint("witness");
 /** A founder signs the record granting a joinee a seat on the PersonaGroup plane. */
 export const FACE_GRANT_DOMAIN = mint("face-join-grant");
 /** The key and context a ceremony checkpoint seals under: the atom's seed through HKDF, so a re-entered founding or

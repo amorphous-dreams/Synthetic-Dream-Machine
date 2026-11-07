@@ -111,10 +111,7 @@ COMMENT = re.compile(r"^\s*(?:\*|/\*|//|#)")
 
 # The known strays: (path, literal prefix) → the act that registers it. Each signs live material under
 # its present spelling, so moving it re-keys that material — the re-found's work, not a lint fix.
-ALLOW = {
-    ("packages/lararium-mesh/src/persistence-keel.ts",         "lar-witness/v1|"):
-        "the keel witness signing preimage registers with the re-found",
-}
+ALLOW = {}
 
 stray, allowed = [], []
 files = [pathlib.Path(p) for p in subprocess.check_output(
