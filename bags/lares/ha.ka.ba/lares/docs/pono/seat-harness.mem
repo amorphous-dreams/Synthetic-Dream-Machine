@@ -75,6 +75,7 @@ Launch each step with `node tools/launch-codex.mjs --lead-step --lane-root … -
 
 * ''The swap'': `tools/seat-broker.mjs` holds the plumbing doors, `tools/seat-walls.mjs` the check and install seats, `tools/tree-export.mjs` the filter-free tree export. ''Requests'' arrive as `req-<id>.json` files in `<lane-root>/relay/`, zero-padded and in order, one at a time; each answer lands as `res-<id>.json` before the next request runs. Unknown kinds and unknown fields refuse by name.
 * ''Doors'': `commit` (named relative paths read race-proof from the worktree, the message as inline text (size-capped; the broker opens no lead-controlled file for it), an expected old head, a verified check receipt; no hook, no filter); `push` (only when the go file names the branch AND the head; never `-u`, never force; the go spends on the attempt); `worktree` (a new path under the lane root, a branch carrying the lane prefix, a filter-free export of the base tree, submodule paths left empty); `install` (the install seat over a worktree in the lane root); `worktree-remove` (a registered, clean tree, never the broker's own, never `--force`); `launch` (`build`, `read` or `research` alone, never `lead`; allowlisted models; a seat directory inside the lane root with its brief).
+* ''Test door'': `test` runs named files with Node or package-local Vitest in a PID, IPC and network namespace; it binds the worktree writable with `.git` read-only, scratch writable, and the active Node version and system tools read-only. Thirty seconds without child stdout or stderr stops the group. Tallies advise the requester and never carry a check receipt.
 * ''The go'' lives outside the lane root and the worktree, at a path the controller names when it starts the broker, so a lead cannot grant its own push.
 * ''The broker runs'' from a copy outside the lane and with a launcher outside the lane; a lead's edit to the lane's own copy never reaches the running broker.
 * ''A crew cap'' may ride the broker: it refuses a `launch` while a seat of the same kind stays live, naming the cap, so a lead adapts by reading the answer.
@@ -222,6 +223,6 @@ This carrier gains its standing sections and rewrites the broker bullets and the
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;BhiMSRJ5phzzZ0x24YeHCtjPinx9fq9iSVzfoqk8TDM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;T_Fdfu2ugSzk21Ft7PMKP9kpn4eesnRGDjzIx6gdWdc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

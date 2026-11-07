@@ -1,8 +1,9 @@
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
+import { killGroup } from './launch-codex.mjs';
 import { exportTree } from './tree-export.mjs';
 import { openHeldSync, readHeld } from './held-dir.mjs';
 import { createHash, createHmac } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, realpathSync, rmSync, statSync } from 'node:fs';
+import { closeSync, constants as FS, existsSync, fchmodSync, fstatSync, mkdirSync, openSync, readdirSync, readFileSync, realpathSync, rmdirSync, rmSync, statSync, unlinkSync } from 'node:fs';
 import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -221,4 +222,191 @@ export async function runInstallSeat({ worktree, worktreeHeld, gitDir, installer
     const ran = spawnSync(BWRAP, args, { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe', ...fds] });
     return { ok: ran.status === 0, output: capOutput(`${ran.stdout ?? ''}${ran.stderr ?? ''}${ran.error ? String(ran.error) : ''}`) };
   } finally { for (const h of opened) h.close(); }
+}
+
+/** Validate the test request before opening the execution boundary. */
+export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
+  if (!['node', 'vitest'].includes(runner)) return { ok: false, output: `refused: unknown runner ${String(runner)}` };
+  if (!Array.isArray(files) || files.length === 0 || files.some((f) => typeof f !== 'string' || !f)) return { ok: false, output: 'refused: nonempty named files required' };
+  for (const file of files) {
+    if (path.isAbsolute(file)) return { ok: false, output: `refused: absolute path ${file}` };
+    if (file.includes('\0') || file.startsWith('-')) return { ok: false, output: `refused: invalid file ${file}` };
+    if (file.split('/').includes('..')) return { ok: false, output: `refused: parent traversal ${file}` };
+    if (/[*?\[\]{}]/.test(file)) return { ok: false, output: `refused: glob ${file}` };
+  }
+  const refuse = message => ({ ok: false, output: `refused: ${message}` });
+  // Walk only from held directories; inspect an ENOTDIR component without following it.
+  const openWorktreeFile = (name, use) => {
+    const opened = [];
+    try {
+      let parent = worktreeHeld.fd;
+      const parts = name.split('/').filter(part => part && part !== '.');
+      if (!parts.length) throw Object.assign(new Error('not a file'), { code: 'ENOTDIR' });
+      for (const [index, part] of parts.entries()) {
+        let fd;
+        try {
+          fd = openSync(`/proc/self/fd/${parent}/${part}`, FS.O_RDONLY | FS.O_NOFOLLOW | FS.O_NONBLOCK | (index < parts.length - 1 ? FS.O_DIRECTORY : 0));
+        } catch (error) {
+          if (error.code === 'ENOTDIR') {
+            let probe;
+            try {
+              probe = openSync(`/proc/self/fd/${parent}/${part}`, 0x200000 | FS.O_NOFOLLOW); // Linux O_PATH
+              if (fstatSync(probe).isSymbolicLink()) error.code = 'ELOOP';
+            } catch {} finally { if (probe !== undefined) closeSync(probe); }
+          }
+          throw error;
+        }
+        opened.push(fd); parent = fd;
+      }
+      return use(parent, fstatSync(parent));
+    } finally { for (const fd of opened.reverse()) closeSync(fd); }
+  };
+  try {
+    for (const file of files) {
+      try {
+        if (!openWorktreeFile(file, (_fd, stat) => stat.isFile())) return refuse(`not a file: ${file}`);
+      } catch (error) {
+        if (error.code === 'ELOOP') return refuse(`symlink: ${file}`);
+        throw error;
+      }
+    }
+  } catch (error) { return refuse(`invalid file: ${error.message}`); }
+  if (!HAVE_BWRAP) return refuse('no test wall available');
+
+  // Resolve the nearest package for each file through the held worktree; one vitest invocation has one package cwd.
+  let packageDir = '.', vitestPath;
+  if (runner === 'vitest') {
+    const packages = [];
+    for (const file of files) {
+      let dir = path.dirname(path.normalize(file));
+      while (true) {
+        const packageFile = path.join(dir, 'package.json');
+        try {
+          const packageData = openWorktreeFile(packageFile, (fd, stat) => {
+            if (!stat.isFile()) throw new Error('not a file');
+            return readFileSync(`/proc/self/fd/${fd}`, 'utf8');
+          });
+          packages.push({ dir, packageData });
+          break;
+        } catch (error) {
+          if (error.code === 'ELOOP') return refuse(`symlink: ${packageFile}`);
+          if (error.code !== 'ENOENT') return refuse('package.json unreadable');
+        }
+        if (dir === '.') return refuse(`no package for ${file}`);
+        dir = path.dirname(dir);
+      }
+    }
+    if (packages.some(pkg => pkg.dir !== packages[0].dir)) return refuse('files belong to different packages');
+    packageDir = packages[0].dir;
+    try { JSON.parse(packages[0].packageData); }
+    catch { return refuse('package.json unreadable'); }
+    vitestPath = path.join(packageDir, 'node_modules/vitest/vitest.mjs');
+  }
+
+  const node = process.execPath;
+  const nodeVersion = path.dirname(path.dirname(node));
+  const nodeVersionReal = realpathSync(nodeVersion); // broker-owned: derived solely from process.execPath
+  const inside = (child, parent) => child === parent || child.startsWith(parent === path.sep ? parent : `${parent}${path.sep}`);
+  for (const [name, held] of [['worktree', worktreeHeld], ['lane root', laneHeld]]) {
+    if (inside(nodeVersionReal, realpathSync(held.at()))) return refuse(`Node toolchain inside ${name}`);
+  }
+  const scratch = await mkdtemp(laneHeld.at('test-seat-'));
+  let scratchHeld, gitFd;
+  try {
+    try {
+      gitFd = openSync(worktreeHeld.at('.git'), FS.O_RDONLY | FS.O_NOFOLLOW);
+      const gitStat = fstatSync(gitFd);
+      if (!gitStat.isFile() && !gitStat.isDirectory()) return refuse('worktree .git must be a file or directory');
+    } catch (error) {
+      if (error.code === 'ENOENT') return refuse('worktree holds no .git');
+      return refuse('worktree .git unreadable');
+    }
+    scratchHeld = openHeldSync(scratch, laneHeld.at());
+    if (inside(nodeVersionReal, realpathSync(scratchHeld.at()))) return refuse('Node toolchain inside scratch directory');
+    mkdirSync(scratchHeld.at('home'));
+    mkdirSync(scratchHeld.at('lar-root'));
+    const bin = path.dirname(node);
+    const args = [
+      '--die-with-parent', '--new-session', '--unshare-pid', '--unshare-ipc', '--unshare-net', '--clearenv',
+      '--ro-bind', '/usr', '/usr', '--symlink', 'usr/bin', '/bin',
+      '--symlink', 'usr/lib', '/lib', '--symlink', 'usr/lib64', '/lib64',
+      '--dir', '/etc', '--ro-bind', '/etc/ssl', '/etc/ssl',
+      '--tmpfs', '/tmp', '--dev', '/dev', '--proc', '/proc',
+      '--ro-bind', nodeVersion, nodeVersion,
+      '--bind-fd', '3', '/work', '--ro-bind-fd', '5', '/work/.git', '--bind-fd', '4', '/scratch',
+      '--chdir', path.posix.join('/work', packageDir),
+      '--setenv', 'PATH', `${bin}:/usr/bin:/bin`, '--setenv', 'HOME', '/scratch/home',
+      '--setenv', 'LAR_ROOT', '/scratch/lar-root', '--setenv', 'TMPDIR', '/tmp', '--setenv', 'LC_ALL', 'C',
+      ...(runner === 'node'
+        ? [node, '--test', '--test-reporter=tap', '--', ...files.map(f => path.posix.join('/work', f))]
+        : [node, path.posix.join('/work', vitestPath), 'run', '--reporter=json', '--outputFile=/scratch/vitest.json', '--reporter=dot', '--root', path.posix.join('/work', packageDir), '--', ...files.map(f => path.posix.join('/work', f))]),
+    ];
+    const result = await new Promise(resolve => {
+      const child = spawn(BWRAP, args, { detached: true, stdio: ['ignore', 'pipe', 'pipe', worktreeHeld.fd, scratchHeld.fd, gitFd] });
+      let output = '', stderrTail = Buffer.alloc(0), overflow = false, silent = false, timer;
+      // LIVENESS: 30 seconds without stdout or stderr releases the single relay; active output resets the bound.
+      const silenceSeconds = 30;
+      const resetSilence = () => { clearTimeout(timer); timer = setTimeout(() => { silent = true; try { killGroup(child.pid, 'SIGKILL'); } catch (error) { if (error.code !== 'ESRCH') child.kill('SIGKILL'); } }, silenceSeconds * 1000); };
+      resetSilence();
+      const append = chunk => { resetSilence(); output += chunk; if (output.length > 16 * 1024 * 1024) { overflow = true; output = output.slice(-8192); } };
+      child.stdout.setEncoding('utf8'); child.stderr.setEncoding('utf8');
+      child.stdout.on('data', append); child.stderr.on('data', chunk => { append(chunk); stderrTail = Buffer.concat([stderrTail, Buffer.from(chunk)]).subarray(-2048); });
+      child.on('error', error => { clearTimeout(timer); resolve({ error, output, stderrTail, silent }); });
+      child.on('close', (code, signal) => { clearTimeout(timer); resolve({ code, signal, output, overflow, stderrTail, silent }); });
+    });
+    const childRefuse = message => ({ ok: false, exitCode: result.code ?? null, output: `refused: ${message}; exitCode: ${result.code ?? 'null'}; stderr tail: ${result.stderrTail.toString('utf8')}` });
+    if (result.silent) return childRefuse('liveness: silent 30s');
+    if (result.error || result.signal || result.code === null || result.overflow) return childRefuse(`test execution failed: ${result.error?.message ?? result.signal ?? 'output overflow'}`);
+    let pass, fail, skip, total;
+    try {
+      if (runner === 'node') {
+        const readCount = name => {
+          const matches = [...result.output.matchAll(new RegExp(`^# ${name} (\\d+)\\s*$`, 'gm'))];
+          if (matches.length !== 1) throw new Error(`missing or ambiguous ${name}`);
+          return Number(matches[0][1]);
+        };
+        const tests = readCount('tests');
+        // Node counts an empty file's synthetic file subtest as one test.
+        const emptyFiles = [...result.output.matchAll(/^# Subtest: (\/work\/[^\r\n]+)\s*$/gm)].filter(match => files.some(file => path.posix.join('/work', file) === match[1])).length;
+        total = tests - emptyFiles;
+        pass = readCount('pass'); fail = readCount('fail'); skip = readCount('skipped');
+        if (!Number.isSafeInteger(tests) || tests < 0) throw new Error('invalid counts');
+      } else {
+        const report = JSON.parse(readHeld(scratchHeld, 'vitest.json'));
+        total = report.numTotalTests;
+        pass = report.numPassedTests; fail = report.numFailedTests; skip = report.numPendingTests;
+      }
+      if (![total, pass, fail, skip].every(n => Number.isSafeInteger(n) && n >= 0)) throw new Error('invalid counts');
+    } catch (error) { return childRefuse(`unparseable ${runner} output: ${error.message}`); }
+    if (total === 0) return childRefuse('no tests ran');
+    // These tallies advise the requester; they never constitute a check receipt.
+    return { ok: true, runner, files, pass, fail, skip, exitCode: result.code, logTail: result.output.slice(-8192) };
+  } finally {
+    // Walk and remove through held directories; symlinks are unlinked, never opened.
+    const clearDir = fd => {
+      fchmodSync(fd, 0o700);
+      for (const name of readdirSync(`/proc/self/fd/${fd}`)) {
+        let child;
+        try {
+          child = openSync(`/proc/self/fd/${fd}/${name}`, FS.O_RDONLY | FS.O_DIRECTORY | FS.O_NOFOLLOW);
+        } catch (error) {
+          if (error.code === 'ENOTDIR' || error.code === 'ELOOP') {
+            try { unlinkSync(`/proc/self/fd/${fd}/${name}`); } catch { /* raced or unavailable */ }
+          }
+          continue;
+        }
+        try { clearDir(child); } catch { /* continue with other entries */ } finally { closeSync(child); }
+        try { rmdirSync(`/proc/self/fd/${fd}/${name}`); } catch { /* raced or not empty */ }
+      }
+    };
+    try {
+      if (scratchHeld) {
+        const fd = openSync(scratchHeld.at('.'), FS.O_RDONLY | FS.O_DIRECTORY | FS.O_NOFOLLOW);
+        try { clearDir(fd); } finally { closeSync(fd); }
+      }
+    } catch { /* cleanup cannot replace the test answer */ }
+    scratchHeld?.close();
+    if (gitFd !== undefined) closeSync(gitFd);
+    try { rmdirSync(laneHeld.at(path.basename(scratch))); } catch { /* cleanup cannot replace the test answer */ }
+  }
 }
