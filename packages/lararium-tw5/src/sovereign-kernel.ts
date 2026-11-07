@@ -278,6 +278,7 @@ export function runSovereignKernel(
       absence:   (rejection) => rejection instanceof Error && /is unavailable/.test(rejection.message),
       now:       mono,
       lastHeard: () => _lastSyncHeardAt,
+      // LIVENESS: slot waits use this for peer-silence and hard-cap bounds as well as polling.
       sleep:     (ms) => new Promise((res) => setTimeout(res, ms)),
       defer,
       onWake: (wake) => {

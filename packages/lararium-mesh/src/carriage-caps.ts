@@ -367,6 +367,7 @@ export function carriageCap(deps: {
         });
       const schedule = (): void => {
         if (stopped) return;
+        // LIVENESS: peers provide no push event for new FLOW records, so pulls recur with jitter.
         timer = setTimeout(() => { void guardedTick().finally(schedule); }, incommensurablePullMs(seed, baseMs, Math.random));
         timer.unref();
       };

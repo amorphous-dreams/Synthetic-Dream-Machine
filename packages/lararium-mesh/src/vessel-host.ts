@@ -112,6 +112,7 @@ export function awaitIslandMsg<T extends IslandToVesselMsg>(opts: AwaitIslandMsg
     const defer: (fn: () => void) => ReturnType<typeof setTimeout> =
       typeof setImmediate === "function"
         ? (setImmediate as unknown as (fn: () => void) => ReturnType<typeof setTimeout>)
+        // PACING: the fallback yields to queued port messages before the silence verdict.
         : (fn) => setTimeout(fn, 0);
     const clearDefer: (h: ReturnType<typeof setTimeout>) => void =
       typeof clearImmediate === "function"
@@ -144,6 +145,7 @@ export function awaitIslandMsg<T extends IslandToVesselMsg>(opts: AwaitIslandMsg
     // wait re-arms instead of killing a live island.
     const arm = (ms: number): void => {
       clearTimeout(timer);
+      // LIVENESS: a wedged island may stop breathing without exiting; measured silence bounds the wait.
       timer = setTimeout(() => {
         const silent = mono() - lastHeardAt;
         if (silent < opts.timeoutMs) { arm(opts.timeoutMs - silent); return; }
