@@ -19,6 +19,14 @@ retain   = true
 * **Zero · Shattered Olympos:** [[Inscription|ha.ka.ba/lares/docs/art-sigils/example-zero-inscription]] · [[Folio|ha.ka.ba/lares/docs/art-sigils/example-zero-folio]]
 * **One · Tide-Clock Monastery:** [[Inscription|ha.ka.ba/lares/docs/art-sigils/example-one-inscription]] · [[Folio|ha.ka.ba/lares/docs/art-sigils/example-one-folio]]
 
+* **Two · Photograph:** [[Single Photograph|ha.ka.ba/lares/docs/art-sigils/example-two-photograph]]
+* **Three · Color Field:** [[Nonrepresentational Field|ha.ka.ba/lares/docs/art-sigils/example-three-color-field]]
+* **Four · Transparent Component:** [[Veil|ha.ka.ba/lares/docs/art-sigils/example-four-transparent-veil]]
+* **Five · Mixed Media:** [[Material Counterpoint|ha.ka.ba/lares/docs/art-sigils/example-five-mixed-media]]
+* **Six · Exact Text:** [[Typographic Poster|ha.ka.ba/lares/docs/art-sigils/example-six-exact-type]]
+
+[[Art Sigils Practice|ha.ka.ba/lares/docs/art-sigils/practice]] · [[Art Research|ha.ka.ba/lares/docs/art-sigils/research/art-methods]] · [[Cartography|ha.ka.ba/lares/docs/art-sigils/research/cartography]]
+
 [[Art Sigils API|ha.ka.ba/lares/api/art-sigils]]
 <<~/ahu>>
 
@@ -26,6 +34,6 @@ retain   = true
 Examples demonstrate the grammar without defining its defaults.
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;IMwlS0_E__g5gghDH2CGSBFs5j9USR4e_DcJpwvtCLo`>>
+<<^ code=`&#x0003;`>>
 
 <<^ code=`&#x0004;` to=`?`>>
