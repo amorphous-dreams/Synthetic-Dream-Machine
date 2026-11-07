@@ -569,6 +569,8 @@ export const FACE_LEAF_BOND_DOMAIN = mint("face-leaf-bond");
 /** A face's ask to feed one realm as its leaf, signed by its atom over the one request it rides: a bond proves a past
  *  signing, and this proves the present hand, so no bond replays as a feed (`face-leaf-bond`). */
 export const REALM_FEED_ASK_DOMAIN = mint("realm-feed-ask");
+/** A realm maintenance roll binds the realm, feeding writer and epoch in its signed image. */
+export const REALM_FEED_DOMAIN = mint("realm-feed");
 /** The digest a ward co-sign ask names its act by: (act, face, wiki, head cid). Its own name, so no other digest reads as one. */
 export const WARD_COSIGN_DIGEST_DOMAIN = mint("ward-cosign-digest");
 /** What a co-signer's per-face ward key signs in its answer to a ward ask: (the answer, the ask's digest, the fleet frontier it read). */
