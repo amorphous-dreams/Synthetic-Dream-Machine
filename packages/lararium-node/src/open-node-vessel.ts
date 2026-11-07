@@ -4533,10 +4533,12 @@ async function composeNodeHermOn(
   const dispose = async (): Promise<void> => {
     await hermLift?.dispose();
     porch.dispose();
-    await p.disposeIslandFloor();    // the island's floor closes with the vessel — a late worker ask reads a miss
     await p.carriageRelay?.close();  // tear the crossroads down first (a no-op when none stood) — no WS server leak
     p.nexusDial?.stop();            // stop the client dial-out (Socket A) — a no-op when none stood
+    // THE FLOOR OUTLASTS ITS ISLAND (T27, as the hearth's teardown runs): the daemon island's settlement round asks receipts
+    // through the floor while it shuts, so the floor closes only after the island acked. A late worker ask then reads a miss.
     await p.daemonVm().shutdown();
+    await p.disposeIslandFloor();
     await herm.vessel.dispose();   // reverse build order → read-face disposes (clears the HTTP handler)
   };
   return {
