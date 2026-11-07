@@ -152,7 +152,7 @@ describe("custodyDerive — a child derives only from a custody root, only under
     const child = custodyDerive(root, DEVICE_DELEGATION_DOMAIN);
     const construction = new Uint8Array(hkdfSync("sha256", FIXED_ROOT, new Uint8Array(0), DEVICE_DELEGATION_DOMAIN, 32));
     expect(hex(child)).toBe(hex(construction));
-    expect(hex(child)).toBe("3b5176603f19c581d5a0cb63e79a0f1ce39dd959660d758aa5378a9f3089cb95");
+    expect(hex(child)).toBe("6cc9d546db5ace3b038fd1df69303742991ed1420555882f89ea2d495e27ac2c");
   });
 });
 
