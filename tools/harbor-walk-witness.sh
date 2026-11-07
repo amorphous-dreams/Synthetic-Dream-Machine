@@ -1,5 +1,6 @@
 #!/bin/sh
-# harbor-walk-witness — the container vessel's first walk, through the host shim alone (tools/lares-container.sh).
+# harbor-walk-witness — the container vessel's first walk, through the host shim (tools/lares-container.sh),
+# with founding through the harness's explicit offline test door.
 #
 #   LEG 1  the hearth before `up`: found --hearth (the Stable founding act: the place, persona zero, its seed charter,
 #          the face) → up → unlock. The vessel boots once and rests at the floor holding no key; the unlock names
@@ -13,7 +14,9 @@
 #
 # Each leg founds through the TEST door on its own `mktemp` state directory (tools/test-scratch-marker.mjs, then
 # tools/seed-test-custody.mjs, mounted read-only into a one-shot container of the image; the image itself carries
-# neither tool). EVERY BOOT RESTS AT THE FLOOR, and only a terminal opens a vessel key; the witness holds none, so
+# neither tool). Each founding mounts the tools and imports test-ward-route.mjs in that offline CLI process,
+# seating its ward, face route and read-back stand-in explicitly; the marker alone authorizes none of them.
+# EVERY BOOT RESTS AT THE FLOOR, and only a terminal opens a vessel key; the witness holds none, so
 # it opens each standing boot through the same test door (tools/unlock-staged-container.sh: the door's files ride
 # into the standing container, and the unlock frame goes out under the published test route; the door refuses
 # any root without the scratch marker). The witness removes only the containers of its own compose project and
@@ -45,6 +48,13 @@ export COMPOSE_PROJECT_NAME="$PROJECT" LARES_PORT="$PORT" LARES_IMAGE="$IMAGE" L
 
 compose() { docker compose -f "$FILE" "$@"; }
 lares() { "$ROOT/tools/lares-container.sh" "$@"; }
+# The product shim gathers from a terminal. This harness seats its own routes on each founding alone,
+# as household-https-witness does; neither the standing vessel nor the product shim loads the harness.
+found_staged() {
+  compose --profile offline run --rm -T -v "$ROOT/tools:/app/tools:ro" \
+    -e NODE_OPTIONS=--import=file:///app/tools/test-ward-route.mjs \
+    offline vessel found --skip-build --root /state --genesis /app/genesis "$@"
+}
 
 drop_scratch() {
   compose down --remove-orphans >/dev/null 2>&1 || :
@@ -92,7 +102,7 @@ not_contains 'live — wiki-less wayfarer' 'live — wiki:' || { printf 'harbor-
 
 printf '── leg 1: a face before up\n'
 new_scratch
-lares found --hearth --name ci-face
+found_staged --hearth --name ci-face
 lares up
 floor=$(boot_log)
 refused=$(lares persona list --json 2>&1 || :)
@@ -127,7 +137,7 @@ drop_scratch
 
 printf '── leg 2: a face after up\n'
 new_scratch
-lares found
+found_staged
 lares up
 opened=$(unlock_staged 2>&1 || :)
 log=$(boot_log)
@@ -137,7 +147,7 @@ result 'leg 2: the faceless vessel composes no Lararium'        not_contains "$l
 faceless=$(lares persona new 0 --name ci-face 2>&1 || :)
 result 'leg 2: a face refuses on a place with no seed charter'  contains "$faceless" 'no seed charter stands here'
 lares vessel stop
-lares found --hearth --name ci-face
+found_staged --hearth --name ci-face
 lares up
 result 'leg 2: the lifted boot rests at the floor'              contains "$(boot_log)" 'stands holding no vessel key'
 opened=$(unlock_staged 2>&1 || :)
