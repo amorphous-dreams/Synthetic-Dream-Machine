@@ -121,3 +121,66 @@ test('test door runs a named vitest file and reports its passing tally', () => {
   assert.equal(result.runner, 'vitest'); assert.deepEqual(result.files, files);
   assert.ok(result.pass > 0); assert.equal(result.fail, 0); assert.equal(result.exitCode, 0);
 });
+
+test('C1 package directory symlink outside the worktree refuses without disclosing its target', () => {
+  const x = fixture(), secret = 'PLANTED-PRIVATE-PACKAGE-CONTENT';
+  const outside = path.join(x.home, 'outside'); mkdirSync(outside);
+  writeFileSync(path.join(outside, 'package.json'), secret);
+  writeFileSync(path.join(outside, 'sample.test.mjs'), '');
+  symlinkSync(outside, path.join(x.wt, 'external'));
+  const result = x.run({ kind: 'test', runner: 'vitest', files: ['external/sample.test.mjs'] });
+  assert.equal(result.ok, false); assert.match(result.output, /symlink/i);
+  assert.ok(!JSON.stringify(result).includes(secret));
+});
+
+test('C1 package.json leaf symlink refuses without disclosing its target', () => {
+  const x = fixture(), secret = 'PLANTED-PRIVATE-PACKAGE-CONTENT';
+  const outside = path.join(x.home, 'outside-package'); writeFileSync(outside, secret);
+  mkdirSync(path.join(x.wt, 'nested'));
+  writeFileSync(path.join(x.wt, 'nested', 'sample.test.mjs'), '');
+  symlinkSync(outside, path.join(x.wt, 'nested', 'package.json'));
+  const result = x.run({ kind: 'test', runner: 'vitest', files: ['nested/sample.test.mjs'] });
+  assert.equal(result.ok, false); assert.match(result.output, /symlink|package\.json unreadable/i);
+  assert.ok(!JSON.stringify(result).includes(secret));
+});
+
+test('C1 malformed package.json refuses by name without echoing its contents', () => {
+  const x = fixture(), secret = 'PLANTED-PRIVATE-PACKAGE-CONTENT';
+  writeFileSync(path.join(x.wt, 'package.json'), secret);
+  const result = x.run({ kind: 'test', runner: 'vitest', files: ['ok.test.mjs'] });
+  assert.equal(result.ok, false); assert.match(result.output, /package\.json unreadable/i);
+  assert.ok(!JSON.stringify(result).includes(secret.slice(0, 10)));
+});
+
+test('C2 silent hanging test receives a liveness refusal', () => {
+  const x = fixture();
+  // The fallback ends the pre-cure run, so controller proof cannot wedge the relay forever.
+  writeFileSync(path.join(x.wt, 'hang.test.mjs'), "import { test } from 'node:test'; test('hang', async () => { await new Promise(resolve => setTimeout(resolve, 90000)); });\n");
+  const result = x.run(request(['hang.test.mjs']));
+  assert.equal(result.ok, false); assert.match(result.output, /liveness: silent \d+s/i);
+});
+
+test('C3 test code cannot write into /work/.git', () => {
+  const x = fixture();
+  writeFileSync(path.join(x.wt, 'git-write.test.mjs'), "import { test } from 'node:test'; import { writeFileSync } from 'node:fs'; test('write git', () => writeFileSync('/work/.git/planted', 'changed'));\n");
+  const result = x.run(request(['git-write.test.mjs']));
+  assert.equal(result.ok, true, JSON.stringify(result));
+  assert.equal(result.fail, 1); assert.notEqual(result.exitCode, 0);
+  assert.match(result.logTail, /EACCES|EROFS|permission denied|read-only file system/i);
+});
+
+test('C4 empty node test file refuses because no tests ran', () => {
+  const x = fixture(); writeFileSync(path.join(x.wt, 'empty.test.mjs'), '');
+  const result = x.run(request(['empty.test.mjs']));
+  assert.equal(result.ok, false); assert.match(result.output, /no tests ran/i);
+});
+
+test('C4 vitest report with zero total tests refuses by name', () => {
+  const x = fixture();
+  mkdirSync(path.join(x.wt, 'node_modules', 'vitest'), { recursive: true });
+  writeFileSync(path.join(x.wt, 'package.json'), JSON.stringify({ name: 'empty-fixture' }));
+  writeFileSync(path.join(x.wt, 'empty.test.mjs'), '');
+  writeFileSync(path.join(x.wt, 'node_modules', 'vitest', 'vitest.mjs'), "import { writeFileSync } from 'node:fs'; writeFileSync('/scratch/vitest.json', JSON.stringify({ numTotalTests: 0, numPassedTests: 0, numFailedTests: 0, numPendingTests: 0 }));\n");
+  const result = x.run({ kind: 'test', runner: 'vitest', files: ['empty.test.mjs'] });
+  assert.equal(result.ok, false); assert.match(result.output, /no tests ran/i);
+});
