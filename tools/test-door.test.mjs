@@ -113,17 +113,18 @@ test('test door reports passing and failing tallies, with a passing control', ()
 });
 
 test('test door runs a named vitest file and reports its passing tally', () => {
-  const home = os.homedir();
-  const temp = mkdtempSync(path.join(home, 'test-door-vitest-'));
-  const lane = mkdtempSync(path.join(home, '.lares-scratch', 'test-door-vitest-'));
+  const temp = mkdtempSync(path.join(os.tmpdir(), 'test-door-vitest-'));
+  const lane = mkdtempSync(path.join(os.tmpdir(), 'test-door-vitest-lane-'));
   roots.push(temp, lane);
   mkdirSync(path.join(lane, 'relay'));
   const launcher = path.join(temp, 'launcher.mjs'); writeFileSync(launcher, '');
   const checks = path.join(temp, 'checks.json'); writeFileSync(checks, '[]');
   const wt = path.dirname(path.dirname(relay));
+  // The relay resolves HOME/.lares-scratch and requires the worktree beneath it.
+  symlinkSync(path.dirname(wt), path.join(temp, '.lares-scratch'));
   const files = ['packages/lararium-mesh/tests/dyad-atom.test.ts'];
   writeFileSync(path.join(lane, 'relay', 'req-001.json'), JSON.stringify({ kind: 'test', runner: 'vitest', files }));
-  const child = spawnSync(process.execPath, [relay, '--lane-root', lane, '--worktree', wt, '--branch', 'test-door', '--launcher', launcher, '--remote-url', path.join(temp, 'remote'), '--checks', checks, '--once'], { encoding: 'utf8', env: { ...process.env, LARES_BROKER_ROOT: path.join(temp, 'broker') } });
+  const child = spawnSync(process.execPath, [relay, '--lane-root', lane, '--worktree', wt, '--branch', 'test-door', '--launcher', launcher, '--remote-url', path.join(temp, 'remote'), '--checks', checks, '--once'], { encoding: 'utf8', env: { ...process.env, HOME: temp, LARES_BROKER_ROOT: path.join(temp, 'broker') } });
   assert.equal(child.status, 0, child.stderr);
   const result = JSON.parse(readFileSync(path.join(lane, 'relay', 'res-001.json'), 'utf8'));
   assert.equal(result.ok, true, JSON.stringify(result));

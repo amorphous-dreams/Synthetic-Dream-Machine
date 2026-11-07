@@ -303,10 +303,13 @@ export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
     vitestPath = path.join(packageDir, 'node_modules/vitest/vitest.mjs');
   }
 
-  const nvm = path.join(os.userInfo().homedir, '.nvm');
   const node = process.execPath;
-  if (!node.startsWith(`${nvm}${path.sep}`)) return refuse('Node toolchain outside ~/.nvm');
   const nodeVersion = path.dirname(path.dirname(node));
+  const nodeVersionReal = realpathSync(nodeVersion); // broker-owned: derived solely from process.execPath
+  const inside = (child, parent) => child === parent || child.startsWith(parent === path.sep ? parent : `${parent}${path.sep}`);
+  for (const [name, held] of [['worktree', worktreeHeld], ['lane root', laneHeld]]) {
+    if (inside(nodeVersionReal, realpathSync(held.at()))) return refuse(`Node toolchain inside ${name}`);
+  }
   const scratch = await mkdtemp(laneHeld.at('test-seat-'));
   let scratchHeld, gitFd;
   try {
@@ -319,6 +322,7 @@ export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
       return refuse('worktree .git unreadable');
     }
     scratchHeld = openHeldSync(scratch, laneHeld.at());
+    if (inside(nodeVersionReal, realpathSync(scratchHeld.at()))) return refuse('Node toolchain inside scratch directory');
     mkdirSync(scratchHeld.at('home'));
     mkdirSync(scratchHeld.at('lar-root'));
     const bin = path.dirname(node);
