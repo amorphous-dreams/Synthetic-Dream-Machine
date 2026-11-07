@@ -764,9 +764,11 @@ describe("the sealed rest's waits end on their own events, never on a clock", ()
 
   it("the door's open waits for the island; the island's departure answers it by name at once", async () => {
     const channel = new MessageChannel();
-    const silent = portOf(channel.port1);   // an island that never answers: it stands, then goes
+    const silent = portOf(channel.port1);   // an island that answers the door, then never answers this ask: it stands, then goes
     const cell = docStorePortCell(async () => null);
     const detach = cell.attach(silent);
+    portOf(channel.port2).post({ type: "docstore:answering" });
+    await settle(50);
     const door = vesselDocStoreDoor<Session>(() => cell.port(), { book: () => () => {}, idPrefix: "gone" });
     let settled = false;
     const opened = door.open({ bagId: BAG, role: "change", ref: "ab".repeat(32) }).then((v) => { settled = true; return v; });
@@ -869,5 +871,25 @@ describe("a fault or a refusal never lets a document rest clear", () => {
     const doc = parseAutomergeUrl(generateAutomergeUrl()).documentId;
     await expect(guard.save([doc, "snapshot", "h1"], id)).rejects.toMatchObject({ refusal: "rest-fault" });
     expect(asked).toEqual([doc]);
+  });
+});
+
+describe("the floor's door never waits on a holder that never stood", () => {
+  it("an island attached at the floor that answers no door draws the open and the seal refused at once by name; once its holder answers, the open reaches it (control)", async () => {
+    const channel = new MessageChannel();
+    const vesselSide = portOf(channel.port1), islandSide = portOf(channel.port2);
+    const cell = docStorePortCell(async () => null);
+    cell.attach(vesselSide);
+    const door = vesselDocStoreDoor<Session>(() => cell.port(), { book: () => () => {}, idPrefix: "floor" });
+    let settled = false;
+    const opened = door.open({ bagId: BAG, role: "change", ref: "ab".repeat(32) }).then((v) => { settled = true; return v; });
+    await settle(50);
+    expect(settled).toBe(true);
+    expect(await opened).toMatchObject({ refusal: "holder-locked" });
+    expect(await door.seal({ bagId: BAG, values: [], session: { id: "s", subject: "x", signer: null as never }, peer: undefined } as never)).toMatchObject({ refusal: "signer-unavailable" });
+    // CONTROL: the island's holder stands and answers the door; the open reaches it.
+    answerDocStoreAsks(islandSide, { seal: async () => ({ refusal: "seal-refused" }) as never, open: async () => ({ refusal: "bag-unknown" }) as never });
+    await settle(50);
+    expect(await door.open({ bagId: BAG, role: "change", ref: "cd".repeat(32) })).toMatchObject({ refusal: "bag-unknown" });
   });
 });
