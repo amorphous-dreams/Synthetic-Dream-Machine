@@ -288,7 +288,7 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
         readAttestation, childExited: () => childExited, now: () => performance.now(), sleep,
         silenceMs: 30_000, // LIVENESS: headroom for a silent heavy stretch (Automerge corpus materialize)
       });
-      let phase: "starting" | "ready" | "fault" = booted === "ready" ? "ready" : booted === "fault" ? "fault" : "starting";
+      let phase: "starting" | "ready" | "fault" | "exited" = booted === "silent" ? "starting" : booted;
       // `vessel-ready` is attested BEFORE the daemon-keyhive gates settle, so a gate
       // fault (e.g. the Binding Gate) surfaces as a LATE `fatal:`. After a ready attestation,
       // settle and re-read for that late fault — never report up for a node that died.
@@ -332,8 +332,10 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
         accepting: await udsAlive(),
         refusal:   udsRefusal,
       });
-      nodeUp = conditionOk(condition);
-      nodeNote = phase === "fault"
+      nodeUp = phase !== "exited" && conditionOk(condition);
+      nodeNote = phase === "exited"
+        ? `child exited before ready (pid ${child.pid ?? "?"}) — see ${log}`
+        : phase === "fault"
         // A BOOT FAULT KEEPS ITS OWN VOICE. The node writes a cure-naming line, and a report answering with a PATH sends the
         // operator to a file at the moment they least want a detour, while the caller downstream fails on
         // the symptom and buries the cause. The line that knows the answer belongs where the question got
