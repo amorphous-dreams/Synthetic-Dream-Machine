@@ -364,8 +364,9 @@ export function composeSealedRest<S extends SaveSession>(input: {
   readonly inner: StorageAdapterInterface;
   readonly bagOf: (documentId: string) => SealedBag | null;
   readonly sessionFace: () => string | null;
-  /** The worn face's subject at another anchor of the vessel's own chain (`SealedDocumentPorts.wornAt`). */
-  readonly wornAt?: (subject: string) => boolean;
+  /** The worn face's subject at another anchor of the vessel's own chain (`SealedDocumentPorts.wornAt`): true only for
+   *  a bag of the face the vessel wears. */
+  readonly wornAt?: (face: string, subject: string) => boolean;
   readonly door: Pick<ConstructorParameters<typeof SealedDocumentStore>[0], "seal" | "open"> & { lock?(): void };
   readonly flushRepo: () => Promise<void>;
   readonly onHeld?: (held: { readonly refusal: "save-unbooked" | "save-unmapped" | "save-unsealed"; readonly documentId: string }) => void;
@@ -401,7 +402,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
   });
   // A session names the bag's face by its own subject, or by the worn face's subject at another anchor.
   const wears = (face: string | null | undefined, subject: string): boolean =>
-    typeof face === "string" && (subject === face || (input.wornAt?.(subject) ?? false));
+    typeof face === "string" && (subject === face || (input.wornAt?.(face, subject) ?? false));
   return {
     store, book,
     wrote(documentId, session) { if (input.bagOf(documentId) !== null) book.book(documentId, session); },

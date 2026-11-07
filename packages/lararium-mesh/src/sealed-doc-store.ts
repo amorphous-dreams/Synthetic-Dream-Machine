@@ -67,6 +67,19 @@ export interface SaveSession {
 /** What the store's seal answers: the address of each value it sealed, or a refusal by name. */
 export type SealedValueAddresses = Pick<SealedValues, "values">;
 
+/**
+ * The `wornAt` port for a vessel that wears one face at more than one anchor: it answers true only when `face` (the
+ * bag's face) names the face this vessel wears now, and `subject` names that face at one of the anchors the vessel's
+ * own chain holds (its place, the dial's Nexus). A bag of another face never passes through the worn subject; a vessel
+ * that wears no face passes nothing. `anchors` reads fresh at each ask: a dial composes and stands down.
+ */
+export function wornAtOf(
+  worn: () => string | null,
+  anchors: () => ReadonlyArray<string | null>,
+): (face: string, subject: string) => boolean {
+  return (face, subject) => face === worn() && anchors().some((anchor) => anchor !== null && anchor === subject);
+}
+
 export interface SealedDocumentPorts {
   /** The engine-facing rest this store wraps: an unsealed bag's values pass straight to it. */
   readonly inner: StorageAdapterInterface;
@@ -76,11 +89,12 @@ export interface SealedDocumentPorts {
   bagOf(documentId: string): { readonly bagId: string; readonly face: string | null; readonly published?: PublishedLookup } | null;
   /** The face the session wears (`faceProofSubjectRef`); null where no session stands. */
   sessionFace(): string | null;
-  /** ONE FACE, TWO ANCHORS (session-contract#/the-hands): does `subject` name the face the vessel wears at another anchor
-   *  its own chain names (its place, while a dial names the face by its Nexus subject; the dial's Nexus, while it stands
-   *  at its place)? A session that face's other anchor booked seals for the bag, and a value it sealed opens. Absent: the
-   *  bag's face reads by one subject. */
-  wornAt?(subject: string): boolean;
+  /** ONE FACE, TWO ANCHORS (session-contract#/the-hands): does `subject` name `face` (the bag's face) at another anchor
+   *  the vessel's own chain names (its place, while a dial names the face by its Nexus subject; the dial's Nexus, while
+   *  it stands at its place)? The port answers true only for the face the vessel wears (`wornAtOf`): a bag of any other
+   *  face never passes through the worn subject. A session that face's other anchor booked seals for the bag, and a
+   *  value it sealed opens. Absent: the bag's face reads by one subject. */
+  wornAt?(face: string, subject: string): boolean;
   /** The session that booked the latest change of a document (R2), reading the save's own bytes where it hands them
    *  (the change's writer, T4); null: no session booked it, and its save waits. */
   sessionOf(documentId: string, data?: Uint8Array): SaveSession | null;
@@ -248,7 +262,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
 
   /** Does `subject` name `face`, the bag's own face: its own subject, or the worn face's subject at another anchor? */
   #wears(face: string | null, subject: string): boolean {
-    return face !== null && (subject === face || (this.#ports.wornAt?.(subject) ?? false));
+    return face !== null && (subject === face || (this.#ports.wornAt?.(face, subject) ?? false));
   }
 
   #bagOf(key: StorageKey): { readonly bagId: string; readonly face: string | null; readonly published?: PublishedLookup } | null {

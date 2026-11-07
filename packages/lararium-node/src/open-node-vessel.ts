@@ -17,7 +17,7 @@
  * in sovereign islands (daemon + wiki). FPI-5 (trim tab): all Node-specific code lives here.
  */
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
-import { WardRefused, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, type SealedBag, type BookedSession, type SessionOwnChain, preparePlaceFace, signAsFaceAtom } from "@lararium/mesh";
+import { WardRefused, wornAtOf, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, type SealedBag, type BookedSession, type SessionOwnChain, preparePlaceFace, signAsFaceAtom } from "@lararium/mesh";
 import * as A from "@automerge/automerge";
 
 /** A summoned panel verb's ward: the ref the CLI parked, spent only on the verb and arguments it was bound to. */
@@ -905,7 +905,7 @@ async function prepareNodeBootOn(
   // it lands (`SessionSignBook`'s hold), each save signs under the session that booked it, a save no session booked
   // waits `save-unbooked` in memory until the next session's call books it, and a session's signer drops only after the Repo and the rest flush (`beforeSignerDrops`).
   type NodeSaveSession = BookedSession & { readonly id: string };
-  const sealedCells: { face: () => string | null; wornAt: (subject: string) => boolean; bags: () => readonly string[]; catalog: () => LarDoc | undefined; mounted: (bagId: string) => string | null; book: SessionSignBook | null } = {
+  const sealedCells: { face: () => string | null; wornAt: (face: string, subject: string) => boolean; bags: () => readonly string[]; catalog: () => LarDoc | undefined; mounted: (bagId: string) => string | null; book: SessionSignBook | null } = {
     face: () => null, wornAt: () => false, bags: () => [], catalog: () => undefined, mounted: () => null, book: null,
   };
   // V3: each slot document the daemon island's resolver named, by bag (`announceSlotDoc`). A slot's document moves when
@@ -1000,7 +1000,7 @@ async function prepareNodeBootOn(
     inner: new DurableNodeFSStorageAdapter(storageDir),
     bagOf: sealedBagOf,
     sessionFace: () => sealedCells.face(),
-    wornAt: (subject) => sealedCells.wornAt(subject),
+    wornAt: (face, subject) => sealedCells.wornAt(face, subject),
     door: vesselDocStoreDoor<NodeSaveSession>(() => docStorePort.port(), {
       book: (ask, verb, session) => sealedCells.book?.hold(ask, verb, session) ?? (() => {}),
       patienceMs: 30_000, idPrefix: `docstore-${process.pid}`,
@@ -2073,10 +2073,11 @@ async function prepareNodeBootOn(
   // ONE FACE, TWO ANCHORS: the worn face proved at this vessel's place names its bags by the place subject until a dial
   // composes, then by the dial's Nexus subject. A save its place session booked before the dial seals after it, and a
   // value either anchor sealed opens at the other, across a restart whose dial stands again first (meme-realm-bag ⑮b).
-  sealedCells.wornAt = (subject) => {
+  // The port answers for the worn face alone (mesh `wornAtOf`): a bag of another face never passes through the worn subject.
+  sealedCells.wornAt = wornAtOf(() => sealedCells.face(), () => {
     const c = dialAnchor.chain();
-    return subject === placeFace || (c !== null && subject === faceProofSubjectRef(c.scope as never));
-  };
+    return [placeFace, c !== null ? faceProofSubjectRef(c.scope as never) : null];
+  });
   const liftSessionSign = (): SessionSignLift => {
     // A call of a session books here, and the sealed rest seals every save that waited for one under it (R2); the
     // document store's own seal books here too, and books nothing further.
