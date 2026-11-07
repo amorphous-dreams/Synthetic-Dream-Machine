@@ -136,8 +136,9 @@ export async function isWorkspaceStale(root: string = repoRoot): Promise<boolean
 /** Record the digest the current dist was built FROM — written only after a build succeeds. */
 async function stampBuild(): Promise<void> {
   try {
-    mkdirSync(dirname(BUILD_STAMP), { recursive: true });
-    writeFileSync(BUILD_STAMP, await sourceDigest(join(repoRoot, "packages")));
+    // The stamp tool's writer: no planted link at the stamp (or on its way) is ever followed (test-door code writes this dir).
+    const { writeStamp } = await import(pathToFileURL(stampToolPath(repoRoot)).href);
+    writeStamp(repoRoot, BUILD_STAMP, await sourceDigest(join(repoRoot, "packages")));
   } catch { /* a stamp we cannot write costs one extra build, never correctness */ }
 }
 

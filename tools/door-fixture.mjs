@@ -63,12 +63,14 @@ export function scratchDoorTree(wt) {
   return { wt, pkg };
 }
 
-/** file -> `ino:mtimeNs` for every file under the checkout's packages/<dir>/dist: a self-test that rebuilds one moves its entries. */
+/** file -> `ino:mtimeNs` for every file under the checkout's packages/<dir>/dist and its node_modules/.lares-build stamps: a
+ *  self-test that rebuilds or restamps one moves its entries. */
 export function checkoutDistSnapshot() {
   const out = {};
   const walk = dir => { for (const e of readdirSync(dir, { withFileTypes: true })) { const f = path.join(dir, e.name); if (e.isDirectory()) walk(f); else { const st = lstatSync(f, { bigint: true }); out[f] = `${st.ino}:${st.mtimeNs}`; } } };
   for (const name of readdirSync(path.join(checkout, 'packages'))) {
     try { walk(path.join(checkout, 'packages', name, 'dist')); } catch (error) { if (!['ENOENT', 'ENOTDIR'].includes(error.code)) throw error; }
   }
+  try { walk(path.join(checkout, 'node_modules', '.lares-build')); } catch (error) { if (!['ENOENT', 'ENOTDIR'].includes(error.code)) throw error; }
   return out;
 }
