@@ -110,3 +110,28 @@ test("a face change asked after the island ended rejects at once", async () => {
     await expect(core.dropFace("abc")).rejects.toThrow("disposed");
   } finally { ports.forEach((port) => port.close()); await repo.shutdown(); }
 });
+
+// The face's late bags (the bag its own catalog names past boot, open-node-vessel's `registerFaceBags`) settle under op `bags`;
+// a composition awaits that answer inside `openDaemon`, so a dropped answer hangs the whole vessel short of its return.
+test.each(["dropped", "bags"] as const)("B2 — a face change under op %s settles on the island's answer (dropped = CONTROL)", async (op) => {
+  const repo = new Repo({ sharePolicy: async () => true });
+  const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
+  const ports: MessagePort[] = [];
+  const listeners: Array<(msg: any) => void> = [];
+  const host: DaemonVmHost = {
+    spawnWorker: () => ({ post: () => {}, listen: (fn) => { listeners.push(fn); return () => {}; }, onError: () => () => {}, terminate: () => {} }),
+    newSyncChannel: () => { const { port1, port2 } = new MessageChannel(); ports.push(port1, port2); return { mainPort: port1 as IslandMsg_Manifest["syncPort"], syncPort: port2 as IslandMsg_Manifest["syncPort"] }; },
+  };
+  const core = openDaemonVmCore(host, { repo, daemonHandle, recipe: { wikiSlug: "daemon" }, grants: { islandUrl: daemonHandle.url }, coreHash: null, workerScriptUrl: new URL("file:///unused"), eaSilenceMs: 2 ** 30 });
+  core.workerEa.catch(() => {});
+  try {
+    let settled = false;
+    const pending = (op === "bags" ? core.registerFaceBags("abc", ["lar:///ha.ka.ba/bags/late"]) : core.dropFace("abc")).then(() => { settled = true; });
+    pending.catch(() => {}); // an unanswered ask ends at the dispose below; the assertion names it
+    await Promise.resolve(); expect(settled).toBe(false);
+    for (const listener of listeners) listener({ type: "daemon:face-settled", atomKey: "abc", op, ok: true });
+    await new Promise((resolve) => setImmediate(resolve));
+    expect(settled, `the ${op} answer settles the ask`).toBe(true);
+    await pending;
+  } finally { core.dispose(); ports.forEach((port) => port.close()); await repo.shutdown(); }
+});

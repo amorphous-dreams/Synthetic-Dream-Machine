@@ -336,8 +336,10 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
     // THE WRITE'S ANSWER WAITS FOR ITS REST, as a save act's result does: the hold begins in the turn of the dispatch and the
     // vessel's own word releases it, so a page that holds its leave until `port:written` never leaves ahead of storage.
     const hold = ctx.receipt?.begin();
-    let released = false;
-    const release = (slots: readonly string[] | null): void => { if (!released) { released = true; hold?.done(slots); } };
+    let rested: Promise<boolean> | undefined;
+    // The write's titles ride its hold: a refused or closed receipt names them unsaved at teardown.
+    const titles = msg.records.map(record => record.title);
+    const release = (slots: readonly string[] | null): Promise<boolean> | undefined => (rested ??= hold?.done(slots, { titles }));
     try {
       const begun = port.ledger.begin(msg.txId, families, digest);
       if (begun.answer) {
@@ -378,8 +380,14 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
           flush(ctx);
         }
       }
-      release(familyStarted && ctx.receipt ? [...ctx.handles.keys()] : null);
-      if (familyStarted && ctx.receipt) await ctx.receipt.held();
+      const verdict = release(familyStarted && ctx.receipt ? [...ctx.handles.keys()] : null);
+      if (familyStarted && ctx.receipt && (await verdict) === false) {
+        // The vessel kept none of it: the write answers refused by name and leaves the ledger, so a retry writes and asks afresh.
+        if (port.ledger.unkept(msg.txId)) port.actorState.unanswered.delete(msg.txId);
+        flush(ctx);
+        answer("refused", [], [...families], "receipt-refused");
+        return;
+      }
       const result = port.ledger.answer(msg.txId, failed);
       if (result.status === "applied") port.actorState.unanswered.delete(msg.txId);
       flush(ctx);

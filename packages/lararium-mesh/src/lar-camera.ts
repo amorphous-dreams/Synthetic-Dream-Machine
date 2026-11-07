@@ -188,7 +188,9 @@ export type LarRefusal =
   | "activation-required" | "unknown-request"
   | "unclaimed" | "actor-not-spawned" | "superseded" | "cap-refused"
   // The vessel's return leg: an act naming a surface the vessel holds no island for, or one the contract's reader refuses.
-  | "surface-unknown" | "event-malformed";
+  | "surface-unknown" | "event-malformed"
+  // A confirmed act whose receipt the vessel refused or closed: its edit stands in the island, never in the vessel's store.
+  | "receipt-refused";
 
 export type LarResultStatus = "applied" | "stale-target" | "refused";
 

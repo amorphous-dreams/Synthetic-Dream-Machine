@@ -8,10 +8,12 @@
  * signer on the main thread, and the next signature refuses there; the island learns nothing it must forget.
  *
  * The law the island applies to a reading (sealed-store#/the-store):
- *   · ONLY A NEXUS-ANCHORED SESSION REACHES THE SEALED STORE. A record carries a session certificate beneath the
- *     vessel's face-scoped key; a place session holds none, and the vessel refuses it `session-anchor-place`.
- *   · THE SESSION WEARS THIS ISLAND'S OWN FACE. Its proof subject equals the subject of the vessel's own chain, or
- *     every sealed verb refuses `session-face-foreign`: another face's session opens nothing this face sealed.
+ *   · THE SEALER READS THE SESSION'S (FACE, ANCHOR), WHATEVER THE ANCHOR. A Nexus session's record carries its session
+ *     certificate beneath the vessel's face-scoped key; a place session's carries the certificate the face's atom
+ *     signed at the vessel's own place. The vessel's chain names a standing at each anchor its face meets.
+ *   · THE SESSION WEARS THIS ISLAND'S OWN FACE. Its proof subject equals the subject of the vessel's own chain at the
+ *     session's anchor, or every sealed verb refuses `session-face-foreign`: another face's session opens nothing this
+ *     face sealed.
  *   · A WRITER STANDS ONLY UNDER THE VESSEL'S OWN CHAIN. `holdsWrite` reads true for a certificate whose scope and
  *     face-scoped key are the chain's, over a bag this face registers. Every other writer reads not capable until
  *     the grant ring reads by face key (face-proof#/owed): the reading fails closed.
@@ -20,6 +22,7 @@
  */
 import type { IslandMsg_SessionSign, IslandMsg_SessionSigned, RecordSigner, WriterStanding } from "@lararium/mesh";
 import type { Signature } from "@lararium/mesh/face-proof-subjects";
+import { faceProofSubjectRef, placeProofSubjectRef } from "@lararium/mesh/face-proof-subjects";
 import type { SessionOwnChain } from "@lararium/mesh";
 
 /** The invocation a session placed, as the island names it: its request id and the verb it placed. */
@@ -54,20 +57,39 @@ export interface IslandSessionProof {
 
 const bare = (s: string): string => s.trim().toLowerCase().replace(/^0x/, "");
 
-/** The certificate's scope and face-scoped key, read without trusting its shape. */
-function chainOf(certificate: unknown): { faceKey: string; nexus: string; vesselFaceKey: string } | null {
+/** The certificate's anchor, read without trusting its shape: a Nexus scope and face-scoped key, or an atom at a place. */
+function chainOf(certificate: unknown):
+  | { readonly anchor: "nexus"; readonly faceKey: string; readonly nexus: string; readonly vesselFaceKey: string }
+  | { readonly anchor: "place"; readonly atomKey: string; readonly place: string }
+  | null {
   if (typeof certificate !== "object" || certificate === null) return null;
   const { scope, vesselFaceKey } = certificate as { scope?: unknown; vesselFaceKey?: unknown };
-  if (typeof scope !== "object" || scope === null || typeof vesselFaceKey !== "string") return null;
+  if (typeof scope !== "object" || scope === null) return null;
+  if (vesselFaceKey === undefined) {
+    const { atomKey, place } = scope as { atomKey?: unknown; place?: unknown };
+    return typeof atomKey === "string" && typeof place === "string" ? { anchor: "place", atomKey, place } : null;
+  }
+  if (typeof vesselFaceKey !== "string") return null;
   const { faceKey, nexus } = scope as { faceKey?: unknown; nexus?: unknown };
-  return typeof faceKey === "string" && typeof nexus === "string" ? { faceKey, nexus, vesselFaceKey } : null;
+  return typeof faceKey === "string" && typeof nexus === "string" ? { anchor: "nexus", faceKey, nexus, vesselFaceKey } : null;
 }
 
-/** Does `certificate` stand under `chain`: the same face, the same Nexus, the same face-scoped key? */
+/** Does `certificate` stand under `chain` at its own anchor: at a Nexus the same face, Nexus and face-scoped key; at
+ *  a place the same atom at the same place? */
 export function certificateUnderChain(certificate: unknown, chain: SessionOwnChain | null): boolean {
   if (chain === null) return false;
   const read = chainOf(certificate);
-  return read !== null && bare(read.faceKey) === bare(chain.scope.faceKey) && read.nexus === chain.scope.nexus && bare(read.vesselFaceKey) === bare(chain.vesselFaceKey);
+  if (read === null) return false;
+  if (read.anchor === "place") return chain.place !== undefined && bare(read.atomKey) === bare(chain.place.atomKey) && read.place === chain.place.place;
+  return "scope" in chain && bare(read.faceKey) === bare(chain.scope.faceKey) && read.nexus === chain.scope.nexus && bare(read.vesselFaceKey) === bare(chain.vesselFaceKey);
+}
+
+/** The proof subject the vessel's own chain names at `certificate`'s anchor, or null where it names no standing there. */
+export function chainSubjectAt(certificate: unknown, chain: SessionOwnChain): string | null {
+  const read = chainOf(certificate);
+  if (read === null) return null;
+  if (read.anchor === "place") return chain.place ? placeProofSubjectRef(chain.place as never) : null;
+  return "scope" in chain ? faceProofSubjectRef(chain.scope as never) : null;
 }
 
 /**
@@ -78,7 +100,13 @@ export function ownChainStanding(chain: () => SessionOwnChain | null, bags: () =
   return {
     holdsWrite: ({ certificate, bagId }) => certificateUnderChain(certificate, chain()) && bags().includes(bagId),
     // No chain before a session asked: the holder takes no reading and settles no roll until one stands.
-    chainOf: () => { const c = chain(); return c === null ? null : `${bare(c.scope.faceKey)}|${c.scope.nexus}|${bare(c.vesselFaceKey)}`; },
+    chainOf: () => {
+      const c = chain();
+      if (c === null) return null;
+      const nexus = "scope" in c ? `${bare(c.scope.faceKey)}|${c.scope.nexus}|${bare(c.vesselFaceKey)}` : "";
+      const place = c.place ? `${bare(c.place.atomKey)}@${c.place.place}` : "";
+      return `${nexus}|${place}`;
+    },
   };
 }
 

@@ -93,7 +93,7 @@ export async function leafOf(
 ): Promise<SiblingLeaf> {
   const deviceKey = await pubOf(device);
   const standing = await leafStandingUnder({ kel, deviceKey, enrolment, open: groupSecretOpenerFromSeed(device) });
-  return { deviceKey, sign: signerOf(device), kel, standing, ...(expectedEpoch !== undefined ? { expectedEpoch } : {}) };
+  return { deviceKey, sign: signerOf(device), kel, standing, ...(expectedEpoch !== undefined ? { expectedEpoch: () => expectedEpoch } : {}) };
 }
 
 /** A leaf as it proves under a KEL: the edge and secret its head op-key sealed to it. Throws for a leaf the head
@@ -217,6 +217,8 @@ export function standLeaf(
     readonly alsoVia?: readonly ReturnType<typeof memoryRelay>[];
     /** Delay before the leaf re-dials a herm that dropped it. */
     readonly retryInterval?: number;
+    /** The leaf the adapter reads at every licensing act, in place of the fixture's (a product composition's). */
+    readonly leaf?: (kel: readonly PersonaKelEvent[]) => Promise<SiblingLeaf>;
   } = {},
 ): Leaf {
   const sharePolicy = opts.sharePolicy ?? (async () => true);
@@ -226,10 +228,10 @@ export function standLeaf(
     transports: [relay, ...(opts.alsoVia ?? [])].map((r) => r.transportFor(self.deviceKey)),
     ...(opts.retryInterval !== undefined ? { retryInterval: opts.retryInterval } : {}),
     kel: self.kel,
-    leaf: async (kel) => {
-      const leaf = await leafOf(device, enrolment, kel, self.expectedEpoch);
+    leaf: opts.leaf ?? (async (kel) => {
+      const leaf = { ...(await leafOf(device, enrolment, kel)), ...(self.expectedEpoch !== undefined ? { expectedEpoch: self.expectedEpoch } : {}) };
       return opts.presents ? { ...leaf, standing: { held: leaf.standing.held.map((h) => ({ ...h, edge: opts.presents! })) } } : leaf;
-    },
+    }),
     ...(drops ? { drops } : {}),
     onRefusal: (r) => refusals.push(r),
   });

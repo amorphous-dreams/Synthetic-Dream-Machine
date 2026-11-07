@@ -12,8 +12,9 @@
  * deliberately like `IdentitySlot.verifyCapability(docUrl, "read")`: the alpha
  * allow-set fork and the V5 capability-check fork are the SAME gate at two
  * capability resolutions — the deterministic allow-set IS a degenerate cap set.
- * So the V5 `KeyhiveIdentitySlot` swaps in behind this interface with no
- * call-site churn.
+ * A capability slot binds nothing here unless it joins a PROVED peer or session
+ * presenter to the decision (a self-DID verifier alone binds nothing); any
+ * peer-bound restriction rides P27 (stable-founding-road, K23 retired).
  *
  * HONEST BOUND: this gate decides at this vessel's Repo alone, and it encrypts
  * nothing. Seated on both share hooks (`shareConfigOf`), it stops the repo
@@ -232,8 +233,8 @@ export interface IdentityRing {
  * main-thread sharePolicy: the live KeyhiveProvider runs INSIDE the daemon-island
  * worker (bootDaemonKeyhive over the worker composite), and the bag↔docId registry
  * lives there too — the founding ceremony DISPOSES its transient provider before
- * returning, and LarVessel (whose `identity` field would carry the slot) is not on
- * the live factory path. So the node vessel passes `identity = null` and this degenerates
+ * returning. No vessel record carries an identity slot; its one record carries capability
+ * members only. So the node vessel passes `identity = null` and this degenerates
  * EXACTLY to federationShareDecision (zero behavior change, deny-by-default intact); the browser
  * vessel reads `federationShareDecision` directly, its PersonaGroup ring composed onto the gate itself.
  * The BRIDGE and the MAP both stand already, and conflating their absence with the ring's absence

@@ -86,6 +86,7 @@ import {
   type BatchMode,
   type IslandMsg_Ea,
   type IslandMsg_TeardownAck,
+  isTeardownFault,
 } from "@lararium/mesh";
 import { runLocalVerb } from "./verb-local-dispatch.js";
 import type { SessionWorn, VerbTable } from "./verb-dispatcher.js";
@@ -902,8 +903,9 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
         await awaitIslandMsg<IslandMsg_TeardownAck>({
           expectedType:   "teardown:ack",
           timeoutMs:      budgetMs,
-          // The island answers its teardown either way: an ack, or a fault by name that ends the wait at once, unacked.
-          rejectOnTypes:  ["fault"],
+          // The island answers its teardown either way: an ack, or a fault by name (`teardown-fault: …`) that ends the wait at
+          // once, unacked. Another fault crossing meanwhile (a late slot fault) ends nothing: the flush still runs.
+          rejectOn:       isTeardownFault,
           subscribe:      (h) => worker.listen(h),
           // A hard `dispose` while this wait stands ends it at once, through the same door a worker
           // error takes: the wait drops its bound with it, and the handshake answers unacked.

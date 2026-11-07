@@ -102,6 +102,7 @@ async function vaultStatus(args: ParsedArgs, daemonUp: boolean): Promise<number>
       } else {
         console.log("vessel key     no vessel stands on this store, so no process holds it.");
       }
+      if (typeof door?.["wikiAwaits"] === "string") console.log(`wiki           ${door["wikiAwaits"]}`);
       printCustody(custody);
     },
   });

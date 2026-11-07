@@ -33,3 +33,23 @@ test("CONTROL: an island whose teardown acks comes down", async () => {
   handle.terminate();
   await stopped;
 }, 3_000);
+
+test("A4: a late slot fault before the teardown ack finishes nothing; the ack still finishes it — CONTROL: the named teardown-fault above finishes it unacked", async () => {
+  let stopped = false;
+  let ack!: () => void;
+  const handle = inPageIsland((scope: BrowserIslandScope) => {
+    scope.onStop?.(() => { stopped = true; });
+    scope.listen((raw) => {
+      if ((raw as { type?: string })?.type !== "teardown") return;
+      scope.post({ type: "fault", wikiUri: "lar:///ha.ka.ba/wikis/daemon", error: "slot working unavailable — the Repo refused the ask" });
+      ack = () => scope.post({ type: "teardown:ack" });
+    });
+  });
+  handle.terminate();
+  for (let i = 0; i < 10 && !ack; i++) await new Promise((resolve) => setTimeout(resolve, 5));
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  expect(stopped, "a slot fault never cuts the island mid-flush").toBe(false);
+  ack();
+  for (let i = 0; i < 20 && !stopped; i++) await new Promise((resolve) => setTimeout(resolve, 5));
+  expect(stopped).toBe(true);
+}, 3_000);

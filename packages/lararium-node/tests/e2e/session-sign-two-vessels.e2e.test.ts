@@ -151,14 +151,15 @@ describe("the herm floor and the lifted vessel in one process", () => {
       expect(lift.islandCaps.sessionSign).toBeTypeOf("function");
       expect(herm.islandCaps.sessionSign).toBeUndefined();
 
-      // A call booked on the lift's own book. A PLACE-anchored session answers `session-anchor-place` from the book itself,
-      // which no bare "no door" refusal can say: the lift's daemon reaches its book, the herm's (same ask id) draws the bare refusal.
+      // A call booked on the lift's own book. A session whose signer already dropped answers `signer-refused` from the book
+      // itself, which no bare "no door" refusal can say: the lift's daemon reaches its book, the herm's (same ask id) draws
+      // the bare refusal.
       const release = lift.sessionSigns.hold("call-1", "sealed-seal", {
-        anchor: { kind: "place", aid: "place-one", head: "head-one" }, subject: "subject-1",
-        signer: { certificate: {}, async sign() { throw new Error("a place session signs nothing"); } } as never,
+        anchor: { kind: "nexus", aid: "nexus-one" }, subject: "subject-1",
+        signer: { certificate: {}, dropped: true, async sign() { throw new Error("a dropped signer signs nothing"); } } as never,
       });
       try {
-        expect(await askThroughDaemon(liftDaemon, ask("l1", "sign"))).toEqual({ type: "session:signed", requestId: "l1", refusal: "session-anchor-place" });
+        expect(await askThroughDaemon(liftDaemon, ask("l1", "sign"))).toEqual({ type: "session:signed", requestId: "l1", refusal: "signer-refused" });
         expect(await askThroughDaemon(hermDaemon, ask("h1"))).toEqual({ type: "session:signed", requestId: "h1", refusal: "signer-unavailable" });
         expect(await askThroughDaemon(hermDaemon, ask("h2", "sign"))).toEqual({ type: "session:signed", requestId: "h2", refusal: "signer-unavailable" });
         // The herm result carries no book at all: nothing a booking on the lift could reach.

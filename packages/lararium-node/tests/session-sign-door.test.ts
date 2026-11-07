@@ -73,14 +73,19 @@ describe("the session sign door answers from the session that placed the call", 
     expect(await book.door(() => CHAIN)({ op: "read", ask: "req-1", verb: "sealed-seal" })).toEqual({ refusal: "signer-unavailable" });
   });
 
-  test("a place session reaches no sealed store: `session-anchor-place`, and it signs nothing", async () => {
+  test("a place session signs where the vessel's own chain names its place, and where it names none it answers `signer-unavailable` and signs nothing", async () => {
     const book = new SessionSignBook();
     const s = signer();
     book.hold("req-1", "sealed-seal", { signer: s, anchor: PLACE, subject: "subject-1" });
-    const door = book.door(() => CHAIN);
-    expect(await door({ op: "read", ask: "req-1", verb: "sealed-seal" })).toEqual({ refusal: "session-anchor-place" });
-    expect(await door({ op: "sign", ask: "req-1", verb: "sealed-seal", payload })).toEqual({ refusal: "session-anchor-place" });
+    // NO PLACE STANDS BESIDE THE NEXUS: the place session's ask refuses by name, and nothing signs.
+    const nexusOnly = book.door(() => CHAIN);
+    expect(await nexusOnly({ op: "read", ask: "req-1", verb: "sealed-seal" })).toEqual({ refusal: "signer-unavailable" });
+    expect(await nexusOnly({ op: "sign", ask: "req-1", verb: "sealed-seal", payload })).toEqual({ refusal: "signer-unavailable" });
     expect(s.signed).toEqual([]);
+    // THE PLACE STANDS: the same booked call signs on this thread under the vessel's place.
+    const atPlace = book.door(() => ({ place: { atomKey: "aa".repeat(32), place: "place-one" } }));
+    expect(await atPlace({ op: "sign", ask: "req-1", verb: "sealed-seal", payload })).toEqual({ signature: "sig-act-3" });
+    expect(s.signed).toEqual([payload]);
   });
 
   test("a lock, a close or a switch drops the signer, and the next ask refuses `signer-refused`", async () => {
