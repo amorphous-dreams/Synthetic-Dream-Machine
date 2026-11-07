@@ -103,8 +103,7 @@ import { testVesselTag } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 const daemonDoc = { tiddlers: { [T.group]: { text: "group-zero" }, [T.kel]: { text: "kel-zero" } } };
 const repo = {
-  findWithProgress: () => ({ whenReady: async () => ({ doc: () => daemonDoc }) }),
-  find: async () => ({ doc: () => ({}) }),
+  find: async (url: string) => ({ url, doc: () => (url === "automerge:daemon" ? daemonDoc : {}) }),
   flush: async () => {},
 } as never;
 const JOINEE = "6e7a1cdd29b0b78fd13af4c5598feff4ef2a97166e3ca6f2e4fbfccd80505bf1";
