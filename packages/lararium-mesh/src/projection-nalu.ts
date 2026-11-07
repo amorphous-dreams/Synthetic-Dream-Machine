@@ -93,6 +93,7 @@ export class CoalesceGate implements ProjectionGate {
   constructor(opts: CoalesceGateOptions) {
     this.windowMs = opts.windowMs;
     this.onFlush = opts.onFlush;
+    // PACING: the coalescing window groups marks into a projection flush.
     this.setTimer = opts.setTimer ?? ((fn, ms) => setTimeout(fn, ms));
     this.clearTimer = opts.clearTimer ?? ((h) => clearTimeout(h));
   }
@@ -181,6 +182,7 @@ export class KeyedCoalesceGate<K> implements ProjectionGate {
     this.debounceMs = opts.debounceMs;
     this.maxWaitMs = opts.maxWaitMs;
     this.onFlush = opts.onFlush;
+    // PACING: debounce and max-wait timers schedule projection flushes, not refusal.
     this.setTimer = opts.setTimer ?? ((fn, ms) => setTimeout(fn, ms));
     this.clearTimer = opts.clearTimer ?? ((h) => clearTimeout(h));
     this.servo = opts.servo;
