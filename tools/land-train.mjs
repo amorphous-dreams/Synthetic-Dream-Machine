@@ -478,7 +478,12 @@ async function landLocal({ name, lanes, plan, span, direct, memDirect = false, d
   const { say, git, stop, env, SP } = d;
   if (direct || memDirect) {
     const held = await ops.heldOut(span);
-    if (held.state === "red") return stop(15, `HELD-OUT RED at ${short(held.covered)}: DIRECT land refuses`, "pono: cure the span's held-out red first; the held-out lane lands DIRECT only over its own green cells");
+    if (held.state === "red") {
+      const lane = lanes[0];
+      const own = direct ? await ops.verdict(`${span}--${lane.suffix}`, lane.head) : null;
+      if (own?.heldOut !== "green") return stop(15, `HELD-OUT RED at ${short(held.covered)}: DIRECT land refuses`, "pono: cure the span's held-out red first; the held-out lane lands DIRECT only over its own green cells");
+      say(`DIRECT over a red span held-out: the lane's own held-out at ${lane.head} reads green`);
+    }
   }
   // --local keeps the road walk from the lanes' common base: the battery reads only shared packages, so every road commit
   // between that base and the span head must read GREEN on its own (a land carries its train's verdict).
