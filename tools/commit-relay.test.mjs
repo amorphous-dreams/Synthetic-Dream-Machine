@@ -240,7 +240,7 @@ test('PROOF 2 a .gitattributes filter and a submodule run nothing: commit hashes
   assert.equal(g.ok, false); assert.match(g.output, /gitlink|submodule/);
 });
 
-wallTest('PROOF 3 hostile lifecycle scripts and .npmrc: the broker has no install door, the install seat refuses hostile config by name and installs with scripts off, and it writes only its store', async () => {
+wallTest('PROOF 3 hostile lifecycle scripts and .npmrc: the broker has no install door, the install seat refuses hostile config by name and installs with scripts off, copies from the store and never writes it', async () => {
   const x = brokerFixture();
   const src = readFileSync(new URL('./commit-relay.mjs', import.meta.url), 'utf8');
   assert.doesNotMatch(src, /pnpm|npm_config|submodule/, 'the relay carries no install or submodule code');
@@ -254,7 +254,7 @@ env | grep -E '^(NODE_OPTIONS|npm_config_|GIT_|HOME)=' >> "${log}"
 touch "${x.wt}/.git/PWNED" 2>>"${log}" && echo GITWRITE >> "${log}"
 touch "${x.goFile}" 2>>"${log}" && echo GOWRITE >> "${log}"
 cat "${x.control}/secret" 2>/dev/null | grep -q CONTROLLER-SECRET && echo CTRLREAD >> "${log}"
-touch "${store}/ok" && echo STOREWRITE >> "${log}"
+if touch "${store}/ok" 2>/dev/null; then echo STOREWRITE >> "${log}"; else echo STOREREFUSED >> "${log}"; fi
 `, { mode: 0o755 });
   writeFileSync(path.join(x.wt, 'package.json'), JSON.stringify({ name: 'p', scripts: { postinstall: `touch ${probe}` } }));
   const seat = { worktree: x.wt, gitDir: x.ctx.gitDir, installer: path.join(pnpmBin, 'pnpm'), storeDir: store, iso: x.iso, extraRw: [x.root], protect: [x.control] };
@@ -270,7 +270,8 @@ touch "${store}/ok" && echo STOREWRITE >> "${log}"
   const seen = readFileSync(log, 'utf8');
   assert.match(seen, /ARGV .*--ignore-scripts/); assert.match(seen, /--offline/); assert.match(seen, /--frozen-lockfile/);
   assert.doesNotMatch(seen, /NODE_OPTIONS|npm_config_script|GIT_DIR/, 'the poisoned environment never reaches the install');
-  assert.match(seen, /STOREWRITE/); assert.match(seen, /--ignore-pnpmfile/); assert.doesNotMatch(seen, /CTRLREAD/, 'the controller dir reads as empty'); assert.doesNotMatch(seen, /GITWRITE|GOWRITE/, 'the install wrote neither git metadata nor the controller file');
+  assert.doesNotMatch(seen, /STOREWRITE/, 'the shared store binds read-only'); assert.match(seen, /STOREREFUSED/, 'CONTROL: the store write was attempted and refused'); assert.match(seen, /--package-import-method=copy/); assert.match(seen, /--ignore-pnpmfile/);
+  assert.equal(existsSync(path.join(store, 'ok')), false, 'nothing landed in the store'); assert.doesNotMatch(seen, /CTRLREAD/, 'the controller dir reads as empty'); assert.doesNotMatch(seen, /GITWRITE|GOWRITE/, 'the install wrote neither git metadata nor the controller file');
   assert.equal(existsSync(path.join(x.wt, '.git', 'PWNED')), false); assert.equal(existsSync(probe), false);
 });
 
@@ -461,6 +462,20 @@ test('P1-1 the relay request directory is held by handle: swapping `relay` for a
   await assert.rejects(openHeld(relay, lane), /not a real directory/, 'a symlinked relay dir refuses to open');
   const elsewhere = path.join(x.root, 'elsewhere'); mkdirSync(elsewhere);
   await assert.rejects(openHeld(elsewhere, lane), /outside/, 'a directory outside the root refuses');
+});
+
+test('a FIFO planted at a request name refuses by name and never stalls the broker; CONTROL a regular request beside it answers', () => {
+  const x = setup();
+  x.request('1', { kind: 'push' });
+  execFileSync('mkfifo', [path.join(x.lane, 'relay', 'req-2.json')]);
+  const r = spawnSync(process.execPath, [script, '--lane-root', x.lane, '--worktree', x.wt, '--branch', 'relay-test', '--launcher', x.launcher, ...x.brokerArgs, '--remote-url', x.remote, '--once'], { encoding: 'utf8', env: x.relayEnv, timeout: 20000, killSignal: 'SIGKILL' });
+  assert.equal(r.signal, null, 'the broker returned on its own, never killed by the bound');
+  assert.equal(r.status, 0, r.stderr);
+  const fifo = x.response('2');
+  assert.equal(fifo.ok, false); assert.match(fifo.output, /req-2\.json: not a regular file \(fifo\)/);
+  const control = x.response('1');
+  assert.equal(control.ok, false); assert.match(control.output, /go/i, 'the regular request reached its door');
+  assert.doesNotMatch(control.output, /not a regular file/);
 });
 
 test('P1-5 the trusted launcher must sit outside the scratch tree entirely', () => {

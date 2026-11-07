@@ -192,6 +192,26 @@ test('C3 a worktree gitlink stays read-only inside the test namespace', () => {
   assert.equal(readFileSync(path.join(x.wt, '.git'), 'utf8'), `gitdir: ${gitDir}\n`);
 });
 
+test('C5 test code cannot write node_modules inside the wall (root and package farms read-only); CONTROL dist/ still writes', () => {
+  const x = fixture();
+  for (const dir of ['node_modules/pkg', 'packages/demo/node_modules/dep']) { mkdirSync(path.join(x.wt, dir), { recursive: true }); writeFileSync(path.join(x.wt, dir, 'index.js'), 'original\n'); }
+  writeFileSync(path.join(x.wt, 'store-write.test.mjs'), `import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdirSync, writeFileSync } from 'node:fs';
+test('rewrite root tooling', () => writeFileSync('/work/node_modules/pkg/index.js', 'planted'));
+test('plant root tooling', () => writeFileSync('/work/node_modules/planted.js', 'planted'));
+test('rewrite package tooling', () => writeFileSync('/work/packages/demo/node_modules/dep/index.js', 'planted'));
+test('control: dist builds', () => { mkdirSync('/work/packages/demo/dist', { recursive: true }); writeFileSync('/work/packages/demo/dist/out.js', 'built'); });
+`);
+  const result = x.run(request(['store-write.test.mjs']));
+  assert.equal(result.ok, true, JSON.stringify(result));
+  assert.equal(result.fail, 3, result.logTail); assert.equal(result.pass, 1, result.logTail);
+  assert.match(result.logTail, /EROFS|read-only file system/i);
+  assert.equal(readFileSync(path.join(x.wt, 'node_modules/pkg/index.js'), 'utf8'), 'original\n');
+  assert.equal(readFileSync(path.join(x.wt, 'packages/demo/node_modules/dep/index.js'), 'utf8'), 'original\n');
+  assert.equal(readFileSync(path.join(x.wt, 'packages/demo/dist/out.js'), 'utf8'), 'built', 'CONTROL: the build output landed');
+});
+
 test('C4 empty node test file refuses because no tests ran', () => {
   const x = fixture(); writeFileSync(path.join(x.wt, 'empty.test.mjs'), '');
   const result = x.run(request(['empty.test.mjs']));

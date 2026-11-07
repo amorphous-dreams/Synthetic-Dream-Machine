@@ -200,7 +200,9 @@ export async function runInstallSeat({ worktree, worktreeHeld, gitDir, installer
       ...(worktree ? [] : ['--tmpfs', '/mnt']),
       ...extraRw.flatMap((p) => bind('--bind-fd', hold(p), p)),
       ...bind('--bind-fd', wt, dest),
-      ...bind('--bind-fd', hold(storeDir), storeDir),
+      // The store binds READ-ONLY and the install copies out of it: a lane's node_modules shares no inode with the store, the
+      // main checkout or another lane, and nothing inside the wall can rewrite a package every later install would trust.
+      ...bind('--ro-bind-fd', hold(storeDir), storeDir),
       ...bind('--ro-bind-fd', hold(gitDir), gitDir),
       ...protect.flatMap((p) => bind('--ro-bind-fd', empty, p)),
       ...hideCredentials(),
@@ -216,6 +218,7 @@ export async function runInstallSeat({ worktree, worktreeHeld, gitDir, installer
       '--frozen-lockfile',
       '--ignore-scripts',
       '--ignore-pnpmfile',
+      '--package-import-method=copy',
       '--store-dir',
       storeDir,
     ];
@@ -312,6 +315,7 @@ export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
   }
   const scratch = await mkdtemp(laneHeld.at('test-seat-'));
   let scratchHeld, gitFd;
+  const moduleFds = [];
   try {
     try {
       gitFd = openSync(worktreeHeld.at('.git'), FS.O_RDONLY | FS.O_NOFOLLOW);
@@ -321,6 +325,23 @@ export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
       if (error.code === 'ENOENT') return refuse('worktree holds no .git');
       return refuse('worktree .git unreadable');
     }
+    // Every node_modules farm (the root, each top-level workspace dir, each package) binds READ-ONLY over the writable /work:
+    // code under test can build dist/ and stamps but never rewrite the tooling (vitest, tsc, any package) a later run trusts.
+    // Each opens through the held worktree, one component at a time, no symlink followed; a symlinked farm resolves inside
+    // the wall's own view, so it is left to that view.
+    const openFarm = rel => {
+      let parent = worktreeHeld.fd; const opened = [];
+      try {
+        for (const part of rel.split('/')) { const fd = openSync(`/proc/self/fd/${parent}/${part}`, FS.O_RDONLY | FS.O_DIRECTORY | FS.O_NOFOLLOW); opened.push(fd); parent = fd; }
+        return opened.pop();
+      } catch (error) {
+        if (['ENOENT', 'ENOTDIR', 'ELOOP'].includes(error.code)) return null;
+        throw error;
+      } finally { for (const fd of opened) closeSync(fd); }
+    };
+    const realDirs = rel => { const fd = openFarm(rel); if (fd === null) return []; try { return readdirSync(`/proc/self/fd/${fd}`, { withFileTypes: true }).filter(e => e.isDirectory() && !e.name.startsWith('.') && e.name !== 'node_modules').map(e => e.name); } finally { closeSync(fd); } };
+    const farms = ['node_modules', ...realDirs('.').filter(d => d !== 'packages').map(d => `${d}/node_modules`), ...realDirs('packages').map(d => `packages/${d}/node_modules`)];
+    for (const rel of farms) { const fd = openFarm(rel); if (fd !== null) moduleFds.push({ rel, fd }); }
     scratchHeld = openHeldSync(scratch, laneHeld.at());
     if (inside(nodeVersionReal, realpathSync(scratchHeld.at()))) return refuse('Node toolchain inside scratch directory');
     mkdirSync(scratchHeld.at('home'));
@@ -334,15 +355,19 @@ export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
       '--tmpfs', '/tmp', '--dev', '/dev', '--proc', '/proc',
       '--ro-bind', nodeVersion, nodeVersion,
       '--bind-fd', '3', '/work', '--ro-bind-fd', '5', '/work/.git', '--bind-fd', '4', '/scratch',
+      ...moduleFds.flatMap(({ rel }, i) => ['--ro-bind-fd', String(6 + i), path.posix.join('/work', rel)]),
       '--chdir', path.posix.join('/work', packageDir),
       '--setenv', 'PATH', `${bin}:/usr/bin:/bin`, '--setenv', 'HOME', '/scratch/home',
       '--setenv', 'LAR_ROOT', '/scratch/lar-root', '--setenv', 'TMPDIR', '/tmp', '--setenv', 'LC_ALL', 'C',
       ...(runner === 'node'
         ? [node, '--test', '--test-reporter=tap', '--', ...files.map(f => path.posix.join('/work', f))]
-        : [node, path.posix.join('/work', vitestPath), 'run', '--reporter=json', '--outputFile=/scratch/vitest.json', '--reporter=dot', '--root', path.posix.join('/work', packageDir), '--', ...files.map(f => path.posix.join('/work', f))]),
+        : [node, path.posix.join('/work', vitestPath), 'run', '--reporter=json', '--outputFile=/scratch/vitest.json', '--reporter=dot',
+          // node_modules reads read-only here, so every vite/vitest write it would take lands in /scratch or nowhere: the config
+          // loads through the runner (no .vite-temp bundle), results keep no cache, the module cache lives under /scratch.
+          '--configLoader', 'runner', '--no-cache', '--fsModuleCachePath', '/scratch/vitest-cache', '--root', path.posix.join('/work', packageDir), '--', ...files.map(f => path.posix.join('/work', f))]),
     ];
     const result = await new Promise(resolve => {
-      const child = spawn(BWRAP, args, { detached: true, stdio: ['ignore', 'pipe', 'pipe', worktreeHeld.fd, scratchHeld.fd, gitFd] });
+      const child = spawn(BWRAP, args, { detached: true, stdio: ['ignore', 'pipe', 'pipe', worktreeHeld.fd, scratchHeld.fd, gitFd, ...moduleFds.map(m => m.fd)] });
       let output = '', stderrTail = Buffer.alloc(0), overflow = false, silent = false, timer;
       // LIVENESS: 30 seconds without stdout or stderr releases the single relay; active output resets the bound.
       const silenceSeconds = 30;
@@ -407,6 +432,7 @@ export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
     } catch { /* cleanup cannot replace the test answer */ }
     scratchHeld?.close();
     if (gitFd !== undefined) closeSync(gitFd);
+    for (const { fd } of moduleFds) closeSync(fd);
     try { rmdirSync(laneHeld.at(path.basename(scratch))); } catch { /* cleanup cannot replace the test answer */ }
   }
 }
