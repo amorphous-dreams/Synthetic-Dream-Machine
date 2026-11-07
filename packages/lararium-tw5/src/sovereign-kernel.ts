@@ -144,6 +144,8 @@ export function runSovereignKernel(
   let _handles:   Map<string, DocHandle<LarDoc>> = new Map();
   let _receipt:   ReceiptCapability | null = null;
   let _receiptDoorClosed = false;
+  /** This island has said `receipt:asks-done`: only then may the vessel's `receipt:close` end its receipts. */
+  let _asksDonePosted = false;
   let _composite: CompositeStore | null = null;
   let _ctx:       IslandContext | null  = null;
   let _lazyUnsub: (() => void) | null   = null;
@@ -161,7 +163,9 @@ export function runSovereignKernel(
 
   host.listen((raw: unknown) => {
     if (!isVesselToIslandMsg(raw)) return;
-    if (raw.type === "receipt:close") { _receiptDoorClosed = true; _receipt?.close(); return; }
+    // The vessel's close answers THIS island's asks-done, and nothing else: a bare close mid-life (a forwarded tab's, a replay)
+    // ends no receipt. The sync port closing stays the local event that ends them at any time.
+    if (raw.type === "receipt:close") { if (_asksDonePosted) { _receiptDoorClosed = true; _receipt?.close(); } return; }
     if (_view?.settleAnswer(raw)) return;
     if (_receipt?.answer(raw)) return;
 
@@ -311,6 +315,8 @@ export function runSovereignKernel(
     // tap whichever face the platform holds (both coexist with the adapter's own).
     if (typeof tapPort.addEventListener === "function") tapPort.addEventListener("message", _markSyncHeard);
     else tapPort.on?.("message", _markSyncHeard);
+    _receiptDoorClosed = false;
+    _asksDonePosted = false;
     const closeReceipts = (): void => { _receiptDoorClosed = true; _receipt?.close(); };
     if (typeof tapPort.addEventListener === "function") tapPort.addEventListener("close", closeReceipts);
     else tapPort.on?.("close", closeReceipts);
@@ -587,12 +593,15 @@ export function runSovereignKernel(
       await receipt.asked();
       if (asksDone || _receiptDoorClosed) return;
       asksDone = true;
+      _asksDonePosted = true;
       try { host.post({ type: "receipt:asks-done" }); } catch { /* the vessel went away: its close ends the waits */ }
     };
     try {
       if (_adaptor) unsaved = (await _adaptor.stop(() => { void announce(); })) ?? [];
       await announce();
       await receipt?.idle();
+      // A port write or act whose receipt refused or closed never reached durable storage either: it joins the drain's titles by name.
+      if (receipt) unsaved = [...new Set([...unsaved, ...receipt.unrested()])];
     } finally {
       receipt?.close();
     }

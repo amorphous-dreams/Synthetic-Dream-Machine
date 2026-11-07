@@ -622,9 +622,21 @@ function dispatchLarControlEventInner(ev: LarMsg_ControlEvent): LarMsg_ControlRe
     });
     if (scope && ev.mountEpoch === scope.mountEpoch) remember(scope, result);
     // A confirmed act answers once its writes rest: the result waits on the receipt capability, so a page that reads
-    // `applied` holds an edit the vessel's store keeps.
+    // `applied` holds an edit the vessel's store keeps. A refused or closed receipt answers by name, never `applied`.
     const resting = scope && !sense && status === "applied" ? scope.receipt?.held() ?? null : null;
-    if (scope && resting) void resting.then(() => scope.post(result));
+    if (scope && resting) {
+      void resting.then((rested) => {
+        if (rested) { scope.post(result); return; }
+        const unkept = mkLarControlResult({
+          eventId: ev.eventId, cameraId: ev.cameraId, mountEpoch: ev.mountEpoch,
+          ...(ev.controlId !== undefined ? { controlId: ev.controlId } : {}),
+          ...(ev.renderId !== undefined ? { renderId: ev.renderId } : {}),
+          status: "refused", reason: "receipt-refused",
+        });
+        if (ev.mountEpoch === scope.mountEpoch) remember(scope, unkept);
+        scope.post(unkept);
+      });
+    }
     else if (scope) scope.post(result);
     else console.warn(`[wiki-worker] no camera stands to answer ${ev.eventId} (${ev.cameraId})`);
     return result;

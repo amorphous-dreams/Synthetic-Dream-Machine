@@ -154,7 +154,8 @@ export function answerIslandAsks(port: { post(msg: unknown): void; listen(cb: (m
   const detachDocStore = caps.docStore?.(port) ?? (() => {});
   const stop = port.listen((raw) => {
     const m = raw as { type?: unknown; requestId?: unknown; [k: string]: unknown } | null;
-    if (m?.type === "receipt:asks-done") { settlement.asksDone(); return; }
+    // The island's word reads whole, as at every island door: a type with any other key is no asks-done.
+    if (m?.type === "receipt:asks-done") { if (Object.keys(m).length === 1) settlement.asksDone(); return; }
     if (!m || typeof m.requestId !== "string") return;
     const requestId = m.requestId;
     switch (m.type) {

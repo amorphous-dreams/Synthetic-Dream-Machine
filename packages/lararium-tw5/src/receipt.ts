@@ -23,11 +23,25 @@ export interface ReceiptCapabilityDeps {
   readonly mintId?: () => string;
 }
 
+/** What an act names at its end beside its slots: the titles it wrote, and whether one of them already refused. */
+export interface ReceiptActEnd {
+  readonly titles?: readonly string[];
+  readonly refused?: boolean;
+}
+
+/** A begun act's hold. `done` resolves with the act's VERDICT: true only when the vessel issued the receipt (or the act wrote nothing). */
+export interface ReceiptHold { done(slots: readonly string[] | null, end?: ReceiptActEnd): Promise<boolean> }
+
 export interface ReceiptCapability {
   /** An act that writes begins here, in the turn of its dispatch; `done` names the slots it wrote (null when it wrote nothing). */
-  begin(): { done(slots: readonly string[] | null): void };
-  /** The acts still waiting for their receipt now, or null when none waits. */
-  held(): Promise<void> | null;
+  begin(): ReceiptHold;
+  /**
+   * The acts still waiting for their receipt now, or null when none waits. It resolves with their joint verdict: false when any of them
+   * met a refused or closed receipt, so no result reads `applied` over a write the vessel never kept.
+   */
+  held(): Promise<boolean> | null;
+  /** The titles whose act met a refused or closed receipt and no later act has rested: they never reached durable storage. */
+  unrested(): string[];
   /** Resolves once no act waits. */
   idle(): Promise<void>;
   /** Resolves once no ask waits to leave: no act begun without its `done`, no request still before its post (or the capability closed). */
@@ -57,8 +71,14 @@ export class ReceiptCapabilityUnavailable extends Error {
 export function makeReceiptCapability(deps: ReceiptCapabilityDeps): ReceiptCapability {
   const mint = deps.mintId ?? (() => crypto.randomUUID());
   const parked = new Map<string, (ok: boolean) => void>();
-  const waiting = new Set<Promise<void>>();
-  const releases = new Set<() => void>();
+  const waiting = new Set<Promise<boolean>>();
+  const releases = new Set<(ok: boolean) => void>();
+  const unrested = new Set<string>();
+  /** An act's verdict over its titles: a refusal names them, a later rest clears them. */
+  const judge = (ok: boolean, titles: readonly string[] | undefined): boolean => {
+    for (const title of titles ?? []) { if (ok) unrested.delete(title); else unrested.add(title); }
+    return ok;
+  };
   let closed = false;
   let stalled = 0;
   /** Asks still to leave: acts begun without `done`, and requests before their post. */
@@ -107,26 +127,40 @@ export function makeReceiptCapability(deps: ReceiptCapabilityDeps): ReceiptCapab
 
   return {
     begin() {
-      let settle!: () => void;
-      const wait = new Promise<void>((resolve) => { settle = resolve; });
+      let settle!: (ok: boolean) => void;
+      const wait = new Promise<boolean>((resolve) => { settle = resolve; });
       waiting.add(wait);
-      const release = (): void => { waiting.delete(wait); releases.delete(release); settle(); };
+      // The FIRST word stands: a close that released the act reads false even though `done` arrives later.
+      let verdict: boolean | null = null;
+      const release = (ok: boolean): void => {
+        if (verdict === null) verdict = ok;
+        waiting.delete(wait); releases.delete(release); settle(verdict);
+      };
       releases.add(release);
-      if (closed) release();
+      if (closed) release(false);
       asking++;
-      let finished = false;
+      let finished: Promise<boolean> | null = null;
       return {
-        done(slots) {
-          if (finished) return;
-          finished = true;
-          if (!slots || slots.length === 0) { release(); leave(); return; }
+        done(slots, end) {
+          if (finished) return finished;
+          const titles = end?.titles;
+          if (!slots || slots.length === 0) {
+            release(end?.refused !== true);
+            leave();
+            return (finished = wait.then((ok) => judge(ok, titles)));
+          }
           // The request counts itself asking before the act stops counting, so `asked` never reads a gap between them.
-          void request(slots).catch((error: unknown) => console.warn(`[receipt] a receipt request faulted: ${String(error)}`)).finally(release);
+          void request(slots).then(
+            (ok) => release(ok && end?.refused !== true),
+            (error: unknown) => { console.warn(`[receipt] a receipt request faulted: ${String(error)}`); release(false); },
+          );
           leave();
+          return (finished = wait.then((ok) => judge(ok, titles)));
         },
       };
     },
-    held: () => (waiting.size === 0 ? null : Promise.all([...waiting]).then(() => undefined)),
+    held: () => (waiting.size === 0 ? null : Promise.all([...waiting]).then((verdicts) => verdicts.every(Boolean))),
+    unrested: () => [...unrested],
     async idle() {
       while (waiting.size > 0) await Promise.all([...waiting]);
     },
@@ -154,7 +188,7 @@ export function makeReceiptCapability(deps: ReceiptCapabilityDeps): ReceiptCapab
       closed = true;
       for (const resolve of parked.values()) resolve(false);
       parked.clear();
-      for (const release of releases) release();
+      for (const release of releases) release(false);
       const answer = [...askedWaiters];
       askedWaiters.clear();
       for (const resolve of answer) resolve();

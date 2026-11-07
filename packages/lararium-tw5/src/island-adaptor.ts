@@ -75,7 +75,7 @@ import { toLarTiddlerRecord, isVolatileVmUri, draftsOffLive, parallelDraftTitle 
 import { maskedExecAll } from "@lararium/memetic-frame";
 import { BAG_PATHS_CONFIG, routeBag, type RouteVerdict } from "./bag-cascade.js";
 import type { TW5Engine } from "./tw5-vm.js";
-import { ReceiptCapabilityUnavailable, type ReceiptCapability } from "./receipt.js";
+import { ReceiptCapabilityUnavailable, type ReceiptCapability, type ReceiptHold } from "./receipt.js";
 import type { LaresTw5Extension } from "./types/lares-globals.js";
 import { splitBodyTiddler, quoteblockFence } from "./deserializer.js";
 import { KAHEA_REF_RE } from "./meme-ast/ahu-scan.js";
@@ -249,7 +249,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   /** The removals acts registered, by removed title; each rides the Drain behind its target. */
   private readonly actRemovals = new Map<string, ActRemoval>();
   /** The rest holds of the acts this change dispatch began; they rest with what the dispatch marked. */
-  private readonly actHolds: Array<{ hold: { done(slots: readonly string[] | null): void }; members: readonly string[] }> = [];
+  private readonly actHolds: Array<{ hold: ReceiptHold; members: readonly string[] }> = [];
   /** Parallel-draft persistence in flight. */
   private readonly surfacings = new Set<Promise<void>>();
 
@@ -347,7 +347,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     void this._whenAllRested().then(() => {
       for (const { hold, members } of holds) {
         const bags = [...new Set([...members, ...marked])].filter((title) => !this.drain.owes(title)).map((title) => this.lastWriteBag.get(title));
-        hold.done([...new Set(bags.filter((bag): bag is string => bag !== undefined))]);
+        // A member the drain still owes was refused: the act's verdict reads false and names it, never `applied`.
+        const owed = members.filter((title) => this.drain.owes(title));
+        void hold.done([...new Set(bags.filter((bag): bag is string => bag !== undefined))], owed.length > 0 ? { titles: owed, refused: true } : { titles: members });
       }
     });
   }
@@ -965,7 +967,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     await this.landing?.stop();
     // An act whose dispatch end never reached the shore rests with the drain like any other: its receipt asks before the door shuts.
     if (this.actHolds.length > 0) this.dispatchEnded();
-    // The drain closes: every owed title leaves (a refused one tries once more), and a failure answers by name rather than hanging.
+    // The drain closes: every owed title leaves, a title refused before the close tries once more, and a failure answers by name rather
+    // than hanging. A demanded title whose receipt refuses after `receipt:asks-done` writes again but can ask nothing (the vessel has
+    // closed its receipts): it ends owed and unsaved by name.
     const closing = this._drainNow(true);
     if (submitted) void this._whenSubmitted().then(submitted);
     await closing;

@@ -34,7 +34,8 @@ function attachReceipt(w: Worker, caps: CapabilityRecord): void {
   const settlement = receiptSettlement(() => { try { w.postMessage({ type: "receipt:close" }); } catch { /* the worker already left */ } });
   w.on("message", (raw: unknown) => {
     const m = raw as Partial<IslandMsg_ReceiptRequest> | null;
-    if ((raw as { type?: unknown } | null)?.type === "receipt:asks-done") { settlement.asksDone(); return; }
+    // The island's word reads whole, as at every island door: a type with any other key is no asks-done.
+    if ((raw as { type?: unknown } | null)?.type === "receipt:asks-done") { if (Object.keys(raw as object).length === 1) settlement.asksDone(); return; }
     if (!m || m.type !== "receipt:request" || typeof m.requestId !== "string" || !Array.isArray(m.documentIds)) return;
     if (!m.documentIds.every((id) => typeof id === "string")) return;
     void settlement.answering(answerReceipt(caps, { requestId: m.requestId, documentIds: m.documentIds, ...(m.heads && typeof m.heads === "object" ? { heads: m.heads } : {}) }).then((reply) => {
