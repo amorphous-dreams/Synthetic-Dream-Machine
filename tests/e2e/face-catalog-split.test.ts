@@ -5,7 +5,7 @@
  *
  *   S1 — a lit vessel CREATEs a user bag: the floor's catalog, decoded off its rest, names no face-class row at all
  *        (POSITIVE FIRST: the floor decodes to its public rows); the face's own catalog rests at its shard SEALED: it
- *        decodes to no clear row. OWED: an in-process reader that opens the sealed rest, to read the bag's row there
+ *        decodes to no clear row, and the opened reader (tools/opened-store.mjs) reads the bag's row there
  *   S2 — CONTROL, the floor: the same root restarts LOCKED, reaches live, opens no face's catalog and binds its rendezvous
  *   S3 — the locked floor's catalog, decoded at rest after its boot, still names no face-class row: nothing at the floor
  *        wrote one
@@ -21,6 +21,7 @@ import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import { awaitRendezvous, bootDocUrl, openStaged, stagedTarget, vesselStorageDir, type LarInstance } from "../harness/instance.js";
 import { catalogRowHalf } from "../../packages/lararium-mesh/src/catalog-view.js";
+import { openedStoredApart } from "../../tools/opened-store.mjs";
 
 const BAG = `lar:///ha.ka.ba/bags/split-${process.pid}`;
 let A: LarInstance | null = null;
@@ -73,6 +74,12 @@ describe.skipIf(!stagedTarget)("the catalog splits by face on a running node ves
     const face = await titlesAtRest(store, faceUrl!);
     expect(face, `the face catalog's rest at ${faceUrl}`).not.toBeNull();
     expect(face, "the face catalog decodes to no clear row at rest").toEqual([]);
+    // The vessel's own reading opens it: the sealed catalog names the bag the face minted.
+    const opened = await openedStoredApart(root);
+    const faceId = faceUrl!.replace(/^automerge:/, "");
+    expect(opened.sealedIds, "the face catalog rests sealed").toContain(faceId);
+    const faceDoc = opened.docs.find((d) => d.id === faceId)?.doc as { tiddlers?: Record<string, unknown> } | undefined;
+    expect(Object.keys(faceDoc?.tiddlers ?? {}), "the opened face catalog names the bag").toContain(BAG);
   }, 240_000);
 
   test("S2 — CONTROL: the same root restarts locked, reaches live, opens no face catalog and binds its rendezvous", async () => {

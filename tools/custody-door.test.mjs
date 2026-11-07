@@ -20,7 +20,6 @@ import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { cpSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { EventEmitter } from "node:events";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -29,6 +28,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { TEST_PASSPHRASE } from "./test-custody-route.mjs";
 import { custodyActLanded, sendCustodyFrame, unlockTestCustody } from "./unlock-test-custody.mjs";
 import { daemonStood } from "./daemon-stood.mjs";
+import { openedStored } from "./opened-store.mjs";
 
 const repo = fileURLToPath(new URL("../", import.meta.url));
 const cli = join(repo, "packages/lares-cli/dist/src/bin/lares.js");
@@ -101,71 +101,12 @@ function privateRows(node, root) {
   }
 }
 
-/**
- * OPEN the stopped vessel's documents the way the vessel opens them: stand its floor in this process, seat its custody,
- * open the node key and its face through the PUBLISHED test route (`TEST_PASSPHRASE`, the route the harness door sends;
- * never a real passphrase), compose the vessel over its own store, and read every document through the vessel's Repo,
- * so a sealed rest reads as the plaintext it seals. Returns the opened text, the documents read, and which rested sealed.
- */
-async function openedStored(node, root) {
-  const prior = process.env.LAR_ROOT;
-  process.env.LAR_ROOT = root;
-  try {
-    const storageDir = node.larDataDir();
-    const sealedIds = await restsSealed(node, storageDir);
-    const floor = await node.standNodeFloor(storageDir);
-    const homes = node.vesselCustodyHomes();
-    const holder = node.makeCustodyHolder({ io: new node.FsCustodyIo(homes), homes });
-    node.seatCustody(holder);
-    const route = [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }];
-    assert.equal((await holder.unlock(route)).reading, "opens", "the reader opens the node key through the test route");
-    const faces = (await holder.unlockFaces(route)).filter((r) => r.reading === "opens").map((r) => r.ordinal);
-    assert.ok(faces.length > 0, "the reader opens the vessel's face through the test route");
-    node.setMountedFace(faces[0]);
-    assert.equal(node.sovereignStands(), true, "the reader composes sovereign, as the unlocked vessel did");
-    // The unlock's own route rides the composition as its boot ward, as the custody door's recomposition hands it.
-    node.seatWardGatherer(async () => route);
-    const vessel = await node.openNodeVessel({ hostId: "custody-door-reader", floor, bootWard: node.wardCredential(route), wikiId: "lares", storageDir, genesisDir: join(root, "genesis"), rootDir: root, wss: new EventEmitter() });
-    try {
-      await vessel.daemon.workerEa;
-      let text = "";
-      let opened = 0;
-      let docs = 0;
-      for (const id of node.enumerateStoreDocs(storageDir)) {
-        const h = await vessel.repo.find(`automerge:${id}`);
-        text += JSON.stringify(h.doc()) + "\n";
-        docs += 1;
-        if (sealedIds.includes(id)) opened += 1;
-      }
-      return { text, docs, sealedIds, opened };
-    } finally {
-      await vessel.teardown();
-      await floor.release();
-      node.seatCustody(null);
-      node.seatWardGatherer(null);
-      node.setMountedFace(undefined);
-    }
-  } finally {
-    if (prior === undefined) delete process.env.LAR_ROOT; else process.env.LAR_ROOT = prior;
-  }
-}
-
-/** The documents that rest SEALED: a plain Repo over the raw rest cannot load them (a sealed pointer, no change chunk). */
-async function restsSealed(node, storageDir) {
-  const { Repo } = await import(pathToFileURL(join(repo, "packages/lararium-node/node_modules/@automerge/automerge-repo/dist/index.js")).href);
-  const { DurableNodeFSStorageAdapter } = await import(pathToFileURL(join(repo, "packages/lararium-node/dist/src/durable-storage-adapter.js")).href);
-  const store = new Repo({ storage: new DurableNodeFSStorageAdapter(storageDir) });
-  const sealed = [];
-  for (const id of node.enumerateStoreDocs(storageDir)) {
-    try { const h = await store.find(`automerge:${id}`); h.doc(); } catch { sealed.push(id); }
-  }
-  await store.shutdown();
-  return sealed;
-}
-
 /** Every document the stopped vessel's store holds, OPENED through the vessel (`openedStored`), plus every file's raw bytes as latin1. */
 async function everythingStored(node, root) {
-  const { text, docs, sealedIds, opened } = await openedStored(node, root);
+  // The shared opened reader (tools/opened-store.mjs): the vessel's own Repo reads each sealed rest as its plaintext.
+  const { docs: read, sealedIds, opened } = await openedStored(root, { node, hostId: "custody-door-reader" });
+  const text = read.map(({ doc }) => JSON.stringify(doc)).join("\n") + "\n";
+  const docs = read.length;
   const raw = [];
   const walk = (dir) => {
     for (const e of readdirSync(dir, { withFileTypes: true })) {
