@@ -8,25 +8,26 @@ uri-path = "ha.ka.ba/lares/docs/art-sigils/example-three-color-field"
 title    = "lar:///ha.ka.ba/lares/docs/art-sigils/example-three-color-field"
 type     = "text/memetic-wikitext+tiddlywiki"
 register = "Synthesis-Canon"
-role     = "draft nonrepresentational example of silence, relation, and withheld interpretation"
+role     = "abstract field with deliberate visual silence and no mandatory focal center"
 status   = "draft"
 retain   = true
 ```
 
-<<~ ahu slot=`#/invitation`>>
-! Example Three ~ an all-over field without an object
+<<~ ahu slot=`#/inscription`>>
+! Nonrepresentational color field
 
 ```tiddlywiki
 <<art worktype=`nonrepresentational color-field painting` subject=`unequal rhythms of compression and release` read=`a held interval that rewards prolonged attention without resolving into a depicted scene` imagery=`overlapping diffuse fields, one spare hard-edged interruption, breathing unpainted space` treatment=`matte pigmented planes and delicate optical vibration; no representational light source` composition=`asymmetric all-over tension with no compulsory focal center` relation=`the hard interruption redirects the diffuse fields without illustrating a literal impact` depiction-scope=`only the painting's surface; no landscape, figure, or external spectator depicted`>>
 ```
 <<~/ahu>>
 
-<<~ ahu slot=`#/critical-reading`>>
-The depicted-content boundary explicitly excludes a landscape or character. The viewer is invited to experience timing and relation through visual form; no intended emotion can be guaranteed. Unpainted space carries a positive artistic responsibility, not a failure to fill the surface.
-<<~/ahu>>
+<<~ ahu slot=`#/verification`>>
+!! Check
 
-<<~ ahu slot=`#/noninheritance`>>
-All-over field, matte pigment, and asymmetric interval belong only to this example. No universal directive to use a central focal point, figurative subject, textured paper or storyboard follows.
+Inspect intervals, asymmetry and nonrepresentation. The unpainted area is part of the intended work, not a missing scene.
+
+No scene, human figure, paper effect or central object enters from a default.
+
 <<~/ahu>>
 
 <<^ code=`&#x0003;`>>

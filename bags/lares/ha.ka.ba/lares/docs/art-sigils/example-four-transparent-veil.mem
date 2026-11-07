@@ -8,37 +8,35 @@ uri-path = "ha.ka.ba/lares/docs/art-sigils/example-four-transparent-veil"
 title    = "lar:///ha.ka.ba/lares/docs/art-sigils/example-four-transparent-veil"
 type     = "text/memetic-wikitext+tiddlywiki"
 register = "Synthesis-Canon"
-role     = "draft example separating perceptual translucency from technical alpha delivery"
+role     = "overlay invitation with independent alpha deliverable requirement"
 status   = "draft"
 retain   = true
 ```
 
-<<~ ahu slot=`#/invitation`>>
-! Example Four ~ a component whose success depends on the next image
+<<~ ahu slot=`#/inscription`>>
+! Transparent veil
 
 ```tiddlywiki
 <<art worktype=`isolated atmospheric overlay for an existing composition` subject=`passing bands of luminous haze` read=`soft depth that leaves the underlying picture intelligible` imagery=`a few uneven veils of delicate color with large untouched intervals` treatment=`diffuse watercolor-like diffusion and gentle edge falloff` composition=`asymmetric partial coverage with broad clear margins` relation=`modulates the unseen base image without replacing its subjects or lettering` depiction-scope=`only the overlay component; no complete scene, page, or studio setup`>>
 ```
 <<~/ahu>>
 
-<<~ ahu slot=`#/artifact-example`>>
-The Art Sigil does not itself ensure actual transparent pixels. A companion artifact contract could independently require RGBA output, transparent corners and a measured alpha channel, with no unrequested background.
+<<~ ahu slot=`#/verification`>>
+!! Check
+
+Check actual pixel alpha and compositing against a reference canvas. A translucent appearance alone does not satisfy an RGBA requirement.
+
+Keep canvas size, format and transparency tests in an artifact contract, not inside the Art Sigil.
 
 ```toml
 [artifact]
-role = "overlay"
-canvas_px = [512, 512]
 format = "PNG/RGBA"
-pixel_alpha = "required: all designated clear margins alpha 0"
-registration = "same canvas origin as a separately identified base"
-test = "inspect alpha and composite at intended display scale"
+canvas_px = [512, 512]
+alpha = "clear margins required to have alpha 0"
+registration = "same origin as the named base canvas"
+test = "inspect pixel alpha and the assembled composite"
 ```
 
-If the receiver supplies opaque watercolor-like material, that may serve as a color reference but fails the technical overlay contract. A masking/postproduction step can correct the artifact, provided it is named as an intervention.
-<<~/ahu>>
-
-<<~ ahu slot=`#/noninheritance`>>
-This case does not make transparency, pixel dimensions, watercolor, layer stacks, or rectangular canvases requirements of all artworks.
 <<~/ahu>>
 
 <<^ code=`&#x0003;`>>

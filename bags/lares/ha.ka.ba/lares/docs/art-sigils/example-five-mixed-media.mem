@@ -8,18 +8,14 @@ uri-path = "ha.ka.ba/lares/docs/art-sigils/example-five-mixed-media"
 title    = "lar:///ha.ka.ba/lares/docs/art-sigils/example-five-mixed-media"
 type     = "text/memetic-wikitext+tiddlywiki"
 register = "Synthesis-Canon"
-role     = "draft mixed-media counterpoint example without pinboard or image-study default"
+role     = "material counterpoint in a two-panel textile and wood work"
 status   = "draft"
 retain   = true
 ```
 
-<<~ ahu slot=`#/invitation`>>
-! Example Five ~ two materials, no compulsory concept board
+<<~ ahu slot=`#/inscription`>>
+! Mixed media
 
-This short Folio uses the same eight-dimension nucleus but adds only the independent material scopes and comparison that the work earns.
-<<~/ahu>>
-
-<<~ ahu slot=`#/folio-sigils`>>
 ```tiddlywiki
 <<art worktype=`physical two-panel textile and painted-wood diptych` subject=`continuity interrupted by an uneven seam` read=`contact without complete merger` imagery=`one stretched cloth panel with thick stitched curves; one quiet wood panel with a pale rubbed arc` treatment=`visible knots and raw cloth contrasting matte pigment rubbed into wood grain` composition=`unequal adjacent panels separated by a narrow dark interval` relation=`the curved mark appears to continue across the seam, but the two materials interrupt its rhythm` depiction-scope=`the diptych itself; no studio, artist, or spectator depicted`>>
 <<art-counterpoint first=`stitched curved line on cloth` second=`rubbed pigment arc on wood` tension=`continuity of gesture meets refusal of material continuity` evidence=`two misaligned arc ends approach the same dark seam`>>
@@ -28,12 +24,13 @@ This short Folio uses the same eight-dimension nucleus but adds only the indepen
 ```
 <<~/ahu>>
 
-<<~ ahu slot=`#/critical-reading`>>
-The diptych need not show preliminary studies, labels, pinned references or a photographic montage. A digital picture may simulate these materials; visual facture alone does not prove a physical diptych was manufactured. Only the artist's actual production record can support that claim.
-<<~/ahu>>
+<<~ ahu slot=`#/verification`>>
+!! Check
 
-<<~ ahu slot=`#/noninheritance`>>
-Neither textile nor two-panel presentation is a procedural default. `art-counterpoint` is warranted by one visible shared gesture, not merely by two nearby objects.
+Inspect a shared interrupted arc and distinct fiber/wood facture. A digital depiction may simulate materials without proving physical manufacture.
+
+Use counterpoint and facture only where each carries a separate artistic responsibility.
+
 <<~/ahu>>
 
 <<^ code=`&#x0003;`>>

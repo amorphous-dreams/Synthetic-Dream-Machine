@@ -1,0 +1,49 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/art-sigils/practice`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+uri-path = "ha.ka.ba/lares/docs/art-sigils/practice"
+title    = "lar:///ha.ka.ba/lares/docs/art-sigils/practice"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "concise practice guide for composing, checking and handing off art artifacts"
+status   = "draft"
+retain   = true
+```
+
+<<~ ahu slot=`#/practice`>>
+! Art Sigils Practice
+
+Use the shortest expression that conveys the intended work. Keep the Art Sigil about the artwork and introduce operational companions only for requirements that matter.
+
+1. **Articulate.** Write one `<<art ...>>` invocation: subject and read first; specify other dimensions only when relevant. Aim for 1,024 characters or fewer.
+2. **Expand selectively.** Use an optional Folio for genuinely independent studies, counterpoints and facture. Keep the contiguous image-facing block within 6,000 characters. No source URLs or procedure declarations in the block.
+3. **Assign reference authority.** Name which sources supply subject, geometry, material, evidence, masking, criticism, or permissions. Confirm the receiver can access them.
+4. **Specify deliverables separately.** When output dimensions, real alpha, exact text, registration, format or physical support are binding, attach an Artifact Contract. Do not add them to universal `art()` defaults.
+5. **Inspect reception.** Compare observed work with the artistic read and technical contract separately. Use scale or context appropriate to the actual work. Record unresolved checks.
+6. **Preserve and release.** Keep reversible source materials where warranted. Verify credit, rights, alt text and the publication export before distribution. Stop upon operator acceptance.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/routes`>>
+!! Choose the companion by task
+
+| Task | Reference |
+|---|---|
+| Source authority | [[Reference Roles|ha.ka.ba/lares/api/art-sigils/reference-roles]] |
+| Technical delivery | [[Artifact Contract|ha.ka.ba/lares/api/art-sigils/artifact-contract]] |
+| Compare actual results | [[Reception QA|ha.ka.ba/lares/api/art-sigils/reception-qa]] |
+| Work with layers | [[Layer Composition|ha.ka.ba/lares/api/art-sigils/layer-composition]] |
+| Publish a derivative | [[Provenance and Publication|ha.ka.ba/lares/api/art-sigils/provenance-publication]] |
+| Describe an existing image | [[Formal Analysis|ha.ka.ba/lares/api/art-sigils/formal-analysis]] |
+
+Examples: [[Photograph|ha.ka.ba/lares/docs/art-sigils/example-two-photograph]] · [[Color Field|ha.ka.ba/lares/docs/art-sigils/example-three-color-field]] · [[Transparent Veil|ha.ka.ba/lares/docs/art-sigils/example-four-transparent-veil]] · [[Mixed Media|ha.ka.ba/lares/docs/art-sigils/example-five-mixed-media]] · [[Exact Text|ha.ka.ba/lares/docs/art-sigils/example-six-exact-type]].
+
+Specialist references: [[Cartography|ha.ka.ba/lares/docs/art-sigils/research/cartography]] · [[Art Methods|ha.ka.ba/lares/docs/art-sigils/research/art-methods]].
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;`>>
+<<^ code=`&#x0004;` to=`?`>>

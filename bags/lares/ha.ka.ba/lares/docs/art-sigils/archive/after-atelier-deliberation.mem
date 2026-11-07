@@ -1,0 +1,47 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/art-sigils/archive/after-atelier-deliberation`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+uri-path = "ha.ka.ba/lares/docs/art-sigils/archive/after-atelier-deliberation"
+title    = "lar:///ha.ka.ba/lares/docs/art-sigils/archive/after-atelier-deliberation"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "historical Art Sigils proposal ratings and rationale; not operational guidance"
+status   = "draft"
+retain   = true
+```
+
+<<~ ahu slot=`#/history`>>
+! Proposal deliberation (archived)
+
+Historical comparison of suggested changes. Scores are judgments, not measured system performance. Current instructions live in [[Art Sigils Practice|ha.ka.ba/lares/docs/art-sigils/practice]]; this archive is not an execution plan.
+
+<<~ ahu slot=`#/rubric`>>
+!! Rubric (judgment, not measured model fidelity)
+
+G gap severity (25%) · T transferability across worktypes (25%) · E observed evidence and source support (20%) · S semantic safety (15%) · M manageability (15%). Score = 5G + 5T + 4E + 3S + 3M, each factor 0–5. Scores rank proposal desirability, not operational dependencies.
+
+| Rank | Change | Score | Decision |
+|---|---|---:|---|
+| 1 | Diversify examples beyond concept boards | 97 | Draft |
+| 2 | Reference-input roles | 93 | Draft companion meme |
+| 3 | Distinguish alpha, artistic transparency and layer opacity | 92 | Draft spec amendment |
+| 4 | Artistic / artifact / execution contracts | 91 | Draft companion meme |
+| 5 | Human-in-the-loop reception QA | 90 | Draft companion meme |
+| 6 | Provenance and publication handoff | 88 | Draft companion meme |
+| 7 | Layer-composition contract | 86 | Draft companion meme |
+| 8 | Exact typography and verification | 83 | Draft spec note + example |
+| 9 | Extract specialist research | 74 | Deferred; no cut |
+| 10 | Consolidate repeated warnings | 63 | Deferred; preserve standalone meaning |
+| 11 | Add `art-layer()` to universal grammar | 57 | Rejected for now |
+
+These are authorial priority judgments. No performance study establishes the rank order.
+<<~/ahu>>
+
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;`>>
+<<^ code=`&#x0004;` to=`?`>>
