@@ -72,4 +72,15 @@ describe("answerIslandAsks (browser daemon door)", () => {
     expect(p.posted.map((m) => m.type)).toEqual(["receipt:issued", "receipt:issued", "receipt:close"]);
     expect(p.posted.slice(0, 2).map((m) => m.issued)).toEqual([true, true]);
   });
+
+  test("F5: an asks-done carrying any other key closes nothing — CONTROL: the bare word closes", async () => {
+    const p = port();
+    answerIslandAsks(p.port, {} as CapabilityRecord);
+    p.send({ type: "receipt:asks-done", requestId: "x" });
+    await turns();
+    expect(p.posted).toEqual([]);
+    p.send({ type: "receipt:asks-done" });
+    await turns();
+    expect(p.posted.map((m) => m.type)).toEqual(["receipt:close"]);
+  });
 });

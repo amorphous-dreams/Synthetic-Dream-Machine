@@ -129,6 +129,37 @@ describe("sovereign kernel teardown drains its queued write", () => {
   });
 });
 
+describe("F1: the vessel's close answers this island's asks-done, and nothing else", () => {
+  async function midLife(event: "bare-close" | "port-close") {
+    let deliver!: (message: unknown) => void;
+    let closePort: (() => void) | undefined;
+    let ready!: () => void;
+    const ea = new Promise<void>((resolve) => { ready = resolve; });
+    fake.handle = { documentId: "working-doc", doc: () => ({ blobs: {}, tiddlers: {} }) };
+    fake.adaptor = { caps: {}, receiptRequired: false, awaitWikiDispatch: async () => {}, stop: async () => [] };
+    const host: IslandHostShore = {
+      listen: (listener) => { deliver = listener; }, storage: () => undefined,
+      resolveByCid: async (cid) => cid === hash ? core : plugin,
+      post: (message) => {
+        if (message.type === "ea") ready();
+        if (message.type === "receipt:request") queueMicrotask(() => deliver({ type: "receipt:issued", requestId: message.requestId, issued: true }));
+      },
+    };
+    const behavior: IslandBehavior = { onEa: async () => {}, onSignal: () => false, onHooAnu: async () => {} };
+    runSovereignKernel(host, behavior, { caps: { receipt: true } });
+    const port = { addEventListener(type: string, listener: () => void) { if (type === "close") closePort = listener; } } as unknown as IslandMsg_Manifest["syncPort"];
+    deliver(mkManifest("lar:///test.kernel.drain/wiki", port, { wikiSlug: "daemon" }, { islandUrl: "automerge:oracle", workingUrl: "automerge:working" }, hash, { pluginCids: ["plugin"] }));
+    await ea;
+    if (event === "bare-close") deliver({ type: "receipt:close" });
+    else closePort?.();
+    return fake.adaptor.caps.receipt.ack([SLOT]).then(() => "issued", () => "refused");
+  }
+  test("a bare receipt:close mid-life leaves a later save receiptable — CONTROL: the sync port closing mid-life ends receipts", async () => {
+    expect(await midLife("bare-close")).toBe("issued");
+    expect(await midLife("port-close")).toBe("refused");
+  });
+});
+
 // Proposed vessel stand-down message: the cure may give this event another wire name, but it must
 // arrive independently of the teardown request so the responsive drain retains its receipt door.
 describe("vessel stand-down releases receipt waits", () => {
@@ -138,19 +169,27 @@ describe("vessel stand-down releases receipt waits", () => {
     let ready!: () => void;
     let acked = false;
     let refused = false;
+    let asksDone = false;
     const ea = new Promise<void>((resolve) => { ready = resolve; });
     fake.handle = { documentId: "working-doc", doc: () => ({ blobs: {}, tiddlers: {} }) };
     fake.adaptor = {
       caps: {}, receiptRequired: false, awaitWikiDispatch: async () => {},
-      stop: async () => {
+      stop: async (submitted?: () => void) => {
         if (kind === "unfinished-act") { fake.adaptor.caps.receipt.begin(); return; }
-        try { await fake.adaptor.caps.receipt.ack([SLOT]); } catch { refused = true; }
+        const acknowledgement = fake.adaptor.caps.receipt.ack([SLOT]);
+        await Promise.resolve();
+        submitted?.();
+        try { await acknowledgement; } catch { refused = true; }
       },
     };
     const host: IslandHostShore = {
       listen: (listener) => { deliver = listener; }, storage: () => undefined,
       resolveByCid: async (cid) => cid === hash ? core : plugin,
-      post: (message) => { if (message.type === "ea") ready(); if (message.type === "teardown:ack") acked = true; },
+      post: (message) => {
+        if (message.type === "ea") ready();
+        if (message.type === "teardown:ack") acked = true;
+        if ((message as { type: string }).type === "receipt:asks-done") asksDone = true;
+      },
     };
     const behavior: IslandBehavior = { onEa: async () => {}, onSignal: () => false, onHooAnu: async () => {} };
     runSovereignKernel(host, behavior, { caps: { receipt: true } });
@@ -163,16 +202,27 @@ describe("vessel stand-down releases receipt waits", () => {
       deliver(mkTeardown());
       for (let i = 0; i < 20; i++) await Promise.resolve();
       expect(acked).toBe(false);
-      if (kind === "port-close") {
+      if (kind === "unfinished-act") {
+        // An act begun without done never lets asks-done leave, so the vessel's close is not yet its answer: the vessel's
+        // stand-down reaches this island as its sync port closing (the vessel's terminate), which ends receipts at any time.
+        expect(asksDone, "an unfinished act holds asks-done").toBe(false);
+        deliver({ type: "receipt:close" });
+        for (let i = 0; i < 20; i++) await Promise.resolve();
+        expect(acked, "a close answering no asks-done ends nothing").toBe(false);
+        closePort?.();
+      } else if (kind === "port-close") {
         expect(closePort, "the island observes its sync port closing").toBeDefined();
         closePort?.();
-      } else deliver({ type: "receipt:close" });
+      } else {
+        expect(asksDone, "the parked ask has left, so asks-done went out").toBe(true);
+        deliver({ type: "receipt:close" });
+      }
       for (let i = 0; i < 50; i++) await Promise.resolve();
       expect(acked, "stand-down must reach teardown:ack without a timer").toBe(true);
       if (kind !== "unfinished-act") expect(refused).toBe(true);
     } finally { clock.mockRestore(); }
   }
-  test("an act begun without done cannot hold teardown after vessel stand-down", async () => { await standDown("unfinished-act"); });
+  test("an act begun without done cannot hold teardown after vessel stand-down (its port closing)", async () => { await standDown("unfinished-act"); });
   test("a parked receipt refuses on vessel stand-down without a clock", async () => { await standDown("parked-ask"); });
   test("a sync port closing mid-settle refuses the parked receipt without a clock", async () => { await standDown("port-close"); });
 });

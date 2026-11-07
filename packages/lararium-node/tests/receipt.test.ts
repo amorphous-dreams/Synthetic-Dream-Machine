@@ -29,7 +29,7 @@ import { restEvery, restingRepo } from "./resting-repo.js";
 import { receiptInStore } from "../src/open-node-vessel.js";
 import { beforeEach, describe, expect, test } from "vitest";
 import type { CapabilityRecord } from "@lararium/mesh";
-import { answerReceipt } from "../src/worker-handle.js";
+import { answerReceipt, nodeWorkerHandle } from "../src/worker-handle.js";
 import { vesselReceiptAsker } from "../src/sovereign-island-model.js";
 
 /** A port pair in one process: what the island posts, the vessel answers through the record's receipt capability. */
@@ -212,5 +212,32 @@ describe("the receipt capability", () => {
     caps.receipt = async (ids, heads) => { seen.push([...ids], heads); };
     await vesselReceiptAsker(wired().port)(["doc-a"], undefined, { "doc-a": ["h1", "h2"] });
     expect(seen).toEqual([["doc-a"], { "doc-a": ["h1", "h2"] }]);
+  });
+});
+
+describe("the node daemon door's settlement round", () => {
+  function fakeDaemon() {
+    const emitter = new EventEmitter();
+    const said: Array<Record<string, unknown>> = [];
+    const worker = Object.assign(emitter, {
+      postMessage: (msg: unknown) => { said.push(msg as Record<string, unknown>); },
+      terminate: async () => 0,
+    }) as unknown as Parameters<typeof nodeWorkerHandle>[0];
+    return { worker, said, send: (msg: unknown) => { emitter.emit("message", msg); } };
+  }
+  const turns = async (): Promise<void> => { for (let i = 0; i < 8; i++) await Promise.resolve(); };
+
+  test("F5: an asks-done carrying any other key closes nothing; the bare word closes once the answers posted — CONTROL: the receipt answers before asks-done", async () => {
+    let issue!: () => void;
+    const d = fakeDaemon();
+    nodeWorkerHandle(d.worker, { island: "daemon", caps: { receipt: () => new Promise<void>((resolve) => { issue = resolve; }) } });
+    d.send({ type: "receipt:request", requestId: "q1", documentIds: ["doc-a"] });
+    d.send({ type: "receipt:asks-done", stray: true });
+    issue();
+    await turns();
+    expect(d.said.map((m) => m.type), "control: the answer leaves; the stray asks-done closes nothing").toEqual(["receipt:issued"]);
+    d.send({ type: "receipt:asks-done" });
+    await turns();
+    expect(d.said.map((m) => m.type)).toEqual(["receipt:issued", "receipt:close"]);
   });
 });
