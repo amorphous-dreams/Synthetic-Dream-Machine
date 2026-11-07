@@ -2,7 +2,7 @@
  * working-layer-host-binding-bound — the host's ask for the daemon working binding never waits in silence.
  *
  * A worker that never answers ends the mount in HostWorkingBindingRefusal once the hang bound passes; a
- * worker that faults or errors ends it at once; a worker that answers late, inside the bound, mounts.
+ * worker that faults, errors or exits ends it at once; a worker that answers late, inside the bound, mounts.
  */
 import { afterEach, describe, expect, test } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
@@ -19,11 +19,13 @@ function rig(boundMs: number) {
   const workingHandle = repo.create<LarDoc>(emptyLarDoc());
   const listeners: Array<(message: unknown) => void> = [];
   const errorListeners: Array<(error: unknown) => void> = [];
+  const exitListeners: Array<(why: string) => void> = [];
   const posted: Array<{ type?: string; requestId?: string }> = [];
   const worker = {
     post: (message: unknown) => { posted.push(message as never); },
     listen: (listener: (message: unknown) => void) => { listeners.push(listener); return () => {}; },
     onError: (listener: (error: unknown) => void) => { errorListeners.push(listener); return () => {}; },
+    onExit: (listener: (why: string) => void) => { exitListeners.push(listener); return () => {}; },
     terminate: () => {},
   };
   const ports: MessagePort[] = [];
@@ -37,7 +39,7 @@ function rig(boundMs: number) {
   };
   const core = openDaemonVmCore(host, {
     repo, daemonHandle, recipe: { wikiSlug: "daemon" }, grants: { islandUrl: daemonHandle.url }, coreHash: null,
-    workerScriptUrl: new URL("file:///unused-fake-worker"), hostBindingBoundMs: boundMs,
+    workerScriptUrl: new URL("file:///unused-fake-worker"), askLivenessMs: boundMs,
   });
   cleanups.push(() => { core.dispose(); for (const port of ports) port.close(); return repo.shutdown().then(() => {}); });
   listeners.forEach((listener) => listener(mkEa(DAEMON_BAG_ID)));
@@ -45,7 +47,7 @@ function rig(boundMs: number) {
     requestId, personalUrl: workingHandle.url, draftUrl: workingHandle.url, workingUrl: workingHandle.url,
   })));
   const asked = async () => { for (let i = 0; i < 50 && !posted.some((m) => m.type === "daemon:resolve-binding-request"); i++) await pause(2); return posted.find((m) => m.type === "daemon:resolve-binding-request")!; };
-  return { core, listeners, errorListeners, answer, asked };
+  return { core, listeners, errorListeners, exitListeners, answer, asked };
 }
 
 describe("the host's binding ask ends in a named refusal or a mount, never in silence", () => {
@@ -69,6 +71,16 @@ describe("the host's binding ask ends in a named refusal or a mount, never in si
     r.errorListeners.forEach((listener) => listener(new Error("worker exited")));
     await expect(mounting).rejects.toBeInstanceOf(HostWorkingBindingRefusal);
   });
+
+  test("RED (clock-sweep): a worker that exits ends the ask at once by name, never at its liveness bound", async () => {
+    const r = rig(2 ** 30);
+    const mounting = r.core.mountHostWorkingLayer();
+    await r.asked();
+    r.exitListeners.forEach((listener) => listener("the island exited (code 1)"));
+    const refusal = await mounting.then(() => null, (error: unknown) => error);
+    expect(refusal).toBeInstanceOf(HostWorkingBindingRefusal);
+    expect(String((refusal as { cause?: unknown }).cause)).toMatch(/the island exited \(code 1\)/);
+  }, 3_000);
 
   test("CONTROL: a worker that answers late, inside the bound, mounts the working layer", async () => {
     const r = rig(5_000);
