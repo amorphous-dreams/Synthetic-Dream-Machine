@@ -120,6 +120,9 @@ export interface IslandHostShore {
 // breath this often (plus a stage mark before each long stretch) so the
 // vessel's watchdog re-arms on breath and silence alone reads dead.
 const BREATH_INTERVAL_MS = 1_000;
+// LIVENESS: a connected vessel can stay alive without answering a receipt; leave time for its flush while
+// keeping this drain inside the browser holder's five-second teardown budget.
+const TEARDOWN_RECEIPT_BOUND_MS = 2_000;
 
 export function runSovereignKernel(
   host: IslandHostShore,
@@ -568,11 +571,17 @@ export function runSovereignKernel(
     if (_adaptor) await _adaptor.awaitWikiDispatch();
     _bridgeUnsub?.();
     _bridgeUnsub = null;
-    // THE RECEIPT CAPABILITY CLOSES FIRST. The Drain's single flight may hang on a receipt a quiet, connected peer never answers; the
-    // stop below awaits that flight, and no clock decides here. Closed, every parked wait settles false: the hung flight ends refused
-    // (its title stays owed and names itself unsaved) and the stop proceeds. An ask made after the close refuses at once.
-    _receipt?.close();
-    if (_adaptor) await _adaptor.stop();
+    // Keep the receipt door open while stop drains owed titles and existing acts finish. Only the named
+    // liveness bound closes it early; close refuses parked and later asks rather than inventing a receipt.
+    const receipt = _receipt;
+    const receiptBound = receipt ? setTimeout(() => receipt.close(), TEARDOWN_RECEIPT_BOUND_MS) : null;
+    try {
+      if (_adaptor) await _adaptor.stop();
+      await receipt?.idle();
+    } finally {
+      if (receiptBound !== null) clearTimeout(receiptBound);
+      receipt?.close();
+    }
     _adaptor = null;
     _lazyUnsub?.();
     _lazyUnsub = null;

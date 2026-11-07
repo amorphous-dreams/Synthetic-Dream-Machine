@@ -4,8 +4,8 @@
  * A confirmed edit lands in the island's Repo at once and reaches storage only after the vessel's Repo holds it and
  * flushes it. The capability lets an act wait for that: the island names the heads it holds of the documents the act
  * wrote, the vessel issues `receipt:issued` once its own Repo holds them and has flushed them, and only then does the
- * act's `lar:control-result` leave. The wait rides the vessel's answer alone: no timer, and a capability that closes (the
- * island tears down) lets every parked wait go.
+ * act's `lar:control-result` leave. The wait rides the vessel's answer; closing the capability refuses every parked wait.
+ * During teardown the kernel keeps it open for the drain, with a named liveness bound for a quiet vessel.
  *
  * Canon: lar:///ha.ka.ba/lares/docs/pono/dreamdom#/what-a-sink-keeps
  */

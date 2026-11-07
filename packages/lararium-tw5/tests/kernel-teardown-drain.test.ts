@@ -94,6 +94,8 @@ describe("sovereign kernel teardown drains its queued write", () => {
   });
   test("CONTROL: a quiet vessel lets shutdown finish without acknowledging the unwritten save", async () => {
     const { events, reopen } = await scenario(false);
+    expect(events).toContain("receipt-request");
+    expect(events).toContain("save-refused");
     expect(events).toContain("shutdown");
     expect(events).not.toContain("save-ack");
     expect(reopen().has(TITLE)).toBe(false);
