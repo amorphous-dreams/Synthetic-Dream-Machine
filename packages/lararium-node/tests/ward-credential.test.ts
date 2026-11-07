@@ -3,6 +3,10 @@
  * acts or lends one to a concurrent act; a store verb names its route by a one-use ticket bound to that verb and its arguments.
  * Every red pairs with a CONTROL. Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness#/the-ward
  */
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { mountedFaceOrdinal, setMountedFace } from "../src/node-vessel-identity.js";
 import { EventEmitter } from "node:events";
 import type { Socket } from "node:net";
 import { describe, expect, test } from "vitest";
@@ -30,23 +34,34 @@ describe("no route outlives its act (S2 cold read, P1-1)", () => {
     expect(wc["duringUnlockAct"], "no module-global route setter stands").toBeUndefined();
 
     // CONTROL: the unlock frame hands its own route to the recompose it runs, and to nothing else.
-    const handed: unknown[] = [];
-    let unlocked = false;
-    const holder = {
-      unlock: async () => { unlocked = true; return { reading: "opens", slot: "s" }; },
-      unlockFaces: async () => [], unlockedFaces: () => [], isUnlocked: () => unlocked, faceStanding: async () => null,
-    } as unknown as CustodyHolder;
-    const handle = custodyFrameHandler({
-      holder, testScratch: false, standing: () => "herm", onLog: () => {},
-      recompose: async (_sovereign: boolean, ward?: unknown) => { handed.push(ward); return { standing: "hearth" }; },
-    } as never);
-    const answered = new Promise<void>((resolve) => {
-      const sock = Object.assign(new EventEmitter(), { end: () => resolve() }) as unknown as Socket;
-      handle({ op: "unlock", credentials: route("the unlock's route") }, sock);
-    });
-    await answered;
-    expect(handed).toHaveLength(1);
-    expect(wardCredentialsOf(handed[0] as never)).toEqual(route("the unlock's route"));
+    const priorRoot = process.env["LAR_ROOT"];
+    const priorMount = mountedFaceOrdinal();
+    const root = mkdtempSync(join(tmpdir(), "ward-unlock-control-"));
+    process.env["LAR_ROOT"] = root;
+    setMountedFace(undefined);
+    try {
+      const handed: unknown[] = [];
+      let unlocked = false;
+      const holder = {
+        unlock: async () => { unlocked = true; return { reading: "opens", slot: "s" }; },
+        unlockFaces: async () => [], unlockedFaces: () => [], isUnlocked: () => unlocked, faceStanding: async () => null,
+      } as unknown as CustodyHolder;
+      const handle = custodyFrameHandler({
+        holder, testScratch: false, standing: () => "herm", onLog: () => {},
+        recompose: async (_sovereign: boolean, ward?: unknown) => { handed.push(ward); return { standing: "hearth" }; },
+      } as never);
+      const answered = new Promise<void>((resolve) => {
+        const sock = Object.assign(new EventEmitter(), { end: () => resolve() }) as unknown as Socket;
+        handle({ op: "unlock", credentials: route("the unlock's route") }, sock);
+      });
+      await answered;
+      expect(handed).toHaveLength(1);
+      expect(wardCredentialsOf(handed[0] as never)).toEqual(route("the unlock's route"));
+    } finally {
+      setMountedFace(priorMount);
+      if (priorRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorRoot;
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 });
 
@@ -123,4 +138,12 @@ describe("a ticket names its face too (S2 re-read, P3)", () => {
     const again = wc.parkWardTicket(wardCredential(route("r")), { verb: "kapae-lower", args: { ...args, face: 0 } });
     expect(wc.takeWardTicket(again, { verb: "kapae-lower", args: { ...args, face: 0, handleIndex: 0 } })).toBeDefined();
   });
+});
+
+
+test("RED: a conflicting handleIndex cannot share a face-bound digest; CONTROL: equal session keys do", async () => {
+  const { wardBindDigest } = await import("../src/ward-credential.js");
+  const bind = (args: Record<string, unknown>) => wardBindDigest({ verb: "kapae-lower", args });
+  expect(bind({ face: 0 })).toBe(bind({ face: 0, handleIndex: 0 }));
+  expect(bind({ face: 0 })).not.toBe(bind({ face: 0, handleIndex: 1 }));
 });

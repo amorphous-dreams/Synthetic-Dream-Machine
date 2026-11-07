@@ -76,14 +76,13 @@ export async function openOfflineCustody(holder: CustodyHolder): Promise<void> {
   if (standing.reading === "silent") {
     throw new OfflineCustodyRefused("something holds this store's socket and gives no answer, so no second key session opens beside it. Check `lares vessel read`, then run the command again.");
   }
-  if (testScratchRoot()) {
+  if (testScratchRoot() && !canPromptSecret()) {
     process.stderr.write("[custody] TEST SCRATCH ROOT: opening the vessel key under the published test route\n");
     const route = [{ kind: "passphrase" as const, passphrase: TEST_ROUTE_PASSPHRASE }];
     const u = await holder.unlock(route);
     if (u.reading === "opens" || u.reading === "already-unlocked") { await holder.unlockFaces(route); return; }
-    throw u.reading === "no-slot-opens"
-      ? new OfflineCustodyRefused("this staged root's custody answers no test route; it was bound to another.")
-      : refusal(u.reading);
+    if (u.reading !== "no-slot-opens") throw refusal(u.reading);
+    // A marker cannot deny a person their terminal route.
   }
   if (!canPromptSecret()) {
     throw new OfflineCustodyRefused(

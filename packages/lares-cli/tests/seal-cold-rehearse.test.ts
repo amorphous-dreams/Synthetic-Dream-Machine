@@ -11,8 +11,8 @@
  *   R2  RED: A CARD THE HEAD NEVER COMMITTED REFUSES BY NAME, AND THE REFUSAL CARRIES NO BYTE OF IT. A mis-copied
  *       card refuses as unreadable; one card typed twice refuses as a repeat.    control: R1
  *   R3  RED: A SPENT CARD ANSWERS NO ROLLED HEAD. After a roll the genesis cards answer nothing; the rolled head's do.
- *   R4  RED: A COPIED MARKER STANDS IN FOR NO TERMINAL. The same root and charter, its custody founded again under
- *       another passphrase: `--cold-key` refuses.                                control: R1, the test route
+ *   R4  RED: A COPIED MARKER STANDS IN FOR NO TERMINAL. With the explicit read-back seat cleared, the same root
+ *       and charter, its custody founded again under another passphrase: `--cold-key` refuses. control: R1
  *   R5  Nothing to rehearse: no charter refuses by name; a terminal-less run without the flag refuses; an empty
  *       typing refuses.
  *   An unarmed head refuses `rotation-unarmed`: `seal-rotate-refusal-codes.test.ts`, which builds that head.
@@ -30,7 +30,7 @@ import type { ParsedArgs } from "../src/parse-args.js";
 import { larSealHome } from "../src/env.js";
 import {
   FsCustodyIo, foundCustody, generateOrLoadPersonaGroupRoot, listSeatKeys, makeCustodyHolder, makeNodePersonaDeclarationStore,
-  makeNodePersonaPetnameStore, nexusCharterDocPath, readNexusDoc, seatCustody, unseatCustody, vesselCustodyHomes,
+  makeNodePersonaPetnameStore, nexusCharterDocPath, readNexusDoc, seatCustody, seatReadBackStandIn, unseatCustody, vesselCustodyHomes,
 } from "@lararium/node";
 import { coldKeyCode, mintColdKey, renameOwnPersona, seatedKahuKeys, standForKahuSeat } from "@lararium/mesh";
 import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
@@ -151,7 +151,8 @@ describe("lares nexus seal cold rehearse", () => {
   test("R4 — RED: a copied marker over custody sealed under another passphrase stands in for no terminal", async () => {
     await stand();
     const codes = cards(await rite.seat());
-    expect((await run(rehearse({ "cold-key": codes[0]! }))).code).toBe(0);         // CONTROL: the test route
+    expect((await run(rehearse({ "cold-key": codes[0]! }))).code).toBe(0);         // CONTROL: the explicit harness seat
+    seatReadBackStandIn(false); // The marker and custody route cannot replace the harness's explicit act.
     // The same root, marker and charter; its custody founded again under a passphrase no harness publishes.
     await custody.drop();
     const homes = vesselCustodyHomes();

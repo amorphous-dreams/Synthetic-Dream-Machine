@@ -86,7 +86,9 @@ export function wardBindDigest(bind: WardBind): string {
   // THE FACE BINDS TOO, as one value: the face the act names (`face`, else `handleIndex`), so a ref parked for one face spends on no
   // other. A session lends a row both keys at the same ordinal, so the CLI, the row and a summoned verb all read the same face.
   const face = bind.args["face"] ?? bind.args["handleIndex"] ?? null;
-  return createHash("sha256").update(JSON.stringify({ verb: bind.verb, face, args: canon(args) })).digest("hex");
+  const conflict = bind.args["face"] != null && bind.args["handleIndex"] != null && bind.args["face"] !== bind.args["handleIndex"]
+    ? bind.args["handleIndex"] : null;
+  return createHash("sha256").update(JSON.stringify({ verb: bind.verb, face, conflict, args: canon(args) })).digest("hex");
 }
 
 const tickets = new Map<string, { readonly ward: WardCredential; readonly verb: string; readonly digest: string }>();

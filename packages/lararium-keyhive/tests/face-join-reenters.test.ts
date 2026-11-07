@@ -33,6 +33,14 @@ function memoryStore() {
   return { store, records, state };
 }
 
+/** The founder's anchor-pinned persona lineage: an inception under ROOT's op-key (1-of-1 self-recovery). */
+async function founderLineage() {
+  const { ed25519VerifyingKeyFromSeed, deriveSelfRecoveryKey, mintPersonaInception, sealKeySetHash } = await import("@lararium/mesh");
+  const selfRecovery = await deriveSelfRecoveryKey(ROOT);
+  const inception = mintPersonaInception(`0x${await ed25519VerifyingKeyFromSeed(ROOT)}`, sealKeySetHash([selfRecovery.verifyingKey], 1));
+  return { prefix: inception.prefix, chain: [inception] };
+}
+
 async function stand() {
   const founder = await provider(7);
   const joinee = await provider(106);
@@ -41,17 +49,18 @@ async function stand() {
   const joineeEdge = await buildDeviceDelegation({ personaRootSeed: ROOT, atomSeed: seedOf(106), hearthTrueName: HEARTH, boundEpoch: 0 });
   const summons = { kind: "face-join/v1" as const, contactCard: new TextDecoder().decode(await joinee.contactCard()), deviceEdge: joineeEdge };
   const ctx: FaceJoinContext = { personaRootDid: founderEdge.personaRootDid, hearthTrueName: HEARTH, personaGroupId: group.groupId, dyad: () => "clear", leaseEpoch: 0 };
+  const founderProof = { personaKel: await founderLineage(), dyad: (_key: string) => "clear" as const };
   const operations = memoryStore();
   const plane = memoryStore();
   const input = {
-    provider: founder, summons, ctx, founderEdge,
+    provider: founder, summons, ctx, founderEdge, founderProof,
     fence: { intentId: "join-106", pinnedAtom: founderEdge.deviceVerifyingKey, ownAtom: founderEdge.deviceVerifyingKey },
     signGrant: async (bytes: Uint8Array) => (await import("@lararium/mesh")).faceAtomKeyFromSeed(seedOf(7), group.groupId).sign(bytes),
     atomSeed: seedOf(7),
     operationStore: operations.store,
     grantPlane: { store: plane.store, heads: () => [String(plane.records.size)] },
   };
-  return { founder, joinee, group, summons, ctx, operations, plane, input };
+  return { founder, joinee, group, summons, ctx, operations, plane, input, founderProof };
 }
 
 const grantTitles = (records: Map<string, LarTiddlerRecord>): string[] => [...records.keys()].filter((t) => t.startsWith("$:/lares/face-grant/"));
@@ -68,6 +77,35 @@ describe("a face-join re-enters to one seat, one seal and one grant", () => {
     const writes = t.operations.state.puts + t.plane.state.puts;
     expect(await runFaceJoinOperation(t.input)).toEqual(first);
     expect(t.operations.state.puts + t.plane.state.puts).toBe(writes);
+  });
+  test("RED: a founder whose own standing this hearth cannot prove, or reads set aside, seats nobody and writes nothing; CONTROL: a standing founder seats", { timeout: 90_000 }, async () => {
+    const t = await stand();
+    // Every provider call counts: a refusal must land before the seat, the re-seal and the card all.
+    let providerCalls = 0;
+    const counted = new Proxy(t.founder, { get: (target, key, receiver) => {
+      const v = Reflect.get(target, key, receiver) as unknown;
+      return typeof v === "function" ? (...args: unknown[]) => { providerCalls += 1; return (v as (...a: unknown[]) => unknown).apply(target, args); } : v;
+    } });
+    const otherRoot = await (async () => {
+      const { ed25519VerifyingKeyFromSeed, deriveSelfRecoveryKey, mintPersonaInception, sealKeySetHash } = await import("@lararium/mesh");
+      const r = await deriveSelfRecoveryKey(seedOf(201));
+      const inception = mintPersonaInception(`0x${await ed25519VerifyingKeyFromSeed(seedOf(201))}`, sealKeySetHash([r.verifyingKey], 1));
+      return { prefix: inception.prefix, chain: [inception] };
+    })();
+    const refusals: Array<[string, Record<string, unknown>, RegExp]> = [
+      ["aside", { founderProof: { ...t.founderProof, dyad: () => "aside" } }, /founder authority refused: founder device set aside/],
+      ["unknown", { founderProof: { ...t.founderProof, dyad: () => "unknown" } }, /founder authority refused: founder dyad standing unknown/],
+      ["absent", { founderProof: undefined }, /founder authority refused: founder persona-KEL proof unavailable/],
+      ["another root", { founderProof: { ...t.founderProof, personaKel: otherRoot } }, /founder authority refused: the persona-KEL incepts under a root other than the pinned one/],
+    ];
+    for (const [what, patch, reason] of refusals) {
+      await expect(runFaceJoinOperation({ ...t.input, provider: counted, ...patch } as never), what).rejects.toThrow(reason);
+    }
+    expect(providerCalls, "no provider call under an unproven founder").toBe(0);
+    expect(t.operations.state.puts + t.plane.state.puts, "no custody write under an unproven founder").toBe(0);
+    const seated = await runFaceJoinOperation({ ...t.input, provider: counted });
+    expect(seated["admitted"]).toBe(true);
+    expect(providerCalls).toBeGreaterThan(0);
   });
   test("a crash after the issue and before the publish re-enters to the grant it issued", { timeout: 90_000 }, async () => {
     const t = await stand();

@@ -7,7 +7,7 @@
  * refuses by name and founds nothing. No marker file ever answers for a route.
  */
 import type { SlotSpec } from "@lararium/mesh";
-import { faceRouteSeated, gatherFaceRoute, seatFaceRoute } from "@lararium/node";
+import { faceRouteBindDigest, faceRouteSeated, gatherFaceRoute, seatFaceRoute } from "@lararium/node";
 import { sendCustodyFrame } from "./custody-door.js";
 import { askYesNo, gatherFoundingRoute, requireTty } from "./custody-prompt.js";
 
@@ -44,7 +44,7 @@ export function seatNewFaceRoute(): void { if (!faceRouteSeated()) seatFaceRoute
  * Hand a new face's route to the vessel standing on this store, over its custody door, before a face founds inside it.
  * The route rides the custody frame alone: a verb's arguments get hashed into a receipt, so the route never rides one.
  */
-export async function handFaceRouteToVessel(label: string): Promise<void> {
+export async function handFaceRouteToVessel(label: string, purpose: "persona-new" | "bundle.restore", args: Readonly<Record<string, unknown>>): Promise<string> {
   // The gatherer this process seated asks (the binary seats the terminal prompt; a harness seats its own route explicitly).
   const slots = await gatherFaceRoute(label);
   for (const slot of slots) {
@@ -52,8 +52,9 @@ export async function handFaceRouteToVessel(label: string): Promise<void> {
       throw new Error("a standing vessel takes a passphrase route for a new face over its door; stop the vessel to bind a paper sheet");
     }
   }
-  const answer = await sendCustodyFrame({ op: "face-route", slots });
-  if (answer === null || (answer as { parked?: unknown }).parked !== true) {
+  const answer = await sendCustodyFrame({ op: "face-route", slots, purpose, argsDigest: faceRouteBindDigest(purpose, args) });
+  if (answer === null || typeof answer["ref"] !== "string") {
     throw new Error("the standing vessel did not take the new face's route; nothing was founded");
   }
+  return answer["ref"] as string;
 }

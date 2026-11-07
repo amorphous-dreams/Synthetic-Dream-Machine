@@ -1,10 +1,12 @@
 import { describe, it, expect } from "vitest";
 import * as ed25519 from "@noble/ed25519";
 import { hex } from "../src/crypto.js";
+import { DEVICE_ATOM_COUNTERSIGN_DOMAIN } from "../src/domains.js";
 import {
   buildDeviceDelegation,
   verifyDeviceDelegation,
   evaluateDeviceDelegation,
+  DEVICE_DELEGATION_DOMAIN,
   type DeviceDelegationTiddler,
 } from "../src/device-delegation.js";
 
@@ -149,5 +151,25 @@ describe("device-delegation — the signed capability edge (v2, post-verificatio
     await expect(buildDeviceDelegation({
       personaRootSeed: opSeed, atomSeed: devSeed, hearthTrueName: PLACE, boundEpoch: -1,
     })).rejects.toThrow(/boundEpoch/);
+  });
+});
+
+// Retirement changes the signed relation itself. Standing remains a separate authority proof.
+describe("epoch-free device-face edge", () => {
+  it("RED: verifies both signatures on the epoch-free edge under the pinned root; CONTROL: legacy edge, wrong pin, and atom signature", async () => {
+    const legacy = await mint();
+    const root = await opDidP;
+    expect(await verifyDeviceDelegation(legacy, root)).toEqual({ ok: true });
+    expect(await verifyDeviceDelegation(legacy, `0x${"ff".repeat(32)}`)).toMatchObject({ ok: false, reason: "operator is not the pinned root" });
+    expect(await verifyDeviceDelegation({ ...legacy, atomSignature: "0".repeat(128) }, root))
+      .toMatchObject({ ok: false, reason: "atom countersignature mismatch" });
+    const { boundEpoch: _epoch, signature: _signature, atomSignature: _atomSignature, ...fields } = legacy;
+    const proof = `${DEVICE_DELEGATION_DOMAIN}|${fields.personaRootDid}|${fields.deviceDid}|${fields.deviceVerifyingKey}|${fields.hearthTrueName}`;
+    const signature = hex(await ed25519.signAsync(new TextEncoder().encode(proof), opSeed));
+    const atomSignature = hex(await ed25519.signAsync(new TextEncoder().encode(
+      `${DEVICE_ATOM_COUNTERSIGN_DOMAIN}|${proof}|${signature}`,
+    ), devSeed));
+    const edge = { ...fields, signature, atomSignature } as DeviceDelegationTiddler;
+    expect(await verifyDeviceDelegation(edge, root)).toEqual({ ok: true });
   });
 });

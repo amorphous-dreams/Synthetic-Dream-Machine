@@ -11,6 +11,7 @@ import {
   HandleBook, type HandleBookSnapshot, type OwnPersonaPetnameStore, type PersonaDeclaration, type PersonaDeclarationStore,
 } from "@lararium/mesh";
 import type { ArmedGenesis, ArmedRoll, SeatKept } from "@lararium/node";
+import { readBackStandInSeated } from "@lararium/node";
 import { sealedAct } from "./sealed-act-door.js";
 
 /** The roster as one read: each held root's index and public key, and every orphan root. */
@@ -133,9 +134,11 @@ export function armRollSeats(cards: readonly Uint8Array[], threshold?: number): 
   return sealedAct<ArmedRoll>("seat.arm-roll", threshold === undefined ? { cards: hex } : { cards: hex, threshold });
 }
 
-/** Whether a card's read-back stands in: a staged test root whose custody proves the published test route. */
+/** Whether the harness explicitly seated a card read-back stand-in in this CLI process. */
 export async function readBackStandsIn(): Promise<boolean> {
-  return (await sealedAct<{ standIn: boolean }>("seat.readback-stand-in")).standIn;
+  // The CLI prints and reads the card here. A standing vessel holds no authority over this terminal's
+  // read-back waiver; only the harness's explicit seat in this process can stand in. Production seats none.
+  return readBackStandInSeated();
 }
 
 /** Retire the seat keys among `keys` that nothing needs; the door's own licence decides, whatever this names. */

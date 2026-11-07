@@ -83,7 +83,7 @@ function withWard(verb: string, row: Row): Row {
 import { runPromoteVerb } from "./commands/promote.js";
 import { runSwarmVerb } from "./commands/swarm.js";
 import { PromoteRefused, KapaeRefused, SwarmRefused, SWARM_VERB_HAND_CODES, type PromoteCommandRequest, type SwarmWikiPort } from "@lararium/mesh";
-import { parkFaceRoute } from "./face-route.js";
+import { faceRouteBindDigest, FaceRouteRefused, withFaceRoute } from "./face-route.js";
 import type { Repo } from "@automerge/automerge-repo";
 import { readFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
@@ -288,6 +288,7 @@ export const storeRefusalName = (verb: string): string => `${verb}-refused`;
 async function answer(verb: string, run: () => Promise<Record<string, unknown>>): Promise<Record<string, unknown>> {
   try { return { verb, ...(await run()) }; }
   catch (err) {
+    if (err instanceof FaceRouteRefused) return { verb, refused: err.message, refusal: "face-route-refused" };
     if (REFUSALS.some((R) => err instanceof R)) return { verb, refused: (err as Error).message, refusal: storeRefusalName(verb) };
     throw err;
   }
@@ -674,9 +675,7 @@ function storeDoorRowsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       ...(await runPersonaLease({ repo, ...opt("handleIndex", int(args["handleIndex"])), ...opt("ward", wardOf(args)) })),
     })),
     "persona-new": (args) => answer("persona-new", async () => {
-      try { return { ...(await runFoundTheFace({ repo, ...opt("handleIndex", int(args["handleIndex"])), ...opt("ward", wardOf(args)) })) }; }
-      // A route handed for this founding serves this founding alone, whether or not the face needed one.
-      finally { parkFaceRoute(null); }
+      return withFaceRoute(str(args["faceRouteRef"]), "persona-new", faceRouteBindDigest("persona-new", args), async () => ({ ...(await runFoundTheFace({ repo, ...opt("handleIndex", int(args["handleIndex"])), ...opt("ward", wardOf(args)) })) }));
     }),
     // M12′/L11: the SAME board resolves BOTH the head op-key and that head's KEL seq, off ONE materialize
     // (`makeLocalPersonaKelHeadAndSeqResolver`), so head and seq never straddle a sync landing between two

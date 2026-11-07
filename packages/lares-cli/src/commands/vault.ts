@@ -368,10 +368,13 @@ async function vaultRestore(args: ParsedArgs, daemonUp: boolean): Promise<number
   const credentials = await gatherCredentials("lares vault restore", routeFlag(args));
   // The restored face takes a route of its own; inside a standing vessel it rides the custody door first.
   seatNewFaceRoute();
-  if (daemonUp && !memory) await handFaceRouteToVessel(`h${asRaw ?? "restore"}`);
   const result = await restoreFromBundle({
     file, credentials, memory, ...(asRaw !== undefined ? { as: Number(asRaw) } : {}),
-    run: (act, actArgs) => sealedActVia(act, actArgs),
+    run: async (act, actArgs) => {
+      const faceRouteRef = daemonUp && act === "bundle.restore"
+        ? await handFaceRouteToVessel(`h${asRaw ?? "restore"}`, "bundle.restore", actArgs) : undefined;
+      return sealedActVia(act, { ...actArgs, ...(faceRouteRef ? { faceRouteRef } : {}) });
+    },
   });
   if (!result.ok) {
     emit(args, { ok: false, error: { code: result.reason, message: result.message }, data: { reason: result.reason }, human: () => console.error(`lares vault restore: ${result.reason}: ${result.message}`) });
@@ -396,8 +399,11 @@ async function vaultRestoreCards(args: ParsedArgs): Promise<number> {
   if (!wantsJson(args)) console.log("The split's cards: for each, the custodian it came from, then its code (hidden).");
   const cards = await gatherCards("lares vault restore --cards");
   seatNewFaceRoute();
-  if ((await sendCustodyFrame({ op: "custody" })) !== null) await handFaceRouteToVessel(`h${asRaw}`);
-  const result = await restoreFromCards({ cards, face, as: Number(asRaw), run: (act, actArgs) => sealedActVia(act, actArgs) });
+  const daemonUp = (await sendCustodyFrame({ op: "custody" })) !== null;
+  const result = await restoreFromCards({ cards, face, as: Number(asRaw), run: async (act, actArgs) => {
+    const faceRouteRef = daemonUp ? await handFaceRouteToVessel(`h${asRaw}`, "bundle.restore", actArgs) : undefined;
+    return sealedActVia(act, { ...actArgs, ...(faceRouteRef ? { faceRouteRef } : {}) });
+  } });
   if (!result.ok) {
     emit(args, { ok: false, error: { code: result.reason, message: result.message }, data: { reason: result.reason }, human: () => console.error(`lares vault restore --cards: ${result.reason}: ${result.message}`) });
     return 1;

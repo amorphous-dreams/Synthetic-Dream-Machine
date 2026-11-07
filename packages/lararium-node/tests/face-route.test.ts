@@ -4,7 +4,7 @@
  */
 import { readFileSync, existsSync } from "node:fs";
 import { afterEach, describe, expect, test } from "vitest";
-import { FaceRouteAbsent, ensureFaceCustodyOfAsk, ensureFaceCustodyOfGroup, seatFaceRoute, settleFaceCustody } from "../src/face-route.js";
+import { faceRouteBindDigest, FaceRouteAbsent, parkFaceRoute, withFaceRoute, ensureFaceCustodyOfAsk, ensureFaceCustodyOfGroup, seatFaceRoute, settleFaceCustody } from "../src/face-route.js";
 import { faceAtomGroupFile, foundingAskDigest, keepAndRetireFoundingSeed, loadFaceAtomOfGroup, pendingFoundingFile, standPendingFoundingSeed, type FoundingAtomAsk } from "../src/face-atom-store.js";
 import { faceIndexPath } from "../src/face-index.js";
 import { personaGroupDigest } from "../src/persona-group-file.js";
@@ -16,6 +16,16 @@ let seat: SeatedScratchCustody | null = null;
 afterEach(async () => { await seat?.drop(); seat = null; seatFaceRoute(null); });
 
 describe("a face founds under the route it asks for", () => {
+  test("persona-new binds the integer the store row forwards, defaulting rejected values to h0", () => {
+    const zero = faceRouteBindDigest("persona-new", { handleIndex: 0 });
+    for (const handleIndex of [undefined, null, "1", true, 1.5, NaN, Infinity]) {
+      expect(faceRouteBindDigest("persona-new", { handleIndex })).toBe(zero);
+    }
+    expect(faceRouteBindDigest("persona-new", {})).toBe(zero);
+    expect(faceRouteBindDigest("persona-new", { handleIndex: 1 })).not.toBe(zero);
+    expect(faceRouteBindDigest("persona-new", { handleIndex: -1 })).not.toBe(zero);
+  });
+
   test("RED: with no route seated a founding refuses by name and writes no index, no tree, no row", async () => {
     seat = await seatScratchCustody("face-route");
     seatFaceRoute(null);
@@ -31,6 +41,15 @@ describe("a face founds under the route it asks for", () => {
     expect(await ensureFaceCustodyOfAsk(foundingAskDigest(ask), "h0")).toBe(fcid);
     const index = JSON.parse(readFileSync(faceIndexPath(seat.homes.identity), "utf8")) as { faces: unknown[] };
     expect(index.faces).toHaveLength(1);
+  });
+
+  test("a referenced route founds the intended face while an unrelated founding refuses", async () => {
+    seat = await seatScratchCustody("face-route");
+    seatFaceRoute(null);
+    const ref = parkFaceRoute([{ t: 1, pins: [{ kind: "passphrase", passphrase: "scoped-face" }] }], "persona-new", faceRouteBindDigest("persona-new", { handleIndex: 0 }));
+    await expect(ensureFaceCustodyOfAsk(foundingAskDigest(ask), "h0")).rejects.toBeInstanceOf(FaceRouteAbsent);
+    const fcid = await withFaceRoute(ref, "persona-new", faceRouteBindDigest("persona-new", { handleIndex: 0 }), () => ensureFaceCustodyOfAsk(foundingAskDigest(ask), "h0"));
+    expect(await seatedCustody()!.faceStanding({ ask: foundingAskDigest(ask) })).toMatchObject({ fcid, unlocked: true });
   });
 
   test("the ask's seed rests in the face, moves under the group, and the ask retires from the index", async () => {

@@ -60,7 +60,7 @@ export type CustodyFrame =
   /** Cut face `face`'s bundle body, sealed under `key` (a bundle key, 64 lower hex), once `credentials` prove the vessel's own route. */
   | { readonly op: "backup"; readonly credentials: readonly Credential[]; readonly face: number; readonly key: string }
   /** Park the human route a NEW face will ask for, for the next face this vessel founds (one use). */
-  | { readonly op: "face-route"; readonly slots: readonly SlotSpec[] }
+  | { readonly op: "face-route"; readonly slots: readonly SlotSpec[]; readonly purpose: "persona-new" | "bundle.restore"; readonly argsDigest: string }
   /** One ward act's route: the door parks it under a one-use ticket a store verb then names (`ward-credential`). */
   | { readonly op: "ward"; readonly credentials: readonly Credential[]; readonly verb: string; readonly argsDigest: string };
 
@@ -78,7 +78,7 @@ export type CustodyAnswer =
   | ({ readonly op: "lock"; readonly locked: true; readonly was: "unlocked" | "locked"; readonly face?: number } & Partial<CustodyStanding>)
   | { readonly op: "custody"; readonly unlocked: boolean; readonly slot: string | null; readonly attemptsLeft: number; readonly standing: string; readonly wikiAwaits: string | null; readonly testScratch: boolean; readonly composing: boolean; readonly facesOpen?: number }
   | { readonly op: "act"; readonly act: string; readonly result: Record<string, unknown> }
-  | { readonly op: "face-route"; readonly parked: true }
+  | { readonly op: "face-route"; readonly ref: string }
   | { readonly op: "ward"; readonly ref: string }
   | { readonly op: "backup"; readonly sealedBody: string; readonly holds: FaceBundleCut["holds"]; readonly face: FaceBundleCut["face"]; readonly carries: FaceBundleCut["carries"] }
   | { readonly op: string; readonly status: "error"; readonly errorMessage: string; readonly refusal: { readonly reason: string; readonly home?: string; readonly file?: string; readonly reading?: string; readonly attemptsLeft?: number } };
@@ -112,7 +112,7 @@ export interface CustodyFrameDeps {
 const OPS: ReadonlySet<string> = new Set(["unlock", "lock", "custody", "act", "backup", "face-route", "ward"]);
 const WARD_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "credentials", "verb", "argsDigest"]);
 /** The keys a `face-route` frame may carry. */
-const FACE_ROUTE_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "slots"]);
+const FACE_ROUTE_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "slots", "purpose", "argsDigest"]);
 /** The keys a `backup` frame may carry. */
 const BACKUP_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "credentials", "face", "key", "ward"]);
 const BUNDLE_KEY_HEX = /^[0-9a-f]{64}$/;
@@ -402,12 +402,13 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       const frame = parsed as Record<string, unknown>;
       const stray = Object.keys(frame).find((k) => !FACE_ROUTE_FRAME_KEYS.has(k));
       const slots = slotsOf(frame["slots"]);
-      if (stray !== undefined || slots === null) {
+      if (stray !== undefined || slots === null || typeof frame["argsDigest"] !== "string" || !BUNDLE_KEY_HEX.test(frame["argsDigest"]) || (frame["purpose"] !== "persona-new" && frame["purpose"] !== "bundle.restore")) {
         deps.onLog("face-route: refused (bad-custody-frame)");
-        answer(sock, { op, status: "error", errorMessage: "a face-route frame carries `op` and `slots` (one or more slots of passphrase pins), and nothing beside them", refusal: { reason: "bad-custody-frame" } });
+        answer(sock, { op, status: "error", errorMessage: "a face-route frame carries `op`, `purpose`, `argsDigest` and `slots` (one or more slots of passphrase pins), and nothing beside them", refusal: { reason: "bad-custody-frame" } });
         return true;
       }
-      act = async () => { parkFaceRoute(slots); deps.onLog("face-route: parked for the next face founding"); return { op: "face-route", parked: true }; };
+      const purpose = frame["purpose"] as "persona-new" | "bundle.restore";
+      act = async () => { const ref = parkFaceRoute(slots, purpose, frame["argsDigest"] as string); deps.onLog("face-route: parked for one operation"); return { op: "face-route", ref }; };
     } else if (op === "unlock") {
       const credentials = credentialsOf((parsed as { credentials?: unknown }).credentials);
       if (!credentials) {

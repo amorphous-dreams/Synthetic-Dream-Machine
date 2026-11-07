@@ -1,17 +1,16 @@
 /** A joinee's one serialized grant take and floor lift, driven only by causal wakes. */
+import type { EdgeStanding } from "@lararium/mesh";
 import { FACE_GRANT_PREFIX, type FaceGrantRecord, type FaceGrantVerdict, type FaceGrantVerifyContext } from "./face-grant-record.js";
-import type { LeaseFrontier } from "./lease-frontier.js";
 
 export interface FaceSeatPorts {
   readonly group: string;
-  /** The daemon-layer title prefix that carries the group's lease slots. */
-  readonly leasePrefix: string;
   readonly selfVerifyingKey: string;
   readonly personaRootDid: string;
   readonly personaKel?: FaceGrantVerifyContext["personaKel"];
   readonly knowsAgent: (group: string) => Promise<boolean>;
   readonly grants: () => Promise<readonly { title: string; record: FaceGrantRecord }[]>;
-  readonly readLease: () => Promise<LeaseFrontier>;
+  /** This vessel's remove-wins reading of a FOUNDER's device-face dyad, off its own fold of the fleet board. */
+  readonly founderStanding: (deviceVerifyingKey: string) => Promise<EdgeStanding>;
   readonly verify: (record: FaceGrantRecord, context: FaceGrantVerifyContext) => Promise<FaceGrantVerdict>;
   readonly ingest: (record: FaceGrantRecord) => Promise<void>;
   /** Lifts the floor under the face; answers how many records a silent floor document held back, so the next pass tries again. */
@@ -102,7 +101,7 @@ export function makeFaceSeat(ports: FaceSeatPorts) {
   let lifted = false;
   let active: Promise<boolean> | null = null;
   let dirty = false;
-  let waitingOnLease = false;
+  let waitingOnProof = false;
   let announcedUnseated = false;
   const seated = () => ports.knowsAgent(ports.group);
   const lift = async () => {
@@ -118,7 +117,7 @@ export function makeFaceSeat(ports: FaceSeatPorts) {
     }
   };
   const pass = async (): Promise<boolean> => {
-    waitingOnLease = false;
+    waitingOnProof = false;
     // The SEATED VERDICT is what the bindings wait on; the lift moves floor documents under the face afterwards and stands off that path
     // (guarded by `lifted`, its faults named, retried by the next pass).
     if (await seated()) { announcedUnseated = false; void lift(); return true; }
@@ -138,17 +137,27 @@ export function makeFaceSeat(ports: FaceSeatPorts) {
       for (const { title, record } of grants) {
         if (!title.startsWith(prefix) || !title.toLowerCase().endsWith(self)) continue;
         if (typeof record?.sig !== "string" || judged.has(record.sig)) continue;
-        const lease = await ports.readLease();
-        if (lease.kind === "unavailable") {
-          waitingOnLease = true;
-          ports.log(`face-join grant pending (${title.slice(-16)}): current lease frontier unavailable (${lease.why})`);
+        // THE FOUNDER'S STANDING, read once per record for the device its edge names: the verifier decides from it.
+        const founderKey = record.founderEdge?.deviceVerifyingKey;
+        const standing: EdgeStanding = typeof founderKey === "string" ? await ports.founderStanding(founderKey) : "unknown";
+        // ABSENCE IS NOT CLEAR: a founder no qualifying signed frontier covers leaves the record unjudged until the board's
+        // reading arrives; the verify never runs on it, so nothing about the record gets decided from what this vessel lacks.
+        if (standing === "unknown") {
+          waitingOnProof = true;
+          ports.log(`face-join grant pending (${title.slice(-16)}): founder dyad standing unknown`);
           continue;
         }
         const verdict = await ports.verify(record, {
-          personaRootDid: ports.personaRootDid, selfVerifyingKey: self, groupId: ports.group,
-          ...(ports.personaKel ? { personaKel: ports.personaKel } : {}), expectedEpoch: lease.n,
+          personaRootDid: ports.personaRootDid, selfVerifyingKey: self, groupId: ports.group, personaKel: ports.personaKel,
+          dyad: (asked) => typeof founderKey === "string" && asked.toLowerCase() === founderKey.toLowerCase() ? standing : "unknown",
         });
         if (!verdict.ok) {
+          // A refusal for proof this vessel does not yet hold judges nothing: the record waits, and the proof's arrival wakes it.
+          if (verdict.pending) {
+            waitingOnProof = true;
+            ports.log(`face-join grant pending (${title.slice(-16)}): ${verdict.reason}`);
+            continue;
+          }
           judged.add(record.sig);
           ports.log(`face-join grant record REFUSED (${title.slice(-16)}): ${verdict.reason}`);
           continue;
@@ -180,8 +189,7 @@ export function makeFaceSeat(ports: FaceSeatPorts) {
     return active;
   };
   const wake = () => { void run(); };
-  // A lease slot always wakes the act; while a grant waits on an unavailable lease frontier, any daemon-layer change does,
-  // since a layer can join holding records but no lease slot.
-  const daemonChanged = (title: string) => { if (waitingOnLease || title.startsWith(ports.leasePrefix)) wake(); };
+  // While a grant waits on founder proof this vessel does not yet hold, any daemon-layer change wakes the act.
+  const daemonChanged = (_title: string) => { if (waitingOnProof) wake(); };
   return { seated, daemonChanged, settled: async () => { if (active) await active; }, wake, run };
 }

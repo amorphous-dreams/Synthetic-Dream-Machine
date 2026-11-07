@@ -7,7 +7,7 @@
  * adopts the minted key. `drop()` locks the holder and clears its seat; the test removes its own root.
  *
  * The root stands STAGED, as a harness stages one: it carries the scratch marker beside custody founded under the
- * published test route, so a rite's card read-back stands in there and nowhere else.
+ * published test route. The shared Vitest setup separately seats card read-back; the marker grants no waiver.
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";

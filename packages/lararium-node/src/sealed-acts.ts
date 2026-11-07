@@ -36,6 +36,7 @@
  *
  * Node-main only: a worker never imports this module.
  */
+import { faceRouteBindDigest, FaceRouteRefused, withFaceRoute } from "./face-route.js";
 import { wardCredentialOfArgs, type WardCredential } from "./ward-credential.js";
 import { FaceNotNamed, resolveFace } from "./face-selector.js";
 import { rewrapWardCustody, unlockedFaceOrdinals } from "./custody-seat.js";
@@ -685,13 +686,15 @@ export const SEALED_ACTS = Object.freeze({
   // and the door's log carries the act's name and how it ended, never the name of a face or a word of a bundle.
   // THE WARD'S REWRAP (seat-harness#/the-ward): a face founded before the ward moves its root under one, over the route this act carries.
   "ward.rewrap": act({ handleIndex: index, ward }, async (a) => ({ ...(await rewrapWardCustody({ ordinal: a.handleIndex }, a.ward)) })),
-  "bundle.restore": act({ body: sealedBody, key: bundleKey, as: optional(index), ward: optional(ward) }, async (a, ctx) => {
+  "bundle.restore": act({ body: sealedBody, key: bundleKey, as: optional(index), ward: optional(ward), faceRouteRef: optional(text) }, async (a, ctx) => {
     try {
       if (!ctx.hosting) throw refuse("no store stands to land a face on: stand the vessel, or run the restore with no vessel standing");
-      const restored = await restoreFaceBundle({ sealedBody: a.body, bundleKey: a.key, withRepo: ctx.hosting.withRepo, ...(a.as !== undefined ? { as: a.as } : {}), ...(a.ward ? { ward: a.ward } : {}) });
+      const hosting = ctx.hosting;
+      const restored = await withFaceRoute(a.faceRouteRef, "bundle.restore", faceRouteBindDigest("bundle.restore", { body: a.body, as: a.as }), () => restoreFaceBundle({ sealedBody: a.body, bundleKey: a.key, withRepo: hosting.withRepo, ...(a.as !== undefined ? { as: a.as } : {}), ...(a.ward ? { ward: a.ward } : {}) }));
       return { ...restored };
     } catch (err) {
       if (err instanceof RestoreRefused) return { refused: err.reason, message: err.message };
+      if (err instanceof FaceRouteRefused) return { refused: "face-route-refused", message: err.message };
       throw err;
     } finally { a.key.fill(0); }
   }),

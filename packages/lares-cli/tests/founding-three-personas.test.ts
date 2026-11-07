@@ -33,7 +33,7 @@ import type { ParsedArgs } from "../src/parse-args.js";
 import { larSealHome } from "../src/env.js";
 import {
   generateOrLoadPersonaGroupRoot, makeNodePersonaPetnameStore, makeNodePersonaDeclarationStore,
-  listPersonaRoots, readNexusDoc, loadIdentityAnchors,
+  listPersonaRoots, readNexusDoc, loadIdentityAnchors, seatReadBackStandIn,
 } from "@lararium/node";
 import { ownPersonaPetname, declaredHandle, foundingQuorumSeated, nexusAidOf } from "@lararium/mesh";
 
@@ -68,10 +68,10 @@ describe("a hearth's three founding faces (CLI, real vault + disk)", () => {
   let card = "";
   beforeEach(async () => {
     vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
+    seatReadBackStandIn(true); // The harness explicitly stands in for the person reading each card back.
     root = mkdtempSync(join(tmpdir(), "lares-founding3-"));
     setEnv("LAR_ROOT", root);                       // isolates bags + vault-state + petname store under one tree
-    // A STAGED root, as a harness stages one: the marker beside custody under the published test route, so the
-    // card's read-back stands in.
+    // Stage the root as the harness does; the explicit stand-in above answers each card read-back.
     writeFileSync(join(root, ".lar-test-scratch"), "");
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
@@ -84,6 +84,7 @@ describe("a hearth's three founding faces (CLI, real vault + disk)", () => {
     expect(card).toMatch(/^[0-9a-f-]+$/);
   });
   afterEach(() => {
+    seatReadBackStandIn(false);
     vi.restoreAllMocks();
     for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
     rmSync(root, { recursive: true, force: true });
