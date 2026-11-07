@@ -287,7 +287,7 @@ export function seatLaw(canonText) {
 /** The lead's separate wall permits work a builder's canon law forbids. */
 export function leadLaw() {
   return `## LEAD LAW (appended by tools/launch-codex.mjs to a lead brief; it binds this lead)
-* You hold no git write access and no credential. Every git act goes through the broker: write a request file \`req-<id>.json\` (zero-padded, in order) into \`<lane-root>/relay/\` and read its \`res-<id>.json\` on your next step. The doors are \`commit\` (\`paths\`, the commit message as inline \`message\` text up to 16 KiB, and \`expectHead\`), \`push\` (only when the controller's go names the branch and the head), \`worktree\`, \`worktree-remove\`, \`install\` and \`launch\`.
+* You hold no git write access and no credential. Every git act goes through the broker: write a request file \`req-<id>.json\` (zero-padded, in order) into \`<lane-root>/relay/\` and read your own \`res-<id>.json\` in the same step: use an event wait for the file to appear, bounded by a named \`// LIVENESS: ... broker ... died\` timeout. Never poll for a receipt; never poll or wait inside your context for a seat. The doors are \`commit\` (\`paths\`, the commit message as inline \`message\` text up to 16 KiB, and \`expectHead\`), \`push\` (only when the controller's go names the branch and the head), \`worktree\`, \`worktree-remove\`, \`install\`, \`launch\` and \`test\` (\`runner\` Node or Vitest, nonempty named \`files\`).
 * A commit message follows the \`lar:///w1.w2.w3 — summary\` convention and ends with the two trailers the session's attribution reminder gives. No \`git stash\` in any form, no \`--no-verify\`, no \`git push -u\`, no force-push, no edit of .git/config.
 * Never write the main checkout (~/Synthetic-Dream-Machine) or its submodule worktrees; work in your own worktree under ~/.lares-scratch only.
 * Never read a credential file or the controller's directory.
@@ -321,11 +321,14 @@ function newestRolloutLines(home) {
   };
   walk(join(home, ".codex", "sessions"), 0);
   files.sort((a, b) => b[0] - a[0]);
-  // The NEWEST rollout alone answers: an older record is a stale pool, and a newest one with none reads unreadable.
-  const newest = files[0]?.[1];
-  if (!newest) return null;
-  const lines = readFileSync(newest, "utf8").split("\n").filter((l) => l.includes('"rate_limits"'));
-  return lines.length ? lines : null;
+  // A just-started rollout may carry no reading yet; use the newest rollout with a readable record.
+  for (const [, file] of files) {
+    try {
+      const lines = readFileSync(file, 'utf8').split('\n').filter(line => line.includes('"rate_limits"'));
+      if (readPool(lines)) return lines;
+    } catch { /* an unreadable rollout carries no usable reading */ }
+  }
+  return null;
 }
 
 /** The main checkout `repo` belongs to: the git common dir's parent (a lane worktree's launcher still guards the real main). */
@@ -365,7 +368,7 @@ export function preflight({ mode, model, seatDir, worktree, briefless }, readers
   if (!cache || !new RegExp(`"slug": *"${model.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"`).test(cache)) throw refuse(`model ${model} is not in Codex's models cache`);
   // An empty read names itself and reads once more; it never stands in for a pool at zero.
   const pool = readPool(readers.rolloutLines(), mode) ?? readPool(readers.rolloutLines(), mode);
-  if (!pool) throw refuse("Codex pool line unreadable (no rate_limits record in the newest rollout, read twice); read it by hand before launching");
+  if (!pool) throw refuse("Codex pool line unreadable (no readable rate_limits record in any rollout, read twice); read it by hand before launching");
   if (!pool.above) throw refuse(`Codex pool at or below its floor: ${pool.summary}`);
   if (MAX_USED[mode] !== undefined && pool.used > MAX_USED[mode]) throw refuse(`Codex pool used ${pool.used.toFixed(1)}%, above the ${mode} seat's ${MAX_USED[mode]}% used ceiling: ${pool.summary}`);
   if (mode === "build" || mode === "lead") {

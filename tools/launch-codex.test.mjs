@@ -330,13 +330,13 @@ test("RED: the main checkout is the git common dir's parent, from a linked workt
   assert.equal(realReaders(base, linked).repo, realpathSync(main));
 });
 
-test("RED: the pool reads the NEWEST rollout alone; an older rollout's record never authorizes a launch", () => {
+test("the pool walks back to the newest rollout carrying a readable rate_limits record", () => {
   const home = mkdtempSync(join(tmpdir(), "rollouts-"));
   const dir = join(home, ".codex", "sessions", "2026", "10", "30"); mkdirSync(dir, { recursive: true });
   const old = join(dir, "rollout-old.jsonl"), fresh = join(dir, "rollout-new.jsonl");
   writeFileSync(old, rate(60) + "\n"); writeFileSync(fresh, '{"type":"session_meta"}\n');
   utimesSync(old, 1000, 1000); utimesSync(fresh, 2000, 2000);
-  assert.equal(readPool(realReaders(home).rolloutLines()), null, "newest has no record: unreadable, not the older 60%");
+  assert.equal(readPool(realReaders(home).rolloutLines()).used, 60, "newest has no record: the older recorded reading answers");
   writeFileSync(fresh, rate(70) + "\n");
   assert.equal(readPool(realReaders(home).rolloutLines()).used, 70, "CONTROL: the newest record answers");
 });
@@ -1231,4 +1231,17 @@ test("P1 preflight keeps every granted root clear of the staging tree: a lead or
   assert.ok(preflight(ask(w, { mode: "build", worktree: join(madeParent, "wt") }), w.readers), "CONTROL the exact made worktree passes");
   const inStage = join(st, "lane-0123456789abcdef", "seatdir"); mkdirSync(inStage, { recursive: true }); writeFileSync(join(inStage, "brief.md"), "b");
   refuses(w, { mode: "read", seatDir: inStage, worktree: undefined }, /sits inside the broker's worktree staging tree/);
+});
+
+test("lead law permits an event wait for its own receipt, bounded for a dead broker; seat waits stay outside", () => {
+  const law = leadLaw();
+  assert.match(law, /own.*res-<id>\.json.*same step/);
+  assert.match(law, /event wait.*file.*appear/);
+  assert.match(law, /\/\/ LIVENESS:.*broker.*died/);
+  assert.doesNotMatch(law, /read its.*on your next step/);
+  assert.match(law, /never poll.*seat/);
+  const canon = readFileSync(new URL('../bags/lares/ha.ka.ba/lares/docs/pono/seat-harness.mem', import.meta.url), 'utf8');
+  const broker = canon.split('<<~ ahu slot=`#/the-broker`>>')[1].split('<<~/ahu>>')[0];
+  assert.match(broker, /own.*res-<id>.*same step/);
+  assert.match(broker, /event wait.*LIVENESS:.*broker.*died/);
 });
