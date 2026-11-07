@@ -902,6 +902,8 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
         await awaitIslandMsg<IslandMsg_TeardownAck>({
           expectedType:   "teardown:ack",
           timeoutMs:      budgetMs,
+          // The island answers its teardown either way: an ack, or a fault by name that ends the wait at once, unacked.
+          rejectOnTypes:  ["fault"],
           subscribe:      (h) => worker.listen(h),
           // A hard `dispose` while this wait stands ends it at once, through the same door a worker
           // error takes: the wait drops its bound with it, and the handshake answers unacked.

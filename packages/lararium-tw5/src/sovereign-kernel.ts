@@ -80,6 +80,19 @@ import type { IslandContext, IslandBehavior } from "./island-context.js";
 import { PLANE_LABELS } from "@lararium/mesh/plane-labels";
 
 /** Detach a failed writable shore before its scheduler task settles. */
+/**
+ * An island's teardown ALWAYS ANSWERS: `teardown:ack` once it came down, or a `fault` named `teardown-fault: …` when a
+ * step threw. The vessel's teardown wait ends on that answer, never on a clock.
+ */
+export async function answerTeardown(run: () => Promise<void>, post: (msg: IslandToVesselMsg) => void, wikiUri: () => string): Promise<void> {
+  try { await run(); }
+  catch (err) {
+    post(mkFault(wikiUri(), `teardown-fault: the island could not tear down: ${err instanceof Error ? err.message : String(err)}`));
+    return;
+  }
+  post(mkTeardownAck());
+}
+
 export async function guardWritableStand<T>(run: () => Promise<T>, detach: () => Promise<void>): Promise<T> {
   try { return await run(); }
   catch (error) {
@@ -169,7 +182,7 @@ export function runSovereignKernel(
     }
 
     if (raw.type === "teardown" || raw.type === "hooanu") {
-      void _handleTeardown();
+      void answerTeardown(_handleTeardown, _post, () => _activeWikiUri);
       return;
     }
 
@@ -586,7 +599,7 @@ export function runSovereignKernel(
     // "working never arrived over syncPort" gap. flush() resolves once the bytes
     // are durable. We await it BEFORE posting teardown:ack, so the vessel's
     // disposeAll() handshake only completes after every island's write is on disk
-    // (flush-then-force; the vessel's force-timer is the only escape if THIS jams).
+    // (flush-then-ack; answerTeardown acks once this body returns, or names a fault when a step throws).
     if (_repo) {
       try { await _repo.flush(); }
       catch (err) { console.warn(`[sovereign-kernel] teardown flush failed: ${String(err)}`); }
@@ -618,7 +631,5 @@ export function runSovereignKernel(
     try { await _repo?.shutdown(); } catch { /* teardown remains best-effort after flush */ }
     _repo      = null;
     _ownedRepo = null;
-
-    host.post(mkTeardownAck());
   }
 }

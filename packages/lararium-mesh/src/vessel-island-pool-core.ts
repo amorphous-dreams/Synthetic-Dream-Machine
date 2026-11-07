@@ -828,6 +828,9 @@ export class VesselIslandPoolCore {
       await awaitIslandMsg<IslandMsg_TeardownAck>({
         expectedType: "teardown:ack",
         timeoutMs:    HANDSHAKE_TIMEOUT_MS,
+        // The island answers its teardown either way: an ack, or a fault by name (`teardown-fault: …`) that ends the
+        // handshake at once, unacked.
+        rejectOnTypes:  ["fault"],
         subscribe:      (h) => workerSlot.worker.listen(h),
         subscribeError: (h) => workerSlot.worker.onError(h),
         send: () => workerSlot.worker.post(mkTeardown()),
