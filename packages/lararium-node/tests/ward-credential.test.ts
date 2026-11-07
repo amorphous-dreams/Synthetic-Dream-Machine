@@ -124,3 +124,11 @@ describe("a ticket names its face too (S2 re-read, P3)", () => {
     expect(wc.takeWardTicket(again, { verb: "kapae-lower", args: { ...args, face: 0, handleIndex: 0 } })).toBeDefined();
   });
 });
+
+
+test("RED: a conflicting handleIndex cannot share a face-bound digest; CONTROL: equal session keys do", async () => {
+  const { wardBindDigest } = await import("../src/ward-credential.js");
+  const bind = (args: Record<string, unknown>) => wardBindDigest({ verb: "kapae-lower", args });
+  expect(bind({ face: 0 })).toBe(bind({ face: 0, handleIndex: 0 }));
+  expect(bind({ face: 0 })).not.toBe(bind({ face: 0, handleIndex: 1 }));
+});

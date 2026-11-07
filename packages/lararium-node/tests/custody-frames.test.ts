@@ -431,6 +431,16 @@ describe("the face-route frame", () => {
     await expect(gatherFaceRoute("h2")).rejects.toBeInstanceOf(FaceRouteAbsent);
   });
 
+  test("RED: another founding cannot take a route parked by a custody frame; CONTROL: no route refuses", async () => {
+    seatFaceRoute(null); parkFaceRoute(null);
+    await expect(gatherFaceRoute("h2")).rejects.toBeInstanceOf(FaceRouteAbsent);
+    const h = harness();
+    await h.send(ROUTE).answer;
+    try {
+      await expect(gatherFaceRoute("h2")).rejects.toBeInstanceOf(FaceRouteAbsent);
+    } finally { parkFaceRoute(null); }
+  });
+
   test("R2 — a bad shape, a stray key or a paper pin refuses whole and parks nothing", async () => {
     seatFaceRoute(null); parkFaceRoute(null);
     const h = harness();
