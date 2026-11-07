@@ -1,11 +1,12 @@
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, symlinkSync, renameSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, symlinkSync, renameSync, existsSync } from 'node:fs';
 import { execFileSync, spawnSync } from 'node:child_process';
 import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { openHeldSync, readHeld } from './held-dir.mjs';
+import { scratchDoorTree, checkoutDistSnapshot } from './door-fixture.mjs';
 
 // Controller runs: this integration fixture spawns git, the relay and a walled test child.
 const relay = fileURLToPath(new URL('./commit-relay.mjs', import.meta.url));
@@ -113,24 +114,37 @@ test('test door reports passing and failing tallies, with a passing control', ()
   assert.equal(control.fail, 0); assert.equal(control.exitCode, 0);
 });
 
-test('test door runs a named vitest file and reports its passing tally', () => {
+test('RED: the door self-test runs a named vitest file in a scratch tree and leaves every checkout dist untouched; CONTROL its own package built and passed', () => {
   const temp = mkdtempSync(path.join(os.tmpdir(), 'test-door-vitest-'));
   const lane = mkdtempSync(path.join(os.tmpdir(), 'test-door-vitest-lane-'));
   roots.push(temp, lane);
   mkdirSync(path.join(lane, 'relay'));
   const launcher = path.join(temp, 'launcher.mjs'); writeFileSync(launcher, '');
   const checks = path.join(temp, 'checks.json'); writeFileSync(checks, '[]');
-  const wt = path.dirname(path.dirname(relay));
-  // The relay resolves HOME/.lares-scratch and requires the worktree beneath it.
-  symlinkSync(path.dirname(wt), path.join(temp, '.lares-scratch'));
-  const files = ['packages/lararium-mesh/tests/dyad-atom.test.ts'];
+  // The relay resolves HOME/.lares-scratch and requires the worktree beneath it; the worktree is scratch, never the checkout,
+  // since the door builds the named file's package in place and a sibling self-test may be importing that dist.
+  const { wt, pkg } = scratchDoorTree(path.join(temp, '.lares-scratch', 'door', 'wt'));
+  const dir = pkg('door-vitest', {
+    'package.json': JSON.stringify({ name: 'door-vitest', type: 'module', scripts: { build: 'tsc -p tsconfig.json' } }),
+    'tsconfig.json': JSON.stringify({ compilerOptions: { target: 'ES2022', module: 'NodeNext', moduleResolution: 'NodeNext', outDir: 'dist', rootDir: 'src', skipLibCheck: true, types: [] }, include: ['src'] }),
+    'src/value.ts': 'export const value: number = 1;',
+    'tests/value.test.mjs': "import { test, expect } from 'vitest'; import { value } from '../dist/value.js'; test('value', () => expect(value).toBe(1));",
+  });
+  const files = ['packages/door-vitest/tests/value.test.mjs'];
+  const before = checkoutDistSnapshot();
   writeFileSync(path.join(lane, 'relay', 'req-001.json'), JSON.stringify({ kind: 'test', runner: 'vitest', files }));
   const child = spawnSync(process.execPath, [relay, '--lane-root', lane, '--worktree', wt, '--branch', 'test-door', '--launcher', launcher, '--remote-url', path.join(temp, 'remote'), '--checks', checks, '--once'], { encoding: 'utf8', env: { ...process.env, HOME: temp, LARES_BROKER_ROOT: path.join(temp, 'broker') } });
   assert.equal(child.status, 0, child.stderr);
   const result = JSON.parse(readFileSync(path.join(lane, 'relay', 'res-001.json'), 'utf8'));
   assert.equal(result.ok, true, JSON.stringify(result));
   assert.equal(result.runner, 'vitest'); assert.deepEqual(result.files, files);
-  assert.ok(result.pass > 0); assert.equal(result.fail, 0); assert.equal(result.exitCode, 0);
+  assert.equal(result.pass, 1); assert.equal(result.fail, 0); assert.equal(result.exitCode, 0);
+  // CONTROL: the door built the scratch package (its dist exists) and stamped it in the scratch tree.
+  assert.match(readFileSync(path.join(dir, 'dist', 'value.js'), 'utf8'), /value = 1/);
+  assert.ok(existsSync(path.join(wt, 'node_modules', '.lares-build', 'pkg', 'door-vitest')));
+  const after = checkoutDistSnapshot();
+  const moved = Object.keys(before).filter(file => after[file] !== before[file]);
+  assert.deepEqual(moved.slice(0, 5), [], `${moved.length} checkout dist file(s) rewritten by a self-test`);
 });
 
 test('C1 package directory symlink outside the worktree refuses without disclosing its target', () => {

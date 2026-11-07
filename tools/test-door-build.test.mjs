@@ -1,30 +1,30 @@
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, symlinkSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, readdirSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
-import { fileURLToPath } from 'node:url';
 import { openHeldSync } from './held-dir.mjs';
 import { runTestSeat } from './seat-walls.mjs';
+import { scratchDoorTree, checkout } from './door-fixture.mjs';
 import { stampPackage } from './stamp-build.mjs';
-const relay = fileURLToPath(new URL('./commit-relay.mjs', import.meta.url));
 const roots = [];
 afterEach(() => { for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true }); });
-// Use the real local Vitest and TypeScript, in a disposable package inside this checkout.
+// Use the real Vitest and TypeScript, copied into a scratch worktree with a disposable package: the fixture never stands in
+// the checkout's packages/ (a transient packages/door-fixture-* joins the workspace glob for every concurrent reader), and
+// its build and stamp land in the scratch tree, never the checkout's dist or node_modules/.lares-build.
 function vitestFixture() {
   const home = mkdtempSync(path.join(os.tmpdir(), 'test-door-vitest-')); roots.push(home);
   const lane = path.join(home, 'lane'); mkdirSync(path.join(lane, 'relay'), { recursive: true });
-  const wt = path.dirname(path.dirname(relay));
-  const pkg = mkdtempSync(path.join(wt, 'packages', 'door-fixture-')); roots.push(pkg);
-  const dir = path.basename(pkg); roots.push(path.join(wt, 'node_modules/.lares-build/pkg', dir));
-  mkdirSync(path.join(pkg, 'src'));
-  symlinkSync('../lararium-mesh/node_modules', path.join(pkg, 'node_modules'));
-  writeFileSync(path.join(pkg, 'package.json'), JSON.stringify({ name: dir, type: 'module', scripts: { build: 'tsc -p tsconfig.json' } }));
-  writeFileSync(path.join(pkg, 'tsconfig.json'), JSON.stringify({ compilerOptions: { target: 'ES2022', module: 'NodeNext', moduleResolution: 'NodeNext', outDir: 'dist', rootDir: 'src', skipLibCheck: true, types: [] }, include: ['src'] }));
-  writeFileSync(path.join(pkg, 'src/value.ts'), 'export const value: number = 1;');
-  writeFileSync(path.join(pkg, 'vitest.config.mjs'), `export default { test: { globalSetup: ['./guard.mjs'] } };`);
-  writeFileSync(path.join(pkg, 'guard.mjs'), `import { checkDistDependencies } from '../../tools/vitest-dist-guard.mjs'; export default function() { checkDistDependencies(new URL('../../', import.meta.url).pathname, ${JSON.stringify(dir)}, [], true); }`);
-  for (const name of ['one', 'two']) writeFileSync(path.join(pkg, name + '.test.mjs'), `import { test, expect } from 'vitest'; import { value } from './dist/value.js'; test('${name}', () => expect(value).toBeGreaterThan(0));`);
+  const { wt, pkg: makePackage } = scratchDoorTree(path.join(home, 'wt'));
+  const dir = 'door-fixture';
+  const pkg = makePackage(dir, {
+    'package.json': JSON.stringify({ name: dir, type: 'module', scripts: { build: 'tsc -p tsconfig.json' } }),
+    'tsconfig.json': JSON.stringify({ compilerOptions: { target: 'ES2022', module: 'NodeNext', moduleResolution: 'NodeNext', outDir: 'dist', rootDir: 'src', skipLibCheck: true, types: [] }, include: ['src'] }),
+    'src/value.ts': 'export const value: number = 1;',
+    'vitest.config.mjs': `export default { test: { globalSetup: ['./guard.mjs'] } };`,
+    'guard.mjs': `import { checkDistDependencies } from '../../tools/vitest-dist-guard.mjs'; export default function() { checkDistDependencies(new URL('../../', import.meta.url).pathname, ${JSON.stringify(dir)}, [], true); }`,
+    ...Object.fromEntries(['one', 'two'].map(name => [name + '.test.mjs', `import { test, expect } from 'vitest'; import { value } from './dist/value.js'; test('${name}', () => expect(value).toBeGreaterThan(0));`])),
+  });
   const run = async names => {
     const files = names.map(name => 'packages/' + dir + '/' + name + '.test.mjs');
     const worktreeHeld = openHeldSync(wt, wt), laneHeld = openHeldSync(lane, lane);
@@ -36,7 +36,7 @@ function vitestFixture() {
     writeFileSync(path.join(pkg, 'dist/value.js'), 'export const value = 1;');
     stampPackage(wt, dir);
   };
-  return { pkg, run, seedBuild };
+  return { wt, pkg, run, seedBuild };
 }
 test('Vitest door selects exactly one named file; control selects both', async () => {
   const x = vitestFixture();
@@ -60,6 +60,9 @@ test('Vitest door rebuilds and stamps a source edit; a type error refuses before
   const edited = await x.run(['one']);
   assert.equal(edited.ok, true, JSON.stringify(edited)); assert.equal(edited.exitCode, 0);
   assert.match(readFileSync(path.join(x.pkg, 'dist/value.js'), 'utf8'), /value = 2/);
+  // RED: no fixture package stands in the checkout's packages/ mid-run, and the stamp lands in the scratch tree.
+  assert.deepEqual(readdirSync(path.join(checkout, 'packages')).filter(name => name.startsWith('door-fixture')), []);
+  assert.ok(existsSync(path.join(x.wt, 'node_modules', '.lares-build', 'pkg', 'door-fixture')));
   writeFileSync(path.join(x.pkg, 'src/value.ts'), 'export const value: number = "broken";');
   const broken = await x.run(['one']);
   assert.equal(broken.ok, false, JSON.stringify(broken)); assert.match(broken.output, /error TS2322/);
