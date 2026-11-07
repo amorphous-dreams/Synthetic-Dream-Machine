@@ -22,12 +22,29 @@ Eight artistic dimensions: worktype, subject, read, imagery, treatment, composit
 * [[Procedure Grammar|ha.ka.ba/lares/api/art-sigils/procedures]]
 * [[Formal Analysis|ha.ka.ba/lares/api/art-sigils/formal-analysis]]
 * [[Worked Examples|ha.ka.ba/lares/docs/art-sigils]]
+
+!! Optional production companions
+
+* [[Reference Roles|ha.ka.ba/lares/api/art-sigils/reference-roles]] — source authority
+* [[Artifact Contract|ha.ka.ba/lares/api/art-sigils/artifact-contract]] — checkable deliverables
+* [[Reception QA|ha.ka.ba/lares/api/art-sigils/reception-qa]] — outcome inspection
+* [[Layer Composition|ha.ka.ba/lares/api/art-sigils/layer-composition]] — component assembly
+* [[Provenance and Publication|ha.ka.ba/lares/api/art-sigils/provenance-publication]] — credits and release
+
+!! Practice, examples, research
+
+* [[Practice|ha.ka.ba/lares/docs/art-sigils/practice]]
+* [[Photograph|ha.ka.ba/lares/docs/art-sigils/example-two-photograph]] · [[Color Field|ha.ka.ba/lares/docs/art-sigils/example-three-color-field]] · [[Transparent Veil|ha.ka.ba/lares/docs/art-sigils/example-four-transparent-veil]]
+* [[Mixed Media|ha.ka.ba/lares/docs/art-sigils/example-five-mixed-media]] · [[Exact Text|ha.ka.ba/lares/docs/art-sigils/example-six-exact-type]]
+* [[Cartography|ha.ka.ba/lares/docs/art-sigils/research/cartography]] · [[Art Methods|ha.ka.ba/lares/docs/art-sigils/research/art-methods]]
+
+Companions remain drafts. The eight-dimension `art()` nucleus is unchanged.
 <<~/ahu>>
 
 <<~ ahu slot=`#/aftermath`>>
 The grammar governs expression, not an artwork's subject, medium or style.
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;SAegB6TjQnRwNeywPIKw5rlKT_aAueqAmaoXQgIGaLY`>>
+<<^ code=`&#x0003;`>>
 
 <<^ code=`&#x0004;` to=`?`>>

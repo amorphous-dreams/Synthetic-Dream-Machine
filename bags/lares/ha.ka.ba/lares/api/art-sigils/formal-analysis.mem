@@ -74,6 +74,12 @@ When an operator presents several versions of a work, make comparisons on **visi
 The authored Inscription, any associated Folio and the rendered work occupy distinct evidentiary positions. A viewer's reading neither recovers an originating prompt nor supersedes the stated artistic intention.
 <<~/ahu>>
 
+<<~ ahu slot=`#/reception-interface`>>
+!! Formal Analysis and reception testing
+
+Formal Analysis describes what an artwork shows and what evidence supports a reading. [[Reception QA|ha.ka.ba/lares/api/art-sigils/reception-qa]] checks a known artifact against a known invitation and optional [[Artifact Contract|ha.ka.ba/lares/api/art-sigils/artifact-contract]]. Neither approach reconstructs a hidden original prompt.
+<<~/ahu>>
+
 <<~ ahu slot=`#/counter-read`>>
 !! Critical drift and failure modes
 
@@ -99,9 +105,9 @@ Across painting, print, photography, installation, abstraction and pictures with
 <<~ ahu slot=`#/sources`>>
 !! Methodological anchors
 
-Getty CDWA subject analysis, material and facture; Harvard Project Zero's See, Think, Wonder and What Makes You Say That?; Panofsky, Arnheim, Baxandall, Kress/van Leeuwen, Mitchell and Warburg; Feldman's descriptive/interpretive/critical moves. See the Art Sigils Specification's research ahu for source paths and authority boundaries. No reference source alone settles the intention of an unknown artist.
+Getty CDWA subject analysis, material and facture; Harvard Project Zero's See, Think, Wonder and What Makes You Say That?; Panofsky, Arnheim, Baxandall, Kress/van Leeuwen, Mitchell and Warburg; Feldman's descriptive/interpretive/critical moves. See [[Art Methods|ha.ka.ba/lares/docs/art-sigils/research/art-methods]] for critical sources and [[Cartography|ha.ka.ba/lares/docs/art-sigils/research/cartography]] for terrain methods. No reference source alone settles the intention of an unknown artist.
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;exqBGas8WQgZchN7qI5EPoGXeq0pSEKGISwBgfkPqMc`>>
+<<^ code=`&#x0003;`>>
 
 <<^ code=`&#x0004;` to=`?`>>

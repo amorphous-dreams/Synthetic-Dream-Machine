@@ -1,0 +1,35 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/art-sigils/research/cartography`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+uri-path = "ha.ka.ba/lares/docs/art-sigils/research/cartography"
+title    = "lar:///ha.ka.ba/lares/docs/art-sigils/research/cartography"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "optional specialist register for cartography, terrain, relief and spatial references"
+status   = "stable"
+retain   = true
+```
+
+<<~ ahu slot=`#/cartography-research`>>
+!! Cartography, terrain portrayal, and plan-oblique relief — optional specialist register
+
+A cartographic image may aim to convey spatial relationships, terrain morphology, travel affordances, or measured data. These intentions differ; visual appeal alone cannot validate a survey. **This ahu offers specialist research for terrain-related art; no cartographic convention enters the core `art()` defaults or its other applications.**
+
+* **Planimetric / orthographic map:** an overhead plan with a chosen projection and scale convention. Such a plan can support route comparison without inheriting a painted panorama's perspective.
+* **Plan-oblique relief:** an elevated view that preserves a recognizable overhead spatial organization while giving terrain vertical relief and expressive volume. Perspective and occlusion may distort local measurements. See Tom Patterson and Bernhard Jenny, `Introducing Plan Oblique Relief`: https://cartographicperspectives.org/index.php/journal/article/view/cp57-jenny-patterson
+* **Hypsometric tinting:** color shifts associated with elevation rather than generic scenic color. The artist may organize low/mid/high bands through hues and values suited to the read; green–ochre–snow supplies an example, never a required palette or assertion of measured heights.
+* **Shaded relief:** directional illumination clarifies landform shape. Shadows and hillshading help viewers understand ridges and slopes without directly establishing traversability.
+* **Aerial / atmospheric perspective:** color, contrast and haze can express depth and air; distinguish distance-based recession from altitude-dependent tint or relief shading. Jenny and Patterson's research on aerial perspective for shaded relief offers a specialist bearing.
+* **Panoramic geography:** Heinrich Berann's painted landform panoramas suggest ways to orchestrate a larger region without reducing its ridges and valleys to a single landmark. Eduard Imhof informs illumination and tonal hierarchy; Erwin Raisz informs selective physiographic characterization.
+* **Embodied terrain:** a photograph or painted eye-level study of a ledge, slope, river or inhabited site may challenge a higher-view depiction. Share distinctive landmarks where two pictures claim to depict the same passage, while acknowledging different projections.
+* **Watershed and route evidence:** drainage, valleys, saddles, escarpments and slope exposure offer features a viewer can compare. Colored routes, plotted arrows or crossed-out lines depict spatial claims; they do not guarantee actual access, gradient, distance or geological accuracy.
+* **Source provenance:** digital elevation models, imagery, survey notes, fictional world references and creative departures deserve separate evidentiary labels. Real geographic reference does not automatically establish an imagined world's terrain or authorize fictional canon.
+
+The same semantic grammar serves a technical topographic plate, a freely invented dream landscape, a narrative route painting or a terrain-themed installation. Use `worktype`, `read`, `treatment` and `relation` to determine what viewers should understand or question.
+<<~/ahu>>
+
+<<^ code=`&#x0003;`>>
+<<^ code=`&#x0004;` to=`?`>>

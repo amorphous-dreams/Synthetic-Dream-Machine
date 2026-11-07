@@ -134,7 +134,7 @@ Thumbnail, color key, alternative, rejected proposal, edit, overlay, juxtapositi
 !!! Writing and image
 Anchorage, relay, pictorial title, caption, handwritten note, printed legend, calligraphy, visual poem, typographic rhythm, diagram key, image-text counterpoint. Distinguish deliberately depicted text from prompt source, attached reference, credits and metadata.
 
-For a specialized spatial, environmental or cartographic work, consult the optional cartography research ahu; the basic grammar neither inherits nor privileges its vocabulary.
+For a specialized spatial, environmental or cartographic work, consult [[Cartographic Research|ha.ka.ba/lares/docs/art-sigils/research/cartography]]; the basic grammar neither inherits nor privileges its vocabulary.
 <<~/ahu>>
 
 <<~ ahu slot=`#/integrities`>>
@@ -168,46 +168,16 @@ Art Sigils distinguishes the **author's written intention**, its **literal TW5 r
 Formal Analysis carries the observational and comparative method; the Procedures meme carries executable TW5 declarations. Both operate through the eight-dimensional semantic contract described here.
 <<~/ahu>>
 
-<<~ ahu slot=`#/cartography-research`>>
-!! Cartography, terrain portrayal, and plan-oblique relief — optional specialist register
 
-A cartographic image may aim to convey spatial relationships, terrain morphology, travel affordances, or measured data. These intentions differ; visual appeal alone cannot validate a survey. **This ahu offers specialist research for terrain-related art; no cartographic convention enters the core `art()` defaults or its other applications.**
 
-* **Planimetric / orthographic map:** an overhead plan with a chosen projection and scale convention. Such a plan can support route comparison without inheriting a painted panorama's perspective.
-* **Plan-oblique relief:** an elevated view that preserves a recognizable overhead spatial organization while giving terrain vertical relief and expressive volume. Perspective and occlusion may distort local measurements. See Tom Patterson and Bernhard Jenny, `Introducing Plan Oblique Relief`: https://cartographicperspectives.org/index.php/journal/article/view/cp57-jenny-patterson
-* **Hypsometric tinting:** color shifts associated with elevation rather than generic scenic color. The artist may organize low/mid/high bands through hues and values suited to the read; green–ochre–snow supplies an example, never a required palette or assertion of measured heights.
-* **Shaded relief:** directional illumination clarifies landform shape. Shadows and hillshading help viewers understand ridges and slopes without directly establishing traversability.
-* **Aerial / atmospheric perspective:** color, contrast and haze can express depth and air; distinguish distance-based recession from altitude-dependent tint or relief shading. Jenny and Patterson's research on aerial perspective for shaded relief offers a specialist bearing.
-* **Panoramic geography:** Heinrich Berann's painted landform panoramas suggest ways to orchestrate a larger region without reducing its ridges and valleys to a single landmark. Eduard Imhof informs illumination and tonal hierarchy; Erwin Raisz informs selective physiographic characterization.
-* **Embodied terrain:** a photograph or painted eye-level study of a ledge, slope, river or inhabited site may challenge a higher-view depiction. Share distinctive landmarks where two pictures claim to depict the same passage, while acknowledging different projections.
-* **Watershed and route evidence:** drainage, valleys, saddles, escarpments and slope exposure offer features a viewer can compare. Colored routes, plotted arrows or crossed-out lines depict spatial claims; they do not guarantee actual access, gradient, distance or geological accuracy.
-* **Source provenance:** digital elevation models, imagery, survey notes, fictional world references and creative departures deserve separate evidentiary labels. Real geographic reference does not automatically establish an imagined world's terrain or authorize fictional canon.
+<<~ ahu slot=`#/production-interfaces`>>
+!! Production interfaces
 
-The same semantic grammar serves a technical topographic plate, a freely invented dream landscape, a narrative route painting or a terrain-themed installation. Use `worktype`, `read`, `treatment` and `relation` to determine what viewers should understand or question.
-<<~/ahu>>
+Art Sigils describes the intended artwork. Use [[Reference Roles|ha.ka.ba/lares/api/art-sigils/reference-roles]] to state what source material may influence; [[Artifact Contract|ha.ka.ba/lares/api/art-sigils/artifact-contract]] to specify checkable delivery properties; and [[Reception QA|ha.ka.ba/lares/api/art-sigils/reception-qa]] to inspect the result. [[Layer Composition|ha.ka.ba/lares/api/art-sigils/layer-composition]] and [[Provenance and Publication|ha.ka.ba/lares/api/art-sigils/provenance-publication]] apply only where relevant.
 
-<<~ ahu slot=`#/art-research`>>
-!! Research bearings — general art ontology
+Distinguish visible translucency, actual pixel alpha and composite layer opacity. Inspect exact text, dimensions, transparency, geometry and file structure where they are binding; neither a natural-language instruction nor visual resemblance proves technical compliance.
 
-Scholarly sources furnish vocabulary and competing interpretive lenses, never one mandatory aesthetic or automatic instruction to imitate their named authors.
-
-* Getty Research Institute, Art & Architecture Thesaurus (AAT): https://www.getty.edu/research/conducting_research/vocabularies/aat/ — work types, materials, techniques, and roles; consult term scope notes.
-* Getty, Categories for the Description of Works of Art (CDWA): https://www.getty.edu/publications/categories-description-works-art/categories/ — materials/techniques, facture, physical description, subject matter, critical responses and related works. Subject: https://www.getty.edu/publications/categories-description-works-art/categories/object-architecture-group/16/ ; Materials/Techniques: https://www.getty.edu/publications/categories-description-works-art/categories/object-architecture-group/7/
-* Getty CONA, TGN and Iconography Authority — distinguish catalogued works, geographical place names, and depicted iconography: https://www.getty.edu/research/tools/vocabularies/
-* Kress and van Leeuwen, *Reading Images: The Grammar of Visual Design* — represented participants, interaction, information value and composition.
-* W. J. T. Mitchell, *Picture Theory* — metapictures and pictures about pictures.
-* Aby Warburg, *Mnemosyne Atlas* — thinking through juxtaposition, absence, and changing image arrangements: https://warburg.sas.ac.uk/library-collections/warburg-institute-archive/bilderatlas-mnemosyne
-* Donald Schön, *Designing as Reflective Conversation with the Materials of a Design Situation* — action and reflection in a developing work.
-* Michael Baxandall, *Patterns of Intention* — historically situated inference about artistic problems.
-* Rudolf Arnheim, *Art and Visual Perception* — spatial balance and perception as critical lenses, not universal law.
-* Josef Albers, *Interaction of Color* — relational color and its surrounding field.
-* James Gurney, *Color and Light* — light, optics and material effects.
-* Roland Barthes, *Rhetoric of the Image* — anchorage and relay between text and picture.
-* Gérard Genette, *Narrative Discourse* — focalization and knowledge limits, with care when applying narrative terms to static images.
-* Henry Jenkins, *Game Design as Narrative Architecture* — implied action and environmental narration: https://electronicbookreview.com/publications/game-design-as-narrative-architecture/
-* Kevin Lynch, *The Image of the City*; Tim Ingold, *The Temporality of the Landscape* — orientation, perceptual movement, spatial practice.
-* Panofsky, *Studies in Iconology*; Feldman's methods of criticism; Harvard Project Zero, *What Makes You Say That?*: https://pz.harvard.edu/resources/what-makes-you-say ; *See, Think, Wonder*: https://pz.harvard.edu/resources/see-think-wonder
-* TiddlyWiki native Procedures, Definition Syntax and Calls: https://tiddlywiki.com/static/Procedures.html ; https://tiddlywiki.com/static/Procedure%2520Definition%2520Syntax.html ; https://tiddlywiki.com/static/Calls.html
+These companions add no `art()` parameters or default production method.
 <<~/ahu>>
 
 <<~ ahu slot=`#/aftermath`>>
@@ -215,11 +185,11 @@ Scholarly sources furnish vocabulary and competing interpretive lenses, never on
 
 Artworks, instructions, references and interpretations carry distinct authorities. Formal criticism distinguishes what a work **shows**, what viewers **infer**, what credible sources **support**, and what the authored **read** invites. Neither a suggestive image nor an artist's name alone establishes technique, intention, identity or provenance.
 
-Discipline-specific methods inhabit named research ahus; artwork-specific forms, fictional facts and materials inhabit their Folios; syntax belongs to Procedure Grammar; observation and inference belong to Formal Analysis. These boundaries protect an artwork from inheriting another worktype's conventions.
+Discipline-specific methods inhabit [[Cartographic Research|ha.ka.ba/lares/docs/art-sigils/research/cartography]] and [[Art Research|ha.ka.ba/lares/docs/art-sigils/research/art-methods]]; artwork-specific forms, fictional facts and materials inhabit their Folios; syntax belongs to Procedure Grammar; observation and inference belong to Formal Analysis. These boundaries protect an artwork from inheriting another worktype's conventions.
 
 The grammar accommodates portraits, abstract fields, textiles, photographs, installations and maps without requiring unrelated genres, parchment, monumental scenery, prescribed narratives or compulsory comparison boards.
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;FT5b0uqPMhCgRaxEA3MIKCiyC7lmTtvzdZ0nStDkC9E`>>
+<<^ code=`&#x0003;`>>
 
 <<^ code=`&#x0004;` to=`?`>>

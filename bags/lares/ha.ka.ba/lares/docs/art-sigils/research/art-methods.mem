@@ -1,0 +1,41 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/art-sigils/research/art-methods`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+uri-path = "ha.ka.ba/lares/docs/art-sigils/research/art-methods"
+title    = "lar:///ha.ka.ba/lares/docs/art-sigils/research/art-methods"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "art-historical critical and methodological source register"
+status   = "stable"
+retain   = true
+```
+
+<<~ ahu slot=`#/art-research`>>
+!! Research bearings — general art ontology
+
+Scholarly sources furnish vocabulary and competing interpretive lenses, never one mandatory aesthetic or automatic instruction to imitate their named authors.
+
+* Getty Research Institute, Art & Architecture Thesaurus (AAT): https://www.getty.edu/research/conducting_research/vocabularies/aat/ — work types, materials, techniques, and roles; consult term scope notes.
+* Getty, Categories for the Description of Works of Art (CDWA): https://www.getty.edu/publications/categories-description-works-art/categories/ — materials/techniques, facture, physical description, subject matter, critical responses and related works. Subject: https://www.getty.edu/publications/categories-description-works-art/categories/object-architecture-group/16/ ; Materials/Techniques: https://www.getty.edu/publications/categories-description-works-art/categories/object-architecture-group/7/
+* Getty CONA, TGN and Iconography Authority — distinguish catalogued works, geographical place names, and depicted iconography: https://www.getty.edu/research/tools/vocabularies/
+* Kress and van Leeuwen, *Reading Images: The Grammar of Visual Design* — represented participants, interaction, information value and composition.
+* W. J. T. Mitchell, *Picture Theory* — metapictures and pictures about pictures.
+* Aby Warburg, *Mnemosyne Atlas* — thinking through juxtaposition, absence, and changing image arrangements: https://warburg.sas.ac.uk/library-collections/warburg-institute-archive/bilderatlas-mnemosyne
+* Donald Schön, *Designing as Reflective Conversation with the Materials of a Design Situation* — action and reflection in a developing work.
+* Michael Baxandall, *Patterns of Intention* — historically situated inference about artistic problems.
+* Rudolf Arnheim, *Art and Visual Perception* — spatial balance and perception as critical lenses, not universal law.
+* Josef Albers, *Interaction of Color* — relational color and its surrounding field.
+* James Gurney, *Color and Light* — light, optics and material effects.
+* Roland Barthes, *Rhetoric of the Image* — anchorage and relay between text and picture.
+* Gérard Genette, *Narrative Discourse* — focalization and knowledge limits, with care when applying narrative terms to static images.
+* Henry Jenkins, *Game Design as Narrative Architecture* — implied action and environmental narration: https://electronicbookreview.com/publications/game-design-as-narrative-architecture/
+* Kevin Lynch, *The Image of the City*; Tim Ingold, *The Temporality of the Landscape* — orientation, perceptual movement, spatial practice.
+* Panofsky, *Studies in Iconology*; Feldman's methods of criticism; Harvard Project Zero, *What Makes You Say That?*: https://pz.harvard.edu/resources/what-makes-you-say ; *See, Think, Wonder*: https://pz.harvard.edu/resources/see-think-wonder
+* TiddlyWiki native Procedures, Definition Syntax and Calls: https://tiddlywiki.com/static/Procedures.html ; https://tiddlywiki.com/static/Procedure%2520Definition%2520Syntax.html ; https://tiddlywiki.com/static/Calls.html
+<<~/ahu>>
+
+<<^ code=`&#x0003;`>>
+<<^ code=`&#x0004;` to=`?`>>
