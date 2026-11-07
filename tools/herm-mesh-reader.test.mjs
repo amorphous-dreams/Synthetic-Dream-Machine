@@ -66,7 +66,12 @@ test("RED: a reader carried nowhere holds no floor pin for the hop, so it knocks
   assert.equal((await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }])).reading, "opens");
   node.seatCustody(holder);
   const ident = await import("../packages/lararium-node/dist/src/node-vessel-identity.js");
-  await ident.generateOrLoadVesselIdentity();
+  // test-ward-env seats spawned CLI entries only. This node:test process mints the reader's place key itself,
+  // so the harness must answer its card here; neither the staged marker nor the child's seat reaches here.
+  const priorReadBack = node.readBackStandInSeated();
+  node.seatReadBackStandIn(true);
+  try { await ident.generateOrLoadVesselIdentity(); }
+  finally { node.seatReadBackStandIn(priorReadBack); }
   const r = await pullHop(`http://127.0.0.1:9#${"ab".repeat(32)}`);
   assert.equal(r.ok, false);
   assert.equal(r.reason, CARRIAGE_PIN_ABSENT);

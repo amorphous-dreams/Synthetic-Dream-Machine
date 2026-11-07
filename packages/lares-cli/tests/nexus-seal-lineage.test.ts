@@ -30,7 +30,7 @@ import type { ParsedArgs } from "../src/parse-args.js";
 import { larSealHome, larDataDir } from "../src/env.js";
 import {
   generateOrLoadPersonaGroupRoot, makeNodePersonaPetnameStore, makeNodePersonaDeclarationStore, readNexusDoc, nexusCharterDocPath,
-  heldSeatKey, listSeatKeys, signAsSeat, writeNexusDoc,
+  heldSeatKey, listSeatKeys, seatReadBackStandIn, signAsSeat, writeNexusDoc,
 } from "@lararium/node";
 import {
   renameOwnPersona, declarePersonaHandle, standForKahuSeat, sealKeySetHash, sealLineageHead, verifySealLineage,
@@ -205,6 +205,7 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
 
   test("RED: a LIVE root prints no card into a JSON answer or a pipe: the seat refuses and writes nothing", async () => {
     await seatVault();
+    seatReadBackStandIn(false); // Exercise the live refusal without the shared harness's explicit read-back seat.
     rmSync(join(root, ".lar-test-scratch"), { force: true });                     // a live root: no staged marker
     const chunks: string[] = [];
     const write = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { chunks.push(String(chunk)); return true; });

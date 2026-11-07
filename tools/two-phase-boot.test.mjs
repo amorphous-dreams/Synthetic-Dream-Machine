@@ -65,15 +65,17 @@ function stage(tag, { found }) {
     // floor mints none): the boot then reaches its caps and refuses there, over the bootstrap.
     const mint = spawnSync(process.execPath, ["--input-type=module", "-e", `
       import { generateOrLoadVesselIdentity } from ${JSON.stringify(join(repo, "packages/lararium-node/dist/src/node-vessel-identity.js"))};
-      import { FsCustodyIo, makeCustodyHolder, seatCustody, vesselCustodyHomes } from ${JSON.stringify(join(repo, "packages/lararium-node/dist/src/index.js"))};
+      import { FsCustodyIo, makeCustodyHolder, seatCustody, seatReadBackStandIn, vesselCustodyHomes } from ${JSON.stringify(join(repo, "packages/lararium-node/dist/src/index.js"))};
       import { TEST_PASSPHRASE } from ${JSON.stringify(join(repo, "tools/test-custody-route.mjs"))};
       const homes = vesselCustodyHomes();
       const holder = makeCustodyHolder({ io: new FsCustodyIo(homes), homes });
       const opened = await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);
       if (opened.reading !== "opens") throw new Error("the staged custody reads " + opened.reading);
       seatCustody(holder);
-      await generateOrLoadVesselIdentity();
-      await holder.lock();
+      // This node -e child bypasses the CLI-only preload. Explicitly answer its founding card in this process.
+      seatReadBackStandIn(true);
+      try { await generateOrLoadVesselIdentity(); }
+      finally { seatReadBackStandIn(false); await holder.lock(); }
     `], { cwd: repo, encoding: "utf8", env: { ...process.env, LAR_ROOT: root } });
     assert.equal(mint.status, 0, `vessel key mint: ${mint.stderr}`);
   }
