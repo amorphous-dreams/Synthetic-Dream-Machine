@@ -2,6 +2,37 @@
 import type { EdgeStanding } from "@lararium/mesh";
 import { FACE_GRANT_PREFIX, type FaceGrantRecord, type FaceGrantVerdict, type FaceGrantVerifyContext } from "./face-grant-record.js";
 
+/** Follow the island's own fleet replica, including proof already present when attachment finishes. */
+export function watchFaceSeatFleet(ports: {
+  readonly open: () => Promise<{ on(event: "change", listener: () => void): unknown; off(event: "change", listener: () => void): unknown }>;
+  readonly wake: () => void;
+  readonly log: (message: string) => void;
+}) {
+  let stopped = false, attached = false, again = false;
+  let pending: Promise<void> | null = null;
+  let detach = () => {};
+  const changed = () => { if (!stopped) ports.wake(); };
+  const attach = (): Promise<void> => {
+    if (stopped || attached) return Promise.resolve();
+    if (pending) { again = true; return pending; }
+    pending = (async () => {
+      do {
+        again = false;
+        try {
+          const handle = await ports.open();
+          if (stopped) return;
+          handle.on("change", changed);
+          detach = () => handle.off("change", changed);
+          attached = true;
+          changed();
+        } catch (error) { if (!stopped) ports.log(`face fleet watch unavailable: ${String(error)}`); }
+      } while (again && !attached && !stopped);
+    })().finally(() => { pending = null; });
+    return pending;
+  };
+  return { attach, stop: () => { stopped = true; detach(); } };
+}
+
 export interface FaceSeatPorts {
   readonly group: string;
   readonly selfVerifyingKey: string;

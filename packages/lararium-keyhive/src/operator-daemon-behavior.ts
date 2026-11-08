@@ -152,7 +152,7 @@ import { type FaceJoinSummons } from "./face-join.js";
 import { answerFleetSeatDuties, type FleetSeatFacts } from "./fleet-seat-duties.js";
 import { announceSeatRoll } from "./seat-duty-executor.js";
 import { FACE_GRANT_PREFIX, verifyFaceGrantRecord, type FaceGrantRecord } from "./face-grant-record.js";
-import { makeFaceSeat, makeGroupDocListener, type GroupDocHandle } from "./face-seat.js";
+import { makeFaceSeat, makeGroupDocListener, watchFaceSeatFleet, type GroupDocHandle } from "./face-seat.js";
 import { runFaceJoinOperation } from "./face-join-operation.js";
 import { makeFaceIntentDoor } from "./face-intent-door.js";
 import { makeSeatSummons, standingOfReading } from "./face-seat-summons.js";
@@ -1416,6 +1416,20 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         });
         const seat = faceSeat;
         let stopped = false;
+        // THE SEAT'S LIVE WAKE: the island's OWN replica of the face's fleet board, on both shores. The browser island folds
+        // that replica itself; the node island asks the vessel's ring, whose replica the island's syncs from, so a move the
+        // island sees has already turned the ring's reading dark and the ring's door refolds before it answers. The board
+        // opens by its deterministic id, materialized blank where none arrived yet, so an absent board never fails the
+        // attach: the founding's acts merge into it on arrival and wake the seat. Attach wakes once, so a lift that landed
+        // while the watch was opening is read. An open that still fails retries on the next daemon-layer change (below).
+        const fleetWatch = watchFaceSeatFleet({
+          open: async () => {
+            const handle = await materializeSharedLarDoc(ctx.repo, fleetEdgeBoardDocUrl(edge.personaRootDid), "board:edge-kapae");
+            return { on: (event, listener) => handle.on(event, listener), off: (event, listener) => handle.off(event, listener) };
+          },
+          wake: () => { seat.daemonChanged("fleet-board"); seat.wake(); },
+          log: (message) => console.log(`[daemon] ${message}`),
+        });
         // The group document's arrival gates its listener without holding the boot: the catalog's own change brings a URL it
         // learns after boot, a daemon-layer change retries a rejected open, and the attach lands exactly once.
         const groupDoc = makeGroupDocListener({
@@ -1540,13 +1554,15 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const stopLease = ctx.composite.subscribe((change) => {
           if (stopped || change.bag !== DAEMON_BAG_ID) return;
           seat.daemonChanged(change.title);
+          void fleetWatch.attach();
           if (!groupDoc.attached()) void groupDoc.attempt();
           if (!doorStop) void attachDoor();
         });
         const doorCatalog = await catalog.handle();
         const doorCatalogWake = (): void => { if (!doorStop) void attachDoor(); };
         doorCatalog.on("change", doorCatalogWake);
-        veil.whenDisposed(() => { stopped = true; stopLease(); groupDoc.stop(); doorCatalog.off("change", doorCatalogWake); doorStop?.(); });
+        veil.whenDisposed(() => { stopped = true; stopLease(); fleetWatch.stop(); groupDoc.stop(); doorCatalog.off("change", doorCatalogWake); doorStop?.(); });
+        void fleetWatch.attach();
         void groupDoc.attempt();
         void attachDoor();
         await seat.run();
