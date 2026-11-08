@@ -1103,6 +1103,33 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
     };
   }
 
+  // ── the kāpae an export's shadow files name (the explicit exclusion a disk can speak) ──
+  // A shadow file (`<stem>.kapae`) stands where a raised kāpae removed its carrier. Re-poured, it raises the
+  // same kāpae here: the root and its fragments tombstone in the target bag, so a copy in any lower layer stays
+  // shadowed (kapae.mem, the exclusion law). Remove-wins inside the wave: a carrier the wave names under a
+  // shadowed title lands nothing. A title already set aside takes no write, so a re-pour stays quiet.
+  const kapaeTitles = [...new Set(action.kapae ?? [])];
+  const shadowed = new Set<string>();
+  let kapaeSummary: Record<string, unknown> | undefined;
+  if (kapaeTitles.length > 0) {
+    const raised: string[] = [];
+    const standing: string[] = [];
+    const refused: Array<Record<string, unknown>> = [];
+    const live = await listLiveTitlesInBag(access, action.toBag);
+    for (const title of kapaeTitles) {
+      const fault = storableTitleFault(title);
+      if (fault !== null) { refused.push({ uri: title, code: SESSION_FORM_TITLE_CODE, reason: fault }); continue; }
+      if (neverProjects(title)) { refused.push({ uri: title, code: "kapae-never-projected", reason: `${title} never projects to disk, so no shadow file speaks for it` }); continue; }
+      shadowed.add(title);
+      const fragments = live.filter((t) => t === title || t.startsWith(`${title}#`));
+      const rootRecord = await readFromBag(access, action.toBag, title);
+      if (rootRecord?.meta?.deleted === true && fragments.length === 0) { standing.push(title); continue; }
+      for (const t of new Set([title, ...fragments])) await tombstoneIn(access, action.toBag, t, o);
+      raised.push(title);
+    }
+    kapaeSummary = { raised, standing, refused };
+  }
+
   const results: Array<Record<string, unknown>> = [];
   const unattended = action.unattended === true;
 
@@ -1114,6 +1141,11 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       continue;
     }
     const uri = carrier.uri;
+    if (shadowed.has(uri)) {
+      const reason = `a kāpae shadow in the same wave sets ${uri} aside, and the shadow holds (remove-wins)`;
+      results.push({ uri, decision: "refuse", code: "kapae-holds", reason, warnings: [reason] });
+      continue;
+    }
     if (neverProjects(uri) || declaresNoProjection(carrier.meta)) {
       results.push(neverProjectedRow(uri, carrier.file, uri));
       continue;
@@ -1492,7 +1524,9 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
         meta: structuredClone(rec.meta ?? {}), // change-id preserved — identity survives the move
       };
       await writeIn(access, action.toBag, moved, o);
-      await tombstoneIn(access, action.toBag, t, o);
+      // A RE-LINK RELOCATES, so its source RETRACTS TO ABSENT and raises no kāpae (kapae.mem, the core cut):
+      // a lower copy under the old address falls through, and the projection leaves no shadow there.
+      await removeIn(access, action.toBag, t, o);
       relinked++;
     }
     results.push({ uri: toUri, decision: "rename", from: fromUri, relinked });
@@ -1502,6 +1536,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
     sourceUri: action.sourceUri, toBag: action.toBag, changeId: action.changeId,
     carriers: results,
     ...(deletionSummary ? { deletions: deletionSummary } : {}),
+    ...(kapaeSummary ? { kapae: kapaeSummary } : {}),
     // THE WAVE'S HEADS: the target bag's document after every carrier of this wave landed. Rows that stay behind
     // the audit cap name no heads of their own; the gesture follows these through the view for them.
     ...(await landedHeads(access, action.toBag)),

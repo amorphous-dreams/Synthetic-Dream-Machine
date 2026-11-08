@@ -281,8 +281,10 @@ export interface IngestDeletion {
  *  refuse · canonical-equivalent · ingest · conflict) and tombstones group
  *  members that vanished from the re-parsed carrier. A wave MAY also carry
  *  whole-carrier `deletions` (vanished files): the island re-links each unique
- *  hash-matched rename and declines the rest. No wave tombstones a carrier: a
- *  vanished file stands pending at the vessel's shore until a person answers. */
+ *  hash-matched rename and declines the rest. No wave tombstones a carrier for a
+ *  vanished file: it stands pending at the vessel's shore until a person answers. A
+ *  wave's `kapae` titles come from shadow files an export carries, the one explicit
+ *  exclusion a disk can speak: each raises a kāpae in the target bag. */
 export interface IngestAction extends ResidencyActionBase {
   readonly verb:      "INGEST";
   readonly sourceUri: string;
@@ -290,6 +292,11 @@ export interface IngestAction extends ResidencyActionBase {
   readonly changeId:  string;
   readonly carriers:  readonly IngestCarrier[];
   readonly deletions?: readonly IngestDeletion[];
+  /** THE EXPLICIT SHADOW GESTURE: the carrier-root titles an export's kāpae shadow files name
+   *  (`<stem>.kapae`, lar:///ha.ka.ba/lares/api/pono/kapae). Unlike a vanished file, a shadow file
+   *  speaks: the island raises a kāpae over each title in the target bag, and a carrier the same wave
+   *  names under a shadowed title never lands (remove-wins). */
+  readonly kapae?: readonly string[];
   /** NO PERSON STANDS BEHIND THIS WAVE: a watcher settled it by itself. Such a wave never adopts a file
    *  that holds no base over records that say something else; the gate answers `conflict`, `no-base`,
    *  and a person settles it. Absent → a gesture a person named. */
@@ -380,6 +387,7 @@ export function encodeResidencyArgs(action: ResidencyAction): ResidencyArgs {
         "change-id":  action.changeId,
         carriers:     action.carriers,
         ...(action.deletions ? { deletions: action.deletions } : {}),
+        ...(action.kapae ? { kapae: action.kapae } : {}),
         ...(action.unattended === true ? { unattended: true } : {}),
       };
     default: {
@@ -480,8 +488,17 @@ export function parseResidencyAction(inv: Verb): ResidencyAction | null {
         deletions.push({ uri, syncedHash });
       }
     }
-    // A wave MUST carry at least one carrier or one deletion.
-    if (carriers.length === 0 && deletions.length === 0) return null;
+    const kapae: string[] = [];
+    const rawKapae = args["kapae"];
+    if (rawKapae !== undefined) {
+      if (!Array.isArray(rawKapae)) return null;
+      for (const t of rawKapae) {
+        if (typeof t !== "string" || !t) return null;
+        kapae.push(t);
+      }
+    }
+    // A wave MUST carry at least one carrier, one deletion or one kāpae.
+    if (carriers.length === 0 && deletions.length === 0 && kapae.length === 0) return null;
     // The flag reads true or absent: any other spelling refuses, since a wave that MEANT to ride
     // unattended and read as a person's gesture would adopt where it must stand off.
     const unattended = args["unattended"];
@@ -489,6 +506,7 @@ export function parseResidencyAction(inv: Verb): ResidencyAction | null {
     return {
       ...base, verb: "INGEST", sourceUri, toBag, changeId, carriers,
       ...(deletions.length > 0 ? { deletions } : {}),
+      ...(kapae.length > 0 ? { kapae } : {}),
       ...(unattended === true ? { unattended: true } : {}),
     };
   }

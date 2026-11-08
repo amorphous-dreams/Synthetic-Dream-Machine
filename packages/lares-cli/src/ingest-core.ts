@@ -18,7 +18,7 @@
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, resolve, sep, extname } from "node:path";
 import { newChangeId, taskContentId, carrierHash, digestsEqual, BAG_MANIFEST_FILE } from "@lararium/mesh";
-import { SyncedTree, syncedTreeKey, syncedTreeDir, bagsFileToUri, mirrorDirFileToUri, larProjectionDir } from "@lararium/node";
+import { SyncedTree, syncedTreeKey, syncedTreeDir, bagsFileToUri, mirrorDirFileToUri, larProjectionDir, KAPAE_EXT, readKapaeShadow } from "@lararium/node";
 import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
 import { summaryOutput, type SubmitResult } from "./verb-result.js";
 import { runVerb } from "./verb-call.js";
@@ -82,6 +82,12 @@ export interface ScanResult {
    *  them and re-homes records. Absent on a partial (watcher) scan, which pairs
    *  its own vanished set by content (`pairedDeletions`). */
   readonly renameDeletions?: PendingDeletion[];
+  /** THE KĀPAE THE SOURCE SPEAKS: each title a shadow file (`<stem>.kapae`) names, where its bytes prove a
+   *  raise and agree with the title its siting derives. The wave raises a kāpae over each, and no row
+   *  carries a shadowed title (remove-wins inside one export). Absent where the source holds no shadow. */
+  readonly shadows?: string[];
+  /** The shadow files that proved no kāpae, each with the refusal that names why. */
+  readonly refusedShadows?: Array<{ readonly file: string; readonly refusal: string }>;
 }
 
 /** Open the Synced tree at the canonical projection-state path (larProjectionDir() —
@@ -115,6 +121,12 @@ export function readCarrierText(file: string): { text: string; binary: boolean }
  * work queue (Confluence: scan is truth, events are hints).
  */
 export function listCarriers(source: string): string[] | null {
+  const listed = listSourceFiles(source);
+  return listed === null ? null : listed.filter((f) => !f.endsWith(KAPAE_EXT));
+}
+
+/** Every file a source lists: the carriers and the kāpae shadow files beside them. */
+function listSourceFiles(source: string): string[] | null {
   let st;
   try { st = statSync(source); } catch { return null; }
   if (!st.isDirectory()) return [source];
@@ -175,10 +187,22 @@ export function scanFiles(
 ): ScanResult {
   const rows: ScanRow[] = [];
   const skipped: string[] = [];
+  const shadows = new Set<string>();
+  const refusedShadows: Array<{ file: string; refusal: string }> = [];
   for (const file of files) {
     const uri = fileToUri(root, file);
     if (!uri) { skipped.push(file); continue; }
     const ext = extname(file);
+    // A KĀPAE SHADOW speaks an exclusion: it names a title and carries no record of its own.
+    if (ext === KAPAE_EXT) {
+      let text: string;
+      try { text = readFileSync(file, "utf8"); } catch { continue; }   // a shadow gone from disk speaks nothing
+      const read = readKapaeShadow(text);
+      if ("refusal" in read) { refusedShadows.push({ file, refusal: read.refusal }); continue; }
+      if (read.title !== uri) { refusedShadows.push({ file, refusal: "kapae-shadow-title-disagrees-with-siting" }); continue; }
+      shadows.add(uri);
+      continue;
+    }
     let text: string;
     let binary: boolean;
     try { ({ text, binary } = readCarrierText(file)); } catch {
@@ -220,7 +244,13 @@ export function scanFiles(
       syncedHash === null ? "new" : digestsEqual(diskHash, syncedHash) ? "unchanged" : "changed";
     rows.push({ file, uri, text, diskHash, syncedHash, ...(syncedRecordsHash !== undefined ? { syncedRecordsHash } : {}), status, ext, binary, ...(meta !== undefined ? { meta } : {}) });
   }
-  return { rows, skipped };
+  // REMOVE-WINS INSIDE ONE EXPORT: a carrier standing beside the shadow of its own title carries nothing.
+  const kept = shadows.size > 0 ? rows.filter((row) => !shadows.has(row.uri)) : rows;
+  return {
+    rows: kept, skipped,
+    ...(shadows.size > 0 ? { shadows: [...shadows].sort() } : {}),
+    ...(refusedShadows.length > 0 ? { refusedShadows } : {}),
+  };
 }
 
 /**
@@ -688,11 +718,15 @@ export function scanSource(
   tree:   SyncedTree,
   fileToUri: FileToUriFn = fileToUriForSource(root, source),
 ): ScanResult | null {
-  const files = listCarriers(source);
+  const files = listSourceFiles(source);
   if (files === null) return null;
   const scan = scanFiles(root, files, toBag, tree, fileToUri);
   const { rows, renameDeletions } = resolveRenames(scan.rows, toBag, tree);
-  return { rows, skipped: scan.skipped, ...(renameDeletions.length > 0 ? { renameDeletions } : {}) };
+  return {
+    rows, skipped: scan.skipped, ...(renameDeletions.length > 0 ? { renameDeletions } : {}),
+    ...(scan.shadows !== undefined ? { shadows: scan.shadows } : {}),
+    ...(scan.refusedShadows !== undefined ? { refusedShadows: scan.refusedShadows } : {}),
+  };
 }
 
 /** The rows an INGEST submission carries — NEW, CHANGED, and RENAMED. A `renamed`
@@ -754,6 +788,8 @@ export interface SubmitIngestOpts {
   /** Vanished carriers riding the same wave: the sources of renames the gesture paired by content, one
    *  vanished file to one arrived file. No gesture sends a deletion it did not pair. */
   readonly deletions?: readonly PendingDeletion[];
+  /** The titles the source's kāpae shadow files name: the island raises a kāpae over each in `toBag`. */
+  readonly kapae?: readonly string[];
   /**
    * Run the INGEST IN the active wiki island over ITS composite — the path
    * for `working` (the per-fingerprint write layer the daemon never reaches).
@@ -801,6 +837,7 @@ export async function submitIngest(opts: SubmitIngestOpts): Promise<SubmitResult
       };
     }),
     ...(deletions.length > 0 ? { deletions: deletions.map((d) => ({ uri: d.uri, syncedHash: d.syncedHash })) } : {}),
+    ...(opts.kapae !== undefined && opts.kapae.length > 0 ? { kapae: [...opts.kapae] } : {}),
     ...(opts.unattended === true ? { unattended: true } : {}),
   };
   // --in-wiki: wrap the INGEST so it runs IN the active wiki island over its
@@ -809,6 +846,6 @@ export async function submitIngest(opts: SubmitIngestOpts): Promise<SubmitResult
   const submitName = opts.inWiki ? "wiki-act" : "INGEST";
   const submitArgs = opts.inWiki ? { verb: "INGEST", args: actionArgs } : actionArgs;
   const requestId = await taskContentId({ subject: opts.toBag, command: submitName, args: submitArgs, nonce: "" });
-  const timeoutMs = Math.max(10_000, 10_000 + (opts.candidates.length + deletions.length) * 400);
+  const timeoutMs = Math.max(10_000, 10_000 + (opts.candidates.length + deletions.length + (opts.kapae?.length ?? 0)) * 400);
   return await runVerb(submitName, submitArgs, opts.did, { requestId, timeoutMs });
 }

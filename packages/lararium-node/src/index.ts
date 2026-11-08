@@ -160,6 +160,7 @@ export { composeStreamSensorium, defaultStreamPlaneSink } from "./sense-stream.j
 export type { ComposeStreamOptions } from "./sense-stream.js";
 
 export { LarDiskProjector } from "./disk-projector.js";
+export { KAPAE_EXT, KAPAE_RAISED, kapaeShadowBody, readKapaeShadow } from "./kapae-shadow.js";
 export { makeGateSorter, socketsNoLongerHeld, ownPlacePosture, SHUT_ARMS } from "./socket-sorter.js";
 export type { GateSorterDeps, ShutArm, PlaceClass } from "./socket-sorter.js";
 export { gateShadowRing, faceDevicesUnbound } from "./gate-shadow-ring.js";
