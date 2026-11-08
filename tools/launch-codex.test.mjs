@@ -391,8 +391,8 @@ test("the floors by mode: a READ seat launches down to its own floor (0% while t
 test("row 2: lead, build and research seats run until 20% of the pool remains (a soft line at 80% used), a read seat to its own floor; just past the line refuses by name; CONTROL just inside the line passes", () => {
   const w = world();
   const at = (u) => ({ ...w.readers, rolloutLines: () => [rate(u)] });
-  assert.ok(preflight(ask(w, { mode: "lead" }), at(55))); // refused under the old 50% lead line
-  assert.ok(preflight(ask(w, { mode: "build" }), at(65))); // refused under the old 60% build line
+  assert.ok(preflight(ask(w, { mode: "lead" }), at(55))); // a lead seat launches at 55% used
+  assert.ok(preflight(ask(w, { mode: "build" }), at(65))); // a build seat launches at 65% used
   for (const mode of ["lead", "build"]) assert.ok(preflight(ask(w, { mode }), at(79.9)), `${mode} CONTROL inside the line`);
   assert.ok(preflight(ask(w, { mode: "research", worktree: undefined }), at(79.9)), "research CONTROL inside the line");
   for (const u of [80, 80.1, 81]) {
