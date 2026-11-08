@@ -33,7 +33,7 @@ written           = "2026-11-01"
 * //"Mu my choice then, we want a 'working memory stage' wiki that syncs across a fleet. If daemon stays device-local as we previously ruled-after-research (pono, actually, each device needs its own 'private working memory/controller wiki' as long as the AI-Operator pair can reach all of them via sync'd actions)…"//
 * //"Approve `kahua` as wiki/recipe name."//
 * //"'sensorium' takes the local-only-never-networked place. This is a different animal."// (⌜1⌝ quoted)
-* //"projections under ~/.lares/state"// — the kahua projects under the house root's state, never into the tracked checkout.
+* //"projections under ~/.lares/state"// — the kahua projects under the house root (`<root>/projections`), never into the tracked checkout.
 
 ''Marks.'' A line marked SOURCED rests on a file, a page or a ruling named beside it; a line marked INFERRED rests on a reading across sources. The research marks at #/research keep the scouts' own S and I tags.
 
@@ -337,6 +337,6 @@ Two research spirits read in parallel: Naʻau-Scout through neuroscience, Manaʻ
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ucTCvtp588vfZXm3Dv1yA5EnaVAPUIy5XVK46VJcaqk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6Y89iBBJ0JXGVY24VOsBSPHCAB6fBojVT-GfOMtovEo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

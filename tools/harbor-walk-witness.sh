@@ -5,16 +5,20 @@
 #   LEG 1  the hearth before `up`: found --hearth (the Stable founding act: the place, persona zero, its seed charter,
 #          the face) → up → unlock. The vessel boots once and rests at the floor holding no key; the unlock names
 #          face zero and composes the vessel in place as a Lararium mounting it, with its working layer attached, and the
-#          workspace receives the projected carrier of a canon bag sourced there, while every private plane stays under /state.
+#          workspace receives the projected carrier of a canon bag sourced there, while every private plane stays under the
+#          house's projections.
 #   LEG 2  a place lifted to a hearth after `up`: found → up → unlock (a faceless vessel stands as a herm) → a face
 #          refuses on a place with no seed charter → stop → found --hearth over the standing place → up. The lifted
 #          boot rests at the floor, and a second unlock composes the Lararium.
 #   CONTROL  a reading verb after the lift restarts nothing; a sovereign verb at the floor refuses and names
 #            `lares vault unlock`.
 #
-# Each leg founds through the TEST door on its own `mktemp` state directory (tools/test-scratch-marker.mjs, then
+# Each leg founds through the TEST door on its own `mktemp` house root, LARES_HOUSE (tools/test-scratch-marker.mjs, then
 # tools/seed-test-custody.mjs, mounted read-only into a one-shot container of the image; the image itself carries
-# neither tool). Each founding mounts the tools and imports test-ward-route.mjs in that offline CLI process,
+# neither tool). The scratch marker rests at the house root, which the surface binds no part of, so each leg reads the
+# surface compose through a witness overlay that binds the marker alone, read-only, at /lar/.lar-test-scratch. The seeding
+# run binds each of the four classes by name as well: the image declares each one a volume, which would otherwise shadow
+# the house root's own directories under the one parent bind. Each founding mounts the tools and imports test-ward-route.mjs in that offline CLI process,
 # seating its ward, face route and read-back stand-in explicitly; the marker alone authorizes none of them.
 # EVERY BOOT RESTS AT THE FLOOR, and only a terminal opens a vessel key; the witness holds none, so
 # it opens each standing boot through the same test door (tools/unlock-staged-container.sh: the door's files ride
@@ -39,41 +43,52 @@ BUILD_FROM_TREE=yes
 [ -z "${HARBOR_IMAGE:-}" ] || BUILD_FROM_TREE=
 FILE="$ROOT/docker-compose.surface.yml"
 FAILURES=0
-SCRATCH_STATE=""
+SCRATCH_HOUSE=""
 SCRATCH_WORKSPACE=""
+OVERLAY=""
 
 case "$PORT" in 54[0-9][0-9]) ;; *) printf 'harbor-walk-witness: port %s lies outside 5400-5499\n' "$PORT" >&2; exit 2 ;; esac
 
 LARES_UID=$(id -u); LARES_GID=$(id -g)
 export COMPOSE_PROJECT_NAME="$PROJECT" LARES_PORT="$PORT" LARES_IMAGE="$IMAGE" LARES_UID LARES_GID
 
-compose() { docker compose -f "$FILE" "$@"; }
-lares() { "$ROOT/tools/lares-container.sh" "$@"; }
+# The surface compose and the witness overlay, merged into one file so the product shim (which reads one compose file)
+# meets the same project the witness drives.
+compose() { docker compose -f "${OVERLAY:-$FILE}" "$@"; }
+lares() { LARES_COMPOSE_FILE="${OVERLAY:-$FILE}" "$ROOT/tools/lares-container.sh" "$@"; }
 # The product shim gathers from a terminal. This harness seats its own routes on each founding alone,
 # as household-https-witness does; neither the standing vessel nor the product shim loads the harness.
 found_staged() {
   compose --profile offline run --rm -T -v "$ROOT/tools:/app/tools:ro" \
     -e NODE_OPTIONS=--import=file:///app/tools/test-ward-route.mjs \
-    offline vessel found --skip-build --root /state --genesis /app/genesis "$@"
+    offline vessel found --skip-build --root /lar --genesis /app/genesis "$@"
 }
 
 drop_scratch() {
   compose down --remove-orphans >/dev/null 2>&1 || :
-  [ -z "$SCRATCH_STATE" ] || rm -rf -- "$SCRATCH_STATE"
+  [ -z "$SCRATCH_HOUSE" ] || rm -rf -- "$SCRATCH_HOUSE"
   [ -z "$SCRATCH_WORKSPACE" ] || rm -rf -- "$SCRATCH_WORKSPACE"
-  SCRATCH_STATE=""; SCRATCH_WORKSPACE=""
+  [ -z "$OVERLAY" ] || rm -f -- "$OVERLAY" "$OVERLAY.part"
+  SCRATCH_HOUSE=""; SCRATCH_WORKSPACE=""; OVERLAY=""
 }
 trap drop_scratch EXIT HUP INT TERM
 
-# A fresh state and workspace, staged through the test door.
+# A fresh house root and workspace, staged through the test door, and the overlay that binds its marker.
 new_scratch() {
-  SCRATCH_STATE=$(mktemp -d "${TMPDIR:-/tmp}/harbor-state.XXXXXX")
+  SCRATCH_HOUSE=$(mktemp -d "${TMPDIR:-/tmp}/harbor-house.XXXXXX")
   SCRATCH_WORKSPACE=$(mktemp -d "${TMPDIR:-/tmp}/harbor-workspace.XXXXXX")
-  export LARES_STATE="$SCRATCH_STATE" LARES_WORKSPACE="$SCRATCH_WORKSPACE"
+  mkdir -p "$SCRATCH_HOUSE/hearth" "$SCRATCH_HOUSE/projections" "$SCRATCH_HOUSE/library" "$SCRATCH_HOUSE/config"
+  export LARES_HOUSE="$SCRATCH_HOUSE" LARES_WORKSPACE="$SCRATCH_WORKSPACE"
   docker run --rm --name "$PROJECT-seed" --user "$LARES_UID:$LARES_GID" \
-    -v "$LARES_STATE:/state" -v "$ROOT/tools:/app/tools:ro" --tmpfs /tmp:mode=1777 \
+    -v "$LARES_HOUSE:/lar" -v "$LARES_HOUSE/hearth:/lar/hearth" -v "$LARES_HOUSE/projections:/lar/projections" -v "$LARES_HOUSE/library:/lar/library" -v "$LARES_HOUSE/config:/lar/config" -v "$ROOT/tools:/app/tools:ro" --tmpfs /tmp:mode=1777 \
     --entrypoint sh "$IMAGE" -ec \
-    'node tools/test-scratch-marker.mjs /state && node tools/seed-test-custody.mjs /state'
+    'node tools/test-scratch-marker.mjs /lar && node tools/seed-test-custody.mjs /lar'
+  OVERLAY=$(mktemp "${TMPDIR:-/tmp}/harbor-compose.XXXXXX")
+  printf 'services:\n' > "$OVERLAY.part"
+  for svc in lares offline; do
+    printf '  %s:\n    volumes:\n      - type: bind\n        source: %s/.lar-test-scratch\n        target: /lar/.lar-test-scratch\n        read_only: true\n' "$svc" "$SCRATCH_HOUSE" >> "$OVERLAY.part"
+  done
+  docker compose --profile offline -f "$FILE" -f "$OVERLAY.part" config > "$OVERLAY"
 }
 
 # Open the standing vessel's key through the test door and print the daemon's answer.
@@ -140,7 +155,7 @@ result 'leg 1: the working layer attaches'                      contains "$log" 
 result 'leg 1: the unlock restarted no container'               test "$before" = "$(started_at)"
 result 'leg 1: the engine restarted nothing'                    test "$(docker inspect -f '{{.RestartCount}}' "$(compose ps -q lares)")" = 0
 # The mirror root splits by origin (operator ruling 2026-11-01): a canon bag whose source stands in the workspace projects
-# back there, while the house's private planes (the daemon wiki, the store, custody) land under the state mount alone.
+# back there, while the house's private planes (the daemon wiki, the store, custody) land under the house root alone.
 mkdir -p "$SCRATCH_WORKSPACE/wikis/inbox/ha.ka.ba/lares/docs"
 sed -e 's#ha.ka.ba/lares/docs/stable-founding-road#ha.ka.ba/lares/docs/harbor-walk-probe#g' -e 's#docs/stable-founding-road.mem#docs/harbor-walk-probe.mem#' \
   "$ROOT/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem" > "$SCRATCH_WORKSPACE/wikis/inbox/ha.ka.ba/lares/docs/harbor-walk-probe.mem"

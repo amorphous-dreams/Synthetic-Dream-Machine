@@ -103,7 +103,7 @@ describe.skipIf(!stagedTarget || !built)("promote, live", () => {
     const { openLocalSession } = await import(join(REPO_ROOT, "packages/lares-cli/dist/src/session-connector.js")) as {
       openLocalSession: (o: { faceRef: string; hand?: string; dataDir?: string | null }) => Promise<{ act(act: string, args: Record<string, unknown>): Promise<Record<string, unknown>>; call(verb: string, args: Record<string, unknown>, opts?: { timeoutMs?: number }): Promise<Record<string, unknown>>; close(): Promise<void> }>;
     };
-    const seat = await openLocalSession({ faceRef: "h0", hand: "seat", dataDir: join(hearth!.root, "data/lares/vessel") });
+    const seat = await openLocalSession({ faceRef: "h0", hand: "seat", dataDir: join(hearth!.root, "hearth/vessel") });
     try {
       const digest = digestOf(listing, "rites/probe-module");
       const refused = await seat.act("promote-commit", { digest }).catch((e: Error) => ({ refused: e.message }));

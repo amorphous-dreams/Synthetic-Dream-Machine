@@ -8,7 +8,7 @@ import { describe, expect, it, afterEach } from "vitest";
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { sessionEphemeral, scratchRoots, transcriptCwd, partitionEphemeral } from "../src/ephemeral.js";
+import { sessionEphemeral, scratchRoots, transcriptCwd, partitionEphemeral, markedScratchRoot } from "../src/ephemeral.js";
 
 const cleanups: string[] = [];
 afterEach(() => { for (const d of cleanups.splice(0)) rmSync(d, { recursive: true, force: true }); });
@@ -57,30 +57,37 @@ describe("grain (a) — derived: the recorded cwd under a scratch root", () => {
     expect(sessionEphemeral(t).ephemeral).toBe(false);
   });
 
-  it("scratchRoots carries tmpdir + /tmp, and the house root covers the sensorium scratch beneath it", () => {
-    // The sensorium scratch sits in the house's CACHE (`<root>/cache/scratch/sensoriums`) — ephemeral by siting,
-    // safe to sweep — so naming the root names it, and a session recorded there reads ephemeral without a marker.
+  it("scratchRoots carries tmpdir + /tmp alone; LAR_ROOT never joins them", () => {
     const prior = process.env["LAR_ROOT"];
     try {
-      process.env["LAR_ROOT"] = "/tmp/lar-house-probe";
+      process.env["LAR_ROOT"] = "/srv/lar-house-probe";
       const roots = scratchRoots();
       expect(roots).toContain("/tmp");
-      const scratch = join("/tmp/lar-house-probe", "cache", "scratch", "sensoriums");
-      expect(roots.some((r) => scratch === r || scratch.startsWith(r + "/"))).toBe(true);
+      expect(roots).not.toContain(resolve("/srv/lar-house-probe"));
     } finally {
       if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;
     }
   });
 
-  it("a LAR_ROOT sandbox joins the scratch roots only while it is set", () => {
+  it("RED: a session whose cwd sits under a MARKED scratch root reads ephemeral", () => {
+    const root = mkHome();
+    writeFileSync(join(root, ".lar-test-scratch"), "staged by a test harness\n");
+    mkdirSync(join(root, "hearth", "work"), { recursive: true });
+    const t = mkTranscript(mkHome(), "marked.jsonl", join(root, "hearth", "work"));
+    const v = sessionEphemeral(t);
+    expect(v.ephemeral).toBe(true);
+    expect(v.reason).toMatch(/under marked scratch root /);
+    expect(markedScratchRoot(join(root, "hearth", "work"))).toBe(resolve(root));
+  });
+
+  it("RED: a session whose cwd sits under an UNMARKED house root reads live, even while LAR_ROOT names that root", () => {
+    const house = mkHome();
+    mkdirSync(join(house, "projections", "wikis"), { recursive: true });
+    const t = mkTranscript(mkHome(), "house.jsonl", join(house, "projections", "wikis"));
     const prior = process.env["LAR_ROOT"];
     try {
-      delete process.env["LAR_ROOT"];
-      const without = scratchRoots();
-      process.env["LAR_ROOT"] = "/tmp/lar-sandbox-probe";
-      const withRoot = scratchRoots();
-      expect(withRoot.length).toBeGreaterThanOrEqual(without.length);
-      expect(withRoot).toContain(resolve("/tmp/lar-sandbox-probe"));
+      process.env["LAR_ROOT"] = house;
+      expect(sessionEphemeral(t)).toEqual({ ephemeral: false, reason: null });
     } finally {
       if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;
     }

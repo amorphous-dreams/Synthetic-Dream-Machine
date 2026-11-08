@@ -105,7 +105,7 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
   test("④ the admit ceremony crosses: B founds by A's signed edge, holding its own key", () => {
     expect(admitted?.code, said(admitted ?? { stdout: "", stderr: "no founding ran" })).toBe(0);
     expect(admitted?.stdout).toContain("joined the PersonaGroup");
-    expect(existsSync(join(rootB, "data/lares/vessel/social-bootstrap.json"))).toBe(true);
+    expect(existsSync(join(rootB, "hearth/vessel/social-bootstrap.json"))).toBe(true);
   });
 
   test("⑤ on A: `get` hands the author's `bag` line back byte-whole", async () => {

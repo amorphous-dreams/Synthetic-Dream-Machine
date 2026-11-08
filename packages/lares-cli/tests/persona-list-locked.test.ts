@@ -33,7 +33,7 @@ describe("a locked persona list", () => {
 
 
   test("a vessel with no face standing refuses a locked list naming the unlock", async () => {
-    rmSync(join(root, "data"), { recursive: true, force: true });
+    rmSync(join(root, "hearth"), { recursive: true, force: true });
     const holder = seatedCustody();
     await holder?.lock();
     expect(await cmdPersona({ command: "persona", positional: ["list"], options: {}, flags: { json: true } })).toBe(1);

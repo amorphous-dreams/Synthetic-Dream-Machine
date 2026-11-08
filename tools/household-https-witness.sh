@@ -169,7 +169,8 @@ services:
         read_only: true
 YAML
 
-export LARES_STATE="$SCRATCH/state" LARES_WORKSPACE="$SCRATCH/workspace"
+mkdir -p "$SCRATCH/house/hearth" "$SCRATCH/house/projections" "$SCRATCH/house/library" "$SCRATCH/house/config"
+export LARES_HOUSE="$SCRATCH/house" LARES_WORKSPACE="$SCRATCH/workspace"
 export LARES_TLS_ZONE="$ZONE" LARES_TLS_NAME="$NAME"
 export LARES_TLS_DIR="$SCRATCH/tls" LARES_TLS_BIND=127.0.0.1 LARES_TLS_PORT="$TLS_PORT"
 export LARES_ISSUER_DNS=exec LARES_ACME_SERVER=https://pebble:14000/dir LARES_ISSUER_RESOLVERS=challtestsrv:8053
@@ -180,14 +181,14 @@ issue() { compose --profile issuer run --rm -T issuer 2>&1; }
 printf '── the issuer refuses by name\n'
 out=$(LARES_ACME_ACCEPT_TOS=yes LARES_DNS_CREDENTIAL_DIR= issue || :)
 result 'no credential directory: the issuer refuses by name'      contains "$out" 'household-issuer: LARES_DNS_CREDENTIAL_DIR stands unset'
-mkdir -p "$SCRATCH/state/credential"
-out=$(LARES_ACME_ACCEPT_TOS=yes LARES_DNS_CREDENTIAL_DIR="$SCRATCH/state/credential" issue || :)
-result 'a credential directory inside the state mount refuses'    contains "$out" 'household-issuer: LARES_DNS_CREDENTIAL_DIR lies inside LARES_STATE'
-out=$(LARES_STATE="$SCRATCH/state/" LARES_ACME_ACCEPT_TOS=yes LARES_DNS_CREDENTIAL_DIR="$SCRATCH/state/credential/" issue || :)
-result 'trailing slashes hide no directory inside the state mount' contains "$out" 'household-issuer: LARES_DNS_CREDENTIAL_DIR lies inside LARES_STATE'
-out=$(LARES_ACME_ACCEPT_TOS=yes LARES_DNS_CREDENTIAL_DIR="$SCRATCH/workspace/../state/credential" issue || :)
+mkdir -p "$SCRATCH/house/credential"
+out=$(LARES_ACME_ACCEPT_TOS=yes LARES_DNS_CREDENTIAL_DIR="$SCRATCH/house/credential" issue || :)
+result 'a credential directory inside the house root refuses'     contains "$out" 'household-issuer: LARES_DNS_CREDENTIAL_DIR lies inside LARES_HOUSE'
+out=$(LARES_HOUSE="$SCRATCH/house/" LARES_ACME_ACCEPT_TOS=yes LARES_DNS_CREDENTIAL_DIR="$SCRATCH/house/credential/" issue || :)
+result 'trailing slashes hide no directory inside the house root'  contains "$out" 'household-issuer: LARES_DNS_CREDENTIAL_DIR lies inside LARES_HOUSE'
+out=$(LARES_ACME_ACCEPT_TOS=yes LARES_DNS_CREDENTIAL_DIR="$SCRATCH/workspace/../house/credential" issue || :)
 result 'a dotted path refuses before any comparison'              contains "$out" 'holds a dot segment or a doubled slash'
-rmdir "$SCRATCH/state/credential"
+rmdir "$SCRATCH/house/credential"
 out=$(LARES_ACME_ACCEPT_TOS= LARES_DNS_CREDENTIAL_DIR="$SCRATCH/credential" issue || :)
 result 'terms not accepted: the issuer refuses by name'           contains "$out" 'household-issuer: LARES_ACME_ACCEPT_TOS'
 chmod 644 "$SCRATCH/credential/porkbun-secret-api-key"
@@ -252,12 +253,12 @@ result 'CONTROL: the issuer reads both fake credentials'          sh -c "printf 
 
 printf '── the vessel stands behind the terminator\n'
 docker run --rm --name "$PROJECT-seed" --user "$LARES_UID:$LARES_GID" \
-  -v "$LARES_STATE:/state" -v "$TOOLS:/app/tools:ro" --tmpfs /tmp:mode=1777 \
+  -v "$LARES_HOUSE:/lar" -v "$LARES_HOUSE/hearth:/lar/hearth" -v "$LARES_HOUSE/projections:/lar/projections" -v "$LARES_HOUSE/library:/lar/library" -v "$LARES_HOUSE/config:/lar/config" -v "$TOOLS:/app/tools:ro" --tmpfs /tmp:mode=1777 \
   --entrypoint sh "$IMAGE" -ec \
-  'node tools/test-scratch-marker.mjs /state && node tools/seed-test-custody.mjs /state' >/dev/null
+  'node tools/test-scratch-marker.mjs /lar && node tools/seed-test-custody.mjs /lar' >/dev/null
 # The founding's face route comes from the harness explicitly (the product founds no face from a marker): the test tools mount and
 # the import ride this one run alone (seat-harness#/the-ward).
-compose --profile offline run --rm -T -v "$TOOLS:/app/tools:ro" -e NODE_OPTIONS=--import=file:///app/tools/test-ward-route.mjs offline vessel found --hearth --name household-witness --skip-build --root /state --genesis /app/genesis >/dev/null
+compose --profile offline run --rm -T -v "$TOOLS:/app/tools:ro" -e NODE_OPTIONS=--import=file:///app/tools/test-ward-route.mjs offline vessel found --hearth --name household-witness --skip-build --root /lar --genesis /app/genesis >/dev/null
 export LARES_TLS_CERT="$CERT" LARES_TLS_KEY="$KEY"
 compose --profile https up -d lares terminator >/dev/null 2>&1
 tries=0

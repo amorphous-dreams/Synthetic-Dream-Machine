@@ -83,6 +83,20 @@ test("the toggle: ON when absent, off mints no observe render", () => {
   expect(off.some((m) => m.bagId === DAEMON_BAG_ID)).toBe(false);
 });
 
+test("a swarm control lands under observe/daemon/swarm, redacted the same way", async () => {
+  const { store, observe, mounted } = await rig();
+  const control = "$:/lares/swarm/lanes/one-root";
+  await store.put({ tiddler: { title: control, text: "go", "session-token": "t-9" } }, origin);
+  await mounted.idle();
+  const file = join(observe, "swarm", "lanes", "one-root.json");
+  expect(observeFileOf(observe, control)).toBe(file);
+  const row = JSON.parse(readFileSync(file, "utf8")) as Record<string, string>;
+  expect(row["text"]).toBe("go");
+  expect(row["session-token"]).toBe(REDACTED);
+  expect(observeFileOf(observe, "$:/lares/swarm/../escape")).toBeNull();
+  mounted.stop();
+});
+
 test("the observe plane names its subtree for the ingest refusal", () => {
   expect(isObserveProjectionPath("/house/projections", "/house/projections/observe/daemon/summons/s-1.json")).toBe(true);
   expect(isObserveProjectionPath("/house/projections", "/house/projections/wikis/notes/x.mem")).toBe(false);

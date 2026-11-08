@@ -1,23 +1,35 @@
 # The SURFACE deployment: ONE vessel in the product image, on any host (Gaia parent/daughter, Linux box, Pi,
 # VPS herm, Elyncia's portable figure). The image carries the executable spirit (daemon + CLI + genesis + web);
-# everything that belongs to a household arrives as environment and two host mounts. Per-surface differences
+# everything that belongs to a household arrives as environment and host mounts. Per-surface differences
 # are ENVIRONMENT, never another file.
 #
-#   /state      one durable per-vessel host directory: the vessel's homes AND its custody (keys), and the house's
-#               PRIVATE projection (wikis/kahua, and every bag or wiki with no source in the workspace): the daemon
-#               roots here (`--root /state`).
-#               Back it up separately. It never rides an image layer, a build arg or an env var.
+#   /lar        THE HOUSE ROOT (`LAR_ROOT=/lar`). Four of its classes bind from ONE host house root, LARES_HOUSE:
+#                 ${LARES_HOUSE}/hearth       -> /lar/hearth       the vessel's homes AND its custody (keys), the
+#                                                                  sensoriums, checkpoints and staging; a re-founding
+#                                                                  clears this directory alone
+#                 ${LARES_HOUSE}/projections  -> /lar/projections  the house's plaintext projection (wikis/daemon-<F>,
+#                                                                  bags/kahua-<F>, every bag or wiki with no source in
+#                                                                  the workspace, observe/daemon)
+#                 ${LARES_HOUSE}/library      -> /lar/library      the acquired library
+#                 ${LARES_HOUSE}/config       -> /lar/config       config.json, meta.json, the repo registry (written)
+#               /lar/cache (container filesystem) and /lar/run (tmpfs) stay inside the container: scratch and
+#               levers, never the host's.
+#               Back the house root up separately. It never rides an image layer, a build arg or an env var.
 #   /workspace  the editable corpus: the canon SOURCE a seeding reads (LAR_BAGS=/workspace/bags). A bag whose source
 #               stands here projects back here, and the wiki it composes to wikis/ (source control); no private plane
 #               ever does (operator ruling 2026-11-01; lararium-node `projectionRoots`).
 #
 # Required (no default, so a forgotten one fails loud instead of siting state in the wrong place):
-#   LARES_STATE       host path mounted at /state      (put it on a LOCAL LINUX filesystem; on Win11 keep it
-#                     inside the WSL distro, never /mnt/c — see the hazards below)
+#   LARES_HOUSE       the host house root, absolute; its hearth, projections, library and config bind under /lar
+#                     (put it on a LOCAL LINUX filesystem; on Win11 keep it inside the WSL distro, never /mnt/c — see
+#                     the hazards below). The host shim makes the four directories as the operator before it stands
+#                     a container, so the engine never makes one owned by root.
 #   LARES_WORKSPACE   host path mounted at /workspace
+# The env file that names them rests at ~/.lares/lares-surface.env, outside every bind; the host shim refuses an env
+# file inside any of LARES_HOUSE's four binds.
 # Optional:
 #   LARES_UID / LARES_GID   the uid:gid the vessel runs as (default 1000:1000). Match the host operator, so
-#                           files in both mounts stay editable from the host. CLI and daemon share it.
+#                           files in every mount stay editable from the host. CLI and daemon share it.
 #   LARES_PORT        published relay/web port (default 4321)       LARES_BIND  host interface (default 127.0.0.1;
 #                     set 0.0.0.0 or a LAN address to serve the house)
 #   LARES_IMAGE       image reference (default lares-surface:local)  LAR_PUBLIC_URL  the REACHABLE face of this
@@ -86,10 +98,10 @@
 #                      THE CREDENTIAL RESTS AS TWO FILES in LARES_DNS_CREDENTIAL_DIR, a host directory outside both
 #                      mounts and outside any repository (mode 0700): `porkbun-api-key` and `porkbun-secret-api-key`,
 #                      each mode 0400 and owned by the uid the issuer runs as. The issuer alone mounts that
-#                      directory, read-only, and refuses by name a directory inside LARES_STATE or LARES_WORKSPACE,
+#                      directory, read-only, and refuses by name a directory inside LARES_HOUSE or LARES_WORKSPACE,
 #                      a relative or dotted path, and a file or directory others can read. It compares path
 #                      strings and cannot see a symlink on the host: keep the directory a real directory. No
-#                      credential VALUE enters this file, an environment variable, the image, /state or /workspace;
+#                      credential VALUE enters this file, an environment variable, the image, /lar or /workspace;
 #                      the vessel mounts and names none of it.
 #                      The issuer writes certificates/<name>.crt and certificates/<name>.key under LARES_TLS_DIR;
 #                      point LARES_TLS_CERT and LARES_TLS_KEY at that pair. After a renewal, confirm the
@@ -101,8 +113,8 @@
 #                      per-name certificate would publish that name.
 #                      Proof with no real credential, domain or zone: tools/household-https-witness.sh.
 #
-# THE ONE HOLDER LAW. One standing vessel owns the store at /state. The store takes its own claim at
-# /state/.holder, a socket on the state mount, so a second container on the same /state refuses with StoreHeld
+# THE ONE HOLDER LAW. One standing vessel owns the store at /lar/hearth/vessel. The store takes its own claim at
+# /lar/hearth/vessel/.holder, a socket on the hearth mount, so a second container on the same hearth refuses with StoreHeld
 # through any entrypoint. Reach a standing vessel through exec; with none standing, the offline CLI door owns
 # the store for one act and refuses by name if a vessel holds it. The CLI reports a needed re-stand while
 # LAR_ENGINE=host leaves restart authority with the host shim. The standing vessel's CLI door is
@@ -112,7 +124,7 @@
 # on a Windows share (its claim hard-links a staging socket, which a 9P/SMB filesystem may refuse).
 #
 # FOUNDING is an offline act on the store:
-#   docker compose -f docker-compose.surface.yml --profile offline run --rm offline vessel found --skip-build --root /state --genesis /app/genesis
+#   docker compose -f docker-compose.surface.yml --profile offline run --rm offline vessel found --skip-build --root /lar --genesis /app/genesis
 # The founding gathers the human route (a passphrase and/or a paper pin) on a TTY: `run` attaches one when the
 # host terminal has one, and `run -T`, a pipe or a detached `up` has none, so the CLI refuses by name
 # (CredentialTtyRefusal). No flag and no env var carries a credential. After the founding, `lares vault status`,
@@ -120,7 +132,7 @@
 # The host shims (tools/lares-container.sh, tools/lares-container.ps1) wrap up, down, found, logs and the exec.
 # The engine has no Docker socket and gets none: engine control stays with the host.
 #
-# WSL2/hosts: bind mounts from /mnt/c (9P) are slow and change ownership/metadata semantics; keep both mounts on
+# WSL2/hosts: bind mounts from /mnt/c (9P) are slow and change ownership/metadata semantics; keep every mount on
 # ext4 inside the distro. Durability of the store rests on the host disk honoring fsync — a VM, network
 # filesystem or controller cache can lie, and the daemon cannot tell.
 
@@ -137,24 +149,35 @@ x-vessel: &vessel
   user: "${LARES_UID:-1000}:${LARES_GID:-1000}"
   volumes:
     - type: bind
-      source: ${LARES_STATE:?set LARES_STATE to the per-vessel state directory on the host}
-      target: /state
+      source: ${LARES_HOUSE:?set LARES_HOUSE to the host house root (absolute)}/hearth
+      target: /lar/hearth
+    - type: bind
+      source: ${LARES_HOUSE:?set LARES_HOUSE to the host house root (absolute)}/projections
+      target: /lar/projections
+    - type: bind
+      source: ${LARES_HOUSE:?set LARES_HOUSE to the host house root (absolute)}/library
+      target: /lar/library
+    - type: bind
+      source: ${LARES_HOUSE:?set LARES_HOUSE to the host house root (absolute)}/config
+      target: /lar/config
     - type: bind
       source: ${LARES_WORKSPACE:?set LARES_WORKSPACE to the corpus directory on the host}
       target: /workspace
-  # The explicit roots. The image bakes the same four; they are restated so a reader of THIS file sees the
-  # contract. The mirrors split by origin: a bag present under LAR_BAGS projects back to it (its wiki to LAR_WIKIS's
-  # tree), and every private or house-minted layer projects under --root /state (tools/compose-surface-root.test.mjs).
+  # The explicit roots. The image bakes the same; they are restated so a reader of THIS file sees the contract.
+  # The mirrors split by origin: a bag present under LAR_BAGS projects back to it (its wiki to LAR_WIKIS's tree), and
+  # every private or house-minted layer projects under /lar/projections (tools/compose-surface-root.test.mjs).
   environment: &roots
-    LAR_ROOT: /state
+    LAR_ROOT: /lar
     LAR_BAGS: /workspace/bags
     LAR_WIKIS: /workspace/wikis
     LAR_GENESIS: /app/genesis
     LAR_PORT: "4321"
     LAR_ENGINE: host
-  # The UDS rendezvous (/tmp/lares-<uid>/…) stays INSIDE this container.
+  # The UDS rendezvous (/tmp/lares-<uid>/…) stays INSIDE this container, and so do the house's cache class (the
+  # container's own filesystem: model bytes outlive a restart, and a recreate fetches them again) and its run class.
   tmpfs:
     - /tmp:mode=1777
+    - /lar/run:mode=1777
   cap_drop: [ALL]
   security_opt: ["no-new-privileges:true"]
 
@@ -174,7 +197,7 @@ services:
       # Node's route ownership. Only a Lararium (a vessel with a lit face) mounts them — see `herm` below.
       LAR_PRONAOS_WEB_ROOT: /app/packages/lararium-web/dist
       LAR_PRONAOS_ARTIFACT_RECORD: /app/pronaos-build/pronaos-artifact.json
-    command: ["--root", "/state", "--genesis", "/app/genesis"]
+    command: ["--root", "/lar", "--genesis", "/app/genesis"]
     init: true
     restart: unless-stopped
     stop_grace_period: 20s
@@ -197,7 +220,7 @@ services:
     restart: "no"
 
   # The VPS-herm surface: the same image standing wiki-less (the carriage crossroads). A herm handed any
-  # LAR_PRONAOS_* input refuses to boot, so it is its own service. It takes the SAME /state as `lares` would, so
+  # LAR_PRONAOS_* input refuses to boot, so it is its own service. It takes the SAME hearth as `lares` would, so
   # run ONE of the two (the one-holder law refuses the second); a host picks its surface by `up lares` or
   # `--profile herm up herm`.
   herm:
@@ -211,7 +234,7 @@ services:
       LAR_PEERS: ${LAR_PEERS:-}
       LAR_LAN_DISCOVERY: ${LAR_LAN_DISCOVERY:-}
       LAR_SAME_ORIGIN: "true"
-    command: ["--root", "/state", "--genesis", "/app/genesis"]
+    command: ["--root", "/lar", "--genesis", "/app/genesis"]
     init: true
     restart: unless-stopped
     stop_grace_period: 20s
@@ -452,9 +475,9 @@ services:
         }
         credential=$$(plain LARES_DNS_CREDENTIAL_DIR "$$LARES_DNS_CREDENTIAL_DIR")
         certificates=$$(plain LARES_TLS_DIR "$$LARES_TLS_DIR")
-        [ -z "$$LARES_STATE" ] || state=$$(plain LARES_STATE "$$LARES_STATE")
+        [ -z "$$LARES_HOUSE" ] || house=$$(plain LARES_HOUSE "$$LARES_HOUSE")
         [ -z "$$LARES_WORKSPACE" ] || workspace=$$(plain LARES_WORKSPACE "$$LARES_WORKSPACE")
-        [ -z "$${state:-}" ] || case "$$credential/" in "$$state/"*) refuse 'LARES_DNS_CREDENTIAL_DIR lies inside LARES_STATE — place it outside the state mount' ;; esac
+        [ -z "$${house:-}" ] || case "$$credential/" in "$$house/"*) refuse 'LARES_DNS_CREDENTIAL_DIR lies inside LARES_HOUSE — place it outside the house root' ;; esac
         [ -z "$${workspace:-}" ] || case "$$credential/" in "$$workspace/"*) refuse 'LARES_DNS_CREDENTIAL_DIR lies inside LARES_WORKSPACE — place it outside the workspace mount' ;; esac
         case "$$credential/" in "$$certificates/"*) refuse 'LARES_DNS_CREDENTIAL_DIR lies inside LARES_TLS_DIR — keep the credential apart from the certificates' ;; esac
         [ "$$(stat -c %d:%i /run/dns)" != "$$(stat -c %d:%i /certs)" ] || refuse 'LARES_DNS_CREDENTIAL_DIR and LARES_TLS_DIR name one directory — keep the credential apart from the certificates'
@@ -497,7 +520,7 @@ services:
       LARES_ACME_SERVER: ${LARES_ACME_SERVER:-https://acme-v02.api.letsencrypt.org/directory}
       LARES_ISSUER_DNS: ${LARES_ISSUER_DNS:-porkbun}
       LARES_ISSUER_RESOLVERS: ${LARES_ISSUER_RESOLVERS:-1.1.1.1:53,9.9.9.9:53}
-      LARES_STATE: ${LARES_STATE:-}
+      LARES_HOUSE: ${LARES_HOUSE:-}
       LARES_WORKSPACE: ${LARES_WORKSPACE:-}
       PORKBUN_API_KEY_FILE: /run/dns/porkbun-api-key
       PORKBUN_SECRET_API_KEY_FILE: /run/dns/porkbun-secret-api-key

@@ -36,6 +36,8 @@ async function engines(): Promise<Array<{ browser: "chromium" | "firefox" | "web
 export default defineConfig(async () => ({
   test: {
     globalSetup: ["../../tools/vitest-dist-guard.mjs"],
+    // A worker that inherits no house root names a scratch one (the resolvers refuse an unnamed root).
+    setupFiles: ["../../tools/vitest-scratch-house.mjs"],
     projects: [
       {
         test: {

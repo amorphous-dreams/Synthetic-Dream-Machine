@@ -38,9 +38,9 @@ import { seedTestCustody } from "../harness/test-door.js";
  * then read a floor that never answered as a floor that refused, which is the opposite verdict.
  * `invokeLocal` re-derives the socket from the root it is handed, so the ROOT is what to hand it.
  */
-function substrateDir(r: string): string { return join(r, "data", "lares", "vessel"); }
+function substrateDir(r: string): string { return join(r, "hearth", "vessel"); }
 function rendezvousFor(r: string): string {
-  // The digest is over the SUBSTRATE dir (`<root>/data/lares/vessel`), which is what `larDataDir()`
+  // The digest is over the SUBSTRATE dir (`<root>/hearth/vessel`), which is what `larDataDir()`
   // resolves to and what `local-connector` hashes. Hashing the bare root names a socket nothing binds.
   return rendezvousPath({ root: substrateDir(r), uid: process.getuid?.() ?? 0 });
 }
@@ -156,7 +156,7 @@ async function stopVessel(): Promise<void> {
  * fault. The log the vessel writes is the one that knows.
  */
 async function standHerm(r: string): Promise<{ live: boolean; log: string }> {
-  const standLog = join(r, "data/lares/vessel/stand.log");
+  const standLog = join(r, "hearth/vessel/stand.log");
   // CLEAR THE PRIOR BOOT'S LOG FIRST. The vessel APPENDS, so a `phase → live` from an earlier stand
   // answers instantly for a vessel that never came back up — the lift vector then reports a hearth that
   // stood when nothing did, and reaches for a socket no process holds.
@@ -377,7 +377,7 @@ describe("the herm — the floor of the lararium cap stack", () => {
   test("R5 — a herm LIFTS into a lararium: the Stable founding act over the place, re-wake, the hearth verbs stand", async () => {
     // THE CHARTER R2 CARRIED IN BELONGS TO THE HEARTH THAT FOUNDED IT, never to this place: a face binds its own hearth's seed
     // charter, and a hearth founds its own seed. The herm's copy leaves before the lift measures a charterless place.
-    rmSync(join(root, "data", "lares", "nexus"), { recursive: true, force: true });
+    rmSync(join(root, "hearth", "nexus"), { recursive: true, force: true });
     // CONTROL — THE FLOOR HOLDS NO VESSEL KEY, SO NO FACE LIGHTS ON IT. A face founding seals its anchors and its
     // veil archive under the vessel key; the standing vessel rests locked, and the founding refuses by naming the
     // unlock, with nothing landed. A lift that passed here would have lit a face under no key.

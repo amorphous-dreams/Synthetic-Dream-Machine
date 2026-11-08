@@ -81,7 +81,7 @@ compose() { docker compose -p "$PROJECT" -f "$FILE" "$@"; }
 lares() { compose exec -T lares node "$CLI" "$@"; }
 # Open the standing node's key through the test door; a door that answers anything but an open key stops the driver.
 unlock() {
-  if ! out=$("$HERE/unlock-staged-container.sh" "$(compose ps -q lares)" 2>&1); then
+  if ! out=$("$HERE/unlock-staged-container.sh" "$(compose ps -q lares)" /state 2>&1); then
     printf '%s\n' "$out" >&2; die "the staged node did not open its vessel key through the test door"
   fi
 }

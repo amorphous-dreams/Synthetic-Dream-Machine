@@ -2,8 +2,9 @@
 # lares-container — the HOST shim for the surface vessel (docker-compose.surface.yml).
 #
 #   lares-container.sh up [--capture <dir>]...   stand the vessel (detached) and wait until it answers healthy
-#   lares-container.sh down                      stop it and remove its container (state stays in LARES_STATE)
-#   lares-container.sh reset                     clear a stopped hearth's state after terminal confirmation
+#   lares-container.sh down                      stop it and remove its container (the house stays in LARES_HOUSE)
+#   lares-container.sh reset                     clear a stopped vessel's hearth (LARES_HOUSE/hearth alone) after
+#                                                terminal confirmation; projections, library and config stay
 #   lares-container.sh found [vessel-found args] the founding act, under a TTY (it gathers the human route: a passphrase
 #                                                and/or a paper pin, and `--hearth` prints the seed card and reads it
 #                                                back; with no TTY the CLI refuses CredentialTtyRefusal)
@@ -35,18 +36,19 @@
 # container.
 # One lararium per HUMAN: nothing here names a face.
 #
-# LARES_STATE and LARES_WORKSPACE come from the environment or the hearth's own `lares-surface.env` (KEY=VALUE
-# lines, as compose reads them). Neither standing refuses by name. THE HEARTH OWNS ITS ENV FILE: it stands at
-# `<hearth>/lares-surface.env`, the hearth root `LAR_ROOT` names (else `~/.lares`), the same root the MCP seat's
-# resolver reads to know the hearth stands in this container. The checkout carries no operator config, so no
+# LARES_HOUSE and LARES_WORKSPACE come from the environment or the operator's `~/.lares/lares-surface.env` (KEY=VALUE
+# lines, as compose reads them). Neither standing refuses by name, and so does a LARES_HOUSE that reads relative.
+# LARES_HOUSE names the ONE host house root: its hearth, projections, library and config bind under /lar, and this
+# shim makes those four directories as the operator before any container stands. THE ENV FILE RESTS OUTSIDE EVERY
+# BIND, at `~/.lares/lares-surface.env`, the same file the MCP seat's resolver reads to know the hearth stands in this
+# container; an env file inside one of the four binds refuses by name. The checkout carries no operator config, so no
 # file beside the compose file is read.
 set -eu
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 ROOT=$(dirname -- "$HERE")
 COMPOSE_FILE_PATH="${LARES_COMPOSE_FILE:-$ROOT/docker-compose.surface.yml}"
-HEARTH="${LAR_ROOT:-${HOME:?set HOME or LAR_ROOT to name the hearth root}/.lares}"
-ENV_FILE="$HEARTH/lares-surface.env"
+ENV_FILE="${HOME:?set HOME to name the operator home that holds .lares/lares-surface.env}/.lares/lares-surface.env"
 CLI="packages/lares-cli/bin/lares.mjs"
 
 die() { printf 'lares-container: %s\n' "$*" >&2; exit 2; }
@@ -54,12 +56,36 @@ die() { printf 'lares-container: %s\n' "$*" >&2; exit 2; }
 set_in_env_file() { # $1 = name; true when the env file carries a non-empty value for it
   [ -f "$ENV_FILE" ] && grep -Eq "^[[:space:]]*$1=[^[:space:]]" "$ENV_FILE"
 }
-for name in LARES_STATE LARES_WORKSPACE; do
+for name in LARES_HOUSE LARES_WORKSPACE; do
   eval "val=\${$name:-}"
   if [ -z "$val" ] && ! set_in_env_file "$name"; then
     die "$name stands in neither the environment nor $ENV_FILE — set it (the host directory mounted for the vessel)"
   fi
 done
+
+# The value one name carries: the environment first, else the env file's last plain KEY=VALUE line for it.
+value_of() { # $1 = name
+  eval "v=\${$1:-}"
+  if [ -z "$v" ] && [ -f "$ENV_FILE" ]; then v=$(sed -n "s/^[[:space:]]*$1=//p" "$ENV_FILE" | tail -n 1); fi
+  printf '%s' "$v"
+}
+HOUSE=$(value_of LARES_HOUSE)
+case "$HOUSE" in /*) ;; *) die "LARES_HOUSE ($HOUSE) reads relative — name the host house root by an absolute path" ;; esac
+HOUSE_CLASSES="hearth projections library config"
+# THE ENV FILE RESTS OUTSIDE EVERY BIND: inside one, the container would read (and a reset could clear) the file that
+# names its own mounts.
+env_real=$(realpath -m -- "$ENV_FILE")
+house_real=$(realpath -m -- "$HOUSE")
+for class in $HOUSE_CLASSES; do
+  case "$env_real" in "$house_real/$class"|"$house_real/$class"/*) die "the env file $ENV_FILE sits inside LARES_HOUSE's $class bind — keep it outside every bind" ;; esac
+done
+
+# Make the four bound classes as the operator, so the engine never makes one owned by root.
+ensure_house() {
+  for class in $HOUSE_CLASSES; do
+    mkdir -p -- "$HOUSE/$class" || die "cannot make $HOUSE/$class — make it as the operator, then run again"
+  done
+}
 
 ENV_ARGS=""
 if [ -f "$ENV_FILE" ]; then ENV_ARGS=yes; fi
@@ -164,6 +190,7 @@ route_cli() {
     if verdict_restand; then lift_vessel; fi
   else
     printf '%s\n' 'lares-container: no vessel stands; this act runs offline on the store' >&2
+    ensure_house
     # shellcheck disable=SC2046
     compose --profile offline run --rm $(tty_flag) offline "$@"
   fi
@@ -180,6 +207,7 @@ verb=$1; shift
 
 case "$verb" in
   up)
+    ensure_house
     override=""; n=0; files=""
     trap '[ -z "$override" ] || rm -f "$override"' EXIT
     while [ "$#" -gt 0 ]; do
@@ -225,29 +253,29 @@ case "$verb" in
     if running_vessel; then die "reset refuses while the lares vessel stands; run tools/lares-container.sh down first"; fi
     [ -n "$HAVE_TTY" ] || die "reset needs a terminal; nothing removed"
     # Compose accepts plain KEY=VALUE lines; reset accepts literal paths alone and resolves symlinks before clearing.
-    state=${LARES_STATE:-}
-    workspace=${LARES_WORKSPACE:-}
-    if [ -z "$state" ] && [ -f "$ENV_FILE" ]; then state=$(sed -n 's/^[[:space:]]*LARES_STATE=//p' "$ENV_FILE" | tail -n 1); fi
-    if [ -z "$workspace" ] && [ -f "$ENV_FILE" ]; then workspace=$(sed -n 's/^[[:space:]]*LARES_WORKSPACE=//p' "$ENV_FILE" | tail -n 1); fi
-    case "$state" in /*) ;; *) die "reset refuses an empty or non-absolute LARES_STATE" ;; esac
+    # IT CLEARS THE HEARTH ALONE: projections, library, config, the env file and the image stay.
+    house=$HOUSE
+    workspace=$(value_of LARES_WORKSPACE)
+    case "$house" in /*) ;; *) die "reset refuses an empty or non-absolute LARES_HOUSE" ;; esac
     case "$workspace" in /*) ;; *) die "reset refuses an empty or non-absolute LARES_WORKSPACE" ;; esac
-    state=$(realpath -e -- "$state") || die "reset cannot resolve LARES_STATE"
+    house=$(realpath -e -- "$house") || die "reset cannot resolve LARES_HOUSE"
     workspace=$(realpath -m -- "$workspace") || die "reset cannot resolve LARES_WORKSPACE"
     home=$(realpath -m -- "$HOME") || die "reset cannot resolve HOME"
-    env_path=$(realpath -m -- "$ENV_FILE") || die "reset cannot resolve the env file"
-    [ -d "$state" ] || die "reset needs LARES_STATE to name a directory"
-    case "$state" in /|"$home"|"$workspace"|"$workspace"/*) die "reset refuses unsafe LARES_STATE: $state" ;; esac
-    case "$workspace/" in "$state/"*) die "reset refuses LARES_STATE containing LARES_WORKSPACE: $state" ;; esac
-    case "$env_path" in "$state"/*) die "reset refuses LARES_STATE containing its env file: $state" ;; esac
-    case "$home/" in "$state/"*) die "reset refuses LARES_STATE containing HOME: $state" ;; esac
-    # Any running container that binds the state dir holds the store: a founding run, a harness, a hand-started one.
-    holders=$(docker ps -q --filter "volume=$state") || die "cannot read running containers (docker ps failed); nothing removed"
-    [ -z "$holders" ] || die "reset refuses while a running container binds $state: $holders"
-    printf 'LARES_STATE: %s\nReset removes every entry inside this directory; the directory itself, the env file and the image stay.\nType re-found to proceed: ' "$state"
+    [ -d "$house" ] || die "reset needs LARES_HOUSE to name a directory"
+    case "$house" in /|"$home"|"$workspace"|"$workspace"/*) die "reset refuses unsafe LARES_HOUSE: $house" ;; esac
+    case "$workspace/" in "$house/"*) die "reset refuses LARES_HOUSE containing LARES_WORKSPACE: $house" ;; esac
+    case "$home/" in "$house/"*) die "reset refuses LARES_HOUSE containing HOME: $house" ;; esac
+    hearth=$(realpath -e -- "$house/hearth") || die "reset finds no hearth at $house/hearth; nothing removed"
+    [ "$hearth" = "$house/hearth" ] || die "reset refuses a hearth that resolves outside LARES_HOUSE ($hearth); nothing removed"
+    [ -d "$hearth" ] || die "reset needs $house/hearth to name a directory"
+    # Any running container that binds the hearth holds the store: a founding run, a harness, a hand-started one.
+    holders=$(docker ps -q --filter "volume=$hearth") || die "cannot read running containers (docker ps failed); nothing removed"
+    [ -z "$holders" ] || die "reset refuses while a running container binds $hearth: $holders"
+    printf 'LARES_HOUSE: %s\nReset removes every entry inside %s; the hearth directory itself, projections, library, config, the env file and the image stay.\nType re-found to proceed: ' "$house" "$hearth"
     IFS= read -r answer || die "reset confirmation not read; nothing removed"
     [ "$answer" = re-found ] || die "reset confirmation did not match; nothing removed"
     failed=""
-    for entry in "$state"/* "$state"/.[!.]* "$state"/..?*; do
+    for entry in "$hearth"/* "$hearth"/.[!.]* "$hearth"/..?*; do
       [ -e "$entry" ] || [ -L "$entry" ] || continue
       if ! rm -rf -- "$entry"; then
         printf 'lares-container: cannot remove %s; clear it with its owner or administrator, then run reset again (no sudo runs here)\n' "$entry" >&2
@@ -255,11 +283,12 @@ case "$verb" in
       fi
     done
     [ -z "$failed" ] || exit 1
-    printf '%s\n' 'lares-container: state cleared; the hearth can be founded again.' ;;
+    printf '%s\n' 'lares-container: hearth cleared; projections, library and config stand; the hearth can be founded again.' ;;
   logs)  compose logs "$@" lares ;;
   found)
+    ensure_house
     # shellcheck disable=SC2046
-    compose --profile offline run --rm $(tty_flag) offline vessel found --skip-build --root /state --genesis /app/genesis "$@" ;;
+    compose --profile offline run --rm $(tty_flag) offline vessel found --skip-build --root /lar --genesis /app/genesis "$@" ;;
   vessel)
     observing=""
     for arg in "$@"; do if [ "$arg" = --observe ]; then observing=yes; fi; done
@@ -270,7 +299,7 @@ case "$verb" in
         else
           # The no-argument acting stand belongs to the host: it stands, restarts on a `restand` verdict, or prints
           # the standing. Option-bearing forms go to the CLI, which owns their validation and execution.
-          if ! running_vessel; then compose up -d --wait lares; unlock_or_name
+          if ! running_vessel; then ensure_house; compose up -d --wait lares; unlock_or_name
           elif ! observe_standing || ! verdict_known; then die "the standing vessel answered no verdict"
           elif verdict_restand; then lift_vessel
           else printf '%s\n' "$observe_output"; fi

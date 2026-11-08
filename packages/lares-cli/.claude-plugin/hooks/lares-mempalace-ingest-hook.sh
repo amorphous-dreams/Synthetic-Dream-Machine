@@ -52,7 +52,8 @@ fi
 # Designation carries authority: a session declares itself ephemeral (a
 # `<transcript>.ephemeral` sibling, or a `.lar-ephemeral` marker in the session's
 # own recorded cwd), or derives it (that recorded cwd sits under a scratch root:
-# $TMPDIR / /tmp, or a LAR_ROOT sandbox, whose tree holds its own scratch).
+# $TMPDIR / /tmp, or a root carrying the harness's `.lar-test-scratch` marker; a house root reads
+# scratch by that marker alone, never because LAR_ROOT names it).
 # EPHEMERAL ≠ DELETED — the transcript survives; only the palace ingest declines.
 # LOUD: one skip line on stderr (silence never hides a skip). TS twin: the
 # sessionEphemeral verdict in packages/lares-cli/src/ephemeral.ts — keep in lockstep.
@@ -73,12 +74,21 @@ with open(sys.argv[1]) as f:
     if [ -n "${session_cwd:-}" ]; then
       [ -f "$session_cwd/.lar-ephemeral" ] && eph_reason="declared: .lar-ephemeral in $session_cwd"
       if [ -z "$eph_reason" ]; then
-        for _root in "${TMPDIR:-/tmp}" /tmp ${LAR_ROOT:+"$LAR_ROOT"}; do
+        for _root in "${TMPDIR:-/tmp}" /tmp; do
           _root="${_root%/}"
           case "$session_cwd" in
             "$_root"|"$_root"/*) eph_reason="derived: cwd $session_cwd under scratch root $_root"; break ;;
           esac
         done
+        if [ -z "$eph_reason" ]; then
+          _dir="$session_cwd"
+          while :; do
+            if [ -f "$_dir/.lar-test-scratch" ]; then eph_reason="derived: cwd $session_cwd under marked scratch root $_dir"; break; fi
+            _parent=$(dirname -- "$_dir")
+            [ "$_parent" != "$_dir" ] || break
+            _dir=$_parent
+          done
+        fi
       fi
     fi
   fi

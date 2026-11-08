@@ -4,8 +4,9 @@
  *
  * The daemon bag stays the CRDT-only control plane: its titles, `DAEMON_BAG_ID` and `isControlPlaneUri` hold as they
  * stand, and the ordinary disk projector never mirrors it. This writer gives an operator something to READ: each record
- * under the bag path lands as one JSON file at `<observe>/<path under the bag>.json`, rewritten as the record moves and
- * removed as it leaves.
+ * under the bag path lands as one JSON file at `<observe>/<path under the bag>.json`, and each swarm control
+ * (`$:/lares/swarm/**`) at `<observe>/swarm/<path under the prefix>.json`, rewritten as the record moves and removed as
+ * it leaves.
  *
  * NOTHING COMES BACK. The writer keeps no agreement record (no Synced-tree row), stands no take-disk door, and reads
  * nothing off the disk; the ingest path refuses any file under `<projections>/observe` by name
@@ -22,7 +23,7 @@
 
 import { readdirSync, rmdirSync, unlinkSync, mkdirSync } from "node:fs";
 import { dirname, join, resolve as resolvePath, sep } from "node:path";
-import { DAEMON_BAG_ID, type LarTiddlerStore } from "@lararium/mesh";
+import { DAEMON_BAG_ID, SWARM_URI_PREFIX, type LarTiddlerStore } from "@lararium/mesh";
 import { confineMirrorWrite } from "./bag-paths.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { PROJECTION_FILE_MODE } from "./disk-projector.js";
@@ -48,10 +49,17 @@ export function observeDaemonEnabled(cfg: { readonly projection?: unknown }): bo
 /** The path a daemon title renders at, relative to the observe root, or null for a title that never lands. */
 export function observeRelPath(title: string): string | null {
   const prefix = `${DAEMON_BAG_ID}/`;
-  if (!title.startsWith(prefix)) return null;
-  const rest = title.slice(prefix.length).split("#")[0]!;
-  const segments = rest.split("/");
-  if (segments.length === 0 || segments[0] === CAP_FAMILY) return null;
+  let segments: string[];
+  if (title.startsWith(prefix)) {
+    segments = title.slice(prefix.length).split("#")[0]!.split("/");
+    if (segments[0] === CAP_FAMILY) return null;
+  } else if (title.startsWith(SWARM_URI_PREFIX)) {
+    // The swarm's live controls ride the same one-way render, under their own `swarm/` folder.
+    segments = ["swarm", ...title.slice(SWARM_URI_PREFIX.length).split("/")];
+  } else {
+    return null;
+  }
+  if (segments.length === 0) return null;
   if (segments.some((seg) => seg.length === 0 || seg === "." || seg === ".." || /[\\\0]/.test(seg))) return null;
   return `${segments.join("/")}.json`;
 }
