@@ -1,5 +1,5 @@
 import type { DocumentId } from "@automerge/automerge-repo";
-import { makeHeldShareFloor, makeIslandAudienceReader, catalogViewOf, islandPeersOf, peerShareAudience, type CapabilityRecord } from "@lararium/mesh";
+import { makeHeldShareFloor, makeIslandAudienceReader, catalogViewOf, islandPeersOf, peerShareAudience, type CapabilityRecord, type PluginProof } from "@lararium/mesh";
 import type { ShareBoundary } from "@lararium/mesh";
 import { browserPromoteStores, browserPromoteCas } from "./browser-promoted-store.js";
 import { browserWardBindRoute, BrowserWardRefused, browserWardSigner, type WardAskKind } from "./browser-ward.js";
@@ -509,7 +509,7 @@ export async function resolveBrowserIslandPluginCids(opts: {
   readonly promoted?: (wiki: string) => Promise<readonly string[]>;
   readonly onPromotedVoided?: (wiki: string, digests: readonly string[]) => void;
   readonly lookup: OfferingLookup;
-}): Promise<{ readonly ok: true; readonly pluginCids: readonly string[] } | { readonly ok: false; readonly error: string }> {
+}): Promise<{ readonly ok: true; readonly pluginCids: readonly string[]; readonly proved: PluginProof } | { readonly ok: false; readonly error: string }> {
   // The selection itself stands in mesh (`resolveRecipePluginCids`), the one function the node door and the
   // surface mount's resolver read too; this door hands it the browser's own inputs: the island document's
   // blobs, the Crossroads lookup and the origin's OPFS content store.
@@ -744,6 +744,12 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     },
     onRefusal: (error) => console.log(`[share-tier] ${error.name}: ${error.message}`),
   });
+  // A RESOLUTION'S PROOF SEATS ON THE FLOOR (P27): the plugin CIDs one wiki's resolution proved count as references at their
+  // promote ledger's or offering board's tier, so the island's sequential plugin fetch reads them.
+  const provePlugins = <V extends { readonly ok: boolean; readonly proved?: PluginProof }>(wikiSlug: string, verdict: V): V => {
+    if (verdict.ok && verdict.proved) shareFloor.provePlugins(wikiSlug, { board: crossroadsOfferingsHandle?.documentId ?? null, ...verdict.proved });
+    return verdict;
+  };
   const repo = new Repo({
     storage: sealedRest.store,
     // The verdict seats on announce AND access (the announce-only lie the node measured in
@@ -1702,13 +1708,13 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // assumed past it.
       crossroadsOfferingsHandle ??= await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
       const resolveDaemonPlugins = async () => {
-        const daemonPluginResolution = await resolveBrowserIslandPluginCids({
+        const daemonPluginResolution = provePlugins("daemon", await resolveBrowserIslandPluginCids({
           islandBlobs: assembly.islandHandle.doc()?.blobs,
           recipe: { wikiSlug: "daemon" },
           lookup: browserOfferingLookup(crossroadsOfferingsHandle!.doc()),
           promoted: (slug) => promoteWiringRef ? promoteWiringRef.boot.promotedFor(slug) : Promise.resolve([]),
           onPromotedVoided: (wiki, digests) => console.warn(`[promote] ${wiki}: promoted digest(s) ${digests.join(", ")} failed the local byte check and were dropped from the plugin union`),
-        });
+        }));
         if (!daemonPluginResolution.ok) throw new Error(`[openBrowserVessel] the daemon island's plugin resolution refused: ${daemonPluginResolution.error}`);
         return daemonPluginResolution.pluginCids;
       };
@@ -2187,13 +2193,13 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         ...(opts.onRest ? { onRest: opts.onRest } : {}),
         resolvePluginCids: async (recipe) => {
           crossroadsOfferingsHandle ??= await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
-          return resolveBrowserIslandPluginCids({
+          return provePlugins(recipe.wikiSlug, await resolveBrowserIslandPluginCids({
             islandBlobs: assembly.islandHandle.doc()?.blobs,
             recipe,
             lookup: browserOfferingLookup(crossroadsOfferingsHandle.doc()),
             promoted: (slug) => promoteWiringRef ? promoteWiringRef.boot.promotedFor(slug) : Promise.resolve([]),
             onPromotedVoided: (wiki, digests) => console.warn(`[promote] ${wiki}: promoted digest(s) ${digests.join(", ")} failed the local byte check and were dropped from the plugin union`),
-          });
+          }));
         },
         onWorkerEvent: (_id, msg) => {
           // The camera's traffic reaches here the way an `event` does. A frame paints ONLY from the ACTIVE surface:

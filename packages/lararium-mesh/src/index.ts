@@ -298,7 +298,7 @@ export type { Repo, DocHandle, AutomergeUrl, StorageAdapterInterface } from "@au
 export { RECIPE_PLANES, effectiveRecipe, recipeRecordStands } from "./recipe-planes.js";
 export type { EffectiveRecipe, RecipePlane } from "./recipe-planes.js";
 export { resolveRecipePluginCids, deriveWikiRecipe, wikiSlugOfBag } from "./surface-recipe.js";
-export type { WikiRecipeDerivation } from "./surface-recipe.js";
+export type { WikiRecipeDerivation, PluginProof } from "./surface-recipe.js";
 export { makeIslandRepo, attachMessageChannelSync, replicaHeads, islandPeersOf, markIslandArrival } from "./island-repo.js";
 export { peerArrivals, type PeerArrival, type PeerArrivals } from "./peer-arrivals.js";
 export { answerReceiptWithHeads, RECEIPT_STALL_ROUNDS } from "./receipt-with-heads.js";

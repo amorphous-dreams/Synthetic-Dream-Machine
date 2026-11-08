@@ -11,6 +11,7 @@ import { plainField, plainRecord, ownEntry } from "./stored-value.js";
 import { DeclaredTierRefusal, makeManifestTierSource, makeShareBoundary } from "./share-tighten.js";
 import { FACE_CATALOG_BAG_ID } from "./register-bags.js";
 import { isFaceScopedBag } from "./persona-scope.js";
+import type { PluginProof } from "./surface-recipe.js";
 
 /**
  * The tier a face's own planes declare by construction. Each of the five face-scoped families (persona · circles ·
@@ -20,6 +21,13 @@ import { isFaceScopedBag } from "./persona-scope.js";
 export const FACE_PLANE_TIER: CapTier = "personagroup";
 /** The face's own catalog binds as no bag: it follows the face to its fleet, never further. */
 export const FACE_CATALOG_TIER: CapTier = "personagroup";
+/** A promoted plugin reads at its promote ledger's tier: the face's own PersonaGroup custody row names it. */
+export const PROMOTED_PLUGIN_TIER: CapTier = "personagroup";
+
+/** One wiki's proven plugin references: the board carrying its offerings (null where it named none) and the resolution's proof. */
+export interface HeldPluginProof extends PluginProof {
+  readonly board: string | null;
+}
 
 export interface HeldShareFloorReaders {
   handles(): Readonly<Record<string, { isReady(): boolean; doc(): unknown } | undefined>>;
@@ -97,12 +105,20 @@ export function makeHeldShareFloor(readers: HeldShareFloorReaders) {
   // carry a face's secrets; all ordinary documents still consult the live secrets registry first.
   const genesisPrefix = "genesis-public:";
   const genesis = (id: string): boolean => id.startsWith(genesisPrefix) && readers.genesisCids().has(id.slice(genesisPrefix.length));
+  // PLUGIN PROOFS (P27): each wiki's latest resolution names the plugin CIDs it proved. A promoted digest reads through its
+  // own reference id (`promoted-plugin:<cid>`), declared at the promote ledger's tier and floored by the proof; an offered blob
+  // reads through the board that carries its offering. A later resolution of the same wiki replaces its proof whole.
+  const pluginProofs = new Map<string, HeldPluginProof>();
+  const promotedPrefix = "promoted-plugin:";
+  const promotedRef = (id: string): boolean => id.startsWith(promotedPrefix)
+    && [...pluginProofs.values()].some((p) => p.promoted.includes(id.slice(promotedPrefix.length)));
+  const proven = (id: string): boolean => genesis(id) || promotedRef(id);
   // WHO OWNS A DOC, PROVEN: the registry gates the worn face's own documents alone (operator clarification 2026-11-06). The
   // seed, a public board and an explicit non-bag plane hold no face's secrets; a doc the face's sealed map names, its
   // catalog, or a face-scoped plane asks the registry; a doc bound to another bag does not. A doc bound nowhere and named by
   // no reader stays unresolved, and the crossing refuses.
   const owns = (id: string): boolean => {
-    if (genesis(id) || readers.publicPlane(id)) return false;
+    if (proven(id) || readers.publicPlane(id)) return false;
     if (readers.faceOwns(id)) return true;
     const bags = bagsOfDoc(id);
     if (bags.some((bag) => bag === FACE_CATALOG_BAG_ID || isFaceScopedBag(bag))) return true;
@@ -110,26 +126,35 @@ export function makeHeldShareFloor(readers: HeldShareFloorReaders) {
     throw new DeclaredTierRefusal("declared-tier-unresolved", `${id}: no binding proves which face owns it`);
   };
   const secrets = faceScopedSecrets(registry.plane, owns);
-  const declaredSource = { declaredTierForDoc: (id: string) => genesis(id) ? "public" as const : declared.declaredTierForDoc(id) };
+  const declaredSource = { declaredTierForDoc: (id: string): CapTier | null => genesis(id) ? "public"
+    : promotedRef(id) ? PROMOTED_PLUGIN_TIER : declared.declaredTierForDoc(id) };
   const floorOf = (federatable: (id: string) => boolean) => makeTierFloorSource({
     federatable,
-    sealed: (id) => !genesis(id) && readers.sealedPlane(id),
-    secrets: (id) => !genesis(id) && secrets.isContractSecretsPlane(id),
+    sealed: (id) => !proven(id) && readers.sealedPlane(id),
+    secrets: (id) => !proven(id) && secrets.isContractSecretsPlane(id),
   });
   // Two rings, one declaration: the held floor (the public boards and the seed alone), and the floor a crossing reads when
   // a gate allowed it (that gate is the structure that carried the doc; the secrets ceiling still reads first).
   const tiers = makeShareBoundary(
-    { declared: declaredSource, floor: floorOf((id) => genesis(id) || readers.publicPlane(id)) },
+    { declared: declaredSource, floor: floorOf((id) => proven(id) || readers.publicPlane(id)) },
     readers.onRefusal,
     { declared: declaredSource, floor: floorOf(() => true) },
   );
   return {
     tiers, registry,
+    /** Seat one wiki's plugin proof from its latest resolution (`resolveRecipePluginCids().proved`), replacing the last. */
+    provePlugins(wikiSlug: string, proof: HeldPluginProof): void {
+      pluginProofs.set(wikiSlug, { board: proof.board, offered: [...proof.offered], promoted: [...proof.promoted] });
+    },
     documentForBag: (bag: string): string | undefined => bindings().get(bag)?.[0],
     documentsForCid(cid: string): readonly string[] {
       // The seed's explicit publication survives a later private reference to the same immutable bytes.
       if (readers.genesisCids().has(cid)) return [`${genesisPrefix}${cid}`];
       const ids: string[] = [];
+      for (const proof of pluginProofs.values()) {
+        if (proof.board !== null && proof.offered.includes(cid) && !ids.includes(proof.board)) ids.push(proof.board);
+        if (proof.promoted.includes(cid) && !ids.includes(`${promotedPrefix}${cid}`)) ids.push(`${promotedPrefix}${cid}`);
+      }
       for (const [id, handle] of Object.entries(readers.handles())) {
         if (!handle?.isReady()) continue;
         const held = handle.doc() as LarDoc;

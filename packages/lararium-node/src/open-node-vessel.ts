@@ -69,7 +69,7 @@ import {
   genesisCasCidsFromOracle, provenVesselKeyOf,
   wikiSlugOfBag, gateSweep, promoteWiring, promoteWikiItems, promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteActRecords, writePromoteAct, type GateSweepSeat,
 }                                       from "@lararium/mesh";
-import { resolveNodeIslandPluginCids, nodeOfferingLookup } from "./node-plugin-resolution.js";
+import { resolveNodeIslandPluginCids, nodeOfferingLookup, type NodePluginResolutionVerdict } from "./node-plugin-resolution.js";
 import { registerStoreDoorReactors } from "./store-door-registry.js";
 import { makeDurableMailbox, type DurableMailbox } from "./vessel-mailbox.js";
 import { makeRealmPlane, type RealmPlanesHolder } from "./realm-plane.js";
@@ -1311,6 +1311,14 @@ async function prepareNodeBootOn(
     },
     onRefusal: (error) => console.log(`[share-tier] ${error.name}: ${error.message}`),
   });
+  // A RESOLUTION'S PROOF SEATS ON THE FLOOR (P27): the plugin CIDs one wiki's resolution proved (promoted at the ledger's tier,
+  // offered at the crossroads board that carries the offering) count as references, so the island's sequential plugin fetch
+  // reads them; each later resolution of that wiki replaces its proof.
+  const provenPlugins = async (wikiSlug: string, verdict: Promise<NodePluginResolutionVerdict>): Promise<NodePluginResolutionVerdict> => {
+    const settled = await verdict;
+    if (settled.ok) shareFloor.provePlugins(wikiSlug, { board: crossroadsOfferingsHandle?.documentId ?? null, ...settled.proved });
+    return settled;
+  };
   // THE WIRE PROBE, armed by the caller or by `LAR_WIRE_LOG=1` on a STAGED vessel. It reads the verdict on both
   // hooks and every sync message the Repo moves, so a witness can quote the sequence for one (peer, document)
   // from a peer's request through the holder's next change. Unarmed it is null and wraps nothing.
@@ -3293,14 +3301,14 @@ async function prepareNodeBootOn(
     const offerings = crossroadsOfferingsHandle;
     daemonHolder = await standDaemonIsland({
       readJoinedFaces,
-      resolvePlugins: () => resolveNodeIslandPluginCids({
+      resolvePlugins: () => provenPlugins("daemon", resolveNodeIslandPluginCids({
         islandBlobs: assembly.islandHandle.doc()?.blobs,
         recipe: { wikiSlug: "daemon" },
         lookup: nodeOfferingLookup(offerings.doc()),
         readBytes: (cid) => readCasBlobFromFs(cid, cidDir),
         promoted: (slug) => promoteWiringRef ? promoteWiringRef.boot.promotedFor(slug) : Promise.resolve([]),
         onPromotedVoided: (wiki, digests) => console.warn(`[promote] ${wiki}: promoted digest(s) ${digests.join(", ")} failed the local byte check and were dropped from the plugin union`),
-      }),
+      })),
       open: async ({ pluginCids, joinedFaces }) => openDaemonVm({
         repo,
         caps: islandCaps,
@@ -4152,14 +4160,14 @@ async function prepareNodeBootOn(
       // slow keyhive reconverge spends it. (silence 120s / stall 360s, matching daemon-vm-core.)
       mountSilenceMs: 120_000,
       mountStallMs:   360_000,
-      resolvePluginCids: (recipe) => resolveNodeIslandPluginCids({
+      resolvePluginCids: (recipe) => provenPlugins(recipe.wikiSlug, resolveNodeIslandPluginCids({
         islandBlobs: assembly.islandHandle.doc()?.blobs,
         recipe,
         lookup:      nodeOfferingLookup(crossroadsOfferingsHandle?.doc()),
         readBytes:   (cid) => readCasBlobFromFs(cid, casDir),
         promoted: (slug) => promoteWiringRef ? promoteWiringRef.boot.promotedFor(slug) : Promise.resolve([]),
         onPromotedVoided: (wiki, digests) => console.warn(`[promote] ${wiki}: promoted digest(s) ${digests.join(", ")} failed the local byte check and were dropped from the plugin union`),
-      }),
+      })),
       diskMirrorGrant,
       onWorkerEvent: (wikiId, msg) => {
         if (msg.type !== "event") return;   // a camera's frame or answer from an island outside any session has no ring to ride on this vessel

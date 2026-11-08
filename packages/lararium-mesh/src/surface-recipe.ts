@@ -162,7 +162,7 @@ function documentIdOf(document: string): string | null {
 export async function resolveRecipePluginCids(
   recipe: Pick<WikiRecipe, "wikiSlug" | "pluginOfferings" | "pluginOfferingsFault">,
   inputs: Pick<SurfacePluginInputs, "islandBlobs" | "lookup" | "readBytes" | "promoted" | "onPromotedVoided">,
-): Promise<{ readonly ok: true; readonly pluginCids: readonly string[] } | { readonly ok: false; readonly error: string }> {
+): Promise<{ readonly ok: true; readonly pluginCids: readonly string[]; readonly proved: PluginProof } | { readonly ok: false; readonly error: string }> {
   if (recipe.pluginOfferingsFault) {
     return { ok: false, error: `${recipe.wikiSlug}: malformed-offerings-field: ${recipe.pluginOfferingsFault}` };
   }
@@ -181,7 +181,19 @@ export async function resolveRecipePluginCids(
     (checked.ok ? sound : voided).push(cid);
   }
   if (voided.length > 0) inputs.onPromotedVoided?.(recipe.wikiSlug, voided);
-  return { ok: true, pluginCids: [...new Set([...floorCids, ...selectedCids, ...sound])] };
+  // THE PROOF RIDES THE VERDICT (P27): the offered CIDs the selection verified and the promoted digests that passed the byte
+  // check. Neither rests in a held document field, so the island floor reads them as references only through this proof.
+  return { ok: true, pluginCids: [...new Set([...floorCids, ...selectedCids, ...sound])], proved: { offered: [...selectedCids], promoted: sound } };
+}
+
+/**
+ * What one resolution proved about its plugin CIDs: the offered blobs the verified selection named (their tier is the board
+ * that carries the offering) and the promoted digests that passed the local byte check (their tier is the face's promote
+ * ledger). The boot-set floor needs no proof: the island document's own blobs and the genesis seed already name it.
+ */
+export interface PluginProof {
+  readonly offered: readonly string[];
+  readonly promoted: readonly string[];
 }
 
 /** Resolve a session's effective recipe for one surface mount. */
