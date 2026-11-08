@@ -41,11 +41,16 @@ export const isWardBoundWiki = (wiki: string): boolean => wiki === "daemon" || w
 /** The face root's signature over a bound promotion, under a fresh ward unlock: what boot reads before a daemon or kahua row runs. */
 export interface PromotionWardSig { key: string; sig: string }
 export interface PromotionRow { wiki: string; digest: string; title: string; revision: string; hand: string; seq: number; bytes: string; kept?: true; wardSig?: PromotionWardSig }
-/** The bytes a ward signature covers: its own domain, the wiki, the digest and the row's sequence (a row moved to another seq voids). */
-export const promotionWardBytes = (row: Pick<PromotionRow, "wiki" | "digest" | "seq">): Uint8Array =>
-  canonicalJsonBytes({ kind: PROMOTE_WARD_DOMAIN, wiki: row.wiki, digest: row.digest, seq: row.seq });
+/** The ledger a bound row belongs to: its device's atom key. A ward signature names it, so a row copied into another device's ledger voids. */
+export interface PromotionOwner { readonly owner: string }
+/**
+ * The bytes a ward signature covers: its own domain, the wiki, the digest, the row's sequence (a row moved to another seq voids) and the
+ * owner, the device whose ledger holds the row (a row moved to another device's ledger voids, and a drop names only its own device's row).
+ */
+export const promotionWardBytes = (row: Pick<PromotionRow, "wiki" | "digest" | "seq"> & PromotionOwner): Uint8Array =>
+  canonicalJsonBytes({ kind: PROMOTE_WARD_DOMAIN, wiki: row.wiki, digest: row.digest, seq: row.seq, owner: row.owner.toLowerCase() });
 /** Sign a bound promotion as the face root (the signer opens under the ward for this one act). */
-export async function signPromotionWard(row: Pick<PromotionRow, "wiki" | "digest" | "seq">, signer: { readonly key: string; sign(bytes: Uint8Array): Promise<string> }): Promise<PromotionWardSig> {
+export async function signPromotionWard(row: Pick<PromotionRow, "wiki" | "digest" | "seq"> & PromotionOwner, signer: { readonly key: string; sign(bytes: Uint8Array): Promise<string> }): Promise<PromotionWardSig> {
   return { key: signer.key.toLowerCase(), sig: await signer.sign(promotionWardBytes(row)) };
 }
 /** The face a boot reads ward signatures against: the root keys its signed log grants. */
@@ -66,6 +71,7 @@ export function ledgerCommit(l: PromotionLedger, input: { wiki: string; digest: 
   requireHand(who);
   if (input.digest !== promoteDigest(input.item)) throw new PromoteRefused("promote-digest-mismatch", "the digest does not name the preload");
   const seq = l.seq + 1;
+  if (!Number.isSafeInteger(seq)) throw new PromoteRefused("promote-seq-exhausted", "the ledger's next seq leaves the safe integers");
   const row: PromotionRow = { wiki: input.wiki, digest: input.digest, title: input.item.title, revision: input.revision, hand: who.id, seq, bytes: new TextDecoder().decode(promotePreloadBytes(input.item)), ...(input.wardSig ? { wardSig: input.wardSig } : {}) };
   const replaced = l.rows.filter(r => r.wiki === row.wiki && (r.title === row.title || r.digest === row.digest));
   return withDropped({ seq, rows: [...l.rows.filter(r => !replaced.includes(r)), row] }, entomb(l, replaced));
@@ -82,7 +88,8 @@ export function ledgerDecideOrphan(l: PromotionLedger, edge: { wiki: string; dig
   const gone = decision === "drop" ? l.rows.filter(r => r.wiki === edge.wiki && r.digest === edge.digest) : [];
   return withDropped({ ...l, rows: decision === "drop" ? l.rows.filter(r => !gone.includes(r)) : l.rows.map(r => r.wiki === edge.wiki && r.digest === edge.digest ? { ...r, kept: true } : r) }, entomb(l, gone));
 }
-export const encodeLedger = (l: PromotionLedger): Uint8Array => canonicalJsonBytes(l);
+/** The codec refuses on the way in what it refuses on the way out: a ledger that would not read back never reaches its row. */
+export const encodeLedger = (l: PromotionLedger): Uint8Array => { const bytes = canonicalJsonBytes(l); decodeLedger(bytes); return bytes; };
 const object = (x: unknown): x is Record<string, unknown> => typeof x === "object" && x !== null && !Array.isArray(x);
 const keys = (x: Record<string, unknown>, required: string[], optional: string[] = []): boolean => required.every(k => Object.hasOwn(x, k)) && Object.keys(x).every(k => required.includes(k) || optional.includes(k));
 const hex64 = (x: unknown): x is string => typeof x === "string" && /^[0-9a-f]{64}$/.test(x);
@@ -98,17 +105,19 @@ export function decodeLedger(bytes: Uint8Array): PromotionLedger {
   return value as unknown as PromotionLedger;
  } catch { throw new PromoteRefused("ledger-malformed", "the ledger has an invalid shape"); }
 }
-/** Whether a bound row's ward signature stands: a key the face grants, over this row's own (wiki, digest, seq). */
-function wardSigStands(row: PromotionRow, face: PromotionWardFace | undefined): boolean {
+/** Whether a bound row's ward signature stands: a key the face grants, over this row's own (wiki, digest, seq) in this device's ledger. */
+function wardSigStands(row: PromotionRow, face: PromotionWardFace | undefined, owner: string): boolean {
   if (!face || !row.wardSig) return false;
-  try { return face.grant(row.wardSig.key) && verifyEd25519(row.wardSig.sig, promotionWardBytes(row), row.wardSig.key); } catch { return false; }
+  try { return face.grant(row.wardSig.key) && verifyEd25519(row.wardSig.sig, promotionWardBytes({ ...row, owner }), row.wardSig.key); } catch { return false; }
 }
 export type PromotionVoid = "digest-mismatch" | "bytes-malformed" | "ward-unsigned" | "ward-dropped" | "ward-floor-unread";
 /**
- * THE DROP FLOOR (road `L23`): the bound rows the face-private board names dropped, keyed `wiki\ndigest\nseq`. The ledger rests in a
- * custody row any writer of unlocked custody can rewrite; the board rides no custody door, so a stripped tombstone strips no drop.
+ * THE DROP FLOOR (road `L23`): the bound rows this device (`owner`) dropped, as its own drops on the face-private board name them, keyed
+ * `wiki\ndigest\nseq`. The ledger rests in a custody row any writer of unlocked custody can rewrite; a custody write never reaches the
+ * board, and the board's history keeps a drop a later change deleted, so a stripped tombstone strips no drop. A rollback of the board's
+ * own storage on a face with no sibling device stays the named limit (seat-harness#/the-ward).
  */
-export interface PromotionDropFloor { readonly dropped: () => ReadonlySet<string> }
+export interface PromotionDropFloor extends PromotionOwner { readonly dropped: () => ReadonlySet<string> }
 /**
  * The rows that may run, and the voided rest by reason. A row of a ward-bound wiki (the daemon wiki, the kahua stage) runs only with
  * a ward signature the face grants, whoever wrote it into the ledger (a write straight into custody included); with no `face` to
@@ -122,9 +131,9 @@ export function verifyPromotionRows(rows: readonly PromotionRow[], face?: Promot
   for (const row of rows) {
     // A bound row that left the ledger never runs again under its old ward signature: a replay reads dropped, the board's drop
     // standing where a custody write stripped the ledger's tombstone.
-    if (isWardBoundWiki(row.wiki) && tomb.has(`${row.wiki}\n${row.digest}\n${row.seq}`)) { voided.push({ digest: row.digest, reason: "ward-dropped" }); continue; }
-    if (isWardBoundWiki(row.wiki) && !wardSigStands(row, face)) { voided.push({ digest: row.digest, reason: "ward-unsigned" }); continue; }
     if (isWardBoundWiki(row.wiki) && !floor) { voided.push({ digest: row.digest, reason: "ward-floor-unread" }); continue; }
+    if (isWardBoundWiki(row.wiki) && tomb.has(`${row.wiki}\n${row.digest}\n${row.seq}`)) { voided.push({ digest: row.digest, reason: "ward-dropped" }); continue; }
+    if (isWardBoundWiki(row.wiki) && !wardSigStands(row, face, floor!.owner)) { voided.push({ digest: row.digest, reason: "ward-unsigned" }); continue; }
     if (sha256HexBytesSync(new TextEncoder().encode(row.bytes)) !== row.digest) { voided.push({ digest: row.digest, reason: "digest-mismatch" }); continue; }
     try {
       const parsed: unknown = JSON.parse(row.bytes);

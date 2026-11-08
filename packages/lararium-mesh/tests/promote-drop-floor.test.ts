@@ -47,7 +47,7 @@ async function world() {
     who: HAND,
     wardSigner: async () => root,
     face: { grant: face.grant },
-    landDrops: (tombstones) => boardDoor.drop(tombstones),
+    landDrops: (tombstones) => boardDoor.drop(tombstones), owner: atom.key,
   });
   /** A writer holding unlocked custody rewrites the ledger's plaintext: it never reaches the board. */
   const custodyWrite = (fn: (l: PromotionLedger) => PromotionLedger) => { state.ledger = decodeLedger(encodeLedger(fn(state.ledger))); };
@@ -120,7 +120,7 @@ describe("the floor itself against a custody writer", () => {
     expect((await promotions(w.ports(USER)).boot()).pluginCids).toEqual([D]);
   });
 
-  test("RED: a drop signed by a key the face neither grants nor enrolls reads refused on the board and floors nothing; CONTROL: the device's own drop reads", async () => {
+  test("RED: a drop signed by a key that is not this device's atom floors nothing in this device's ledger; CONTROL: the device's own drop reads", async () => {
     const w = await world();
     const { signPromoteDrop } = await import("../src/promote-board.js");
     const stranger = { key: await ed25519VerifyingKeyFromSeed(seed(9)), sign: ed25519SignerFromSeed(seed(9)) };
@@ -128,8 +128,7 @@ describe("the floor itself against a custody writer", () => {
     const forged = await signPromoteDrop({ group: GROUP, epoch: 0, wiki: "daemon", digest: D, seq: 1 }, stranger);
     const own = await signPromoteDrop({ group: GROUP, epoch: 0, wiki: "daemon", digest: D, seq: 2 }, w.atom);
     const reading = readPromoteBoard([forged, own], face);
-    expect(reading.refused.map((r) => r.refusal)).toEqual(["grant"]);
-    expect([...reading.dropped()]).toEqual([`daemon\n${D}\n2`]);
-    expect(reading.dropFloor()).toBe(2);
+    expect([...reading.droppedBy(w.atom.key)]).toEqual([`daemon\n${D}\n2`]);
+    expect([...reading.droppedBy(stranger.key)]).toEqual([`daemon\n${D}\n1`]);
   });
 });

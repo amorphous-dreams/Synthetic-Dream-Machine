@@ -87,7 +87,7 @@ import { composeBrowser }                    from "./browser-caps.js";
 import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
 import { runFoundingCeremony, runApplyAdmitPayload, foundThePlace, assemblePersonaGroupRing, archiveIsOf } from "@lararium/keyhive";
 import {
-  promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteActRecords, writePromoteAct, promoteWiring, promoteWikiItems, faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, readFace, faceRecordsOf, adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard, KAHUA_BAG, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog,
+  promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteBoardRecords, writePromoteAct, promoteWiring, promoteWikiItems, faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, readFace, faceRecordsOf, adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard, KAHUA_BAG, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog,
   readFleetFrontier, fleetFrontierLinks, fleetRaiseCids, readFrontierPins, writeFrontierPin, FLEET_HAND,
   type WideningRead,
 } from "@lararium/mesh";
@@ -1562,6 +1562,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
             return { group: wornGroup, grant: f ? f.grant : () => false, device: (k) => devices.has(k), ward };
           },
           stores: browserPromoteStores(idbName, wornGroup), cas: browserPromoteCas(),
+          // THE OWNER (road L23): this device's atom binds its ledger into each ward signature and signs the drops boot lands.
+          atom: wornAtom, epoch: () => readFace(personaKelChain)?.lineage.at(-1)?.epoch ?? 0,
           wikiItems: promoteWikiItems({ repo, catalog: () => assembly.catalogHandle.doc() }), restart: restartWikiIsland,
           onArrive: async () => { await pushPromoteSnapshot?.(); },
           onFault: (reason) => console.warn(`[promote] ${reason}`),
@@ -1585,7 +1587,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
             epoch: () => readFace(personaKelChain)?.lineage.at(-1)?.epoch ?? 0,
             // THE LOWER RIDES THE WARD: the face root signs in a per-act worker, fresh from the passphrase the person types for it.
             rootSigner: () => wardRootSignerOf("a kāpae-lower"),
-            board: { records: async () => promoteActRecords(handle.doc(), wornGroup), land: async act => { handle.change(doc => writePromoteAct(doc, act)); await repo.flush(); } },
+            board: { records: async () => promoteBoardRecords(handle.doc(), wornGroup), land: async act => { handle.change(doc => writePromoteAct(doc, act)); await repo.flush(); } },
             projection: () => proof.projection,
             // THE CO-SIGN GATE: where the face holds two devices, a lower waits on a second one's answer (seat-harness#/the-swarm-slices).
             cosign: browserCosignPortOf,
@@ -1598,7 +1600,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
               items: () => wiring.itemsOf(wiki), board: wiring.board, cas: browserPromoteCas(),
               wardSigner: () => wardRootSignerOf(`a commit in ${wiki}`), face: { grant: (key: string) => promoteFace.read()?.grant(key) ?? false },
               // THE DROP FLOOR (road L23): a bound row that leaves the ledger lands as a drop on the board, where no custody row reaches.
-              landDrops: (tombstones) => boardDoor.drop(tombstones) }), boardDoor,
+              landDrops: (tombstones) => boardDoor.drop(tombstones), owner: wornAtom.key }), boardDoor,
           });
           const push = async (data: string) => { daemon.placeVerb({ verb: "promote-state", args: { data }, requestedBy: "promote", origin: "channel" }); };
           // A quiet panel stays unpushed (the island starts quiet): a push is a verb tiddler in the daemon document, and a boot mints no content head.

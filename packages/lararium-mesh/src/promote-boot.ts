@@ -16,6 +16,9 @@ export function promoteBoot(opts: {
   itemsOf: (wiki: string) => Promise<readonly PromoteItem[]>;
   /** The face whose grant a bound row's ward signature answers to (seat-harness#/the-ward); absent, every daemon or kahua row voids. */
   face?: PromotionPorts["face"];
+  /** This device's atom key (the ledger's owner) and the door that lands an owed drop floor at boot (road `L23`). */
+  owner?: string;
+  landDrops?: PromotionPorts["landDrops"];
   /** Resolves when the wiki restarted, or answers `{ pending }` when the restart follows a later completion (a raise in flight here): pending until it reports. */
   restart: (wiki: string, hit: readonly string[]) => Promise<void | { pending: Promise<void> }>;
   onReport?: (wiki: string, report: PromoteBootReport) => void;
@@ -42,7 +45,7 @@ export function promoteBoot(opts: {
       });
       try {
         const result = await promotions({ wiki, ledger: wrap(opts.stores.ledger), local: wrap(opts.stores.local),
-          items: () => opts.itemsOf(wiki), board: opts.board, cas: opts.cas, ...(opts.face ? { face: opts.face } : {}),
+          items: () => opts.itemsOf(wiki), board: opts.board, cas: opts.cas, ...(opts.face ? { face: opts.face } : {}), ...(opts.owner ? { owner: opts.owner } : {}), ...(opts.landDrops ? { landDrops: opts.landDrops } : {}),
           who: { kind: "seat", id: "boot" } }).boot();
         loaded.set(wiki, new Set(result.pluginCids.map(digest => promoteEdgeKey(wiki, digest))));
         opts.onReport?.(wiki, { orphans: result.orphans, updateWaits: result.updateWaits, voided: result.voided, shadowed: result.shadowed });

@@ -141,7 +141,7 @@ test("RED: a daemon or kahua ledger row written straight into custody, with no w
     const doorOf = (wiki: string, extra: object = {}) => promotions({
       wiki, ...nodePromoteStores(GROUP), who: hand, items: async () => [{ ...rite, revision: "r1", origin: { seat: "s", device: "d", session: "x" } }],
       board: async () => readPromoteBoard(acts, { ...face, ward: { accepts: () => true } }), cas: { put: (d, b) => { cas.set(d, b); }, pin: () => {} }, face,
-      landDrops: (tombstones) => boardDoor.drop(tombstones), ...extra,
+      landDrops: (tombstones) => boardDoor.drop(tombstones), owner: atom.key, ...extra,
     });
     for (const wiki of ["daemon", "kahua"]) {
       const booted = await doorOf(wiki).boot();

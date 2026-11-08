@@ -15,6 +15,24 @@ export type PromoteBoardDoorPorts = {
   /** The face's intent plane, where a lower's co-sign rides (seat-harness#/the-swarm-slices): every composition hands one, read at the act. */
   cosign(): WardCosignPort | Promise<WardCosignPort>;
 };
+/**
+ * Land each tombstone as this atom's drop, skipping the drops the board already names for it (road `L23`). The reader counts a drop by
+ * its signer alone, so no face's enrolment enters here; a boot without a board door lands its owed floor through this same helper.
+ */
+export async function landPromoteDrops(ports: { group: string; atom: Signer; epoch(): number; board: { records(): Promise<readonly unknown[]>; land(act: SignedPromoteAct): Promise<void> } }, tombstones: readonly PromotionTombstone[]): Promise<{ cids: string[] }> {
+  const reader = { group: ports.group, grant: () => false, device: () => false, ward: WARD_GATE_DECIDED };
+  const named = new Set(readPromoteBoard(await ports.board.records(), reader).droppedBy(ports.atom.key));
+  const cids: string[] = [];
+  for (const t of tombstones) {
+    const key = promoteDropKey(t.wiki, t.digest, t.seq);
+    if (named.has(key)) continue;
+    const act = await signPromoteDrop({ group: ports.group, epoch: ports.epoch(), wiki: t.wiki, digest: t.digest, seq: t.seq }, ports.atom);
+    const reading = readPromoteAct(act, reader);
+    if (!reading.ok) throw new KapaeRefused("promote-act-refused", reading.refusal);
+    await ports.board.land(act); cids.push(reading.cid); named.add(key);
+  }
+  return { cids };
+}
 export function promoteBoardDoor(ports: PromoteBoardDoorPorts) {
   // The door lands what its gate decided (its outcome follows the act); every READ of the board names the co-sign witness.
   const land = async (act: SignedPromoteAct) => {
@@ -77,23 +95,11 @@ export function promoteBoardDoor(ports: PromoteBoardDoorPorts) {
       }
     },
     /**
-     * THE DROP FLOOR (road `L23`): each bound row that left the ledger lands as a drop over its (wiki, digest, seq), signed by this
-     * device's atom. A drop only adds a brake, so no ward opens and no co-sign waits; no act lifts one. A drop the board already names
-     * lands nothing.
+     * THE DROP FLOOR (road `L23`): each bound row that left this device's ledger lands as a drop over its (wiki, digest, seq), signed by
+     * this device's atom, the owner the ward bytes bind. A drop only adds a brake, and only to this device's ledger, so no ward opens, no
+     * co-sign waits and no enrolment gates it; no act lifts one. A drop the board already names for this atom lands nothing.
      */
-    async drop(tombstones: readonly PromotionTombstone[]) {
-      const signer = ports.atom;
-      if (!ports.face.device(signer.key)) throw new KapaeRefused("device-not-enrolled", "this device's atom stands in no enrolment of the face");
-      const named = new Set(readPromoteBoard(await ports.board.records(), { ...ports.face, ward: WARD_GATE_DECIDED }).dropped());
-      const cids: string[] = [];
-      for (const t of tombstones) {
-        const key = promoteDropKey(t.wiki, t.digest, t.seq);
-        if (named.has(key)) continue;
-        cids.push((await land(await signPromoteDrop({ group: ports.group, epoch: ports.epoch(), wiki: t.wiki, digest: t.digest, seq: t.seq }, signer))).cid);
-        named.add(key);
-      }
-      return { cids };
-    },
+    async drop(tombstones: readonly PromotionTombstone[]) { return landPromoteDrops({ group: ports.group, atom: ports.atom, epoch: ports.epoch, board: ports.board }, tombstones); },
     async mint() { return { url: promoteBoardMint(ports.projection(), ports.group), minted: false as const }; },
   };
 }
