@@ -338,10 +338,10 @@ describe("face grant standing replaces the face lease", () => {
     expect((await verifyFaceGrantRecord(rec, aside)).ok).toBe(false);
   });
 
-  test("RED: a signed clear founder edge with no epoch grants; CONTROL: a changed signature refuses", async () => {
+  test("a signed clear founder edge with no epoch grants; changed grant or edge signatures refuse", async () => {
     const old = await founderEdge();
     const { boundEpoch: _discard, signature: _rootSig, atomSignature: _atomSig, ...fields } = old;
-    // Proposed epoch-free signed shape: the same domain and identity fields, with the epoch component removed.
+    // The epoch-free signed shape omits the epoch component from both signatures.
     const proof = `${DEVICE_DELEGATION_DOMAIN}|${fields.personaRootDid}|${fields.deviceDid}|${fields.deviceVerifyingKey}|${fields.hearthTrueName}`;
     const signature = await ed25519SignerFromSeed(ROOT_SEED)(new TextEncoder().encode(proof));
     const atomSignature = await ed25519SignerFromSeed(FOUNDER_SEED)(new TextEncoder().encode(`${DEVICE_ATOM_COUNTERSIGN_DOMAIN}|${proof}|${signature}`));
@@ -350,11 +350,14 @@ describe("face grant standing replaces the face lease", () => {
     const kel = await personaKel(null);
     const ctx = { personaRootDid: edge.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP,
       personaKel: kel, dyad: (_key: string) => "clear" as const };
-    // A minted-shape edge reaches the grant signature check, so the changed signature refuses there by name.
-    const control = await grantFor();
-    expect((await verifyFaceGrantRecord(control, ctx)).ok).toBe(true);
-    expect(await verifyFaceGrantRecord({ ...control, sig: "0".repeat(128) }, ctx))
-      .toMatchObject({ ok: false, reason: "the record's signature fails under the founder's licensed key" });
     expect((await verifyFaceGrantRecord(rec, ctx)).ok).toBe(true);
+    expect(await verifyFaceGrantRecord({ ...rec, sig: "0".repeat(128) }, ctx))
+      .toMatchObject({ ok: false, reason: "the record's signature fails under the founder's licensed key" });
+    // Re-sign the outer grant so the edge's own signature, rather than the grant signature, decides.
+    const tamperedEdge = { ...edge, signature: "0".repeat(128) };
+    const tampered = await grantFor({ founderEdge: tamperedEdge });
+    const verdict = await verifyFaceGrantRecord(tampered, ctx);
+    expect(verdict.ok).toBe(false);
+    if (!verdict.ok) expect(verdict.reason).toMatch(/founder|edge|signature/i);
   });
 });
