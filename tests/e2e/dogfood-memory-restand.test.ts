@@ -1,19 +1,22 @@
 /**
  * LEAD RUNS: this proof founds and boots two staged vessels and exercises the daemon's projection journal.
  * The content key keeps the same memory title across a state-home re-stand; a changed key makes a new title.
+ * Road L9: a stage row's title derives from its `row-key` alone (`lar:///ha.ka.ba/kahua/memory/<row-key>`), the
+ * Confluence gate refuses a row at any other title (`row-key-title`), and `lares meme put` re-pours an exported
+ * projection byte for byte. The projection aligns its meta, so the fields read by name, never by spacing.
  */
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
-import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { daemonWikiDir, openStaged, stageDir, type LarInstance } from "../harness/instance.js";
 import { expectEntry } from "../harness/journal-expect.js";
 
 const ROW = { rowKey: "dogfood-memory-row-76f4a2ff", text: "The memory crosses a re-stand by its content key." };
-const titleFor = (rowKey: string): string => {
-  const key = createHash("sha256").update(JSON.stringify({ rowKey, fields: { kind: "memory", steward: "dogfood" }, text: ROW.text })).digest("hex");
-  return `lar:///ha.ka.ba/kahua/memory/${key}`;
-};
+// An independent spelling of the house derivation (`stageRowTitle`), so a drift in either reads red here.
+const titleFor = (rowKey: string): string => `lar:///ha.ka.ba/kahua/memory/${rowKey}`;
+/** One meta field by name, whatever column the canonical render aligns its `=` at. */
+const field = (text: string, name: string): string | undefined =>
+  new RegExp(`^${name}\\s*=\\s*"([^"]*)"$`, "m").exec(text)?.[1];
 const pathFor = (uri: string): string => uri.slice("lar:///".length);
 const carrier = (uri: string, rowKey = ROW.rowKey): string => {
   const path = pathFor(uri);
@@ -74,7 +77,7 @@ describe("dogfood memory survives a content-keyed re-stand", () => {
     // The face folder comes from the old projection itself; it remains inside the renamed state home.
     const archivedProjection = join(asideRoot, oldProjectionRelative);
     const priorWiki = readFileSync(archivedProjection, "utf8");
-    expect(priorWiki).toContain(`row-key = "${ROW.rowKey}"`);
+    expect(field(priorWiki, "row-key")).toBe(ROW.rowKey);
     const sourceAgain = join(freshRoot, "re-pour.mem");
     writeFileSync(sourceAgain, priorWiki);
     const poured = await restored!.cli(["meme", "put", uri, "--recipe", "default", "--file", sourceAgain, "--json"]);
@@ -84,7 +87,8 @@ describe("dogfood memory survives a content-keyed re-stand", () => {
     const data = fetched.json?.["data"] as Record<string, unknown>;
     expect(data["uri"]).toBe(uri);
     expect(data["text"]).toBe(priorWiki);
-    expect(data["text"]).toContain(`kind = "memory"\nsteward = "dogfood"\nrow-key = "${ROW.rowKey}"`);
+    const text = String(data["text"]);
+    expect([field(text, "kind"), field(text, "steward"), field(text, "row-key"), field(text, "title")]).toEqual(["memory", "dogfood", ROW.rowKey, uri]);
     const newProjection = join(daemonWikiDir(freshRoot), `${path}.mem`);
     await expectEntry(restored!, {
       kind: "bag-projected",
@@ -106,7 +110,16 @@ describe("dogfood memory survives a content-keyed re-stand", () => {
     expect(put.json?.["ok"], `${put.stdout}\n${put.stderr}`).toBe(true);
     const fetched = await restored!.cli(["meme", "get", changedUri, "--recipe", "default", "--json"]);
     expect(fetched.json?.["ok"], `${fetched.stdout}\n${fetched.stderr}`).toBe(true);
-    expect((fetched.json?.["data"] as Record<string, unknown>)["text"]).toContain(`row-key = "${changedKey}"`);
-    expect((fetched.json?.["data"] as Record<string, unknown>)["text"]).toContain(changedUri);
+    const text = String((fetched.json?.["data"] as Record<string, unknown>)["text"]);
+    expect([field(text, "row-key"), field(text, "title")]).toEqual([changedKey, changedUri]);
+
+    // The gate holds the derivation: the changed row placed at the old row's title refuses by name, and the old row stands.
+    const drifted = join(freshRoot, "drifted-row.mem");
+    writeFileSync(drifted, carrier(titleFor(ROW.rowKey), changedKey));
+    const refused = await restored!.cli(["meme", "put", titleFor(ROW.rowKey), "--recipe", "default", "--file", drifted, "--json"]);
+    expect(refused.json?.["ok"], `${refused.stdout}\n${refused.stderr}`).toBe(false);
+    expect(JSON.stringify(refused.json?.["error"])).toContain("row-key-title");
+    const kept = await restored!.cli(["meme", "get", titleFor(ROW.rowKey), "--recipe", "default", "--json"]);
+    expect(field(String((kept.json?.["data"] as Record<string, unknown>)["text"]), "row-key")).toBe(ROW.rowKey);
   });
 });
