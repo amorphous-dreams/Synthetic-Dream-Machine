@@ -101,6 +101,7 @@ export function makeFaceSeat(ports: FaceSeatPorts) {
   let lifted = false;
   let active: Promise<boolean> | null = null;
   let dirty = false;
+  let proofVersion = 0;
   let waitingOnProof = false;
   let announcedUnseated = false;
   const seated = () => ports.knowsAgent(ports.group);
@@ -139,12 +140,15 @@ export function makeFaceSeat(ports: FaceSeatPorts) {
         if (typeof record?.sig !== "string" || judged.has(record.sig)) continue;
         // THE FOUNDER'S STANDING, read once per record for the device its edge names: the verifier decides from it.
         const founderKey = record.founderEdge?.deviceVerifyingKey;
+        const proofAtRead = proofVersion;
         const standing: EdgeStanding = typeof founderKey === "string" ? await ports.founderStanding(founderKey) : "unknown";
         // Walk the held lineage even when standing is unknown, so a fork cannot hide behind a pending frontier.
         const verdict = await ports.verify(record, {
           personaRootDid: ports.personaRootDid, selfVerifyingKey: self, groupId: ports.group, personaKel: ports.personaKel,
           dyad: (asked) => typeof founderKey === "string" && asked.toLowerCase() === founderKey.toLowerCase() ? standing : "unknown",
         });
+        // A proof change overtook this reading. The queued pass must read again before ingest or memoization.
+        if (proofAtRead !== proofVersion) return false;
         if (!verdict.ok) {
           // A refusal for proof this vessel does not yet hold judges nothing: the record waits, and the proof's arrival wakes it.
           if (verdict.pending) {
@@ -198,6 +202,6 @@ export function makeFaceSeat(ports: FaceSeatPorts) {
   const wake = () => { void run(); };
   // A change during an in-flight read must also queue a pass: the read may have captured the old standing before
   // the change, and has not yet marked the grant as waiting. Idle seats without pending proof do no work.
-  const daemonChanged = (_title: string) => { if (waitingOnProof || active) wake(); };
+  const daemonChanged = (_title: string) => { proofVersion++; if (waitingOnProof || active) wake(); };
   return { seated, daemonChanged, settled: async () => { if (active) await active; }, wake, run };
 }

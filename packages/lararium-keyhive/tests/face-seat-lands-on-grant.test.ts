@@ -207,6 +207,31 @@ describe("a causal face seat", () => {
     expect(await exercise(true)).toEqual({ reads: 2, ingests: 1 });
     expect(await exercise(false)).toEqual({ reads: 2, ingests: 0 });
   });
+  test("a clear reading overtaken by an aside cannot ingest; CONTROL: unchanged clear seats", async () => {
+    const exercise = async (aside: boolean) => {
+      let standing: "clear" | "aside" = "clear", ingests = 0, known = false, verifies = 0;
+      let release!: () => void, started!: () => void;
+      const blocked = new Promise<void>((resolve) => { release = resolve; });
+      const verifying = new Promise<void>((resolve) => { started = resolve; });
+      const seat = makeFaceSeat({
+        group, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
+        knowsAgent: async () => known, grants: async () => [{ title, record: grant }],
+        founderStanding: async () => standing,
+        verify: async (_record, ctx) => {
+          const snapshot = ctx.dyad?.(FOUNDER);
+          if (++verifies === 1) { started(); await blocked; }
+          return snapshot === "aside" ? { ok: false, reason: "founder device set aside" } : { ok: true };
+        },
+        ingest: async () => { ingests++; known = true; }, lift: async () => {}, log: () => {},
+      });
+      const running = seat.run(); await verifying;
+      if (aside) { standing = "aside"; seat.daemonChanged("edge/aside"); }
+      release(); await running;
+      return { ingests, known };
+    };
+    expect(await exercise(false)).toEqual({ ingests: 1, known: true });
+    expect(await exercise(true)).toEqual({ ingests: 0, known: false });
+  });
   test("R3 duplicate pulses coalesce and a pulse during a pass yields one trailing pass", async () => {
     const f = fixture(); f.arrive(); f.standingArrives();
     const running = f.seat.run();
