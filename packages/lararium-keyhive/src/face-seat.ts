@@ -239,8 +239,8 @@ export function makeFaceSeat(ports: FaceSeatPorts) {
     return active;
   };
   const wake = () => { void run(); };
-  // A change during an in-flight read must also queue a pass: the read may have captured the old standing before
-  // the change, and has not yet marked the grant as waiting. Idle seats without pending proof do no work.
+  // A change during an in-flight read queues a pass too: that read's standing predates the change, and the grant
+  // stands unmarked as waiting until the pass ends. A seat with no pass running and no pending proof does no work.
   const daemonChanged = (_title: string) => { proofVersion++; if (waitingOnProof || active) wake(); };
   return { seated, daemonChanged, settled: async () => { if (active) await active; }, wake, run };
 }

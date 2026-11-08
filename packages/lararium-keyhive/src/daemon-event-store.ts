@@ -162,7 +162,7 @@ export interface CapEventSink {
  * The trailing loop is the backstop: keyhive accepts a subset of any bundle, and what it did not take must
  * still persist for a boot replay. Those rows carry the sentinel honestly — nothing on this side read them.
  */
-/** The reading that licensed this absorb no longer stands: nothing mutated, nothing persisted. */
+/** The guard refused at the boundary: the reading that licensed this absorb differs from the one it was asked under; nothing mutated, nothing persisted. */
 export class IngestOvertaken extends Error {
   constructor() { super("cap-event ingest overtaken: the reading that licensed it changed before the mutation; nothing taken"); this.name = "IngestOvertaken"; }
 }
