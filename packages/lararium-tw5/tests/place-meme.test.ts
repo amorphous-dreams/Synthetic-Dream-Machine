@@ -7,7 +7,10 @@
  * tests here drive it over an in-memory sink so the placement law reads without a wiki beneath it.
  */
 import { describe, test, expect } from "vitest";
-import { placeMeme, wikiMemeSink, groupOfMeme, listMemes, type MemeSink } from "../src/place-meme.js";
+import {
+  placeMeme, wikiMemeSink, groupOfMeme, listMemes, readMeme, stageRowTitle, STAGE_ROW_PREFIX,
+  ROW_KEY_MISSING_CODE, ROW_KEY_SHAPE_CODE, ROW_KEY_TITLE_CODE, type MemeSink,
+} from "../src/place-meme.js";
 import type { TiddlerFields } from "../src/deserializer.js";
 
 const URI = "lar:///t/x";
@@ -194,5 +197,90 @@ describe("★ listMemes — roots by default, the slot tree on request ★", () 
     ]);
     // CONTROL: no slot child, and no carriage part, lists as a root.
     expect(listed.map((r) => r.uri)).toEqual([URI, "lar:///t/y", "lar:///t/z"]);
+  });
+});
+
+/** A stage row: the memory stage's carrier, its `row-key` in the meta, at whatever title the writer names. */
+const stageRow = (uri: string, rowKey: string | null, body = "The memory crosses a re-stand by its content key."): string =>
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n<<^ code=\`&#x0002;\`>>\n\n` +
+  `\`\`\`toml meta\nuri-path = "${uri.slice("lar:///".length)}"\nkind = "memory"\n${rowKey === null ? "" : `row-key = "${rowKey}"\n`}\`\`\`\n\n` +
+  `! A stage row\n\n${body}\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
+
+describe("★ L9: a stage row's title derives from its row key, never a clock or a counter ★", () => {
+  test("the title reads the stage prefix and the row key, the same key always the same title", () => {
+    expect(STAGE_ROW_PREFIX).toBe("lar:///ha.ka.ba/kahua/memory/");
+    expect([ROW_KEY_MISSING_CODE, ROW_KEY_SHAPE_CODE, ROW_KEY_TITLE_CODE]).toEqual(["row-key-missing", "row-key-shape", "row-key-title"]);
+    expect(stageRowTitle("l9-dogfood-proof")).toBe("lar:///ha.ka.ba/kahua/memory/l9-dogfood-proof");
+    expect(stageRowTitle("feedback/never-stash")).toBe("lar:///ha.ka.ba/kahua/memory/feedback/never-stash");
+    expect(stageRowTitle("l9-dogfood-proof")).toBe(stageRowTitle("l9-dogfood-proof"));
+  });
+
+  test("CONTROL: a changed row key derives a different title", () => {
+    expect(stageRowTitle("l9-dogfood-proof-changed")).not.toBe(stageRowTitle("l9-dogfood-proof"));
+  });
+
+  test.each([
+    ["", "empty"], ["L9", "uppercase"], ["a/b/c", "three segments overrun the uri's four path segments"],
+    ["../x", "dot segment"], ["a/", "empty segment"], ["-a", "leading hyphen"], ["a b", "space"], ["a#b", "fragment"],
+  ])("a row key that reads no path refuses by name: %j (%s)", (key) => {
+    expect(() => stageRowTitle(key)).toThrow(/^row-key-shape: /);
+  });
+
+  test("a row placed at its derived title lands", async () => {
+    const sink = memorySink();
+    const uri = stageRowTitle("l9-dogfood-proof");
+    const r = await placeMeme({ uri, text: stageRow(uri, "l9-dogfood-proof") }, sink);
+    expect(r.decision).toBe("ingest");
+    expect(sink.store.get(uri)?.["row-key"]).toBe("l9-dogfood-proof");
+  });
+
+  test("★ a row placed at any other title refuses `row-key-title`, and nothing lands ★", async () => {
+    const sink = memorySink();
+    const drifted = stageRowTitle("l9-dogfood-proof-changed");
+    const r = await placeMeme({ uri: drifted, text: stageRow(drifted, "l9-dogfood-proof") }, sink);
+    expect(r.decision).toBe("refuse");
+    expect(r.diagnostics.map((d) => d.code)).toEqual([ROW_KEY_TITLE_CODE]);
+    expect(r.warnings[0]).toContain(stageRowTitle("l9-dogfood-proof"));
+    expect(sink.store.size).toBe(0);
+  });
+
+  test("a row key outside the stage refuses `row-key-title` too: the key names one title, one place", async () => {
+    const sink = memorySink();
+    const r = await placeMeme({ uri: "lar:///t/x", text: stageRow("lar:///t/x", "l9-dogfood-proof") }, sink);
+    expect(r.decision).toBe("refuse");
+    expect(r.diagnostics.map((d) => d.code)).toEqual([ROW_KEY_TITLE_CODE]);
+    expect(sink.store.size).toBe(0);
+  });
+
+  test("★ a row under the stage prefix with no row key refuses `row-key-missing` ★", async () => {
+    const sink = memorySink();
+    const uri = stageRowTitle("l9-dogfood-proof");
+    const r = await placeMeme({ uri, text: stageRow(uri, null) }, sink);
+    expect(r.decision).toBe("refuse");
+    expect(r.diagnostics.map((d) => d.code)).toEqual([ROW_KEY_MISSING_CODE]);
+    expect(sink.store.size).toBe(0);
+  });
+
+  test("a row key that reads no path refuses `row-key-shape` at the gate", async () => {
+    const sink = memorySink();
+    const uri = `${STAGE_ROW_PREFIX}L9`;
+    const r = await placeMeme({ uri, text: stageRow(uri, "L9") }, sink);
+    expect(r.decision).toBe("refuse");
+    expect(r.diagnostics.map((d) => d.code)).toEqual([ROW_KEY_SHAPE_CODE]);
+    expect(sink.store.size).toBe(0);
+  });
+
+  test("★ RED (L9): one export poured onto two fresh sinks reproduces the same tiddlers, title, fields and text ★", async () => {
+    const first = memorySink();
+    const uri = stageRowTitle("l9-dogfood-proof");
+    await placeMeme({ uri, text: stageRow(uri, "l9-dogfood-proof") }, first);
+    const exported = (await readMeme(uri, first))!.text;
+    const a = memorySink();
+    const b = memorySink();
+    expect((await placeMeme({ uri, text: exported }, a)).decision).toBe("ingest");
+    expect((await placeMeme({ uri, text: exported }, b)).decision).toBe("ingest");
+    expect([...a.store.entries()]).toEqual([...b.store.entries()]);
+    expect([...a.store.entries()]).toEqual([...first.store.entries()]);
+    expect((await readMeme(uri, b))!.text).toBe(exported);
   });
 });

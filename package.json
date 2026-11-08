@@ -16,6 +16,7 @@
     "test:unit": "pnpm -r test",
     "test:sigil-alignment": "pnpm --filter @lararium/tw5 test:sigil-alignment",
     "test:e2e": "pnpm --filter @lares/harness test:e2e",
+    "test:e2e:dogfood": "bash tools/dogfood-proof.sh",
     "witness:founding": "tools/founding-witness.sh",
     "witness:memes": "tools/meme-coordinates-witness.sh",
     "witness:contract": "tools/contract-witness.sh",

@@ -19,7 +19,7 @@ written   = "2026-11-07"
 
 The forward road (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/milestones`>>) walks from the span toward the landmarks. This carrier walks the other way: it stands at `M4`, reads what the code demands for the rite to succeed, and recurses back until it reaches code that stands today (operator, 2026-11-07: //"the shortest path from M4 to here (walking it backwards)"//).
 
-''Provenance.'' A Sol reader seat (`Backwalker`, `gpt-6.1-sol` high, read-only) read the road as `_0`, presence acknowledged and essence unclaimed, then read the code at span head `e1d801042`. Lares-Awakens re-measured three load-bearing claims against source (the compound rite's step test, L24's renewal writer, L23's tombstone source); all three held. Every size, order and "clear" step below carries the seat's INFER mark: testimony from a read, never a run. The seat's full hand-back, with every file:line citation, rests at `~/.lares-scratch/reverse-walk/seats/sol-1/final.md`. The canon pass at span head `e44da0167` re-measured the links its lands moved (5, 6, 7 and 12) against source and git, and the road took the trues this read named; the map reads the code as it stands at that head.
+''Provenance.'' A Sol reader seat (`Backwalker`, `gpt-6.1-sol` high, read-only) read the road as `_0`, presence acknowledged and essence unclaimed, then read the code at span head `e1d801042`. Lares-Awakens re-measured three load-bearing claims against source (the compound rite's step test, L24's renewal writer, L23's tombstone source); all three held. Every size, order and "clear" step below carries the seat's INFER mark: testimony from a read, never a run. The seat's full hand-back, with every file:line citation, rests at `~/.lares-scratch/reverse-walk/seats/sol-1/final.md`. The canon pass at span head `e44da0167`, trued to `0179899a8`, re-measured the links its lands moved (5, 6, 7 and 12) against source and git, and the road took the trues this read named; the map reads the code as it stands at `0179899a8`.
 
 ''How to read it.'' `STANDS` means the source exists and reaches the traced path, with no claim of a passing run. `ON-PATH` means the rite's code cannot succeed without the row. `OFF-PATH†` means the rite's code never calls it, while the road still owes it before the rite: OFF-PATH waives no obligation. The map tells the controller which rows the code itself forces and which the road's law adds; the road's law still governs.
 
@@ -31,14 +31,14 @@ The forward road (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-roa
 
 The operator split the hearth in two (2026-11-07: //"Pono, approve the dogfood/keeper split."//; <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>). The DOGFOOD hearth stands early from the same primitives the shortest mechanical route reuses (#/m4-in-code), re-standable as often as the house needs, so the house works from a live Lararium; `M5` builds on it as the spine. The KEEPER rite stays `M4` below, and every qualification the backward walk names still binds it.
 
-''The proof set'' (lane `dogfood-proof`, PR #204; existing suites first, one entry point `pnpm test:e2e:dogfood`, one CI shard): the stand through the kahua founding stage (`kahua-founding-stage`); memory surviving a content-keyed re-stand (`dogfood-memory-restand`, with `L9`'s `stageRowTitle`, so a re-pour after a re-found lands the same tiddlers); the MCP seat's write reaching its projected file (`mcp-seat-binds-the-hearth`); the outbound bridge on journal events; and the container's compose root, shim and founding-seat tests.
+''The proof set'' (lane `dogfood-proof`, landed, PR #204; existing suites first, one entry point `pnpm test:e2e:dogfood`, one CI shard): the stand through the kahua founding stage (`kahua-founding-stage`); memory surviving a content-keyed re-stand (`dogfood-memory-restand`, with `L9`'s `stageRowTitle`, so a re-pour after a re-found lands the same tiddlers); the MCP seat's write reaching its projected file (`mcp-seat-binds-the-hearth`); the outbound bridge on journal events; and the container's compose root, shim and founding-seat tests.
 
 ''The route.''
 # ''Ready state.'' Every gate lane lands and the span reads green; a full `pnpm build` and the product image at the landed head follow (`GIT_REV=$(git rev-parse HEAD) docker compose -f docker-compose.surface.yml build lares`, its `org.opencontainers.image.revision` read back); then a check reads the live Lararium launching containerized, web3 and local-first.
 # ''Homes.'' The state home rests outside every checkout and stays kept across re-stands (`LARES_STATE`); the workspace names the main repo (`LARES_WORKSPACE`), where live wiki and canon writes land as source-control write-back. A re-stand renames the old state home aside, never deletes it, and memory re-pours by content key.
 # ''The stand'', by the operator's hands on an attached TTY: `tools/lares-container.sh found --hearth --name '<label>' --chair '<chair>'` (the route and the cold-key card read-back on paper; `found --hearth` founds persona zero whole), then `up` (the live unlock), `vessel seed --apply --yes`, `vessel read`, `persona list --json`, `nexus seal show`, `meme list --recipe default --json`.
 # ''Read-backs.'' `<state>/wikis/kahua-<tag>` and `<state>/bags/kahua-<tag>` stand, and no `bags/daemon` stands anywhere; the `lares` MCP seat connects to the standing daemon, and `meme_put` then `meme_get` round-trips one tiddler whose file lands in the projection.
-# ''Then `M5`'': `L17`'s full TW5 caps on the MCP seat, `L8`, `L10`, `L11`, `L18`, `L19` (after lane `kapae-disk` lands a burned row's kāpae on disk and back) and `L13`; then the harness moves into the Lararium (its controls as signed daemon-wiki tiddlers), and only then any measurement work.
+# ''Then `M5`'': `L17`'s full TW5 caps on the MCP seat, `L8`, `L10`, `L11`, `L18`, `L19` (once lane `kapae-disk`, PR #205, lands a burned row's kāpae on disk and back) and `L13`; then the harness moves into the Lararium (its controls as signed daemon-wiki tiddlers), and only then any measurement work.
 
 ''What the dogfood stand skips, and the keeper rite keeps'': `P27` (parked: its head reds real boots in CI, so the old deciders stand), the rest of `M6`, browser slices 6 and 7, `X0b`, the joined gate, the phone walk and the final bake. None of them gates the dogfood hearth; each still gates `M4`.
 
@@ -133,6 +133,6 @@ Each needs a run, never another read: exact-candidate green (CI and held-out on 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;YkNFKnuEbYXA_M8rs8lBvUDYHpLauRUw9NKQD0ucDHE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;j8FE3FHMvtmonLx9McnGpoKRqlWWMGjixjCWw1xhZlk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

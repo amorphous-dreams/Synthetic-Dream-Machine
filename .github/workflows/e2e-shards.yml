@@ -105,7 +105,11 @@ jobs:
           ~/.venv/bin/python3 -m pip install --upgrade pip
           ~/.venv/bin/python3 -m pip install -e ./mempalace -r packages/lararium-sensorium/requirements.txt
       - name: Witness the holder answers
-        run: ~/.venv/bin/python3 -c "import mempalace; from mcp.server.mcpserver import MCPServer; print('holder ok')"
+        # The slice below runs under a scratch HOME, where `~/.venv` names nothing: the seat's interpreter rides by name
+        # (`LARES_PYTHON`, read before `~/.venv`), pinned here while HOME still names the runner's own home.
+        run: |
+          ~/.venv/bin/python3 -c "import mempalace; from mcp.server.mcpserver import MCPServer; print('holder ok')"
+          echo "LARES_PYTHON=$HOME/.venv/bin/python3" >> "$GITHUB_ENV"
       - name: Run this shard's slice of its e2e set
         working-directory: ${{ matrix.dir }}
         env:
@@ -114,7 +118,9 @@ jobs:
           # neither, and `larRoot()` throws a clean error rather than silently sitting the repo
           # checkout as the corpus. Each shard gets its own directory; the shards never share a VM.
           LAR_ROOT: ${{ runner.temp }}/lar-root-${{ matrix.set }}-${{ matrix.shard }}
+          HOME: ${{ runner.temp }}/home-e2e-${{ matrix.set }}-${{ matrix.shard }}
         run: |
+          mkdir -p "$HOME"
           mkdir -p "$LAR_ROOT"
           # THE DEAL IS BY MEASURED WEIGHT, never vitest's path hash: `tools/e2e-shards.mjs shard-files` reads
           # `tools/e2e-shard-weights.json`, and the merge gate still reads every tracked file run exactly once.
@@ -124,6 +130,11 @@ jobs:
             --reporter=blob --reporter=json \
             --outputFile.json=".vitest/blob/report-shard-${{ matrix.set }}-${{ matrix.shard }}.json"
         timeout-minutes: 45
+      # The dogfood vessel suites above enter the normal tracked-file shard set. These no-socket
+      # controls pin the product image's state mounts and the host shim used by the runbook.
+      - name: Dogfood surface controls
+        if: ${{ matrix.set == 'tests' && matrix.shard == 4 }}
+        run: node --test tools/compose-surface-root.test.mjs tools/lares-container.test.mjs tools/container-founding-seat.test.mjs
       # THE COMPANION SET RIDES THIS RUNNER. A full CI run raises at most ten jobs (tools/ci-graph.test.mjs), so the node
       # package's 47-second e2e set takes no runner of its own: it runs here, after the shard's slice, and uploads under its
       # own artifact name (`e2e-shard-node-1`), so the merge gate reads it exactly as it read the shard it replaces.
