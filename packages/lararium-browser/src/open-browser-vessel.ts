@@ -1,5 +1,5 @@
 import type { DocumentId } from "@automerge/automerge-repo";
-import { makeHeldShareFloor, makeIslandAudienceReader, catalogViewOf, islandPeersOf, peerShareAudience, type CapabilityRecord, type PluginProof } from "@lararium/mesh";
+import { makeHeldShareFloor, makeIslandAudienceReader, NO_CONTRACT_SECRETS_PLANE, islandPeersOf, peerShareAudience, type CapabilityRecord, type PluginProof } from "@lararium/mesh";
 import type { ShareBoundary } from "@lararium/mesh";
 import { browserPromoteStores, browserPromoteCas } from "./browser-promoted-store.js";
 import { browserWardBindRoute, BrowserWardRefused, browserWardSigner, type WardAskKind } from "./browser-ward.js";
@@ -712,7 +712,6 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     hydrates: true,
   });
   let shareRepo: Repo | null = null;
-  let shareCatalog: DocHandle<LarDoc> | null = null;
   let publicTierGate: DeterministicFederationGate | null = null;
   let publicGenesisCids: ReadonlySet<string> = new Set();
   let poolCaps: CapabilityRecord | null = null;
@@ -736,12 +735,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     sealedPlane: (id) => sealedBagOf(id) !== null,
     nonBagTier: (id) => id === fleetBoardDoc ? "personagroup" : null,
     faceOwns: (id) => sealedBagOf(id) !== null,
-    secretsCatalog: {
-      face: () => catalogViewOf(shareCatalog)?.faceHandle() ?? null,
-      sealed: () => false, // This leaf reads the durable registry; the hearth alone writes it.
-      failure: () => null,
-      flush: async () => { await shareRepo!.flush(); },
-    },
+    // A LEAF STANDS AS A SURFACE (the seat's ruling 2026-11-07; road #/rulings · "no key on a surface"): the secrets vault stands on
+    // the node alone, so no gate lets a secrets plane reach this vessel, and its face planes cross by their declared tier.
+    secrets: { establishedAbsence: NO_CONTRACT_SECRETS_PLANE },
     onRefusal: (error) => console.log(`[share-tier] ${error.name}: ${error.message}`),
   });
   // A RESOLUTION'S PROOF SEATS ON THE FLOOR (P27): the plugin CIDs one wiki's resolution proved count as references at their
@@ -1302,7 +1298,6 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   })() : [];
 
   // ── The WHO plane as a LEAF — RESOLVE the per-Nexus crossroads board; announce NOTHING ──
-  shareCatalog = catalogHandle;
   // Networked only: the board needs the relay to sync, and the island key (`nexusPubkey`) scopes the
   // causal island so a human's two vessels resolve the SAME board. Boot composes whoFaceCap with NO card: it
   // resolves the island's WHO board through the deterministic crossroads address and layers it writable so
@@ -1757,7 +1752,6 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // as a nested stack on unlock. The lift seats `custodyWrite` and `sessionSign` while this vessel's custody stands
       // open and a joined face's Nexus session stands; its dispose IS the lock: both leave the record and the session's
       // signer drops. A vessel at its floor carries neither, and its island's `session:sign` answers `signer-unavailable`.
-      shareCatalog = assembly.catalogHandle;
       const islandFloor = await composeVessel(islandFloorStack({
         tiers: shareFloor.tiers, documentsForCid: shareFloor.documentsForCid,
         receipt: browserIslandReceipt(repo),

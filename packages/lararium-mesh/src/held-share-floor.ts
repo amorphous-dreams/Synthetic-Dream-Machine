@@ -6,9 +6,9 @@ import { casCidOfRecord } from "./cas.js";
 import { makeTierFloorSource, type CapTier } from "./cap-tier.js";
 import { documentIdOfUrl } from "./sealed-rest.js";
 import { isBagId } from "./lar-uris.js";
-import { faceScopedSecrets, makeFaceSecretsRegistry, type FaceSecretsCatalog } from "./secrets-registry.js";
+import { faceScopedSecrets, makeFaceSecretsRegistry, NO_CONTRACT_SECRETS_PLANE, type ContractSecretsPlane, type FaceSecretsCatalog, type SecretsRegistry } from "./secrets-registry.js";
 import { plainField, plainRecord, ownEntry } from "./stored-value.js";
-import { DeclaredTierRefusal, makeManifestTierSource, makeShareBoundary } from "./share-tighten.js";
+import { DeclaredTierRefusal, makeManifestTierSource, makeShareBoundary, type ShareBoundary } from "./share-tighten.js";
 import { FACE_CATALOG_BAG_ID } from "./register-bags.js";
 import { isFaceScopedBag } from "./persona-scope.js";
 import type { PluginProof } from "./surface-recipe.js";
@@ -46,12 +46,40 @@ export interface HeldShareFloorReaders {
   nonBagTier(documentId: string): CapTier | null;
   /** The worn face's sealed map names this doc (its sealed bags and catalog). The secrets registry gates these alone. */
   faceOwns(documentId: string): boolean;
-  secretsCatalog: FaceSecretsCatalog;
+  /**
+   * Where the secrets reading comes from, by the vessel's kind (reach-plane#/the-vault-reads-as-a-bag):
+   *   · a NODE reads its face's registry over the face's own sealed catalog (`catalog`);
+   *   · a SURFACE (a browser leaf) floors by ESTABLISHED ABSENCE: the vault stands on the node alone and no key rests on a
+   *     surface, so no gate lets a secrets plane reach it (`establishedAbsence: NO_CONTRACT_SECRETS_PLANE`, the one constant).
+   */
+  secrets: HeldSecretsSource;
   onRefusal(refusal: Error): void;
 }
 
-export function makeHeldShareFloor(readers: HeldShareFloorReaders) {
-  const registry = makeFaceSecretsRegistry(readers.secretsCatalog);
+/** The held floor: the one boundary, the node's registry (null on a surface), and its readers of references. */
+export interface HeldShareFloor<R extends SecretsRegistry | null> {
+  readonly tiers: ShareBoundary;
+  readonly registry: R;
+  provePlugins(wikiSlug: string, proof: HeldPluginProof): void;
+  documentForBag(bag: string): string | undefined;
+  documentsForCid(cid: string): readonly string[];
+}
+
+export type HeldSecretsSource = { readonly catalog: FaceSecretsCatalog } | { readonly establishedAbsence: ContractSecretsPlane };
+
+/** A surface named an absence other than the one constant: absence must stand ESTABLISHED, never improvised. */
+export class SecretsAbsenceUnestablished extends Error {
+  override readonly name = "SecretsAbsenceUnestablished";
+  readonly reason = "secrets-absence-unestablished";
+  constructor() { super("secrets-absence-unestablished: a surface floors by NO_CONTRACT_SECRETS_PLANE alone"); }
+}
+
+export function makeHeldShareFloor(readers: HeldShareFloorReaders & { secrets: { readonly catalog: FaceSecretsCatalog } }): HeldShareFloor<SecretsRegistry>;
+export function makeHeldShareFloor(readers: HeldShareFloorReaders & { secrets: { readonly establishedAbsence: ContractSecretsPlane } }): HeldShareFloor<null>;
+export function makeHeldShareFloor(readers: HeldShareFloorReaders): HeldShareFloor<SecretsRegistry | null> {
+  const source = readers.secrets;
+  if ("establishedAbsence" in source && source.establishedAbsence !== NO_CONTRACT_SECRETS_PLANE) throw new SecretsAbsenceUnestablished();
+  const registry = "catalog" in source ? makeFaceSecretsRegistry(source.catalog) : null;
   const bindings = (): Map<string, string[]> => {
     const found = new Map<string, string[]>();
     const add = (bag: string, id: string) => { const ids = found.get(bag) ?? []; if (!ids.includes(id)) ids.push(id); found.set(bag, ids); };
@@ -125,7 +153,7 @@ export function makeHeldShareFloor(readers: HeldShareFloorReaders) {
     if (bags.length > 0 || readers.nonBagTier(id) !== null) return false;
     throw new DeclaredTierRefusal("declared-tier-unresolved", `${id}: no binding proves which face owns it`);
   };
-  const secrets = faceScopedSecrets(registry.plane, owns);
+  const secrets: ContractSecretsPlane = registry === null ? NO_CONTRACT_SECRETS_PLANE : faceScopedSecrets(registry.plane, owns);
   const declaredSource = { declaredTierForDoc: (id: string): CapTier | null => genesis(id) ? "public"
     : promotedRef(id) ? PROMOTED_PLUGIN_TIER : declared.declaredTierForDoc(id) };
   const floorOf = (federatable: (id: string) => boolean) => makeTierFloorSource({

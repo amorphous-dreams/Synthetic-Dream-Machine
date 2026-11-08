@@ -1,4 +1,4 @@
-import { makeHeldShareFloor, makeIslandAudienceReader, effectiveRecipe } from "@lararium/mesh";
+import { makeHeldShareFloor, makeIslandAudienceReader, effectiveRecipe, type HeldShareFloor, type SecretsRegistry } from "@lararium/mesh";
 /**
  * openNodeVessel — local-first Node.js vessel factory.
  *
@@ -753,7 +753,7 @@ interface NodeBootPrep {
   placeSigner:    PlaceSigner;
   /** This vessel's own gate key — the node ANCHORS its confederation, so its gate key doubles as the Nexus
    *  key its admitted browser leaves resolve. Every per-Nexus board (WHO, KEL, antigen) scopes to it. */
-  shareFloor: ReturnType<typeof makeHeldShareFloor>;
+  shareFloor: HeldShareFloor<SecretsRegistry>;
   nexusPubkey:      string;
   /** This vessel's gate key — its own verifying key, the key every gate it stands answers under. */
   vesselGateKey:    string;
@@ -1303,12 +1303,12 @@ async function prepareNodeBootOn(
     nonBagTier: (id) => ownHostingDocs.has(id as DocumentId) ? "contract"
       : (edgeShadows?.fleetBoardUrls() ?? []).some((url) => documentIdOfUrl(url) === id) ? "personagroup" : null,
     faceOwns: (id) => sealedBagOf(id) !== null,
-    secretsCatalog: {
+    secrets: { catalog: {
       face: () => catalogViewOf(shareCatalog)?.faceHandle() ?? null,
       sealed: () => faceCatalogDocId !== null && sealedBagOf(faceCatalogDocId) !== null,
       failure: () => null,
       flush: async () => { await shareRepo!.flush(); },
-    },
+    } },
     onRefusal: (error) => console.log(`[share-tier] ${error.name}: ${error.message}`),
   });
   // A RESOLUTION'S PROOF SEATS ON THE FLOOR (P27): the plugin CIDs one wiki's resolution proved (promoted at the ledger's tier,

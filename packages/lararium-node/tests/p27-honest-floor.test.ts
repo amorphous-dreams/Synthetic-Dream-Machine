@@ -50,7 +50,7 @@ async function house() {
     sealedPlane: (id) => sealed.has(id),
     nonBagTier: (id) => hostingDocs.has(id as DocumentId) ? "contract" : null,
     faceOwns: (id) => sealed.has(id),
-    secretsCatalog: { face: () => catalog, sealed: () => true, failure: () => null, flush: async () => { await repo.flush(); } },
+    secrets: { catalog: { face: () => catalog, sealed: () => true, failure: () => null, flush: async () => { await repo.flush(); } } },
     onRefusal: (error) => refused.push(error),
   });
   const ring = makePersonaGroupIdentityRing({

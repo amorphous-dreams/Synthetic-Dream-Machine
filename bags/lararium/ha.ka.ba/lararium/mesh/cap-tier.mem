@@ -83,6 +83,8 @@ The keystone reads back through the code: revert the meet to take the more-OPEN 
 
 ''One predicate tightens every allowing return.'' `tightenShare` (share-tighten.ts) takes the verdict a branch already reached and the AUDIENCE that branch proved (`in-process` · `fleet` · `contract` · `world`), and only withdraws: a structural deny stays deny; `in-process` stays allowed after the structural checks; a same-face sibling crosses a vessel boundary and reads `fleet`; PERSONAGROUP holds the fleet, CONTRACT the fleet and the contracted, PUBLIC anyone, VEIL the island alone. A reading that cannot answer (a `SecretsRegistryRefusal`, a `DeclaredTierRefusal`, any throw) withholds, and so does a vessel crossing that names no document. The ring stands required, so an omitted ring never reads as an inert one. The declared tier reads off the bag's manifest met with every PRESENT tiddler refinement (`makeManifestTierSource`): an absent refinement adds nothing, a torn one reads VEIL, and an unresolved doc, an unread or mismatched manifest or a half-read cascade refuses by name; a plane bound explicitly as no bag answers the tier it declares, never an inert null.
 
+''The secrets plane stands on the node alone; a leaf floors by established absence.'' (the seat's ruling, 2026-11-07, read off standing law.) The secrets vault builds on the node, and the daemon drives the swarm only once its credentials rest there, never on a surface (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> #/rulings, the stories' leans of 2026-11-07, item 5); a page holds a surface and no key rests on one (the same #/rulings, "a page never stands as a vessel", 2026-10-29). A browser leaf stands as a surface, so no gate lets a secrets plane reach it: its floor reads `secrets: { establishedAbsence: NO_CONTRACT_SECRETS_PLANE }` (that one constant, or it refuses `secrets-absence-unestablished`), and its face planes cross by their declared tier. The node reads its face's registry over the face's own sealed catalog (`secrets: { catalog }`), and the registry gates only the documents that face owns. A leaf names no secrets relation because it holds none.
+
 ''Repo crossings read the carried declaration; the crypto floor bites at the byte doors.'' A Repo crossing allowed through a gate floors by that gate (`allows(…, carried)`), so its tier comes to the carried declaration met under the secrets ceiling; the meet against the structural floor (public boards, the seed, sealed planes) still holds whole at the byte doors (`require`), which name no gate.
 
 <<~/ahu>>
@@ -160,6 +162,6 @@ Deferred with clean shores (not built): the TW5 `$:/tags/CapTierFilter` ordered-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;cPkO-Wy6GJBP_mp7hLF0UkDw9GSi4sseYuCD1MRVL9E`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;XA-KKx9Kib1Y3HLTOZ7KlwMCjCl-9f3RjErDZp6KiN0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -71,7 +71,7 @@ test("P27 boot: immutable engine and genesis-bag inventory reads with no held do
   const secretsFace = vi.fn(() => registryDoc ? registryHandle : null);
   const held = makeHeldShareFloor({ handles: () => handles, catalog: () => undefined, bindings: () => [],
     genesisCids: () => declared, publicPlane: () => false, sealedPlane: () => false, nonBagTier: () => null, faceOwns: () => false,
-    secretsCatalog: { face: secretsFace, sealed: () => false, failure: () => null, flush: async () => {} },
+    secrets: { catalog: { face: secretsFace, sealed: () => false, failure: () => null, flush: async () => {} } },
     onRefusal: () => {},
   });
   const floor = await composeVessel(islandFloorStack({ cas, tiers: held.tiers, documentsForCid: held.documentsForCid }));

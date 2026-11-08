@@ -17,7 +17,7 @@ async function rig() {
   const floor = makeHeldShareFloor({
     genesisCids: () => new Set(), handles: () => ({}), catalog: () => undefined, bindings: () => [],
     publicPlane: (id) => id === "crossroads-board", sealedPlane: () => false, nonBagTier: () => null, faceOwns: () => false,
-    secretsCatalog: { face: () => null, sealed: () => false, failure: () => null, flush: async () => {} },
+    secrets: { catalog: { face: () => null, sealed: () => false, failure: () => null, flush: async () => {} } },
     onRefusal: () => {},
   });
   const cas = vi.fn(async (cid: string) => (cid === PLUGIN ? plugin : new Uint8Array([1])));
