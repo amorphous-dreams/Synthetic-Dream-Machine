@@ -2,7 +2,7 @@
  * lane-state — the lane's state file and the fresh-per-step lead's brief (seat-harness#/the-lead).
  *
  * `<lane-root>/state.json` holds what the next lead step needs and nothing else: head, owed rows, live seats, the
- * worktree map, the next step and the step counter. A lead reads it, does ONE step, writes it back and stops; the next
+ * worktree map, the next step, the step counter and the commit trailers the controller sets once for the lane. A lead reads it, does ONE step, writes it back and stops; the next
  * launch is a fresh lead over the new state. A missing, torn or misshapen file refuses by name, never reads as empty.
  */
 import { renameSync } from "node:fs";
@@ -10,7 +10,9 @@ import { openHeldSync, readHeld, writeHeld } from "./held-dir.mjs";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-const KEYS = ["head", "owed", "seats", "worktrees", "next", "step"];
+const KEYS = ["head", "owed", "seats", "worktrees", "next", "step", "trailers"];
+/** One trailer line: a git trailer key, a colon, a value, no line break. */
+const TRAILER = /^[A-Za-z][A-Za-z0-9-]*: \S[^\r\n]*$/;
 const isStr = (v) => typeof v === "string" && v.length > 0;
 const SEAT_KEYS = ["name", "mode", "dir"];
 
@@ -25,6 +27,7 @@ export function validateState(s) {
   if (!s.worktrees || typeof s.worktrees !== "object" || Array.isArray(s.worktrees) || !Object.values(s.worktrees).every(isStr)) throw new Error("lane state worktrees must map names to strings");
   if (typeof s.next !== "string" || s.next.length === 0) throw new Error("lane state next must be a string");
   if (!Number.isInteger(s.step) || s.step < 0) throw new Error("lane state step must be a non-negative integer");
+  if (!Array.isArray(s.trailers) || s.trailers.length === 0 || !s.trailers.every((t) => typeof t === "string" && TRAILER.test(t))) throw new Error("lane state trailers must be a nonempty array of one-line \"Key: value\" commit trailers");
   return s;
 }
 
@@ -90,9 +93,12 @@ ${list(state.seats.map((s) => `${s.name} (${s.mode}) at ${s.dir}`))}
 ### Worktrees
 ${list(Object.entries(state.worktrees).map(([k, v]) => `${k}: ${v}`))}
 
+## COMMIT TRAILERS (end every lane commit message with exactly these lines)
+${state.trailers.join("\n")}
+
 ## STEP LAW
 * ONE step per launch: do the next step above, then stop. A step stays under about 10 to 15 minutes or 40 tool calls.
-* Before you stop, rewrite ${join(laneRoot, "state.json")} (same keys; keep the step counter as it stands) with the new head, the owed rows, the live seats, the worktree map and the next step, and write your hand-back to ${join(stepDir, "out.md")}.
+* Before you stop, rewrite ${join(laneRoot, "state.json")} (same keys; keep the step counter as it stands) with the new head, the owed rows, the live seats, the worktree map and the next step (the trailers stay as they stand), and write your hand-back to ${join(stepDir, "out.md")}.
 * A seat you start runs outside your context: record it in the state and stop; never poll for it. The next step reads its result path.
 * Stop at a wall, at a design question that needs an operator ruling (name it with its options and your lean), or at the push go.
 `;
