@@ -1,3 +1,4 @@
+import { publicCasFixture } from "../../lararium-mesh/tests/public-share-fixture.js";
 /**
  * herm-reshares-public-blob.test.ts — THE HERM RE-SHARE (basket-one #/the-fetch-door: "a public blob travels
  * to a Herm before any hearth serves it").
@@ -62,7 +63,7 @@ describe("the Herm re-shares a fleet peer's PUBLIC blob over its read-face while
     writeCasEntriesFs([...bulb.casEntries, { cid: likenessCid, bytes: likeness }, { cid: noteCid, bytes: note }, { cid: strayCid, bytes: stray }], casDir);
 
     const tiers: Record<string, CapTier> = { [PUBLIC_BAG]: "public", [PRIVATE_BAG]: "veil" };
-    const publicCas = publicCasShore({
+    const publicCas = publicCasShore({ ...publicCasFixture,
       casDir,
       references: async () => [pointer(PUBLIC_BAG, "lar:///t.w.b/likeness", likenessCid), pointer(PRIVATE_BAG, "lar:///t.w.b/note", noteCid)],
       bagTier: (bagUrl) => tiers[bagUrl] ?? null,
@@ -118,7 +119,7 @@ describe("the Herm re-shares a fleet peer's PUBLIC blob over its read-face while
     const casDir = join(storageDir, "cas");
     const likeness = utf8Bytes("a public png the dispatcher must route"); const likenessCid = sha256HexBytesSync(likeness);
     writeCasEntriesFs([...bulb.casEntries, { cid: likenessCid, bytes: likeness }], casDir);
-    const publicCas = publicCasShore({
+    const publicCas = publicCasShore({ ...publicCasFixture,
       casDir,
       references: async () => [pointer(PUBLIC_BAG, "lar:///t.w.b/likeness", likenessCid)],
       bagTier: (bagUrl) => (bagUrl === PUBLIC_BAG ? "public" : null),

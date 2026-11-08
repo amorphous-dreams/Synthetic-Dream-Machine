@@ -26,7 +26,8 @@ import { Repo, type DocHandle, type PeerId } from "@automerge/automerge-repo";
 import {
   ENGINE_CORE_ID, LARES_BAG, computePluginsCid, emptyLarDoc, hex, pluginOfferingAnnounceOf, pluginOfferingCid, recipeRecordFields,
   recipeUri, sha256HexBytesSync, signPluginOffering, storedLarRecord, wikiBagUri, wikiUri,
-  type LarDoc, type OfferedBlob, type PluginOffering, type WikiRecipe, type CapabilityRecord,
+  composeVessel, islandFloorStack, larVesselOf, makeShareBoundary, makeTierFloorSource, makeIslandAudienceReader,
+  type LarDoc, type OfferedBlob, type PluginOffering, type WikiRecipe, type CapabilityRecord, type ComposedVessel, type ShareAudience,
 } from "@lararium/mesh";
 import { resolveSurfaceRecipe, type SurfaceRecipe } from "../../lararium-mesh/src/surface-recipe.js";
 import { casDirForStorage, readCasBlobFromFs } from "../src/node-cas.js";
@@ -43,6 +44,7 @@ const SEED = new Uint8Array(32).fill(44);
 let storageDir: string;
 let repo: Repo;
 let pool: VesselIslandPool;
+let floor: ComposedVessel | undefined;
 /** The capability record the vessel hands the pool's islands; each vessel stands a fresh one. */
 let poolCaps: CapabilityRecord = {};
 beforeEach(() => {
@@ -51,6 +53,8 @@ beforeEach(() => {
 });
 afterEach(async () => {
   await pool?.disposeAll();
+  await floor?.dispose();
+  floor = undefined;
   await repo?.shutdown();
   rmSync(storageDir, { recursive: true, force: true });
 });
@@ -87,9 +91,10 @@ async function vessel() {
   const grammarCid = putBlob(new TextEncoder().encode(JSON.stringify({ title: GRAMMAR_ID })));
   const coreCid = putBlob(new TextEncoder().encode("the engine core"));
   const islandBlobs = {
-    core:    { id: ENGINE_CORE_ID, sha256: coreCid,    mimeType: "application/javascript" },
-    grammar: { id: GRAMMAR_ID,     sha256: grammarCid, mimeType: "application/json" },
+    core:    { id: ENGINE_CORE_ID, sha256: coreCid,    mimeType: "application/javascript", version: "test" },
+    grammar: { id: GRAMMAR_ID,     sha256: grammarCid, mimeType: "application/json", version: "test" },
   };
+  oracle.change((d) => { Object.assign(d, { blobs: islandBlobs }); });
 
   // One signed offering, announced on the Crossroads board, its plugin's bytes in the content store.
   const offeredCid = putBlob(new TextEncoder().encode(JSON.stringify({ title: "$:/plugins/synthetic/highlight" })));
@@ -132,9 +137,25 @@ async function vessel() {
     if (!verdict.ok) throw new Error(`${verdict.refusal}: ${verdict.detail}`);
     return verdict.recipe;
   };
-  // The islands' storage root stands beside the content store, as `casDirForStorage` lays it.
-  poolCaps = {};
-  pool = new VesselIslandPool({
+  // As in openNodeVessel, the scoped view reaches the composed floor, never the filesystem directly.
+  // Private held grammar bytes still read for the verified face's own session; world must refuse them.
+  const byteReads: { cid: string; audience: ShareAudience | undefined }[] = [];
+  const tiers = makeShareBoundary({
+    declared: { declaredTierForDoc: () => "veil" },
+    floor: makeTierFloorSource({ federatable: () => true, sealed: () => false, secrets: () => false }),
+  }, () => {});
+  floor = await composeVessel(islandFloorStack({
+    tiers,
+    documentsForCid: (cid) => Object.values(oracle.doc()?.blobs ?? {}).some((blob) => blob.sha256 === cid) ? [oracle.documentId] : [],
+    cas: async (cid, audience) => {
+      byteReads.push({ cid, audience });
+      return readCasBlobFromFs(cid, casDirForStorage(storageDir));
+    },
+  }));
+  poolCaps = larVesselOf(floor).record;
+  let wornFace = faces.player.plane.url;
+  const audienceForIsland = makeIslandAudienceReader({ ownFacePlane: () => wornFace, recipePlane: () => "catalog" });
+  pool = new VesselIslandPool({ audienceForIsland,
     caps: poolCaps, workerScriptUrl: PROBE_URL, mainRepo: repo, storageRoot: storageDir, cidDir: casDirForStorage(storageDir),
     resolvePluginCids: async () => ({ ok: true as const, pluginCids: [] }),
   });
@@ -143,7 +164,8 @@ async function vessel() {
     const surface = pool.surfaceOf(key);
     return pool.placeWikiVerb(key, { verb, args, requestedBy: "test" }, surface ? { sessionId: surface.sessionId, generation: surface.generation } : undefined);
   };
-  return { oracle, catalog, canon, shared, lares, faces, writeRecipe, resolve, probe, grammarCid, coreCid, offeredCid, offeringCid };
+  return { oracle, catalog, canon, shared, lares, faces, writeRecipe, resolve, probe, grammarCid, coreCid, offeredCid, offeringCid,
+    byteReads, wear: (who: "player" | "referee") => { wornFace = faces[who].plane.url; } };
 }
 
 describe("a session surface through the node vessel's own parts", () => {
@@ -258,13 +280,24 @@ describe("a session surface through the node vessel's own parts", () => {
 
     expect(await v.probe(one, "catalog", { name: SHARED_BAG })).toEqual({ documentUrl: v.shared.url, refusal: null });
     expect(await v.probe(one, "catalog", { name: "lar:///ha.ka.ba/bags/persona-referee" })).toEqual({ documentUrl: null, refusal: "beyond-facets" });
-    // Content: the vessel's own filesystem store answers what the view passes, and nothing it refuses.
+    // The same composed door refuses world before reading the private grammar bytes.
+    await expect(poolCaps.cas!(v.grammarCid, "world")).rejects.toMatchObject({ reason: "declared-tier-audience" });
+    expect(v.byteReads).toEqual([]);
+    // Content: the view grants first, then the tier gate reads under this session's own verified audience.
     expect(await v.probe(one, "content", { cid: v.grammarCid })).toEqual({ ok: true, refusal: null });
+    expect(v.byteReads).toEqual([{ cid: v.grammarCid, audience: "in-process" }]);
     expect(await v.probe(one, "content", { cid: v.offeredCid })).toEqual({ ok: false, refusal: "beyond-facets" });   // its recipe names no offering
     expect(await v.probe(one, "content", { cid: "../cas/" + v.grammarCid })).toEqual({ ok: false, refusal: "beyond-facets" });
+    expect(v.byteReads).toHaveLength(1); // a refused view never reaches the byte resolver
+    v.wear("referee");
+    expect(await v.probe(one, "content", { cid: v.grammarCid })).toEqual({ ok: false, refusal: "declared-tier-audience-unresolved" });
+    expect(v.byteReads).toHaveLength(1);
+    v.wear("player");
     // The session's end drops its island alone.
     await pool.closeSession("session-1");
     expect([pool.has(one), pool.has(two)]).toEqual([false, true]);
     expect(await v.probe(two, "find", { url: v.faces.player.working.url })).toMatchObject({ found: true });
+    expect(await v.probe(two, "content", { cid: v.grammarCid })).toEqual({ ok: true, refusal: null });
+    expect(v.byteReads).toEqual(Array(2).fill({ cid: v.grammarCid, audience: "in-process" }));
   });
 });

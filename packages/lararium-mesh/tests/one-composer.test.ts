@@ -1,3 +1,6 @@
+import type { IslandFloor } from "../src/lar-vessel.js";
+import { makeShareBoundary } from "../src/share-tighten.js";
+import { makeTierFloorSource } from "../src/cap-tier.js";
 /**
  * one-composer — slice 5b: the node and the browser compose their island record through the ONE `composeVessel`
  * (cap-compose), read it as the one `LarVessel`, and answer the same capability probes alike.
@@ -43,7 +46,7 @@ interface LarVesselRecord {
   liftedFace(): string | null;
 }
 interface OneComposerSeam {
-  islandFloorStack(floor: { receipt?: ReceiptIssuer; cas?: CasFetcher; dyad?: DyadReader }): CapModule[];
+  islandFloorStack(floor: IslandFloor): CapModule[];
   islandLiftStack(vessel: LarVesselRecord, lift: { face: string; custodyWrite?: CustodyWriter; sessionSign: SessionSignDoor; drop: () => void }): CapModule[];
   larVesselOf(composed: ComposedVessel): LarVesselRecord;
 }
@@ -60,8 +63,15 @@ const bytes = (s: string) => new TextEncoder().encode(s);
 const cas: CasFetcher = async (cid) => (cid === "cid-held" ? bytes("held bytes") : null);
 const receipt: ReceiptIssuer = async (ids) => { if (ids.includes("doc-unrested")) throw new Error("receipt-unissued: doc-unrested rests nowhere"); };
 /** The node reads its fleet board on the vessel thread; the browser's island reads its own, so its floor carries no dyad. */
-const nodeFloor = { receipt, cas, dyad: (() => "clear") as DyadReader };
-const browserFloor = { receipt, cas };
+const tierFloor = {
+  tiers: makeShareBoundary({
+    declared: { declaredTierForDoc: () => "public" },
+    floor: makeTierFloorSource({ federatable: () => true, sealed: () => false, secrets: () => false }),
+  }, (error) => { throw error; }),
+  documentsForCid: () => ["held-public-doc"],
+};
+const nodeFloor = { ...tierFloor, receipt, cas, dyad: (() => "clear") as DyadReader };
+const browserFloor = { ...tierFloor, receipt, cas };
 
 const CHAIN: SessionOwnChain = { scope: { faceKey: "aa".repeat(32), nexus: "nexus-one" }, vesselFaceKey: "bb".repeat(32) };
 function signer(): BookedSessionSigner & { drops: number; drop(): void } {
@@ -93,8 +103,8 @@ async function probe(record: Readonly<CapabilityRecord>) {
   return {
     receipt:  (await answerReceipt(caps, { requestId: "r1", documentIds: ["doc-a"] })).issued,
     unrested: (await answerReceipt(caps, { requestId: "r2", documentIds: ["doc-unrested"] })).issued,
-    cas:      record.cas ? new TextDecoder().decode((await record.cas("cid-held")) ?? new Uint8Array()) : "no-cas",
-    casMiss:  record.cas ? await record.cas("cid-absent") : "no-cas",
+    cas:      record.cas ? new TextDecoder().decode((await record.cas("cid-held", "world")) ?? new Uint8Array()) : "no-cas",
+    casMiss:  record.cas ? await record.cas("cid-absent", "world") : "no-cas",
     custody:  (await answerCustodyWrite(caps, { requestId: "c1", carrier: "veil", bytes: bytes("veil") })).written,
     signRead: pick(await answerSessionSign(caps, { requestId: "s1", op: "read", ask: "call-1", verb: "sealed-seal" })),
     signSign: pick(await answerSessionSign(caps, { requestId: "s2", op: "sign", ask: "call-1", verb: "sealed-seal", payload: bytes("x") })),

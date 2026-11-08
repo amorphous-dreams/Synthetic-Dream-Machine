@@ -1,3 +1,4 @@
+import { publicCasFixture } from "../../lararium-mesh/tests/public-share-fixture.js";
 /**
  * cas-at-rest-verify — bytes that fail to recompute to their address never leave a holder.
  *
@@ -68,7 +69,7 @@ describe("a holder serves only bytes that still match their address", () => {
       const bytes = utf8Bytes("a public page a herm serves to anyone who asks by its address");
       const cid = sha256HexBytesSync(bytes);
       writeCasEntriesFs([{ cid, bytes }], dir);
-      const shore = publicCasShore({ casDir: dir, references: () => [], bagTier: () => null });
+      const shore = publicCasShore({ ...publicCasFixture, casDir: dir, references: () => [], bagTier: () => null });
       expect(shore.read(cid)).toEqual(bytes);                                 // CONTROL
       flipOneByte(join(dir, cid));
       expect(shore.read(cid)).toBeNull();

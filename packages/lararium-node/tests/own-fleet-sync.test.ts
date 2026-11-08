@@ -1,3 +1,4 @@
+import { publicShareTiers } from "../../lararium-mesh/tests/public-share-fixture.js";
 /**
  * own-fleet-sync — the no-break-own-sync witness: one face's two devices sync the face's document
  * through the real gate, and nobody else's device reads it.
@@ -135,7 +136,7 @@ async function standHearth(founder: { w: World; p: Presenter }, joinee: Presente
     const session = sessions.get(peerId);
     if (!session) return false;
     return selfSlotShareDecision({
-      hasWsSocket: true, peerClass: session.class, selfSlotFedGate: shelfGate, antigenRing: NO_BANS, membership: null, planeSeal: null,
+      tiers: publicShareTiers, hasWsSocket: true, peerClass: session.class, selfSlotFedGate: shelfGate, antigenRing: NO_BANS, membership: null, planeSeal: null,
       federationPosture: "private", peerId, documentId, sessionFace: views.gateFor(peerId),
       shadow: NOBODY_ASIDE, protectedDocs: NOTHING_CLASSED,
     });

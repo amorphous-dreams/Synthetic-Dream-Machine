@@ -1,3 +1,4 @@
+import { publicShareTiers } from "../../lararium-mesh/tests/public-share-fixture.js";
 /**
  * kahu-guard-standing — THE GUARD SERVES THE COUNT THAT STANDS AFTER A WRITE, AND DECIDES EACH DOCUMENT ON ITS OWN HOME'S
  * STANDING (road `P26`; Sol's lanes read, SHOULDs 2 and 3).
@@ -135,7 +136,7 @@ describe("the guard serves the standing count and each document's own home", () 
     } as GuardOptions);
     // A same-face session whose face view (the alias lane, the bridge) would carry any document it is asked for.
     const crosses = (documentId: string) => selfSlotShareDecision({
-      hasWsSocket: true, peerClass: "same-operator", selfSlotFedGate: { mayFederate: async () => false }, antigenRing: NO_BANS, membership: null,
+      tiers: publicShareTiers, hasWsSocket: true, peerClass: "same-operator", selfSlotFedGate: { mayFederate: async () => false }, antigenRing: NO_BANS, membership: null,
       planeSeal: null, peerId: "same-face-leaf", documentId, sessionFace: { mayFederate: async () => true }, protectedDocs: guard,
       shadow: NOBODY_ASIDE,
     } as Parameters<typeof selfSlotShareDecision>[0]);

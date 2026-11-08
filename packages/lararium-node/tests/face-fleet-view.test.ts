@@ -1,3 +1,4 @@
+import { publicShareTiers } from "../../lararium-mesh/tests/public-share-fixture.js";
 /**
  * face-fleet-view — D3's narrowest caller: a same-operator session reads its face's documents through that face's
  * scoped view, opened from the PersonaGroup the gate proved and the vessel's bootstrap alone.
@@ -55,7 +56,7 @@ describe("a same-operator session reads its own face's documents", () => {
     const views = faceFleetViews(() => bootstrap(ONE, TWO));
     views.seat("device-two", grant(G1));
     const verdict = (documentId: DocumentId, sessionFace = views.gateFor("device-two")) => selfSlotShareDecision({
-      hasWsSocket: true, peerClass: "same-operator", selfSlotFedGate: shelf, antigenRing: NO_BANS, membership: null, planeSeal: null,
+      tiers: publicShareTiers, hasWsSocket: true, peerClass: "same-operator", selfSlotFedGate: shelf, antigenRing: NO_BANS, membership: null, planeSeal: null,
       federationPosture: "private", peerId: "device-two", documentId, sessionFace,
       shadow: NOBODY_ASIDE, protectedDocs: NOTHING_CLASSED,
     });

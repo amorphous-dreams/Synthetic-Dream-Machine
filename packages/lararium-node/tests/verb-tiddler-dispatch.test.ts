@@ -112,7 +112,7 @@ describe.skipIf(skipReason)(
       const events: IslandMsg_Event[] = [];
       const cas = setupCasFromGenesis(genesisDoc);
 
-      const pool = new VesselIslandPool({ caps: {},
+      const pool = new VesselIslandPool({ audienceForIsland: () => "world", caps: cas.caps,
         workerScriptUrl: ISLAND_JS,
         mainRepo:        vesselRepo,
         storageRoot:     cas.storageDir, cidDir:     cas.cidDir,
@@ -194,7 +194,7 @@ describe.skipIf(skipReason)(
       const verbEvents: IslandMsg_Event[] = [];
       const cas = setupCasFromGenesis(genesisDoc);
 
-      const pool = new VesselIslandPool({ caps: {},
+      const pool = new VesselIslandPool({ audienceForIsland: () => "world", caps: cas.caps,
         workerScriptUrl: ISLAND_JS,
         mainRepo:        vesselRepo,
         storageRoot:     cas.storageDir, cidDir:     cas.cidDir,

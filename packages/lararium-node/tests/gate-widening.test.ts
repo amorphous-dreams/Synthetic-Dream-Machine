@@ -1,3 +1,4 @@
+import { publicShareTiers } from "../../lararium-mesh/tests/public-share-fixture.js";
 /**
  * gate-widening.test.ts — the ONE sort, proven END-TO-END against the live self-slot split.
  *
@@ -56,7 +57,7 @@ describe("END-TO-END — an OPEN gate's stranger reaches the federatable set, DE
   const cls = foreignKey(true)!;
   const share = (documentId: DocumentId | undefined, antigenRing: AntigenRing = NO_BANS) =>
     selfSlotShareDecision({
-      hasWsSocket: true, peerClass: cls, selfSlotFedGate: fedGate, antigenRing,
+      tiers: publicShareTiers, hasWsSocket: true, peerClass: cls, selfSlotFedGate: fedGate, antigenRing,
       membership: null, planeSeal: null, peerId: FOREIGN_PEER, documentId,
       shadow: NOBODY_ASIDE, protectedDocs: NOTHING_CLASSED,
     });
@@ -75,7 +76,7 @@ describe("END-TO-END — an OPEN gate's stranger reaches the federatable set, DE
 describe("D3 — a SAME-OPERATOR peer reads through its proven face, never by class", () => {
   const faceGate = { mayFederate: (documentId: DocumentId) => documentId === PERSONAL_LIKE };
   const same = (documentId: DocumentId, sessionFace: typeof faceGate | null = null) => selfSlotShareDecision({
-    hasWsSocket: true, peerClass: "same-operator", selfSlotFedGate: fedGate, antigenRing: NO_BANS,
+    tiers: publicShareTiers, hasWsSocket: true, peerClass: "same-operator", selfSlotFedGate: fedGate, antigenRing: NO_BANS,
     membership: null, planeSeal: null, peerId: "own-device-peer", documentId, sessionFace,
     shadow: NOBODY_ASIDE, protectedDocs: NOTHING_CLASSED,
   });
@@ -101,7 +102,7 @@ describe("the #59 antigen runs AHEAD — a Kapae'd stranger draws Mu", () => {
 
   test("even a federatable plane draws Mu (false) for a Kapae'd stranger", async () => {
     const verdict = await selfSlotShareDecision({
-      hasWsSocket: true, peerClass: cls, selfSlotFedGate: fedGate, membership: null, planeSeal: null,
+      tiers: publicShareTiers, hasWsSocket: true, peerClass: cls, selfSlotFedGate: fedGate, membership: null, planeSeal: null,
       antigenRing: antigen, peerId: KAPAED_PEER, documentId: CROSSROADS,
       shadow: NOBODY_ASIDE, protectedDocs: NOTHING_CLASSED,
     });
@@ -109,7 +110,7 @@ describe("the #59 antigen runs AHEAD — a Kapae'd stranger draws Mu", () => {
   });
   test("a clean stranger still reaches the federatable plane with the antigen wired", async () => {
     const verdict = await selfSlotShareDecision({
-      hasWsSocket: true, peerClass: cls, selfSlotFedGate: fedGate, membership: null, planeSeal: null,
+      tiers: publicShareTiers, hasWsSocket: true, peerClass: cls, selfSlotFedGate: fedGate, membership: null, planeSeal: null,
       antigenRing: antigen, peerId: FOREIGN_PEER, documentId: CROSSROADS,
       shadow: NOBODY_ASIDE, protectedDocs: NOTHING_CLASSED,
     });

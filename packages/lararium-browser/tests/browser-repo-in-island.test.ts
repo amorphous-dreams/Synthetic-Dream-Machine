@@ -58,7 +58,7 @@ describe("BrowserVesselIslandPool Repo-in-island gate", () => {
     repo = new Repo({ sharePolicy: async () => true });
     repo.create<{ tiddlers: Record<string, unknown> }>({ tiddlers: {} });
 
-    pool = new BrowserVesselIslandPool({
+    pool = new BrowserVesselIslandPool({ audienceForIsland: () => "world", caps: {},
       workerScriptUrl: FIXTURE_URL,
       mainRepo: repo,
       resolvePluginCids: async () => ({ ok: true, pluginCids: [] }),
@@ -84,7 +84,7 @@ describe("BrowserVesselIslandPool Repo-in-island gate", () => {
     repo = new Repo({ sharePolicy: async () => true });
     const docHandle = repo.create<{ tiddlers: Record<string, unknown> }>({ tiddlers: {} });
 
-    pool = new BrowserVesselIslandPool({
+    pool = new BrowserVesselIslandPool({ audienceForIsland: () => "world", caps: {},
       workerScriptUrl: FIXTURE_URL,
       mainRepo: repo,
       resolvePluginCids: async () => ({ ok: true, pluginCids: [] }),

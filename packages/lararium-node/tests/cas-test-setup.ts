@@ -22,9 +22,9 @@ import { fileURLToPath } from "url";
 import { randomBytes } from "crypto";
 import {
   bootSetPluginCids, authorizeAddress, openPrivateBody, readContentKey,
-  type AntigenRing, type LarDoc, type MembershipEnvelope, type NexusMembership, type PrivateBodyKey,
+  type AntigenRing, type LarDoc, type MembershipEnvelope, type NexusMembership, type PrivateBodyKey, type CapabilityRecord,
 } from "@lararium/mesh";
-import { casDirForStorage, mirrorGenesisCasFs } from "../src/node-cas.js";
+import { casDirForStorage, mirrorGenesisCasFs, makeNodeCasResolver } from "../src/node-cas.js";
 import { readGenesisCasManifest, genesisCasDir } from "../src/genesis-artifact.js";
 import { makeSealedPlaneRegistry } from "../src/plane-seal.js";
 import type { NexusEpochName } from "../src/plane-seal.js";
@@ -47,6 +47,8 @@ export interface CasSetup {
   readonly cidDir:      string;
   /** Plugin-tiddler CIDs the island resolves from the CAS. */
   readonly pluginCids:  readonly string[];
+  /** Explicit fixture byte door: real workers no longer read the directory outside their vessel's record. */
+  readonly caps: CapabilityRecord;
   /** Remove the temp storageDir (call in finally). */
   readonly cleanup:     () => void;
 }
@@ -67,6 +69,7 @@ export function setupCasFromGenesis(genesisDoc: LarDoc, genesisDir: string = REP
     storageDir,
     cidDir: casDirForStorage(storageDir),
     pluginCids: bootSetPluginCids(genesisDoc.blobs),
+    caps: { cas: makeNodeCasResolver({ cidDir: casDirForStorage(storageDir), corpusCasDir: null, shore: null }) },
     cleanup: () => rmSync(storageDir, { recursive: true, force: true }),
   };
 }

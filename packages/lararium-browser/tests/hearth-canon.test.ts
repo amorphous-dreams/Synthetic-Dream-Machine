@@ -1,3 +1,4 @@
+import { publicShareTiers } from "../../lararium-mesh/tests/public-share-fixture.js";
 /**
  * hearth-canon — AN ADMITTED LEAF TAKES THE CANON DOCUMENTS ITS OWN ADMIT NAMES, AND NOTHING ELSE.
  *
@@ -139,7 +140,7 @@ describe("a leaf's catalog write never reaches its hearth", () => {
     const leaf = new Repo({
       peerId: "leaf" as PeerId,
       network: [new MessageChannelNetworkAdapter(port2 as never)],
-      shareConfig: browserShareConfig(new Set(["hearth"]), () => gate),
+      shareConfig: browserShareConfig(new Set(["hearth"]), () => gate, null, publicShareTiers),
     });
     const leafOracle = await materializeSharedLarDoc(leaf, oracleGenesisDocUrl(), "oracle");
     const leafCatalog = leaf.create<LarDoc>(emptyLarDoc());

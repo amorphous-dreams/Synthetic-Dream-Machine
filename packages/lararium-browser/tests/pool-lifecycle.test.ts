@@ -34,11 +34,11 @@ describe("BrowserVesselIslandPool lifecycle contract", () => {
   test("port policy crosses the browser pool door; no policy stays closed", async () => {
     const open = { type: "port:open", portId: "p", wikiUri: WIKI_A, actor: "page", width: "full", maxRecordBytes: 4096, maxBatchBytes: 8192 };
     const mount = { coreHash: null, recipe: { wikiSlug: "test" }, grants: { islandUrl: "automerge:fixture-lararium-url" } };
-    pool = new BrowserVesselIslandPool({ workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS });
+    pool = new BrowserVesselIslandPool({ audienceForIsland: () => "world", caps: {}, workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS });
     await pool.mountWiki(WIKI_A, mount);
     expect(pool.placePort(WIKI_A, "page", open)).toEqual({ ok: false, reason: "port-not-granted" });
     await pool.disposeAll();
-    pool = new BrowserVesselIslandPool({ workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS,
+    pool = new BrowserVesselIslandPool({ audienceForIsland: () => "world", caps: {}, workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS,
       portPolicy: (binding) => ({ faceId: "face", actor: binding, edits: false, bags: [], admin: false }) });
     await pool.mountWiki(WIKI_A, mount);
     expect(pool.placePort(WIKI_A, "page", open)).toEqual({ ok: true }); // control: a read-only port opens
@@ -46,7 +46,7 @@ describe("BrowserVesselIslandPool lifecycle contract", () => {
 
   test("mountWiki registers island; has() and size reflect it", async () => {
     repo = new Repo({ sharePolicy: async () => true });
-    pool = new BrowserVesselIslandPool({ workerScriptUrl: FIXTURE_URL, mainRepo: repo, resolvePluginCids: NO_OFFERINGS });
+    pool = new BrowserVesselIslandPool({ audienceForIsland: () => "world", caps: {}, workerScriptUrl: FIXTURE_URL, mainRepo: repo, resolvePluginCids: NO_OFFERINGS });
 
     expect(pool.has(WIKI_A)).toBe(false);
     expect(pool.size).toBe(0);
@@ -62,7 +62,7 @@ describe("BrowserVesselIslandPool lifecycle contract", () => {
 
   test("mountWiki is idempotent — second call for same id is a no-op", async () => {
     repo = new Repo({ sharePolicy: async () => true });
-    pool = new BrowserVesselIslandPool({ workerScriptUrl: FIXTURE_URL, mainRepo: repo, resolvePluginCids: NO_OFFERINGS });
+    pool = new BrowserVesselIslandPool({ audienceForIsland: () => "world", caps: {}, workerScriptUrl: FIXTURE_URL, mainRepo: repo, resolvePluginCids: NO_OFFERINGS });
 
     await pool.mountWiki(WIKI_A, {
       coreHash:    null,
@@ -78,7 +78,7 @@ describe("BrowserVesselIslandPool lifecycle contract", () => {
 
   test("multiple islands mount independently", async () => {
     repo = new Repo({ sharePolicy: async () => true });
-    pool = new BrowserVesselIslandPool({ workerScriptUrl: FIXTURE_URL, mainRepo: repo, resolvePluginCids: NO_OFFERINGS });
+    pool = new BrowserVesselIslandPool({ audienceForIsland: () => "world", caps: {}, workerScriptUrl: FIXTURE_URL, mainRepo: repo, resolvePluginCids: NO_OFFERINGS });
 
     await Promise.all([
       pool.mountWiki(WIKI_A, { coreHash: null, recipe: { wikiSlug: "test" }, grants: { islandUrl: "automerge:fixture-lararium-url" } }),
@@ -95,7 +95,7 @@ describe("BrowserVesselIslandPool lifecycle contract", () => {
 
   test("unmountWiki takes island cold (anu); has() reflects it", async () => {
     repo = new Repo({ sharePolicy: async () => true });
-    pool = new BrowserVesselIslandPool({ workerScriptUrl: FIXTURE_URL, mainRepo: repo, resolvePluginCids: NO_OFFERINGS });
+    pool = new BrowserVesselIslandPool({ audienceForIsland: () => "world", caps: {}, workerScriptUrl: FIXTURE_URL, mainRepo: repo, resolvePluginCids: NO_OFFERINGS });
 
     await pool.mountWiki(WIKI_A, { coreHash: null, recipe: { wikiSlug: "test" }, grants: { islandUrl: "automerge:fixture-lararium-url" } });
     expect(pool.has(WIKI_A)).toBe(true);
@@ -110,7 +110,7 @@ describe("BrowserVesselIslandPool lifecycle contract", () => {
 
   test("unmountWiki on unknown id is a no-op, reported as acked (nothing to cut)", async () => {
     repo = new Repo({ sharePolicy: async () => true });
-    pool = new BrowserVesselIslandPool({ workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS });
+    pool = new BrowserVesselIslandPool({ audienceForIsland: () => "world", caps: {}, workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS });
 
     // H3/M4 — unmountWiki now reports {wikiId, acked} rather than resolving void, so a
     // caller's own shutdown line can name a handshake cut honestly. A no-op (nothing was ever
@@ -122,7 +122,7 @@ describe("BrowserVesselIslandPool lifecycle contract", () => {
 
   test("disposeAll removes all islands", async () => {
     repo = new Repo({ sharePolicy: async () => true });
-    pool = new BrowserVesselIslandPool({ workerScriptUrl: FIXTURE_URL, mainRepo: repo, resolvePluginCids: NO_OFFERINGS });
+    pool = new BrowserVesselIslandPool({ audienceForIsland: () => "world", caps: {}, workerScriptUrl: FIXTURE_URL, mainRepo: repo, resolvePluginCids: NO_OFFERINGS });
 
     await Promise.all([
       pool.mountWiki(WIKI_A, { coreHash: null, recipe: { wikiSlug: "test" }, grants: { islandUrl: "automerge:fixture-lararium-url" } }),
@@ -138,7 +138,7 @@ describe("BrowserVesselIslandPool lifecycle contract", () => {
 
   test("inspect reports wikiId and temperature for each island", async () => {
     repo = new Repo({ sharePolicy: async () => true });
-    pool = new BrowserVesselIslandPool({ workerScriptUrl: FIXTURE_URL, mainRepo: repo, resolvePluginCids: NO_OFFERINGS });
+    pool = new BrowserVesselIslandPool({ audienceForIsland: () => "world", caps: {}, workerScriptUrl: FIXTURE_URL, mainRepo: repo, resolvePluginCids: NO_OFFERINGS });
 
     await pool.mountWiki(WIKI_A, { coreHash: null, recipe: { wikiSlug: "test" }, grants: { islandUrl: "automerge:fixture-lararium-url" } });
 

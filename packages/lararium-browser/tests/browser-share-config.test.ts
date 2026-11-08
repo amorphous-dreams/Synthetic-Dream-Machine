@@ -1,3 +1,4 @@
+import { publicShareTiers } from "../../lararium-mesh/tests/public-share-fixture.js";
 /**
  * browser-share-config — THE BROWSER SEATS ITS VERDICT ON BOTH HOOKS, AND READS THE GATE IT ARMS.
  *
@@ -28,7 +29,7 @@ const CROSSROADS  = interpretAsDocumentId(crossroadsDocUrl(NEXUS)) as DocumentId
 
 describe("browserShareConfig", () => {
   test("a peer the decision refuses is refused on access too", async () => {
-    const cfg = browserShareConfig(new Set(["relay"]), () => null);
+    const cfg = browserShareConfig(new Set(["relay"]), () => null, null, publicShareTiers);
     // No federation gate and no ring: a relay peer draws the decision's floor on BOTH hooks, identically.
     const a = await cfg.announce("relay" as never, "doc" as never);
     const b = await cfg.access("relay" as never, "doc" as never);
@@ -39,7 +40,7 @@ describe("browserShareConfig", () => {
 
   test("a gate armed AFTER the config stands governs every later decision", async () => {
     let fedGate: FederationGate | null = null;
-    const cfg = browserShareConfig(new Set(["relay"]), () => fedGate);
+    const cfg = browserShareConfig(new Set(["relay"]), () => fedGate, null, publicShareTiers);
     // CONTROL: before the crossing arms the gate, the relay reads as the own node — full sync.
     expect(await cfg.access("relay" as never, PRIVATE_DOC)).toBe(true);
     fedGate = new DeterministicFederationGate(NEXUS);
@@ -54,10 +55,10 @@ describe("browserShareConfig", () => {
 
   test("the ring composed onto the gate is the verdict — no second ring socket stands beside it", async () => {
     // The config reads the relay set, the gate and the siblings, nothing else.
-    expect(browserShareConfig.length).toBe(3);
+    expect(browserShareConfig.length).toBe(4);
     const base = new DeterministicFederationGate(NEXUS);
     let fedGate: FederationGate | null = base;
-    const cfg = browserShareConfig(new Set(["relay"]), () => fedGate);
+    const cfg = browserShareConfig(new Set(["relay"]), () => fedGate, null, publicShareTiers);
     // CONTROL: the bare cross-operator gate keeps a private plane off the relay.
     expect(await cfg.access("relay" as never, PRIVATE_DOC)).toBe(false);
     // A ring composed onto the gate widens it by the face's own planes, for the peer it proved …
@@ -74,7 +75,7 @@ describe("browserShareConfig", () => {
     const cfg = browserShareConfig(new Set(["relay"]), () => null, {
       isSibling: (peerId) => peerId === "sibling",
       gate: () => siblingGate,
-    });
+    }, publicShareTiers);
     // Before the ring stands, a sibling reaches nothing — though it rides no relay socket.
     expect(await cfg.access("sibling" as never, FACE_A)).toBe(false);
     const base = new DeterministicFederationGate(NEXUS);

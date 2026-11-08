@@ -1,3 +1,4 @@
+import { publicShareTiers } from "../../lararium-mesh/tests/public-share-fixture.js";
 /**
  * vessel-private-guard — NO RELATION, REGISTRATION OR ALIAS WIDENS WHO READS A VESSEL'S PRIVATE DOCUMENTS (lane `ralias`,
  * on P26's one guard).
@@ -111,7 +112,7 @@ const verdict = (o: {
   guard: ReturnType<typeof protectedDocGuard> | null; fed: FederationGate | null; peerClass: "contracted" | "same-operator";
   documentId: string; sessionFace?: FederationGate | null; peerId?: string; sibling?: boolean; siblingGate?: FederationGate | null; hasWsSocket?: boolean;
 }) => selfSlotShareDecision({
-  hasWsSocket: o.hasWsSocket ?? true, peerClass: o.peerClass, selfSlotFedGate: o.fed, antigenRing: NO_BANS, membership: null, planeSeal: null,
+  tiers: publicShareTiers, hasWsSocket: o.hasWsSocket ?? true, peerClass: o.peerClass, selfSlotFedGate: o.fed, antigenRing: NO_BANS, membership: null, planeSeal: null,
   peerId: o.peerId ?? "peer-B", documentId: o.documentId as DocumentId, sessionFace: o.sessionFace ?? null, protectedDocs: o.guard,
   ...(o.sibling ? { sibling: true, siblingGate: o.siblingGate ?? null } : {}),
   shadow: NOBODY_ASIDE,
@@ -176,8 +177,8 @@ describe("no relation, registration or alias widens who reads a vessel's private
     const planesOfOne = new Set([ONE.persona, ONE.identities, ONE.circles, ONE.sessions, ONE.intents].map((u) => String(idOf(u))));
     const siblingGate: FederationGate = { mayFederate: async (d) => planesOfOne.has(String(d)) };
     const asSibling = () => ({ ...noRelation(), sibling: true, siblingGate });
-    expect(await verdict({ guard: seatedGuard(ids, asSibling), fed: null, peerClass: "contracted", hasWsSocket: false, sibling: true, siblingGate, peerId: "sib", documentId: idOf(ONE.circles) }), "a sibling reads the face's plane").toBe(true);
-    expect(await verdict({ guard: seatedGuard(ids, asSibling), fed: null, peerClass: "contracted", hasWsSocket: false, sibling: true, siblingGate, peerId: "sib", documentId: idOf(DAEMON) }), "a sibling never reads the daemon doc").toBe(false);
+    expect(await verdict({ guard: seatedGuard(ids, asSibling), fed: null, peerClass: "contracted", tiers: publicShareTiers, hasWsSocket: false, sibling: true, siblingGate, peerId: "sib", documentId: idOf(ONE.circles) }), "a sibling reads the face's plane").toBe(true);
+    expect(await verdict({ guard: seatedGuard(ids, asSibling), fed: null, peerClass: "contracted", tiers: publicShareTiers, hasWsSocket: false, sibling: true, siblingGate, peerId: "sib", documentId: idOf(DAEMON) }), "a sibling never reads the daemon doc").toBe(false);
     // A face-join grant holder: the ring opens the face's planes on the fed gate, and the guard lets that relation through.
     const faceGrant = { admitsPeer: async (d: DocumentId, p: PeerId) => p === "joinee" && planesOfOne.has(String(d)) };
     const ringFed: FederationGate = { mayFederate: async (d, p) => (p ? faceGrant.admitsPeer(d, p) : false) };

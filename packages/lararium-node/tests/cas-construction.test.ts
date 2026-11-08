@@ -27,13 +27,15 @@ describe("the CAS dirs are fixed at construction", () => {
   test("C1 — LAR_CAS set after the reader was built changes nothing", async () => {
     const handed = tmp(), late = tmp();
     mkdirSync(handed, { recursive: true });
-    writeFileSync(join(late, CID), BYTES);
-    const read = nodeContentReader(handed, {});
+    writeFileSync(join(late, "sha256:" + createHash("sha256").update(BYTES).digest("hex")), BYTES);
+    const heldCid = "sha256:" + createHash("sha256").update(BYTES).digest("hex");
+    const read = nodeContentReader({ cas: makeNodeCasResolver({ cidDir: handed, corpusCasDir: null, shore: null }) }, () => "world");
+    const island = { wikiId: "test", wikiSlug: "test", facePlaneId: null };
     process.env["LAR_CAS"] = late;
-    expect(await read(CID)).toBeNull();
+    expect(await read(heldCid, island)).toBeNull();
     // control: the blob in the handed dir answers
-    writeFileSync(join(handed, CID), BYTES);
-    expect(await read(CID)).toEqual(BYTES);
+    writeFileSync(join(handed, heldCid), BYTES);
+    expect(await read(heldCid, island)).toEqual(BYTES);
   });
 
   test("C2 — the pool and the island worker's CAS path read no env", () => {
@@ -48,7 +50,7 @@ describe("the CAS dirs are fixed at construction", () => {
     const wh = await import("../src/worker-handle.js");
     const src = readFileSync(join(import.meta.dirname, "..", "src", "vessel-island-pool.ts"), "utf8");
     expect(/nodeSpawnSessionWorker\(workerUrl, options\.caps\)/.test(src)).toBe(true);
-    expect(/nodeSpawnWikiWorker\(workerUrl, options\.caps, casData\)/.test(src)).toBe(true);
+    expect(/nodeSpawnWikiWorker\(workerUrl, options\.caps, casData,/.test(src)).toBe(true);
     expect(typeof VesselIslandPool).toBe("function"); expect(typeof wh.nodeSpawnSessionWorker).toBe("function");
   });
 

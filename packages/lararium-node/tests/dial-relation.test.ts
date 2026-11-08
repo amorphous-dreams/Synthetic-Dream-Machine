@@ -1,3 +1,4 @@
+import { publicShareTiers } from "../../lararium-mesh/tests/public-share-fixture.js";
 /**
  * dial-relation — THE OUTBOUND DIAL SEATS THE RELATION ITS OWN HELD RECORDS PROVE (road `P26`; controller transport
  * ruling 2026-10-31, and its fork ruling (b), settled at rung 1: each side decides what IT shares from ITS OWN held records;
@@ -76,7 +77,7 @@ function seatRig() {
   const maps: { peerClassMap: Map<string, PeerClass>; peerNexus: Map<string, string | null>; faceViews: ReturnType<typeof faceFleetViews>; dialedHearth?: { pinned: boolean; aid: string | null } | null } =
     { peerClassMap: new Map<string, PeerClass>(), peerNexus: new Map<string, string | null>(), faceViews: faceFleetViews(() => bootstrap(ONE), () => G1), dialedHearth: null };
   const verdict = (peerId: string, url: string) => selfSlotShareDecision({
-    hasWsSocket: true, peerClass: maps.peerClassMap.get(peerId), selfSlotFedGate: shelf, antigenRing: NO_BANS, membership: null, planeSeal: null,
+    tiers: publicShareTiers, hasWsSocket: true, peerClass: maps.peerClassMap.get(peerId), selfSlotFedGate: shelf, antigenRing: NO_BANS, membership: null, planeSeal: null,
     peerId, documentId: idOf(url), sessionFace: maps.faceViews.gateFor(peerId),
     shadow: NOBODY_ASIDE, protectedDocs: NOTHING_CLASSED,
   } as Parameters<typeof selfSlotShareDecision>[0]);

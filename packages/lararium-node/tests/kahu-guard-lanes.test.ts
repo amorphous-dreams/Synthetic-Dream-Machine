@@ -1,3 +1,4 @@
+import { publicShareTiers } from "../../lararium-mesh/tests/public-share-fixture.js";
 /**
  * kahu-guard-lanes — THE LANES AROUND THE ONE GUARD close where trust was INFERRED FROM ABSENCE (road `P26`; controller
  * wider design ruling 2026-10-31 after Sol's guard read).
@@ -62,7 +63,7 @@ async function rig(inProcess: (repo: Repo, peerId: string) => boolean) {
     shareConfig: shareConfigOf(async (peerId, documentId) => {
       const wire = !inProcess(house, peerId);
       return selfSlotShareDecision({
-        hasWsSocket: wire, peerClass: undefined, selfSlotFedGate: deny, antigenRing: NO_BANS, membership: null, planeSeal: null,
+        tiers: publicShareTiers, hasWsSocket: wire, peerClass: undefined, selfSlotFedGate: deny, antigenRing: NO_BANS, membership: null, planeSeal: null,
         peerId, documentId: documentId as DocumentId | undefined, protectedDocs: guard,
         shadow: NOBODY_ASIDE,
       } as Parameters<typeof selfSlotShareDecision>[0]);

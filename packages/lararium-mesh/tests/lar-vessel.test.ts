@@ -1,3 +1,4 @@
+import { makeShareBoundary, makeTierFloorSource } from "../src/index.js";
 /**
  * The one island record (slice 5b).
  * Canon: lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift#/the-slices
@@ -18,13 +19,21 @@ function makeStore(): CompositeStore {
   return store;
 }
 
-const cas = async () => null;
+const cas = vi.fn(async (_cid: string) => new Uint8Array([1]));
+const documentsForCid = vi.fn(() => ["held-public-doc"]);
+const tiers = makeShareBoundary({
+  declared: { declaredTierForDoc: () => "public" },
+  floor: makeTierFloorSource({ federatable: () => true, sealed: () => false, secrets: () => false }),
+}, (error) => { throw error; });
 const receipt = async () => {};
 
 describe("LarVessel — one island record", () => {
   test("the floor composes one record with its members alone", async () => {
-    const vessel = larVesselOf(await composeVessel(islandFloorStack({ cas, receipt })));
-    expect(vessel.record.cas).toBe(cas);
+    const vessel = larVesselOf(await composeVessel(islandFloorStack({ cas, receipt, tiers, documentsForCid })));
+    cas.mockClear(); documentsForCid.mockClear();
+    await expect(vessel.record.cas!("cid-held", "world")).resolves.toEqual(new Uint8Array([1]));
+    expect(documentsForCid).toHaveBeenCalledWith("cid-held");
+    expect(cas).toHaveBeenCalledExactlyOnceWith("cid-held", "world");
     expect(vessel.stands("cas")).toBe(true);
     expect(vessel.stands("dyad")).toBe(false);
     expect(vessel.stands("sessionSign")).toBe(false);
@@ -38,7 +47,7 @@ describe("LarVessel — one island record", () => {
   });
 
   test("the floor's dispose takes its members back, and a second dispose takes nothing", async () => {
-    const composed = await composeVessel(islandFloorStack({ cas, receipt }));
+    const composed = await composeVessel(islandFloorStack({ cas, receipt, tiers, documentsForCid }));
     const vessel = larVesselOf(composed);
     await composed.dispose();
     expect(vessel.stands("cas")).toBe(false);
@@ -46,7 +55,7 @@ describe("LarVessel — one island record", () => {
   });
 
   test("a lift seated by islandLiftStack leaves through its own dispose only; the read face carries no setter", async () => {
-    const floor = await composeVessel(islandFloorStack({ cas, receipt }));
+    const floor = await composeVessel(islandFloorStack({ cas, receipt, tiers, documentsForCid }));
     const vessel = larVesselOf(floor);
     const door = async () => ({ refusal: "x" });
     const drop = vi.fn();
@@ -62,7 +71,7 @@ describe("LarVessel — one island record", () => {
   // THE FENCE READS ON BOTH SIDES OF ITS AWAIT (row B8): a custody write the lock overtook in flight answers `lift-locked`,
   // as a session sign that settles after the lock does, so no caller reads a write of a face the lock ended as landed.
   test("L1 RED: a custody write in flight when the lift locks refuses `lift-locked` once it settles", async () => {
-    const vessel = larVesselOf(await composeVessel(islandFloorStack({ cas, receipt })));
+    const vessel = larVesselOf(await composeVessel(islandFloorStack({ cas, receipt, tiers, documentsForCid })));
     let land!: () => void;
     const lift = await composeVessel(islandLiftStack(vessel, {
       face: "G-A", drop: () => {}, custodyWrite: () => new Promise<void>((resolve) => { land = resolve; }),
@@ -74,7 +83,7 @@ describe("LarVessel — one island record", () => {
   });
 
   test("L0 CONTROL: a custody write that settles while the lift stands lands", async () => {
-    const vessel = larVesselOf(await composeVessel(islandFloorStack({ cas, receipt })));
+    const vessel = larVesselOf(await composeVessel(islandFloorStack({ cas, receipt, tiers, documentsForCid })));
     const landed: Uint8Array[] = [];
     await composeVessel(islandLiftStack(vessel, { face: "G-A", drop: () => {}, custodyWrite: async (_c, bytes) => { landed.push(bytes); } }));
     await expect(vessel.record.custodyWrite!("veil-archive" as never, new Uint8Array([1]))).resolves.toBeUndefined();
