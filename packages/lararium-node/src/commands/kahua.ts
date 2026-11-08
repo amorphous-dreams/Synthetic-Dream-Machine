@@ -15,7 +15,7 @@ import type { WardCredential } from "../ward-credential.js";
 import { randomBytes } from "node:crypto";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import {
-  faceRecordsOf, storedLarRecord, type KahuaSource, type LarDoc,
+  faceRecordsOf, faceRelationOf, storedLarRecord, type KahuaSource, type LarDoc,
 } from "@lararium/mesh";
 import { loadIntentFace, IntentRefused } from "./intent.js";
 import { kahuaDoor, KahuaRefused, type KahuaDoorPorts } from "../kahua-door.js";
@@ -92,7 +92,9 @@ export async function runKahuaCommand(opts: KahuaCommandOptions): Promise<Record
       if (!opts.all && (opts.cids ?? []).length === 0) throw new KahuaRefused("carry: name the revision cids that keep standing, or `all`");
       return { ...(await door.carry(opts.all ? { all: true } : { cids: opts.cids ?? [] })) };
     }
-    case "list": return { items: await door.list() };
+    // The list names the face's relation F beside its items: the folder name its private projections carry
+    // (`daemon-<F>`, `kahua-<F>`), so a reader that maps folders to faces (`lares export`) reads it off the verified log.
+    case "list": return { items: await door.list(), relation: faceRelationOf(ports.projection()) };
     case "get": {
       const title = need(opts.title, "a title");
       return { item: await door.get(title), ...(opts.history ? { history: await door.history(title) } : {}) };
