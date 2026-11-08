@@ -97,11 +97,16 @@ function payload(result: unknown): Record<string, unknown> {
 let lar: LarInstance;
 let entry: Entry;
 let priorHome: string | undefined;
+let priorPython: string | undefined;
 
 describe.skipIf(gaps.length > 0)("★ THE MCP SEAT BINDS THE HEARTH — a harness's seat writes the wiki the CLI reads ★", () => {
   beforeAll(async () => {
     const root = mkdtempSync(join(stageDir(), "lares-mcp-seat-"));
     priorHome = process.env["HOME"];
+    // The seat's interpreter is THE venv under the box's own home (`~/.venv`, the shard stands it); the scratch HOME
+    // below holds none, so the venv rides by name (`LARES_PYTHON`) before the swap. An operator's own pin stands.
+    priorPython = process.env["LARES_PYTHON"];
+    if (priorPython === undefined && priorHome !== undefined) process.env["LARES_PYTHON"] = join(priorHome, ".venv", "bin", "python3");
     process.env["HOME"] = join(root, "home");
     mkdirSync(process.env["HOME"], { recursive: true });
     lar = await openStaged({ root, tag: "mcp-seat" });
@@ -127,6 +132,8 @@ describe.skipIf(gaps.length > 0)("★ THE MCP SEAT BINDS THE HEARTH — a harnes
     await lar?.stop();
     if (priorHome === undefined) delete process.env["HOME"];
     else process.env["HOME"] = priorHome;
+    if (priorPython === undefined) delete process.env["LARES_PYTHON"];
+    else process.env["LARES_PYTHON"] = priorPython;
   });
 
   test("the entry names this hearth's root", () => {
