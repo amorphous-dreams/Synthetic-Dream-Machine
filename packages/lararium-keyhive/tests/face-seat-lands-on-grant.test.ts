@@ -163,6 +163,18 @@ describe("a causal face seat", () => {
     f.seat.daemonChanged("any/title"); await f.seat.settled();
     expect(f.counts()).toEqual({ ingests: 1, lifts: 1, verifies: 2 });
   });
+  test("a founder lift retries the same set-aside grant on a daemon change; CONTROL: an unchanged aside never seats", async () => {
+    const f = fixture(); f.arrive(); f.founderAside();
+    await f.seat.run();
+    expect(f.seated()).toBe(false);
+    f.seat.daemonChanged("edge/unchanged"); await f.seat.settled();
+    expect(f.seated()).toBe(false);
+    expect(f.counts().ingests).toBe(0);
+    f.standingArrives();
+    f.seat.daemonChanged("edge/lift"); await f.seat.settled();
+    expect(f.seated()).toBe(true);
+    expect(f.counts().ingests).toBe(1);
+  });
   test("R3 duplicate pulses coalesce and a pulse during a pass yields one trailing pass", async () => {
     const f = fixture(); f.arrive(); f.standingArrives();
     const running = f.seat.run();
