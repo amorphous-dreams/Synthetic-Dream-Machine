@@ -51,3 +51,29 @@ test('root farm refuses a link appearing after an absent name', () => {
 test('install wall masks host run sockets', () => {
   assert.deepEqual(INSTALL_RUN_WALL, ['--tmpfs', '/run']);
 });
+
+test('RED (blind read F1): a child that exits while another process holds its pipe releases the broker at the drain bound, never waits on the holder', async () => {
+  const holderScript = 'const { spawn } = require("node:child_process"); const h = spawn(process.execPath, ["-e", "setTimeout(() => {}, 60000)"], { detached: true, stdio: ["ignore", "inherit", "inherit"] }); h.unref(); process.stdout.write(String(h.pid) + "\\n");';
+  const t0 = Date.now();
+  const ran = await superviseChild(child(holderScript), { silenceMs: 5000, runMaxMs: 10_000, drainMs: 100 });
+  const held = Number(ran.output.trim());
+  try { process.kill(held, 'SIGKILL'); } catch { /* already gone */ }
+  assert.equal(ran.code, 0);
+  assert.ok(Date.now() - t0 < 3000, 'the drain bound settles; the holder never holds the broker');
+});
+
+test('RED (blind read F1): the whole-run bound settles the door even when a holder keeps the pipe open after the kill', async () => {
+  const holderScript = 'const { spawn } = require("node:child_process"); const h = spawn(process.execPath, ["-e", "setTimeout(() => {}, 60000)"], { detached: true, stdio: ["ignore", "inherit", "inherit"] }); h.unref(); process.stdout.write(String(h.pid) + "\\n"); setInterval(() => process.stdout.write("."), 10);';
+  const t0 = Date.now();
+  const ran = await superviseChild(child(holderScript), { silenceMs: 5000, runMaxMs: 150, drainMs: 100 });
+  try { process.kill(Number(ran.output.split('\n')[0]), 'SIGKILL'); } catch { /* already gone */ }
+  assert.equal(ran.overran, true);
+  assert.ok(Date.now() - t0 < 3000);
+});
+
+test('the check seat refuses a check list whose bounds together pass the door run bound (blind read F3)', async () => {
+  const { runCheckSeat } = await import('./seat-walls.mjs');
+  const checks = Array.from({ length: Math.floor(DOOR_RUN_MAX_MS / checkTimeoutMs) + 1 }, (_, i) => ({ name: `c${i}`, argv: ['/usr/bin/true'] }));
+  const out = await runCheckSeat({ gitDir: '/nonexistent', tree: 'x', checks, key: Buffer.alloc(32), receipts: new Map(), iso: '/nonexistent', bwrap: true });
+  assert.match(out.output, /checks together bound/);
+});

@@ -44,30 +44,40 @@ function baseEnv(iso) {
 
 /** A check runs synchronously, so no output can reset a bound: each check stops at the door silence. */
 export const checkTimeoutMs = DOOR_SILENCE_MS;
+/** After the child exits, its stdio may stay open in a process it handed the pipe to; the door drains this long, then settles. */
+export const EXIT_DRAIN_MS = 5_000;
 
 /**
  * Supervises a door's detached child until it closes: collects stdout and stderr, beats `onBeat` on each chunk, and stops
  * the child's group on silence or on the whole-run bound (relay-claim), so no child holds the one broker.
  */
-export async function superviseChild(child, { silenceMs = DOOR_SILENCE_MS, runMaxMs = DOOR_RUN_MAX_MS, onBeat = () => {} } = {}) {
+export async function superviseChild(child, { silenceMs = DOOR_SILENCE_MS, runMaxMs = DOOR_RUN_MAX_MS, drainMs = EXIT_DRAIN_MS, onBeat = () => {} } = {}) {
   // Once the child exits (reaped, though its stdio may still drain), its pgid may be reused: no bound signals after that.
   let exited = false;
   const stop = () => { if (exited) return; try { killGroup(child.pid, 'SIGKILL'); } catch (error) { if (error.code !== 'ESRCH') child.kill('SIGKILL'); } };
   const within = (n, max) => Number.isInteger(n) && n >= 1 && n <= max;
-  if (!within(silenceMs, DOOR_SILENCE_MS) || !within(runMaxMs, DOOR_RUN_MAX_MS)) { stop(); throw new Error(`seat-bound: silence 1..${DOOR_SILENCE_MS} ms, run 1..${DOOR_RUN_MAX_MS} ms`); }
+  if (!within(silenceMs, DOOR_SILENCE_MS) || !within(runMaxMs, DOOR_RUN_MAX_MS) || !within(drainMs, EXIT_DRAIN_MS)) { stop(); throw new Error(`seat-bound: silence 1..${DOOR_SILENCE_MS} ms, run 1..${DOOR_RUN_MAX_MS} ms, drain 1..${EXIT_DRAIN_MS} ms`); }
   return new Promise(resolve => {
-    let output = '', stderrTail = Buffer.alloc(0), overflow = false, silent = false, overran = false, quiet;
+    let output = '', stderrTail = Buffer.alloc(0), overflow = false, silent = false, overran = false, quiet, drain, settled = false, exitFields = {};
     // LIVENESS: `silenceMs` without stdout or stderr stops the child; active output resets the bound.
-    const resetSilence = () => { clearTimeout(quiet); if (exited) return; quiet = setTimeout(() => { silent = true; stop(); }, silenceMs); };
+    const resetSilence = () => { clearTimeout(quiet); if (exited) return; quiet = setTimeout(() => { silent = true; stop(); armDrain(); }, silenceMs); };
+    const settle = (fields) => {
+      if (settled) return;
+      settled = true; clearTimeout(quiet); clearTimeout(whole); clearTimeout(drain);
+      child.stdout.destroy(); child.stderr.destroy();
+      resolve({ ...fields, output, overflow, stderrTail, silent, overran });
+    };
+    // LIVENESS: once the child exits or a bound kills it, the door drains its stdio for `drainMs`, then settles: a process
+    // the child handed its pipe to never holds the one broker.
+    const armDrain = () => { clearTimeout(drain); drain = setTimeout(() => settle(exitFields), drainMs); };
     // LIVENESS: the whole run stops at `runMaxMs`, however much the child talks.
-    const whole = setTimeout(() => { overran = true; stop(); }, runMaxMs);
-    const settle = (fields) => { clearTimeout(quiet); clearTimeout(whole); resolve({ ...fields, output, overflow, stderrTail, silent, overran }); };
+    const whole = setTimeout(() => { overran = true; stop(); armDrain(); }, runMaxMs);
     resetSilence();
     const append = chunk => { resetSilence(); onBeat(); output += chunk; if (output.length > 16 * 1024 * 1024) { overflow = true; output = output.slice(-CAP * 2); } };
     child.stdout.setEncoding('utf8'); child.stderr.setEncoding('utf8');
     child.stdout.on('data', append);
     child.stderr.on('data', chunk => { append(chunk); stderrTail = Buffer.concat([stderrTail, Buffer.from(chunk)]).subarray(-2048); });
-    child.on('exit', () => { exited = true; clearTimeout(quiet); clearTimeout(whole); });
+    child.on('exit', (code, signal) => { exited = true; exitFields = { code, signal }; clearTimeout(quiet); clearTimeout(whole); armDrain(); });
     child.on('error', error => settle({ error }));
     child.on('close', (code, signal) => settle({ code, signal }));
   });
@@ -104,6 +114,7 @@ async function extractTree({ gitDir, tree, to, iso }) {
 }
 
 export async function runCheckSeat({ gitDir, tree, checks, key, receipts, iso, bwrap, keepWork, onBeat = () => {} }) {
+  if ((checks ?? []).length * checkTimeoutMs > DOOR_RUN_MAX_MS) return { ok: false, output: `refused: ${checks.length} checks together bound past the ${DOOR_RUN_MAX_MS}ms door run (each ${checkTimeoutMs}ms)` };
   const named = (checks ?? []).map((c) => c?.name).join(', ') || '<none>';
   if (!bwrap || !HAVE_GIT || !HAVE_TAR || !HAVE_BWRAP) return { ok: false, output: `no wall available: refusing to run check ${named} unwalled` };
 
@@ -149,7 +160,7 @@ export async function runCheckSeat({ gitDir, tree, checks, key, receipts, iso, b
         '--setenv', 'LC_ALL', 'C',
         ...check.argv,
       ];
-      onBeat();
+      onBeat({ force: true }); // a synchronous check speaks no output, so the claim stirs at its start, past the pacing
       const ran = run(BWRAP, args, { timeout: checkTimeoutMs });
       if (ran.result.error?.code === 'ETIMEDOUT') return { ok: false, output: `check ${check.name} failed: liveness: ran past ${checkTimeoutMs}ms` };
       if (!ran.ok) return { ok: false, output: `check ${check.name} failed: ${ran.output}` };

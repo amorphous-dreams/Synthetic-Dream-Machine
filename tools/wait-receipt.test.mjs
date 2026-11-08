@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync, writeFileSync, utimesSync, symlinkSync, statSync, readFileSync, existsSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync, utimesSync, symlinkSync, statSync, readFileSync, existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -122,6 +122,31 @@ test('openClaim paces its beats: at most one stir per relay pause, so a chatty d
       assert.equal(claim.beat({ now: 1_000 + RELAY_PAUSE_MS - 1 }), false);
       assert.equal(claim.beat({ now: 1_000 + RELAY_PAUSE_MS }), true);
       assert.equal(claim.beat({ now: 1_000 + RELAY_PAUSE_MS + 1 }), false);
+      claim.clear();
+    } finally { held.close(); }
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('RED (blind read F2): a directory the lead plants at the claim name never crashes the broker: beat and clear stay best-effort', () => {
+  const dir = relayDir();
+  try {
+    const held = openHeldSync(dir, dir);
+    try {
+      mkdirSync(join(dir, claimName('003')));
+      const claim = openClaim(held, '003');
+      assert.doesNotThrow(() => claim.beat({ now: Date.now() + RELAY_PAUSE_MS * 2 }));
+      assert.doesNotThrow(() => claim.clear());
+    } finally { held.close(); }
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('openClaim stirs at once when forced, past the pacing: the relay stirs before each long synchronous check (blind read F4)', () => {
+  const dir = relayDir();
+  try {
+    const held = openHeldSync(dir, dir);
+    try {
+      const claim = openClaim(held, '004', { now: 1_000 });
+      assert.equal(claim.beat({ now: 1_001, force: true }), true);
       claim.clear();
     } finally { held.close(); }
   } finally { rmSync(dir, { recursive: true, force: true }); }

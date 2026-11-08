@@ -24,20 +24,22 @@ export const isClaimName = (name) => /^run-[^/]+\.json$/.test(name);
 /**
  * Stands the claim for request `id` inside the held relay dir. A name the lead planted first stays (O_EXCL refuses to
  * write through it); `beat` stirs the entry itself with lutimes and `clear` unlinks the entry, so neither follows a link.
+ * A claim only advises the waiter, so `beat` and `clear` stay best-effort: whatever the lead planted at the name (a
+ * directory, a link, a mode it set), neither throws into the broker.
  */
 export function openClaim(relayHeld, id, { now = Date.now() } = {}) {
   const at = relayHeld.at(claimName(id));
-  try { writeFileSync(at, `${JSON.stringify({ id })}\n`, { flag: "wx" }); } catch (error) { if (error.code !== "EEXIST") throw error; }
+  try { writeFileSync(at, `${JSON.stringify({ id })}\n`, { flag: "wx" }); } catch { /* advisory: a planted name stays, and the waiter's cap holds without a claim */ }
   let last = now;
   return {
-    /** PACING: at most one stir per relay pause, so a chatty door never floods the relay dir with events. */
-    beat({ now: t = Date.now() } = {}) {
-      if (t - last < RELAY_PAUSE_MS) return false;
+    /** PACING: at most one stir per relay pause, so a chatty door never floods the relay dir; `force` stirs at once (before a long synchronous step). */
+    beat({ now: t = Date.now(), force = false } = {}) {
+      if (!force && t - last < RELAY_PAUSE_MS) return false;
       last = t;
       const stamp = new Date(t);
-      try { lutimesSync(at, stamp, stamp); } catch (error) { if (error.code !== "ENOENT") throw error; }
+      try { lutimesSync(at, stamp, stamp); } catch { /* advisory: the waiter's cap holds without it */ }
       return true;
     },
-    clear() { try { unlinkSync(at); } catch (error) { if (error.code !== "ENOENT") throw error; } },
+    clear() { try { unlinkSync(at); } catch { /* advisory: a planted entry outlives its request harmlessly */ } },
   };
 }

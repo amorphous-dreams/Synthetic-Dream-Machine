@@ -160,7 +160,7 @@ async function poll() {
     // The claim tells the lead's waiter the broker lives while a long door runs (relay-claim); it never sets a bound.
     const claim = openClaim(relay, id);
     let answer;
-    try { answer = await handle(JSON.parse(await readHeldAsync(relay, name)), () => claim.beat()); }
+    try { answer = await handle(JSON.parse(await readHeldAsync(relay, name)), (opts) => claim.beat(opts)); }
     catch (error) { answer = { ok: false, output: cap(`refused: ${error.message}`) }; }
     try { await writeFile(relay.at(`res-${id}.json`), JSON.stringify(answer) + '\n', { flag: 'wx' }); }
     catch (error) {
