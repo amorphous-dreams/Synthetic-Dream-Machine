@@ -94,8 +94,10 @@ export async function gatherCredentials(verb: string, opts: { readonly route?: R
   const out: Credential[] = [];
   for (;;) {
     const [route] = opts.route ? [opts.route] : await askRoute("open with", false);
-    out.push(await readCredential(route!));
-    const more = (await promptLine("another credential for a multi-pin slot? [y/N]: ")).trim().toLowerCase();
+    const credential = await readCredential(route!);
+    if (out.length > 0 && credential.kind === "passphrase" && credential.passphrase === "") say("  blank extra passphrase skipped.");
+    else out.push(credential);
+    const more = (await promptLine("another pin? only a slot sealed with several pins needs one [y/N]: ")).trim().toLowerCase();
     if (!more.startsWith("y")) return out;
   }
 }
@@ -126,6 +128,7 @@ async function newPaperPin(): Promise<PinSpec> {
   const draft = draftPaperPin({ threshold: 1, count: 1 });
   say();
   say("  PAPER PIN — write these words on paper, in order. They are shown once and kept nowhere:");
+  say("  Never paste these words anywhere: no chat, no notes app, no screenshot.");
   say();
   draft.sheets.forEach((sheet, i) => say(`    sheet ${i + 1}: ${sheet}`));
   say();

@@ -150,6 +150,7 @@ async function foundHearth(args: ParsedArgs, at: { storageDir: string; genesisDi
       ...(args.flags["force"] ? { force: true } : {}),
       name, ...(chair ? { chair } : {}), ...(restore ? { restore } : {}),
       placeFoundingCard: { readBack: async (card, fingerprint, generation) => {
+        if (args.flags["json"] !== true) process.stdout.write("2 cards print in order: PLACE (generation 0), then chair.\n");
         await readBack(args, [{ chair: "place", seed: card.seed, digest: card.digest }], generation, fingerprint);
       } },
       readBack: async (cards, fingerprint) => { printed = await readBack(args, cards, 1, fingerprint); },

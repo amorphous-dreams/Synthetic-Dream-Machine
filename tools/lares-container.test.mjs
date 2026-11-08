@@ -7,7 +7,7 @@
  * binds, and that no argv ever carries the docker socket.
  */
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, readFile, writeFile, chmod, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, readdir, writeFile, chmod, rm } from "node:fs/promises";
 import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -55,6 +55,40 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth" } = {}) {
 // ATTACHED: under a real pseudo-terminal the shim must NOT add -T, or the founding loses its human-route prompt.
 // (Reading `-t 1` inside the `$(tty_flag)` substitution once always read false: stdout there is a pipe.)
 const haveScript = spawnSync("script", ["--version"]).status === 0;
+test("sh: reset protects the standing vessel and unsafe paths, then clears only confirmed state", { skip: !haveScript }, async () => {
+  const dir = await mkdtemp(join(tmpdir(), "lares-reset-"));
+  try {
+    const state = join(dir, "state"), workspace = join(dir, "workspace"), hearth = join(dir, "hearth");
+    await Promise.all([state, workspace, hearth, join(workspace, "nested")].map((path) => mkdir(path, { recursive: true })));
+    await writeFile(join(dir, "docker"), `#!/bin/sh\ncase " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}";; *" ps -q --filter volume="*) printf '%s' "\${FAKE_HOLDER_ID:-}";; esac\n`);
+    await chmod(join(dir, "docker"), 0o755);
+    await writeFile(join(state, "entry"), "keep until confirmation");
+    await writeFile(join(state, ".hidden"), "hidden");
+    await writeFile(join(hearth, "lares-surface.env"), "# stays\n");
+    const base = { PATH: `${dir}:${process.env.PATH}`, HOME: dir, LAR_ROOT: hearth, LARES_STATE: state, LARES_WORKSPACE: workspace };
+    const reset = (env, input = "re-found\n") => spawnSync("script", ["-qec", `sh '${SH}' reset`, "/dev/null"], { env: { ...base, ...env }, input, encoding: "utf8" });
+    const standing = reset({ FAKE_RUNNING_ID: "vessel" });
+    assert.equal(standing.status, 2);
+    assert.match(standing.stdout, /tools\/lares-container\.sh down first/);
+    const held = reset({ FAKE_HOLDER_ID: "founding-run" });
+    assert.equal(held.status, 2);
+    assert.match(held.stdout, /a running container binds .*founding-run/);
+    const parentOfHome = reset({ HOME: join(state, "operator") });
+    assert.equal(parentOfHome.status, 2);
+    assert.match(parentOfHome.stdout, /containing HOME/);
+    for (const unsafe of ["", "/", dir, workspace, join(workspace, "nested"), dir + "/state/../workspace"]) {
+      const result = reset({ LARES_STATE: unsafe });
+      assert.equal(result.status, 2, `${unsafe}: ${result.stdout}`);
+    }
+    assert.equal(reset({}, "no\n").status, 2);
+    assert.deepEqual((await readdir(state)).sort(), [".hidden", "entry"]);
+    const done = reset({});
+    assert.equal(done.status, 0, done.stdout);
+    assert.match(done.stdout, /directory itself, the env file and the image stay/);
+    assert.deepEqual(await readdir(state), []);
+    assert.equal(await readFile(join(hearth, "lares-surface.env"), "utf8"), "# stays\n");
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});
 test("sh: found under a TTY runs attached, with no -T", { skip: !haveScript }, async () => {
   const dir = await mkdtemp(join(tmpdir(), "lares-container-tty-"));
   try {

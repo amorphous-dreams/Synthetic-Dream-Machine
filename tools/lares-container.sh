@@ -3,6 +3,7 @@
 #
 #   lares-container.sh up [--capture <dir>]...   stand the vessel (detached) and wait until it answers healthy
 #   lares-container.sh down                      stop it and remove its container (state stays in LARES_STATE)
+#   lares-container.sh reset                     clear a stopped hearth's state after terminal confirmation
 #   lares-container.sh found [vessel-found args] the founding act, under a TTY (it gathers the human route: a passphrase
 #                                                and/or a paper pin, and `--hearth` prints the seed card and reads it
 #                                                back; with no TTY the CLI refuses CredentialTtyRefusal)
@@ -174,7 +175,7 @@ HAVE_TTY=""
 if [ -t 0 ] && [ -t 1 ]; then HAVE_TTY=yes; fi
 tty_flag() { if [ -z "$HAVE_TTY" ]; then printf -- '-T'; fi; }
 
-[ "$#" -gt 0 ] || die "usage: lares-container.sh up|down|found|logs|vessel stand|<lares verb…>"
+[ "$#" -gt 0 ] || die "usage: lares-container.sh up|down|reset|found|logs|vessel stand|<lares verb…>"
 verb=$1; shift
 
 case "$verb" in
@@ -219,6 +220,42 @@ case "$verb" in
     warn_image_revision
     unlock_or_name ;;
   down)  compose down --remove-orphans "$@" ;;
+  reset)
+    [ "$#" -eq 0 ] || die "reset takes no arguments"
+    if running_vessel; then die "reset refuses while the lares vessel stands; run tools/lares-container.sh down first"; fi
+    [ -n "$HAVE_TTY" ] || die "reset needs a terminal; nothing removed"
+    # Compose accepts plain KEY=VALUE lines; reset accepts literal paths alone and resolves symlinks before clearing.
+    state=${LARES_STATE:-}
+    workspace=${LARES_WORKSPACE:-}
+    if [ -z "$state" ] && [ -f "$ENV_FILE" ]; then state=$(sed -n 's/^[[:space:]]*LARES_STATE=//p' "$ENV_FILE" | tail -n 1); fi
+    if [ -z "$workspace" ] && [ -f "$ENV_FILE" ]; then workspace=$(sed -n 's/^[[:space:]]*LARES_WORKSPACE=//p' "$ENV_FILE" | tail -n 1); fi
+    case "$state" in /*) ;; *) die "reset refuses an empty or non-absolute LARES_STATE" ;; esac
+    case "$workspace" in /*) ;; *) die "reset refuses an empty or non-absolute LARES_WORKSPACE" ;; esac
+    state=$(realpath -e -- "$state") || die "reset cannot resolve LARES_STATE"
+    workspace=$(realpath -m -- "$workspace") || die "reset cannot resolve LARES_WORKSPACE"
+    home=$(realpath -m -- "$HOME") || die "reset cannot resolve HOME"
+    env_path=$(realpath -m -- "$ENV_FILE") || die "reset cannot resolve the env file"
+    [ -d "$state" ] || die "reset needs LARES_STATE to name a directory"
+    case "$state" in /|"$home"|"$workspace"|"$workspace"/*) die "reset refuses unsafe LARES_STATE: $state" ;; esac
+    case "$workspace/" in "$state/"*) die "reset refuses LARES_STATE containing LARES_WORKSPACE: $state" ;; esac
+    case "$env_path" in "$state"/*) die "reset refuses LARES_STATE containing its env file: $state" ;; esac
+    case "$home/" in "$state/"*) die "reset refuses LARES_STATE containing HOME: $state" ;; esac
+    # Any running container that binds the state dir holds the store: a founding run, a harness, a hand-started one.
+    holders=$(docker ps -q --filter "volume=$state") || die "cannot read running containers (docker ps failed); nothing removed"
+    [ -z "$holders" ] || die "reset refuses while a running container binds $state: $holders"
+    printf 'LARES_STATE: %s\nReset removes every entry inside this directory; the directory itself, the env file and the image stay.\nType re-found to proceed: ' "$state"
+    IFS= read -r answer || die "reset confirmation not read; nothing removed"
+    [ "$answer" = re-found ] || die "reset confirmation did not match; nothing removed"
+    failed=""
+    for entry in "$state"/* "$state"/.[!.]* "$state"/..?*; do
+      [ -e "$entry" ] || [ -L "$entry" ] || continue
+      if ! rm -rf -- "$entry"; then
+        printf 'lares-container: cannot remove %s; clear it with its owner or administrator, then run reset again (no sudo runs here)\n' "$entry" >&2
+        failed=yes
+      fi
+    done
+    [ -z "$failed" ] || exit 1
+    printf '%s\n' 'lares-container: state cleared; the hearth can be founded again.' ;;
   logs)  compose logs "$@" lares ;;
   found)
     # shellcheck disable=SC2046

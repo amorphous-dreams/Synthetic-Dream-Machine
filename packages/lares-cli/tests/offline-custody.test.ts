@@ -73,6 +73,27 @@ afterEach(async () => {
   for (const r of roots.splice(0)) rmSync(r, { recursive: true, force: true });
 });
 
+test("gathering skips a blank extra passphrase and explains the multi-pin question", async () => {
+  vi.spyOn(secretPrompt, "canPromptSecret").mockReturnValue(true);
+  vi.spyOn(secretPrompt, "promptSecret").mockResolvedValueOnce("held phrase").mockResolvedValueOnce("");
+  const lines = vi.spyOn(secretPrompt, "promptLine").mockResolvedValueOnce("y").mockResolvedValueOnce("n");
+  const output = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+  expect(await custodyPrompt.gatherCredentials("test", { route: "passphrase" })).toEqual([{ kind: "passphrase", passphrase: "held phrase" }]);
+  expect(lines.mock.calls[0]?.[0]).toContain("only a slot sealed with several pins needs one");
+  expect(output.mock.calls.map((c) => String(c[0])).join("")).toContain("blank extra passphrase skipped");
+});
+
+test("paper pin warns against digital copies before asking the sheet back", async () => {
+  vi.spyOn(secretPrompt, "canPromptSecret").mockReturnValue(true);
+  let printed = "";
+  vi.spyOn(process.stdout, "write").mockImplementation((chunk) => { printed += String(chunk); return true; });
+  vi.spyOn(secretPrompt, "promptSecret").mockImplementation(async () => {
+    expect(printed).toContain("Never paste these words anywhere: no chat, no notes app, no screenshot");
+    return /sheet 1: ([^\n]+)/.exec(printed)![1]!;
+  });
+  expect((await custodyPrompt.gatherNewSlot("test", "paper")).pins).toHaveLength(1);
+});
+
 describe("a command's own key session", () => {
   test("RED: a planted marker cannot lock a person's root out; CONTROL: the same terminal opens it without the marker", async () => {
     const root = await stage("person-chosen-route", { marked: true });

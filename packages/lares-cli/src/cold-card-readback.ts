@@ -43,6 +43,7 @@ export async function readBack(args: ParsedArgs, cards: readonly ColdCard[], gen
     // A card names the fields its caller holds: a chair whose charter does not stand yet (a joint Nexus at `cofound
     // open` and `join`, a seat with no inception image) prints the three it holds and no charter line, never a refusal.
     const fields = charterFingerprint === "" ? (["purpose", "chairLabel", "generation"] as const) : COLD_KEY_CARD_DEFAULT_FIELDS;
+    if (!json && cards.length > 1) say(`${cards.length} cards print in order: ${cards.map((card) => card.chair).join(", ")}.`);
     for (const card of cards) {
       if (!json) {
         say(`── cold-key card · ${card.chair} ──`);
@@ -50,14 +51,21 @@ export async function readBack(args: ParsedArgs, cards: readonly ColdCard[], gen
       }
       if (standIn) continue;
       for (let tries = 0; ; tries++) {
-        const typed = (await promptSecret(`type the card for ${card.chair} back`)).trim();
+        const typed = (await promptSecret(`type ${card.chair}'s three code lines (dashes and spaces optional), not the confirm words`)).trim();
         let back: Uint8Array | null = null;
-        try { back = coldKeySeedFromCode(typed); } catch { back = null; }
+        let reason = "reads as another card";
+        try { back = coldKeySeedFromCode(typed); } catch (err) {
+          const fault = err instanceof Error ? err.message : "";
+          if (fault.endsWith(": length")) reason = `${typed.replace(/[\s-]/g, "").length} of 72 characters`;
+          else if (fault.endsWith(": character")) reason = "a character outside 0-9 a-f";
+          else if (fault.endsWith(": checksum")) reason = "a typo somewhere (checksum)";
+          else throw err;
+        }
         const same = back !== null && Buffer.from(back).equals(Buffer.from(card.seed));
         back?.fill(0);
         if (same) break;
-        if (tries >= 2) throw new CardReadBackRefused(`the card for ${card.chair} read back three times and never matched — nothing was written; run the rite again`);
-        say("  that card reads otherwise — try again");
+        if (tries >= 2) throw new CardReadBackRefused(`the card for ${card.chair}: ${reason}; three attempts never matched — nothing was written; run the rite again`);
+        say(`  ${reason} — try again`);
       }
     }
     return cards.map((card) => {
