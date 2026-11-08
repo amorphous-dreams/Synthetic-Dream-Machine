@@ -35,6 +35,7 @@ function fixture() {
       read.push(`${reading}|${context.dyad?.("someone-else")}`);
       if (pendingOnce) { pendingOnce = false; return { ok: false, reason: "founder persona-KEL proof unavailable", pending: true }; }
       if (reading === "aside") return { ok: false, reason: "founder device set aside" };
+      if (reading === "unknown") return { ok: false, reason: "founder dyad standing unknown", pending: true };
       return refuse ? { ok: false, reason: "refused" } : { ok: true };
     },
     ingest: async () => { ingests++; if (failIngest) throw new Error("ingest"); known = true; },
@@ -82,6 +83,16 @@ describe("a causal face seat", () => {
     expect(fork.logs.join("\n")).toMatch(/REFUSED .*founder lineage forked/);
     expect(fork.ingests).toBe(0);
   });
+  test("unknown standing still withholds when a supplied verifier accepts", async () => {
+    let ingests = 0;
+    const seat = makeFaceSeat({
+      group, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
+      knowsAgent: async () => false, grants: async () => [{ title, record: grant }], founderStanding: async () => "unknown",
+      verify: async () => ({ ok: true }), ingest: async () => { ingests++; }, lift: async () => {}, log: () => {},
+    });
+    await seat.run();
+    expect(ingests).toBe(0);
+  });
   test("R1 grant arrival seats and lifts without a binding call; absent grant leaves the floor", async () => {
     const f = fixture(); f.standingArrives();
     expect(await f.seat.run()).toBe(false);
@@ -114,7 +125,7 @@ describe("a causal face seat", () => {
   });
   test("R2 a grant waits unjudged while its founder's standing reads unknown", async () => {
     const f = fixture(); f.arrive();
-    await f.seat.run(); expect(f.counts().verifies).toBe(0);
+    await f.seat.run(); expect(f.counts().verifies).toBe(1);
     f.standingArrives(); f.seat.wake(); await f.seat.settled();
     expect(f.counts().ingests).toBe(1);
   });
@@ -123,7 +134,7 @@ describe("a causal face seat", () => {
     idle.seat.daemonChanged("unrelated/title"); await idle.seat.settled();
     expect(idle.counts().verifies).toBe(0);
     const f = fixture(); f.arrive();
-    await f.seat.run(); expect(f.counts().verifies).toBe(0);
+    await f.seat.run(); expect(f.counts().verifies).toBe(1);
     f.standingArrives(); f.seat.daemonChanged("unrelated/title"); await f.seat.settled();
     expect(f.counts().ingests).toBe(1);
   });

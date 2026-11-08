@@ -140,13 +140,7 @@ export function makeFaceSeat(ports: FaceSeatPorts) {
         // THE FOUNDER'S STANDING, read once per record for the device its edge names: the verifier decides from it.
         const founderKey = record.founderEdge?.deviceVerifyingKey;
         const standing: EdgeStanding = typeof founderKey === "string" ? await ports.founderStanding(founderKey) : "unknown";
-        // ABSENCE IS NOT CLEAR: a founder no qualifying signed frontier covers leaves the record unjudged until the board's
-        // reading arrives; the verify never runs on it, so nothing about the record gets decided from what this vessel lacks.
-        if (standing === "unknown") {
-          waitingOnProof = true;
-          ports.log(`face-join grant pending (${title.slice(-16)}): founder dyad standing unknown`);
-          continue;
-        }
+        // Walk the held lineage even when standing is unknown, so a fork cannot hide behind a pending frontier.
         const verdict = await ports.verify(record, {
           personaRootDid: ports.personaRootDid, selfVerifyingKey: self, groupId: ports.group, personaKel: ports.personaKel,
           dyad: (asked) => typeof founderKey === "string" && asked.toLowerCase() === founderKey.toLowerCase() ? standing : "unknown",
@@ -160,6 +154,12 @@ export function makeFaceSeat(ports: FaceSeatPorts) {
           }
           judged.add(record.sig);
           ports.log(`face-join grant record REFUSED (${title.slice(-16)}): ${verdict.reason}`);
+          continue;
+        }
+        // Retain the seat's own fail-closed boundary even if a supplied verifier accepts unknown standing.
+        if (standing === "unknown") {
+          waitingOnProof = true;
+          ports.log(`face-join grant pending (${title.slice(-16)}): founder dyad standing unknown`);
           continue;
         }
         try { await ports.ingest(record); }
