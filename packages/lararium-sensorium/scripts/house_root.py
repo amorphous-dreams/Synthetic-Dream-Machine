@@ -9,9 +9,9 @@ joins the two spellings, and `packages/lararium-node/tests/house-root-weld.test.
 both tables and asserting them equal. Move one and move the other in the same breath.
 
     <root>/hearth/{vessel,identity,nexus}   the spirits' sovereign homes
-    <root>/hearth/sensoriums/<name>          memory · mesh · memetic-wikitext
     <root>/hearth/checkpoints                watermarks (projection, harvest)
     <root>/hearth/staging                    normalized copies a harvest stages
+    <root>/sensoriums/<name>                 memory · mesh · memetic-wikitext (outside the hearth)
     <root>/library                           the acquired library (outside the hearth)
     <root>/projections                       deliberate plaintext renders
     <root>/config · <root>/cache · <root>/run
@@ -60,8 +60,8 @@ def seal_home() -> str:
 
 
 def sensoriums_home() -> str:
-    """`<root>/hearth/sensoriums` — every standing sensorium. Mirrors TS `larSensoriumsHome()`."""
-    return os.path.join(hearth_home(), "sensoriums")
+    """`<root>/sensoriums` — every standing sensorium, outside the hearth. Mirrors TS `larSensoriumsHome()`."""
+    return os.path.join(house_root(), "sensoriums")
 
 
 def checkpoints_home() -> str:

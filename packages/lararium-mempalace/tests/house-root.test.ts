@@ -53,7 +53,7 @@ describe("house-root (the one named house root)", () => {
     set("LAR_ROOT", "/house");
     expect(larHouseRoot()).toBe("/house");
     expect(larHearthHome()).toBe(join("/house", "hearth"));
-    expect(larSensoriumsHome()).toBe(join("/house", "hearth", "sensoriums"));
+    expect(larSensoriumsHome()).toBe(join("/house", "sensoriums"));
     expect(larCheckpointsHome()).toBe(join("/house", "hearth", "checkpoints"));
     expect(larStagingHome()).toBe(join("/house", "hearth", "staging"));
     expect(larLibraryRoot()).toBe(join("/house", "library"));
@@ -71,9 +71,9 @@ describe("house-root (the one named house root)", () => {
 
   // Both tongues name the same planes — the li planes resolve the SAME string the Python holders' defaults do
   // (structurepalace_io._default_structurepalace_dir + siblings), or capture writes one dir while recall reads another.
-  it("the memory sensorium planes stand under <root>/hearth/sensoriums/memory", () => {
+  it("the memory sensorium planes stand under <root>/sensoriums/memory", () => {
     set("LAR_ROOT", "/iso");
-    const memory = join("/iso", "hearth", "sensoriums", "memory");
+    const memory = join("/iso", "sensoriums", "memory");
     expect(memorySensoriumDir()).toBe(memory);
     expect(memorySensoriumContentDir()).toBe(join(memory, "content"));
     expect(memorySensoriumStructureDir()).toBe(join(memory, "structure"));

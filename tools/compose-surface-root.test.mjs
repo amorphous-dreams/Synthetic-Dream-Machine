@@ -7,7 +7,7 @@
  *
  *   · `LAR_ROOT` reads `/lar`, the house root, and every service command that names `--root` names `/lar` too;
  *   · no service command names `/workspace` (or a path under it) as its root;
- *   · the house's four bound classes bind from one host root, LARES_HOUSE: hearth, projections, library and config;
+ *   · the house's five bound classes bind from one host root, LARES_HOUSE: hearth, sensoriums, projections, library and config;
  *   · the canon SOURCE reads the checkout through `LAR_BAGS=/workspace/bags`, and genesis rides the image
  *     (`LAR_GENESIS=/app/genesis`);
  *   · the mirrors split by origin (operator ruling, 2026-11-01): a bag whose source stands under `LAR_BAGS` projects back
@@ -49,7 +49,7 @@ export function readComposeRoots(text) {
     if (root === "/workspace" || String(root).startsWith("/workspace/")) refusals.push(`line ${line}: --root ${root} writes the projection into the checkout`);
   }
   if (!/^\s*LAR_ROOT:\s*\/lar\s*$/m.test(text)) refusals.push("LAR_ROOT does not read /lar");
-  for (const cls of ["hearth", "projections", "library", "config"]) {
+  for (const cls of ["hearth", "sensoriums", "projections", "library", "config"]) {
     const bind = new RegExp(`source: \\$\\{LARES_HOUSE:\\?[^}]*\\}/${cls}\\s*\\n\\s*target: /lar/${cls}\\s*$`, "m");
     if (!bind.test(text)) refusals.push(`the ${cls} class does not bind LARES_HOUSE/${cls} at /lar/${cls}`);
   }

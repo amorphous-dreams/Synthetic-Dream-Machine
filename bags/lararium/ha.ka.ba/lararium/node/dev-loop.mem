@@ -61,7 +61,8 @@ house-state resolver refuses by name (`HouseRootUnnamed`), with no XDG base and 
 default. Each level beneath the root carries one meaning, sorted by what a re-founding clears:
 
 |! class |! holds |! survives a re-founding |
-| `<root>/hearth` | `vessel/` storage · key · social bootstrap · `identity/` keypair · `nexus/` seal · `sensoriums/` memory · mesh · memetic-wikitext · `checkpoints/` projection + harvest watermarks · `staging/` harvest copies | no — a re-founding clears this directory alone |
+| `<root>/hearth` | `vessel/` storage · key · social bootstrap · `identity/` keypair · `nexus/` seal · `checkpoints/` projection + harvest watermarks · `staging/` harvest copies | no — a re-founding clears this directory alone |
+| `<root>/sensoriums` | memory · mesh · memetic-wikitext: captured conversation memory, never projected | yes — capture the machine took once and cannot take again |
 | `<root>/library` | the acquired library | yes — originals nothing re-makes |
 | `<root>/projections` | deliberate plaintext renders · house-homed bags | yes |
 | `<root>/config` | `config.json` · `meta.json` · `repos.json` | yes |
@@ -76,7 +77,7 @@ default. Each level beneath the root carries one meaning, sorted by what a re-fo
 (uds-channel) always agree on the ''UDS socket'' path. The Python tongue mirrors the table in
 `packages/lararium-sensorium/scripts/house_root.py`, and `house-root-weld.test.ts` holds the two
 equal. The guest mempalace stays `~/.mempalace` (mempalace's own home; `MEMPALACE_PALACE_PATH`
-overrides); the SOVEREIGN content plane rides `<root>/hearth/sensoriums/memory`.
+overrides); the SOVEREIGN content plane rides `<root>/sensoriums/memory`.
 
 ''Only an EXPLICIT `--root` (or the env) sets `LAR_ROOT`'' — never a default; a `REPO_ROOT` default
 would put the house inside the checkout.
@@ -113,6 +114,6 @@ would put the house inside the checkout.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;eYyXmitGYT7z2ZK9xdTtXoxDO6BdzcKlBU8pEX0mWjs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qwjzc51Oqw1ZWvNi5Fd8SXtYQ6Fakjlh2-AwdGUAr-M`>>
 
 <<^ code=`&#x0004;` to=`?`>>

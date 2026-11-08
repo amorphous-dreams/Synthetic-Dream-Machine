@@ -138,8 +138,8 @@ COPY --from=build /app/packages/lares-cli/bin               ./packages/lares-cli
 COPY --from=build /app/packages/lares-cli/package.json      ./packages/lares-cli/package.json
 
 # THE HOUSE ROOT AND THE CORPUS (the deployment contract; docker-compose.surface.yml wires them):
-#   /lar        the house root (LAR_ROOT). Its hearth (vessel homes AND custody keys), projections, library and
-#               config bind from the host's one house root; its cache and run stay inside the container. Never in a
+#   /lar        the house root (LAR_ROOT). Its hearth (vessel homes AND custody keys), sensoriums, projections,
+#               library and config bind from the host's one house root; its cache and run stay inside the container. Never in a
 #               layer.
 #   /workspace  the editable corpus — the canon source a seeding reads, and the canon projections written back.
 # The image declares the bound classes and the corpus so an unmounted run lands in an anonymous volume, never in the
@@ -147,10 +147,11 @@ COPY --from=build /app/packages/lares-cli/package.json      ./packages/lares-cli
 # from the image, so an unmounted run reads node:node here, never root-owned. The cache and run classes stand sticky
 # and world-writable for whatever uid the compose `user:` names. The harness composes root their scratch vessels at
 # /state (`LAR_ROOT=/state`), so that mount point stands node-owned for their named volumes too.
-RUN mkdir -p /lar/hearth /lar/projections /lar/library /lar/config /lar/cache /lar/run /state /workspace \
- && chown node:node /lar /lar/hearth /lar/projections /lar/library /lar/config /state /workspace \
+RUN mkdir -p /lar/hearth /lar/sensoriums /lar/projections /lar/library /lar/config /lar/cache /lar/run /state /workspace \
+ && chown node:node /lar /lar/hearth /lar/sensoriums /lar/projections /lar/library /lar/config /state /workspace \
  && chmod 1777 /lar/cache /lar/run
 VOLUME /lar/hearth
+VOLUME /lar/sensoriums
 VOLUME /lar/projections
 VOLUME /lar/library
 VOLUME /lar/config

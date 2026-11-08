@@ -130,7 +130,7 @@ def test_manifest_without_root_still_validates(tmp_path):
 
 
 def test_pour_roots_in_the_sensorium_roster(tmp_path, monkeypatch):
-    # the collapse: a bed pours into the ONE roster <root>/hearth/sensoriums/<bed>,
+    # the collapse: a bed pours into the ONE roster <root>/sensoriums/<bed>,
     # resolved from the bed NAME — never the manifest's stale literal root.
     monkeypatch.setenv("LAR_ROOT", str(tmp_path / "home"))     # name a scratch house root
     path, _ = _manifest(tmp_path, root="~/.lares/testbeds/ignored-stale-root")

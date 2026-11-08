@@ -52,7 +52,7 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth" } = {}) {
     const r = spawnSync(cmd[0], cmd[1], { env: { ...base, ...filled }, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
     let calls = ""; try { calls = await readFile(log, "utf8"); } catch {}
     const made = {};
-    for (const c of ["hearth", "projections", "library", "config"]) { try { await readdir(join(house, c)); made[c] = true; } catch { made[c] = false; } }
+    for (const c of ["hearth", "sensoriums", "projections", "library", "config"]) { try { await readdir(join(house, c)); made[c] = true; } catch { made[c] = false; } }
     return { ...r, calls, dir, made };
   } finally { await rm(dir, { recursive: true, force: true }); }
 }
@@ -60,11 +60,11 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth" } = {}) {
 // ATTACHED: under a real pseudo-terminal the shim must NOT add -T, or the founding loses its human-route prompt.
 // (Reading `-t 1` inside the `$(tty_flag)` substitution once always read false: stdout there is a pipe.)
 const haveScript = spawnSync("script", ["--version"]).status === 0;
-test("sh: reset clears the hearth alone, after its refusals; projections, library, config and the env file stay", { skip: !haveScript }, async () => {
+test("sh: reset clears the hearth alone, after its refusals; sensoriums, projections, library, config and the env file stay", { skip: !haveScript }, async () => {
   const dir = await mkdtemp(join(tmpdir(), "lares-reset-"));
   try {
     const house = join(dir, "house"), workspace = join(dir, "workspace"), hearth = join(house, "hearth");
-    const kept = ["projections", "library", "config"].map((c) => join(house, c));
+    const kept = ["sensoriums", "projections", "library", "config"].map((c) => join(house, c));
     await Promise.all([hearth, ...kept, workspace, join(workspace, "nested"), join(dir, ".lares")].map((path) => mkdir(path, { recursive: true })));
     const calls = join(dir, "calls.log");
     await writeFile(join(dir, "docker"), `#!/bin/sh\nprintf '%s\\n' "$*" >> "${calls}"\ncase " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}";; *" ps -q --filter volume="*) printf '%s' "\${FAKE_HOLDER_ID:-}";; esac\n`);
@@ -98,7 +98,7 @@ test("sh: reset clears the hearth alone, after its refusals; projections, librar
     assert.deepEqual((await readdir(hearth)).sort(), [".hidden", "entry"]);
     const done = reset({});
     assert.equal(done.status, 0, done.stdout);
-    assert.match(done.stdout, /projections, library, config, the env file and the image stay/);
+    assert.match(done.stdout, /sensoriums, projections, library, config, the env file and the image stay/);
     assert.deepEqual(await readdir(hearth), []);
     for (const k of kept) assert.equal(await readFile(join(k, "keep"), "utf8"), "stays");
     assert.equal(await readFile(join(dir, ".lares", "lares-surface.env"), "utf8"), "# stays\n");
@@ -437,14 +437,14 @@ for (const [name, shim] of shims) {
     assert.equal(beside.status, 0, beside.stderr);
   });
 
-  test(`${name}: up, found and the offline door make the house's four bound classes before a container stands`, async () => {
+  test(`${name}: up, found and the offline door make the house's five bound classes before a container stands`, async () => {
     for (const argv of [["up"], ["found"]]) {
       const r = await run(shim, argv, { env: MOUNTS });
       assert.equal(r.status, 0, r.stderr);
-      assert.deepEqual(r.made, { hearth: true, projections: true, library: true, config: true });
+      assert.deepEqual(r.made, { hearth: true, sensoriums: true, projections: true, library: true, config: true });
     }
     const offline = await run(shim, ["vessel", "read"], { env: MOUNTS });
-    assert.deepEqual(offline.made, { hearth: true, projections: true, library: true, config: true });
+    assert.deepEqual(offline.made, { hearth: true, sensoriums: true, projections: true, library: true, config: true });
   });
 
   test(`${name}: no argv carries the docker socket`, async () => {

@@ -4,8 +4,8 @@
 # stands. The host holds the engine: the shim reads the CLI's standing verdict after a verb and restarts the vessel
 # itself when the verdict reads `restand`. The app gets no docker socket.
 # LARES_HOUSE / LARES_WORKSPACE come from the environment or the operator's `~/.lares/lares-surface.env` (outside every
-# bind; never beside the compose file). LARES_HOUSE names the ONE host house root, absolute: its hearth, projections,
-# library and config bind under /lar, and this shim makes those four directories before a container stands. Keep every
+# bind; never beside the compose file). LARES_HOUSE names the ONE host house root, absolute: its hearth, sensoriums,
+# projections, library and config bind under /lar, and this shim makes those five directories before a container stands. Keep every
 # mount inside the WSL distro's filesystem, never a Windows share. One lararium per HUMAN: nothing here names a face.
 # A VESSEL STANDS HOLDING NO KEY. Every start returns it to the floor, so after `up`, after `vessel stand`, and after
 # each restart this shim performs, it runs `vault unlock` attached when this shell holds a TTY, and otherwise names
@@ -37,14 +37,14 @@ function ValueOf([string]$name) {
 }
 $House = ValueOf 'LARES_HOUSE'
 if (-not [System.IO.Path]::IsPathRooted($House)) { Die "LARES_HOUSE ($House) reads relative — name the host house root by an absolute path" }
-$HouseClasses = @('hearth', 'projections', 'library', 'config')
+$HouseClasses = @('hearth', 'sensoriums', 'projections', 'library', 'config')
 # THE ENV FILE RESTS OUTSIDE EVERY BIND.
 $envFull = [System.IO.Path]::GetFullPath($EnvFile)
 foreach ($class in $HouseClasses) {
   $bind = [System.IO.Path]::GetFullPath((Join-Path $House $class)).TrimEnd('/', '\')
   if ($envFull -eq $bind -or $envFull.StartsWith($bind + [System.IO.Path]::DirectorySeparatorChar)) { Die "the env file $EnvFile sits inside LARES_HOUSE's $class bind — keep it outside every bind" }
 }
-# Make the four bound classes as the operator, so the engine never makes one owned by root.
+# Make the five bound classes as the operator, so the engine never makes one owned by root.
 function EnsureHouse { foreach ($class in $HouseClasses) { New-Item -ItemType Directory -Force -Path (Join-Path $House $class) | Out-Null } }
 
 $Base = @()

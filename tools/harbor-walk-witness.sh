@@ -17,7 +17,7 @@
 # tools/seed-test-custody.mjs, mounted read-only into a one-shot container of the image; the image itself carries
 # neither tool). The scratch marker rests at the house root, which the surface binds no part of, so each leg reads the
 # surface compose through a witness overlay that binds the marker alone, read-only, at /lar/.lar-test-scratch. The seeding
-# run binds each of the four classes by name as well: the image declares each one a volume, which would otherwise shadow
+# run binds each of the five classes by name as well: the image declares each one a volume, which would otherwise shadow
 # the house root's own directories under the one parent bind. Each founding mounts the tools and imports test-ward-route.mjs in that offline CLI process,
 # seating its ward, face route and read-back stand-in explicitly; the marker alone authorizes none of them.
 # EVERY BOOT RESTS AT THE FLOOR, and only a terminal opens a vessel key; the witness holds none, so
@@ -77,10 +77,10 @@ trap drop_scratch EXIT HUP INT TERM
 new_scratch() {
   SCRATCH_HOUSE=$(mktemp -d "${TMPDIR:-/tmp}/harbor-house.XXXXXX")
   SCRATCH_WORKSPACE=$(mktemp -d "${TMPDIR:-/tmp}/harbor-workspace.XXXXXX")
-  mkdir -p "$SCRATCH_HOUSE/hearth" "$SCRATCH_HOUSE/projections" "$SCRATCH_HOUSE/library" "$SCRATCH_HOUSE/config"
+  mkdir -p "$SCRATCH_HOUSE/hearth" "$SCRATCH_HOUSE/sensoriums" "$SCRATCH_HOUSE/projections" "$SCRATCH_HOUSE/library" "$SCRATCH_HOUSE/config"
   export LARES_HOUSE="$SCRATCH_HOUSE" LARES_WORKSPACE="$SCRATCH_WORKSPACE"
   docker run --rm --name "$PROJECT-seed" --user "$LARES_UID:$LARES_GID" \
-    -v "$LARES_HOUSE:/lar" -v "$LARES_HOUSE/hearth:/lar/hearth" -v "$LARES_HOUSE/projections:/lar/projections" -v "$LARES_HOUSE/library:/lar/library" -v "$LARES_HOUSE/config:/lar/config" -v "$ROOT/tools:/app/tools:ro" --tmpfs /tmp:mode=1777 \
+    -v "$LARES_HOUSE:/lar" -v "$LARES_HOUSE/hearth:/lar/hearth" -v "$LARES_HOUSE/sensoriums:/lar/sensoriums" -v "$LARES_HOUSE/projections:/lar/projections" -v "$LARES_HOUSE/library:/lar/library" -v "$LARES_HOUSE/config:/lar/config" -v "$ROOT/tools:/app/tools:ro" --tmpfs /tmp:mode=1777 \
     --entrypoint sh "$IMAGE" -ec \
     'node tools/test-scratch-marker.mjs /lar && node tools/seed-test-custody.mjs /lar'
   OVERLAY=$(mktemp "${TMPDIR:-/tmp}/harbor-compose.XXXXXX")

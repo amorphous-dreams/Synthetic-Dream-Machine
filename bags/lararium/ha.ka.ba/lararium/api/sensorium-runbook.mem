@@ -8,7 +8,7 @@ cacheable  = true
 hydrate    = true
 l-space    = "lararium"
 namespace  = "&#x2695;"
-role       = "the TENDING rite — the sensorium's operational lifecycle, sibling to the founding rite and deliberately NOT it. Stand up · feed · read · survive catastrophe · tear down and re-sweep · know the ceiling · hand it to a stranger. The founding's cardinal sin loses a KEY; this rite's loses a BASELINE. Carries the measure-first law (one clean before/after boundary per re-pour), six catastrophe drills each with a detector, and the honest-limits section that names what a reading CANNOT claim. The two surfaces SLICE DIFFERENTLY and neither is a subset of the other: `lares sense` holds one wide door over one sensorium, while the MCP roster spans several CLI doors at once (vault_* · wiki · kapae answer at `lares vault`/`wiki`/`edge`). Alignment means naming the slicing rather than widening one to match — and a name shared is not a motion shared, so a door and its tool agree on what they WRITE. The movement runs as `lares sense pour --all`; the destroying step stays the operator's own hand. Carries the SITING LAW (#/the-planes): one named house root (`LAR_ROOT`), and a sensorium stands at `<root>/hearth/sensoriums/<name>` (`larSensoriumsHome()` / `house_root.sensoriums_home()`, one string in both tongues); an unnamed root refuses, so a scratch root isolates a rehearsal whole. The teardown preflight names the one reach that stays INTENDED: the operator's own hand."
+role       = "the TENDING rite — the sensorium's operational lifecycle, sibling to the founding rite and deliberately NOT it. Stand up · feed · read · survive catastrophe · tear down and re-sweep · know the ceiling · hand it to a stranger. The founding's cardinal sin loses a KEY; this rite's loses a BASELINE. Carries the measure-first law (one clean before/after boundary per re-pour), six catastrophe drills each with a detector, and the honest-limits section that names what a reading CANNOT claim. The two surfaces SLICE DIFFERENTLY and neither is a subset of the other: `lares sense` holds one wide door over one sensorium, while the MCP roster spans several CLI doors at once (vault_* · wiki · kapae answer at `lares vault`/`wiki`/`edge`). Alignment means naming the slicing rather than widening one to match — and a name shared is not a motion shared, so a door and its tool agree on what they WRITE. The movement runs as `lares sense pour --all`; the destroying step stays the operator's own hand. Carries the SITING LAW (#/the-planes): one named house root (`LAR_ROOT`), and a sensorium stands at `<root>/sensoriums/<name>` (`larSensoriumsHome()` / `house_root.sensoriums_home()`, one string in both tongues); an unnamed root refuses, so a scratch root isolates a rehearsal whole. The teardown preflight names the one reach that stays INTENDED: the operator's own hand."
 status-why = "the tending rite; its verb surface stands verified against the live roster"
 tags       = ["api/pono/li-ki-integrities", "api/pono/sensorium-machina", "lararium/mesh/founding-runbook", "api/pono/causal-islands", "api/lararium/living-grammar-palace", "kind/rite"]
 title      = "lar:///ha.ka.ba/lararium/api/sensorium-runbook"
@@ -118,21 +118,27 @@ broken instrument unless the operator knows which planes carry weight.
 
 ''ONE NAMED HOUSE ROOT'': `LAR_ROOT` names it (the container sets `/lar`), and every house-state resolver
 lays its classes one level beneath it; an unnamed root refuses by name, with no home-directory default. The
-sensoriums stand inside the hearth:
+sensoriums stand in their own class, beside the library and outside the hearth:
 
 |! form |! the sensorium root |! resolver |
-| any house (`LAR_ROOT`) | `<root>/hearth/sensoriums/<name>` | `larSensoriumsHome()` · `house_root.sensoriums_home()` |
+| any house (`LAR_ROOT`) | `<root>/sensoriums/<name>` | `larSensoriumsHome()` · `house_root.sensoriums_home()` |
 
 A scratch `LAR_ROOT` therefore isolates a rehearsal whole, and it never reaches the operator's own planes.
 Both tongues resolve the same string — the TypeScript `larSensoriumsHome()` and the Python
 `house_root.sensoriums_home()`, held equal by `house-root-weld.test.ts` — so a holder started from either
 side opens the same store.
 
-''A re-founding clears `<root>/hearth`, and the sensoriums with it.'' The class decides survival, never a
-removal list: the hearth holds what a re-founding re-makes or lets go, and what must outlive one stands beside
-it at the root's first level (`library/`, `projections/`, `config/`). A sensorium's memory outlives a
-re-founding through its deliberate plaintext projection under `<root>/projections`, never by sheltering in the
-hearth; a reset that finds unprojected content lists it item by item and asks a typed accept-loss first.
+''What a rite re-makes decides nothing here; whose home holds a thing decides everything.'' A sensorium holds
+operator history and DreamNet history, capture the machine took once and cannot take again, so it belongs to
+the HOUSE and stands in the house's own class, `<root>/sensoriums`, beside the library. A re-founding clears
+`<root>/hearth` alone, and no founding and no vessel rite reaches the sensoriums. That they survive every
+founding reads as the ''CONSEQUENCE'' of belonging to the house, never the reason, and belonging makes the
+protection STRUCTURAL: a tier kept safe by its absence from a removal list stays safe until somebody widens the
+list by one path segment, while a tier standing in its own class leaves no edge to widen.
+
+''Two types of memory, two homes.'' The sensoriums hold CAPTURED conversation memory, and they never project to
+disk. The daemon wiki's working layer and its tiers hold AUTHORED memes (the memory stage), and those project as
+plaintext under `<root>/projections` (`wikis/daemon-<F>`, `bags/kahua-<F>`). Neither stands in for the other.
 
 !!! What feeds what ~ four planes over four bases
 
@@ -323,7 +329,7 @@ Run every check before the first deletion:
 # ''The old provenance kept.'' Copy the write log out before the teardown — not for recovery, but as the
   baseline the new pour gets compared against. It costs kilobytes.
 # ''The operator's hand named the store.'' `lares sense teardown`, `purge` and `rederive.py` reach into
-  `<root>/hearth/sensoriums` ''on purpose'' — a dev-time re-pour wants exactly that, and no guard belongs on
+  `<root>/sensoriums` ''on purpose'' — a dev-time re-pour wants exactly that, and no guard belongs on
   them. The structural protection covers the machine's rites, never the operator's own hand, so the reading
   the operator must not lose stands at #catastrophe ⑥: capture the machine took once and cannot take again.
 
@@ -485,6 +491,6 @@ reports whether they carry a flow between them.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;9_gE_0Qt-zjamqQLYqE0pfeSW8livtVQHIhz51nkEIM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jumgJ7Xgo06izMZB6g9L4RMzVrE6FdLiAuGqdPpqgmw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

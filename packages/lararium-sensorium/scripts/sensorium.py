@@ -113,7 +113,7 @@ def assert_one_segment(kind: str, name: str) -> str:
 
 
 def sensorium_dir(name: str) -> str:
-    """Turn a sensorium NAME into its root — `<root>/hearth/sensoriums/<name>` — mirroring TS `sensoriumDir`
+    """Turn a sensorium NAME into its root — `<root>/sensoriums/<name>` — mirroring TS `sensoriumDir`
     (vessel-paths.ts). The one shore a `lares sense <sensorium>` / MCP `sensorium=` address crosses to
     reach a target root; `memory` resolves the same dir the memory default names. The name passes the
     one-segment law first, so an address can never route out of the sensoriums home."""
@@ -122,7 +122,7 @@ def sensorium_dir(name: str) -> str:
 
 
 def sensorium_names() -> "list[str]":
-    """Roster every sensorium standing under `<root>/hearth/sensoriums` — the names an address may reach.
+    """Roster every sensorium standing under `<root>/sensoriums` — the names an address may reach.
     Mirrors TS `sensoriumNames`; an absent dir reads as an empty roster rather than raising."""
     import house_root
     root = house_root.sensoriums_home()

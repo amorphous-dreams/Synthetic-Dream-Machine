@@ -13,8 +13,10 @@
  * unnamed (or blank) root refuses by name ({@link HouseRootUnnamed}); the container sets `LAR_ROOT=/lar`.
  * Each level beneath the root carries one meaning, sorted by what survives a re-founding:
  *
- *   <root>/hearth       the spirits' sovereign homes (vessel · identity · nexus), the sensoriums, the
- *                       checkpoints and the staging area. A re-founding clears this directory alone.
+ *   <root>/hearth       the spirits' sovereign homes (vessel · identity · nexus), the checkpoints and the
+ *                       staging area. A re-founding clears this directory alone.
+ *   <root>/sensoriums   the house's captured history (memory · mesh · memetic-wikitext): conversation memory the
+ *                       machine took once and cannot take again, kept through every re-founding by where it stands.
  *   <root>/library      the acquired library: originals the house took in, kept through every re-founding.
  *   <root>/projections  the deliberate plaintext renders of the house's documents.
  *   <root>/config       the operator's settings (config.json, meta.json, the repo registry).
@@ -46,15 +48,16 @@ export function larHouseRoot(): string {
   return root;
 }
 
-/** `<root>/hearth` — the spirits' homes, the sensoriums, the checkpoints and the staging area; a re-founding
- *  clears this directory and nothing outside it. */
+/** `<root>/hearth` — the spirits' homes, the checkpoints and the staging area; a re-founding clears this directory
+ *  and nothing outside it. */
 export function larHearthHome(): string {
   return join(larHouseRoot(), "hearth");
 }
 
-/** `<root>/hearth/sensoriums` — every standing sensorium (memory, mesh, memetic-wikitext), each by its own name. */
+/** `<root>/sensoriums` — every standing sensorium (memory, mesh, memetic-wikitext), each by its own name. The house's
+ *  captured history stands in its own class beside the library, outside the hearth, so no re-founding reaches it. */
 export function larSensoriumsHome(): string {
-  return join(larHearthHome(), "sensoriums");
+  return join(larHouseRoot(), "sensoriums");
 }
 
 /** `<root>/hearth/checkpoints` — the watermarks (projection, harvest); each re-derives from what it watches. */
@@ -107,7 +110,7 @@ export function mempalaceContentParent(): string {
 }
 
 /**
- * The `memory` sensorium root — `<root>/hearth/sensoriums/memory`. Home to the li planes AND to the worldline
+ * The `memory` sensorium root — `<root>/sensoriums/memory`. Home to the li planes AND to the worldline
  * stores (the KG + the fork-DAG). It sits SOVEREIGN, never inside the guest comparator: a rite that paves the
  * comparator must never reach a plane the RUN writes.
  */

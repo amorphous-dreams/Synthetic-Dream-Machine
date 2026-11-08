@@ -109,7 +109,7 @@ describe("the house table, welded", () => {
       larDataDir: join(r, "hearth", "vessel"),
       larIdentityDir: join(r, "hearth", "identity"),
       larSealHome: join(r, "hearth", "nexus"),
-      larSensoriumsHome: join(r, "hearth", "sensoriums"),
+      larSensoriumsHome: join(r, "sensoriums"),
       larCheckpointsHome: join(r, "hearth", "checkpoints"),
       larStagingHome: join(r, "hearth", "staging"),
       larProjectionCheckpointDir: join(r, "hearth", "checkpoints", "projection"),
@@ -123,10 +123,10 @@ describe("the house table, welded", () => {
     });
     // The feeds: what each broad resolver hands its consumers.
     expect(larBootstrapPath()).toBe(join(r, "hearth", "vessel", "social-bootstrap.json"));
-    expect(memorySensoriumDir()).toBe(join(r, "hearth", "sensoriums", "memory"));
-    expect(sensoriumDir("ai-sessions")).toBe(join(r, "hearth", "sensoriums", "ai-sessions"));
-    expect(meshSensoriumDir()).toBe(join(r, "hearth", "sensoriums", "mesh"));
-    expect(memeticWikitextSensoriumDir()).toBe(join(r, "hearth", "sensoriums", "memetic-wikitext"));
+    expect(memorySensoriumDir()).toBe(join(r, "sensoriums", "memory"));
+    expect(sensoriumDir("ai-sessions")).toBe(join(r, "sensoriums", "ai-sessions"));
+    expect(meshSensoriumDir()).toBe(join(r, "sensoriums", "mesh"));
+    expect(memeticWikitextSensoriumDir()).toBe(join(r, "sensoriums", "memetic-wikitext"));
     expect(scratchSensoriumDir()).toBe(join(r, "cache", "scratch", "sensoriums"));
     expect(laresConfigPath()).toBe(join(r, "config", "config.json"));
     expect(repoRegistryPath()).toBe(join(r, "config", "repos.json"));

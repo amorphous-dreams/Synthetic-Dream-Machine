@@ -57,7 +57,7 @@ describe("larMempalaceDir (derives from the shared house-root)", () => {
     set("HOME", join(root, "home"));
     set("USERPROFILE", join(root, "home"));
     // even with the consolidated content dir present in the house, content stays external at ~/.mempalace.
-    mkdirSync(join(root, "house", "hearth", "sensoriums", "memory", "content"), { recursive: true });
+    mkdirSync(join(root, "house", "sensoriums", "memory", "content"), { recursive: true });
     expect(larMempalaceDir()).toBe(join(root, "home", ".mempalace"));
   });
 });

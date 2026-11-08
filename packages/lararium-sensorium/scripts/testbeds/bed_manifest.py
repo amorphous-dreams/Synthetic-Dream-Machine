@@ -253,7 +253,7 @@ def pour(m: dict, *, twin: bool = False) -> dict:
                          "turn/tiddler/module shores land with their own engines")
     files, tally = resolve_flow(m)
     # Every bed lands in the ONE sensorium roster the node governs: XDG
-    # <root>/hearth/sensoriums/<bed>, resolved from the bed NAME (the address carries
+    # <root>/sensoriums/<bed>, resolved from the bed NAME (the address carries
     # the bearing — the manifest's literal `root` field stays advisory). This
     # seats each poured bed as a first-class EPHEMERAL sensorium (compose_testbed
     # stamps ephemeral=true) that the standing roster + teardown already reach,

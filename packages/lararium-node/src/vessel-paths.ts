@@ -7,9 +7,10 @@
  *   <root>/hearth/vessel       the vessel substrate (Automerge Repo, the social bootstrap)
  *   <root>/hearth/identity     the sovereign keypair + the veiled-Handle anchors
  *   <root>/hearth/nexus        the Nexus seal
- *   <root>/hearth/sensoriums   memory · mesh · memetic-wikitext, each under its own name
  *   <root>/hearth/checkpoints  the watermarks (projection, harvest) — each re-derives from what it watches
  *   <root>/hearth/staging      normalized transcript copies a harvest stages
+ *   <root>/sensoriums          memory · mesh · memetic-wikitext, each under its own name — the house's captured
+ *                              history, outside the hearth, kept through every re-founding
  *   <root>/library             the acquired library — outside the hearth, kept through every re-founding
  *   <root>/projections         the deliberate plaintext renders
  *   <root>/config              config.json, meta.json, the repo registry
@@ -17,7 +18,8 @@
  *   <root>/run                 transient spool, sockets and levers
  *
  * A re-founding clears `<root>/hearth` and touches nothing beside it, so every class that must outlive one
- * (the library, the projections, the operator's settings) stands at the root's first level, never inside it.
+ * (the sensoriums, the library, the projections, the operator's settings) stands at the root's first level, never
+ * inside it.
  * The Python mirror (`packages/lararium-sensorium/scripts/house_root.py`) holds the same table;
  * `tests/house-root-weld.test.ts` reads both and asserts them equal.
  *
@@ -77,7 +79,7 @@ export function resolveMempalaceExe(): string {
  * both `rmSync` recursively over what the name resolves to — and one of them reaches through the MCP,
  * so the segment arrives from outside this island entirely.
  *
- * The sensoriums stand inside the hearth, under one root. A traversing
+ * The sensoriums stand in their own class, outside the hearth a re-founding clears. A traversing
  * segment is the one thing that defeats that boundary: it walks outside the intended root.
  * So the containment holds at the CHOKE-POINT, where a name becomes a path, rather than at each of the
  * dozen verbs downstream — the same mechanism-over-policy shape `confineMirrorWrite` keeps for the

@@ -620,13 +620,13 @@ def test_daemon_routed_set_names_the_wired_verbs():
 
 
 def test_sensorium_address_resolver_honors_lar_root(monkeypatch, tmp_path):
-    # the py resolver mirrors TS sensoriumDir: <root>/hearth/sensoriums/<name>, so the MCP `sensorium=` address
+    # the py resolver mirrors TS sensoriumDir: <root>/sensoriums/<name>, so the MCP `sensorium=` address
     # and the CLI `lares sense <sensorium>` name ONE root byte-for-byte.
     from sensorium import sensorium_dir, sensorium_names
     monkeypatch.setenv("LAR_ROOT", str(tmp_path))
-    assert sensorium_dir("memory") == os.path.join(str(tmp_path), "hearth", "sensoriums", "memory")
+    assert sensorium_dir("memory") == os.path.join(str(tmp_path), "sensoriums", "memory")
     assert sensorium_names() == []                         # an absent dir rosters empty, never raises
-    os.makedirs(os.path.join(str(tmp_path), "hearth", "sensoriums", "ai-sessions"))
+    os.makedirs(os.path.join(str(tmp_path), "sensoriums", "ai-sessions"))
     assert "ai-sessions" in sensorium_names()             # a stood sensorium shows in the roster
 
 
@@ -646,7 +646,7 @@ def test_a_sensorium_address_never_routes_out_of_the_shrine(monkeypatch, tmp_pat
     # it in — and a traversing segment consults no wipe-list on the way. The shore refuses it.
     from sensorium import sensorium_dir, assert_one_segment
     monkeypatch.setenv("LAR_ROOT", str(tmp_path))
-    assert sensorium_dir("memory") == os.path.join(str(tmp_path), "hearth", "sensoriums", "memory")
+    assert sensorium_dir("memory") == os.path.join(str(tmp_path), "sensoriums", "memory")
     assert assert_one_segment("t", "memetic-wikitext") == "memetic-wikitext"   # a plain name passes
     for bad in ("..", ".", "", "../abide", "a/b", "/etc", "..\\win"):
         with pytest.raises(ValueError, match="ONE path segment"):

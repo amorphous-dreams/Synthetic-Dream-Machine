@@ -3,10 +3,13 @@
 # everything that belongs to a household arrives as environment and host mounts. Per-surface differences
 # are ENVIRONMENT, never another file.
 #
-#   /lar        THE HOUSE ROOT (`LAR_ROOT=/lar`). Four of its classes bind from ONE host house root, LARES_HOUSE:
+#   /lar        THE HOUSE ROOT (`LAR_ROOT=/lar`). Five of its classes bind from ONE host house root, LARES_HOUSE:
 #                 ${LARES_HOUSE}/hearth       -> /lar/hearth       the vessel's homes AND its custody (keys), the
-#                                                                  sensoriums, checkpoints and staging; a re-founding
-#                                                                  clears this directory alone
+#                                                                  checkpoints and staging; a re-founding clears this
+#                                                                  directory alone
+#                 ${LARES_HOUSE}/sensoriums   -> /lar/sensoriums   the house's captured conversation memory (memory,
+#                                                                  mesh, memetic-wikitext): never projected, and no
+#                                                                  re-founding reaches it
 #                 ${LARES_HOUSE}/projections  -> /lar/projections  the house's plaintext projection (wikis/daemon-<F>,
 #                                                                  bags/kahua-<F>, every bag or wiki with no source in
 #                                                                  the workspace, observe/daemon)
@@ -20,13 +23,14 @@
 #               ever does (operator ruling 2026-11-01; lararium-node `projectionRoots`).
 #
 # Required (no default, so a forgotten one fails loud instead of siting state in the wrong place):
-#   LARES_HOUSE       the host house root, absolute; its hearth, projections, library and config bind under /lar
+#   LARES_HOUSE       the host house root, absolute; its hearth, sensoriums, projections, library and config bind
+#                     under /lar
 #                     (put it on a LOCAL LINUX filesystem; on Win11 keep it inside the WSL distro, never /mnt/c — see
-#                     the hazards below). The host shim makes the four directories as the operator before it stands
+#                     the hazards below). The host shim makes the five directories as the operator before it stands
 #                     a container, so the engine never makes one owned by root.
 #   LARES_WORKSPACE   host path mounted at /workspace
 # The env file that names them rests at ~/.lares/lares-surface.env, outside every bind; the host shim refuses an env
-# file inside any of LARES_HOUSE's four binds.
+# file inside any of LARES_HOUSE's five binds.
 # Optional:
 #   LARES_UID / LARES_GID   the uid:gid the vessel runs as (default 1000:1000). Match the host operator, so
 #                           files in every mount stay editable from the host. CLI and daemon share it.
@@ -151,6 +155,9 @@ x-vessel: &vessel
     - type: bind
       source: ${LARES_HOUSE:?set LARES_HOUSE to the host house root (absolute)}/hearth
       target: /lar/hearth
+    - type: bind
+      source: ${LARES_HOUSE:?set LARES_HOUSE to the host house root (absolute)}/sensoriums
+      target: /lar/sensoriums
     - type: bind
       source: ${LARES_HOUSE:?set LARES_HOUSE to the host house root (absolute)}/projections
       target: /lar/projections

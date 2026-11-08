@@ -271,7 +271,7 @@ def refuse_guest(path: str, *, who: str) -> None:
         raise SystemExit(
             f"{who}: REFUSED — {path!r} reaches the guest install at ~/.mempalace. "
             "The guest stands apart from every sensorium; point this at "
-            "<root>/hearth/sensoriums/<name> instead."
+            "<root>/sensoriums/<name> instead."
         )
 
 

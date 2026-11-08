@@ -4,8 +4,8 @@
  * ONE NAMED ROOT, ONE MEANING PER LEVEL. `LAR_ROOT` names the house root and nothing stands in for it; beneath it:
  *
  *   1. an unnamed or blank root refuses by name — no XDG base and no home directory answer in its place,
- *   2. the hearth holds the spirits' homes, the sensoriums, the checkpoints and the staging area,
- *   3. the library, the projections and the operator's settings stand BESIDE the hearth, never inside it, so the
+ *   2. the hearth holds the spirits' homes, the checkpoints and the staging area,
+ *   3. the sensoriums, the library, the projections and the operator's settings stand BESIDE the hearth, never inside it, so the
  *      re-founding that clears `<root>/hearth` reaches none of them,
  *   4. a caller-supplied NAME cannot walk out of its root — the one route that defeats an address.
  *
@@ -57,17 +57,18 @@ describe("an unnamed house root refuses", () => {
 });
 
 describe("each class stands one level below the root", () => {
-  test("the hearth holds the spirits' homes, the sensoriums, the checkpoints and the staging area", () => {
+  test("the hearth holds the spirits' homes, the checkpoints and the staging area; the sensoriums stand beside it", () => {
     set("LAR_ROOT", "/iso");
     const hearth = join("/iso", "hearth");
     expect(larHearthHome()).toBe(hearth);
     expect(larDataDir()).toBe(join(hearth, "vessel"));
     expect(larIdentityDir()).toBe(join(hearth, "identity"));
     expect(larSealHome()).toBe(join(hearth, "nexus"));
-    expect(larSensoriumsHome()).toBe(join(hearth, "sensoriums"));
-    expect(memorySensoriumDir()).toBe(join(hearth, "sensoriums", "memory"));
-    expect(meshSensoriumDir()).toBe(join(hearth, "sensoriums", "mesh"));
-    expect(memeticWikitextSensoriumDir()).toBe(join(hearth, "sensoriums", "memetic-wikitext"));
+    expect(larSensoriumsHome()).toBe(join("/iso", "sensoriums"));
+    expect(memorySensoriumDir()).toBe(join("/iso", "sensoriums", "memory"));
+    expect(meshSensoriumDir()).toBe(join("/iso", "sensoriums", "mesh"));
+    expect(memeticWikitextSensoriumDir()).toBe(join("/iso", "sensoriums", "memetic-wikitext"));
+    expect(isUnder(larSensoriumsHome(), hearth)).toBe(false);          // the house's history stands outside the hearth
     expect(sensoriumDir("memory")).toBe(memorySensoriumDir());     // one name, one dir
     expect(larCheckpointsHome()).toBe(join(hearth, "checkpoints"));
     expect(larProjectionCheckpointDir()).toBe(join(hearth, "checkpoints", "projection"));
@@ -77,16 +78,16 @@ describe("each class stands one level below the root", () => {
     expect(isUnder(larIdentityDir(), larDataDir())).toBe(false);    // beside the runtime store, never inside
   });
 
-  test("the library, the projections, the settings, the cache and the run dir stand beside the hearth", () => {
+  test("the sensoriums, the library, the projections, the settings, the cache and the run dir stand beside the hearth", () => {
     set("LAR_ROOT", "/iso");
     set("LAR_LIBRARY", undefined);
-    const beside = { library: larLibraryRoot(), projections: larProjectionsHome(), config: larConfigHome(), cache: larCacheHome(), run: larRuntimeHome() };
+    const beside = { sensoriums: larSensoriumsHome(), library: larLibraryRoot(), projections: larProjectionsHome(), config: larConfigHome(), cache: larCacheHome(), run: larRuntimeHome() };
     for (const [name, dir] of Object.entries(beside)) {
       expect(dir).toBe(join("/iso", name));
       expect(isUnder(dir, larHearthHome())).toBe(false);
     }
     expect(larLibraryHome()).toBe(larLibraryRoot());
-    expect(new Set([...Object.values(beside), larHearthHome()]).size).toBe(6);
+    expect(new Set([...Object.values(beside), larHearthHome()]).size).toBe(7);
   });
 
   test("XDG variables move nothing — LAR_ROOT alone places every class", () => {
@@ -116,7 +117,7 @@ describe("the one-segment law — a name never routes out of its root", () => {
 
   test("sensoriumDir refuses a traversing name rather than resolving out of the sensoriums home", () => {
     set("LAR_ROOT", "/iso");
-    expect(sensoriumDir("memory")).toBe(join("/iso", "hearth", "sensoriums", "memory"));   // it RESOLVES
+    expect(sensoriumDir("memory")).toBe(join("/iso", "sensoriums", "memory"));   // it RESOLVES
     expect(() => sensoriumDir("../../library")).toThrow(/ONE path segment/);               //  … and refuses
   });
 

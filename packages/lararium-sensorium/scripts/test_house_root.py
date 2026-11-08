@@ -34,7 +34,7 @@ def test_every_entry_stands_one_level_below_the_root(monkeypatch):
         "larDataDir": j("/house", "hearth", "vessel"),
         "larIdentityDir": j("/house", "hearth", "identity"),
         "larSealHome": j("/house", "hearth", "nexus"),
-        "larSensoriumsHome": j("/house", "hearth", "sensoriums"),
+        "larSensoriumsHome": j("/house", "sensoriums"),
         "larCheckpointsHome": j("/house", "hearth", "checkpoints"),
         "larStagingHome": j("/house", "hearth", "staging"),
         "larProjectionCheckpointDir": j("/house", "hearth", "checkpoints", "projection"),

@@ -4,7 +4,7 @@
 #   lares-container.sh up [--capture <dir>]...   stand the vessel (detached) and wait until it answers healthy
 #   lares-container.sh down                      stop it and remove its container (the house stays in LARES_HOUSE)
 #   lares-container.sh reset                     clear a stopped vessel's hearth (LARES_HOUSE/hearth alone) after
-#                                                terminal confirmation; projections, library and config stay
+#                                                terminal confirmation; sensoriums, projections, library and config stay
 #   lares-container.sh found [vessel-found args] the founding act, under a TTY (it gathers the human route: a passphrase
 #                                                and/or a paper pin, and `--hearth` prints the seed card and reads it
 #                                                back; with no TTY the CLI refuses CredentialTtyRefusal)
@@ -38,10 +38,10 @@
 #
 # LARES_HOUSE and LARES_WORKSPACE come from the environment or the operator's `~/.lares/lares-surface.env` (KEY=VALUE
 # lines, as compose reads them). Neither standing refuses by name, and so does a LARES_HOUSE that reads relative.
-# LARES_HOUSE names the ONE host house root: its hearth, projections, library and config bind under /lar, and this
-# shim makes those four directories as the operator before any container stands. THE ENV FILE RESTS OUTSIDE EVERY
+# LARES_HOUSE names the ONE host house root: its hearth, sensoriums, projections, library and config bind under /lar,
+# and this shim makes those five directories as the operator before any container stands. THE ENV FILE RESTS OUTSIDE EVERY
 # BIND, at `~/.lares/lares-surface.env`, the same file the MCP seat's resolver reads to know the hearth stands in this
-# container; an env file inside one of the four binds refuses by name. The checkout carries no operator config, so no
+# container; an env file inside one of the five binds refuses by name. The checkout carries no operator config, so no
 # file beside the compose file is read.
 set -eu
 
@@ -71,7 +71,7 @@ value_of() { # $1 = name
 }
 HOUSE=$(value_of LARES_HOUSE)
 case "$HOUSE" in /*) ;; *) die "LARES_HOUSE ($HOUSE) reads relative — name the host house root by an absolute path" ;; esac
-HOUSE_CLASSES="hearth projections library config"
+HOUSE_CLASSES="hearth sensoriums projections library config"
 # THE ENV FILE RESTS OUTSIDE EVERY BIND: inside one, the container would read (and a reset could clear) the file that
 # names its own mounts.
 env_real=$(realpath -m -- "$ENV_FILE")
@@ -80,7 +80,7 @@ for class in $HOUSE_CLASSES; do
   case "$env_real" in "$house_real/$class"|"$house_real/$class"/*) die "the env file $ENV_FILE sits inside LARES_HOUSE's $class bind — keep it outside every bind" ;; esac
 done
 
-# Make the four bound classes as the operator, so the engine never makes one owned by root.
+# Make the five bound classes as the operator, so the engine never makes one owned by root.
 ensure_house() {
   for class in $HOUSE_CLASSES; do
     mkdir -p -- "$HOUSE/$class" || die "cannot make $HOUSE/$class — make it as the operator, then run again"
@@ -253,7 +253,7 @@ case "$verb" in
     if running_vessel; then die "reset refuses while the lares vessel stands; run tools/lares-container.sh down first"; fi
     [ -n "$HAVE_TTY" ] || die "reset needs a terminal; nothing removed"
     # Compose accepts plain KEY=VALUE lines; reset accepts literal paths alone and resolves symlinks before clearing.
-    # IT CLEARS THE HEARTH ALONE: projections, library, config, the env file and the image stay.
+    # IT CLEARS THE HEARTH ALONE: sensoriums, projections, library, config, the env file and the image stay.
     house=$HOUSE
     workspace=$(value_of LARES_WORKSPACE)
     case "$house" in /*) ;; *) die "reset refuses an empty or non-absolute LARES_HOUSE" ;; esac
@@ -271,7 +271,7 @@ case "$verb" in
     # Any running container that binds the hearth holds the store: a founding run, a harness, a hand-started one.
     holders=$(docker ps -q --filter "volume=$hearth") || die "cannot read running containers (docker ps failed); nothing removed"
     [ -z "$holders" ] || die "reset refuses while a running container binds $hearth: $holders"
-    printf 'LARES_HOUSE: %s\nReset removes every entry inside %s; the hearth directory itself, projections, library, config, the env file and the image stay.\nType re-found to proceed: ' "$house" "$hearth"
+    printf 'LARES_HOUSE: %s\nReset removes every entry inside %s; the hearth directory itself, sensoriums, projections, library, config, the env file and the image stay.\nType re-found to proceed: ' "$house" "$hearth"
     IFS= read -r answer || die "reset confirmation not read; nothing removed"
     [ "$answer" = re-found ] || die "reset confirmation did not match; nothing removed"
     failed=""
@@ -283,7 +283,7 @@ case "$verb" in
       fi
     done
     [ -z "$failed" ] || exit 1
-    printf '%s\n' 'lares-container: hearth cleared; projections, library and config stand; the hearth can be founded again.' ;;
+    printf '%s\n' 'lares-container: hearth cleared; sensoriums, projections, library and config stand; the hearth can be founded again.' ;;
   logs)  compose logs "$@" lares ;;
   found)
     ensure_house

@@ -169,7 +169,7 @@ services:
         read_only: true
 YAML
 
-mkdir -p "$SCRATCH/house/hearth" "$SCRATCH/house/projections" "$SCRATCH/house/library" "$SCRATCH/house/config"
+mkdir -p "$SCRATCH/house/hearth" "$SCRATCH/house/sensoriums" "$SCRATCH/house/projections" "$SCRATCH/house/library" "$SCRATCH/house/config"
 export LARES_HOUSE="$SCRATCH/house" LARES_WORKSPACE="$SCRATCH/workspace"
 export LARES_TLS_ZONE="$ZONE" LARES_TLS_NAME="$NAME"
 export LARES_TLS_DIR="$SCRATCH/tls" LARES_TLS_BIND=127.0.0.1 LARES_TLS_PORT="$TLS_PORT"
@@ -253,7 +253,7 @@ result 'CONTROL: the issuer reads both fake credentials'          sh -c "printf 
 
 printf '── the vessel stands behind the terminator\n'
 docker run --rm --name "$PROJECT-seed" --user "$LARES_UID:$LARES_GID" \
-  -v "$LARES_HOUSE:/lar" -v "$LARES_HOUSE/hearth:/lar/hearth" -v "$LARES_HOUSE/projections:/lar/projections" -v "$LARES_HOUSE/library:/lar/library" -v "$LARES_HOUSE/config:/lar/config" -v "$TOOLS:/app/tools:ro" --tmpfs /tmp:mode=1777 \
+  -v "$LARES_HOUSE:/lar" -v "$LARES_HOUSE/hearth:/lar/hearth" -v "$LARES_HOUSE/sensoriums:/lar/sensoriums" -v "$LARES_HOUSE/projections:/lar/projections" -v "$LARES_HOUSE/library:/lar/library" -v "$LARES_HOUSE/config:/lar/config" -v "$TOOLS:/app/tools:ro" --tmpfs /tmp:mode=1777 \
   --entrypoint sh "$IMAGE" -ec \
   'node tools/test-scratch-marker.mjs /lar && node tools/seed-test-custody.mjs /lar' >/dev/null
 # The founding's face route comes from the harness explicitly (the product founds no face from a marker): the test tools mount and

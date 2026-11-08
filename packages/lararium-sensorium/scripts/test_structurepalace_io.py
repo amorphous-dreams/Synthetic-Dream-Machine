@@ -433,7 +433,7 @@ def test_put_edit_same_uuid_retracts_the_old_structure_tally(tmp_path):
 
 def test_structure_default_mirrors_the_house_root(monkeypatch):
     monkeypatch.setenv("LAR_ROOT", "/iso")
-    assert ap._default_structurepalace_dir() == "/iso/hearth/sensoriums/memory/structure"
+    assert ap._default_structurepalace_dir() == "/iso/sensoriums/memory/structure"
 
 
 def test_structure_default_refuses_an_unnamed_root(monkeypatch):
