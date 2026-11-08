@@ -161,3 +161,34 @@ export function heldBytes(held, rel = "", depth = 0) {
   }
   return total;
 }
+
+// ---- the bounded read, for the relay's requests ----
+
+const kindOf = (st) => st.isFIFO() ? "fifo" : st.isSocket() ? "socket" : st.isCharacterDevice() ? "character device" : st.isBlockDevice() ? "block device" : "special file";
+
+/**
+ * Reads `name` in a held directory whole, up to `limit` bytes. O_NONBLOCK lets a planted FIFO open without a writer, and the
+ * kind check refuses it before any read; a directory keeps its EISDIR. The read itself stops at `limit + 1` bytes, so a file
+ * that grows after its size check (or reads longer than its stat) refuses at the limit and never costs the reader more.
+ */
+export async function readHeldBoundedAsync(held, name, { limit }) {
+  let fh;
+  try { fh = await open(held.at(name), FS.O_RDONLY | FS.O_NOFOLLOW | FS.O_NONBLOCK); }
+  catch (error) { if (error.code === "ENXIO") throw new Error(`${name}: not a regular file (ENXIO: a socket or a device without a reader)`); throw error; }
+  const over = (n) => new Error(`${name}: ${n} bytes, over the ${limit}-byte request limit`);
+  try {
+    const st = await fh.stat();
+    if (st.isDirectory()) throw Object.assign(new Error(`EISDIR: ${name} is a directory`), { code: "EISDIR" });
+    if (!st.isFile()) throw new Error(`${name}: not a regular file (${kindOf(st)})`);
+    if (st.size > limit) throw over(st.size);
+    const buf = Buffer.alloc(limit + 1);
+    let got = 0;
+    for (;;) {
+      const { bytesRead } = await fh.read(buf, got, buf.length - got, got);
+      if (bytesRead === 0) break;
+      got += bytesRead;
+      if (got > limit) throw over(`more than ${limit}`);
+    }
+    return buf.subarray(0, got).toString("utf8");
+  } finally { await fh.close(); }
+}

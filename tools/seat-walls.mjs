@@ -49,13 +49,15 @@ export const checkTimeoutMs = DOOR_SILENCE_MS;
  * the child's group on silence or on the whole-run bound (relay-claim), so no child holds the one broker.
  */
 export async function superviseChild(child, { silenceMs = DOOR_SILENCE_MS, runMaxMs = DOOR_RUN_MAX_MS, onBeat = () => {} } = {}) {
-  const stop = () => { try { killGroup(child.pid, 'SIGKILL'); } catch (error) { if (error.code !== 'ESRCH') child.kill('SIGKILL'); } };
+  // Once the child exits (reaped, though its stdio may still drain), its pgid may be reused: no bound signals after that.
+  let exited = false;
+  const stop = () => { if (exited) return; try { killGroup(child.pid, 'SIGKILL'); } catch (error) { if (error.code !== 'ESRCH') child.kill('SIGKILL'); } };
   const within = (n, max) => Number.isInteger(n) && n >= 1 && n <= max;
   if (!within(silenceMs, DOOR_SILENCE_MS) || !within(runMaxMs, DOOR_RUN_MAX_MS)) { stop(); throw new Error(`seat-bound: silence 1..${DOOR_SILENCE_MS} ms, run 1..${DOOR_RUN_MAX_MS} ms`); }
   return new Promise(resolve => {
     let output = '', stderrTail = Buffer.alloc(0), overflow = false, silent = false, overran = false, quiet;
     // LIVENESS: `silenceMs` without stdout or stderr stops the child; active output resets the bound.
-    const resetSilence = () => { clearTimeout(quiet); quiet = setTimeout(() => { silent = true; stop(); }, silenceMs); };
+    const resetSilence = () => { clearTimeout(quiet); if (exited) return; quiet = setTimeout(() => { silent = true; stop(); }, silenceMs); };
     // LIVENESS: the whole run stops at `runMaxMs`, however much the child talks.
     const whole = setTimeout(() => { overran = true; stop(); }, runMaxMs);
     const settle = (fields) => { clearTimeout(quiet); clearTimeout(whole); resolve({ ...fields, output, overflow, stderrTail, silent, overran }); };
@@ -64,6 +66,7 @@ export async function superviseChild(child, { silenceMs = DOOR_SILENCE_MS, runMa
     child.stdout.setEncoding('utf8'); child.stderr.setEncoding('utf8');
     child.stdout.on('data', append);
     child.stderr.on('data', chunk => { append(chunk); stderrTail = Buffer.concat([stderrTail, Buffer.from(chunk)]).subarray(-2048); });
+    child.on('exit', () => { exited = true; clearTimeout(quiet); clearTimeout(whole); });
     child.on('error', error => settle({ error }));
     child.on('close', (code, signal) => settle({ code, signal }));
   });
