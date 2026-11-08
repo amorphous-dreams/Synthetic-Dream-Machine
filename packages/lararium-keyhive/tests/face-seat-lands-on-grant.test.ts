@@ -58,6 +58,30 @@ function fixture() {
 }
 
 describe("a causal face seat", () => {
+  test("a held fork surfaces even when founder standing is unknown; CONTROL: an unforked grant waits", async () => {
+    const run = async (fork: boolean) => {
+      const logs: string[] = [];
+      let ingests = 0;
+      const seat = makeFaceSeat({
+        group, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
+        knowsAgent: async () => false, grants: async () => [{ title, record: grant }], founderStanding: async () => "unknown",
+        verify: async (_record, context) => fork
+          ? { ok: false, reason: "founder lineage forked: test" }
+          : context.dyad?.(FOUNDER) === "unknown"
+            ? { ok: false, reason: "founder dyad standing unknown", pending: true }
+            : { ok: true },
+        ingest: async () => { ingests++; }, lift: async () => {}, log: (message) => { logs.push(message); },
+      });
+      await seat.run();
+      return { logs, ingests };
+    };
+    const control = await run(false);
+    expect(control.logs.join("\n")).toMatch(/pending .*dyad standing unknown/);
+    expect(control.ingests).toBe(0);
+    const fork = await run(true);
+    expect(fork.logs.join("\n")).toMatch(/REFUSED .*founder lineage forked/);
+    expect(fork.ingests).toBe(0);
+  });
   test("R1 grant arrival seats and lifts without a binding call; absent grant leaves the floor", async () => {
     const f = fixture(); f.standingArrives();
     expect(await f.seat.run()).toBe(false);
