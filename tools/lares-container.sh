@@ -2,7 +2,8 @@
 # lares-container — the HOST shim for the surface vessel (docker-compose.surface.yml).
 #
 #   lares-container.sh up [--capture <dir>]...   stand the vessel (detached) and wait until it answers healthy
-#   lares-container.sh down                      stop it and remove its container (the house stays in LARES_HOUSE)
+#   lares-container.sh down [compose-down args]  stop it and remove its container (the house stays in LARES_HOUSE),
+#                                                after a census of what a stop would drop (below)
 #   lares-container.sh reset                     clear a stopped vessel's hearth (LARES_HOUSE/hearth alone) after
 #                                                terminal confirmation; sensoriums, projections, library and config stay
 #   lares-container.sh found [vessel-found args] the founding act, under a TTY (it gathers the human route: a passphrase
@@ -35,6 +36,13 @@
 # and restarts the vessel itself when the verdict reads `restand` (a face lit after boot). `vessel stop` stops the
 # container.
 # One lararium per HUMAN: nothing here names a face.
+#
+# A STOP NEVER DROPS CONTENT SILENTLY. A stopped container holds no memory to count, so `down` asks the standing vessel
+# first (`vessel census`, by compose exec): the saves its sealed rest holds in memory and the carriers its disk
+# projector has not settled. A clean answer stops as before. Any item, or a census that cannot answer (a wedged vessel,
+# a failed exec, the bound passing), prints what it learned and refuses, naming two ways on: unlock and let it settle
+# (`vault unlock`, then `down` again), or type `accept-loss` on this terminal to stop anyway. With no terminal it
+# refuses. With no vessel standing, `down` runs as it always has.
 #
 # LARES_HOUSE and LARES_WORKSPACE come from the environment or the operator's `~/.lares/lares-surface.env` (KEY=VALUE
 # lines, as compose reads them). Neither standing refuses by name, and so does a LARES_HOUSE that reads relative.
@@ -196,6 +204,70 @@ route_cli() {
   fi
 }
 
+# THE CENSUS BEFORE A STOP, bounded: the census itself waits on its own lines (ten seconds for the custody door, fifteen
+# per island page), and this bound stands over the whole exec, so a wedged vessel never hangs `down`.
+CENSUS_WAIT_SECONDS=60
+census_out=""; census_err=""; census_timed_out=""
+run_census() {
+  census_dir=$(mktemp -d) || return 125
+  (
+    if [ -n "$ENV_ARGS" ]; then exec docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE_PATH" exec -T lares node "$CLI" vessel census --no-json
+    else exec docker compose --env-file /dev/null -f "$COMPOSE_FILE_PATH" exec -T lares node "$CLI" vessel census --no-json; fi
+  ) >"$census_dir/out" 2>"$census_dir/err" </dev/null &
+  census_pid=$!
+  # The watch polls once a second and leaves on its own once the exec ends, so no sleeper outlives the census by more
+  # than a second; past the bound it marks the timeout, then stops the exec (TERM, and KILL five seconds on).
+  (
+    waited=0
+    while kill -0 "$census_pid" 2>/dev/null; do
+      if [ "$waited" -ge "$CENSUS_WAIT_SECONDS" ]; then
+        : > "$census_dir/timed-out"
+        kill -TERM "$census_pid" 2>/dev/null
+        for _ in 1 2 3 4 5; do kill -0 "$census_pid" 2>/dev/null || exit 0; sleep 1; done
+        kill -KILL "$census_pid" 2>/dev/null
+        exit 0
+      fi
+      sleep 1
+      waited=$((waited + 1))
+    done
+  ) >/dev/null 2>&1 &
+  if wait "$census_pid"; then census_rc=0; else census_rc=$?; fi
+  census_out=$(cat "$census_dir/out")
+  census_err=$(cat "$census_dir/err")
+  census_timed_out=""; if [ -e "$census_dir/timed-out" ]; then census_timed_out=yes; fi
+  rm -rf -- "$census_dir"
+  return "$census_rc"
+}
+
+# The two ways on, then the typed acceptance: only the word `accept-loss`, typed on this terminal, stops anyway.
+offer_accept_loss() {
+  printf '%s\n' 'lares-container: the vessel stands. Two ways on:' \
+    '  - unlock it and let it settle: tools/lares-container.sh vault unlock, then tools/lares-container.sh down again' \
+    '  - stop anyway, dropping what the list names: type accept-loss below' >&2
+  [ -n "$HAVE_TTY" ] || die "down refuses: no terminal stands here to type accept-loss on; the vessel stands"
+  printf 'Type accept-loss to stop anyway: '
+  IFS= read -r answer || die "down: no answer read; the vessel stands"
+  [ "$answer" = accept-loss ] || die "down: the answer did not read accept-loss; the vessel stands"
+  printf '%s\n' 'lares-container: accept-loss typed; stopping the vessel' >&2
+}
+
+# Census the standing vessel; return only when the stop may go on (clean, or accept-loss typed).
+census_before_stop() {
+  if run_census; then rc=0; else rc=$?; fi
+  if [ "$rc" -eq 0 ] && printf '%s\n' "$census_out" | grep -q '^census: clean'; then return 0; fi
+  if [ "$rc" -eq 3 ] && [ -z "$census_timed_out" ]; then
+    printf '%s\n' 'lares-container: down refuses a silent stop: the census names content that rests nowhere yet, and a stop now drops it:' >&2
+    printf '%s\n' "$census_out" | sed -e '/^$/d' -e 's/^/  /' >&2
+  else
+    if [ -n "$census_timed_out" ]; then why="no answer within ${CENSUS_WAIT_SECONDS}s (the vessel may stand wedged)"
+    else why="the census exec ended with status $rc"; fi
+    printf 'lares-container: down refuses a silent stop: the census could not answer (%s), so what a stop would drop reads unknown\n' "$why" >&2
+    if [ -n "$census_out" ]; then printf '%s\n' "$census_out" | sed -e '/^$/d' -e 's/^/  /' >&2; fi
+    if [ -n "$census_err" ]; then printf '%s\n' "$census_err" | sed -e '/^$/d' -e 's/^/  /' >&2; fi
+  fi
+  offer_accept_loss
+}
+
 # Read the terminal NOW: inside `$(tty_flag)` stdout is the substitution's pipe, so a `[ -t 1 ]` there is always false
 # and every founding would lose its TTY.
 HAVE_TTY=""
@@ -247,7 +319,16 @@ case "$verb" in
     fi
     warn_image_revision
     unlock_or_name ;;
-  down)  compose down --remove-orphans "$@" ;;
+  down)
+    # A ps that fails reads as UNKNOWN: whether a vessel stands, and what it holds, goes uncounted, so the same typed
+    # acceptance guards the stop.
+    if ! down_id=$(compose ps -q --status running lares); then
+      printf '%s\n' 'lares-container: down refuses a silent stop: docker compose ps failed, so whether a vessel stands reads unknown' >&2
+      offer_accept_loss
+    elif [ -n "$down_id" ]; then
+      census_before_stop
+    fi
+    compose down --remove-orphans "$@" ;;
   reset)
     [ "$#" -eq 0 ] || die "reset takes no arguments"
     if running_vessel; then die "reset refuses while the lares vessel stands; run tools/lares-container.sh down first"; fi

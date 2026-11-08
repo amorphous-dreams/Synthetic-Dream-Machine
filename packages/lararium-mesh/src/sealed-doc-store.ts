@@ -49,6 +49,17 @@ export const SEALED_DOCUMENT_REFUSALS = [
 ] as const;
 export type SealedDocumentRefusalName = (typeof SEALED_DOCUMENT_REFUSALS)[number];
 
+/** The three refusals that keep a save in memory rather than at rest. */
+export type HeldRefusal = "save-unbooked" | "save-unmapped" | "save-unsealed";
+
+/** One document's saves held in memory under one refusal (`SealedDocumentStore.held`): its id, never its body. */
+export interface HeldSaves {
+  readonly documentId: string;
+  readonly refusal: HeldRefusal;
+  readonly saves: number;
+  readonly bagId: string | null;
+}
+
 /** A refusal by name: this store's own (`SEALED_DOCUMENT_REFUSALS`) or the holder's, passed through. */
 export class SealedDocumentRefusal extends Error {
   override readonly name = "SealedDocumentRefusal";
@@ -156,8 +167,9 @@ export class SealedDocumentStore implements StorageAdapterInterface {
   readonly #ports: SealedDocumentPorts;
   /** The sealed address of each value this store holds, by document and storage key: a change's parents, a checkpoint's cover. */
   readonly #held = new Map<string, Map<string, SealedAddress>>();
-  /** The saves no session booked, by storage key, in arrival order: in memory alone, until a session books them. */
-  readonly #waiting = new Map<string, { readonly key: StorageKey; readonly data: Uint8Array }>();
+  /** The saves no session booked, by storage key, in arrival order: in memory alone, until a session books them. Each
+   *  names the refusal that held it back. */
+  readonly #waiting = new Map<string, { readonly key: StorageKey; readonly data: Uint8Array; readonly refusal: HeldRefusal }>();
   /** The removals a compaction asked while its snapshot waits unbooked, by document. */
   readonly #deferred = new Map<string, StorageKey[]>();
   /** The documents whose rest this store already read for clear chunks, this process. */
@@ -238,6 +250,23 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     return true;
   }
 
+  /**
+   * THE CENSUS OF HELD SAVES: each document with a save waiting in memory, the refusal that holds it, how many saves
+   * wait, and the bag the map names for it now (null: none). It names the document and never a byte of its body, so a
+   * stop that would drop these saves can list them first.
+   */
+  held(): HeldSaves[] {
+    const rows = new Map<string, { documentId: string; refusal: HeldRefusal; saves: number }>();
+    for (const { key, refusal } of this.#waiting.values()) {
+      const documentId = key[0]!;
+      const name = `${documentId}\u0000${refusal}`;
+      const row = rows.get(name);
+      if (row) row.saves++;
+      else rows.set(name, { documentId, refusal, saves: 1 });
+    }
+    return [...rows.values()].map((row) => ({ ...row, bagId: this.#ports.bagOf(row.documentId)?.bagId ?? null }));
+  }
+
   /** The documents with a save waiting unbooked. */
   waitingDocuments(): string[] { return [...new Set([...this.#waiting.values()].map((w) => w.key[0]!))]; }
 
@@ -288,7 +317,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
       if (typeof key[0] === "string" && key.length >= 2 && await this.#keepsSealedClass(key[0])) {
         if (this.#ports.waitOverSealed) {
           this.#swept.delete(key[0]);
-          this.#waiting.set(nameOf(key), { key: [...key], data: Uint8Array.from(data) });
+          this.#waiting.set(nameOf(key), { key: [...key], data: Uint8Array.from(data), refusal: "save-unmapped" });
           this.#ports.onHeld?.({ refusal: "save-unmapped", documentId: key[0] });
           return;
         }
@@ -302,7 +331,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     // A SEALED BAG NO FACE WEARS YET (the floor, before its face lights): its save waits in memory, never clear, until
     // the face lights and a session books it.
     if (!isPublic(bag) && bag.face === null) {
-      this.#waiting.set(nameOf(key), { key: [...key], data: Uint8Array.from(data) });
+      this.#waiting.set(nameOf(key), { key: [...key], data: Uint8Array.from(data), refusal: "save-unmapped" });
       this.#ports.onHeld?.({ refusal: "save-unmapped", documentId: key[0]! });
       return;
     }
@@ -315,7 +344,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     // R2: the save signs under the session that booked the change, never under whichever session stands now.
     const session = this.#ports.sessionOf(key[0]!, data);
     if (session === null) {
-      this.#waiting.set(nameOf(key), { key: [...key], data: Uint8Array.from(data) });
+      this.#waiting.set(nameOf(key), { key: [...key], data: Uint8Array.from(data), refusal: "save-unbooked" });
       this.#ports.onHeld?.({ refusal: "save-unbooked", documentId: key[0]! });
       return;
     }
@@ -324,7 +353,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     try { await this.#inTurn(() => this.#seal(bag, key, data, session)); }
     catch (error) {
       if (!(error instanceof SealedDocumentRefusal)) throw error;
-      this.#waiting.set(nameOf(key), { key: [...key], data: Uint8Array.from(data) });
+      this.#waiting.set(nameOf(key), { key: [...key], data: Uint8Array.from(data), refusal: "save-unsealed" });
       this.#ports.onHeld?.({ refusal: "save-unsealed", documentId: key[0]! });
       return;
     }
