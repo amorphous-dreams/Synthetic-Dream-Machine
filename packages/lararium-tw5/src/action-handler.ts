@@ -1525,7 +1525,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       };
       await writeIn(access, action.toBag, moved, o);
       // A RE-LINK RELOCATES, so its source RETRACTS TO ABSENT and raises no kāpae (kapae.mem, the core cut):
-      // a lower copy under the old address falls through, and the projection leaves no shadow there.
+      // a lower copy at the source address falls through, and the projection leaves no shadow there.
       await removeIn(access, action.toBag, t, o);
       relinked++;
     }
