@@ -2,7 +2,7 @@
  * daemon-protocol-seed-projects-nothing — the daemon's born-from-source tiddlers never reach the workspace.
  *
  * `seedDaemonProtocol` writes the daemon's UI surfaces and its flow set from source at every boot. Those
- * writes route into the daemon wiki's working layer, and that layer projects under `<root>/wikis/kahua/`.
+ * writes route into the daemon wiki's working layer, and that layer projects under `<projections>/wikis/daemon-<F>/`.
  * A file there would hold nothing the source lacks, and the next boot's seed would write over any hand's
  * edit to it, so each seeded record carries the per-record opt-out (`disk-projection: "no"`) the
  * projector honours, as a receipt, a summons and a ward audit do. A record in the volatile `$:/temp/`

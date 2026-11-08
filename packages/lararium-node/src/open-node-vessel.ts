@@ -32,7 +32,7 @@ import { provenPlaneUrls, registerFacePlanesForRelay } from "./face-plane-regist
 import { enabledIntentRelayFaces } from "./intent-relay-ring.js";
 
 import { readFileSync, writeFileSync, mkdirSync } from "fs";
-import { larBootstrapPath } from "./vessel-paths.js";
+import { larBootstrapPath, larProjectionsHome } from "./vessel-paths.js";
 import { createAfterRoll } from "./after-roll-chain.js";
 import { join }                         from "path";
 import type { Server }                  from "node:http";
@@ -109,7 +109,7 @@ import { bootFacePlanes, bootDaemonUrl }               from "./boot-face-planes.
 import { standKahuCanon, kahuHandAtWire, kahuProtectedHolder, kahuStandingBook, protectedDocsOver, watchKahuStanding, type KahuCanonDocs } from "./kahu-realm.js";
 import { dialRelationOf, seatDialPeer, unseatDialPeer, type DialRelation, type DialSeatMaps } from "./dial-relation.js";
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
-import { daemonGenesisDir, daemonCorpusRoot, daemonBagsDir } from "./lares-config.js";
+import { daemonGenesisDir, daemonBagsDir } from "./lares-config.js";
 import { projectionRoots } from "./bag-paths.js";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
 import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
@@ -380,7 +380,8 @@ export interface NodeVesselOptions extends LarariumVesselOptions {
   catalogUrl?: string | null;
   /** Directory holding the BAKED GENESIS SEED (island + cas). The bootstrap no longer lives here. */
   genesisDir?: string;
-  /** Repo root for wiki memes scan and all mirror paths. Defaults to monorepo root. */
+  /** The corpus root this vessel boots from (the caller's `--root`). Disk projections follow the house root instead:
+   *  `<LAR_ROOT>/projections`, beside canon write-back to the canon source. */
   rootDir?: string;
   /** HTTP server the Herm's FLOW-map read-face serves over (required for openNodeHerm). */
   httpServer?: Server;
@@ -838,7 +839,7 @@ export async function sweepUnderTheGate(sovereignOpen: boolean, sweep: () => Pro
 async function prepareNodeBootOn(
   opts: NodeVesselOptions, placeClass: PlaceClass, floor: NodeFloor, stood: Stood, teardown: () => Promise<void>,
 ): Promise<NodeBootPrep> {
-  const { wikiId, storageDir, wss, catalogUrl, onPhase, genesisDir, rootDir: rootDirOpt } = opts;
+  const { wikiId, storageDir, wss, catalogUrl, onPhase, genesisDir } = opts;
   // THE CAPABILITY RECORD: ONE per vessel, composed through the one composer (slice 5b, @lararium/mesh lar-vessel) and
   // handed to every island this vessel constructs. Its floor members stand below as their transports stand (`docStore`,
   // `restsSealed`, `receipt`, `cas`, `dyad`), and the floor stack composes them as one record before any island stands
@@ -855,10 +856,6 @@ async function prepareNodeBootOn(
   // `null`, it stands at the floor and reads none. Left to itself it reads the seated custody's rows when this
   // process holds its vessel key, and stands at the floor when it holds none.
   const sovereign = opts.sovereign !== undefined ? opts.sovereign : (sovereignOpen ? seatedSovereignReaders() : null);
-  // THE CORPUS ROOT every disk projection mirrors under: the one named, else `LAR_ROOT`, else the repo. A boot
-  // isolated under `LAR_ROOT` projects into that root, never into the tracked tree; with neither, a fresh clone
-  // boots repo-relative as it always has.
-  const corpusRoot = rootDirOpt ?? daemonCorpusRoot();
   const bootstrapPath = larBootstrapPath();   // <root>/hearth/vessel — beside the docs it addresses
   // The hearth dial an admission pinned (null on a self-founded vessel — it IS the hearth).
   const hearthPin = readHearthDialPin(bootstrapPath);
@@ -3289,7 +3286,7 @@ async function prepareNodeBootOn(
         // D-VR-C: the daemon bag is the one explicit worker-owned durable scope;
         // ordinary oracle/recipe documents remain parent-attached in the primary worker Repo.
         ownedDocument: true,
-        rootDir: corpusRoot,
+        projectionRoot: larProjectionsHome(),
         guardCrossroadsNexusHandles: nexusStanding.kind !== "charter",
       }),
     });
@@ -4033,10 +4030,11 @@ async function prepareNodeBootOn(
     eventBus.start();
     subscribeWorkerEventsToDaemon();
 
-    const workerRootDir = corpusRoot;
     // THE MIRROR ROOT SPLITS BY ORIGIN (`projectionRoots`): a bag whose source stands under the canon source projects back
-    // there (and its wiki beside it), for source control; every house-minted or private layer projects under `--root`.
-    const projection = projectionRoots({ stateRoot: workerRootDir, canonBags: daemonBagsDir() });
+    // there (and its wiki beside it), for source control; every house-minted or private layer projects under the house's
+    // projections root (`<root>/projections`), outside the hearth a re-founding clears.
+    const projectionRoot = larProjectionsHome();
+    const projection = projectionRoots({ projectionRoot, canonBags: daemonBagsDir() });
     const diskMirrorGrant: DiskMirrorGrant = [
       // `bags/` PROJECTS ON THE KAHU'S VESSEL ALONE: a vessel the cabal did not admit holds neither live document, so it
       // grants neither mirror and writes nothing under `bags/lares` or `bags/lararium`.
@@ -4065,14 +4063,14 @@ async function prepareNodeBootOn(
       // the bag `wikis/{slug}/working` and the leaf fill from the slug at mount —
       // wikiSlot). The authority (the wikis base) stays static here; designation
       // rides the recipe's mirrorBags.
-      { bagId: "working",        mirrorRoot: join(workerRootDir, "wikis"),          scope: "working",  wikiSlot: "working", sourcedRoots: projection.sourcedRoots("wikis") },
+      { bagId: "working",        mirrorRoot: join(projectionRoot, "wikis"),          scope: "working",  wikiSlot: "working", sourcedRoots: projection.sourcedRoots("wikis") },
       // Recovery remains an explicit, recipe-designated grant with its own directory.
-      { bagId: "draft",          mirrorRoot: join(workerRootDir, "wikis"),          scope: "draft", wikiSlot: "draft", mirrorClass: "recovery", sourcedRoots: projection.sourcedRoots("wikis") },
+      { bagId: "draft",          mirrorRoot: join(projectionRoot, "wikis"),          scope: "draft", wikiSlot: "draft", mirrorClass: "recovery", sourcedRoots: projection.sourcedRoots("wikis") },
       // self-canon = the per-wiki CANON authority: a minted user wiki's own
       // @{slug} bag projects to bags/{slug} (both bagId and leaf fill from the
       // slug at mount). System wikis (lares/lararium) carry literal grants
       // above, so resolveDiskMirrors skips this for them — no double-project.
-      { bagId: "self",          mirrorRoot: join(workerRootDir, "bags"),           scope: "self",    perWikiSlug: true, selfCanon: true, sourcedRoots: projection.sourcedRoots("bags") },
+      { bagId: "self",          mirrorRoot: join(projectionRoot, "bags"),           scope: "self",    perWikiSlug: true, selfCanon: true, sourcedRoots: projection.sourcedRoots("bags") },
     ];
     // R3 — TWO WIKIS IN ONE VESSEL: each mount resolves its OWN recipe's plugin-offerings
     // through the selector + CAS (`resolveNodeIslandPluginCids`), never one vessel-wide floor.

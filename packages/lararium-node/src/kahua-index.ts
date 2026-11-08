@@ -20,12 +20,12 @@ function parseKahuaIndex(text: string): KahuaIndexRow[] {
 
 /**
  * Write the index: the given rows MERGE by relation into the rows already standing, so a boot wearing one face never drops
- * another face's row on a shared state root. A convenience view: nothing reads it to decide anything; the merge only carries
+ * another face's row on a shared projections root. A convenience view: nothing reads it to decide anything; the merge only carries
  * unknown rows through untouched.
  */
-export async function writeKahuaIndex(stateRoot: string, rows: readonly KahuaIndexRow[]): Promise<void> {
-  await mkdir(stateRoot, { recursive: true });
-  const target = join(stateRoot, "kahua-index.toml"), temp = `${target}.${randomUUID()}.tmp`;
+export async function writeKahuaIndex(projectionRoot: string, rows: readonly KahuaIndexRow[]): Promise<void> {
+  await mkdir(projectionRoot, { recursive: true });
+  const target = join(projectionRoot, "kahua-index.toml"), temp = `${target}.${randomUUID()}.tmp`;
   const standing = await readFile(target, "utf8").then(parseKahuaIndex, () => []);
   const byRelation = new Map(standing.map((row) => [row.relation, row] as const));
   for (const row of rows) byRelation.set(row.relation, row);

@@ -24,7 +24,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
-import { larDataDir, loadLaresConfig, loadVesselVerifyingKey, resolveGenesis, runtimeCasOverride } from "@lararium/node";
+import { HouseRootUnnamed, larDataDir, larProjectionsHome, loadLaresConfig, loadVesselVerifyingKey, resolveGenesis, runtimeCasOverride } from "@lararium/node";
 
 // The vessel runtime-state resolvers — defined once in @lararium/node, surfaced here.
 export {
@@ -90,6 +90,11 @@ export function larBagsDir(): string {
 /** The wikis dir — `LAR_WIKIS`, else `<corpus>/wikis`. The projection tree. */
 export function larWikisDir(): string {
   return process.env["LAR_WIKIS"] ?? join(larRoot(), "wikis");
+}
+
+/** The house's projections root (`<root>/projections`), or undefined while LAR_ROOT names no house root. */
+export function larProjectionsDirOrNone(): string | undefined {
+  try { return larProjectionsHome(); } catch (err) { if (err instanceof HouseRootUnnamed) return undefined; throw err; }
 }
 
 /** The genesis dir — `LAR_GENESIS`, else `<corpus>/genesis`. TRACKED SEED ALONE (island + cas), identical

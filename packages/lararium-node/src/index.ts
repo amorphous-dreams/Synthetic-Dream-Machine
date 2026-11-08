@@ -187,7 +187,7 @@ export type { NodeReadiness, ReadinessState, ReadinessFace } from "./readiness-f
 
 export { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "./open-node-vessel.js";
 export { SyncedTree, contentHash, syncedTreeKey, syncedTreeDir, type SyncedBase } from "./synced-tree.js";
-export { bagsFileToUri, wikisFileToUri, mirrorDirFileToUri } from "./bag-paths.js";
+export { bagsFileToUri, wikisFileToUri, mirrorDirFileToUri, isObserveProjectionPath, daemonObserveRoot, OBSERVE_DIR } from "./bag-paths.js";
 
 export { runInit, runFoundTheFace, faceStands, armRecoveryAtFounding } from "./commands/init.js";
 export { recoveryContactOffer } from "./recovery-contact-enrolment.js";

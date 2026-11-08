@@ -64,6 +64,8 @@ export interface LaresConfig {
   readonly herm?: LaresHermConfig;
   /** What this hearth gives the walkers it hosts. Absent, the house defaults stand. */
   readonly hosting?: LaresHostingConfig;
+  /** The projection knobs. `observeDaemon` toggles the one-way render of the daemon bag (`daemon-observe.ts`); ON when absent. */
+  readonly projection?: { readonly observeDaemon?: boolean };
 }
 
 /** The hearth's hosting knobs. */

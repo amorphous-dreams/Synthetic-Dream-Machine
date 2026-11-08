@@ -13,13 +13,14 @@
 import { mkWikiVerbResult } from "@lararium/mesh";
 import type { IslandMsg_Manifest, WikiMsg_PlaceVerb } from "@lararium/mesh";
 import type { VesselJournal } from "@lararium/mesh";
-import { exportCarrierFile, makeWikiBehavior, hasWikiSensorium, makeTw5Deserializer, canonicalizeNativeCarrierText, wikiLandedCovers, bindRecoveryAtRest } from "@lararium/tw5";
+import { exportCarrierFile, exportRecordCarrierFile, makeWikiBehavior, hasWikiSensorium, makeTw5Deserializer, canonicalizeNativeCarrierText, wikiLandedCovers, bindRecoveryAtRest } from "@lararium/tw5";
 import type { CarrierFile } from "@lararium/tw5";
 import type { IslandBehavior, IslandContext } from "@lararium/tw5";
 // PURE subpath (no Automerge/wasm) — the same law `ingest-gate` reads `@lararium/mesh/agile-digest` under.
 import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
 import { LarDiskProjector } from "./disk-projector.js";
 import { namedBagMirror } from "./bag-paths.js";
+import { mountDaemonObserve } from "./daemon-observe.js";
 import { SyncedTree, syncedTreeDir } from "./synced-tree.js";
 import { larProjectionCheckpointDir } from "./vessel-paths.js";
 import { SHORE_VERB, answerShore } from "./shore-verb.js";
@@ -105,15 +106,23 @@ export function vmCarrierFile(tw5: Parameters<typeof exportCarrierFile>[0]): (ur
  * Mount the disk projection an island's manifest grants: one `LarDiskProjector` over
  * `manifest.diskMirrors`, the ONE render shore, the shadow-aware unlink gate and the disk-ward.
  * A wiki island and the daemon island call the same function — the daemon wiki projects to
- * `<root>/wikis/kahua/` (the kahua tree) much as a wiki's working layer projects to `<root>/wikis/<slug>/`.
+ * `<projections>/wikis/daemon-<F>/` much as a wiki's working layer projects to `<projections>/wikis/<slug>/`.
  */
 export function mountDiskProjection(
   manifest: IslandMsg_Manifest,
   ctx: IslandContext,
   opts: { readonly journal?: VesselJournal } = {},
 ): (() => Promise<void>) | undefined {
-  const mirrorDefs = manifest.diskMirrors;
-  if (!mirrorDefs?.length) return undefined;
+  const allDefs = manifest.diskMirrors;
+  if (!allDefs?.length) return undefined;
+  // THE OBSERVE RENDERS stand apart from the projector: a one-way writer over the bag's own store, no agreement, no
+  // ingest (`daemon-observe.ts`).
+  const observes = allDefs.filter((def) => def.mirrorClass === "observe").flatMap(({ bagId, mirrorRoot }) => {
+    const store = ctx.composite.storeForBag(bagId);
+    return store ? [mountDaemonObserve(store, mirrorRoot)] : [];
+  });
+  const mirrorDefs = allDefs.filter((def) => def.mirrorClass !== "observe");
+  if (!mirrorDefs.length) return async () => { for (const o of observes) o.stop(); };
   const mirrors = mirrorDefs.map(({ bagId, mirrorRoot, scope, guardNexusHandles, titlePaths, mirrorClass }) =>
     namedBagMirror(bagId, scope, mirrorRoot, guardNexusHandles, titlePaths, mirrorClass),
   );
@@ -140,6 +149,22 @@ export function mountDiskProjection(
       body: `${tiddler.getFieldStringBlock({ exclude: ["text", "bag", "$origin-bag"] })}\n\n${typeof fields["text"] === "string" ? fields["text"] : ""}`,
       defaultRelPath: `${encodeURIComponent(title)}.tid`,
     };
+  },
+  // A SHADOWED OWN RECORD renders off its bag's own records: the root and its own fragment records, read from that bag
+  // alone, through the same shore the resolved view renders through (`exportRecordCarrierFile`).
+  recordFileFn: async (bagId, uri) => {
+    const store = ctx.composite.storeForBag(bagId);
+    if (!store) return null;
+    const records = new Map<string, Record<string, unknown>>();
+    const root = await store.get(uri);
+    if (!root || root.meta?.deleted) return null;
+    records.set(uri, root.tiddler);
+    for (const title of await store.listVisible()) {
+      if (!title.startsWith(`${uri}#`)) continue;
+      const record = await store.get(title);
+      if (record && !record.meta?.deleted) records.set(title, record.tiddler);
+    }
+    return carrierFileOf((u) => exportRecordCarrierFile(ctx.tw5, u, records))(uri);
   },
   // A POINTER projects as the whole file beside its `.meta`: the bytes come from the same
   // cid/ tier the lazy resolver reads (THE BLOB LAW, content-handle.ts).
@@ -205,6 +230,7 @@ export function mountDiskProjection(
   mountedProjector = projector;
   bindRecoveryAtRest(ctx.tw5, (bag, title, fields) => projector.recoveryAtRest(bag, title, fields));
   return async () => {
+    for (const o of observes) o.stop();
     bindRecoveryAtRest(ctx.tw5, null);
     if (mountedProjector === projector) mountedProjector = null;
     await stop();

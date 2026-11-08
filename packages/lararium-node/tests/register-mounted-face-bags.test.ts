@@ -111,7 +111,7 @@ async function captureRegisterBags(root: string): Promise<string[]> {
     hostId: "register-bags",
     wikiId: "register-bags",
     storageDir,
-    rootDir: root,
+    projectionRoot: root,
     wss: new EventEmitter() as never,
     genesisDir: join(root, "genesis"),
   } as never)).rejects.toThrow(/capture-register-bags/);

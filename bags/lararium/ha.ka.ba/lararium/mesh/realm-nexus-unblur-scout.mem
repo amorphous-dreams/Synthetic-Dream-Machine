@@ -165,7 +165,7 @@ the record version literal "realm-bag"                                        re
 !!! On-disk paths
 
 ```
-join(laresDataHome(), "nexus")                        lararium-node/src/vessel-paths.ts:414
+join(larHearthHome(), "nexus")                        lararium-node/src/vessel-paths.ts (larSealHome)
 join(sealHome, "nexus", "carriage-consent.json")      lararium-node/src/commands/nexus-contract.ts:302
 the `bags/nexus` charter home                         nexus-refresh.ts:42 · open-node-vessel.ts
 ```
@@ -202,6 +202,6 @@ the `bags/nexus` charter home                         nexus-refresh.ts:42 · ope
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;hSyj2mevBQAeGRAoxsO1VHpF3Y37nJN1fOzGoXZbOe4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9Ty3H295HiS-Vd2SeUFvxw_d123-XW84eavmC4uColo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

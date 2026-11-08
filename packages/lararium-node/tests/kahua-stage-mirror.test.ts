@@ -36,7 +36,7 @@ function rig(): { projector: Flushable; state: string; workspace: string; refusa
   for (const d of ["lares", "kahua", "daemon"]) mkdirSync(join(workspace, "bags", d), { recursive: true });
   mkdirSync(join(workspace, "wikis"), { recursive: true });
   const refusals: string[] = [];
-  const roots = projectionRoots({ stateRoot: state, canonBags: join(workspace, "bags") });
+  const roots = projectionRoots({ projectionRoot: state, canonBags: join(workspace, "bags") });
   expect(roots.bagRoot("kahua"), "the canon source never claims the stage").toBe(join(state, "bags", "kahua"));
   expect(roots.bagRoot(FACE), "the canon source never claims the face's stage").toBe(join(state, "bags", FACE));
   const projector = new LarDiskProjector({
