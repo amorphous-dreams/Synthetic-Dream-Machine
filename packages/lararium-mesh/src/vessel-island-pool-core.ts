@@ -196,7 +196,7 @@ type Slot = IslandSlot | ColdSlot;
 /** One held disk-write grant. `sourcedRoots` (per-wiki grants alone) names, by wiki slug, the base a SOURCED slug projects
  *  under in place of `mirrorRoot`: a wiki whose bag stands in the canon source writes back beside that source, while every
  *  other slug keeps `mirrorRoot` (the mirror root splits by origin; the host derives the map from its source tree). */
-export type DiskMirrorGrant = readonly { bagId: string; mirrorRoot: string; scope: string; perWikiSlug?: boolean; selfCanon?: boolean; wikiSlot?: WikiSlotKind; mirrorClass?: "recovery"; guardNexusHandles?: boolean; sourcedRoots?: Readonly<Record<string, string>> }[];
+export type DiskMirrorGrant = readonly { bagId: string; mirrorRoot: string; scope: string; perWikiSlug?: boolean; selfCanon?: boolean; wikiSlot?: WikiSlotKind; mirrorClass?: "recovery"; guardNexusHandles?: boolean; sourcedRoots?: Readonly<Record<string, string>>; consentSlugs?: readonly string[]; tempLayer?: boolean }[];
 
 /** Resolve a mount's disk mirrors: intersect the held grant (authority) with the
  *  recipe's `mirrorBags` (designation), then fill a per-wiki grant's bag + leaf
@@ -212,6 +212,10 @@ export type DiskMirrorGrant = readonly { bagId: string; mirrorRoot: string; scop
  *    wikis (lares/lararium, literal grants) keep their static roots and never
  *    double-project; a system wiki's canon never projects by self-canon at all
  *    (`bags/` projects on the Kahu's vessel alone, road `W26`).
+ *
+ *  A `temp` slot entry projects the wiki's user temp layer to `wikis/{slug}/temp` and yields only for a slug its
+ *  `consentSlugs` names (the operator's consent row, keyed by slug); the resolved entry carries `tempLayer`, so the
+ *  projector bars the layer's internal volatile titles by namespace. A draft recovery entry lands in `/recovery`.
  *
  *  OCAP-clean: authority stays in the static grant, designation in the synced
  *  recipe, the per-instance bag + subdir resolved here. */
@@ -229,6 +233,8 @@ export function resolveDiskMirrors(
     .filter((g) => {
       const bag = perWikiBag(g);
       if (isFaceScopedBag(bag)) return false;
+      // A consent-keyed grant (the user temp layer) yields only for a slug the operator's consent row names.
+      if (g.consentSlugs !== undefined && !g.consentSlugs.includes(wikiSlug)) return false;
       // A SYSTEM wiki's canon projects through its LITERAL grant alone, which only the Kahu's vessel holds: self-canon
       // never reaches `bags/lares` or `bags/lararium`, so no vessel outside the cabal writes under them.
       return g.selfCanon
@@ -238,9 +244,10 @@ export function resolveDiskMirrors(
     .map((g) => {
       // A sourced slug's per-wiki root writes back beside its source; every other slug keeps the grant's own root.
       const base = Object.hasOwn(g.sourcedRoots ?? {}, wikiSlug) ? g.sourcedRoots![wikiSlug]! : g.mirrorRoot;
-      const { sourcedRoots: _sourced, ...held } = g;
+      const { sourcedRoots: _sourced, consentSlugs: _consent, ...held } = g;
+      const leaf = g.wikiSlot === "temp" ? "/temp" : g.mirrorClass === "recovery" ? "/recovery" : "";
       return (g.selfCanon || g.wikiSlot)
-        ? { ...held, bagId: perWikiBag(g), mirrorRoot: `${base}/${wikiSlug}${g.mirrorClass === "recovery" ? "/recovery" : ""}` }
+        ? { ...held, bagId: perWikiBag(g), mirrorRoot: `${base}/${wikiSlug}${leaf}`, ...(g.wikiSlot === "temp" ? { tempLayer: true } : {}) }
         : g.perWikiSlug
           ? { ...held, mirrorRoot: `${base}/${wikiSlug}` }
           : held;
