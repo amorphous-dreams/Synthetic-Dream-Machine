@@ -8,6 +8,7 @@ import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { sharedModuleFiles, sharedInodeRefusal } from './module-inodes.mjs';
+import { DOOR_RUN_MAX_MS, DOOR_SILENCE_MS } from './relay-claim.mjs';
 
 const GIT = '/usr/bin/git';
 const TAR = '/usr/bin/tar';
@@ -40,11 +41,41 @@ function baseEnv(iso) {
   };
 }
 
-function run(command, args, { env, cwd, input } = {}) {
+/** A check runs synchronously, so no output can reset a bound: each check stops at the door silence. */
+export const checkTimeoutMs = DOOR_SILENCE_MS;
+
+/**
+ * Supervises a door's detached child until it closes: collects stdout and stderr, beats `onBeat` on each chunk, and stops
+ * the child's group on silence or on the whole-run bound (relay-claim), so no child holds the one broker.
+ */
+export async function superviseChild(child, { silenceMs = DOOR_SILENCE_MS, runMaxMs = DOOR_RUN_MAX_MS, onBeat = () => {} } = {}) {
+  const stop = () => { try { killGroup(child.pid, 'SIGKILL'); } catch (error) { if (error.code !== 'ESRCH') child.kill('SIGKILL'); } };
+  const within = (n, max) => Number.isInteger(n) && n >= 1 && n <= max;
+  if (!within(silenceMs, DOOR_SILENCE_MS) || !within(runMaxMs, DOOR_RUN_MAX_MS)) { stop(); throw new Error(`seat-bound: silence 1..${DOOR_SILENCE_MS} ms, run 1..${DOOR_RUN_MAX_MS} ms`); }
+  return new Promise(resolve => {
+    let output = '', stderrTail = Buffer.alloc(0), overflow = false, silent = false, overran = false, quiet;
+    // LIVENESS: `silenceMs` without stdout or stderr stops the child; active output resets the bound.
+    const resetSilence = () => { clearTimeout(quiet); quiet = setTimeout(() => { silent = true; stop(); }, silenceMs); };
+    // LIVENESS: the whole run stops at `runMaxMs`, however much the child talks.
+    const whole = setTimeout(() => { overran = true; stop(); }, runMaxMs);
+    const settle = (fields) => { clearTimeout(quiet); clearTimeout(whole); resolve({ ...fields, output, overflow, stderrTail, silent, overran }); };
+    resetSilence();
+    const append = chunk => { resetSilence(); onBeat(); output += chunk; if (output.length > 16 * 1024 * 1024) { overflow = true; output = output.slice(-CAP * 2); } };
+    child.stdout.setEncoding('utf8'); child.stderr.setEncoding('utf8');
+    child.stdout.on('data', append);
+    child.stderr.on('data', chunk => { append(chunk); stderrTail = Buffer.concat([stderrTail, Buffer.from(chunk)]).subarray(-2048); });
+    child.on('error', error => settle({ error }));
+    child.on('close', (code, signal) => settle({ code, signal }));
+  });
+}
+
+function run(command, args, { env, cwd, input, timeout } = {}) {
   const result = spawnSync(command, args, {
     env,
     cwd,
     input,
+    timeout,
+    killSignal: 'SIGKILL',
     encoding: 'utf8',
     stdio: ['pipe', 'pipe', 'pipe'],
     maxBuffer: 16 * 1024 * 1024,
@@ -68,7 +99,7 @@ async function extractTree({ gitDir, tree, to, iso }) {
   return exportTree({ gitDir, tree, to, iso });
 }
 
-export async function runCheckSeat({ gitDir, tree, checks, key, receipts, iso, bwrap, keepWork }) {
+export async function runCheckSeat({ gitDir, tree, checks, key, receipts, iso, bwrap, keepWork, onBeat = () => {} }) {
   const named = (checks ?? []).map((c) => c?.name).join(', ') || '<none>';
   if (!bwrap || !HAVE_GIT || !HAVE_TAR || !HAVE_BWRAP) return { ok: false, output: `no wall available: refusing to run check ${named} unwalled` };
 
@@ -114,8 +145,11 @@ export async function runCheckSeat({ gitDir, tree, checks, key, receipts, iso, b
         '--setenv', 'LC_ALL', 'C',
         ...check.argv,
       ];
-      const ran = run(BWRAP, args);
+      onBeat();
+      const ran = run(BWRAP, args, { timeout: checkTimeoutMs });
+      if (ran.result.error?.code === 'ETIMEDOUT') return { ok: false, output: `check ${check.name} failed: liveness: ran past ${checkTimeoutMs}ms` };
       if (!ran.ok) return { ok: false, output: `check ${check.name} failed: ${ran.output}` };
+      onBeat();
     }
 
     // The receipt lives in the broker's memory under a key that never touched disk: a lead can neither read the key nor plant a receipt.
@@ -167,7 +201,7 @@ function hideCredentials() {
  * nothing: the installer gets exactly the directories that were opened. `.npmrc` is read through the held worktree handle with
  * O_NOFOLLOW before the wall opens (a symlink there refuses by name).
  */
-export async function runInstallSeat({ worktree, worktreeHeld, gitDir, installer, storeDir, cacheDir, iso, protect = [], env, extraRw = [], bwrap = HAVE_BWRAP, silenceSeconds = 120 }) {
+export async function runInstallSeat({ worktree, worktreeHeld, gitDir, installer, storeDir, cacheDir, iso, protect = [], env, extraRw = [], bwrap = HAVE_BWRAP, silenceSeconds = DOOR_SILENCE_MS / 1000, onBeat = () => {} }) {
   void env;
   const label = worktree ?? "the held worktree";
   if (!bwrap || !HAVE_BWRAP) return { ok: false, output: `no wall available: refusing to run the install of ${installer} in ${label} unwalled` };
@@ -233,26 +267,16 @@ export async function runInstallSeat({ worktree, worktreeHeld, gitDir, installer
       '--cache-dir',
       cacheDir,
     ];
-    const ran = await new Promise(resolve => {
-      const child = spawn(BWRAP, args, { detached: true, stdio: ['ignore', 'pipe', 'pipe', ...fds] });
-      let output = '', silent = false, timer;
-      // LIVENESS: `silenceSeconds` (120 by default) without stdout or stderr ends the install as refused, so a stalled installer
-      // (a lane dependency naming a FIFO, a wedged open) never holds the one broker; pnpm reports progress while it works.
-      const resetSilence = () => { clearTimeout(timer); timer = setTimeout(() => { silent = true; try { killGroup(child.pid, 'SIGKILL'); } catch (error) { if (error.code !== 'ESRCH') child.kill('SIGKILL'); } }, silenceSeconds * 1000); };
-      resetSilence();
-      const append = chunk => { resetSilence(); output += chunk; if (output.length > 16 * 1024 * 1024) output = output.slice(-CAP * 2); };
-      child.stdout.setEncoding('utf8'); child.stderr.setEncoding('utf8');
-      child.stdout.on('data', append); child.stderr.on('data', append);
-      child.on('error', error => { clearTimeout(timer); resolve({ error, output, silent }); });
-      child.on('close', (code, signal) => { clearTimeout(timer); resolve({ code, signal, output, silent }); });
-    });
+    // A stalled installer (a lane dependency naming a FIFO, a wedged open) goes silent; pnpm reports progress while it works.
+    const ran = await superviseChild(spawn(BWRAP, args, { detached: true, stdio: ['ignore', 'pipe', 'pipe', ...fds] }), { silenceMs: silenceSeconds * 1000, onBeat });
     if (ran.silent) return { ok: false, output: capOutput(`refused: install liveness: silent ${silenceSeconds}s; ${ran.output}`) };
+    if (ran.overran) return { ok: false, output: capOutput(`refused: install liveness: ran past ${DOOR_RUN_MAX_MS}ms; ${ran.output}`) };
     return { ok: ran.code === 0, output: capOutput(`${ran.output}${ran.error ? String(ran.error) : ''}${ran.signal ? `signal ${ran.signal}` : ''}`) };
   } finally { for (const h of opened) h.close(); }
 }
 
 /** Validate the test request before opening the execution boundary. */
-export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
+export async function runTestSeat({ worktreeHeld, laneHeld, runner, files, onBeat = () => {} }) {
   if (!['node', 'vitest'].includes(runner)) return { ok: false, output: `refused: unknown runner ${String(runner)}` };
   if (!Array.isArray(files) || files.length === 0 || files.some((f) => typeof f !== 'string' || !f)) return { ok: false, output: 'refused: nonempty named files required' };
   for (const file of files) {
@@ -430,21 +454,11 @@ export async function runTestSeat({ worktreeHeld, laneHeld, runner, files }) {
         ? [node, '--test', '--test-reporter=tap', '--', ...files.map(f => path.posix.join('/work', f))]
         : [node, '-e', packageTest, '--', build ?? '', packageDir, path.posix.join('/work', vitestPath), ...files.map(f => path.posix.join('/work', f))]),
     ];
-    const result = await new Promise(resolve => {
-      const child = spawn(BWRAP, args, { detached: true, stdio: ['ignore', 'pipe', 'pipe', worktreeHeld.fd, scratchHeld.fd, gitFd, ...boundFds.map(m => m.fd)] });
-      let output = '', stderrTail = Buffer.alloc(0), overflow = false, silent = false, timer;
-      // LIVENESS: 30 seconds without stdout or stderr releases the single relay; active output resets the bound.
-      const silenceSeconds = 30;
-      const resetSilence = () => { clearTimeout(timer); timer = setTimeout(() => { silent = true; try { killGroup(child.pid, 'SIGKILL'); } catch (error) { if (error.code !== 'ESRCH') child.kill('SIGKILL'); } }, silenceSeconds * 1000); };
-      resetSilence();
-      const append = chunk => { resetSilence(); output += chunk; if (output.length > 16 * 1024 * 1024) { overflow = true; output = output.slice(-8192); } };
-      child.stdout.setEncoding('utf8'); child.stderr.setEncoding('utf8');
-      child.stdout.on('data', append); child.stderr.on('data', chunk => { append(chunk); stderrTail = Buffer.concat([stderrTail, Buffer.from(chunk)]).subarray(-2048); });
-      child.on('error', error => { clearTimeout(timer); resolve({ error, output, stderrTail, silent }); });
-      child.on('close', (code, signal) => { clearTimeout(timer); resolve({ code, signal, output, overflow, stderrTail, silent }); });
-    });
+    // A test runner prints as it goes; 30 seconds without a word reads as a hang.
+    const result = await superviseChild(spawn(BWRAP, args, { detached: true, stdio: ['ignore', 'pipe', 'pipe', worktreeHeld.fd, scratchHeld.fd, gitFd, ...boundFds.map(m => m.fd)] }), { silenceMs: 30_000, onBeat });
     const childRefuse = message => ({ ok: false, exitCode: result.code ?? null, output: `refused: ${message}; exitCode: ${result.code ?? 'null'}; stderr tail: ${result.stderrTail.toString('utf8')}` });
     if (result.silent) return childRefuse('liveness: silent 30s');
+    if (result.overran) return childRefuse(`liveness: ran past ${DOOR_RUN_MAX_MS}ms`);
     if (result.error || result.signal || result.code === null || result.overflow) return childRefuse(`test execution failed: ${result.error?.message ?? result.signal ?? 'output overflow'}`);
     if (runner === 'vitest') {
       try { readHeld(scratchHeld, 'build-ok'); }

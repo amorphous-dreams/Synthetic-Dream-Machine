@@ -2,20 +2,30 @@
 import { watch, openSync, fstatSync, readFileSync, closeSync, constants as FS } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { RECEIPT_CAP_MS, RECEIPT_SILENCE_MS, isClaimName } from './relay-claim.mjs';
 
-export const MAX_RECEIPT_WAIT_MS = 300_000;
-/** Wait only for this request's receipt; file events wake reads, never a polling loop. */
-export async function waitForReceipt(file, { timeoutMs = 120_000 } = {}) {
-  if (!Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > MAX_RECEIPT_WAIT_MS) {
-    throw new Error(`receipt-timeout-bound: choose 1..${MAX_RECEIPT_WAIT_MS} milliseconds`);
+const bounded = (n, max) => Number.isInteger(n) && n >= 1 && n <= max;
+
+/**
+ * Wait only for this request's receipt; file events wake reads, never a polling loop. Any claim's stir in the relay dir
+ * reads as the broker's life and resets the silence bound; the cap holds whatever the claims do (relay-claim).
+ */
+export async function waitForReceipt(file, { silenceMs = RECEIPT_SILENCE_MS, capMs = RECEIPT_CAP_MS } = {}) {
+  if (!bounded(silenceMs, RECEIPT_SILENCE_MS) || !bounded(capMs, RECEIPT_CAP_MS) || capMs < silenceMs) {
+    throw new Error(`receipt-bound: silence 1..${RECEIPT_SILENCE_MS} ms, cap silence..${RECEIPT_CAP_MS} ms`);
   }
   if (!/^res-\d+\.json$/.test(path.basename(file))) throw new Error('receipt-name: expected res-<id>.json');
   return new Promise((resolve, reject) => {
-    let watcher, timer, done = false;
+    let watcher, silence, cap, done = false;
     const finish = (error, answer) => {
       if (done) return;
-      done = true; watcher?.close(); clearTimeout(timer);
+      done = true; watcher?.close(); clearTimeout(silence); clearTimeout(cap);
       if (error) reject(error); else resolve(answer);
+    };
+    // LIVENESS: a broker that died stirs no claim; the silence bound (a door's longest silence plus two relay pauses) releases the lead.
+    const stir = () => {
+      clearTimeout(silence);
+      silence = setTimeout(() => finish(new Error(`receipt-silent: ${path.basename(file)} absent and no claim stirred for ${silenceMs}ms; broker may have died`)), silenceMs);
     };
     const read = () => {
       let fd;
@@ -30,11 +40,13 @@ export async function waitForReceipt(file, { timeoutMs = 120_000 } = {}) {
     };
     try {
       watcher = watch(path.dirname(file), (_event, name) => {
+        if (name !== null && isClaimName(String(name))) stir();
         if (name === null || String(name) === path.basename(file)) read();
       });
       watcher.on('error', error => finish(error));
-      // LIVENESS: a broker that died releases the lead by this enforced, capped deadline.
-      timer = setTimeout(() => finish(new Error(`receipt-timeout: ${path.basename(file)} absent or incomplete after ${timeoutMs}ms; broker may have died`)), timeoutMs);
+      stir();
+      // LIVENESS: the cap (the longest door run plus two relay pauses) holds even while a claim stirs; a forged claim stretches nothing past it.
+      cap = setTimeout(() => finish(new Error(`receipt-cap: ${path.basename(file)} absent after ${capMs}ms, though a claim stirred; a door overran its own bound or a claim was forged`)), capMs);
       read(); // Watch first, then read: an answer arriving during setup cannot get lost.
     } catch (error) { finish(error); }
   });
@@ -42,8 +54,7 @@ export async function waitForReceipt(file, { timeoutMs = 120_000 } = {}) {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
   try {
-    if (process.argv.length < 3 || process.argv.length > 4) throw new Error('usage: wait-receipt.mjs <res-id.json> [timeout-ms]');
-    const answer = await waitForReceipt(process.argv[2], process.argv[3] ? { timeoutMs: Number(process.argv[3]) } : {});
-    console.log(JSON.stringify(answer));
+    if (process.argv.length !== 3) throw new Error('usage: wait-receipt.mjs <res-id.json>');
+    console.log(JSON.stringify(await waitForReceipt(process.argv[2])));
   } catch (error) { console.error(error.message); process.exitCode = 1; }
 }

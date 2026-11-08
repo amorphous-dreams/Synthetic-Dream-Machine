@@ -11,6 +11,7 @@ import { constants as FSC } from 'node:fs';
 import { brokerRootPath, ensureBrokerRoot, ensureLaneDir, ensureStageRoot, laneId } from './broker-root.mjs';
 import { addWorktree, commitWithReceipt, pushWithGo, removeWorktree } from './seat-broker.mjs';
 import { runInstallSeat, runTestSeat } from './seat-walls.mjs';
+import { RELAY_PAUSE_MS, openClaim } from './relay-claim.mjs';
 
 const args = process.argv.slice(2);
 const options = {};
@@ -106,13 +107,13 @@ const madeFile = path.join(iso, 'made.json');
 const made = new Map();
 try { for (const [k, v] of Object.entries(JSON.parse(await readFile(madeFile, 'utf8')))) made.set(k, v); } catch (error) { if (error.code !== 'ENOENT') throw error; } // broker-owned
 const saveMade = async () => { await mkdir(iso, { recursive: true }); await writeFile(madeFile, JSON.stringify(Object.fromEntries(made))); }; // broker-owned
-async function handle(request) {
+async function handle(request, onBeat) {
   if (!request || typeof request !== 'object' || Array.isArray(request)) throw new Error('request must be an object');
   const schemas = { test: ['kind', 'runner', 'files'], commit: ['kind', 'paths', 'message', 'expectHead'], push: ['kind'], install: ['kind', 'path'], worktree: ['kind', 'path', 'branch', 'base'], 'worktree-remove': ['kind', 'path'], launch: ['kind', 'seatDir', 'model', 'effort', 'mode', 'worktree'] };
   if (Object.hasOwn(schemas, request.kind)) { const unknown = Object.keys(request).find(key => !schemas[request.kind].includes(key)); if (unknown) throw new Error(`unknown field ${unknown}`); }
   if (request.kind === 'test') {
     const held = openHeldSync(worktree, scratch); // broker-owned: the controller configured worktree
-    try { return await runTestSeat({ worktreeHeld: held, laneHeld, runner: request.runner, files: request.files }); } finally { held.close(); }
+    try { return await runTestSeat({ worktreeHeld: held, laneHeld, runner: request.runner, files: request.files, onBeat }); } finally { held.close(); }
   }
   if (request.kind === 'worktree') {
     const { target } = laneRel(request.path);
@@ -139,7 +140,7 @@ async function handle(request) {
     const held = stage ? openHeldSync(stage, stageRoot) : openLaneDir(request.path); // the worktree opens ONCE here; the wall binds this fd, never a pathname
     const ctx = await brokerCtx();
     let done;
-    try { done = await runInstallSeat({ worktreeHeld: held, gitDir: ctx.gitDir, installer: path.resolve(options.installer), storeDir: path.resolve(options['store-dir']), cacheDir: path.resolve(options['cache-dir']), iso, protect: [goDir] }); } finally { held.close(); }
+    try { done = await runInstallSeat({ worktreeHeld: held, gitDir: ctx.gitDir, installer: path.resolve(options.installer), storeDir: path.resolve(options['store-dir']), cacheDir: path.resolve(options['cache-dir']), iso, protect: [goDir], onBeat }); } finally { held.close(); }
     return { ok: done.ok, output: cap(done.output) };
   }
   if (request.kind === 'launch') {
@@ -157,7 +158,7 @@ async function handle(request) {
     if (!Array.isArray(request.paths) || request.paths.length === 0) throw new Error('commit requires nonempty paths');
     if (typeof request.message !== 'string' || !request.message) throw new Error('commit requires message text');
     if (checks.length === 0) throw new Error('no checks configured for the check seat');
-    const done = await commitWithReceipt(await brokerCtx(), { paths: request.paths, message: request.message, expectHead: request.expectHead ?? (git('rev-parse', `refs/heads/${branch}`).stdout || '').trim() });
+    const done = await commitWithReceipt({ ...(await brokerCtx()), onBeat }, { paths: request.paths, message: request.message, expectHead: request.expectHead ?? (git('rev-parse', `refs/heads/${branch}`).stdout || '').trim() });
     return { ok: done.ok, head: done.head, output: cap(done.output) };
   }
   if (request.kind === 'push') {
@@ -172,8 +173,10 @@ async function poll() {
   for (const name of names) {
     const id = name.slice(4, -5);
     try { await lstat(relay.at(`res-${id}.json`)); continue; } catch (error) { if (error.code !== 'ENOENT') throw error; }
+    // The claim tells the lead's waiter the broker lives while a long door runs (relay-claim); it never sets a bound.
+    const claim = openClaim(relay, id);
     let answer;
-    try { answer = await handle(JSON.parse(await readHeldAsync(relay, name))); }
+    try { answer = await handle(JSON.parse(await readHeldAsync(relay, name)), () => claim.beat()); }
     catch (error) { answer = { ok: false, output: cap(`refused: ${error.message}`) }; }
     try { await writeFile(relay.at(`res-${id}.json`), JSON.stringify(answer) + '\n', { flag: 'wx' }); }
     catch (error) {
@@ -181,7 +184,8 @@ async function poll() {
       // A lane can plant an answer while the act runs. Preserve it and keep the relay alive.
       console.error(`refused: receipt-clash res-${id}.json; request handled, existing file preserved`);
     }
+    claim.clear();
   }
 }
-// PACING: the relay dir is re-read every 5 s; a request waits at most one pause, and the pause bounds the broker's own spend.
-do { await poll(); if (!options.once) await new Promise(resolve => setTimeout(resolve, 5000)); } while (!options.once);
+// PACING: the relay dir is re-read every relay pause; a request waits at most one pause, and the pause bounds the broker's own spend.
+do { await poll(); if (!options.once) await new Promise(resolve => setTimeout(resolve, RELAY_PAUSE_MS)); } while (!options.once);
