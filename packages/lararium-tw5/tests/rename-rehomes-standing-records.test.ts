@@ -75,5 +75,8 @@ describe("a rename re-homes records that stand", () => {
     expect(rows.find((r) => r["decision"] === "rename")?.["relinked"]).toBe(1);
     expect((result["deletions"] as { renames: unknown[] }).renames).toEqual([{ fromUri: FROM, toUri: URI }]);
     expect((await composite.get(URI))?.tiddler["text"]).toBe("a standing root");
+    // A re-link relocates: its source retracts to ABSENT, never a kāpae, so a lower copy may fall through
+    // and the projection leaves no shadow under the old address.
+    expect(await composite.get(FROM)).toBeNull();
   });
 });

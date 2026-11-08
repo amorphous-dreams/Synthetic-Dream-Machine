@@ -2,7 +2,7 @@ import { afterEach, expect, test } from "vitest";
 import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { wikiSlotUri } from "@lararium/mesh";
+import { CompositeStore, wikiSlotUri } from "@lararium/mesh";
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
 import { daemonWorkingMirror, kahuaFaceFolder } from "../src/bag-paths.js";
 import { LarDiskProjector } from "../src/disk-projector.js";
@@ -36,13 +36,31 @@ test("exclusion projects a persistent kāpae alongside the removed carrier", asy
   await store.tombstone(title, origin);
   await internal.reconcile(title);
   expect(existsSync(stem + ".mem")).toBe(false);
-  expect(JSON.parse(readFileSync(stem + ".kapae", "utf8"))).toEqual({ title });
+  expect(JSON.parse(readFileSync(stem + ".kapae", "utf8"))).toEqual({ title, kapae: "raised" });
 });
 
 test("control: retract-to-absent leaves no kāpae", async () => {
   const { store, internal, stem } = await rig();
+  const canon = new MemoryTiddlerStore("canon");
+  await canon.put({ tiddler: { title, text: "canon" } }, origin);
+  const composite = new CompositeStore();
+  composite.addLayer({ bagId: "canon", store: canon, writable: false });
+  composite.addLayer({ bagId: bag, store, writable: true });
+  expect((await composite.get(title))?.tiddler.text).toBe("live");
   await store.remove(title, origin);
   await internal.reconcile(title);
   expect(existsSync(stem + ".mem")).toBe(false);
+  expect(existsSync(stem + ".kapae")).toBe(false);
+  expect((await composite.get(title))?.tiddler.text).toBe("canon");
+});
+
+test("control: lowering the kāpae (the record returns live) takes the shadow down as the carrier writes back", async () => {
+  const { store, internal, stem } = await rig();
+  await store.tombstone(title, origin);
+  await internal.reconcile(title);
+  expect(existsSync(stem + ".kapae")).toBe(true);
+  await store.put({ tiddler: { title, text: "live" } }, origin);
+  await internal.flush(bag, title);
+  expect(existsSync(stem + ".mem")).toBe(true);
   expect(existsSync(stem + ".kapae")).toBe(false);
 });
