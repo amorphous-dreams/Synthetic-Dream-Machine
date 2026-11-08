@@ -2,7 +2,7 @@
 // build or CLI gate writing a stamp there must leave a link's target alone.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, renameSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { packageStampPath, sourceDigest, stampPackage, writeStamp } from './stamp-build.mjs';
@@ -42,4 +42,15 @@ test('RED: a symlinked dir on the stamp path refuses by name and writes nothing 
   assert.throws(() => stampPackage(x.repo, 'a'), /stamp path .*\/pkg is not a real directory/);
   assert.deepEqual(readdirSync(x.outside), ['target']);
   assert.throws(() => writeStamp(x.repo, join(x.root, 'elsewhere', 'stamp'), 'x'), /a stamp lives under/);
+});
+
+
+test('a swapped stamp directory cannot redirect the write', (t) => {
+  const x = scratch(); t.after(() => rmSync(x.root, { recursive: true, force: true }));
+  const dir = join(x.repo, 'node_modules', '.lares-build', 'pkg');
+  mkdirSync(dir, { recursive: true });
+  writeStamp(x.repo, packageStampPath(x.repo, 'a'), 'digest', { afterWalk() {
+    renameSync(dir, `${dir}-held`); symlinkSync(x.outside, dir);
+  }});
+  assert.deepEqual(readdirSync(x.outside), ['target']);
 });

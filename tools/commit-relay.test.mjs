@@ -1,7 +1,7 @@
 import { test, afterEach } from 'node:test';
 import { wallTest } from './wall-test.mjs';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync, symlinkSync, chmodSync, readdirSync, linkSync, renameSync, realpathSync, statSync, truncateSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync, symlinkSync, chmodSync, readdirSync, linkSync, renameSync, realpathSync, statSync, truncateSync, lstatSync } from 'node:fs';
 import { createServer } from 'node:net';
 import os from 'node:os';
 import { createHash, randomBytes } from 'node:crypto';
@@ -716,4 +716,13 @@ test('RED: a receipt planted during a request reports the clash and processes th
   assert.match(result.stderr, /receipt-clash.*res-1.json/);
   assert.equal(readFileSync(planted, 'utf8'), 'planted');
   assert.match(x.response('2').output, /unknown kind/);
+});
+
+test('row 2: the relay stands a claim while it handles a request and clears it after the answer; a lead-planted claim never blocks the answer and is cleared too', () => {
+  const x = setup();
+  symlinkSync(path.join(x.root, 'remote.git'), path.join(x.lane, 'relay', 'run-2.json')); // a lead plants a claim as a link before the relay reads
+  x.request('1', { kind: 'push' }); x.request('2', { kind: 'push' }); x.run();
+  assert.equal(x.response('1').ok, false); assert.equal(x.response('2').ok, false);
+  assert.deepEqual(readdirSync(path.join(x.lane, 'relay')).sort(), ['req-1.json', 'req-2.json', 'res-1.json', 'res-2.json'], 'no claim outlives its answer');
+  assert.ok(lstatSync(path.join(x.root, 'remote.git')).isDirectory(), 'the planted link\'s target stands untouched');
 });

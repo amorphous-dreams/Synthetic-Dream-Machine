@@ -10,7 +10,7 @@
  * the brief once, appended here. Hand-back: wait on `until [ -f <seat-dir>/final.md ]`.
  *
  *   build    workspace-write in the worktree, network off, both tmp excludes, `-C <worktree> --add-dir <seat-dir>`
- *   lead     workspace-write in a scratch worktree, network on, with seat, common Git, and lane root dirs added
+ *   lead     workspace-write in a scratch worktree, network off, no git dir; seat and lane root dirs added (git acts go through the broker)
  *   read     `-s read-only -C <seat-dir>`
  *   research workspace-write in the seat dir alone, networked, the only mode with `--search`
  *
