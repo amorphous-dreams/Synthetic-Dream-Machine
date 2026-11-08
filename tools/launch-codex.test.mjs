@@ -388,16 +388,18 @@ test("the floors by mode: a READ seat launches down to its own floor (0% while t
 });
 
 // ---- row 2: the pool-used ceilings by mode ----
-test("row 2: a lead refuses above 50% used, build and research above 60%, a read seat never; the refusal names the reading; CONTROL at the line passes", () => {
+test("row 2: lead, build and research seats run until 20% of the pool remains (a soft line at 80% used), a read seat to its own floor; just past the line refuses by name; CONTROL just inside the line passes", () => {
   const w = world();
   const at = (u) => ({ ...w.readers, rolloutLines: () => [rate(u)] });
-  refuses(w, { mode: "lead" }, /used 55\.0%.*lead.*50%/s, at(55));
-  assert.ok(preflight(ask(w, { mode: "lead" }), at(50)));
-  refuses(w, { mode: "build" }, /used 65\.0%.*build.*60%/s, at(65));
-  assert.ok(preflight(ask(w, { mode: "build" }), at(60)));
-  refuses(w, { mode: "research", worktree: undefined }, /used 61\.0%.*research.*60%/s, at(61));
-  assert.ok(preflight(ask(w, { mode: "read" }), at(79)));
-  refuses(w, { mode: "lead" }, /at or below its floor/, at(85)); // the 20%-left floor still speaks first
+  assert.ok(preflight(ask(w, { mode: "lead" }), at(55))); // a lead seat launches at 55% used
+  assert.ok(preflight(ask(w, { mode: "build" }), at(65))); // a build seat launches at 65% used
+  for (const mode of ["lead", "build"]) assert.ok(preflight(ask(w, { mode }), at(79.9)), `${mode} CONTROL inside the line`);
+  assert.ok(preflight(ask(w, { mode: "research", worktree: undefined }), at(79.9)), "research CONTROL inside the line");
+  for (const u of [80, 80.1, 81]) {
+    for (const mode of ["lead", "build"]) refuses(w, { mode }, /at or below its floor.*floor 20%/s, at(u));
+    refuses(w, { mode: "research", worktree: undefined }, /at or below its floor.*floor 20%/s, at(u));
+  }
+  assert.ok(preflight(ask(w, { mode: "read" }), at(95))); // a read seat spends to its own 0% floor
 });
 
 // ---- row 1: per-seat ceilings ----
@@ -724,6 +726,39 @@ test("P1-4 findRollout remembers the rollouts whose prompt carries another marke
   const mine = join(dir, "rollout-mine.jsonl");
   writeFileSync(mine, `${cevent({ type: "response_item", payload: { type: "message", role: "user", content: [{ text: "SEAT-MARKER mine" }] } })}\n`);
   assert.equal(findRollout(home, { marker: "SEAT-MARKER mine", before: new Set(), seen }), mine);
+});
+
+test("P27 findRollout reads the seat's OWN prompt past Codex's injected context: an AGENTS.md project doc as the first user message never decides; CONTROL another seat's prompt, a marker quoted in a brief's body, or an echoed marker never binds", () => {
+  const home = mkdtempSync(join(tmpdir(), "rollouts-")), dir = join(home, ".codex", "sessions", "2026", "11", "07"); mkdirSync(dir, { recursive: true });
+  // the shape a fresh worktree's rollout measured (codex-cli 0.166.0): developer context, then ONE user message carrying the project doc and the environment, then the turn, then the brief
+  const injected = [
+    cevent({ type: "session_meta", payload: { cwd: "/wt" } }),
+    cevent({ type: "response_item", payload: { type: "message", role: "developer", content: [{ type: "input_text", text: "You are Codex" }] } }),
+    cevent({ type: "response_item", payload: { type: "message", role: "user", content: [{ type: "input_text", text: "# AGENTS.md instructions for /wt\n\n<INSTRUCTIONS>\nthe house seed\n</INSTRUCTIONS>" }, { type: "input_text", text: "<environment_context>\n  <cwd>/wt</cwd>\n</environment_context>" }], internal_chat_message_metadata_passthrough: { content_item_metadata: [{ provenance: { type: "agents_md" } }, { provenance: { type: "harness" } }] } } }),
+    cevent({ type: "turn_context", payload: { cwd: "/wt" } }),
+  ];
+  const prompt = (text) => cevent({ type: "response_item", payload: { type: "message", role: "user", content: [{ type: "input_text", text }] } });
+  const put = (name, lines) => { const f = join(dir, name); writeFileSync(f, `${lines.join("\n")}\n`); return f; };
+  const before = new Set();
+  const mine = put("rollout-mine.jsonl", [...injected, prompt("SEAT-MARKER mine\n\nthe brief"), tc(5)]);
+  assert.equal(findRollout(home, { marker: "SEAT-MARKER mine", before }), mine, "the brief behind the project doc binds its seat");
+  rmSync(mine);
+  const seen = new Set();
+  const pending = put("rollout-pending.jsonl", injected);
+  assert.equal(findRollout(home, { marker: "SEAT-MARKER mine", before, seen }), null);
+  assert.ok(!seen.has(pending), "injected context alone, the prompt not yet written, reads as not yet, never decided");
+  const other = put("rollout-other.jsonl", [...injected, prompt("SEAT-MARKER other\n\nSEAT-MARKER mine quoted in the body"), cevent({ type: "response_item", payload: { type: "function_call_output", output: "SEAT-MARKER mine" } }), tc(5)]);
+  assert.equal(findRollout(home, { marker: "SEAT-MARKER mine", before, seen }), null, "CONTROL another seat's prompt never binds, nor a marker in its body or its tool output");
+  assert.ok(seen.has(other), "another seat's prompt decides: never re-read");
+  const plain = put("rollout-plain.jsonl", [...injected, prompt("an operator's own session"), cevent({ type: "response_item", payload: { type: "function_call_output", output: "SEAT-MARKER mine" } }), tc(5)]);
+  assert.equal(findRollout(home, { marker: "SEAT-MARKER mine", before, seen }), null, "CONTROL a session with no seat prompt never binds, an echo in its tool output included");
+  assert.ok(seen.has(plain), "a turn that answered with no seat prompt ahead of it decides: never re-read");
+  const quoted = put("rollout-quoted.jsonl", [injected[0], prompt("# AGENTS.md instructions for /wt\n\n<INSTRUCTIONS>\nSEAT-MARKER mine\n</INSTRUCTIONS>")]);
+  assert.equal(findRollout(home, { marker: "SEAT-MARKER mine", before, seen }), null, "CONTROL a project doc that quotes the marker never binds: only a prompt's FIRST line names its seat");
+  assert.ok(!seen.has(quoted), "injected context decides nothing");
+  rmSync(pending); rmSync(other); rmSync(plain); rmSync(quoted);
+  const late = put("rollout-late.jsonl", [...injected, prompt("SEAT-MARKER mine\n\nthe brief")]);
+  assert.equal(findRollout(home, { marker: "SEAT-MARKER mine", before, seen }), late, "the prompt written on a later tick binds");
 });
 
 test("P1-4 a STALE reading never resets the blind counter: token events stop while the seat lives and the supervisor stops it at the blind limit", async () => {

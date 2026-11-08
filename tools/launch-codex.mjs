@@ -20,7 +20,8 @@
  * from Codex's models cache, `gpt-6-sol`, a Codex pool line unreadable twice (never read as zero), a pool at or under
  * its floor (20% for build, lead or research, 0% for read), a build or lead seat on the main checkout, a lead worktree
  * outside scratch, or a build seat over a stale dist.
- * Pool-used lines (seat-harness#/the-spend-guard): a lead refuses above 50% used, build or research above 60%. A detached
+ * Pool-used lines (seat-harness#/the-spend-guard): lead, build and research seats run until 20% of the pool remains (80% used,
+ * a soft line the operator set 2026-11-07, so the 20% floor speaks first); a read seat spends to its own floor. A detached
  * supervisor (`--supervise`, the seat's parent: it spawns codex itself) tails the seat's rollout and stops it at its token ceiling (`--ceiling N`;
  * lead 15M, others 8M), writing `ceiling.md`.
  * `--lead-step --lane-root <dir> --model --effort --worktree` launches ONE fresh lead step over `<lane-root>/state.json`
@@ -53,8 +54,9 @@ const READ_FLOOR = 0;
 const MODES = ["build", "lead", "read", "research"];
 export const COMPACT_LIMIT = 120000;
 export const TOOL_OUTPUT_LIMIT = 8000;
-/** The pool's used-percent ceiling by mode (seat-harness#/owed row 2): a read seat spends to its own floor. */
-const MAX_USED = { lead: 50, build: 60, research: 60 };
+/** The pool's used-percent ceiling by mode (seat-harness#/owed row 2), 80% since 2026-11-07 (the operator: "Set the codex pool limit
+ * down to 20% (its really a soft limit)"): it meets FLOOR, which refuses first; a read seat spends to its own floor. */
+const MAX_USED = { lead: 80, build: 80, research: 80 };
 /** The per-seat token ceiling by mode (row 1): total_token_usage.total_tokens, cached input counted. */
 const CEILINGS = { lead: 15_000_000, build: 8_000_000, read: 8_000_000, research: 8_000_000 };
 
@@ -117,16 +119,34 @@ export function listRollouts(home) {
   return out;
 }
 
-/** The text of a rollout event's user-prompt field, or null when the event holds no user prompt. */
-function promptText(event) {
+/** The text items of a rollout event's user-prompt field (a list, possibly empty), or null when the event holds no user prompt. */
+function promptTexts(event) {
   const p = event?.payload;
   if (!p) return null;
-  if (p.type === "user_message") return typeof p.message === "string" ? p.message : JSON.stringify(p.message ?? "");
-  if (p.type === "message" && p.role === "user") return JSON.stringify(p.content ?? "");
+  if (p.type === "user_message") return typeof p.message === "string" ? [p.message] : [];
+  if (p.type === "message" && p.role === "user") return Array.isArray(p.content) ? p.content.map((c) => c?.text).filter((t) => typeof t === "string") : [];
   return null;
 }
 
-/** Whether the rollout at `file` holds `marker` in its FIRST user-prompt event (true or false), or null while no complete prompt event stands yet: lines parse as JSONL events, no byte cap, an echoed copy in tool output never counts; a file with no complete prompt event yet reads as not yet. */
+/** Whether an event shows a turn answered or ended: a token count, an assistant message, a completed or aborted task (harness items such as a developer tool list never count). */
+function answers(event) {
+  const p = event?.payload;
+  if (!p) return false;
+  if (event.type === "event_msg") return p.type === "token_count" || p.type === "task_complete" || p.type === "turn_aborted";
+  return event.type === "response_item" && p.type === "message" && p.role === "assistant";
+}
+
+const SEAT_PROMPT = "SEAT-MARKER ";
+
+/**
+ * Whether the rollout at `file` names `marker`'s seat (true or false), or null while that stands undecided. The launcher
+ * writes the marker as the FIRST line of the seat's prompt, so the seat prompt reads as the first user-prompt text item
+ * whose first line opens with `SEAT-MARKER `; it decides, true only when that line equals the marker. Every other user
+ * text item (Codex's AGENTS.md project doc, its environment context, any harness block, a doc quoting a marker) decides
+ * nothing, so the lookup holds no list of Codex's injection headers. An event showing the model answering with no seat
+ * prompt ahead of it decides false (a session that no seat launched). Lines parse as JSONL events, no byte cap; an echoed
+ * copy in tool output never counts; a file with no complete seat prompt and no answer yet reads as not yet.
+ */
 function rolloutHoldsMarker(file, marker) {
   const fd = openSync(file, "r");
   try {
@@ -143,14 +163,18 @@ function rolloutHoldsMarker(file, marker) {
         tail = tail.subarray(nl + 1);
         if (!line.trim()) continue;
         let event; try { event = JSON.parse(line); } catch { continue; }
-        const text = promptText(event);
-        if (text !== null) return text.includes(marker);
+        const texts = promptTexts(event);
+        if (texts === null) { if (answers(event)) return false; continue; }
+        for (const text of texts) {
+          const first = text.split("\n", 1)[0].trim();
+          if (first.startsWith(SEAT_PROMPT)) return first === marker;
+        }
       }
     }
   } finally { closeSync(fd); }
 }
 
-/** The rollout of one seat: among the files NOT in `before` (the set the launcher listed ahead of the spawn), the one whose first user-prompt event carries the seat's own marker. The marker rides the prompt, so a rollout names its seat. */
+/** The rollout of one seat: among the files NOT in `before` (the set the launcher listed ahead of the spawn), the one whose seat prompt (the first user text opening with `SEAT-MARKER `, past any injected context) carries the seat's own marker on its first line. The marker rides the prompt, so a rollout names its seat. */
 export function findRollout(home, { marker, before, seen = new Set() }) {
   for (const p of listRollouts(home)) {
     if (before.has(p) || seen.has(p)) continue;

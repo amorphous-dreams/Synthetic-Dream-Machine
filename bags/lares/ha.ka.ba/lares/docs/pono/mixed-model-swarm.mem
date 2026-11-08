@@ -264,6 +264,7 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 # 2026-11-04, spend: a lead runs fresh per step, and spend reads true usage from the rollouts (#/the-shapes).
 # 2026-11-06, spend balance (operator's words, the Codex pool reset in full that night): "Update the mixed-model-swarm working contract to reduce Claude spends and go with balanced Claude:Codex Spends (leaning on Codex say 70/30). Re-launch a Terra scout to finish that research." (#/the-tiers)
 # 2026-11-06, the spend balance raised (operator's words): "Let's go 80/20 Codex/Claude spends on tasked spirits, please." (#/the-tiers)
+# 2026-11-07, the pool line (operator's words): "Set the codex pool limit down to 20% (its really a soft limit)." Lead, build and research seats launch until 20% of the weekly pool remains; read seats keep their 0% floor (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness`>> #/the-spend-guard).
 <<~/ahu>>
 
 <<~ ahu slot=`#/owed`>>
@@ -297,6 +298,6 @@ Ruled by the operator, 2026-11-05: "Does it apply to all tasked spirits... all l
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;WLhMj3kZOoUJsU0OBAprxGIK2Sq2OIeskpP45q5gwuA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yW-kSTBMMo4-_nuGugwb_kN6XveukoC0pGg7Qf-gF88`>>
 
 <<^ code=`&#x0004;` to=`?`>>
