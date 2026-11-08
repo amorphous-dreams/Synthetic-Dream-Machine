@@ -174,8 +174,8 @@ describe("F4 re-read: an overwrite lifts no drop, and the history read stays bou
       handle.change((d: LarDoc) => writePromoteAct(d, drop));
       handle.change((d: LarDoc) => writePromoteAct(d, honest));
       const key = keyOf(drop);
-      if (lift === "text-edit") handle.change((d: LarDoc) => { (d.tiddlers as Record<string, { fields: Record<string, unknown> }>)[key]!.fields["text"] = "{}"; });
-      else handle.change((d: LarDoc) => { (d.tiddlers as Record<string, unknown>)[key] = { fields: { title: key, text: "{}" } }; });
+      if (lift === "text-edit") handle.change((d: LarDoc) => { (d.tiddlers as Record<string, { tiddler: Record<string, unknown> }>)[key]!.tiddler["text"] = "{}"; });
+      else handle.change((d: LarDoc) => { (d.tiddlers as Record<string, unknown>)[key] = { tiddler: { title: key, text: "{}" }, meta: {} }; });
       if (lift === "overwrite-then-delete") handle.change((d: LarDoc) => { delete (d.tiddlers as Record<string, unknown>)[key]; });
       const records = mesh.promoteBoardRecords(handle.doc() as LarDoc, GROUP);
       expect([...countedBy(records, a.key)], lift).toEqual([`daemon\n${D}\n1`, `daemon\n${D}\n2`]);

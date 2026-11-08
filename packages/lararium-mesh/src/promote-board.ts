@@ -80,17 +80,25 @@ export function promoteActKey(group: string, cid: string): string { return `${PR
 export function writePromoteAct(draft: LarDoc, act: SignedPromoteAct): void { const cid = promoteActCid(act), key = promoteActKey(act.body.group, cid); draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(act) }, cid); }
 export function promoteActRecords(doc: LarDoc | undefined | null, group: string): unknown[] { const prefix = `${PROMOTE_ACT_PREFIX}${encodeURIComponent(group)}/`, out: unknown[] = []; for (const [title, record] of Object.entries(doc?.tiddlers ?? {})) { if (!title.startsWith(prefix)) continue; const text = tiddlerText(record); if (text !== null) try { out.push(JSON.parse(text)); } catch { /* torn carriage */ } } return out; }
 /**
- * THE DROPS A DELETE TOOK (road `L23`): a board holds documents any writer may edit, so a plain delete would lift a drop from the current
- * map. A drop rides the board's change history as well; each change that deletes anything hands back the drops standing just before it,
- * so only a rollback of the board's own storage loses one. It reads a real Automerge document (an absent one holds none) and throws on
- * anything else.
+ * THE DROPS A DELETE OR AN OVERWRITE TOOK (road `L23`): a board holds documents any writer may edit, so a plain delete, a put over an
+ * act's key or an edit of its text would lift a drop from the current map. A drop rides the board's change history as well; each change
+ * that deletes or overwrites anything (an op with a `del` action or a predecessor; an honest `writePromoteAct` only inserts new keys)
+ * hands back the drops standing just before it, so only a rollback of the board's own storage loses one. Each drop comes back once, and
+ * none the current map still holds, so a flood of tiny deletes costs one verify per drop. It reads a real Automerge document (an absent
+ * one holds none) and throws on anything else.
  */
 export function promoteDropHistory(doc: LarDoc | undefined | null, group: string): unknown[] {
  if (!doc) return [];
+ const cidOf = (raw: unknown): string | null => { try { return object(raw) && object(raw.body) && raw.body.act === "drop" && str(raw.signer) ? promoteActCid(raw as unknown as SignedPromoteAct) : null; } catch { return null; } };
+ const seen = new Set(promoteActRecords(doc, group).map(cidOf).filter((cid): cid is string => cid !== null));
  const history = getHistory(doc as Doc<LarDoc>), out: unknown[] = [];
  for (let i = 1; i < history.length; i++) {
-  if (!history[i]!.change.ops.some((op) => op.action === "del")) continue;
-  for (const raw of promoteActRecords(history[i - 1]!.snapshot, group)) if (object(raw) && object(raw.body) && raw.body.act === "drop") out.push(raw);
+  if (!history[i]!.change.ops.some((op) => op.action === "del" || op.pred.length > 0)) continue;
+  for (const raw of promoteActRecords(history[i - 1]!.snapshot, group)) {
+   const cid = cidOf(raw);
+   if (cid === null || seen.has(cid)) continue;
+   seen.add(cid); out.push(raw);
+  }
  }
  return out;
 }
