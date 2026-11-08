@@ -196,7 +196,8 @@ export function makeFaceSeat(ports: FaceSeatPorts) {
     return active;
   };
   const wake = () => { void run(); };
-  // While a grant waits on founder proof this vessel does not yet hold, any daemon-layer change wakes the act.
-  const daemonChanged = (_title: string) => { if (waitingOnProof) wake(); };
+  // A change during an in-flight read must also queue a pass: the read may have captured the old standing before
+  // the change, and has not yet marked the grant as waiting. Idle seats without pending proof do no work.
+  const daemonChanged = (_title: string) => { if (waitingOnProof || active) wake(); };
   return { seated, daemonChanged, settled: async () => { if (active) await active; }, wake, run };
 }
