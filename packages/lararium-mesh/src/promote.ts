@@ -103,19 +103,28 @@ function wardSigStands(row: PromotionRow, face: PromotionWardFace | undefined): 
   if (!face || !row.wardSig) return false;
   try { return face.grant(row.wardSig.key) && verifyEd25519(row.wardSig.sig, promotionWardBytes(row), row.wardSig.key); } catch { return false; }
 }
-export type PromotionVoid = "digest-mismatch" | "bytes-malformed" | "ward-unsigned" | "ward-dropped";
+export type PromotionVoid = "digest-mismatch" | "bytes-malformed" | "ward-unsigned" | "ward-dropped" | "ward-floor-unread";
+/**
+ * THE DROP FLOOR (road `L23`): the bound rows the face-private board names dropped, keyed `wiki\ndigest\nseq`. The ledger rests in a
+ * custody row any writer of unlocked custody can rewrite; the board rides no custody door, so a stripped tombstone strips no drop.
+ */
+export interface PromotionDropFloor { readonly dropped: () => ReadonlySet<string> }
 /**
  * The rows that may run, and the voided rest by reason. A row of a ward-bound wiki (the daemon wiki, the kahua stage) runs only with
  * a ward signature the face grants, whoever wrote it into the ledger (a write straight into custody included); with no `face` to
- * read against, a bound row voids. A user's own wiki carries none and stands as its digest and bytes do.
+ * read against, a bound row voids. It runs only where `floor` (the board's drops) could be read and neither the floor nor the
+ * ledger's own tombstones name it; with no floor (an unread board, or none handed), a bound row voids `ward-floor-unread`. A user's
+ * own wiki carries none and stands as its digest and bytes do.
  */
-export function verifyPromotionRows(rows: readonly PromotionRow[], face?: PromotionWardFace, ledger?: Pick<PromotionLedger, "dropped">): { verified: PromotionRow[]; voided: { digest: string; reason: PromotionVoid }[] } {
+export function verifyPromotionRows(rows: readonly PromotionRow[], face?: PromotionWardFace, ledger?: Pick<PromotionLedger, "dropped">, floor?: PromotionDropFloor | null): { verified: PromotionRow[]; voided: { digest: string; reason: PromotionVoid }[] } {
   const verified: PromotionRow[] = [], voided: { digest: string; reason: PromotionVoid }[] = [];
-  const tomb = new Set((ledger?.dropped ?? []).map((t) => `${t.wiki}\n${t.digest}\n${t.seq}`));
+  const tomb = new Set([...(ledger?.dropped ?? []).map((t) => `${t.wiki}\n${t.digest}\n${t.seq}`), ...(floor?.dropped() ?? [])]);
   for (const row of rows) {
-    // A bound row that left the ledger never runs again under its old ward signature: a replay reads dropped.
+    // A bound row that left the ledger never runs again under its old ward signature: a replay reads dropped, the board's drop
+    // standing where a custody write stripped the ledger's tombstone.
     if (isWardBoundWiki(row.wiki) && tomb.has(`${row.wiki}\n${row.digest}\n${row.seq}`)) { voided.push({ digest: row.digest, reason: "ward-dropped" }); continue; }
     if (isWardBoundWiki(row.wiki) && !wardSigStands(row, face)) { voided.push({ digest: row.digest, reason: "ward-unsigned" }); continue; }
+    if (isWardBoundWiki(row.wiki) && !floor) { voided.push({ digest: row.digest, reason: "ward-floor-unread" }); continue; }
     if (sha256HexBytesSync(new TextEncoder().encode(row.bytes)) !== row.digest) { voided.push({ digest: row.digest, reason: "digest-mismatch" }); continue; }
     try {
       const parsed: unknown = JSON.parse(row.bytes);

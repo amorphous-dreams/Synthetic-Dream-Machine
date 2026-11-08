@@ -1,7 +1,7 @@
 import {
   PromoteRefused, promoteClass, promoteDigest, promoteEdgeKey, promotePreloadBytes,
   ledgerCommit, ledgerUnpromote, ledgerDecideOrphan, reconcilePromotions, verifyPromotionRows, isWardBoundWiki, signPromotionWard,
-  type PromoteWho, type PromotionLedger, type PromotionWardFace,
+  type PromoteWho, type PromotionLedger, type PromotionTombstone, type PromotionWardFace,
 } from "./promote.js";
 import { kapaeNoteArrival, kapaeBootSet, kapaeStanding, type KapaeLocal } from "./promote-kapae.js";
 import type { PromoteBoardReading } from "./promote-board.js";
@@ -32,10 +32,29 @@ export type PromotionPorts = {
    */
   wardSigner?: () => Promise<{ readonly key: string; sign(bytes: Uint8Array): Promise<string> }>;
   face?: PromotionWardFace;
+  /**
+   * THE DROP FLOOR (road `L23`). Every bound row that leaves the ledger (a drop, an orphan dropped, a row a newer commit replaced)
+   * lands as a drop on the face-private board, signed by this device's atom (a brake, so it fails safe), because the ledger's own
+   * tombstone rests in a custody row a writer of unlocked custody can strip. Absent, a bound drop still leaves the ledger and the
+   * verb refuses `promote-floor-unlanded` after it, naming the floor it owes.
+   */
+  landDrops?: (tombstones: readonly PromotionTombstone[]) => Promise<unknown>;
 };
 
 export function promotions(ports: PromotionPorts) {
   const { wiki } = ports;
+  /**
+   * The brake runs first: the ledger drops the row, then every tombstone it holds lands on the board (the board door skips what it
+   * already names, and a tombstone an earlier verb failed to land lands now). A floor that cannot land refuses by name after the drop.
+   */
+  const floored = async (next: PromotionLedger): Promise<PromotionLedger> => {
+    const tombstones = next.dropped ?? [];
+    if (tombstones.length === 0) return next;
+    if (!ports.landDrops) throw new PromoteRefused("promote-floor-unlanded", "the ledger dropped the bound row, and no board door lands its floor here");
+    try { await ports.landDrops(tombstones); }
+    catch (e) { throw new PromoteRefused("promote-floor-unlanded", `the ledger dropped the bound row; its board floor did not land (${e instanceof Error ? e.message : String(e)}); the next promotion verb lands it`); }
+    return next;
+  };
   const own = (ledger: PromotionLedger) => ledger.rows.filter(row => row.wiki === wiki);
   const states = (rows: ReturnType<typeof own>, items: readonly PromoteItem[]) => reconcilePromotions(rows, (_wiki, title) => {
     const item = items.find(i => i.title === title); return item ? promoteDigest(item) : null;
@@ -66,7 +85,15 @@ export function promotions(ports: PromotionPorts) {
       const item = (await ports.items()).find(i => promoteDigest(i) === digest);
       if (!item) throw new PromoteRefused("promote-unknown", "no item carries the digest");
       // Refuse before any CAS byte lands; the bytes ride under their digest, so a repeat costs nothing; the ledger takes the row atomically.
-      const standing = await ports.ledger.read();
+      // A BOUND COMMIT LANDS PAST THE BOARD'S DROP FLOOR: a ledger a custody write reset would hand it a seq a drop already names, and
+      // the ward's signature over that (wiki, digest, seq) would read as the dropped one. No board read, no bound commit.
+      let floor = 0;
+      if (isWardBoundWiki(wiki)) {
+        try { floor = (await ports.board()).dropFloor(); }
+        catch (e) { throw new PromoteRefused("promote-floor-unread", `a commit in ${wiki} reads the board's drop floor first, and the board did not read (${e instanceof Error ? e.message : String(e)})`); }
+      }
+      const atFloor = (l: PromotionLedger): PromotionLedger => (l.seq < floor ? { ...l, seq: floor } : l);
+      const standing = atFloor(await ports.ledger.read());
       ledgerCommit(standing, { wiki, digest, item, revision: item.revision }, ports.who);
       // A BOUND COMMIT SIGNS ITS OWN ROW: the face root, opened under the ward for this act, over (wiki, digest, the seq it lands at).
       let wardSig: Awaited<ReturnType<typeof signPromotionWard>> | undefined;
@@ -80,13 +107,14 @@ export function promotions(ports: PromotionPorts) {
       await ports.cas.put(digest, promotePreloadBytes(item)); await ports.cas.pin(digest);
       const ledger = await mutate(ports.ledger, (now) => {
         // The signature names the seq it was made for: a ledger that moved meanwhile refuses, and the hand commits again.
-        if (wardSig && now.seq !== standing.seq) throw new PromoteRefused("promote-ledger-moved", "the ledger moved while the ward signed; commit again");
-        return ledgerCommit(now, { wiki, digest, item, revision: item.revision, ...(wardSig ? { wardSig } : {}) }, ports.who);
+        if (wardSig && atFloor(now).seq !== standing.seq) throw new PromoteRefused("promote-ledger-moved", "the ledger moved while the ward signed; commit again");
+        return ledgerCommit(atFloor(now), { wiki, digest, item, revision: item.revision, ...(wardSig ? { wardSig } : {}) }, ports.who);
       });
+      await floored(ledger);
       return ledger.rows[ledger.rows.length - 1]!;
     },
-    async unpromote({ digest }: { digest: string }) { await mutate(ports.ledger, (standing) => ledgerUnpromote(standing, { wiki, digest }, ports.who)); },
-    async decideOrphan({ digest, decision }: { digest: string; decision: "keep" | "drop" }) { await mutate(ports.ledger, (standing) => ledgerDecideOrphan(standing, { wiki, digest }, decision, ports.who)); },
+    async unpromote({ digest }: { digest: string }) { await floored(await mutate(ports.ledger, (standing) => ledgerUnpromote(standing, { wiki, digest }, ports.who))); },
+    async decideOrphan({ digest, decision }: { digest: string; decision: "keep" | "drop" }) { await floored(await mutate(ports.ledger, (standing) => ledgerDecideOrphan(standing, { wiki, digest }, decision, ports.who))); },
     async boot() {
       const [ledger, local] = await Promise.all([ports.ledger.read(), ports.local.read()]);
       let edges: ReadonlySet<string>, readings: ReturnType<typeof states> = [];
@@ -101,7 +129,8 @@ export function promotions(ports: PromotionPorts) {
         // and the brake decide those), and rides out by name for the caller to report.
         try { readings = states(own(ledger), await ports.items()); } catch (error) { itemsError = error; }
       } else { edges = kapaeBootSet(local, null); }
-      const { verified, voided } = verifyPromotionRows(own(ledger), ports.face, ledger);
+      // THE DROP FLOOR: the board's drops void a replayed bound row whatever the ledger's plaintext says; no board, no bound row runs.
+      const { verified, voided } = verifyPromotionRows(own(ledger), ports.face, ledger, board);
       const runnable = verified.filter(row => !edges.has(promoteEdgeKey(wiki, row.digest)));
       for (const row of runnable) { await ports.cas.put(row.digest, new TextEncoder().encode(row.bytes)); await ports.cas.pin(row.digest); }
       return { itemsError, pluginCids: runnable.map(row => row.digest), voided, orphans: readings.filter(r => r.state === "orphaned").map(r => r.row.digest), updateWaits: readings.filter(r => r.state === "update-waits").map(r => r.row.digest), shadowed: shadows(edges) };

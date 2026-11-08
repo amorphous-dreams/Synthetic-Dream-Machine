@@ -2785,7 +2785,9 @@ async function prepareNodeBootOn(
                 if (!held) throw new WardNeedsFreshUnlock(`the panel's commit in ${wiki} (the panel carries no ward route: run \`lares promote commit <digest> --wiki ${wiki}\` at a terminal)`);
                 return wardRootSigner(wornMount?.handleIndex ?? 0, held, `a commit in ${wiki}`);
               },
-              face: { grant: (key: string) => promoteFace.read()?.grant(key) ?? false } }), boardDoor,
+              face: { grant: (key: string) => promoteFace.read()?.grant(key) ?? false },
+              // THE DROP FLOOR (road L23): a bound row that leaves the ledger lands as a drop on the board, where no custody write reaches.
+              landDrops: (tombstones) => boardDoor.drop(tombstones) }), boardDoor,
           });
           const push = async (data: string) => { daemonVm.placeVerb({ verb: "promote-state", args: { data }, requestedBy: "promote", origin: "channel" }); };
           // A quiet panel stays unpushed (the island starts quiet): a push is a verb tiddler in the daemon document, and a boot mints no content head.

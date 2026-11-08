@@ -19,6 +19,8 @@ const HAND = { kind: "hand", id: "hand-1" } as const;
 const SEAT = { kind: "seat", id: "seat-1" } as const;
 const rite = item({ "module-type": "startup" }, "exports.startup = function(){}");
 const R = "a".repeat(64);
+/** A board read that names no drop. */
+const NO_DROPS = { dropped: () => new Set<string>() };
 const commit = (who: typeof HAND | typeof SEAT, l: PromotionLedger = EMPTY_LEDGER, wiki = W1, it = rite, digest = promoteDigest(it)) =>
   ledgerCommit(l, { wiki, digest, item: it, revision: R }, who);
 
@@ -143,7 +145,9 @@ describe("the ward binds a daemon or kahua promotion (row 7, S2)", () => {
       const moved = { ...bare, seq: bare.seq + 1, wardSig: await signPromotionWard(bare, root) };
       expect(verifyPromotionRows([moved], face).voided.map((v) => v.reason)).toEqual(["ward-unsigned"]);
       const signed = { ...bare, wardSig: await signPromotionWard(bare, root) };
-      expect(verifyPromotionRows([signed], face).verified).toEqual([signed]);
+      expect(verifyPromotionRows([signed], face, undefined, NO_DROPS).verified).toEqual([signed]);
+      // The board unread: no floor proves the row was never dropped, so it voids by name.
+      expect(verifyPromotionRows([signed], face).voided.map((v) => v.reason)).toEqual(["ward-floor-unread"]);
       // With no face to read grants against, a bound row voids: the read fails closed.
       expect(verifyPromotionRows([signed]).voided.map((v) => v.reason)).toEqual(["ward-unsigned"]);
       // The signature rides the ledger's bytes and back.
@@ -166,14 +170,14 @@ describe("a dropped bound row stays dropped (S2 cold read, P2-2)", () => {
     const wardSig = await signPromotionWard(unsigned, root);
     const committed = ledgerCommit(EMPTY_LEDGER, { wiki: "daemon", digest, item: rite, revision: R, wardSig }, HAND);
     const signed = committed.rows[0]!;
-    expect(verifyPromotionRows(committed.rows, face, committed).verified).toEqual([signed]);
+    expect(verifyPromotionRows(committed.rows, face, committed, NO_DROPS).verified).toEqual([signed]);
     const dropped = ledgerUnpromote(committed, { wiki: "daemon", digest }, HAND);
     // A writer of the face's custody puts the old signed row back.
     const replayed = { ...dropped, rows: [...dropped.rows, signed] };
     const back = decodeLedger(encodeLedger(replayed));
-    expect(verifyPromotionRows(back.rows, face, back).voided).toEqual([{ digest, reason: "ward-dropped" }]);
+    expect(verifyPromotionRows(back.rows, face, back, NO_DROPS).voided).toEqual([{ digest, reason: "ward-dropped" }]);
     // CONTROL: the hand commits the same bytes again under a fresh ward signature; the new row stands.
     const again = ledgerCommit(dropped, { wiki: "daemon", digest, item: rite, revision: R, wardSig: await signPromotionWard({ wiki: "daemon", digest, seq: dropped.seq + 1 }, root) }, HAND);
-    expect(verifyPromotionRows(again.rows, face, again).verified.map((r) => r.seq)).toEqual([again.seq]);
+    expect(verifyPromotionRows(again.rows, face, again, NO_DROPS).verified.map((r) => r.seq)).toEqual([again.seq]);
   });
 });

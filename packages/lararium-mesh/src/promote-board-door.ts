@@ -1,6 +1,6 @@
 import { assertKapaeHand, KapaeRefused } from "./promote-kapae.js";
-import { kapaeLowerHead, promoteBoardMint, readPromoteAct, readPromoteBoard, signPromoteKapae, signPromotePrepare, type PromoteFace, type SignedPromoteAct } from "./promote-board.js";
-import type { PromoteWho } from "./promote.js";
+import { kapaeLowerHead, promoteBoardMint, promoteDropKey, readPromoteAct, readPromoteBoard, signPromoteDrop, signPromoteKapae, signPromotePrepare, type PromoteFace, type SignedPromoteAct } from "./promote-board.js";
+import type { PromotionTombstone, PromoteWho } from "./promote.js";
 import { cosignPortWitness, WARD_WITNESS_CLOSED, WardActAlreadyRun, wardCosignGate, type WardCosignPort } from "./ward-cosign-gate.js";
 import { WARD_GATE_DECIDED } from "./ward-door-decided.js";
 import { WardRefused } from "./ward-slots.js";
@@ -75,6 +75,24 @@ export function promoteBoardDoor(ports: PromoteBoardDoorPorts) {
         if (e instanceof WardRefused) throw new KapaeRefused(e.reading, e.message.slice(e.reading.length + 2));
         throw e;
       }
+    },
+    /**
+     * THE DROP FLOOR (road `L23`): each bound row that left the ledger lands as a drop over its (wiki, digest, seq), signed by this
+     * device's atom. A drop only adds a brake, so no ward opens and no co-sign waits; no act lifts one. A drop the board already names
+     * lands nothing.
+     */
+    async drop(tombstones: readonly PromotionTombstone[]) {
+      const signer = ports.atom;
+      if (!ports.face.device(signer.key)) throw new KapaeRefused("device-not-enrolled", "this device's atom stands in no enrolment of the face");
+      const named = new Set(readPromoteBoard(await ports.board.records(), { ...ports.face, ward: WARD_GATE_DECIDED }).dropped());
+      const cids: string[] = [];
+      for (const t of tombstones) {
+        const key = promoteDropKey(t.wiki, t.digest, t.seq);
+        if (named.has(key)) continue;
+        cids.push((await land(await signPromoteDrop({ group: ports.group, epoch: ports.epoch(), wiki: t.wiki, digest: t.digest, seq: t.seq }, signer))).cid);
+        named.add(key);
+      }
+      return { cids };
     },
     async mint() { return { url: promoteBoardMint(ports.projection(), ports.group), minted: false as const }; },
   };

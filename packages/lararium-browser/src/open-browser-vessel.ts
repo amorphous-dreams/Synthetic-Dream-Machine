@@ -1596,7 +1596,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
             wikis: async () => ["daemon", ...vmManager.inspect().filter(slot => slot.temperature === "wela" && slot.wikiId !== "daemon").map(slot => slot.wikiId)],
             promotionsFor: wiki => promotions({ wiki, ...browserPromoteStores(idbName, wornGroup), who,
               items: () => wiring.itemsOf(wiki), board: wiring.board, cas: browserPromoteCas(),
-              wardSigner: () => wardRootSignerOf(`a commit in ${wiki}`), face: { grant: (key: string) => promoteFace.read()?.grant(key) ?? false } }), boardDoor,
+              wardSigner: () => wardRootSignerOf(`a commit in ${wiki}`), face: { grant: (key: string) => promoteFace.read()?.grant(key) ?? false },
+              // THE DROP FLOOR (road L23): a bound row that leaves the ledger lands as a drop on the board, where no custody row reaches.
+              landDrops: (tombstones) => boardDoor.drop(tombstones) }), boardDoor,
           });
           const push = async (data: string) => { daemon.placeVerb({ verb: "promote-state", args: { data }, requestedBy: "promote", origin: "channel" }); };
           // A quiet panel stays unpushed (the island starts quiet): a push is a verb tiddler in the daemon document, and a boot mints no content head.
