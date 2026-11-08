@@ -51,7 +51,7 @@ function standVessel(): string {
   dir = mkdtempSync(join(tmpdir(), "act-load-split-"));
   mkdirSync(dir, { recursive: true });
   process.env["LAR_ROOT"] = dir;
-  const dataDir = join(dir, "data", "lares", "vessel");
+  const dataDir = join(dir, "hearth", "vessel");
   return rendezvousPath({ root: dataDir, uid: process.getuid?.() ?? 0 });
 }
 

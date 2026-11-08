@@ -24,7 +24,7 @@ seatFaceRoute(async () => [TEST_SLOT]);
 seatWardGatherer(async () => TEST_SLOT.pins.flatMap((pin) => (pin.kind === "passphrase" ? [{ kind: "passphrase" as const, passphrase: pin.passphrase }] : [])));
 const root = mkdtempSync(join(tmpdir(), "nexus-rekey-boot-"));
 const genesisDir = join(root, "genesis");
-const storageDir = join(root, "data", "lares", "vessel");
+const storageDir = join(root, "hearth", "vessel");
 const source = join(import.meta.dirname, "..", "..", "..", "..", "genesis");
 cpSync(source, genesisDir, { recursive: true });
 let vessel: NodeVesselResult | null = null;

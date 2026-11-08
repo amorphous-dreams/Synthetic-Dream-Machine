@@ -46,9 +46,7 @@ describe("node persona pet-name stores", () => {
   const dataDir = () => root;
   beforeEach(async () => {
     root = mkdtempSync(join(tmpdir(), "lares-petname-"));
-    setEnv("LAR_ROOT", undefined);
-    setEnv("XDG_STATE_HOME", join(root, "state"));
-    setEnv("XDG_DATA_HOME", join(root, "state"));   // identity/seal/library answer HERE
+    setEnv("LAR_ROOT", root);   // the scratch house root every resolver lays its classes beneath
     seated = await seatScratchCustody("petname-store");
   });
   afterEach(async () => {

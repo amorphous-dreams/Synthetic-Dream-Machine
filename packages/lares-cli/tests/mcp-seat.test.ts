@@ -23,10 +23,9 @@ import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync,
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { memorySensoriumDir } from "@lararium/node";
-import { IMAGE_SEAT, resolveLaresMcp } from "../src/mcp-resolve.js";
+import { IMAGE_SEAT, hearthSurfaceEnv, resolveLaresMcp, seatAbsentCause } from "../src/mcp-resolve.js";
 import { homeItems, mainCloneOf } from "../src/reality-tunnel/catalog.js";
 import { execFileSync } from "node:child_process";
-import { homedir } from "node:os";
 
 const REPO = join(import.meta.dirname, "..", "..", "..");
 const SEAT = join("packages", "lararium-sensorium", "scripts", "lares_mcp.py");
@@ -175,21 +174,17 @@ describe("the hearth root reads absolute, or the seat refuses by name", () => {
   beforeEach(() => { priorCwd = process.cwd(); });
   afterEach(() => { process.chdir(priorCwd); });
 
-  it("an empty LAR_ROOT reads as unset (the shims' rule): a cwd-side surface env never flips the form, and no path runs relative", () => {
+  it("an empty LAR_ROOT names no house: no seat resolves, a cwd-side surface env never flips the form, and the cause names LAR_ROOT", () => {
     const clone = fakeClone();
     const cwd = join(dir, "project");
     mkdirSync(cwd, { recursive: true });
     writeFileSync(join(cwd, "lares-surface.env"), "COMPOSE_PROJECT_NAME=elsewhere\n");
     process.chdir(cwd);
     process.env["LAR_ROOT"] = "";
-    const mcp = resolveLaresMcp(clone);
-    // The hearth reads `~/.lares` (a scratch HOME under the suite law). The cwd's file never decides the form:
-    // only a surface env at `~/.lares` would, and then the seat names it by its absolute path.
-    const homeEnv = join(homedir(), ".lares", "lares-surface.env");
-    if (mcp?.command === "docker") expect(mcp.args[2]).toBe(homeEnv);
-    else if (mcp !== null) expect(mcp.env["LAR_ROOT"]).toBe(join(homedir(), ".lares"));
-    else expect(existsSync(homeEnv)).toBe(false);
-    if (!existsSync(homeEnv)) expect(mcp?.command).not.toBe("docker");
+    // No home directory stands in for the house root, so no seat binds and the cwd's file decides nothing.
+    expect(resolveLaresMcp(clone)).toBeNull();
+    expect(hearthSurfaceEnv()).toBeNull();
+    expect(seatAbsentCause()).toMatch(/set LAR_ROOT/);
   });
 
   it("a relative LAR_ROOT refuses by name", () => {

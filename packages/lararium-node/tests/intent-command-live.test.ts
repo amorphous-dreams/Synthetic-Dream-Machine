@@ -22,7 +22,7 @@ import { direct } from "./direct-store.js";
 import { foundDirect, openTestCustody, seatSeedCharter } from "./found-route.js";
 
 const ROOT = join(tmpdir(), `lar-intent-live-${Date.now()}`);
-const storage = join(ROOT, "data", "lares", "vessel"), genesis = join(ROOT, "genesis");
+const storage = join(ROOT, "hearth", "vessel"), genesis = join(ROOT, "genesis");
 const BUILT_GENESIS = join(new URL("../", import.meta.url).pathname, "..", "..", "genesis");
 afterAll(() => { try { rmSync(ROOT, { recursive: true, force: true }); } catch { /* best effort */ } });
 

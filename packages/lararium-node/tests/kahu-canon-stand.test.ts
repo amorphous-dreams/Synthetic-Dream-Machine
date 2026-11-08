@@ -37,7 +37,7 @@ describe("a vessel stands its system canon from the Kahu realm", () => {
   const r = freshRoot("a");
 
   test("the founded face's group stands both documents the realm registered; a place with no face and a group never admitted stand none", async () => {
-    await withLarRoot(r, () => foundHearthDirect({ storageDir: join(r, "data", "lares", "vessel"), genesisDir: join(r, "genesis") }));
+    await withLarRoot(r, () => foundHearthDirect({ storageDir: join(r, "hearth", "vessel"), genesisDir: join(r, "genesis") }));
     await withLarRoot(r, async () => {
       const vesselKey = await loadVesselVerifyingKey();
       const stood = await ownedStore(larDataDir(), async (repo) => {

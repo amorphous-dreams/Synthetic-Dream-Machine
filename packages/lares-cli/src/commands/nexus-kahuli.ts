@@ -18,7 +18,7 @@
  * exactly as this line always described. The claim holds about RATCHETS; it never held about consent.
  *
  * The epochs read through the SAME composable genesis cap the vessel boots from (`LAR_GENESIS` →
- * `~/.lares/config.json` → repo-relative `<corpus>/genesis`). A hand-rolled `larRoot()/genesis` read
+ * `<root>/config/config.json` → repo-relative `<corpus>/genesis`). A hand-rolled `larRoot()/genesis` read
  * honoured neither, so with the cap pointed elsewhere this verb reported the epochs of an island the
  * vessel does not boot — and the epoch it prints is the hearth true-name, the value an operator reads
  * before deciding whether an overturn strands a fleet. A silent wrong answer is the worst shape here.

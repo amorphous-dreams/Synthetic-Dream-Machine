@@ -95,7 +95,7 @@ import { loadFaceAtomOfGroup } from "../../src/face-atom-store.js";
 // ---------------------------------------------------------------------------
 
 const TEST_ROOT = join(tmpdir(), `lar-persona-ring-e2e-${Date.now()}`);
-const FOUNDER   = { root: TEST_ROOT, storage: join(TEST_ROOT, "data", "lares", "vessel"), genesis: join(TEST_ROOT, "genesis") };
+const FOUNDER   = { root: TEST_ROOT, storage: join(TEST_ROOT, "hearth", "vessel"), genesis: join(TEST_ROOT, "genesis") };
 
 const BUILT_GENESIS = join(new URL("../../", import.meta.url).pathname, "..", "..", "genesis");
 

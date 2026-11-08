@@ -16,7 +16,7 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
 import { resolveMempalacePython } from "@lararium/mempalace";
-import { memorySensoriumDir } from "@lararium/mempalace/xdg-base";
+import { memorySensoriumDir } from "@lararium/mempalace/house-root";
 import { resolveHolderCapEnv } from "@lararium/mempalace";
 
 /** The per-run enrichment report the py leg prints (worldline_ffz.py enrich). */

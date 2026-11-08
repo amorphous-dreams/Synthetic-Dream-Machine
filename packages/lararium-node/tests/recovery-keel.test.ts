@@ -157,9 +157,7 @@ describe("recovery-keel — founding provision against the real identity store",
   let root: string;
   beforeEach(() => {
     root = mkdtempSync(join(tmpdir(), "lares-recprov-"));
-    setEnv("LAR_ROOT", undefined);
-    setEnv("XDG_STATE_HOME", join(root, "state"));
-    setEnv("XDG_DATA_HOME", join(root, "state"));   // identity/seal/library answer HERE
+    setEnv("LAR_ROOT", root);   // the scratch house root every resolver lays its classes beneath
   });
   afterEach(() => {
     for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
@@ -167,7 +165,7 @@ describe("recovery-keel — founding provision against the real identity store",
   });
 
   test("provision at founding: split the minted root, seal the device-share, recover from {code, escrow}", async () => {
-    const dataDir = root;   // identityDir ignores it — the store resolves under XDG state
+    const dataDir = root;   // identityDir ignores it — the store resolves under the house root
     await generateOrLoadPersonaGroupRoot();                    // the founding mint
     const { recordedCode, escrowCarrier } = await provisionRecoveryAtFounding(dataDir, seededRng(11), 1, 0, undefined, fixtureWard());
 
@@ -190,9 +188,7 @@ describe("recovery-keel — identity recovery issues the SHARED custodian cards 
   let dir: string;
   beforeEach(() => {
     dir = mkdtempSync(join(tmpdir(), "lares-reccard-"));
-    setEnv("LAR_ROOT", undefined);
-    setEnv("XDG_STATE_HOME", join(dir, "state"));
-    setEnv("XDG_DATA_HOME", join(dir, "state"));   // identity/seal/library answer HERE
+    setEnv("LAR_ROOT", dir);   // the scratch house root every resolver lays its classes beneath
   });
   afterEach(() => {
     for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }

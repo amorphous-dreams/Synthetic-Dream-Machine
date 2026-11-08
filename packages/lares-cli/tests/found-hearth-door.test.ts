@@ -70,7 +70,7 @@ describe("lares vessel found --hearth", () => {
   test("D2 — no label for persona zero refuses by name before any byte lands", async () => {
     writeFileSync(join(root, ".lar-test-scratch"), "");
     expect(await cmdVessel(found({}, { hearth: true }))).not.toBe(0);
-    expect(existsSync(join(root, "data", "lares", "vessel", "social-bootstrap.json"))).toBe(false);
+    expect(existsSync(join(root, "hearth", "vessel", "social-bootstrap.json"))).toBe(false);
     expect(readNexusDoc(larSealHome())).toBeNull();
   });
 

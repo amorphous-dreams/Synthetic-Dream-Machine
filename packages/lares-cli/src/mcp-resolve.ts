@@ -28,7 +28,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
 import { resolveLaresMcpSpawn } from "@lararium/mempalace";
-import { larHome, memorySensoriumDir } from "@lararium/node";
+import { HouseRootUnnamed, larHouseRoot, memorySensoriumDir } from "@lararium/node";
 
 export type WireAction = "wired" | "present" | "missing-script";
 
@@ -46,23 +46,36 @@ export const SURFACE_COMPOSE = "docker-compose.surface.yml";
 /** The seat inside the product image: the image's working root (`WORKDIR /app`) plus the repo-relative path. */
 export const IMAGE_SEAT = "/app/packages/lararium-sensorium/scripts/lares_mcp.py";
 
+/** The house root LAR_ROOT names, or null while it names none. A seat binds one house, so an unnamed root
+ *  resolves no seat at all, and {@link seatAbsentCause} says so. */
+function namedRoot(): string | null {
+  try {
+    return larHouseRoot();
+  } catch (err) {
+    if (err instanceof HouseRootUnnamed) return null;
+    throw err;
+  }
+}
+
 /** The hearth's surface env when the hearth stands in the surface container, else null. The ONE signal the
  *  resolver and the catalog's refusal both read (`tools/lares-container.sh` reads the same file). */
 export function hearthSurfaceEnv(): string | null {
-  if (relativeHearth() !== null) return null;
-  const file = join(larHome(), SURFACE_ENV);
+  const root = namedRoot();
+  if (root === null || relativeHearth() !== null) return null;
+  const file = join(root, SURFACE_ENV);
   return existsSync(file) ? file : null;
 }
 
-/** The hearth root when it reads RELATIVE, else null. A seat a harness spawns resolves a relative path against
- *  that harness's own cwd, a project the house never chose, so a relative hearth names no seat at all. */
+/** The house root when it reads RELATIVE, else null. A seat a harness spawns resolves a relative path against
+ *  that harness's own cwd, a project the house never chose, so a relative root names no seat at all. */
 function relativeHearth(): string | null {
-  const hearth = larHome();
-  return isAbsolute(hearth) ? null : hearth;
+  const root = namedRoot();
+  return root === null || isAbsolute(root) ? null : root;
 }
 
 /** Why no seat resolves, in the form the hearth stands in: the refusal a missing seat reads. */
 export function seatAbsentCause(): string {
+  if (namedRoot() === null) return new HouseRootUnnamed().message;
   const relative = relativeHearth();
   if (relative !== null) return `LAR_ROOT names a relative hearth (${relative}); name it by an absolute path`;
   return hearthSurfaceEnv() !== null
@@ -83,8 +96,8 @@ function containerRoot(compose: string): string | null {
  *
  * THE ENTRY NAMES THE HEARTH'S ROOT. The seat routes every verb over the daemon socket, and `lares_uds.py`
  * derives that socket from `LAR_ROOT`. A harness spawns the seat with its own environment, which names no
- * root, so an entry without one binds the default XDG vessel and never the hearth. The hearth's root
- * derives from `larHome()` (`LAR_ROOT`, else `~/.lares`), and the entry carries it in BOTH forms:
+ * root, so an entry without one binds no house at all. The house root reads `larHouseRoot()` (`LAR_ROOT`
+ * alone; unnamed resolves no seat), and the entry carries it in BOTH forms:
  *
  *   container  the hearth root holds the surface env (`lares-surface.env`), so the hearth stands in the
  *              surface container. The entry execs the image's seat there through the clone's compose file
@@ -98,8 +111,8 @@ function containerRoot(compose: string): string | null {
  * strands no seat. Every path runs absolute: a harness spawns this with no venv active and no cwd guarantee.
  */
 export function resolveLaresMcp(clone: string): LaresMcpCommand | null {
-  if (relativeHearth() !== null) return null;
-  const hearth = larHome();
+  const hearth = namedRoot();
+  if (hearth === null || relativeHearth() !== null) return null;
   const surfaceEnv = hearthSurfaceEnv();
   if (surfaceEnv !== null) {
     const compose = join(clone, SURFACE_COMPOSE);

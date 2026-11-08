@@ -18,7 +18,7 @@
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, resolve, sep, extname } from "node:path";
 import { newChangeId, taskContentId, carrierHash, digestsEqual, BAG_MANIFEST_FILE } from "@lararium/mesh";
-import { SyncedTree, syncedTreeKey, syncedTreeDir, bagsFileToUri, mirrorDirFileToUri, larProjectionDir, KAPAE_EXT, readKapaeShadow } from "@lararium/node";
+import { SyncedTree, syncedTreeKey, syncedTreeDir, bagsFileToUri, mirrorDirFileToUri, larProjectionCheckpointDir, KAPAE_EXT, readKapaeShadow } from "@lararium/node";
 import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
 import { summaryOutput, type SubmitResult } from "./verb-result.js";
 import { runVerb } from "./verb-call.js";
@@ -90,10 +90,10 @@ export interface ScanResult {
   readonly refusedShadows?: Array<{ readonly file: string; readonly refusal: string }>;
 }
 
-/** Open the Synced tree at the canonical projection-state path (larProjectionDir() —
- *  runtime vessel state, not corpus). */
+/** Open the Synced tree at the canonical projection checkpoint (larProjectionCheckpointDir() —
+ *  runtime vessel state inside the hearth, not corpus). */
 export function openSyncedTree(): SyncedTree {
-  return new SyncedTree(syncedTreeDir(larProjectionDir()));
+  return new SyncedTree(syncedTreeDir(larProjectionCheckpointDir()));
 }
 
 /**

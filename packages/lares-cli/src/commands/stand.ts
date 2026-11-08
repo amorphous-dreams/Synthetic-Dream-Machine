@@ -237,7 +237,7 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
     } else if (!existsSync(bootstrap)) {
       nodeNote = "no bootstrap — run `lares vessel found` (or point LAR_ROOT at an initialized instance)";
     } else {
-      const dataDir = larDataDir();   // runtime → <lares>/vessel
+      const dataDir = larDataDir();   // runtime → <root>/hearth/vessel
       mkdirSync(dataDir, { recursive: true });
       const log = join(dataDir, "stand.log");
       // Readiness is SELF-ATTESTED, not requested (no web2 /health probe): the node

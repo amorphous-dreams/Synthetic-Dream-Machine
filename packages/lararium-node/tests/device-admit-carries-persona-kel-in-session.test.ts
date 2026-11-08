@@ -92,9 +92,6 @@ describe("device-admit carries persona-KEL in-session, with no daemon boot betwe
   beforeEach(() => {
     root = mkdtempSync(join(tmpdir(), "lares-admit-carry-session-"));
     setEnv("LAR_ROOT", root);
-    setEnv("XDG_STATE_HOME", join(root, "state"));
-    setEnv("XDG_DATA_HOME", join(root, "state"));
-    setEnv("XDG_CONFIG_HOME", join(root, "config"));
   });
 
   afterEach(() => {

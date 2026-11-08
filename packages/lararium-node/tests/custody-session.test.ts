@@ -347,7 +347,7 @@ describe("runInit seals custody from birth", () => {
     if (!existsSync(join(GENESIS, "seed.json"))) throw new Error("no built genesis — run `pnpm --filter @lararium/node build:genesis`");
     const r = mkdtempSync(join(tmpdir(), "lar-found-seals-"));
     try {
-      const storage = join(r, "data", "lares", "vessel");
+      const storage = join(r, "hearth", "vessel");
       const genesis = join(r, "genesis");
       cpSync(GENESIS, genesis, { recursive: true, filter: (s) => !s.endsWith("social-bootstrap.json") });
       mkdirSync(storage, { recursive: true });
@@ -390,7 +390,7 @@ describe("runInit seals custody from birth", () => {
       // MUTATION: a founding over cleartext identity output with no tree (the old shape) refuses and moves no byte.
       const old = mkdtempSync(join(tmpdir(), "lar-found-old-"));
       try {
-        const oStorage = join(old, "data", "lares", "vessel");
+        const oStorage = join(old, "hearth", "vessel");
         const oGenesis = join(old, "genesis");
         cpSync(genesis, oGenesis, { recursive: true });
         mkdirSync(oStorage, { recursive: true });

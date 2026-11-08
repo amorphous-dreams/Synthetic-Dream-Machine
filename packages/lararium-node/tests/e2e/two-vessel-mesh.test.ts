@@ -64,8 +64,8 @@ import { plainEntries, tiddlerText } from "@lararium/mesh";
 const TEST_ROOT  = join(tmpdir(), `lar-two-vessel-${Date.now()}`);
 const VESSEL_A_ROOT = join(TEST_ROOT, "a");
 const VESSEL_B_ROOT = join(TEST_ROOT, "b");
-const VESSEL_A   = { root: VESSEL_A_ROOT, storage: join(VESSEL_A_ROOT, "data", "lares", "vessel"), genesis: join(VESSEL_A_ROOT, "genesis") };
-const VESSEL_B   = { root: VESSEL_B_ROOT, storage: join(VESSEL_B_ROOT, "data", "lares", "vessel"), genesis: join(VESSEL_B_ROOT, "genesis") };
+const VESSEL_A   = { root: VESSEL_A_ROOT, storage: join(VESSEL_A_ROOT, "hearth", "vessel"), genesis: join(VESSEL_A_ROOT, "genesis") };
+const VESSEL_B   = { root: VESSEL_B_ROOT, storage: join(VESSEL_B_ROOT, "hearth", "vessel"), genesis: join(VESSEL_B_ROOT, "genesis") };
 
 // The built hearth artifact, which `pnpm --filter @lararium/node build:genesis` produces.
 const BUILT_GENESIS = join(new URL("../../", import.meta.url).pathname, "..", "..", "genesis");

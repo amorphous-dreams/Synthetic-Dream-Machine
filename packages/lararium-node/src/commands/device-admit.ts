@@ -3,7 +3,7 @@
  * fleet-join answer signs beside it.
  *
  * Node-specific shores (only these belong here):
- *   - readFileSync for the social bootstrap (<lares>/vessel — see larBootstrapPath)
+ *   - readFileSync for the social bootstrap (<root>/hearth/vessel — see larBootstrapPath)
  *   - findWithProgress on the store's one holder for daemon doc access — the standing vessel's own Repo
  *     when the door runs inside it, the direct holder's (`ownedStore`) when no vessel stands
  *   - loadVesselSigningSeed (disk keypair)
@@ -340,7 +340,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   await repo.flush();
 
   // The founder's PersonaGroup ROOT signs the joinee's edge (the upgrade event). The root seed is
-  // founder-only, held in the spirits' house at `<lares>/identity`; the joinee supplies ONLY its
+  // founder-only, held in the spirits' house at `<root>/hearth/identity`; the joinee supplies ONLY its
   // PUBLIC verifying key.
   if (!opts.joineeVerifyingKey) {
     throw new Error("[lares fleet join answer] the request names no joinee key — the joining vessel's public verifying key.");

@@ -166,7 +166,7 @@ describe("L16 · a capture source keeps one identity across ingress", () => {
     (wing, [surface, direct], name, stage, hash) => {
       const want = `${wing}/${surface}__${name}`;
       expect(captureSourceFile(wing, direct(name))).toBe(want);
-      expect(captureSourceFile(wing, `/state/harvest-stage/${stage}/${wing}/${surface}/${hash}/${name}`)).toBe(want);
+      expect(captureSourceFile(wing, `/lar/hearth/staging/harvest/${stage}/${wing}/${surface}/${hash}/${name}`)).toBe(want);
     });
 });
 

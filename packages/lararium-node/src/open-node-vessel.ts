@@ -256,7 +256,7 @@ import { PLANE_LABELS } from "@lararium/mesh";
 import { shoreInbound } from "@lararium/mesh";
 
 /** The genesis dir when a caller sites none — resolves through the composable genesis cap
- *  (`LAR_GENESIS` → `~/.lares/config.json` → repo-relative `<corpus>/genesis`). Genesis stays
+ *  (`LAR_GENESIS` → `<root>/config/config.json` → repo-relative `<corpus>/genesis`). Genesis stays
  *  checked-in-by-default, so a no-config boot lands on the repo's tracked seed exactly as before. */
 
 function defaultGenesisDir(): string {
@@ -859,7 +859,7 @@ async function prepareNodeBootOn(
   // isolated under `LAR_ROOT` projects into that root, never into the tracked tree; with neither, a fresh clone
   // boots repo-relative as it always has.
   const corpusRoot = rootDirOpt ?? daemonCorpusRoot();
-  const bootstrapPath = larBootstrapPath();   // <lares>/vessel — beside the docs it addresses
+  const bootstrapPath = larBootstrapPath();   // <root>/hearth/vessel — beside the docs it addresses
   // The hearth dial an admission pinned (null on a self-founded vessel — it IS the hearth).
   const hearthPin = readHearthDialPin(bootstrapPath);
   // THE VESSEL'S PRIVATE DOCUMENTS, classed by IDENTITY off its own bootstrap before any peer can ask (lane `ralias`): the
@@ -1441,7 +1441,7 @@ async function prepareNodeBootOn(
   // holder resolves the always-carried antigen board, folds the quorum-signed bans against the
   // founding kahu quorum's seats read off `bags/nexus` (LAR_BAGS ?? <root>/bags), and re-folds on every board
   // change. FAILS CLOSED: an unseated charter → empty roster → nothing Kapae'd (no quorum, no bans).
-  // The Nexus SEAL homes PER-OPERATOR (`<lares>/nexus`), never in the corpus bags tree: a seal sited in the
+  // The Nexus SEAL homes PER-OPERATOR (`<root>/hearth/nexus`), never in the corpus bags tree: a seal sited in the
   // corpus inherits that tree's home, which on a development install sits inside the repository. The seal
   // belongs to the operators who founded it, so it survives every substrate wipe beside the sovereign root
   // and travels with neither a clone nor the runtime vessel store.

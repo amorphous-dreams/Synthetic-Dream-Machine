@@ -30,7 +30,7 @@ import {
 // ---------------------------------------------------------------------------
 
 /** The genesis dir when a caller sites none — resolves through the composable genesis cap
- *  (`LAR_GENESIS` → `~/.lares/config.json` → repo-relative `<corpus>/genesis`). Genesis stays
+ *  (`LAR_GENESIS` → `<root>/config/config.json` → repo-relative `<corpus>/genesis`). Genesis stays
  *  checked-in-by-default, so a no-config boot lands on the repo's tracked seed exactly as before. */
 function defaultGenesisDir(): string {
   return daemonGenesisDir();

@@ -106,14 +106,14 @@ function parseArgs(): { port: number; storageDir: string; genesisDir: string; ge
     const spaced = i !== -1 && !(args[i + 1] ?? "--").startsWith("--") ? args[i + 1] : undefined;
     return (joined !== undefined ? joined.slice(flag.length + 1) : spaced) ?? process.env[env] ?? fallback;
   };
-  const cfg        = loadLaresConfig();   // per-daemon resource overrides (~/.lares/config.json)
+  const cfg        = loadLaresConfig();   // per-daemon resource overrides (<root>/config/config.json)
   const rootDir    = resolve(get("--root", "LAR_ROOT", REPO_ROOT));   // corpus root (genesis)
   // ONE SUBSTRATE DIR, DERIVED THE SAME WAY ON BOTH SIDES. An override here moved the daemon's dir and
   // not its client's — and since the rendezvous derives FROM this dir, a caller who used it stranded the
   // daemon at a socket the CLI could not compute. `LAR_ROOT` remains the way to move a whole vessel,
   // because it moves BOTH sides at once.
-  const storageDir = larDataDir();   // the vessel substrate → <lares>/vessel
-  // The composable genesis cap: --genesis flag → LAR_GENESIS env → ~/.lares/config.json → repo-relative
+  const storageDir = larDataDir();   // the vessel substrate → <root>/hearth/vessel
+  // The composable genesis cap: --genesis flag → LAR_GENESIS env → <root>/config/config.json → repo-relative
   // <rootDir>/genesis. Genesis stays checked-in by default, so a no-config boot lands on the repo's
   // tracked seed exactly as before; an operator sites it under ~ via config.resources.genesis.
   const genesis = resolveGenesis({
@@ -203,7 +203,7 @@ function logPendingPlanes(prefix: string, manifest: MountManifest): void {
 }
 
 /** The `receipts.ring {ratePerMin, horizonDays, burst, bytesPerOutcome}` shape an operator may override in
- *  `~/.lares/config.json` — read loosely here rather than widening `LaresConfig`'s own
+ *  `<root>/config/config.json` — read loosely here rather than widening `LaresConfig`'s own
  *  interface, so this one pass-through site in `main.ts` carries it to `uds-channel.ts`. The first three dials size the ring's count, and `bytesPerOutcome` the mean
  *  weight a kept outcome may take, so one block sets both bounds. Absent entirely → `startUdsChannel`'s own
  *  defaults (`RECEIPT_RING_DEFAULT`, `RECEIPT_RING_BYTES_DEFAULT`). */

@@ -288,7 +288,7 @@
     "tests/lan-discovery.test.ts": 1,
     "tests/land-persona-root.test.ts": 9,
     "tests/lares-config.test.ts": 1,
-    "tests/lares-lararium-home-separation.test.ts": 1,
+    "tests/house-root-classes.test.ts": 1,
     "tests/lares-query.test.ts": 6,
     "tests/late-dial-once.test.ts": 1,
     "tests/lease-charter.test.ts": 1,

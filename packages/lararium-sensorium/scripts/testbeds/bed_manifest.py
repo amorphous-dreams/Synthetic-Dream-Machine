@@ -137,25 +137,22 @@ _LIBRARY_PREFIX = "library:"
 
 
 def _library_home() -> str:
-    """The ACQUIRED tier's home — `LAR_LIBRARY`, else `<lararium>/library`.
+    """The ACQUIRED tier's home — `LAR_LIBRARY`, else `<root>/library`.
 
     It mirrors the TS resolver exactly (packages/lararium-node/src/library-store.ts, `larLibraryHome`), so a
     `library:<collection>` reference resolves to the SAME directory whichever tongue reads it; a second
-    spelling would point a flow at a shelf the CLI never fills. The tier stands in the HOUSE'S home
-    (`LAR_ROOT/data/lararium`, else `$XDG_DATA_HOME/lararium`) because a family's books are the family's:
-    an acquired body has no author in any tracked tree, so nothing re-makes it, and a house no wipe names
-    carries that without a list."""
+    spelling would point a flow at a shelf the CLI never fills. The tier stands beside the hearth, never
+    inside it: an acquired body has no author in any tracked tree, so nothing re-makes it, and no
+    re-founding reaches `<root>/library`."""
     override = os.environ.get("LAR_LIBRARY")
     if override:
         return override
-    # ONE RESOLVER, IMPORTED. The shelf's home is the shrine's, and a second derivation of it drifts the
-    # first time the layout moves — this very function resolved `<root>/abide/library` until an hour ago,
-    # while the CLI filled `<root>/data/lararium/library`, so a testbed read a shelf nothing ever wrote.
-    # A copy fails by ANSWERING: an empty directory reads as a shelf that holds nothing.
+    # ONE RESOLVER, IMPORTED. A second derivation of the shelf's home drifts the first time the layout moves,
+    # and a copy fails by ANSWERING: an empty directory reads as a shelf that holds nothing.
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from sensorium import _lararium_data_home
-    return os.path.join(_lararium_data_home(), "library")
+    import house_root
+    return house_root.library_root()
 
 
 def resolve_source_root(src: str) -> str:
@@ -256,7 +253,7 @@ def pour(m: dict, *, twin: bool = False) -> dict:
                          "turn/tiddler/module shores land with their own engines")
     files, tally = resolve_flow(m)
     # Every bed lands in the ONE sensorium roster the node governs: XDG
-    # <lararium>/sensoriums/<bed>, resolved from the bed NAME (the address carries
+    # <root>/hearth/sensoriums/<bed>, resolved from the bed NAME (the address carries
     # the bearing — the manifest's literal `root` field stays advisory). This
     # seats each poured bed as a first-class EPHEMERAL sensorium (compose_testbed
     # stamps ephemeral=true) that the standing roster + teardown already reach,

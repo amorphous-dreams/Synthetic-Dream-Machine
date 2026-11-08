@@ -27,7 +27,7 @@ import { pullHop, dialsOf } from "./herm-mesh-reader.mjs";
 import { readPins } from "./mesh-pins.mjs";
 
 // The reader must stand founded: its social bootstrap is the founding's invariant artifact.
-if (!process.env.LAR_ROOT || !existsSync(join(process.env.LAR_ROOT, "data", "lares", "vessel", "social-bootstrap.json"))) {
+if (!process.env.LAR_ROOT || !existsSync(join(process.env.LAR_ROOT, "hearth", "vessel", "social-bootstrap.json"))) {
   console.error("ReaderNotFounded: LAR_ROOT holds no vessel identity — stage it (test-scratch-marker, seed-test-custody) and run `vessel found --skip-build` first");
   process.exit(2);
 }

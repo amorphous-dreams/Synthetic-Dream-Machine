@@ -21,7 +21,7 @@ import {
 import { runtimeCasOverride } from "./lares-config.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 
-/** The CAS dir for a vessel rooted at `storageDir` (`<lares>/vessel` → `<lares>/vessel/cas`). The
+/** The CAS dir for a vessel rooted at `storageDir` (`<root>/hearth/vessel` → `<root>/hearth/vessel/cas`). The
  *  runtime-cas OVERRIDE (`LAR_CAS` → `config.vessel.cas`) wins when sited — the SAME lever the CLI stager
  *  (`larCasDir`) honors, so ONE dir holds the blob the CLI stages and the blob a worker resolveByCid-reads.
  *  Absent → the storage-rooted default. A lever moving only one side diverges the two silently. */

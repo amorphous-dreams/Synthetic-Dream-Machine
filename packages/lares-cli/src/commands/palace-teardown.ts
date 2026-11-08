@@ -34,7 +34,7 @@
 
 import { existsSync, rmSync, statSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { larHarvestDir, larHarvestStageDir, larPort } from "../env.js";
+import { larHarvestCheckpointDir, larHarvestStagingDir, larPort } from "../env.js";
 import { palaceOrgans, sensoriumTeardownDirs, memorySensoriumDir } from "@lararium/node";
 import { emit, exitFor } from "../render.js";
 import { livePalaceProcs, type PalaceProc } from "../palace-procs.js";
@@ -122,8 +122,8 @@ function resolveTargets(): Target[] {
     { label: "memory sensorium (all planes + worldline KG + .worldline + manifest)", path: memRoot },
     ...organs,
     ...scratch,
-    { label: "harvest watermark (lar_hv idempotency)",        path: larHarvestDir() },
-    { label: "harvest stage (normalized transcript copies)",  path: larHarvestStageDir() },
+    { label: "harvest watermark (lar_hv idempotency)",        path: larHarvestCheckpointDir() },
+    { label: "harvest stage (normalized transcript copies)",  path: larHarvestStagingDir() },
   ];
   return raw.map((t) => ({ ...t, group: targetGroup(t.path) }));
 }

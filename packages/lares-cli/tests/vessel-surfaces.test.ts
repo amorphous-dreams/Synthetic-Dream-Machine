@@ -49,7 +49,7 @@ describe("vessel surfaces", () => {
   test("read reports the store without changing it", async () => {
     quiet();
     const root = scratch();
-    const store = join(root, "data", "lares", "vessel");
+    const store = join(root, "hearth", "vessel");
     mkdirSync(store, { recursive: true });
     const marker = join(store, "marker.txt");
     writeFileSync(marker, "kept");
@@ -72,7 +72,7 @@ describe("vessel surfaces", () => {
 
   test("refresh runs build · stop · stand in order and preserves the store", async () => {
     const root = scratch();
-    const store = join(root, "data", "lares", "vessel");
+    const store = join(root, "hearth", "vessel");
     mkdirSync(store, { recursive: true });
     const marker = join(store, "marker.txt");
     writeFileSync(marker, "refresh-store");

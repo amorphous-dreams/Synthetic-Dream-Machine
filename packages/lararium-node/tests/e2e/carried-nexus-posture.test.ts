@@ -43,7 +43,7 @@ seatFaceRoute(async () => [TEST_SLOT]);
 seatWardGatherer(async () => TEST_SLOT.pins.flatMap((pin) => (pin.kind === "passphrase" ? [{ kind: "passphrase" as const, passphrase: pin.passphrase }] : [])));
 
 const ROOT = join(tmpdir(), `lar-carried-posture-e2e-${Date.now()}`);
-const STORAGE = join(ROOT, "data", "lares", "vessel");
+const STORAGE = join(ROOT, "hearth", "vessel");
 const GENESIS = join(ROOT, "genesis");
 const BUILT_GENESIS = join(new URL("../../", import.meta.url).pathname, "..", "..", "genesis");
 if (!existsSync(join(BUILT_GENESIS, "seed.json"))) throw new Error(`[carried-nexus-posture] no hearth engine at ${BUILT_GENESIS}: run build:genesis first`);

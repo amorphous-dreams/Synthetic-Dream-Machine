@@ -33,6 +33,8 @@ import json
 import os
 import socket
 
+import house_root
+
 
 class LaresDaemonUnreachable(Exception):
     """No daemon holds the socket. The caller renders it; it never falls back to opening a store."""
@@ -43,22 +45,11 @@ class LaresVerbError(Exception):
 
 
 def data_dir() -> str:
-    """`<lares>/vessel` — the ONE env contract both sides resolve the socket under, mirroring TS
-    `larDataDir()` (vessel-paths.ts): `LAR_ROOT/data/lares/vessel` for an isolated instance, else
-    `$XDG_DATA_HOME/lares/vessel` (`XDG_DATA_HOME` is trimmed; unset/blank-after-trim ->
-    `~/.local/share/lares/vessel`).
-
-    THE CRITERION IS WHOSE IT IS. The vessel substrate belongs to the SPIRITS, so it stands in the
-    spirits' house; what belongs to the HOUSE stands at `<lararium>`. Under an isolated root every
-    directory names an XDG KIND and the two HOUSES nest inside the data kind, exactly as under XDG —
-    so a resolver one segment short opens an absent directory and reports a daemon that never answered."""
-    root = os.environ.get("LAR_ROOT")
-    if root:
-        return os.path.join(root, "data", "lares", "vessel")
-    xdg = (os.environ.get("XDG_DATA_HOME") or "").strip()
-    if not xdg:
-        xdg = os.path.join(os.path.expanduser("~"), ".local", "share")
-    return os.path.join(xdg, "lares", "vessel")
+    """`<root>/hearth/vessel` — the ONE env contract both sides resolve the socket under, mirroring TS
+    `larDataDir()` (vessel-paths.ts) through `house_root.vessel_dir()`. An unnamed `LAR_ROOT` raises
+    `HouseRootUnnamed`: a resolver that guessed a home would open an absent directory and report a daemon
+    that never answered."""
+    return house_root.vessel_dir()
 
 
 def socket_path() -> str:
@@ -86,7 +77,7 @@ def available() -> bool:
 
 
 def identity_dir() -> str:
-    """`<lares>/identity` — the SIBLING of the vessel store, mirroring TS `larIdentityDir()`.
+    """`<root>/hearth/identity` — the SIBLING of the vessel store, mirroring TS `larIdentityDir()`.
 
     A Lar's keys ARE that Lar, so the sovereign root belongs to the SPIRITS and stands beside the
     substrate rather than inside it: every substrate verb (`reset`/`regenesis`/`rebuild`) reforges the
@@ -94,7 +85,7 @@ def identity_dir() -> str:
     keeps the did this side sends and the daemon that answers agreed on ONE keypair — a second spelling
     reads a keypair the TS side never wrote and sends a did no cap resolves.
     """
-    return os.path.join(os.path.dirname(data_dir()), "identity")
+    return house_root.identity_dir()
 
 
 def operator_did() -> str:

@@ -267,9 +267,7 @@ describe("persona pet-name + seat gesture (the door's core)", () => {
   beforeEach(() => {
     root = mkdtempSync(join(tmpdir(), "lares-personaseat-"));
     bags = mkdtempSync(join(tmpdir(), "lares-personaseat-bags-"));
-    setEnv("LAR_ROOT", undefined);
-    setEnv("XDG_STATE_HOME", join(root, "state"));
-    setEnv("XDG_DATA_HOME", join(root, "state"));   // identity/seal/library answer HERE
+    setEnv("LAR_ROOT", root);   // the scratch house root every resolver lays its classes beneath
   });
   afterEach(() => {
     for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }

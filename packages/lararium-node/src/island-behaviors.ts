@@ -21,7 +21,7 @@ import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
 import { LarDiskProjector } from "./disk-projector.js";
 import { namedBagMirror } from "./bag-paths.js";
 import { SyncedTree, syncedTreeDir } from "./synced-tree.js";
-import { larProjectionDir } from "./vessel-paths.js";
+import { larProjectionCheckpointDir } from "./vessel-paths.js";
 import { SHORE_VERB, answerShore } from "./shore-verb.js";
 import { bagProjectedEvent } from "./journal-append-gate.js";
 
@@ -122,7 +122,7 @@ export function mountDiskProjection(
   // never a meme surface, never inside bags/; the ingest gate reads the
   // same file. mirrorRoot shape under the full-path-inside-bag ruling:
   // <root>/bags/<scope> → up two.
-  const syncedTree = new SyncedTree(syncedTreeDir(larProjectionDir()));   // runtime → ~/.lares
+  const syncedTree = new SyncedTree(syncedTreeDir(larProjectionCheckpointDir()));   // runtime → <root>/hearth/checkpoints
   const projector = new LarDiskProjector({
   mirrors,
   // The ONE render shore: a carrier projects back to ITS OWN filetype

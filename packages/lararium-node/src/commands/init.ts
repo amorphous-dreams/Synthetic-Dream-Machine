@@ -5,7 +5,7 @@
  *   - the store's one holder (`repo`): the direct holder's for a founding (`ownedStore`), with no vessel
  *     standing; the standing vessel's own Repo, or the direct holder's, for a face
  *   - generateOrLoadVesselIdentity / loadVesselSigningSeed (disk keypair)
- *   - writeFileSync for the social bootstrap (<lares>/vessel — see larBootstrapPath)
+ *   - writeFileSync for the social bootstrap (<root>/hearth/vessel — see larBootstrapPath)
  *   - the composable genesis cap (daemonGenesisDir) for default directory resolution
  *
  * All ceremony logic lives in @lararium/keyhive (foundThePlace, foundTheFace,
@@ -95,8 +95,8 @@ export interface InitResult {
 
 function defaultDirs(): { storageDir: string; genesisDir: string } {
   return {
-    storageDir: larDataDir(),        // the vessel substrate → <lares>/vessel
-    // Baked seed rides the composable genesis cap (LAR_GENESIS → ~/.lares/config.json →
+    storageDir: larDataDir(),        // the vessel substrate → <root>/hearth/vessel
+    // Baked seed rides the composable genesis cap (LAR_GENESIS → <root>/config/config.json →
     // repo-relative <corpus>/genesis). Checked-in by default; a no-config boot lands on the repo seed.
     genesisDir: daemonGenesisDir(),
   };

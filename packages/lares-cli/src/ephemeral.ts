@@ -30,7 +30,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, join, resolve, sep } from "node:path";
-import { larCacheHome } from "@lararium/node";
 
 export interface EphemeralVerdict {
   readonly ephemeral: boolean;
@@ -58,9 +57,10 @@ export function transcriptCwd(jsonl: string): string | null {
 
 /** The recognized scratch roots — a session whose recorded cwd sits under one reads ephemeral. */
 export function scratchRoots(): readonly string[] {
-  const roots = [tmpdir(), "/tmp", join(larCacheHome(), "scratch", "sensoriums")];
+  // The house root holds the scratch sensoriums (`<root>/cache/scratch/sensoriums`), so naming the root names them.
+  const roots = [tmpdir(), "/tmp"];
   const larRootEnv = process.env["LAR_ROOT"];
-  if (larRootEnv) roots.push(larRootEnv); // a LAR_ROOT sandbox — the isolated-instance tree
+  if (larRootEnv?.trim()) roots.push(larRootEnv); // a LAR_ROOT sandbox — the isolated-instance tree
   return [...new Set(roots.map((r) => resolve(r)))];
 }
 

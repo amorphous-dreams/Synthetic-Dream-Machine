@@ -30,7 +30,7 @@ function entropy(start: number): RandomProvider {
   let n = start;
   return { getRandomValues<T extends Uint8Array<ArrayBuffer>>(a: T): T { for (let i = 0; i < a.length; i++) a[i] = n++ & 255; return a; }, randomUUID: () => "deterministic" };
 }
-const at = (r: string) => ({ storageDir: join(r, "data", "lares", "vessel"), genesisDir: join(r, "genesis") });
+const at = (r: string) => ({ storageDir: join(r, "hearth", "vessel"), genesisDir: join(r, "genesis") });
 
 /** Run `work` with git's global config at a scratch file naming `email`; `flip` rewrites it mid-run. */
 async function underEmail<T>(r: string, email: string, work: (flip: (next: string) => void) => Promise<T>): Promise<T> {

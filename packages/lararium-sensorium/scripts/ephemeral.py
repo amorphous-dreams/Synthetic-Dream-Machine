@@ -2,7 +2,7 @@
 
 Witness-spirits, `LAR_ROOT` sandbox runs, and scratch sessions never enter the rhizome. A session
 reads ephemeral when (a) its recorded cwd sits under a recognized scratch root (the OS tmpdir /
-`/tmp` / `<larHome>/.corpus` / a `LAR_ROOT` sandbox), or (b) a `.ephemeral` sibling marker sits beside
+`/tmp` / a `LAR_ROOT` sandbox), or (b) a `.ephemeral` sibling marker sits beside
 the transcript, or a `.lar-ephemeral` marker sits in the session's recorded cwd. The verdict reads off
 the transcript's CONTENT (grain a + the cwd half of b), so a staged copy carries the same verdict as
 the original. The TS capture leg reads `ephemeral.ts`; this holds the same gate, so both skip alike.
@@ -13,18 +13,12 @@ import tempfile
 from wing_derive import read_cwd_from_transcript  # the same cwd row the wing law reads
 
 
-def _lar_home():
-    """The `~/.lares` vessel home — `LAR_ROOT` (isolated instance) or `~/.lares`. Mirrors
-    `vessel-paths.ts::larHome`."""
-    return os.environ.get("LAR_ROOT") or os.path.join(os.path.expanduser("~"), ".lares")
-
-
 def scratch_roots():
     """The recognized scratch roots — a session whose recorded cwd sits under one reads ephemeral.
     Mirrors `ephemeral.ts::scratchRoots` (abspath-normalized, deduped, no symlink follow)."""
-    roots = [tempfile.gettempdir(), "/tmp", os.path.join(_lar_home(), ".corpus")]
+    roots = [tempfile.gettempdir(), "/tmp"]
     lar_root = os.environ.get("LAR_ROOT")
-    if lar_root:
+    if lar_root and lar_root.strip():
         roots.append(lar_root)  # a LAR_ROOT sandbox — the isolated-instance tree
     seen, out = set(), []
     for r in roots:

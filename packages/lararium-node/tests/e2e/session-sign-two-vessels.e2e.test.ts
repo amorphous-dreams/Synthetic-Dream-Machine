@@ -68,7 +68,7 @@ seatWardGatherer(async () => TEST_SLOT.pins.flatMap((pin) => (pin.kind === "pass
 const BASE = join(tmpdir(), `lar-session-sign-two-${Date.now()}`);
 const LIFT = { root: join(BASE, "lift") };
 const HERM = { root: join(BASE, "herm") };
-const storageOf = (root: string): string => join(root, "data", "lares", "vessel");
+const storageOf = (root: string): string => join(root, "hearth", "vessel");
 const genesisOf = (root: string): string => join(root, "genesis");
 const BUILT_GENESIS = join(new URL("../../", import.meta.url).pathname, "..", "..", "genesis");
 if (!existsSync(join(BUILT_GENESIS, "seed.json"))) throw new Error(`[session-sign-two-vessels] no hearth engine at ${BUILT_GENESIS}: run build:genesis first`);

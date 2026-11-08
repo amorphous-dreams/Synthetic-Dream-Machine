@@ -3,8 +3,9 @@
  *
  *   LAR_ROOT  — the CORPUS/resource root of ONE daemon's holdings (bags · wikis · genesis).
  *               Explicit siting, never a silent global-tree default: an operator points each
- *               daemon at ITS resources. The VESSEL STATE roots separately, in the operator's
- *               home (~/.lares, see larHome); LAR_ROOT also isolates that state for staged pairs.
+ *               daemon at ITS resources. LAR_ROOT also names the HOUSE ROOT every vessel-state
+ *               resolver lays its classes beneath (hearth · library · projections · config · cache
+ *               · run, see vessel-paths); an unnamed root refuses there by name.
  *   LAR_BAGS · LAR_WIKIS · LAR_GENESIS · LAR_CAS — per-resource overrides. Each resource sites
  *               INDEPENDENTLY (composable #has caps); unset → it derives off LAR_ROOT.
  *   LAR_DEV_REPO_ROOT — the named repo DEV-PRESET switch. Truthy → the repo checkout stands as the
@@ -27,9 +28,9 @@ import { larDataDir, loadLaresConfig, loadVesselVerifyingKey, resolveGenesis, ru
 
 // The vessel runtime-state resolvers — defined once in @lararium/node, surfaced here.
 export {
-  larHome, larDataDir, larIdentityDir, larProjectionDir, larSealHome, larBootstrapPath,
-  larHarvestDir, larHarvestStageDir, larStructurePalaceDir, larFormPalaceDir,
-  larariumDataHome,
+  larHouseRoot, larDataDir, larIdentityDir, larProjectionCheckpointDir, larSealHome, larBootstrapPath,
+  larHarvestCheckpointDir, larHarvestStagingDir, larStructurePalaceDir, larFormPalaceDir,
+  larSensoriumsHome,
 } from "@lararium/node";
 
 /** The committed marker that opts a checkout in as the repo dev-preset corpus root. */
@@ -67,7 +68,7 @@ export function resolveLarRoot(opts: {
  * CORPUS/resource root — the base each daemon sites EXPLICITLY (bags · wikis · genesis derive off
  * it unless independently overridden). LAR_ROOT sites it; the named repo dev-preset opts the checkout
  * in; unconfigured throws a CLEAN error (mirroring vesselDid — no silent global-tree fallback).
- * The vessel STATE roots separately, in the home (see larHome).
+ * The vessel STATE lays its classes beneath the same LAR_ROOT (see larHouseRoot).
  */
 export function larRoot(): string {
   return resolveLarRoot({

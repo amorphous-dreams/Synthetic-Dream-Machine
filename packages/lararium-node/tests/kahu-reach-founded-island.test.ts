@@ -91,7 +91,7 @@ describe("the shore's reader of a REAL one-seat founding", () => {
     const bare = mkdtempSync(join(tmpdir(), "lar-kahu-bare-"));
     cpSync(genesis, join(root, "genesis"), { recursive: true, filter: (src) => !src.endsWith("social-bootstrap.json") });
     try {
-      const founded = await withLarRoot(root, () => foundHearthDirect({ storageDir: join(root, "data", "lares", "vessel"), genesisDir: join(root, "genesis") }));
+      const founded = await withLarRoot(root, () => foundHearthDirect({ storageDir: join(root, "hearth", "vessel"), genesisDir: join(root, "genesis") }));
       await withLarRoot(root, async () => {
         const vesselKey = await loadVesselVerifyingKey();
         const board = await ownedStore(larDataDir(), (repo) => readKahuCabalBoard(repo, larSealHome(), vesselKey));

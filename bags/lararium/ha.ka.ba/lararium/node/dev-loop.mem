@@ -53,35 +53,33 @@ genesis inputs also wants a genesis bake.
 
 <<~ ahu slot=`#/vessel-paths`>>
 
-!! Where state lives ~ the two houses vs the corpus
+!! Where state lives ~ one named house root vs the corpus
 
-The CORPUS + code live in the ''repo'' (versioned); the vessel's RUNTIME STATE lives in the
-operator's own homes. The split renders the `@daemon` ontology as filesystem — the bound-operator's
-vessel-only worker belongs to the operator, not a checkout.
+The CORPUS + code live in the ''repo'' (versioned); the vessel's RUNTIME STATE lives under ONE named
+house root, `LAR_ROOT` (the container sets `/lar`). Nothing stands in for an unnamed root: every
+house-state resolver refuses by name (`HouseRootUnnamed`), with no XDG base and no home-directory
+default. Each level beneath the root carries one meaning, sorted by what a re-founding clears:
 
-''THREE WORDS, NO SYNONYMS'': ''lares'' names the SPIRITS, ''lararium'' names the
-HOUSE, ''lar'' names the NAMESPACE. Every siting answers ''whose?'':
-
-|! home |! holds |! whose |
-| `<lares>` (`~/.local/share/lares`) | `vessel/` storage · key · UDS socket · `identity/` keypair · `nexus/` seal · `repos.json` · hearth bags | the SPIRITS' — a Lar's keys ARE that Lar |
-| `<lararium>` (`~/.local/share/lararium`) | `library/` the acquired shelf · `sensoriums/` operator history + DreamNet history | the HOUSE'S — nothing here re-derives |
-| `<state>` (`~/.local/state/lares`) | `projection/` synced-tree watermark · `harvest/` · `harvest-stage/` | nobody's for long — all of it re-derives |
+|! class |! holds |! survives a re-founding |
+| `<root>/hearth` | `vessel/` storage · key · social bootstrap · `identity/` keypair · `nexus/` seal · `sensoriums/` memory · mesh · memetic-wikitext · `checkpoints/` projection + harvest watermarks · `staging/` harvest copies | no — a re-founding clears this directory alone |
+| `<root>/library` | the acquired library | yes — originals nothing re-makes |
+| `<root>/projections` | deliberate plaintext renders · house-homed bags | yes |
+| `<root>/config` | `config.json` · `meta.json` · `repos.json` | yes |
+| `<root>/cache` | scratch sensoriums | sweepable |
+| `<root>/run` | spool · sockets · the hook-pause lever | transient |
 
 <<~ scale name=`corpus` ranks=`repo/genesis/seed.json+cas -> repo/bags/seed-memes -> repo/packages/code`>>
 
-''The resolver'' — ONE source, `@lararium/node/vessel-paths.ts` (`larHome` · `larDataDir` ·
-`larIdentityDir` · `larProjectionDir` · `larHarvest*`) over `@lararium/mempalace/xdg-base`
-(`laresDataHome` · `larariumDataHome`), so the CLI (local-connector) and the daemon (uds-channel)
-always agree on the ''UDS socket'' path. `larHome()` (`~/.lares`) carries the per-@daemon
-`config.json` alone. The guest mempalace stays `~/.mempalace` (mempalace's own home;
-`MEMPALACE_PALACE_PATH` overrides); the SOVEREIGN content plane rides `<lararium>/sensoriums/memory`.
+''The resolver'' — ONE source, `@lararium/node/vessel-paths.ts` (`larDataDir` · `larIdentityDir` ·
+`larSealHome` · `larProjectionCheckpointDir` · `larHarvest*`) over `@lararium/mempalace/house-root`
+(`larHouseRoot` and one resolver per class), so the CLI (local-connector) and the daemon
+(uds-channel) always agree on the ''UDS socket'' path. The Python tongue mirrors the table in
+`packages/lararium-sensorium/scripts/house_root.py`, and `house-root-weld.test.ts` holds the two
+equal. The guest mempalace stays `~/.mempalace` (mempalace's own home; `MEMPALACE_PALACE_PATH`
+overrides); the SOVEREIGN content plane rides `<root>/hearth/sensoriums/memory`.
 
-''`LAR_ROOT`'' overrides the root for ISOLATED instances (the test harness / staged pairs) — every
-home AND genesis fall under it. Each directory beneath it names an XDG ''KIND'' — data, state, cache,
-config, run — and the two HOUSES nest inside the data kind exactly as under XDG: `<root>/data/lares`
-beside `<root>/data/lararium`. ''A house never stands where a kind belongs'', so an isolated root
-reads as the real disk with a different prefix. ''Only an EXPLICIT `--root` (or the env) sets it'' —
-never a default; a `REPO_ROOT` default would resolve `larHome()` to the repo and defeat the split.
+''Only an EXPLICIT `--root` (or the env) sets `LAR_ROOT`'' — never a default; a `REPO_ROOT` default
+would put the house inside the checkout.
 
 <<~/ahu>>
 
@@ -115,6 +113,6 @@ never a default; a `REPO_ROOT` default would resolve `larHome()` to the repo and
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;crO7p0PRhI7Msn6gKySj5ZRcpGxU23SfibuuAgDsm4c`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;eYyXmitGYT7z2ZK9xdTtXoxDO6BdzcKlBU8pEX0mWjs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

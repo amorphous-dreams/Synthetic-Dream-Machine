@@ -155,7 +155,7 @@ stage_custody() {
 assert_founded() {
   step "$2's founding left an identity on disk"
   # The social bootstrap is the founding's invariant artifact: it stands under every identity name, with or without a git email.
-  if [ -f "$1/data/lares/vessel/social-bootstrap.json" ]; then ok
+  if [ -f "$1/hearth/vessel/social-bootstrap.json" ]; then ok
   else bad "NoIdentityAfterFounding"; say "ABANDONED — $2's founding wrote no identity; every check below would measure an unfounded vessel."; exit 2; fi
 }
 
@@ -236,7 +236,7 @@ step "★ B's key is FOREIGN to A — no shared seed on disk ★"
 # keys A minted, and the two vessels' own floor keys differ.
 # UNMEASURED HERE: whether a sealed copy of B's seed rests under A's root. Nothing in this run carries one there,
 # and no reading of A's sealed rows by this harness could tell B's seed from A's own.
-vessel_key_of() { cat "$1"/data/lares/identity/.vessel-key.json 2>/dev/null | grep -oE '"verifyingKey": *"[0-9a-f]{64}"' | head -1 | grep -oE '[0-9a-f]{64}'; }
+vessel_key_of() { cat "$1"/hearth/identity/.vessel-key.json 2>/dev/null | grep -oE '"verifyingKey": *"[0-9a-f]{64}"' | head -1 | grep -oE '[0-9a-f]{64}'; }
 A_LIST=$(as_a persona list --json 2>/dev/null); B_LIST=$(as_b persona list --json 2>/dev/null)
 A_VESSEL=$(vessel_key_of "$A_ROOT"); B_VESSEL=$(vessel_key_of "$B_ROOT")
 if ! printf '%s' "$B_LIST" | grep -qs '"ok":true'; then bad "B's persona list gave no answer"

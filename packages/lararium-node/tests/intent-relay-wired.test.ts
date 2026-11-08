@@ -56,7 +56,7 @@ test("RED: a sibling's lock and light refresh the relay at once; CONTROL: the ce
 });
 
 const ROOT = mkdtempSync(join(tmpdir(), "lar-relay-wired-"));
-const storage = join(ROOT, "data", "lares", "vessel"), genesis = join(ROOT, "genesis");
+const storage = join(ROOT, "hearth", "vessel"), genesis = join(ROOT, "genesis");
 const builtGenesis = join(new URL("../", import.meta.url).pathname, "..", "..", "genesis");
 let group = "", catalogUrl = "";
 const row = (verb: Parameters<typeof storeDoorDirect>[0], args: Record<string, unknown>) => withLarRoot(ROOT, async () => { await openTestCustody(); return storeDoorDirect(verb, args, { sealHome: larSealHome(), storageDir: storage }); });

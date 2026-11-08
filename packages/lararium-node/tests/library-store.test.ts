@@ -18,7 +18,7 @@ import {
   listCollections, listCollection, verifyCollection, writeLibraryIndex, readLibraryMeta,
 } from "../src/library-store.js";
 import { sha256HexBytesSync } from "@lararium/mesh";
-import { larDataDir, larStateHome, laresDataHome, larariumDataHome } from "../src/vessel-paths.js";
+import { larDataDir, larHearthHome, larLibraryRoot } from "../src/vessel-paths.js";
 
 const saved: Record<string, string | undefined> = {};
 const setEnv = (k: string, v: string | undefined): void => {
@@ -33,8 +33,6 @@ describe("the acquired tier", () => {
   beforeEach(() => {
     root = mkdtempSync(join(tmpdir(), "lares-library-"));
     setEnv("LAR_ROOT", root);
-    setEnv("XDG_STATE_HOME", join(root, "xdgstate"));
-    setEnv("XDG_DATA_HOME", join(root, "xdgdata"));
     setEnv("LAR_LIBRARY", undefined);
     src = join(root, "incoming");
     mkdirSync(src, { recursive: true });
@@ -44,18 +42,15 @@ describe("the acquired tier", () => {
     rmSync(root, { recursive: true, force: true });
   });
 
-  test("★ it homes in the HOUSE, not the spirits — belonging, and the structure that follows ★", () => {
-    // THE CRITERION IS WHOSE IT IS. A shelf is the LARARIUM's — a family's books outlast whoever reads
-    // them — so it stands in the house's home rather than the one the Lares carry.
-    //
-    // LARES PASS; THE LARARIUM ABIDES through distinct homes: runtime vessel data stands at <lares>/vessel,
-    // premise that its blobs rebuild from the bags carriers, and an acquired book rebuilds from nothing.
-    // A sibling subdirectory stays safe until someone widens a wipe by one path segment; a separate
-    // home has no such edge to widen.
-    expect(larLibraryHome()).toBe(join(larariumDataHome(), "library"));
-    expect(larLibraryHome().startsWith(laresDataHome())).toBe(false);    // not the spirit's home at all
-    expect(larLibraryHome().startsWith(larDataDir())).toBe(false);     // and nowhere near the vessel store
-    expect(larLibraryHome().startsWith(larStateHome())).toBe(false);   // watermarks live there, not books
+  test("★ it homes BESIDE the hearth, never inside it — the structure a re-founding cannot cross ★", () => {
+    // A shelf holds originals the house acquired, which nothing re-makes. The runtime CAS under
+    // <root>/hearth/vessel stands licensed for a wipe by one premise — that its blobs rebuild from the bags
+    // carriers — and an acquired book rebuilds from nothing. So the library stands at the root's first level,
+    // beside the hearth a re-founding clears, with no shared edge for a widened wipe to cross.
+    expect(larLibraryHome()).toBe(join(root, "library"));
+    expect(larLibraryHome()).toBe(larLibraryRoot());
+    expect(larLibraryHome().startsWith(larHearthHome())).toBe(false);   // outside what a re-founding clears
+    expect(larLibraryHome().startsWith(larDataDir())).toBe(false);      // and nowhere near the vessel store
   });
 
   test("LAR_LIBRARY re-sites it — a shelf outgrows its default disk before anything else here does", () => {
@@ -146,8 +141,6 @@ describe("verify reads BYTES, never records", () => {
   beforeEach(() => {
     root = mkdtempSync(join(tmpdir(), "lares-libverify-"));
     setEnv("LAR_ROOT", root);
-    setEnv("XDG_STATE_HOME", join(root, "xdgstate"));
-    setEnv("XDG_DATA_HOME", join(root, "xdgdata"));
     setEnv("LAR_LIBRARY", undefined);
     mkdirSync(join(root, "in"), { recursive: true });
   });
@@ -200,8 +193,6 @@ describe("a reference NAMES, and refuses what could walk out of the tier", () =>
     // shelf rather than this test's own `root`, and the next test's "empty shelf" reads that
     // leftover `c` collection back — a scratch root should isolate harder than this, not less.
     setEnv("LAR_ROOT", root);
-    setEnv("XDG_STATE_HOME", join(root, "xdgstate"));
-    setEnv("XDG_DATA_HOME", join(root, "xdgdata"));
     setEnv("LAR_LIBRARY", undefined);
   });
   afterEach(() => {

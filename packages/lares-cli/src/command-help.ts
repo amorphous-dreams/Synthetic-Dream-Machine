@@ -468,8 +468,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     usage: "usage: lares library <list | show | acquire | verify | index | path>",
     synopsis:
       "The ACQUIRED shelf — books and corpora a human did not author, kept READABLE and VERIFIABLE outside " +
-      "every tracked tree. The tier stands in the SHRINE at `<lararium>/library` (`~/.local/share/lararium/" +
-      "library`, or LAR_LIBRARY) — a house no wipe names. Layout: `<collection>/<cid>/<the real filename>`: " +
+      "every tracked tree. The tier stands at `<root>/library` (or LAR_LIBRARY), beside the hearth and never " +
+      "inside it, so no re-founding reaches it. Layout: `<collection>/<cid>/<the real filename>`: " +
       "the directory name IS the digest (audit with sha256sum, no tooling), the filename reads to a human. " +
       "No per-entry sidecar: each entry's record rides as its own `#/<cid>` ahu slot inside the collection's " +
       "`index.mem` carrier — origin · licence · the RFC-6920 anchor. A reference NAMES — " +

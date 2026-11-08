@@ -9,8 +9,8 @@
  *     in "Operator O delegates to Device D AT PLACE P".
  *
  * Runs the exact subsequence `lares vessel found` executes (commands/init.ts: generateOrLoadVesselIdentity →
- * generateOrLoadPersonaGroupRoot → loadPersonaGroupRootSeed → buildDeviceDelegation) over a temp XDG
- * state home — no founding, no daemon, no ceremony repo. The browser twin lives at
+ * generateOrLoadPersonaGroupRoot → loadPersonaGroupRootSeed → buildDeviceDelegation) over a temp house
+ * root — no founding, no daemon, no ceremony repo. The browser twin lives at
  * browser/tests/browser-persona-vault.test.ts; this closes the node side.
  */
 import { seatSuiteWard } from "./support/scratch-custody-setup.js";
@@ -41,13 +41,11 @@ const HEARTH_TRUE_NAME = "bafyTestHearthTrueName";
 
 describe("the True Name Model — vessel, persona root, and the edge that binds them", () => {
   let root: string;
-  const dataDir = () => root;   // the identity store resolves under XDG state; dataDir rides the contract
+  const dataDir = () => root;   // the identity store resolves under the house root; dataDir rides the contract
 
   beforeEach(() => {
     root = mkdtempSync(join(tmpdir(), "lares-truename-"));
-    setEnv("LAR_ROOT", undefined);
-    setEnv("XDG_STATE_HOME", join(root, "state"));
-    setEnv("XDG_DATA_HOME", join(root, "state"));   // identity/seal/library answer HERE
+    setEnv("LAR_ROOT", root);   // the scratch house root every resolver lays its classes beneath
   });
   afterEach(() => {
     for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
