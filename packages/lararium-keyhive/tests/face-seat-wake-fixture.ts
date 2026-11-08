@@ -43,22 +43,31 @@ export async function standJoineeSeat(input: {
   /** The shore's dyad reading: `readDyadFromBoard` (the browser island) or a vessel-side reader (the node island). */
   readonly extra: (stood: { repo: ReturnType<typeof makeIslandRepo>; root: string; joinee: string; lineage: unknown }) => Promise<Record<string, unknown>> | Record<string, unknown>;
   readonly seedByte: number;
+  /** The board stands nowhere at boot: it is founded later on a peer Repo synced to the island's, with the founder clear. */
+  readonly boardArrivesLater?: boolean;
 }) {
   const rootSeed = new Uint8Array(32).fill(input.seedByte);
   const root = await ed25519VerifyingKeyFromSeed(rootSeed);
   const founder = await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(input.seedByte + 1));
   const joinee = await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(input.seedByte + 2));
   const group = `group-${input.seedByte}`;
-  const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
-  const board: DocHandle<LarDoc> = await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(root), "board:edge-kapae");
+  const channel = new MessageChannel();
+  const repo = makeIslandRepo({ syncPort: channel.port1 });
+  const peer = input.boardArrivesLater ? makeIslandRepo({ syncPort: channel.port2 }) : null;
   const fx = await fleetFixture(rootSeed);
-  await fx.found(board);
   const signer = [{ signer: root, sign: ed25519SignerFromSeed(rootSeed) }];
   const edgeId = deviceEdgeId(root, founder);
-  // THE FOUNDER STANDS ASIDE when the joinee boots: a counted raise on its device-face dyad.
-  const raise = await signEdgeKapae({ edgeId, raised: true, hand: "holder", parents: [] }, signer);
-  board.change((draft) => { writeEdgeKapae(draft, raise); });
-  await fx.register(board, [raise.actCid]);
+  let board: DocHandle<LarDoc> | null = null;
+  let raise: Awaited<ReturnType<typeof signEdgeKapae>> | null = null;
+  if (!peer) {
+    board = await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(root), "board:edge-kapae");
+    await fx.found(board);
+    // THE FOUNDER STANDS ASIDE when the joinee boots: a counted raise on its device-face dyad.
+    raise = await signEdgeKapae({ edgeId, raised: true, hand: "holder", parents: [] }, signer);
+    const counted = raise;
+    board.change((draft) => { writeEdgeKapae(draft, counted); });
+    await fx.register(board, [raise.actCid]);
+  }
 
   // The face's persona plane holds the joinee's grant record; the catalog maps the plane's bag to it.
   const plane = repo.create<LarDoc>(emptyLarDoc());
@@ -86,17 +95,23 @@ export async function standJoineeSeat(input: {
   const extra = await input.extra({ repo, root, joinee, lineage: fx.lineage });
   const options = input.operatorDaemonOptions({ daemonAuth } as never, extra as never);
   return {
-    repo, board, ctx, root, founder, joinee, group,
+    repo, ctx, root, founder, joinee, group,
+    /** The founding reaches the island: the peer founds the board (no raise: the founder stands clear) and sync carries it. */
+    arrive: async () => {
+      const founded = await materializeSharedLarDoc(peer!, fleetEdgeBoardDocUrl(root), "board:edge-kapae");
+      await fx.found(founded);
+    },
+    shutdown: async () => { await Promise.all([repo.shutdown(), peer?.shutdown()]); },
     boot: () => options.verifierFactory!(ctx as never),
     /** The founder's dyad lifts: a holder act on the same edge, parented on the raise (the lift owes its roll). */
     lift: async () => {
-      const down = await signEdgeKapae({ edgeId, raised: false, hand: "holder", parents: [raise.actCid] }, signer);
-      board.change((draft) => { writeEdgeKapae(draft, down); });
+      const down = await signEdgeKapae({ edgeId, raised: false, hand: "holder", parents: [raise!.actCid] }, signer);
+      board!.change((draft) => { writeEdgeKapae(draft, down); });
     },
     /** A daemon-layer change: the wake the composition already carried before the fleet watch. */
     daemonTouch: () => { daemonHandle.change((d) => { d.tiddlers["$:/test/touch"] = storedLarRecord("$:/test/touch", { text: String(Math.random()) }, "test"); }); },
     /** A board move that leaves the founder's standing as it was. */
-    noise: () => { board.change((d) => { (d.tiddlers as Record<string, unknown>)["a-foreign-row"] = { tiddler: { text: "noise" }, meta: {} }; }); },
+    noise: () => { board!.change((d) => { (d.tiddlers as Record<string, unknown>)["a-foreign-row"] = { tiddler: { text: "noise" }, meta: {} }; }); },
   };
 }
 

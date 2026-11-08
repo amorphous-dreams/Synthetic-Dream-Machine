@@ -29,7 +29,7 @@ describe("the browser island's seat wakes on its own fleet replica", () => {
     const log = vi.spyOn(console, "log").mockImplementation(() => {});
     const seat = await standJoineeSeat({ operatorDaemonOptions: operatorDaemonOptions as never, seedByte, extra: () => ({ readDyadFromBoard: true }) });
     await seat.boot();
-    stop = async () => { for (const d of kh.disposers) d(); await seat.repo.shutdown(); };
+    stop = async () => { for (const d of kh.disposers) d(); await seat.shutdown(); };
     expect(refusals(log), "the boot's pass read the founder aside").toBeGreaterThan(0);
     expect(kh.ingests).toBe(0);
     await quiesce();
@@ -61,5 +61,18 @@ describe("the browser island's seat wakes on its own fleet replica", () => {
     await quiesce();
     expect(kh.ingests).toBe(0);
     expect(kh.known).toBe(false);
+  });
+
+  test("a board that stood nowhere at boot wakes the seat when the founding arrives by sync, with no daemon-layer change", async () => {
+    const kh = recordingKeyhive();
+    boot.kh = kh;
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    const seat = await standJoineeSeat({ operatorDaemonOptions: operatorDaemonOptions as never, seedByte: 181, boardArrivesLater: true, extra: () => ({ readDyadFromBoard: true }) });
+    await seat.boot();
+    stop = async () => { for (const d of kh.disposers) d(); await seat.shutdown(); };
+    await quiesce();
+    expect(kh.ingests, "no board, no standing: the grant waits").toBe(0);
+    await seat.arrive();
+    expect(await until(() => kh.ingests > 0), "the founding's arrival on the island's replica woke the seat").toBe(true);
   });
 });

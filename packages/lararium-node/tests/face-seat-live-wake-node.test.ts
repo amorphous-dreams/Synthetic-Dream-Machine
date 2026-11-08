@@ -42,7 +42,7 @@ describe("the node island's seat wakes through the vessel's ring door", () => {
       },
     });
     await seat.boot();
-    stop = async () => { for (const d of kh.disposers) d(); ring?.dispose(); await seat.repo.shutdown(); };
+    stop = async () => { for (const d of kh.disposers) d(); ring?.dispose(); await seat.shutdown(); };
     expect(ring!.deviceStanding(seat.root, seat.founder), "the vessel's ring reads the founder aside at boot").toBe("aside");
     expect(kh.ingests).toBe(0);
     await quiesce();
