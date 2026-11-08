@@ -157,3 +157,39 @@ describe("F5 and F6: an owed floor never blocks an unrelated verb, and boot land
       .toEqual(new Set([`daemon\n${D}\n${old.seq}`]));
   });
 });
+
+describe("F4 re-read: an overwrite lifts no drop, and the history read stays bounded (R1, R2)", () => {
+  const history = (doc: unknown) => (mesh as unknown as { promoteDropHistory: (d: unknown, g: string) => unknown[] }).promoteDropHistory(doc, GROUP);
+  const countedBy = (records: readonly unknown[], owner: string) =>
+    readPromoteBoard(records, { group: GROUP, grant: () => false, device: () => false, ward: { accepts: () => true } }).droppedBy(owner);
+
+  test("RED: on the repo's own board handle, a put over a drop's key, an edit of its text, and an overwrite followed by a delete each keep the drop through promoteBoardRecords. CONTROL: an honest second drop stands beside the first", async () => {
+    const a = await signer(2);
+    const repo = mesh.makeIslandRepo({ syncPort: new MessageChannel().port1 });
+    const keyOf = (act: Parameters<typeof writePromoteAct>[1]) => mesh.promoteActKey(GROUP, mesh.promoteActCid(act));
+    for (const lift of ["overwrite", "text-edit", "overwrite-then-delete"] as const) {
+      const handle = await mesh.materializeSharedLarDoc(repo, mesh.promoteBoardDocUrl(`${GROUP}-${lift}`), "promote:board");
+      const drop = await signPromoteDrop({ group: GROUP, epoch: 0, wiki: "daemon", digest: D, seq: 1 }, a);
+      const honest = await signPromoteDrop({ group: GROUP, epoch: 0, wiki: "daemon", digest: D, seq: 2 }, a);
+      handle.change((d: LarDoc) => writePromoteAct(d, drop));
+      handle.change((d: LarDoc) => writePromoteAct(d, honest));
+      const key = keyOf(drop);
+      if (lift === "text-edit") handle.change((d: LarDoc) => { (d.tiddlers as Record<string, { fields: Record<string, unknown> }>)[key]!.fields["text"] = "{}"; });
+      else handle.change((d: LarDoc) => { (d.tiddlers as Record<string, unknown>)[key] = { fields: { title: key, text: "{}" } }; });
+      if (lift === "overwrite-then-delete") handle.change((d: LarDoc) => { delete (d.tiddlers as Record<string, unknown>)[key]; });
+      const records = mesh.promoteBoardRecords(handle.doc() as LarDoc, GROUP);
+      expect([...countedBy(records, a.key)], lift).toEqual([`daemon\n${D}\n1`, `daemon\n${D}\n2`]);
+    }
+  });
+
+  test("RED: 40 drops under 30 one-key deletes hand back each lifted drop once, and none the current map still holds. CONTROL: the deleted drops all still count", async () => {
+    const a = await signer(2);
+    let doc = A.from<LarDoc>({ tiddlers: {} } as unknown as LarDoc);
+    const acts = await Promise.all(Array.from({ length: 40 }, (_, i) => signPromoteDrop({ group: GROUP, epoch: 0, wiki: "daemon", digest: D, seq: i + 1 }, a)));
+    for (const act of acts) doc = A.change(doc, (d) => writePromoteAct(d, act));
+    for (let i = 0; i < 30; i++) doc = A.change(doc, (d) => { delete d.tiddlers[mesh.promoteActKey(GROUP, mesh.promoteActCid(acts[i]!))]; });
+    const lifted = history(doc);
+    expect(lifted.length).toBe(30);
+    expect(countedBy(mesh.promoteBoardRecords(doc, GROUP), a.key).size).toBe(40);
+  });
+});
