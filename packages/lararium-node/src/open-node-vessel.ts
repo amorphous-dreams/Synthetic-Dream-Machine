@@ -77,7 +77,7 @@ import { makeEdgeShadowRing, ringDyadDoor, type EdgeShadowRing } from "./edge-sh
 import { floorShadowRing } from "./floor-fleet-lanes.js";
 import type { JoinedFaceAuth, WikiActivationCap, PortIslandToVesselMsg } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
-import type { MountManifest } from "@lararium/mesh";
+import type { HeldSaves, MountManifest } from "@lararium/mesh";
 import { nodePromoteStores, nodePromoteCas } from "./promoted-store.js";
 import { casDirForStorage, casFetchReading, corpusCasDirFromEnv, makeNodeCasResolver, type IslandCasData, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
 import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard } from "@lararium/mesh";
@@ -653,6 +653,8 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   /** The stand-down's last flush of the sealed rest (T3), after every session closed and before the daemon island goes:
    *  answers how many saves still wait unbooked (each rests nowhere new; its change returns by sync). */
   sealedRestStandDown: () => Promise<number>;
+  /** The census of saves this vessel's sealed rest holds in memory, by document and never by body (`lares vessel census`). */
+  heldSaves: () => readonly HeldSaves[];
 }
 
 /** A composed Herm (wiki-less): the daemon immune core + a served meshpalace FLOW-map, no pool. */
@@ -688,6 +690,8 @@ export interface NodeHermResult {
   hostingDoor:      HostingDoor;
   /** What this composition lends a backup bundle's cut: the mounted face, its own edge's shadow, the island's memory section and the board's key history. */
   backupDoor:      BackupDoor;
+  /** The census of saves this herm's sealed rest holds in memory, by document and never by body (`lares vessel census`). */
+  heldSaves:       () => readonly HeldSaves[];
   /** M15: which social planes mounted live vs degraded vs PENDING — see `NodeVesselResult.mountManifest`. */
   mountManifest:    MountManifest;
   /** Tear down the read-face + the daemon island, then the composed vessel (reverse build order). */
@@ -745,6 +749,8 @@ interface NodeBootPrep {
   sealedRestLock:  (signer: object) => Promise<void>;
   /** The stand-down's last flush of the sealed rest (T3), after every session closed: answers how many saves still wait. */
   sealedRestStandDown: () => Promise<number>;
+  /** The census of saves the sealed rest holds in memory, by document and never by body. */
+  heldSaves: () => readonly HeldSaves[];
   /** THE SESSION SIGN LIFT, built and seated by the lift alone: each call stands a fresh book and its door over this
    *  prep's chain and fleet fold, and stands nothing itself. The Lararium lift seats `door` on `islandCaps.sessionSign`
    *  and owns `down`; a herm never calls it, so a herm's record signs nothing (`session-sign-door.ts`). */
@@ -4202,6 +4208,7 @@ async function prepareNodeBootOn(
       if (waiting > 0) console.log(`[sealed-rest] save-unbooked: ${waiting} save(s) no session could seal rest nowhere new; the replica that holds each change hands it back by sync after the next unlock`);
       return waiting;
     },
+    heldSaves: () => sealedRest.store.held(),
     backupDoor: {
       wornFace: () => litFace,
       ownEdgeShadowed: async () => {
@@ -4404,6 +4411,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     sessionSigns:    sessionSign.book,
     sealedRestLock:  p.sealedRestLock,
     sealedRestStandDown: p.sealedRestStandDown,
+    heldSaves:       p.heldSaves,
     backupDoor:      p.backupDoor,
     oracleDocUrl:     result.assembly.islandHandle.url,
     larariumDocUrl:   result.assembly.larariumHandle?.url ?? null,
@@ -4559,6 +4567,7 @@ async function composeNodeHermOn(
     walkDial:         p.walkDial,
     hostingDoor:      p.hostingDoor,
     backupDoor:      p.backupDoor,
+    heldSaves:        p.heldSaves,
     mountManifest:    herm.assembly.mountManifest,
     dispose,
     teardown: async () => {

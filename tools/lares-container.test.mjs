@@ -24,7 +24,7 @@ const havePwsh = spawnSync("pwsh", ["-NoProfile", "-Command", "1"]).status === 0
  * and a scratch house root, so no test reads a real `~/.lares`. `envAt: "clone"` plants the file beside the compose
  * file instead, where the shim must not look. `@HOUSE@` in an env value or an env file names the run's scratch house.
  */
-async function run(shim, argv, { env = {}, envFile, envAt = "hearth" } = {}) {
+async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty } = {}) {
   const dir = await mkdtemp(join(tmpdir(), "lares-container-"));
   try {
     const log = join(dir, "calls.log");
@@ -32,6 +32,7 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth" } = {}) {
       `for a in "$@"; do case "$a" in -f) :;; *override*|/tmp/*) [ -f "$a" ] && cat "$a" >> "$CALL_LOG";; esac; done\n` +
       `case " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}"; exit "\${FAKE_PS_RC:-0}";; esac\n` +
       `case " $* " in *" --observe --json "*) printf '%s\\n' "\${FAKE_OBSERVE_OUTPUT:-}"; exit "\${FAKE_OBSERVE_RC:-0}";; esac\n` +
+      `case " $* " in *" vessel census "*) [ -z "\${FAKE_CENSUS_OUTPUT:-}" ] || printf '%s\\n' "\${FAKE_CENSUS_OUTPUT}"; [ -z "\${FAKE_CENSUS_ERR:-}" ] || printf '%s\\n' "\${FAKE_CENSUS_ERR}" >&2; exit "\${FAKE_CENSUS_RC:-0}";; esac\n` +
       `case " $* " in *" vault status --json "*) printf '%s\\n' "\${FAKE_CUSTODY_OUTPUT:-}"; exit 0;; esac\n` +
       `case " $* " in *" ps -q lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}"; exit 0;; esac\n` +
       `case " $* " in *"inspect --format"*) printf '%s\\n' "\${FAKE_IMAGE_REV:-}"; exit 0;; esac\n` +
@@ -49,7 +50,10 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth" } = {}) {
     const steady = '{"data":{"standing":{"act":"attach","reason":"steady"}}}';
     const base = { PATH: `${dir}:${process.env.PATH}`, CALL_LOG: log, HOME: home, LARES_COMPOSE_FILE: compose, FAKE_OBSERVE_OUTPUT: steady };
     const filled = Object.fromEntries(Object.entries(env).map(([k, v]) => [k, fill(v)]));
-    const r = spawnSync(cmd[0], cmd[1], { env: { ...base, ...filled }, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+    // `tty` names the bytes typed on a pseudo-terminal (`script`), which then carries stdout and stderr as one stream.
+    const r = tty === undefined
+      ? spawnSync(cmd[0], cmd[1], { env: { ...base, ...filled }, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] })
+      : spawnSync("script", ["-qec", [cmd[0], ...cmd[1]].map((a) => `'${a}'`).join(" "), "/dev/null"], { env: { ...base, ...filled }, encoding: "utf8", input: tty });
     let calls = ""; try { calls = await readFile(log, "utf8"); } catch {}
     const made = {};
     for (const c of ["hearth", "sensoriums", "projections", "library", "config"]) { try { await readdir(join(house, c)); made[c] = true; } catch { made[c] = false; } }
@@ -405,6 +409,78 @@ for (const [name, shim] of shims) {
   test(`${name}: up stands the lares service detached; down removes it`, async () => {
     assert.match((await run(shim, ["up"], { env: MOUNTS })).calls, /up -d --wait lares/);
     assert.match((await run(shim, ["down"], { env: MOUNTS })).calls, /down --remove-orphans/);
+  });
+
+  // THE CENSUS BEFORE A STOP (operator ruling R3): a stop never drops content silently.
+  const STANDING = { ...MOUNTS, FAKE_RUNNING_ID: "vessel" };
+  const CLEAN = "census: clean — no save waits in memory, and the disk projector owes no carrier";
+  const ITEMS = "held-save  save-unbooked  doc doc-heron  2 save(s) in memory  bag notes\ncarrier  pending  lar:///ha.ka.ba/notes/pond  bag notes  island wiki";
+  const stopped = (calls) => /down --remove-orphans/.test(calls);
+
+  test(`${name}: down over a standing vessel asks the census first, and a clean answer stops it`, async () => {
+    const r = await run(shim, ["down", "--timeout", "5"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.calls, /exec -T lares node packages\/lares-cli\/bin\/lares\.mjs vessel census --no-json/);
+    assert.ok(r.calls.indexOf("vessel census") < r.calls.indexOf("down --remove-orphans"), r.calls);
+    // down's own flags still pass through.
+    assert.match(r.calls, /down --remove-orphans --timeout 5/);
+  });
+
+  test(`${name}: a census naming items refuses with no terminal, listing each, and stops nothing`, async () => {
+    const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: ITEMS, FAKE_CENSUS_RC: "3" } });
+    assert.equal(r.status, 2);
+    assert.match(r.stderr, /held-save {2}save-unbooked {2}doc doc-heron/);
+    assert.match(r.stderr, /carrier {2}pending {2}lar:\/\/\/ha\.ka\.ba\/notes\/pond/);
+    assert.match(r.stderr, /vault unlock/);
+    assert.match(r.stderr, /accept-loss/);
+    assert.match(r.stderr, /no terminal/);
+    assert.equal(stopped(r.calls), false, r.calls);
+  });
+
+  test(`${name}: a census that cannot answer refuses by name, never a silent stop`, async () => {
+    const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_RC: "1", FAKE_CENSUS_ERR: "container wedged" } });
+    assert.equal(r.status, 2);
+    assert.match(r.stderr, /could not answer/);
+    assert.match(r.stderr, /container wedged/);
+    assert.equal(stopped(r.calls), false, r.calls);
+    // An exit of zero that names no clean verdict never reads clean.
+    const mute = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_RC: "0" } });
+    assert.equal(mute.status, 2);
+    assert.equal(stopped(mute.calls), false, mute.calls);
+  });
+
+  test(`${name}: a ps that fails refuses the stop with no terminal`, async () => {
+    const r = await run(shim, ["down"], { env: { ...MOUNTS, FAKE_PS_RC: "1" } });
+    assert.equal(r.status, 2);
+    assert.match(r.stderr, /reads unknown/);
+    assert.equal(stopped(r.calls), false, r.calls);
+  });
+
+  test(`${name}: CONTROL down with no vessel standing asks no census`, async () => {
+    const r = await run(shim, ["down"], { env: MOUNTS });
+    assert.equal(r.status, 0, r.stderr);
+    assert.doesNotMatch(r.calls, /vessel census/);
+    assert.ok(stopped(r.calls));
+  });
+
+  test(`${name}: on a terminal, accept-loss typed stops; another word refuses`, { skip: !haveScript }, async () => {
+    const items = { ...STANDING, FAKE_CENSUS_OUTPUT: ITEMS, FAKE_CENSUS_RC: "3" };
+    const accepted = await run(shim, ["down"], { env: items, tty: "accept-loss\n" });
+    assert.equal(accepted.status, 0, accepted.stdout);
+    assert.match(accepted.stdout, /doc doc-heron/);
+    assert.match(accepted.stdout, /Type accept-loss/);
+    assert.ok(stopped(accepted.calls), accepted.calls);
+    const wrong = await run(shim, ["down"], { env: items, tty: "yes\n" });
+    assert.notEqual(wrong.status, 0, wrong.stdout);
+    assert.match(wrong.stdout, /did not read accept-loss/);
+    assert.equal(stopped(wrong.calls), false, wrong.calls);
+  });
+
+  test(`${name}: on a terminal, a census that cannot answer offers accept-loss`, { skip: !haveScript }, async () => {
+    const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_RC: "1" }, tty: "accept-loss\n" });
+    assert.equal(r.status, 0, r.stdout);
+    assert.match(r.stdout, /could not answer/);
+    assert.ok(stopped(r.calls), r.calls);
   });
 
   test(`${name}: --capture binds read-only under /capture/<n>; a home directory whole refuses`, async () => {

@@ -304,3 +304,52 @@ export async function askShore(shoreArgs: Readonly<Record<string, unknown>>, did
   const answer = await ask(island)(shoreArgs);
   return answer.ok ? answer : refusedAt(island, answer);
 }
+
+/** How long one island's census page may take: the island's own drain wait (five seconds) and the page beside it. */
+export const CENSUS_PAGE_MS = 15_000;
+
+/** What one census read of every disk shore names: each carrier not settled, and each island that could not answer. */
+export interface ShoreCensus {
+  readonly carriers: ReadonlyArray<{ readonly state: string; readonly uri: string; readonly bagId: string | null; readonly island: ShoreIsland }>;
+  readonly unanswered: ReadonlyArray<{ readonly part: string; readonly why: string }>;
+}
+
+/**
+ * THE SHORE'S CENSUS: ask every island that mounts a disk shore which carriers its projector has not settled, reading
+ * each island's pages to the end. An island that mounts no projection holds none; an island that refuses, throws, or
+ * answers in a shape this door cannot read lands in `unanswered`, by name, and never reads as an empty shore.
+ */
+export async function askShoreCensus(did: string, run: RunVerb = runVerb): Promise<ShoreCensus> {
+  const carriers: Array<ShoreCensus["carriers"][number]> = [];
+  const unanswered: Array<ShoreCensus["unanswered"][number]> = [];
+  for (const island of SHORE_ISLANDS) {
+    const part = `${island === "wiki" ? "the active wiki's" : "the daemon"} island's disk projector`;
+    const rows: Array<ShoreCensus["carriers"][number]> = [];
+    let failed: string | null = null;
+    for (let after: string | null = null, pages = 0; ; pages++) {
+      const shoreArgs: Record<string, unknown> = after === null ? { op: "census" } : { op: "census", after };
+      let answer: ShoreAnswer;
+      try {
+        answer = readShoreAnswer(island === "wiki"
+          ? await run("wiki-act", { verb: SHORE_VERB, args: shoreArgs }, did, { timeoutMs: CENSUS_PAGE_MS })
+          : await run(SHORE_VERB, shoreArgs, did, { timeoutMs: CENSUS_PAGE_MS }));
+      } catch (e) { failed = e instanceof Error ? e.message : String(e); break; }
+      if (!answer.ok) { if (!holdsNoShore(answer)) failed = `${answer.refusal ?? "refused"}: ${answer.why ?? "named no reason"}`; break; }
+      const o = answer.output;
+      if (!Array.isArray(o["carriers"])) { failed = "the census answered no carrier array (a vessel older than this door, or a page past the outcome's row cap)"; break; }
+      for (const c of o["carriers"] as Array<Record<string, unknown>>) {
+        rows.push({ state: String(c["state"]), uri: String(c["uri"]), bagId: typeof c["bagId"] === "string" ? c["bagId"] : null, island });
+      }
+      const next = o["next"];
+      if (typeof next !== "string" || next === "") {
+        if (typeof o["carrierCount"] === "number" && o["carrierCount"] !== rows.length && pages === 0) failed = `the census counted ${String(o["carrierCount"])} carriers and named ${rows.length}`;
+        break;
+      }
+      if (after !== null && next <= after) { failed = "the census cursor stood still between two pages"; break; }
+      after = next;
+    }
+    carriers.push(...rows);
+    if (failed !== null) unanswered.push({ part, why: failed });
+  }
+  return { carriers, unanswered };
+}

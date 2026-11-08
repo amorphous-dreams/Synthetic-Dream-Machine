@@ -1556,16 +1556,35 @@ export class LarDiskProjector {
     if (set.size === 0) this.reconcileWatches.delete(uri);
   }
 
+  /** The carrier roots whose latest reconcile threw: each file stands as its failure left it, until a reconcile lands. */
+  private readonly failedRoots = new Set<string>();
+
   /** Reconcile one carrier and tell every watch that stood when it started how it ended (the last run counts). */
   private async reconcileWatched(rootUri: string): Promise<void> {
     const watching = [...(this.reconcileWatches.get(rootUri) ?? [])];
     try {
       await this.reconcile(rootUri);
+      this.failedRoots.delete(rootUri);
       for (const watch of watching) { watch.ran = true; watch.threw = false; }
     } catch (error) {
+      this.failedRoots.add(rootUri);
       for (const watch of watching) watch.threw = true;
       throw error;
     }
+  }
+
+  /**
+   * WHAT THE PROJECTOR HAS NOT SETTLED, read and never moved: each carrier root its queue still owes a reconcile
+   * (`pending`), and each whose latest reconcile threw (`failed`), with the bag the view names for it (null: none).
+   * A stop that would leave these off disk lists them first (`lares vessel census`).
+   */
+  unsettled(): { readonly pending: ReadonlyArray<{ readonly uri: string; readonly bagId: string | null }>; readonly failed: ReadonlyArray<{ readonly uri: string; readonly bagId: string | null }> } {
+    const bagOf = (uri: string): string | null => {
+      const origin = (this._tw5?.$tw.wiki.getTiddler?.(uri)?.fields as Record<string, unknown> | undefined)?.["$origin-bag"];
+      return typeof origin === "string" ? origin : null;
+    };
+    const row = (uri: string) => ({ uri, bagId: bagOf(uri) });
+    return { pending: (this.gate?.pending() ?? []).map(row), failed: [...this.failedRoots].map(row) };
   }
 
   /**

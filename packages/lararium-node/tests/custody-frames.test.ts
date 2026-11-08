@@ -514,3 +514,27 @@ describe("the custody state query answers beside the chain (L7)", () => {
     expect(await h.send({ op: "custody" }).answer).toMatchObject({ op: "custody", unlocked: true, composing: false });
   });
 });
+
+/**
+ * The `census` frame: the saves the standing composition holds in memory, read before a stop.
+ *   N1  it answers at once with each held document by id and refusal, beside the chain and with no credential.
+ *   N2  while no composition sits it answers `held: null`, never an empty list.     control: no census wired reads null too
+ */
+describe("the census frame", () => {
+  const door = (heldSaves?: () => readonly import("@lararium/mesh").HeldSaves[] | null) => custodyFrameHandler({
+    holder: { isUnlocked: () => false, openedSlot: () => null, attemptsLeft: () => 3, unlockedFaces: () => [] } as unknown as CustodyHolder,
+    testScratch: false, standing: () => "hearth", recompose: async () => ({ standing: "hearth" }), onLog: () => {},
+    ...(heldSaves ? { heldSaves } : {}),
+  });
+  const ask = (handle: ReturnType<typeof door>) => { const { sock, answer } = fakeSock(); expect(handle({ op: "census" }, sock)).toBe(true); return answer; };
+
+  test("N1 — each held document answers by id, refusal, count and bag, and never a body", async () => {
+    const held = [{ documentId: "doc-a", refusal: "save-unbooked" as const, saves: 2, bagId: "lar:///ha.ka.ba/bags/notes" }];
+    expect(await ask(door(() => held))).toEqual({ op: "census", held, standing: "hearth" });
+  });
+
+  test("N2 — no composition sitting answers held null; CONTROL: a door with no census wired answers null", async () => {
+    expect(await ask(door(() => null))).toEqual({ op: "census", held: null, standing: "hearth" });
+    expect(await ask(door())).toEqual({ op: "census", held: null, standing: "hearth" });
+  });
+});

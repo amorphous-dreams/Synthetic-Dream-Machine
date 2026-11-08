@@ -42,7 +42,7 @@ import WebSocket                         from "isomorphic-ws";
 import { resolve }                       from "path";
 import { deriveReachFaces, wsUrlForOrigin, crossingBannerLines, originCompositionForFace, assertWaystoneCustody, OriginCustodyRefusal, type ExplicitOriginComposition, type InterfaceTable } from "./lan-address.js";
 import { openNodeVessel, openNodeHerm, standNodeFloor, seatedSovereignReaders, type AskedStanding, type NodeFloor, type SovereignReaders } from "./open-node-vessel.js";
-import type { MountManifest } from "@lararium/mesh";
+import type { HeldSaves, MountManifest } from "@lararium/mesh";
 import { bootFaultReport }                 from "./boot-fault.js";
 import { standAs, FLOW_SOCKET_ROUTE, HEARTH_FLOOR_CARD_ROUTE, hearthFloorCardText } from "@lararium/mesh";
 import { hearthFloorProof } from "./hearth-floor-claims.js";
@@ -470,6 +470,8 @@ async function main(): Promise<void> {
     backup: (face, bundleKey, ward) => cutFaceBundle({ face, bundleKey, door: composition?.backup ?? null, ward }),
     standing: () => composition?.standing ?? "recomposing",
     wikiAwaits: () => composition?.wikiAwaits ?? null,
+    // THE CENSUS of saves held in memory: null while no composition sits, so a stop never reads "none held" from a gap.
+    heldSaves: () => composition?.heldSaves?.() ?? null,
     onLog: (line) => console.log(`[custody] ${line}`),
   });
 
@@ -542,6 +544,8 @@ interface StandingComposition {
   readonly hosting?: SealedActContext["hosting"];
   /** What this composition lends a backup bundle's cut. */
   readonly backup?: BackupDoor;
+  /** The saves this composition's sealed rest holds in memory, by document and never by body (the custody door's census). */
+  readonly heldSaves?: () => readonly HeldSaves[];
   /** The wiki this composition stands in for on its floor wiki, waiting on a face (its `wiki-awaits-face` line); absent or null where none waits. */
   readonly wikiAwaits?: string | null;
 }
@@ -705,6 +709,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
     walk: herm.walkDial,
     hosting: herm.hostingDoor,
     backup: herm.backupDoor,
+    heldSaves: herm.heldSaves,
   };
 }
 
@@ -988,6 +993,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     walk: result.walkDial,
     hosting: result.hostingDoor,
     backup: result.backupDoor,
+    heldSaves: result.heldSaves,
     wikiAwaits: result.wikiAwaitsFace?.message ?? null,
   };
 }
