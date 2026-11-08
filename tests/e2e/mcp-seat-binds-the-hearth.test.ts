@@ -1,4 +1,5 @@
 /**
+ * LEAD RUNS: this suite stands a staged daemon and speaks MCP over the seat's stdio process.
  * e2e/mcp-seat-binds-the-hearth — the MCP seat a harness registers reaches THIS hearth (road L3, walk gap G4).
  *
  * A harness spawns the seat from the entry `lares home tend` writes, with nothing of its own in the
@@ -13,10 +14,11 @@
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { spawn } from "node:child_process";
-import { existsSync, mkdirSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createInterface } from "node:readline";
-import { openStaged, awaitRendezvous, type LarInstance } from "../harness/instance.js";
+import { daemonWikiDir, openStaged, awaitRendezvous, stageDir, type LarInstance } from "../harness/instance.js";
+import { expectEntry } from "../harness/journal-expect.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -77,6 +79,7 @@ async function speak(entry: Entry, env: NodeJS.ProcessEnv, calls: Array<{ name: 
     }
   }
   child.stdin.end();
+  // LIVENESS: the exit event ends the seat process; the bound kills a wedged child and reports no successful round-trip.
   const code = await Promise.race([exited, new Promise<number | null>((r) => setTimeout(() => { child.kill("SIGKILL"); r(null); }, 15_000))]);
   return { results, stderr, code };
 }
@@ -93,10 +96,15 @@ function payload(result: unknown): Record<string, unknown> {
 
 let lar: LarInstance;
 let entry: Entry;
+let priorHome: string | undefined;
 
 describe.skipIf(gaps.length > 0)("★ THE MCP SEAT BINDS THE HEARTH — a harness's seat writes the wiki the CLI reads ★", () => {
   beforeAll(async () => {
-    lar = await openStaged({ tag: "mcp-seat" });
+    const root = mkdtempSync(join(stageDir(), "lares-mcp-seat-"));
+    priorHome = process.env["HOME"];
+    process.env["HOME"] = join(root, "home");
+    mkdirSync(process.env["HOME"], { recursive: true });
+    lar = await openStaged({ root, tag: "mcp-seat" });
     if (!(await awaitRendezvous(lar))) throw new Error(`the staged daemon reached live but bound no rendezvous:\n${lar.bootLog().slice(-800)}`);
     // Resolve the seat as `lares home tend` does, for THIS hearth. The native form gates on a stood memory
     // sensorium (`lares sense setup`); the seat itself opens no store, so the walk stands the directory.
@@ -115,7 +123,11 @@ describe.skipIf(gaps.length > 0)("★ THE MCP SEAT BINDS THE HEARTH — a harnes
     }
   }, 180_000);
 
-  afterAll(async () => { await lar?.stop(); });
+  afterAll(async () => {
+    await lar?.stop();
+    if (priorHome === undefined) delete process.env["HOME"];
+    else process.env["HOME"] = priorHome;
+  });
 
   test("the entry names this hearth's root", () => {
     expect(entry.env["LAR_ROOT"]).toBe(lar.root);
@@ -128,6 +140,8 @@ describe.skipIf(gaps.length > 0)("★ THE MCP SEAT BINDS THE HEARTH — a harnes
   });
 
   test("meme_put with recipe=default through the seat, and `lares meme get --recipe default` read the same bytes", async () => {
+    const projection = join(daemonWikiDir(lar.root), `${PATH}.mem`);
+    expect(existsSync(projection), "control: the fresh daemon wiki has no seat tiddler yet").toBe(false);
     const said = await speak(entry, harnessEnv(entry.env), [
       { name: "meme_put", arguments: { uri: URI, text: MEME, recipe: "default" } },
       { name: "meme_get", arguments: { uri: URI, recipe: "default" } },
@@ -143,6 +157,19 @@ describe.skipIf(gaps.length > 0)("★ THE MCP SEAT BINDS THE HEARTH — a harnes
     expect(cli.text).toBe(seatGet["text"]);
     expect(cli.canonicalHash).toBe(seatGet["canonicalHash"]);
     expect(cli.canonicalHash).toBe(put["canonicalHash"]);
+
+    // LIVENESS: the journal's event wait fails by the missing bag-projected event after 60 seconds; the bound
+    // only refuses a stalled projector and does not decide whether the write succeeded.
+    await expectEntry(lar, {
+      kind: "bag-projected",
+      match: (event) => {
+        const data = event.data as Record<string, unknown>;
+        return data["bagId"] === "lar:///ha.ka.ba/wikis/daemon/working" && data["path"] === daemonWikiDir(lar.root);
+      },
+    }, { budgetMs: 60_000 });
+    expect(existsSync(projection), `MCP write never projected to ${projection}`).toBe(true);
+    expect(readFileSync(projection, "utf8")).toContain(`uri-path = "${PATH}"`);
+    expect(existsSync(join(lar.root, "bags", "daemon")), "control: the private daemon bag must not project").toBe(false);
   }, 120_000);
 
   test("control: the same seat without the entry's LAR_ROOT reaches no daemon", async () => {
