@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { beginStep, leadStepBrief, readState, stepDirName, validateState, writeState } from "./lane-state.mjs";
 
-const good = () => ({ head: "e6aa31a8e", owed: ["row 4", "row 5"], seats: [{ name: "b3", mode: "build", dir: "/lane/cop3" }], worktrees: { wt: "feature/x" }, next: "write the broker red tests", step: 0 });
+const good = () => ({ head: "e6aa31a8e", owed: ["row 4", "row 5"], seats: [{ name: "b3", mode: "build", dir: "/lane/cop3" }], worktrees: { wt: "feature/x" }, next: "write the broker red tests", step: 0, trailers: ["Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>", "Claude-Session: https://claude.ai/code/session_01TEST"] });
 const lane = () => mkdtempSync(join(tmpdir(), "lane-"));
 
 test("validateState accepts the whole shape and refuses by name: unknown key, missing key, bad head, bad seat, non-string owed, negative step", () => {
@@ -62,4 +62,19 @@ test("validateState refuses a seat with an extra or empty field, and an empty ne
   assert.throws(() => validateState({ ...good(), seats: [{ name: "", mode: "build", dir: "/d" }] }), /seat/);
   assert.throws(() => validateState({ ...good(), next: "" }), /next/);
   assert.throws(() => validateState({ ...good(), worktrees: { a: "" } }), /worktrees/);
+});
+
+test("validateState refuses missing, empty or malformed commit trailers: each one line of the shape Key: value", () => {
+  const { trailers, ...rest } = good();
+  assert.throws(() => validateState(rest), /missing key "trailers"/);
+  assert.throws(() => validateState({ ...good(), trailers: [] }), /trailers/);
+  assert.throws(() => validateState({ ...good(), trailers: ["no colon here"] }), /trailers/);
+  assert.throws(() => validateState({ ...good(), trailers: ["Co-Authored-By: a\nClaude-Session: b"] }), /trailers/);
+  assert.throws(() => validateState({ ...good(), trailers: ["Key:"] }), /trailers/);
+});
+
+test("leadStepBrief carries the lane's commit trailers verbatim, one per line, under COMMIT TRAILERS", () => {
+  const root = lane();
+  const text = leadStepBrief(good(), { laneRoot: root, stepDir: join(root, "steps", "step-001") });
+  assert.match(text, /## COMMIT TRAILERS[^\n]*\nCo-Authored-By: Claude Opus 5\.5 <noreply@anthropic\.com>\nClaude-Session: https:\/\/claude\.ai\/code\/session_01TEST\n/);
 });

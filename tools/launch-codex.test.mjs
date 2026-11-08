@@ -78,7 +78,8 @@ test("P0-1 a lead holds no git dir and no network flag: edits go through the bro
   const law = leadLaw();
   assert.match(law, /broker/); assert.match(law, /req-<id>\.json/);
   assert.doesNotMatch(law, /git commit -F/, "the law no longer tells a lead to commit itself");
-  assert.doesNotMatch(law, /Launch seats ONLY through tools\/launch-codex/);
+  assert.doesNotMatch(law, /Launch seats ONLY through tools\/launch-codex/);  assert.match(law, /COMMIT TRAILERS/, "the law points the lead at the trailers its brief carries");
+  assert.doesNotMatch(law, /attribution reminder/, "a Codex lead never sees a Claude attribution reminder");
 });
 
 test("lead argv needs worktree", () => {
@@ -268,7 +269,7 @@ test("lead law launch twice", () => {
   assert.doesNotMatch(brief, /^## SEAT LAW/m);
   assert.doesNotMatch(brief, /forged/);
   assert.match(brief, /## Notes\nkeep/);
-  for (const phrase of ["git stash", "--no-verify", "git push -u", "force-push", ".git/config", "req-<id>.json", "lar:///w1.w2.w3 — summary", "two trailers", "submodule worktrees", "credential file", "scratch LAR_ROOT", "global LAR_BAGS", "tools/e2e-shards.mjs", "ci/*", "launch door", "Sol seat", "out.md", "final.md", "never push without"]) assert.ok(brief.includes(phrase), phrase);
+  for (const phrase of ["git stash", "--no-verify", "git push -u", "force-push", ".git/config", "req-<id>.json", "lar:///w1.w2.w3 — summary", "COMMIT TRAILERS", "submodule worktrees", "credential file", "scratch LAR_ROOT", "global LAR_BAGS", "tools/e2e-shards.mjs", "ci/*", "launch door", "Sol seat", "out.md", "final.md", "never push without"]) assert.ok(brief.includes(phrase), phrase);
 });
 
 test("--dry-run prints the whole argv and spawns nothing, writes nothing; a refusal exits 2 and names SEAT-REFUSED", () => {
@@ -388,16 +389,18 @@ test("the floors by mode: a READ seat launches down to its own floor (0% while t
 });
 
 // ---- row 2: the pool-used ceilings by mode ----
-test("row 2: a lead refuses above 50% used, build and research above 60%, a read seat never; the refusal names the reading; CONTROL at the line passes", () => {
+test("row 2: lead, build and research seats run until 20% of the pool remains (a soft line at 80% used), a read seat to its own floor; just past the line refuses by name; CONTROL just inside the line passes", () => {
   const w = world();
   const at = (u) => ({ ...w.readers, rolloutLines: () => [rate(u)] });
-  refuses(w, { mode: "lead" }, /used 55\.0%.*lead.*50%/s, at(55));
-  assert.ok(preflight(ask(w, { mode: "lead" }), at(50)));
-  refuses(w, { mode: "build" }, /used 65\.0%.*build.*60%/s, at(65));
-  assert.ok(preflight(ask(w, { mode: "build" }), at(60)));
-  refuses(w, { mode: "research", worktree: undefined }, /used 61\.0%.*research.*60%/s, at(61));
-  assert.ok(preflight(ask(w, { mode: "read" }), at(79)));
-  refuses(w, { mode: "lead" }, /at or below its floor/, at(85)); // the 20%-left floor still speaks first
+  assert.ok(preflight(ask(w, { mode: "lead" }), at(55))); // a lead seat launches at 55% used
+  assert.ok(preflight(ask(w, { mode: "build" }), at(65))); // a build seat launches at 65% used
+  for (const mode of ["lead", "build"]) assert.ok(preflight(ask(w, { mode }), at(79.9)), `${mode} CONTROL inside the line`);
+  assert.ok(preflight(ask(w, { mode: "research", worktree: undefined }), at(79.9)), "research CONTROL inside the line");
+  for (const u of [80, 80.1, 81]) {
+    for (const mode of ["lead", "build"]) refuses(w, { mode }, /at or below its floor.*floor 20%/s, at(u));
+    refuses(w, { mode: "research", worktree: undefined }, /at or below its floor.*floor 20%/s, at(u));
+  }
+  assert.ok(preflight(ask(w, { mode: "read" }), at(95))); // a read seat spends to its own 0% floor
 });
 
 // ---- row 1: per-seat ceilings ----
@@ -570,7 +573,7 @@ test("row 4: --lead-step reads the lane state, bumps the step, writes the step b
   assert.equal(run(argv, { readers, spawn, log() {}, err: (s) => err.push(s) }), 2);
   assert.match(err.join("\n"), /no state\.json/);
   assert.equal(spawned.length, 0);
-  writeFileSync(join(laneRoot, "state.json"), JSON.stringify({ head: "e6aa31a8e", owed: ["row 5"], seats: [], worktrees: {}, next: "do row 5", step: 3 }));
+  writeFileSync(join(laneRoot, "state.json"), JSON.stringify({ head: "e6aa31a8e", owed: ["row 5"], seats: [], worktrees: {}, next: "do row 5", step: 3, trailers: ["Claude-Session: https://claude.ai/code/session_01ROW4"] }));
   assert.equal(run(argv, { readers, spawn, log() {} }), 0);
   const stepDir = join(realpathSync(laneRoot), "steps", "step-004");
   CURRENT = { seatDir: stepDir };
@@ -581,6 +584,7 @@ test("row 4: --lead-step reads the lane state, bumps the step, writes the step b
   assert.ok(codex.args.includes("sandbox_workspace_write.network_access=false") && !codex.args.some((a) => /^\/.*(\.git|git-common)/.test(a) && a !== stepDir), "a lead step carries no git dir and no network flag");
   assert.match(readFileSync(join(stepDir, "brief.md"), "utf8"), /do row 5/);
   assert.match(readFileSync(join(stepDir, "brief.md"), "utf8"), /^## LEAD LAW/m);
+  assert.match(readFileSync(join(stepDir, "brief.md"), "utf8"), /## COMMIT TRAILERS[^\n]*\nClaude-Session: https:\/\/claude\.ai\/code\/session_01ROW4\n/, "the step brief carries the lane's trailers");
   assert.equal(JSON.parse(readFileSync(join(laneRoot, "state.json"), "utf8")).step, 4);
   const dog = sup(spawned);
   assert.equal(dog.args[dog.args.indexOf("--ceiling") + 1], "15000000", "a step is bounded by the lead ceiling");
@@ -589,7 +593,7 @@ test("row 4: --lead-step reads the lane state, bumps the step, writes the step b
 test("row 4: a refused launch does not spend a step; --lead-step needs --lane-root", () => {
   const w = world({ rolloutLines: () => [rate(95)] });
   const laneRoot = join(w.home, ".lares-scratch", "lane");
-  writeFileSync(join(laneRoot, "state.json"), JSON.stringify({ head: "e6aa31a8e", owed: [], seats: [], worktrees: {}, next: "x", step: 0 }));
+  writeFileSync(join(laneRoot, "state.json"), JSON.stringify({ head: "e6aa31a8e", owed: [], seats: [], worktrees: {}, next: "x", step: 0, trailers: ["Claude-Session: https://claude.ai/code/session_01TEST"] }));
   const err = [];
   assert.equal(run(["--lead-step", "--lane-root", laneRoot, "--model", "gpt-6.1-terra", "--effort", "high", "--worktree", w.wt], { readers: { ...w.readers, gitCommonDir: () => "/g" }, spawn() { throw new Error("spawned"); }, log() {}, err: (s) => err.push(s) }), 2);
   assert.equal(JSON.parse(readFileSync(join(laneRoot, "state.json"), "utf8")).step, 0);
@@ -600,7 +604,7 @@ test("row 4: a --lead-step dry run writes nothing and spends no step; a lane roo
   const w = world();
   const readers = { ...w.readers, gitCommonDir: () => "/g" };
   const laneRoot = join(w.home, ".lares-scratch", "lane");
-  const st = { head: "e6aa31a8e", owed: [], seats: [], worktrees: {}, next: "x", step: 0 };
+  const st = { head: "e6aa31a8e", owed: [], seats: [], worktrees: {}, next: "x", step: 0, trailers: ["Claude-Session: https://claude.ai/code/session_01TEST"] };
   writeFileSync(join(laneRoot, "state.json"), JSON.stringify(st));
   const base = ["--lead-step", "--model", "gpt-6.1-terra", "--effort", "high", "--worktree", w.wt];
   const out = [];
@@ -936,7 +940,7 @@ test("P1 the hand-back copies only regular files under the cap and replaces a pl
 });
 
 test("P1 lead steps go through a held lane root: a `steps` entry swapped for a symlink refuses, and a lane root swapped after the hold writes into the held root, never outside", () => {
-  const mk = () => { const w = world(); const laneRoot = join(w.home, ".lares-scratch", "lane"); writeFileSync(join(laneRoot, "state.json"), JSON.stringify({ head: "e6aa31a8e", owed: [], seats: [], worktrees: {}, next: "x", step: 0 })); return { w, laneRoot }; };
+  const mk = () => { const w = world(); const laneRoot = join(w.home, ".lares-scratch", "lane"); writeFileSync(join(laneRoot, "state.json"), JSON.stringify({ head: "e6aa31a8e", owed: [], seats: [], worktrees: {}, next: "x", step: 0, trailers: ["Claude-Session: https://claude.ai/code/session_01TEST"] })); return { w, laneRoot }; };
   const argvFor = (w, laneRoot) => ["--lead-step", "--lane-root", laneRoot, "--model", "gpt-6.1-terra", "--effort", "high", "--worktree", w.wt];
   { // the steps entry is a symlink to an outside dir
     const { w, laneRoot } = mk(); const outside = join(w.home, "out1"); mkdirSync(outside);
@@ -1051,7 +1055,7 @@ test("P1-2 a launch refuses by name where no PID-namespace wall can stand, and a
 
 test("a refusal after the lead-step claim point spends no step: a bad broker dir refuses before the state is touched", () => {
   const w = world(); const laneRoot = join(w.home, ".lares-scratch", "lane");
-  writeFileSync(join(laneRoot, "state.json"), JSON.stringify({ head: "e6aa31a8e", owed: [], seats: [], worktrees: {}, next: "x", step: 0 }));
+  writeFileSync(join(laneRoot, "state.json"), JSON.stringify({ head: "e6aa31a8e", owed: [], seats: [], worktrees: {}, next: "x", step: 0, trailers: ["Claude-Session: https://claude.ai/code/session_01TEST"] }));
   const { spawn } = spawnMock();
   assert.equal(run(["--lead-step", "--lane-root", laneRoot, "--model", "gpt-6.1-terra", "--effort", "high", "--worktree", w.wt, "--broker-dir", join(laneRoot, "bsd")], { readers: w.readers, spawn, log() {}, err() {} }), 2);
   assert.equal(JSON.parse(readFileSync(join(laneRoot, "state.json"), "utf8")).step, 0);

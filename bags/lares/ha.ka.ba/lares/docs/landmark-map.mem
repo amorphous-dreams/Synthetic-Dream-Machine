@@ -1,0 +1,124 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/landmark-map`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "THE LANDMARK MAP — the road walked backwards: it stands at `M4` (the hearth stands), reads the code, and walks back to the span, naming the shortest path forward; it sits beside the forward road and tests the road's testimony against source"
+title     = "lar:///ha.ka.ba/lares/docs/landmark-map"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/landmark-map"
+written   = "2026-11-07"
+```
+
+<<~ ahu slot=`#/entry`>>
+
+! The Landmark Map ~ M4 walked backwards
+
+The forward road (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/milestones`>>) walks from the span toward the landmarks. This carrier walks the other way: it stands at `M4`, reads what the code demands for the rite to succeed, and recurses back until it reaches code that stands today (operator, 2026-11-07: //"the shortest path from M4 to here (walking it backwards)"//).
+
+''Provenance.'' A Sol reader seat (`Backwalker`, `gpt-6.1-sol` high, read-only) read the road as `_0`, presence acknowledged and essence unclaimed, then read the code at span head `e1d801042`. Lares-Awakens re-measured three load-bearing claims against source (the compound rite's step test, L24's renewal writer, L23's tombstone source); all three held. Every size, order and "clear" step below carries the seat's INFER mark: testimony from a read, never a run. The seat's full hand-back, with every file:line citation, rests at `~/.lares-scratch/reverse-walk/seats/sol-1/final.md`.
+
+''How to read it.'' `STANDS` means the source exists and reaches the traced path, with no claim of a passing run. `ON-PATH` means the rite's code cannot succeed without the row. `OFF-PATH†` means the rite's code never calls it, while the road still owes it before the rite: OFF-PATH waives no obligation. The map tells the controller which rows the code itself forces and which the road's law adds; the road's law still governs.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/m4-in-code`>>
+
+!! M4 as the code defines it
+
+Three different boundaries answer to "the hearth stands":
+
+# ''The offline hearth act.'' `lares vessel found --hearth --name '<label>'` (`lares-cli/src/commands/found.ts`, then `lararium-node/src/commands/found-hearth.ts`) initializes the place, seats the one-chair seed charter, founds persona zero, admits its group and lands the Kahu realm. It prints "the hearth stands" before any daemon starts.
+# ''The compound rite.'' `lares vessel rite founding` (`lares-cli/src/commands/vessel.ts`, `runFoundingRite`) runs found, stand, seed. It passes no `--hearth` and calls no unlock, and it halts only on a nonzero exit, while `stand` returns zero on an `ok: false` payload unless the host refuses. A failed stand therefore flows on into seed.
+# ''The live, sovereign, seeded household under the operator's hand.'' The founding runbook (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>) runs `found --hearth`, `up` (a TTY unlock), then `vessel seed --apply --yes`. No call inside the rite demands household HTTPS, a phone, the joined gate or `M6`; the road demands them before the operator's `M4`.
+
+''The shortest mechanical route'' reuses the separate primitives the runbook already names. ''The shortest authorized route'' finishes the road's pre-rite qualifications, proves the final candidate in a scratch household, then hands the operator those same primitives on a TTY. The code enforces only part of the road's admission rule.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-backward-walk`>>
+
+!! The backward walk
+
+A dependency graph, not one serial train: links 3 to 7 branch independently.
+
+|! # |! Precondition |! State |! The smallest change that clears it |
+| 1 | The operator's qualified M4 hand-off | UNWIRED as an executable gate | gather the road's receipts against the final candidate; keep the operator's TTY act; no new product gate follows of necessity |
+| 2 | A joined household over trusted HTTPS, with a real phone | UNWIRED as a proved gate | browser admission, custody and lift already compose; HTTPS surfaces refuse by name; a LAN-HTTP phone meets `insecure-origin`; the browser weld's W5 reports an unwired disk leg (that leg belongs to `L4p`, never this gate). Clear: links 3 to 7, then a scratch node, browser and real-phone founding and join on the final image |
+| 3 | Browser founding and retry idempotence (slice 6, `X0b`) | UNWIRED across the sequence | ceremony, atom, archive and anchor persist before bootstrap lands in `loadGenesis`, with no single commit spanning them; carry a durable founding-operation identity across the cut points; prove one atom, one group, no orphan rows |
+| 4 | Durability disclosure before binding (slice 7) | UNWIRED | the page reads durability only after the vessel stands live, and swallows an unreadable store; read and show it before founding or joining binds; settle partial-keystore loss apart from whole-origin loss |
+| 5 | `P27` at four crossings | UNWIRED; its composer STANDS | `capTierShareDecision` and the contract secrets registry exist with no production caller; the node and browser repo shares, the public CAS shore and island CAS still use their old deciders; `composeVessel` already serves node, browser and herm, so 5b needs no rebuild; invent no secrets store to give the registry a caller |
+| 6 | The named security dispositions | mixed | `L23` BROKEN (its drop floor trusts tombstones from the same ledger node custody can rewrite: bind drops to the board or a ward-authenticated head); `L24` writer STANDS (re-measure, never rebuild); `L25`/`L26` residues UNWIRED; `L27` base STANDS, two residual witnesses owed; `L29` base STANDS, tails need measurement; `K22`/`L28` reviews owed after `M6`; `K23` retirement STANDS |
+| 7 | `M6` before the rite | UNWIRED to its end state | lineage and remove-wins readers stand, yet live lease readers still fold signed epochs, `persona lease` still rolls one, browser founding still writes `leaseEpoch: 0`, and genesis keeps the `lararium-genesis-seed/v1` literal; finish the dyad census with incomplete-view refusal, retire lease authority, burn its writers, change the literal in the one final bake |
+| 8 | Seeding under a lit, unlocked face | STANDS as primitives; BROKEN in the compound rite | the compound neither founds a hearth nor unlocks before seed; use found `--hearth`, start, live unlock, seed; read Kahu projection as its own receipt |
+| 9 | A live sovereign daemon | STANDS; compound success propagation BROKEN | each boot starts with empty custody and unlock recomposes; `stand` can read `ok: false` and exit zero; the container's `vessel rite` routes into the CLI without the host shim's unlock; keep the host `up` path and verify held custody and sovereign standing |
+| 10 | Seed charter, persona zero, custody, card readback | STANDS | `found --hearth` does it whole; bare `found` founds a faceless place and `persona new 0` then refuses; the act needs a TTY, a label and the place and chair card readbacks |
+| 11 | Fresh roots, usable genesis, runnable artifacts | STANDS conditionally; final qualification UNWIRED | founding refuses occupied storage (`OccupiedStoreRefusal`); Docker copies committed genesis and never bakes; a missing seed pin permits an unpinned boot; one final bake and image build, then check revision, genesis, artifacts and mounts together |
+| 12 | Today's code and instruments | STANDS; green unread | shared composition, TTY custody, charter founding, floor boot, unlock, seed, browser lift, HTTPS profiles and the store-wall refusals all stand at this head; the exact candidate's CI and held-out receipts settle green |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-shortest-path`>>
+
+!! The shortest path forward
+
+The walk reversed into slices. Sizes and order carry INFER; the road's four-lane ceiling and one owner per compose hunk still hold.
+
+# ''S · Reuse the standing foundation'' (links 12 to 8). Keep 5b, custody, charter founding, unlock, seed and the HTTPS machinery; rebuild nothing an older road inventory calls absent. HTTPS, DNS and certificate preparation start alongside.
+# ''L · Finish `M6`'' (link 7). The dyad census, incomplete-view refusal, the lease burn, the format literal. Parallel with the security slice on disjoint files.
+# ''L · Close the security dispositions'' (link 6). Fix `L23`; re-measure `L24`; finish `L25`/`L26`; measure `L27`'s and `L29`'s residuals; review `K22`/`L28` under `M6`'s shape.
+# ''L · Wire `P27` at four crossings'' (link 5). On the standing 5b; serialize shared compose edits.
+# ''L · Browser slices 6 and 7, then `X0b`'' (links 3 and 4), after `P27` in the road's order.
+# ''M · Bake and build the final candidate'' (link 11).
+# ''M/L · Prove `M3` from that candidate'' (link 2): joined node and browser founding, `X0b`'s crash controls, `G55`, `G56`, drain checks, the real phone over household HTTPS, durability before binding, green CI and held-out on the exact SHA.
+# ''S · Pre-rite and `M4` by hand'' (links 1, 9 to 11): confirm projection, rename old homes, then on the TTY `found --hearth`, `up` with its live unlock, `vessel seed --apply --yes`, and the read-backs (`vessel read`, `persona list`, `nexus seal show`, `meme list --recipe default`); then the browser slot and the join acts.
+
+''Keep the compound rite off the critical path.'' The runbook's manual route supplies the orchestration the compound lacks. Its false success on a failed stand and its misleading help stand as one bounded defect to cure if the house keeps advertising it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/rows-sorted`>>
+
+!! Roadmap rows sorted by the code's own demand
+
+* ''ON-PATH'' (the rite's code needs it): 5b; `M6`'s landed lineage readers; usable artifacts, roots and origin projection; fresh empty storage; TTY custody and cards; valid genesis; `found --hearth`; live unlock; seed; `L1`, `L2`, `L5`, `L7`; the `L22`/`S1`–`S3b` ward and tag model; the `L29` drain foundation.
+* ''OFF-PATH†'' (the code never calls it; the road still owes it before the rite): every `M0` and `M1` row (train and instrument law); `P27`; slices 6 and 7; `X0b`; `K22`; `L28`; `K23` (already retired); the `M6` timeout sweep, version burn, dyad census and lease burn; the `M3` joined gate and phone walk; the final rebuild; the browser passphrase slot and fleet join acts; `L23` to `L26`; `G55`.
+* ''UNCLEAR'' (a measurement settles it): `L27`'s residual projection witness (seed's real Kahu-gated receipt); `L29`'s tails (dedicated-worker pagehide, herm drain); `G56` (dial order against the joined gate); `F11` (if agent writes enter `M4` acceptance); `L16` (a cold corpus without `.git`).
+* ''OFF-PATH, after the rite by the road's own word'': `L3`/`home tend`, `L15`, `L4p`/`L4f` and every `M5` row, `S4`–`S6`, the mirror, harness and AI-harness tails, `M7`, `M8`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/collisions`>>
+
+!! Canon against code ~ the trues this read owes the road
+
+Each row names a place where the road's word and the source disagree; the controller trues the road from it.
+
+# ''store-wall'' lands at `e1d801042` (PR #194); `M1` and rank 1 still list it owed.
+# ''`L24`'' — the road says no writer appends a renewed `device-edge`; `device-admit.ts` appends one when the seated digest changes. Keep the qualification work; drop the rebuild.
+# ''The CLI help'' advertises bare `rite founding` then `persona new 0`; bare `found` seats no charter and persona zero refuses without one. The runbook's `found --hearth` holds.
+# ''The compound rite's comment'' promises a halt at the first refusing step; `stand` exits zero on most failed payloads.
+# ''The compound rite's commentary'' explains boot class by an env passphrase; boot now starts without custody and the TTY reaches the live custody frame.
+# ''"The hearth stands"'' printed by `found` reads as no `M4` qualification; it prints before the vessel stands.
+# ''`OldShapeRefusal`'' in the road's fresh start; the code names `OccupiedStoreRefusal` at the same point.
+# ''Older blanket inventories'' calling socket cutover, signer and archive custody and the browser custody path absent; current code seats them.
+# ''The ambient `.env` bleed'' concern; the shim now selects its env file or `/dev/null`.
+# ''`K22` against `M7`'' — `K22` proposes wiring a helper that reconstructs a root; `M7` rotates without reconstruction. A critical review settles it before any wire.
+# ''The test re-cut's place'' — one road passage sets it before founding, the operator-order passage after standing; prefer the explicit order.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/unsettled`>>
+
+!! What the read could not settle
+
+Each needs a run, never another read: exact-candidate green (CI and held-out on the final SHA); artifact freshness after the final bake; `M6` completeness under injected missing lineage, stale replicas and incomplete frontiers; browser crash behavior at each persistence cut; erasure on real phones, keystore-only against whole-origin; `L24`'s full scope over every lease-advancing act; `L27`/`L29` residuals and `G56`; household HTTPS and DNS on the actual phone; a kill between init and seed-pin persistence (the pin carries no atomic guarantee today); and a recorded scratch-household qualification of the final candidate before the operator's live re-found.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WpYWxSi2vM4yP7p5dg7hQ9gW60UlmK_pDpJpf_AOisk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -20,7 +20,8 @@
  * from Codex's models cache, `gpt-6-sol`, a Codex pool line unreadable twice (never read as zero), a pool at or under
  * its floor (20% for build, lead or research, 0% for read), a build or lead seat on the main checkout, a lead worktree
  * outside scratch, or a build seat over a stale dist.
- * Pool-used lines (seat-harness#/the-spend-guard): a lead refuses above 50% used, build or research above 60%. A detached
+ * Pool-used lines (seat-harness#/the-spend-guard): lead, build and research seats run until 20% of the pool remains (80% used,
+ * a soft line the operator set 2026-11-07, so the 20% floor speaks first); a read seat spends to its own floor. A detached
  * supervisor (`--supervise`, the seat's parent: it spawns codex itself) tails the seat's rollout and stops it at its token ceiling (`--ceiling N`;
  * lead 15M, others 8M), writing `ceiling.md`.
  * `--lead-step --lane-root <dir> --model --effort --worktree` launches ONE fresh lead step over `<lane-root>/state.json`
@@ -53,8 +54,9 @@ const READ_FLOOR = 0;
 const MODES = ["build", "lead", "read", "research"];
 export const COMPACT_LIMIT = 120000;
 export const TOOL_OUTPUT_LIMIT = 8000;
-/** The pool's used-percent ceiling by mode (seat-harness#/owed row 2): a read seat spends to its own floor. */
-const MAX_USED = { lead: 50, build: 60, research: 60 };
+/** The pool's used-percent ceiling by mode (seat-harness#/owed row 2), 80% since 2026-11-07 (the operator: "Set the codex pool limit
+ * down to 20% (its really a soft limit)"): it meets FLOOR, which refuses first; a read seat spends to its own floor. */
+const MAX_USED = { lead: 80, build: 80, research: 80 };
 /** The per-seat token ceiling by mode (row 1): total_token_usage.total_tokens, cached input counted. */
 const CEILINGS = { lead: 15_000_000, build: 8_000_000, read: 8_000_000, research: 8_000_000 };
 
@@ -311,7 +313,7 @@ export function seatLaw(canonText) {
 export function leadLaw() {
   return `## LEAD LAW (appended by tools/launch-codex.mjs to a lead brief; it binds this lead)
 * You hold no git write access and no credential. Every git act goes through the broker: write a request file \`req-<id>.json\` (zero-padded, in order) into \`<lane-root>/relay/\` and read your own \`res-<id>.json\` in the same step: use \`node tools/wait-receipt.mjs <lane-root>/relay/res-<id>.json\` for an event wait for the file to appear, bounded by a named \`// LIVENESS: ... broker ... died\` timeout. Never poll for a receipt; never poll or wait inside your context for a seat. The doors are \`commit\` (\`paths\`, the commit message as inline \`message\` text up to 16 KiB, and \`expectHead\`), \`push\` (only when the controller's go names the branch and the head), \`worktree\`, \`worktree-remove\`, \`install\`, \`launch\` and \`test\` (\`runner\` Node or Vitest, nonempty named \`files\`).
-* A commit message follows the \`lar:///w1.w2.w3 — summary\` convention and ends with the two trailers the session's attribution reminder gives. No \`git stash\` in any form, no \`--no-verify\`, no \`git push -u\`, no force-push, no edit of .git/config.
+* A commit message follows the \`lar:///w1.w2.w3 — summary\` convention and ends with the lines your brief's COMMIT TRAILERS section carries, verbatim. No \`git stash\` in any form, no \`--no-verify\`, no \`git push -u\`, no force-push, no edit of .git/config.
 * Never write the main checkout (~/Synthetic-Dream-Machine) or its submodule worktrees; work in your own worktree under ~/.lares-scratch only.
 * Never read a credential file or the controller's directory.
 * Never boot a daemon in-tree bare; any boot uses a scratch LAR_ROOT and no global LAR_BAGS.
