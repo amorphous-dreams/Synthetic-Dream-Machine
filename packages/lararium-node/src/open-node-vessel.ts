@@ -73,7 +73,7 @@ import { registerStoreDoorReactors } from "./store-door-registry.js";
 import { makeDurableMailbox, type DurableMailbox } from "./vessel-mailbox.js";
 import { makeRealmPlane, type RealmPlanesHolder } from "./realm-plane.js";
 import { noteVesselRealm, readVesselRealms } from "./edge-board.js";
-import { makeEdgeShadowRing, type EdgeShadowRing } from "./edge-shadow-ring.js";
+import { makeEdgeShadowRing, ringDyadDoor, type EdgeShadowRing } from "./edge-shadow-ring.js";
 import { floorShadowRing } from "./floor-fleet-lanes.js";
 import type { JoinedFaceAuth, WikiActivationCap, PortIslandToVesselMsg } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
@@ -2311,14 +2311,7 @@ async function prepareNodeBootOn(
   // names BEFORE the island boots, so the island's first ask reads a landed fold. An ask that arrives while a
   // board's change left the reading dark waits on the next fold, never on a clock, and a fold that fails
   // answers `aside`. The door stands with the floor and drops at its teardown.
-  const dyadDoor: DyadReader = async (fleetRoot, deviceKey) => {
-    // A fold a board's move overtook publishes nothing, so the capability asks again; three folds each overtaken
-    // leave the reading dark, and a dark reading answers `aside`.
-    for (let tries = 0; tries < 3 && !shadowRing.fold(); tries++) {
-      try { await shadowRing.refold(); } catch { return "aside"; }
-    }
-    return shadowRing.deviceStanding(fleetRoot, deviceKey);
-  };
+  const dyadDoor: DyadReader = ringDyadDoor(shadowRing);
   // THE FLOOR COMPOSES (slice 5b): one record through the one composer, before any island stands. Its stand-down runs
   // after the islands shut (T27): the teardown runs backward, so this entry, pushed before the islands', runs after
   // them, and an ask an island sends while it shuts still reads through the floor.
