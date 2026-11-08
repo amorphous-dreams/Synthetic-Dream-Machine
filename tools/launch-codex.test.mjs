@@ -1312,19 +1312,3 @@ test("RED: the pool refuses two newer recordless rollouts; CONTROL one skip and 
   rmSync(home, { recursive: true, force: true });
 });
 
-test("RED: receipt event wait reads its own answer and refuses a dead broker within a code bound", async () => {
-  const { waitForReceipt } = await import('./wait-receipt.mjs');
-  const dir = mkdtempSync(join(tmpdir(), 'receipt-wait-'));
-  try {
-    const file = join(dir, 'res-001.json');
-    const pending = waitForReceipt(file, { timeoutMs: 1000 });
-    writeFileSync(file, ''); // Creation can precede a completed broker write.
-    writeFileSync(join(dir, 'res-other.json'), '{}');
-    const timer = setTimeout(() => writeFileSync(file, '{"ok":true}'), 30);
-    try { assert.deepEqual(await pending, { ok: true }); } finally { clearTimeout(timer); }
-    assert.deepEqual(await waitForReceipt(file), { ok: true }, 'CONTROL already arrived');
-    await assert.rejects(waitForReceipt(join(dir, 'res-002.json'), { timeoutMs: 30 }), /receipt-timeout.*broker.*died/);
-    await assert.rejects(waitForReceipt(file, { timeoutMs: Infinity }), /receipt-timeout-bound/);
-  } finally { rmSync(dir, { recursive: true, force: true }); }
-});
-

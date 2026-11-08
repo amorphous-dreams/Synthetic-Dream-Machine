@@ -35,6 +35,7 @@ function fixture() {
       read.push(`${reading}|${context.dyad?.("someone-else")}`);
       if (pendingOnce) { pendingOnce = false; return { ok: false, reason: "founder persona-KEL proof unavailable", pending: true }; }
       if (reading === "aside") return { ok: false, reason: "founder device set aside" };
+      if (reading === "unknown") return { ok: false, reason: "founder dyad standing unknown", pending: true };
       return refuse ? { ok: false, reason: "refused" } : { ok: true };
     },
     ingest: async () => { ingests++; if (failIngest) throw new Error("ingest"); known = true; },
@@ -58,6 +59,50 @@ function fixture() {
 }
 
 describe("a causal face seat", () => {
+  test("a held fork surfaces even when founder standing is unknown; CONTROL: an unforked grant waits", async () => {
+    const run = async (fork: boolean) => {
+      const logs: string[] = [];
+      let ingests = 0;
+      const seat = makeFaceSeat({
+        group, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
+        knowsAgent: async () => false, grants: async () => [{ title, record: grant }], founderStanding: async () => "unknown",
+        verify: async (_record, context) => fork
+          ? { ok: false, reason: "founder lineage forked: test" }
+          : context.dyad?.(FOUNDER) === "unknown"
+            ? { ok: false, reason: "founder dyad standing unknown", pending: true }
+            : { ok: true },
+        ingest: async () => { ingests++; }, lift: async () => {}, log: (message) => { logs.push(message); },
+      });
+      await seat.run();
+      return { logs, ingests };
+    };
+    const control = await run(false);
+    expect(control.logs.join("\n")).toMatch(/pending .*dyad standing unknown/);
+    expect(control.ingests).toBe(0);
+    const fork = await run(true);
+    expect(fork.logs.join("\n")).toMatch(/REFUSED .*founder lineage forked/);
+    expect(fork.ingests).toBe(0);
+  });
+  test("unknown standing still withholds when a supplied verifier accepts", async () => {
+    let ingests = 0;
+    const seat = makeFaceSeat({
+      group, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
+      knowsAgent: async () => false, grants: async () => [{ title, record: grant }], founderStanding: async () => "unknown",
+      verify: async () => ({ ok: true }), ingest: async () => { ingests++; }, lift: async () => {}, log: () => {},
+    });
+    await seat.run();
+    expect(ingests).toBe(0);
+  });
+  test("aside standing still withholds when a supplied verifier accepts", async () => {
+    let ingests = 0;
+    const seat = makeFaceSeat({
+      group, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
+      knowsAgent: async () => false, grants: async () => [{ title, record: grant }], founderStanding: async () => "aside",
+      verify: async () => ({ ok: true }), ingest: async () => { ingests++; }, lift: async () => {}, log: () => {},
+    });
+    await seat.run();
+    expect(ingests).toBe(0);
+  });
   test("R1 grant arrival seats and lifts without a binding call; absent grant leaves the floor", async () => {
     const f = fixture(); f.standingArrives();
     expect(await f.seat.run()).toBe(false);
@@ -90,7 +135,7 @@ describe("a causal face seat", () => {
   });
   test("R2 a grant waits unjudged while its founder's standing reads unknown", async () => {
     const f = fixture(); f.arrive();
-    await f.seat.run(); expect(f.counts().verifies).toBe(0);
+    await f.seat.run(); expect(f.counts().verifies).toBe(1);
     f.standingArrives(); f.seat.wake(); await f.seat.settled();
     expect(f.counts().ingests).toBe(1);
   });
@@ -99,7 +144,7 @@ describe("a causal face seat", () => {
     idle.seat.daemonChanged("unrelated/title"); await idle.seat.settled();
     expect(idle.counts().verifies).toBe(0);
     const f = fixture(); f.arrive();
-    await f.seat.run(); expect(f.counts().verifies).toBe(0);
+    await f.seat.run(); expect(f.counts().verifies).toBe(1);
     f.standingArrives(); f.seat.daemonChanged("unrelated/title"); await f.seat.settled();
     expect(f.counts().ingests).toBe(1);
   });
@@ -110,10 +155,10 @@ describe("a causal face seat", () => {
     expect(f.read()).toEqual(["clear|unknown"]);
     expect(f.counts().ingests).toBe(1);
   });
-  test("R8 a set-aside founder's grant judges once and seats nothing; CONTROL: a standing founder's seats", async () => {
+  test("R8 a set-aside founder's grant remains refused on retries; CONTROL: a standing founder's seats", async () => {
     const f = fixture(); f.arrive(); f.founderAside();
     await f.seat.run(); f.seat.wake(); await f.seat.settled(); await f.seat.run();
-    expect(f.counts()).toEqual({ ingests: 0, lifts: 0, verifies: 1 });
+    expect(f.counts()).toEqual({ ingests: 0, lifts: 0, verifies: 3 });
     expect(f.seated()).toBe(false);
     expect(f.logs.some((m) => /REFUSED .*founder device set aside/.test(m))).toBe(true);
     const control = fixture(); control.arrive(); control.standingArrives();
@@ -127,6 +172,65 @@ describe("a causal face seat", () => {
     expect(f.logs.some((m) => /grant pending .*persona-KEL proof unavailable/.test(m))).toBe(true);
     f.seat.daemonChanged("any/title"); await f.seat.settled();
     expect(f.counts()).toEqual({ ingests: 1, lifts: 1, verifies: 2 });
+  });
+  test("a founder lift retries the same set-aside grant on a daemon change; CONTROL: an unchanged aside never seats", async () => {
+    const f = fixture(); f.arrive(); f.founderAside();
+    await f.seat.run();
+    expect(f.seated()).toBe(false);
+    f.seat.daemonChanged("edge/unchanged"); await f.seat.settled();
+    expect(f.seated()).toBe(false);
+    expect(f.counts().ingests).toBe(0);
+    f.standingArrives();
+    f.seat.daemonChanged("edge/lift"); await f.seat.settled();
+    expect(f.seated()).toBe(true);
+    expect(f.counts().ingests).toBe(1);
+  });
+  test("a proof change during a standing read gets a trailing pass; CONTROL: unchanged aside never seats", async () => {
+    const exercise = async (lift: boolean) => {
+      let answer: "aside" | "clear" = "aside", reads = 0, ingests = 0, known = false;
+      let release!: () => void, started!: () => void;
+      const blocked = new Promise<void>((resolve) => { release = resolve; });
+      const reading = new Promise<void>((resolve) => { started = resolve; });
+      const seat = makeFaceSeat({
+        group, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
+        knowsAgent: async () => known, grants: async () => [{ title, record: grant }],
+        founderStanding: async () => { const snapshot = answer; if (++reads === 1) { started(); await blocked; } return snapshot; },
+        verify: async (_record, ctx) => ctx.dyad?.(FOUNDER) === "aside"
+          ? { ok: false, reason: "founder device set aside" } : { ok: true },
+        ingest: async () => { ingests++; known = true; }, lift: async () => {}, log: () => {},
+      });
+      const running = seat.run(); await reading;
+      if (lift) answer = "clear";
+      seat.daemonChanged("edge/change"); release(); await running;
+      return { reads, ingests };
+    };
+    expect(await exercise(true)).toEqual({ reads: 2, ingests: 1 });
+    expect(await exercise(false)).toEqual({ reads: 2, ingests: 0 });
+  });
+  test("a clear reading overtaken by an aside cannot ingest; CONTROL: unchanged clear seats", async () => {
+    const exercise = async (aside: boolean) => {
+      let standing: "clear" | "aside" = "clear", ingests = 0, known = false, verifies = 0;
+      let release!: () => void, started!: () => void;
+      const blocked = new Promise<void>((resolve) => { release = resolve; });
+      const verifying = new Promise<void>((resolve) => { started = resolve; });
+      const seat = makeFaceSeat({
+        group, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
+        knowsAgent: async () => known, grants: async () => [{ title, record: grant }],
+        founderStanding: async () => standing,
+        verify: async (_record, ctx) => {
+          const snapshot = ctx.dyad?.(FOUNDER);
+          if (++verifies === 1) { started(); await blocked; }
+          return snapshot === "aside" ? { ok: false, reason: "founder device set aside" } : { ok: true };
+        },
+        ingest: async () => { ingests++; known = true; }, lift: async () => {}, log: () => {},
+      });
+      const running = seat.run(); await verifying;
+      if (aside) { standing = "aside"; seat.daemonChanged("edge/aside"); }
+      release(); await running;
+      return { ingests, known };
+    };
+    expect(await exercise(false)).toEqual({ ingests: 1, known: true });
+    expect(await exercise(true)).toEqual({ ingests: 0, known: false });
   });
   test("R3 duplicate pulses coalesce and a pulse during a pass yields one trailing pass", async () => {
     const f = fixture(); f.arrive(); f.standingArrives();

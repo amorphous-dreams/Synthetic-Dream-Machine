@@ -66,14 +66,14 @@ import {
   faceAtomKeyFromSeed, type FaceAtomKey,
   carriageFloorDutyOf, type PlaceSigner,
   genesisCasCidsFromOracle, provenVesselKeyOf,
-  wikiSlugOfBag, gateSweep, promoteWiring, promoteWikiItems, promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteActRecords, writePromoteAct, type GateSweepSeat,
+  wikiSlugOfBag, gateSweep, promoteWiring, promoteWikiItems, promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteBoardRecords, writePromoteAct, type GateSweepSeat,
 }                                       from "@lararium/mesh";
 import { resolveNodeIslandPluginCids, nodeOfferingLookup } from "./node-plugin-resolution.js";
 import { registerStoreDoorReactors } from "./store-door-registry.js";
 import { makeDurableMailbox, type DurableMailbox } from "./vessel-mailbox.js";
 import { makeRealmPlane, type RealmPlanesHolder } from "./realm-plane.js";
 import { noteVesselRealm, readVesselRealms } from "./edge-board.js";
-import { makeEdgeShadowRing, type EdgeShadowRing } from "./edge-shadow-ring.js";
+import { makeEdgeShadowRing, ringDyadDoor, type EdgeShadowRing } from "./edge-shadow-ring.js";
 import { floorShadowRing } from "./floor-fleet-lanes.js";
 import type { JoinedFaceAuth, WikiActivationCap, PortIslandToVesselMsg } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
@@ -2311,14 +2311,7 @@ async function prepareNodeBootOn(
   // names BEFORE the island boots, so the island's first ask reads a landed fold. An ask that arrives while a
   // board's change left the reading dark waits on the next fold, never on a clock, and a fold that fails
   // answers `aside`. The door stands with the floor and drops at its teardown.
-  const dyadDoor: DyadReader = async (fleetRoot, deviceKey) => {
-    // A fold a board's move overtook publishes nothing, so the capability asks again; three folds each overtaken
-    // leave the reading dark, and a dark reading answers `aside`.
-    for (let tries = 0; tries < 3 && !shadowRing.fold(); tries++) {
-      try { await shadowRing.refold(); } catch { return "aside"; }
-    }
-    return shadowRing.deviceStanding(fleetRoot, deviceKey);
-  };
+  const dyadDoor: DyadReader = ringDyadDoor(shadowRing);
   // THE FLOOR COMPOSES (slice 5b): one record through the one composer, before any island stands. Its stand-down runs
   // after the islands shut (T27): the teardown runs backward, so this entry, pushed before the islands', runs after
   // them, and an ask an island sends while it shuts still reads through the floor.
@@ -2726,7 +2719,7 @@ async function prepareNodeBootOn(
         wornPromoteGroup = personaGroupId;
         const promoteFace = liveKahuaFace({ group: personaGroupId, prefix: personaKelPrefix, bootChain: personaKelChain, anchor: faceAnchor, board: repo.find(personaKelBoardDocUrl(nexusPubkey)) });
         const devices = new Set(proof.projection.devices);
-        const promoteHolder = activeAtom.key;
+        const promoteHolder = activeAtom.key, promoteAtom = activeAtom;
         rebuildPromoteWiring = () => {
           promoteWiringRef = wornPromote ? promoteWiring({
             repo, group: personaGroupId, boardUrl: wornPromote, stageUrl: wornKahua?.url ?? null,
@@ -2740,6 +2733,8 @@ async function prepareNodeBootOn(
               return { group: personaGroupId, grant: f ? f.grant : () => false, device: (k) => devices.has(k), ward };
             },
             stores: nodePromoteStores(personaGroupId), cas: nodePromoteCas(cidDir, promoteHolder),
+            // THE OWNER (road L23): this device's atom binds its ledger into each ward signature and signs the drops boot lands.
+            atom: promoteAtom, epoch: () => readFace(personaKelChain ?? [], faceAnchor)?.lineage.at(-1)?.epoch ?? 0,
             wikiItems: promoteWikiItems({ repo, catalog: () => assembly.catalogHandle.doc() }), restart: restartWikiIsland,
             onArrive: async () => { await pushPromoteSnapshot?.(); },
             onFault: (reason) => console.warn(`[promote] ${reason}`),
@@ -2767,7 +2762,7 @@ async function prepareNodeBootOn(
               if (!held) throw new WardNeedsFreshUnlock("the panel's kāpae-lower (the panel carries no ward route: run `lares kapae lower <digest>` at a terminal)");
               return wardRootSigner(wornMount?.handleIndex ?? 0, held, "a kāpae-lower");
             },
-            board: { records: async () => promoteActRecords(handle.doc(), personaGroupId), land: async act => { handle.change(doc => writePromoteAct(doc, act)); await repo.flush(); } },
+            board: { records: async () => promoteBoardRecords(handle.doc(), personaGroupId), land: async act => { handle.change(doc => writePromoteAct(doc, act)); await repo.flush(); } },
             projection: () => proof.projection,
             // THE CO-SIGN GATE: a summoned lower reads the worn face's signed admission fold and its intent plane at the act and, where
             // the face holds two devices, waits on a second one's answer; a one-device face lowers even where its intents plane cannot
@@ -2785,7 +2780,9 @@ async function prepareNodeBootOn(
                 if (!held) throw new WardNeedsFreshUnlock(`the panel's commit in ${wiki} (the panel carries no ward route: run \`lares promote commit <digest> --wiki ${wiki}\` at a terminal)`);
                 return wardRootSigner(wornMount?.handleIndex ?? 0, held, `a commit in ${wiki}`);
               },
-              face: { grant: (key: string) => promoteFace.read()?.grant(key) ?? false } }), boardDoor,
+              face: { grant: (key: string) => promoteFace.read()?.grant(key) ?? false },
+              // THE DROP FLOOR (road L23): a bound row that leaves the ledger lands as a drop on the board, where no custody write reaches.
+              landDrops: (tombstones) => boardDoor.drop(tombstones), owner: atom.key }), boardDoor,
           });
           const push = async (data: string) => { daemonVm.placeVerb({ verb: "promote-state", args: { data }, requestedBy: "promote", origin: "channel" }); };
           // A quiet panel stays unpushed (the island starts quiet): a push is a verb tiddler in the daemon document, and a boot mints no content head.

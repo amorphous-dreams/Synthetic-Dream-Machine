@@ -1,6 +1,7 @@
 import type { AutomergeUrl, Repo } from "@automerge/automerge-repo";
 import { promoteBoot, type PromoteBootReport } from "./promote-boot.js";
-import { promoteActRecords, readPromoteBoard, type PromoteFace } from "./promote-board.js";
+import { promoteBoardRecords, readPromoteBoard, writePromoteAct, type PromoteFace } from "./promote-board.js";
+import { landPromoteDrops } from "./promote-board-door.js";
 import { kahuaActRecords, readKahuaStage, type KahuaFoldFace } from "./kahua-stage.js";
 import type { PromoteItem, PromotionPorts } from "./promote-door.js";
 import type { LarDoc } from "./base-doc.js";
@@ -11,6 +12,8 @@ export function promoteWiring(opts: {
   /** The face the board reads under, its co-sign witness composed at each read (a vessel loads the face's plane for it). */
   foldFace: () => KahuaFoldFace; boardFace: () => PromoteFace | Promise<PromoteFace>;
   stores: { ledger: PromotionPorts["ledger"]; local: PromotionPorts["local"] };
+  /** This device's atom: the ledger's owner the ward bytes bind, and the signer of the drops boot lands when a verb owed them (road `L23`). */
+  atom: { readonly key: string; sign(bytes: Uint8Array): Promise<string> }; epoch: () => number;
   cas: PromotionPorts["cas"]; wikiItems: (wiki: string) => Promise<readonly PromoteItem[]>;
   restart: (wiki: string, hit?: readonly string[]) => Promise<void | { pending: Promise<void> }>; daemonWiki?: string;
   onArrive?: () => Promise<void>;
@@ -24,7 +27,8 @@ export function promoteWiring(opts: {
   const board: PromotionPorts["board"] = async () => {
     if (opts.boardUrl === null) throw new Error("board-unpinned");
     const handle = await opts.repo.find<LarDoc>(opts.boardUrl as AutomergeUrl);
-    return readPromoteBoard(promoteActRecords(handle.doc(), opts.group), await opts.boardFace());
+    // The current map and every drop the board's history holds: a delete lifts no drop (road `L23`).
+    return readPromoteBoard(promoteBoardRecords(handle.doc(), opts.group), await opts.boardFace());
   };
   const itemsOf = async (wiki: string) => {
     if (wiki !== (opts.daemonWiki ?? "daemon")) return opts.wikiItems(wiki);
@@ -40,6 +44,15 @@ export function promoteWiring(opts: {
     board, itemsOf,
     // A bound row's ward signature reads against the face's CURRENT grant, as the stage and the board read theirs.
     face: { grant: (key: string) => opts.foldFace().grant(key) },
+    owner: opts.atom.key,
+    landDrops: async (tombstones) => {
+      if (opts.boardUrl === null) throw new Error("board-unpinned");
+      const handle = await opts.repo.find<LarDoc>(opts.boardUrl as AutomergeUrl);
+      return landPromoteDrops({ group: opts.group, atom: opts.atom, epoch: opts.epoch, board: {
+        records: async () => promoteBoardRecords(handle.doc(), opts.group),
+        land: async (act) => { handle.change((doc) => writePromoteAct(doc, act)); await opts.repo.flush(); },
+      } }, tombstones);
+    },
   });
   const boot = {
     promotedFor: (wiki: string): Promise<readonly string[]> => {

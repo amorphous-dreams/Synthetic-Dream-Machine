@@ -107,7 +107,7 @@ test("RED (Sol: mixed edges): an arrival carrying a raised edge AND another edge
 });
 
 // ── the ward binds the daemon realm's promotions (row 7, S2) ─────────────────────────────────────────────────────────────
-test("RED: a daemon or kahua ledger row written straight into custody, with no ward signature, voids at boot; CONTROL: a user-wiki row with none stands, and a fresh-unlocked commit lands and runs", async () => {
+test("RED: a daemon or kahua ledger row written straight into custody, with no ward signature, voids at boot, and so does a dropped signed row a custody write puts back; CONTROL: a user-wiki row with none stands, and a fresh-unlocked commit lands and runs", async () => {
   const { seatScratchCustody } = await import("./custody-seat-fixture.js");
   const { personaGroupDigest } = await import("../src/persona-group-file.js");
   const { generateOrLoadPersonaGroupRoot, loadPersonaGroupRootVerifyingKey, setMountedFace } = await import("../src/node-vessel-identity.js");
@@ -115,7 +115,7 @@ test("RED: a daemon or kahua ledger row written straight into custody, with no w
   const { wardRootSigner } = await import("../src/ward-signer.js");
   const { nodePromoteStores, promotedFile } = await import("../src/promoted-store.js");
   const { updateCustodyRow } = await import("../src/custody-seat.js");
-  const { EMPTY_LEDGER, encodeLedger, ledgerCommit, promoteDigest, promotions, readPromoteBoard } = await import("@lararium/mesh");
+  const { EMPTY_LEDGER, decodeLedger, encodeLedger, ledgerCommit, promoteDigest, promotions, readPromoteBoard, promoteBoardDoor, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } = await import("@lararium/mesh");
   const PASS = "promote-ward-route", GROUP = "promote-ward-group";
   const seat = await seatScratchCustody("promote-ward");
   try {
@@ -132,10 +132,16 @@ test("RED: a daemon or kahua ledger row written straight into custody, with no w
     forged = ledgerCommit(forged, { wiki: "garden", digest, item: rite, revision: "r1" }, hand);
     await updateCustodyRow("identity", promotedFile(GROUP), () => ({ plaintext: encodeLedger(forged), value: undefined }));
     const cas = new Map<string, Uint8Array>();
-    const face = { group: GROUP, grant: (k: string) => k === rootKey, device: () => false };
+    // The face-private board: a bound row a commit replaces lands its drop here, signed by this device's atom (road L23).
+    const atom = { key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(3)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(3)) };
+    const acts: unknown[] = [];
+    const face = { group: GROUP, grant: (k: string) => k === rootKey, device: (k: string) => k === atom.key };
+    const boardDoor = promoteBoardDoor({ group: GROUP, face, atom, epoch: () => 0, rootSigner: async () => { throw new Error("no lower rides this red"); },
+      board: { records: async () => acts, land: async (act) => { acts.push(act); } }, projection: () => ({ planes: {} }), cosign: () => { throw new Error("no co-sign rides this red"); } });
     const doorOf = (wiki: string, extra: object = {}) => promotions({
       wiki, ...nodePromoteStores(GROUP), who: hand, items: async () => [{ ...rite, revision: "r1", origin: { seat: "s", device: "d", session: "x" } }],
-      board: async () => readPromoteBoard([], face), cas: { put: (d, b) => { cas.set(d, b); }, pin: () => {} }, face, ...extra,
+      board: async () => readPromoteBoard(acts, { ...face, ward: { accepts: () => true } }), cas: { put: (d, b) => { cas.set(d, b); }, pin: () => {} }, face,
+      landDrops: (tombstones) => boardDoor.drop(tombstones), owner: atom.key, ...extra,
     });
     for (const wiki of ["daemon", "kahua"]) {
       const booted = await doorOf(wiki).boot();
@@ -149,5 +155,12 @@ test("RED: a daemon or kahua ledger row written straight into custody, with no w
     const row = await doorOf("daemon", { wardSigner: () => wardRootSigner(0, ward) }).promote({ digest });
     expect(row.wardSig?.key).toBe(rootKey);
     expect((await doorOf("daemon").boot()).pluginCids).toEqual([digest]);
+    // THE DROP FLOOR on the real custody row (road L23): the hand drops the signed row; a plain custody write strips its tombstone and
+    // puts the row back, ward signature and all; the board's drop voids it at boot.
+    await doorOf("daemon").unpromote({ digest });
+    await updateCustodyRow("identity", promotedFile(GROUP), (bytes) => { const l = decodeLedger(bytes!); return { plaintext: encodeLedger({ seq: l.seq, rows: [...l.rows, row] }), value: undefined }; });
+    const replay = await doorOf("daemon").boot();
+    expect(replay.pluginCids).toEqual([]);
+    expect(replay.voided).toEqual([{ digest, reason: "ward-dropped" }]);
   } finally { setMountedFace(undefined); await seat.drop(); }
 });
