@@ -68,6 +68,10 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
   // rename-deletion so the island re-links records (change-id preserved) and the
   // observation survives the move (see applyConfirmedRenames, post-submit).
   const renameDeletions = scan.renameDeletions ?? [];
+  // THE KĀPAE THE SOURCE SPEAKS: each shadow file's title rides the wave, and the island raises a kāpae over
+  // it in the target bag; a shadow file that proves no kāpae gets named and fails the run.
+  const shadows = scan.shadows ?? [];
+  const refusedShadows = scan.refusedShadows ?? [];
 
   // Carriers that would hit the ungated-large-inline wall during ingest, still
   // un-flagged — the readiness law reads off text the scan already holds.
@@ -100,11 +104,15 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
         unchanged: rows.filter((r) => r.status === "unchanged").length,
         nonNfc: rows.filter((r) => r.status === "non-nfc").map((r) => r.uri),
         wouldFault: wouldFault.map((r) => r.uri),
+        kapae: shadows,
+        refusedShadows,
         skipped,
         rows: rows.filter((r) => r.status !== "unchanged").map((r) => ({ uri: r.uri, status: r.status })),
       },
       human: () => {
         for (const r of rows) console.log(`  ${r.status.toUpperCase().padEnd(10)} ${r.uri}`);
+        for (const t of shadows) console.log(`  ${"KAPAE".padEnd(10)} ${t}`);
+        for (const r of refusedShadows) console.error(`  ${"REFUSE".padEnd(10)} ${r.file} (${r.refusal})`);
         for (const f of skipped) console.log(`  SKIPPED    ${f} (no address derivation — outside bags//wikis/, non-.md, or rootless interior)`);
         console.log(`\n  ${rows.length} scanned · ${candidates.length} would submit · preview only (pass --apply)`);
         if (wouldFault.length > 0) console.log(`  ${wouldFault.length} large un-flagged file(s) would fault during ingest — run \`--tag-blobs\` to flag them.`);
@@ -113,7 +121,7 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
     return 0;
   }
 
-  if (candidates.length === 0) {
+  if (candidates.length === 0 && shadows.length === 0) {
     emit(args, { ok: true, data: { toBag, scanned: rows.length, submitted: 0 }, human: () => console.log("nothing to ingest — all carriers match the Synced tree") });
     return 0;
   }
@@ -125,8 +133,9 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
       return exitFor("usage");
     }
     for (const r of candidates) console.log(`  ${r.status.toUpperCase().padEnd(8)} ${r.uri}`);
+    for (const t of shadows) console.log(`  ${"KAPAE".padEnd(8)} ${t}`);
     const rl = createInterface({ input: stdin, output: stdout });
-    const answer = await rl.question(`INGEST ${candidates.length} carriers into ${toBag}? [y/N] `);
+    const answer = await rl.question(`INGEST ${candidates.length} carriers${shadows.length > 0 ? ` and raise ${shadows.length} kāpae` : ""} into ${toBag}? [y/N] `);
     rl.close();
     if (!/^y(es)?$/i.test(answer.trim())) { console.log("aborted"); return 1; }
   }
@@ -147,6 +156,7 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
       source, toBag, candidates, did,
       inWiki: Boolean(args.flags["in-wiki"]),
       ...(renameDeletions.length > 0 ? { deletions: renameDeletions } : {}),
+      ...(shadows.length > 0 ? { kapae: shadows } : {}),
       ...(args.options["change-id"] ? { changeId: args.options["change-id"] } : {}),
     }, tree);
   } catch (err) {
@@ -201,7 +211,16 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
   // one gets named with the two doors that settle it by key.
   const { refused, conflicts } = settled;
   const pageError = settled.pageError;
-  const { failed, message: refusedMessage } = ingestVerdict(settled);
+  const verdict = ingestVerdict(settled);
+  // A SHADOW THAT RAISED NOTHING NEVER READS AS APPLIED: a file that proved no kāpae, or a title the island
+  // refused to set aside, fails the run by name.
+  const kapaeAnswer = (summary as { kapae?: { raised?: unknown; standing?: unknown; refused?: unknown } }).kapae;
+  const kapaeRefused = Array.isArray(kapaeAnswer?.refused) ? (kapaeAnswer.refused as Array<Record<string, unknown>>) : [];
+  const kapaeFault = refusedShadows.length > 0 || kapaeRefused.length > 0
+    ? `INGEST set aside no title for ${refusedShadows.length + kapaeRefused.length} kāpae shadow(s): ${[...refusedShadows.map((r) => `${r.file} (${r.refusal})`), ...kapaeRefused.map((r) => `${String(r["uri"])} (${String(r["code"])})`)].join(", ")}`
+    : null;
+  const failed = verdict.failed || kapaeFault !== null;
+  const refusedMessage = verdict.message ?? kapaeFault;
   const stoodOff = !failed && conflicts.length > 0;
   const conflictMessage = `INGEST landed nothing for ${conflicts.length} of ${candidates.length} carrier(s) that stand in a conflict: ${conflicts.map((r) => r.uri).join(", ")}. \`lares shore\` names each standoff's key; settle one with \`lares shore take-disk <uri> --key <key>\` (the file's words) or \`lares shore take-records <uri> --key <key>\` (the records')`;
   const data = {
@@ -228,6 +247,9 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
         ? `INGEST ✓ applied locally — ${candidates.length} carrier(s) submitted (req ${result.requestId.slice(0, 8)})`
         : `INGEST ✗ ${refused.length} of ${candidates.length} carrier(s) refused; the rest applied locally (req ${result.requestId.slice(0, 8)})`);
       for (const [decision, n] of Object.entries(settled.tallies)) console.log(`  ${decision.toUpperCase().padEnd(10)} × ${n}`);
+      for (const t of Array.isArray(kapaeAnswer?.raised) ? (kapaeAnswer.raised as unknown[]) : []) console.log(`  ${"KAPAE".padEnd(10)} ${String(t)}  (raised)`);
+      for (const t of Array.isArray(kapaeAnswer?.standing) ? (kapaeAnswer.standing as unknown[]) : []) console.log(`  ${"KAPAE".padEnd(10)} ${String(t)}  (already set aside)`);
+      if (kapaeFault !== null) console.error(`  ⚠ ${kapaeFault}`);
       // Under the row cap every row prints. Past it the landed rows ride the tally above, and each row
       // that asks for a hand prints below with its reason.
       const asking = new Set([...refused, ...conflicts].map((r) => r.uri));

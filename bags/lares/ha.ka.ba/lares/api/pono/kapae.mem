@@ -81,6 +81,18 @@ the bag-cascade sense stands witnessed in shipped code and named in residency-mo
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/disk-sense`>>
+
+!! Sense (a′) — the disk projection carries the shadow (BUILT)
+
+A working layer's projection writes each record it holds to a file, and an operator may pour that export into a fresh root whose canon still holds a title the operator burned. Were the projection to drop the file alone, the re-pour would read the title as //absent//, the canon copy would fall through, and the deliberate forgetting would undo itself: the moby#783 resurrection, crossing a disk.
+
+So the cut holds on disk too. Where a kāpae rises over a working record, the projector removes the carrier's file and writes a ''shadow file'' at the carrier's own stem: `<carrier-stem>.kapae`, its bytes `{"title":"<title>","kapae":"raised"}`. The file's place names the layer the kāpae stands in, exactly as the carrier's place named the layer its record stood in; its bytes name the title and the act. A retract to absent (MOVE, promotion, an ingest rename's re-link) writes no shadow and takes one down; a record returning live takes its shadow down as its carrier writes back.
+
+The ingest gesture reads a shadow as the one exclusion a disk can speak: unlike a vanished file, which proves nothing and stands pending at the vessel's shore, a shadow file states its act. The wave raises a kāpae over its title in the target layer, and a carrier the same export holds under that title never lands (remove-wins inside one export). A shadow whose bytes prove no raise, or name a title its siting does not derive, raises nothing and gets named. Witness: `packages/lararium-node/src/kapae-shadow.ts`, the projector's `settleShadow`, and `packages/lares-cli/tests/kapae-repour.test.ts` (a burned row re-poured into a fresh root stays shadowed over its canon copy).
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/membership-sense`>>
 
 !! Sense (b) — the membership / governance stack (PROPOSED)
@@ -280,6 +292,7 @@ The hand that raised lowers, by an act that cites every raise head, and an effec
 * A relocation gesture (MOVE, promotion source) MUST retract to absent, never raise a kāpae — so the canonical copy beneath surfaces.
 * An exclusion gesture (EVICT, CLEAR, DROP, DELETE) MUST raise a kāpae, never retract to absent — so a lower re-add cannot resurrect the excluded record.
 * A raised kāpae MUST win remove-wins under contention / partition (the shadow defeats a concurrent lower-layer re-add).
+* A projection MUST carry a raised kāpae to disk as a shadow file where the carrier stood, and an ingest of that export MUST raise the kāpae again; a retract to absent MUST leave no shadow (#/disk-sense).
 * Lowering a kāpae MUST stay a deliberate gesture and MUST write an effect record; a record MUST NOT un-shadow silently.
 
 <<~/ahu>>
@@ -294,6 +307,6 @@ The hand that raised lowers, by an act that cites every raise head, and an effec
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;mUCZ2uK3Q3ujGHS33VeIT7LzroeBHJsjSRJ6gtqpBrk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ttEx7h6gxZE8BiIEivdrBmA8rpFOhH3mkBZy1CDatOY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

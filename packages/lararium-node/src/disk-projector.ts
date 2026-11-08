@@ -68,6 +68,7 @@
 import { writeFileSync, mkdirSync, unlinkSync, existsSync, readFileSync, readdirSync, renameSync } from "fs";
 import { dirname, basename, extname, relative as relativePath, resolve as resolvePath } from "path";
 import { confineMirrorWrite, carrierBaseRelPath, titleRelPath } from "./bag-paths.js";
+import { KAPAE_EXT, kapaeShadowBody } from "./kapae-shadow.js";
 import { contentHash, syncedTreeKey, SyncedTree } from "./synced-tree.js";
 import { decideProjection } from "./projection-gate.js";
 import { MEME_EXT } from "@lararium/mesh/mirror-paths";
@@ -269,8 +270,10 @@ export function carrierDiskFiles(absBase: string): string[] {
   const dir  = dirname(absBase);
   const stem = basename(absBase);
   const re   = new RegExp(`^${escapeRegExp(stem)}\\.[^.]+(?:\\.meta)?$`);
+  // A kāpae shadow (`<stem>.kapae`) stands where a carrier left; it never counts as the carrier's home.
+  const shadow = `${stem}${KAPAE_EXT}`;
   try {
-    return readdirSync(dir).filter((n) => re.test(n)).map((n) => `${dir}/${n}`);
+    return readdirSync(dir).filter((n) => re.test(n) && n !== shadow).map((n) => `${dir}/${n}`);
   } catch { return []; }
 }
 
@@ -1138,15 +1141,59 @@ export class LarDiskProjector {
       // The base names the content file its agreement stood at, across a restart: a carrier a siting rule
       // or the flattened default placed elsewhere gets read there too.
       homes.push(...this.basedHomes(mirror, title));
+      // Where the carrier sited, read BEFORE its siting leaves: the kāpae shadow takes that stem.
+      const shadowBase = this.sited.get(sitedKey(mirror.bagId, title)) ?? carrierBaseRelPath(title);
       // The records hold no such carrier, so the base alone can vouch for a file. A held one stays.
       if (!this.settleHomes(mirror.bagId, title, homes, null, null, `the records dropped ${title}`)) continue;
       this._leaveStandoff(mirror.bagId, title);
+      // KĀPAE SHADOWS, ABSENT FALLS THROUGH, on disk too: a kāpae raised in this mirror's bag leaves its
+      // shadow where the carrier stood; a record that left the bag (a MOVE, a promotion) leaves none.
+      if (shadowBase !== null) await this.settleShadow(mirror, title, shadowBase);
       // A BASE LEAVES WITH ITS OWN FILE: each home this mirror weighed gives up its base, a home whose file
       // had already left included. A base at a path outside the mirror (a holding copy a hand keeps) stays
       // with its file, so that file's next scan still reads it against the agreement it reached.
       for (const home of new Set(homes)) this.syncedTree.deleteAt(syncedTreeKey(mirror.bagId, title), home);
       this.sited.delete(sitedKey(mirror.bagId, title));
     }
+  }
+
+  /**
+   * THE KĀPAE SHADOW FOLLOWS THE LAYER (`kapae-shadow.ts`). Where this mirror's own bag holds a raised kāpae
+   * over the title, `<base>.kapae` stands, written only where its bytes differ, so a standing shadow takes
+   * no write and wakes no watcher. Where the bag holds nothing under the title (a retract to absent), a
+   * shadow standing there leaves: the record fell through and nothing stays set aside. The bag's own store
+   * answers; a projector with no store door reads no kāpae and writes no shadow.
+   */
+  private async settleShadow(mirror: BagMirrorConfig, title: string, base: string): Promise<void> {
+    if (LarDiskProjector.neverOnDisk(mirror, title)) return;
+    const gate = confineMirrorWrite(mirror.mirrorRoot, base + KAPAE_EXT, mirror.allowBagsRootFiles);
+    if (!gate.ok) {
+      console.error(`[disk-ward] kāpae shadow refused (${mirror.bagId}): ${gate.reason}`);
+      this.onRefusal?.({ bagId: mirror.bagId, uri: title, reason: gate.reason });
+      return;
+    }
+    const store = this.recoveryStore?.(mirror.bagId);
+    const record = store ? await store.get(title) : null;
+    if (record?.meta?.deleted === true) {
+      const body = kapaeShadowBody(title);
+      let standing: string | null = null;
+      try { standing = existsSync(gate.path) ? readFileSync(gate.path, "utf-8") : null; } catch { standing = null; }
+      if (standing === body) return;
+      this.writing.add(title);
+      try {
+        mkdirSync(dirname(gate.path), { recursive: true });
+        this.atomicWrite(gate.path, body);
+      } finally { this.writing.delete(title); }
+      return;
+    }
+    if (record !== null || !existsSync(gate.path)) return;
+    this.writing.add(title);
+    try { LarDiskProjector.lowerShadowAt(gate.path); } finally { this.writing.delete(title); }
+  }
+
+  /** A shadow standing at `path` leaves: its title surfaced again, or fell through to absent. The caller holds the write mark. */
+  private static lowerShadowAt(path: string): void {
+    try { if (existsSync(path)) unlinkSync(path); } catch { /* best-effort — a hand can clean up */ }
   }
 
   /**
@@ -1458,33 +1505,42 @@ export class LarDiskProjector {
     }
   }
 
-  private async flush(bagId: string, tiddlerUri: string, recoveryFields?: Record<string, unknown>): Promise<void> {
-    const mirror = this.mirrors.find((m) => m.bagId === bagId);
-    if (!mirror) return;
-
+  /**
+   * The titles that never write a file through this mirror, whatever the records say: the projection
+   * filter (lar-uri #five-planes), read alike by a carrier's write and by its kāpae shadow.
+   */
+  private static neverOnDisk(mirror: BagMirrorConfig, uri: string): boolean {
     // THE CHARTER-ONLY MIRROR GUARD (crossroads WHO-board leak, 2026-09-20): a per-Nexus WHO-face
     // pointer never projects through a mirror grant baked from a NON-charter `nexusIdentity().kind`
     // (own / anchor). The flag rides the grant (resolved once, at boot, on the main thread — never
     // re-derived from the tiddler, which carries no kind of its own); this shore only tests the
     // URI's SHAPE. Curated crossroads library content carries no such shape and always projects.
-    if (mirror.guardNexusHandles && isNexusHandlesUri(tiddlerUri)) return;
+    if (mirror.guardNexusHandles && isNexusHandlesUri(uri)) return true;
 
     // Projection FILTER ⊥ siting (lar-uri #five-planes): the siting function
     // carries every name; WHAT projects = carriers only. Ledger/observation
     // records (residency effect log) stay off disk — audit data, never
     // carrier surface. (The general type-filter — project only
     // text/memetic-wikitext+tiddlywiki — arrives with the migration wave.)
-    if (isEffectRecordUri(tiddlerUri)) return;
+    if (isEffectRecordUri(uri)) return true;
     // The daemon stays the control plane, CRDT only: a `bags/daemon/**` title writes no file from any mirror, whichever layer
     // holds it (a verb outcome, a flow, a cap event).
-    if (isControlPlaneUri(tiddlerUri)) return;
+    if (isControlPlaneUri(uri)) return true;
     // A realm-bag announce pointer comes from the house, minted into the live crossroads document on each
     // registration. The crossroads mirror roots in the canon tree, so writing it would leave a house-minted
     // record beside the curated library; the pointer rests in the document alone.
-    if (isRealmBagAnnounceUri(tiddlerUri)) return;
+    if (isRealmBagAnnounceUri(uri)) return true;
     // A bag's manifest is a record ABOUT the bag, never a carrier IN it — `meta.mem` at the bag root
     // belongs to the declare verb. Refused before the render, so no rule can site it either.
-    if (isBagManifestUri(tiddlerUri)) return;
+    if (isBagManifestUri(uri)) return true;
+    return false;
+  }
+
+  private async flush(bagId: string, tiddlerUri: string, recoveryFields?: Record<string, unknown>): Promise<void> {
+    const mirror = this.mirrors.find((m) => m.bagId === bagId);
+    if (!mirror) return;
+
+    if (LarDiskProjector.neverOnDisk(mirror, tiddlerUri)) return;
 
     // Site the carrier by its own filetype — ONE render shore. The VM registry
     // hands back the chosen extension + bytes + any `.meta` sidecar, so a
@@ -1717,6 +1773,8 @@ export class LarDiskProjector {
       // it lands beside the body, atomic too, so a reader never pairs a fresh
       // body with a stale sidecar.
       if (metaPath !== null) this.atomicWrite(metaPath, metaBody!);
+      // THE KĀPAE LOWERED: the carrier writes back, so a shadow standing at its stem leaves with the raise.
+      LarDiskProjector.lowerShadowAt(candidate.slice(0, candidate.length - extname(candidate).length) + KAPAE_EXT);
       // The observation names the WHOLE carrier; under a pending body it names the sidecar alone.
       this.syncedTree.set(syncedTreeKey(bagId, tiddlerUri), candidate, gateRecords);
       // A bag counts as projected once a file of it stands: a pending body with no sidecar wrote nothing yet.
