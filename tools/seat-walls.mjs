@@ -114,7 +114,7 @@ async function extractTree({ gitDir, tree, to, iso }) {
 }
 
 export async function runCheckSeat({ gitDir, tree, checks, key, receipts, iso, bwrap, keepWork, onBeat = () => {} }) {
-  if ((checks ?? []).length * checkTimeoutMs > DOOR_RUN_MAX_MS) return { ok: false, output: `refused: ${checks.length} checks together bound past the ${DOOR_RUN_MAX_MS}ms door run (each ${checkTimeoutMs}ms)` };
+  if ((checks ?? []).length * checkTimeoutMs >= DOOR_RUN_MAX_MS) return { ok: false, output: `refused: ${checks.length} checks together bound to the ${DOOR_RUN_MAX_MS}ms door run or past it, leaving the commit's own steps no room (each ${checkTimeoutMs}ms)` };
   const named = (checks ?? []).map((c) => c?.name).join(', ') || '<none>';
   if (!bwrap || !HAVE_GIT || !HAVE_TAR || !HAVE_BWRAP) return { ok: false, output: `no wall available: refusing to run check ${named} unwalled` };
 

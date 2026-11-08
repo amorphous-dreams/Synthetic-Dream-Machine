@@ -73,7 +73,7 @@ test('RED (blind read F1): the whole-run bound settles the door even when a hold
 
 test('the check seat refuses a check list whose bounds together pass the door run bound (blind read F3)', async () => {
   const { runCheckSeat } = await import('./seat-walls.mjs');
-  const checks = Array.from({ length: Math.floor(DOOR_RUN_MAX_MS / checkTimeoutMs) + 1 }, (_, i) => ({ name: `c${i}`, argv: ['/usr/bin/true'] }));
+  const checks = Array.from({ length: Math.ceil(DOOR_RUN_MAX_MS / checkTimeoutMs) }, (_, i) => ({ name: `c${i}`, argv: ['/usr/bin/true'] }));
   const out = await runCheckSeat({ gitDir: '/nonexistent', tree: 'x', checks, key: Buffer.alloc(32), receipts: new Map(), iso: '/nonexistent', bwrap: true });
   assert.match(out.output, /checks together bound/);
 });

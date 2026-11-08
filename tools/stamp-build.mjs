@@ -59,7 +59,8 @@ export function writeStamp(repo, path, body, { afterWalk = () => {} } = {}) {
   const directoryFlags = FS.O_RDONLY | FS.O_DIRECTORY | FS.O_NOFOLLOW;
   const held = [];
   try {
-    let parent = openSync(resolve(repo), FS.O_RDONLY | FS.O_DIRECTORY); // the repo root comes from the caller; links are refused below it held.push(parent);
+    // The repo root comes from the caller; links are refused below it.
+    let parent = openSync(resolve(repo), FS.O_RDONLY | FS.O_DIRECTORY); held.push(parent);
     let dir = resolve(repo);
     for (const part of ["node_modules", ...(rel ? rel.split("/") : [])]) {
       dir = join(dir, part);

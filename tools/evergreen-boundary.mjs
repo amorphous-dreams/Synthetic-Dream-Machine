@@ -60,6 +60,7 @@ export const EXCEPTIONS = [
   { rule: "clock", file: "tools/held-out-steps.mjs", match: "const left = deadline - Date.now()", reason: "The runner computes only its own child process timeout." },
   { rule: "clock", file: "tools/held-out-steps.test.mjs", match: "Date.now() - started <", count: 2, reason: "The two timeout tests each measure only their own completion time." },
   { rule: "clock", file: "tools/seat-walls.test.mjs", match: "Date.now() - t0 < 2000", reason: "The run-bound test measures only its own completion time." },
+  { rule: "clock", file: "tools/seat-walls.test.mjs", match: "Date.now() - t0 < 3000", count: 2, reason: "The two pipe-holder tests each measure only their own completion time against the drain bound." },
   { rule: "clock", file: "tools/wait-receipt.test.mjs", match: "Date.now() - t0 < 900", reason: "The silence-bound test measures only its own completion time." },
   { rule: "clock", file: "tools/wait-receipt.test.mjs", match: "const took = Date.now() - t0", reason: "The forged-claim test measures only its own completion time against the cap." },
   { rule: "retired-test", file: "packages/lararium-memetic-frame/tests/verdict.test.ts", match: "const retired: Record<string, string> = {", reason: "The frame verdict suite feeds malformed heads that a reader meets as foreign bytes; the record names input bytes." },
