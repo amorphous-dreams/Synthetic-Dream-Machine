@@ -20,6 +20,8 @@ const HAND = { kind: "hand", id: "hand-1" } as const;
 
 async function world(opts: { boardPinned?: boolean } = {}) {
   const root = { key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(1)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(1)) };
+  // This device's atom: the ledger's owner the ward bytes bind (road L23).
+  const atom = { key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(2)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(2)) };
   const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
   const board = await materializeSharedLarDoc(repo, promoteBoardDocUrl(GROUP), "promote:board");
   const stage = await materializeSharedLarDoc(repo, kahuaStageDocUrl(GROUP), "kahua:stage");
@@ -29,7 +31,7 @@ async function world(opts: { boardPinned?: boolean } = {}) {
     // The daemon row carries the face root's ward signature (seat-harness#/the-ward): a bound row without one voids at boot.
     ledger: await [["daemon", RITE], [GARDEN, RITE]].reduce(async (prior, [wiki, item]) => {
       const l = await prior as PromotionLedger, digest = promoteDigest(item as typeof RITE);
-      const wardSig = wiki === "daemon" ? await signPromotionWard({ wiki: wiki as string, digest, seq: l.seq + 1 }, root) : undefined;
+      const wardSig = wiki === "daemon" ? await signPromotionWard({ wiki: wiki as string, digest, seq: l.seq + 1, owner: atom.key }, root) : undefined;
       return ledgerCommit(l, { wiki: wiki as string, digest, item: item as typeof RITE, revision: "r1", ...(wardSig ? { wardSig } : {}) }, HAND);
     }, Promise.resolve(EMPTY_LEDGER as PromotionLedger)) as PromotionLedger,
     local: EMPTY_KAPAE_LOCAL as KapaeLocal, cas: new Map<string, Uint8Array>(), restarts: [] as string[],
@@ -42,6 +44,7 @@ async function world(opts: { boardPinned?: boolean } = {}) {
     cas: { put: (d, b) => { st.cas.set(d, b); }, pin: () => {} },
     wikiItems: async () => [],
     restart: async (wiki) => { st.restarts.push(wiki); },
+    atom, epoch: () => 0,
   });
   const raise = (wiki: string) => signPromoteKapae({ group: GROUP, epoch: 0, wiki, digest: D, raised: true, parents: [] }, root);
   return { wiring, st, board, raise, stage };

@@ -4,7 +4,7 @@ import type { WardCredential } from "../ward-credential.js";
 import type { Repo } from "@automerge/automerge-repo";
 import {
   faceRecordsOf, kahuaActRecords, kahuaPlaneUrl,
-  promoteActRecords, promoteBoardDoor, promoteCommand, promotePlaneUrl, promotions, promoteWikiItems,
+  promoteBoardRecords, promoteBoardDoor, promoteCommand, promotePlaneUrl, promotions, promoteWikiItems,
   readKahuaStage, readPromoteBoard, writePromoteAct, PromoteRefused, cosignPortWitness, type LarDoc, type PromoteCommandRequest,
 } from "@lararium/mesh";
 import { loadFaceFold, nodeWardCosignPortOf, IntentRefused, type FaceFold } from "./intent.js";
@@ -31,7 +31,7 @@ export async function runPromoteVerb(opts: {
   const catalog = await makeCatalogAccessor(opts.repo, opts.catalogUrl!).handle();
   const boardFace = { group, grant: (key: string) => face.currentSigner(key), device: (key: string) => projection.devices.includes(key) };
   const foldFace = { group, grant: (key: string) => face.currentSigner(key), signedAt: (epoch: number, key: string) => face.signsAt(epoch, key) };
-  const board = { records: async () => promoteActRecords(handle.doc(), group), land: async (act: Parameters<typeof writePromoteAct>[1]) => {
+  const board = { records: async () => promoteBoardRecords(handle.doc(), group), land: async (act: Parameters<typeof writePromoteAct>[1]) => {
     handle.change(d => writePromoteAct(d, act)); await opts.repo.flush();
   } };
   const boardDoor = promoteBoardDoor({ group, face: boardFace, atom: signer, epoch: () => face.lineage[face.lineage.length - 1]!.epoch,
@@ -52,6 +52,8 @@ export async function runPromoteVerb(opts: {
     board: async () => readPromoteBoard(await board.records(), { ...boardFace, ward: cosignPortWitness(await nodeWardCosignPortOf(opts.repo, loaded)) }), cas: nodePromoteCas(opts.casDir, signer.key),
     // THE WARD: a daemon or kahua commit signs its row as the face root, opened fresh under this act's route; boot reads the grant.
     wardSigner: () => wardRootSigner(index, opts.ward, `a commit in ${wiki}`), face: { grant: (key: string) => face.currentSigner(key) },
+    // THE DROP FLOOR (road L23): a bound row that leaves the ledger lands as a drop on the board, where no custody write reaches.
+    landDrops: (tombstones) => boardDoor.drop(tombstones), owner: signer.key,
   });
   const value = (key: string) => typeof opts.args[key] === "string" ? opts.args[key] as string : undefined;
   const wiki = value("wiki") ?? "daemon";
