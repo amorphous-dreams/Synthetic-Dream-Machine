@@ -286,6 +286,15 @@ describe("the later grant — a signed record the joinee verifies offline", () =
       expect((await verifyFaceGrantRecord(rec, await proofOf(rec.founderEdge.personaRootDid))).ok).toBe(true);
     });
 
+    test("a fork stays visible when dyad standing remains unknown; CONTROL: an unforked lineage waits for the dyad", async () => {
+      const rec = await grantFor();
+      const unknown = () => "unknown" as const;
+      const clean = await verifyFaceGrantRecord(rec, await proofOf(rec.founderEdge.personaRootDid, { dyad: unknown }));
+      expect(clean).toMatchObject({ ok: false, pending: true, reason: expect.stringMatching(/dyad standing unknown/) });
+      const fork = await verifyFaceGrantRecord(rec, await proofOf(rec.founderEdge.personaRootDid, { personaKel: await forkedKel(), dyad: unknown }));
+      expect(fork).toMatchObject({ ok: false, reason: expect.stringMatching(/founder lineage forked/) });
+    });
+
     test("a chain carrying an event under another prefix refuses: the anchor pins one lineage", async () => {
       const rec = await grantFor();
       const kel = await personaKel(null);
