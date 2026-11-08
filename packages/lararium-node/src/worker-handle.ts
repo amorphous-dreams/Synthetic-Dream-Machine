@@ -4,7 +4,7 @@
  */
 
 import { Worker, MessageChannel } from "worker_threads";
-import { answerReceipt, receiptSettlement, answerDyad, answerCustodyWrite, answerSessionSign, answerRestAsk, type IslandMsg_RestAsk, type VesselWorkerHandle, type CapabilityRecord, type CustodyWriteCarrier, type IslandMsg_CasWant, type IslandMsg_CasBlock, type IslandMsg_DyadAsk, type IslandMsg_DyadRead, type IslandMsg_ReceiptRequest, type IslandMsg_ReceiptIssued, type IslandMsg_CustodyWrite, type IslandMsg_CustodyWritten, type IslandMsg_SessionSign, type IslandMsg_SessionSigned } from "@lararium/mesh";
+import { answerCas, type ShareAudience, answerReceipt, receiptSettlement, answerDyad, answerCustodyWrite, answerSessionSign, answerRestAsk, type IslandMsg_RestAsk, type VesselWorkerHandle, type CapabilityRecord, type CustodyWriteCarrier, type IslandMsg_CasWant, type IslandMsg_CasBlock, type IslandMsg_DyadAsk, type IslandMsg_DyadRead, type IslandMsg_ReceiptRequest, type IslandMsg_ReceiptIssued, type IslandMsg_CustodyWrite, type IslandMsg_CustodyWritten, type IslandMsg_SessionSign, type IslandMsg_SessionSigned } from "@lararium/mesh";
 
 // The answers stand once on the mesh floor (`capability-record.ts`), so the node and the browser answer one ask alike.
 export { answerReceipt, answerDyad, answerCustodyWrite, answerSessionSign };
@@ -15,18 +15,13 @@ export { answerReceipt, answerDyad, answerCustodyWrite, answerSessionSign };
 // module-global stands behind any of the four.
 
 /** Answer a worker's `cas:want` on the same requestId: through the record's `cas` when one stands, else a miss. */
-function attachCas(w: Worker, caps: CapabilityRecord): void {
+function attachCas(w: Worker, caps: CapabilityRecord, audience: () => ShareAudience | undefined): void {
   w.on("message", (raw: unknown) => {
     const m = raw as Partial<IslandMsg_CasWant> | null;
     if (!m || m.type !== "cas:want" || typeof m.requestId !== "string" || typeof m.cid !== "string") return;
-    const { requestId, cid } = m;
-    const answer = (bytes: Uint8Array | null): void => {
-      const reply: IslandMsg_CasBlock = { type: "cas:block", requestId, bytes };
-      try { w.postMessage(reply); } catch { /* the worker went away — nothing to answer */ }
-    };
-    const cas = caps.cas;
-    if (!cas) { answer(null); return; }
-    cas(cid).then(answer, () => answer(null));   // a faulting fetch reads as a miss, never a worker fault
+    void answerCas(caps, { requestId: m.requestId, cid: m.cid }, audience()).then((reply) => {
+      try { w.postMessage(reply); } catch { /* the worker went away */ }
+    });
   });
 }
 
@@ -170,10 +165,10 @@ function attachRestAsk(w: Worker, caps: CapabilityRecord): void {
  * Wrap a worker as a handle, binding the capability record its vessel handed it and attaching the answers its class
  * owns ({@link IslandClass}). No record handed reads as an empty one: every ask answers absent.
  */
-export function nodeWorkerHandle(w: Worker, opts: { readonly island: IslandClass; readonly caps?: CapabilityRecord }): VesselWorkerHandle {
+export function nodeWorkerHandle(w: Worker, opts: { readonly island: IslandClass; readonly caps?: CapabilityRecord; readonly casAudience?: () => ShareAudience | undefined }): VesselWorkerHandle {
   const caps = opts.caps ?? {};
   if (opts.island === "daemon") {
-    attachCas(w, caps);
+    attachCas(w, caps, () => "in-process");
     attachDyad(w, caps);
     attachReceipt(w, caps);
     attachCustodyWrite(w, caps);
@@ -181,7 +176,7 @@ export function nodeWorkerHandle(w: Worker, opts: { readonly island: IslandClass
     attachDocStore(w, caps);
     attachRestAsk(w, caps);
   } else if (opts.island === "wiki") {
-    attachCas(w, caps);
+    attachCas(w, caps, () => opts.casAudience?.());
     attachRefusals(w, caps);
     attachRestAsk(w, caps);
   } else {
@@ -216,8 +211,8 @@ export function nodeSpawnDaemonWorker(url: string | URL, caps: CapabilityRecord,
 }
 
 /** Spawn a WIKI island: a worker that reaches its record's `cas` alone. */
-export function nodeSpawnWikiWorker(url: string | URL, caps: CapabilityRecord, workerData?: unknown): VesselWorkerHandle {
-  return nodeWorkerHandle(new Worker(url, workerData !== undefined ? { workerData } : undefined), { island: "wiki", caps });
+export function nodeSpawnWikiWorker(url: string | URL, caps: CapabilityRecord, workerData: unknown, casAudience: () => ShareAudience | undefined): VesselWorkerHandle {
+  return nodeWorkerHandle(new Worker(url, workerData !== undefined ? { workerData } : undefined), { island: "wiki", caps, casAudience });
 }
 
 /** Spawn a SESSION's island: a worker that reaches no member of the record. */

@@ -1,3 +1,6 @@
+import type { DocumentId } from "@automerge/automerge-repo";
+import { makeHeldShareFloor, makeIslandAudienceReader, catalogViewOf, type CapabilityRecord } from "@lararium/mesh";
+import type { ShareBoundary } from "@lararium/mesh";
 import { browserPromoteStores, browserPromoteCas } from "./browser-promoted-store.js";
 import { browserWardBindRoute, BrowserWardRefused, browserWardSigner, type WardAskKind } from "./browser-ward.js";
 import type { WardRoute } from "./ward-core.js";
@@ -708,6 +711,31 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     // the Repo's stand-down ends the wait by name.
     hydrates: true,
   });
+  let shareRepo: Repo | null = null;
+  let shareCatalog: DocHandle<LarDoc> | null = null;
+  let publicTierGate: DeterministicFederationGate | null = null;
+  let publicGenesisCids: ReadonlySet<string> = new Set();
+  let poolCaps: CapabilityRecord | null = null;
+  const shareFloor = makeHeldShareFloor({
+    genesisCids: () => publicGenesisCids,
+    handles: () => shareRepo?.handles ?? {},
+    catalog: () => sealedCells.catalog(),
+    bindings: function* () {
+      for (const [bag, ids] of slotDocsNamed) for (const id of ids) yield [bag, id] as const;
+      for (const bag of sealedCells.bags()) {
+        const id = sealedMap.docOf(bag); if (id) yield [bag, id] as const;
+      }
+    },
+    publicPlane: (id) => publicTierGate?.mayFederate(id as DocumentId) ?? false,
+    sealedPlane: (id) => sealedBagOf(id) !== null,
+    secretsCatalog: {
+      face: () => catalogViewOf(shareCatalog)?.faceHandle() ?? null,
+      sealed: () => false, // This leaf reads the durable registry; the hearth alone writes it.
+      failure: () => null,
+      flush: async () => { await shareRepo!.flush(); },
+    },
+    onRefusal: (error) => console.log(`[share-tier] ${error.name}: ${error.message}`),
+  });
   const repo = new Repo({
     storage: sealedRest.store,
     // The verdict seats on announce AND access (the announce-only lie the node measured in
@@ -718,8 +746,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       gate: () => siblingGate,
       // THE DYAD'S SHADOW (kapae#/reach): a sibling whose device the fleet root set aside reaches nothing.
       aside: (peerId) => siblingAside(peerId),
-    }),
+    }, shareFloor.tiers),
   });
+  shareRepo = repo;
   held.stood.push({ what: "repo", down: () => { sealedRest.store.endHydration(); return repo.shutdown(); } });
   // R2's booking, by the change's own writer (T4): a change this replica made books the vessel's unlocked session while
   // it stands, and a peer's change books its peer writer and rests as received under that session.
@@ -1020,6 +1049,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   const { ownHearth } = crossing;
   // The canon documents the admit named. The own-hearth gate opens exactly these, and this vessel's own oracle
   // replica points at them; the oracle plane itself stays behind the gate.
+  publicTierGate = new DeterministicFederationGate(nexusPubkey);
   const { hearthCanon } = crossing;
   // The oracle doc as this boot holds it: the recipe reader reads a system wiki's default recipe off it. Null
   // until genesis loads.
@@ -1257,6 +1287,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   })() : [];
 
   // ── The WHO plane as a LEAF — RESOLVE the per-Nexus crossroads board; announce NOTHING ──
+  shareCatalog = catalogHandle;
   // Networked only: the board needs the relay to sync, and the island key (`nexusPubkey`) scopes the
   // causal island so a human's two vessels resolve the SAME board. Boot composes whoFaceCap with NO card: it
   // resolves the island's WHO board through the deterministic crossroads address and layers it writable so
@@ -1310,6 +1341,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         // by the seed-derived inventory (the browser face of the node mirrorGenesisCasFs). Once in OPFS they
         // persist (write-once-read-many), so later/replica boots need no separate inventory file.
         const casManifest = genesisSeed ? genesisCasManifestFromSeed(genesisSeed) : undefined;
+        publicGenesisCids = new Set(casManifest?.blobs.map(({ cid }) => cid) ?? []);
         const casCids = casManifest
           ? casManifest.blobs.map(({ cid }) => cid)
           : genesisCasCidsFromOracle(islandHandle.doc()!);
@@ -1710,7 +1742,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // as a nested stack on unlock. The lift seats `custodyWrite` and `sessionSign` while this vessel's custody stands
       // open and a joined face's Nexus session stands; its dispose IS the lock: both leave the record and the session's
       // signer drops. A vessel at its floor carries neither, and its island's `session:sign` answers `signer-unavailable`.
+      shareCatalog = assembly.catalogHandle;
       const islandFloor = await composeVessel(islandFloorStack({
+        tiers: shareFloor.tiers, documentsForCid: shareFloor.documentsForCid,
         receipt: browserIslandReceipt(repo),
         cas: readCasBlobFromOpfs,
         docStore: (port) => docStorePort.attach(port),
@@ -1718,6 +1752,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         restsSealed: (documentId) => sealedRest.restsSealed(documentId),
       }));
       const islandVessel = larVesselOf(islandFloor);
+      poolCaps = islandVessel.record;
       const islandCaps = islandVessel.record;
       held.stood.push({ what: "the island's floor", down: () => islandFloor.dispose() });
       // The lift's lock-and-flush, once a lift stands: the stand-down runs it again ahead of the daemon worker (P2-3).
@@ -2121,11 +2156,19 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     },
 
     makePool: (_a, assembly) => {
+      if (!poolCaps) throw new Error("cas-unavailable: the island floor has not composed");
       // R4 — TWO WIKIS IN ONE VESSEL: each mount resolves its OWN recipe's plugin-offerings
       // through the selector + OPFS CAS (`resolveBrowserIslandPluginCids`), never one vessel-wide
       // floor. The Crossroads board materializes once (lazily,
       // shared with the daemon VM's own resolution above) and is read fresh per mount.
       vmManager = new BrowserVesselIslandPool({
+        caps: poolCaps,
+        audienceForIsland: makeIslandAudienceReader({
+          ownFacePlane: () => portFaceId
+            ? tiddlerText(ownEntry(catalogHandle.doc()?.tiddlers, personaBagIdFor(portFaceId))) || null : null,
+          recipePlane: (slug) => effectiveRecipe(slug, (plane, title) =>
+            ownEntry((plane === "oracle" ? assembly.islandHandle : catalogHandle).doc()?.tiddlers, title))?.plane ?? null,
+        }),
         mainRepo: repo,
         // D4 lends the actor grant; this vessel opens a read-only port until then.
         portPolicy: opts.portPolicy ?? ((binding, islandKey) => pagePortGrant({ binding, islandKey, faceId: portFaceId, daemonKey: DAEMON_SURFACE_ID })),
@@ -2350,7 +2393,13 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
  * A SIBLING — a peer the sibling channel proved — never reads as a house member: `siblings` hands it to the
  * sibling gate, the ring's sibling path, and nothing else reaches it.
  */
-export function browserShareConfig(relayPeers: ReadonlySet<string>, fedGateOf: () => FederationGate | null, siblings?: SiblingShare | null) {
+export function browserShareConfig(relayPeers: ReadonlySet<string>, fedGateOf: () => FederationGate | null, siblings: SiblingShare | null, tiers: ShareBoundary) {
   // `siblings.aside` carries the dyad's shadow: mesh's one law reads it ahead of the sibling gate.
-  return shareConfigOf((peerId, documentId) => federationShareDecision(relayPeers, fedGateOf(), peerId, documentId, siblings ?? null));
+  return shareConfigOf(async (peerId, documentId) => {
+    const gate = fedGateOf();
+    const audience = siblings?.isSibling(peerId) ? "fleet"
+      : relayPeers.has(peerId) ? (gate === null ? "fleet" : "world") : "in-process";
+    const base = await federationShareDecision(relayPeers, gate, peerId, documentId, siblings);
+    return tiers.allows(base, documentId, audience);
+  });
 }

@@ -24,7 +24,7 @@
  */
 
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
-import { islandRestGuard, shoreStorage, vesselRestAsker } from "@lararium/mesh";
+import { islandRestGuard, shoreStorage, vesselRestAsker, vesselCasAsker } from "@lararium/mesh";
 import {
   runSovereignKernel,
   type IslandHostShore,
@@ -32,7 +32,6 @@ import {
 import { mkReady } from "@lararium/mesh";
 import type { IslandMsg_Manifest, IslandToVesselMsg } from "@lararium/mesh";
 import type { IslandBehavior } from "@lararium/tw5";
-import { readCasBlobFromOpfs } from "./browser-genesis.js";
 
 /** Browser storage composition: preserve ordinary wiki durability while the
  * D-VR daemon primary crossing stays ephemeral. */
@@ -74,9 +73,11 @@ export function runBrowserSovereignWorker(
     listen:  (onMessage) => scope ? scope.listen(onMessage) : self.addEventListener("message", (e: MessageEvent) => onMessage(e.data)),
     storage: (msg) => browserIslandStorage(msg, restsAtVessel),
     ready:   () => scope ? scope.ready() : self.postMessage(mkReady()),
-    // The breath path: pull engine + plugin bytes by CID from the OPFS CAS the vessel
-    // populated on genesis-load — never CRDT-synced over the port.
-    resolveByCid: (cid) => readCasBlobFromOpfs(cid),
+    // The vessel owns OPFS; every read crosses its audience gate, including engine boot and local hits.
+    resolveByCid: vesselCasAsker({ post, listen: (cb) => {
+      if (scope) scope.listen(cb);
+      else self.addEventListener("message", (e: MessageEvent) => cb(e.data));
+    } }),
   };
 
   runSovereignKernel(host, behaviorOrFactory, opts?.caps?.receipt ? { caps: { receipt: true } } : undefined);

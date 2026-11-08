@@ -219,8 +219,8 @@ export {
   SecretsRegistryRefusal, secretsPlaneRow, makeFaceSecretsRegistry, faceScopedSecrets, secretsDoorsIn,
 } from "./secrets-registry.js";
 // The one tighten predicate every allowing return passes through, and the declared tier read off bag manifests.
-export type { ShareAudience, DocBagBinding, ManifestTierReaders, DeclaredTierReason } from "./share-tighten.js";
-export { audiencePermits, tightenShare, makeManifestTierSource, DeclaredTierRefusal } from "./share-tighten.js";
+export type { ShareAudience, ShareBoundary, DocBagBinding, ManifestTierReaders, DeclaredTierReason } from "./share-tighten.js";
+export { audiencePermits, tightenShare, makeShareBoundary, makeManifestTierSource, DeclaredTierRefusal } from "./share-tighten.js";
 // The cad ENCRYPT-ON-CAS primitive — cid = BLAKE3(ciphertext), verify-cap ⊥ read-cap.
 export {
   ciphertextCid, verifyCiphertextCid, sealPrivateBody, openPrivateBody,
@@ -303,7 +303,7 @@ export { makeIslandRepo, attachMessageChannelSync, replicaHeads, islandPeersOf, 
 export { peerArrivals, type PeerArrival, type PeerArrivals } from "./peer-arrivals.js";
 export { answerReceiptWithHeads, RECEIPT_STALL_ROUNDS } from "./receipt-with-heads.js";
 export type { CapabilityRecord, ReceiptIssuer, CasFetcher, DyadReader, CustodyWriter, SessionSignDoor } from "./capability-record.js";
-export { answerReceipt, answerDyad, answerCustodyWrite, answerSessionSign, answerRestAsk, answerIslandAsks, receiptSettlement, RECORD_ASKS } from "./capability-record.js";
+export { answerReceipt, answerDyad, answerCustodyWrite, answerSessionSign, answerRestAsk, answerIslandAsks, answerCas, vesselCasAsker, receiptSettlement, RECORD_ASKS } from "./capability-record.js";
 export { SessionSignBook, standingSessionSeat, type BookedSession, type BookedSessionSigner } from "./session-sign-book.js";
 export { GatedSyncLeg, oneWayDocumentsGate, carriesPrototypeKeyReason } from "./gated-sync-leg.js";
 export { shoreInbound, shoreStorage, syncMessagePrototypeKey, chunkPrototypeKey, docPrototypeKeyFault, assertNoPrototypeKeys, type PrototypeKeyRefusal } from "./prototype-key-shore.js";
@@ -312,7 +312,7 @@ export type { IslandRepoConfig } from "./island-repo.js";
 export { assembleVessel, mountWikiSlot } from "./open-vessel-core.js";
 export type { VesselKeel, VesselBootstrap, VesselCoreAssembly, MountManifest, MountEntry } from "./open-vessel-core.js";
 export { awaitIslandMsg } from "./vessel-host.js";
-export type { AwaitIslandMsgOpts, VesselWorkerHandle, VesselIslandHost } from "./vessel-host.js";
+export type { AwaitIslandMsgOpts, VesselWorkerHandle, VesselIslandHost, IslandAudienceContext } from "./vessel-host.js";
 export { VesselIslandPoolCore } from "./vessel-island-pool-core.js";
 export { makeWikiActivationCap } from "./wiki-activation.js";
 export type { WikiActivationCap, WikiActivationGrant, ActivationResidency, ActivationPool, ResolveWikiSpec, WikiActivationResult, WikiSpecResolution } from "./wiki-activation.js";
@@ -673,3 +673,7 @@ export * from "./promote-panel-api.js";
 
 
 export * from "./promote-main-verbs.js";
+
+export * from "./held-share-floor.js";
+
+export { makeIslandAudienceReader } from "./island-audience.js";

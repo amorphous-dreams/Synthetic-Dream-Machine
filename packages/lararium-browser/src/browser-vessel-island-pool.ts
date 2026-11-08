@@ -22,12 +22,12 @@ import {
   type LarIslandToVesselMsg,
   type WikiRecipe,
   type PortIslandToVesselMsg,
-  type VesselRestState,
+  type VesselRestState, type CapabilityRecord, type ShareAudience, type IslandAudienceContext,
+  answerCas, DeclaredTierRefusal,
 } from "@lararium/mesh";
 import type { PortPolicy } from "@lararium/mesh/port-lease";
 import { browserNewSyncChannel, browserSpawnWorker } from "./worker-handle.js";
 import { refuseBrowserDyadAsks } from "./browser-dyad-refusal.js";
-import { readCasBlobFromOpfs } from "./browser-genesis.js";
 
 /** A page life signal the page feeds the vessel: the page went hidden, or the page is leaving. */
 export type PageLife = "hidden" | "pagehide";
@@ -39,6 +39,8 @@ export type PageLife = "hidden" | "pagehide";
 export type PageLifeFeed = (listener: (life: PageLife) => void) => () => void;
 
 export interface BrowserVesselIslandPoolOptions {
+  caps: CapabilityRecord;
+  audienceForIsland: (island: IslandAudienceContext) => ShareAudience | undefined;
   /**
    * URL of the compiled browser-wiki-worker entry script. Optional at
    * construction; required before mountWiki (a placeholder pool may predate the
@@ -73,7 +75,7 @@ export class BrowserVesselIslandPool extends VesselIslandPoolCore {
     super({
       resolvePluginCids: opts.resolvePluginCids,
       host: {
-        spawnWorker: () => {
+        spawnWorker: (spawn) => {
           if (!workerUrl) {
             throw new Error(
               "[browser-vessel-island-pool] cannot mountWiki — no workerScriptUrl set. " +
@@ -83,6 +85,15 @@ export class BrowserVesselIslandPool extends VesselIslandPoolCore {
           // A wiki island reaches no dyad capability: its ask draws `aside` and one named warning.
           const handle = browserSpawnWorker(workerUrl);
           refuseBrowserDyadAsks(handle);
+          handle.listen((raw) => {
+            const ask = raw as { type?: unknown; requestId?: unknown; cid?: unknown } | null;
+            if (ask?.type !== "cas:want" || typeof ask.requestId !== "string" || typeof ask.cid !== "string") return;
+            // A session keeps its scoped view; only a wiki's host-bound relation reaches the record.
+            if (spawn.session) { handle.post({ type: "cas:block", requestId: ask.requestId, bytes: null, refusal: "CasRefused" }); return; }
+            void answerCas(opts.caps, { requestId: ask.requestId, cid: ask.cid }, opts.audienceForIsland(spawn)).then((reply) => {
+              try { handle.post(reply); } catch { /* the worker went away */ }
+            });
+          });
           // The browser vessel's lift stands its main Repo beside the pool, and that Repo is the browser's receipt
           // capability: a wiki island's receipt ask draws the pool's answer (the one answerer) exactly where the pool holds
           // one, since the page carries no record a worker could refuse from. A pool built with no Repo grants none.
@@ -93,8 +104,12 @@ export class BrowserVesselIslandPool extends VesselIslandPoolCore {
         awaitReady: true,
       },
       mainRepo: opts.mainRepo ?? null,
-      // The vessel's content store, as a session island's scoped view reads it: the origin's OPFS plane.
-      readContent: (cid) => readCasBlobFromOpfs(cid),
+      readContent: (cid, island) => {
+        const audience = opts.audienceForIsland(island);
+        if (!audience) throw new DeclaredTierRefusal("declared-tier-audience-unresolved", `wiki ${island.wikiId} proves no plane relation`);
+        if (!opts.caps.cas) throw new Error("cas-unavailable: the vessel holds no byte door");
+        return opts.caps.cas(cid, audience);
+      },
       ...(opts.onWorkerEvent ? { onWorkerEvent: opts.onWorkerEvent } : {}),
       ...(opts.portPolicy ? { portPolicy: opts.portPolicy } : {}),
       ...(opts.onPortMessage ? { onPortMessage: opts.onPortMessage } : {}),

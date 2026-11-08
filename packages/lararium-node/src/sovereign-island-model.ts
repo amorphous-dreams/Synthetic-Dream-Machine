@@ -20,21 +20,17 @@
  * Meme: lar:///ha.ka.ba/lararium/node/sovereign-island-model
  */
 
-import { parentPort, workerData } from "worker_threads";
-import { join } from "node:path";
-import { mkdirSync, writeFileSync, existsSync } from "node:fs";
+import { parentPort } from "worker_threads";
 import { DurableNodeFSStorageAdapter } from "./durable-storage-adapter.js";
 import {
   runSovereignKernel,
   type IslandHostShore,
 } from "@lararium/tw5";
 import {
-  makeCidResolver, islandRestGuard, vesselRestAsker, type StorageAdapterInterface,
+  vesselCasAsker, islandRestGuard, vesselRestAsker, type StorageAdapterInterface,
   type IslandMsg_Manifest,
   type IslandStorageConfig,
   type IslandToVesselMsg,
-  type IslandMsg_CasWant,
-  type IslandMsg_CasBlock,
   type IslandMsg_DyadAsk,
   type IslandMsg_DyadRead,
   type EdgeStanding,
@@ -44,11 +40,9 @@ import {
   type IslandMsg_CustodyWrite,
   type IslandMsg_CustodyWritten,
   type CasTransitTransport,
-  verifyCidBytes,
 } from "@lararium/mesh";
 import type { IslandBehavior } from "@lararium/tw5";
 import { islandSessionDoor, type IslandSessionProof } from "@lararium/keyhive";
-import { casDirFromIslandStorageDir, readCasBlobFromFs, type IslandCasData } from "./node-cas.js";
 
 /**
  * THE CAS CAPABILITY, worker side — a `CasTransitTransport` over the parent port. The worker holds no socket; the
@@ -57,30 +51,8 @@ import { casDirFromIslandStorageDir, readCasBlobFromFs, type IslandCasData } fro
  * with its vessel, so no clock reads silence as a miss.
  */
 export function portTransit(port: { postMessage(msg: unknown): void; on(ev: "message", fn: (m: unknown) => void): void }): CasTransitTransport {
-  const pending = new Map<string, (bytes: Uint8Array | null) => void>();
-  port.on("message", (raw: unknown) => {
-    const m = raw as Partial<IslandMsg_CasBlock> | null;
-    if (!m || m.type !== "cas:block" || typeof m.requestId !== "string") return;
-    const settle = pending.get(m.requestId);
-    if (!settle) return;
-    pending.delete(m.requestId);
-    settle(m.bytes instanceof Uint8Array ? m.bytes : null);
-  });
-  let seq = 0;
-  return {
-    async discover() { return ["vessel"]; },
-    fetchBlock(cid) {
-      return new Promise<Uint8Array | null>((resolve, reject) => {
-        const requestId = `cas-${process.pid}-${++seq}`;
-        pending.set(requestId, (bytes) => {
-          if (bytes && !verifyCidBytes(bytes, cid)) reject(new Error(`CID mismatch for ${cid}`));
-          else resolve(bytes);
-        });
-        const ask: IslandMsg_CasWant = { type: "cas:want", requestId, cid };
-        port.postMessage(ask);
-      });
-    },
-  };
+  const read = vesselCasAsker({ post: (msg) => port.postMessage(msg), listen: (cb) => port.on("message", cb) });
+  return { discover: async () => ["vessel"], fetchBlock: (cid) => read(cid) };
 }
 
 // THE ISLAND'S ASKS END ON THE VESSEL'S ANSWER. The vessel answers every ask (`capability-record.ts`: a missing member
@@ -208,21 +180,6 @@ export function runSovereignWorker(
   }
   const port = parentPort;
 
-  // The fs CAS dir — captured from the manifest storage dir when the kernel builds the repo
-  // (host.storage runs before resolveByCid). Engine + plugin bytes ride this local CID plane,
-  // pulled by content-address off the sync port — the nodefs face of the worker CAS. A
-  // memory-storage island carries no CAS dir; resolveByCid yields null and the kernel faults
-  // (the CID plane is required).
-  let casDir: string | null = null;
-
-  // The CAS dirs the VESSEL handed this island at construction (`workerData`, `IslandCasData`): the vessel's one runtime
-  // `cid/` dir and the CORPUS CAS dir where the operator gesture stages oversized carrier bodies (whole books) that ride
-  // LOAD/INGEST verbs BY REFERENCE, never inline. The island reads no env: a dir the vessel did not hand reads absent.
-  // The runtime `casDir` (engine/plugin bytes) falls back to the sibling of its storage dir where the vessel handed none.
-  const handed = (workerData ?? {}) as Partial<IslandCasData>;
-  const corpusCasDir: string | null = handed.corpusCasDir ?? null;
-  if (handed.cidDir) casDir = handed.cidDir;
-
   const restsAtVessel = vesselRestAsker({
     post: (msg) => port.postMessage(msg),
     listen: (cb) => { port.on("message", cb); return () => { port.off("message", cb); }; },
@@ -231,37 +188,9 @@ export function runSovereignWorker(
   const host: IslandHostShore = {
     post:    (msg: IslandToVesselMsg) => port.postMessage(msg),
     listen:  (onMessage) => port.on("message", onMessage),
-    storage: (msg) => {
-      if (msg.storage?.type === "nodefs" && !handed.cidDir) casDir = casDirFromIslandStorageDir(msg.storage.dir);
-      return _buildStorage(msg.storage, restsAtVessel);
-    },
-    // Resolve by content-address — the vessel's cas capability (basket-one #/the-fetch-door), composed here as
-    // `makeCidResolver(localRead, portTransit, cacheWriteThrough)` (@lararium/mesh):
-    //   · localRead — the runtime CID plane first (engine/plugin bytes), then the corpus CAS (staged
-    //     carrier bodies); the caller re-verifies cid==hash(bytes), so a two-dir lookup never widens trust;
-    //   · portTransit — a local miss asks the VESSEL over the parent port (the worker holds no socket; the
-    //     vessel's cas capability reaches Socket B and its fleet holders); the transit leg re-verifies the bytes
-    //     against the cid's own class before they return — a body that fails verify never returns;
-    //   · cacheWriteThrough — the verified body lands in the local `cid/` so the next read stays local.
-    // Absent a cas capability (the vessel answers every ask with a miss) the leg degenerates to exactly the local
-    // read: a miss is a miss, PENDING stays PENDING, never an unverified body, never a fault.
-    resolveByCid: makeCidResolver(
-      (cid) => {
-        const runtime = casDir ? readCasBlobFromFs(cid, casDir) : null;
-        if (runtime) return runtime;
-        return corpusCasDir ? readCasBlobFromFs(cid, corpusCasDir) : null;
-      },
-      portTransit(port),
-      (cid, bytes) => {
-        const dir = casDir ?? corpusCasDir;
-        if (!dir) return;
-        try {
-          mkdirSync(dir, { recursive: true });
-          const path = join(dir, cid);
-          if (!existsSync(path)) writeFileSync(path, bytes);
-        } catch { /* a failed write-through costs the next read a re-fetch, never the bytes */ }
-      },
-    ),
+    storage: (msg) => _buildStorage(msg.storage, restsAtVessel),
+    // Runtime, corpus and shore reads all cross the vessel's audience gate, including engine boot and local hits.
+    resolveByCid: vesselCasAsker({ post: (msg) => port.postMessage(msg), listen: (cb) => port.on("message", cb) }),
   };
 
   runSovereignKernel(host, behaviorOrFactory, { caps: { receipt: true } });

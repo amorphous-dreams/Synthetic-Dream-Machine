@@ -1,3 +1,4 @@
+import { makeHeldShareFloor, makeIslandAudienceReader, effectiveRecipe } from "@lararium/mesh";
 /**
  * openNodeVessel — local-first Node.js vessel factory.
  *
@@ -752,6 +753,7 @@ interface NodeBootPrep {
   placeSigner:    PlaceSigner;
   /** This vessel's own gate key — the node ANCHORS its confederation, so its gate key doubles as the Nexus
    *  key its admitted browser leaves resolve. Every per-Nexus board (WHO, KEL, antigen) scopes to it. */
+  shareFloor: ReturnType<typeof makeHeldShareFloor>;
   nexusPubkey:      string;
   /** This vessel's gate key — its own verifying key, the key every gate it stands answers under. */
   vesselGateKey:    string;
@@ -1279,6 +1281,31 @@ async function prepareNodeBootOn(
   // registers here AS A SIDE-EFFECT and the member blind-transit lane opens for that ciphertext body. A
   // cleartext body reaches no encrypt path → never registers → a doc can never self-label sealed.
   const sealRegistry = makeSealedPlaneRegistry();
+  let shareRepo: Repo | null = null;
+  let shareCatalog: DocHandle<LarDoc> | null = null;
+  let publicTierGate: DeterministicFederationGate | null = null;
+  let publicGenesisCids: ReadonlySet<string> = new Set();
+  const shareFloor = makeHeldShareFloor({
+    genesisCids: () => publicGenesisCids,
+    handles: () => shareRepo?.handles ?? {},
+    catalog: () => catalogForViews?.(),
+    bindings: function* () {
+      for (const [bag, ids] of slotDocsNamed) for (const id of ids) yield [bag, id] as const;
+      for (const bag of sealedCells.bags()) {
+        const id = sealedMap.docOf(bag); if (id) yield [bag, id] as const;
+      }
+      if (faceCatalogDocId) yield [FACE_CATALOG_BAG_ID, faceCatalogDocId] as const;
+    },
+    publicPlane: (id) => publicTierGate?.mayFederate(id as DocumentId) ?? false,
+    sealedPlane: (id) => sealRegistry.seal.isSealedPlane(id as DocumentId) || sealedBagOf(id) !== null,
+    secretsCatalog: {
+      face: () => catalogViewOf(shareCatalog)?.faceHandle() ?? null,
+      sealed: () => faceCatalogDocId !== null && sealedBagOf(faceCatalogDocId) !== null,
+      failure: () => null,
+      flush: async () => { await shareRepo!.flush(); },
+    },
+    onRefusal: (error) => console.log(`[share-tier] ${error.name}: ${error.message}`),
+  });
   // THE WIRE PROBE, armed by the caller or by `LAR_WIRE_LOG=1` on a STAGED vessel. It reads the verdict on both
   // hooks and every sync message the Repo moves, so a witness can quote the sequence for one (peer, document)
   // from a peer's request through the holder's next change. Unarmed it is null and wraps nothing.
@@ -1323,6 +1350,7 @@ async function prepareNodeBootOn(
       // every in-process island peer full-sync; a cross-operator/unclassified WS peer reaches only the
       // deterministically-federatable planes; the antigen draws Mu on a Kapae'd presenter regardless.
       return selfSlotShareDecision({
+        tiers: shareFloor.tiers,
         // A WIRE PEER is every peer the house did not prove its own (road `P26`; in-process gets proven, never inferred from
         // a missing listening socket): a dialed hearth on the dial's own adapter reads as wire, the guard first. A sibling
         // keeps its own lane below.
@@ -1359,6 +1387,7 @@ async function prepareNodeBootOn(
       });
     }, wireProbe ?? undefined),
   });
+  shareRepo = repo;
   // The SECOND half of the probe — a doc enters a peer's sync session exactly when sync messages start moving
   // for that (doc, peer) pair, and leaves it when they stop. `doc-metrics` carries both directions.
   if (wireProbe) {
@@ -1424,6 +1453,7 @@ async function prepareNodeBootOn(
   // rows over it once the face proves (`standFaceCatalog`, below). Every reader of this handle reads the view, and each
   // write lands on the half its row class names. The `catalog-url` file names the floor alone.
   const catalogHandle: DocHandle<LarDoc> = makeCatalogView(catalogFloor);
+  shareCatalog = catalogHandle;
   if (resolvedCatalogUrl && resolvedCatalogUrl !== catalogUrl) {
     try { mkdirSync(storageDir, { recursive: true }); writeFileSync(catalogUrlFile, catalogHandle.url, "utf8"); } catch { /* quota */ }
   }
@@ -1499,6 +1529,7 @@ async function prepareNodeBootOn(
   });
   const nexusStanding = nexusIdentity(nexusStandsAt);
   const nexusPubkey   = nexusScopeOrThrow(nexusStanding);
+  publicTierGate = new DeterministicFederationGate(nexusPubkey);
   console.log(`[nexus] island ${nexusPubkey.slice(0, 18)}… (${nexusStanding.kind}${nexusStanding.shared ? ", shared" : ""}) — ${nexusStanding.reading}`);
 
   const antigenHolder = makeAntigenRingHolder({
@@ -2323,6 +2354,7 @@ async function prepareNodeBootOn(
   // after the islands shut (T27): the teardown runs backward, so this entry, pushed before the islands', runs after
   // them, and an ask an island sends while it shuts still reads through the floor.
   const islandFloor = await composeVessel(islandFloorStack({
+    tiers: shareFloor.tiers, documentsForCid: shareFloor.documentsForCid,
     receipt: receiptDoor, cas: resolveCid, dyad: dyadDoor, docStore: docStoreDoor, restsSealed: restsSealedDoor,
   }));
   const islandVessel = larVesselOf(islandFloor);
@@ -2370,12 +2402,11 @@ async function prepareNodeBootOn(
       const coreHash = coreBlobEntry.sha256;
       if (!coreHash) throw new Error(`[openNodeVessel] TW5 core blob missing sha256; re-run build:genesis`);
 
-      // Populate the fs CAS — every island worker pulls engine + plugin bytes by CID from
-      // this local CID plane, off the sync port. The genesis CRDT now carries METADATA only;
-      // the bytes ship as genesis/cas/<cid> files indexed by the immutable seed. Mirror exactly
-      // those into the runtime CAS the workers read via resolveByCid (the nodefs face of the
-      // browser vessel's OPFS fetch — isomorphic by composition).
+      // Populate the vessel's fs CAS. Workers ask the gated record over their port for engine/plugin bytes;
+      // the genesis CRDT carries metadata only. Mirror exactly the immutable seed inventory, which also
+      // supplies the explicit public byte declarations. The browser follows the same gate over OPFS.
       const manifest = readGenesisCasManifest(genesisDir);
+      publicGenesisCids = new Set(manifest?.blobs.map(({ cid }) => cid) ?? []);
       const runtimeCas = cidDir;
       if (manifest) {
         const casWritten = mirrorGenesisCasFs(manifest, genesisCasDir(genesisDir), runtimeCas);
@@ -4084,6 +4115,14 @@ async function prepareNodeBootOn(
     const casDir = cidDir;
     vmManager = new VesselIslandPool({
       caps:        islandCaps,
+      audienceForIsland: makeIslandAudienceReader({
+        ownFacePlane: () => {
+          const face = wornGateFace();
+          return face ? tiddlerText(ownEntry(catalogHandle.doc()?.tiddlers, personaBagIdFor(face.personaGroup))) || null : null;
+        },
+        recipePlane: (slug) => effectiveRecipe(slug, (plane, title) =>
+          ownEntry((plane === "oracle" ? assembly.islandHandle : catalogHandle).doc()?.tiddlers, title))?.plane ?? null,
+      }),
       mainRepo:    repo,
       // D4 lends the actor grant; this vessel opens a read-only port until then.
       portPolicy: opts.portPolicy ?? ((binding, islandKey) => ({ faceId: wornGateFace()?.personaGroup ?? islandKey, actor: binding, edits: false, bags: [], admin: false })),
@@ -4159,7 +4198,7 @@ async function prepareNodeBootOn(
   };
 
   return {
-    islandCaps, islandVessel,
+    islandCaps, islandVessel, shareFloor,
     disposeIslandFloor: () => islandFloor.dispose(),
     // A sovereign composition lifts its mounted face (by its PersonaGroup, else the place it stands as); the floor lifts none.
     liftFace: sovereign ? (custodyGroup ?? "place") : null,
@@ -4491,6 +4530,9 @@ async function composeNodeHermOn(
     // THE HERM RE-SHARE: `/cas/<cid>` serves a fleet peer's PUBLIC blob (landed write-through in its `cid/`) IFF the crossroads board — the public plane by construction — names the cid.
     publicCas: publicCasShore({
       casDir: p.cidDir,
+      tiers: p.shareFloor.tiers,
+      documentForBag: p.shareFloor.documentForBag,
+      releasedDocument: () => hermCrossroads.documentId,
       references: () => Object.entries(hermCrossroads.doc()?.tiddlers ?? {}).map(([title, record]) => ({ title, bagId: CROSSROADS_DOC_URI, record: plainRecord(record) })),
       bagTier: (bagUrl) => (bagUrl === CROSSROADS_DOC_URI ? "public" : null),
       // THE REALM LANE: a Herm serves books it never authored, so its own crossroads alone withheld every

@@ -275,6 +275,11 @@ const GENESIS_BLOB_CID = /^[0-9a-f]{64}$/;
 /**
  * Derive the logical CAS inventory from the immutable seed.
  *
+ * Publication declaration: every byte this build-derived inventory names carries PUBLIC readership.
+ * ROOT_BAGS declares the genesis system material public; bulb-read-face publishes this same inventory.
+ * This declaration covers immutable engine/plugin and genesis-bag snapshots, never later oracle mutations.
+ * makeHeldShareFloor feeds it into the one tier predicate as explicit genesis byte declarations.
+ *
  * The inventory remains a useful in-memory bulb/public-wire payload, but it is
  * no longer a second boot file.  This function is deliberately strict: a seed
  * with a malformed blob row, duplicate CID, or missing region witness cannot

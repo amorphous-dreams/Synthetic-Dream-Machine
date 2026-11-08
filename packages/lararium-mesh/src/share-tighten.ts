@@ -43,15 +43,43 @@ export function audiencePermits(tier: CapTier, audience: ShareAudience): boolean
  * The ring stands REQUIRED: a composer with no ring has no tier to tighten by, and an omitted ring must not read
  * as an inert one.
  */
-export function tightenShare(base: boolean, documentId: string | undefined, audience: ShareAudience, ring: CapTierRing): boolean {
-  if (!base) return false;                      // structural deny stands
-  if (audience === "in-process") return true;   // the house's own island, after the structural checks
-  if (!documentId) return false;                // a vessel crossing that names no doc proves nothing
+export function tightenShare(base: boolean, documentId: string | undefined, audience: ShareAudience | undefined, ring: CapTierRing,
+  onRefusal?: (refusal: Error) => void): boolean {
+  if (!base) return false;
+  let refusal: Error;
   try {
-    return audiencePermits(resolveTierForDoc(ring, documentId), audience);
-  } catch {
-    return false;                               // SecretsRegistryRefusal, DeclaredTierRefusal, any torn reading: deny
+    if (!audience || !["in-process", "fleet", "contract", "world"].includes(audience)) {
+      throw new DeclaredTierRefusal("declared-tier-audience-unresolved", "the asking island proves no audience relation");
+    }
+    if (audience === "in-process") return true;
+    if (!documentId) throw new DeclaredTierRefusal("declared-tier-unresolved", "the crossing names no document");
+    const tier = resolveTierForDoc(ring, documentId);
+    if (audiencePermits(tier, audience)) return true;
+    refusal = new DeclaredTierRefusal("declared-tier-audience", `${documentId}: ${tier} withholds from ${audience}`);
+  } catch (error) {
+    refusal = error instanceof Error ? error : new DeclaredTierRefusal("declared-tier-reading-refused", String(error));
   }
+  onRefusal?.(refusal);
+  return false;
+}
+
+/** Every production crossing holds this floor: boolean Repo hooks report a name; byte doors throw that same refusal. */
+export interface ShareBoundary {
+  allows(base: boolean, documentId: string | undefined, audience: ShareAudience | undefined): boolean;
+  require(documentId: string | undefined, audience: ShareAudience | undefined): void;
+}
+
+export function makeShareBoundary(ring: CapTierRing, onRefusal: (refusal: Error) => void): ShareBoundary {
+  const decide = (base: boolean, documentId: string | undefined, audience: ShareAudience | undefined, throwing: boolean): boolean => {
+    let refusal: Error | undefined;
+    const allowed = tightenShare(base, documentId, audience, ring, (error) => { refusal = error; onRefusal(error); });
+    if (!allowed && throwing) throw refusal;
+    return allowed;
+  };
+  return {
+    allows: (base, documentId, audience) => decide(base, documentId, audience, false),
+    require: (documentId, audience) => { decide(true, documentId, audience, true); },
+  };
 }
 
 // ── The production DeclaredTierSource ───────────────────────────────────────────────────────────
@@ -70,6 +98,9 @@ export interface ManifestTierReaders {
 }
 
 export type DeclaredTierReason =
+  | "declared-tier-audience"
+  | "declared-tier-audience-unresolved"
+  | "declared-tier-reading-refused"
   | "declared-tier-unresolved"
   | "declared-tier-manifest-unread"
   | "declared-tier-manifest-mismatch"

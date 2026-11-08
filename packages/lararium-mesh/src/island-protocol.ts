@@ -820,9 +820,9 @@ export interface IslandMsg_Fault {
 }
 
 /**
- * Island → vessel: THE FETCH DOOR's ask. A worker's `resolveByCid` missed every local dir; it asks the vessel
- * (which alone holds a transport) for the bytes a cid names. The vessel answers `cas:block` on the same
- * `requestId` — verified bytes, or `null` when no fleet holder carried them (PENDING stays PENDING, no fault).
+ * Island → vessel: THE FETCH DOOR's ask. Every worker read asks the vessel for the bytes a cid names;
+ * the vessel owns the local stores and the transport, and derives readership from the asking island.
+ * The vessel answers `cas:block` on the same `requestId`: bytes, a named refusal, or a missing body.
  */
 export interface IslandMsg_CasWant {
   type: "cas:want";
@@ -830,11 +830,12 @@ export interface IslandMsg_CasWant {
   cid: string;
 }
 
-/** Vessel → island: the fetch door's answer — the bytes (already verified against the cid) or null. */
+/** Vessel → island: bytes checked again by the worker, or null with an optional named refusal. */
 export interface IslandMsg_CasBlock {
   type: "cas:block";
   requestId: string;
   bytes: Uint8Array | null;
+  refusal?: string;
 }
 
 /**
