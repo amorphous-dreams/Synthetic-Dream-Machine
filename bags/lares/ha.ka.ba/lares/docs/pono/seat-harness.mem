@@ -144,6 +144,7 @@ Residuals, named: the ward is only as strong as the passphrase, offline; a seed-
 ## Lane state gains a `generation` that `writeState` checks before it writes, so a stale lead never overwrites a newer step. No time lease: a clock deadline breaks No global now.
 ## The fresh lead per step holds. A measure row compares fresh and resumed steps by cached and uncached tokens (`rolloutTokens`), not raw totals, before anything changes.
 ## A deterministic controller (readiness, receipts, land) waits until the Lararium stands; meanwhile each row moves one controller judgment into a tool, as the claim moved "is the broker late".
+## The install seat's `pnpm-workspace.yaml` stays unfenced for now (store-wall F11b). The wall keeps writes inside the worktree, no lane code runs (`--ignore-scripts`, `--ignore-pnpmfile`), and the inode guard refuses a shared tree, so the residual reads as links into read-only paths. A name-checked allowlist would race the writable bind; the cure, when it lands, parses the yaml with a trusted parser, refuses keys outside the house's own (`packages`, `allowBuilds`, `overrides`), and binds a broker-owned copy of the validated bytes over the file. It reopens when an install seat runs lane code, or a lane edits a workspace setting beyond those keys.
 ## A broker door for local e2e stays parked. The no-local-e2e ruling guards wall-clock time and allows one named e2e test, so a one-test door would not overturn it; it reopens when a lead step names "waiting on an e2e only the controller can run" as its stop, and then lands as one named-test door under `DOOR_RUN_MAX_MS` with fake keys and its own network namespace.
 
 <<~/ahu>>
@@ -231,6 +232,6 @@ This carrier gains its standing sections and rewrites the broker bullets and the
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;4NF65STPBbA9ce3xJ3yIJ5o2Rzvvfk1h6_p8OIhHsnI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;N-Cz0xBJvSuwPEXXl1hQOzu-EfVgPY-L6Bj9kBEGEv0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

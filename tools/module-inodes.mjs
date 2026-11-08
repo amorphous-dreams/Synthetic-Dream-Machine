@@ -2,7 +2,7 @@
 // hardlink import from the pnpm store, the main checkout or another lane) lets a write in one tree reach every tree that
 // links it, past any wall that fences only paths. Provision refuses one; the test door and the lead and build launch refuse
 // one too, so the wall never rests on how a tree was installed. One walk, lstat only, no link followed.
-import { existsSync, lstatSync, readdirSync } from 'node:fs';
+import { existsSync, lstatSync, readdirSync, openSync, closeSync, constants as FS } from 'node:fs';
 import { join } from 'node:path';
 
 /** Module farms a workspace install writes, relative to `root`: the root, every top-level workspace dir, every package. */
@@ -16,12 +16,13 @@ export function moduleFarms(root) {
  * Walk each farm once (`farms`: `{ rel, dir }`, where `dir` is any readable path to it, a `/proc/self/fd/N` handle included)
  * and return `{ count, sample }`: the regular files with nlink > 1, named relative to the tree.
  */
-export function sharedModuleFiles(farms, sampleSize = 5) {
+export function sharedModuleFiles(farms, sampleSize = 5, { beforeDescend = () => {} } = {}) {
   let count = 0; const sample = [];
+  const directoryFlags = FS.O_RDONLY | FS.O_DIRECTORY | FS.O_NOFOLLOW;
   const walk = (dir, rel) => {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       const path = join(dir, entry.name);
-      if (entry.isDirectory()) walk(path, `${rel}/${entry.name}`);
+      if (entry.isDirectory()) { beforeDescend(path); const fd = openSync(path, directoryFlags); try { walk(`/proc/self/fd/${fd}`, `${rel}/${entry.name}`); } finally { closeSync(fd); } }
       else if (entry.isFile() && lstatSync(path).nlink > 1) { count++; if (sample.length < sampleSize) sample.push(`${rel}/${entry.name}`); }
     }
   };

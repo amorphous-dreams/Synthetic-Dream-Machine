@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { superviseChild, checkTimeoutMs } from './seat-walls.mjs';
+import { superviseChild, checkTimeoutMs, openRootFarm, INSTALL_RUN_WALL } from './seat-walls.mjs';
 import { DOOR_RUN_MAX_MS, DOOR_SILENCE_MS } from './relay-claim.mjs';
 
 const child = (script) => spawn(process.execPath, ['-e', script], { detached: true, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -33,4 +33,21 @@ test('the bounds come from the doors: wider refuses, and the check seat bounds e
   await assert.rejects(superviseChild(child(''), { silenceMs: DOOR_SILENCE_MS + 1 }), /seat-bound/);
   await assert.rejects(superviseChild(child(''), { runMaxMs: DOOR_RUN_MAX_MS + 1 }), /seat-bound/);
   assert.equal(checkTimeoutMs, DOOR_SILENCE_MS);
+});
+
+test('root farm refuses when a checked directory loses its handle', () => {
+  const result = openRootFarm(0, () => null, () => ({ isDirectory: () => true }));
+  assert.match(result.refusal ?? '', /root node_modules/);
+});
+
+test('root farm refuses a link appearing after an absent name', () => {
+  const absent = () => { const error = new Error('absent'); error.code = 'ENOENT'; throw error; };
+  for (const code of ['ELOOP', 'ENOTDIR']) {
+    const result = openRootFarm(0, () => { const error = new Error(code); error.code = code; throw error; }, absent);
+    assert.match(result.refusal ?? '', /root node_modules/);
+  }
+});
+
+test('install wall masks host run sockets', () => {
+  assert.deepEqual(INSTALL_RUN_WALL, ['--tmpfs', '/run']);
 });

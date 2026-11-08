@@ -30,9 +30,9 @@
  */
 
 import { createHash } from "node:crypto";
-import { readdirSync, readFileSync, writeFileSync, mkdirSync, lstatSync, renameSync, rmSync } from "node:fs";
+import { readdirSync, readFileSync, writeFileSync, mkdirSync, renameSync, rmSync, openSync, closeSync, constants as FS } from "node:fs";
 import { randomBytes } from "node:crypto";
-import { join, dirname, resolve, relative } from "node:path";
+import { join, dirname, basename, resolve, relative } from "node:path";
 
 const REPO = resolve(process.argv[2] ?? ".");
 
@@ -52,19 +52,27 @@ export function packageStampPath(repo, dir) {
  * every dir from node_modules down must stand as a real directory, and the bytes land in a fresh temp file renamed over the
  * name (rename replaces a link, never writes through it).
  */
-export function writeStamp(repo, path, body) {
+export function writeStamp(repo, path, body, { afterWalk = () => {} } = {}) {
   const base = join(resolve(repo), "node_modules");
   const rel = relative(base, dirname(path));
   if (rel.startsWith("..") || resolve(base, rel) !== dirname(path)) throw new Error(`a stamp lives under ${base}: ${path}`);
-  let dir = base;
-  for (const part of ["", ...(rel ? rel.split("/") : [])]) {
-    dir = part ? join(dir, part) : dir;
-    try { if (!lstatSync(dir).isDirectory()) throw new Error(`stamp path ${dir} is not a real directory (a symlink or file stands there)`); }
-    catch (error) { if (error.code !== "ENOENT") throw error; mkdirSync(dir); }
-  }
-  const temp = join(dirname(path), `.stamp-${process.pid}-${randomBytes(6).toString("hex")}`);
-  writeFileSync(temp, body, { flag: "wx" });
-  try { renameSync(temp, path); } catch (error) { rmSync(temp, { force: true }); throw error; }
+  const directoryFlags = FS.O_RDONLY | FS.O_DIRECTORY | FS.O_NOFOLLOW;
+  const held = [];
+  try {
+    let parent = openSync(resolve(repo), directoryFlags); held.push(parent);
+    let dir = resolve(repo);
+    for (const part of ["node_modules", ...(rel ? rel.split("/") : [])]) {
+      dir = join(dir, part);
+      const at = `/proc/self/fd/${parent}/${part}`;
+      try { mkdirSync(at); } catch (error) { if (error.code !== "EEXIST") throw error; }
+      try { parent = openSync(at, directoryFlags); held.push(parent); }
+      catch (error) { if (["ELOOP", "ENOTDIR"].includes(error.code)) throw new Error(`stamp path ${dir} is not a real directory (a symlink or file stands there)`); throw error; }
+    }
+    afterWalk();
+    const temp = `/proc/self/fd/${parent}/.stamp-${process.pid}-${randomBytes(6).toString("hex")}`;
+    writeFileSync(temp, body, { flag: "wx" });
+    try { renameSync(temp, `/proc/self/fd/${parent}/${basename(path)}`); } catch (error) { rmSync(temp, { force: true }); throw error; }
+  } finally { for (const fd of held.reverse()) closeSync(fd); }
 }
 
 /** Every `packages/<dir>` holding its own `package.json` — derived from the filesystem, never a hand list. */

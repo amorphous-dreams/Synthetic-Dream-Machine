@@ -14,6 +14,7 @@ const GIT = '/usr/bin/git';
 const TAR = '/usr/bin/tar';
 const BWRAP = '/usr/bin/bwrap';
 const CAP = 8192;
+export const INSTALL_RUN_WALL = ['--tmpfs', '/run'];
 
 const HAVE_GIT = existsSync(GIT); // broker-owned
 const HAVE_TAR = existsSync(TAR); // broker-owned
@@ -236,6 +237,7 @@ export async function runInstallSeat({ worktree, worktreeHeld, gitDir, installer
       '--unshare-pid',
       '--clearenv',
       '--ro-bind', '/', '/',
+      ...INSTALL_RUN_WALL,
       ...(worktree ? [] : ['--tmpfs', '/mnt']),
       ...extraRw.flatMap((p) => bind('--bind-fd', hold(p), p)),
       ...bind('--bind-fd', wt, dest),
@@ -276,6 +278,25 @@ export async function runInstallSeat({ worktree, worktreeHeld, gitDir, installer
     if (ran.overran) return { ok: false, output: capOutput(`refused: install liveness: ran past ${DOOR_RUN_MAX_MS}ms; ${ran.output}`) };
     return { ok: ran.code === 0, output: capOutput(`${ran.output}${ran.error ? String(ran.error) : ''}${ran.signal ? `signal ${ran.signal}` : ''}`) };
   } finally { for (const h of opened) h.close(); }
+}
+
+/**
+ * Opens the root module farm under the held worktree, or refuses by name: a root `node_modules` that a check saw as a
+ * directory but that opens as nothing, or that opens as a link or a file (ELOOP, ENOTDIR), never reads as an absent farm,
+ * so a swap between the check and the open can never drop the read-only bind.
+ */
+export function openRootFarm(rootFd, openFarm, stat = lstatSync) {
+  let existed = false;
+  try { if (!stat(`/proc/self/fd/${rootFd}/node_modules`).isDirectory()) return { refusal: 'root node_modules must be a real directory' }; existed = true; }
+  catch (error) { if (error.code !== 'ENOENT') throw error; }
+  try {
+    const fd = openFarm('node_modules');
+    if (existed && fd === null) return { refusal: 'root node_modules must be a real directory' };
+    return { fd };
+  } catch (error) {
+    if (['ELOOP', 'ENOTDIR'].includes(error.code)) return { refusal: 'root node_modules must be a real directory' };
+    throw error;
+  }
 }
 
 /** Validate the test request before opening the execution boundary. */
@@ -386,16 +407,17 @@ export async function runTestSeat({ worktreeHeld, laneHeld, runner, files, onBea
         for (const part of rel.split('/')) { const fd = openSync(`/proc/self/fd/${parent}/${part}`, FS.O_RDONLY | FS.O_DIRECTORY | FS.O_NOFOLLOW); opened.push(fd); parent = fd; }
         return opened.pop();
       } catch (error) {
-        if (['ENOENT', 'ENOTDIR', 'ELOOP'].includes(error.code)) return null;
+        if (error.code === 'ENOENT' || (rel !== 'node_modules' && ['ENOTDIR', 'ELOOP'].includes(error.code))) return null;
         throw error;
       } finally { for (const fd of opened) closeSync(fd); }
     };
     const realDirs = rel => { const fd = openFarm(rel); if (fd === null) return []; try { return readdirSync(`/proc/self/fd/${fd}`, { withFileTypes: true }).filter(e => e.isDirectory() && !e.name.startsWith('.') && e.name !== 'node_modules').map(e => e.name); } finally { closeSync(fd); } };
     const farms = ['node_modules', ...realDirs('.').filter(d => d !== 'packages').map(d => `${d}/node_modules`), ...realDirs('packages').map(d => `packages/${d}/node_modules`)];
     // A symlinked root farm would resolve inside the wall's own view, past the read-only bind: refuse it by name.
-    try { if (!lstatSync(`/proc/self/fd/${worktreeHeld.fd}/node_modules`).isDirectory()) return refuse('root node_modules must be a real directory'); }
-    catch (error) { if (error.code !== 'ENOENT') throw error; }
-    for (const rel of farms) { const fd = openFarm(rel); if (fd !== null) moduleFds.push({ rel, fd }); }
+    const rootFarm = openRootFarm(worktreeHeld.fd, openFarm);
+    if (rootFarm.refusal) return refuse(rootFarm.refusal);
+    if (rootFarm.fd !== null) moduleFds.push({ rel: 'node_modules', fd: rootFarm.fd });
+    for (const rel of farms.slice(1)) { const fd = openFarm(rel); if (fd !== null) moduleFds.push({ rel, fd }); }
     // The wall never rests on how the tree was installed: a module file sharing an inode with another tree (the store, the
     // main checkout, another lane) refuses by name before any code runs, since a read-only bind fences paths, not inodes.
     const shared = sharedInodeRefusal(sharedModuleFiles(moduleFds.map(({ rel, fd }) => ({ rel, dir: `/proc/self/fd/${fd}` }))));
