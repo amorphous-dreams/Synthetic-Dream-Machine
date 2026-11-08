@@ -47,7 +47,7 @@ A seat names its lineage, model, effort, mode, wall, seat directory under `~/.la
 | `read` | nothing (the final message carries the hand-back) | off | never |
 | `research` | its seat directory | on, with search | never |
 | `build` | its worktree and seat directory | off | never; its lead lands the diff |
-| `lead` (Codex) | its worktree, the repo's git dir, its lane root | on | through the broker alone |
+| `lead` (Codex) | its worktree, its seat directory and its lane root; no git dir | off (the model API rides the codex process, outside the sandbox) | through the broker alone |
 
 ''Walls that hold by measure.'' The Codex sandbox keeps `.git` read-only inside every granted root, so no sandboxed Codex seat commits. A seat launched inside another seat's sandbox inherits that sandbox and cannot initialize its own runtime state, so the broker launches every seat a lead asks for. A Copilot build seat's tool gate may deny `node` and `pnpm`; its lead or the controller then runs the tests.
 
@@ -232,6 +232,6 @@ This carrier gains its standing sections and rewrites the broker bullets and the
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;TpYLjb4W7jie4RoCGkSJO7hI5w0PkhL11Q0dDg6-he0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QtWS5J31QaxczABSmcBYo1AJ-u7G3d7ezit1aWKvXrE`>>
 
 <<^ code=`&#x0004;` to=`?`>>
