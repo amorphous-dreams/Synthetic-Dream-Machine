@@ -176,14 +176,15 @@ describe.skipIf(gaps.length > 0)("★ THE MCP SEAT BINDS THE HEARTH — a harnes
     }, { budgetMs: 60_000 });
     expect(existsSync(projection), `MCP write never projected to ${projection}`).toBe(true);
     expect(readFileSync(projection, "utf8")).toContain(`uri-path = "${PATH}"`);
-    expect(existsSync(join(lar.root, "bags", "daemon")), "control: the private daemon bag must not project").toBe(false);
+    expect(existsSync(join(lar.root, "projections/bags", "daemon")), "control: the private daemon bag must not project").toBe(false);
   }, 120_000);
 
-  test("control: the same seat without the entry's LAR_ROOT reaches no daemon", async () => {
+  test("control: the same seat without the entry's LAR_ROOT names no house and reaches no daemon", async () => {
     const said = await speak(entry, harnessEnv({ ...entry.env, LAR_ROOT: "" }), [
       { name: "meme_get", arguments: { uri: URI, recipe: "default" } },
     ]);
     expect(said.code).not.toBe(0);
-    expect(said.stderr).toMatch(/no lares daemon/);
+    // No house root named: the seat's resolvers refuse by name rather than guess a home (`HouseRootUnnamed`).
+    expect(said.stderr).toMatch(/LAR_ROOT names no house root|no lares daemon/);
   }, 60_000);
 });

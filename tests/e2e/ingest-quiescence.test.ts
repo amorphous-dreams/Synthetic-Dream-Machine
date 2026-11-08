@@ -40,7 +40,7 @@ async function awaitProjection(timeoutMs = 60_000): Promise<void> {
 }
 
 function ingest(args: string[]): ReturnType<LarInstance["cli"]> {
-  return lar.cli(["ingest", "--source", join(lar.root, "bags/lares"), "--to", LARES_URI, ...args, "--json"]);
+  return lar.cli(["ingest", "--source", join(lar.root, "projections/bags/lares"), "--to", LARES_URI, ...args, "--json"]);
 }
 
 beforeAll(async () => {
@@ -104,7 +104,7 @@ describe.skipIf(!stagedTarget)("ingest quiescence — the composed loop holds st
   }, 60_000);
 
   test("Q4 — the NFC membrane assertion refuses foreign normal forms loudly", async () => {
-    const nfdPath = join(lar.root, "bags/lares/ha.ka.ba/lares/api/nfd-probe.mem");
+    const nfdPath = join(lar.root, "projections/bags/lares/ha.ka.ba/lares/api/nfd-probe.mem");
     const body = readFileSync(projected, "utf8")
       .replace(/noosphere-boot/g, "nfd-probe")
       .replace("! Entry", "! Entrée".normalize("NFD"));   // é as e + combining accent (wikitext heading)

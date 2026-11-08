@@ -30,7 +30,7 @@ import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import { plainRecordOrNull } from "../../packages/lararium-mesh/src/stored-value.js";
 import { DEVICE_DELEGATION_SELF_TIDDLER } from "../../packages/lararium-mesh/src/lar-uris.js";
-import { kahuaFaceFolder } from "../../packages/lararium-node/src/bag-paths.js";
+import { daemonFaceFolder, kahuaFaceFolder } from "../../packages/lararium-node/src/bag-paths.js";
 
 /**
  * Remove a staged root, and WAIT OUT THE DAEMON'S LAST WRITES.
@@ -294,7 +294,7 @@ const hearthGroups = new Map<string, string>();
 
 /** Persona zero's PersonaGroup id on a staged hearth `foundStagedHearth` founded; a root it never founded throws by name. */
 export function stagedHearthRelation(root: string): string {
-  const index = readFileSync(join(root, "kahua-index.toml"), "utf8");
+  const index = readFileSync(join(root, "projections", "kahua-index.toml"), "utf8");
   const relation = /^\[faces\."([^"\n]+)"\]/m.exec(index)?.[1];
   if (!relation) throw new Error("kahua index contains no face relation");
   return relation;
@@ -311,7 +311,12 @@ export function stagedHearthGroup(root: string): string {
  * rides the folder's name, `<root>/wikis/kahua-<tag>`, the tag the founded face's derived persona tag.
  */
 export function daemonWikiDir(root: string): string {
-  return join(root, "wikis", kahuaFaceFolder(stagedHearthRelation(root)));
+  return join(root, "projections", "wikis", daemonFaceFolder(stagedHearthRelation(root)));
+}
+
+/** The face's kahua stage on a staged hearth: `<root>/projections/bags/kahua-<F>`. */
+export function kahuaStageDir(root: string): string {
+  return join(root, "projections", "bags", kahuaFaceFolder(stagedHearthRelation(root)));
 }
 
 /**

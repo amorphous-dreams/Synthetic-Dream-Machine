@@ -1184,8 +1184,8 @@ export class LarDiskProjector {
     const keptRoots = new Set<string>();
     for (const mirror of this.mirrors) {
       if (!holdingBags?.has(mirror.bagId)) continue;
-      // A carrier shadowed from the resolved view no longer projects here, unless its own record does: the standoff
-      // between its sides names a conflict nobody weighs.
+      // A carrier the resolved view shadows stops projecting here, unless its own record does: the standoff between
+      // its sides names a conflict nobody weighs.
       if (!spare?.has(mirror.bagId)) this._leaveStandoff(mirror.bagId, title, "sides");
       keptRoots.add(resolvePath(mirror.mirrorRoot));
     }
@@ -1831,8 +1831,8 @@ export class LarDiskProjector {
       // A pointer whose bytes the tier lacks writes no content file at all.
       //
       // THE ORDER: BODY FIRST, THEN `.meta`. Each lands atomically and durably before the next starts, so a crash
-      // between them leaves a NEW body beside the OLD sidecar, never a new sidecar over an old body: a `.meta`
-      // names the fields of the body it sits beside, and a stale body under fresh fields would read as a carrier
+      // between them leaves the fresh body beside the prior sidecar, never a fresh sidecar over a prior body: a
+      // `.meta` names the fields of the body it sits beside, and a stale body under fresh fields would read as a carrier
       // nobody wrote. The Synced-tree agreement lands after both, so a crash between them leaves no agreement
       // claiming the pair, and the next reconcile reads the disk against the records afresh.
       if (!bodyPending) this.atomicWrite(candidate, writeBytes);
