@@ -55,7 +55,9 @@ describe("the lease-epoch fence's wiring", () => {
   test("★ an unknown founder standing cannot make a face-grant record mutate the joinee ★", () => {
     const src = KEYHIVE_SRC("face-seat.ts");
     const start = src.indexOf("await ports.founderStanding(");
-    const end = src.indexOf("ports.verify(record", start);
+    // The fork walk runs before the standing waits (a held fork surfaces even while standing reads unknown), so the
+    // unknown-standing hold stands between the standing read and the ingest.
+    const end = src.indexOf("ports.ingest(record", start);
     expect(start).toBeGreaterThanOrEqual(0);
     expect(end).toBeGreaterThan(start);
     const grantTake = src.slice(start, end);
@@ -68,7 +70,7 @@ describe("the lease-epoch fence's wiring", () => {
     expect(src).not.toMatch(/expectedEpoch|freshnessOpts|verifyDeviceDelegation/);
     expect(src).toMatch(/const authority = await verifyFounderAuthority\(r\.founderEdge,\s*ctx\)/);
     expect(src).toMatch(/verifyEdgeAgainstPersonaKel\(founderEdge,\s*chain\)/);
-    expect(src).toMatch(/if \(!proof\.dyad\) return \{ ok: false, reason: "founder dyad standing proof unavailable", pending: true \}/);
+    expect(src).toMatch(/if \(!proof\.dyad\) return \{ ok: false, reason: "founder dyad standing proof unavailable", pending: true(, \.\.\.said)? \}/);
   });
 
   test("★ ONE ROAD: every lease read goes through the island's own daemon layer, never the oracle registry ★", () => {
