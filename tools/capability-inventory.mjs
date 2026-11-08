@@ -263,8 +263,10 @@ parentPort.postMessage({ type: "probe:done" });
 `;
 }
 
-/** How the pool core calls its host's spawn for each class (VesselIslandPoolCore: `plan.surface ? { session: true } : undefined`). */
-export const POOL_SPAWN_ARGS = [["wiki", undefined], ["session", { session: true }]];
+/** How the pool core calls its host's spawn for each class (VesselIslandPoolCore: the island's audience context, with
+ *  `session: true` on a session's surface). */
+const PROBE_AUDIENCE = { wikiId: "lar:///ha.ka.ba/wikis/capability-probe", wikiSlug: "capability-probe", facePlaneId: null };
+export const POOL_SPAWN_ARGS = [["wiki", { ...PROBE_AUDIENCE }], ["session", { ...PROBE_AUDIENCE, session: true }]];
 
 /** A pool's own host spawn, read off a constructed pool; a pool whose host stands unreachable throws by name. */
 export function poolSpawnOf(pool, label) {
@@ -274,11 +276,13 @@ export function poolSpawnOf(pool, label) {
 }
 
 const resolveNoPlugins = async () => ({ ok: true, pluginCids: [] });
+/** The inventory measures reach, never readership: each probed island's audience reads as the house's own. */
+const probeAudience = () => "in-process";
 
 /** Each node row and the spawn that builds its handle: the daemon's spawn function, then the pool's OWN host spawn per class,
  *  each handed the one capability record `caps` (the vessel's, at construction). */
 export function nodeSpawnPlan(handleMod, VesselIslandPool, probe, caps = {}) {
-  const spawn = poolSpawnOf(new VesselIslandPool({ caps, workerScriptUrl: probe, resolvePluginCids: resolveNoPlugins }), "VesselIslandPool");
+  const spawn = poolSpawnOf(new VesselIslandPool({ caps, workerScriptUrl: probe, resolvePluginCids: resolveNoPlugins, audienceForIsland: probeAudience }), "VesselIslandPool");
   return [
     ["node daemon", () => handleMod.nodeSpawnDaemonWorker(probe, caps)],
     ...POOL_SPAWN_ARGS.map(([cls, args]) => [`node ${cls}`, () => spawn(args)]),
@@ -286,8 +290,8 @@ export function nodeSpawnPlan(handleMod, VesselIslandPool, probe, caps = {}) {
 }
 
 /** Each web row the tool drives and the spawn that builds its handle: the browser pool's OWN host spawn per class. */
-export function webSpawnPlan(BrowserVesselIslandPool) {
-  const pool = new BrowserVesselIslandPool({ workerScriptUrl: new URL("file:///capability-probe/island.js"), resolvePluginCids: resolveNoPlugins });
+export function webSpawnPlan(BrowserVesselIslandPool, caps = {}) {
+  const pool = new BrowserVesselIslandPool({ caps, workerScriptUrl: new URL("file:///capability-probe/island.js"), resolvePluginCids: resolveNoPlugins, audienceForIsland: probeAudience });
   const spawn = poolSpawnOf(pool, "BrowserVesselIslandPool");
   return POOL_SPAWN_ARGS.map(([cls, args]) => [`web ${cls}`, () => spawn(args)]);
 }
@@ -403,7 +407,8 @@ async function measureWeb(dist) {
   const rows = {}; const listeners = {};
   const warn = console.warn; console.warn = () => {};
   try {
-    for (const [row, spawn] of webSpawnPlan(BrowserVesselIslandPool)) {
+    // The browser pool answers its islands' byte door on the main thread, from the record the vessel hands it.
+    for (const [row, spawn] of webSpawnPlan(BrowserVesselIslandPool, countingCaps().record)) {
       const read = await measureBrowserSpawn(spawn, asks, row);
       rows[row] = read.caps; listeners[row] = read.listeners;
     }

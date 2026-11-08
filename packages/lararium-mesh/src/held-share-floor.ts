@@ -3,12 +3,23 @@ import type { LarDoc } from "./base-doc.js";
 import { tiddlerText } from "./base-doc.js";
 import { bagManifestFromMeta } from "./bag-manifest.js";
 import { casCidOfRecord } from "./cas.js";
-import { makeTierFloorSource } from "./cap-tier.js";
+import { makeTierFloorSource, type CapTier } from "./cap-tier.js";
 import { documentIdOfUrl } from "./sealed-rest.js";
 import { isBagId } from "./lar-uris.js";
-import { makeFaceSecretsRegistry, type FaceSecretsCatalog } from "./secrets-registry.js";
+import { faceScopedSecrets, makeFaceSecretsRegistry, type FaceSecretsCatalog } from "./secrets-registry.js";
 import { plainField, plainRecord, ownEntry } from "./stored-value.js";
-import { makeManifestTierSource, makeShareBoundary } from "./share-tighten.js";
+import { DeclaredTierRefusal, makeManifestTierSource, makeShareBoundary } from "./share-tighten.js";
+import { FACE_CATALOG_BAG_ID } from "./register-bags.js";
+import { isFaceScopedBag } from "./persona-scope.js";
+
+/**
+ * The tier a face's own planes declare by construction. Each of the five face-scoped families (persona · circles ·
+ * identities · sessions · intents) derives its id from the PersonaGroup, so its readership is that group's fleet: a
+ * plane that rests no manifest carrier reads this declaration, and a carrier it rests tightens or agrees.
+ */
+export const FACE_PLANE_TIER: CapTier = "personagroup";
+/** The face's own catalog binds as no bag: it follows the face to its fleet, never further. */
+export const FACE_CATALOG_TIER: CapTier = "personagroup";
 
 export interface HeldShareFloorReaders {
   handles(): Readonly<Record<string, { isReady(): boolean; doc(): unknown } | undefined>>;
@@ -20,6 +31,13 @@ export interface HeldShareFloorReaders {
   genesisCids(): ReadonlySet<string>;
   publicPlane(documentId: string): boolean;
   sealedPlane(documentId: string): boolean;
+  /**
+   * A plane the vessel binds EXPLICITLY as no bag, with the tier it declares (a hearth's hosting docs CONTRACT, the
+   * fleet's edge boards PERSONAGROUP); null for every other doc. Never a default: a doc no reader names stays unresolved.
+   */
+  nonBagTier(documentId: string): CapTier | null;
+  /** The worn face's sealed map names this doc (its sealed bags and catalog). The secrets registry gates these alone. */
+  faceOwns(documentId: string): boolean;
   secretsCatalog: FaceSecretsCatalog;
   onRefusal(refusal: Error): void;
 }
@@ -42,19 +60,26 @@ export function makeHeldShareFloor(readers: HeldShareFloorReaders) {
     return handle?.isReady() ? handle.doc() as LarDoc : null;
   };
   const docsOf = (bag: string): (LarDoc | null)[] => (bindings().get(bag) ?? []).map(doc);
+  const bagsOfDoc = (id: string): string[] => [...bindings()].filter(([, ids]) => ids.includes(id)).map(([bag]) => bag);
   const declared = makeManifestTierSource({
     bagOfDoc(id) {
-      const bags = [...bindings()].filter(([, ids]) => ids.includes(id)).map(([bag]) => bag);
+      const bags = bagsOfDoc(id);
+      // The face's catalog binds as no bag, under its own declared tier.
+      if (bags.length === 1 && bags[0] === FACE_CATALOG_BAG_ID) return { kind: "non-bag", tier: FACE_CATALOG_TIER };
       if (bags.length === 1) return { kind: "bag", bag: bags[0]! };
-      // Only a known non-bag public board opts out of a manifest. An unknown doc never does.
-      if (bags.length === 0 && readers.publicPlane(id)) return { kind: "non-bag" };
-      return null;
+      if (bags.length > 0) return null;
+      // Only a plane a reader names opts out of a manifest: a public board PUBLIC, another non-bag plane its own tier.
+      if (readers.publicPlane(id)) return { kind: "non-bag", tier: "public" };
+      const tier = readers.nonBagTier(id);
+      return tier === null ? null : { kind: "non-bag", tier };
     },
     manifestOf(bag) {
       const manifests = docsOf(bag).flatMap((held) => {
         const record = ownEntry(held?.tiddlers, bag);
         return record ? [plainRecord(record).tiddler] : [];
       });
+      // A face plane declares by its family; a carrier it rests must still agree below.
+      if (manifests.length === 0 && isFaceScopedBag(bag)) return { bag, tier: FACE_PLANE_TIER, home: "hearth" };
       // More than one carrier must agree; no arbitrary replica order decides a tier.
       if (manifests.length === 0) return null;
       const first = bagManifestFromMeta(bag, manifests[0]);
@@ -72,14 +97,32 @@ export function makeHeldShareFloor(readers: HeldShareFloorReaders) {
   // carry a face's secrets; all ordinary documents still consult the live secrets registry first.
   const genesisPrefix = "genesis-public:";
   const genesis = (id: string): boolean => id.startsWith(genesisPrefix) && readers.genesisCids().has(id.slice(genesisPrefix.length));
-  const tiers = makeShareBoundary({
-    declared: { declaredTierForDoc: (id) => genesis(id) ? "public" : declared.declaredTierForDoc(id) },
-    floor: makeTierFloorSource({
-      federatable: (id) => genesis(id) || readers.publicPlane(id),
-      sealed: (id) => !genesis(id) && readers.sealedPlane(id),
-      secrets: (id) => !genesis(id) && registry.plane.isContractSecretsPlane(id),
-    }),
-  }, readers.onRefusal);
+  // WHO OWNS A DOC, PROVEN: the registry gates the worn face's own documents alone (operator clarification 2026-11-06). The
+  // seed, a public board and an explicit non-bag plane hold no face's secrets; a doc the face's sealed map names, its
+  // catalog, or a face-scoped plane asks the registry; a doc bound to another bag does not. A doc bound nowhere and named by
+  // no reader stays unresolved, and the crossing refuses.
+  const owns = (id: string): boolean => {
+    if (genesis(id) || readers.publicPlane(id)) return false;
+    if (readers.faceOwns(id)) return true;
+    const bags = bagsOfDoc(id);
+    if (bags.some((bag) => bag === FACE_CATALOG_BAG_ID || isFaceScopedBag(bag))) return true;
+    if (bags.length > 0 || readers.nonBagTier(id) !== null) return false;
+    throw new DeclaredTierRefusal("declared-tier-unresolved", `${id}: no binding proves which face owns it`);
+  };
+  const secrets = faceScopedSecrets(registry.plane, owns);
+  const declaredSource = { declaredTierForDoc: (id: string) => genesis(id) ? "public" as const : declared.declaredTierForDoc(id) };
+  const floorOf = (federatable: (id: string) => boolean) => makeTierFloorSource({
+    federatable,
+    sealed: (id) => !genesis(id) && readers.sealedPlane(id),
+    secrets: (id) => !genesis(id) && secrets.isContractSecretsPlane(id),
+  });
+  // Two rings, one declaration: the held floor (the public boards and the seed alone), and the floor a crossing reads when
+  // a gate allowed it (that gate is the structure that carried the doc; the secrets ceiling still reads first).
+  const tiers = makeShareBoundary(
+    { declared: declaredSource, floor: floorOf((id) => genesis(id) || readers.publicPlane(id)) },
+    readers.onRefusal,
+    { declared: declaredSource, floor: floorOf(() => true) },
+  );
   return {
     tiers, registry,
     documentForBag: (bag: string): string | undefined => bindings().get(bag)?.[0],

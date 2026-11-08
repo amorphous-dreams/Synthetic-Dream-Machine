@@ -94,7 +94,7 @@ function attachSessionSignDoor(w: Worker, caps: CapabilityRecord): void {
  *            vessel's store. Its dyad ask draws `aside` and logs the same way: a wiki never learns what a device's
  *            edge reads.
  *   session  a session's island. It reaches none of the four: each ask it posts refuses by name on the same request
- *            id, its `cas:want` answering a miss, so an ask it makes never waits on a vessel that will not answer
+ *            id, its `cas:want` answering `CasRefused`, so an ask it makes never waits on a vessel that will not answer
  *            (the island's asks keep no clock).
  *
  * The class binds at the spawn and never moves: a worker carries no way to name itself another class.
@@ -102,7 +102,7 @@ function attachSessionSignDoor(w: Worker, caps: CapabilityRecord): void {
 export type IslandClass = "daemon" | "wiki" | "session";
 
 /** Answer a capability an island of this class may not use: the same reply shape the capability gives, refused by name,
- *  logged once. A session island reaches no member, so its `cas:want` answers a miss by name too. */
+ *  logged once. A session island reaches no member, so its `cas:want` answers `CasRefused` by name too. */
 function attachRefusals(w: Worker, caps: CapabilityRecord, island: "wiki" | "session" = "wiki"): void {
   const logged = new Set<string>();
   const once = (name: string, what: string): void => {
@@ -116,8 +116,9 @@ function attachRefusals(w: Worker, caps: CapabilityRecord, island: "wiki" | "ses
     if (!m || typeof m !== "object" || typeof m.requestId !== "string") return;
     if (m.type === "cas:want" && island === "session") {
       once("CasRefused", "the cas capability");
-      const miss: IslandMsg_CasBlock = { type: "cas:block", requestId: m.requestId, bytes: null };
-      reply(miss);
+      // The refusal rides the reply, as the browser's does: the island's asker rejects it, never reads a miss.
+      const refused: IslandMsg_CasBlock = { type: "cas:block", requestId: m.requestId, bytes: null, refusal: "CasRefused" };
+      reply(refused);
     } else if (m.type === "custody:write") {
       once("CustodyWriteRefused", "the custodyWrite capability");
       const refused: IslandMsg_CustodyWritten = {

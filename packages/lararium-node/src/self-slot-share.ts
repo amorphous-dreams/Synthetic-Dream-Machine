@@ -40,7 +40,7 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/node/self-slot-share
  */
-import type { DocumentId } from "@automerge/automerge-repo";
+import type { DocumentId, PeerId } from "@automerge/automerge-repo";
 import { carryContractShareDecision, carrierShareDecision, presenterIsKapaed, presenterStandsAside, siblingShareDecision } from "@lararium/mesh";
 import type { AntigenRing, FederationGate, NexusMembership, PeerClass, PlaneSeal, ProtectedDocGuard, ShadowConsult, ShareBoundary, ShareAudience } from "@lararium/mesh";
 
@@ -90,6 +90,11 @@ export interface SelfSlotShareInput {
    * that classes no document passes `NOTHING_CLASSED`.
    */
   readonly protectedDocs: ProtectedDocGuard | null;
+  /**
+   * The face-grant ring (`assemblePersonaGroupRing`): a wire peer it admits for this document holds a verified face-join
+   * grant under the face's PersonaGroup, so that crossing reaches `fleet`. Absent or null: no wire peer proves fleet so.
+   */
+  readonly faceGrant?: { admitsPeer(documentId: DocumentId, peerId: PeerId): Promise<boolean> } | null;
 }
 
 /** A Kapae-antigen ring that stood and bans nobody. */
@@ -119,7 +124,9 @@ export function unstoodShareInputs(input: Pick<SelfSlotShareInput, "antigenRing"
 export async function selfSlotShareDecision(input: SelfSlotShareInput): Promise<boolean> {
   let audience: ShareAudience = input.hasWsSocket ? "world" : "in-process";
   const base = await structuralShareDecision(input, (proved) => { audience = proved; });
-  return input.tiers.allows(base, input.documentId, audience);
+  // Every lane past the house's own island allows only through a gate (sibling, session face, the federatable gate, the
+  // walker or hosting set): the floor reads the gate that carried the doc, never a narrower public-board set.
+  return input.tiers.allows(base, input.documentId, audience, audience !== "in-process");
 }
 
 async function structuralShareDecision(input: SelfSlotShareInput, proves: (audience: ShareAudience) => void): Promise<boolean> {
@@ -164,6 +171,8 @@ async function structuralShareDecision(input: SelfSlotShareInput, proves: (audie
     // sync", a DIFFERENT case, so a gated peer must never reach it null — that would leak every plane).
     const fedGate: FederationGate = input.selfSlotFedGate ?? new DenyAllGate();
     if (input.membership?.holdsCarriagePeer(input.peerId)) proves("contract");
+    // A face-grant member the ring admits for this document reads it as fleet (its grant seats it in the face's group).
+    if (input.documentId && input.faceGrant && await input.faceGrant.admitsPeer(input.documentId, input.peerId as PeerId)) proves("fleet");
     return carrierShareDecision(
       new Set<string>([input.peerId]),
       fedGate,

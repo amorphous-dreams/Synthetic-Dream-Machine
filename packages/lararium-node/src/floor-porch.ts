@@ -20,6 +20,7 @@
  */
 import type { IncomingMessage, Server, ServerResponse } from "node:http";
 import type { Repo } from "@automerge/automerge-repo";
+import type { ShareBoundary } from "@lararium/mesh";
 import {
   NEXUS_AID_PATTERN, crossroadsDocUrl, floorAnswerOf, floorReleaseRowsFromBoard, foldFloorReleases, materializeSharedLarDoc, readFloorManifest,
   type LarDoc,
@@ -60,11 +61,17 @@ export function mountFloorPorch(args: {
   readonly casDir:      string;
   /** True on a hearth, which carries no bulb face. A herm lends the same lane to its bulb face's `/cas` instead. */
   readonly serveCas:    boolean;
+  /**
+   * The one tier predicate the `/cas` serve passes (P27): the board that names the release, and every held document that
+   * references the cid, must each hold `world`. Required wherever `serveCas` stands.
+   */
+  readonly share?:      { readonly tiers: ShareBoundary; readonly documentsForCid: (cid: string) => readonly string[] };
   readonly onLog?:      (line: string) => void;
 }): { readonly dispose: () => void } {
+  if (args.serveCas && !args.share) throw new Error("floor-porch-share-absent: a porch that serves /cas names the tier predicate it passes");
   const { httpServer, dispatcher, repo, nexusPubkey, casDir, serveCas } = args;
   const answers = NEXUS_AID_PATTERN.test(nexusPubkey);
-  let board: Promise<{ doc(): LarDoc | undefined }> | null = null;
+  let board: Promise<{ doc(): LarDoc | undefined; readonly documentId: string }> | null = null;
   const boardOf = () => (board ??= materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads"));
 
   const pathOf = (req: IncomingMessage): string => { try { return new URL(req.url ?? "/", "http://localhost").pathname; } catch { return ""; } };
@@ -91,7 +98,10 @@ export function mountFloorPorch(args: {
     const cid = cas[1]!;
     void boardOf().then(async (b) => {
       const named = await releasedFloorCids({ board: b.doc(), nexus: nexusPubkey, casDir });
-      const bytes = named.has(cid) ? readVerifiedCasBlobFromFs(cid, casDir) : null;
+      const share = args.share!;
+      const crosses = named.has(cid) && share.tiers.allows(true, b.documentId, "world")
+        && share.documentsForCid(cid).every((id) => share.tiers.allows(true, id, "world"));
+      const bytes = crosses ? readVerifiedCasBlobFromFs(cid, casDir) : null;
       if (!bytes) { answerClosedDoor(res); return; }
       res.writeHead(200, { "access-control-allow-origin": "*", "content-type": "application/octet-stream", "cache-control": "public, immutable, max-age=31536000" });
       if (req.method === "HEAD") res.end(); else res.end(Buffer.from(bytes));

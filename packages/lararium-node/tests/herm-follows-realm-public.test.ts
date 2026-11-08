@@ -26,7 +26,7 @@ const HERM_CROSSROADS = "lar:///ha.ka.ba/bags/crossroads";
 const REALM_PUBLIC_BAG = "lar:///ha.ka.ba/bags/lares";
 const REALM_CONTRACT_BAG = "lar:///ha.ka.ba/bags/ledger";
 const pointer = (bagId: string, title: string, cid: string): CasReferenceEntry =>
-  ({ title, bagId, record: { tiddler: { title, _is_skinny: "yes", textCid: cid } } });
+  ({ title, bagId, documentId: bagId, record: { tiddler: { title, _is_skinny: "yes", textCid: cid } } } as CasReferenceEntry);
 
 describe("the Herm's shore follows the realm's PUBLIC registrations, never its own crossroads alone", () => {
   test("a pointer in a realm-registered PUBLIC bag reads public; a CONTRACT-tier one does not", async () => {

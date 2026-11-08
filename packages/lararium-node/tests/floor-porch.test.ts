@@ -9,6 +9,7 @@
  * method, a private blob in the same CAS, a blob only an UNVERIFIED board row names, and (on a herm) `/cas` beside the porch.
  */
 import { afterEach, describe, expect, test } from "vitest";
+import { publicShareTiers } from "../../lararium-mesh/tests/public-share-fixture.js";
 import { createServer, type Server } from "node:http";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -51,7 +52,7 @@ async function rig(opts: { serveCas?: boolean } = {}) {
   const board = await materializeSharedLarDoc(repo, crossroadsDocUrl(c.aid), "board:crossroads");
   const server = createServer(); servers.push(server);
   const dispatcher = mountHttpFaceDispatcher(server);
-  const porch = mountFloorPorch({ httpServer: server, dispatcher, repo, nexusPubkey: c.aid, casDir, serveCas: opts.serveCas ?? true });
+  const porch = mountFloorPorch({ httpServer: server, dispatcher, repo, nexusPubkey: c.aid, casDir, serveCas: opts.serveCas ?? true, share: { tiers: publicShareTiers, documentsForCid: () => [] } });
   await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
   const origin = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
   return { c, board, release, casDir, origin, porch, ids: { lares: lares.cid, lararium: lararium.cid, manifest: manifestCid, secret: secretCid } };
@@ -108,7 +109,7 @@ describe("the porch answers for the Nexus's floor", () => {
     const repo = new Repo({ network: [] });
     const server = createServer(); servers.push(server);
     const dispatcher = mountHttpFaceDispatcher(server);
-    mountFloorPorch({ httpServer: server, dispatcher, repo, nexusPubkey: "ab".repeat(32), casDir: tmpdir(), serveCas: true });
+    mountFloorPorch({ httpServer: server, dispatcher, repo, nexusPubkey: "ab".repeat(32), casDir: tmpdir(), serveCas: true, share: { tiers: publicShareTiers, documentsForCid: () => [] } });
     await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
     const origin = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
     expect((await fetch(`${origin}/floor/nexus-${"ab".repeat(32)}`)).status).toBe(404);

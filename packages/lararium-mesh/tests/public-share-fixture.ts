@@ -10,6 +10,7 @@ export const publicShareTiers = makeShareBoundary({
 export const publicCasFixture = {
   tiers: publicShareTiers,
   documentForBag: (bag: string) => bag,
+  documentsForCid: (): readonly string[] => [],
   releasedDocument: () => "released-public-floor",
 };
 

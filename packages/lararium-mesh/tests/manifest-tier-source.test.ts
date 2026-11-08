@@ -34,7 +34,7 @@ const bindings: Record<string, DocBagBinding> = {
   d_shelf: { kind: "bag", bag: "shelf" }, d_circle: { kind: "bag", bag: "circle" }, d_torn: { kind: "bag", bag: "torn" },
   d_veiled: { kind: "bag", bag: "shelf-veiled" }, d_tornrow: { kind: "bag", bag: "shelf-torn-row" },
   d_liar: { kind: "bag", bag: "liar" }, d_nomanifest: { kind: "bag", bag: "ghost" }, d_nocascade: { kind: "bag", bag: "half" },
-  d_system: { kind: "non-bag" },
+  d_system: { kind: "non-bag", tier: "public" },
 };
 manifests["half"] = bagManifestFromMeta("half", { "cap-tier": "public" });
 const source = makeManifestTierSource({
@@ -66,8 +66,8 @@ describe("the manifest tier source", () => {
     expect(refusal("d_nocascade")).toBe("declared-tier-cascade-incomplete");
   });
 
-  test("M4 — the inert null stands only for a plane bound explicitly as no bag", () => {
-    expect(source.declaredTierForDoc("d_system")).toBeNull();
+  test("M4 — a plane bound explicitly as no bag answers the tier it declares, never the inert null", () => {
+    expect(source.declaredTierForDoc("d_system")).toBe("public");
   });
 
   test("M5 — through the predicate, each refusal withholds the crossing", () => {

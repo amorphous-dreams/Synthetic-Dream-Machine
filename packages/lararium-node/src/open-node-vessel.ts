@@ -1298,6 +1298,11 @@ async function prepareNodeBootOn(
     },
     publicPlane: (id) => publicTierGate?.mayFederate(id as DocumentId) ?? false,
     sealedPlane: (id) => sealRegistry.seal.isSealedPlane(id as DocumentId) || sealedBagOf(id) !== null,
+    // The planes this hearth binds as no bag, by name: its hosting docs ride to a contracted carrier (CONTRACT); the fleet's
+    // own edge boards ride the sibling lane (PERSONAGROUP). Every other unbound doc stays unresolved.
+    nonBagTier: (id) => ownHostingDocs.has(id as DocumentId) ? "contract"
+      : (edgeShadows?.fleetBoardUrls() ?? []).some((url) => documentIdOfUrl(url) === id) ? "personagroup" : null,
+    faceOwns: (id) => sealedBagOf(id) !== null,
     secretsCatalog: {
       face: () => catalogViewOf(shareCatalog)?.faceHandle() ?? null,
       sealed: () => faceCatalogDocId !== null && sealedBagOf(faceCatalogDocId) !== null,
@@ -1377,6 +1382,7 @@ async function prepareNodeBootOn(
         // A walker never reads the carriage board's contract ledger; a carrier replicates this hearth's hosting docs.
         carriageBoard:   ownCarriageBoard,
         hostingDocs:     ownHostingDocs,
+        faceGrant:       faceGrantRing,
         peerId,
         documentId: documentId as DocumentId | undefined,
         // A device the fleet root set aside reads nothing on any lane, the same-operator and sibling lanes included.
@@ -2655,6 +2661,12 @@ async function prepareNodeBootOn(
       let face: DocHandle<LarDoc>;
       try { face = await openFaceCatalog(repo, faceCatalogExpected, secret); } finally { secret.fill(0); }
       view.bindFace(face);
+      // THE SECRETS REGISTRY STANDS WITH THE FACE'S CATALOG (reach-plane#/the-vault-reads-as-a-bag): its init row lands in the
+      // sealed catalog and rests before the face's own documents cross, so a bound catalog never reads uninitialized. A
+      // catalog that already holds it answers `held`; a refusal names itself, and those documents keep refusing by it.
+      await shareFloor.registry.initialize().then(
+        (state) => console.log(`[secrets-registry] ${state} in the face's own catalog`),
+        (e: unknown) => console.log(`[secrets-registry] the face's documents keep refusing: ${e instanceof Error ? e.message : String(e)}`));
       const moved = liftFaceCatalogRows(view.floorHandle, face);
       if (moved.length) console.log(`[catalog] ${moved.length} face row(s) left the floor for the face's own catalog`);
       const unstand = standLitFaceCatalog(assembly.catalogHandle.url, face.url);
@@ -4409,6 +4421,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     const porch = mountFloorPorch({
       ...(opts.httpServer ? { httpServer: opts.httpServer } : {}), ...(opts.dispatcher ? { dispatcher: opts.dispatcher } : {}), repo: p.repo,
       nexusPubkey: p.nexusPubkey, casDir: p.cidDir, serveCas: true,
+      share: { tiers: p.shareFloor.tiers, documentsForCid: p.shareFloor.documentsForCid },
       onLog: (line) => console.log(`[lararium] ${line}`),
     });
     roleCaps.push(() => porch.dispose());
@@ -4532,8 +4545,10 @@ async function composeNodeHermOn(
       casDir: p.cidDir,
       tiers: p.shareFloor.tiers,
       documentForBag: p.shareFloor.documentForBag,
+      documentsForCid: p.shareFloor.documentsForCid,
       releasedDocument: () => hermCrossroads.documentId,
-      references: () => Object.entries(hermCrossroads.doc()?.tiddlers ?? {}).map(([title, record]) => ({ title, bagId: CROSSROADS_DOC_URI, record: plainRecord(record) })),
+      // Each pointer names the board that carries it (`hermCrossroads`), never the canon crossroads bag.
+      references: () => Object.entries(hermCrossroads.doc()?.tiddlers ?? {}).map(([title, record]) => ({ title, bagId: CROSSROADS_DOC_URI, documentId: hermCrossroads.documentId, record: plainRecord(record) })),
       bagTier: (bagUrl) => (bagUrl === CROSSROADS_DOC_URI ? "public" : null),
       // THE REALM LANE: a Herm serves books it never authored, so its own crossroads alone withheld every
       // pointer a peer landed in a public bag. Each standing registration this realm carries names its book

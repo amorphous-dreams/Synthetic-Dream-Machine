@@ -42,7 +42,7 @@ function fixtureBulb(): BulbArtifact {
 const PUBLIC_BAG  = "lar:///ha.ka.ba/bags/crossroads";
 const PRIVATE_BAG = "lar:///ha.ka.ba/bags/lares";
 const pointer = (bagId: string, title: string, cid: string): CasReferenceEntry =>
-  ({ title, bagId, record: { tiddler: { title, _is_skinny: "yes", textCid: cid } } });
+  ({ title, bagId, documentId: bagId, record: { tiddler: { title, _is_skinny: "yes", textCid: cid } } } as CasReferenceEntry);
 
 describe("the Herm re-shares a fleet peer's PUBLIC blob over its read-face while the peer stands dark", () => {
   const servers: Server[] = [];

@@ -63,29 +63,56 @@ export function tightenShare(base: boolean, documentId: string | undefined, audi
   return false;
 }
 
-/** Every production crossing holds this floor: boolean Repo hooks report a name; byte doors throw that same refusal. */
+/**
+ * Every production crossing holds this floor: boolean Repo hooks report a name; byte doors throw that same refusal.
+ *
+ * `carried` names the gate that ALLOWED the crossing (selfSlotFedGate, the sibling gate, the browser's `crossing.gate`,
+ * the face-grant ring): the structure that let the document cross is that gate, so the floor reads it in place of the
+ * narrower public-board set (`carried` ring). A byte door names no gate (`require`): its floor reads the held ring alone.
+ */
 export interface ShareBoundary {
-  allows(base: boolean, documentId: string | undefined, audience: ShareAudience | undefined): boolean;
+  allows(base: boolean, documentId: string | undefined, audience: ShareAudience | undefined, carried?: boolean): boolean;
   require(documentId: string | undefined, audience: ShareAudience | undefined): void;
 }
 
-export function makeShareBoundary(ring: CapTierRing, onRefusal: (refusal: Error) => void): ShareBoundary {
-  const decide = (base: boolean, documentId: string | undefined, audience: ShareAudience | undefined, throwing: boolean): boolean => {
+/**
+ * The boundary over its two rings: `ring` (the floor as the vessel holds it) and `carried` (the same declaration, floored
+ * by the gate that allowed the crossing). A boundary built with one ring reads it for both.
+ */
+export function makeShareBoundary(ring: CapTierRing, onRefusal: (refusal: Error) => void, carried: CapTierRing = ring): ShareBoundary {
+  const decide = (base: boolean, documentId: string | undefined, audience: ShareAudience | undefined, viaGate: boolean, throwing: boolean): boolean => {
     let refusal: Error | undefined;
-    const allowed = tightenShare(base, documentId, audience, ring, (error) => { refusal = error; onRefusal(error); });
+    const allowed = tightenShare(base, documentId, audience, viaGate ? carried : ring, (error) => { refusal = error; onRefusal(error); });
     if (!allowed && throwing) throw refusal;
     return allowed;
   };
   return {
-    allows: (base, documentId, audience) => decide(base, documentId, audience, false),
-    require: (documentId, audience) => { decide(true, documentId, audience, true); },
+    allows: (base, documentId, audience, viaGate = false) => decide(base, documentId, audience, viaGate, false),
+    require: (documentId, audience) => { decide(true, documentId, audience, false, true); },
   };
+}
+
+/**
+ * peerShareAudience — the audience a Repo peer PROVES, positively, or undefined (the predicate refuses it by name):
+ *   · a sibling the sibling channel proved, on no relay → `fleet`;
+ *   · a relay peer the face-grant ring admits for this document → `fleet`;
+ *   · a relay peer behind an armed gate → `world`; a relay peer with no gate armed proves nothing;
+ *   · a peer the vessel attached for its own islands → `in-process`;
+ *   · any other peer proves nothing.
+ */
+export function peerShareAudience(peer: {
+  readonly sibling: boolean; readonly relay: boolean; readonly gateArmed: boolean;
+  readonly grantAdmits: boolean; readonly houseIsland: boolean;
+}): ShareAudience | undefined {
+  if (peer.sibling) return peer.relay ? undefined : "fleet";
+  if (peer.relay) return !peer.gateArmed ? undefined : peer.grantAdmits ? "fleet" : "world";
+  return peer.houseIsland ? "in-process" : undefined;
 }
 
 // ── The production DeclaredTierSource ───────────────────────────────────────────────────────────
 
-/** How a doc binds to its declaration: one bag, or a plane bound EXPLICITLY as no bag (the inert null's one home). */
-export type DocBagBinding = { readonly kind: "bag"; readonly bag: string } | { readonly kind: "non-bag" };
+/** How a doc binds to its declaration: one bag, or a plane bound EXPLICITLY as no bag, carrying the tier it declares. */
+export type DocBagBinding = { readonly kind: "bag"; readonly bag: string } | { readonly kind: "non-bag"; readonly tier: CapTier };
 
 /** What the manifest source reads through. A composer over the bag registry and each bag's home supplies them. */
 export interface ManifestTierReaders {
@@ -115,7 +142,7 @@ export class DeclaredTierRefusal extends Error {
 /**
  * makeManifestTierSource — the declared tier for a doc: its bag's manifest tier met with every PRESENT per-tiddler
  * refinement. An absent refinement adds nothing; a present torn one parses VEIL. An unresolved doc, an unread or
- * mismatched manifest, or an incomplete cascade REFUSES by name; null answers only for a plane bound as no bag.
+ * mismatched manifest, or an incomplete cascade REFUSES by name; a plane bound as no bag answers the tier it declares.
  */
 export function makeManifestTierSource(readers: ManifestTierReaders): DeclaredTierSource {
   return {
@@ -124,7 +151,12 @@ export function makeManifestTierSource(readers: ManifestTierReaders): DeclaredTi
       if (binding === null || (binding.kind === "bag" && !binding.bag)) {
         throw new DeclaredTierRefusal("declared-tier-unresolved", `${documentId} resolves to no registered bag`);
       }
-      if (binding.kind === "non-bag") return null;
+      if (binding.kind === "non-bag") {
+        if (!["veil", "personagroup", "contract", "public"].includes(binding.tier)) {
+          throw new DeclaredTierRefusal("declared-tier-unresolved", `${documentId} binds as no bag and declares no tier`);
+        }
+        return binding.tier;
+      }
       const manifest = readers.manifestOf(binding.bag);
       if (manifest === null) throw new DeclaredTierRefusal("declared-tier-manifest-unread", `bag ${binding.bag} holds no readable manifest`);
       if (manifest.bag !== binding.bag) {
@@ -132,7 +164,8 @@ export function makeManifestTierSource(readers: ManifestTierReaders): DeclaredTi
       }
       const raw = readers.tiddlerTiersOf(binding.bag);
       if (raw === null) throw new DeclaredTierRefusal("declared-tier-cascade-incomplete", `bag ${binding.bag}'s tiddlers have not all read`);
-      const refinements = raw.filter((t) => t !== undefined && t !== null).map(parseCapTier);
+      // Only `undefined` reads absent: a present `null` names a torn refinement, and parses VEIL.
+      const refinements = raw.filter((t) => t !== undefined).map(parseCapTier);
       return refineBagTierWithTiddlers(manifest.tier, refinements);
     },
   };

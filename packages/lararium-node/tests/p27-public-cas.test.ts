@@ -12,9 +12,9 @@ test("P27 public CAS: a PUBLIC registration cannot loosen the held manifest; pub
       manifestOf: () => ({ bag: "work", tier, home: "hearth" }), tiddlerTiersOf: () => [] }),
     floor: makeTierFloorSource({ federatable: () => true, sealed: () => false, secrets: () => secret }),
   }, (error) => refused.push(error));
-  const entry = { title: "pointer", bagId: "work", record: { tiddler: { textCid: "cid" } } };
+  const entry = { title: "pointer", bagId: "work", documentId: "doc", record: { tiddler: { textCid: "cid" } } };
   const shore = publicCasShore({ casDir: "unused-no-byte-read", references: () => [entry],
-    bagTier: () => "public", tiers, documentForBag: () => "doc",
+    bagTier: () => "public", tiers, documentForBag: () => "doc", documentsForCid: () => ["doc"],
     realmReferences: () => [{ bagUri: "work", readTier: "public", entries: [entry] }],
     releasedFloor: () => new Set(["cid"]), releasedDocument: () => "doc" });
   expect(await shore.isPublic("cid")).toBe(false);

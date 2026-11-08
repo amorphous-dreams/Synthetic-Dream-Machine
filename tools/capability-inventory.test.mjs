@@ -8,7 +8,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { Worker } from "node:worker_threads";
 import {
-  CAPS, UNMEASURED, askMentions, stripComments, asksOf, countingCaps, differences, measureBrowserSpawn, nodeSpawnPlan, outcomeOf, poolSpawnOf, probeSource,
+  CAPS, UNMEASURED, askMentions, stripComments, asksOf, countingCaps, differences, measureBrowserSpawn, nodeSpawnPlan, outcomeOf, POOL_SPAWN_ARGS, poolSpawnOf, probeSource,
   seamCallSites, standInWorkerClass, webSpawnPlan,
 } from "./capability-inventory.mjs";
 
@@ -245,9 +245,11 @@ test("CONTROL: the wiki and session rows spawn through each pool's OWN host, cal
   assert.deepEqual(web.map(([row]) => row), ["web wiki", "web session"]);
   for (const [, spawn] of web) spawn();
   assert.deepEqual(calls, [
-    ["file:///probe.mjs", undefined], ["file:///probe.mjs", { session: true }],
-    ["file:///capability-probe/island.js", undefined], ["file:///capability-probe/island.js", { session: true }],
+    ["file:///probe.mjs", POOL_SPAWN_ARGS[0][1]], ["file:///probe.mjs", POOL_SPAWN_ARGS[1][1]],
+    ["file:///capability-probe/island.js", POOL_SPAWN_ARGS[0][1]], ["file:///capability-probe/island.js", POOL_SPAWN_ARGS[1][1]],
   ]);
+  assert.equal(POOL_SPAWN_ARGS[0][1].session, undefined);
+  assert.equal(POOL_SPAWN_ARGS[1][1].session, true);
 });
 
 test("CONTROL: the probe's handshake reads an answered ask and an unanswered one apart, with no clock", async () => {

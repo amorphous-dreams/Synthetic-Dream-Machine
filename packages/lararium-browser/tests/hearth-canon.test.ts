@@ -140,7 +140,7 @@ describe("a leaf's catalog write never reaches its hearth", () => {
     const leaf = new Repo({
       peerId: "leaf" as PeerId,
       network: [new MessageChannelNetworkAdapter(port2 as never)],
-      shareConfig: browserShareConfig(new Set(["hearth"]), () => gate, null, publicShareTiers),
+      shareConfig: browserShareConfig(new Set(["hearth"]), () => gate, null, publicShareTiers, { house: { has: () => false }, grant: () => null }),
     });
     const leafOracle = await materializeSharedLarDoc(leaf, oracleGenesisDocUrl(), "oracle");
     const leafCatalog = leaf.create<LarDoc>(emptyLarDoc());

@@ -1,5 +1,5 @@
 import type { DocumentId } from "@automerge/automerge-repo";
-import { makeHeldShareFloor, makeIslandAudienceReader, catalogViewOf, type CapabilityRecord } from "@lararium/mesh";
+import { makeHeldShareFloor, makeIslandAudienceReader, catalogViewOf, islandPeersOf, peerShareAudience, type CapabilityRecord } from "@lararium/mesh";
 import type { ShareBoundary } from "@lararium/mesh";
 import { browserPromoteStores, browserPromoteCas } from "./browser-promoted-store.js";
 import { browserWardBindRoute, BrowserWardRefused, browserWardSigner, type WardAskKind } from "./browser-ward.js";
@@ -716,6 +716,12 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   let publicTierGate: DeterministicFederationGate | null = null;
   let publicGenesisCids: ReadonlySet<string> = new Set();
   let poolCaps: CapabilityRecord | null = null;
+  // The peers this vessel attached for its own islands (`islandPeersOf`), once the Repo stands; until then none.
+  let houseIslands: { has(peerId: string): boolean } = new Set<string>();
+  // The face-grant ring, once it stands: a relay peer it admits for a document reads that document as fleet.
+  let faceGrantRing: { admitsPeer(documentId: DocumentId, peerId: PeerId): Promise<boolean> } | null = null;
+  // The fleet's own edge board, which rides the sibling lane as no bag (PERSONAGROUP), once the ring names it.
+  let fleetBoardDoc: string | null = null;
   const shareFloor = makeHeldShareFloor({
     genesisCids: () => publicGenesisCids,
     handles: () => shareRepo?.handles ?? {},
@@ -728,6 +734,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     },
     publicPlane: (id) => publicTierGate?.mayFederate(id as DocumentId) ?? false,
     sealedPlane: (id) => sealedBagOf(id) !== null,
+    nonBagTier: (id) => id === fleetBoardDoc ? "personagroup" : null,
+    faceOwns: (id) => sealedBagOf(id) !== null,
     secretsCatalog: {
       face: () => catalogViewOf(shareCatalog)?.faceHandle() ?? null,
       sealed: () => false, // This leaf reads the durable registry; the hearth alone writes it.
@@ -746,9 +754,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       gate: () => siblingGate,
       // THE DYAD'S SHADOW (kapae#/reach): a sibling whose device the fleet root set aside reaches nothing.
       aside: (peerId) => siblingAside(peerId),
-    }, shareFloor.tiers),
+    }, shareFloor.tiers, { house: { has: (peerId) => houseIslands.has(peerId) }, grant: () => faceGrantRing }),
   });
   shareRepo = repo;
+  houseIslands = islandPeersOf(repo);
   held.stood.push({ what: "repo", down: () => { sealedRest.store.endHydration(); return repo.shutdown(); } });
   // R2's booking, by the change's own writer (T4): a change this replica made books the vessel's unlocked session while
   // it stands, and a peer's change books its peer writer and rests as received under that session.
@@ -1880,9 +1889,11 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           deviceAside: (vesselKey) => !fleetShadows || fleetShadows.frontier.status !== "known" || fleetShadows.readings.get(deviceEdgeId(fleetShadows.root, vesselKey))?.stands === true,
         });
         if (fedGate && ringRelay) fedGate = ring.compose(fedGate);
+        faceGrantRing = ring;
         // THE FLEET'S EDGE BOARD rides the sibling lane beside the public boards, so the root's raise reaches every
         // device; this leaf read it before its island booted (above) and re-reads it whenever it changes.
         const fleetBoardUrl = fleetEdgeBoardDocUrl(ringRoot);
+        fleetBoardDoc = documentIdOfUrl(fleetBoardUrl);
         siblingGate = ring.composeSiblings(new DeterministicFederationGate(nexusPubkey, [fleetBoardUrl]));
       }
 
@@ -2393,13 +2404,28 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
  * A SIBLING — a peer the sibling channel proved — never reads as a house member: `siblings` hands it to the
  * sibling gate, the ring's sibling path, and nothing else reaches it.
  */
-export function browserShareConfig(relayPeers: ReadonlySet<string>, fedGateOf: () => FederationGate | null, siblings: SiblingShare | null, tiers: ShareBoundary) {
+export function browserShareConfig(relayPeers: ReadonlySet<string>, fedGateOf: () => FederationGate | null, siblings: SiblingShare | null, tiers: ShareBoundary,
+  proof: BrowserAudienceProof) {
   // `siblings.aside` carries the dyad's shadow: mesh's one law reads it ahead of the sibling gate.
   return shareConfigOf(async (peerId, documentId) => {
     const gate = fedGateOf();
-    const audience = siblings?.isSibling(peerId) ? "fleet"
-      : relayPeers.has(peerId) ? (gate === null ? "fleet" : "world") : "in-process";
+    const relay = relayPeers.has(peerId);
+    const grant = relay && gate !== null && documentId ? proof.grant() : null;
+    // THE AUDIENCE IS PROVEN, NEVER DEFAULTED (P27): a sibling the channel proved, a relay the face-grant ring admits, a
+    // relay behind its armed gate, or an island this vessel attached. An unclassified peer and a relay with no gate armed
+    // prove nothing, and the predicate refuses them by name.
+    const audience = peerShareAudience({
+      sibling: Boolean(siblings?.isSibling(peerId)), relay, gateArmed: gate !== null,
+      grantAdmits: grant !== null && documentId !== undefined && await grant.admitsPeer(documentId, peerId as PeerId),
+      houseIsland: proof.house.has(peerId),
+    });
     const base = await federationShareDecision(relayPeers, gate, peerId, documentId, siblings);
-    return tiers.allows(base, documentId, audience);
+    return tiers.allows(base, documentId, audience, audience !== undefined && audience !== "in-process");
   });
+}
+
+/** What proves a browser peer's audience: the house's own island arrivals, and the face-grant ring once it stands. */
+export interface BrowserAudienceProof {
+  readonly house: { has(peerId: string): boolean };
+  readonly grant: () => { admitsPeer(documentId: DocumentId, peerId: PeerId): Promise<boolean> } | null;
 }

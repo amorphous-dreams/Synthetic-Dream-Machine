@@ -70,7 +70,7 @@ test("P27 boot: immutable engine and genesis-bag inventory reads with no held do
   const registryHandle = { doc: () => registryDoc } as DocHandle<LarDoc>;
   const secretsFace = vi.fn(() => registryDoc ? registryHandle : null);
   const held = makeHeldShareFloor({ handles: () => handles, catalog: () => undefined, bindings: () => [],
-    genesisCids: () => declared, publicPlane: () => false, sealedPlane: () => false,
+    genesisCids: () => declared, publicPlane: () => false, sealedPlane: () => false, nonBagTier: () => null, faceOwns: () => false,
     secretsCatalog: { face: secretsFace, sealed: () => false, failure: () => null, flush: async () => {} },
     onRefusal: () => {},
   });
@@ -86,10 +86,10 @@ test("P27 boot: immutable engine and genesis-bag inventory reads with no held do
     const mutable: LarDoc = { ...emptyLarDoc(), blobs: { guessed: { id: "guessed", sha256: "mutable-only", mimeType: "text/plain", version: "test" } } };
     handles = { oracle: { isReady: () => true, doc: () => mutable } };
     expect(held.documentsForCid("mutable-only")).toEqual(["oracle"]);
-    // A mutable reference names a document, not a public declaration. The one predicate reads its
-    // structural/secrets floor before its declaration, so an unread registry answers first.
-    await expect(door("mutable-only", "world")).rejects.toMatchObject({ name: "SecretsRegistryRefusal", reason: "secrets-registry-unread" });
-    expect(secretsFace).toHaveBeenCalledOnce();
+    // A mutable reference names a document, not a public declaration. A doc bound nowhere proves no owner, so the
+    // registry is never asked and the crossing refuses unresolved (the registry gates its own face's documents alone).
+    await expect(door("mutable-only", "world")).rejects.toMatchObject({ name: "DeclaredTierRefusal", reason: "declared-tier-unresolved" });
+    expect(secretsFace).not.toHaveBeenCalled();
     // Once the registry reads, the same unbound document still cannot declare these bytes public.
     registryDoc = emptyLarDoc();
     registryDoc.tiddlers[SECRETS_REGISTRY_ROW] = storedLarRecord(SECRETS_REGISTRY_ROW,
