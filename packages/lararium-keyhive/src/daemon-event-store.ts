@@ -162,11 +162,24 @@ export interface CapEventSink {
  * The trailing loop is the backstop: keyhive accepts a subset of any bundle, and what it did not take must
  * still persist for a boot replay. Those rows carry the sentinel honestly — nothing on this side read them.
  */
+/** The reading that licensed this absorb no longer stands: nothing mutated, nothing persisted. */
+export class IngestOvertaken extends Error {
+  constructor() { super("cap-event ingest overtaken: the reading that licensed it changed before the mutation; nothing taken"); this.name = "IngestOvertaken"; }
+}
+
+/**
+ * THE COMMIT BOUNDARY (`admit`): Keyhive changes membership inside `ingestPeerEvents`, before the caller's await returns, so a
+ * check after the await reads a mutation already made. The caller's guard is asked HERE, synchronously, with no await between
+ * the answer and the mutation's call: a guard that answers false refuses by name (`IngestOvertaken`) and the crossing neither
+ * mutates nor persists. A proof change that lands after this line meets a committed membership.
+ */
 export async function absorbCapEvents(
   kh: CapEventSink,
   store: EventStore,
   events: readonly Uint8Array[],
+  boundary: { readonly admit?: () => boolean } = {},
 ): Promise<void> {
+  if (boundary.admit && !boundary.admit()) throw new IngestOvertaken();
   // THE READ MAY FAIL; THE RECORD MAY NOT. Keyhive refuses a bundle it cannot deserialize — a crossing packed
   // by a peer running other code, or one event corrupted in carriage — and it refuses the WHOLE array, not the
   // bad element. Persisting is what lets a later boot replay the crossing against whatever keyhive stands then,

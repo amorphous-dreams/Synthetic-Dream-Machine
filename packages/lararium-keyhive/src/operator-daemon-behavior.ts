@@ -1401,7 +1401,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           // The founder's standing, off this vessel's own fold of the face's fleet board: no reader composed reads nothing as clear.
           founderStanding: async (key) => requireDyadReader(dyadReader(ctx), "the grant founder")(edge.personaRootDid, key),
           verify: verifyFaceGrantRecord,
-          ingest: async (record) => { await absorbCapEvents(veil, new DaemonEventStore({ daemon: ctx.composite, face: daemonAuth.personaGroupId! }), record.capEvents.map(base64ToBytes)); },
+          ingest: async (record, admit) => { await absorbCapEvents(veil, new DaemonEventStore({ daemon: ctx.composite, face: daemonAuth.personaGroupId! }), record.capEvents.map(base64ToBytes), { admit }); },
           lift: async () => {
             const lifted = await slotDocsOf(ctx).liftFloor();
             if (lifted.moved.length + lifted.finished.length > 0)
