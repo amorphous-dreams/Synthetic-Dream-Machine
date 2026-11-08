@@ -152,11 +152,18 @@ export function makeFaceSeat(ports: FaceSeatPorts) {
             ports.log(`face-join grant pending (${title.slice(-16)}): ${verdict.reason}`);
             continue;
           }
-          judged.add(record.sig);
+          // Standing can change after a lift; retain the refusal but revisit it on daemon changes.
+          if (standing === "aside") waitingOnProof = true;
+          else judged.add(record.sig);
           ports.log(`face-join grant record REFUSED (${title.slice(-16)}): ${verdict.reason}`);
           continue;
         }
         // Retain the seat's own fail-closed boundary even if a supplied verifier accepts unknown standing.
+        if (standing === "aside") {
+          waitingOnProof = true;
+          ports.log(`face-join grant record REFUSED (${title.slice(-16)}): founder device set aside`);
+          continue;
+        }
         if (standing === "unknown") {
           waitingOnProof = true;
           ports.log(`face-join grant pending (${title.slice(-16)}): founder dyad standing unknown`);

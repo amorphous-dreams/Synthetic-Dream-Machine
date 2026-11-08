@@ -93,6 +93,16 @@ describe("a causal face seat", () => {
     await seat.run();
     expect(ingests).toBe(0);
   });
+  test("aside standing still withholds when a supplied verifier accepts", async () => {
+    let ingests = 0;
+    const seat = makeFaceSeat({
+      group, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
+      knowsAgent: async () => false, grants: async () => [{ title, record: grant }], founderStanding: async () => "aside",
+      verify: async () => ({ ok: true }), ingest: async () => { ingests++; }, lift: async () => {}, log: () => {},
+    });
+    await seat.run();
+    expect(ingests).toBe(0);
+  });
   test("R1 grant arrival seats and lifts without a binding call; absent grant leaves the floor", async () => {
     const f = fixture(); f.standingArrives();
     expect(await f.seat.run()).toBe(false);
@@ -145,10 +155,10 @@ describe("a causal face seat", () => {
     expect(f.read()).toEqual(["clear|unknown"]);
     expect(f.counts().ingests).toBe(1);
   });
-  test("R8 a set-aside founder's grant judges once and seats nothing; CONTROL: a standing founder's seats", async () => {
+  test("R8 a set-aside founder's grant remains refused on retries; CONTROL: a standing founder's seats", async () => {
     const f = fixture(); f.arrive(); f.founderAside();
     await f.seat.run(); f.seat.wake(); await f.seat.settled(); await f.seat.run();
-    expect(f.counts()).toEqual({ ingests: 0, lifts: 0, verifies: 1 });
+    expect(f.counts()).toEqual({ ingests: 0, lifts: 0, verifies: 3 });
     expect(f.seated()).toBe(false);
     expect(f.logs.some((m) => /REFUSED .*founder device set aside/.test(m))).toBe(true);
     const control = fixture(); control.arrive(); control.standingArrives();
