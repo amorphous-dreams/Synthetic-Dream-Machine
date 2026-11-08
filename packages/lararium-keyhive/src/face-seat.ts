@@ -1,6 +1,38 @@
 /** A joinee's one serialized grant take and floor lift, driven only by causal wakes. */
 import type { EdgeStanding } from "@lararium/mesh";
 import { FACE_GRANT_PREFIX, type FaceGrantRecord, type FaceGrantVerdict, type FaceGrantVerifyContext } from "./face-grant-record.js";
+import { IngestOvertaken } from "./daemon-event-store.js";
+
+/** Follow the island's own fleet replica, including proof already present when attachment finishes. */
+export function watchFaceSeatFleet(ports: {
+  readonly open: () => Promise<{ on(event: "change", listener: () => void): unknown; off(event: "change", listener: () => void): unknown }>;
+  readonly wake: () => void;
+  readonly log: (message: string) => void;
+}) {
+  let stopped = false, attached = false, again = false;
+  let pending: Promise<void> | null = null;
+  let detach = () => {};
+  const changed = () => { if (!stopped) ports.wake(); };
+  const attach = (): Promise<void> => {
+    if (stopped || attached) return Promise.resolve();
+    if (pending) { again = true; return pending; }
+    pending = (async () => {
+      do {
+        again = false;
+        try {
+          const handle = await ports.open();
+          if (stopped) return;
+          handle.on("change", changed);
+          detach = () => handle.off("change", changed);
+          attached = true;
+          changed();
+        } catch (error) { if (!stopped) ports.log(`face fleet watch unavailable: ${String(error)}`); }
+      } while (again && !attached && !stopped);
+    })().finally(() => { pending = null; });
+    return pending;
+  };
+  return { attach, stop: () => { stopped = true; detach(); } };
+}
 
 export interface FaceSeatPorts {
   readonly group: string;
@@ -12,7 +44,9 @@ export interface FaceSeatPorts {
   /** This vessel's remove-wins reading of a FOUNDER's device-face dyad, off its own fold of the fleet board. */
   readonly founderStanding: (deviceVerifyingKey: string) => Promise<EdgeStanding>;
   readonly verify: (record: FaceGrantRecord, context: FaceGrantVerifyContext) => Promise<FaceGrantVerdict>;
-  readonly ingest: (record: FaceGrantRecord) => Promise<void>;
+  /** Takes the grant's cap events. `admit` answers whether this pass's reading still stands; the ingest asks it at the commit
+   *  boundary, immediately before Keyhive mutates, and refuses with `IngestOvertaken` when it does not. */
+  readonly ingest: (record: FaceGrantRecord, admit: () => boolean) => Promise<void>;
   /** Lifts the floor under the face; answers how many records a silent floor document held back, so the next pass tries again. */
   readonly lift: () => Promise<void | { readonly skipped: number; /** One promise per skipped document, settling when it arrives (a read peers never answered) or rests (a flush storage never confirmed): that wakes the seat. */ readonly arrivals?: readonly Promise<unknown>[] }>;
   readonly log: (message: string) => void;
@@ -101,6 +135,7 @@ export function makeFaceSeat(ports: FaceSeatPorts) {
   let lifted = false;
   let active: Promise<boolean> | null = null;
   let dirty = false;
+  let proofVersion = 0;
   let waitingOnProof = false;
   let announcedUnseated = false;
   const seated = () => ports.knowsAgent(ports.group);
@@ -139,18 +174,15 @@ export function makeFaceSeat(ports: FaceSeatPorts) {
         if (typeof record?.sig !== "string" || judged.has(record.sig)) continue;
         // THE FOUNDER'S STANDING, read once per record for the device its edge names: the verifier decides from it.
         const founderKey = record.founderEdge?.deviceVerifyingKey;
+        const proofAtRead = proofVersion;
         const standing: EdgeStanding = typeof founderKey === "string" ? await ports.founderStanding(founderKey) : "unknown";
-        // ABSENCE IS NOT CLEAR: a founder no qualifying signed frontier covers leaves the record unjudged until the board's
-        // reading arrives; the verify never runs on it, so nothing about the record gets decided from what this vessel lacks.
-        if (standing === "unknown") {
-          waitingOnProof = true;
-          ports.log(`face-join grant pending (${title.slice(-16)}): founder dyad standing unknown`);
-          continue;
-        }
+        // Walk the held lineage even when standing is unknown, so a fork cannot hide behind a pending frontier.
         const verdict = await ports.verify(record, {
           personaRootDid: ports.personaRootDid, selfVerifyingKey: self, groupId: ports.group, personaKel: ports.personaKel,
           dyad: (asked) => typeof founderKey === "string" && asked.toLowerCase() === founderKey.toLowerCase() ? standing : "unknown",
         });
+        // A proof change overtook this reading. The queued pass must read again before ingest or memoization.
+        if (proofAtRead !== proofVersion) return false;
         if (!verdict.ok) {
           // A refusal for proof this vessel does not yet hold judges nothing: the record waits, and the proof's arrival wakes it.
           if (verdict.pending) {
@@ -158,12 +190,30 @@ export function makeFaceSeat(ports: FaceSeatPorts) {
             ports.log(`face-join grant pending (${title.slice(-16)}): ${verdict.reason}`);
             continue;
           }
-          judged.add(record.sig);
+          // Standing can change after a lift; retain the refusal but revisit it on daemon changes.
+          if (standing === "aside") waitingOnProof = true;
+          else judged.add(record.sig);
           ports.log(`face-join grant record REFUSED (${title.slice(-16)}): ${verdict.reason}`);
           continue;
         }
-        try { await ports.ingest(record); }
-        catch (error) { ports.log(`face-join grant atom ingest faulted: ${String(error)}`); continue; }
+        // Retain the seat's own fail-closed boundary even if a supplied verifier accepts unknown standing.
+        if (standing === "aside") {
+          waitingOnProof = true;
+          ports.log(`face-join grant record REFUSED (${title.slice(-16)}): founder device set aside`);
+          continue;
+        }
+        if (standing === "unknown") {
+          waitingOnProof = true;
+          ports.log(`face-join grant pending (${title.slice(-16)}): founder dyad standing unknown`);
+          continue;
+        }
+        // THE READING RIDES TO THE BOUNDARY: a proof change between here and Keyhive's mutation refuses the ingest there,
+        // and the queued pass reads again.
+        try { await ports.ingest(record, () => proofAtRead === proofVersion); }
+        catch (error) {
+          if (error instanceof IngestOvertaken) return false;
+          ports.log(`face-join grant atom ingest faulted: ${String(error)}`); continue;
+        }
         judged.add(record.sig);
         taken = true;
         const nowSeated = await seated();
@@ -189,7 +239,8 @@ export function makeFaceSeat(ports: FaceSeatPorts) {
     return active;
   };
   const wake = () => { void run(); };
-  // While a grant waits on founder proof this vessel does not yet hold, any daemon-layer change wakes the act.
-  const daemonChanged = (_title: string) => { if (waitingOnProof) wake(); };
+  // A change during an in-flight read queues a pass too: that read's standing predates the change, and the grant
+  // stands unmarked as waiting until the pass ends. A seat with no pass running and no pending proof does no work.
+  const daemonChanged = (_title: string) => { proofVersion++; if (waitingOnProof || active) wake(); };
   return { seated, daemonChanged, settled: async () => { if (active) await active; }, wake, run };
 }

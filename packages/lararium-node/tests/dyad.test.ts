@@ -133,10 +133,12 @@ describe("the dyad capability", () => {
   test("D6 — the composition folds the worn fleet and stands the dyad capability before its island boots (a source weld)", () => {
     const src = readFileSync(join(__dirname, "..", "src", "open-node-vessel.ts"), "utf8");
     // Presence first: an ordering over an absent call passes vacuously.
-    expect((src.match(/^\s*const dyadDoor: DyadReader = async \(fleetRoot, deviceKey\) => \{$/gm) ?? []).length).toBe(1);
+    // The door the vessel serves is the ring's own (`ringDyadDoor`, edge-shadow-ring.ts), bound once over this ring.
+    const ringSrc = readFileSync(join(__dirname, "..", "src", "edge-shadow-ring.ts"), "utf8");
+    expect((src.match(/^\s*const dyadDoor: DyadReader = ringDyadDoor\(shadowRing\);$/gm) ?? []).length).toBe(1);
     expect((src.match(/await standDaemonIsland\(\{/g) ?? []).length).toBe(1);
     expect(src).toMatch(/islandFloorStack\(\{[\s\S]*?dyad: dyadDoor/);
-    const door = src.indexOf("const dyadDoor: DyadReader = async (fleetRoot, deviceKey) => {");
+    const door = src.indexOf("const dyadDoor: DyadReader = ringDyadDoor(shadowRing);");
     const floor = src.indexOf("islandFloorStack({");
     const fold = src.indexOf("if (activeAtom) await shadowRing.refold();");
     const boot = src.indexOf("await standDaemonIsland({");
@@ -148,9 +150,9 @@ describe("the dyad capability", () => {
     expect(floor).toBeLessThan(boot);
     expect(fold).toBeLessThan(boot);
     expect(src).toMatch(/if \(wornFleetRoot\) roots\.add\(wornFleetRoot\);/);
-    expect(src).toMatch(/return shadowRing\.deviceStanding\(fleetRoot, deviceKey\);/);
-    expect(src).toMatch(/try \{ await shadowRing\.refold\(\); \} catch \{ return "aside"; \}/);
-    expect(src).toMatch(/for \(let tries = 0; tries < 3 && !shadowRing\.fold\(\); tries\+\+\) \{/);
+    expect(ringSrc).toMatch(/return ring\.deviceStanding\(fleetRoot, deviceKey\);/);
+    expect(ringSrc).toMatch(/try \{ await ring\.refold\(\); \} catch \{ return "aside"; \}/);
+    expect(ringSrc).toMatch(/for \(let tries = 0; tries < 3 && !ring\.fold\(\); tries\+\+\) \{/);
     // The floor goes down after the daemon island (T27).
     const floorDown = 'what: "the island\'s floor", down: () => islandFloor.dispose()';
     const daemonDown = 'what: "the daemon island"';

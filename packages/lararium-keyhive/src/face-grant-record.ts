@@ -129,11 +129,7 @@ export async function verifyFounderAuthority(
   proof: { readonly personaRootDid: string; readonly personaKel?: FounderLineage | undefined; readonly dyad?: ((deviceVerifyingKey: string) => EdgeStanding) | undefined },
 ): Promise<FounderAuthorityVerdict> {
   if (!proof.personaKel) return { ok: false, reason: "founder persona-KEL proof unavailable", pending: true };
-  if (!proof.dyad) return { ok: false, reason: "founder dyad standing proof unavailable", pending: true };
   if (typeof founderEdge?.deviceVerifyingKey !== "string") return { ok: false, reason: "founder edge names no device verifying key" };
-  const standing = standingOfReading(proof.dyad(founderEdge.deviceVerifyingKey));
-  if (standing === "aside") return { ok: false, reason: "founder device set aside" };
-  if (standing === "unknown") return { ok: false, reason: "founder dyad standing unknown: no qualifying signed edge frontier", pending: true };
   const { prefix, chain } = proof.personaKel;
   const genesis = chain[0];
   if (!genesis || genesis.prefix !== prefix || chain.some((e) => e.prefix !== prefix)) {
@@ -146,12 +142,16 @@ export async function verifyFounderAuthority(
   const said = walked.unreadable ? { unreadable: walked.unreadable } : {};
   if (walked.fork) return { ok: false, reason: `founder lineage forked: ${walked.fork}`, ...said };
   if (!walked.ok) return { ok: false, reason: `founder edge refused under the persona-KEL head: ${walked.reason ?? "signature"}`, ...said };
+  if (!proof.dyad) return { ok: false, reason: "founder dyad standing proof unavailable", pending: true, ...said };
+  const standing = standingOfReading(proof.dyad(founderEdge.deviceVerifyingKey));
+  if (standing === "aside") return { ok: false, reason: "founder device set aside", ...said };
+  if (standing === "unknown") return { ok: false, reason: "founder dyad standing unknown: no qualifying signed edge frontier", pending: true, ...said };
   return { ok: true, ...said };
 }
 
 /**
- * Verify a grant record OFFLINE. Order: shape → ours (joinee + group) → the founder's authority (dyad standing, then
- * its edge under the anchor-pinned persona-KEL head) → the signature under the key that edge licenses. A record that
+ * Verify a grant record OFFLINE. Order: shape → ours (joinee + group) → the founder's authority (its edge under the
+ * anchor-pinned persona-KEL head, then dyad standing) → the signature under the key that edge licenses. A record that
  * fails reads a reason and re-cuts nothing. A grant a rotated-away op-key signed refuses under the head.
  */
 export async function verifyFaceGrantRecord(rec: unknown, ctx: FaceGrantVerifyContext): Promise<FaceGrantVerdict> {

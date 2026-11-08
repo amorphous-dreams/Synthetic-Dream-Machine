@@ -108,6 +108,20 @@ export interface EdgeShadowRing extends ShadowConsult {
   fleetBoardUrls(): readonly AutomergeUrl[];
 }
 
+/**
+ * THE DYAD CAPABILITY the vessel serves its daemon island off this ring. A fold a board's move overtook publishes nothing, so
+ * the door asks again; three folds each overtaken leave the reading dark, and a dark reading answers `aside`. A board move
+ * turns the reading dark at once (`follow`), so an ask that follows a move never reads the fold from before it.
+ */
+export function ringDyadDoor(ring: Pick<EdgeShadowRing, "fold" | "refold" | "deviceStanding">): (fleetRoot: string, deviceKey: string) => Promise<EdgeStanding> {
+  return async (fleetRoot, deviceKey) => {
+    for (let tries = 0; tries < 3 && !ring.fold(); tries++) {
+      try { await ring.refold(); } catch { return "aside"; }
+    }
+    return ring.deviceStanding(fleetRoot, deviceKey);
+  };
+}
+
 export function makeEdgeShadowRing(deps: EdgeShadowRingDeps): EdgeShadowRing {
   let last: EdgeShadowFold | null = null;
   let boards: ReadonlyMap<DocumentId, string> = new Map();
