@@ -24,7 +24,7 @@ import { join } from "node:path";
 import { describe, expect, test, vi, afterEach } from "vitest";
 import { next as A } from "@automerge/automerge";
 import { Repo, type DocHandle } from "@automerge/automerge-repo";
-import { VesselIslandPoolCore, emptyLarDoc, mkEa, mkTeardownAck, type CapabilityRecord, type LarDoc, type VesselIslandHost } from "@lararium/mesh";
+import { VesselIslandPoolCore, emptyLarDoc, mkEa, mkTeardownAck, vesselCasAsker, type CapabilityRecord, type LarDoc, type VesselIslandHost } from "@lararium/mesh";
 import { nodeWorkerHandle } from "../src/worker-handle.js";
 
 /** The worker type the handle wraps, read off the handle itself: this suite stands no thread, only an emitter. */
@@ -194,7 +194,13 @@ describe("the vessel's doors answer by island class", () => {
     // RED: before F3 a session island drew no answer, so its portTransit `cas:want` on a local miss waited forever.
     expect(session.said.find((m) => m["requestId"] === "s1")).toMatchObject({ type: "custody:written", written: false });
     expect(session.said.find((m) => m["requestId"] === "s2")).toMatchObject({ type: "receipt:issued", issued: false });
-    expect(session.said.find((m) => m["requestId"] === "s3")).toEqual({ type: "cas:block", requestId: "s3", bytes: null });
+    const casReply = session.said.find((m) => m["requestId"] === "s3");
+    expect(casReply).toEqual({ type: "cas:block", requestId: "s3", bytes: null, refusal: "CasRefused" });
+    // The island's asker reads that reply as a refusal, never a miss (P27: the browser's session refusal travels the same).
+    const listeners: ((msg: unknown) => void)[] = [];
+    const ask = vesselCasAsker({ listen: (cb) => { listeners.push(cb); },
+      post: (msg) => { queueMicrotask(() => { for (const l of listeners) l({ ...casReply, requestId: (msg as { requestId: string }).requestId }); }); } });
+    await expect(ask("sha256:" + "ab".repeat(32))).rejects.toMatchObject({ name: "CasRefused", reason: "CasRefused" });
     expect(session.said.find((m) => m["requestId"] === "s4")).toMatchObject({ type: "dyad:read", standing: "aside" });
     expect(session.said.find((m) => m["requestId"] === "s5")).toMatchObject({ type: "session:signed", refusal: "signer-unavailable" });
     expect(warn.mock.calls.some(([line]) => /CasRefused: a session island asked for the cas capability/.test(String(line)))).toBe(true);
