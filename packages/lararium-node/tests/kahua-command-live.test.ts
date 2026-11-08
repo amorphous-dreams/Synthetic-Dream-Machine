@@ -96,8 +96,11 @@ describe("lares kahua over a founded face", () => {
     expect(JSON.stringify(await standing("kahua-lift", { title: "note", text: "x", sources: src }, true))).toMatch(/taint/);
     const lifted = await standing("kahua-lift", { title: "note", text: "x", taint: [], sources: src }, true) as { cid: string };
     expect(lifted.cid).toMatch(/^[0-9a-f]{64}$/);
-    const listed = await row("kahua-read", {}) as { items: Array<{ title: string }> };
+    const listed = await row("kahua-read", {}) as { items: Array<{ title: string }>; relation: unknown };
     expect(listed.items.map((i) => i.title)).toEqual(["note"]);
+    // The list names the face relation its private folders carry, read off the verified log (null where none pins).
+    expect(listed.relation === null || /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(String(listed.relation))).toBe(true);
+    expect(Object.hasOwn(listed, "relation")).toBe(true);
     await standing("kahua-withdraw", { target: lifted.cid }, true);
     expect(((await row("kahua-read", {})) as { items: unknown[] }).items).toEqual([]);
     const got = await row("kahua-read", { action: "get", title: "note", history: true }) as { item: unknown; history: Array<{ withdrawn: boolean }> };
