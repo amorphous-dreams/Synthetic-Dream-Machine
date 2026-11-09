@@ -43,6 +43,7 @@ class FakeVessel {
   lifts: Array<{ face: number; title: string; text: string; signer: string; parent: string | null }> = [];
   stage = new Map<number, CarryKahuaHead[]>();
   ingestCalls = 0;
+  waves: Array<Parameters<CarryDoors["ingest"]>[0]> = [];
   inWikiBags: string[] = [];
   held = new Set<string>(["garden"]);
   mints: string[] = [];
@@ -62,7 +63,9 @@ class FakeVessel {
       standSeat: async (i, chair) => { this.acts.push(`seat h${i} ${chair}`); this.faces = this.faces.map((f) => (f.handleIndex === i ? { ...f, seat: true, chair } : f)); },
       heldSlugs: async () => new Set(this.held),
       mintBag: async (bag) => { this.mints.push(bag); this.held.add(bag.slice(bag.lastIndexOf("/") + 1)); },
-      ingest: async ({ toBag, candidates, kapae, inWiki, wiki }) => {
+      ingest: async (wave) => {
+        this.waves.push(wave);
+        const { toBag, candidates, kapae, inWiki, wiki } = wave;
         this.ingestCalls++;
         if (inWiki === true) this.inWikiBags.push(`${toBag} in ${wiki}`);
         const store = toBag === "lar:///ha.ka.ba/wikis/daemon/working" ? this.records : (this.bagRecords.get(toBag) ?? this.bagRecords.set(toBag, new Map()).get(toBag)!);
@@ -122,6 +125,45 @@ beforeEach(() => {
 afterEach(() => { rmSync(root, { recursive: true, force: true }); rmSync(dirname(out), { recursive: true, force: true }); });
 
 describe("the carry verbs", () => {
+  test("apply restores wave files to their mirror before ingest, including shadows", async () => {
+    put("projections/wikis/pond/ha.ka.ba/notes/gone.kapae", kapaeShadowBody("lar:///ha.ka.ba/notes/gone"));
+    await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    const after = refound();
+    rmSync(join(root, "projections/bags/garden"), { recursive: true });
+    rmSync(join(root, "projections/wikis/pond"), { recursive: true });
+    await carryImport(out, { apply: true, doors: after.doors() });
+    const mirror = join(root, "projections/bags/garden");
+    const wave = after.waves.find((w) => w.toBag === "lar:///ha.ka.ba/bags/garden")!;
+    expect(wave.source).toBe(mirror);
+    expect(readFileSync(join(mirror, "ha.ka.ba/garden/rose.tid"), "utf8")).toBe(tid("lar:///ha.ka.ba/garden/rose", "a rose"));
+    expect(readFileSync(join(root, "projections/wikis/pond/ha.ka.ba/notes/gone.kapae"), "utf8")).toBe(kapaeShadowBody("lar:///ha.ka.ba/notes/gone"));
+    expect(after.waves.find((w) => w.wiki === "pond")?.kapae).toContain("lar:///ha.ka.ba/notes/gone");
+  });
+
+  test("a different mirror file stands off and never enters the wave", async () => {
+    await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    const after = refound();
+    const path = join(root, "projections/bags/garden/ha.ka.ba/garden/rose.tid");
+    writeFileSync(path, "different");
+    const result = await carryImport(out, { apply: true, doors: after.doors() });
+    expect(readFileSync(path, "utf8")).toBe("different");
+    expect(result.tallies.bag.stoodOff).toContain("lar:///ha.ka.ba/garden/rose (a different file stands in the mirror; left as it stands)");
+    expect(after.waves.flatMap((w) => w.candidates).some((c) => c.uri === "lar:///ha.ka.ba/garden/rose")).toBe(false);
+  });
+
+  test("the journal prevents repeated mirror writes and candidates", async () => {
+    await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    const after = refound();
+    await carryImport(out, { apply: true, doors: after.doors() });
+    const path = join(root, "projections/bags/garden/ha.ka.ba/garden/rose.tid");
+    const before = readFileSync(path);
+    const calls = after.waves.length;
+    const { mtimeMs } = (await import("node:fs")).statSync(path);
+    await carryImport(out, { apply: true, doors: after.doors() });
+    expect(readFileSync(path)).toEqual(before);
+    expect((await import("node:fs")).statSync(path).mtimeMs).toBe(mtimeMs);
+    expect(after.waves.slice(calls).flatMap((w) => w.candidates)).toEqual([]);
+  });
   test("C1 — carry follows active mirrors: kahua heads, drafts and temp land under the new face", async () => {
     const before = oldVessel();
     const { manifest } = await carryExport(out, { acceptOmissions: false, doors: before.doors() });
@@ -132,7 +174,7 @@ describe("the carry verbs", () => {
     expect(result.faceMap).toEqual({ "hearth-one": 0 });
     expect(after.records.has(MEMORY)).toBe(false);
     expect(after.records.has(NOTE)).toBe(false);
-    expect([...after.kapae]).toEqual(["lar:///ha.ka.ba/notes/gone"]);
+    expect([...after.kapae]).toEqual([]);
     expect(after.bagRecords.get("lar:///ha.ka.ba/bags/garden")?.get("lar:///ha.ka.ba/garden/rose")).toBe(tid("lar:///ha.ka.ba/garden/rose", "a rose"));
     expect(after.lifts).toEqual([{ face: 0, title: MEMORY, text: "remember the heron", signer: "new-grant", parent: null }]);
     expect(readFileSync(join(root, `projections/wikis/daemon-${F2}/recovery/draft-one.tid`), "utf8")).toBe(tid("draft one", "half a thought"));
@@ -178,9 +220,9 @@ describe("the carry verbs", () => {
 
   test("C4 — a tampered byte, an unlisted file or an unsafe path refuses before any write", async () => {
     await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
-    const target = join(out, "faces/f0/working/ha.ka.ba/notes/pond.tid");
+    const target = join(out, "bags/garden/ha.ka.ba/garden/rose.tid");
     const good = readFileSync(target, "utf8");
-    writeFileSync(target, good.replace("dusk", "dawn"));
+    writeFileSync(target, good.replace("rose", "dawn"));
     const after = refound();
     await expect(carryImport(out, { apply: true, doors: after.doors() })).rejects.toThrow(/bundle-hash-mismatch/);
     expect(after.ingestCalls + after.lifts.length + after.acts.length).toBe(0);
