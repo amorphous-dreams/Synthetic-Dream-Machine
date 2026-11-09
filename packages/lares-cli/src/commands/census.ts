@@ -48,7 +48,8 @@ export interface CensusLines {
 function boundedCustodyCensus(): Promise<CustodyDoorAnswer | null> {
   const abort = new AbortController();
   const timer = setTimeout(() => abort.abort(), CENSUS_CUSTODY_MS);
-  return sendCustodyFrame({ op: "census" }, null, abort.signal).finally(() => clearTimeout(timer));
+  // This process's own vessel: the root rides absent (the ambient answer). A `null` reads "looked for, not found" and refuses.
+  return sendCustodyFrame({ op: "census" }, undefined, abort.signal).finally(() => clearTimeout(timer));
 }
 
 const LIVE_LINES: CensusLines = {
