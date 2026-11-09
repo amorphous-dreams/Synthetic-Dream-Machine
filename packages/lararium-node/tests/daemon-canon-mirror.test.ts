@@ -13,7 +13,7 @@ import { describe, test, expect, afterEach } from "vitest";
 import { mkdirSync, mkdtempSync, rmSync, existsSync, readFileSync, writeFileSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { DAEMON_BAG_ID } from "@lararium/mesh";
+import { DAEMON_BAG_ID, PROJECTION_FILTER_TEXT, projectionFilterTitle } from "@lararium/mesh";
 import { LarDiskProjector } from "../src/disk-projector.js";
 import { SyncedTree } from "../src/synced-tree.js";
 import { daemonCanonMirror, daemonDiskMirrors, daemonObserveRoot, isDaemonCanonWithheld } from "../src/bag-paths.js";
@@ -79,6 +79,16 @@ describe("the daemon wiki's canon projects", () => {
     expect(isDaemonCanonWithheld("A Plain Note")).toBe(false);
     const walk = (d: string): string[] => (existsSync(d) ? (readdirSync(d, { recursive: true }) as string[]).filter((p) => p.includes(".")) : []);
     expect(walk(projections)).toEqual([]);
+  });
+
+  test("RED: the projector reads the filter as its wiki holds it: an override adding the memory family stops it projecting", async () => {
+    const { projector, projections } = rig();
+    const override = `${PROJECTION_FILTER_TEXT.daemon}\n[prefix[lar:///ha.ka.ba/kahua/memory/]]`;
+    const wiki = { getTiddlerText: (t: string) => (t === projectionFilterTitle("daemon") ? override : undefined), getTiddler: () => undefined };
+    const stop = (projector as unknown as { start: (tw5: unknown) => () => Promise<void> }).start({ $tw: { wiki } });
+    await projector.flush(DAEMON_BAG_ID, MEMORY);
+    await stop();
+    expect(existsSync(join(projections, "bags", "daemon", "ha.ka.ba", "kahua", "memory", "heron.mem"))).toBe(false);
   });
 
   test("CONTROL: a file a hand wrote with other words and no agreement stands; the gate never writes over it", async () => {
