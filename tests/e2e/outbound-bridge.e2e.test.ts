@@ -19,7 +19,7 @@
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { join, sep } from "node:path";
-import { isDaemonCanonWithheld } from "@lararium/mesh";
+import { isDaemonCanonWithheld } from "../../packages/lararium-mesh/src/lar-uris.js";
 import { openStaged, awaitRendezvous, daemonWikiDir, stageDir, type LarInstance } from "../harness/instance.js";
 import { expectEntry } from "../harness/journal-expect.js";
 

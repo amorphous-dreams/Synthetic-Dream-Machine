@@ -14,12 +14,13 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
-import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { join, sep } from "node:path";
 import { daemonWikiDir, kahuaStageDir, openStaged, stageDir, stagedTarget, type CliResult, type LarInstance } from "../harness/instance.js";
 import { expectEntry } from "../harness/journal-expect.js";
 import { kahuaStageDocUrl } from "../../packages/lararium-mesh/src/kahua-stage.js";
 import { KAHUA_BAG } from "../../packages/lararium-mesh/src/wiki-recipe.js";
+import { isDaemonCanonWithheld } from "../../packages/lararium-mesh/src/lar-uris.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const built = existsSync(join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js")) && existsSync(join(REPO_ROOT, "packages/lararium-node/dist/src/main.js"));
@@ -57,7 +58,9 @@ describe.skipIf(!stagedTarget || !built)("the founding pins the face's kahua sta
   test("RED: the unlocked founding device reads an empty stage, names the stage it adopted at the face's derived address, and a mint finds the pin standing", async () => {
     const listed = await hearth!.cli(["kahua", "list"]);
     expect(listed.code, said(listed)).toBe(0);
-    expect(answer(listed)).toEqual({ items: [] });
+    // The list names the face's relation beside its items: the folder name its private projections carry.
+    expect(answer(listed)["items"]).toEqual([]);
+    expect(Object.hasOwn(answer(listed), "relation")).toBe(true);
     expect(adoptedLine(hearth!.bootLog()), hearth!.bootLog().slice(-3000)).toBe(kahuaStageDocUrl(group));
     const mint = await hearth!.cli(["kahua", "mint"]);
     expect(mint.code, said(mint)).toBe(0);
@@ -76,7 +79,7 @@ describe.skipIf(!stagedTarget || !built)("the founding pins the face's kahua sta
     expect(answer(again)).toEqual({ url: kahuaStageDocUrl(group), minted: false });
   }, 600_000);
 
-  test("a daemon-wiki write and a kahua lift each project under the face's kahua name, and the daemon bag never projects", async () => {
+  test("a daemon-wiki write and a kahua lift each project under the face's kahua name, and the daemon bag projects no control or house title", async () => {
     // Trued from the seed form: `vessel seed` reads the canon source, which a scratch LAR_ROOT holds empty, and the
     // fleet bag projects under its own bag id (`bags/kahua`), never `bags/kahua-<F>`. A write to each layer drives
     // its projection; the face rides the folder name alone.
@@ -98,8 +101,12 @@ describe.skipIf(!stagedTarget || !built)("the founding pins the face's kahua sta
     } }, { budgetMs: 60_000 });
     expect(existsSync(join(daemonWikiDir(hearth!.root), "ha.ka.ba/kahua/memory/kahua-founding-stage-row.mem"))).toBe(true);
     expect(existsSync(kahuaStageDir(hearth!.root))).toBe(true);
-    // CONTROL: the daemon's private identity bag never becomes a filesystem projection.
+    // CONTROL: the daemon bag never projects into the tracked-shape bags/ beside the root, and its canon mirror under
+    // <projections>/bags/daemon carries authored records alone: no control or house title (`isDaemonCanonWithheld`).
     expect(existsSync(join(hearth!.root, "bags", "daemon"))).toBe(false);
-    expect(existsSync(join(hearth!.root, "projections", "bags", "daemon"))).toBe(false);
+    const canon = join(hearth!.root, "projections", "bags", "daemon");
+    const files = existsSync(canon) ? (readdirSync(canon, { recursive: true }) as string[]).filter((p) => statSync(join(canon, p)).isFile()) : [];
+    const titles = files.filter((p) => !p.endsWith(".meta")).map((p) => `lar:///${p.split(sep).join("/").replace(/\.[^/.]+$/, "")}`);
+    expect(titles.filter((t) => isDaemonCanonWithheld(t)), "a withheld title stands under bags/daemon").toEqual([]);
   });
 });
