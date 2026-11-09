@@ -48,14 +48,33 @@ describe("the daemon wiki's canon per face", () => {
   test("RED: the face's first stand mints its daemon canon and names it in the face's catalog; CONTROL: a second stand returns that same document", async () => {
     const repo = new Repo({});
     const catalog = repo.create<LarDoc>(emptyLarDoc());
-    const first = await standFaceDaemonCanon({ repo, catalog, faceRelation: F });
+    const first = await standFaceDaemonCanon({ repo, control: catalog, faceRelation: F });
     expect(first.bagId).toBe(daemonFaceCanonBag(F));
-    expect(tiddlerText(ownEntry(catalog.doc()?.tiddlers, first.bagId))).toBe(first.url);
-    const second = await standFaceDaemonCanon({ repo, catalog, faceRelation: F });
+    expect(tiddlerText(ownEntry(catalog.doc()?.tiddlers, `${CONTROL_HOME_ID}/daemon-canon/${encodeURIComponent(F)}`))).toBe(first.url);
+    const second = await standFaceDaemonCanon({ repo, control: catalog, faceRelation: F });
     expect(second.handle.documentId).toBe(first.handle.documentId);
   });
 
   test("a face relation that is no relation names no canon", () => {
     expect(() => daemonFaceCanonBag("not-a-relation")).toThrow(/invalid relation/);
   });
+  test("control names a vessel's canon separately from another device and the face catalog", async () => {
+    const deviceRepo = new Repo();
+    const otherRepo = new Repo();
+    const catalog = deviceRepo.create<LarDoc>(emptyLarDoc());
+    const control = deviceRepo.create<LarDoc>(emptyLarDoc());
+    const otherControl = otherRepo.create<LarDoc>(emptyLarDoc());
+    const faceRelation = "123e4567-e89b-42d3-a456-426614174000";
+    const first = await standFaceDaemonCanon({ repo: deviceRepo, control, faceRelation });
+    const again = await standFaceDaemonCanon({ repo: deviceRepo, control, faceRelation });
+    const other = await standFaceDaemonCanon({ repo: otherRepo, control: otherControl, faceRelation });
+    const title = `lar:///ha.ka.ba/bags/control/daemon-canon/${encodeURIComponent(faceRelation)}`;
+    expect(tiddlerText(ownEntry(control.doc()?.tiddlers, title))).toBe(first.url);
+    expect(catalog.doc()?.tiddlers[title]).toBeUndefined();
+    expect(catalog.doc()?.tiddlers[first.bagId]).toBeUndefined();
+    expect(again.url).toBe(first.url);
+    expect(other.url).not.toBe(first.url);
+    await deviceRepo.shutdown(); await otherRepo.shutdown();
+  });
+
 });
