@@ -43,8 +43,9 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/verb-tiddler
  */
 
+import { projectionWithheld } from "./projection-filter.js";
 import {
-  DAEMON_BAG_ID, VOLATILE_VM_PREFIX, isSwarmUri,
+  DAEMON_BAG_ID, VOLATILE_VM_PREFIX,
   LARES_VERB_EVENT_TAG, LARES_VERB_TAG,
 } from "./lar-uris.js";
 import { sha256Hex, canonicalJsonBytes, defaultCryptoProvider, type DigestProvider } from "./crypto.js";
@@ -121,15 +122,13 @@ export const RECEIPT_FACT_URI_PREFIX = `${DAEMON_BAG_ID}/receipts/`;
 export const WARD_AUDIT_URI_PREFIX = `${DAEMON_BAG_ID}/ledger/ward/`;
 
 /**
- * True for a title whose record never projects to disk: a receipt fact, a verb summons, a ward audit, a swarm control.
- * The makers stamp such a record `disk-projection: "no"`; no file for it ever comes from the projector,
- * so a file standing at its address counts as foreign.
+ * True for a title whose record never projects to disk: whatever the base projection filter withholds from every mirror
+ * (`projection-filter.ts`: the daemon's control plane with its receipt facts, summons and ward audits, the swarm's controls,
+ * the volatile VM plane, effect records, realm-bag announces, bag manifests). No file for such a record ever comes from the
+ * projector, so a file standing at its address counts as foreign, and no wave lands it.
  */
 export function neverProjects(title: string): boolean {
-  return title.startsWith(RECEIPT_FACT_URI_PREFIX)
-    || title.startsWith(SUMMONS_URI_PREFIX)
-    || title.startsWith(WARD_AUDIT_URI_PREFIX)
-    || isSwarmUri(title);
+  return projectionWithheld(title);
 }
 
 /** A file whose ingest would write a record that never projects to disk. */

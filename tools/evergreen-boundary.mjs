@@ -44,7 +44,7 @@ import { fileURLToPath } from "node:url";
 
 export const RULES = ["version", "clock", "narration", "old-shape", "retired-test", "upgrade-delete", "canon-history", "canon-dated-history"];
 /** Today's measured open debt, per rule. RATCHET: each number may only ever come DOWN. */
-export const CEILINGS = { version: 55, clock: 53, narration: 163, "old-shape": 0, "retired-test": 6, "upgrade-delete": 0, "canon-history": 98, "canon-dated-history": 1 };
+export const CEILINGS = { version: 55, clock: 53, narration: 162, "old-shape": 0, "retired-test": 6, "upgrade-delete": 0, "canon-history": 98, "canon-dated-history": 1 };
 export const EXCEPTIONS = [
   { rule: "version", file: "packages/lararium-browser/src/browser-vessel-identity.ts", match: "const IDB_VERSION", reason: "IndexedDB's open call takes a numeric version argument; the browser API names it." },
   { rule: "clock", file: "packages/lararium-tw5/src/wiki-draft-handlers.ts", match: "const cutoffMs =", reason: "The prune-stale report lists idle drafts for a person to read; the clock picks what the report shows, never what leaves, since nothing here prunes (operator ruling 2026-10-18)." },

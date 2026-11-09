@@ -3,6 +3,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/lar-uris — the law this file enacts.
  */
 
+import { resolvedTitlePath, projectionWithheld } from "./projection-filter.js";
 import type { LarDoc } from "./base-doc.js";
 import { emptyLarDoc } from "./base-doc.js";
 
@@ -352,6 +353,14 @@ export function isControlPlaneUri(title: string): boolean {
   return resolvedTitlePath(title).startsWith(`${DAEMON_BAG_ID}/`) || isSwarmUri(title);
 }
 
+/**
+ * Whether a title stays off disk for the daemon bag: off its canon mirror, and out of every wave into it. The rule lives in
+ * the projection filters (`projection-filter.ts`: the base and `$:/config/lares/ProjectionFilter/daemon`); this reads them.
+ */
+export function isDaemonCanonWithheld(title: string): boolean {
+  return projectionWithheld(title, ["daemon"]);
+}
+
 /** The swarm's live controls (house cap, lane shares, go, lane state, roster, receipts) rest in the daemon wiki under this prefix. */
 export const SWARM_URI_PREFIX = "$:/lares/swarm/";
 
@@ -361,27 +370,7 @@ export function isSwarmUri(title: string): boolean {
   return title.startsWith(SWARM_URI_PREFIX) || resolvedTitlePath(title).startsWith(SWARM_URI_PREFIX);
 }
 
-/**
- * The path a title resolves to, read the way a reader resolves a URL: the scheme lower-cased, each percent escape decoded
- * (a malformed one keeps its bytes), and the `.` and `..` segments folded. A law that reads a title by prefix reads it
- * here first, so no spelling of a path slips past the prefix it resolves to.
- */
-export function resolvedTitlePath(title: string): string {
-  const scheme = /^[A-Za-z][A-Za-z0-9+.-]*:/.exec(title)?.[0] ?? "";
-  let rest = title.slice(scheme.length);
-  try { rest = decodeURIComponent(rest); } catch { /* a malformed escape keeps its bytes */ }
-  const segments = rest.split("/");
-  let leading = 0;
-  while (leading < segments.length && segments[leading] === "") leading++;
-  const out: string[] = Array(leading).fill("");
-  for (const segment of segments.slice(leading)) {
-    if (segment === "") continue;
-    if (segment === ".") continue;
-    if (segment === ".." && out.length > leading && out[out.length - 1] !== "") { out.pop(); continue; }
-    out.push(segment);
-  }
-  return scheme.toLowerCase() + out.join("/");
-}
+export { resolvedTitlePath };
 
 /** e.g. flowUri("crystal") → "lar:///ha.ka.ba/lararium/daemon/flows/crystal" — a Flow's
  *  pet-name IS its address: a callable, composed cap-stack tiddler in the daemon bag. */

@@ -147,6 +147,10 @@
     "./worldline": {
       "import": "./dist/worldline.js",
       "types": "./dist/worldline.d.ts"
+    },
+    "./projection-filter": {
+      "import": "./dist/projection-filter.js",
+      "types": "./dist/projection-filter.d.ts"
     }
   },
   "main": "./dist/index.js",

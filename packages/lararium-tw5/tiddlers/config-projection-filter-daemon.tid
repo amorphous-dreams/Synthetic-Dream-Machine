@@ -1,0 +1,7 @@
+title: $:/config/lares/ProjectionFilter/daemon
+type: text/vnd.tiddlywiki
+
+[prefix[$:/]]
+[lar-path[]prefix[lar:///ha.ka.ba/bags/]]
+[lar-path[]prefix[lar:///ha.ka.ba/dreamnet/]]
+[lar-path[]prefix[$:/]]

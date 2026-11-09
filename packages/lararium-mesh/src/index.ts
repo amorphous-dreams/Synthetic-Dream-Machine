@@ -124,6 +124,7 @@ export * from "./agile-digest.js";
 export * from "./projection-registry.js";
 export * from "./readiness.js";
 export * from "./lar-uris.js";
+export { PROJECTION_FILTER, PROJECTION_FILTER_TEXT, projectionFilterTitle, filterSelects, projectionWithheld, ProjectionFilterUnreadable, type ProjectionClass, type ProjectionFilterText } from "./projection-filter.js";
 export * from "./boot-resolver.js";
 export * from "./plane-labels.js";
 export * from "./capture/branch-frontier.js";

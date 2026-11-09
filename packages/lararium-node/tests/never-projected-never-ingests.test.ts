@@ -10,7 +10,7 @@ import { describe, expect, test } from "vitest";
 import { createHash } from "node:crypto";
 import {
   CompositeStore, NeverProjectedPathRefusal, RECEIPT_FACT_URI_PREFIX, SUMMONS_URI_PREFIX, WARD_AUDIT_URI_PREFIX,
-  buildReceiptFact, neverProjects, summon,
+  buildReceiptFact, isEffectRecordUri, neverProjects, summon,
 } from "@lararium/mesh";
 import type { CapabilityAccess, CapabilityVerifyResult, Verb, VerbContext } from "@lararium/mesh";
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
@@ -91,7 +91,8 @@ describe("a path whose records never project out never ingests in", () => {
       // CONTROL: the ordinary carrier of the same wave ingests and its record stands.
       expect(rows.find((row) => row["uri"] === ORDINARY)!["decision"]).toBe("ingest");
       expect((await r.store.get(ORDINARY))?.tiddler.title).toBe(ORDINARY);
-      expect((await r.store.listVisible()).filter((title) => neverProjects(title))).toEqual([]);
+      // The wave's own effect record (its residency-ledger entry) stays off disk too; no forged file minted a record.
+      expect((await r.store.listVisible()).filter((title) => neverProjects(title) && !isEffectRecordUri(title))).toEqual([]);
     });
   }
 

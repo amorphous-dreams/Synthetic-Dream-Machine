@@ -43,7 +43,7 @@ const SRC = resolve(dirname(fileURLToPath(import.meta.url)), "../../src");
 /** Which file each command's handler lives in (the `import` the table row names). */
 const HANDLER_FILE: Readonly<Record<string, string>> = {
   vessel: "commands/vessel", herm: "commands/herm", host: "commands/host-cmd", walk: "commands/walk-cmd",
-  act: "commands/act", ingest: "commands/ingest", watch: "commands/watch", shore: "commands/shore", draft: "commands/draft",
+  act: "commands/act", ingest: "commands/ingest", export: "commands/carry-export", import: "commands/carry-import", watch: "commands/watch", shore: "commands/shore", draft: "commands/draft",
   receipt: "commands/receipt-cmd", cancel: "commands/receipt-cmd", events: "commands/events", meme: "commands/meme", bag: "commands/bag",
   wiki: "commands/wiki", repo: "commands/tunnel-door", home: "commands/tunnel-door", sense: "commands/sense", flow: "commands/flow-run",
   "wing-of": "commands/wing-of", mempalace: "commands/mempalace", hooks: "commands/hooks",

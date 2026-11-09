@@ -68,12 +68,12 @@
 
 import { writeFileSync, mkdirSync, unlinkSync, existsSync, readFileSync, readdirSync } from "fs";
 import { dirname, basename, extname, relative as relativePath, resolve as resolvePath } from "path";
-import { confineMirrorWrite, carrierBaseRelPath, titleRelPath, isTempLayerInternalTitle } from "./bag-paths.js";
+import { confineMirrorWrite, carrierBaseRelPath, titleRelPath } from "./bag-paths.js";
 import { KAPAE_EXT, kapaeShadowBody } from "./kapae-shadow.js";
 import { contentHash, syncedTreeKey, SyncedTree } from "./synced-tree.js";
 import { decideProjection } from "./projection-gate.js";
 import { MEME_EXT } from "@lararium/mesh/mirror-paths";
-import { isEffectRecordUri, isControlPlaneUri, isBagManifestUri, isVolatileVmUri, isNexusHandlesUri, isRealmBagAnnounceUri, isFaceScopedBag, KeyedReconcileGate, carrierHash, sha256HexBytesSync, digestsEqual } from "@lararium/mesh";
+import { DAEMON_BAG_ID, isVolatileVmUri, isFaceScopedBag, KeyedReconcileGate, carrierHash, sha256HexBytesSync, digestsEqual, projectionWithheld, type ProjectionClass } from "@lararium/mesh";
 import { ORIGINAL_TIDDLER_PATHS, parseProvenance, packOfMember } from "@lararium/mesh";
 import type { ReadinessMap, VesselJournal, LarTiddlerStore } from "@lararium/mesh";
 import type { TW5Engine, CarrierFile } from "@lararium/tw5";
@@ -731,7 +731,7 @@ export class LarDiskProjector {
       // A recovery-class mirror reads its bag's own store, ahead of the view's volatile bar below: the namespace bar
       // (`neverOnDisk`) answers here first, so neither the volatile VM plane nor a temp layer's internal state reaches
       // the flush or the unlink.
-      if (LarDiskProjector.neverOnDisk(mirror, rootUri)) continue;
+      if (this.neverOnDisk(mirror, rootUri)) continue;
       const store = this.recoveryStore?.(mirror.bagId);
       if (store) {
         const record = await store.get(rootUri);
@@ -1251,7 +1251,7 @@ export class LarDiskProjector {
    * answers; a projector with no store door reads no kāpae and writes no shadow.
    */
   private async settleShadow(mirror: BagMirrorConfig, title: string, base: string): Promise<void> {
-    if (LarDiskProjector.neverOnDisk(mirror, title)) return;
+    if (this.neverOnDisk(mirror, title)) return;
     const gate = confineMirrorWrite(mirror.mirrorRoot, base + KAPAE_EXT, mirror.allowBagsRootFiles);
     if (!gate.ok) {
       console.error(`[disk-ward] kāpae shadow refused (${mirror.bagId}): ${gate.reason}`);
@@ -1608,48 +1608,27 @@ export class LarDiskProjector {
   }
 
   /**
-   * The titles that never write a file through this mirror, whatever the records say: the projection
-   * filter (lar-uri #five-planes), read alike by a carrier's write and by its kāpae shadow.
+   * The titles that never write a file through this mirror, whatever the records say, read alike by a carrier's write and
+   * by its kāpae shadow: THE PROJECTION FILTERS (`@lararium/mesh` `projection-filter`). Every mirror reads the base filter
+   * (`$:/config/lares/ProjectionFilter`); a mirror of the daemon bag, a user temp layer and a grant baked from no charter
+   * each read their class's filter beside it. The texts come from this island's wiki where it stands (the plugin's shadow,
+   * or an operator's override), else the shipped default.
    */
-  private static neverOnDisk(mirror: BagMirrorConfig, uri: string): boolean {
-    // THE CHARTER-ONLY MIRROR GUARD (crossroads WHO-board leak, 2026-09-20): a per-Nexus WHO-face
-    // pointer never projects through a mirror grant baked from a NON-charter `nexusIdentity().kind`
-    // (own / anchor). The flag rides the grant (resolved once, at boot, on the main thread — never
-    // re-derived from the tiddler, which carries no kind of its own); this shore only tests the
-    // URI's SHAPE. Curated crossroads library content carries no such shape and always projects.
-    if (mirror.guardNexusHandles && isNexusHandlesUri(uri)) return true;
-
-    // THE VOLATILE VM PLANE NEVER PROJECTS, through any mirror: `lararium.local.vm` names this vessel's own scratch,
-    // and the line runs by namespace, never by a guess at a title's meaning.
-    if (isVolatileVmUri(uri)) return true;
-    // A USER TEMP LAYER projects user temp content alone: the house's internal volatile state that shares its bag
-    // (TiddlyWiki's system namespace, the house's config plane) stays in memory (`isTempLayerInternalTitle`).
-    if (mirror.tempLayer && isTempLayerInternalTitle(uri)) return true;
-
-    // Projection FILTER ⊥ siting (lar-uri #five-planes): the siting function
-    // carries every name; WHAT projects = carriers only. Ledger/observation
-    // records (residency effect log) stay off disk — audit data, never
-    // carrier surface. (The general type-filter — project only
-    // text/memetic-wikitext+tiddlywiki — arrives with the migration wave.)
-    if (isEffectRecordUri(uri)) return true;
-    // The daemon stays the control plane, CRDT only: a `bags/daemon/**` title writes no file from any mirror, whichever layer
-    // holds it (a verb outcome, a flow, a cap event).
-    if (isControlPlaneUri(uri)) return true;
-    // A realm-bag announce pointer comes from the house, minted into the live crossroads document on each
-    // registration. The crossroads mirror roots in the canon tree, so writing it would leave a house-minted
-    // record beside the curated library; the pointer rests in the document alone.
-    if (isRealmBagAnnounceUri(uri)) return true;
-    // A bag's manifest is a record ABOUT the bag, never a carrier IN it — `meta.mem` at the bag root
-    // belongs to the declare verb. Refused before the render, so no rule can site it either.
-    if (isBagManifestUri(uri)) return true;
-    return false;
+  private neverOnDisk(mirror: BagMirrorConfig, uri: string): boolean {
+    const classes: ProjectionClass[] = [
+      ...(mirror.bagId === DAEMON_BAG_ID ? ["daemon" as const] : []),
+      ...(mirror.tempLayer ? ["temp" as const] : []),
+      ...(mirror.guardNexusHandles ? ["nexus-handles" as const] : []),
+    ];
+    const wiki = this._tw5?.$tw.wiki as { getTiddlerText?: (t: string) => string | undefined } | undefined;
+    return projectionWithheld(uri, classes, wiki?.getTiddlerText ? (t: string) => wiki.getTiddlerText!(t) || undefined : undefined);
   }
 
   private async flush(bagId: string, tiddlerUri: string, recoveryFields?: Record<string, unknown>, ownRecord = false): Promise<void> {
     const mirror = this.mirrors.find((m) => m.bagId === bagId);
     if (!mirror) return;
 
-    if (LarDiskProjector.neverOnDisk(mirror, tiddlerUri)) return;
+    if (this.neverOnDisk(mirror, tiddlerUri)) return;
 
     // Site the carrier by its own filetype — ONE render shore. The VM registry
     // hands back the chosen extension + bytes + any `.meta` sidecar, so a

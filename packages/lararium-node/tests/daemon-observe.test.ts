@@ -80,7 +80,7 @@ test("the toggle: ON when absent, off mints no observe render", () => {
   expect(observeDaemonEnabled({ projection: { observeDaemon: false } })).toBe(false);
   expect(() => observeDaemonEnabled({ projection: { observeDaemon: "no" } })).toThrow(/boolean/);
   const off = daemonDiskMirrors({ projectionRoot: "/p", canonBags: "/absent", faceRelation: null, observeDaemon: false });
-  expect(off.some((m) => m.bagId === DAEMON_BAG_ID)).toBe(false);
+  expect(off.some((m) => m.bagId === DAEMON_BAG_ID && m.mirrorClass === "observe")).toBe(false);
 });
 
 test("a swarm control lands under observe/daemon/swarm, redacted the same way", async () => {
