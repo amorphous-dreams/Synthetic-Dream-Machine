@@ -154,8 +154,7 @@ export interface DaemonVmCoreOptions {
   repo:            Repo;
   /** Daemon doc handle, already resolved by the platform wrapper. */
   daemonHandle:     DocHandle<LarDoc>;
-  /** The persona plane's doc handle (the PersonaGroup), resolved by the platform wrapper the same way.
-   *  The ONE daemon VM tends BOTH bags — the daemon bag (sovereign) + the persona plane (veiled identity). */
+  /** The persona plane's direct handle for proof readers; verbs never access it through the composite. */
   /** ABSENT on a PLACE that never grew a face — the VM tends the daemon bag alone. */
   personaHandle?:   DocHandle<LarDoc>;
   /** The mounted plane's bag id, derived from its PersonaGroup's own doc id — one name, everywhere. */
@@ -223,6 +222,8 @@ export class HostWorkingBindingRefusal extends Error {
 export interface DaemonVmCore {
   daemonHandle:    DocHandle<LarDoc>;
   composite:      CompositeStore;
+  /** Direct access for proof readers; never a composite layer. */
+  personaPlane: { bagId: string; handle: DocHandle<LarDoc> } | null;
   /** Resolve the worker's daemon binding and mount that exact document as the host default. */
   mountHostWorkingLayer: () => Promise<void>;
   /**
@@ -401,15 +402,8 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   const daemonStore = new AutomergeDocStore(daemonHandle, DAEMON_BAG_ID);
   composite.addLayer({ bagId: DAEMON_BAG_ID, store: daemonStore, writable: true, defaultWritable: false });
   daemonStore.markSyncComplete();
-  // The PersonaGroup plane this vessel stands in, tended by the SAME VM (one VM, two bags), and
-  // mounted under the name its own group derives — the id the registry, the cap ring and the admit
-  // payload all use for it.
-  // The persona plane layers only when a face stands; a faceless place carries the daemon bag and nothing of a person.
-  if (personaHandle && personaBagId) {
-    const personaStore = new AutomergeDocStore(personaHandle, personaBagId);
-    composite.addLayer({ bagId: personaBagId, store: personaStore, writable: true, defaultWritable: false });
-    personaStore.markSyncComplete();
-  }
+  // Hold the persona plane directly for proof readers; no verb reads or writes it through the composite.
+  const personaPlane = personaHandle && personaBagId ? { bagId: personaBagId, handle: personaHandle } : null;
 
   // ── MessageChannel — island ↔ vessel Repo sync (wiring owned by mesh) ───────
   const { mainPort, syncPort } = host.newSyncChannel();
@@ -803,6 +797,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
 
   return {
     daemonHandle,
+    personaPlane,
     composite,
     mountHostWorkingLayer,
     followHostWorkingLayer,

@@ -30,7 +30,7 @@ import {
   type DocHandle,
   type LarDoc,
   type LarTiddlerRecord,
-  type LarTiddlerStore, ownEntry} from "@lararium/mesh";
+  type LarTiddlerStore, ownEntry, plainField} from "@lararium/mesh";
 import { catalogRowHalf, isSystemCanonBag, litFaceCatalogOf, makeCatalogView, plainRecordOrNull, realmStandingDocUrl } from "@lararium/mesh";
 
 export interface CatalogAccessor {
@@ -122,6 +122,8 @@ function accessorOver(handle: () => Promise<DocHandle<LarDoc>>, catalogUrl: stri
 
   const find = async (bagUri: string): Promise<DocHandle<LarDoc> | null> => {
     if (bagUri === CATALOG_DOC_URI) return handle();
+    const row = await recordOf(bagUri);
+    if (plainField(row, "kind") === "private-synced") return null;
     const url = await urlOf(bagUri);
     if (!url) return null;
     return findOrThrow(repo, url, `bag ${bagUri}`);
@@ -141,6 +143,7 @@ function accessorOver(handle: () => Promise<DocHandle<LarDoc>>, catalogUrl: stri
  * url and grants no reach: every write into the document clears the Kahu predicate at its own door.
  */
 export async function libraryDocUrl(catalog: CatalogAccessor, bagUri: string): Promise<string | null> {
+  if (plainField(await catalog.recordOf(bagUri), "kind") === "private-synced") return null;
   const row = await catalog.urlOf(bagUri);
   if (row !== null || !isSystemCanonBag(bagUri)) return row;
   return realmStandingDocUrl((await (catalog.floor ?? catalog.handle)()).doc(), bagUri);

@@ -15,7 +15,7 @@
  */
 
 import { tiddlerText, mkDaemonResidencyOp, mkDaemonWikiAlert, bagStackFromRec, recipeUri, SYSTEM_BAGS, wikiBagUri, wikiSlotUri, WARD_AUDIT_URI_PREFIX, type CompositeStore, type DaemonMsg_ResidencyOp, type DaemonMsg_WikiAlert, type LarDoc, type LarTiddlerRecord, type Repo, type WikiSlotKind, ownEntry } from "@lararium/mesh";
-import { plainEntries, storedDeleted, SYSTEM_CANON_BAGS } from "@lararium/mesh";
+import { plainEntries, plainField, storedDeleted, SYSTEM_CANON_BAGS } from "@lararium/mesh";
 import { ACTIVE_WIKI_URI } from "./active-wiki.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import { findOrThrow, makeCatalogAccessor, type CatalogAccessor } from "./catalog-accessor.js";
@@ -53,7 +53,7 @@ function listRegisteredDocUris(doc: LarDoc | undefined): string[] {
   const out: string[] = [];
   for (const [title, rec] of Object.entries(doc?.tiddlers ?? {})) {
     const text = tiddlerText(rec);
-    if (text && text.startsWith("automerge:")) out.push(title);
+    if (text && text.startsWith("automerge:") && plainField(rec, "kind") !== "private-synced") out.push(title);
   }
   return out;
 }
