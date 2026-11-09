@@ -37,6 +37,9 @@ export type TtyStream = Pick<
   "isTTY" | "isRaw" | "setRawMode" | "resume" | "pause" | "setEncoding" | "on" | "removeListener" | "unshift"
 >;
 
+/** A bracketed paste's start and end markers (ESC [200~ and ESC [201~). */
+const PASTE_MARKERS = /\u001b\[20[01]~/g;
+
 /** Streams whose last read ended on a bare carriage return, so a line feed leading the next chunk is that CRLF's second byte. */
 const crEnded = new WeakSet<object>();
 
@@ -60,7 +63,8 @@ function readTty(label: string, echo: boolean, stdin: TtyStream): Promise<string
     };
     const onData = (chunk: string) => {
       // the line feed of a CRLF whose carriage return ended the previous read is the same line end.
-      let text = chunk;
+      // a bracketed paste wraps its text in the terminal's paste markers; they carry no character of the line.
+      let text = chunk.replace(PASTE_MARKERS, "");
       if (crEnded.delete(stdin) && text.startsWith("\n")) text = text.slice(1);
       for (let i = 0; i < text.length; i++) {
         const c = text[i]!;

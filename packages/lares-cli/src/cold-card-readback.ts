@@ -24,11 +24,13 @@ export class CardReadBackRefused extends Error {
 /** A card's code holds 72 characters once its dashes and spaces drop. */
 const CODE_CHARACTERS = 72;
 const CARD_LINES = 3;
+const LINE_CHARACTERS = CODE_CHARACTERS / CARD_LINES;
 
 /**
  * One read-back attempt gathers the card's three lines: typed one per line, pasted as three lines (the terminal
  * hands them over one line at a time), or pasted onto one line. It stops once 72 characters stand, after three
- * lines, or on an empty line. The input stays hidden, so each further line names how many characters it still needs.
+ * lines, on an empty line, or on a line that cannot be one card row (24 characters), so a wrong line never waits for
+ * more. The input stays hidden, so each further line names how many characters it still needs.
  */
 async function readCardLines(chair: string): Promise<string> {
   let code = "";
@@ -39,7 +41,7 @@ async function readCardLines(chair: string): Promise<string> {
     const typed = (await promptSecret(label)).replace(/[\s-]/g, "");
     if (typed.length === 0) break;
     code += typed;
-    if (code.length >= CODE_CHARACTERS) break;
+    if (code.length >= CODE_CHARACTERS || typed.length !== LINE_CHARACTERS) break;
   }
   return code;
 }
@@ -87,7 +89,7 @@ export async function readBack(args: ParsedArgs, cards: readonly ColdCard[], gen
         const same = back !== null && Buffer.from(back).equals(Buffer.from(card.seed));
         back?.fill(0);
         if (same) break;
-        if (tries >= 2) throw new CardReadBackRefused(`the card for ${card.chair}: ${reason}; three attempts never matched — nothing was written; run the rite again`);
+        if (tries >= 2) throw new CardReadBackRefused(`the card for ${card.chair}: ${reason}; three attempts never matched — nothing was written; run the rite again. A new run prints new cards: discard these and write down the new ones`);
         say(`  ${reason} — try again`);
       }
     }

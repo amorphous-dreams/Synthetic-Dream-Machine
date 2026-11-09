@@ -31,6 +31,15 @@ const quiet = (): void => { vi.spyOn(process.stdout, "write").mockImplementation
 afterEach(() => { vi.restoreAllMocks(); });
 
 describe("promptSecret keeps the rest of a pasted chunk", () => {
+  test("a bracketed paste reads as its text: the terminal's paste markers never join the line", async () => {
+    quiet();
+    const tty = new FakeTty();
+    const first = promptSecret("a: ", tty as never);
+    tty.feed("\u001b[200~alpha\rbeta\u001b[201~\r");
+    expect(await first).toBe("alpha");
+    expect(await promptSecret("b: ", tty as never)).toBe("beta");
+  });
+
   test("one chunk of two lines answers two prompts", async () => {
     quiet();
     const tty = new FakeTty();

@@ -150,7 +150,9 @@ async function foundHearth(args: ParsedArgs, at: { storageDir: string; genesisDi
       ...(args.flags["force"] ? { force: true } : {}),
       name, ...(chair ? { chair } : {}), ...(restore ? { restore } : {}),
       placeFoundingCard: { readBack: async (card, fingerprint, generation) => {
-        if (args.flags["json"] !== true) process.stdout.write("2 cards print in order: PLACE (generation 0), then chair.\n");
+        if (args.flags["json"] !== true) process.stdout.write(`2 cold-key cards print next: first PLACE (this hearth's own card), then the chair ${chair || "you named"}.\n`
+          + "Write each card's three code lines on paper before you type them back; the card backs up that chair's next key, and nothing keeps it for you.\n"
+          + "The confirm words let two people check they hold the same card; never type them here.\n");
         await readBack(args, [{ chair: "place", seed: card.seed, digest: card.digest }], generation, fingerprint);
       } },
       readBack: async (cards, fingerprint) => { printed = await readBack(args, cards, 1, fingerprint); },
