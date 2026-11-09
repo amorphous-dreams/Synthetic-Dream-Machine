@@ -53,8 +53,8 @@ describe("browserShareConfig", () => {
   });
 
   test("the ring composed onto the gate is the verdict — no second ring socket stands beside it", async () => {
-    // The config reads the relay set, the gate and the siblings, nothing else.
-    expect(browserShareConfig.length).toBe(3);
+    // The config reads the relay set, the gate, the siblings and the vessel's secret home, nothing else.
+    expect(browserShareConfig.length).toBe(4);
     const base = new DeterministicFederationGate(NEXUS);
     let fedGate: FederationGate | null = base;
     const cfg = browserShareConfig(new Set(["relay"]), () => fedGate);

@@ -1,10 +1,9 @@
 /**
- * THE DAEMON BAG TAKES NO HOUSE RECORD FROM DISK, at the island, whatever its caller scanned.
+ * THE DAEMON BAG'S DISK WAVES FOLLOW PLACEMENT, NEVER A TITLE PATTERN (operator ruling 2026-11-09).
  *
- * Every disk-to-store road into `bags/daemon` rides one INGEST wave: `lares ingest`, `lares shore take-disk`, the daemon
- * canon mirror's ingest-back, `lares import`. The island refuses, by name (`daemon-withheld-title`), a carrier, a kāpae or
- * a re-link naming a control or house title (`isDaemonCanonWithheld`: `bags/daemon/cap/**`, `bags/persona/**`,
- * `dreamnet/**`, `$:/`), and lands its authored sibling. The CLI scan guard stands beside it; this wave bypasses it.
+ * Every disk-to-store road into `bags/daemon` rides one INGEST wave. The secret families (cap events, group-secret seals,
+ * dyads) rest in the vessel's secret home, which no wave can name, so a carrier that spells one of their titles lands as
+ * ordinary content; a wave is bound to the mirror it came from (`disk-wave-placement`), never judged by its titles.
  */
 import { describe, test, expect, beforeAll } from "vitest";
 import { CompositeStore, DAEMON_BAG_ID, isEffectRecordUri, type CapabilityAccess, type CapabilityVerifyResult, type Verb, type VerbContext } from "@lararium/mesh";
@@ -42,19 +41,15 @@ describe.skipIf(wikiSkip)(`the island holds the daemon bag's withheld titles${sk
     return { composite, store, table, carriersIn: async () => (await store.listVisible()).filter((t) => !isEffectRecordUri(t)).sort() };
   }
 
-  test("RED: an INGEST into bags/daemon naming a cap event, a group-secret seal or a checkpoint refuses each by name; the memory lands", async () => {
+  test("PLACEMENT, NEVER PATTERN: a carrier titled like a cap event, a group-secret seal or a checkpoint lands in bags/daemon as ordinary content; no title decides", async () => {
+    // The secret families rest in the vessel's secret home (`secret-home`), which no recipe, composite or INGEST names: a
+    // disk carrier that merely spells one of their titles carries no secret, and its title earns it no refusal.
     const r = rig(DAEMON_BAG_ID);
-    const args = { "source-uri": "file:///scratch", "to-bag": DAEMON_BAG_ID, "change-id": "chg-w", carriers: [CAP, SEAL, CHECKPOINT, MEMORY].map(carrier), kapae: [SEAL] };
+    const args = { "source-uri": "file:///scratch", "to-bag": DAEMON_BAG_ID, "change-id": "chg-w", carriers: [CAP, SEAL, CHECKPOINT, MEMORY].map(carrier) };
     const out = await r.table.get("INGEST")!(args, ctx(r.composite, args)) as Record<string, unknown>;
     const rows = out["carriers"] as Array<Record<string, unknown>>;
-    for (const t of [CAP, SEAL, CHECKPOINT]) {
-      const row = rows.find((x) => x["uri"] === t)!;
-      expect(row["decision"], t).toBe("refuse");
-      expect(row["code"], t).toBe("daemon-withheld-title");
-    }
-    expect(rows.find((x) => x["uri"] === MEMORY)!["decision"]).toBe("ingest");
-    expect((out["kapae"] as { refused: Array<{ code: string }> }).refused.map((k) => k.code)).toEqual(["daemon-withheld-title"]);
-    expect(await r.carriersIn()).toEqual([MEMORY]);
+    for (const t of [CAP, SEAL, CHECKPOINT, MEMORY]) expect(rows.find((x) => x["uri"] === t)!["decision"], t).toBe("ingest");
+    expect(await r.carriersIn()).toEqual([CAP, SEAL, CHECKPOINT, MEMORY].sort());
   });
 
   test("CONTROL: the same persona-namespace title into another bag answers by that bag's own law, never this refusal", async () => {

@@ -17,7 +17,7 @@ import { join } from "node:path";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
 import type { IslandSessionProof } from "@lararium/keyhive";
 import {
-  AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, attachMessageChannelSync, faceAtomKeyFromSeed, hex, makeIslandRepo, signMemoryAsk, wikiBagUri,
+  AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, SECRET_HOME_ID, attachMessageChannelSync, faceAtomKeyFromSeed, hex, makeIslandRepo, signMemoryAsk, wikiBagUri,
   type LarDoc, type MemoryAct, type RecordSigner,
 } from "@lararium/mesh";
 import { VerbTable } from "@lararium/tw5";
@@ -31,6 +31,7 @@ import { loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { readLocalPersonaKelChain } from "../src/local-persona-kel.js";
 import { islandStorageDirOf, nodeSealedStoreShore } from "../src/sealed-store-island.js";
 import { larBootstrapPath, larDataDir } from "../src/vessel-paths.js";
+import { openVesselSecretHome } from "../src/secret-home-store.js";
 
 /** One session proof for a suite's faces: the same chain signs on every vessel the suite stands, as one face's sessions do. */
 export async function suiteSessionProof(label: string): Promise<IslandSessionProof> {
@@ -82,11 +83,14 @@ export async function standRootIsland(args: { repo: Repo; handleIndex: number; b
   const store = new AutomergeDocStore(daemonHandle, DAEMON_BAG_ID);
   composite.addLayer({ bagId: DAEMON_BAG_ID, store, writable: true });
   store.markSyncComplete();
+  // THE VESSEL'S SECRET HOME, opened on this root's own store holder from its custody row, as the vessel opens it.
+  const secret = await openVesselSecretHome(repo);
   const ctx = {
     wikiUri: "lar:///ha.ka.ba/wikis/daemon", composite, tw5: {} as never,
     handles: new Map([[wikiBagUri("daemon"), daemonHandle]]), post: () => {},
     repo: islandRepo, catalogUrl: catalog.url, oracleUrl: oracle.url, engine: { sha256: "", version: "" },
     recipe: { wikiSlug: "daemon" },
+    secretStore: new AutomergeDocStore(secret.handle, SECRET_HOME_ID), secretRest: secret.rest,
   } as never;
   const daemonAuth = {
     placeVerifyingKey: vesselKey, archiveOpens: true,

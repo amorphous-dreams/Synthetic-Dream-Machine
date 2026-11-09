@@ -73,6 +73,7 @@ export function runBrowserSovereignWorker(
     post:    (msg: IslandToVesselMsg) => post(msg),
     listen:  (onMessage) => scope ? scope.listen(onMessage) : self.addEventListener("message", (e: MessageEvent) => onMessage(e.data)),
     storage: (msg) => browserIslandStorage(msg, restsAtVessel),
+    restsAtVessel,
     ready:   () => scope ? scope.ready() : self.postMessage(mkReady()),
     // The breath path: pull engine + plugin bytes by CID from the OPFS CAS the vessel
     // populated on genesis-load — never CRDT-synced over the port.

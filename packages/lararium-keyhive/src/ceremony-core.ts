@@ -44,7 +44,7 @@
 
 import type { Repo } from "@lararium/mesh";
 import {
-  IDENTITIES_NAMESPACE, SECRET_HOME_ID, emptyLarDoc,
+  IDENTITIES_NAMESPACE, SECRET_HOME_ID,
   MESH_CABAL_SENTINEL_URI,
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   HEARTH_DAEMON_URL_TIDDLER,
@@ -225,8 +225,6 @@ export interface FoundingCeremonyResult {
 /** What a place-founding needs: a key, a name, and the hearth it stands at. No persona anywhere. */
 export interface PlaceFoundingInput {
   repo:               Repo;
-  /** A separately held secret document; absent creates an empty placeholder only. */
-  secretHandle?:      ReturnType<typeof seedDaemonDoc>;
   /** The hearth true-name (engine content-CID) this place stands at. */
   hearthTrueName:     string;
 }
@@ -237,9 +235,6 @@ export interface PlaceFoundingResult {
   /** That island's live handle. `seedDaemonDoc` CREATES, so a face-founding must be handed this one
    *  rather than seeding again — a second call would stand a second daemon doc and orphan the first. */
   daemonHandle:         ReturnType<typeof seedDaemonDoc>;
-  /** The separate secret document, held by this vessel alone. */
-  secretUrl:            string;
-  secretHandle:         ReturnType<typeof seedDaemonDoc>;
 }
 
 /**
@@ -252,9 +247,9 @@ export interface PlaceFoundingResult {
 export async function foundThePlace(input: PlaceFoundingInput): Promise<PlaceFoundingResult> {
   const { repo, hearthTrueName } = input;
 
+  // THE PLACE WRITES NOTHING SECRET: the vessel's secret home enrolls on its own sealed rest (the store's one holder), and
+  // a place founding neither creates nor names it.
   const daemonHandle = seedDaemonDoc(repo);
-  const secretHandle = input.secretHandle ?? repo.create<LarDoc>(emptyLarDoc());
-  if (secretHandle.url === daemonHandle.url) throw new Error("secret-home-shared: the secret document must differ from the daemon document");
 
   daemonHandle.change((doc) => {
     doc.tiddlers[HEARTH_TRUE_NAME_TIDDLER] = storedRecord({
@@ -266,8 +261,6 @@ export async function foundThePlace(input: PlaceFoundingInput): Promise<PlaceFou
   return {
     daemonUrl: daemonHandle.url as string,
     daemonHandle,
-    secretUrl: secretHandle.url as string,
-    secretHandle,
   };
 }
 
@@ -768,13 +761,12 @@ export async function runFoundingCeremony(
   if (!input.secretHandle || !input.secretRest || !await input.secretRest.assertSealed()) throw new Error("secret-home-unavailable: founding requires a separately held secret document with sealed rest");
   const place = await foundThePlace({
     repo:           input.repo,
-    secretHandle:   input.secretHandle,
     hearthTrueName: input.hearthTrueName,
   });
   const face = await foundTheFace({
     repo:               input.repo,
     daemonHandle:       place.daemonHandle,
-    secretHandle:       place.secretHandle,
+    secretHandle:       input.secretHandle,
     secretRest:         input.secretRest,
     placeVerifyingKey: input.placeVerifyingKey,
     vesselDisplayName:  input.vesselDisplayName,
@@ -786,7 +778,7 @@ export async function runFoundingCeremony(
   });
   return {
     daemonUrl:       place.daemonUrl,
-    secretUrl:       place.secretUrl,
+    secretUrl:       input.secretHandle.url as string,
     ...face,
   };
 }

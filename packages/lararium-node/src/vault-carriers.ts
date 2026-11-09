@@ -92,6 +92,7 @@ import { OUTBOX_KEY_FILE } from "./outbox-key.js";
 import { larDataDir, larIdentityDir, larSealHome } from "./vessel-paths.js";
 import { RELAY_GATE_SEED_FILE } from "./relay-gate-seed.js";
 import { SWITCH_ACTS_FILE } from "./switch-act-log.js";
+import { SECRET_HOME_FILE } from "./secret-home-store.js";
 
 /** The custody classes, closed. */
 export const CUSTODY_CLASSES = ["floor", "floor-plain", "serving", "hot", "cold", "outbox", "face-hot", "face-cold", "ward-cold"] as const;
@@ -507,6 +508,10 @@ function buildTable(): readonly CarrierRow[] {
     // An operator's per-face relay switches rest sealed; an absent row leaves every face off. Principal: intent-admission service; opener: intent-relay-ring.
     id({ row: "intent-relay-faces", target: tgt(["S"]), match: file("intent-relay-faces.json"), custody: "hot", keyClass: null,
          writer: "intent-relay-ring" }),
+    // The vessel's secret home's address (`secret-home-store`): its document id and the held key its rest seals it under. A
+    // node-only secret of the vessel, never one face's: it never leaves its vessel. Principal and opener: secret-home-store.
+    id({ row: "secret-home", target: tgt(["S"]), match: file(SECRET_HOME_FILE), custody: "hot", keyClass: "device-minted",
+         writer: "secret-home-store" }),
     // A hearth's own cadence key and its next key, minted at random on the device for one joint founding
     // (`cadence-key-store`): apart from every root, leaf, seat and serving or floor key. It stays on its vessel.
     faceRowOf({ row: "cadence-key", target: tgt(["D"]), inner: /^cadence-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-cold", keyClass: "device-minted",

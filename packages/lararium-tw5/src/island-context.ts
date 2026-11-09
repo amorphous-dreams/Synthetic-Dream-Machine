@@ -17,7 +17,7 @@
  */
 
 import type { DocHandle }                        from "@lararium/mesh";
-import type { CompositeStore, IslandToVesselMsg, LarDoc, LarTiddlerStore, Repo, WikiRecipe } from "@lararium/mesh";
+import type { CompositeStore, IslandToVesselMsg, LarDoc, Repo, SecretHomeStore, SecretRestAnswer, WikiRecipe } from "@lararium/mesh";
 import type { TW5Engine }                        from "./tw5-vm.js";
 import type { ReceiptCapability }                        from "./receipt.js";
 
@@ -98,8 +98,11 @@ export interface IslandContext {
   viewCatalog?: (name: string) => Promise<string | null>;
   /** The vessel's concrete disk mirror grants intersected with this recipe; absent for older/test contexts. */
   diskMirrors?: readonly { readonly bagId: string; readonly mirrorRoot: string; readonly scope: string; readonly mirrorClass?: "recovery" | "observe"; readonly titlePaths?: boolean; readonly tempLayer?: boolean }[];
-  /** Privileged secret home exposed only to the daemon behavior, never composed into a page recipe. */
-  secretStore?: LarTiddlerStore;
+  /** THE VESSEL'S SECRET HOME, on the daemon island alone (`islandSecretHome`): never composed into a recipe, a composite
+   *  or a mirror. Absent on every wiki island and on a daemon whose vessel named no home. */
+  secretStore?: SecretHomeStore;
+  /** The vessel's rest answering whether it holds the secret home sealed; asked before each secret act. */
+  secretRest?: SecretRestAnswer;
 }
 
 /**

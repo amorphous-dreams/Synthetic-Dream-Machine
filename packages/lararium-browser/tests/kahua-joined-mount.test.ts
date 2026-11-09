@@ -30,6 +30,7 @@ import { foundTheFace, foundThePlace, runApplyAdmitPayload, runDeviceAdmitEdge }
 import { buildIslandRecipe, kahuaShadowOf, librarySlotUrl, type TW5Engine } from "@lararium/tw5";
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "../../lararium-keyhive/tests/admit-acts.js";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { memorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 
 const key = (seed: Uint8Array) => groupSecretOpenerFromSeed(seed).deviceKey;
 const newRepo = () => makeIslandRepo({ syncPort: new MessageChannel().port1 });
@@ -51,7 +52,7 @@ async function joinedPage(opts: { readonly pin: boolean; readonly catalogRow?: (
   const atomSeed = new Uint8Array(32).fill(73), joineeAtom = new Uint8Array(32).fill(74);
   const founder = await foundThePlace({ repo: founderRepo, vesselSeed: founderSeed, hearthTrueName: "hearth" });
   const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
-    repo: founderRepo, daemonHandle: founder.daemonHandle, placeVerifyingKey: key(founderSeed), vesselDisplayName: "founder",
+    repo: founderRepo, daemonHandle: founder.daemonHandle, ...memorySecretHome(founderRepo), placeVerifyingKey: key(founderSeed), vesselDisplayName: "founder",
     binding: { mode: "self-stood", signerSeed }, hearthTrueName: "hearth", nexusPubkey: key(founderSeed), atomSeed,
   });
   const board = await materializeSharedLarDoc(founderRepo, personaKelBoardDocUrl(key(founderSeed)), "board:persona-kel");
@@ -74,7 +75,7 @@ async function joinedPage(opts: { readonly pin: boolean; readonly catalogRow?: (
     meshCabalDocIdHex: face.meshCabalDocIdHex, syncUrl: null, hearthDaemonUrl: founder.daemonUrl, personaUrl: face.personaUrl,
   });
   const daemonHandle = seedDaemonDoc(joineeRepo);
-  const applied = await runApplyAdmitPayload({ repo: joineeRepo, daemonHandle, atomSeed: joineeAtom, vesselDisplayName: "joinee", payload, nexusPubkey: key(founderSeed) });
+  const applied = await runApplyAdmitPayload({ repo: joineeRepo, daemonHandle, ...memorySecretHome(joineeRepo), atomSeed: joineeAtom, vesselDisplayName: "joinee", payload, nexusPubkey: key(founderSeed) });
   // THE PAGE'S BOOT: the face proof over the daemon doc the admit wrote, then the adoption against the catalog hint.
   const anchor = mintFaceAnchor({ personaGroup: face.personaGroupId, personaKelPrefix: face.personaKelPrefix, personaRootDid: face.founderEdge.personaRootDid, edge: applied.deviceEdge, leaseEpoch: 0 });
   const proof = proveFaceFromLog({ records: faceRecordsOf([daemonHandle.doc()], face.personaGroupId), chain, group: face.personaGroupId, anchor,

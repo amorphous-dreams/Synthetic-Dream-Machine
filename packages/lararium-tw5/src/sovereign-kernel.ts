@@ -57,6 +57,7 @@ import {
   GENESIS_FLOOR_TIDDLER,
   plainRecordOrNull,
   resolveFloor,
+  islandSecretHome,
   type KahuaStageFace,
   type Repo,
   type DocHandle,
@@ -117,6 +118,9 @@ export interface IslandHostShore {
   listen(onMessage: (raw: unknown) => void): void;
   /** Build the Repo storage adapter for this manifest (undefined = in-memory). */
   storage(msg: IslandMsg_Manifest): StorageAdapterInterface | undefined;
+  /** Ask the vessel's rest whether it holds a document sealed (`vesselRestAsker`); the daemon's secret home asks it before
+   *  each secret act. Absent: the island reaches no secret home. */
+  restsAtVessel?: (documentId: string) => Promise<boolean>;
   /** Optional IoC handshake fired after the listener registers (browser mkReady). */
   ready?(): void;
   /**
@@ -168,6 +172,14 @@ export function runSovereignKernel(
   let _activeWikiUri                    = "";
   // A session island's two asked gates (catalog names, content addresses) ride this channel; null outside a session.
   let _view: ViewChannel | null         = null;
+  // THE SECRET HOME rides the daemon manifest alone (`daemonAuth.secretUrl`), and only where the host can ask the vessel's
+  // rest; a wiki island's manifest carries no daemonAuth and reaches none.
+  const secretHomeOf = (msg: IslandMsg_Manifest): Pick<IslandContext, "secretStore" | "secretRest"> => {
+    const url = msg.daemonAuth?.secretUrl;
+    if (!url || !host.restsAtVessel || !_repo) return {};
+    const home = islandSecretHome(_repo, url, host.restsAtVessel);
+    return { secretStore: home.store, secretRest: home.rest };
+  };
 
   // Live CRDT patches flow through AutomergeDocStore.handle.on("change") →
   // MemeProvider → IslandAdaptor → the shore queue. The packed engine is a synchronous applier;
@@ -546,7 +558,7 @@ export function runSovereignKernel(
               // reconciling the SAME path boot just walked.
               // The CID plane the kernel already pulls engine/plugin bytes from, lifted to
               // behaviors: a residency handler resolves a carrier body a verb rode by reference.
-              _ctx = { wikiUri: msg.wikiUri, composite: _composite!, tw5, handles: _handles, post: _post, requestDrain: () => _adaptor?.requestDrain(), repo: _repo!, kahuaUrl: msg.grants.kahuaUrl ?? null, kahuaFace, kahuaFaceWatch, ...(_receipt ? { receipt: _receipt } : {}), catalogUrl, faceCatalogUrl, oracleUrl: msg.grants.islandUrl, engine, recipe: msg.recipe, resolveByCid, diskMirrors: msg.diskMirrors ?? [], ...(resolved ? { resolvedMount: true } : {}), ...(view ? { viewCatalog: (name: string) => view.catalog(name) } : {}) };
+              _ctx = { wikiUri: msg.wikiUri, composite: _composite!, tw5, handles: _handles, post: _post, requestDrain: () => _adaptor?.requestDrain(), repo: _repo!, kahuaUrl: msg.grants.kahuaUrl ?? null, kahuaFace, kahuaFaceWatch, ...(_receipt ? { receipt: _receipt } : {}), catalogUrl, faceCatalogUrl, oracleUrl: msg.grants.islandUrl, engine, recipe: msg.recipe, resolveByCid, diskMirrors: msg.diskMirrors ?? [], ...(resolved ? { resolvedMount: true } : {}), ...(view ? { viewCatalog: (name: string) => view.catalog(name) } : {}), ...secretHomeOf(msg) };
               // Read-side skinny-handle rehydration: answer TW5's own `lazyLoad` event (fired when
               // `getTiddlerText` meets a bodyless `_is_skinny` tiddler) by pulling the body from the corpus
               // CAS through the SAME resolveByCid shore the kernel already rides for engine/plugin blobs. The

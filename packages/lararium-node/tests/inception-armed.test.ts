@@ -21,6 +21,7 @@ import {
   type LarDoc,
 } from "@lararium/mesh";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { memorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 
 const pubOf = async (seed: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(seed));
 
@@ -29,7 +30,7 @@ const FOUNDER_SEED = new Uint8Array(32).fill(7);
 async function found() {
   const repo = new Repo({ sharePolicy: async () => true });
   const verifyingKey = await pubOf(FOUNDER_SEED);
-  const f = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), repo,
+  const f = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), ...memorySecretHome(repo), repo,
     vesselSeed:         FOUNDER_SEED,
     placeVerifyingKey: verifyingKey,
     vesselDisplayName:  "The Strandbeest Shrine",

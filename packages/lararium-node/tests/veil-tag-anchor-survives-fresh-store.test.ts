@@ -5,13 +5,14 @@ import { foundThePlace, foundTheFace } from "@lararium/keyhive";
 import * as ed25519 from "@noble/ed25519";
 import { faceAtomKeyFromSeed, hex, mintFaceAtomSeed } from "@lararium/mesh";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { withMemorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 
 const SEED = new Uint8Array(32).fill(9);
 const pubOf = async (s: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(s));
 
 async function lightAFace(repo: Repo, verifyingKey: string, atomSeed: Uint8Array) {
-  const place = await foundThePlace({ repo, vesselSeed: SEED, hearthTrueName: "" });
-  const face = await foundTheFace({ vesselTag: testVesselTagDoor(1), repo, daemonHandle: place.daemonHandle,
+  const place = withMemorySecretHome(await foundThePlace({ repo, vesselSeed: SEED, hearthTrueName: "" }), repo);
+  const face = await foundTheFace({ vesselTag: testVesselTagDoor(1), repo, daemonHandle: place.daemonHandle, secretHandle: place.secretHandle, secretRest: { assertSealed: async () => true },
     atomSeed, placeVerifyingKey: verifyingKey, vesselDisplayName: "Repave Shrine",
     binding: { mode: "self-stood", signerSeed: SEED }, hearthTrueName: "", nexusPubkey: verifyingKey,
   });

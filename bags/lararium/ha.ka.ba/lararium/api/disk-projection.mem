@@ -125,6 +125,8 @@ A hand MAY add a future debug-only disk projection behind an explicit flag; it M
 
 ''A disk wave follows its mirror.'' INGEST accepts a source only when the vessel grants that mirror root to the selected bag. A wave has no route into an unmirrored control or secret home. Arbitrary-directory LOAD lands into a working layer; promotion moves content from its selected store.
 
+''The secret home rests sealed from its first byte.'' Group-secret seals, dyads and Keyhive cap events rest in one vessel-held document. The store's one holder maps it on its rest under a held key before its first write, so every value rests sealed with no session standing. The key and the document id rest together in one sealed custody row (`secret-home.json`), written after the document rests. No recipe, mirror or peer names the home; the daemon island reaches it by sync from its own vessel.
+
 `$:/config/lares/ProjectionFilter` remains an operator preference: TW5's `$:/temp/` and `$:/state/` namespaces stay off disk, and the temp class may withhold house config. It carries no control, secret, residency, manifest, or effect-title list. Residency effects stay with the affected bag and the projector recognizes their record kind. The control observe view reads one way and redacts its fields.
 
 ''Bag manifests belong to declaration.'' The catalog owns each bag-root `meta.mem`; a directory LOAD omits only that root declaration, by ownership.
@@ -239,6 +241,6 @@ between casual chat-use and the defined parser core.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZAqz5wq58TlX6e48R4W8CNvIf9NSVwfSEj0W7yz1_Gs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GhVUDQRYI9l_xaxCsI22WGGLoJRpZgHtcwWIEx1SsXk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

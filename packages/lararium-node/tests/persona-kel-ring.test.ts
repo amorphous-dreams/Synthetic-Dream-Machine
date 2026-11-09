@@ -24,6 +24,7 @@ import { KeyhiveProvider, DaemonEventStore, bootDaemonKeyhive, runFoundingCeremo
 import { makePersonaKelRingHolder, type PersonaKelRingHolder } from "../src/persona-kel-ring.js";
 import { SEEDS, pubOf, didOf, signerOf, founded, enrol, rotatedKeeping } from "../../lararium-mesh/tests/fixtures/sibling-fleet.js";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { memorySecretHome, MEMORY_SEALED, memorySecretStore } from "../../lararium-mesh/tests/secret-home-fixture.js";
 
 const NEXUS = "7c".repeat(32);
 
@@ -89,7 +90,7 @@ describe("persona-kel ring — the doors meet every event the board holds", () =
     const did = await probe.whoami();
     const verifyingKey = did.startsWith("0x") ? did.slice(2) : did;
     await probe.dispose();
-    const cer = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), repo, atomSeed: ATOM_SEED, placeVerifyingKey: verifyingKey, vesselDisplayName: "Ring Operator",
+    const cer = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), ...memorySecretHome(repo), repo, atomSeed: ATOM_SEED, placeVerifyingKey: verifyingKey, vesselDisplayName: "Ring Operator",
       binding: { mode: "self-stood", signerSeed: SEED }, hearthTrueName: "", nexusPubkey: verifyingKey,
     });
     const daemonHandle = await repo.find<LarDoc>(cer.daemonUrl as AutomergeUrl);
@@ -100,7 +101,7 @@ describe("persona-kel ring — the doors meet every event the board holds", () =
     boot = {
       repo, verifyingKey, prefix: cer.personaKelPrefix,
       args: {
-        atomSeed: cer.atomSeed, veilArchiveBytes: cer.veilArchive, eventStore: new DaemonEventStore({ daemon: composite, face: cer.personaGroupId }), placeVerifyingKey: verifyingKey,
+        atomSeed: cer.atomSeed, veilArchiveBytes: cer.veilArchive, eventStore: new DaemonEventStore({ ...memorySecretStore(await repo.find(cer.secretUrl as AutomergeUrl)), face: cer.personaGroupId }), placeVerifyingKey: verifyingKey,
         personaGroupId: cer.personaGroupId,
         faceAnchor: mintFaceAnchor({ personaGroup: cer.personaGroupId, personaKelPrefix: cer.personaKelPrefix,
           personaRootDid: cer.founderEdge.personaRootDid, edge: cer.founderEdge, leaseEpoch: 0 }),

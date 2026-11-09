@@ -38,7 +38,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
 import { rendezvousPath } from "@lararium/mesh/rendezvous-path";
-import { SealedDocumentStore } from "@lararium/mesh";
+import { SealedDocumentStore, SECRET_HOME_ID, bindSecretHomeRest, type HeldRestKey } from "@lararium/mesh";
 
 import { DurableNodeFSStorageAdapter } from "./durable-storage-adapter.js";
 import { claimName, anchoredName, NameHeld, answers, letGo, type ClaimedName, type ReapWord } from "./socket-claim.js";
@@ -390,12 +390,17 @@ export async function ownedStore<T>(storageDir: string, act: (repo: Repo) => Pro
   const claim = await claimStore(storageDir);
   try {
     // THE DIRECT HOLDER NEVER WRITES CLEAR OVER A SEALED REST (sealed-store#/owed, T2). It stands no daemon island, no
-    // session and no bag map, so it seals nothing: a document whose rest holds a sealed value refuses its reads and its
+    // session and no face, so it seals no wiki bag: a document whose rest holds a sealed value refuses its reads and its
     // writes by name (`bag-unmapped`), and every other document rests as the engine hands it.
+    // THE ONE MAP IT HOLDS: the vessel's secret home (placement over patterns). An act that stands or opens the home enrolls
+    // it on this rest before its first byte (`bindSecretHomeRest`), and it rests sealed under the held key the vessel's
+    // custody keeps; nothing else maps.
+    const held = new Map<string, HeldRestKey>();
     const refuse = async () => ({ refusal: "signer-unavailable" }) as never;
     const storage = new SealedDocumentStore({
       inner: new DurableNodeFSStorageAdapter(storageDir),
-      bagOf: () => null, sessionFace: () => null, sessionOf: () => null, seal: refuse, open: refuse,
+      bagOf: (documentId) => { const key = held.get(documentId); return key ? { bagId: SECRET_HOME_ID, face: null, held: key } : null; },
+      sessionFace: () => null, sessionOf: () => null, seal: refuse, open: refuse,
       refuseClearOverSealed: true,
     });
     // NO WRITE OUTLIVES THE CLAIM. A Repo opening a store with no id mints one and saves it unawaited, so that
@@ -403,6 +408,10 @@ export async function ownedStore<T>(storageDir: string, act: (repo: Repo) => Pro
     // reads it and writes nothing of its own accord.
     if (!(await storage.load([STORE_ID_KEY]))) await storage.save([STORE_ID_KEY], new TextEncoder().encode(randomUUID()));
     const repo = new Repo({ storage });
+    bindSecretHomeRest(repo, {
+      enroll: (documentId, key) => { held.set(documentId, key); },
+      restsSealed: async (documentId) => held.has(documentId) && await storage.holdsSealed(documentId),
+    });
     let done = false;
     try {
       const out = await act(repo);
@@ -414,6 +423,7 @@ export async function ownedStore<T>(storageDir: string, act: (repo: Repo) => Pro
       // THE STORE RESTS BEFORE THE CLAIM RELEASES. The adapter closes: every write it issued lands, and a save the
       // Repo's own debounce starts after its shutdown returned lands no byte in a store this holder gave up.
       await storage.close();
+      for (const key of held.values()) key.fill(0);
     }
   } finally {
     await claim.release();

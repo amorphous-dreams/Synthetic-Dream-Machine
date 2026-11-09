@@ -9,12 +9,13 @@ import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import { runFoundingCeremony } from "@lararium/keyhive";
 import {
-  CompositeStore, AutomergeDocStore, DAEMON_BAG_ID, faceAtomKeyFromSeed, hex, makeIslandRepo, attachMessageChannelSync,
+  CompositeStore, AutomergeDocStore, DAEMON_BAG_ID, SECRET_HOME_ID, faceAtomKeyFromSeed, hex, makeIslandRepo, attachMessageChannelSync,
   mintFaceAnchor,
   materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, wikiBagUri, type LarDoc,
 } from "@lararium/mesh";
 import * as ed25519 from "@noble/ed25519";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { memorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 
 const pubOf = async (s: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(s));
 const seed  = (n: number): Uint8Array => new Uint8Array(32).fill(n);
@@ -25,7 +26,10 @@ export async function standFoundedIsland(teardown: Array<() => void>, opts: { co
   const vesselRepo = new Repo({ sharePolicy: async () => true });
   const founderSeed = seed(71 + (opts.seedOffset ?? 0));
   const key = await pubOf(founderSeed);
-  const cer = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), repo: vesselRepo, atomSeed: seed(72 + (opts.seedOffset ?? 0)), placeVerifyingKey: key,
+  // The vessel's secret home: this fixture's vessel Repo holds no storage, so it rests nothing (`memorySecretHome`); the
+  // daemon island reaches it as the kernel hands it (`islandSecretHome`): a store and the vessel's sealed-rest answer.
+  const secret = memorySecretHome(vesselRepo);
+  const cer = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), ...secret, repo: vesselRepo, atomSeed: seed(72 + (opts.seedOffset ?? 0)), placeVerifyingKey: key,
     vesselDisplayName: "Founder", binding: { mode: "self-stood", signerSeed: founderSeed }, hearthTrueName: "", nexusPubkey: key,
   });
   const kelBoard = await materializeSharedLarDoc(vesselRepo, personaKelBoardDocUrl(key), "board:persona-kel");
@@ -62,6 +66,7 @@ export async function standFoundedIsland(teardown: Array<() => void>, opts: { co
     handles: new Map([[wikiBagUri("daemon"), daemonHandle]]), post: () => {},
     repo: islandRepo, catalogUrl: catalog.url, oracleUrl: oracle.url, engine: { sha256: "", version: "" },
     recipe: { wikiSlug: "daemon" },
+    secretStore: new AutomergeDocStore(secret.secretHandle, SECRET_HOME_ID), secretRest: secret.secretRest,
   } as never;
   const atom = faceAtomKeyFromSeed(cer.atomSeed, cer.personaGroupId);
   const veil = { atom: { seed: hex(cer.atomSeed), key: atom.key }, veilArchiveBytes: cer.veilArchive };
@@ -76,5 +81,5 @@ export async function standFoundedIsland(teardown: Array<() => void>, opts: { co
     faceAnchor: mintFaceAnchor({ personaGroup: cer.personaGroupId, personaKelPrefix: cer.personaKelPrefix,
       personaRootDid: cer.founderEdge.personaRootDid, edge: cer.founderEdge, leaseEpoch: 0 }),
   };
-  return { ctx, daemonAuth, daemonHandle, vesselRepo, veil, placeSeed: Uint8Array.from(founderSeed) };
+  return { ctx, daemonAuth, daemonHandle, secretHandle: secret.secretHandle, vesselRepo, veil, placeSeed: Uint8Array.from(founderSeed) };
 }

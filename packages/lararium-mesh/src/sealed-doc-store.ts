@@ -35,6 +35,7 @@ import { hex, utf8Bytes } from "./crypto.js";
 import type { BagLocator } from "./sealed-records.js";
 import { readSealedAddress, SEALED_CHUNK_MARK, type KeyVersionId, type SealedAddress } from "./sealed-chunk.js";
 import { openPublished, sealPublished, type PublishedLookup } from "./published-bag-key.js";
+import { openHeld, sealHeld, type HeldRestKey } from "./held-rest-key.js";
 import type { DocumentValue, FreshBase, HolderRefusal, OpenedValue, SealedValues } from "./content-key-holder.js";
 
 export const SEALED_DOCUMENT_REFUSALS = [
@@ -46,6 +47,7 @@ export const SEALED_DOCUMENT_REFUSALS = [
   "save-unbooked",           // no session booked the change a save carries: it stays in memory, unsealed and unwritten
   "save-unmapped",           // the document rests sealed and the map names no bag for it now: the save waits in memory, never clear
   "save-unsealed",           // the holder refused or never answered the seal: the save waits in memory, and the next reseal tries again
+  "held-clear-at-rest",      // a held bag (the vessel's secret home) found a clear chunk at rest: a fault, never read as the document
 ] as const;
 export type SealedDocumentRefusalName = (typeof SEALED_DOCUMENT_REFUSALS)[number];
 
@@ -96,8 +98,10 @@ export interface SealedDocumentPorts {
   readonly inner: StorageAdapterInterface;
   /** The bag a document belongs to and that bag's face (`faceProofSubjectRef`); null: the bag rests unsealed. A public
    *  or crossroads bag names its published lookup (`published`): it rests sealed under the key that lookup derives, and
-   *  opens for whoever holds it, with no session, no face and no holder (`published-bag-key`). */
-  bagOf(documentId: string): { readonly bagId: string; readonly face: string | null; readonly published?: PublishedLookup } | null;
+   *  opens for whoever holds it, with no session, no face and no holder (`published-bag-key`). The vessel's secret home
+   *  names its held key (`held`): it rests sealed under the key its vessel's custody alone keeps, and opens for that vessel
+   *  with no session and no face (`held-rest-key`). */
+  bagOf(documentId: string): SealedBagRow | null;
   /** The face the session wears (`faceProofSubjectRef`); null where no session stands. */
   sessionFace(): string | null;
   /** ONE FACE, TWO ANCHORS (session-contract#/the-hands): does `subject` name `face` (the bag's face) at another anchor
@@ -142,8 +146,14 @@ const POINTER = "lares-sealed-value:";
 const AUTOMERGE_MAGIC = [0x85, 0x6f, 0x4a, 0x83] as const;
 const readsClear = (bytes: Uint8Array): boolean => AUTOMERGE_MAGIC.every((b, i) => bytes[i] === b);
 const readsSealed = (bytes: Uint8Array): boolean => SEALED_CHUNK_MARK.every((b, i) => bytes[i] === b);
+/** What the bag map names for one document: its bag, that bag's face, and the key a keyed bag rests under. */
+export interface SealedBagRow { readonly bagId: string; readonly face: string | null; readonly published?: PublishedLookup; readonly held?: HeldRestKey }
 type PublicBag = { readonly bagId: string; readonly published: PublishedLookup };
+type HeldBag = { readonly bagId: string; readonly held: HeldRestKey };
 const isPublic = (bag: { readonly published?: PublishedLookup } | null): bag is PublicBag & { readonly face: string | null } => bag?.published !== undefined;
+const isHeld = (bag: SealedBagRow | null): bag is SealedBagRow & HeldBag => bag?.held !== undefined;
+/** A bag that rests under a key its reader holds (public or held): it seals and opens with no session and no holder. */
+const isKeyed = (bag: SealedBagRow | null): boolean => isPublic(bag) || isHeld(bag);
 const nameOf = (key: StorageKey): string => key.join("\u0000");
 
 /** The logical reference a storage key names inside its bag. */
@@ -239,7 +249,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
    *  that books it now; they leave rest. Answers whether any sealed. */
   async sealClearRest(documentId: string): Promise<boolean> {
     const bag = this.#ports.bagOf(documentId);
-    if (bag === null || isPublic(bag)) return false;
+    if (bag === null || isKeyed(bag)) return false;
     const clear = (await this.#ports.inner.loadRange([documentId])).filter((c): c is Chunk & { data: Uint8Array } => ROLES[c.key[1] ?? ""] !== undefined && c.data !== undefined && readsClear(c.data));
     if (clear.length === 0) return false;
     const session = this.#ports.sessionOf(documentId);
@@ -276,7 +286,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     for (const [name, { key, data }] of [...this.#waiting]) {
       const bag = this.#bagOf(key);
       const session = this.#ports.sessionOf(key[0]!, data);
-      if (bag === null || isPublic(bag) || session === null || !this.#wears(bag.face, session.subject)) continue;
+      if (bag === null || isKeyed(bag) || session === null || !this.#wears(bag.face, session.subject)) continue;
       try { await this.#inTurn(() => this.#seal(bag, key, data, session)); }
       catch (error) { if (error instanceof SealedDocumentRefusal) continue; throw error; }
       this.#waiting.delete(name);
@@ -295,7 +305,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     return face !== null && (subject === face || (this.#ports.wornAt?.(face, subject) ?? false));
   }
 
-  #bagOf(key: StorageKey): { readonly bagId: string; readonly face: string | null; readonly published?: PublishedLookup } | null {
+  #bagOf(key: StorageKey): SealedBagRow | null {
     return key.length >= 1 && typeof key[0] === "string" ? this.#ports.bagOf(key[0]) : null;
   }
   #heldOf(documentId: string): Map<string, SealedAddress> {
@@ -328,6 +338,12 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     if (!isPublic(bag) && typeof key[0] === "string") this.#classedSealed.add(key[0]);
     const role = ROLES[key[1] ?? ""];
     if (role === undefined) return;
+    // THE SECRET HOME RESTS SEALED UNDER ITS VESSEL'S HELD KEY: the sealed value itself rests, before any session stands.
+    if (isHeld(bag)) {
+      const out = sealHeld({ bagId: bag.bagId, held: bag.held, role, ref: logicalRefOf(key), plaintext: data });
+      if (!("chunk" in out)) throw new SealedDocumentRefusal(out.refusal);
+      return this.#ports.inner.save(key, out.chunk.sealed);
+    }
     // A SEALED BAG NO FACE WEARS YET (the floor, before its face lights): its save waits in memory, never clear, until
     // the face lights and a session books it.
     if (!isPublic(bag) && bag.face === null) {
@@ -400,6 +416,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     const bag = this.#bagOf(key);
     if (bag === null) return this.#unmapped(await this.#ports.inner.load(key));
     if (isPublic(bag)) return this.#openPublic(bag, key, await this.#ports.inner.load(key));
+    if (isHeld(bag)) return this.#openHeld(bag, key, await this.#ports.inner.load(key));
     const face = this.#face(bag);
     const waiting = this.#waiting.get(nameOf(key));
     return waiting ? Uint8Array.from(waiting.data) : this.#open(bag, key, face);
@@ -434,6 +451,18 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     return opened.plaintext;
   }
 
+  /** A held bag's value opens with its vessel's held key alone. No clear byte of it ever rests: one found there refuses by
+   *  name and never reaches the engine. */
+  #openHeld(bag: HeldBag, key: StorageKey, rested: Uint8Array | undefined): Uint8Array | undefined {
+    const role = ROLES[key[1] ?? ""];
+    if (role === undefined || rested === undefined) return undefined;
+    if (readsClear(rested)) throw new SealedDocumentRefusal("held-clear-at-rest");
+    if (!readsSealed(rested)) throw new SealedDocumentRefusal("pointer-malformed");
+    const opened = openHeld({ bagId: bag.bagId, held: bag.held, role, ref: logicalRefOf(key), sealed: rested });
+    if (!("plaintext" in opened)) throw new SealedDocumentRefusal(opened.refusal);
+    return opened.plaintext;
+  }
+
   /** A document the map names no bag for reads its inner rest as the engine wrote it; a sealed value there never
    *  reaches the engine as if it were clear (`bag-unmapped`). */
   #unmapped<T extends Uint8Array | undefined>(bytes: T): T {
@@ -463,12 +492,13 @@ export class SealedDocumentStore implements StorageAdapterInterface {
 
   async #loadRange(prefix: StorageKey): Promise<Chunk[]> {
     const whole = this.#bagOf(prefix);
-    const face = whole === null || isPublic(whole) ? null : this.#face(whole);
+    const face = whole === null || isKeyed(whole) ? null : this.#face(whole);
     const out: Chunk[] = [];
     for (const chunk of await this.#ports.inner.loadRange(prefix)) {
       const bag = this.#bagOf(chunk.key);
       if (bag === null) { if (chunk.data !== undefined) this.#unmapped(chunk.data); out.push(chunk); continue; }
       if (isPublic(bag)) { const data = this.#openPublic(bag, chunk.key, chunk.data); if (data !== undefined) out.push({ key: chunk.key, data }); continue; }
+      if (isHeld(bag)) { const data = this.#openHeld(bag, chunk.key, chunk.data); if (data !== undefined) out.push({ key: chunk.key, data }); continue; }
       if (this.#waiting.has(nameOf(chunk.key))) continue;
       const data = await this.#open(bag, chunk.key, face ?? this.#face(bag), chunk.data);
       if (data !== undefined) out.push({ key: chunk.key, data });
@@ -476,7 +506,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     for (const { key, data } of this.#waiting.values()) {
       if (key.slice(0, prefix.length).join("\u0000") !== nameOf(prefix)) continue;
       const bag = this.#bagOf(key);
-      if (bag !== null) this.#face(bag);
+      if (bag !== null && !isKeyed(bag)) this.#face(bag);
       out.push({ key: [...key], data: Uint8Array.from(data) });
     }
     return out;

@@ -76,6 +76,7 @@ const SOWN: Record<string, string> = {
   "identity/gate-root.bin":                  "root",
   "identity/intent-relay-key.bin": "k".repeat(32),
   "identity/intent-relay-faces.json": '{"faces":[]}',
+  "identity/secret-home.json": "x",
   [`identity/faces/${FCID}/outbox-key-h0.bin`]: "x",
   [`identity/faces/${FCID}/veil-archive-g${"a".repeat(64)}.bin`]: "x",
   [`identity/faces/${FCID}/face-atom-g${"a".repeat(64)}.bin`]: "x",
@@ -162,6 +163,8 @@ const RULED: Record<string, CustodyClass> = {
   // A hearth's own cadence key and its next key: they open for one act (kahu#/contract, engine cadence ruling).
   "cadence-key": "face-cold",
   "intent-relay-key": "cold", "intent-relay-faces": "hot",
+  // The vessel's secret home's address: opened at unlock, the home's rest maps by it (placement over patterns).
+  "secret-home": "hot",
   // One joint founding's record: public material and the judged image, read at each joint signature.
   "cofound": "face-hot",
   // A restore's own commit row: one act writes it, one act removes it (custody#/the-restore).
