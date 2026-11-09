@@ -1,3 +1,5 @@
+import type { ShareAudience } from "./share-tighten.js";
+import { verifyCidBytes } from "./cas-transit.js";
 /**
  * CapabilityRecord — the ONE record a vessel hands an island AT CONSTRUCTION.
  *
@@ -29,7 +31,7 @@ import type {
 /** The vessel's answer to an island's receipt ask — resolves once every named document rests in the vessel's store. */
 export type ReceiptIssuer = (documentIds: readonly string[], heads?: Readonly<Record<string, readonly string[]>>) => Promise<void>;
 /** The vessel's answer to an island's `cas:want` — verified bytes, or null. */
-export type CasFetcher = (cid: string) => Promise<Uint8Array | null>;
+export type CasFetcher = (cid: string, audience: ShareAudience | undefined) => Promise<Uint8Array | null>;
 /** The vessel's reading of one device edge on one fleet root. */
 export type DyadReader = (fleetRoot: string, deviceKey: string) => EdgeStanding | Promise<EdgeStanding>;
 /** The vessel's seal of bytes an island hands across under the vessel key. */
@@ -163,10 +165,7 @@ export function answerIslandAsks(port: { post(msg: unknown): void; listen(cb: (m
     switch (m.type) {
       case "cas:want": {
         if (typeof m["cid"] !== "string") return;
-        const cas = caps.cas;
-        const answer = (bytes: Uint8Array | null): void => reply({ type: "cas:block", requestId, bytes } satisfies IslandMsg_CasBlock);
-        if (!cas) { answer(null); return; }
-        cas(m["cid"]).then(answer, () => answer(null));
+        void answerCas(caps, { requestId, cid: m["cid"] }, "in-process").then(reply);
         return;
       }
       case "receipt:request": {
@@ -194,4 +193,46 @@ export function answerIslandAsks(port: { post(msg: unknown): void; listen(cb: (m
     }
   });
   return () => { stop(); detachDocStore(); };
+}
+
+/** Answer bytes through the one gated member; preserve a named refusal across the worker boundary. */
+export async function answerCas(caps: CapabilityRecord, ask: { requestId: string; cid: string }, audience: ShareAudience | undefined): Promise<IslandMsg_CasBlock> {
+  const answer = { type: "cas:block" as const, requestId: ask.requestId };
+  if (!caps.cas) return { ...answer, bytes: null, refusal: "cas-unavailable" };
+  try { return { ...answer, bytes: await caps.cas(ask.cid, audience) }; }
+  catch (error) {
+    const reason = error && typeof error === "object" && "reason" in error ? String(error.reason)
+      : error instanceof Error ? error.message : String(error);
+    return { ...answer, bytes: null, refusal: reason };
+  }
+}
+
+/** Worker-side byte door. Every read asks the vessel, including local hits: a hash proves bytes, never readership.
+ * The vessel answers each request and the island dies with its vessel, so no clock decides a miss. */
+export function vesselCasAsker(port: {
+  post(msg: unknown): void;
+  listen(cb: (msg: unknown) => void): void;
+}): (cid: string) => Promise<Uint8Array | null> {
+  const pending = new Map<string, { cid: string; resolve(bytes: Uint8Array | null): void; reject(error: Error): void }>();
+  let seq = 0;
+  port.listen((raw) => {
+    const m = raw as Partial<IslandMsg_CasBlock> | null;
+    if (!m || m.type !== "cas:block" || typeof m.requestId !== "string") return;
+    const ask = pending.get(m.requestId);
+    if (!ask) return;
+    pending.delete(m.requestId);
+    if (m.refusal) {
+      const error = new Error(m.refusal);
+      error.name = m.refusal.startsWith("declared-tier-") ? "DeclaredTierRefusal" : "CasRefused";
+      ask.reject(Object.assign(error, { reason: m.refusal }));
+    } else if (m.bytes instanceof Uint8Array && !verifyCidBytes(m.bytes, ask.cid)) {
+      ask.reject(new Error(`CID mismatch for ${ask.cid}`));
+    } else ask.resolve(m.bytes instanceof Uint8Array ? m.bytes : null);
+  });
+  return (cid) => new Promise((resolve, reject) => {
+    const requestId = `cas-${++seq}`;
+    pending.set(requestId, { cid, resolve, reject });
+    try { port.post({ type: "cas:want", requestId, cid }); }
+    catch (error) { pending.delete(requestId); reject(error); }
+  });
 }

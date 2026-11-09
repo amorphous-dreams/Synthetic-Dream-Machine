@@ -1,3 +1,4 @@
+import { publicIslandFixture } from "../../lararium-mesh/tests/public-share-fixture.js";
 /**
  * browser-island-caps — slice 5b: the browser answers its daemon island's asks through a record composed through
  * the one composer. Receipt, cas and dyad stand at construction; `custodyWrite` and `sessionSign` stand
@@ -36,7 +37,7 @@ function wire() {
 
 const SOURCES = import.meta.glob(["../src/open-browser-daemon-vm.ts", "../src/open-browser-vessel.ts", "../src/daemon-island-start.ts"], { query: "?raw", import: "default", eager: true }) as Record<string, string>;
 
-const floorOf = async () => larVesselOf(await composeVessel(islandFloorStack({ cas: async (cid) => (cid === "cid-held" ? utf8Bytes("held bytes") : null) })));
+const floorOf = async () => larVesselOf(await composeVessel(islandFloorStack({ ...publicIslandFixture, cas: async (cid) => (cid === "cid-held" ? utf8Bytes("held bytes") : null) })));
 
 describe("slice 5b: the browser's island asks answer through its capability record", () => {
   it("a browser vessel at its floor answers session:sign with signer-unavailable by name, as composeHerm does", async () => {

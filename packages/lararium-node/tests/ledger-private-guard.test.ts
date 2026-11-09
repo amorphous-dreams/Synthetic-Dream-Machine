@@ -1,3 +1,4 @@
+import { publicShareTiers } from "../../lararium-mesh/tests/public-share-fixture.js";
 /**
  * ledger-private-guard — A VESSEL'S EDGE LEDGER CROSSES TO NO WIRE PEER (road `T33`, the class half).
  *
@@ -92,18 +93,18 @@ describe("a vessel's edge ledger crosses to no wire peer (T33)", () => {
     expect(book.has(ledger), "today the ledger stands unclassed").toBe(false);
     // The sibling gate's base, as the composer builds it (`composeSiblings` answers the face's planes alone, else the base).
     const siblingGate = new DeterministicFederationGate(NEXUS, [fleetEdgeBoardDocUrl(FLEET_ROOT)]);
-    expect(await selfSlotShareDecision({ hasWsSocket: false, sibling: true, siblingGate, peerClass: undefined, selfSlotFedGate: null, antigenRing: NO_BANS, shadow: NOBODY_ASIDE,
+    expect(await selfSlotShareDecision({ tiers: publicShareTiers, hasWsSocket: false, sibling: true, siblingGate, peerClass: undefined, selfSlotFedGate: null, antigenRing: NO_BANS, shadow: NOBODY_ASIDE,
       membership: null, planeSeal: null, peerId: "sib", documentId: idOf(LEDGER), protectedDocs: seatedGuard(book, none) }), "the sibling gate").toBe(false);
     // The same-face session's view (`face-fleet-view`).
     const views = faceFleetViews(() => bootstrap(), () => G1, () => new Set<string>());
     views.seat("own-device", { personaGroup: G1 } as FaceGrantReading);
-    expect(await selfSlotShareDecision({ hasWsSocket: true, peerClass: "same-operator", sessionFace: views.gateFor("own-device"), selfSlotFedGate: new DeterministicFederationGate(NEXUS),
+    expect(await selfSlotShareDecision({ tiers: publicShareTiers, hasWsSocket: true, peerClass: "same-operator", sessionFace: views.gateFor("own-device"), selfSlotFedGate: new DeterministicFederationGate(NEXUS),
       antigenRing: NO_BANS, shadow: NOBODY_ASIDE, membership: null, planeSeal: null, peerId: "own-device", documentId: idOf(LEDGER), protectedDocs: seatedGuard(book, none) }), "the same-face view").toBe(false);
     // A plain wire stranger, on the deterministic shelf.
-    expect(await selfSlotShareDecision({ hasWsSocket: true, peerClass: "contracted", selfSlotFedGate: new DeterministicFederationGate(NEXUS),
+    expect(await selfSlotShareDecision({ tiers: publicShareTiers, hasWsSocket: true, peerClass: "contracted", selfSlotFedGate: new DeterministicFederationGate(NEXUS),
       antigenRing: NO_BANS, shadow: NOBODY_ASIDE, membership: null, planeSeal: null, peerId: "stranger", documentId: idOf(LEDGER), protectedDocs: seatedGuard(book, none) }), "a stranger").toBe(false);
     // A contracted realm member's lone registration naming the ledger: the realm lane opens it.
-    expect(await selfSlotShareDecision({ hasWsSocket: true, peerClass: "contracted", selfSlotFedGate: await aliasedRealmGate(LEDGER),
+    expect(await selfSlotShareDecision({ tiers: publicShareTiers, hasWsSocket: true, peerClass: "contracted", selfSlotFedGate: await aliasedRealmGate(LEDGER),
       antigenRing: NO_BANS, shadow: NOBODY_ASIDE, membership: null, planeSeal: null, peerId: "peer-B", documentId: idOf(LEDGER), protectedDocs: seatedGuard(book, none) }), "a realm alias").toBe(true);
     views.close();
   });
@@ -114,11 +115,11 @@ describe("a vessel's edge ledger crosses to no wire peer (T33)", () => {
     expect(book.ownerOf(String(idOf(LEDGER))), "the ledger's owner").toBe("device");
     const open: FederationGate = { mayFederate: async () => true };
     const lanes: Array<[string, Parameters<typeof selfSlotShareDecision>[0]]> = [
-      ["a sibling whose gate opens it", { hasWsSocket: false, sibling: true, siblingGate: open, peerClass: undefined, selfSlotFedGate: null, antigenRing: NO_BANS, shadow: NOBODY_ASIDE, membership: null, planeSeal: null,
+      ["a sibling whose gate opens it", { tiers: publicShareTiers, hasWsSocket: false, sibling: true, siblingGate: open, peerClass: undefined, selfSlotFedGate: null, antigenRing: NO_BANS, shadow: NOBODY_ASIDE, membership: null, planeSeal: null,
         peerId: "sib", documentId: idOf(LEDGER), protectedDocs: seatedGuard(book, { ...none, sibling: true, siblingGate: open }) }],
-      ["the worn face's session whose view opens it", { hasWsSocket: true, peerClass: "same-operator", sessionFace: open, selfSlotFedGate: null, antigenRing: NO_BANS, shadow: NOBODY_ASIDE, membership: null, planeSeal: null,
+      ["the worn face's session whose view opens it", { tiers: publicShareTiers, hasWsSocket: true, peerClass: "same-operator", sessionFace: open, selfSlotFedGate: null, antigenRing: NO_BANS, shadow: NOBODY_ASIDE, membership: null, planeSeal: null,
         peerId: "own-device", documentId: idOf(LEDGER), protectedDocs: seatedGuard(book, { ...none, sameOperator: true, sessionFace: open, peerFace: G1 }) }],
-      ["a realm alias", { hasWsSocket: true, peerClass: "contracted", selfSlotFedGate: await aliasedRealmGate(LEDGER), antigenRing: NO_BANS, shadow: NOBODY_ASIDE, membership: null, planeSeal: null,
+      ["a realm alias", { tiers: publicShareTiers, hasWsSocket: true, peerClass: "contracted", selfSlotFedGate: await aliasedRealmGate(LEDGER), antigenRing: NO_BANS, shadow: NOBODY_ASIDE, membership: null, planeSeal: null,
         peerId: "peer-B", documentId: idOf(LEDGER), protectedDocs: seatedGuard(book, none) }],
     ];
     for (const [what, input] of lanes) expect(await selfSlotShareDecision(input), what).toBe(false);
@@ -129,10 +130,10 @@ describe("a vessel's edge ledger crosses to no wire peer (T33)", () => {
     book.add(LEDGER, (vp as { DEVICE_OWNER?: string }).DEVICE_OWNER);
     const open: FederationGate = { mayFederate: async () => true };
     for (const url of [DAEMON, FACE.circles]) {
-      expect(await selfSlotShareDecision({ hasWsSocket: true, peerClass: "same-operator", sessionFace: open, selfSlotFedGate: null, antigenRing: NO_BANS, shadow: NOBODY_ASIDE, membership: null, planeSeal: null,
+      expect(await selfSlotShareDecision({ tiers: publicShareTiers, hasWsSocket: true, peerClass: "same-operator", sessionFace: open, selfSlotFedGate: null, antigenRing: NO_BANS, shadow: NOBODY_ASIDE, membership: null, planeSeal: null,
         peerId: "own-device", documentId: idOf(url), protectedDocs: seatedGuard(book, { ...none, sameOperator: true, sessionFace: open, peerFace: G1 }) }), `session reads ${url}`).toBe(true);
     }
-    expect(await selfSlotShareDecision({ hasWsSocket: false, sibling: true, siblingGate: open, peerClass: undefined, selfSlotFedGate: null, antigenRing: NO_BANS, shadow: NOBODY_ASIDE, membership: null, planeSeal: null,
+    expect(await selfSlotShareDecision({ tiers: publicShareTiers, hasWsSocket: false, sibling: true, siblingGate: open, peerClass: undefined, selfSlotFedGate: null, antigenRing: NO_BANS, shadow: NOBODY_ASIDE, membership: null, planeSeal: null,
       peerId: "sib", documentId: idOf(FACE.circles), protectedDocs: seatedGuard(book, { ...none, sibling: true, siblingGate: open }) }), "a sibling reads the face's plane").toBe(true);
   });
 

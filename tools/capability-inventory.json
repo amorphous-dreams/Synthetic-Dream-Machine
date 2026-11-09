@@ -22,14 +22,14 @@
       "sessionSign": "refused"
     },
     "web wiki": {
-      "cas": "silent",
+      "cas": "grants",
       "receipt": "silent",
       "custodyWrite": "silent",
       "dyad": "refused",
       "sessionSign": "silent"
     },
     "web session": {
-      "cas": "silent",
+      "cas": "refused",
       "receipt": "silent",
       "custodyWrite": "silent",
       "dyad": "refused",
@@ -44,8 +44,8 @@
     }
   },
   "webListeners": {
-    "web wiki": 1,
-    "web session": 1,
+    "web wiki": 2,
+    "web session": 2,
     "web daemon": "unmeasured"
   },
   "callSites": [
@@ -112,6 +112,8 @@
     "packages/lararium-browser/src/browser-dyad-refusal.ts: \"dyad:ask\"",
     "packages/lararium-browser/src/browser-dyad-refusal.ts: \"dyad:read\"",
     "packages/lararium-browser/src/browser-island-caps.ts: \"receipt:request\"",
+    "packages/lararium-browser/src/browser-vessel-island-pool.ts: \"cas:want\"",
+    "packages/lararium-browser/src/browser-vessel-island-pool.ts: \"cas:block\"",
     "packages/lararium-browser/src/holder-routes.ts: \"cas:want\"",
     "packages/lararium-browser/src/holder-routes.ts: \"dyad:ask\"",
     "packages/lararium-browser/src/holder-routes.ts: \"receipt:request\"",
@@ -150,12 +152,14 @@
     "packages/lararium-mesh/src/capability-record.ts: \"custody:write\"",
     "packages/lararium-mesh/src/capability-record.ts: \"session:sign\"",
     "packages/lararium-mesh/src/capability-record.ts: \"cas:want\"",
-    "packages/lararium-mesh/src/capability-record.ts: \"cas:block\"",
     "packages/lararium-mesh/src/capability-record.ts: \"receipt:request\"",
     "packages/lararium-mesh/src/capability-record.ts: \"receipt:issued\"",
     "packages/lararium-mesh/src/capability-record.ts: \"dyad:ask\"",
     "packages/lararium-mesh/src/capability-record.ts: \"custody:write\"",
     "packages/lararium-mesh/src/capability-record.ts: \"session:sign\"",
+    "packages/lararium-mesh/src/capability-record.ts: \"cas:block\"",
+    "packages/lararium-mesh/src/capability-record.ts: \"cas:block\"",
+    "packages/lararium-mesh/src/capability-record.ts: \"cas:want\"",
     "packages/lararium-mesh/src/island-protocol.ts: \"cas:want\"",
     "packages/lararium-mesh/src/island-protocol.ts: \"cas:block\"",
     "packages/lararium-mesh/src/island-protocol.ts: \"view:catalog\"",
@@ -200,8 +204,6 @@
     "packages/lararium-mesh/src/vessel-island-pool-core.ts: \"receipt:issued\"",
     "packages/lararium-mesh/src/vessel-island-pool-core.ts: \"view:content\"",
     "packages/lararium-mesh/src/vessel-island-pool-core.ts: \"view:content-result\"",
-    "packages/lararium-node/src/sovereign-island-model.ts: \"cas:block\"",
-    "packages/lararium-node/src/sovereign-island-model.ts: \"cas:want\"",
     "packages/lararium-node/src/sovereign-island-model.ts: \"dyad:read\"",
     "packages/lararium-node/src/sovereign-island-model.ts: \"dyad:ask\"",
     "packages/lararium-node/src/sovereign-island-model.ts: \"receipt:issued\"",
@@ -209,7 +211,6 @@
     "packages/lararium-node/src/sovereign-island-model.ts: \"custody:written\"",
     "packages/lararium-node/src/sovereign-island-model.ts: \"custody:write\"",
     "packages/lararium-node/src/worker-handle.ts: \"cas:want\"",
-    "packages/lararium-node/src/worker-handle.ts: \"cas:block\"",
     "packages/lararium-node/src/worker-handle.ts: \"receipt:request\"",
     "packages/lararium-node/src/worker-handle.ts: \"receipt:issued\"",
     "packages/lararium-node/src/worker-handle.ts: \"dyad:ask\"",

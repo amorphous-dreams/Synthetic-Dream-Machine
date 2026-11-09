@@ -183,6 +183,9 @@ export interface TierFloorSource {
  * The remaining order stands as before: PUBLIC wins over SEALED (a plane both federatable-public AND sealed
  * reads PUBLIC — its ciphertext still names a world-readable shelf entry); a sealed-but-not-public plane
  * reads CONTRACT; none of them reads VEIL. A null source → VEIL.
+ *
+ * A READING THAT THROWS LEAVES THE FOLD UNANSWERED. The secrets reading runs first, so a registry that has not
+ * read (secrets-registry.ts) throws before any public reading answers: the caller reads the throw as a refusal.
  */
 export function structuralFloorFor(source: TierFloorSource | null, documentId: string): CapTier {
   if (!source) return "veil";
@@ -192,30 +195,52 @@ export function structuralFloorFor(source: TierFloorSource | null, documentId: s
   return "veil";
 }
 
+/** One floor reading: does this doc carry the property? A reading that cannot answer THROWS, never answers false. */
+export type TierFloorReading = (documentId: string) => boolean;
+
+/** The three readings every floor names (`makeTierFloorSource`). Each stands REQUIRED. */
+export interface TierFloorReadings {
+  /** The doc rides the deterministically-federatable PUBLIC shelf. */
+  readonly federatable: TierFloorReading;
+  /** The doc's bytes are provably ciphertext a carrier cannot read. */
+  readonly sealed: TierFloorReading;
+  /** The doc holds secrets whose value rests on staying unpublished — floors at CONTRACT, read FIRST. */
+  readonly secrets: TierFloorReading;
+}
+
+/**
+ * THE COMPILE-TIME WITNESS that `secrets` stands required: a reading set that omits it must not satisfy
+ * `TierFloorReadings`. Make the reading optional again and this line fails the typecheck by name.
+ */
+export const SECRETS_READING_REQUIRED: { readonly federatable: TierFloorReading; readonly sealed: TierFloorReading } extends TierFloorReadings ? never : true = true;
+
+/** An untyped caller handed the floor fewer than its three readings (`floor-reading-absent: <reading>`). */
+export class FloorReadingAbsent extends Error {
+  override readonly name = "FloorReadingAbsent";
+  readonly reason = "floor-reading-absent";
+  constructor(readonly reading: keyof TierFloorReadings) { super(`floor-reading-absent: ${reading} — every floor names its three readings`); }
+}
+
 /**
  * makeTierFloorSource — the ONE door that assembles a floor source, so no site hand-rolls one.
  *
- * WHY A CONSTRUCTOR RATHER THAN AN OBJECT LITERAL. The interface requires all three readings, and this
- * door takes each as a NAMED argument, so a site that leaves one out does so in plain sight.
+ * ALL THREE READINGS STAND REQUIRED (cap-tier#/the-keystone). An absent `secrets` would withhold the CONTRACT
+ * ceiling, so a federatable secrets plane would floor PUBLIC and read exactly like a plane holding none. A site
+ * that omits a reading fails to compile (`SECRETS_READING_REQUIRED`), and an untyped caller refuses here by name.
+ * `NO_CONTRACT_SECRETS_PLANE` (secrets-registry.ts) stands only where absence stands established.
  *
- * AN ABSENT READING ANSWERS FALSE, AND FALSE CLOSES ONLY TWO OF THE THREE. An absent `federatable` or
- * `sealed` floors toward VEIL. An absent `secrets` withholds the CONTRACT ceiling: a doc whose `federatable`
- * reads true then floors PUBLIC. A caller that holds a secrets store must pass `secrets`, and nothing here
- * notices the omission. Passing nothing at all yields an source that reads VEIL for everything.
+ * A READING THAT CANNOT ANSWER THROWS, and the fold passes the throw on: the secrets registry before its face's
+ * catalog reads (reach-plane#/the-vault-reads-as-a-bag) refuses every doc, never answering false.
  */
-export function makeTierFloorSource(readings: {
-  /** The doc rides the deterministically-federatable PUBLIC shelf. */
-  readonly federatable?: (documentId: string) => boolean;
-  /** The doc's bytes are provably ciphertext a carrier cannot read. */
-  readonly sealed?: (documentId: string) => boolean;
-  /** The doc holds secrets whose value rests on staying unpublished — floors at CONTRACT, read FIRST. */
-  readonly secrets?: (documentId: string) => boolean;
-}): TierFloorSource {
+export function makeTierFloorSource(readings: TierFloorReadings): TierFloorSource {
+  for (const reading of ["federatable", "sealed", "secrets"] as const) {
+    if (typeof readings?.[reading] !== "function") throw new FloorReadingAbsent(reading);
+  }
   const { federatable, sealed, secrets } = readings;
   return {
-    isPublicPlane:          (d) => federatable?.(d) ?? false,
-    isSealedPlane:          (d) => sealed?.(d) ?? false,
-    isContractSecretsPlane: (d) => secrets?.(d) ?? false,
+    isPublicPlane:          (d) => federatable(d),
+    isSealedPlane:          (d) => sealed(d),
+    isContractSecretsPlane: (d) => secrets(d),
   };
 }
 

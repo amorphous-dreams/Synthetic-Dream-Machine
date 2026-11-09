@@ -99,7 +99,7 @@ describe("VesselIslandPool — island lifecycle", () => {
   });
 
   test("mountWiki promotes slot to hot tier", async () => {
-    pool = new VesselIslandPool({ caps: {}, workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS });
+    pool = new VesselIslandPool({ audienceForIsland: () => "world", caps: {}, workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS });
 
     await pool.mountWiki(WIKI_ID, spec(null));
 
@@ -108,7 +108,7 @@ describe("VesselIslandPool — island lifecycle", () => {
   });
 
   test("mountWiki is idempotent — second call is a no-op", async () => {
-    pool = new VesselIslandPool({ caps: {}, workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS });
+    pool = new VesselIslandPool({ audienceForIsland: () => "world", caps: {}, workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS });
 
     await pool.mountWiki(WIKI_ID, spec(null));
     await pool.mountWiki(WIKI_ID, spec(null)); // no-op
@@ -125,7 +125,7 @@ describe("VesselIslandPool — island lifecycle", () => {
     repo = new Repo({ sharePolicy: async () => true });
     const docHandle = repo.create<{ tiddlers: Record<string, unknown> }>({ tiddlers: {} });
 
-    pool = new VesselIslandPool({ caps: {},
+    pool = new VesselIslandPool({ audienceForIsland: () => "world", caps: {},
       resolvePluginCids: NO_OFFERINGS,
       workerScriptUrl: REPO_FIXTURE_URL,
       mainRepo:        repo,
@@ -145,18 +145,18 @@ describe("VesselIslandPool — island lifecycle", () => {
 
   test("port policy crosses the node pool door; no policy stays closed", async () => {
     const open = { type: "port:open", portId: "p", wikiUri: WIKI_ID, actor: "page", width: "full", maxRecordBytes: 4096, maxBatchBytes: 8192 };
-    pool = new VesselIslandPool({ caps: {}, workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS });
+    pool = new VesselIslandPool({ audienceForIsland: () => "world", caps: {}, workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS });
     await pool.mountWiki(WIKI_ID, spec(null));
     expect(pool.placePort(WIKI_ID, "page", open)).toEqual({ ok: false, reason: "port-not-granted" });
     await pool.disposeAll();
-    pool = new VesselIslandPool({ caps: {}, workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS,
+    pool = new VesselIslandPool({ audienceForIsland: () => "world", caps: {}, workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS,
       portPolicy: (binding) => ({ faceId: "face", actor: binding, edits: false, bags: [], admin: false }) });
     await pool.mountWiki(WIKI_ID, spec(null));
     expect(pool.placePort(WIKI_ID, "page", open)).toEqual({ ok: true }); // control: a read-only port opens
   });
 
   test("unmountWiki moves slot to cold; coldSince returns a MONOTONIC timestamp", async () => {
-    pool = new VesselIslandPool({ caps: {}, workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS });
+    pool = new VesselIslandPool({ audienceForIsland: () => "world", caps: {}, workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS });
 
     await pool.mountWiki(WIKI_ID, spec(null));
     // `cooledAt` is this process's own local bookkeeping (never persisted, never compared
@@ -174,7 +174,7 @@ describe("VesselIslandPool — island lifecycle", () => {
 
   // SET-BACK/SET-FORWARD PROOF — `coldSince` must not move with the wall clock.
   test("SET-BACK/SET-FORWARD: coldSince is unmoved by a Date.now() jump around the unmount", async () => {
-    pool = new VesselIslandPool({ caps: {}, workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS });
+    pool = new VesselIslandPool({ audienceForIsland: () => "world", caps: {}, workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS });
     await pool.mountWiki(WIKI_ID, spec(null));
     const before = performance.now();
     const realNow = Date.now;
@@ -200,7 +200,7 @@ describe("VesselIslandPool — island lifecycle", () => {
     repo = new Repo({ sharePolicy: async () => true });
     const docHandle = repo.create<{ tiddlers: Record<string, unknown> }>({ tiddlers: {} });
 
-    pool = new VesselIslandPool({ caps: {},
+    pool = new VesselIslandPool({ audienceForIsland: () => "world", caps: {},
       resolvePluginCids: NO_OFFERINGS,
       workerScriptUrl: REPO_FIXTURE_URL,
       mainRepo:        repo,
@@ -218,7 +218,7 @@ describe("VesselIslandPool — island lifecycle", () => {
   });
 
   test("stats() reflects tier counts correctly", async () => {
-    pool = new VesselIslandPool({ caps: {}, workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS });
+    pool = new VesselIslandPool({ audienceForIsland: () => "world", caps: {}, workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS });
 
     expect(pool.stats()).toEqual({ pinned: 0, wela: 0, anu: 0 });
 
@@ -238,7 +238,7 @@ describe("VesselIslandPool — island lifecycle", () => {
     repo = new Repo({ sharePolicy: async () => true });
     const docHandle = repo.create<{ tiddlers: Record<string, unknown> }>({ tiddlers: {} });
 
-    pool = new VesselIslandPool({ caps: {},
+    pool = new VesselIslandPool({ audienceForIsland: () => "world", caps: {},
       resolvePluginCids: NO_OFFERINGS,
       workerScriptUrl: REPO_FIXTURE_URL,
       mainRepo:        repo,
@@ -272,7 +272,7 @@ describe("VesselIslandPool — island lifecycle", () => {
   }, 10_000);
 
   test("placeWikiVerb — sends wiki:place-verb and resolves with wiki:verb-result", async () => {
-    pool = new VesselIslandPool({ caps: {}, workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS });
+    pool = new VesselIslandPool({ audienceForIsland: () => "world", caps: {}, workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS });
     await pool.mountWiki(WIKI_ID, spec(null));
 
     const result = await pool.placeWikiVerb(WIKI_ID, {
@@ -289,7 +289,7 @@ describe("VesselIslandPool — island lifecycle", () => {
     // The echo fixture echoes all verbs successfully, so we test the error path directly
     // via a timeout scenario by using a very short timeout — instead use a dedicated check:
     // placeWikiVerb on a cold slot rejects immediately.
-    pool = new VesselIslandPool({ caps: {}, workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS });
+    pool = new VesselIslandPool({ audienceForIsland: () => "world", caps: {}, workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS });
 
     await expect(
       pool.placeWikiVerb("lar:///ha.ka.ba/bags/test/no-such-wiki", {

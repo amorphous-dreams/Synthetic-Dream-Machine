@@ -1,3 +1,4 @@
+import { publicShareTiers } from "../../lararium-mesh/tests/public-share-fixture.js";
 /**
  * same-operator-refold — a same-operator session ANSWERS TO THE REFOLD: a device set aside after its seat, or an admit
  * revoked after its seat, ends the session it stood (house ruling "A device set aside"; kapae#/reach).
@@ -123,7 +124,7 @@ async function standHearth(founder: { w: World; p: Presenter }, joinee: Presente
     const session = sessions.get(peerId);
     if (!session) return false;
     return selfSlotShareDecision({
-      hasWsSocket: true, peerClass: session.class, selfSlotFedGate: shelfGate, antigenRing: NO_BANS, membership: null, planeSeal: null,
+      tiers: publicShareTiers, hasWsSocket: true, peerClass: session.class, selfSlotFedGate: shelfGate, antigenRing: NO_BANS, membership: null, planeSeal: null,
       federationPosture: "private", peerId, documentId, sessionFace: views.gateFor(peerId), shadow,
       protectedDocs: NOTHING_CLASSED,
     });

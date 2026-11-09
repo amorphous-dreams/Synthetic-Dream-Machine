@@ -20,7 +20,7 @@ describe("promoted digests join a wiki's plugin selection", () => {
     expect(base.ok).toBe(true);
     const withHook = await resolveRecipePluginCids(recipe("field-notes"), { ...inputs(store), promoted: async (slug) => { asked.push(slug); return [digest, digest]; } });
     expect(asked).toEqual(["field-notes"]);
-    expect(withHook).toEqual({ ok: true, pluginCids: [...(base as { pluginCids: string[] }).pluginCids, digest] });
+    expect(withHook).toMatchObject({ ok: true, pluginCids: [...(base as { pluginCids: string[] }).pluginCids, digest] });
   });
 
   test("RED: a promoted digest whose bytes the store lacks or holds corrupt DROPS out of the union and is reported by name, while the rest of the selection still boots; CONTROL: sound bytes pass, and a failing offering selection keeps the whole-recipe refusal", async () => {
@@ -28,12 +28,13 @@ describe("promoted digests join a wiki's plugin selection", () => {
     const onPromotedVoided = (wiki: string, digests: readonly string[]) => { voided.push({ wiki, digests }); };
     const base = (await resolveRecipePluginCids(recipe("field-notes"), inputs(new Map()))) as { ok: true; pluginCids: string[] };
     const missing = await resolveRecipePluginCids(recipe("field-notes"), { ...inputs(new Map()), promoted: async () => [digest], onPromotedVoided });
-    expect(missing).toEqual({ ok: true, pluginCids: base.pluginCids });
+    expect(missing).toMatchObject({ ok: true, pluginCids: base.pluginCids, proved: { promoted: [] } });
     const corrupt = await resolveRecipePluginCids(recipe("field-notes"), { ...inputs(new Map([[digest, new TextEncoder().encode("evil")]])), promoted: async () => [digest], onPromotedVoided });
-    expect(corrupt).toEqual({ ok: true, pluginCids: base.pluginCids });
+    expect(corrupt).toMatchObject({ ok: true, pluginCids: base.pluginCids });
     expect(voided).toEqual([{ wiki: "field-notes", digests: [digest] }, { wiki: "field-notes", digests: [digest] }]);
     const sound = await resolveRecipePluginCids(recipe("field-notes"), { ...inputs(new Map([[digest, bytes]])), promoted: async () => [digest], onPromotedVoided });
-    expect(sound).toEqual({ ok: true, pluginCids: [...base.pluginCids, digest] });
+    // The proof names only the digest that passed the byte check (P27: the island floor reads it as a reference).
+    expect(sound).toMatchObject({ ok: true, pluginCids: [...base.pluginCids, digest], proved: { promoted: [digest] } });
     expect(voided).toHaveLength(2);
     const offered = await resolveRecipePluginCids({ wikiSlug: "field-notes", pluginOfferings: ["f".repeat(64)] }, { ...inputs(new Map([[digest, bytes]])), promoted: async () => [digest], onPromotedVoided });
     expect(offered.ok).toBe(false);

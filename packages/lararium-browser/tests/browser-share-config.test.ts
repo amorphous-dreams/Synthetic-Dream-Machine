@@ -1,3 +1,4 @@
+import { publicShareTiers } from "../../lararium-mesh/tests/public-share-fixture.js";
 /**
  * browser-share-config — THE BROWSER SEATS ITS VERDICT ON BOTH HOOKS, AND READS THE GATE IT ARMS.
  *
@@ -18,17 +19,19 @@
  */
 import { describe, expect, test } from "vitest";
 import type { DocumentId } from "@automerge/automerge-repo";
-import { DeterministicFederationGate, crossroadsDocUrl, type FederationGate } from "@lararium/mesh";
+import { DeterministicFederationGate, crossroadsDocUrl, makeShareBoundary, makeTierFloorSource, type FederationGate } from "@lararium/mesh";
 import { interpretAsDocumentId } from "@automerge/automerge-repo";
 import { browserShareConfig } from "../src/open-browser-vessel.js";
 
 const NEXUS = "ab".repeat(32);
 const PRIVATE_DOC = "4NMNnkMhL8jXrkWJZWFqQnhkWkpq" as DocumentId;   // a random-id plane — never a derived address
 const CROSSROADS  = interpretAsDocumentId(crossroadsDocUrl(NEXUS)) as DocumentId;
+// The house's own island arrivals (`islandPeersOf`) and no face-grant ring: each peer proves its audience positively.
+const PROOF = { house: { has: (peerId: string) => peerId === "island" }, grant: () => null };
 
 describe("browserShareConfig", () => {
   test("a peer the decision refuses is refused on access too", async () => {
-    const cfg = browserShareConfig(new Set(["relay"]), () => null);
+    const cfg = browserShareConfig(new Set(["relay"]), () => null, null, publicShareTiers, PROOF);
     // No federation gate and no ring: a relay peer draws the decision's floor on BOTH hooks, identically.
     const a = await cfg.announce("relay" as never, "doc" as never);
     const b = await cfg.access("relay" as never, "doc" as never);
@@ -39,9 +42,10 @@ describe("browserShareConfig", () => {
 
   test("a gate armed AFTER the config stands governs every later decision", async () => {
     let fedGate: FederationGate | null = null;
-    const cfg = browserShareConfig(new Set(["relay"]), () => fedGate);
-    // CONTROL: before the crossing arms the gate, the relay reads as the own node — full sync.
-    expect(await cfg.access("relay" as never, PRIVATE_DOC)).toBe(true);
+    const cfg = browserShareConfig(new Set(["relay"]), () => fedGate, null, publicShareTiers, PROOF);
+    // P27: before the crossing arms the gate, the relay proves no audience and draws the named refusal.
+    expect(await cfg.access("relay" as never, PRIVATE_DOC)).toBe(false);
+    expect(await cfg.access("relay" as never, CROSSROADS)).toBe(false);
     fedGate = new DeterministicFederationGate(NEXUS);
     // The crossing armed it: a private plane no longer reaches the foreign relay, on either hook …
     expect(await cfg.access("relay" as never, PRIVATE_DOC)).toBe(false);
@@ -53,11 +57,11 @@ describe("browserShareConfig", () => {
   });
 
   test("the ring composed onto the gate is the verdict — no second ring socket stands beside it", async () => {
-    // The config reads the relay set, the gate and the siblings, nothing else.
-    expect(browserShareConfig.length).toBe(3);
+    // The config reads the relay set, the gate, the siblings, the tier boundary and the audience proof, nothing else.
+    expect(browserShareConfig.length).toBe(5);
     const base = new DeterministicFederationGate(NEXUS);
     let fedGate: FederationGate | null = base;
-    const cfg = browserShareConfig(new Set(["relay"]), () => fedGate);
+    const cfg = browserShareConfig(new Set(["relay"]), () => fedGate, null, publicShareTiers, PROOF);
     // CONTROL: the bare cross-operator gate keeps a private plane off the relay.
     expect(await cfg.access("relay" as never, PRIVATE_DOC)).toBe(false);
     // A ring composed onto the gate widens it by the face's own planes, for the peer it proved …
@@ -74,7 +78,7 @@ describe("browserShareConfig", () => {
     const cfg = browserShareConfig(new Set(["relay"]), () => null, {
       isSibling: (peerId) => peerId === "sibling",
       gate: () => siblingGate,
-    });
+    }, publicShareTiers, PROOF);
     // Before the ring stands, a sibling reaches nothing — though it rides no relay socket.
     expect(await cfg.access("sibling" as never, FACE_A)).toBe(false);
     const base = new DeterministicFederationGate(NEXUS);
@@ -86,5 +90,15 @@ describe("browserShareConfig", () => {
     expect(await cfg.announce("sibling" as never, PRIVATE_DOC)).toBe(false);
     // CONTROL: an in-process house peer still shares freely.
     expect(await cfg.access("island" as never, PRIVATE_DOC)).toBe(true);
+  });
+  test("P27 RED: an unclassified peer proves no audience and refuses by name; CONTROL: a house island and the shelf still cross", async () => {
+    const refused: Error[] = [];
+    const tiers = makeShareBoundary({ declared: { declaredTierForDoc: () => "public" },
+      floor: makeTierFloorSource({ federatable: () => true, sealed: () => false, secrets: () => false }) }, (e) => refused.push(e));
+    const cfg = browserShareConfig(new Set(["relay"]), () => new DeterministicFederationGate(NEXUS), null, tiers, PROOF);
+    expect(await cfg.access("stray" as never, CROSSROADS)).toBe(false);
+    expect(refused.at(-1)).toMatchObject({ reason: "declared-tier-audience-unresolved" });
+    expect(await cfg.access("island" as never, PRIVATE_DOC)).toBe(true);
+    expect(await cfg.access("relay" as never, CROSSROADS)).toBe(true);
   });
 });

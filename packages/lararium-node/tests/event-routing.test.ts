@@ -72,7 +72,7 @@ describe("M.2 event-routing — island→vessel verb payload transport", () => {
     repo = new Repo({ sharePolicy: async () => true });
     const docHandle = repo.create<{ tiddlers: Record<string, unknown> }>({ tiddlers: {} });
 
-    manager = new VesselIslandPool({ caps: {},
+    manager = new VesselIslandPool({ audienceForIsland: () => "world", caps: {},
       workerScriptUrl: FIXTURE_URL,
       mainRepo:        repo,
       onWorkerEvent:   (_id, msg) => events.push(msg),

@@ -20,22 +20,21 @@ import {
   type IslandStorageConfig,
   type WikiRecipe,
   type PortIslandToVesselMsg,
-  type CapabilityRecord,
+  type CapabilityRecord, type IslandAudienceContext, type ShareAudience,
+  DeclaredTierRefusal,
 } from "@lararium/mesh";
 import type { PortPolicy } from "@lararium/mesh/port-lease";
 import { nodeNewSyncChannel, nodeSpawnSessionWorker, nodeSpawnWikiWorker } from "./worker-handle.js";
-import { readCasBlobFromFs, type IslandCasData } from "./node-cas.js";
+import { type IslandCasData } from "./node-cas.js";
 
-/**
- * The vessel's content store, as a session island's scoped view reads it: the vessel's one runtime `cid/` dir
- * (`cidDir`, handed at construction), then the vessel's `cas` capability, read off the record at ask time (absent, or
- * faulting, reads a miss; the corpus store rides inside that capability as its second tier). A session island holds no
- * store of its own, so every content read it makes arrives here, after its view has passed the address. No env read.
- */
-export function nodeContentReader(cidDir: string | null, caps: CapabilityRecord): (cid: string) => Promise<Uint8Array | null> {
-  return async (cid) =>
-    (cidDir ? readCasBlobFromFs(cid, cidDir) : null)
-      ?? (caps.cas ? caps.cas(cid).catch(() => null) : null);
+/** A scoped view's address reaches the same gated record as a wiki's CAS want; no local-store bypass. */
+export function nodeContentReader(caps: CapabilityRecord, audienceForIsland: (island: IslandAudienceContext) => ShareAudience | undefined) {
+  return async (cid: string, island: IslandAudienceContext): Promise<Uint8Array | null> => {
+    if (!caps.cas) throw new Error("cas-unavailable: the vessel holds no byte door");
+    const audience = audienceForIsland(island);
+    if (!audience) throw new DeclaredTierRefusal("declared-tier-audience-unresolved", `wiki ${island.wikiId} proves no plane relation`);
+    return caps.cas(cid, audience);
+  };
 }
 
 /** Node's default live-wiki activation cap — the vessel advertises this as the
@@ -50,6 +49,7 @@ export interface VesselIslandPoolOptions {
    * receipt, custody and dyad asks refuse by name); a session island reaches none. The members read at ask time.
    */
   caps: CapabilityRecord;
+  audienceForIsland: (island: IslandAudienceContext) => ShareAudience | undefined;
   /** Compiled island entry script. Defaults to node-wiki-island.js alongside this module. */
   workerScriptUrl?: URL;
   /** Called when an island outside any session emits an `event` (RE reaction) or one of the camera's kinds
@@ -96,13 +96,13 @@ export class VesselIslandPool extends VesselIslandPoolCore {
     const casData: IslandCasData = { cidDir: options.cidDir ?? null, corpusCasDir: options.corpusCasDir ?? null };
     super({
       host: {
-        spawnWorker: (spawn) => (spawn?.session ? nodeSpawnSessionWorker(workerUrl, options.caps) : nodeSpawnWikiWorker(workerUrl, options.caps, casData)),
+        spawnWorker: (spawn) => (spawn.session ? nodeSpawnSessionWorker(workerUrl, options.caps) : nodeSpawnWikiWorker(workerUrl, options.caps, casData, () => options.audienceForIsland(spawn))),
         newSyncChannel: nodeNewSyncChannel,
         storage: (wikiId): IslandStorageConfig | undefined =>
           storageRoot ? { type: "nodefs", dir: join(storageRoot, _sanitizeWikiId(wikiId)) } : undefined,
       },
       mainRepo: options.mainRepo ?? null,
-      readContent: nodeContentReader(options.cidDir ?? null, options.caps),
+      readContent: nodeContentReader(options.caps, options.audienceForIsland),
       diskMirrorGrant: options.diskMirrorGrant ?? [],
       resolvePluginCids: options.resolvePluginCids,
       ...(options.onWorkerEvent ? { onWorkerEvent: options.onWorkerEvent } : {}),

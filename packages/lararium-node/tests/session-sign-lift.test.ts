@@ -1,3 +1,4 @@
+import { publicIslandFixture } from "../../lararium-mesh/tests/public-share-fixture.js";
 /**
  * session-sign-lift — session signing seats on the LIFT, never on the herm floor and never on a process-global door.
  *
@@ -96,8 +97,8 @@ describe("session signing seats on the lift, per record", () => {
 
   test("D12 — a herm floor signs nothing while a Lararium in the same process signs through its lift; the lift's down removes the door", async () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
-    const hermFloor = larVesselOf(await composeVessel(islandFloorStack({ cas: async () => null })));
-    const larFloor = larVesselOf(await composeVessel(islandFloorStack({ cas: async () => null })));
+    const hermFloor = larVesselOf(await composeVessel(islandFloorStack({ ...publicIslandFixture, cas: async () => null })));
+    const larFloor = larVesselOf(await composeVessel(islandFloorStack({ ...publicIslandFixture, cas: async () => null })));
     const l = lift("lar", "req-1");
     const lifted = await composeVessel(islandLiftStack(larFloor, { face: "lar", sessionSign: l.door, drop: () => {} }));
     const herm = island(), lar = island();

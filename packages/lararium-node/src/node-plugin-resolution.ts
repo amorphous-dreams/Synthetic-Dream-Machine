@@ -27,11 +27,11 @@
  * Meme: lar:///ha.ka.ba/lararium/node/node-plugin-resolution
  */
 
-import type { LarDoc, WikiRecipe, OfferingLookup } from "@lararium/mesh";
+import type { LarDoc, WikiRecipe, OfferingLookup, PluginProof } from "@lararium/mesh";
 import { offeringAnnouncesFromDoc, resolveRecipePluginCids } from "@lararium/mesh";
 
 export type NodePluginResolutionVerdict =
-  | { readonly ok: true; readonly pluginCids: readonly string[] }
+  | { readonly ok: true; readonly pluginCids: readonly string[]; readonly proved: PluginProof }
   | { readonly ok: false; readonly error: string };
 
 export interface ResolveNodeIslandPluginCidsOpts {

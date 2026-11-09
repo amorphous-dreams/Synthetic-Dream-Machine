@@ -1,3 +1,4 @@
+import { publicIslandFixture } from "./public-share-fixture.js";
 /**
  * face-switch-mid-compose — slice 5b's B8 red: an ask an island began under face A and resumes after the vessel switched to
  * face B never reaches B, and never answers as A's either.
@@ -70,7 +71,7 @@ function nodeHost() {
 }
 
 async function floor(): Promise<LarVessel> {
-  return larVesselOf(await composeVessel(islandFloorStack({ receipt, cas })));
+  return larVesselOf(await composeVessel(islandFloorStack({ ...publicIslandFixture, receipt, cas })));
 }
 
 /** The switch, as the vessel runs it: A's lift locks, the worn face moves, and B's lift composes over the same record. */

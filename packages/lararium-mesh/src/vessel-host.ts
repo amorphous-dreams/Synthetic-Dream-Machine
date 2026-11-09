@@ -50,13 +50,20 @@ export interface VesselWorkerHandle {
 // module worker's WASM-load handshake (node omits it). Held capabilities
 // (mainRepo, diskMirrorGrant, hotCap) ride pool config, not this shore.
 
+/** Host-held context for a wiki's byte requests; no field comes from a worker payload. */
+export interface IslandAudienceContext {
+  readonly wikiId: string;
+  readonly wikiSlug: string;
+  readonly facePlaneId: string | null;
+}
+
 export interface VesselIslandHost {
   /**
    * Spawn a fresh island worker (closes over the platform worker URL). `session: true` names a SESSION's
    * island: the host hands that worker NONE of the vessel's own doors (the fetch door, the receipt capability, the
    * custody write door). A session island reaches the vessel through its scoped view alone.
    */
-  spawnWorker(opts?: { readonly session?: boolean }): VesselWorkerHandle;
+  spawnWorker(opts: IslandAudienceContext & { readonly session?: boolean }): VesselWorkerHandle;
   /** Create a sync channel; the pool keeps mainPort, transfers syncPort. */
   newSyncChannel(): { mainPort: MessagePort; syncPort: MessagePort };
   /** Per-wiki island storage (node nodefs; browser undefined → island owns IDB). */

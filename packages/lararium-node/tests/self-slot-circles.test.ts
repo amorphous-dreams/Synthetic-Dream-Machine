@@ -1,3 +1,4 @@
+import { publicShareTiers } from "../../lararium-mesh/tests/public-share-fixture.js";
 /**
  * self-slot-circles — the circles doc reaches the face that owns it, NEVER federates to a stranger (STRUCTURAL).
  *
@@ -34,7 +35,7 @@ describe("circles fleet-sync-but-never-federate (structural)", () => {
 
   test("a SAME-OPERATOR WS peer syncs the circles doc through its face's gate, and never by class (D3)", async () => {
     const base = {
-      hasWsSocket: true, peerClass: "same-operator" as const,
+      tiers: publicShareTiers, hasWsSocket: true, peerClass: "same-operator" as const,
       selfSlotFedGate: gate, antigenRing: NO_BANS, shadow: NOBODY_ASIDE, protectedDocs: NOTHING_CLASSED, membership: null, planeSeal: null,
       federationPosture: "private", peerId: "same-op-device", documentId: circlesStandIn,
     };
@@ -45,7 +46,7 @@ describe("circles fleet-sync-but-never-federate (structural)", () => {
 
   test("a CROSS-OPERATOR peer is DENIED the circles doc even with the Nexus OPEN", async () => {
     const base = {
-      hasWsSocket: true, peerClass: "stranger" as const,
+      tiers: publicShareTiers, hasWsSocket: true, peerClass: "stranger" as const,
       selfSlotFedGate: gate, antigenRing: NO_BANS, shadow: NOBODY_ASIDE, protectedDocs: NOTHING_CLASSED, membership: null, planeSeal: null,
       federationPosture: "open" as const, peerId: "stranger",
     };
@@ -57,7 +58,7 @@ describe("circles fleet-sync-but-never-federate (structural)", () => {
 
   test("a CROSS-OPERATOR peer is denied the circles doc under a PRIVATE Nexus too", async () => {
     const denied = await selfSlotShareDecision({
-      hasWsSocket: true, peerClass: "stranger",
+      tiers: publicShareTiers, hasWsSocket: true, peerClass: "stranger",
       selfSlotFedGate: gate, antigenRing: NO_BANS, membership: null, planeSeal: null,
       federationPosture: "private", peerId: "stranger", documentId: circlesStandIn,
       shadow: NOBODY_ASIDE, protectedDocs: NOTHING_CLASSED,

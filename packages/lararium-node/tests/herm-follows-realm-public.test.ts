@@ -1,3 +1,4 @@
+import { publicCasFixture } from "../../lararium-mesh/tests/public-share-fixture.js";
 /**
  * herm-follows-realm-public.test.ts — THE HERM FOLLOWS THE REALM'S PUBLIC REGISTRATIONS (the 2026-09-12
  * ruling: the realm's own registration decides which documents cross, and the PUBLIC tier rides the Herm
@@ -25,7 +26,7 @@ const HERM_CROSSROADS = "lar:///ha.ka.ba/bags/crossroads";
 const REALM_PUBLIC_BAG = "lar:///ha.ka.ba/bags/lares";
 const REALM_CONTRACT_BAG = "lar:///ha.ka.ba/bags/ledger";
 const pointer = (bagId: string, title: string, cid: string): CasReferenceEntry =>
-  ({ title, bagId, record: { tiddler: { title, _is_skinny: "yes", textCid: cid } } });
+  ({ title, bagId, documentId: bagId, record: { tiddler: { title, _is_skinny: "yes", textCid: cid } } } as CasReferenceEntry);
 
 describe("the Herm's shore follows the realm's PUBLIC registrations, never its own crossroads alone", () => {
   test("a pointer in a realm-registered PUBLIC bag reads public; a CONTRACT-tier one does not", async () => {
@@ -38,7 +39,7 @@ describe("the Herm's shore follows the realm's PUBLIC registrations, never its o
       writeCasEntriesFs([{ cid: likenessCid, bytes: likeness }, { cid: ledgerCid, bytes: ledger }, { cid: strayCid, bytes: stray }], casDir);
 
       // The Herm's own crossroads carries nothing about either body — the whole point of the seam.
-      const shore = publicCasShore({
+      const shore = publicCasShore({ ...publicCasFixture,
         casDir,
         references: () => [],
         bagTier: (bagUrl) => (bagUrl === HERM_CROSSROADS ? "public" as CapTier : null),
@@ -65,7 +66,7 @@ describe("the Herm's shore follows the realm's PUBLIC registrations, never its o
       const own = utf8Bytes("a body the Herm's own crossroads names"); const ownCid = sha256HexBytesSync(own);
       const far = utf8Bytes("a body only a realm names");              const farCid = sha256HexBytesSync(far);
       writeCasEntriesFs([{ cid: ownCid, bytes: own }, { cid: farCid, bytes: far }], casDir);
-      const shore = publicCasShore({
+      const shore = publicCasShore({ ...publicCasFixture,
         casDir,
         references: () => [pointer(HERM_CROSSROADS, "lar:///t.w.h/own", ownCid)],
         bagTier: (bagUrl) => (bagUrl === HERM_CROSSROADS ? "public" as CapTier : null),

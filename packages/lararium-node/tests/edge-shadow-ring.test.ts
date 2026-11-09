@@ -1,3 +1,4 @@
+import { publicShareTiers } from "../../lararium-mesh/tests/public-share-fixture.js";
 /**
  * edge-shadow-ring — the one live reading the gates consult, driven through each gate's own entry point.
  *
@@ -387,7 +388,7 @@ describe("a device the fleet root set aside — the sorter, the share verdict an
       // THE SHARE VERDICT: a socket admitted before the shadow arrived still holds its class; the verdict reads the shadow first.
       const MY_NEXUS = "11".repeat(32);
       const share = (peerId: string, documentId: DocumentId, sibling = false) => selfSlotShareDecision({
-        hasWsSocket: !sibling, sibling, siblingGate: { mayFederate: () => true }, peerClass: "same-operator",
+        tiers: publicShareTiers, hasWsSocket: !sibling, sibling, siblingGate: { mayFederate: () => true }, peerClass: "same-operator",
         selfSlotFedGate: new DeterministicFederationGate(MY_NEXUS), antigenRing: NO_BANS, membership: null, planeSeal: null,
         peerId, documentId, shadow: ring,
         // D3: the gate of the face each session proved; it would hand over the face's every plane, so only the shadow refuses.

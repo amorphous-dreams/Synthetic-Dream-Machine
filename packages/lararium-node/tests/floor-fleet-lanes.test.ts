@@ -1,3 +1,4 @@
+import { publicShareTiers } from "../../lararium-mesh/tests/public-share-fixture.js";
 /**
  * floor-fleet-lanes.test — at the floor every fleet lane stays shut.
  *
@@ -41,7 +42,7 @@ const floor = floorShadowRing(built, (peerId) => peerId === SIBLING);
 /** A sibling gate that hands the proven sibling its face's plane. */
 const siblingGate = { mayFederate: async (documentId: DocumentId, peerId?: string) => documentId === FACE_PLANE && peerId === SIBLING };
 const asSibling = (shadow: EdgeShadowRing) => selfSlotShareDecision({
-  hasWsSocket: false, sibling: true, siblingGate, peerClass: undefined, selfSlotFedGate: null,
+  tiers: publicShareTiers, hasWsSocket: false, sibling: true, siblingGate, peerClass: undefined, selfSlotFedGate: null,
   antigenRing: NO_BANS, membership: null, planeSeal: null, peerId: SIBLING, documentId: FACE_PLANE, shadow,
   protectedDocs: NOTHING_CLASSED,
 });
@@ -62,7 +63,7 @@ describe("at the floor every fleet lane stays shut", () => {
     expect(floor.aside("island")).toBe(false);
     expect(floor.aside(SET_ASIDE)).toBe(true);
     expect(await selfSlotShareDecision({
-      hasWsSocket: false, peerClass: undefined, selfSlotFedGate: null, antigenRing: NO_BANS, membership: null,
+      tiers: publicShareTiers, hasWsSocket: false, peerClass: undefined, selfSlotFedGate: null, antigenRing: NO_BANS, membership: null,
       planeSeal: null, peerId: "island", documentId: FACE_PLANE, shadow: floor,
       protectedDocs: NOTHING_CLASSED,
     })).toBe(true);

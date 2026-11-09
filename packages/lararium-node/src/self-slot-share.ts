@@ -40,14 +40,15 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/node/self-slot-share
  */
-import type { DocumentId } from "@automerge/automerge-repo";
+import type { DocumentId, PeerId } from "@automerge/automerge-repo";
 import { carryContractShareDecision, carrierShareDecision, presenterIsKapaed, presenterStandsAside, siblingShareDecision } from "@lararium/mesh";
-import type { AntigenRing, FederationGate, NexusMembership, PeerClass, PlaneSeal, ProtectedDocGuard, ShadowConsult } from "@lararium/mesh";
+import type { AntigenRing, FederationGate, NexusMembership, PeerClass, PlaneSeal, ProtectedDocGuard, ShadowConsult, ShareBoundary, ShareAudience } from "@lararium/mesh";
 
 /** Every in-process island peer rides this empty relay ring → shared freely. */
 const NO_RELAY_PEERS: ReadonlySet<string> = new Set<string>();
 
 export interface SelfSlotShareInput {
+  readonly tiers: ShareBoundary;
   /** True for a WS peer (an outside carrier); false for an in-process island peer (a house member). */
   readonly hasWsSocket: boolean;
   /** True for a peer id the SIBLING CHANNEL proved — a device of the mounted face's PersonaGroup. It holds standing,
@@ -89,6 +90,11 @@ export interface SelfSlotShareInput {
    * that classes no document passes `NOTHING_CLASSED`.
    */
   readonly protectedDocs: ProtectedDocGuard | null;
+  /**
+   * The face-grant ring (`assemblePersonaGroupRing`): a wire peer it admits for this document holds a verified face-join
+   * grant under the face's PersonaGroup, so that crossing reaches `fleet`. Absent or null: no wire peer proves fleet so.
+   */
+  readonly faceGrant?: { admitsPeer(documentId: DocumentId, peerId: PeerId): Promise<boolean> } | null;
 }
 
 /** A Kapae-antigen ring that stood and bans nobody. */
@@ -116,6 +122,14 @@ export function unstoodShareInputs(input: Pick<SelfSlotShareInput, "antigenRing"
  * presenter draws Mu regardless. The self-slot INNER capability ring stays inert (identity = null).
  */
 export async function selfSlotShareDecision(input: SelfSlotShareInput): Promise<boolean> {
+  let audience: ShareAudience = input.hasWsSocket ? "world" : "in-process";
+  const base = await structuralShareDecision(input, (proved) => { audience = proved; });
+  // Every lane past the house's own island allows only through a gate (sibling, session face, the federatable gate, the
+  // walker or hosting set): the floor reads the gate that carried the doc, never a narrower public-board set.
+  return input.tiers.allows(base, input.documentId, audience, audience !== "in-process");
+}
+
+async function structuralShareDecision(input: SelfSlotShareInput, proves: (audience: ShareAudience) => void): Promise<boolean> {
   // AN INPUT THAT HAS NOT STOOD reads first: no deny layer stands yet for a peer from outside the house.
   if ((input.hasWsSocket || input.sibling) && unstoodShareInputs(input).length > 0) return false;
   // THE EDGE SHADOW reads FIRST. A socket admitted before the shadow arrived keeps its class until the gate
@@ -132,13 +146,14 @@ export async function selfSlotShareDecision(input: SelfSlotShareInput): Promise<
   if (input.sibling) {
     if (input.hasWsSocket) return false;
     if (presenterIsKapaed(input.antigenRing, input.peerId)) return false;
+    proves("fleet");
     return siblingShareDecision(input.siblingGate ?? null, input.peerId, input.documentId);
   }
   // D3: TRANSPORT KINSHIP GRANTS NO READERSHIP. A same-operator session reads its proven face's documents through
   // that face's gate, the antigen ahead; past it, it reads what any admitted peer reads.
   if (input.hasWsSocket && input.peerClass === "same-operator") {
     if (presenterIsKapaed(input.antigenRing, input.peerId)) return false;
-    if (await siblingShareDecision(input.sessionFace ?? null, input.peerId, input.documentId)) return true;
+    if (await siblingShareDecision(input.sessionFace ?? null, input.peerId, input.documentId)) { proves("fleet"); return true; }
   }
   if (input.hasWsSocket) {
     if (input.peerClass === "walker" && input.walkerBoard && input.documentId === input.walkerBoard) {
@@ -148,12 +163,16 @@ export async function selfSlotShareDecision(input: SelfSlotShareInput): Promise<
     // A walker never reads the contract ledger, even where the shelf would carry it.
     if (input.peerClass === "walker" && input.carriageBoard && input.documentId === input.carriageBoard) return false;
     if (input.peerClass === "contracted" && input.documentId && input.hostingDocs?.has(input.documentId)) {
+      proves("contract");
       return carryContractShareDecision(NO_RELAY_PEERS, null, input.antigenRing, null, input.peerId, input.documentId);
     }
     // FAIL-CLOSED at the boot edge: a gated peer whose federatable classifier has not yet stood gets a
     // DenyAllGate floor (`carryContractShareDecision` reads a null fed gate as "same-operator relay → full
     // sync", a DIFFERENT case, so a gated peer must never reach it null — that would leak every plane).
     const fedGate: FederationGate = input.selfSlotFedGate ?? new DenyAllGate();
+    if (input.membership?.holdsCarriagePeer(input.peerId)) proves("contract");
+    // A face-grant member the ring admits for this document reads it as fleet (its grant seats it in the face's group).
+    if (input.documentId && input.faceGrant && await input.faceGrant.admitsPeer(input.documentId, input.peerId as PeerId)) proves("fleet");
     return carrierShareDecision(
       new Set<string>([input.peerId]),
       fedGate,

@@ -213,7 +213,7 @@ describe("★ R4 — TWO WIKIS IN ONE BROWSER VESSEL load plugins BY RECIPE, ove
     // the cast): this proves the RUNTIME guard inherited from VesselIslandPoolCore fires through
     // the browser's own construction path too, never silently falling back to a flat list — and
     // it fires BEFORE any worker would spawn, so no `workerScriptUrl` is needed to prove it.
-    expect(() => new BrowserVesselIslandPool({} as unknown as ConstructorParameters<typeof BrowserVesselIslandPool>[0]))
+    expect(() => new BrowserVesselIslandPool({ audienceForIsland: () => "world", caps: {},} as unknown as ConstructorParameters<typeof BrowserVesselIslandPool>[0]))
       .toThrow(/resolvePluginCids is required/);
   });
 

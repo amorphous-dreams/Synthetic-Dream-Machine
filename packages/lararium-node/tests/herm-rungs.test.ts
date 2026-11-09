@@ -1,3 +1,4 @@
+import { publicCasFixture } from "../../lararium-mesh/tests/public-share-fixture.js";
 /**
  * herm-rungs.test.ts — the herm's rung ladder (pronaos#/the-rung-ladder).
  *
@@ -83,7 +84,7 @@ async function standHerm(opts: { waymark?: boolean } = {}): Promise<{ origin: st
   const dispatcher = mountHttpFaceDispatcher(server);
   await mountBulbReadFace({
     httpServer: server, bulb, dispatcher,
-    publicCas: publicCasShore({ casDir: join(storageDir, "cas"), references: () => [], bagTier: () => null }),
+    publicCas: publicCasShore({ ...publicCasFixture, casDir: join(storageDir, "cas"), references: () => [], bagTier: () => null }),
   });
   if (opts.waymark) mountHermWaymark({ httpServer: server, dispatcher, bulbCid: genesisSeedCid(bulb.seedBytes) });
   await new Promise<void>((r) => server.listen(0, "127.0.0.1", () => r()));

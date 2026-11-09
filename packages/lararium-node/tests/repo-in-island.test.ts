@@ -125,7 +125,7 @@ describe("Repo-in-island — CRDT sync gate (GP-3 deprecation proof)", () => {
     repo = new Repo({ sharePolicy: async () => true });
     const docHandle = repo.create<{ tiddlers: Record<string, unknown> }>({ tiddlers: {} });
 
-    manager = new VesselIslandPool({ caps: {},
+    manager = new VesselIslandPool({ audienceForIsland: () => "world", caps: {},
       workerScriptUrl: FIXTURE_URL,
       mainRepo:        repo,
       onWorkerEvent:   (id, msg) => { all.callback(id, msg); changes.callback(id, msg); },
@@ -168,7 +168,7 @@ describe("Repo-in-island — CRDT sync gate (GP-3 deprecation proof)", () => {
     repo = new Repo({ sharePolicy: async () => true });
     const docHandle = repo.create<{ tiddlers: Record<string, unknown> }>({ tiddlers: {} });
 
-    manager = new VesselIslandPool({ caps: {},
+    manager = new VesselIslandPool({ audienceForIsland: () => "world", caps: {},
       workerScriptUrl: FIXTURE_URL,
       mainRepo:        repo,
       onWorkerEvent:   (id, msg) => { all.callback(id, msg); changes.callback(id, msg); },
@@ -215,7 +215,7 @@ describe("Repo-in-island — CRDT sync gate (GP-3 deprecation proof)", () => {
     repo = new Repo({ sharePolicy: async () => true });
     const docHandle = repo.create<{ tiddlers: Record<string, unknown> }>({ tiddlers: {} });
 
-    manager = new VesselIslandPool({ caps: {},
+    manager = new VesselIslandPool({ audienceForIsland: () => "world", caps: {},
       workerScriptUrl: FIXTURE_URL,
       mainRepo:        repo,
       onWorkerEvent:   (id, msg) => { all.callback(id, msg); changes.callback(id, msg); },

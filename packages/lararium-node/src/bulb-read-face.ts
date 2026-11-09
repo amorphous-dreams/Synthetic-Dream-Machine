@@ -1,3 +1,4 @@
+import type { ShareBoundary } from "@lararium/mesh";
 /**
  * bulb-read-face — hand over the BULB by CID over the node's PUBLIC read-face (the flow-substrate floor).
  *
@@ -145,9 +146,19 @@ export async function hermRealmShoreBooks(opts: {
  * THE HERM HOLDS THE HINT, NEVER THE READ-CAP: both lanes answer over pointers and declared tiers alone. The
  * reference count derives at each ask — never cached — so a DROP or a re-tiering answers on the next fetch.
  */
+/** A pointer the herm's own lane reads, with the document that carries it. */
+export type ShoreReferenceEntry = CasReferenceEntry & { readonly documentId?: string };
+
 export function publicCasShore(opts: {
+  readonly tiers: ShareBoundary;
+  /** The realm lane's book document, by its bag (owed: the realm readers hold the book's own document binding). */
+  readonly documentForBag: (bag: string) => string | undefined;
+  readonly releasedDocument: () => string | undefined;
+  /** Every held document that references this cid (`makeHeldShareFloor().documentsForCid`): each must hold `world`. */
+  readonly documentsForCid: (cid: string) => readonly string[];
   readonly casDir:     string;
-  readonly references: () => Promise<Iterable<CasReferenceEntry>> | Iterable<CasReferenceEntry>;
+  /** The own lane: each pointer names the DOCUMENT that carries it (the board), which the predicate reads at `world`. */
+  readonly references: () => Promise<Iterable<ShoreReferenceEntry>> | Iterable<ShoreReferenceEntry>;
   readonly bagTier:    (bagUrl: string) => CapTier | null;
   /** The realm lane — absent, the shore answers exactly as its own planes answer. */
   readonly realmReferences?: () => Promise<Iterable<RealmShoreBook>> | Iterable<RealmShoreBook>;
@@ -159,7 +170,12 @@ export function publicCasShore(opts: {
     // Bytes altered at rest never leave: a blob that fails its own address reads as a blob this shore lacks.
     read: (cid) => readVerifiedCasBlobFromFs(cid, opts.casDir),
     isPublic: async (cid) => {
-      if (opts.releasedFloor && (await opts.releasedFloor()).has(cid)) return true;
+      // A held private reference withholds the bytes, whatever pointer names them public: every document that
+      // references this cid crosses to the world, or the shore serves nothing (a pointer on a world-writable board
+      // never lifts a private blob).
+      if (!opts.documentsForCid(cid).every((id) => opts.tiers.allows(true, id, "world"))) return false;
+      if (opts.releasedFloor && (await opts.releasedFloor()).has(cid)
+        && opts.tiers.allows(true, opts.releasedDocument(), "world")) return true;
       const own   = [...(await opts.references())];
       const books = opts.realmReferences ? [...(await opts.realmReferences())] : [];
       const realm = books.flatMap((b) => [...b.entries].map((e) => ({ book: b, entry: e })));
@@ -167,12 +183,13 @@ export function publicCasShore(opts: {
       if (!names || names.size === 0) return false;
       for (const e of own) {
         if (!e.bagId) continue;
-        if (names.has(`${e.bagId} ${e.title}`) && opts.bagTier(e.bagId) === "public") return true;
+        if (names.has(`${e.bagId} ${e.title}`) && opts.bagTier(e.bagId) === "public"
+          && opts.tiers.allows(true, e.documentId, "world")) return true;
       }
       for (const { book, entry } of realm) {
         if (book.readTier !== "public") continue;          // a CONTRACT book rides the realm's own lane, never the shore
         const address = entry.bagId ? `${entry.bagId} ${entry.title}` : entry.title;
-        if (names.has(address)) return true;
+        if (names.has(address) && opts.tiers.allows(true, opts.documentForBag(book.bagUri), "world")) return true;
       }
       return false;
     },

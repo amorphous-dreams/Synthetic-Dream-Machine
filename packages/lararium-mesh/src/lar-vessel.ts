@@ -20,6 +20,8 @@
  *
  * Canon: lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift#/the-slices (slices 5a, 5b) · lar:///ha.ka.ba/lararium/api/composable-keel
  */
+import type { ShareAudience, ShareBoundary } from "./share-tighten.js";
+import { DeclaredTierRefusal } from "./share-tighten.js";
 import type { CapModule, ComposedVessel } from "./cap-compose.js";
 import type { CapabilityRecord, CustodyWriter, SessionSignDoor } from "./capability-record.js";
 
@@ -29,7 +31,10 @@ export const ISLAND_RECORD_CAP = "island-record";
 export const ISLAND_LIFT_CAP = "island-lift";
 
 /** What a vessel's floor hands its record: every member a vessel stands with no face lifted. */
-export type IslandFloor = Pick<CapabilityRecord, "receipt" | "cas" | "dyad" | "docStore" | "restsSealed">;
+export type IslandFloor = Pick<CapabilityRecord, "receipt" | "cas" | "dyad" | "docStore" | "restsSealed"> & {
+  readonly tiers: ShareBoundary;
+  readonly documentsForCid: (cid: string) => readonly string[];
+};
 
 /** One face's lift: the members it seats, and the drop its lock runs once (the session's signer, the face's own hold). */
 export interface IslandLift {
@@ -59,12 +64,30 @@ const FLOOR_MEMBERS = ["receipt", "cas", "dyad", "docStore", "restsSealed"] as c
 
 /** Compose a vessel's floor: one cap that builds the record its islands read, carrying the floor's members alone. */
 export function islandFloorStack(floor: IslandFloor): CapModule[] {
+  // The host supplies the asking island's relation; the CID and island payload supply no authority.
+  const cas = floor.cas ? async (cid: string, audience: ShareAudience | undefined) => {
+    const requireRead = (): void => {
+      if (!audience) floor.tiers.require(undefined, audience);
+      const documents = floor.documentsForCid(cid);
+      // Even the house's own island must name held content or an explicit immutable genesis declaration.
+      if (documents.length === 0) {
+        throw new DeclaredTierRefusal("declared-tier-unresolved", `CID ${cid} names no held document or genesis declaration`);
+      }
+      for (const id of documents) floor.tiers.require(id, audience);
+    };
+    requireRead();
+    const bytes = await floor.cas!(cid, audience);
+    // Re-read both references and declarations after an await; a withdrawn binding publishes nothing.
+    requireRead();
+    return bytes;
+  } : undefined;
+  const members = { ...floor, cas };
   const module: CapModule<LarVessel> = {
     id: ISLAND_RECORD_CAP,
     build: () => {
       const record: CapabilityRecord = {};
       for (const member of FLOOR_MEMBERS) {
-        const value = floor[member];
+        const value = members[member];
         if (value !== undefined) (record as Record<string, unknown>)[member] = value;
       }
       const seat: LiftSeat = { lift: null };
@@ -82,7 +105,7 @@ export function islandFloorStack(floor: IslandFloor): CapModule[] {
       const held = seats.get(vessel);
       if (!held) return;
       for (const member of FLOOR_MEMBERS) {
-        if (floor[member] !== undefined && held.record[member] === floor[member]) delete held.record[member];
+        if (members[member] !== undefined && held.record[member] === members[member]) delete held.record[member];
       }
     },
   };

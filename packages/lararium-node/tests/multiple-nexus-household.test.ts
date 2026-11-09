@@ -1,3 +1,4 @@
+import { publicShareTiers } from "../../lararium-mesh/tests/public-share-fixture.js";
 /**
  * multiple-nexus-household — two independent chartered Nexuses may share one immutable
  * genesis seed without sharing scope, boards, private documents, or causal state.
@@ -91,7 +92,7 @@ describe("multiple-Nexus household proof", () => {
 
     for (const documentId of aBoards) {
       expect(await selfSlotShareDecision({
-        hasWsSocket: true, peerClass: "stranger", selfSlotFedGate: gateA,
+        tiers: publicShareTiers, hasWsSocket: true, peerClass: "stranger", selfSlotFedGate: gateA,
         antigenRing: NO_BANS, membership: null, planeSeal: null, peerId: "foreign-peer", documentId,
         shadow: NOBODY_ASIDE, protectedDocs: NOTHING_CLASSED,
       })).toBe(true);
@@ -99,7 +100,7 @@ describe("multiple-Nexus household proof", () => {
     for (const documentId of [...bBoards, privateA]) {
       // This assertion is the mutation pin: replacing the gate with `() => true` must turn red.
       expect(await selfSlotShareDecision({
-        hasWsSocket: true, peerClass: "stranger", selfSlotFedGate: gateA,
+        tiers: publicShareTiers, hasWsSocket: true, peerClass: "stranger", selfSlotFedGate: gateA,
         antigenRing: NO_BANS, membership: null, planeSeal: null, peerId: "foreign-peer", documentId,
         shadow: NOBODY_ASIDE, protectedDocs: NOTHING_CLASSED,
       })).toBe(false);
@@ -146,7 +147,7 @@ describe("multiple-Nexus household proof", () => {
     // No A board is materialized or merged. The foreign absence is an explicit denied read.
     const gateB = new DeterministicFederationGate(NEXUS_B);
     expect(await selfSlotShareDecision({
-      hasWsSocket: true, peerClass: "stranger", selfSlotFedGate: gateB,
+      tiers: publicShareTiers, hasWsSocket: true, peerClass: "stranger", selfSlotFedGate: gateB,
       antigenRing: NO_BANS, membership: null, planeSeal: null, peerId: RELAY_A, documentId: docIdOf(crossroadsDocUrl(NEXUS_A)),
       shadow: NOBODY_ASIDE, protectedDocs: NOTHING_CLASSED,
     })).toBe(false);

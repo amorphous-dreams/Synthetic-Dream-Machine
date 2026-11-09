@@ -1,3 +1,6 @@
+import type { DocumentId } from "@automerge/automerge-repo";
+import { makeHeldShareFloor, makeIslandAudienceReader, NO_CONTRACT_SECRETS_PLANE, islandPeersOf, peerShareAudience, type CapabilityRecord, type PluginProof } from "@lararium/mesh";
+import type { ShareBoundary } from "@lararium/mesh";
 import { browserPromoteStores, browserPromoteCas } from "./browser-promoted-store.js";
 import { browserWardBindRoute, BrowserWardRefused, browserWardSigner, type WardAskKind } from "./browser-ward.js";
 import type { WardRoute } from "./ward-core.js";
@@ -506,7 +509,7 @@ export async function resolveBrowserIslandPluginCids(opts: {
   readonly promoted?: (wiki: string) => Promise<readonly string[]>;
   readonly onPromotedVoided?: (wiki: string, digests: readonly string[]) => void;
   readonly lookup: OfferingLookup;
-}): Promise<{ readonly ok: true; readonly pluginCids: readonly string[] } | { readonly ok: false; readonly error: string }> {
+}): Promise<{ readonly ok: true; readonly pluginCids: readonly string[]; readonly proved: PluginProof } | { readonly ok: false; readonly error: string }> {
   // The selection itself stands in mesh (`resolveRecipePluginCids`), the one function the node door and the
   // surface mount's resolver read too; this door hands it the browser's own inputs: the island document's
   // blobs, the Crossroads lookup and the origin's OPFS content store.
@@ -708,6 +711,41 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     // the Repo's stand-down ends the wait by name.
     hydrates: true,
   });
+  let shareRepo: Repo | null = null;
+  let publicTierGate: DeterministicFederationGate | null = null;
+  let publicGenesisCids: ReadonlySet<string> = new Set();
+  let poolCaps: CapabilityRecord | null = null;
+  // The peers this vessel attached for its own islands (`islandPeersOf`), once the Repo stands; until then none.
+  let houseIslands: { has(peerId: string): boolean } = new Set<string>();
+  // The face-grant ring, once it stands: a relay peer it admits for a document reads that document as fleet.
+  let faceGrantRing: { admitsPeer(documentId: DocumentId, peerId: PeerId): Promise<boolean> } | null = null;
+  // The fleet's own edge board, which rides the sibling lane as no bag (PERSONAGROUP), once the ring names it.
+  let fleetBoardDoc: string | null = null;
+  const shareFloor = makeHeldShareFloor({
+    genesisCids: () => publicGenesisCids,
+    handles: () => shareRepo?.handles ?? {},
+    catalog: () => sealedCells.catalog(),
+    bindings: function* () {
+      for (const [bag, ids] of slotDocsNamed) for (const id of ids) yield [bag, id] as const;
+      for (const bag of sealedCells.bags()) {
+        const id = sealedMap.docOf(bag); if (id) yield [bag, id] as const;
+      }
+    },
+    publicPlane: (id) => publicTierGate?.mayFederate(id as DocumentId) ?? false,
+    sealedPlane: (id) => sealedBagOf(id) !== null,
+    nonBagTier: (id) => id === fleetBoardDoc ? "personagroup" : null,
+    faceOwns: (id) => sealedBagOf(id) !== null,
+    // A LEAF STANDS AS A SURFACE (the seat's ruling 2026-11-07; road #/rulings · "no key on a surface"): the secrets vault stands on
+    // the node alone, so no gate lets a secrets plane reach this vessel, and its face planes cross by their declared tier.
+    secrets: { establishedAbsence: NO_CONTRACT_SECRETS_PLANE },
+    onRefusal: (error) => console.log(`[share-tier] ${error.name}: ${error.message}`),
+  });
+  // A RESOLUTION'S PROOF SEATS ON THE FLOOR (P27): the plugin CIDs one wiki's resolution proved count as references at their
+  // promote ledger's or offering board's tier, so the island's sequential plugin fetch reads them.
+  const provePlugins = <V extends { readonly ok: boolean; readonly proved?: PluginProof }>(wikiSlug: string, verdict: V): V => {
+    if (verdict.ok && verdict.proved) shareFloor.provePlugins(wikiSlug, { board: crossroadsOfferingsHandle?.documentId ?? null, ...verdict.proved });
+    return verdict;
+  };
   const repo = new Repo({
     storage: sealedRest.store,
     // The verdict seats on announce AND access (the announce-only lie the node measured in
@@ -718,8 +756,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       gate: () => siblingGate,
       // THE DYAD'S SHADOW (kapae#/reach): a sibling whose device the fleet root set aside reaches nothing.
       aside: (peerId) => siblingAside(peerId),
-    }),
+    }, shareFloor.tiers, { house: { has: (peerId) => houseIslands.has(peerId) }, grant: () => faceGrantRing }),
   });
+  shareRepo = repo;
+  houseIslands = islandPeersOf(repo);
   held.stood.push({ what: "repo", down: () => { sealedRest.store.endHydration(); return repo.shutdown(); } });
   // R2's booking, by the change's own writer (T4): a change this replica made books the vessel's unlocked session while
   // it stands, and a peer's change books its peer writer and rests as received under that session.
@@ -1020,6 +1060,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   const { ownHearth } = crossing;
   // The canon documents the admit named. The own-hearth gate opens exactly these, and this vessel's own oracle
   // replica points at them; the oracle plane itself stays behind the gate.
+  publicTierGate = new DeterministicFederationGate(nexusPubkey);
   const { hearthCanon } = crossing;
   // The oracle doc as this boot holds it: the recipe reader reads a system wiki's default recipe off it. Null
   // until genesis loads.
@@ -1310,6 +1351,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         // by the seed-derived inventory (the browser face of the node mirrorGenesisCasFs). Once in OPFS they
         // persist (write-once-read-many), so later/replica boots need no separate inventory file.
         const casManifest = genesisSeed ? genesisCasManifestFromSeed(genesisSeed) : undefined;
+        publicGenesisCids = new Set(casManifest?.blobs.map(({ cid }) => cid) ?? []);
         const casCids = casManifest
           ? casManifest.blobs.map(({ cid }) => cid)
           : genesisCasCidsFromOracle(islandHandle.doc()!);
@@ -1665,13 +1707,13 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // assumed past it.
       crossroadsOfferingsHandle ??= await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
       const resolveDaemonPlugins = async () => {
-        const daemonPluginResolution = await resolveBrowserIslandPluginCids({
+        const daemonPluginResolution = provePlugins("daemon", await resolveBrowserIslandPluginCids({
           islandBlobs: assembly.islandHandle.doc()?.blobs,
           recipe: { wikiSlug: "daemon" },
           lookup: browserOfferingLookup(crossroadsOfferingsHandle!.doc()),
           promoted: (slug) => promoteWiringRef ? promoteWiringRef.boot.promotedFor(slug) : Promise.resolve([]),
           onPromotedVoided: (wiki, digests) => console.warn(`[promote] ${wiki}: promoted digest(s) ${digests.join(", ")} failed the local byte check and were dropped from the plugin union`),
-        });
+        }));
         if (!daemonPluginResolution.ok) throw new Error(`[openBrowserVessel] the daemon island's plugin resolution refused: ${daemonPluginResolution.error}`);
         return daemonPluginResolution.pluginCids;
       };
@@ -1715,6 +1757,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // open and a joined face's Nexus session stands; its dispose IS the lock: both leave the record and the session's
       // signer drops. A vessel at its floor carries neither, and its island's `session:sign` answers `signer-unavailable`.
       const islandFloor = await composeVessel(islandFloorStack({
+        tiers: shareFloor.tiers, documentsForCid: shareFloor.documentsForCid,
         receipt: browserIslandReceipt(repo),
         cas: readCasBlobFromOpfs,
         docStore: (port) => docStorePort.attach(port),
@@ -1722,6 +1765,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         restsSealed: (documentId) => sealedRest.restsSealed(documentId),
       }));
       const islandVessel = larVesselOf(islandFloor);
+      poolCaps = islandVessel.record;
       const islandCaps = islandVessel.record;
       held.stood.push({ what: "the island's floor", down: () => islandFloor.dispose() });
       // The lift's lock-and-flush, once a lift stands: the stand-down runs it again ahead of the daemon worker (P2-3).
@@ -1849,9 +1893,11 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           deviceAside: (vesselKey) => !fleetShadows || fleetShadows.frontier.status !== "known" || fleetShadows.readings.get(deviceEdgeId(fleetShadows.root, vesselKey))?.stands === true,
         });
         if (fedGate && ringRelay) fedGate = ring.compose(fedGate);
+        faceGrantRing = ring;
         // THE FLEET'S EDGE BOARD rides the sibling lane beside the public boards, so the root's raise reaches every
         // device; this leaf read it before its island booted (above) and re-reads it whenever it changes.
         const fleetBoardUrl = fleetEdgeBoardDocUrl(ringRoot);
+        fleetBoardDoc = documentIdOfUrl(fleetBoardUrl);
         siblingGate = ring.composeSiblings(new DeterministicFederationGate(nexusPubkey, [fleetBoardUrl]));
       }
 
@@ -2125,11 +2171,19 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     },
 
     makePool: (_a, assembly) => {
+      if (!poolCaps) throw new Error("cas-unavailable: the island floor has not composed");
       // R4 — TWO WIKIS IN ONE VESSEL: each mount resolves its OWN recipe's plugin-offerings
       // through the selector + OPFS CAS (`resolveBrowserIslandPluginCids`), never one vessel-wide
       // floor. The Crossroads board materializes once (lazily,
       // shared with the daemon VM's own resolution above) and is read fresh per mount.
       vmManager = new BrowserVesselIslandPool({
+        caps: poolCaps,
+        audienceForIsland: makeIslandAudienceReader({
+          ownFacePlane: () => portFaceId
+            ? tiddlerText(ownEntry(catalogHandle.doc()?.tiddlers, personaBagIdFor(portFaceId))) || null : null,
+          recipePlane: (slug) => effectiveRecipe(slug, (plane, title) =>
+            ownEntry((plane === "oracle" ? assembly.islandHandle : catalogHandle).doc()?.tiddlers, title))?.plane ?? null,
+        }),
         mainRepo: repo,
         // D4 lends the actor grant; this vessel opens a read-only port until then.
         portPolicy: opts.portPolicy ?? ((binding, islandKey) => pagePortGrant({ binding, islandKey, faceId: portFaceId, daemonKey: DAEMON_SURFACE_ID })),
@@ -2137,13 +2191,13 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         ...(opts.onRest ? { onRest: opts.onRest } : {}),
         resolvePluginCids: async (recipe) => {
           crossroadsOfferingsHandle ??= await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
-          return resolveBrowserIslandPluginCids({
+          return provePlugins(recipe.wikiSlug, await resolveBrowserIslandPluginCids({
             islandBlobs: assembly.islandHandle.doc()?.blobs,
             recipe,
             lookup: browserOfferingLookup(crossroadsOfferingsHandle.doc()),
             promoted: (slug) => promoteWiringRef ? promoteWiringRef.boot.promotedFor(slug) : Promise.resolve([]),
             onPromotedVoided: (wiki, digests) => console.warn(`[promote] ${wiki}: promoted digest(s) ${digests.join(", ")} failed the local byte check and were dropped from the plugin union`),
-          });
+          }));
         },
         onWorkerEvent: (_id, msg) => {
           // The camera's traffic reaches here the way an `event` does. A frame paints ONLY from the ACTIVE surface:
@@ -2354,7 +2408,28 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
  * A SIBLING — a peer the sibling channel proved — never reads as a house member: `siblings` hands it to the
  * sibling gate, the ring's sibling path, and nothing else reaches it.
  */
-export function browserShareConfig(relayPeers: ReadonlySet<string>, fedGateOf: () => FederationGate | null, siblings?: SiblingShare | null) {
+export function browserShareConfig(relayPeers: ReadonlySet<string>, fedGateOf: () => FederationGate | null, siblings: SiblingShare | null, tiers: ShareBoundary,
+  proof: BrowserAudienceProof) {
   // `siblings.aside` carries the dyad's shadow: mesh's one law reads it ahead of the sibling gate.
-  return shareConfigOf((peerId, documentId) => federationShareDecision(relayPeers, fedGateOf(), peerId, documentId, siblings ?? null));
+  return shareConfigOf(async (peerId, documentId) => {
+    const gate = fedGateOf();
+    const relay = relayPeers.has(peerId);
+    const grant = relay && gate !== null && documentId ? proof.grant() : null;
+    // THE AUDIENCE IS PROVEN, NEVER DEFAULTED (P27): a sibling the channel proved, a relay the face-grant ring admits, a
+    // relay behind its armed gate, or an island this vessel attached. An unclassified peer and a relay with no gate armed
+    // prove nothing, and the predicate refuses them by name.
+    const audience = peerShareAudience({
+      sibling: Boolean(siblings?.isSibling(peerId)), relay, gateArmed: gate !== null,
+      grantAdmits: grant !== null && documentId !== undefined && await grant.admitsPeer(documentId, peerId as PeerId),
+      houseIsland: proof.house.has(peerId),
+    });
+    const base = await federationShareDecision(relayPeers, gate, peerId, documentId, siblings);
+    return tiers.allows(base, documentId, audience, audience !== undefined && audience !== "in-process");
+  });
+}
+
+/** What proves a browser peer's audience: the house's own island arrivals, and the face-grant ring once it stands. */
+export interface BrowserAudienceProof {
+  readonly house: { has(peerId: string): boolean };
+  readonly grant: () => { admitsPeer(documentId: DocumentId, peerId: PeerId): Promise<boolean> } | null;
 }

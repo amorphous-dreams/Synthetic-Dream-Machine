@@ -1,3 +1,4 @@
+import { publicShareTiers } from "../../lararium-mesh/tests/public-share-fixture.js";
 /**
  * kahu-canon-guard — THE KAHU CANON IS CLASSED BY DOCUMENT IDENTITY AND DECIDED LIVE, by one guard at the head of the share
  * verdict (road `P26`; controller design ruling 2026-10-31 after Sol's revision read).
@@ -51,7 +52,7 @@ const open: FederationGate = { mayFederate: async () => true };
 /** One verdict as the composer asks it, the guard seated where the composer seats it. */
 const verdict = (o: { guard: Guard | null; sessionFace?: FederationGate; fed?: FederationGate; peerClass: "same-operator" | "contracted"; documentId: string }) =>
   selfSlotShareDecision({
-    hasWsSocket: true, peerClass: o.peerClass, selfSlotFedGate: o.fed ?? null, antigenRing: NO_BANS, membership: null, planeSeal: null,
+    tiers: publicShareTiers, hasWsSocket: true, peerClass: o.peerClass, selfSlotFedGate: o.fed ?? null, antigenRing: NO_BANS, membership: null, planeSeal: null,
     peerId: "peer", documentId: o.documentId as DocumentId, sessionFace: o.sessionFace ?? null,
     ...({ protectedDocs: o.guard } as object),
     shadow: NOBODY_ASIDE,

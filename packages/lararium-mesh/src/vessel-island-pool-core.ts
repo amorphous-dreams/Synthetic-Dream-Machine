@@ -1,3 +1,4 @@
+import type { IslandAudienceContext } from "./vessel-host.js";
 /**
  * VesselIslandPoolCore — the one platform-blind island pool.
  *
@@ -305,7 +306,7 @@ export interface VesselIslandPoolCoreOptions {
    * scoped view decides each content read, and this reader then answers it. Absent, a surface's island
    * draws `content-store-absent` for every address.
    */
-  readContent?: (cid: string) => Uint8Array | null | Promise<Uint8Array | null>;
+  readContent?: (cid: string, island: IslandAudienceContext) => Uint8Array | null | Promise<Uint8Array | null>;
   /** Override the mount silence budget in ms (tests). */
   mountSilenceMs?: number;
   /** Override the mount progress-stall budget in ms (default 3x silence). */
@@ -712,8 +713,13 @@ export class VesselIslandPoolCore {
     }
 
     // A session's island spawns without the vessel's own doors: its view answers what it may ask.
-    const worker = this._host.spawnWorker(plan.surface ? { session: true } : undefined);
-    this._wireWorkerListeners(wikiId, worker, view, standing, plan.surface?.parts ?? null);
+    const audienceContext: IslandAudienceContext = {
+      wikiId: plan.surface?.parts.wikiId ?? wikiId,
+      wikiSlug: plan.recipe.wikiSlug,
+      facePlaneId: plan.surface?.parts.facePlaneId ?? null,
+    };
+    const worker = this._host.spawnWorker({ ...audienceContext, ...(plan.surface ? { session: true } : {}) });
+    this._wireWorkerListeners(wikiId, worker, view, standing, plan.surface?.parts ?? null, audienceContext);
 
     // Disk-mirror = designation ∩ grant: the recipe (synced) DESIGNATES bags;
     // this pool's held grant names which it MAY write. A browser pool's empty
@@ -1078,14 +1084,19 @@ export class VesselIslandPoolCore {
 
   /** One content ask: the view decides first, and only an address it passes ever reaches the store. */
   private async _answerContent(
-    ask: IslandMsg_ViewContent, view: SessionDocumentView | null,
+    ask: IslandMsg_ViewContent, view: SessionDocumentView | null, island: IslandAudienceContext,
   ): Promise<{ bytes: Uint8Array | null; refusal?: string }> {
     if (!view) return { bytes: null, refusal: "view-absent" };
     const verdict = view.content(ask.cid);
     if (!verdict.ok) return { bytes: null, refusal: verdict.refusal };
     if (!this._readContent) return { bytes: null, refusal: "content-store-absent" };
     let bytes: Uint8Array | null = null;
-    try { bytes = await this._readContent(ask.cid); } catch { bytes = null; }
+    try { bytes = await this._readContent(ask.cid, island); }
+    catch (error) {
+      const refusal = error && typeof error === "object" && "reason" in error ? String(error.reason)
+        : error instanceof Error ? error.message : String(error);
+      return { bytes: null, refusal };
+    }
     // The view may close while the store reads: a closed view answers nothing.
     if (view.closed) return { bytes: null, refusal: "view-closed" };
     // CONTENT ANSWERS TO ITS ADDRESS. Bytes that fail to recompute to the address they were asked under never
@@ -1095,7 +1106,7 @@ export class VesselIslandPoolCore {
 
 
   private _wireWorkerListeners(
-    wikiId: string, worker: VesselWorkerHandle, view: SessionDocumentView | null, standing: SurfaceStanding, surface: IslandKeyParts | null,
+    wikiId: string, worker: VesselWorkerHandle, view: SessionDocumentView | null, standing: SurfaceStanding, surface: IslandKeyParts | null, audienceContext: IslandAudienceContext,
   ): void {
     const settlement = receiptSettlement(() => { try { worker.post({ type: "receipt:close" }); } catch { /* the worker already left */ } });
     worker.listen((raw: unknown) => {
@@ -1164,7 +1175,7 @@ export class VesselIslandPoolCore {
       if (raw.type === "view:content") {
         const ask = raw as IslandMsg_ViewContent;
         if (typeof ask.requestId !== "string") return;
-        void this._answerContent(ask, view).then((answer) => {
+        void this._answerContent(ask, view, audienceContext).then((answer) => {
           try { worker.post({ type: "view:content-result", requestId: ask.requestId, ...answer }); }
           catch { /* the island went away: nothing to answer */ }
         });

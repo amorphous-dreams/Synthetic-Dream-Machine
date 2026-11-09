@@ -37,7 +37,7 @@ describe("VesselIslandPool — mount intensity cap", () => {
   });
 
   test("a silent island times out on the silence budget; repeats hit the cap fast", async () => {
-    pool = new VesselIslandPool({ caps: {},
+    pool = new VesselIslandPool({ audienceForIsland: () => "world", caps: {},
       workerScriptUrl:      SILENT_FIXTURE_URL,
       mountSilenceMs:       200,
       maxMountFailures:     2,
@@ -58,7 +58,7 @@ describe("VesselIslandPool — mount intensity cap", () => {
   }, 15_000);
 
   test("the cap holds past any clock window: it clears on a success or the operator's remount, never on elapsed time", async () => {
-    pool = new VesselIslandPool({ caps: {},
+    pool = new VesselIslandPool({ audienceForIsland: () => "world", caps: {},
       workerScriptUrl:   SILENT_FIXTURE_URL,
       mountSilenceMs:    200,
       maxMountFailures:  1,
@@ -78,7 +78,7 @@ describe("VesselIslandPool — mount intensity cap", () => {
   }, 15_000);
 
   test("a successful mount clears the failure history", async () => {
-    pool = new VesselIslandPool({ caps: {},
+    pool = new VesselIslandPool({ audienceForIsland: () => "world", caps: {},
       workerScriptUrl:      ECHO_FIXTURE_URL,
       maxMountFailures:     1,
       resolvePluginCids:    NO_OFFERINGS,

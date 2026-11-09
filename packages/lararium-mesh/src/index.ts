@@ -207,12 +207,21 @@ export {
   RENEW_ELAPSED, WARN_ELAPSED, URGENT_ELAPSED,
 } from "./cert-expiry-gauge.js";
 // The bag's sharing-posture as SELF-DESCRIBING DATA — the 4-tier total order + the tighten-only keystone.
-export type { CapTier, TierFloorSource, DeclaredTierSource, CapTierRing } from "./cap-tier.js";
+export type { CapTier, TierFloorSource, TierFloorReading, TierFloorReadings, DeclaredTierSource, CapTierRing } from "./cap-tier.js";
 export {
   CAP_TIER_ORDER, DEFAULT_CAP_TIER, capTierRank, parseCapTier, meetCapTier, resolveTier,
   refineBagTierWithTiddlers, mayDeclareTier, mayDeclassify, structuralFloorFor, resolveTierForDoc,
-  tierPermitsRelayPeer, makeTierFloorSource,
+  tierPermitsRelayPeer, makeTierFloorSource, FloorReadingAbsent, SECRETS_READING_REQUIRED,
 } from "./cap-tier.js";
+// The secrets registry: the face's secrets planes, read off its sealed catalog, refusing by name until it reads.
+export type { ContractSecretsPlane, FaceSecretsCatalog, SecretsRegistry, SecretsRegistryReading, SecretsRegistryReason } from "./secrets-registry.js";
+export {
+  NO_CONTRACT_SECRETS_PLANE, SECRETS_REGISTRY_ROW, SECRETS_REGISTRY_KIND, SECRETS_PLANE_KIND, SECRETS_REGISTRY_VERSION,
+  SecretsRegistryRefusal, secretsPlaneRow, makeFaceSecretsRegistry, faceScopedSecrets, secretsDoorsIn,
+} from "./secrets-registry.js";
+// The one tighten predicate every allowing return passes through, and the declared tier read off bag manifests.
+export type { ShareAudience, ShareBoundary, DocBagBinding, ManifestTierReaders, DeclaredTierReason } from "./share-tighten.js";
+export { audiencePermits, tightenShare, makeShareBoundary, makeManifestTierSource, peerShareAudience, DeclaredTierRefusal } from "./share-tighten.js";
 // The cad ENCRYPT-ON-CAS primitive — cid = BLAKE3(ciphertext), verify-cap ⊥ read-cap.
 export {
   ciphertextCid, verifyCiphertextCid, sealPrivateBody, openPrivateBody,
@@ -290,12 +299,12 @@ export type { Repo, DocHandle, AutomergeUrl, StorageAdapterInterface } from "@au
 export { RECIPE_PLANES, effectiveRecipe, recipeRecordStands } from "./recipe-planes.js";
 export type { EffectiveRecipe, RecipePlane } from "./recipe-planes.js";
 export { resolveRecipePluginCids, deriveWikiRecipe, wikiSlugOfBag } from "./surface-recipe.js";
-export type { WikiRecipeDerivation } from "./surface-recipe.js";
+export type { WikiRecipeDerivation, PluginProof } from "./surface-recipe.js";
 export { makeIslandRepo, attachMessageChannelSync, replicaHeads, islandPeersOf, markIslandArrival } from "./island-repo.js";
 export { peerArrivals, type PeerArrival, type PeerArrivals } from "./peer-arrivals.js";
 export { answerReceiptWithHeads, RECEIPT_STALL_ROUNDS } from "./receipt-with-heads.js";
 export type { CapabilityRecord, ReceiptIssuer, CasFetcher, DyadReader, CustodyWriter, SessionSignDoor } from "./capability-record.js";
-export { answerReceipt, answerDyad, answerCustodyWrite, answerSessionSign, answerRestAsk, answerIslandAsks, receiptSettlement, RECORD_ASKS } from "./capability-record.js";
+export { answerReceipt, answerDyad, answerCustodyWrite, answerSessionSign, answerRestAsk, answerIslandAsks, answerCas, vesselCasAsker, receiptSettlement, RECORD_ASKS } from "./capability-record.js";
 export { SessionSignBook, standingSessionSeat, type BookedSession, type BookedSessionSigner } from "./session-sign-book.js";
 export { GatedSyncLeg, oneWayDocumentsGate, carriesPrototypeKeyReason } from "./gated-sync-leg.js";
 export { shoreInbound, shoreStorage, syncMessagePrototypeKey, chunkPrototypeKey, docPrototypeKeyFault, assertNoPrototypeKeys, type PrototypeKeyRefusal } from "./prototype-key-shore.js";
@@ -304,7 +313,7 @@ export type { IslandRepoConfig } from "./island-repo.js";
 export { assembleVessel, mountWikiSlot } from "./open-vessel-core.js";
 export type { VesselKeel, VesselBootstrap, VesselCoreAssembly, MountManifest, MountEntry } from "./open-vessel-core.js";
 export { awaitIslandMsg } from "./vessel-host.js";
-export type { AwaitIslandMsgOpts, VesselWorkerHandle, VesselIslandHost } from "./vessel-host.js";
+export type { AwaitIslandMsgOpts, VesselWorkerHandle, VesselIslandHost, IslandAudienceContext } from "./vessel-host.js";
 export { VesselIslandPoolCore } from "./vessel-island-pool-core.js";
 export { makeWikiActivationCap } from "./wiki-activation.js";
 export type { WikiActivationCap, WikiActivationGrant, ActivationResidency, ActivationPool, ResolveWikiSpec, WikiActivationResult, WikiSpecResolution } from "./wiki-activation.js";
@@ -665,3 +674,7 @@ export * from "./promote-panel-api.js";
 
 
 export * from "./promote-main-verbs.js";
+
+export * from "./held-share-floor.js";
+
+export { makeIslandAudienceReader } from "./island-audience.js";

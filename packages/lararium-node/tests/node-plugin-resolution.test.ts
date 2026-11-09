@@ -194,7 +194,9 @@ describe("★ M1 — the node resolver, driven over a real fs CAS and a real Cro
     // rebuild that drops every field but wikiSlug (and so every wiki's offerings) still calls the
     // SAME function, so only reading what's handed to it — not merely that it was called — proves
     // the regression stays caught here.
-    const poolHookBody = /resolvePluginCids:\s*\(recipe\)\s*=>\s*resolveNodeIslandPluginCids\(\{[\s\S]{0,900}?\}\)/.exec(src);
+    // P27: each verdict passes through `provenPlugins(<slug>, …)`, which seats the resolution's proof on the share floor.
+    const poolHookBody = /resolvePluginCids:\s*\(recipe\)\s*=>\s*provenPlugins\(recipe\.wikiSlug,\s*resolveNodeIslandPluginCids\(\{[\s\S]{0,900}?\}\)\)/.exec(src);
+    expect(/resolvePlugins:\s*\(\)\s*=>\s*provenPlugins\("daemon",\s*resolveNodeIslandPluginCids\(/.test(src), "the daemon's resolution seats its proof").toBe(true);
     expect(importsFromModule, "open-node-vessel.ts must import resolveNodeIslandPluginCids from node-plugin-resolution.js").toBe(true);
     expect(daemonCallSite, "the daemon VM boot must call resolveNodeIslandPluginCids").not.toBeNull();
     expect(poolHookBody, "the island pool's resolvePluginCids hook must call resolveNodeIslandPluginCids").not.toBeNull();
