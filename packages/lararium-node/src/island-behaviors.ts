@@ -10,7 +10,8 @@
  * Meme: lar:///ha.ka.ba/lararium/node/island-behaviors
  */
 
-import { mkWikiVerbResult } from "@lararium/mesh";
+import { resolve as resolvePath, sep } from "node:path";
+import { mkWikiVerbResult, wikiSlotUri } from "@lararium/mesh";
 import type { IslandMsg_Manifest, WikiMsg_PlaceVerb } from "@lararium/mesh";
 import type { VesselJournal } from "@lararium/mesh";
 import { exportCarrierFile, exportRecordCarrierFile, makeWikiBehavior, hasWikiSensorium, makeTw5Deserializer, canonicalizeNativeCarrierText, wikiLandedCovers, bindRecoveryAtRest } from "@lararium/tw5";
@@ -21,8 +22,10 @@ import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
 import { LarDiskProjector } from "./disk-projector.js";
 import { namedBagMirror } from "./bag-paths.js";
 import { mountDaemonObserve } from "./daemon-observe.js";
-import { SyncedTree, syncedTreeDir } from "./synced-tree.js";
-import { larProjectionCheckpointDir } from "./vessel-paths.js";
+import { SyncedTree, syncedTreeDir, syncedTreeKey } from "./synced-tree.js";
+import { larProjectionCheckpointDir, larProjectionsHome } from "./vessel-paths.js";
+import { readBackTempCarriers, TempLayerHousekeeper } from "./temp-layer.js";
+import { loadLaresConfig, tempExpiryDays, tempProjectionConsented } from "./lares-config.js";
 import { SHORE_VERB, answerShore } from "./shore-verb.js";
 import { bagProjectedEvent } from "./journal-append-gate.js";
 
@@ -123,9 +126,32 @@ export function mountDiskProjection(
   });
   const mirrorDefs = allDefs.filter((def) => def.mirrorClass !== "observe");
   if (!mirrorDefs.length) return async () => { for (const o of observes) o.stop(); };
-  const mirrors = mirrorDefs.map(({ bagId, mirrorRoot, scope, guardNexusHandles, titlePaths, mirrorClass }) =>
-    namedBagMirror(bagId, scope, mirrorRoot, guardNexusHandles, titlePaths, mirrorClass),
+  // THE USER TEMP LAYER stands only for this island's own wiki and only under `<root>/projections`: any other temp grant
+  // drops here, before the projector learns of it.
+  const tempSlug = manifest.recipe?.wikiSlug ?? "";
+  const tempDefs = mirrorDefs.filter((def) => def.tempLayer);
+  const projectionsRoot = tempDefs.length === 0 ? null : (() => { try { return resolvePath(larProjectionsHome()); } catch { return null; } })();
+  const tempMirrors = tempDefs.filter((def) =>
+    tempSlug !== "" && def.bagId === wikiSlotUri(tempSlug, "temp") && projectionsRoot !== null && resolvePath(def.mirrorRoot).startsWith(projectionsRoot + sep)
+    && ctx.composite.storeForBag(def.bagId) !== null);
+  const mirrors = mirrorDefs.filter((def) => !def.tempLayer || tempMirrors.includes(def)).map(({ bagId, mirrorRoot, scope, guardNexusHandles, titlePaths, mirrorClass, tempLayer }) =>
+    namedBagMirror(bagId, scope, mirrorRoot, guardNexusHandles, titlePaths, mirrorClass, tempLayer),
   );
+  // READ-BACK AHEAD OF THE FIRST PASS: the temp layer comes up empty at every restart, so each carrier its mirror holds
+  // re-enters the layer's store before the projector starts; the start scan then finds every record standing, and no
+  // carrier reads as dropped (`temp-layer.ts`).
+  for (const def of tempMirrors) {
+    const store = ctx.composite.storeForBag(def.bagId)!;
+    const holds = (title: string): boolean => {
+      const record = (store as { readNow?: (t: string) => { record: { meta?: { deleted?: boolean } } | null } }).readNow?.(title)?.record;
+      return record !== null && record !== undefined && record.meta?.deleted !== true;
+    };
+    const read = readBackTempCarriers({
+      mirrorRoot: def.mirrorRoot, projectionsRoot: projectionsRoot!, holds,
+      put: (fields) => { void store.put({ tiddler: fields }, { kind: "operator-import", sessionId: "temp-read-back" }); },
+    });
+    if (read.read > 0 || read.refused > 0) console.log(`[temp-layer] ${tempSlug}: ${read.read} carrier(s) read back, ${read.refused} refused`);
+  }
   // The Synced tree (Confluence merge base) sits at the INSTANCE ROOT (the dir
   // holding bags/) under .lararium-projection/ — observation state,
   // never a meme surface, never inside bags/; the ingest gate reads the
@@ -231,7 +257,28 @@ export function mountDiskProjection(
   const stop = projector.start(ctx.tw5);
   mountedProjector = projector;
   bindRecoveryAtRest(ctx.tw5, (bag, title, fields) => projector.recoveryAtRest(bag, title, fields));
+  // HOUSEKEEPING per temp mirror: once the first pass settles, then once a day; each run reads the consent row and the
+  // expiry window afresh from `<root>/config/config.json`.
+  const housekeepers = tempMirrors.map((def) => {
+    const store = ctx.composite.storeForBag(def.bagId)!;
+    return new TempLayerHousekeeper({
+      bagId: def.bagId, slug: tempSlug, mirrorRoot: def.mirrorRoot, projectionsRoot: projectionsRoot!,
+      policy: () => { const cfg = loadLaresConfig(); return { consent: tempProjectionConsented(cfg, tempSlug), expiryDays: tempExpiryDays(cfg, tempSlug) }; },
+      record: async (title) => {
+        const record = await store.get(title);
+        return record === null ? "absent" : record.meta?.deleted ? "gone" : "live";
+      },
+      lastWritten: (title, path) => { syncedTree.reread(syncedTreeKey(def.bagId, title)); return syncedTree.baseAt(syncedTreeKey(def.bagId, title), path)?.disk ?? null; },
+      forget: (title, path) => syncedTree.deleteAt(syncedTreeKey(def.bagId, title), path),
+      holdsOpen: (title) => projector.writing.has(title)
+        || projector.pendingRemovals().some((p) => p.bagId === def.bagId && p.uri === title)
+        || projector.standing().some((st) => st.bagId === def.bagId && st.uri === title),
+      onError: (err) => console.error(`[temp-layer] ${tempSlug}: housekeeping skipped: ${(err as Error).message}`),
+    });
+  });
+  if (housekeepers.length > 0) void projector.idle().then(() => { for (const h of housekeepers) h.start(); });
   return async () => {
+    for (const h of housekeepers) await h.stop();
     for (const o of observes) o.stop();
     bindRecoveryAtRest(ctx.tw5, null);
     if (mountedProjector === projector) mountedProjector = null;
