@@ -50,10 +50,10 @@ rite = "\n".join(r.read_text() for r in RITES)
 cmds = {m.group(1) for m in re.finditer(
     r'(?m)^\s*lares ((?:[a-z][a-z0-9-]*)(?: [a-z][a-z0-9-]*)?)', rite)}
 
-# A rite that walks the container instructs through the HOST SHIM. The shim keeps three verbs of its
-# own (the engine's: up, down, logs), spells the founding act `found`, and hands every other word to
+# A rite that walks the container instructs through the HOST SHIM. The shim keeps four verbs of its
+# own (the engine's: up, down, logs, build), spells the founding act `found`, and hands every other word to
 # the CLI. So a shim line claims a CLI door exactly as a bare `lares` line does.
-SHIM_OWN = {"up", "down", "logs"}
+SHIM_OWN = {"up", "down", "logs", "build"}
 for m in re.finditer(
         r'(?m)^\s*tools/lares-container\.(?:sh|ps1) ((?:[a-z][a-z0-9-]*)(?: [a-z][a-z0-9-]*)?)', rite):
     words = m.group(1).split()

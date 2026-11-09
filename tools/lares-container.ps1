@@ -1,6 +1,8 @@
 # lares-container — the HOST shim for the surface vessel (docker-compose.surface.yml), PowerShell form.
 # Same contract as tools/lares-container.sh: up [--capture <dir>]...  down [compose-down args]  found [vessel-found args]  logs
-# vessel stand  <lares verb…>. The CLI runs by exec while a vessel stands and through the offline door while none
+# build [compose-build args]  vessel stand  <lares verb…>. `build` rebuilds the vessel image (every package the
+# vessel runs) from the committed checkout, through the env file, stamping HEAD as its revision label; a dirty checkout,
+# or none, refuses by name. The CLI runs by exec while a vessel stands and through the offline door while none
 # stands. The host holds the engine: the shim reads the CLI's standing verdict after a verb and restarts the vessel
 # itself when the verdict reads `restand`. The app gets no docker socket.
 # LARES_HOUSE / LARES_WORKSPACE come from the environment or the operator's `~/.lares/lares-surface.env` (outside every
@@ -124,9 +126,9 @@ function WarnImageRevision {
   $named = if ($label) { $label } else { 'none' }
   if ($label -eq $rev) { return }
   if ($script:GitDirty) {
-    [Console]::Error.WriteLine("lares-container: the image names revision $named and the checkout holds uncommitted changes; commit first, then rebuild with ``" + '$env:GIT_REV = (git rev-parse HEAD); docker compose -f "' + $ComposeFile + '" build lares' + "`` and ``up`` again")
+    [Console]::Error.WriteLine("lares-container: the image names revision $named and the checkout holds uncommitted changes; commit first, then rebuild with ``tools/lares-container.ps1 build`` and ``up`` again")
   } else {
-    [Console]::Error.WriteLine("lares-container: the image names revision $named and the checkout stands at $rev; rebuild with ``" + "`$env:GIT_REV='$rev'; docker compose -f `"$ComposeFile`" build lares" + "``, then ``up`` again")
+    [Console]::Error.WriteLine("lares-container: the image names revision $named and the checkout stands at $rev; rebuild with ``tools/lares-container.ps1 build``, then ``up`` again")
   }
 }
 
@@ -223,7 +225,7 @@ $script:Tty = (-not [Console]::IsInputRedirected) -and (-not [Console]::IsOutput
 $Tty = $script:Tty
 $NoTty = if ($Tty) { @() } else { @('-T') }
 
-if ($args.Count -eq 0) { Die 'usage: lares-container.ps1 up|down|found|logs|vessel stand|<lares verb…>' }
+if ($args.Count -eq 0) { Die 'usage: lares-container.ps1 up|down|found|logs|build|vessel stand|<lares verb…> (build rebuilds the vessel image, every package, from the committed checkout)' }
 $verb = [string]$args[0]
 $rest = @(); if ($args.Count -gt 1) { $rest = @($args[1..($args.Count - 1)]) }
 
@@ -270,6 +272,16 @@ switch ($verb) {
     Compose (@('down', '--remove-orphans') + $rest)
   }
   'logs'  { Compose (@('logs') + $rest + @('lares')) }
+  'build' {
+    # THE IMAGE BUILDS THROUGH THE SHIM: compose reads the env file, and the revision label names the commit the
+    # checkout stands at. A dirty checkout refuses (commit first), and so does a shim outside any checkout.
+    ResolveGitRev
+    if (-not $script:GitRev) { Die "build refuses: no git checkout answers at $PSScriptRoot, so the image's revision label would name no commit; build from a checkout" }
+    if ($script:GitDirty) { Die "build refuses: the checkout holds uncommitted tracked changes, so the image's revision label ($($script:GitRev)) would name no real commit; commit first, then run build again" }
+    [Console]::Error.WriteLine("lares-container: rebuilding the vessel image (every package) from the committed checkout at $($script:GitRev)")
+    Compose (@('build') + $rest + @('lares'))
+    [Console]::Error.WriteLine("lares-container: the vessel image stands rebuilt, stamped revision $($script:GitRev); ``up`` stands it")
+  }
   'found' {
     EnsureHouse
     Compose (@('--profile', 'offline', 'run', '--rm') + $NoTty + @('offline', 'vessel', 'found', '--skip-build', '--root', '/lar', '--genesis', '/app/genesis') + $rest)

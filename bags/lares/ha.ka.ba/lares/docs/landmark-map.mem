@@ -34,7 +34,7 @@ The operator split the hearth in two (2026-11-07: //"Pono, approve the dogfood/k
 ''The proof set'' (lane `dogfood-proof`, landed, PR #204; existing suites first, one entry point `pnpm test:e2e:dogfood`, one CI shard): the stand through the kahua founding stage (`kahua-founding-stage`); memory surviving a content-keyed re-stand (`dogfood-memory-restand`, with `L9`'s `stageRowTitle`, so a re-pour after a re-found lands the same tiddlers); the MCP seat's write reaching its projected file (`mcp-seat-binds-the-hearth`); the outbound bridge on journal events; and the container's compose root, shim and founding-seat tests.
 
 ''The route.''
-# ''Ready state.'' Every gate lane lands and the span reads green; a full `pnpm build` and the product image at the landed head follow (`GIT_REV=$(git rev-parse HEAD) docker compose -f docker-compose.surface.yml build lares`, its `org.opencontainers.image.revision` read back); then a check reads the live Lararium launching containerized, web3 and local-first.
+# ''Ready state.'' Every gate lane lands and the span reads green; a full `pnpm build` and the product image at the landed head follow (`tools/lares-container.sh build`, its `org.opencontainers.image.revision` read back); then a check reads the live Lararium launching containerized, web3 and local-first.
 # ''Homes.'' The house root rests outside every checkout and stays kept across re-stands (`LARES_HOUSE`, bound at `/lar`: hearth, sensoriums, projections, library and config); the workspace names the main repo (`LARES_WORKSPACE`), where live wiki and canon writes land as source-control write-back. A re-founding clears the hearth alone; a re-stand renames an old house root aside, never deletes it, and memory re-pours by content key.
 # ''The stand'', by the operator's hands on an attached TTY: `tools/lares-container.sh found --hearth --name '<label>' --chair '<chair>'` (the route and the cold-key card read-back on paper; `found --hearth` founds persona zero whole), then `up` (the live unlock), `vessel seed --apply --yes`, `vessel read`, `persona list --json`, `nexus seal show`, `meme list --recipe default --json`.
 # ''Read-backs.'' `<state>/wikis/kahua-<tag>` and `<state>/bags/kahua-<tag>` stand, and `bags/daemon` stands under the projections root alone, holding authored canon and no control record; the `lares` MCP seat connects to the standing daemon, and `meme_put` then `meme_get` round-trips one tiddler whose file lands in the projection.
@@ -133,6 +133,6 @@ Each needs a run, never another read: exact-candidate green (CI and held-out on 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;hmKTIQvHx0TLh1EDSLtTi8p7PqcSuRuYhRhHYFeV7XQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;s1PzAuCeAI6O7fH2cGbQ5re2Gc-olGGK95Mh9eCKWHc`>>
 
 <<^ code=`&#x0004;` to=`?`>>
