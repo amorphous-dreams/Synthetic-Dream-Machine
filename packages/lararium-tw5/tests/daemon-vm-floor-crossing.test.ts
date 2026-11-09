@@ -39,7 +39,7 @@ describe("the daemon VM floor crossing", () => {
       onManifestReplay: (factory) => { replayManifest = factory; },
     };
     const core = openDaemonVmCore(host, {
-      repo, daemonHandle, ownedDocument: { documentUrl: daemonHandle.url },
+      repo, daemonHandle, controlHandle: repo.create<LarDoc>(emptyLarDoc()), ownedDocument: { documentUrl: daemonHandle.url },
       recipe: { wikiSlug: "daemon" }, grants: { islandUrl: daemonHandle.url }, coreHash: null,
       workerScriptUrl: new URL("file:///unused-floor-island"), eaSilenceMs: 2 ** 30,
     });
@@ -84,7 +84,7 @@ test("face drop waits for the island acknowledgement", async () => {
     spawnWorker: () => ({ post: () => {}, listen: (fn) => { listeners.push(fn); return () => {}; }, onError: () => () => {}, terminate: () => {} }),
     newSyncChannel: () => { const { port1, port2 } = new MessageChannel(); ports.push(port1, port2); return { mainPort: port1 as IslandMsg_Manifest["syncPort"], syncPort: port2 as IslandMsg_Manifest["syncPort"] }; },
   };
-  const core = openDaemonVmCore(host, { repo, daemonHandle, recipe: { wikiSlug: "daemon" }, grants: { islandUrl: daemonHandle.url }, coreHash: null, workerScriptUrl: new URL("file:///unused"), eaSilenceMs: 2 ** 30 });
+  const core = openDaemonVmCore(host, { repo, daemonHandle, controlHandle: repo.create<LarDoc>(emptyLarDoc()), recipe: { wikiSlug: "daemon" }, grants: { islandUrl: daemonHandle.url }, coreHash: null, workerScriptUrl: new URL("file:///unused"), eaSilenceMs: 2 ** 30 });
   core.workerEa.catch(() => {});
   try {
     let settled = false;
@@ -103,7 +103,7 @@ test("a face change asked after the island ended rejects at once", async () => {
     spawnWorker: () => ({ post: () => {}, listen: () => () => {}, onError: () => () => {}, terminate: () => {} }),
     newSyncChannel: () => { const { port1, port2 } = new MessageChannel(); ports.push(port1, port2); return { mainPort: port1 as IslandMsg_Manifest["syncPort"], syncPort: port2 as IslandMsg_Manifest["syncPort"] }; },
   };
-  const core = openDaemonVmCore(host, { repo, daemonHandle, recipe: { wikiSlug: "daemon" }, grants: { islandUrl: daemonHandle.url }, coreHash: null, workerScriptUrl: new URL("file:///unused"), eaSilenceMs: 2 ** 30 });
+  const core = openDaemonVmCore(host, { repo, daemonHandle, controlHandle: repo.create<LarDoc>(emptyLarDoc()), recipe: { wikiSlug: "daemon" }, grants: { islandUrl: daemonHandle.url }, coreHash: null, workerScriptUrl: new URL("file:///unused"), eaSilenceMs: 2 ** 30 });
   core.workerEa.catch(() => {});
   try {
     core.dispose();
@@ -122,7 +122,7 @@ test.each(["dropped", "bags"] as const)("B2 — a face change under op %s settle
     spawnWorker: () => ({ post: () => {}, listen: (fn) => { listeners.push(fn); return () => {}; }, onError: () => () => {}, terminate: () => {} }),
     newSyncChannel: () => { const { port1, port2 } = new MessageChannel(); ports.push(port1, port2); return { mainPort: port1 as IslandMsg_Manifest["syncPort"], syncPort: port2 as IslandMsg_Manifest["syncPort"] }; },
   };
-  const core = openDaemonVmCore(host, { repo, daemonHandle, recipe: { wikiSlug: "daemon" }, grants: { islandUrl: daemonHandle.url }, coreHash: null, workerScriptUrl: new URL("file:///unused"), eaSilenceMs: 2 ** 30 });
+  const core = openDaemonVmCore(host, { repo, daemonHandle, controlHandle: repo.create<LarDoc>(emptyLarDoc()), recipe: { wikiSlug: "daemon" }, grants: { islandUrl: daemonHandle.url }, coreHash: null, workerScriptUrl: new URL("file:///unused"), eaSilenceMs: 2 ** 30 });
   core.workerEa.catch(() => {});
   try {
     let settled = false;

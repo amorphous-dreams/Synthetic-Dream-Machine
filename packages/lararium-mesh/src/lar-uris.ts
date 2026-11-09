@@ -86,7 +86,7 @@ export function stableTagUri(name: string): string {
 // URI — the reaction-router lifts them into a structured args payload the verse-event
 // carries (#48). A GENUINE dispatch also sets the `lares-dispatch` marker field; the
 // router fires a verb verse-event ONLY on a marked tiddler, so the verb machinery's own
-// lar:-titled writes (`…/verbs/<id>` invocations, `bags/daemon/outcomes/<id>` outcomes —
+// lar:-titled writes (`…/verbs/<id>` invocations, `bags/control/outcomes/<id>` outcomes —
 // which carry a `verb` field but never the marker) stay router-inert BY CONSTRUCTION,
 // and no dispatch loop can form. The VOLATILE namespace keeps the summon tiddler
 // reaction-routable (lar: prefix) yet unpersisted/unsynced (isVolatileVmUri → the
@@ -343,14 +343,16 @@ export function parseMeshScale(s: string | null | undefined): MeshScale | undefi
 
 // ── Daemon bag + Persona bag ─────────────────────────────────────────────────
 
-/** Daemon wiki bag id — the lararium's own central daemon `daemon` bag (one-recipe model).
- *  SOVEREIGN-per-vessel: this vessel's own control-plane, never shared across vessels. */
+/** The vessel's daemon document — `bags/daemon`, SOVEREIGN-per-vessel and never shared across vessels. It holds vessel
+ *  state (bindings, the bag-doc ledger, the active-wiki marker) and names the control document; it carries no canon role
+ *  (the daemon wiki's canon follows the worn face, `daemonFaceCanonBag`) and no mirror. */
 export const DAEMON_BAG_ID    = bagUri("daemon");
-/** Vessel-private homes: hosts address these documents by bag coordinate; pages never mount them. */
+/** Vessel-private homes: hosts address these documents by bag coordinate; pages never mount them. The control home rests
+ *  every control family (`control-home.ts`); no recipe composes it and no mirror names it. */
 export const CONTROL_HOME_ID = bagUri("control");
 export const SECRET_HOME_ID = bagUri("secret");
 
-/** The swarm's live controls (house cap, lane shares, go, lane state, roster, receipts) rest in the daemon wiki under this prefix. */
+/** The swarm's live controls (house cap, lane shares, go, lane state, roster, receipts) rest in the control document under this prefix. */
 export const SWARM_URI_PREFIX = "$:/lares/swarm/";
 
 /** True for a title that starts with `SWARM_URI_PREFIX` as spelled, or resolves under it through a dot segment. */

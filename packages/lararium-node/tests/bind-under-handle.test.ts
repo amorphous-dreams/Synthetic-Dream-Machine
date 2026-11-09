@@ -21,7 +21,7 @@ import {
   runDeviceAdmitEdge, runApplyAdmitPayload, packPersonaCrossing, replayCapEvents, readLeaseFrontier } from "@lararium/keyhive";
 import { seedDaemonDoc } from "@lararium/mesh";
 import {
-  CompositeStore, AutomergeDocStore, DAEMON_BAG_ID, hex, type LarDoc,
+  CompositeStore, AutomergeDocStore, DAEMON_BAG_ID, controlStoreOf, standControlHome, hex, type LarDoc,
   materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix,
   mintFaceAnchor,
 } from "@lararium/mesh";
@@ -50,8 +50,8 @@ async function bootOver(repo: Repo, daemonUrl: string, secretUrl: string, s: Uin
   const kelBoard = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(verifyingKey), "board:persona-kel");
   const chain = personaKelChainForPrefix(kelBoard.doc(), personaKelPrefix);
   if (!chain) throw new Error(`no persona-KEL chain for ${personaKelPrefix} on this vessel's board`);
-  // The lease frontier, by the SAME fold the daemon behaviour runs, over this vessel's OWN daemon layer.
-  const lease = await readLeaseFrontier(composite, pg.groupId);
+  // The lease frontier, by the SAME fold the daemon behaviour runs, over this vessel's OWN control document.
+  const lease = await readLeaseFrontier(controlStoreOf(await standControlHome(repo, handle)), pg.groupId);
   if (lease.kind !== "epoch") throw new Error(`fixture: lease frontier unavailable (${lease.why})`);
   return bootDaemonKeyhive({
     atomSeed: s, eventStore: new DaemonEventStore({ ...memorySecretStore(await repo.find(secretUrl as AutomergeUrl)), face: pg.groupId }),

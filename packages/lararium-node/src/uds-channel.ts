@@ -5,11 +5,10 @@
  * A co-located `lares` CLI never needed its own leaf replica + sync-on-connect (the
  * ~3s/command tax) — it only needs to hand the daemon a capability-bearing
  * invocation and await the receipt. This Unix-domain socket carries one-shot maintenance
- * frames and bound session frames. The daemon writes an invocation into its warm
- * daemon working doc (the SAME tiddler the worker reacts to from a WS peer), awaits the
- * durable bags/daemon/outcomes/<id> outcome, and returns it over the socket. The outcome and the
- * receipt facts both land in the daemon wiki's working document, which seals under the lit face
- * (sealed-store#/owed, U1's D half); the clear daemon document rests neither.
+ * frames and bound session frames. The daemon hands an invocation to its worker, awaits the
+ * durable bags/control/outcomes/<id> outcome, and returns it over the socket. The outcome and the
+ * receipt facts both rest in the vessel's CONTROL document (`control-home`), which no recipe composes and no
+ * mirror names; it seals under the lit face (sealed-store#/owed, U1's D half).
  *
  *   transport  = this socket (kernel-local, authority-agnostic)
  *   authority  = the session's verified face and worker-held profile on a bound socket;
@@ -19,8 +18,8 @@
  * Content routing (the co-located bypass): the CLI and the daemon worker share ONE
  * process, so the carriers (tiddler/meme/blob CONTENT in `args`) ride the DIRECT
  * worker channel (`placeVerb` → postMessage → the worker's volatile invocation),
- * NEVER the daemon Automerge doc. The daemon wiki's working slot carries only the VERB-record's
- * durable OUTCOME/receipt (`bags/daemon/outcomes/<id>`, written by the dispatcher) — the
+ * NEVER the daemon Automerge doc. The control document carries only the VERB-record's
+ * durable OUTCOME/receipt (`bags/control/outcomes/<id>`, written by the dispatcher) — the
  * command's result, never its carriers. A remote peer that lacks the shared process
  * still writes a summons over WS sync (that path keeps content in the CRDT by
  * necessity — no channel bypasses the network); the co-located path skips it.
@@ -46,7 +45,7 @@ import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import {
   CompositeStore,
   NoWorkingLayerRefusal, newRequestId, OUTCOME_URI_PREFIX, type LarDoc,
-  wikiSlotUri,
+  CONTROL_HOME_ID,
   RECEIPT_FACT_URI_PREFIX, RECEIPT_RING_DEFAULT, RECEIPT_RING_BYTES_DEFAULT, buildReceiptFact, parseReceiptFact, outcomeBytesOf,
   verbInputDigest, SessionTable, sessionBinding, type SessionBinding,
   faceScopedId, type SessionReceipt, type DurabilityReceipt,
@@ -91,7 +90,7 @@ export interface UdsChannelOptions {
   /**
    * Verbs whose answer on a session rides its socket alone (`session:act`): the face rows and the realm verbs that name a
    * face's key at a realm's Nexus (`REALM_KEY_VERBS`). A `session:call`, whose outcome body rests in the daemon wiki's
-   * working slot beside the session's face, refuses one `answers-on-the-socket`, as it refuses every `sessionVerbs` row.
+   * control document beside the session's face, refuses one `answers-on-the-socket`, as it refuses every `sessionVerbs` row.
    */
   readonly socketVerbs?: ReadonlySet<string>;
   /**
@@ -103,16 +102,16 @@ export interface UdsChannelOptions {
   /** The lock ritual's first move, before a session's signer drops (sealed-store#/owed, R2): the vessel flushes its Repo
    *  and its sealed rest, so every save the session booked lands sealed under it. Absent → the signer drops at once. */
   readonly beforeSignerDrops?: (signer: UdsSessionSigner) => Promise<void>;
-  /** The daemon's warm daemon doc handle (result.daemon.daemonHandle). */
-  readonly daemonHandle: DocHandle<LarDoc>;
-  /** The daemon composite with its attached working layer established as default writable. */
-  readonly composite: CompositeStore;
+  /** The vessel's control document (`standControlHome`): its heads name a receipt's durability. */
+  readonly controlHandle: DocHandle<LarDoc>;
+  /** The control document as a store (result.daemon.control): the outcome ledger and the receipt facts rest here. */
+  readonly control: CompositeStore;
   /**
    * The DIRECT worker channel (result.daemon.placeVerb) — posts the invocation
    * (verb + `args` CONTENT) straight to the daemon worker over the MessageChannel,
    * so the carriers reach the dispatcher WITHOUT riding the daemon Automerge doc.
-   * The worker still writes the durable outcome to `bags/daemon/outcomes/<id>` in the daemon
-   * wiki's working slot, which this channel awaits through `composite`. For a session call, the seat supplies
+   * The worker still writes the durable outcome to `bags/control/outcomes/<id>` in the control
+   * document, which this channel awaits through `control`. For a session call, the seat supplies
    * `requestedBy` from the verified presenter and `face` from the verified proof subject.
    */
   readonly placeVerb: (o: { origin: "channel"; verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string; face?: string; ordinal?: number; effectKey?: string }) => void;
@@ -271,8 +270,8 @@ export class VesselWaitExpired extends Error {
  * co-located worker or a remote summons). The worker never writes a fact, only the outcome tiddler
  * this channel observes — so no two processes ever race one fact's `state` field.
  *
- * A restart loses NOTHING: the fact backing this ledger lives in the composite's default writable
- * working layer (`RECEIPT_FACT_URI_PREFIX<requestId>`), read through an in-memory cache that is seeded from the
+ * A restart loses NOTHING: the fact backing this ledger lives in the vessel's control document
+ * (`RECEIPT_FACT_URI_PREFIX<requestId>`), read through an in-memory cache that is seeded from the
  * store on first use and kept warm by every write this process makes. H1R's proven bug — a
  * same-id, same-args reuse re-running after a restart, and a cancelled id's abandonment not
  * surviving one — closes because the fact this ledger reads back IS the fact a prior process wrote,
@@ -369,11 +368,10 @@ export class FactLedger {
     return `${RECEIPT_FACT_URI_PREFIX}${requestId}`;
   }
 
-  /** Receipt facts live in the default writable layer that receives them; the ledger reads no other layer. */
+  /** Receipt facts live in the control document alone; the ledger reads no other layer. */
   private factStore() {
-    const bagId = this.composite.defaultWritableBagId();
-    const store = bagId ? this.composite.storeForBag(bagId) : null;
-    if (!store) throw new NoWorkingLayerRefusal("The receipt ledger read", "Mount the daemon working slot before opening the UDS channel.");
+    const store = this.composite.storeForBag(CONTROL_HOME_ID);
+    if (!store) throw new NoWorkingLayerRefusal("The receipt ledger read", "Stand the vessel's control document before opening the UDS channel.");
     return store;
   }
 
@@ -755,14 +753,14 @@ export function serveUdsFront(a: {
 }
 
 export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
-  const { daemonHandle, claim } = opts;
+  const { controlHandle, claim } = opts;
   const timeoutMs = opts.timeoutMs ?? 30_000;
   const log = opts.onLog ?? (() => { /* quiet */ });
 
-  // Outcomes remain in the explicit daemon bag; bagless receipt facts use the attached working layer.
-  const composite = opts.composite;
-  if (composite.defaultWritableBagId() !== wikiSlotUri("daemon", "working")) {
-    throw new NoWorkingLayerRefusal("Opening the UDS channel", "Mount the daemon working slot (wikis/daemon/working) as the default writable first.");
+  // Outcomes and receipt facts rest in the vessel's control document, the control store's one default writable.
+  const composite = opts.control;
+  if (composite.defaultWritableBagId() !== CONTROL_HOME_ID) {
+    throw new NoWorkingLayerRefusal("Opening the UDS channel", "Stand the vessel's control document (`standControlHome`) as the control store's default writable first.");
   }
 
   // The DURABLE arbitration ledger (D1, H1R+H4+M1+M3″) — one winner per request id, backed by the
@@ -772,9 +770,9 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   const ledger = new FactLedger(composite, opts.repo, opts.ring ?? RECEIPT_RING_DEFAULT, claim.bootEpoch, opts.ringBytes ?? RECEIPT_RING_BYTES_DEFAULT, log);
   const ownerEpoch = randomUUID();
   const settleDurably = async (): Promise<DurabilityReceipt> => {
-    const heads = daemonHandle.heads();
-    await opts.repo.flush([daemonHandle.documentId]);
-    return { docUrl: daemonHandle.url, heads, ownerEpoch };
+    const heads = controlHandle.heads();
+    await opts.repo.flush([controlHandle.documentId]);
+    return { docUrl: controlHandle.url, heads, ownerEpoch };
   };
 
   const readOutcomeFor = async (requestId: string): Promise<Record<string, unknown> | null> => {
@@ -819,10 +817,9 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       // Only a COMPLETION teaches the servo (a timeout/hang never records → can't drag the EWMA to CEIL).
       const check = () => { void readOutcomeFor(requestId).then((r) => { if (r) settle(() => { recordMineDuration(verb, performance.now() - t0); resolve(r); }); }); };
       const onChange = () => check();
-      // THE LEDGER RESTS IN THE DAEMON WIKI'S WORKING SLOT (sealed-store#/owed, U1's D half): the wait hears every layer
-      // of the composite, the working slot the island writes the outcome into among them, and the daemon document.
+      // THE LEDGER RESTS IN THE CONTROL DOCUMENT: the wait hears the control store and the document beneath it.
       const unsubscribe = composite.subscribe((change) => { if (change.title === `${OUTCOME_URI_PREFIX}${requestId}`) check(); });
-      daemonHandle.on("change", onChange);
+      controlHandle.on("change", onChange);
       // Fail on a GRADIENT: the wait grows with this verb's learned durations (EWMA·K, clamped
       // FLOOR..CEIL) — headroom for an honest long verb, while a real hang still dies within CEIL.
       // The INVOCATION's own ask raises it within that bound: the servo cannot learn that a first
@@ -841,16 +838,16 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       });
       // LIVENESS: a dispatched act may never return; its eventual outcome remains available to read.
       const timer = setTimeout(() => settle(() => reject(new VesselWaitExpired(verb, requestId, budget))), budget);
-      const cleanup = () => { daemonHandle.off("change", onChange); unsubscribe(); clearTimeout(timer); };
+      const cleanup = () => { controlHandle.off("change", onChange); unsubscribe(); clearTimeout(timer); };
       check(); // the outcome may already exist (idempotent re-submission)
     });
   };
 
   // Hand the invocation (verb + args CONTENT) to the daemon worker over the DIRECT
   // MessageChannel (placeVerb → the worker's volatile invocation), then await the
-  // durable outcome via the composite's change events. The carriers NEVER enter
-  // the daemon's documents — only the worker-written outcome (bags/daemon/outcomes/<id>)
-  // lands, in the daemon wiki's working slot. A co-located CLI shares the worker's process, so the CRDT summons
+  // durable outcome via the control store's change events. The carriers NEVER enter
+  // the daemon's documents — only the worker-written outcome (bags/control/outcomes/<id>)
+  // lands, in the vessel's control document. A co-located CLI shares the worker's process, so the CRDT summons
   // (the remote-peer transport) would be a pointless content-bloating round-trip.
   const runVerb = async (inv: Invocation, requestId: string): Promise<Record<string, unknown>> => {
     opts.placeVerb({
@@ -1095,7 +1092,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       return sessionRefuse(sock, "malformed-message", requestId);
     }
     // A FACE ROW'S ANSWER RIDES THE SOCKET ALONE (`session:act`), as does a realm verb's that names a face's key: a call's
-    // outcome body rests in the daemon wiki's working slot beside the session's face, so neither rides one.
+    // outcome body rests in the vessel's control document beside the session's face, so neither rides one.
     if (opts.sessionVerbs?.has(frame["verb"]) || opts.socketVerbs?.has(frame["verb"])) return sessionRefuse(sock, "answers-on-the-socket", requestId);
     const args = frame["args"] as Record<string, unknown>;
     const face = checked.session.face.proofSubject;

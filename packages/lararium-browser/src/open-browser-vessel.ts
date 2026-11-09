@@ -24,7 +24,7 @@ import type { PortIslandToVesselMsg, VesselRestState } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import { Repo }                              from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter }           from "@automerge/automerge-repo-storage-indexeddb";
-import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, sealedBagMap, vesselDocStoreDoor, SECRET_HOME_ID, bindSecretHomeRest, SecretHomeUnavailable, type HeldRestKey, type SecretHome, type SealedBag } from "@lararium/mesh";
+import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, sealedBagMap, vesselDocStoreDoor, bindSecretHomeRest, vesselHeldHomes, SecretHomeUnavailable, type SecretHome, type SealedBag } from "@lararium/mesh";
 import { openBrowserSecretHome, standBrowserSecretHome } from "./browser-secret-home.js";
 import { faceProofSubjectRef } from "@lararium/mesh/face-proof-subjects";
 import * as A from "@automerge/automerge";
@@ -39,7 +39,7 @@ import {
   GatedSyncLeg, oneWayDocumentsGate,
   LarWSClientAdapter,
   standSiblingChannel, siblingRefusalLine, groupSecretSealTitle, verifyGroupSecretSeal,
-  leaseEpochPrefix, tiddlerText, type SiblingNetworkAdapter, type SiblingShare, type SiblingChannelStatus,
+  leaseEpochPrefix, controlHomeUrlOf, tiddlerText, type SiblingNetworkAdapter, type SiblingShare, type SiblingChannelStatus,
   BAG_IDS, slugFromUri, islandEventAsk, bagStackFromRec, recipeHostFacets, type WikiActivationCap,
   carriageStack, deriveMeshLeaf, type MeshPeer,
   materializeGenesisIsland, genesisCasManifestFromSeed, genesisCasCidsFromOracle, sha256HexBytesSync,
@@ -670,10 +670,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   });
   // THE SECRET HOME (placement over patterns): this vessel's own secret document maps sealed under its held key, with no
   // face and no session, from the moment an enrollment or an open names it (`browser-secret-home`).
-  const secretHomes = new Map<string, HeldRestKey>();
+  const secretHomes = vesselHeldHomes();
   const sealedBagOf = (documentId: string): SealedBag | null => {
-    const heldKey = secretHomes.get(documentId);
-    return heldKey !== undefined ? { bagId: SECRET_HOME_ID, face: null, held: heldKey } : sealedMap.bagOf(documentId);
+    return secretHomes.bagOf(documentId) ?? sealedMap.bagOf(documentId);
   };
   const docStorePort = docStorePortCell(async (bagId) => {
     const documentId = sealedMap.docOf(bagId);
@@ -728,10 +727,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     }, (documentId) => secretHomes.has(documentId)),
   });
   // THE SECRET HOME'S REST, bound to this Repo: an enrollment or an open maps the home before its first byte.
-  bindSecretHomeRest(repo, {
-    enroll: (documentId, key) => { secretHomes.set(documentId, key); sealedRest.store.mapMoved(); },
-    restsSealed: async (documentId) => secretHomes.has(documentId) && await sealedRest.restsSealed(documentId),
-  });
+  bindSecretHomeRest(repo, secretHomes.rest((documentId) => sealedRest.restsSealed(documentId), () => sealedRest.store.mapMoved()));
   held.stood.push({ what: "repo", down: () => { sealedRest.store.endHydration(); return repo.shutdown(); } });
   // R2's booking, by the change's own writer (T4): a change this replica made books the vessel's unlocked session while
   // it stands, and a peer's change books its peer writer and rests as received under that session.
@@ -1050,16 +1046,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // (`vesselDyads`, mesh): the ceremony-minted slots are the only source, and a face standing
   // beside zero slots is a doc minted before the ruling — said aloud here, warned never thrown.
   // Every vessel class inherits this read verbatim; the pattern integrity is the ONE door.
-  // The daemon doc AS THIS BOOT READS IT, kept for the sibling channel's enrolment seal and lease epoch below.
-  let bootDaemonDoc: LarDoc | undefined;
   // The vessel's secret home, opened from its keystore row once a face stands; null where none opens.
   let secretHome: SecretHome | null = null;
-  // The live daemon doc, for the sibling channel's lease reader (read at every licensing act, never once at boot).
-  let daemonDocHandle: DocHandle<LarDoc> | undefined;
   try {
-    const dhandle = await repo.find<LarDoc>(social.daemonUrl as never);
-    daemonDocHandle = dhandle;
-    bootDaemonDoc = dhandle.doc();
+    await repo.find<LarDoc>(social.daemonUrl as never);
     // THE DYADS AND SEALS REST IN THE SECRET HOME (placement over patterns), opened here once the keystore stands.
     if (social.deviceEdge) {
       try { secretHome = await openBrowserSecretHome(idbName, repo); }
@@ -1516,7 +1506,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         // missing or replayed older slot never lowers the epoch this device already accepted.
         const head = proof.projection.head;
         const leasePrefix = leaseEpochPrefix(wornGroup);
-        const leaseSlots = Object.entries(daemonDoc?.tiddlers ?? {}).filter(([title]) => title.startsWith(leasePrefix)).map(([, rec]) => tiddlerText(rec));
+        const controlUrl = controlHomeUrlOf(daemonDoc), leaseDoc = controlUrl ? heldDocOf(repo, controlUrl) : undefined;
+        const leaseSlots = Object.entries(leaseDoc?.tiddlers ?? {}).filter(([title]) => title.startsWith(leasePrefix)).map(([, rec]) => tiddlerText(rec));
         const observedLease = readFace(personaKelChain)?.observedLease(wornGroup, leaseSlots) ?? 0;
         const pinned = raiseFaceFrontier(faceAnchor, { leaseEpoch: observedLease, ...(head ? { actSeq: head.seq, actCid: head.cid } : {}) });
         if (pinned !== faceAnchor) await keepBrowserFaceAnchor(idbName, pinned);
@@ -1902,10 +1893,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         if (!seal) {
           console.warn("[sibling] this face holds no PersonaGroup secret sealed to this device — its enrolment delivered none, so no sibling channel stands.");
         } else {
-          // THE LEASE READER: the face reading over the live daemon doc's lease slots, read at every licensing act, so a
+          // THE LEASE READER: the face reading over the control document's lease slots, read at every licensing act, so a
           // roll that lands after the channel stood refuses an edge bound below it at the next act.
           const leasePrefix = leaseEpochPrefix(group);
-          const leaseSlotsNow = (): Array<string | null> => Object.entries((daemonDocHandle?.doc() ?? bootDaemonDoc)?.tiddlers ?? {})
+          const leaseSlotsNow = (): Array<string | null> => Object.entries(daemon.controlHandle.doc()?.tiddlers ?? {})
             .filter(([title]) => title.startsWith(leasePrefix)).map(([, rec]) => tiddlerText(rec));
           siblings = await standSiblingChannel({
             repo, herms: siblingHerms, nexusPubkey, personaKelPrefix,
@@ -1916,7 +1907,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           });
         }
       }
-      return { workerEa: daemon.workerEa, mountMainVerbs: daemon.mountMainVerbs, resolveBinding: daemon };
+      return { workerEa: daemon.workerEa, mountMainVerbs: daemon.mountMainVerbs, resolveBinding: daemon, control: daemon.control };
     },
 
     wireVerbs: (registry, _assembly) => {

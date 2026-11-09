@@ -18,7 +18,7 @@
  * daemon decouple) and with `slot` present where one does.
  */
 
-import type { Repo, DocHandle, LarDoc, LarOpenPhase, VesselKeel, VesselCoreAssembly } from "@lararium/mesh";
+import type { CompositeStore, Repo, DocHandle, LarDoc, LarOpenPhase, VesselKeel, VesselCoreAssembly } from "@lararium/mesh";
 import { assembleVessel, mountWikiSlot, LARES_DOC_URI, composeVessel, recipeFromRecord, type CapModule } from "@lararium/mesh";
 import { mountPrimaryWiki, recipeRecordOf, resolveSlotDocs, type PrimaryMountPool, type BindingResolver } from "./vessel-steps.js";
 import { VerbTable } from "./verb-dispatcher.js";
@@ -28,6 +28,8 @@ import { VerbTable } from "./verb-dispatcher.js";
 /** The daemon VM surface the orchestrator drives (node + browser both satisfy it). */
 export interface VesselDaemonVm {
   workerEa:       Promise<void>;
+  /** The vessel's control document as a store (`control-home`): the durable mailbox parks here. */
+  control:        CompositeStore;
   mountMainVerbs: (registry: VerbTable) => void;
   resolveBinding: BindingResolver;
 }

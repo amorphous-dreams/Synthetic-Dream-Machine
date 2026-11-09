@@ -23,7 +23,7 @@ import type { AutomergeUrl } from "@automerge/automerge-repo";
 import { runFoundingCeremony } from "@lararium/keyhive";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
 import {
-  CompositeStore, AutomergeDocStore, DAEMON_BAG_ID, hex, leaseEpochSlotUri, wikiBagUri, makeIslandRepo, attachMessageChannelSync,
+  CompositeStore, AutomergeDocStore, DAEMON_BAG_ID, controlStoreOf, standControlHome, hex, leaseEpochSlotUri, wikiBagUri, makeIslandRepo, attachMessageChannelSync,
   materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, type LarDoc,
   mintFaceAnchor, signLeaseAdvance, ed25519SignerFromSeed, faceAtomPublicKey, signAsFaceAtom, signFaceLeafBond, hexToBytes, realmFeedAskImage,
 } from "@lararium/mesh";
@@ -71,6 +71,7 @@ async function standIsland(opts: { daemonLayer?: boolean } = {}) {
 
   // The composite's daemon layer — the owned doc, as the kernel layers it.
   const daemonHandle = await vesselRepo.find<LarDoc>(cer.daemonUrl as AutomergeUrl);
+  const controlHandle = opts.daemonLayer !== false ? await standControlHome(vesselRepo, daemonHandle) : null;
   const composite = new CompositeStore();
   if (opts.daemonLayer !== false) {
     const store = new AutomergeDocStore(daemonHandle, DAEMON_BAG_ID);
@@ -83,6 +84,8 @@ async function standIsland(opts: { daemonLayer?: boolean } = {}) {
     repo: islandRepo, catalogUrl: catalog.url, oracleUrl: oracle.url, engine: { sha256: "", version: "" },
     recipe: { wikiSlug: "daemon" },
     ...memorySecretStore(await vesselRepo.find(cer.secretUrl as AutomergeUrl)),
+    // The lease slots rest in the vessel's control document (`control-home`): the island reads its lease off that store.
+    ...(controlHandle ? { control: controlStoreOf(controlHandle) } : {}),
   } as never;
   const daemonAuth = {
     atom: { seed: hex(cer.atomSeed), key: cer.founderEdge.deviceVerifyingKey }, veilArchiveBytes: cer.veilArchive,
@@ -94,7 +97,7 @@ async function standIsland(opts: { daemonLayer?: boolean } = {}) {
       personaRootDid: cer.founderEdge.personaRootDid, edge: cer.founderEdge, leaseEpoch: 0 }),
   };
   // A face's lease slot counts only SIGNED by a key the KEL seats: the root signs; a bare number raises nothing.
-  const writeSlotText = (text: string) => daemonHandle.change((d) => {
+  const writeSlotText = (text: string) => controlHandle!.change((d) => {
     const title = leaseEpochSlotUri(cer.personaGroupId, "another-writer");
     (d.tiddlers as Record<string, unknown>)[title] = { tiddler: { title, text } };
   });
@@ -102,7 +105,7 @@ async function standIsland(opts: { daemonLayer?: boolean } = {}) {
     { resource: cer.personaGroupId, epoch },
     { key: cer.founderEdge.personaRootDid.replace(/^0x/, ""), sign: ed25519SignerFromSeed(FOUNDER_SEED) }));
   const writeUnsignedSlot = writeSlotText;
-  return { ctx, daemonAuth, daemonHandle, writeSlot, writeUnsignedSlot, chain };
+  return { ctx, daemonAuth, daemonHandle, controlHandle, writeSlot, writeUnsignedSlot, chain };
 }
 
 const cer0AtomSeed = (auth: { atom: { seed: string } }): Uint8Array => hexToBytes(auth.atom.seed);
@@ -134,7 +137,7 @@ describe("the lease frontier reads off the island's own daemon layer", () => {
   }, 60_000);
 
   test("V3 — realm-feed and realm-clock reach the composite's daemon layer", async () => {
-    const { ctx, daemonAuth, daemonHandle } = await standIsland();
+    const { ctx, daemonAuth, daemonHandle, controlHandle } = await standIsland();
     const registry = new VerbTable();
     operatorDaemonOptions({ daemonAuth } as never, { dyadReading: () => "clear" }).wireWorkerVerbs!(registry, ctx as never);
     const realm = "ab".repeat(32);
@@ -149,7 +152,7 @@ describe("the lease frontier reads off the island's own daemon layer", () => {
     const askSig = await signAsFaceAtom(cer0AtomSeed(daemonAuth), realmFeedAskImage({ requestId: "v3-feed", realm, writer }));
     const fed = await call("realm-feed", { realm, writer, bond, askSig });
     expect(fed["fed"]).toBe(true);
-    expect(Object.keys(daemonHandle.doc()!.tiddlers).some((t) => t.includes(realm))).toBe(true);
+    expect([...Object.keys(daemonHandle.doc()!.tiddlers), ...Object.keys(controlHandle!.doc()!.tiddlers)].some((t) => t.includes(realm))).toBe(true);
     const clock = await call("realm-clock", { realm });
     expect(JSON.stringify(clock)).toContain(writer);
   }, 60_000);

@@ -8,7 +8,7 @@
 
 import { resolve as resolvePath, join as joinPath, dirname, basename, isAbsolute, sep } from "path";
 import { readdirSync } from "fs";
-import { stripMemeExt, wikiSlotUri, projectionWithheld, KAHUA_BAG, CROSSROADS_DOC_URI } from "@lararium/mesh";
+import { stripMemeExt, wikiSlotUri, projectionWithheld, daemonFaceCanonBag, KAHUA_BAG, CROSSROADS_DOC_URI } from "@lararium/mesh";
 
 export interface BagMirrorConfig {
   /** The bag whose changes this mirror reflects. */
@@ -192,9 +192,10 @@ export function isObserveProjectionPath(projectionRoot: string, path: string): b
  * The daemon wiki's disk mirror: its working layer, bound to the worn face, writes files to
  * `<projections>/wikis/daemon-<F>/`. The daemon document carries no canon role.
  *
- * The working top projects to `<projections>/wikis/daemon-<F>` and the lift-only fleet bag `bags/kahua` to
- * `<projections>/bags/kahua-<F>` (`kahuaStageMirror`). The daemon document has no mirror. A face-bound canon mirror
- * still needs its own bag and recipe registration.
+ * The working top projects to `<projections>/wikis/daemon-<F>`, the face's daemon canon `bags/daemon-<F>` to
+ * `<projections>/bags/daemon-<F>` (`daemonCanonMirror`) and the lift-only fleet bag `bags/kahua` to
+ * `<projections>/bags/kahua-<F>` (`kahuaStageMirror`). The daemon document and the control document have no mirror:
+ * every control family rests in the control document (`control-home`), so placement keeps it off these mirrors.
  */
 export function daemonWorkingMirror(projectionRoot: string, faceRelation: string): BagMirrorConfig {
   return { bagId: wikiSlotUri("daemon", "working"), mirrorRoot: joinPath(privateProjectionRoot(projectionRoot), "wikis", daemonFaceFolder(faceRelation)) };
@@ -222,13 +223,23 @@ export function daemonTempMirror(projectionRoot: string, faceRelation: string): 
   };
 }
 
+/**
+ * The face's daemon canon mirror: `bags/daemon-<F>` projects as a two-way canon mirror to `<projections>/bags/daemon-<F>/`,
+ * under the projections root alone (never beside a canon source), with its Confluence agreement, take-disk door and kāpae
+ * like every other canon mirror. A meme promoted into the daemon wiki's canon lands there and survives a re-founding.
+ */
+export function daemonCanonMirror(projectionRoot: string, faceRelation: string): BagMirrorConfig {
+  return { bagId: daemonFaceCanonBag(faceRelation), mirrorRoot: joinPath(privateProjectionRoot(projectionRoot), "bags", daemonFaceFolder(faceRelation)) };
+}
+
 /** A daemon VM disk mirror: the grant plus the scope its island names it by. */
 export type DaemonDiskMirror = BagMirrorConfig & { readonly scope: string };
 
 /**
- * THE DAEMON VM'S CURRENT DISK MIRRORS: its kahua stage (`<projections>/bags/kahua-<F>`, items sited by title) and the public
- * crossroads bag, split by origin back to its canon source where one stands. The daemon document and working layer have
- * no mirror while their control families await the private control home.
+ * THE DAEMON VM'S DISK MIRRORS, the one list its island receives: the worn face's working top
+ * (`<projections>/wikis/daemon-<F>`), its daemon canon (`<projections>/bags/daemon-<F>`, where the face's catalog names one),
+ * its kahua stage (`<projections>/bags/kahua-<F>`, items sited by title), and the public crossroads bag, split by origin back
+ * to its canon source where one stands. The daemon document and the control document have no mirror.
  *
  * `faceRelation` names the face the composition wears (from the verified founding record). With no face worn (`null`) the list holds no private
  * kahua mirror at all, and never an untagged `kahua` folder; a later composition wearing a face mirrors under its tag.
@@ -238,13 +249,17 @@ export function daemonDiskMirrors(opts: {
   readonly projectionRoot: string;
   readonly canonBags: string;
   readonly faceRelation: string | null;
+  /** True where the daemon recipe mounts the face's daemon canon (`canonBag`): the list then carries its mirror. */
+  readonly canon?: boolean;
   /** True where the daemon recipe designates its temp layer AND the operator's consent row names the `daemon` slug:
    *  the list then carries the temp layer's mirror (`daemonTempMirror`). */
   readonly temp?: boolean;
 }): readonly DaemonDiskMirror[] {
-  const { projectionRoot, canonBags, faceRelation, temp = false } = opts;
+  const { projectionRoot, canonBags, faceRelation, canon = false, temp = false } = opts;
   return [
     ...(faceRelation === null ? [] : [
+      { ...daemonWorkingMirror(projectionRoot, faceRelation), scope: "daemon" },
+      ...(canon ? [{ ...daemonCanonMirror(projectionRoot, faceRelation), scope: "daemon-canon" }] : []),
       { ...kahuaStageMirror(projectionRoot, faceRelation), scope: "kahua" },
       ...(temp ? [{ ...daemonTempMirror(projectionRoot, faceRelation), scope: "daemon-temp" }] : []),
     ]),

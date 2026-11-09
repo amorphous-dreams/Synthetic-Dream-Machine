@@ -6,6 +6,7 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage#/caps
  */
+import { controlStoreOf } from "@lararium/mesh";
 import { afterEach, expect, test } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -73,7 +74,7 @@ async function stand() {
     return { verb: act, ran: true };
   } };
   const front = serveUdsFront({ claim });
-  front.attach(makeUdsSeat({ daemonHandle, composite, claim, repo: { flush: (ids) => repo.flush(ids) }, sessions: door,
+  front.attach(makeUdsSeat({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo: { flush: (ids) => repo.flush(ids) }, sessions: door,
     switchActs: { write: async () => {} }, sessionVerbs: new Set([...KAHUA_ROWS]), handOnlyActs: STORE_DOOR_HAND_ONLY_ACTS, handOnlyCodes: STORE_DOOR_HAND_CODES,
     socketVerbs: new Set([...KAHUA_ROWS]), sessionActs: sessionActs as never,
     placeVerb: (o) => {

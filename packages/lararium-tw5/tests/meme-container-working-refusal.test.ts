@@ -1,4 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
+import { memoryControlStore } from "./control-store-fixture.js";
 import { CompositeStore, DAEMON_BAG_ID, NoWorkingLayerRefusal, OUTCOME_URI_PREFIX } from "@lararium/mesh";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeMemePutReactor } from "../src/meme-verbs.js";
@@ -58,25 +59,25 @@ describe("a meme write into the daemon's own wiki without a working layer", () =
     expect(await daemon.defaultWritableBagId()).toBeNull();
   });
 
-  test("through the dispatcher, the clear daemon bag holds no outcome and no content", async () => {
+  test("through the dispatcher, the refused write rests its outcome in the control document; the clear daemon bag holds no outcome and no content", async () => {
     const { daemon, daemonBag, tw5, options } = stand();
     const registry = new VerbTable();
     registry.register("meme-put", makeMemePutReactor(options));
-    const dispatcher = new VerbDispatcher({ daemonVm: tw5 as unknown as TW5Engine, daemon, registry });
-    let settle!: () => void;
-    const settled = new Promise<void>((resolve) => { settle = resolve; });
-    const spy = vi.spyOn(console, "error").mockImplementation((...line: unknown[]) => {
-      if (String(line[0]).includes("verb dispatch crashed")) settle();
+    const control = memoryControlStore();
+    const dispatcher = new VerbDispatcher({ daemonVm: tw5 as unknown as TW5Engine, daemon, control, registry });
+    const landed = new Promise<void>((resolve) => {
+      control.subscribe((change) => { if (change.title === `${OUTCOME_URI_PREFIX}meme-no-working`) resolve(); });
     });
     try {
       dispatcher.start();
       dispatcher.placeVerb({ verb: "meme-put", args: { recipe: "default", uri: "lar:///t/no-working", text: "content" }, requestedBy: "did:key:test", requestId: "meme-no-working" });
-      await settled;
+      await landed;
+      const outcome = await control.getLive(`${OUTCOME_URI_PREFIX}meme-no-working`);
+      expect(outcome?.tiddler["status"], "the refused write's outcome rests in the control document").toBe("error");
       expect(await daemonBag.get(`${OUTCOME_URI_PREFIX}meme-no-working`), "an outcome landed in the clear daemon bag").toBeNull();
       expect(await daemonBag.get("lar:///t/no-working")).toBeNull();
     } finally {
       dispatcher.stop();
-      spy.mockRestore();
     }
   });
 });

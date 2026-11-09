@@ -1,17 +1,17 @@
 /**
- * swarm-wiki — the daemon document as the swarm's wiki: a record reads back what wrote it, rests stamped `disk-projection: "no"`, a
+ * swarm-wiki — the control document as the swarm's wiki: a record reads back what wrote it, rests stamped `disk-projection: "no"`, a
  * `writeNew` claim lands once however many writers race it, and a prototype-keyed title reads as absent. Every red pairs with a CONTROL.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
 import { expect, test } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import { emptyLarDoc, ownEntry, swarmGoRowTitle, swarmGoTitle, swarmGoSpentTitle, type LarDoc } from "@lararium/mesh";
-import { daemonSwarmWiki } from "../src/swarm-wiki.js";
+import { controlSwarmWiki } from "../src/swarm-wiki.js";
 
 function stand() {
   const repo = new Repo();
   const handle = repo.create<LarDoc>(emptyLarDoc());
-  return { handle, wiki: daemonSwarmWiki(async () => handle) };
+  return { handle, wiki: controlSwarmWiki(async () => handle) };
 }
 
 test("RED: a written record reads back and rests with disk-projection no; CONTROL: an unwritten title reads null and a rewrite replaces", async () => {

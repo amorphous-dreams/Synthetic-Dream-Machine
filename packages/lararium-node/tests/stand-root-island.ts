@@ -17,7 +17,7 @@ import { join } from "node:path";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
 import type { IslandSessionProof } from "@lararium/keyhive";
 import {
-  AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, SECRET_HOME_ID, attachMessageChannelSync, faceAtomKeyFromSeed, hex, makeIslandRepo, signMemoryAsk, wikiBagUri,
+  AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, SECRET_HOME_ID, controlStoreOf, standControlHome, attachMessageChannelSync, faceAtomKeyFromSeed, hex, makeIslandRepo, signMemoryAsk, wikiBagUri,
   type LarDoc, type MemoryAct, type RecordSigner,
 } from "@lararium/mesh";
 import { VerbTable } from "@lararium/tw5";
@@ -91,6 +91,7 @@ export async function standRootIsland(args: { repo: Repo; handleIndex: number; b
     repo: islandRepo, catalogUrl: catalog.url, oracleUrl: oracle.url, engine: { sha256: "", version: "" },
     recipe: { wikiSlug: "daemon" },
     secretStore: new AutomergeDocStore(secret.handle, SECRET_HOME_ID), secretRest: secret.rest,
+    control: controlStoreOf(await standControlHome(repo, daemonHandle)),
   } as never;
   const daemonAuth = {
     placeVerifyingKey: vesselKey, archiveOpens: true,

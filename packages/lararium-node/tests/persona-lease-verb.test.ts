@@ -1,7 +1,7 @@
 /**
  * persona-lease — the production road of a face's signed lease advance, end to end through the store-door verb
  * (`lares persona lease`). Reds: a roll that would leave a seated device's edge stale refuses `lease-roll-strands-devices`
- * and writes nothing; an unsigned slot and a stranger-signed slot on the daemon doc raise nothing, so the verb reads only
+ * and writes nothing; an unsigned slot and a stranger-signed slot in the control document raise nothing, so the verb reads only
  * the anchor's floor and the verb's own advance raises the slot and the frontier. The rolls that succeed stand a face whose
  * edge already halts below the floor (`edgeAlreadyStale`), so they strand no device. Controls: a second advance climbs by
  * one, and a face with no lineage refuses by name.
@@ -13,7 +13,7 @@ import { afterEach, describe, expect } from "vitest";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import {
-  DAEMON_BAG_ID, ed25519SignerFromSeed, leaseEpochSlotUri, seedDaemonDoc, signLeaseAdvance, signedLeaseEpoch, raiseFaceFrontier, tiddlerText, type LarDoc,
+  DAEMON_BAG_ID, standControlHome, ed25519SignerFromSeed, leaseEpochSlotUri, seedDaemonDoc, signLeaseAdvance, signedLeaseEpoch, raiseFaceFrontier, tiddlerText, type LarDoc,
   ed25519VerifyingKeyFromSeed, emptyLarDoc, signFoundingLog, signPersonaAct, actCid, faceRootCommitment, edgeBodyDigest, personaBagIdFor,
   verifyDeviceDelegation, writePersonaAct,
 } from "@lararium/mesh";
@@ -87,7 +87,8 @@ async function standFaceLog(): Promise<void> {
 
 const roll = () => storeDoorDirect("persona-lease", { handleIndex: 0 }, { sealHome: larSealHome() });
 const slotsOf = async (group: string): Promise<string[]> => ownedStore(larDataDir(), async (repo) => {
-  const doc = (await repo.find<LarDoc>(daemonUrl as never)).doc();
+  // The lease slots rest in the vessel's control document, which the daemon doc names (`control-home`).
+  const doc = (await standControlHome(repo, await repo.find<LarDoc>(daemonUrl as never))).doc();
   return Object.entries(doc?.tiddlers ?? {}).filter(([t]) => t.includes("/lease-epoch/")).map(([, r]) => tiddlerText(r) ?? "").filter((x) => x.length > 0 || group === "");
 });
 
@@ -125,7 +126,7 @@ describe("lares persona lease", () => {
     const anchors = (await loadIdentityAnchors(0))!;
     const group = anchors.personaGroupId;
     await ownedStore(larDataDir(), async (repo) => {
-      const daemon = await repo.find<LarDoc>(daemonUrl as never);
+      const daemon = await standControlHome(repo, await repo.find<LarDoc>(daemonUrl as never));
       const stranger = await signLeaseAdvance({ resource: group, epoch: 40 }, { key: "ab".repeat(32), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(8)) });
       daemon.change((d) => {
         for (const [writer, text] of [["unsigned", "50"], ["stranger", stranger]] as const) {

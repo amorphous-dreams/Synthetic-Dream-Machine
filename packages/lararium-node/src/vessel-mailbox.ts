@@ -3,7 +3,7 @@
  * and substrate-agnostic: node and browser vessels wire the same mechanism.
  *
  * A verb addressed to an island that isn't live PARKS as a record in
- * the daemon bag keyed by island identity; the island's next `ea` (its own breath
+ * the vessel's control document (`control-home`) keyed by island identity; the island's next `ea` (its own breath
  * declaration) drains it — deliver-to-IDENTITY: the message survives the
  * island and arrives when the identity breathes again. The record's
  * status transition (parked → delivered) makes one artifact serve as
@@ -13,9 +13,9 @@
  * ports — the caller supplies `placeVerb` (its own live-delivery path).
  */
 
-import { DAEMON_BAG_ID, type CompositeStore } from "@lararium/mesh";
+import { CONTROL_HOME_ID, MAILBOX_URI_PREFIX, type CompositeStore } from "@lararium/mesh";
 
-const MAILBOX_PREFIX = "lar:///ha.ka.ba/bags/daemon/mailbox/";
+const MAILBOX_PREFIX = MAILBOX_URI_PREFIX;
 
 export interface MailboxVerb {
   readonly verb:        string;
@@ -31,6 +31,7 @@ export interface DurableMailbox {
 }
 
 export function makeDurableMailbox(
+  /** The vessel's control document as a store (`DaemonVmCore.control`): every parked verb rests there. */
   composite: CompositeStore,
   placeVerb: (wikiId: string, v: MailboxVerb) => Promise<unknown>,
   log: (line: string) => void = () => {},
@@ -49,7 +50,7 @@ export function makeDurableMailbox(
           "parked-at": new Date().toISOString(),
         },
         meta: {},
-      }, { kind: "lares-verb", requestId: id }, { bag: DAEMON_BAG_ID });
+      }, { kind: "lares-verb", requestId: id }, { bag: CONTROL_HOME_ID });
       log(`[mailbox] parked ${v.verb} for ${wikiId} (island not live)`);
     },
 
@@ -69,7 +70,7 @@ export function makeDurableMailbox(
           await composite.put({
             tiddler: { ...f, title, status: "delivered", "delivered-at": new Date().toISOString() },
             meta: rec.meta ?? {},
-          }, { kind: "lares-verb", requestId: `${title}#delivered` }, { bag: DAEMON_BAG_ID });
+          }, { kind: "lares-verb", requestId: `${title}#delivered` }, { bag: CONTROL_HOME_ID });
           log(`[mailbox] delivered ${f["verb"]} to ${wikiId}`);
         } catch { /* island died mid-drain — record stays parked for the next ea */ }
       }

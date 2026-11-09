@@ -55,6 +55,7 @@
  *       `handleIndex` alone; the custody door's own act frame refuses each.
  *                                 control: an act of the place (`petname.set`) keeps the custody door's frame
  */
+import { controlStoreOf } from "@lararium/mesh";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import type { Socket } from "node:net";
@@ -127,7 +128,7 @@ async function standVessel(opts: { unlocked: boolean; table?: (act: string, args
   const composite = new CompositeStore();
   composite.addLayer({ bagId: DAEMON_BAG_ID, store: new AutomergeDocStore(daemonHandle as never, DAEMON_BAG_ID), writable: true, defaultWritable: false });
   composite.addLayer({ bagId: wikiSlotUri("daemon", "working"), store: new AutomergeDocStore(workingHandle, wikiSlotUri("daemon", "working")), writable: true });
-  const seat = makeUdsSeat({ daemonHandle, composite, claim, repo, placeVerb: () => {},
+  const seat = makeUdsSeat({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo, placeVerb: () => {},
     sessionActs: { names: SESSION_ACTS, run: async (act, args) => ({ ...(await door.act(act, args)) }) },
     sessions: { anchorNow: async () => PLACE, open: async ({ faceRef }) => {
       const ordinal = Number(/^h(\d+)$/.exec(faceRef)?.[1] ?? NaN);

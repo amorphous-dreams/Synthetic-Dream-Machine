@@ -41,7 +41,7 @@
  */
 
 import { type LarDoc, tiddlerText } from "./base-doc.js";
-import { BAG_IDS, CATALOG_DOC_URI, DAEMON_BAG_ID, isBagId } from "./lar-uris.js";
+import { BAG_IDS, CATALOG_DOC_URI, CONTROL_HOME_ID, DAEMON_BAG_ID, isBagId } from "./lar-uris.js";
 import { isFaceScopedBag, personaScopedBagIds } from "./persona-scope.js";
 import { ownEntry } from "./stored-value.js";
 import { wikiSlotUri } from "./wiki-recipe.js";
@@ -164,11 +164,13 @@ export const DAEMON_WIKI_SLOT_BAGS: readonly string[] = [wikiSlotUri("daemon", "
  * register set reads `writer-not-capable`, its seal refuses, and a flush waits on it. The user wiki's slots register at
  * the floor and lit alike, as a wiki stack stands; the daemon wiki's slots register and seal under the lit face alone.
  */
-export function wornFaceWikiBags(input: { readonly slot?: WikiSlotBags | undefined; readonly lit: boolean }): { readonly registered: string[]; readonly sealed: string[] } {
+export function wornFaceWikiBags(input: { readonly slot?: WikiSlotBags | undefined; readonly lit: boolean; readonly daemonCanon?: string }): { readonly registered: string[]; readonly sealed: string[] } {
   const user = input.slot ? [input.slot.wikiBagId, input.slot.workingBagId, input.slot.draftBagId] : [];
   // The face's own catalog (U1's D half of the catalog) rides with the daemon wiki's slots: the island registers it at
-  // boot, so its holder holds the catalog's key before the lift opens the sealed document.
-  const faceOwn = input.lit ? [...DAEMON_WIKI_SLOT_BAGS, FACE_CATALOG_BAG_ID] : [];
+  // boot, so its holder holds the catalog's key before the lift opens the sealed document. The vessel's control document
+  // (`control-home`) rides with them: the outcome ledger and the receipt facts it rests seal under the lit face.
+  // The worn face's daemon canon (`bags/daemon-<F>`, `daemonFaceCanonBag`) rides with them too: a face's daemon wiki content.
+  const faceOwn = input.lit ? [...DAEMON_WIKI_SLOT_BAGS, ...(input.daemonCanon ? [input.daemonCanon] : []), FACE_CATALOG_BAG_ID, CONTROL_HOME_ID] : [];
   return {
     registered: [...user, ...faceOwn],
     sealed: [...(input.lit ? user : []), ...faceOwn],

@@ -33,6 +33,52 @@ export interface SecretHomeRest {
   enroll(documentId: string, key: HeldRestKey): void;
   /** Does this rest hold `documentId` sealed? Only the rest itself answers; no caller asserts it. */
   restsSealed(documentId: string): Promise<boolean>;
+  /** VESSEL-SCOPED CLASSIFICATION BESIDE THE SECRET HOME: map another vessel document (the control document) as `bagId`,
+   *  sealed under the vessel's held key (bound to `bagId`, so each home opens under its own content key), before any byte
+   *  of it moves. Answers false, mapping nothing, while no secret home's key stands on this rest. */
+  enrollBeside(documentId: string, bagId: string): boolean;
+}
+
+/**
+ * THE VESSEL'S HELD HOMES, one table per store holder: the secret home and every vessel document classified beside it
+ * (`enrollBeside`). A holder's bag map reads it first (`bagOf`); its share verdict keeps every one on the vessel (`has`).
+ */
+export interface VesselHeldHomes {
+  bagOf(documentId: string): { readonly bagId: string; readonly face: null; readonly held: HeldRestKey } | null;
+  has(documentId: string): boolean;
+  /** Every vessel-only document this table holds (the secret home, and what enrolled beside it): the read a share verdict's
+   *  vessel-only deny set takes. */
+  ids(): readonly string[];
+  /** The rest this table answers through: `restsSealed` reads the holder's store; `moved` tells it the map moved. */
+  rest(restsSealed: (documentId: string) => Promise<boolean>, moved?: () => void): SecretHomeRest;
+  /** Overwrite every held key (the holder stands down). */
+  wipe(): void;
+}
+
+export function vesselHeldHomes(): VesselHeldHomes {
+  const homes = new Map<string, { readonly bagId: string; readonly key: HeldRestKey }>();
+  let vesselKey: HeldRestKey | null = null;
+  return {
+    bagOf(documentId) { const h = homes.get(documentId); return h ? { bagId: h.bagId, face: null, held: h.key } : null; },
+    has: (documentId) => homes.has(documentId),
+    ids: () => [...homes.keys()],
+    rest(restsSealed, moved) {
+      return {
+        enroll(documentId, key) { vesselKey ??= key; homes.set(documentId, { bagId: SECRET_HOME_ID, key }); moved?.(); },
+        enrollBeside(documentId, bagId) {
+          if (vesselKey === null || bagId === SECRET_HOME_ID) return false;
+          homes.set(documentId, { bagId, key: vesselKey }); moved?.(); return true;
+        },
+        restsSealed: async (documentId) => homes.has(documentId) && await restsSealed(documentId),
+      };
+    },
+    wipe() { for (const { key } of homes.values()) key.fill(0); homes.clear(); vesselKey = null; },
+  };
+}
+
+/** Classify a vessel document beside the secret home on `repo`'s rest (`SecretHomeRest.enrollBeside`): true once mapped. */
+export function enrollBesideSecretHome(repo: Repo, documentId: string, bagId: string): boolean {
+  return secretHomeRestOf(repo)?.enrollBeside(documentId, bagId) ?? false;
 }
 
 /** The capability a Keyhive writer asks before every secret write: true only once the rest confirms sealed rest. */
@@ -76,7 +122,7 @@ export function mintSecretHomeAddress(random?: Pick<RandomProvider, "getRandomVa
   return { documentId: parseAutomergeUrl(generateAutomergeUrl()).documentId, key: mintHeldRestKey(random) };
 }
 
-const ADDRESS_MAGIC = "lares-secret-home/v1";
+const ADDRESS_MAGIC = "lares-secret-home-address";
 
 /** The address as its custody row keeps it. */
 export function encodeSecretHomeAddress(address: SecretHomeAddress): Uint8Array {

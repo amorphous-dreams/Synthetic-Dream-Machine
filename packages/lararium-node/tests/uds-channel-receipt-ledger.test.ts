@@ -16,13 +16,14 @@
  * design banks on) and the same on-disk store directory. Anything the second channel answers
  * correctly, it answers from the FACT, never from memory the first channel happened to keep warm.
  */
+import { controlStoreOf } from "@lararium/mesh";
 import { describe, test, expect, onTestFinished } from "vitest";
 import { mkdtempSync, existsSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createConnection } from "node:net";
 import { Repo, type DocHandle } from "@automerge/automerge-repo";
-import { emptyLarDoc, NoWorkingLayerRefusal, buildReceiptFact, concludeVerb, verbInputDigest, RECEIPT_FACT_URI_PREFIX, OUTCOME_URI_PREFIX, DAEMON_BAG_ID, AutomergeDocStore, CompositeStore, wikiSlotUri, type LarDoc } from "@lararium/mesh";
+import { emptyLarDoc, NoWorkingLayerRefusal, buildReceiptFact, concludeVerb, verbInputDigest, RECEIPT_FACT_URI_PREFIX, OUTCOME_URI_PREFIX, DAEMON_BAG_ID, CONTROL_HOME_ID, AutomergeDocStore, CompositeStore, wikiSlotUri, type LarDoc } from "@lararium/mesh";
 import { FactLedger, startUdsChannel, type UdsChannel } from "../src/uds-channel.js";
 import { claimStore, type StoreClaim } from "../src/owned-store.js";
 import { plainRecord, outcomeBytesOf } from "@lararium/mesh";
@@ -82,7 +83,7 @@ function bodyWorker(counter: { n: number }, bodyOf: (requestId: string) => numbe
 
 /** The measure of the outcome record a vessel holds for `requestId`, read off the store. */
 function storedOutcomeBytes(v: { daemonHandle: ReturnType<Repo["create"]> }, requestId: string): number {
-  return outcomeBytesOf(plainRecord((v.daemonHandle.doc() as LarDoc).tiddlers[`${OUTCOME_URI_PREFIX}${requestId}`]!).tiddler as Record<string, unknown>);
+  return outcomeBytesOf(plainRecord((v.workingHandle.doc() as LarDoc).tiddlers[`${OUTCOME_URI_PREFIX}${requestId}`]!).tiddler as Record<string, unknown>);
 }
 
 /** A fixture carrying what a real vessel carries across a restart: the Automerge repo/doc + the
@@ -104,7 +105,7 @@ class Vessel {
   compositeForBoot(): CompositeStore {
     const composite = new CompositeStore();
     composite.addLayer({ bagId: DAEMON_BAG_ID, store: new AutomergeDocStore(this.daemonHandle as never, DAEMON_BAG_ID), writable: true, defaultWritable: false });
-    composite.addLayer({ bagId: wikiSlotUri("daemon", "working"), store: new AutomergeDocStore(this.workingHandle as never, wikiSlotUri("daemon", "working")), writable: true });
+    composite.addLayer({ bagId: CONTROL_HOME_ID, store: new AutomergeDocStore(this.workingHandle as never, CONTROL_HOME_ID), writable: true });
     return composite;
   }
 
@@ -141,9 +142,9 @@ class Vessel {
   private async start(): Promise<void> {
     this.claim = await claimStore(this.dir, { holder: "vessel" });
     this.channel = startUdsChannel({
-      daemonHandle: this.daemonHandle,
-      composite: this.compositeForBoot(),
-      placeVerb: (o) => this.placeVerbImpl(o as Placed, this.daemonHandle),
+      controlHandle: this.workingHandle,
+      control: this.compositeForBoot(),
+      placeVerb: (o) => this.placeVerbImpl(o as Placed, this.workingHandle),
       claim: this.claim,
       repo: this.repo,
       ...(this.ring !== undefined && { ring: this.ring }),
@@ -181,7 +182,7 @@ async function dispatchAndStrand(v: Vessel, counter: { n: number }, inv: Record<
 }
 
 describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)", () => {
-  test("a fresh Repo and fresh stores seed working-layer facts in sequence order", async () => {
+  test("a fresh Repo and fresh stores seed control-document facts in sequence order", async () => {
     const counter = { n: 0 };
     const first = await Vessel.boot({ placeVerbImpl: doneWorker(counter), ring: 8 });
     let second: Vessel | undefined;
@@ -218,7 +219,7 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
     }
   });
 
-  test("a missing working default refuses before dispatch and records nothing", async () => {
+  test("a control store standing no control home refuses before dispatch and records nothing", async () => {
     const repo = new Repo({ sharePolicy: async () => true });
     const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
     const composite = new CompositeStore();
@@ -226,7 +227,7 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
     const dir = mkdtempSync(join(tmpdir(), "uds-no-working-"));
     const claim = await claimStore(dir, { holder: "vessel" });
     try {
-      expect(() => startUdsChannel({ daemonHandle, composite, claim, repo, placeVerb: () => {} }))
+      expect(() => startUdsChannel({ controlHandle: daemonHandle, control: composite, claim, repo, placeVerb: () => {} }))
         .toThrow(NoWorkingLayerRefusal);
       expect(Object.keys(daemonHandle.doc()!.tiddlers)).toEqual([]);
     } finally {
@@ -311,7 +312,7 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
       const factTitle = `${RECEIPT_FACT_URI_PREFIX}${requestId}`;
       const onWorking = (): void => { if (v.workingHandle.doc()!.tiddlers[factTitle] !== undefined) minted.arrive(); };
       v.workingHandle.on("change", onWorking);
-      v.daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
+      v.workingHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
       try { await minted.arrived; } finally { v.workingHandle.off("change", onWorking); }
 
       // A same-args UDS dispatch under the SAME id computes the IDENTICAL digest — `arbitrate`
@@ -345,7 +346,7 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
     } finally { await v.teardown(); }
   });
 
-  test("a fresh ledger reads receipts only from its working layer", async () => {
+  test("a fresh ledger reads receipts only from the control document", async () => {
     const v = await Vessel.boot({ placeVerbImpl: () => {} });
     try {
       const requestId = "receipt-in-the-daemon-bag";
@@ -372,16 +373,16 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
       }
       expect(counter.n).toBe(4);
 
-      // Bagless receipt facts follow the default working layer. The dispatcher outcome keeps its explicit daemon destination.
+      // Receipt facts and outcomes both rest in the control document; the daemon document holds neither.
       expect(v.workingHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${ids[0]}`]).toBeDefined();
       expect(v.daemonHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${ids[0]}`]).toBeUndefined();
-      expect(v.daemonHandle.doc()!.tiddlers[`${OUTCOME_URI_PREFIX}${ids[0]}`]).toBeDefined();
+      expect(v.workingHandle.doc()!.tiddlers[`${OUTCOME_URI_PREFIX}${ids[0]}`]).toBeDefined();
 
       const receipt = await sendLine(v.socketPath, { op: "receipt", requestId: ids[0] });
       expect(receipt["state"]).toBe("evicted");
-      const liveOutcome = v.daemonHandle.doc()!.tiddlers[`${OUTCOME_URI_PREFIX}${ids[0]}`];
+      const liveOutcome = v.workingHandle.doc()!.tiddlers[`${OUTCOME_URI_PREFIX}${ids[0]}`];
       expect(liveOutcome?.meta?.deleted).toBe(true);
-      expect(v.workingHandle.doc()!.tiddlers[`${OUTCOME_URI_PREFIX}${ids[0]}`]).toBeUndefined();
+      expect(v.daemonHandle.doc()!.tiddlers[`${OUTCOME_URI_PREFIX}${ids[0]}`]).toBeUndefined();
       expect(await v.compositeForBoot().getLive(`${OUTCOME_URI_PREFIX}${ids[0]}`)).toBeNull();
 
       const redispatch = await sendLine(v.socketPath, { verb: "nexus-kapae", args: { requestId: ids[0] }, requestedBy: "did:key:test", requestId: ids[0] });
@@ -465,8 +466,8 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
       // the seeding channel's epoch belongs to this boot and never settles.
       v.channel.close();
       v.channel = startUdsChannel({
-        daemonHandle: v.daemonHandle, placeVerb: (o) => v.placeVerbImpl(o as Placed, v.daemonHandle),
-        composite: v.compositeForBoot(),
+        controlHandle: v.workingHandle, placeVerb: (o) => v.placeVerbImpl(o as Placed, v.workingHandle),
+        control: v.compositeForBoot(),
         claim: v.claim, repo: v.repo, timeoutMs: 1_000,
       });
       await waitForSocket(v.claim.socketPath);
@@ -510,7 +511,7 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
           requestId, verb: inv.verb, status: "done", cause: "test-worker",
           batchMode: "best-effort", results: { summary: { ok: true } },
         });
-        v.daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
+        v.workingHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
       });
       expect((await sendLine(v.socketPath, { op: "receipt", requestId }))["state"]).toBe("done");
       const stored = plainRecord(v.workingHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${requestId}`]!).tiddler as Record<string, unknown>;
@@ -632,7 +633,7 @@ describe("the receipt ring bounds BYTES as well as count", () => {
     const composite = (): CompositeStore => {
       const c = new CompositeStore();
       c.addLayer({ bagId: DAEMON_BAG_ID, store: new AutomergeDocStore(daemonHandle as never, DAEMON_BAG_ID), writable: true, defaultWritable: false });
-      c.addLayer({ bagId: wikiSlotUri("daemon", "working"), store: new AutomergeDocStore(workingHandle as never, wikiSlotUri("daemon", "working")), writable: true });
+      c.addLayer({ bagId: CONTROL_HOME_ID, store: new AutomergeDocStore(workingHandle as never, CONTROL_HOME_ID), writable: true });
       return c;
     };
     let boot = 0;
@@ -986,7 +987,7 @@ describe("the receipt ring bounds BYTES as well as count", () => {
     expect((await sendLine(v.socketPath, inv(ID(2))))["status"]).toBe("done");
     await factReads(v, ID(1), "evicted");
     expect((await sendLine(v.socketPath, { op: "receipt", requestId: ID(1) }))["state"]).toBe("evicted");
-    expect(v.daemonHandle.doc()!.tiddlers[`${OUTCOME_URI_PREFIX}${ID(1)}`]?.meta?.deleted).toBe(true);
+    expect(v.workingHandle.doc()!.tiddlers[`${OUTCOME_URI_PREFIX}${ID(1)}`]?.meta?.deleted).toBe(true);
     expect((await factReads(v, ID(2), "done"))["outcome-bytes"]).toBe(String(storedOutcomeBytes(v, ID(2))));
     const again = await sendLine(v.socketPath, inv(ID(1)));
     expect((again["refusal"] as { reason?: string } | undefined)?.reason).toBe("retention-gap");
@@ -1048,7 +1049,7 @@ describe("a cancel's answer carries the vessel's outcome, never the caller's aba
       // Another road ran the id. Its record names no digest, so the fact keeps reading `abandoned` and the answer
       // below comes from the record alone, whatever the observer did.
       const outcome = concludeVerb({ requestId, verb: "nexus-kapae", status: "done", cause: "summons", batchMode: "best-effort", results: { summary: { ok: true } } });
-      v.daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
+      v.workingHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
       expect((await sendLine(v.socketPath, { op: "receipt", requestId }))["state"]).toBe("done");
       expect((await sendLine(v.socketPath, { op: "cancel", requestId }))["state"]).toBe("done");
       expect(counter.n).toBe(0);
@@ -1069,7 +1070,7 @@ describe("a cancel's answer carries the vessel's outcome, never the caller's aba
 
 describe("a cancelled id leaves the ring as every other fact does", () => {
   const ORIGIN = { kind: "lares-verb", requestId: "cancel-ring-fixture" } as const;
-  const WORKING = wikiSlotUri("daemon", "working");
+  const WORKING = CONTROL_HOME_ID;
 
   function stores() {
     const repo = new Repo({ sharePolicy: async () => true });

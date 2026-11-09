@@ -16,7 +16,8 @@ import {
 import { SECRET_HOME_ID } from "../src/lar-uris.js";
 import { storedRecord } from "../src/stored-record.js";
 import { attachMessageChannelSync, makeIslandRepo } from "../src/island-repo.js";
-import { islandSecretHome } from "../src/secret-home.js";
+import { islandSecretHome, vesselHeldHomes, enrollBesideSecretHome } from "../src/secret-home.js";
+import { CONTROL_HOME_ID } from "../src/lar-uris.js";
 
 const WORD = "the-group-secret-seal-rides-here";
 const MAGIC = [0x85, 0x6f, 0x4a, 0x83];
@@ -55,6 +56,7 @@ function holderStore(inner: StorageAdapterInterface, opts: { readonly lies?: boo
     // A LYING REST (the instrument's own check): it answers sealed and maps nothing.
     enroll: (documentId, key) => { if (!opts.lies) held.set(documentId, key); },
     restsSealed: async (documentId) => opts.lies ? true : store.holdsSealed(documentId),
+    enrollBeside: () => false,
   };
   return { store, rest };
 }
@@ -172,5 +174,31 @@ describe("the vessel's secret home rests sealed from its first byte", () => {
       const stranger = islandSecretHome(island, home.url, async () => false);
       expect(await stranger.rest.assertSealed()).toBe(false);
     } finally { detach(); port1.close(); port2.close(); await island.shutdown(); await vessel.shutdown(); }
+  });
+
+  it("VESSEL-SCOPED CLASSIFICATION BESIDE THE HOME: the control document maps under the vessel's held key, bound to its own bag, only once the home's key stands", async () => {
+    const inner = memoryAdapter();
+    const homes = vesselHeldHomes();
+    const refuse = async () => ({ refusal: "signer-unavailable" }) as never;
+    const store = new SealedDocumentStore({ inner, bagOf: (id) => homes.bagOf(id), sessionFace: () => null, sessionOf: () => null, seal: refuse, open: refuse, refuseClearOverSealed: true });
+    const repo = new Repo({ storage: store, network: [] });
+    bindSecretHomeRest(repo, homes.rest((id) => store.holdsSealed(id)));
+    const control = mintSecretHomeAddress().documentId;
+    // No home's key stands yet: nothing maps, and the caller keeps its own class.
+    expect(enrollBesideSecretHome(repo, control, CONTROL_HOME_ID)).toBe(false);
+    expect(homes.bagOf(control)).toBeNull();
+    const home = await enrollSecretHome(repo, mintSecretHomeAddress());
+    expect(enrollBesideSecretHome(repo, control, CONTROL_HOME_ID)).toBe(true);
+    expect(homes.bagOf(control)?.bagId).toBe(CONTROL_HOME_ID);
+    expect(homes.has(control)).toBe(true);
+    expect([...homes.ids()].sort()).toEqual([home.handle.documentId, control].sort());
+    // The secret home's own bag never re-enrolls beside itself.
+    expect(enrollBesideSecretHome(repo, mintSecretHomeAddress().documentId, SECRET_HOME_ID)).toBe(false);
+    const handle = repo.import<{ tiddlers: Record<string, unknown> }>((await import("@automerge/automerge")).save((await import("@automerge/automerge")).from({ tiddlers: {} })), { docId: control as never });
+    writeSecret(handle as never);
+    await repo.flush();
+    await repo.shutdown();
+    expect(restsClear(inner, control)).toBe(false);
+    expect(restsClear(inner, home.handle.documentId)).toBe(false);
   });
 });
