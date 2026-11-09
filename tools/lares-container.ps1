@@ -215,8 +215,8 @@ function CensusBeforeStop {
   } else {
     $why = if ($timedOut) { "no answer within ${CensusWaitSeconds}s (the vessel may stand wedged)" } else { "the census exec ended with status $rc" }
     [Console]::Error.WriteLine("lares-container: down refuses a silent stop: the census could not answer ($why), so what a stop would drop reads unknown")
-    Indent $out
-    Indent $err
+    [Console]::Error.WriteLine('lares-container: down cannot confirm the vessel census; it remains standing. Check tools/lares-container.sh logs, then retry down.')
+    if ($env:LARES_DEBUG -eq '1') { Indent $out; Indent $err }
   }
   OfferAcceptLoss
 }
@@ -255,9 +255,12 @@ switch ($verb) {
       try {
         Set-Content -Path $override -Value ("services:`n  lares:`n    volumes:`n" + ($binds -join "`n")) -Encoding utf8
         & docker compose @Base -f $override up -d --wait lares
-        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the vessel did not become ready — check tools/lares-container.sh logs; if it already runs, run up again'); exit $LASTEXITCODE }
       } finally { Remove-Item -Force $override -ErrorAction SilentlyContinue }
-    } else { Compose @('up', '-d', '--wait', 'lares') }
+    } else {
+      & docker compose @Base up -d --wait lares
+      if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the vessel did not become ready — check tools/lares-container.sh logs; if it already runs, run up again'); exit $LASTEXITCODE }
+    }
     WarnImageRevision
     UnlockOrName
   }
@@ -267,6 +270,7 @@ switch ($verb) {
     $ids = & docker compose @Base ps -q --status running lares
     if ($LASTEXITCODE -ne 0) {
       [Console]::Error.WriteLine('lares-container: down refuses a silent stop: docker compose ps failed, so whether a vessel stands reads unknown')
+      [Console]::Error.WriteLine('lares-container: down cannot confirm the vessel census; it remains standing. Check tools/lares-container.sh logs, then retry down.')
       OfferAcceptLoss
     } elseif (-not [string]::IsNullOrWhiteSpace(($ids -join ''))) { CensusBeforeStop }
     Compose (@('down', '--remove-orphans') + $rest)

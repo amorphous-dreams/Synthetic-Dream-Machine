@@ -37,6 +37,7 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *" ps -q lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}"; exit 0;; esac\n` +
       `case " $* " in *"inspect --format"*) printf '%s\\n' "\${FAKE_IMAGE_REV:-}"; exit 0;; esac\n` +
       `case " $* " in *" build "*) printf 'GIT_REV=%s\\n' "\${GIT_REV:-}" >> "$CALL_LOG"; exit 0;; esac\n` +
+      `case " $* " in *" up -d --wait lares "*) [ "\${FAKE_UP_RC:-0}" = 0 ] || printf '%s\\n' 'compose readiness failed' >&2; exit "\${FAKE_UP_RC:-0}";; esac\n` +
       `case " $* " in *" exec "*) exit "\${FAKE_EXEC_RC:-0}";; esac\n`);
     await chmod(join(dir, "docker"), 0o755);
     const compose = join(dir, "docker-compose.surface.yml");
@@ -458,12 +459,19 @@ for (const [name, shim] of shims) {
     const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_RC: "1", FAKE_CENSUS_ERR: "container wedged" } });
     assert.equal(r.status, 2);
     assert.match(r.stderr, /could not answer/);
-    assert.match(r.stderr, /container wedged/);
+    assert.match(r.stderr, /check .*lares-container.* logs/i);
+    assert.doesNotMatch(r.stderr, /container wedged/);
     assert.equal(stopped(r.calls), false, r.calls);
     // An exit of zero that names no clean verdict never reads clean.
     const mute = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_RC: "0" } });
     assert.equal(mute.status, 2);
     assert.equal(stopped(mute.calls), false, mute.calls);
+  });
+
+  test(`${name}: up translates compose failure after its own error`, async () => {
+    const r = await run(shim, ["up"], { env: { ...MOUNTS, FAKE_UP_RC: "1" } });
+    assert.notEqual(r.status, 0);
+    assert.match(r.stderr, /the vessel did not become ready — check tools\/lares-container\.sh logs; if it already runs, run up again/);
   });
 
   test(`${name}: a ps that fails refuses the stop with no terminal`, async () => {

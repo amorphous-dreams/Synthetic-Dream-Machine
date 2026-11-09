@@ -76,7 +76,7 @@ export function discoverHoldings(bagsDir: string): Array<{ holding: string; sour
 
 /**
  * Feed ONE holding back into its doc — the kind-route (ingest for system bags, the island's named road
- * for the rest), lifted out so the whole-store `seedRun` shares ONE kind-routed spelling for feeding a holding.
+ * for the rest), lifted out so the whole-store seed shares ONE kind-routed spelling for feeding a holding.
  * Returns this holding's verdict row.
  *
  * THE NAMED ROAD (W27: a write lands on a working layer, and canon takes it by promotion). A LOAD into a canon
@@ -94,12 +94,12 @@ export async function seedHolding(
     // ingest gate's "confirmation required" WITHOUT `--yes` — and that is the FEATURE: new infra
     // content SURFACES for the operator to grade on a gradient (approve → re-run with --yes, or
     // abort), never silently auto-applied. `--yes` (the operator's relayed approval) passes through.
-    const exitCode = await cmdIngest({
+    const exitCode = await withIngestTicks(h.holding, () => cmdIngest({
       command: "ingest",
       positional: [],
       options: { ...args.options, source: h.source, to: h.toBag },
       flags: args.flags,
-    });
+    }));
     return { ...h, gesture: "ingest", exitCode };
   }
   const working = workingLayerOf(h.toBag);
@@ -111,12 +111,12 @@ export async function seedHolding(
     ? { ...args.flags, yes: true }
     : { ...args.flags, "dry-run": true };
   if (args.flags["apply"]) {
-    const createCode = await cmdAct({
+    const createCode = await foldCreateOutput(args, () => cmdAct({
       command: "act",
       positional: ["CREATE"],
       options: { ...args.options, bag: h.toBag },
       flags: { ...args.flags, yes: true },
-    });
+    }));
     if (createCode !== 0) return { ...h, gesture: "load", exitCode: createCode };
   }
   const loadCode = await cmdAct({
@@ -137,22 +137,50 @@ export async function seedHolding(
   return { ...h, gesture: "load", exitCode: moveCode };
 }
 
+/** The CLI already uses performance.now() for process-local liveness budgets; seed durations share that monotonic clock. */
+function elapsedText(ms: number): string {
+  const seconds = Math.floor(ms / 1000);
+  return seconds >= 60 ? `${Math.floor(seconds / 60)}m${String(seconds % 60).padStart(2, "0")}s` : `${seconds}s`;
+}
+
+function countCarriers(dir: string): number {
+  let count = 0;
+  try {
+    for (const name of readdirSync(dir)) {
+      const path = join(dir, name);
+      const stat = statSync(path);
+      if (stat.isDirectory()) count += countCarriers(path);
+      else if (stat.isFile() && !name.startsWith(".")) count++;
+    }
+  } catch { /* The ingest gesture reports source failures. */ }
+  return count;
+}
+
+async function withIngestTicks(holding: string, run: () => Promise<number>): Promise<number> {
+  const started = performance.now();
+  const timer = setInterval(() => {
+    console.log(`… ${holding}: settling · ${elapsedText(performance.now() - started)}`);
+  }, 5000);
+  try { return await run(); } finally { clearInterval(timer); }
+}
+
+async function foldCreateOutput(args: ParsedArgs, run: () => Promise<number>): Promise<number> {
+  if (args.flags["verbose"]) return run();
+  const lines: string[] = [];
+  const log = console.log;
+  console.log = (...values: unknown[]) => { lines.push(values.map(String).join(" ")); };
+  try {
+    const result = await run();
+    const detail = lines.join(" · ").replace(/\s+/g, " ").trim();
+    if (detail) log(`  CREATE ${detail}`);
+    return result;
+  } finally { console.log = log; }
+}
+
 /** The working layer of the wiki a canon bag opens as (W27: every bag opens as its own wiki). */
 function workingLayerOf(canonBag: string): string {
   const slug = canonBag.slice(canonBag.lastIndexOf("/") + 1);
   return `lar:///ha.ka.ba/wikis/${slug}/working`;
-}
-
-/**
- * The core run — one existing gesture per holding, sequential (one island gate, no
- * write contention). Continues past a failing holding (converge what it can); the
- * caller reads per-holding exit codes.
- */
-export async function seedRun(args: ParsedArgs): Promise<SeedHolding[]> {
-  const holdings = discoverHoldings(larBagsDir());
-  const ledger: SeedHolding[] = [];
-  for (const h of holdings) ledger.push(await seedHolding(args, h));
-  return ledger;
 }
 
 export async function cmdSeed(args: ParsedArgs): Promise<number> {
@@ -166,10 +194,21 @@ export async function cmdSeed(args: ParsedArgs): Promise<number> {
     });
     return 3;
   }
-  console.log(`[seed] ${holdings.length} holding(s): ${holdings.map((h) => h.holding).join(" · ")}${args.flags["apply"] ? "" : "  (preview — pass --apply)"}`);
-  const ledger = await seedRun(args);
+  const ledger: SeedHolding[] = [];
+  const started = performance.now();
+  for (const h of holdings) {
+    const carriers = countCarriers(h.source);
+    console.log(`seed ${h.holding}: ${carriers} files…`);
+    const holdingStarted = performance.now();
+    const row = await seedHolding(args, h);
+    ledger.push(row);
+    const retry = row.exitCode === 0 ? "retry safe" : row.gesture === "ingest"
+      ? "retry safe (diff-gated)"
+      : "retry safety unknown; use the act request/change-id hint before retrying";
+    console.log(`${row.exitCode === 0 ? "✓" : "✗"} ${h.holding}: ${carriers} files · ${elapsedText(performance.now() - holdingStarted)} · ${retry}`);
+  }
   const failed = ledger.filter((h) => h.exitCode !== 0);
-  for (const h of failed) console.error(`[seed] ${h.holding} (${h.gesture}) → exit ${h.exitCode}`);
-  console.log(`[seed] ${ledger.length - failed.length}/${ledger.length} holding(s) converged`);
+  for (const h of failed) console.error(`  ${h.holding}: ${h.gesture} failed (exit ${h.exitCode})`);
+  console.log(`seed: ${ledger.length - failed.length}/${ledger.length} holdings · ${elapsedText(performance.now() - started)}`);
   return failed.length === 0 ? 0 : 1;
 }

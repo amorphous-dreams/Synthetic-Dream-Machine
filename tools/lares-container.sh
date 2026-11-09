@@ -265,8 +265,11 @@ census_before_stop() {
     if [ -n "$census_timed_out" ]; then why="no answer within ${CENSUS_WAIT_SECONDS}s (the vessel may stand wedged)"
     else why="the census exec ended with status $rc"; fi
     printf 'lares-container: down refuses a silent stop: the census could not answer (%s), so what a stop would drop reads unknown\n' "$why" >&2
-    if [ -n "$census_out" ]; then printf '%s\n' "$census_out" | sed -e '/^$/d' -e 's/^/  /' >&2; fi
-    if [ -n "$census_err" ]; then printf '%s\n' "$census_err" | sed -e '/^$/d' -e 's/^/  /' >&2; fi
+    printf '%s\n' 'lares-container: down cannot confirm the vessel census; it remains standing. Check tools/lares-container.sh logs, then retry down.' >&2
+    if [ "${LARES_DEBUG:-}" = 1 ]; then
+      if [ -n "$census_out" ]; then printf '%s\n' "$census_out" | sed -e '/^$/d' -e 's/^/  /' >&2; fi
+      if [ -n "$census_err" ]; then printf '%s\n' "$census_err" | sed -e '/^$/d' -e 's/^/  /' >&2; fi
+    fi
   fi
   offer_accept_loss
 }
@@ -317,9 +320,11 @@ case "$verb" in
       else
         docker compose --env-file /dev/null -f "$COMPOSE_FILE_PATH" -f "$override" up -d --wait lares
       fi
+      up_rc=$?
     else
-      compose up -d --wait lares
+      if compose up -d --wait lares; then up_rc=0; else up_rc=$?; fi
     fi
+    if [ "$up_rc" -ne 0 ]; then printf '%s\n' 'lares-container: the vessel did not become ready — check tools/lares-container.sh logs; if it already runs, run up again' >&2; exit "$up_rc"; fi
     warn_image_revision
     unlock_or_name ;;
   down)
@@ -327,6 +332,7 @@ case "$verb" in
     # acceptance guards the stop.
     if ! down_id=$(compose ps -q --status running lares); then
       printf '%s\n' 'lares-container: down refuses a silent stop: docker compose ps failed, so whether a vessel stands reads unknown' >&2
+      printf '%s\n' 'lares-container: down cannot confirm the vessel census; it remains standing. Check tools/lares-container.sh logs, then retry down.' >&2
       offer_accept_loss
     elif [ -n "$down_id" ]; then
       census_before_stop
