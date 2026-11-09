@@ -21,16 +21,16 @@
 
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";
-import { larHarvestStageDir } from "@lararium/node";
+import { larHarvestStagingDir } from "@lararium/node";
 import { resolvePython } from "../integration-check.js";
 import { larRoot } from "../env.js";
 import { emit } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
-/** The guest Mempalace lane beneath the one canonical stage root — threaded to python for LAR_ROOT
- *  isolation parity (python's own default computes the same path). */
+/** The guest Mempalace lane beneath the one harvest staging root — threaded to python, whose own default
+ *  computes the same path. */
 function mempalaceStageRoot(): string {
-  return join(larHarvestStageDir(), "mempalace");
+  return join(larHarvestStagingDir(), "mempalace");
 }
 
 /** The python guest lane. */

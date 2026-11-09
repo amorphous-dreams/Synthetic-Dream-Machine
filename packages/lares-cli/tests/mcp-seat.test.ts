@@ -6,9 +6,9 @@
  * environment names, which for a harness reads as none: the default XDG vessel, never the hearth. So the
  * resolved entry names the hearth's root in its env, in both forms a hearth stands in:
  *
- *   native     the hearth's root is `LAR_ROOT` (or `~/.lares`); the entry spawns the main clone's
- *              `lares_mcp.py` with `LAR_ROOT` in its env
- *   container  the hearth root holds the surface env (`lares-surface.env`), so the hearth stands in the
+ *   native     the hearth's root is `LAR_ROOT`; the entry spawns the main clone's `lares_mcp.py` with `LAR_ROOT`
+ *              in its env
+ *   container  the operator's `~/.lares` holds the surface env (`lares-surface.env`), so the hearth stands in the
  *              surface container; the entry execs the image's seat there and forwards the container's
  *              own root, read from the compose file, by name
  *
@@ -16,28 +16,32 @@
  * strands no seat. And a stored seat that drifted only in its env reads as drift, so `home tend`
  * re-aims a seat that lacks the root.
  *
- * Every root here stands under a scratch directory; nothing reads or writes a real home.
+ * Every root and every HOME here stands under a scratch directory (the native resolve alone reads the real `~/.venv`);
+ * nothing reads or writes a real `~/.lares`.
  */
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, onTestFinished } from "vitest";
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { memorySensoriumDir } from "@lararium/node";
-import { IMAGE_SEAT, resolveLaresMcp } from "../src/mcp-resolve.js";
+import { IMAGE_SEAT, hearthSurfaceEnv, resolveLaresMcp, seatAbsentCause } from "../src/mcp-resolve.js";
 import { homeItems, mainCloneOf } from "../src/reality-tunnel/catalog.js";
 import { execFileSync } from "node:child_process";
-import { homedir } from "node:os";
 
 const REPO = join(import.meta.dirname, "..", "..", "..");
 const SEAT = join("packages", "lararium-sensorium", "scripts", "lares_mcp.py");
 
 let dir: string;
 let priorRoot: string | undefined;
+let priorHome: string | undefined;
 beforeEach(() => {
   dir = mkdtempSync(join(tmpdir(), "mcp-seat-"));
   priorRoot = process.env["LAR_ROOT"];
+  priorHome = process.env["HOME"];
+  process.env["HOME"] = join(dir, "operator");
 });
 afterEach(() => {
+  process.env["HOME"] = priorHome;
   if (priorRoot === undefined) delete process.env["LAR_ROOT"];
   else process.env["LAR_ROOT"] = priorRoot;
   rmSync(dir, { recursive: true, force: true });
@@ -53,6 +57,14 @@ function fakeClone(): string {
   return clone;
 }
 
+/** The surface env at the scratch operator's `~/.lares`, where the hearth standing in the surface container names it. */
+function surfaceEnv(): string {
+  const file = join(process.env["HOME"]!, ".lares", "lares-surface.env");
+  mkdirSync(join(process.env["HOME"]!, ".lares"), { recursive: true });
+  writeFileSync(file, "LARES_HOUSE=/nowhere\n");
+  return file;
+}
+
 /** A scratch hearth root with its memory sensorium stood, as `lares sense setup` leaves it. */
 function scratchHearth(): string {
   const root = join(dir, "hearth");
@@ -63,6 +75,11 @@ function scratchHearth(): string {
 
 describe("the seat names the hearth's root", () => {
   it("native: a scratch LAR_ROOT rides the entry's env, and the entry aims at the clone it was handed", () => {
+    // The interpreter the native form spawns rests in the real ~/.venv; name it by the operator override, so the scratch
+    // HOME (which holds no surface env) keeps the form native.
+    const priorPython = process.env["LARES_PYTHON"];
+    process.env["LARES_PYTHON"] ??= join(priorHome ?? "", ".venv", "bin", "python3");
+    onTestFinished(() => { if (priorPython === undefined) delete process.env["LARES_PYTHON"]; else process.env["LARES_PYTHON"] = priorPython; });
     const clone = fakeClone();
     const root = scratchHearth();
     const mcp = resolveLaresMcp(clone);
@@ -72,19 +89,19 @@ describe("the seat names the hearth's root", () => {
     expect(mcp!.env["PYTHONPATH"]).toBe(join(clone, "mempalace"));
   });
 
-  it("container: a hearth holding the surface env execs the image's seat and forwards the compose file's root by name", () => {
+  it("container: the operator's surface env execs the image's seat and forwards the compose file's root by name", () => {
     const clone = fakeClone();
-    const root = scratchHearth();
-    writeFileSync(join(root, "lares-surface.env"), "LARES_STATE=/nowhere\n");
+    delete process.env["LAR_ROOT"];          // the host shell names no house root; the surface env alone decides the form
+    const file = surfaceEnv();
     const mcp = resolveLaresMcp(clone);
     expect(mcp).not.toBeNull();
     expect(mcp!.command).toBe("docker");
     expect(mcp!.args).toEqual([
-      "compose", "--env-file", join(root, "lares-surface.env"), "-f", join(clone, "docker-compose.surface.yml"),
+      "compose", "--env-file", file, "-f", join(clone, "docker-compose.surface.yml"),
       "exec", "-T", "-e", "LAR_ROOT", "lares", "python3", `/app/${SEAT}`,
     ]);
     // The container's root, read from the compose file the entry names, never typed here.
-    expect(mcp!.env).toEqual({ LAR_ROOT: "/state" });
+    expect(mcp!.env).toEqual({ LAR_ROOT: "/lar" });
   });
 
   it("the image seat the container form names stands where the Dockerfile lays the scripts", () => {
@@ -141,10 +158,8 @@ describe("a missing seat names its own form's cause", () => {
   });
 
   it("container: the cause names the compose file's root, and no python or sensorium", () => {
-    const root = join(dir, "container-hearth");
-    mkdirSync(root, { recursive: true });
-    writeFileSync(join(root, "lares-surface.env"), "LARES_STATE=/nowhere\n");
-    process.env["LAR_ROOT"] = root;
+    surfaceEnv();
+    delete process.env["LAR_ROOT"];
     const said = unreachable(home());
     expect(said).toMatch(/docker-compose\.surface\.yml/);
     expect(said).toMatch(/LAR_ROOT/);
@@ -175,21 +190,17 @@ describe("the hearth root reads absolute, or the seat refuses by name", () => {
   beforeEach(() => { priorCwd = process.cwd(); });
   afterEach(() => { process.chdir(priorCwd); });
 
-  it("an empty LAR_ROOT reads as unset (the shims' rule): a cwd-side surface env never flips the form, and no path runs relative", () => {
+  it("an empty LAR_ROOT names no house: no seat resolves, a cwd-side surface env never flips the form, and the cause names LAR_ROOT", () => {
     const clone = fakeClone();
     const cwd = join(dir, "project");
     mkdirSync(cwd, { recursive: true });
     writeFileSync(join(cwd, "lares-surface.env"), "COMPOSE_PROJECT_NAME=elsewhere\n");
     process.chdir(cwd);
     process.env["LAR_ROOT"] = "";
-    const mcp = resolveLaresMcp(clone);
-    // The hearth reads `~/.lares` (a scratch HOME under the suite law). The cwd's file never decides the form:
-    // only a surface env at `~/.lares` would, and then the seat names it by its absolute path.
-    const homeEnv = join(homedir(), ".lares", "lares-surface.env");
-    if (mcp?.command === "docker") expect(mcp.args[2]).toBe(homeEnv);
-    else if (mcp !== null) expect(mcp.env["LAR_ROOT"]).toBe(join(homedir(), ".lares"));
-    else expect(existsSync(homeEnv)).toBe(false);
-    if (!existsSync(homeEnv)) expect(mcp?.command).not.toBe("docker");
+    // No home directory stands in for the house root, so no seat binds and the cwd's file decides nothing.
+    expect(resolveLaresMcp(clone)).toBeNull();
+    expect(hearthSurfaceEnv()).toBeNull();
+    expect(seatAbsentCause()).toMatch(/set LAR_ROOT/);
   });
 
   it("a relative LAR_ROOT refuses by name", () => {

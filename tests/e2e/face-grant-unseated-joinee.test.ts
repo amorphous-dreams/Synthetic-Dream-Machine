@@ -57,7 +57,7 @@ describe.skipIf(gaps.length > 0)("★ the later grant, to a joinee that dialed b
 
   test("① B founds by A's edge, holding the hearth's dial in its PIN", () => {
     expect(admitCode).toBe(0);
-    expect(existsSync(join(rootB, "data/lares/vessel/social-bootstrap.json"))).toBe(true);
+    expect(existsSync(join(rootB, "hearth/vessel/social-bootstrap.json"))).toBe(true);
   });
 
   test("MEASURE: a joinee stands by its PIN alone — the boot dials the hearth the edge names", () => {

@@ -18,7 +18,7 @@
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, resolve, sep, extname } from "node:path";
 import { newChangeId, taskContentId, carrierHash, digestsEqual, BAG_MANIFEST_FILE } from "@lararium/mesh";
-import { SyncedTree, syncedTreeKey, syncedTreeDir, bagsFileToUri, mirrorDirFileToUri, larProjectionDir, KAPAE_EXT, readKapaeShadow } from "@lararium/node";
+import { SyncedTree, syncedTreeKey, syncedTreeDir, bagsFileToUri, mirrorDirFileToUri, larProjectionCheckpointDir, KAPAE_EXT, readKapaeShadow, isObserveProjectionPath } from "@lararium/node";
 import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
 import { summaryOutput, type SubmitResult } from "./verb-result.js";
 import { runVerb } from "./verb-call.js";
@@ -90,10 +90,10 @@ export interface ScanResult {
   readonly refusedShadows?: Array<{ readonly file: string; readonly refusal: string }>;
 }
 
-/** Open the Synced tree at the canonical projection-state path (larProjectionDir() —
- *  runtime vessel state, not corpus). */
+/** Open the Synced tree at the canonical projection checkpoint (larProjectionCheckpointDir() —
+ *  runtime vessel state inside the hearth, not corpus). */
 export function openSyncedTree(): SyncedTree {
-  return new SyncedTree(syncedTreeDir(larProjectionDir()));
+  return new SyncedTree(syncedTreeDir(larProjectionCheckpointDir()));
 }
 
 /**
@@ -150,9 +150,23 @@ function listSourceFiles(source: string): string[] | null {
  *  names which address reverse-derivation a row carries. */
 export type FileToUriFn = (root: string, file: string) => string | null;
 
-/** The two mirror directories a vessel reads — `LAR_BAGS` / `LAR_WIKIS` (cli `larBagsDir()` / `larWikisDir()`),
- *  which may sit outside `LAR_ROOT`. */
-export interface MirrorDirs { readonly bags: string; readonly wikis: string }
+/** The mirror directories a vessel reads — `LAR_BAGS` / `LAR_WIKIS` (cli `larBagsDir()` / `larWikisDir()`),
+ *  which may sit outside `LAR_ROOT`, and the house's projections root (`<root>/projections`), whose `bags/` and
+ *  `wikis/` read the same way and whose `observe/` no ingest reads. */
+export interface MirrorDirs { readonly bags: string; readonly wikis: string; readonly projections?: string }
+
+/** The refusal a source under `<projections>/observe` raises: an observe render reads one way, never back. */
+export class ObserveIngestRefused extends Error {
+  override readonly name = "ObserveIngestRefused";
+  constructor(source: string) {
+    super(`observe-ingest-refused: ${source} sits under the observe plane (projections/observe), a one-way render of a control-plane bag; nothing there ingests back`);
+  }
+}
+
+/** Throw {@link ObserveIngestRefused} when `source` sits under `<projections>/observe`. */
+export function refuseObserveSource(source: string, dirs: MirrorDirs): void {
+  if (dirs.projections !== undefined && isObserveProjectionPath(dirs.projections, source)) throw new ObserveIngestRefused(source);
+}
 
 /**
  * Pick the address reverse-derivation by which mirror plane the source sits in.
@@ -166,10 +180,16 @@ export function fileToUriForSource(
   root: string, source: string,
   dirs: MirrorDirs = { bags: join(root, "bags"), wikis: join(root, "wikis") },
 ): FileToUriFn {
-  const wikisRoot = resolve(dirs.wikis);
   const abs = resolve(source);
-  const dir = abs === wikisRoot || abs.startsWith(wikisRoot + sep) ? dirs.wikis : dirs.bags;
-  return (_root, file) => mirrorDirFileToUri(dir, file);
+  const under = (dir: string): boolean => { const r = resolve(dir); return abs === r || abs.startsWith(r + sep); };
+  const projected = dirs.projections === undefined ? null
+    : under(join(dirs.projections, "wikis")) ? join(dirs.projections, "wikis")
+    : under(join(dirs.projections, "bags")) ? join(dirs.projections, "bags")
+    : null;
+  const dir = projected ?? (under(dirs.wikis) ? dirs.wikis : dirs.bags);
+  const observe = dirs.projections;
+  // An observe file derives no address: whatever source names it, it never reaches a wave.
+  return (_root, file) => observe !== undefined && isObserveProjectionPath(observe, file) ? null : mirrorDirFileToUri(dir, file);
 }
 
 /**

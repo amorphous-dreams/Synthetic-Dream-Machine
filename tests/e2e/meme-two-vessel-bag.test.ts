@@ -105,7 +105,7 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
   test("④ the admit ceremony crosses: B founds by A's signed edge, holding its own key", () => {
     expect(admitted?.code, said(admitted ?? { stdout: "", stderr: "no founding ran" })).toBe(0);
     expect(admitted?.stdout).toContain("joined the PersonaGroup");
-    expect(existsSync(join(rootB, "data/lares/vessel/social-bootstrap.json"))).toBe(true);
+    expect(existsSync(join(rootB, "hearth/vessel/social-bootstrap.json"))).toBe(true);
   });
 
   test("⑤ on A: `get` hands the author's `bag` line back byte-whole", async () => {
@@ -127,7 +127,7 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     // The wiki island mounts the SAME working doc the recipe seat wrote (the ONE slot-doc resolver), and
     // its disk mirror sites the working layer under wikis/{slug}/ — a file here is the running wiki's own
     // projection of the placement, never the daemon's.
-    const f = join(A!.root, "wikis/lares", `${PATH}.mem`);
+    const f = join(A!.root, "projections/wikis/lares", `${PATH}.mem`);
     const deadline = Date.now() + 60_000;
     while (!existsSync(f)) {
       if (Date.now() > deadline) throw new Error(`A's running wiki never surfaced the placement at ${f}`);
@@ -172,7 +172,7 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
       console.error(`meme-two-vessel-bag MEASURE ${tag}: bag stats\n${stats.stdout.trim()}\nwiki which ${URI}\n${which.stdout.trim()}`);
     }
     // CONTROL for the projection witness below: nothing sits on B's disk before the promotion.
-    expect(existsSync(join(B!.root, "bags/lares", `${PATH}.mem`))).toBe(false);
+    expect(existsSync(join(B!.root, "projections/bags/lares", `${PATH}.mem`))).toBe(false);
     const refused = await A!.cli(["meme", "put", URI, "--bag", "lares", "--file", join(A!.root, "npc.mem"), "--json"]);
     console.error(`meme-two-vessel-bag MEASURE A: meme put --bag lares → ${said(refused).trim().slice(0, 300)}`);
     expect(refused.json?.["ok"]).toBe(false);
@@ -206,7 +206,7 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     expect(String((bag.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "")).not.toContain("<<~ ahu slot=`#/a`>>");
     expect(String((wiki.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "")).not.toContain("<<~ ahu slot=`#/a`>>");
     expect(which.stdout).not.toContain(`  ${LARES_BAG}`);
-    expect(existsSync(join(B!.root, "bags/lares", `${PATH}.mem`))).toBe(false);
+    expect(existsSync(join(B!.root, "projections/bags/lares", `${PATH}.mem`))).toBe(false);
   });
 
   test("⑧ A's lares record stays whole while B, holding no board source yet, draws kahu-reach on lares", async () => {

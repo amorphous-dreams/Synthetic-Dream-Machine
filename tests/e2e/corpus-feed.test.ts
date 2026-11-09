@@ -101,7 +101,7 @@ function expectedRoots(): Set<string> {
 interface MirrorReading { readonly files: string[]; readonly measure: string }
 
 async function awaitStableMirror(root: string, expected: ReadonlySet<string>, capMs = 300_000): Promise<MirrorReading> {
-  const mirrorRoot = join(root, "wikis/lares");
+  const mirrorRoot = join(root, "projections/wikis/lares");
   const start = Date.now();
   const seconds = (): number => Math.round((Date.now() - start) / 1000);
   let last = -1;
@@ -179,7 +179,7 @@ describe.skipIf(!stagedTarget)("corpus feed — the whole hearth in one gesture 
     // holds (lawful residents outside the corpus namespace included), so the
     // law reads as membership: every corpus root projects to exactly one
     // file at its full-name path; fragments never surface.
-    const mirrorRoot = join(lar.root, "wikis/lares");
+    const mirrorRoot = join(lar.root, "projections/wikis/lares");
     const fileUris = new Set(files.map((f) =>
       "lar:///" + relative(mirrorRoot, f).split(sep).join("/").replace(/\.mem$/, ""),
     ));
@@ -196,7 +196,7 @@ describe.skipIf(!stagedTarget)("corpus feed — the whole hearth in one gesture 
   }, 360_000);
 
   test("F3 — the boot meme projects content-whole (iam framing normalizes once)", async () => {
-    const projected = join(lar.root, "wikis/lares", BOOT_PROJ);
+    const projected = join(lar.root, "projections/wikis/lares", BOOT_PROJ);
     expect(existsSync(projected)).toBe(true);
     const metaFence = /```toml meta\n[\s\S]*?```\n/g;
     const contentView = (s: string) => s.replace(metaFence, "```toml meta\n<normalized>\n```\n");
@@ -207,7 +207,7 @@ describe.skipIf(!stagedTarget)("corpus feed — the whole hearth in one gesture 
   });
 
   test("F4 — pipeline idempotence: re-feeding a projection leaves it byte-stable", async () => {
-    const projected = join(lar.root, "wikis/lares", BOOT_PROJ);
+    const projected = join(lar.root, "projections/wikis/lares", BOOT_PROJ);
     const before = readFileSync(projected, "utf8");
     const r = await lar.cli(["act", "LOAD", "--source-uri", projected, "--to", "lar:///ha.ka.ba/wikis/lares/working", "--yes", "--json"]);
     let late = "";

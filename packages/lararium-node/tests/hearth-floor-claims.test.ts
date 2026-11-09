@@ -32,7 +32,7 @@ function entropy(start: number): RandomProvider {
   let n = start;
   return { getRandomValues<T extends Uint8Array<ArrayBuffer>>(a: T): T { for (let i = 0; i < a.length; i++) a[i] = n++ & 255; return a; }, randomUUID: () => "deterministic" };
 }
-const at = (r: string) => ({ storageDir: join(r, "data", "lares", "vessel"), genesisDir: join(r, "genesis") });
+const at = (r: string) => ({ storageDir: join(r, "hearth", "vessel"), genesisDir: join(r, "genesis") });
 const NEXUS = "nexus-hearth-claims.synthetic";
 const flowPin = (fill: number) => {
   const b = deriveGateBundle(floorGateRoot(floorKeyDoor({ derive: () => new Uint8Array(32).fill(fill) })), new TextEncoder().encode(NEXUS), floorRoute("/flow"));

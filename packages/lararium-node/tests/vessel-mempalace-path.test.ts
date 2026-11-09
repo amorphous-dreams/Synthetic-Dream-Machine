@@ -5,11 +5,11 @@ import { join } from "node:path";
 import { larMempalaceDir } from "../src/vessel-paths.js";
 
 /**
- * `larMempalaceDir` (node) and mempalace's `defaultPalacePath` now derive the store parent from ONE
- * cycle-free source (`@lararium/mempalace/xdg-base`). This locks the byte-identical resolution the
- * pre-refactor value-duplicate produced — so the vessel view and the mempalace chroma dir always agree.
+ * `larMempalaceDir` (node) and mempalace's `defaultPalacePath` derive the store parent from ONE
+ * cycle-free source (`@lararium/mempalace/house-root`), so the vessel view and the mempalace chroma dir
+ * always agree. The guest follows the operator's home and never the house root.
  */
-describe("larMempalaceDir (derives from the shared xdg-base)", () => {
+describe("larMempalaceDir (derives from the shared house-root)", () => {
   const saved: Record<string, string | undefined> = {};
   const roots: string[] = [];
 
@@ -44,8 +44,7 @@ describe("larMempalaceDir (derives from the shared xdg-base)", () => {
     // never strangled into our sensorium tree; the memory-sensorium `#has` it by ABSOLUTE reference.
     const root = freshRoot();
     set("MEMPALACE_PALACE_PATH", undefined);
-    set("LAR_ROOT", undefined);
-    set("XDG_DATA_HOME", join(root, "xdg"));
+    set("LAR_ROOT", undefined);                       // the guest needs no house root named
     set("HOME", join(root, "home"));
     set("USERPROFILE", join(root, "home"));
     expect(larMempalaceDir()).toBe(join(root, "home", ".mempalace"));
@@ -54,12 +53,11 @@ describe("larMempalaceDir (derives from the shared xdg-base)", () => {
   it("the sensorium tree does NOT relocate content (upstream-external boundary)", () => {
     const root = freshRoot();
     set("MEMPALACE_PALACE_PATH", undefined);
-    set("LAR_ROOT", undefined);
-    set("XDG_DATA_HOME", join(root, "xdg"));
+    set("LAR_ROOT", join(root, "house"));
     set("HOME", join(root, "home"));
     set("USERPROFILE", join(root, "home"));
-    // even with the consolidated content dir present in the tree, content stays external at ~/.mempalace.
-    mkdirSync(join(root, "xdg", "lares", "sensoriums", "memory", "content"), { recursive: true });
+    // even with the consolidated content dir present in the house, content stays external at ~/.mempalace.
+    mkdirSync(join(root, "house", "sensoriums", "memory", "content"), { recursive: true });
     expect(larMempalaceDir()).toBe(join(root, "home", ".mempalace"));
   });
 });

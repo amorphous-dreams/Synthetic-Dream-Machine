@@ -6,11 +6,12 @@ export {
 } from "./lan-discovery.js";
 export type { LanAnnouncement, LanCandidate, LanSocket, LanDatagramSocket, LanPacket, LanRecord } from "./lan-discovery.js";
 export {
-  larHome, larDataDir, larIdentityDir, larProjectionDir, larSealHome, larBootstrapPath,
-  larHarvestDir, larHarvestStageDir, larStructurePalaceDir, larFormPalaceDir,
+  larDataDir, larIdentityDir, larProjectionCheckpointDir, larSealHome, larBootstrapPath,
+  larHarvestCheckpointDir, larHarvestStagingDir, larStructurePalaceDir, larFormPalaceDir,
   larMempalaceDir, larContentDir, scratchSensoriumDir, scratchSensoriumInstanceDir,
-  // XDG base homes + the memory sensorium dir + config path (the consolidated layout).
-  laresDataHome, larariumDataHome, larStateHome, larCacheHome, larConfigHome, larRuntimeHome,
+  // The named house root and its classes (one level each beneath LAR_ROOT).
+  HouseRootUnnamed, larHouseRoot, larHearthHome, larSensoriumsHome, larCheckpointsHome, larStagingHome,
+  larLibraryRoot, larProjectionsHome, larConfigHome, larCacheHome, larRuntimeHome,
   assertOneSegment,
   memorySensoriumDir, memorySensoriumLenses, sensoriumLenses, sensoriumNames, sensoriumDir,
   // The `mesh` sensorium dir + its WHO/AUTHORITY/FLOW child dirs (the consolidated federation tree).
@@ -34,14 +35,14 @@ export {
 export type { BagSighting, BagMoveOutcome } from "./bag-declare.js";
 
 // The ACQUIRED tier — bodies a human did not author, sited readable + verifiable in the SHRINE
-// (`<lararium>/library`), a house no wipe names, so a shelf may grow without a repository growing with it.
+// (`<root>/library`), a house no wipe names, so a shelf may grow without a repository growing with it.
 export {
   larLibraryHome, libraryCollectionDir, resolveLibraryRef, acquireIntoLibrary,
   readLibraryMeta, listCollections, listCollection, verifyCollection, writeLibraryIndex,
 } from "./library-store.js";
 export type { AcquireOutcome, AcquireOptions, LibraryVerdict } from "./library-store.js";
 
-// The per-daemon resource-override reader + the composable daemon resource caps (`~/.lares/config.json`
+// The per-daemon resource-override reader + the composable daemon resource caps (`<root>/config/config.json`
 // sites bags/genesis/cas away from the repo-relative default; genesis artifacts stay checked-in by default).
 export {
   loadLaresConfig, laresConfigPath, daemonCorpusRoot, daemonGenesisDir, daemonBagsDir, daemonCasDir,
@@ -186,7 +187,7 @@ export type { NodeReadiness, ReadinessState, ReadinessFace } from "./readiness-f
 
 export { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "./open-node-vessel.js";
 export { SyncedTree, contentHash, syncedTreeKey, syncedTreeDir, type SyncedBase } from "./synced-tree.js";
-export { bagsFileToUri, wikisFileToUri, mirrorDirFileToUri } from "./bag-paths.js";
+export { bagsFileToUri, wikisFileToUri, mirrorDirFileToUri, isObserveProjectionPath, daemonObserveRoot, OBSERVE_DIR } from "./bag-paths.js";
 
 export { runInit, runFoundTheFace, faceStands, armRecoveryAtFounding } from "./commands/init.js";
 export { recoveryContactOffer } from "./recovery-contact-enrolment.js";

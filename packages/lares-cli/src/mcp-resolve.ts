@@ -26,9 +26,10 @@
  */
 
 import { existsSync, readFileSync } from "node:fs";
+import { homedir } from "node:os";
 import { isAbsolute, join } from "node:path";
 import { resolveLaresMcpSpawn } from "@lararium/mempalace";
-import { larHome, memorySensoriumDir } from "@lararium/node";
+import { HouseRootUnnamed, larHouseRoot, memorySensoriumDir } from "@lararium/node";
 
 export type WireAction = "wired" | "present" | "missing-script";
 
@@ -39,35 +40,47 @@ export interface LaresMcpCommand {
   readonly env: Record<string, string>;
 }
 
-/** The surface env a hearth root holds when its hearth stands in the surface container. */
+/** The surface env the operator's `~/.lares` holds when the hearth stands in the surface container. */
 export const SURFACE_ENV = "lares-surface.env";
 /** The surface deployment's compose file, at the clone's root. */
 export const SURFACE_COMPOSE = "docker-compose.surface.yml";
 /** The seat inside the product image: the image's working root (`WORKDIR /app`) plus the repo-relative path. */
 export const IMAGE_SEAT = "/app/packages/lararium-sensorium/scripts/lares_mcp.py";
 
-/** The hearth's surface env when the hearth stands in the surface container, else null. The ONE signal the
- *  resolver and the catalog's refusal both read (`tools/lares-container.sh` reads the same file). */
+/** The house root LAR_ROOT names, or null while it names none. A seat binds one house, so an unnamed root
+ *  resolves no seat at all, and {@link seatAbsentCause} says so. */
+function namedRoot(): string | null {
+  try {
+    return larHouseRoot();
+  } catch (err) {
+    if (err instanceof HouseRootUnnamed) return null;
+    throw err;
+  }
+}
+
+/** The surface env (`~/.lares/lares-surface.env`, outside every bind of the house) when the hearth stands in the
+ *  surface container, else null. The ONE signal the resolver and the catalog's refusal both read
+ *  (`tools/lares-container.sh` reads the same file). It names host config, never house state, so it reads the
+ *  operator's home whether or not this shell names a house root. */
 export function hearthSurfaceEnv(): string | null {
-  if (relativeHearth() !== null) return null;
-  const file = join(larHome(), SURFACE_ENV);
+  const file = join(homedir(), ".lares", SURFACE_ENV);
   return existsSync(file) ? file : null;
 }
 
-/** The hearth root when it reads RELATIVE, else null. A seat a harness spawns resolves a relative path against
- *  that harness's own cwd, a project the house never chose, so a relative hearth names no seat at all. */
+/** The house root when it reads RELATIVE, else null. A seat a harness spawns resolves a relative path against
+ *  that harness's own cwd, a project the house never chose, so a relative root names no seat at all. */
 function relativeHearth(): string | null {
-  const hearth = larHome();
-  return isAbsolute(hearth) ? null : hearth;
+  const root = namedRoot();
+  return root === null || isAbsolute(root) ? null : root;
 }
 
 /** Why no seat resolves, in the form the hearth stands in: the refusal a missing seat reads. */
 export function seatAbsentCause(): string {
+  if (hearthSurfaceEnv() !== null) return `the hearth stands in the surface container (${SURFACE_ENV}), and the clone's ${SURFACE_COMPOSE} stands absent or names no LAR_ROOT`;
+  if (namedRoot() === null) return new HouseRootUnnamed().message;
   const relative = relativeHearth();
   if (relative !== null) return `LAR_ROOT names a relative hearth (${relative}); name it by an absolute path`;
-  return hearthSurfaceEnv() !== null
-    ? `the hearth stands in the surface container (${SURFACE_ENV}), and the clone's ${SURFACE_COMPOSE} stands absent or names no LAR_ROOT`
-    : "lares_mcp.py, python or the sensorium stands absent; `lares mempalace install` and `lares sense setup` lay them down";
+  return "lares_mcp.py, python or the sensorium stands absent; `lares mempalace install` and `lares sense setup` lay them down";
 }
 
 /** The vessel's root inside the surface container, as the compose file's environment names it. */
@@ -83,10 +96,10 @@ function containerRoot(compose: string): string | null {
  *
  * THE ENTRY NAMES THE HEARTH'S ROOT. The seat routes every verb over the daemon socket, and `lares_uds.py`
  * derives that socket from `LAR_ROOT`. A harness spawns the seat with its own environment, which names no
- * root, so an entry without one binds the default XDG vessel and never the hearth. The hearth's root
- * derives from `larHome()` (`LAR_ROOT`, else `~/.lares`), and the entry carries it in BOTH forms:
+ * root, so an entry without one binds no house at all. The house root reads `larHouseRoot()` (`LAR_ROOT`
+ * alone; unnamed resolves no seat), and the entry carries it in BOTH forms:
  *
- *   container  the hearth root holds the surface env (`lares-surface.env`), so the hearth stands in the
+ *   container  the operator's `~/.lares` holds the surface env (`lares-surface.env`), so the hearth stands in the
  *              surface container. The entry execs the image's seat there through the clone's compose file
  *              and forwards `LAR_ROOT` by name (`exec -e LAR_ROOT`), its value the container's own root as
  *              the compose file names it. The image carries its own interpreter and pinned `mcp`.
@@ -98,8 +111,6 @@ function containerRoot(compose: string): string | null {
  * strands no seat. Every path runs absolute: a harness spawns this with no venv active and no cwd guarantee.
  */
 export function resolveLaresMcp(clone: string): LaresMcpCommand | null {
-  if (relativeHearth() !== null) return null;
-  const hearth = larHome();
   const surfaceEnv = hearthSurfaceEnv();
   if (surfaceEnv !== null) {
     const compose = join(clone, SURFACE_COMPOSE);
@@ -111,6 +122,9 @@ export function resolveLaresMcp(clone: string): LaresMcpCommand | null {
       env: { LAR_ROOT: root },
     };
   }
+  // NATIVE: the seat binds the house root this shell names, absolute.
+  const hearth = namedRoot();
+  if (hearth === null || relativeHearth() !== null) return null;
   const { python, script, submoduleRoot, scriptPresent } = resolveLaresMcpSpawn(clone);
   if (python === null || !scriptPresent) return null;
   if (!existsSync(memorySensoriumDir())) return null; // no sensorium stood — `lares sense setup` stands it

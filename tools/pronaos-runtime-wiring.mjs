@@ -36,7 +36,7 @@ export function assertPronaosRuntimeConfiguration({ dockerfile, compose }) {
     if (environmentStart < 0 || environmentEnd < 0) throw new Error(`${profile.toUpperCase()} service has no bounded environment block`);
     const environment = service.slice(environmentStart, environmentEnd);
     if (profile === "prod" && environment.includes("LAR_DEV_REPO_ROOT")) throw new Error("PROD environment carries the QA-only dev corpus preset");
-    if (!environment.includes("XDG_DATA_HOME: /app/.lararium-data") && !environment.includes("<<: *vessel-data-env")) throw new Error(`${profile.toUpperCase()} environment does not name the durable vessel data home`);
+    if (!environment.includes("LAR_ROOT: /app/.lararium-data") && !environment.includes("<<: *vessel-data-env")) throw new Error(`${profile.toUpperCase()} environment does not name the durable house root`);
     if (!environment.includes("\n      LAR_PRONAOS_WEB_ROOT: " + WEB_ROOT)) throw new Error(`${profile.toUpperCase()} environment does not name the Web artifact root`);
     if (!environment.includes("\n      LAR_PRONAOS_ARTIFACT_RECORD: " + RECORD_PATH)) throw new Error(`${profile.toUpperCase()} environment does not name the Pronaos artifact receipt`);
     if (!environment.includes('\n      LAR_SAME_ORIGIN: "true"')) throw new Error(`${profile.toUpperCase()} environment does not declare the direct Node same-origin composition`);

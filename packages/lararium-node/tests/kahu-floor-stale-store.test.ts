@@ -7,8 +7,8 @@
  *   · the derivation under persona zero's keys cannot read at a locked floor, the recount names that failure, and the
  *     holder reads INCOMPLETE, so the guard (wired as the composer wires it) withholds every document from every wire peer;
  *   · CONTROL: a seal home with no charter runs no derivation, reads whole, and withholds nothing it never classed.
- * Both stood GREEN on the span: the clause found no hole, and this file pins the closed state it measured. Under the suite
- * harness the key read refuses as `ScratchCustodyRefused`; a locked vessel refuses `CustodyLocked` (`face-key-custody.ts`,
+ * Both stood GREEN on the span: the clause found no hole, and this file pins the closed state it measured. The floor stands
+ * as a custody seated and LOCKED under a scratch house root, so the key read refuses `CustodyLocked` (`face-key-custody.ts`,
  * `readNexusKey`). Either throw reaches the one catch that names the failure, so the measure reads the same path.
  */
 import { afterAll, describe, expect, test, vi } from "vitest";
@@ -20,6 +20,7 @@ import { hex, protectedDocGuard } from "@lararium/mesh";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { kahuProtectedHolder } from "../src/kahu-realm.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
+import { seatScratchCustody } from "./custody-seat-fixture.js";
 
 const roots: string[] = [];
 afterAll(() => { for (const r of roots) rmSync(r, { recursive: true, force: true }); });
@@ -40,6 +41,9 @@ describe("T22 measure: a floor on a store a sovereign run left", () => {
     const sealHome = scratch();
     const keys = await Promise.all([71, 72].map((b) => ed.getPublicKeyAsync(new Uint8Array(32).fill(b)).then(hex)));
     writeNexusDoc(sealHome, heldCharter({ keys, threshold: 2 }).doc());
+    // THE FLOOR: a custody stands under the scratch house root and holds no open key.
+    const floor = await seatScratchCustody("kahu-floor");
+    await floor.holder.lock();
     const holder = kahuProtectedHolder({ sealHome, canon: () => ({}) });
     const said = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
@@ -49,7 +53,7 @@ describe("T22 measure: a floor on a store a sovereign run left", () => {
       const lines = said.mock.calls.map((c) => c.map(String).join(" "));
       expect(lines.some((l) => /\(1 read failure\(s\): persona zero's keys at /.test(l)), lines.join("\n")).toBe(true);
       expect(await guardOver(holder).withholds("dialed-hearth", KAHU_CANON_ID)).toBe(true);
-    } finally { said.mockRestore(); holder.close(); }
+    } finally { said.mockRestore(); holder.close(); await floor.drop(); }
   });
 
   test("CONTROL: a seal home with no charter reads whole and withholds an unclassed document from nobody", async () => {

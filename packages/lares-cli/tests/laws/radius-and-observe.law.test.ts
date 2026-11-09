@@ -157,7 +157,7 @@ describe("L4 · an observing verb leaves every tree it can reach unchanged", () 
   plain("the vessel door's read leaves its store and its LAR_ROOT unchanged", async () => {
     expect(VESSEL_SUBS).toContain("read");
     const root = mkdtempSync(join(sandbox, "lar-root-"));
-    const store = join(root, "data", "lares", "vessel");
+    const store = join(root, "hearth", "vessel");
     mkdirSync(store, { recursive: true });
     writeFileSync(join(store, "marker.txt"), "kept");
     const prior = process.env["LAR_ROOT"];

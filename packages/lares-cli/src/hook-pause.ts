@@ -9,20 +9,20 @@
  * the discipline made a switch: `lares hooks pause` writes the marker, the hook
  * script's guard exits early, `lares mempalace quiesce` can then drain to zero.
  *
- * The marker lives at `<state>/hooks.paused` (XDG state home, LAR_ROOT-aware) so
- * the same path resolves in TS (here) and in bash (the hook script computes it
- * from `${LAR_ROOT:+$LAR_ROOT/state}` else `${XDG_STATE_HOME:-$HOME/.local/state}/lares`).
+ * The marker lives at `<root>/run/hooks.paused` (the house root's transient levers),
+ * so the same path resolves in TS (here) and in bash (the hook script computes it
+ * as `$LAR_ROOT/run/hooks.paused`, and steps aside whole while LAR_ROOT names no root).
  *
  * Meme: lar:///ha.ka.ba/lararium/mempalace/palace-path
  */
 
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { larStateHome } from "@lararium/node";
+import { larRuntimeHome } from "@lararium/node";
 
 /** The absolute path of the hook-pause marker — one spelling, TS + bash agree. */
 export function hookPauseMarkerPath(): string {
-  return join(larStateHome(), "hooks.paused");
+  return join(larRuntimeHome(), "hooks.paused");
 }
 
 export interface HookPauseState {

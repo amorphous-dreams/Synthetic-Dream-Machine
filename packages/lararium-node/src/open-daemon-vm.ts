@@ -20,7 +20,8 @@
 
 import { writeKahuaIndex } from "./kahua-index.js";
 import { daemonDiskMirrors } from "./bag-paths.js";
-import { daemonBagsDir } from "./lares-config.js";
+import { daemonBagsDir, loadLaresConfig } from "./lares-config.js";
+import { observeDaemonEnabled } from "./daemon-observe.js";
 import { parseAutomergeUrl } from "@automerge/automerge-repo";
 import { join }                                          from "path";
 import {
@@ -93,8 +94,8 @@ export interface DaemonVmOptions {
   casData?:          IslandCasData;
   /** D-VR-C: persist only the explicit daemon document in its owned scope. */
   ownedDocument?:    boolean;
-  /** The vessel root (`<root>/wikis/kahua/` receives the daemon wiki's working layer). */
-  rootDir?:          string;
+  /** The house's projections root (`<root>/projections`): `wikis/daemon-<F>/` receives the daemon wiki's working layer. */
+  projectionRoot?:   string;
   /** Override the daemon island script URL (tests). */
   workerScriptUrl?:  URL;
   /**
@@ -121,7 +122,7 @@ export function faceRelationStance(input: { personaBagId?: string | null | undef
 }
 
 export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore> {
-  const { repo, caps, daemonUrl, personaUrl, personaBagId, faceRelation, faceGroup, faceLabel, personaLate = false, coreHash, pluginCids, grants, libraryBags, daemonAuth, storageDir, ownedDocument = false, rootDir, workerScriptUrl, casData,
+  const { repo, caps, daemonUrl, personaUrl, personaBagId, faceRelation, faceGroup, faceLabel, personaLate = false, coreHash, pluginCids, grants, libraryBags, daemonAuth, storageDir, ownedDocument = false, projectionRoot, workerScriptUrl, casData,
           guardCrossroadsNexusHandles = true } = opts;
 
   // An explicitly supplied empty path must not silently downgrade the worker to
@@ -157,9 +158,9 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
   }
 
   const stance = faceRelationStance({ personaBagId, faceGroup, faceRelation });
-  if (rootDir && stance === "no-face") console.log("[kahua] no face worn; no private kahua mirrors");
-  if (rootDir && stance === "unproven") console.log("[kahua] the face's founding record stands unproven in this composition (the key rests locked or the face is still joining); no private kahua mirrors until the unlocked composition proves it");
-  if (rootDir && faceRelation && faceGroup) await writeKahuaIndex(rootDir, [{ relation: faceRelation, tag: personaScopeTag(faceGroup), label: faceLabel ?? "", group: faceGroup }]);
+  if (projectionRoot && stance === "no-face") console.log("[kahua] no face worn; no private kahua mirrors");
+  if (projectionRoot && stance === "unproven") console.log("[kahua] the face's founding record stands unproven in this composition (the key rests locked or the face is still joining); no private kahua mirrors until the unlocked composition proves it");
+  if (projectionRoot && faceRelation && faceGroup) await writeKahuaIndex(projectionRoot, [{ relation: faceRelation, tag: personaScopeTag(faceGroup), label: faceLabel ?? "", group: faceGroup }]);
 
   // The daemon holds NO standing system-bag mount: it reaches a deep target bag
   // by ACCESS per residency action (ephemeral mount, released after — the
@@ -192,11 +193,11 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
       documentUrl: daemonUrl,
       storage: { type: "nodefs" as const, dir: join(storageDir!, "daemon-owned") },
     } } : {}),
-    // The daemon VM's mirrors, one list (`daemonDiskMirrors`): the worn face's working top under `<root>/wikis/kahua-<F>/`,
-    // its kahua stage under `<root>/bags/kahua-<F>/`, crossroads back to its canon source where one stands; the control
+    // The daemon VM's mirrors, one list (`daemonDiskMirrors`): the worn face's working top under `<projections>/wikis/daemon-<F>/`,
+    // its kahua stage under `<projections>/bags/kahua-<F>/`, crossroads back to its canon source where one stands; the control
     // plane holds none. The verified founding relation names the folders that face projects on
     // every device; no worn face projects no private kahua layer.
-    ...(rootDir ? { diskMirrors: daemonDiskMirrors({ rootDir, canonBags: daemonBagsDir(), faceRelation: faceRelation ?? null, guardCrossroadsNexusHandles }) } : {}),
+    ...(projectionRoot ? { diskMirrors: daemonDiskMirrors({ projectionRoot, canonBags: daemonBagsDir(), faceRelation: faceRelation ?? null, guardCrossroadsNexusHandles, observeDaemon: observeDaemonEnabled(loadLaresConfig()) }) } : {}),
     workerScriptUrl: workerScriptUrl ?? DEFAULT_ADMIN_WORKER_URL,
   });
 }

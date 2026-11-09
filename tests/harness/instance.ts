@@ -30,7 +30,7 @@ import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import { plainRecordOrNull } from "../../packages/lararium-mesh/src/stored-value.js";
 import { DEVICE_DELEGATION_SELF_TIDDLER } from "../../packages/lararium-mesh/src/lar-uris.js";
-import { kahuaFaceFolder } from "../../packages/lararium-node/src/bag-paths.js";
+import { daemonFaceFolder, kahuaFaceFolder } from "../../packages/lararium-node/src/bag-paths.js";
 
 /**
  * Remove a staged root, and WAIT OUT THE DAEMON'S LAST WRITES.
@@ -294,7 +294,7 @@ const hearthGroups = new Map<string, string>();
 
 /** Persona zero's PersonaGroup id on a staged hearth `foundStagedHearth` founded; a root it never founded throws by name. */
 export function stagedHearthRelation(root: string): string {
-  const index = readFileSync(join(root, "kahua-index.toml"), "utf8");
+  const index = readFileSync(join(root, "projections", "kahua-index.toml"), "utf8");
   const relation = /^\[faces\."([^"\n]+)"\]/m.exec(index)?.[1];
   if (!relation) throw new Error("kahua index contains no face relation");
   return relation;
@@ -311,7 +311,12 @@ export function stagedHearthGroup(root: string): string {
  * rides the folder's name, `<root>/wikis/kahua-<tag>`, the tag the founded face's derived persona tag.
  */
 export function daemonWikiDir(root: string): string {
-  return join(root, "wikis", kahuaFaceFolder(stagedHearthRelation(root)));
+  return join(root, "projections", "wikis", daemonFaceFolder(stagedHearthRelation(root)));
+}
+
+/** The face's kahua stage on a staged hearth: `<root>/projections/bags/kahua-<F>`. */
+export function kahuaStageDir(root: string): string {
+  return join(root, "projections", "bags", kahuaFaceFolder(stagedHearthRelation(root)));
 }
 
 /**
@@ -481,10 +486,9 @@ function attachLive(): LarInstance {
   if (!root) throw new Error("LAR_TARGET=live requires LAR_ROOT (and usually LAR_PORT) to name the instance");
   // A FOUNDED vessel proves itself by its own address book, which lives with the store it addresses —
   // never in genesis/, where only the shared seed rides. Under LAR_ROOT the store sites at
-  // <root>/data/lares/vessel: every directory under an isolated root names an XDG KIND, and the two
-  // HOUSES nest inside the data kind exactly as they do under XDG.
-  if (!existsSync(join(root, "data", "lares", "vessel", "social-bootstrap.json"))) {
-    throw new Error(`LAR_TARGET=live: no social bootstrap at ${root}/data/lares/vessel — has this root been founded?`);
+  // <root>/hearth/vessel, the hearth class of the house root LAR_ROOT names.
+  if (!existsSync(join(root, "hearth", "vessel", "social-bootstrap.json"))) {
+    throw new Error(`LAR_TARGET=live: no social bootstrap at ${root}/hearth/vessel — has this root been founded?`);
   }
   const env = { LAR_ROOT: root, LAR_PORT: String(port) };
   return {
@@ -515,11 +519,9 @@ export async function targetInstance(): Promise<LarInstance> {
 /**
  * The vessel's Automerge STORE on disk — the one path a raw-storage read may open.
  *
- * It rides in the SPIRITS' house (`<root>/data/lares/vessel`) because a vessel substrate is the spirits':
- * a Lar wakes, acts and gives way, and `bake` re-derives the genesis engine while the staged root starts from a fresh scratch directory. What
- * belongs to the HOUSE — the acquired shelf, the sensoriums — stands beside it at `<root>/data/lararium`,
- * and `<root>/state` keeps watermarks alone. A house never stands where a kind belongs, so an isolated
- * root reads as the real disk with a different prefix.
+ * It rides in the hearth (`<root>/hearth/vessel`), beside the identity and the seal, under the house root a staged
+ * vessel names; the staged root starts from a fresh scratch directory, so it reads as the real house with a different
+ * prefix.
  *
  * NAME THE ADDRESS EXACTLY. A wrong path here does not fail loudly — it opens an absent directory, finds
  * no chunks, and reports the document "unavailable", which reads as a replication fault.
@@ -544,7 +546,7 @@ export async function targetInstance(): Promise<LarInstance> {
 export function rendezvousSocket(instance: LarInstance): string {
   // THE DIGEST IS OVER THE SUBSTRATE DIR, NOT THE INSTANCE ROOT. `local-connector` derives
   // `rendezvousPath({ root: dataDir ?? larDataDir() })`, and `larDataDir()` resolves to
-  // `<LAR_ROOT>/data/lares/vessel` — so hashing the bare root names a socket nothing ever binds.
+  // `<LAR_ROOT>/hearth/vessel` — so hashing the bare root names a socket nothing ever binds.
   return rendezvousPath({ root: vesselStorageDir(instance), uid: process.getuid?.() ?? 0 });
 }
 
@@ -569,7 +571,7 @@ export async function awaitRendezvous(instance: LarInstance, timeoutMs = 60_000)
 }
 
 export function vesselStorageDir(instance: LarInstance): string {
-  return join(instance.root, "data", "lares", "vessel");
+  return join(instance.root, "hearth", "vessel");
 }
 
 /** Read a `key: automerge:...` line from the staged boot log (e.g. "lararium", "catalog"). */

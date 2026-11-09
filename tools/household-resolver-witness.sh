@@ -70,9 +70,9 @@ if [ -n "$(docker ps -a -q --filter "label=com.docker.compose.project=$PROJECT" 
 fi
 
 SCRATCH=$(mktemp -d "${TMPDIR:-/tmp}/household-resolver.XXXXXX")
-mkdir -p "$SCRATCH/state" "$SCRATCH/workspace"
-# The vessel's two mounts stay unset in this slot's services, and compose still reads the whole file.
-export LARES_STATE="$SCRATCH/state" LARES_WORKSPACE="$SCRATCH/workspace"
+mkdir -p "$SCRATCH/house" "$SCRATCH/workspace"
+# The vessel's mounts stay unset in this slot's services, and compose still reads the whole file.
+export LARES_HOUSE="$SCRATCH/house" LARES_WORKSPACE="$SCRATCH/workspace"
 export LARES_TLS_ZONE="$ZONE" LARES_DNS_BIND=127.0.0.1
 # A loopback port the OS hands out, so a second copy of this witness never reaches for the same one.
 LARES_DNS_PORT=$(node -e 'const s=require("net").createServer();s.listen(0,"127.0.0.1",()=>{process.stdout.write(String(s.address().port));s.close();});')

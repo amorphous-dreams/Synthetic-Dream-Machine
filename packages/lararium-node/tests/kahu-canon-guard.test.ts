@@ -86,7 +86,7 @@ describe("the Kahu canon is classed by identity and decided live, by one guard",
   test("B1–B3 — removal then reboot: the retained canon stays classed, and an ordinary admitted peer draws denial", async () => {
     expect(typeof guardOf, "protectedDocGuard stands").toBe("function");
     expect(typeof protectedIds, "kahuProtectedDocIds stands").toBe("function");
-    await withLarRoot(r, () => foundHearthDirect({ storageDir: join(r, "data", "lares", "vessel"), genesisDir: join(r, "genesis") }));
+    await withLarRoot(r, () => foundHearthDirect({ storageDir: join(r, "hearth", "vessel"), genesisDir: join(r, "genesis") }));
     await withLarRoot(r, async () => {
       const sealHome = larSealHome();
       const vesselKey = await loadVesselVerifyingKey();

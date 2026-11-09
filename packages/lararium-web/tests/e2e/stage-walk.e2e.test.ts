@@ -3,7 +3,7 @@
  * `LAR_ROOT`, founded and unlocked through the test door) and a real Chromium joined to its face through the fleet-join door.
  *
  *   S1 — the node half: a CLI `meme put --recipe default` lands in the daemon wiki's working layer, its carrier projects
- *        under `<root>/wikis/kahua/` (the kahua tree the operator works in), and `meme get --recipe default` reads the same bytes; the repo's tree takes no write.
+ *        under `<root>/projections/wikis/daemon-<F>/` (the face-bound daemon wiki the operator works in), and `meme get --recipe default` reads the same bytes; the repo's tree takes no write.
  *        It doubles as the KNOWN POSITIVE for S3's disk instrument: a write under the root reads as a write.
  *   S2 — a fresh browser joins the hearth's face (offer → request → answer → land), crosses connected, and SUMMONS its own
  *        daemon surface: the one wiki whose recipe stacks this device's working top over the face's kahua stage over canon
@@ -37,7 +37,7 @@ import { foundStagedHearth, openStaged, stageDir, stagedHearthRelation, type Lar
 import { mintStagedNexusKey } from "../../../../tests/harness/vessel-key.js";
 // The published test route answers the custody form a fresh vessel raises (a harness door; never a person's passphrase).
 import { armTestCustody } from "../../../lararium-node/dist/probes/browser-test-custody.js";
-import { kahuaFaceFolder } from "../../../lararium-node/dist/src/bag-paths.js";
+import { daemonFaceFolder, kahuaFaceFolder } from "../../../lararium-node/dist/src/bag-paths.js";
 
 const REPO = resolve(import.meta.dirname, "../../../..");
 const WEB_ROOT = join(REPO, "packages/lararium-web/dist");
@@ -61,19 +61,22 @@ function filesUnder(dir: string): string[] {
 
 /** The hearth root's projection trees, file → mtime: the disk instrument S1 proves and S3 reads. */
 const projection = (): Map<string, number> =>
-  new Map([...filesUnder(join(hearth!.root, "bags")), ...filesUnder(join(hearth!.root, "wikis"))].map((f) => [f, statSync(f).mtimeMs]));
+  new Map([...filesUnder(join(hearth!.root, "projections", "bags")), ...filesUnder(join(hearth!.root, "projections", "wikis"))].map((f) => [f, statSync(f).mtimeMs]));
 
 const tail = (): string => lines.filter((l) => !l.startsWith("Warning: Global assignment")).slice(-80).join("\n");
 
-/** The worn face's folder (`kahua-<F>`), its tag derived from the hearth's founding group as its persona plane derives it. */
+/** The worn face's stage folder (`kahua-<F>`), its relation read off the hearth's founding record. */
 const faceFolder = (): string => kahuaFaceFolder(stagedHearthRelation(hearth!.root));
+/** The worn face's daemon wiki folder (`daemon-<F>`), the same relation. */
+const daemonFolder = (): string => daemonFaceFolder(stagedHearthRelation(hearth!.root));
 /**
- * WHERE A NODE-SIDE DRAFT PROJECTS: the worn face's kahua working top under the state root (`<root>/wikis/kahua-<F>`).
+ * WHERE A NODE-SIDE DRAFT PROJECTS: the worn face's daemon wiki working top under the projections root
+ * (`<root>/projections/wikis/daemon-<F>`).
  * One helper, so the lane repoints every read when the top moves.
  */
-const draftPath = (titlePath: string, ext: string): string => join(hearth!.root, "wikis", faceFolder(), `${titlePath}${ext}`);
-/** Where a LIFTED kahua item projects: the face's stage under the state root (`<root>/bags/kahua-<F>`), sited by title. */
-const stagePath = (titlePath: string): string => join(hearth!.root, "bags", faceFolder(), `${titlePath}.tid`);
+const draftPath = (titlePath: string, ext: string): string => join(hearth!.root, "projections", "wikis", daemonFolder(), `${titlePath}${ext}`);
+/** Where a LIFTED kahua item projects: the face's stage under the projections root (`<root>/projections/bags/kahua-<F>`), sited by title. */
+const stagePath = (titlePath: string): string => join(hearth!.root, "projections", "bags", faceFolder(), `${titlePath}.tid`);
 
 /** Poll a predicate on the hearth's disk or CLI to a bound; answer its last reading. */
 async function settle<T>(read: () => T | Promise<T>, done: (v: T) => boolean, ms = 30_000): Promise<T> {
@@ -92,7 +95,7 @@ async function settle<T>(read: () => T | Promise<T>, done: (v: T) => boolean, ms
  */
 const CONTROL_TITLE = /checkpoint|persona[-_/]?act|cap[-_/]?event|\/seal|binding|intent|outcomes?\/|summons|delegation|\$:\//i;
 function controlRecordsOnDisk(): string[] {
-  return [...filesUnder(join(hearth!.root, "bags")), ...filesUnder(join(hearth!.root, "wikis"))].filter((f) => {
+  return [...filesUnder(join(hearth!.root, "projections", "bags")), ...filesUnder(join(hearth!.root, "projections", "wikis"))].filter((f) => {
     const rel = f.slice(hearth!.root.length);
     const title = /^title: (.*)$/m.exec((() => { try { return readFileSync(f, "utf8").slice(0, 4000); } catch { return ""; } })())?.[1] ?? "";
     return CONTROL_TITLE.test(rel) || CONTROL_TITLE.test(title);
@@ -155,7 +158,7 @@ async function seatRead(title: string): Promise<Record<string, unknown>> {
   const { openLocalSession } = await import(join(REPO, "packages/lares-cli/dist/src/session-connector.js")) as {
     openLocalSession: (o: { faceRef: string; hand?: string; dataDir?: string | null }) => Promise<{ act(act: string, args: Record<string, unknown>): Promise<Record<string, unknown>>; close(): Promise<void> }>;
   };
-  const session = await openLocalSession({ faceRef: "h0", hand: "seat", dataDir: join(hearth!.root, "data/lares/vessel") });
+  const session = await openLocalSession({ faceRef: "h0", hand: "seat", dataDir: join(hearth!.root, "hearth/vessel") });
   try { return await session.act("kahua-read", { action: "get", title }); }
   finally { await session.close(); }
 }
@@ -216,7 +219,7 @@ afterAll(async () => {
 });
 
 describe("the stage walk: the node half, the join, and the page's save route", () => {
-  test("S1 — a CLI put to recipe default projects under <root>/wikis/kahua and reads back the same bytes", async () => {
+  test("S1 — a CLI put to recipe default projects under <root>/projections/wikis/daemon-<F> and reads back the same bytes", async () => {
     const uri = "lar:///t.stage.walk/cli-put";
     const file = join(scratch, "cli.txt");
     writeFileSync(file, "hello from the CLI\n");
@@ -226,7 +229,7 @@ describe("the stage walk: the node half, the join, and the page's save route", (
     const carrier = draftPath("t.stage.walk/cli-put", ".txt");
     const deadline = performance.now() + 30_000;
     while (!existsSync(carrier) && performance.now() < deadline) await new Promise((r) => setTimeout(r, 250));
-    expect(existsSync(carrier), filesUnder(join(hearth!.root, "wikis")).join("\n")).toBe(true);
+    expect(existsSync(carrier), filesUnder(join(hearth!.root, "projections", "wikis")).join("\n")).toBe(true);
     expect(readFileSync(carrier, "utf8")).toBe("hello from the CLI\n");
     const got = await hearth!.cli(["meme", "get", uri, "--recipe", "default", "--json"]);
     expect(got.code, got.stderr).toBe(0);
@@ -313,7 +316,7 @@ describe("the stage walk: the node half, the join, and the page's save route", (
     proposal = ids[0]!;
     // Digests only crossed: nothing stands on the stage until the operator's hand lifts.
     expect(existsSync(stagePath(DRAFT.title))).toBe(false);
-    expect(filesUnder(join(hearth!.root, "bags", faceFolder()))).toEqual([]);
+    expect(filesUnder(join(hearth!.root, "projections", "bags", faceFolder()))).toEqual([]);
     const got = await hearth!.cli(["kahua", "get", DRAFT.title]);
     expect(got.code, got.stderr).toBe(0);
     expect((JSON.parse(got.stdout) as { item: unknown }).item).toBeNull();
@@ -329,7 +332,7 @@ describe("the stage walk: the node half, the join, and the page's save route", (
     const cid = (JSON.parse(lifted.stdout) as { cid: string }).cid;
     expect(cid).toMatch(/^[0-9a-f]{64}$/);
     const at = stagePath(DRAFT.title);
-    expect(await settle(() => existsSync(at), (v) => v), `nothing landed at ${at}:\n${filesUnder(join(hearth!.root, "bags")).join("\n")}`).toBe(true);
+    expect(await settle(() => existsSync(at), (v) => v), `nothing landed at ${at}:\n${filesUnder(join(hearth!.root, "projections", "bags")).join("\n")}`).toBe(true);
     const file = readFileSync(at, "utf8");
     expect(file).toContain(`title: ${DRAFT.title}`);
     expect(file).toContain(DRAFT.body);

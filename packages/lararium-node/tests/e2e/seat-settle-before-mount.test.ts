@@ -38,7 +38,7 @@ afterEach(async () => { while (leaving.length) await leaving.pop()!(); vi.restor
 async function stand(owesRaise: boolean): Promise<{ root: string; vessel: NodeVesselResult }> {
   const root = mkdtempSync(join(tmpdir(), "settle-before-mount-"));
   const genesisDir = join(root, "genesis");
-  const storageDir = join(root, "data", "lares", "vessel");
+  const storageDir = join(root, "hearth", "vessel");
   cpSync(join(import.meta.dirname, "..", "..", "..", "..", "genesis"), genesisDir, { recursive: true });
   let vessel: NodeVesselResult | null = null;
   leaving.push(async () => { if (vessel) await withLarRoot(root, () => vessel!.teardown()); rmSync(root, { recursive: true, force: true }); });

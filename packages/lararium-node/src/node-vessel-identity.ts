@@ -26,8 +26,8 @@
  * See lar:///ha.ka.ba/lares/docs/federation and api/pono/has-stack-ontology.
  *
  * Storage law — identity lives beside the runtime store:
- *   the place keypair persists to `<lares>/identity` (`larIdentityDir`), in the XDG data
- *   home BESIDE — never inside — the runtime `<lares>/vessel` store. No storage operation
+ *   the place keypair persists to `<root>/hearth/identity` (`larIdentityDir`), in the hearth
+ *   BESIDE — never inside — the runtime `<root>/hearth/vessel` store. No storage operation
  *   can reach it (they rmSync the substrate store, never the home that holds it). This realizes the
  *   law below (the key MUST NOT sit inside an Automerge doc storage path) and the
  *   keypair-wipe lesson: a destructive storage verb cannot reach identity.
@@ -42,7 +42,7 @@
  * Key file naming (inside the identity dir): `.vessel-key.json`, beside its KEL `.vessel-kel.json`. Every custody
  * name derives from the identity home alone: a host fact (a git email, a login) never picks which file a vessel
  * reads, so a changed host fact never reads a standing vessel as empty. The home itself answers "which vessel"
- * (`LAR_ROOT`, else the OS user's XDG home), and each face's rows stand in that face's own directory.
+ * (the house root `LAR_ROOT` names; an unnamed root refuses), and each face's rows stand in that face's own directory.
  * The keypair derives from a local CSPRNG — fully device-local, no external service.
  *
  * MUST NOT be placed inside any Automerge doc storage path — MUST NOT sync.
@@ -90,15 +90,15 @@ import {
 } from "./custody-seat.js";
 
 /**
- * The identity dir — the ONE resolver, `<lares>/identity` (`larIdentityDir`), in the XDG
- * data home beside the `<lares>/vessel` store; the place key + face anchors are separate from vessel
+ * The identity dir — the ONE resolver, `<root>/hearth/identity` (`larIdentityDir`), in the hearth
+ * beside the `<root>/hearth/vessel` store; the place key + face anchors are separate from vessel
  * documents and unreachable by store operations. An empty home re-derives a fresh device key — no migration arm, no legacy spelling.
  *
- * TAKES NO `dataDir`: this resolver answers off `LAR_ROOT`/XDG env vars alone (`larIdentityDir`), never
+ * TAKES NO `dataDir`: this resolver answers off `LAR_ROOT` alone (`larIdentityDir`), never
  * off a caller-supplied path. A `dataDir` parameter it ignored would be the footgun measured live
  * (`persona-ring-cross-operator-admit.test.ts`): a caller isolating a `dataDir` per simulated vessel,
- * in-process, with no matching `LAR_ROOT` mutation, silently reads/writes the REAL
- * `~/.local/share/lares/identity` home instead of its intended isolated one. Removing the parameter
+ * in-process, with no matching `LAR_ROOT` mutation, silently reads/writes the identity home of
+ * whatever house the process names instead of its intended isolated one. Removing the parameter
  * (rather than honoring it) preserves the tested invariant "ONE resolver, no second spelling"
  * (`vessel-identity-home.test.ts`) — honoring it would need a SECOND address-derivation scheme to
  * keep identity separate from a caller-supplied store path, which is exactly the thing this file's storage
@@ -944,7 +944,7 @@ export async function orphanPersonaRoots(): Promise<number[]> {
 
 // ── The two-layer PET-NAME stores — the own-side private label + the own-side public face ────────────
 //
-// Two DISTINCT sealed rows in each face's own directory under `<lares>/identity`:
+// Two DISTINCT sealed rows in each face's own directory under `<root>/hearth/identity`:
 //   · the PRIVATE pet-name map (`.persona-petnames-h<N>.json`) — the human's own label for their own
 //     personas, freely renamable, never PUBLICLY federated (persona-petname).
 //   · the PUBLIC handle record (`.persona-public-handles-h<N>.json`) — the vessel's memory of ITS OWN

@@ -19,10 +19,10 @@ const PS1 = join(ROOT, "tools/lares-container.ps1");
 const havePwsh = spawnSync("pwsh", ["-NoProfile", "-Command", "1"]).status === 0;
 
 /**
- * THE HEARTH OWNS ITS ENV FILE. The shim reads `lares-surface.env` from the hearth root (`LAR_ROOT`, else
- * `~/.lares`), the same root `resolveLaresMcp` reads, and never from the clone: a file beside the compose file
- * would sit in the tracked checkout. Every run names a scratch hearth, so no test reads a real `~/.lares`.
- * `envAt: "clone"` plants the file beside the compose file instead, where the shim must not look.
+ * THE ENV FILE RESTS AT `~/.lares/lares-surface.env`, outside every bind, the same file `resolveLaresMcp` reads, and
+ * never in the clone: a file beside the compose file would sit in the tracked checkout. Every run names a scratch HOME
+ * and a scratch house root, so no test reads a real `~/.lares`. `envAt: "clone"` plants the file beside the compose
+ * file instead, where the shim must not look. `@HOUSE@` in an env value or an env file names the run's scratch house.
  */
 async function run(shim, argv, { env = {}, envFile, envAt = "hearth" } = {}) {
   const dir = await mkdtemp(join(tmpdir(), "lares-container-"));
@@ -39,54 +39,84 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth" } = {}) {
     await chmod(join(dir, "docker"), 0o755);
     const compose = join(dir, "docker-compose.surface.yml");
     await writeFile(compose, "services: {}\n");
-    const hearth = join(dir, "hearth");
-    await mkdir(hearth, { recursive: true });
-    if (envFile) await writeFile(join(envAt === "clone" ? dir : hearth, "lares-surface.env"), envFile);
+    const house = join(dir, "house");
+    const fill = (v) => typeof v === "string" ? v.replaceAll("@HOUSE@", house) : v;
+    const home = env.HOME ? fill(env.HOME) : join(dir, "home");
+    await mkdir(join(home, ".lares"), { recursive: true });
+    if (envFile) await writeFile(join(envAt === "clone" ? dir : join(home, ".lares"), "lares-surface.env"), fill(envFile));
     const cmd = shim === SH ? ["sh", [SH, ...argv]] : ["pwsh", ["-NoProfile", "-File", PS1, ...argv]];
     // A standing vessel answers a steady verdict unless a test scripts another answer.
     const steady = '{"data":{"standing":{"act":"attach","reason":"steady"}}}';
-    const base = { PATH: `${dir}:${process.env.PATH}`, CALL_LOG: log, HOME: process.env.HOME, LAR_ROOT: hearth, LARES_COMPOSE_FILE: compose, FAKE_OBSERVE_OUTPUT: steady };
-    const r = spawnSync(cmd[0], cmd[1], { env: { ...base, ...env }, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+    const base = { PATH: `${dir}:${process.env.PATH}`, CALL_LOG: log, HOME: home, LARES_COMPOSE_FILE: compose, FAKE_OBSERVE_OUTPUT: steady };
+    const filled = Object.fromEntries(Object.entries(env).map(([k, v]) => [k, fill(v)]));
+    const r = spawnSync(cmd[0], cmd[1], { env: { ...base, ...filled }, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
     let calls = ""; try { calls = await readFile(log, "utf8"); } catch {}
-    return { ...r, calls, dir };
+    const made = {};
+    for (const c of ["hearth", "sensoriums", "projections", "library", "config"]) { try { await readdir(join(house, c)); made[c] = true; } catch { made[c] = false; } }
+    return { ...r, calls, dir, made };
   } finally { await rm(dir, { recursive: true, force: true }); }
 }
 
 // ATTACHED: under a real pseudo-terminal the shim must NOT add -T, or the founding loses its human-route prompt.
 // (Reading `-t 1` inside the `$(tty_flag)` substitution once always read false: stdout there is a pipe.)
 const haveScript = spawnSync("script", ["--version"]).status === 0;
-test("sh: reset protects the standing vessel and unsafe paths, then clears only confirmed state", { skip: !haveScript }, async () => {
+test("sh: reset clears the hearth alone, after its refusals; sensoriums, projections, library, config and the env file stay", { skip: !haveScript }, async () => {
   const dir = await mkdtemp(join(tmpdir(), "lares-reset-"));
   try {
-    const state = join(dir, "state"), workspace = join(dir, "workspace"), hearth = join(dir, "hearth");
-    await Promise.all([state, workspace, hearth, join(workspace, "nested")].map((path) => mkdir(path, { recursive: true })));
-    await writeFile(join(dir, "docker"), `#!/bin/sh\ncase " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}";; *" ps -q --filter volume="*) printf '%s' "\${FAKE_HOLDER_ID:-}";; esac\n`);
+    const house = join(dir, "house"), workspace = join(dir, "workspace"), hearth = join(house, "hearth");
+    const kept = ["sensoriums", "projections", "library", "config"].map((c) => join(house, c));
+    await Promise.all([hearth, ...kept, workspace, join(workspace, "nested"), join(dir, ".lares")].map((path) => mkdir(path, { recursive: true })));
+    const calls = join(dir, "calls.log");
+    await writeFile(join(dir, "docker"), `#!/bin/sh\nprintf '%s\\n' "$*" >> "${calls}"\ncase " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}";; *" ps -q --filter volume="*) printf '%s' "\${FAKE_HOLDER_ID:-}";; esac\n`);
     await chmod(join(dir, "docker"), 0o755);
-    await writeFile(join(state, "entry"), "keep until confirmation");
-    await writeFile(join(state, ".hidden"), "hidden");
-    await writeFile(join(hearth, "lares-surface.env"), "# stays\n");
-    const base = { PATH: `${dir}:${process.env.PATH}`, HOME: dir, LAR_ROOT: hearth, LARES_STATE: state, LARES_WORKSPACE: workspace };
+    await writeFile(join(hearth, "entry"), "keep until confirmation");
+    await writeFile(join(hearth, ".hidden"), "hidden");
+    for (const k of kept) await writeFile(join(k, "keep"), "stays");
+    await writeFile(join(dir, ".lares", "lares-surface.env"), "# stays\n");
+    const base = { PATH: `${dir}:${process.env.PATH}`, HOME: dir, LARES_HOUSE: house, LARES_WORKSPACE: workspace };
     const reset = (env, input = "re-found\n") => spawnSync("script", ["-qec", `sh '${SH}' reset`, "/dev/null"], { env: { ...base, ...env }, input, encoding: "utf8" });
     const standing = reset({ FAKE_RUNNING_ID: "vessel" });
     assert.equal(standing.status, 2);
     assert.match(standing.stdout, /tools\/lares-container\.sh down first/);
+    // The holder check reads the hearth bind, and a running holder of it refuses.
     const held = reset({ FAKE_HOLDER_ID: "founding-run" });
     assert.equal(held.status, 2);
-    assert.match(held.stdout, /a running container binds .*founding-run/);
-    const parentOfHome = reset({ HOME: join(state, "operator") });
+    assert.match(held.stdout, /a running container binds .*hearth: founding-run/);
+    assert.match(await readFile(calls, "utf8"), new RegExp(`ps -q --filter volume=${hearth.replaceAll("/", "\\/")}\\b`));
+    const parentOfHome = reset({ HOME: join(house, "operator") });
     assert.equal(parentOfHome.status, 2);
     assert.match(parentOfHome.stdout, /containing HOME/);
-    for (const unsafe of ["", "/", dir, workspace, join(workspace, "nested"), dir + "/state/../workspace"]) {
-      const result = reset({ LARES_STATE: unsafe });
+    for (const unsafe of ["", "/", dir, workspace, join(workspace, "nested"), dir + "/house/../workspace", "relative/house"]) {
+      const result = reset({ LARES_HOUSE: unsafe });
       assert.equal(result.status, 2, `${unsafe}: ${result.stdout}`);
     }
+    // A house that holds the workspace refuses.
+    const holding = reset({ LARES_WORKSPACE: join(house, "projections", "ws") });
+    assert.equal(holding.status, 2);
+    assert.match(holding.stdout, /containing LARES_WORKSPACE/);
     assert.equal(reset({}, "no\n").status, 2);
-    assert.deepEqual((await readdir(state)).sort(), [".hidden", "entry"]);
+    assert.deepEqual((await readdir(hearth)).sort(), [".hidden", "entry"]);
     const done = reset({});
     assert.equal(done.status, 0, done.stdout);
-    assert.match(done.stdout, /directory itself, the env file and the image stay/);
-    assert.deepEqual(await readdir(state), []);
-    assert.equal(await readFile(join(hearth, "lares-surface.env"), "utf8"), "# stays\n");
+    assert.match(done.stdout, /sensoriums, projections, library, config, the env file and the image stay/);
+    assert.deepEqual(await readdir(hearth), []);
+    for (const k of kept) assert.equal(await readFile(join(k, "keep"), "utf8"), "stays");
+    assert.equal(await readFile(join(dir, ".lares", "lares-surface.env"), "utf8"), "# stays\n");
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});
+test("sh: reset refuses a hearth that resolves outside the house", { skip: !haveScript }, async () => {
+  const dir = await mkdtemp(join(tmpdir(), "lares-reset-link-"));
+  try {
+    const house = join(dir, "house"), elsewhere = join(dir, "elsewhere"), workspace = join(dir, "workspace");
+    await Promise.all([house, elsewhere, workspace].map((path) => mkdir(path, { recursive: true })));
+    await writeFile(join(elsewhere, "precious"), "never cleared");
+    spawnSync("ln", ["-s", elsewhere, join(house, "hearth")]);
+    await writeFile(join(dir, "docker"), "#!/bin/sh\nexit 0\n");
+    await chmod(join(dir, "docker"), 0o755);
+    const r = spawnSync("script", ["-qec", `sh '${SH}' reset`, "/dev/null"], { env: { PATH: `${dir}:${process.env.PATH}`, HOME: dir, LARES_HOUSE: house, LARES_WORKSPACE: workspace }, input: "re-found\n", encoding: "utf8" });
+    assert.equal(r.status, 2, r.stdout);
+    assert.match(r.stdout, /resolves outside LARES_HOUSE/);
+    assert.equal(await readFile(join(elsewhere, "precious"), "utf8"), "never cleared");
   } finally { await rm(dir, { recursive: true, force: true }); }
 });
 test("sh: found under a TTY runs attached, with no -T", { skip: !haveScript }, async () => {
@@ -98,36 +128,36 @@ test("sh: found under a TTY runs attached, with no -T", { skip: !haveScript }, a
     const compose = join(dir, "docker-compose.surface.yml");
     await writeFile(compose, "services: {}\n");
     spawnSync("script", ["-qec", `sh ${SH} found`, "/dev/null"], {
-      env: { PATH: `${dir}:${process.env.PATH}`, CALL_LOG: log, HOME: process.env.HOME, LAR_ROOT: join(dir, "hearth"), LARES_COMPOSE_FILE: compose, LARES_STATE: "/s", LARES_WORKSPACE: "/w" },
+      env: { PATH: `${dir}:${process.env.PATH}`, CALL_LOG: log, HOME: join(dir, "home"), LARES_COMPOSE_FILE: compose, LARES_HOUSE: join(dir, "house"), LARES_WORKSPACE: "/w" },
       encoding: "utf8",
     });
     const calls = await readFile(log, "utf8");
-    assert.match(calls, /--profile offline run --rm offline vessel found --skip-build --root \/state --genesis \/app\/genesis\s*$/m);
+    assert.match(calls, /--profile offline run --rm offline vessel found --skip-build --root \/lar --genesis \/app\/genesis\s*$/m);
     assert.doesNotMatch(calls, /(^|\s)-T(\s|$)/);
   } finally { await rm(dir, { recursive: true, force: true }); }
 });
 
-const MOUNTS = { LARES_STATE: "/s", LARES_WORKSPACE: "/w" };
+const MOUNTS = { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w" };
 const shims = [["sh", SH], ...(havePwsh ? [["ps1", PS1]] : [])];
 
 for (const [name, shim] of shims) {
   test(`${name}: neither mount standing refuses by name, before docker runs`, async () => {
     const r = await run(shim, ["vessel", "read"]);
     assert.equal(r.status, 2);
-    assert.match(r.stderr, /LARES_STATE/);
+    assert.match(r.stderr, /LARES_HOUSE/);
     assert.equal(r.calls, "");
   });
 
   test(`${name}: a mount named in the hearth's lares-surface.env stands`, async () => {
-    const r = await run(shim, ["vessel", "read"], { envFile: "LARES_STATE=/s\nLARES_WORKSPACE=/w\n" });
+    const r = await run(shim, ["vessel", "read"], { envFile: "LARES_HOUSE=@HOUSE@\nLARES_WORKSPACE=/w\n" });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /--env-file \S*\/hearth\/lares-surface\.env/);
+    assert.match(r.calls, /--env-file \S*\/home\/\.lares\/lares-surface\.env/);
   });
 
   test(`${name}: an env file beside the compose file goes unread: no hearth file, the mounts refuse by name`, async () => {
-    const r = await run(shim, ["vessel", "read"], { envFile: "LARES_STATE=/s\nLARES_WORKSPACE=/w\n", envAt: "clone" });
+    const r = await run(shim, ["vessel", "read"], { envFile: "LARES_HOUSE=@HOUSE@\nLARES_WORKSPACE=/w\n", envAt: "clone" });
     assert.equal(r.status, 2);
-    assert.match(r.stderr, /LARES_STATE stands in neither the environment nor \S*\/hearth\/lares-surface\.env/);
+    assert.match(r.stderr, /LARES_HOUSE stands in neither the environment nor \S*\/home\/\.lares\/lares-surface\.env/);
     assert.equal(r.calls, "");
   });
 
@@ -140,8 +170,8 @@ for (const [name, shim] of shims) {
   });
 
   test(`${name}: CONTROL: a hearth env file stays the env file named`, async () => {
-    const r = await run(shim, ["vessel", "read"], { envFile: "LARES_STATE=/s\nLARES_WORKSPACE=/w\n" });
-    assert.match(r.calls, /--env-file \S*\/hearth\/lares-surface\.env/);
+    const r = await run(shim, ["vessel", "read"], { envFile: "LARES_HOUSE=@HOUSE@\nLARES_WORKSPACE=/w\n" });
+    assert.match(r.calls, /--env-file \S*\/home\/\.lares\/lares-surface\.env/);
     assert.doesNotMatch(r.calls, /--env-file \/dev\/null/);
   });
 
@@ -160,7 +190,7 @@ for (const [name, shim] of shims) {
 
   test(`${name}: found uses the offline CLI door`, async () => {
     const r = await run(shim, ["found", "--json"], { env: MOUNTS });
-    assert.match(r.calls, /--profile offline run --rm -T offline vessel found --skip-build --root \/state --genesis \/app\/genesis --json\s*$/m);
+    assert.match(r.calls, /--profile offline run --rm -T offline vessel found --skip-build --root \/lar --genesis \/app\/genesis --json\s*$/m);
   });
 
   test(`${name}: a successful exec with a restand verdict restarts and waits healthy`, async () => {
@@ -383,11 +413,38 @@ for (const [name, shim] of shims) {
       const r = await run(shim, ["up", "--capture", dir], { env: MOUNTS });
       assert.match(r.calls, /target: \/capture\/1/);
       assert.match(r.calls, /read_only: true/);
-      const bad = await run(shim, ["up", "--capture", process.env.HOME], { env: MOUNTS });
+      const bad = await run(shim, ["up", "--capture", "/home"], { env: MOUNTS });
       assert.equal(bad.status, 2);
       assert.match(bad.stderr, /home directory/);
       assert.equal(bad.calls, "");
     } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test(`${name}: a relative LARES_HOUSE refuses by name, before docker runs`, async () => {
+    const r = await run(shim, ["vessel", "read"], { env: { LARES_HOUSE: "house", LARES_WORKSPACE: "/w" } });
+    assert.equal(r.status, 2);
+    assert.match(r.stderr, /LARES_HOUSE \(house\) reads relative/);
+    assert.equal(r.calls, "");
+  });
+
+  test(`${name}: an env file inside one of the house's binds refuses by name, before docker runs`, async () => {
+    const inside = await run(shim, ["vessel", "read"], { env: { HOME: "@HOUSE@/config/operator", LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w" }, envFile: "# names nothing\n" });
+    assert.equal(inside.status, 2, inside.stderr);
+    assert.match(inside.stderr, /sits inside LARES_HOUSE's config bind/);
+    assert.equal(inside.calls, "");
+    // CONTROL: an env file beside the house root, in no bind, serves.
+    const beside = await run(shim, ["vessel", "read"], { env: { HOME: "@HOUSE@/operator", LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w" }, envFile: "# names nothing\n" });
+    assert.equal(beside.status, 0, beside.stderr);
+  });
+
+  test(`${name}: up, found and the offline door make the house's five bound classes before a container stands`, async () => {
+    for (const argv of [["up"], ["found"]]) {
+      const r = await run(shim, argv, { env: MOUNTS });
+      assert.equal(r.status, 0, r.stderr);
+      assert.deepEqual(r.made, { hearth: true, sensoriums: true, projections: true, library: true, config: true });
+    }
+    const offline = await run(shim, ["vessel", "read"], { env: MOUNTS });
+    assert.deepEqual(offline.made, { hearth: true, sensoriums: true, projections: true, library: true, config: true });
   });
 
   test(`${name}: no argv carries the docker socket`, async () => {

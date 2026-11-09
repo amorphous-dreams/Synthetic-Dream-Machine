@@ -88,7 +88,7 @@ async function daemonDoc(): Promise<LarDoc> {
 
 /** Found a hearth at `r`, keeping each card's seed for a later look. */
 async function foundAt(r: string, readBack?: (cards: readonly HearthCard[]) => Promise<void>) {
-  return withLarRoot(r, () => foundHearthDirect({ storageDir: join(r, "data", "lares", "vessel"), genesisDir: join(r, "genesis"), ...(readBack ? { readBack } : {}) }));
+  return withLarRoot(r, () => foundHearthDirect({ storageDir: join(r, "hearth", "vessel"), genesisDir: join(r, "genesis"), ...(readBack ? { readBack } : {}) }));
 }
 
 describe("the Stable founding act", () => {

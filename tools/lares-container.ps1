@@ -3,9 +3,10 @@
 # vessel stand  <lares verb…>. The CLI runs by exec while a vessel stands and through the offline door while none
 # stands. The host holds the engine: the shim reads the CLI's standing verdict after a verb and restarts the vessel
 # itself when the verdict reads `restand`. The app gets no docker socket.
-# LARES_STATE / LARES_WORKSPACE come from the environment or the hearth's own `lares-surface.env`
-# (`<hearth>/lares-surface.env`, the hearth root `LAR_ROOT` names, else `~/.lares`; never beside the compose file); keep both
-# mounts inside the WSL distro's filesystem, never a Windows share. One lararium per HUMAN: nothing here names a face.
+# LARES_HOUSE / LARES_WORKSPACE come from the environment or the operator's `~/.lares/lares-surface.env` (outside every
+# bind; never beside the compose file). LARES_HOUSE names the ONE host house root, absolute: its hearth, sensoriums,
+# projections, library and config bind under /lar, and this shim makes those five directories before a container stands. Keep every
+# mount inside the WSL distro's filesystem, never a Windows share. One lararium per HUMAN: nothing here names a face.
 # A VESSEL STANDS HOLDING NO KEY. Every start returns it to the floor, so after `up`, after `vessel stand`, and after
 # each restart this shim performs, it runs `vault unlock` attached when this shell holds a TTY, and otherwise names
 # that one command. `vault lock` routes to the CLI like any other verb. No flag, env var or pipe carries a credential.
@@ -16,15 +17,35 @@ function Die([string]$m) { [Console]::Error.WriteLine("lares-container: $m"); ex
 $Here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $Root = Split-Path -Parent $Here
 $ComposeFile = if ($env:LARES_COMPOSE_FILE) { $env:LARES_COMPOSE_FILE } else { Join-Path $Root 'docker-compose.surface.yml' }
-$Hearth = if ($env:LAR_ROOT) { $env:LAR_ROOT } else { Join-Path $HOME '.lares' }
-$EnvFile = Join-Path $Hearth 'lares-surface.env'
+$EnvFile = Join-Path (Join-Path $HOME '.lares') 'lares-surface.env'
 $Cli = 'packages/lares-cli/bin/lares.mjs'
 
-foreach ($name in 'LARES_STATE', 'LARES_WORKSPACE') {
+foreach ($name in 'LARES_HOUSE', 'LARES_WORKSPACE') {
   $val = [Environment]::GetEnvironmentVariable($name)
   $inFile = (Test-Path $EnvFile) -and (Select-String -Path $EnvFile -Pattern "^\s*$name=\S" -Quiet)
   if (-not $val -and -not $inFile) { Die "$name stands in neither the environment nor $EnvFile — set it (the host directory mounted for the vessel)" }
 }
+
+# The value one name carries: the environment first, else the env file's last plain KEY=VALUE line for it.
+function ValueOf([string]$name) {
+  $v = [Environment]::GetEnvironmentVariable($name)
+  if (-not $v -and (Test-Path $EnvFile)) {
+    $line = Select-String -Path $EnvFile -Pattern "^\s*$name=(.*)$" | Select-Object -Last 1
+    if ($line) { $v = $line.Matches[0].Groups[1].Value }
+  }
+  return [string]$v
+}
+$House = ValueOf 'LARES_HOUSE'
+if (-not [System.IO.Path]::IsPathRooted($House)) { Die "LARES_HOUSE ($House) reads relative — name the host house root by an absolute path" }
+$HouseClasses = @('hearth', 'sensoriums', 'projections', 'library', 'config')
+# THE ENV FILE RESTS OUTSIDE EVERY BIND.
+$envFull = [System.IO.Path]::GetFullPath($EnvFile)
+foreach ($class in $HouseClasses) {
+  $bind = [System.IO.Path]::GetFullPath((Join-Path $House $class)).TrimEnd('/', '\')
+  if ($envFull -eq $bind -or $envFull.StartsWith($bind + [System.IO.Path]::DirectorySeparatorChar)) { Die "the env file $EnvFile sits inside LARES_HOUSE's $class bind — keep it outside every bind" }
+}
+# Make the five bound classes as the operator, so the engine never makes one owned by root.
+function EnsureHouse { foreach ($class in $HouseClasses) { New-Item -ItemType Directory -Force -Path (Join-Path $House $class) | Out-Null } }
 
 $Base = @()
 if (Test-Path $EnvFile) { $Base += @('--env-file', $EnvFile) }
@@ -144,6 +165,7 @@ function RouteCli([string[]]$argv, [bool]$followUp) {
     }
   } else {
     [Console]::Error.WriteLine('lares-container: no vessel stands; this act runs offline on the store')
+    EnsureHouse
     Compose (@('--profile', 'offline', 'run', '--rm') + $NoTty + @('offline') + $argv)
   }
 }
@@ -158,6 +180,7 @@ $rest = @(); if ($args.Count -gt 1) { $rest = @($args[1..($args.Count - 1)]) }
 
 switch ($verb) {
   'up' {
+    EnsureHouse
     ResolveGitRev
     $n = 0; $binds = @(); $i = 0
     while ($i -lt $rest.Count) {
@@ -190,14 +213,15 @@ switch ($verb) {
   'down'  { Compose (@('down', '--remove-orphans') + $rest) }
   'logs'  { Compose (@('logs') + $rest + @('lares')) }
   'found' {
-    Compose (@('--profile', 'offline', 'run', '--rm') + $NoTty + @('offline', 'vessel', 'found', '--skip-build', '--root', '/state', '--genesis', '/app/genesis') + $rest)
+    EnsureHouse
+    Compose (@('--profile', 'offline', 'run', '--rm') + $NoTty + @('offline', 'vessel', 'found', '--skip-build', '--root', '/lar', '--genesis', '/app/genesis') + $rest)
   }
   'vessel' {
     $observing = $rest -contains '--observe'
     $sub = if ($rest.Count -gt 0) { $rest[0] } else { '' }
     if ($sub -eq 'stand' -and -not $observing -and $rest.Count -eq 1) {
       # The no-argument acting stand belongs to the host: it stands, restarts on a `restand` verdict, or prints the standing.
-      if (-not (HasRunningVessel)) { Compose @('up', '-d', '--wait', 'lares'); UnlockOrName }
+      if (-not (HasRunningVessel)) { EnsureHouse; Compose @('up', '-d', '--wait', 'lares'); UnlockOrName }
       else {
         $answer = ObserveStanding
         if ($script:ObserveFailed -or (VerdictAct $answer) -eq '') { Die 'the standing vessel answered no verdict' }

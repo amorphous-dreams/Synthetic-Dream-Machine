@@ -58,7 +58,7 @@ beforeAll(async () => {
   if (!stagedTarget) return;
   // Each wiki projects its own tree under `wikis/<slug>/` (the daemon's own rides `wikis/kahua-<tag>/`, the face in the folder's name), so the
   // scan back into `wikis/lares/working` reads `wikis/lares/` alone — a sibling wiki's tree is never its source.
-  wikisDir = join(lar.root, "wikis", "lares");
+  wikisDir = join(lar.root, "projections/wikis", "lares");
   const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", WORKING, "--in-wiki", "--yes", "--json"]);
   if (r.json?.["ok"] !== true) throw new Error(`seed LOAD --to working failed: ${JSON.stringify(r.json)}`);
   projected = await awaitWikisCarrier();

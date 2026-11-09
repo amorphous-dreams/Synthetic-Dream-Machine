@@ -43,7 +43,10 @@ import { join, isAbsolute } from "node:path";
 import type { ParsedArgs } from "../parse-args.js";
 import { exitFor, emit } from "../render.js";
 import { udsAlive, udsSocketPath } from "../local-connector.js";
-import { larRoot, larBagsDir, larWikisDir, vesselDid } from "../env.js";
+import { larRoot, larBagsDir, larWikisDir, larProjectionsDirOrNone, vesselDid } from "../env.js";
+
+/** The projections root when one stands, as the optional `MirrorDirs` field. */
+const projectionsDirs = (): { projections?: string } => { const p = larProjectionsDirOrNone(); return p === undefined ? {} : { projections: p }; };
 import { openSyncedTree, scanFiles, fileToUriForSource, candidatesOf, deletionsOf, settleIngest, applyConfirmedRenames, standingAfterWave, standingAfterFault, standsClean, renamedSources, absentSources, NO_STANDING_ASKS, type ArmedDeletion, type StandingAsks } from "../ingest-core.js";
 import { askShore } from "../shore-core.js";
 
@@ -176,7 +179,7 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
     buffer.clear();
 
     const tree = openSyncedTree();     // fresh read — the projection moves under us
-    const { rows, skipped } = scanFiles(root, [...files], toBag, tree, fileToUriForSource(root, source, { bags: larBagsDir(), wikis: larWikisDir() }));
+    const { rows, skipped } = scanFiles(root, [...files], toBag, tree, fileToUriForSource(root, source, { bags: larBagsDir(), wikis: larWikisDir(), ...projectionsDirs() }));
     const candidates = candidatesOf(rows);
 
     // A vanished address whose path scans present again has RETURNED (a checkout that re-creates the

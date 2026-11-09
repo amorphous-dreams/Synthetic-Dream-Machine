@@ -30,12 +30,13 @@ import {
 } from "@lararium/mesh";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { kv, metaFieldsFromBody, renderCarrier } from "./carrier-render.js";
-import { laresDataHome } from "./vessel-paths.js";
+import { larConfigHome, larProjectionsHome } from "./vessel-paths.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 
-/** Where the operator's repo registry rests — per-operator state, beside every other sovereign thing. */
+/** Where the operator's repo registry rests — `<root>/config/repos.json`, beside the operator's other settings,
+ *  outside the hearth a re-founding clears. */
 export function repoRegistryPath(): string {
-  return join(laresDataHome(), "repos.json");
+  return join(larConfigHome(), "repos.json");
 }
 
 /**
@@ -63,7 +64,7 @@ export function readRepoRegistry(): Map<string, RepoRegistration> {
 export function registerRepo(reg: RepoRegistration): Map<string, RepoRegistration> {
   const all = readRepoRegistry();
   all.set(reg.id, reg);
-  mkdirSync(laresDataHome(), { recursive: true });
+  mkdirSync(larConfigHome(), { recursive: true });
   atomicWriteFileSync(repoRegistryPath(), JSON.stringify({ repos: [...all.values()] }, null, 2));
   return all;
 }
@@ -72,14 +73,16 @@ export function registerRepo(reg: RepoRegistration): Map<string, RepoRegistratio
 export function unregisterRepo(id: string): Map<string, RepoRegistration> {
   const all = readRepoRegistry();
   all.delete(id);
-  mkdirSync(laresDataHome(), { recursive: true });
+  mkdirSync(larConfigHome(), { recursive: true });
   atomicWriteFileSync(repoRegistryPath(), JSON.stringify({ repos: [...all.values()] }, null, 2));
   return all;
 }
 
-/** This vessel's roots — the registered repos plus the hearth every standing vessel has. */
+/** This vessel's roots — the registered repos plus the house bag home every standing vessel has. A bag homed in
+ *  the house holds the operator's own bytes, so it rests under `<root>/projections/bags`, outside the hearth a
+ *  re-founding clears. */
 export function bagHomeRoots(): BagHomeRoots {
-  return { hearth: join(laresDataHome(), "bags"), repositories: readRepoRegistry() };
+  return { hearth: join(larProjectionsHome(), "bags"), repositories: readRepoRegistry() };
 }
 
 /**

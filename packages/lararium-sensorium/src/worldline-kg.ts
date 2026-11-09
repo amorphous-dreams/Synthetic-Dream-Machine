@@ -24,7 +24,7 @@ import { repoRoot } from "@lararium/mesh/node";
 import { rewindThenFork, type WorldlineEdgeTriple, type WorldlineEdgeClose, type RewindThenForkResult } from "@lararium/mesh";
 import { resolveMempalacePython } from "@lararium/mempalace";
 import { resolveHolderCapEnv } from "@lararium/mempalace";
-import { memorySensoriumDir } from "@lararium/mempalace/xdg-base";
+import { memorySensoriumDir } from "@lararium/mempalace/house-root";
 
 /** Raised when python / `kg_io.py` are absent — the caller renders a clean error. */
 export class KgUnavailable extends Error {}

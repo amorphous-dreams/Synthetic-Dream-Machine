@@ -47,7 +47,7 @@ export function nexusCharterDocRelPath(): string {
 }
 
 /**
- * The seal file's absolute path under a SEAL HOME (`larSealHome()` — `<lares>/nexus`, per-operator).
+ * The seal file's absolute path under a SEAL HOME (`larSealHome()` — `<root>/hearth/nexus`, per-operator).
  *
  * It takes a home rather than reading one, so this module keeps no env dependency and a test stands the
  * seal wherever it likes. The home rides per-operator state rather than the corpus tree: a Nexus belongs

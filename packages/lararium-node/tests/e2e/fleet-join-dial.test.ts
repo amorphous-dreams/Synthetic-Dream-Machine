@@ -69,7 +69,7 @@ import { foundDirect, openTestCustody, sealTestCustody, seatSeedCharter } from "
 const TEST_ROOT = join(tmpdir(), `lar-fleet-join-dial-${Date.now()}`);
 const vessel = (name: string) => {
   const root = join(TEST_ROOT, name);
-  return { root, storage: join(root, "data", "lares", "vessel"), genesis: join(root, "genesis") };
+  return { root, storage: join(root, "hearth", "vessel"), genesis: join(root, "genesis") };
 };
 const A = vessel("a");
 const B = vessel("b");

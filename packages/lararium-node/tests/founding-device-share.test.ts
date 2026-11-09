@@ -36,9 +36,7 @@ describe("the device share mints at the face founding", () => {
   let root: string;
   beforeEach(() => {
     root = mkdtempSync(join(tmpdir(), "lares-found-share-"));
-    setEnv("LAR_ROOT", undefined);
-    setEnv("XDG_STATE_HOME", join(root, "state"));
-    setEnv("XDG_DATA_HOME", join(root, "state"));
+    setEnv("LAR_ROOT", root);   // the scratch house root every resolver lays its classes beneath
   });
   afterEach(() => {
     for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }

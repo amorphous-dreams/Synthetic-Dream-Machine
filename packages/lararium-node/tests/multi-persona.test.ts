@@ -75,13 +75,11 @@ const anchorsFor = (n: number, withMount: boolean): IdentityAnchors => ({
 describe("multi-persona-per-vessel (#63)", () => {
   let root: string;
   let seated: Awaited<ReturnType<typeof seatScratchCustody>>;
-  const dataDir = () => root;   // identityDir ignores it — the store resolves under XDG state
+  const dataDir = () => root;   // identityDir ignores it — the store resolves under the house root
   beforeEach(async () => {
     setMountedFace(undefined);
     root = mkdtempSync(join(tmpdir(), "lares-multipersona-"));
-    setEnv("LAR_ROOT", undefined);
-    setEnv("XDG_STATE_HOME", join(root, "state"));
-    setEnv("XDG_DATA_HOME", join(root, "state"));   // identity/seal/library answer HERE
+    setEnv("LAR_ROOT", root);   // the scratch house root every resolver lays its classes beneath
     seated = await seatScratchCustody("multi-persona");
   });
   afterEach(async () => {

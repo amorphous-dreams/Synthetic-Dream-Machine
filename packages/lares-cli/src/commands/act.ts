@@ -38,7 +38,10 @@ import { createInterface } from "node:readline/promises";
 import { stdin, stdout } from "node:process";
 import { join, extname, resolve, relative, sep } from "node:path";
 import { statSync, readdirSync, readFileSync, existsSync, writeFileSync } from "node:fs";
-import { larRoot, larBagsDir, larWikisDir, vesselDid } from "../env.js";
+import { larRoot, larBagsDir, larWikisDir, larProjectionsDirOrNone, vesselDid } from "../env.js";
+
+/** The projections root when one stands, as the optional `MirrorDirs` field. */
+const projectionsDirs = (): { projections?: string } => { const p = larProjectionsDirOrNone(); return p === undefined ? {} : { projections: p }; };
 import { readCarrierText, fileToUriForSource } from "../ingest-core.js";
 import { stageBodyToCas, carrierCasFlagged, declaredType } from "../cas-stage.js";
 import { ACTION_VERBS, isActionVerb, isTransferVerb, isBagVerb, newChangeId, newRequestId, taskContentId, OUTCOME_URI_PREFIX, wikiSlugOfBag } from "@lararium/mesh";
@@ -139,7 +142,7 @@ async function actRepack(args: ParsedArgs): Promise<number> {
   const root = larRoot();
   // Derive the pack path (mirror-relative, WITH extension) exactly as the island recorded it in the
   // aside provenance: the `lar:` URI's path + the file's extension.
-  const uri = fileToUriForSource(root, source, { bags: larBagsDir(), wikis: larWikisDir() })(root, source);
+  const uri = fileToUriForSource(root, source, { bags: larBagsDir(), wikis: larWikisDir(), ...projectionsDirs() })(root, source);
   if (!uri || !uri.startsWith("lar:///")) {
     emit(args, { ok: false, error: { code: "usage", message: `no address derivation for "${source}" (outside bags//wikis/, or rootless)` }, human: () => console.error(`lares act REPACK: no address derivation for "${source}"`) });
     return exitFor("usage");

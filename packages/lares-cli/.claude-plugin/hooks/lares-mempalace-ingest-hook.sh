@@ -23,14 +23,16 @@ set -uo pipefail
 # `lares hooks pause` / `lares mempalace quiesce` writes a marker; while it exists
 # this hook NO-OPS so a migration/teardown runs without minting warm write-daemons
 # (the daemon-spawn whack-a-mole cure — kill the SPAWNER, not the children). The
-# marker path mirrors larStateHome() in TS: LAR_ROOT/state (isolated) else the XDG
-# state home. `lares hooks resume` removes it. Keep this BEFORE any daemon-minting.
-if [ -n "${LAR_ROOT:-}" ]; then
-  _lares_state="$LAR_ROOT/state"
-else
-  _lares_state="${XDG_STATE_HOME:-$HOME/.local/state}/lares"
+# marker path mirrors hookPauseMarkerPath() in TS: $LAR_ROOT/run/hooks.paused, under
+# the named house root (no root named, no marker to read). `lares hooks resume`
+# removes it. Keep this BEFORE any daemon-minting.
+_lares_root="${LAR_ROOT:-}"
+if [ -z "${_lares_root// /}" ]; then
+  # No house root named: no stage to write and no house to land in. Say so once and step aside.
+  echo "[lares-ingest-hook] skip: LAR_ROOT names no house root — set LAR_ROOT to capture" >&2
+  exit 0
 fi
-[ -f "$_lares_state/hooks.paused" ] && exit 0
+[ -f "$_lares_root/run/hooks.paused" ] && exit 0
 
 input="$(cat)"
 # Harness-aware: Claude Code + Codex Stop hooks deliver `transcript_path` on stdin;
@@ -50,7 +52,8 @@ fi
 # Designation carries authority: a session declares itself ephemeral (a
 # `<transcript>.ephemeral` sibling, or a `.lar-ephemeral` marker in the session's
 # own recorded cwd), or derives it (that recorded cwd sits under a scratch root:
-# $TMPDIR / /tmp, a LAR_ROOT sandbox, the corpus-palace `.corpus` scratch).
+# $TMPDIR / /tmp, or a root carrying the harness's `.lar-test-scratch` marker; a house root reads
+# scratch by that marker alone, never because LAR_ROOT names it).
 # EPHEMERAL ≠ DELETED — the transcript survives; only the palace ingest declines.
 # LOUD: one skip line on stderr (silence never hides a skip). TS twin: the
 # sessionEphemeral verdict in packages/lares-cli/src/ephemeral.ts — keep in lockstep.
@@ -71,12 +74,21 @@ with open(sys.argv[1]) as f:
     if [ -n "${session_cwd:-}" ]; then
       [ -f "$session_cwd/.lar-ephemeral" ] && eph_reason="declared: .lar-ephemeral in $session_cwd"
       if [ -z "$eph_reason" ]; then
-        for _root in "${TMPDIR:-/tmp}" /tmp ${LAR_ROOT:+"$LAR_ROOT"} "${LAR_ROOT:-$HOME/.lares}/.corpus"; do
+        for _root in "${TMPDIR:-/tmp}" /tmp; do
           _root="${_root%/}"
           case "$session_cwd" in
             "$_root"|"$_root"/*) eph_reason="derived: cwd $session_cwd under scratch root $_root"; break ;;
           esac
         done
+        if [ -z "$eph_reason" ]; then
+          _dir="$session_cwd"
+          while :; do
+            if [ -f "$_dir/.lar-test-scratch" ]; then eph_reason="derived: cwd $session_cwd under marked scratch root $_dir"; break; fi
+            _parent=$(dirname -- "$_dir")
+            [ "$_parent" != "$_dir" ] || break
+            _dir=$_parent
+          done
+        fi
       fi
     fi
   fi
@@ -139,7 +151,8 @@ fi
 # Stage just this transcript so sibling scratch / memory / json never get swept.
 # Claude .jsonl + Codex rollout stage as-is. Copilot CLI remains a native SQLite pointer;
 # Copilot VS Code JSONL still takes its declared adapter path during bulk comparison.
-# A live hook owns a source-scoped directory under the ONE harvest-stage root, separate from
+# A live hook owns a source-scoped directory under the ONE harvest staging root
+# (`$LAR_ROOT/hearth/staging/harvest`, larHarvestStagingDir in TS), separate from
 # bulk's `bulk/...` and the vanilla comparator's `comparator/...` lanes. The original filename stays intact; the directory
 # names ingress only, never memory identity.
 # Surface comes from the native path, not a staging filename prefix.
@@ -153,7 +166,7 @@ direct_sqlite=0
 if [ "$surface" != "copilot-cli" ]; then
   source_key="$(printf '%s' "$transcript" | sha256sum 2>/dev/null | cut -c1-16)"
   [ -n "$source_key" ] || exit 0
-  stage="$_lares_state/harvest-stage/live/$wing/$surface/$source_key"
+  stage="$_lares_root/hearth/staging/harvest/live/$wing/$surface/$source_key"
   mkdir -p "$stage" 2>/dev/null || exit 0
 else
   direct_sqlite=1

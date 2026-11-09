@@ -2,7 +2,7 @@
  * `lares vessel found` — bootstrap a new Lararium node.
  *
  * Thin shim over `runInit` from @lararium/node. Idempotent; pass --force to
- * re-seed when the social bootstrap already lives on disk (<lares>/vessel — see larBootstrapPath).
+ * re-seed when the social bootstrap already lives on disk (<root>/hearth/vessel — see larBootstrapPath).
  *
  * A FOUNDING RUNS WITH NO VESSEL STANDING. It holds the store for its act (`ownedStore`), so a vessel standing
  * on the same store refuses it by name, before any key mints and before any byte of the store moves.
@@ -93,7 +93,7 @@ export async function cmdFound(args: ParsedArgs): Promise<number> {
   seatNewFaceRoute();
   // ONLY an explicit --root sets LAR_ROOT (never a default — that would defeat the ~/.lares uplift).
   if (args.options["root"]) process.env["LAR_ROOT"] = args.options["root"];
-  // storage (runtime) → <lares>/vessel (larDataDir); genesis (the baked seed) stays corpus-relative.
+  // storage (runtime) → <root>/hearth/vessel (larDataDir); genesis (the baked seed) stays corpus-relative.
   const storageDir = args.options["storage"] ?? larDataDir();
   const genesisDir = args.options["genesis"] ?? larGenesisDir();   // --genesis → LAR_GENESIS → <root>/genesis
   try {

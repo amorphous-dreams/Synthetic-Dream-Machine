@@ -31,7 +31,7 @@ describe("the pin moves with a successful founding only", () => {
     delete process.env["LAR_GENESIS"];
     expect(existsSync(join(SHIPPED, "seed.json"))).toBe(true);
     const r = mkdtempSync(join(tmpdir(), "lar-pin-founding-")); roots.push(r);
-    const storage = join(r, "data", "lares", "vessel");
+    const storage = join(r, "hearth", "vessel");
     mkdirSync(storage, { recursive: true });
     const pinPath = join(storage, "genesis-pin.json");
 

@@ -1,107 +1,60 @@
 /**
- * vessel-paths — the ONE resolver for the operator's runtime vessel state, consolidated onto the
- * XDG Base Directory layout (freedesktop.org). Persistent bytes, ephemeral scratch, transient runtime,
- * durable state, and config each land in their proper XDG home instead of one `~/.lares` monolith:
+ * vessel-paths — the ONE resolver for the operator's house state, every path laid beneath ONE named root.
  *
- *   $XDG_DATA_HOME/lares    (~/.local/share/lares)  — THE SPIRITS' OWN: the sovereign identity, the
- *                                                     Nexus seal, the repo registry, and the vessel
- *                                                     substrate they run on. A Lar's keys ARE that Lar.
- *   $XDG_DATA_HOME/lararium (~/.local/share/lararium) — THE HOUSE'S OWN: the acquired library and the
- *                                                     SENSORIUMS — operator history and DreamNet
- *                                                     history, capture the machine took once and cannot
- *                                                     take again. LARES AND LARARIUM HAVE DISTINCT
- *                                                     HOMES — each tier resolves by the house that owns it.
- *   $XDG_STATE_HOME/lares   (~/.local/state/lares)  — WATERMARKS ALONE: harvest, harvest-stage,
- *                                                     projection. All of it re-derives.
- *   $XDG_CACHE_HOME/lares   (~/.cache/lares)        — ephemeral scratch: sensoriums (swept).
- *   $XDG_CONFIG_HOME/lares  (~/.config/lares)       — config.json.
- *   $XDG_RUNTIME_DIR/lares  (tmpfs, or os.tmpdir()) — transient spool (+ future sockets/locks/pids).
+ * `LAR_ROOT` names the house root and nothing else stands in for it; an unnamed root refuses by name
+ * (`HouseRootUnnamed`, from `@lararium/mempalace/house-root`). The container sets `LAR_ROOT=/lar`. Beneath it:
+ *
+ *   <root>/hearth/vessel       the vessel substrate (Automerge Repo, the social bootstrap)
+ *   <root>/hearth/identity     the sovereign keypair + the veiled-Handle anchors
+ *   <root>/hearth/nexus        the Nexus seal
+ *   <root>/hearth/checkpoints  the watermarks (projection, harvest) — each re-derives from what it watches
+ *   <root>/hearth/staging      normalized transcript copies a harvest stages
+ *   <root>/sensoriums          memory · mesh · memetic-wikitext, each under its own name — the house's captured
+ *                              history, outside the hearth, kept through every re-founding
+ *   <root>/library             the acquired library — outside the hearth, kept through every re-founding
+ *   <root>/projections         the deliberate plaintext renders
+ *   <root>/config              config.json, meta.json, the repo registry
+ *   <root>/cache               sweepable scratch (the ephemeral sensoriums)
+ *   <root>/run                 transient spool, sockets and levers
+ *
+ * A re-founding clears `<root>/hearth` and touches nothing beside it, so every class that must outlive one
+ * (the sensoriums, the library, the projections, the operator's settings) stands at the root's first level, never
+ * inside it.
+ * The Python mirror (`packages/lararium-sensorium/scripts/house_root.py`) holds the same table;
+ * `tests/house-root-weld.test.ts` reads both and asserts them equal.
  *
  * The SENSORIUM consolidation (SHEAF-TRUE): content ← the contentpalace, structure ← the structurepalace,
- * form ← the formpalace, ALL THREE co-located under `<lararium>/sensoriums/memory/{content,structure,form}`
+ * form ← the formpalace, ALL THREE co-located under `<sensoriums>/memory/{content,structure,form}`
  * so the filetree IS the composition (sensorium.ts). The lararium OWNS its content plane: the sovereign
  * contentpalace inherits mempalace's exact base schema, holds content internally under the abiding home,
  * and adopting a user's mempalace history runs as a deliberate one-way import Act (`guest-import.ts`),
- * never a runtime binding. bands + coupling are BASE caps — they live in the manifest, never as dirs.
+ * never a runtime binding. bands + coupling ride as BASE caps — they live in the manifest, never as dirs.
  *
  * The mesh federation store lives as its OWN `mesh` SENSORIUM that `#has` three nested child sensoriums
- * (WHO · AUTHORITY · FLOW) under `<lararium>/sensoriums/mesh`, the children hanging below it. The mesh's own
- * caps stay minimal — its STRUCTURE is the three children, each carrying its own thin manifest.
+ * (WHO · AUTHORITY · FLOW) under `<sensoriums>/mesh`, the children hanging below it. The mesh's own
+ * caps stay minimal — its STRUCTURE comes from the three children, each carrying its own thin manifest.
  *
- * Every resolver answers the canonical XDG dir deterministically — one canonical home, no `~/.lares`
- * fallback arm. The env shores
- * (`LAR_ROOT`, `MEMPALACE_PALACE_PATH`) are preserved and win.
- *
- * `LAR_ROOT` overrides the home root for ISOLATED instances (the test harness / staged pairs): each
- * pair gets its own tree with the XDG facets laid out beneath it (`<root>/data`, `<root>/state`, …),
- * so isolation holds and the UDS socket path always agrees. Both the CLI (local-connector) and the
- * node daemon (uds-channel) resolve through HERE.
- *
- * ── THREE HOMES, ONE QUESTION ───────────────────────────────────────────────────────────────────
- * Every siting answers WHOSE IS THIS?, and the answer picks the house:
- *   `<lararium>`  the LARARIUM's — the acquired shelf, the sensoriums. Back it up; nothing re-makes it.
- *   `<lares>`   the LARES' — their identity and seal, and the substrate they run on. Back it up.
- *   `<state>`  nobody's for long: watermarks, deletable at any moment, each re-deriving from what it
- *              watches.
- *
- * EACH HOUSE HAS ITS OWN ADDRESS. Runtime vessel data and its projection state resolve under the Lares
- * homes; acquired library bodies and sensoriums resolve under the Lararium home. The homes never nest.
- *
- * A rule that fits in one breath needs no warning label.
+ * Both the CLI (local-connector) and the node daemon (uds-channel) resolve through HERE, so the UDS socket
+ * path always agrees.
  */
 
 import { existsSync, readdirSync } from "node:fs";
-import { homedir, tmpdir } from "node:os";
+import { homedir } from "node:os";
 import { basename, join } from "node:path";
 
-// The XDG data-home + the mempalace content parent live in ONE cycle-free
-// home — `@lararium/mempalace/xdg-base` — so vessel-paths and mempalace's palace-path derive the store
-// parent from the SAME source (no value-duplication). Imported across the existing node → mempalace edge.
-import { laresDataHome, larariumDataHome, mempalaceContentParent } from "@lararium/mempalace/xdg-base";
+// The house root and its classes live in ONE cycle-free home — `@lararium/mempalace/house-root` — so
+// vessel-paths and mempalace's palace-path derive every home from the SAME source (no value-duplication).
+// Imported across the existing node → mempalace edge.
+import {
+  HouseRootUnnamed, larHouseRoot, larHearthHome, larSensoriumsHome, larCheckpointsHome, larStagingHome,
+  larLibraryRoot, larProjectionsHome, larConfigHome, larCacheHome, larRuntimeHome, mempalaceContentParent,
+} from "@lararium/mempalace/house-root";
 
-// Re-export both homes — `laresDataHome` for what belongs to the SPIRITS, `larariumDataHome` for what
-// belongs to the HOUSE. (`lar` names the namespace alone; the resolvers below wear it for that reason.)
-export { laresDataHome, larariumDataHome };
-
-// ── XDG base homes ──────────────────────────────────────────────────────────────────────────────
-// Each honors its env var (unset → the freedesktop default), and roots under LAR_ROOT when isolated.
-//
-// THE KIND SEGMENT APPEARS ONLY WHERE TWO KINDS SHARE A FLOOR. Under LAR_ROOT the data home splits
-// `data/lares` from `data/lararium` because the spirits' substrate and the house's shelf both stand
-// there and a wipe must reach exactly one. State and cache hold ONE kind, so `<root>/state` and
-// `<root>/cache` name it fully — a segment there would carry no relation, and a reader who "restored
-// the symmetry" would add one. Under XDG the `lares` segment does different work: it separates this
-// house from every other application sharing `~/.local/state`. Same word, two jobs, one of which
-// LAR_ROOT already does by owning the whole root. A house-kind durable state would earn the segment
-// on the day one exists.
-
-/** $XDG_STATE_HOME/lares — durable watermarks (harvest, harvest-stage, projection). */
-export function larStateHome(): string {
-  const root = process.env["LAR_ROOT"];
-  return root ? join(root, "state")
-              : join(process.env["XDG_STATE_HOME"]?.trim() || join(homedir(), ".local", "state"), "lares");
-}
-
-/** $XDG_CACHE_HOME/lares — ephemeral scratch (sensoriums), safe to sweep. */
-export function larCacheHome(): string {
-  const root = process.env["LAR_ROOT"];
-  return root ? join(root, "cache")
-              : join(process.env["XDG_CACHE_HOME"]?.trim() || join(homedir(), ".cache"), "lares");
-}
-
-/** $XDG_CONFIG_HOME/lares — config.json. */
-export function larConfigHome(): string {
-  const root = process.env["LAR_ROOT"];
-  return root ? join(root, "config")
-              : join(process.env["XDG_CONFIG_HOME"]?.trim() || join(homedir(), ".config"), "lares");
-}
-
-/** $XDG_RUNTIME_DIR/lares (tmpfs) — transient spool + future sockets/locks/pids. Isolated → under root. */
-export function larRuntimeHome(): string {
-  const root = process.env["LAR_ROOT"];
-  if (root) return join(root, "run");
-  return join(process.env["XDG_RUNTIME_DIR"]?.trim() || tmpdir(), "lares");
-}
+// Re-export the root and its classes, so every caller in the node and the CLI names them through here.
+export {
+  HouseRootUnnamed, larHouseRoot, larHearthHome, larSensoriumsHome, larCheckpointsHome, larStagingHome,
+  larLibraryRoot, larProjectionsHome, larConfigHome, larCacheHome, larRuntimeHome,
+};
 
 /**
  * The ONE mempalace executable resolver (DRY) — prefer the user-installed CLI at `~/.local/bin`
@@ -115,16 +68,6 @@ export function resolveMempalaceExe(): string {
   return existsSync(local) ? local : exe;
 }
 
-// ── The `~/.lares` vessel home (isolation base + vessel-identity) ─────────────────────────────────
-
-/** The `~/.lares` vessel home — `LAR_ROOT` (isolated instance) or `~/.lares`. Hosts vessel-identity
- *  (a separate concern, kept at its `~/.lares` spelling). An EMPTY `LAR_ROOT` reads as unset, as the socket
- *  resolver (`lares_uds.py`), the runtime home and the container shims read it: an empty root would put every
- *  path under it relative to whatever cwd a process happens to hold. */
-export function larHome(): string {
-  return process.env["LAR_ROOT"] || join(homedir(), ".lares");
-}
-
 // ── The one-segment law (every caller-named dir passes through it) ───────────────────────────────
 
 /**
@@ -136,7 +79,7 @@ export function larHome(): string {
  * both `rmSync` recursively over what the name resolves to — and one of them reaches through the MCP,
  * so the segment arrives from outside this island entirely.
  *
- * The shrine stands in the house that owns acquired bodies and sensoriums. A traversing
+ * The sensoriums stand in their own class, outside the hearth a re-founding clears. A traversing
  * segment is the one thing that defeats that boundary: it walks outside the intended root.
  * So the containment holds at the CHOKE-POINT, where a name becomes a path, rather than at each of the
  * dozen verbs downstream — the same mechanism-over-policy shape `confineMirrorWrite` keeps for the
@@ -155,10 +98,10 @@ export function assertOneSegment(kind: string, name: string): string {
 
 // ── The `memory` sensorium (content · structure · form) ──────────────────────────────────────────
 
-/** The `memory` sensorium dir — `<lararium>/sensoriums/memory`. Its manifest declares content/structure/
+/** The `memory` sensorium dir — `<sensoriums>/memory`. Its manifest declares content/structure/
  *  form/persistence (fiber caps, leaf-dirs below) + bands/coupling (base caps, manifest-only). */
 export function memorySensoriumDir(): string {
-  return join(larariumDataHome(), "sensoriums", "memory");
+  return join(larSensoriumsHome(), "memory");
 }
 
 /**
@@ -185,16 +128,16 @@ export function memorySensoriumLenses(): Record<string, string> {
   };
 }
 
-/** Resolve a sensorium NAME to its root dir — `<lararium>/sensoriums/<name>` (the manifest lives beneath it).
+/** Resolve a sensorium NAME to its root dir — `<sensoriums>/<name>` (the manifest lives beneath it).
  *  The one place a `lares sense <sensorium> <verb>` address turns a name into a target root; `memory`
  *  resolves to {@link memorySensoriumDir} by construction (same join), so the default stays identical. */
 export function sensoriumDir(name: string): string {
-  return join(larariumDataHome(), "sensoriums", assertOneSegment("sensoriumDir", name));
+  return join(larSensoriumsHome(), assertOneSegment("sensoriumDir", name));
 }
 
-/** Every sensorium standing under `<lararium>/sensoriums` — the ones a lens may name. */
+/** Every sensorium standing under `<sensoriums>` — the ones a lens may name. */
 export function sensoriumNames(): string[] {
-  const root = join(larariumDataHome(), "sensoriums");
+  const root = larSensoriumsHome();
   try {
     return readdirSync(root, { withFileTypes: true })
       .filter((e) => e.isDirectory())
@@ -218,7 +161,7 @@ export function sensoriumNames(): string[] {
  * A bare plane name (`content`) still resolves against `memory`, which keeps the common read short.
  */
 export function sensoriumLenses(): Record<string, string> {
-  const root = join(larariumDataHome(), "sensoriums");
+  const root = larSensoriumsHome();
   const out: Record<string, string> = {};
 
   // DISCOVER the palaces; never declare them. A sensorium `#has` EITHER planes OR child sensoriums —
@@ -301,12 +244,12 @@ export function larContentDir(): string {
 
 // ── The `mesh` sensorium (WHO · AUTHORITY · FLOW) ─────────────────────────────────────────────────
 
-/** The `mesh` sensorium dir — `<lararium>/sensoriums/mesh`. Its manifest declares MINIMAL own caps + three
+/** The `mesh` sensorium dir — `<sensoriums>/mesh`. Its manifest declares MINIMAL own caps + three
  *  nested children (who/authority/flow) as dumb `coupling.children[]` edges; the filetree IS the
  *  composition (sensorium.ts). The cross-Lararium federation feed/carriage lives elsewhere in the mesh
  *  domain — this is directory + structure only. */
 export function meshSensoriumDir(): string {
-  return join(larariumDataHome(), "sensoriums", "mesh");
+  return join(larSensoriumsHome(), "mesh");
 }
 
 /** The WHO child-sensorium dir — `<mesh>/who`. Identity/presence: content (presence-embeddings) +
@@ -330,12 +273,12 @@ export function meshFlowDir(): string {
 
 // ── The `memetic-wikitext` sensorium (FORMAL ⋈ INFORMAL peers, neither top) ───────────────────────
 
-/** The `memetic-wikitext` sensorium dir — `<lararium>/sensoriums/memetic-wikitext`. A nameless nested
+/** The `memetic-wikitext` sensorium dir — `<sensoriums>/memetic-wikitext`. A nameless nested
  *  entity that `#has` NO fiber cap and TWO PEER child-sensoria (formal ⋈ informal) as dumb
  *  `coupling.children[]` edges, NEITHER on top; the coupling plane reads the directed formal↔informal
  *  flow (memetic-wikitext-sensorium.ts). The filetree IS the composition (sensorium.ts). */
 export function memeticWikitextSensoriumDir(): string {
-  return join(larariumDataHome(), "sensoriums", "memetic-wikitext");
+  return join(larSensoriumsHome(), "memetic-wikitext");
 }
 
 /** The FORMAL peer-sensorium dir — `<memetic-wikitext>/formal`. The memes-on-disk corpus (grammar/
@@ -367,22 +310,22 @@ export function scratchSensoriumInstanceDir(id: string): string {
 
 // ── The vessel substrate (Automerge Repo — NOT a sensorium) ──────────────────────────────────────
 
-/** Storage dir — the Automerge Repo, vessel key, and UDS socket, at `<lares>/vessel`.
+/** Storage dir — the Automerge Repo, vessel key, and UDS socket, at `<root>/hearth/vessel`.
  *  Runtime store, not a sensorium (it carries no sensory fiber caps). */
 export function larDataDir(): string {
-  return join(laresDataHome(), "vessel");
+  return join(larHearthHome(), "vessel");
 }
 
 /** Vessel identity dir — the sovereign keypair + the veiled-Handle anchors, at
- *  `<lares>/identity`. It sits beside (never inside) the runtime `<lares>/vessel` store, so
+ *  `<root>/hearth/identity`. It sits beside (never inside) the runtime `<root>/hearth/vessel` store, so
  *  storage and sovereignty remain separate filesystem responsibilities. The ONE identity resolver —
  *  node-vessel-identity resolves any prior location onto it. */
 export function larIdentityDir(): string {
-  return join(laresDataHome(), "identity");
+  return join(larHearthHome(), "identity");
 }
 
 /**
- * The Nexus SEAL home — the kahu quorum's seats + their epoch lineage, at `<lares>/nexus`.
+ * The Nexus SEAL home — the kahu quorum's seats + their epoch lineage, at `<root>/hearth/nexus`.
  *
  * WHY IT SITS HERE AND NOT IN THE BAGS TREE. The seal reads as a FILE rather than a bag: an operator
  * backs it up, hands it to a peer, and reads it with their own eyes. A bag would give it fleet-sync it
@@ -390,33 +333,34 @@ export function larIdentityDir(): string {
  * tree's home — which on a development install sits INSIDE the repository, so a founding seal could land
  * in a git history nobody meant to write it into.
  *
- * So it homes beside `identity`, per-operator, under the XDG data home: outside the corpus, outside the
- * repo, and beside the runtime vessel store; the seal and sovereign root are separate from vessel data. A clone of the corpus therefore carries NO Nexus — which reads correct,
+ * So it homes beside `identity`, per-operator, under the hearth: outside the corpus, outside the repo, and
+ * beside the runtime vessel store; the seal and sovereign root stay separate from vessel data. A clone of the
+ * corpus therefore carries NO Nexus — which reads correct,
  * because a Nexus belongs to the operators who founded it, never to whoever copied the code.
  */
 export function larSealHome(): string {
-  return join(laresDataHome(), "nexus");
+  return join(larHearthHome(), "nexus");
 }
 
-// ── Durable watermarks (state) ────────────────────────────────────────────────────────────────────
+// ── Checkpoints and staging (inside the hearth) ───────────────────────────────────────────────────
 
-/** Disk-projection state dir (the synced-tree watermark) — `<state>/projection`. */
-export function larProjectionDir(): string {
-  return join(larStateHome(), "projection");
+/** Disk-projection checkpoint (the synced-tree watermark) — `<checkpoints>/projection`. */
+export function larProjectionCheckpointDir(): string {
+  return join(larCheckpointsHome(), "projection");
 }
 
-/** Harvest watermark (lar_hv idempotency state) — `<state>/harvest`. */
-export function larHarvestDir(): string {
-  return join(larStateHome(), "harvest");
+/** Harvest checkpoint (lar_hv idempotency state) — `<checkpoints>/harvest`. */
+export function larHarvestCheckpointDir(): string {
+  return join(larCheckpointsHome(), "harvest");
 }
 
-/** Harvest stage (normalized transcript copies) — `<state>/harvest-stage`. */
-export function larHarvestStageDir(): string {
-  return join(larStateHome(), "harvest-stage");
+/** Harvest staging (normalized transcript copies) — `<staging>/harvest`. */
+export function larHarvestStagingDir(): string {
+  return join(larStagingHome(), "harvest");
 }
 
 /**
- * The social bootstrap — `<lares>/vessel/social-bootstrap.json`. The ONE resolver; every reader and the
+ * The social bootstrap — `<vessel>/social-bootstrap.json`. The ONE resolver; every reader and the
  * writer route through it.
  *
  * IT HOLDS AN ADDRESS BOOK: the automerge URLs of this vessel's social docs (the identities · circles ·
@@ -433,7 +377,7 @@ export function larHarvestStageDir(): string {
  *   · the bootstrap lived in the corpus tree, so copied seed material carried another vessel's address book;
  *   · a line in .gitignore stood as the only guard, where a placement should have been.
  *
- * ── WHY <lares>/vessel RATHER THAN <state> ───────────────────────────────────────────────────────
+ * ── WHY <vessel> RATHER THAN <checkpoints> ───────────────────────────────────────────────────────
  * The address book belongs with the vessel store because it names the docs in that store. A fresh store
  * gets a freshly founded address book beside its documents.
  */
@@ -441,7 +385,5 @@ export function larBootstrapPath(): string {
   return join(larDataDir(), "social-bootstrap.json");
 }
 
-// NOTE: genesis/ stays CORPUS-relative (larRoot / the repo) and now holds TRACKED SEED ALONE — the baked
+// NOTE: genesis/ stays CORPUS-relative (larRoot / the repo) and holds TRACKED SEED ALONE — the baked
 // bundle (seed.json, cas/), identical for every vessel and safe to copy.
-
-// ── Transient runtime (tmpfs) ────────────────────────────────────────────────────────────────────

@@ -16,6 +16,8 @@ export default defineConfig({
   },
   test: {
     globalSetup: ["../../tools/vitest-dist-guard.mjs"],
+    // A worker that inherits no house root names a scratch one (the resolvers refuse an unnamed root).
+    setupFiles: ["../../tools/vitest-scratch-house.mjs"],
     // STATED, not inherited — the shape every sibling package writes down.
     //
     // `include` fences the run to `tests/`. Left to vitest's default glob, a stray `*.test.ts` dropped

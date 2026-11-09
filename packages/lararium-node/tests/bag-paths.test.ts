@@ -44,23 +44,23 @@ describe("the projection pre-check — what the founding rite reads before it tr
     return join(dir, "bags");
   };
 
-  test("a canon source sources no `daemon` slug, and the daemon working mirror lands under the state root as kahua-<tag>", () => {
+  test("a canon source sources no `daemon` slug, and the daemon working mirror lands under the projections root as daemon-<tag>", () => {
     const canonBags = fixtureCanon();
-    const roots = projectionRoots({ stateRoot: "/state", canonBags });
+    const roots = projectionRoots({ projectionRoot: "/state", canonBags });
     expect(roots.sourcedSlugs()).not.toContain("daemon");
-    expect(daemonWorkingMirror("/state", TAG).mirrorRoot).toBe(`/state/wikis/kahua-${TAG}`);
+    expect(daemonWorkingMirror("/state", TAG).mirrorRoot).toBe(`/state/wikis/daemon-${TAG}`);
   });
 
   test("the checkout's real bags/ sources no `daemon` slug either", () => {
     const realBags = join(import.meta.dirname, "..", "..", "..", "bags");
-    const roots = projectionRoots({ stateRoot: "/state", canonBags: realBags });
+    const roots = projectionRoots({ projectionRoot: "/state", canonBags: realBags });
     expect(roots.sourcedSlugs().length, "the checkout's bags/ stands").toBeGreaterThan(0);
     expect(roots.sourcedSlugs()).not.toContain("daemon");
   });
 
   test("CONTROL: a sourced slug lands under the canon parent, its wiki beside the canon source", () => {
     const canonBags = fixtureCanon();
-    const roots = projectionRoots({ stateRoot: "/state", canonBags });
+    const roots = projectionRoots({ projectionRoot: "/state", canonBags });
     expect(roots.sourcedSlugs()).toContain("lares");
     expect(roots.bagRoot("lares")).toBe(join(canonBags, "lares"));
     expect(roots.wikisRootFor("lares")).toBe(join(dirname(canonBags), "wikis"));

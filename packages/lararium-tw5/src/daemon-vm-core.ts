@@ -175,10 +175,10 @@ export interface DaemonVmCoreOptions {
   storage?:        IslandStorageConfig;
   /** One bounded D-VR-C worker-owned document; absent, the worker owns no document and its doc syncs over the host's channel alone. */
   ownedDocument?:  { documentUrl: string; storage?: IslandStorageConfig };
-  /** The daemon wiki's disk mirrors (its working layer → `<root>/wikis/kahua/`); a node host mints
-   *  them, a browser passes none. Rides the manifest's `diskMirrors` so the worker's `onBoot` can
-   *  mount the same projector a wiki island mounts. */
-  diskMirrors?:    readonly { bagId: string; mirrorRoot: string; scope: string; guardNexusHandles?: boolean; titlePaths?: boolean }[];
+  /** The daemon wiki's disk mirrors (its working layer → `<projections>/wikis/daemon-<F>/`, the daemon bag's observe-only
+   *  render as `mirrorClass: "observe"`); a node host mints them, a browser passes none. Rides the manifest's
+   *  `diskMirrors` so the worker's `onBoot` can mount the same projector a wiki island mounts. */
+  diskMirrors?:    readonly { bagId: string; mirrorRoot: string; scope: string; mirrorClass?: "recovery" | "observe"; guardNexusHandles?: boolean; titlePaths?: boolean }[];
   /** Compiled daemon-island Worker script URL. */
   workerScriptUrl: URL;
   /** Override the ea silence budget in ms (tests). */

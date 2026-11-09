@@ -70,7 +70,7 @@ Cure: `process.exitCode = code` and let the loop drain (or await a stdout drain 
 
 `packages/lares-cli/src/local-connector.ts:29` — `rendezvousPath({ root: dataDir ?? larDataDir(), … })`.
 
-`herm-floor.test.ts:158/169/196` calls `findSock(root)`, gets `null` (see D3/RC-C), and passes `dir!`. `null ?? larDataDir()` resolves to `/home/joshu/.local/share/lares/vessel` → `/tmp/lares-1000/c338a5d9ed5f.sock`, **which exists on this machine** (dated 30 Aug). Measured on the box: a live daemon stands at `--root /home/joshu/Synthetic-Dream-Machine` (pid 624306) plus six stale ones.
+`herm-floor.test.ts:158/169/196` calls `findSock(root)`, gets `null` (see D3/RC-C), and passes `dir!`. `null ?? larDataDir()` resolves to the vessel of whatever house the process names (`<root>/hearth/vessel`; the operator's own when the harness names no scratch `LAR_ROOT`) → `/tmp/lares-1000/c338a5d9ed5f.sock`, **which exists on this machine** (dated 30 Aug). Measured on the box: a live daemon stands at `--root /home/joshu/Synthetic-Dream-Machine` (pid 624306) plus six stale ones.
 
 Consequences in this very run:
 - **R5 fails against the wrong vessel.** Its message — `"this vessel stands at the WAKING FLOOR and holds no face"` — is the *operator's home vessel* answering, not the herm the test just lifted. R5 is **not** evidence that the lift is broken.
@@ -217,6 +217,6 @@ Finally, two housekeeping notes worth the operator's ear: add a named `test:e2e:
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;S7KSH6j4WdlJ2BcFPpU2WylFuL7ppP5e5Wk8VAx5eKQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UxkI-vUSF5VQXu8IXQ4pcNIh7MdwF4FT2n4rbhUf2Hc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

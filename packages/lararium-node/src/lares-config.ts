@@ -2,7 +2,7 @@
  * lares-config — the per-daemon resource-override reader + the composable daemon resource caps.
  *
  * An operator sites ONE daemon's corpus resources (bags · genesis · cas) away from the repo-relative
- * default by writing `~/.lares/config.json`. Genesis artifacts ride the repo checkout BY DEFAULT (tracked
+ * default by writing `<root>/config/config.json`. Genesis artifacts ride the repo checkout BY DEFAULT (tracked
  * seed), so the base stays repo-relative and a fresh clone with no config boots exactly as before; the
  * config file OVERRIDES a resource to a `~`-derived dir when the operator sites one.
  *
@@ -21,10 +21,10 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
 import { resolveGenesis } from "./genesis-resolve.js";
-import { larHome } from "./vessel-paths.js";
+import { HouseRootUnnamed, larConfigHome } from "./vessel-paths.js";
 import type { ExplicitOriginComposition } from "./lan-address.js";
 
-/** Per-resource root overrides an operator may site in `~/.lares/config.json`. Each sites INDEPENDENTLY. */
+/** Per-resource root overrides an operator may site in `<root>/config/config.json`. Each sites INDEPENDENTLY. */
 export interface LaresResourceRoots {
   /** The daemon's holdings tree — overrides `<corpus>/bags`. */
   readonly bags?:    string;
@@ -54,7 +54,7 @@ export interface LaresOriginConfig {
   readonly flow?: string;
 }
 
-/** The `~/.lares/config.json` shape. `resources` carries corpus-root overrides; `vessel` carries
+/** The `<root>/config/config.json` shape. `resources` carries corpus-root overrides; `vessel` carries
  *  vessel-STATE overrides — the two kept apart so corpus and state never blur. */
 export interface LaresConfig {
   readonly resources?: LaresResourceRoots;
@@ -64,6 +64,8 @@ export interface LaresConfig {
   readonly herm?: LaresHermConfig;
   /** What this hearth gives the walkers it hosts. Absent, the house defaults stand. */
   readonly hosting?: LaresHostingConfig;
+  /** The projection knobs. `observeDaemon` toggles the one-way render of the daemon bag (`daemon-observe.ts`); ON when absent. */
+  readonly projection?: { readonly observeDaemon?: boolean };
 }
 
 /** The hearth's hosting knobs. */
@@ -109,19 +111,27 @@ export function hermWaymarkDeclared(cfg: LaresConfig): boolean {
   return originBoolean((herm as { waymark?: unknown }).waymark, "herm.waymark") ?? false;
 }
 
-/** The per-daemon config file — `~/.lares/config.json`. LAR_ROOT-isolated for staged pairs (larHome
- *  honors LAR_ROOT), so each isolated instance reads its OWN overrides. */
+/** The per-daemon config file — `<root>/config/config.json`, under the house root LAR_ROOT names, so each
+ *  house reads its OWN overrides. An unnamed root refuses (`HouseRootUnnamed`). */
 export function laresConfigPath(): string {
-  return join(larHome(), "config.json");
+  return join(larConfigHome(), "config.json");
 }
 
 /**
- * Read `~/.lares/config.json` — PURE + well-guarded. A missing file yields `{}` (the repo-relative
- * defaults stand); an unreadable or malformed file THROWS a clear error naming the path (a typo
- * SURFACES, never silently degrades the boot). The `path` param stays injectable so the reader tests
- * without touching the operator's home.
+ * Read `<root>/config/config.json` — PURE + well-guarded. A missing file yields `{}` (the repo-relative
+ * defaults stand), and so does an unnamed house root: no house names no config, and the house-state
+ * resolvers refuse on their own when a caller reaches them. An unreadable or malformed file THROWS a clear
+ * error naming the path (a typo SURFACES, never silently degrades the boot). The `path` param stays
+ * injectable so the reader tests without touching a house.
  */
-export function loadLaresConfig(path: string = laresConfigPath()): LaresConfig {
+export function loadLaresConfig(given?: string): LaresConfig {
+  let path: string;
+  try {
+    path = given ?? laresConfigPath();
+  } catch (err) {
+    if (err instanceof HouseRootUnnamed) return {};   // no house root named — no house config to read
+    throw err;
+  }
   if (!existsSync(path)) return {};   // no override sited — the repo-relative defaults stand
   let raw: string;
   try {

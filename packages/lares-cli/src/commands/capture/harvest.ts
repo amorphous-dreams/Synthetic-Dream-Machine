@@ -16,7 +16,7 @@ import { homedir } from "node:os";
 import { basename, join } from "node:path";
 import { TIMEOUT_CEIL_MS } from "@lararium/mempalace";
 import { writebackWing, isoWholeSeconds } from "@lararium/sensorium";
-import { larRoot, larHarvestDir, vesselDid } from "../../env.js";
+import { larRoot, larHarvestCheckpointDir, vesselDid } from "../../env.js";
 import { wingFromDir } from "../../wing-law.js";
 import { partitionEphemeral } from "../../ephemeral.js";
 import { runVerb } from "../../verb-call.js";
@@ -24,9 +24,9 @@ import { readVerbOutcome } from "../../verb-result.js";
 import { emit, exitFor, type LaresError } from "../../render.js";
 import type { ParsedArgs } from "../../parse-args.js";
 
-/** The re-pave's state home — `<state>/harvest`, XDG; LAR_ROOT-isolated for staged instances. The
- *  baseline series lands here under the wing. */
-const HARVEST_DIR = larHarvestDir();
+/** The re-pave's checkpoint home — `<root>/hearth/checkpoints/harvest`. The baseline series lands here under
+ *  the wing. Resolved at the act, so loading the command never asks for a house root. */
+const harvestDir = (): string => larHarvestCheckpointDir();
 
 // --- the writeback leg (the daemon memory-shore) --------------------------
 // The lar-telemetry projection onto a wing's drawers lives ONCE in @lararium/sensorium
@@ -319,15 +319,15 @@ async function readBaseline(args: ParsedArgs, when: "before" | "after"): Promise
 
 /** The kept comparison series — both readings of a pass, in the re-pave's state home. */
 function appendBaseline(wing: string, row: Record<string, unknown>): void {
-  mkdirSync(HARVEST_DIR, { recursive: true });
-  appendFileSync(join(HARVEST_DIR, `${wing}.baseline.ndjson`),
+  mkdirSync(harvestDir(), { recursive: true });
+  appendFileSync(join(harvestDir(), `${wing}.baseline.ndjson`),
                  JSON.stringify({ wing, ...row, at: isoWholeSeconds(new Date().toISOString()) }) + "\n", "utf8");
 }
 
 /** This pass's own before-reading — the comparison is against this run, never a remembered number. */
 function readBaselineRow(wing: string, when: "before" | "after"): number {
   try {
-    const rows = readFileSync(join(HARVEST_DIR, `${wing}.baseline.ndjson`), "utf8")
+    const rows = readFileSync(join(harvestDir(), `${wing}.baseline.ndjson`), "utf8")
       .split("\n").filter(Boolean).map((l) => JSON.parse(l) as Record<string, unknown>);
     for (let i = rows.length - 1; i >= 0; i--) {
       if (rows[i]?.["when"] === when) { const d = rows[i]?.["drawers"]; return typeof d === "number" ? d : 0; }

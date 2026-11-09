@@ -79,7 +79,7 @@ describe("the Kahu canon reads only its charter's steward", () => {
   };
   /** One real founding for the file; each case opens the hearth's store on it and reads the genuine registrations off the kept files. */
   async function scene(fn: (s: Scene) => Promise<void>): Promise<void> {
-    founded ??= withLarRoot(r, () => foundHearthDirect({ storageDir: join(r, "data", "lares", "vessel"), genesisDir: join(r, "genesis") })).then(() => undefined);
+    founded ??= withLarRoot(r, () => foundHearthDirect({ storageDir: join(r, "hearth", "vessel"), genesisDir: join(r, "genesis") })).then(() => undefined);
     await founded;
     await withLarRoot(r, async () => {
       const vesselKey = await loadVesselVerifyingKey();

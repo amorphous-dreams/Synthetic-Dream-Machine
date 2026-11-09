@@ -60,38 +60,30 @@ def test_no_secret_fails_loud(tmp_path, monkeypatch):
         wv.load_local_secret(identity_dir=str(empty))  # never a silent public/empty-key fallback
 
 
-# --- the XDG-state parity guard (identity-home caller-lag, healed 2026-07-15) ------------
-# The salt dir MUST resolve the SAME rule the TS larIdentityDir() (vessel-paths.ts) holds — the vessel
+# --- the house-root parity guard (identity-home caller-lag) ------------
+# The salt dir MUST resolve the SAME path the TS larIdentityDir() (vessel-paths.ts) names — the vessel
 # WRITES the persona-group-root there, so a second spelling reads a salt that is not there and veils
 # against nothing. The vectors below pin the ONE address and refuse every scattered sibling.
 
-def test_identity_dir_mirrors_xdg_data(monkeypatch):
+def test_identity_dir_mirrors_the_house_root(monkeypatch):
+    monkeypatch.setenv("LAR_ROOT", "/iso")
+    assert wv._identity_dir() == "/iso/hearth/identity"
+
+
+def test_identity_dir_refuses_an_unnamed_root(monkeypatch):
+    from house_root import HouseRootUnnamed
     monkeypatch.delenv("LAR_ROOT", raising=False)
     monkeypatch.setenv("XDG_DATA_HOME", "/x/state")
-    assert wv._identity_dir() == "/x/state/lares/identity"
-
-
-def test_identity_dir_honors_xdg_state_unset(monkeypatch):
-    import os
-    monkeypatch.delenv("LAR_ROOT", raising=False)
-    monkeypatch.delenv("XDG_DATA_HOME", raising=False)
-    expect = os.path.join(os.path.expanduser("~"), ".local", "share", "lares", "identity")
-    assert wv._identity_dir() == expect
-
-
-def test_identity_dir_isolated_instance(monkeypatch):
-    monkeypatch.setenv("LAR_ROOT", "/iso")
-    monkeypatch.delenv("XDG_DATA_HOME", raising=False)
-    assert wv._identity_dir() == "/iso/data/lares/identity"
+    with pytest.raises(HouseRootUnnamed, match="LAR_ROOT"):
+        wv._identity_dir()
 
 
 def test_identity_dir_explicit_override_wins(monkeypatch):
-    monkeypatch.setenv("XDG_DATA_HOME", "/x/state")
+    monkeypatch.delenv("LAR_ROOT", raising=False)
     assert wv._identity_dir("/explicit/dir") == "/explicit/dir"
 
 
-def test_identity_dir_never_the_prexdg_scatter(monkeypatch):
-    monkeypatch.delenv("LAR_ROOT", raising=False)
-    monkeypatch.delenv("XDG_DATA_HOME", raising=False)
+def test_identity_dir_never_a_scatter(monkeypatch):
+    monkeypatch.setenv("LAR_ROOT", "/iso")
     assert ".lararium-identity" not in wv._identity_dir()
     assert "/.lares/" not in wv._identity_dir()
