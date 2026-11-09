@@ -38,13 +38,13 @@
  */
 import { appendFileSync, copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, realpathSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
-import { basename, dirname, join, resolve, sep } from "node:path";
+import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
 import { wikiBagUri, wikiSlotUri, KAHUA_BAG, defaultChairLabel, declarePersonaHandle, renameOwnPersona, standForKahuSeat } from "@lararium/mesh";
 import {
   larHouseRoot, larProjectionsHome, larConfigHome, mirrorDirFileToUri, SyncedTree, OBSERVE_DIR, TEMP_LAYER_DIR,
   daemonFaceFolder, isDaemonFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug, loadLaresConfig, tempConsentedSlugs,
-  listCollections, libraryCollectionDir,
+  listCollections, libraryCollectionDir, atomicWriteFileSync,
 } from "@lararium/node";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor } from "../render.js";
@@ -534,27 +534,50 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   const minted: string[] = [];
   const skipped: string[] = [];
 
-  // WORKING ROWS AND KĀPAE: one wave per face, through the ingest gesture, keyed by content.
-  const wave = async (sourceDir: string, mirrorDir: string, toBag: string, files: readonly string[], keyPrefix: string, workTally: CarryTally, kapaeTally: CarryTally | null, wiki: string | null = null): Promise<void> => {
+  // An import restores each file into its mirror, then ingest reads it there so the placement ward sees the bag's own mirror.
+  const wave = async (sourceDir: string, uriDir: string, mirrorDir: string, toBag: string, files: readonly string[], keyPrefix: string, workTally: CarryTally, kapaeTally: CarryTally | null, wiki: string | null = null): Promise<void> => {
     if (files.length === 0) return;
-    const scan = scanFiles(bundle.root, files.map((f) => join(bundle.root, ...f.split("/"))), toBag, new SyncedTree(null), (_r, file) => mirrorDirFileToUri(mirrorDir, file));
+    const scan = scanFiles(bundle.root, files.map((f) => join(bundle.root, ...f.split("/"))), toBag, new SyncedTree(null), (_r, file) => mirrorDirFileToUri(uriDir, file));
     for (const s of scan.skipped) if (!s.endsWith(".meta")) skipped.push(s);
     for (const r of scan.refusedShadows ?? []) kapaeTally?.refused.push(`${r.file} (${r.refusal})`);
     const keyed = (r: ScanRow): string => `${keyPrefix}:${r.uri}:${r.diskHash}`;
-    const candidates = candidatesOf(scan.rows).filter((r) => { if (journal.done.has(keyed(r))) { workTally.already++; return false; } return true; });
+    let candidates = candidatesOf(scan.rows).filter((r) => { if (journal.done.has(keyed(r))) { workTally.already++; return false; } return true; });
     for (const r of scan.rows) if (r.status === "non-nfc") workTally.refused.push(`${r.uri} (non-NFC bytes)`);
-    const kapae = (scan.shadows ?? []).filter((t) => { if (journal.done.has(`${keyPrefix}:kapae:${t}`)) { kapaeTally!.already++; return false; } return true; });
+    const shadowTally = kapaeTally ?? workTally;
+    let kapae = (scan.shadows ?? []).filter((t) => { if (journal.done.has(`${keyPrefix}:kapae:${t}`)) { shadowTally.already++; return false; } return true; });
     workTally.planned += candidates.length;
-    if (kapaeTally) kapaeTally.planned += kapae.length;
+    shadowTally.planned += kapae.length;
     if (!apply || (candidates.length === 0 && kapae.length === 0)) return;
-    const answer = await doors.ingest({ source: sourceDir, toBag, candidates, kapae, ...(wiki !== null ? { inWiki: true, wiki } : {}) });
+    const wanted = new Set([...candidates.map((r) => r.uri), ...kapae]);
+    const blocked = new Set<string>();
+    const pending: Array<{ uri: string; to: string; bytes: Buffer }> = [];
+    for (const f of files) {
+      const from = join(bundle.root, ...f.split("/"));
+      const uri = mirrorDirFileToUri(uriDir, from.endsWith(".meta") ? from.slice(0, -5) : from);
+      if (!uri || !wanted.has(uri)) continue;
+      const to = join(mirrorDir, relative(sourceDir, from));
+      const bytes = readFileSync(from);
+      if (existsSync(to)) {
+        if (!readFileSync(to).equals(bytes)) blocked.add(uri);
+      } else pending.push({ uri, to, bytes });
+    }
+    for (const uri of blocked) workTally.stoodOff.push(`${uri} (a different file stands in the mirror; left as it stands)`);
+    for (const { uri, to, bytes } of pending) {
+      if (blocked.has(uri)) continue;
+      mkdirSync(dirname(to), { recursive: true });
+      atomicWriteFileSync(to, bytes, undefined, { mode: 0o600 });
+    }
+    candidates = candidates.filter((r) => !blocked.has(r.uri));
+    kapae = kapae.filter((uri) => !blocked.has(uri));
+    if (candidates.length === 0 && kapae.length === 0) return;
+    const answer = await doors.ingest({ source: mirrorDir, toBag, candidates, kapae, ...(wiki !== null ? { inWiki: true, wiki } : {}) });
     const landed = new Set(answer.landed);
     for (const r of candidates) if (landed.has(r.uri)) { workTally.landed++; journal.mark(keyed(r), "landed"); }
     for (const c of answer.conflicts) workTally.stoodOff.push(`${c.uri} (${c.why})`);
     for (const c of answer.refused) workTally.refused.push(`${c.uri} (${c.why})`);
     for (const u of answer.unanswered) workTally.refused.push(`${u} (no answer; import again)`);
-    for (const t of answer.kapaeRaised) { kapaeTally!.landed++; journal.mark(`${keyPrefix}:kapae:${t}`, "raised"); }
-    for (const k of answer.kapaeRefused) kapaeTally!.refused.push(`${k.uri} (${k.why})`);
+    for (const t of answer.kapaeRaised) { shadowTally.landed++; journal.mark(`${keyPrefix}:kapae:${t}`, "raised"); }
+    for (const k of answer.kapaeRefused) shadowTally.refused.push(`${k.uri} (${k.why})`);
   };
   // KAHUA HEADS: re-lifted under the new face's grant, keyed by title + body digest.
   for (const bf of manifest.faces) {
@@ -633,11 +656,11 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   }
   for (const slug of bagSlugs) {
     const files = manifest.files.map((f) => f.path).filter((p) => p.startsWith(`bags/${slug}/`));
-    await wave(join(bundle.root, "bags", slug), join(bundle.root, "bags"), wikiBagUri(slug), files, `bag:${slug}`, tallies.bag, null);
+    await wave(join(bundle.root, "bags", slug), join(bundle.root, "bags"), join(projections, "bags", slug), wikiBagUri(slug), files, `bag:${slug}`, tallies.bag, null);
   }
   for (const slug of wikiSlugs) {
     const files = manifest.files.map((f) => f.path).filter((p) => p.startsWith(`wikis/${slug}/working/`));
-    await wave(join(bundle.root, "wikis", slug, "working"), join(bundle.root, "wikis", slug), wikiSlotUri(slug, "working"), files, `wiki-working:${slug}`, tallies.wikiWorking, tallies.kapae, slug);
+    await wave(join(bundle.root, "wikis", slug, "working"), join(bundle.root, "wikis", slug), join(projections, "wikis", slug), wikiSlotUri(slug, "working"), files, `wiki-working:${slug}`, tallies.wikiWorking, tallies.kapae, slug);
   }
 
   return { bundleId: manifest.bundleId, applied: apply, faceMap, redeclare: acts, tallies, skipped, minted };
