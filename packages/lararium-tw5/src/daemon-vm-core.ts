@@ -35,6 +35,7 @@ import {
   rebindWorkingLayer,
   wikiSlotUri,
   attachMessageChannelSync,
+  controlStoreOf,
   awaitIslandMsg,
   mkManifest,
   mkDaemonPlaceVerb,
@@ -160,6 +161,9 @@ export interface DaemonVmCoreOptions {
   personaHandle?:   DocHandle<LarDoc>;
   /** The mounted plane's bag id, derived from its PersonaGroup's own doc id — one name, everywhere. */
   personaBagId?:    string;
+  /** The vessel's CONTROL document (`standControlHome`), resolved by the platform wrapper: granted to the island as
+   *  `controlUrl` and stood here as the host's control store, where the outcome ledger and the receipt facts read. */
+  controlHandle:    DocHandle<LarDoc>;
   /** One-recipe model for the daemon island. */
   recipe:          WikiRecipe;
   /** Typed structural capabilities (engine doc, daemon bag, the lares bag, catalog registry access). */
@@ -223,12 +227,18 @@ export class HostWorkingBindingRefusal extends Error {
 export interface DaemonVmCore {
   daemonHandle:    DocHandle<LarDoc>;
   composite:      CompositeStore;
+  /** The vessel's control document as a store (`controlStoreOf`): the outcome ledger, the effect index and the receipt
+   *  facts read and write here, never in a layer a mirror reads. */
+  control:        CompositeStore;
+  /** The control document beneath `control` (its heads name a receipt's durability). */
+  controlHandle:  DocHandle<LarDoc>;
   /** Resolve the worker's daemon binding and mount that exact document as the host default. */
   mountHostWorkingLayer: () => Promise<void>;
   /**
    * The island named `url` as the daemon working slot's document (the seat's lift moves it from the floor's document to
-   * the face's derived one): the host's mounted working layer follows, so the outcome ledger the island writes there
-   * reads here. Nothing moves before the host mounts its layer, or where it stands on that document already.
+   * the face's derived one): the host's mounted working layer follows, so a main-side write to the daemon wiki lands on
+   * the document the island reads. Nothing moves before the host mounts its layer, or where it stands on that document
+   * already. The outcome ledger rests in the control store (`control`), never in this layer.
    */
   followHostWorkingLayer: (url: string) => Promise<void>;
   workerEa:       Promise<void>;
@@ -368,7 +378,7 @@ class DisposedMidHandshake extends Error {
 }
 
 export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions): DaemonVmCore {
-  const { repo, daemonHandle, personaHandle, personaBagId, recipe, grants, coreHash, pluginCids, daemonAuth, storage, ownedDocument, diskMirrors, workerScriptUrl } = opts;
+  const { repo, daemonHandle, controlHandle, personaHandle, personaBagId, recipe, coreHash, pluginCids, daemonAuth, storage, ownedDocument, diskMirrors, workerScriptUrl } = opts;
 
   // Mutable delegation config — set via mountMainVerbs(). The worker gates routed
   // verbs (verify-then-delegate); main trusts the channel, so no main-side verifier.
@@ -396,7 +406,11 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   let _cutDown: (() => void) | null = null;
   let _verbEventHandler: ((e: { verb: string; args: Record<string, unknown>; origin: "channel" | "surface" | "content"; fromUri?: string; listenable?: string }) => void) | null = null;
 
-  // ── Vessel composite (cap-event + receipt writes) ──────────────────────────
+  // The island reaches the control document by grant alone; the host reads it through its own control store.
+  const grants: IslandGrants = { ...opts.grants, controlUrl: controlHandle.url };
+  const control = controlStoreOf(controlHandle);
+
+  // ── Vessel composite (cap-event writes) ─────────────────────────────────────
   const composite  = new CompositeStore();
   const daemonStore = new AutomergeDocStore(daemonHandle, DAEMON_BAG_ID);
   composite.addLayer({ bagId: DAEMON_BAG_ID, store: daemonStore, writable: true, defaultWritable: false });
@@ -804,6 +818,8 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   return {
     daemonHandle,
     composite,
+    control,
+    controlHandle,
     mountHostWorkingLayer,
     followHostWorkingLayer,
     workerEa,

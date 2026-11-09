@@ -98,6 +98,12 @@ export interface IslandContext {
   viewCatalog?: (name: string) => Promise<string | null>;
   /** The vessel's concrete disk mirror grants intersected with this recipe; absent for older/test contexts. */
   diskMirrors?: readonly { readonly bagId: string; readonly mirrorRoot: string; readonly scope: string; readonly mirrorClass?: "recovery" | "observe"; readonly titlePaths?: boolean; readonly tempLayer?: boolean }[];
+  /**
+   * The vessel's CONTROL document as a store (`controlStoreOf` over `grants.controlUrl`): the daemon island's control
+   * families rest here (summons, outcomes, the effect index, ward audits). Never a recipe layer and never mirrored; absent
+   * on every wiki island.
+   */
+  control?: CompositeStore;
   /** Privileged secret home exposed only to the daemon behavior, never composed into a page recipe. */
   secretStore?: LarTiddlerStore;
 }
@@ -128,4 +134,10 @@ export interface IslandBehavior {
   onEa(ctx: IslandContext): void | Promise<void>;
   onSignal(type: string, raw: unknown, ctx: IslandContext): boolean;
   onHooAnu(ctx: IslandContext): void | Promise<void>;
+}
+
+/** The daemon island's control store, or a refusal by name: a daemon island granted no control document writes no control family. */
+export function controlOf(ctx: Pick<IslandContext, "control">): CompositeStore {
+  if (!ctx.control) throw new Error("control-home-unavailable: the daemon island carries no control document grant; the vessel stands its control document (`standControlHome`) before it opens the daemon VM");
+  return ctx.control;
 }

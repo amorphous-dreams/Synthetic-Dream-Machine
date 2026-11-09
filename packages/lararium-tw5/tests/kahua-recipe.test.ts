@@ -158,7 +158,7 @@ describe("the kahua recipe stacks top, kahua, canon", () => {
       spawnWorker: () => ({ post: (msg) => { posted.push(msg as IslandMsg_Manifest); }, listen: () => () => {}, onError: () => () => {}, terminate: () => {} }),
       newSyncChannel: () => { const { port1, port2 } = new MessageChannel(); ports.push(port1, port2); return { mainPort: port1 as IslandMsg_Manifest["syncPort"], syncPort: port2 as IslandMsg_Manifest["syncPort"] }; },
     };
-    const core = openDaemonVmCore(host, { repo, daemonHandle, recipe: { wikiSlug: "daemon" }, grants: { islandUrl: daemonHandle.url }, coreHash: null, workerScriptUrl: new URL("file:///unused"), eaSilenceMs: 2 ** 30 });
+    const core = openDaemonVmCore(host, { repo, daemonHandle, controlHandle: repo.create<LarDoc>(emptyLarDoc()), recipe: { wikiSlug: "daemon" }, grants: { islandUrl: daemonHandle.url }, coreHash: null, workerScriptUrl: new URL("file:///unused"), eaSilenceMs: 2 ** 30 });
     core.workerEa.catch(() => {});
     try {
       await new Promise((r) => setTimeout(r, 10));

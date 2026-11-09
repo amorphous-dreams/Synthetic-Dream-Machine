@@ -7,6 +7,7 @@
  * in the wiki alone: the composite never holds it, and a `kahua-propose` over it answers `kahua-proposal-no-draft`
  * (lararium-web e2e/stage-walk, S4). Driven over a real wiki, the real recipe and the real bridge.
  */
+import { memoryControlStore } from "./control-store-fixture.js";
 import { describe, expect, test } from "vitest";
 import { AutomergeDocStore, CompositeStore, HULLS_TS_ONLY, LAR_CONTROL_EVENT, wikiBagUri, wikiSlotUri } from "@lararium/mesh";
 import type { DocHandle, LarDoc } from "@lararium/mesh";
@@ -70,7 +71,7 @@ async function rig(slug: string, make: (attach: () => Promise<void>) => IslandBe
   };
   const behavior = make(attach);
   const ctx = {
-    wikiUri: `lar:///ha.ka.ba/wikis/${slug}`, composite, tw5: engine, handles: new Map(), post: () => {},
+    wikiUri: `lar:///ha.ka.ba/wikis/${slug}`, composite, control: memoryControlStore(), tw5: engine, handles: new Map(), post: () => {},
     repo: undefined, catalogUrl: null, oracleUrl: null, engine: { sha256: "", version: "" }, recipe: { wikiSlug: slug },
   } as unknown as IslandContext;
   // The working layer stands before the seeds run, as the daemon's attach precedes its protocol seed.

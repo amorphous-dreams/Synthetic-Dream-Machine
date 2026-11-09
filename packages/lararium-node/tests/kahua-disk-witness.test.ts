@@ -81,10 +81,11 @@ const daemonBagDirs = (dir: string): string[] =>
   walk(dir).filter((p) => basename(p) === "daemon" && basename(dirname(join(dir, p))) === "bags");
 
 describe("the daemon VM's mirror list names the ruled layout", () => {
-  test("the kahua stage and crossroads mirror while daemon control writers await their home", () => {
+  test("the daemon working top, the kahua stage and crossroads mirror; the control families rest in the unmirrored control document", () => {
     const state = "/house/state";
     const mirrors = daemonDiskMirrors({ projectionRoot: state, canonBags: "/house/workspace/bags-absent", faceRelation: TAG });
     expect(mirrors.map((m) => [m.bagId, m.mirrorRoot])).toEqual([
+      [WORKING, join(state, "wikis", WFACE)],
       [KAHUA_BAG, join(state, "bags", FACE)],
       [CROSSROADS_DOC_URI, join(state, "bags", "crossroads")],
     ]);
@@ -139,8 +140,8 @@ describe("the kahua disk witnesses", () => {
     await projector.flush(WORKING, "Plain Note");
     const kahua = walk(join(state, "wikis", WFACE));
     expect(kahua).toContain("Plain Note.tid");
-    expect(kahua).toContain("ha.ka.ba/lararium/daemon/outcomes/req-0001.tid");
-    expect(kahua).toContain("ha.ka.ba/bags/daemon/flows/couple.tid");
+    expect(kahua).toContain("ha.ka.ba/bags/control/outcomes/req-0001.mem");
+    expect(kahua).toContain("ha.ka.ba/bags/daemon/flows/couple.mem");
   });
 
   test("CONTROL (c): a canon source holding stale daemon/ and kahua/ dirs receives nothing into them", async () => {

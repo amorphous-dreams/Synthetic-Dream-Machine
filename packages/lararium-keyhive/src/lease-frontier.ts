@@ -1,46 +1,45 @@
 /**
  * lease-frontier — THE ONE ROAD a daemon island reads its own PersonaGroup lease epoch by.
  *
- * The per-writer lease slots live in the daemon doc, and the daemon island holds that doc as a LAYER of its own
- * composite. Under an owned document the island's main repo DENIES the daemon doc (it lives in the owned repo
- * alone), so a registry lookup over the main repo never resolves. The composite layer is the address the island
- * actually holds, on every platform, owned or not — so the read goes there, with no second road to fall back on.
+ * The per-writer lease slots rest in the vessel's CONTROL document (`control-home`), which the daemon island holds as its
+ * control store (`IslandContext.control`, granted by `controlUrl`) and never as a recipe layer. The control store is the
+ * address the island actually holds, on every platform, so the read goes there, with no second road to fall back on.
  *
  * TWO VERDICTS, NEVER MERGED (null-as-default law):
- *   - the daemon layer reads, and holds no slot under the group's prefix → `{kind:"epoch", n:0}`, the founding
+ *   - the control layer reads, and holds no slot under the group's prefix → `{kind:"epoch", n:0}`, the founding
  *     epoch. An empty, readable lease set reads zero.
- *   - no group pinned, no composite captured, the daemon layer absent, or the read faults → `{kind:"unavailable"}`.
+ *   - no group pinned, no control store captured, the control layer absent, or the read faults → `{kind:"unavailable"}`.
  *     A mutation gate refuses on it; it never stands in for 0.
  *
  * Meme: lar:///ha.ka.ba/lararium/keyhive/lease-frontier
  */
-import { DAEMON_BAG_ID, leaseEpochPrefix, signedLeaseEpoch, type LarTiddlerStore } from "@lararium/mesh";
+import { CONTROL_HOME_ID, leaseEpochPrefix, signedLeaseEpoch, type LarTiddlerStore } from "@lararium/mesh";
 
 /** What a lease read yields: the current epoch, or a named reason the frontier cannot be read. */
 export type LeaseFrontier =
   | { readonly kind: "epoch"; readonly n: number }
   | { readonly kind: "unavailable"; readonly why: string };
 
-/** The one surface the read needs off a composite: the store of a named layer, or null when none is mounted. */
-export interface DaemonLayerHolder {
+/** The one surface the read needs off a store: the store of a named layer, or null when none is mounted. */
+export interface ControlLayerHolder {
   storeForBag(bagId: string): LarTiddlerStore | null;
 }
 
-/** The daemon doc's store, as this island's composite holds it — null when the layer is absent. */
-export function daemonLayerOf(composite: DaemonLayerHolder | null | undefined): LarTiddlerStore | null {
-  return composite?.storeForBag(DAEMON_BAG_ID) ?? null;
+/** The control document's store, as this island's control store holds it — null when the layer is absent. */
+export function controlLayerOf(control: ControlLayerHolder | null | undefined): LarTiddlerStore | null {
+  return control?.storeForBag(CONTROL_HOME_ID) ?? null;
 }
 
-/** Fold every slot under the group's lease prefix by max, off the island's own daemon layer. Read fresh per call. */
+/** Fold every slot under the group's lease prefix by max, off the island's own control layer. Read fresh per call. */
 export async function readLeaseFrontier(
-  composite: DaemonLayerHolder | null | undefined,
+  composite: ControlLayerHolder | null | undefined,
   groupDocIdHex: string | null | undefined,
   authorize: (writerHex: string) => boolean,
 ): Promise<LeaseFrontier> {
   if (!groupDocIdHex) return { kind: "unavailable", why: "no PersonaGroup pinned" };
-  if (!composite) return { kind: "unavailable", why: "no island composite in scope" };
-  const store = daemonLayerOf(composite);
-  if (!store) return { kind: "unavailable", why: "the daemon layer is absent from this island's composite" };
+  if (!composite) return { kind: "unavailable", why: "no island control store in scope" };
+  const store = controlLayerOf(composite);
+  if (!store) return { kind: "unavailable", why: "the control layer is absent from this island's control store" };
   try {
     const prefix = leaseEpochPrefix(groupDocIdHex);
     const slots: string[] = [];
@@ -52,17 +51,17 @@ export async function readLeaseFrontier(
     }
     return { kind: "epoch", n: signedLeaseEpoch(groupDocIdHex, slots, authorize) };
   } catch (err) {
-    return { kind: "unavailable", why: `the daemon layer read faulted: ${(err as Error)?.message ?? String(err)}` };
+    return { kind: "unavailable", why: `the control layer read faulted: ${(err as Error)?.message ?? String(err)}` };
   }
 }
 
 /**
- * The lease a LIVE door acts under: the current roster's signed advances off the daemon layer (`FaceReading.currentSigner`), floored
+ * The lease a LIVE door acts under: the current roster's signed advances off the control layer (`FaceReading.currentSigner`), floored
  * under the sealed anchor the reading holds, so a missing or replayed older slot never lowers the epoch a join or a grant checks an
  * edge against. No verified face reading: no signer, so nothing raises; an unavailable layer stays unavailable.
  */
 export async function readLeaseUnderFace(
-  composite: DaemonLayerHolder | null | undefined,
+  composite: ControlLayerHolder | null | undefined,
   groupDocIdHex: string | null | undefined,
   face: { readonly currentSigner: (writerHex: string) => boolean; readonly floor: (observed: number) => number } | null,
 ): Promise<LeaseFrontier> {

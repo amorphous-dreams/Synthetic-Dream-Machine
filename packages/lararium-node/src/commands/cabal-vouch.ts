@@ -29,8 +29,7 @@ import {
   signCabalInvite, writeVouch, verifiedVouchesFromBoard, vouchDagFromInvites, vouchEdgeId,
   realmVouchBoardDocUrl, realmEdgeBoardDocUrl, materializeSharedLarDoc,
   prepareHolderFrontier, registerHandFrontierInto, realmAdmitBundle, type RealmAdmitBundle,
-  type CabalInvite,
-} from "@lararium/mesh";
+  type CabalInvite, controlHomeUrlOf, type LarDoc } from "@lararium/mesh";
 import { loadFaceAtomKey } from "../face-atom-store.js";
 import { daemonDocUrlFromBootstrap, cabalAdmissionEpoch } from "./cabal-join.js";
 import { actingRealmNexus, noteVesselRealm } from "../edge-board.js";
@@ -110,7 +109,8 @@ async function resolveBoundEpoch(realm: string, repo: Repo, lineage: HandLineage
   }
   try {
     const dh = await materializeSharedLarDoc(repo, daemonUrl as never, "daemon");
-    return cabalAdmissionEpoch(dh.doc(), realm, lineage);
+    const controlUrl = controlHomeUrlOf(dh.doc());   // the lease slots rest in the control document; a read mints none
+    return cabalAdmissionEpoch(controlUrl ? (await repo.find<LarDoc>(controlUrl as never)).doc() : null, realm, lineage);
   } catch (err) {
     throw new CabalVouchError(
       `the realm's lease epoch could not be read off the daemon doc — refusing to mint at a guessed epoch ` +

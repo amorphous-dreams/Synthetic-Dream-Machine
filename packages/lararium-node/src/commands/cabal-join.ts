@@ -26,7 +26,7 @@ import {
   quorumLeaseEpochOnBoard, DAEMON_BAG_ID, charterHandLineage, type HandLineage, type WideningRead,
   DEFAULT_JOIN_POLICY, alphaFromHalfLife, writeEdgeKapae,
   readRealmAdmitBundle, readRealmBoardFrontiers, readFrontierPins, writeFrontierPin, holderHand, type RealmAdmitBundle,
-  type CabalInvite, type CabalJoinPolicy, type AdmissionDials, ownEntry} from "@lararium/mesh";
+  type CabalInvite, type CabalJoinPolicy, type AdmissionDials, ownEntry, controlHomeUrlOf } from "@lararium/mesh";
 import { type LarDoc } from "@lararium/mesh";
 import { admitOnLineage, type LineageAdmission } from "../realm-admission.js";
 import { larBootstrapPath } from "../vessel-paths.js";
@@ -274,7 +274,8 @@ export async function runCabalJoin(
       const lineage = realmNexus === null ? null : leaseLineageOfNexus(opts.sealHome, realmNexus);
       // A realm whose charter this vessel cannot verify reads no fence: a refusal still narrows, and only an admission waits on it (below).
       epochUnreadable = lineage === null && opts.epoch === undefined;
-      boardEpoch = cabalAdmissionEpoch(dh.doc(), realm, lineage);
+      const controlUrl = controlHomeUrlOf(dh.doc());   // the lease slots rest in the control document; a read mints none
+      boardEpoch = cabalAdmissionEpoch(controlUrl ? (await repo.find<LarDoc>(controlUrl as never)).doc() : null, realm, lineage);
     } else if (opts.epoch === undefined) {
       throw new CabalJoinError(
         "incomplete-view: this vessel cannot read the realm's lease fence (its daemon doc is unreadable), " +

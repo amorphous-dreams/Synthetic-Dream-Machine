@@ -15,7 +15,7 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, statSync } fro
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
-import { CROSSROADS_DOC_URI, DAEMON_BAG_ID, KAHUA_BAG, wikiSlotUri } from "@lararium/mesh";
+import { CROSSROADS_DOC_URI, DAEMON_BAG_ID, KAHUA_BAG, wikiSlotUri, CONTROL_HOME_ID } from "@lararium/mesh";
 import {
   projectionRoots, daemonWorkingMirror, kahuaStageMirror, daemonDiskMirrors, daemonFaceFolder, kahuaFaceFolder,
   isPrivateProjectionSlug,
@@ -68,18 +68,19 @@ describe("projectionRoots — the mirror root splits by origin", () => {
 });
 
 describe("the daemon VM's mirrors under distinct state, canon and projection roots", () => {
-  test("kahua and crossroads receive mirrors; daemon control stores remain unmirrored", () => {
+  test("the daemon working top, kahua and crossroads receive mirrors; the daemon and control documents remain unmirrored", () => {
     const { state, projections, canon } = tree("crossroads");
     const mirrors = daemonDiskMirrors({ projectionRoot: projections, canonBags: canon, faceRelation: TAG });
     const byBag = new Map(mirrors.map((m) => [m.bagId, m.mirrorRoot]));
-    expect(byBag.has(wikiSlotUri("daemon", "working"))).toBe(false);
+    expect(byBag.get(wikiSlotUri("daemon", "working"))).toBe(join(projections, "wikis", `daemon-${TAG}`));
+    expect(byBag.has(CONTROL_HOME_ID)).toBe(false);
     expect(byBag.get(KAHUA_BAG)).toBe(join(projections, "bags", `kahua-${TAG}`));
     expect(byBag.get(CROSSROADS_DOC_URI)).toBe(join(canon, "crossroads"));
     expect(mirrors.some((m) => m.bagId === DAEMON_BAG_ID)).toBe(false);
     for (const root of byBag.values()) expect(root.startsWith(join(state, "bags")) || root.startsWith(join(state, "wikis"))).toBe(false);
     expect(mirrors.some((m) => m.mirrorRoot.startsWith(join(canon, "daemon")))).toBe(false);
   });
-  test("the daemon store receives no observe render before the control home is wired", () => {
+  test("the daemon store receives no observe render", () => {
     const { projections, canon } = tree();
     const mirrors = daemonDiskMirrors({ projectionRoot: projections, canonBags: canon, faceRelation: TAG });
     const observe = mirrors.find((m) => m.bagId === DAEMON_BAG_ID && m.mirrorClass === "observe");

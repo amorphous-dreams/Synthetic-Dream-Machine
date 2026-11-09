@@ -6,6 +6,7 @@
  * atom with the per-Nexus key the row answers. The `session:call` path, whose outcome body rests in the daemon
  * document beside its requester, refuses a face row and places nothing.
  */
+import { controlStoreOf } from "@lararium/mesh";
 import { afterEach, expect, test } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -69,7 +70,7 @@ async function stand() {
     return { verb: act, realm: args["realm"], nexusAid: "nexus-one.synthetic", face: LEAF };
   } };
   const front = serveUdsFront({ claim });
-  front.attach(makeUdsSeat({ daemonHandle, composite, claim, repo: { flush: (ids) => repo.flush(ids) }, sessions: door,
+  front.attach(makeUdsSeat({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo: { flush: (ids) => repo.flush(ids) }, sessions: door,
     switchActs: { write: async () => {} }, sessionVerbs: new Set(["cabal-face"]),
     socketVerbs: new Set(["cabal-face", "realm-bag", "realm-bags", "realm-clock"]), sessionActs: sessionActs as never,
     placeVerb: (o) => {

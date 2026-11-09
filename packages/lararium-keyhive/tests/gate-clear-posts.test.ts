@@ -2,7 +2,7 @@
 import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
 import { deviceEdgeDigest, ed25519SignerFromSeed, makeIslandRepo, mintFaceAnchor, signLeaseAdvance, type AutomergeUrl, type DeviceDelegationTiddler } from "@lararium/mesh";
 import {
-  AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, SECRET_HOME_ID, leaseEpochSlotUri,
+  AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, SECRET_HOME_ID, leaseEpochSlotUri, controlStoreOf,
   emptyLarDoc, materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix,
   wikiSlotUri, type LarDoc,
 } from "@lararium/mesh";
@@ -52,9 +52,12 @@ function island(options: { floor?: boolean; epoch?: number; dyad?: "clear" | "as
   const daemonStore = new AutomergeDocStore(daemonHandle as never, DAEMON_BAG_ID);
   composite.addLayer({ bagId: DAEMON_BAG_ID, store: daemonStore, writable: true });
   daemonStore.markSyncComplete();
+  // The lease slots rest in the vessel's control document (`control-home`), the island's control store.
+  const controlHandle = repo.create<LarDoc>(emptyLarDoc());
+  const control = controlStoreOf(controlHandle as never);
   if (options.epoch !== undefined) {
     const title = leaseEpochSlotUri(ceremony.personaGroupId, verifyingKey);
-    (daemonHandle as { change: (fn: (doc: LarDoc) => void) => void }).change((doc) => {
+    (controlHandle as { change: (fn: (doc: LarDoc) => void) => void }).change((doc) => {
       doc.tiddlers[title] = { tiddler: { title, text: signedEpoch(options.epoch!) } } as never;
     });
   }
@@ -65,7 +68,7 @@ function island(options: { floor?: boolean; epoch?: number; dyad?: "clear" | "as
   const post = vi.fn();
   const secretStore = new AutomergeDocStore(secretHandle as never, SECRET_HOME_ID);
   secretStore.markSyncComplete();
-  const ctx = { composite, secretStore, secretRest, repo, recipe: { wikiSlug: "daemon" }, handles: new Map(), post };
+  const ctx = { composite, control, secretStore, secretRest, repo, recipe: { wikiSlug: "daemon" }, handles: new Map(), post };
   const daemonAuth = {
     placeVerifyingKey: verifyingKey, registerBags: [DAEMON_BAG_ID], archiveOpens: false,
     ...(options.floor ? {} : {

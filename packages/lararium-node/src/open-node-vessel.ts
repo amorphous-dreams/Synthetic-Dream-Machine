@@ -116,7 +116,7 @@ import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
 import { DeterministicFederationGate, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
 import {
   standSiblingChannel, siblingRefusalLine, groupSecretSealTitle, verifyGroupSecretSeal,
-  leaseEpochPrefix, readFace, proveFaceFromLog, adoptKahuaStage, joinFaceDocumentsOnArrival, raiseFaceFrontier, heldDocOf, personaKelChainForPrefix, personaKelBoardDocUrl,
+  leaseEpochPrefix, standControlHome, CONTROL_HOME_ID, readFace, proveFaceFromLog, adoptKahuaStage, joinFaceDocumentsOnArrival, raiseFaceFrontier, heldDocOf, personaKelChainForPrefix, personaKelBoardDocUrl,
   type SiblingNetworkAdapter, type SiblingChannelStatus,
 } from "@lararium/mesh";
 import { nodeHandleBookReading, runRealmBag, runRealmBags, stewardGuard } from "./realm-steward.js";
@@ -249,7 +249,8 @@ import { landEveryHostingAct }                    from "./commands/host.js";
 import { loadNodeWardCosignPort }                  from "./commands/intent.js";
 import { listWalkRecords }        from "./node-walk-store.js";
 import { storeDoorReactors, awaitOnRolled }       from "./store-door-verbs.js";
-import { daemonSwarmWiki }                        from "./swarm-wiki.js";
+import { controlSwarmWiki }                       from "./swarm-wiki.js";
+import { standFaceDaemonCanon }                   from "./face-daemon-canon.js";
 import { carriedSet, readCarriedCharters }       from "./carried-set.js";
 import { composeLararium, composeHerm, carriageStack, type MeshSelf } from "./node-caps.js";
 import { PLANE_LABELS } from "@lararium/mesh";
@@ -923,6 +924,9 @@ async function prepareNodeBootOn(
   // T2: the face's own catalog, by the document its secret derives, named sealed from the moment the face proves and
   // before the document opens (`expectFaceCatalog`); null at the floor and on a herm.
   let faceCatalogDocId: string | null = null;
+  // The vessel's control document (`control-home`), by the document the daemon document names: sealed under the lit face
+  // with the daemon wiki's slots (`wornFaceWikiBags`), named here once the vessel stands it.
+  let controlDocId: string | null = null;
   // V3: a bag's document by every name it carries: the layer the mount resolved (a working slot's derived address, a
   // draft binding: no catalog row names either), then the catalog's row.
   const sealedMap = sealedBagMap({
@@ -931,6 +935,7 @@ async function prepareNodeBootOn(
     catalog: () => sealedCells.catalog(),
     docsOf: (bagId) => bagId === FACE_CATALOG_BAG_ID
       ? [faceCatalogDocId]
+      : bagId === CONTROL_HOME_ID ? [controlDocId]
       : [sealedCells.mounted(bagId), ...(slotDocsNamed.get(bagId) ?? []), documentIdOfUrl(tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId)))],
   });
   // The session that stands for the worn face now: a call's, else a seated one (the dial's own, V6).
@@ -955,10 +960,11 @@ async function prepareNodeBootOn(
     if (session === null) return;
     void sealedRest.rebook(saveSessionOf(session)).catch((e: unknown) => console.log(`[sealed-rest] a waiting save stays in memory after ${why}: ${e instanceof Error ? e.message : String(e)}`));
     for (const named of slotDocsNamed.values()) for (const documentId of named) sealNowMapped(documentId);
+    if (controlDocId) sealNowMapped(controlDocId);
   };
   const onSlotNamed = (bagId: string, documentId: string): void => {
-    // THE HOST'S WORKING LAYER FOLLOWS THE ISLAND'S: the outcome ledger rests in the daemon working slot, so the side that
-    // reads a verb's answer stands on the document the island writes it into (the seat's lift moves it to the face's).
+    // THE HOST'S WORKING LAYER FOLLOWS THE ISLAND'S: a main-side write to the daemon wiki lands on the document the island
+    // reads (the seat's lift moves it to the face's). The outcome ledger rests in the control document, never here.
     if (bagId === DAEMON_WORKING_SLOT) followHostWorking(documentId);
     const named = slotDocsNamed.get(bagId) ?? new Set<string>();
     if (named.has(documentId)) return;
@@ -2342,6 +2348,17 @@ async function prepareNodeBootOn(
       // a doc nobody wrote: a founding seeds it moments earlier in this same process.
       { tideline: "hearth-private", label: PLANE_LABELS.daemon, settled: () => repo.flush() });
 
+  // The vessel's control document, named by the daemon document (`control-home`): minted at its first stand.
+  const readControlDoc = async (): Promise<DocHandle<LarDoc>> => {
+    const handle = await standControlHome(repo, await readDaemonDoc());
+    if (controlDocId !== handle.documentId) {
+      controlDocId = handle.documentId;
+      sealedRest.store.mapMoved();
+      sealNowMapped(handle.documentId);
+    }
+    return handle;
+  };
+
   const keel: VesselOrchestration<VesselIslandPool>["keel"] = {
     repo,
     catalogHandle,
@@ -3155,21 +3172,28 @@ async function prepareNodeBootOn(
     // THE ANCHOR THE DAEMON STANDS ON ALREADY CARRIES THE VERIFIED LEASE: this runs before the first open snapshots `standingAnchor`; a re-open snapshots the anchor the vessel holds now, so the
     // daemon's live join and grant reads floor under the anchor this boot raised, never an older copy (read 6, opening row 2).
     // The sealed frontier rises only on a VERIFIED observation (`lease-observation`): a signed advance from a key the KEL
-    // lineage seats. An unsigned slot on the mirrored daemon doc raises nothing, so a forged high slot cannot ratchet custody.
+    // lineage seats. An unsigned slot on the control document raises nothing, so a forged high slot cannot ratchet custody.
     if (faceAnchor && personaGroupId && personaKelChain) {
       const prefix = leaseEpochPrefix(personaGroupId);
-      const slots = Object.entries(daemonDoc?.tiddlers ?? {}).filter(([t]) => t.startsWith(prefix)).map(([, r]) => tiddlerText(r));
+      const leaseDoc = (await readControlDoc()).doc();
+      const slots = Object.entries(leaseDoc?.tiddlers ?? {}).filter(([t]) => t.startsWith(prefix)).map(([, r]) => tiddlerText(r));
       const raised = raiseAnchorFromSlots(standingAnchor!, slots, personaKelChain);
       if (raised !== standingAnchor) { await keepFaceAnchorOfGroup(raised); standingAnchor = raised; }
     }
     const faceLit = activeAtom !== null && atomSeed !== null;
-    // R1: the bags the sealed rest seals, the worn face's own wiki bags and the daemon wiki's slots (U1's D half), only
+    // THE DAEMON WIKI'S CANON FOLLOWS THE WORN FACE (`daemonFaceCanonBag`): `bags/daemon-<F>`, the document the face's own
+    // catalog names, minted at the face's first worn stand. A face that stands unproven, or the floor, reads no daemon canon.
+    const wornRelation = wornFaceProved && wornFaceProjection && personaGroupId ? (await import("@lararium/mesh")).faceRelationOf(wornFaceProjection) : null;
+    const daemonCanon = wornRelation ? await standFaceDaemonCanon({ repo, catalog: faceViews.viewOf(personaGroupId!), faceRelation: wornRelation }) : null;
+    // R1: the bags the sealed rest seals, the worn face's own wiki bags, the daemon wiki's slots and canon (U1's D half), only
     // while that face stands lit and proved; the face's hive registers each (`wornFaceWikiBags`).
-    const faceWikiBags = wornFaceWikiBags({ slot, lit: faceLit && !!personaGroupId && wornFaceProved });
+    const faceWikiBags = wornFaceWikiBags({ slot, lit: faceLit && !!personaGroupId && wornFaceProved, ...(daemonCanon ? { daemonCanon: daemonCanon.bagId } : {}) });
     placeFace = faceLit && !!personaGroupId && wornFaceProved && activeAtom !== null && placeAid !== null
       ? placeProofSubjectRef({ atomKey: activeAtom.key, place: placeAid } as never) : null;
     await standPlaceSession(placeFace !== null && personaGroupId && activeAtom ? { group: personaGroupId, atomKey: activeAtom.key } : null);
     sealedCells.bags = () => faceWikiBags.sealed;
+    // The control document stands before the daemon island opens over it, and the map names it from here on.
+    await readControlDoc();
     sealedRest.store.mapMoved();
     const workingFloorAnchor = workingFloorAnchorOf({ place: placeAid });
     // A sibling's planes need their own face proof before registration; joinedFaceAuth hands each sibling the vessel ground alone.
@@ -3286,6 +3310,8 @@ async function prepareNodeBootOn(
           ...((faceCatalogUrlOf(catalogHandle) ?? faceCatalogExpected) ? { faceCatalogUrl: (faceCatalogUrlOf(catalogHandle) ?? faceCatalogExpected)! } : {}),
           // The face's kahua stage, from the verified pin alone: the daemon recipe stacks this device's own top over it.
           ...(wornKahua ? { kahuaUrl: wornKahua.url } : {}),
+          // The worn face's daemon canon (`bags/daemon-<F>`), the document its catalog names; none at the floor.
+          ...(daemonCanon ? { canonUrl: daemonCanon.url } : {}),
         },
         daemonAuth: daemonAuthNow(joinedFaces),
         storageDir,
@@ -3371,9 +3397,9 @@ async function prepareNodeBootOn(
       if (!seal) {
         console.warn("[sibling] this face holds no PersonaGroup secret sealed to this device — its enrolment delivered none, so no sibling channel stands.");
       } else {
-        // THE LEASE READER: the face reading over the live daemon doc's lease slots, read at every licensing act, so a
+        // THE LEASE READER: the face reading over the control document's lease slots, read at every licensing act, so a
         // roll that lands after the channel stood refuses an edge bound below it at the next act.
-        const leaseHandle = await readDaemonDoc();
+        const leaseHandle = await readControlDoc();
         const leasePrefix = leaseEpochPrefix(personaGroupId);
         const leaseSlotsNow = (): Array<string | null> => Object.entries(leaseHandle.doc()?.tiddlers ?? {})
           .filter(([title]) => title.startsWith(leasePrefix)).map(([, rec]) => tiddlerText(rec));
@@ -3733,7 +3759,7 @@ async function prepareNodeBootOn(
       worldlineVerbCap(),
     ]);
 
-    return { workerEa: daemonVm.workerEa, mountMainVerbs: daemonVm.mountMainVerbs, resolveBinding: daemonVm };
+    return { workerEa: daemonVm.workerEa, mountMainVerbs: daemonVm.mountMainVerbs, resolveBinding: daemonVm, control: daemonVm.control };
   };
 
   // Thin main verb plane. Every daemon verb that touches the catalog / recipe /
@@ -3789,7 +3815,7 @@ async function prepareNodeBootOn(
       casDir: cidDir, restartWiki: reloadWikiAfterVerb,
       onRolled: afterRoll,
       // The swarm's controls rest in the daemon wiki, device-local by the daemon document's anchor.
-      swarmWiki: daemonSwarmWiki(readDaemonDoc),
+      swarmWiki: controlSwarmWiki(readControlDoc),
       // The key side of a removal answers a SOVEREIGN vessel alone: the facts read the sealed roster, and a
       // floor's island holds no veil.
       ...(sovereign ? { seatDuties: (facts) => askSeatDutiesAsVessel(facts).answer } : {}),
@@ -3829,7 +3855,7 @@ async function prepareNodeBootOn(
         ...(named ? { named } : {}) });
       const held = await selectHeldQuorumSigners(charter.roster, (count, threshold) =>
         new Error(`nexus-rekey: seats-not-held: ${count} of ${threshold} charter seats held`));
-      const r = await rollQuorumLeaseOnBoard(await readDaemonDoc(), resource,
+      const r = await rollQuorumLeaseOnBoard(await readControlDoc(), resource,
         { lineage: charter.lineage, signers: held.map((s) => ({ key: s.verifyingKey, sign: s.sign })) });
       return { verb: "nexus-rekey", nexus: charter.nexus, ...r };
     });
@@ -4014,12 +4040,12 @@ async function prepareNodeBootOn(
   };
 
   // Island pool (worker_threads) + the event bus + the sovereign-worker command bindings.
-  const makePool: VesselOrchestration<VesselIslandPool>["makePool"] = (_daemon, assembly) => {
+  const makePool: VesselOrchestration<VesselIslandPool>["makePool"] = (daemonForPool, assembly) => {
     // ── Durable mailbox (lane law §7) — keel mechanism (vessel-mailbox.ts,
     // substrate-agnostic); this vessel supplies only its live-delivery path. Assigned to the
     // forward-declared ref so the shared residency wiring's undeliverable-alert hook parks here.
     mailbox = makeDurableMailbox(
-      assembly.composite,
+      daemonForPool.control,
       // Delivery activates on reference: a drain to a cold grain re-mounts it first
       // (on `ea` the grain is already live → a cheap no-op; this covers a drain raced
       // ahead of the breath). A grain that cannot activate rejects → stays parked.

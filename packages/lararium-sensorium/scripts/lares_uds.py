@@ -152,7 +152,7 @@ def output(verb: str, args: "dict | None" = None, **kw) -> dict:
     """`call` unwrapped to the verb's own payload.
 
     The daemon returns a RECEIPT, not a bare value: `{status, requestId, results: {summary: {ok,
-    output}}}`. The receipt carries the durable record (it lands at @daemon/outcomes/<id>); `output` carries
+    output}}}`. The receipt carries the durable record (it lands at bags/control/outcomes/<id>, in the vessel's control document); `output` carries
     what the verb actually computed. Callers want the latter, so the envelope peels HERE — once — rather
     than in every caller, each reaching through four keys and each getting it subtly wrong.
     """

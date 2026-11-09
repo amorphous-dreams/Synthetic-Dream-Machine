@@ -2,6 +2,7 @@
  * uds-session-pipeline — frames on one session socket answer in the order they arrived, a close queues behind the call
  * in flight, and a socket that goes while its call runs ends its session without disturbing a sibling.
  */
+import { controlStoreOf } from "@lararium/mesh";
 import { describe, expect, test } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -75,7 +76,7 @@ describe("UDS session socket, frames in flight", () => {
         ...(o.face !== undefined && { face: o.face }), cause: "test-worker", batchMode: "best-effort", results: { summary: { ok: true } } });
       daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
     };
-    const channel = startUdsChannel({ daemonHandle, composite, claim, repo, sessions: door,
+    const channel = startUdsChannel({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo, sessions: door,
       placeVerb: (o) => {
         placed.push(o);
         if (o.verb === "hold") { held = o; markHeld?.(); return; }

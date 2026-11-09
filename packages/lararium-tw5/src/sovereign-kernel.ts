@@ -66,7 +66,7 @@ import {
   type IslandMsg_Manifest,
   type IslandToVesselMsg,
   type SlotUri,
-  type LarTiddlerRecord, ownEntry} from "@lararium/mesh";
+  type LarTiddlerRecord, ownEntry, CONTROL_HOME_ID, controlStoreOf} from "@lararium/mesh";
 import { IslandKernel } from "./island-kernel.js";
 import { waitForSlotDocument } from "./slot-wait.js";
 import { buildIslandRecipe, seedDrained } from "./island-recipe.js";
@@ -161,6 +161,8 @@ export function runSovereignKernel(
   /** This island has said `receipt:asks-done`: only then may the vessel's `receipt:close` end its receipts. */
   let _asksDonePosted = false;
   let _composite: CompositeStore | null = null;
+  /** The daemon island's control store (`grants.controlUrl`); null on every wiki island. */
+  let _control: CompositeStore | null = null;
   let _ctx:       IslandContext | null  = null;
   let _lazyUnsub: (() => void) | null   = null;
   let _bridgeUnsub: (() => void) | null = null;   // the outbound bridge (Road B) — one listener, cancelled at teardown
@@ -392,11 +394,23 @@ export function runSovereignKernel(
       if (slot === wikiSlotUri(slug, "draft"))    return msg.grants.draftUrl    ?? null;
       if (slot === wikiSlotUri(slug, "working"))  return msg.grants.workingUrl  ?? null;
       if (slot === wikiSlotUri(slug, "personal")) return msg.grants.personalUrl ?? null;
+      // A canon that follows the face (`canonBag`) mounts from its own grant; the wiki's own bag then rides as vessel state.
+      if (msg.recipe.canonBag !== undefined && slot === msg.recipe.canonBag) return msg.grants.canonUrl ?? null;
       if (slot === wikiBagUri(slug))              return msg.ownedDocument?.documentUrl ?? msg.grants.wikiUrl ?? null;
       if (slot === ORACLE_BAG)                 return msg.grants.islandUrl;
       // `bags/kahua` answers from the grant the face proof filled, never from a catalog row (`kahua-layer`).
       return librarySlotUrl(slot, msg.grants, catalog ? (s) => libraryDocUrl(catalog, s) : null);
     };
+
+    // THE CONTROL DOCUMENT, an access grant the daemon island alone carries: resolved here and held as its own store, never
+    // laid into the recipe's composite, so no control record reaches the engine's wiki or a mirrored layer.
+    _control = null;
+    if (msg.grants.controlUrl) {
+      const controlHandle = await _resolveSlot(_repo, msg.grants.controlUrl, CONTROL_HOME_ID, msg.wikiUri);
+      if (!controlHandle) return;
+      _handles.set(CONTROL_HOME_ID, controlHandle);
+      _control = controlStoreOf(controlHandle);
+    }
 
     const slots = expandRecipe(msg.recipe);
     const ready: Array<{ slot: SlotUri; handle: DocHandle<LarDoc> }> = [];
@@ -546,7 +560,7 @@ export function runSovereignKernel(
               // reconciling the SAME path boot just walked.
               // The CID plane the kernel already pulls engine/plugin bytes from, lifted to
               // behaviors: a residency handler resolves a carrier body a verb rode by reference.
-              _ctx = { wikiUri: msg.wikiUri, composite: _composite!, tw5, handles: _handles, post: _post, requestDrain: () => _adaptor?.requestDrain(), repo: _repo!, kahuaUrl: msg.grants.kahuaUrl ?? null, kahuaFace, kahuaFaceWatch, ...(_receipt ? { receipt: _receipt } : {}), catalogUrl, faceCatalogUrl, oracleUrl: msg.grants.islandUrl, engine, recipe: msg.recipe, resolveByCid, diskMirrors: msg.diskMirrors ?? [], ...(resolved ? { resolvedMount: true } : {}), ...(view ? { viewCatalog: (name: string) => view.catalog(name) } : {}) };
+              _ctx = { wikiUri: msg.wikiUri, composite: _composite!, ...(_control ? { control: _control } : {}), tw5, handles: _handles, post: _post, requestDrain: () => _adaptor?.requestDrain(), repo: _repo!, kahuaUrl: msg.grants.kahuaUrl ?? null, kahuaFace, kahuaFaceWatch, ...(_receipt ? { receipt: _receipt } : {}), catalogUrl, faceCatalogUrl, oracleUrl: msg.grants.islandUrl, engine, recipe: msg.recipe, resolveByCid, diskMirrors: msg.diskMirrors ?? [], ...(resolved ? { resolvedMount: true } : {}), ...(view ? { viewCatalog: (name: string) => view.catalog(name) } : {}) };
               // Read-side skinny-handle rehydration: answer TW5's own `lazyLoad` event (fired when
               // `getTiddlerText` meets a bodyless `_is_skinny` tiddler) by pulling the body from the corpus
               // CAS through the SAME resolveByCid shore the kernel already rides for engine/plugin blobs. The

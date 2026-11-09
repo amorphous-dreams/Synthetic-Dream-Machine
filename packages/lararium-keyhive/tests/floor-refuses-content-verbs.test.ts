@@ -14,6 +14,7 @@ import { VerbTable } from "@lararium/tw5";
 
 const fakeCtx = () => ({
   composite: {} as never,
+  control:   {} as never,
   repo:      {} as never,
   catalogUrl: "automerge:fakeCatalog",
   oracleUrl:  "automerge:fakeOracle",
@@ -103,7 +104,7 @@ describe("the faceless floor refuses content verbs by name", () => {
     const registry = new VerbTable();
     const ctx = {
       repo: {} as never, catalogUrl: "automerge:fakeCatalog", oracleUrl: "automerge:fakeOracle",
-      tw5: {} as never, post: () => {},
+      tw5: {} as never, post: () => {}, control: {} as never,
       composite: {
         resolveAll: async () => [],
         listKapaeBags: async () => [],

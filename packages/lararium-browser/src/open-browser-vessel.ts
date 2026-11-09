@@ -38,7 +38,7 @@ import {
   GatedSyncLeg, oneWayDocumentsGate,
   LarWSClientAdapter,
   standSiblingChannel, siblingRefusalLine, groupSecretSealTitle, verifyGroupSecretSeal,
-  leaseEpochPrefix, tiddlerText, type SiblingNetworkAdapter, type SiblingShare, type SiblingChannelStatus,
+  leaseEpochPrefix, controlHomeUrlOf, tiddlerText, type SiblingNetworkAdapter, type SiblingShare, type SiblingChannelStatus,
   BAG_IDS, slugFromUri, islandEventAsk, bagStackFromRec, recipeHostFacets, type WikiActivationCap,
   carriageStack, deriveMeshLeaf, type MeshPeer,
   materializeGenesisIsland, genesisCasManifestFromSeed, genesisCasCidsFromOracle, sha256HexBytesSync,
@@ -1029,13 +1029,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // (`vesselDyads`, mesh): the ceremony-minted slots are the only source, and a face standing
   // beside zero slots is a doc minted before the ruling — said aloud here, warned never thrown.
   // Every vessel class inherits this read verbatim; the pattern integrity is the ONE door.
-  // The daemon doc AS THIS BOOT READS IT, kept for the sibling channel's enrolment seal and lease epoch below.
+  // The daemon doc AS THIS BOOT READS IT, kept for the sibling channel's enrolment seal below.
   let bootDaemonDoc: LarDoc | undefined;
-  // The live daemon doc, for the sibling channel's lease reader (read at every licensing act, never once at boot).
-  let daemonDocHandle: DocHandle<LarDoc> | undefined;
   try {
     const dhandle = await repo.find<LarDoc>(social.daemonUrl as never);
-    daemonDocHandle = dhandle;
     bootDaemonDoc = dhandle.doc();
     const dyads = vesselDyads(dhandle.doc());
     if (social.deviceEdge && dyads.length === 0) {
@@ -1488,7 +1485,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         // missing or replayed older slot never lowers the epoch this device already accepted.
         const head = proof.projection.head;
         const leasePrefix = leaseEpochPrefix(wornGroup);
-        const leaseSlots = Object.entries(daemonDoc?.tiddlers ?? {}).filter(([title]) => title.startsWith(leasePrefix)).map(([, rec]) => tiddlerText(rec));
+        const controlUrl = controlHomeUrlOf(daemonDoc), leaseDoc = controlUrl ? heldDocOf(repo, controlUrl) : undefined;
+        const leaseSlots = Object.entries(leaseDoc?.tiddlers ?? {}).filter(([title]) => title.startsWith(leasePrefix)).map(([, rec]) => tiddlerText(rec));
         const observedLease = readFace(personaKelChain)?.observedLease(wornGroup, leaseSlots) ?? 0;
         const pinned = raiseFaceFrontier(faceAnchor, { leaseEpoch: observedLease, ...(head ? { actSeq: head.seq, actCid: head.cid } : {}) });
         if (pinned !== faceAnchor) await keepBrowserFaceAnchor(idbName, pinned);
@@ -1873,10 +1871,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         if (!seal) {
           console.warn("[sibling] this face holds no PersonaGroup secret sealed to this device — its enrolment delivered none, so no sibling channel stands.");
         } else {
-          // THE LEASE READER: the face reading over the live daemon doc's lease slots, read at every licensing act, so a
+          // THE LEASE READER: the face reading over the control document's lease slots, read at every licensing act, so a
           // roll that lands after the channel stood refuses an edge bound below it at the next act.
           const leasePrefix = leaseEpochPrefix(group);
-          const leaseSlotsNow = (): Array<string | null> => Object.entries((daemonDocHandle?.doc() ?? bootDaemonDoc)?.tiddlers ?? {})
+          const leaseSlotsNow = (): Array<string | null> => Object.entries(daemon.controlHandle.doc()?.tiddlers ?? {})
             .filter(([title]) => title.startsWith(leasePrefix)).map(([, rec]) => tiddlerText(rec));
           siblings = await standSiblingChannel({
             repo, herms: siblingHerms, nexusPubkey, personaKelPrefix,
@@ -1887,7 +1885,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           });
         }
       }
-      return { workerEa: daemon.workerEa, mountMainVerbs: daemon.mountMainVerbs, resolveBinding: daemon };
+      return { workerEa: daemon.workerEa, mountMainVerbs: daemon.mountMainVerbs, resolveBinding: daemon, control: daemon.control };
     },
 
     wireVerbs: (registry, _assembly) => {

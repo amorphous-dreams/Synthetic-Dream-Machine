@@ -227,6 +227,12 @@ export interface WikiRecipe {
    */
   readonly libraryBags?: readonly SlotUri[];
   /**
+   * THE WIKI'S CANON, where it is not `bags/<wikiSlug>`: the daemon wiki's canon follows the worn face
+   * (`daemonFaceCanonBag`), so its recipe names that bag here, and the daemon document beneath (`bags/daemon`) keeps no
+   * canon role. Absent: the canon reads `wikiBagUri(wikiSlug)`.
+   */
+  readonly canonBag?: SlotUri;
+  /**
    * Canon bag URIs this wiki DESIGNATES for local disk projection (write-back).
    * A synced, platform-neutral *wish* (the shape half of disk-mirroring). The
    * island materializes a mirror for a designated bag IFF it also holds the
@@ -353,13 +359,33 @@ export function expandRecipe(r: WikiRecipe): readonly SlotUri[] {
     // the read-only library member, published to only by a promotion MOVE
     // (wiki-layer-ontology#shore-law). Working (live) and canon stay distinct layers.
     wikiSlotUri(slug, "working"),
-    wikiBagUri(slug),
+    wikiCanonOf(r),
     ...(r.libraryBags ?? []),
+    // A wiki whose canon follows its face keeps its own bag beneath the libraries, below every canon: the daemon
+    // document, the vessel's own state, in no canon role.
+    ...(r.canonBag !== undefined ? [wikiBagUri(slug)] : []),
     // oracle = the universal floor (engine + grammar + bag-oracle). The lares and
     // lararium bags never stand as the floor — they ride a wiki's libraryBags (the lares
     // wiki-recipe = oracle floor + lararium bag + lares bag).
     ORACLE_BAG,
   ])];
+}
+
+/** The bag a recipe reads as its wiki's canon: `canonBag` where it names one, else `bags/<wikiSlug>`. */
+export function wikiCanonOf(r: Pick<WikiRecipe, "wikiSlug" | "canonBag">): SlotUri {
+  return r.canonBag ?? wikiBagUri(r.wikiSlug);
+}
+
+const FACE_RELATION = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+
+/**
+ * THE DAEMON WIKI'S CANON FOR ONE FACE: `bags/daemon-<F>`, F the relation the face's verified founding record pins (the
+ * same F its `wikis/daemon-<F>` and `bags/kahua-<F>` folders carry). Minted at the face's first worn stand and named in
+ * that face's own catalog; the daemon document (`bags/daemon`) keeps no canon role.
+ */
+export function daemonFaceCanonBag(faceRelation: string): SlotUri {
+  if (!FACE_RELATION.test(faceRelation)) throw new Error(`daemon face canon: invalid relation ${JSON.stringify(faceRelation)}`);
+  return bagUri(`daemon-${faceRelation}`);
 }
 
 /**

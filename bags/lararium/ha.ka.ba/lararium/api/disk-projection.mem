@@ -57,7 +57,7 @@ Disk projection serves ''content'' bags (definitions + instances). State and vie
 | `@temp` | volatile session layer | `wikis/{slug}/temp/` only where the recipe designates it and the operator's consent row names the slug (`projection.temp.<slug>`); its internal volatile state never |
 | `@daemon` | operator's sovereign authority doc | ''none'' — private; syncs to operator devices via the admin-doc surface |
 
-The daemon working layer carries no mirror while swarm controls and ward audits still rest there. The daemon document also carries no mirror. The active grant list includes the face's kahua stage and the public crossroads bag; each writes only records from its own selected store. A future daemon working mirror requires every control writer to target the unmirrored control home first.
+Every control family (summons, outcomes and their effect index, receipt facts, ward audits, the mailbox, the swarm's live controls, the lease-epoch slots) rests in the vessel's control document (`bags/control`, `packages/lararium-mesh/src/control-home.ts`), which no recipe composes and no mirror names. The daemon document names it, and both carry no mirror. The daemon VM's grant list names the worn face's working top (`<projections>/wikis/daemon-<F>`), its daemon canon `bags/daemon-<F>` (`<projections>/bags/daemon-<F>`, named in the face's own catalog), its kahua stage and the public crossroads bag; each writes only records from its own selected store. `tools/placement-residency-witness.mjs` reads red where a control family titles outside the control home, a daemon mirror names a private home, or a control writer reaches past the control store.
 
 ''Draft recovery and rest.'' A granted recovery mirror reads the draft bag's own record, including `draft.of`, `draft.title` and the open-base fields, even when another bag shadows its wiki view. The recovery subtree carries no canon or publication authority. The shore uses one keyed latest-state drain: one write runs at a time, its durable acknowledgement paces the next coalesced state, and lifecycle signals only request a pass. One drain state machine owns each title's generation: callers only mark or await, one pump issues the writes and yields to a macrotask between them, one typed flight closes each generation as `acked`, `failed`, `superseded` or `abandoned`, an act's removals wait on an explicit edge to their target's acknowledgement, and memory stays bounded by the number of titles. No timer decides a flush. A draft reaches recovery rest only after the storage-backed repository acknowledges its heads and the projector confirms the file hash; a warning or the worker's in-memory flush never supplies that acknowledgement. SAVE and RENAME retain the recovery copy until the target receives durable acknowledgement.
 
@@ -125,7 +125,7 @@ A hand MAY add a future debug-only disk projection behind an explicit flag; it M
 
 ''A disk wave follows its mirror.'' INGEST accepts a source only when the vessel grants that mirror root to the selected bag. A wave has no route into an unmirrored control or secret home. Arbitrary-directory LOAD lands into a working layer; promotion moves content from its selected store.
 
-`$:/config/lares/ProjectionFilter` remains an operator preference: TW5's `$:/temp/` and `$:/state/` namespaces stay off disk, and the temp class may withhold house config. It carries no control, secret, residency, manifest, or effect-title list. Residency effects stay with the affected bag and the projector recognizes their record kind. The control observe view reads one way and redacts its fields.
+`$:/config/lares/ProjectionFilter` remains an operator preference: TW5's `$:/temp/` and `$:/state/` namespaces stay off disk, and the temp class may withhold house config. It carries no control, secret, residency, manifest, or effect-title list. Residency effects stay with the affected bag and the projector recognizes their record kind. No mirror grant names the control document, and no observe render projects it.
 
 ''Bag manifests belong to declaration.'' The catalog owns each bag-root `meta.mem`; a directory LOAD omits only that root declaration, by ownership.
 
@@ -239,6 +239,6 @@ between casual chat-use and the defined parser core.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZAqz5wq58TlX6e48R4W8CNvIf9NSVwfSEj0W7yz1_Gs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4eyd6dYvT_4Il_C-1MpXUmA8iEPkbT04rDB_IGOKezg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

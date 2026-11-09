@@ -1,13 +1,14 @@
 /**
- * THE DAEMON BAG TAKES NO HOUSE RECORD FROM DISK, at the island, whatever its caller scanned.
+ * THE DAEMON DOCUMENT TAKES NOTHING FROM DISK, at the island, whatever its caller scanned: placement decides.
  *
- * Every disk-to-store road into `bags/daemon` rides one INGEST wave: `lares ingest`, `lares shore take-disk`, the daemon
- * canon mirror's ingest-back, `lares import`. The island refuses, by name (`daemon-withheld-title`), a carrier, a kāpae or
- * a re-link naming a control or house title (`isDaemonCanonWithheld`: `bags/daemon/cap/**`, `bags/persona/**`,
- * `dreamnet/**`, `$:/`), and lands its authored sibling. The CLI scan guard stands beside it; this wave bypasses it.
+ * Every disk-to-store road rides one INGEST wave: `lares ingest`, `lares shore take-disk`, a canon mirror's ingest-back,
+ * `lares import`. The island admits a wave only where the vessel grants a mirror for that destination and the source
+ * rests under it. The daemon document (`bags/daemon`) carries no mirror and no canon role, so every wave into it refuses
+ * by placement (`disk-wave-placement`); the face's daemon canon (`bags/daemon-<F>`) carries its own mirror and takes any
+ * title as ordinary content, a cap-shaped or seal-shaped title included.
  */
 import { describe, test, expect, beforeAll } from "vitest";
-import { CompositeStore, DAEMON_BAG_ID, isEffectRecordUri, type CapabilityAccess, type CapabilityVerifyResult, type Verb, type VerbContext } from "@lararium/mesh";
+import { CompositeStore, DAEMON_BAG_ID, daemonFaceCanonBag, isEffectRecordUri, type CapabilityAccess, type CapabilityVerifyResult, type Verb, type VerbContext } from "@lararium/mesh";
 import { carrierHash } from "@lararium/mesh/crypto";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { registerActionReactors, makeTw5Deserializer } from "../src/action-handler.js";
@@ -29,7 +30,7 @@ const MEMORY = "lar:///ha.ka.ba/kahua/memory/heron";
 const tid = (title: string): string => `title: ${title}\ntype: text/vnd.tiddlywiki\n\nwords\n`;
 const carrier = (uri: string) => ({ uri, file: `/scratch/${uri.split("/").pop()}.tid`, text: tid(uri), diskHash: carrierHash(tid(uri)), syncedHash: null, ext: ".tid" });
 
-describe.skipIf(wikiSkip)(`the island holds the daemon bag's withheld titles${skipNote}`, () => {
+describe.skipIf(wikiSkip)(`the island admits a disk wave by placement alone${skipNote}`, () => {
   let engine: TW5Engine;
   beforeAll(async () => { engine = await bootTestWiki(); }, 60_000);
 
@@ -42,19 +43,19 @@ describe.skipIf(wikiSkip)(`the island holds the daemon bag's withheld titles${sk
     return { composite, store, table, carriersIn: async () => (await store.listVisible()).filter((t) => !isEffectRecordUri(t)).sort() };
   }
 
-  test("RED: an INGEST into bags/daemon naming a cap event, a group-secret seal or a checkpoint refuses each by name; the memory lands", async () => {
-    const r = rig(DAEMON_BAG_ID);
-    const args = { "source-uri": "file:///scratch", "to-bag": DAEMON_BAG_ID, "change-id": "chg-w", carriers: [CAP, SEAL, CHECKPOINT, MEMORY].map(carrier), kapae: [SEAL] };
-    const out = await r.table.get("INGEST")!(args, ctx(r.composite, args)) as Record<string, unknown>;
-    const rows = out["carriers"] as Array<Record<string, unknown>>;
-    for (const t of [CAP, SEAL, CHECKPOINT]) {
-      const row = rows.find((x) => x["uri"] === t)!;
-      expect(row["decision"], t).toBe("refuse");
-      expect(row["code"], t).toBe("daemon-withheld-title");
-    }
-    expect(rows.find((x) => x["uri"] === MEMORY)!["decision"]).toBe("ingest");
-    expect((out["kapae"] as { refused: Array<{ code: string }> }).refused.map((k) => k.code)).toEqual(["daemon-withheld-title"]);
-    expect(await r.carriersIn()).toEqual([MEMORY]);
+  test("RED: an INGEST into bags/daemon refuses by placement, its mirror-shaped source notwithstanding; CONTROL: the face's daemon canon takes the same titles as ordinary content", async () => {
+    const CANON = daemonFaceCanonBag("7b0f6c1e-4a52-4d3b-9c18-2e5a6f0d8b31");
+    const mirrors = [{ bagId: CANON, mirrorRoot: "/scratch/daemon-canon", scope: "daemon-canon" }];
+    const daemonRig = rig(DAEMON_BAG_ID, mirrors);
+    const toDaemon = { "source-uri": "/scratch/daemon-canon", "to-bag": DAEMON_BAG_ID, "change-id": "chg-w", carriers: [CAP, SEAL, CHECKPOINT, MEMORY].map(carrier) };
+    await expect(daemonRig.table.get("INGEST")!(toDaemon, ctx(daemonRig.composite, toDaemon))).rejects.toMatchObject({ code: "disk-wave-placement" });
+    expect(await daemonRig.carriersIn()).toEqual([]);
+
+    const canonRig = rig(CANON, mirrors);
+    const toCanon = { ...toDaemon, "to-bag": CANON, "change-id": "chg-w-canon" };
+    const rows = (await canonRig.table.get("INGEST")!(toCanon, ctx(canonRig.composite, toCanon)) as Record<string, unknown>)["carriers"] as Array<Record<string, unknown>>;
+    for (const t of [CAP, SEAL, CHECKPOINT, MEMORY]) expect(rows.find((x) => x["uri"] === t)?.["decision"], t).toBe("ingest");
+    expect(await canonRig.carriersIn()).toEqual([CAP, CHECKPOINT, SEAL, MEMORY].sort());
   });
 
   test("CONTROL: the same persona-namespace title into another bag answers by that bag's own law, never this refusal", async () => {

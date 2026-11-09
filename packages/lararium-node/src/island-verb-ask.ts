@@ -2,16 +2,16 @@
  * island-verb-ask — the vessel's MAIN THREAD places one verb on its daemon island and awaits the answer.
  *
  * A person's command reaches an island verb through the verb socket, which commits a receipt and then awaits the
- * outcome the island writes into the daemon wiki's working slot. The main thread itself sometimes owes the island a
+ * outcome the island writes into the vessel's control document (`control-home`). The main thread itself sometimes owes the island a
  * question that no person typed: the settle a fold sets off asks `seat-duties`, where a face's group keys live.
  * This module holds that one road: hand the invocation to the island over its direct channel, then read the
- * outcome off the daemon composite (its working slot) when it lands.
+ * outcome off the control store when it lands.
  *
  * NO TIMER. The ask settles when the outcome lands, or when its caller abandons it (the composition that asked
  * tears down). Nothing here measures a wait or decides by one.
  *
- * WHAT MAY RIDE THIS ROAD. A verb's arguments cross to the island and its outcome rests in the daemon wiki's working
- * slot, clear at the floor and sealed under a lit face, so nothing a sealed row holds rides here: a sealed row's act
+ * WHAT MAY RIDE THIS ROAD. A verb's arguments cross to the island and its outcome rests in the control document,
+ * clear at the floor and sealed under a lit face, so nothing a sealed row holds rides here: a sealed row's act
  * rides the custody door (`sealed-acts`).
  */
 import {
@@ -41,7 +41,7 @@ export interface IslandAsk {
   abandon(): void;
 }
 
-/** The terminal outcome of one request, read through the daemon composite, or null while none stands. */
+/** The terminal outcome of one request, read through the control store, or null while none stands. */
 async function outcomeOf(store: Pick<CompositeStore, "get">, requestId: string): Promise<{ readonly status: "done" | "error"; readonly output: Record<string, unknown>; readonly errorMessage?: string; readonly refusal?: string } | null> {
   const record = await store.get(`${OUTCOME_URI_PREFIX}${requestId}`);
   if (!record || record.meta?.deleted) return null;
@@ -63,12 +63,12 @@ async function outcomeOf(store: Pick<CompositeStore, "get">, requestId: string):
 }
 
 /**
- * Place `verb` on the daemon island and await its outcome on the daemon composite. `requestId` names this one
+ * Place `verb` on the daemon island and await its outcome on the control store. `requestId` names this one
  * attempt: a fresh id runs the verb, and an id whose outcome already stands answers that outcome.
  */
 export function askIslandVerb(opts: {
-  /** The daemon composite: the working slot the island writes each outcome into, over the daemon document. */
-  readonly composite:    Pick<CompositeStore, "get" | "subscribe">;
+  /** The control store (`DaemonVmCore.control`): the control document the island writes each outcome into. */
+  readonly control:      Pick<CompositeStore, "get" | "subscribe">;
   readonly placeVerb:    PlaceIslandVerb;
   readonly verb:         string;
   readonly args:         Record<string, unknown>;
@@ -85,14 +85,14 @@ export function askIslandVerb(opts: {
       fn();
     };
     const check = async (): Promise<void> => {
-      const outcome = await outcomeOf(opts.composite, opts.requestId);
+      const outcome = await outcomeOf(opts.control, opts.requestId);
       if (!outcome) return;
       if (outcome.status === "done") settle(() => resolve(outcome.output));
       else settle(() => reject(new IslandVerbRefused(opts.verb, outcome.errorMessage ?? `${opts.verb} ended in an error`, outcome.refusal ?? null)));
     };
     const fault = (err: unknown): void => settle(() => reject(err instanceof Error ? err : new Error(String(err))));
     const title = `${OUTCOME_URI_PREFIX}${opts.requestId}`;
-    const unsubscribe = opts.composite.subscribe((change) => { if (change.title === title) void check().catch(fault); });
+    const unsubscribe = opts.control.subscribe((change) => { if (change.title === title) void check().catch(fault); });
     abandon = () => settle(() => reject(new IslandAskAbandoned(opts.verb)));
     // An outcome that already stands answers with no placement; otherwise the verb goes to the island once.
     void check().then(() => {
@@ -109,7 +109,7 @@ export function askIslandVerb(opts: {
  * thread: the settle a fold sets off, and the store door's row for `lares edge settle`.
  */
 export function askSeatDuties(opts: {
-  readonly composite:    Pick<CompositeStore, "get" | "subscribe">;
+  readonly control:      Pick<CompositeStore, "get" | "subscribe">;
   readonly placeVerb:    PlaceIslandVerb;
   readonly facts:        { readonly fleetRoot: string; readonly acts: readonly unknown[]; readonly rolled: readonly string[] };
   /** The vessel's own key and its signer: the proof the island reads, and the requester it names. */
@@ -123,7 +123,7 @@ export function askSeatDuties(opts: {
   const answer = signSeatDutiesAsk({ requestId, facts, sign: opts.sign }).then((ask) => {
     if (abandoned) throw new IslandAskAbandoned("seat-duties");
     inner = askIslandVerb({
-      composite: opts.composite, placeVerb: opts.placeVerb,
+      control: opts.control, placeVerb: opts.placeVerb,
       verb: "seat-duties", args: { facts, ask }, requestedBy: `0x${opts.vesselKey}`, requestId,
     });
     return inner.answer;
@@ -139,11 +139,11 @@ const MEMORY_VERBS: Readonly<Record<MemoryAct, string>> = { cut: "sealed-memory-
  * main thread alone: the ask carries the vessel key's signature over its own request id and the facts it hands in
  * (`signMemoryAsk`), and this function holds the one place that signature gets made. A cut hands in a public key
  * and draws ciphertext; a door draws a public key; an import hands in a section and its pair's secret half sealed
- * to that door. No bare content key rides this road in either direction, so an outcome that rests in the daemon wiki's
- * working slot names bags, versions and ciphertext alone.
+ * to that door. No bare content key rides this road in either direction, so an outcome that rests in the control
+ * document names bags, versions and ciphertext alone.
  */
 export function askIslandMemory(opts: {
-  readonly composite:    Pick<CompositeStore, "get" | "subscribe">;
+  readonly control:      Pick<CompositeStore, "get" | "subscribe">;
   readonly placeVerb:    PlaceIslandVerb;
   readonly act:          MemoryAct;
   /** What the act hands in: `{ to }` for a cut, `{}` for a door, `{ section, secret }` for an import. */
@@ -158,7 +158,7 @@ export function askIslandMemory(opts: {
   const answer = signMemoryAsk({ requestId, act: opts.act, facts: opts.facts, sign: opts.sign }).then((ask) => {
     if (abandoned) throw new IslandAskAbandoned(verb);
     inner = askIslandVerb({
-      composite: opts.composite, placeVerb: opts.placeVerb,
+      control: opts.control, placeVerb: opts.placeVerb,
       verb, args: { ...opts.facts, ask }, requestedBy: `0x${opts.vesselKey}`, requestId,
     });
     return inner.answer;

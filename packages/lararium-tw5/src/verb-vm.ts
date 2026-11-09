@@ -2,29 +2,29 @@
  * verb-vm — volatile verb invocation lifecycle for the daemon causal island.
  *
  * Manages the in-TW5-wiki invocation tiddlers (volatile scratch, never synced)
- * and writes durable outcome tiddlers into the daemon wiki's working slot (the daemon
- * composite's default writable), which seals under the lit face; the clear daemon bag
- * beneath rests no outcome body (lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed, U1).
+ * and writes durable outcome tiddlers into the vessel's CONTROL document (`control-home`): a store no recipe composes
+ * and no mirror names, sealed under the lit face like the daemon wiki's slots
+ * (lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed, U1). The daemon wiki's layers rest no outcome body.
  *
  * Meme: lar:///ha.ka.ba/lararium/tw5/verb-vm
  */
 
 import type { BatchMode, CompositeStore, Verb, VerbTargetResult } from "@lararium/mesh";
 import {
-  DAEMON_BAG_ID, VERB_RESULT_KEY, concludeVerb, buildVerb, buildRunningPatch,
+  EFFECT_URI_PREFIX, VERB_RESULT_KEY, concludeVerb, buildVerb, buildRunningPatch,
   canonicalJsonBytes, sha256HexBytesSync, verbInputDigest, isVerbRefusal,
 } from "@lararium/mesh";
 import type { TW5Engine } from "./tw5-vm.js";
 
 // ── Effect index — single writer: the daemon worker (D1, P2.5 iter 4) ──────
-// `<daemon bag>/effects/<effectKey>` names the ONE prior `done` attempt that produced
+// `<control home>/effects/<effectKey>` (`EFFECT_URI_PREFIX`) names the ONE prior `done` attempt that produced
 // this effect, so a later attempt under a NEW requestId with the SAME effectKey can
 // find it (verb-dispatcher.ts owns the reuse decision; this module owns the write).
-export const EFFECT_URI_PREFIX = `${DAEMON_BAG_ID}/effects/`;
+export { EFFECT_URI_PREFIX };
 
 // ── audit-doc write-amplification cure (the dd4da8481 class, a new site) ────────────────────────────
 //
-// A verb's durable outcome (`writeOutcome` below → `bags/daemon/outcomes/<id>`) embeds the handler's
+// A verb's durable outcome (`writeOutcome` below → `bags/control/outcomes/<id>`) embeds the handler's
 // FULL return value under `results[summary].output` — for a batch verb (e.g. INGEST) that means a
 // per-carrier result array, unbounded across a corpus seed (214 entries measured for one lararium
 // ingest). That array lands in an Automerge doc that syncs to every vessel and never shrinks — the
@@ -146,7 +146,7 @@ export function removeVerb(tw5: TW5Engine, title: string): void {
 }
 
 export async function writeOutcome(
-  daemon: CompositeStore,
+  control: CompositeStore,
   opts: {
     invocation:    Verb;
     status:        "done" | "error";
@@ -186,20 +186,19 @@ export async function writeOutcome(
     inputDigest,
     ...(opts.invocation.effectKey !== undefined && { effectKey: opts.invocation.effectKey }),
   });
-  // THE LEDGER RESTS IN THE WORKING SLOT: the composite's default writable, never the daemon bag by name.
-  await daemon.put(outcome, origin);
+  // THE LEDGER RESTS IN THE CONTROL DOCUMENT: the control store's one layer, never a layer any mirror reads.
+  await control.put(outcome, origin);
 
   // Effect index — single writer (the daemon worker). Only a `done` outcome with an
   // effect key indexes; an `error` outcome indexes nothing, so a failed effect may be
   // retried under a fresh requestId without the dedup path ever shadowing it.
   if (opts.status === "done" && opts.invocation.effectKey !== undefined) {
-    await daemon.put({
+    await control.put({
       tiddler: {
         title:          `${EFFECT_URI_PREFIX}${opts.invocation.effectKey}`,
         "effect-key":   opts.invocation.effectKey,
         ...(opts.invocation.face !== undefined && { face: opts.invocation.face }),
         "request-id":   opts.invocation.requestId,
-        "disk-projection": "no",
       },
       meta: { authority: "lares-dispatcher" },
     }, origin);
@@ -215,7 +214,7 @@ export async function writeOutcome(
  */
 export async function copyEffectOutcome(
   tw5: TW5Engine,
-  daemon: CompositeStore,
+  control: CompositeStore,
   invocation: Verb,
   opts: { priorRequestId: string; priorResults: Record<string, VerbTargetResult>; inputDigest: string },
 ): Promise<void> {
@@ -232,7 +231,7 @@ export async function copyEffectOutcome(
     ...(invocation.effectKey !== undefined && { effectKey: invocation.effectKey }),
     effectOf:    opts.priorRequestId,
   });
-  await daemon.put(outcome, origin);
+  await control.put(outcome, origin);
   removeVerb(tw5, invocation.title);
 }
 
@@ -256,7 +255,7 @@ function errorText(err: unknown): string {
 
 export async function dispatchVerb(
   tw5: TW5Engine,
-  daemon: CompositeStore,
+  control: CompositeStore,
   invocation: Verb,
   run: () => Promise<Record<string, unknown>>,
 ): Promise<void> {
@@ -264,9 +263,9 @@ export async function dispatchVerb(
 
   try {
     const result = await run();
-    await writeOutcome(daemon, { invocation, status: "done", result });
+    await writeOutcome(control, { invocation, status: "done", result });
   } catch (err) {
-    await writeOutcome(daemon, {
+    await writeOutcome(control, {
       invocation, status: "error", errorMessage: errorText(err),
       // A reactor that refuses by name hands its machine-read reason to the outcome; a plain
       // failure carries none.

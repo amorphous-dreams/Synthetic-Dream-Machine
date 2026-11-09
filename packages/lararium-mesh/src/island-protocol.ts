@@ -171,6 +171,12 @@ export interface IslandGrants {
   /** The face's kahua stage, the url its VERIFIED `plane` act pins (`adoptKahuaPlane`); `bags/kahua` mounts from this
    *  grant alone and never from a catalog row. Absent/null: the layer stands absent. */
   kahuaUrl?:    string | null;
+  /** The vessel's CONTROL document (`control-home`), granted to the daemon island alone: an access grant, never a recipe
+   *  slot. The island's control store stands over it; absent on every wiki island. */
+  controlUrl?:  string | null;
+  /** The worn face's daemon canon (`daemonFaceCanonBag`), the document its catalog row names: the daemon recipe's
+   *  `canonBag` slot mounts from this grant alone. Absent at the floor, where the daemon wiki reads no canon. */
+  canonUrl?:    string | null;
 }
 export interface IslandMsg_Manifest {
   type: "manifest";

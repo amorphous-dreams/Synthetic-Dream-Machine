@@ -19,6 +19,7 @@
 
 import {
   emptyLarDoc,
+  standControlHome,
   type Repo, type AutomergeUrl, type LarDoc,
   type WikiRecipe,
   type IslandMsg_Manifest,
@@ -126,6 +127,8 @@ export async function openBrowserDaemonVm(
       return repo.create<LarDoc>(emptyLarDoc());
     }
   })();
+  // ── The vessel's control document, named by the daemon document (`control-home`) ──
+  const controlHandle = await standControlHome(repo, daemonHandle);
   // ── Persona doc handle (same find-or-create) — the one VM tends both bags ────
   const personaHandle = await (async () => {
     try {
@@ -147,7 +150,7 @@ export async function openBrowserDaemonVm(
   // The wrapper IS the shore — host pieces + find-or-create daemonHandle; the lifecycle and the
   // whole result surface (DaemonVmCore) live once in the core. Return it directly, no re-spread.
   return openDaemonVmCore(host, {
-    repo, daemonHandle, recipe, grants, coreHash,
+    repo, daemonHandle, controlHandle, recipe, grants, coreHash,
     ...(personaHandle ? { personaHandle } : {}),
     ...(personaBagId  ? { personaBagId }  : {}),
     ...(pluginCids?.length ? { pluginCids } : {}),

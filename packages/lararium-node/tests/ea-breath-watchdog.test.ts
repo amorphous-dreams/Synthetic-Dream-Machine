@@ -83,7 +83,7 @@ describe("openDaemonVmCore — the ea-breath watchdog", () => {
 
     const core = openDaemonVmCore(host, {
       repo,
-      daemonHandle,
+      daemonHandle, controlHandle: repo.create<LarDoc>(emptyLarDoc()),
       personaHandle,
       recipe:          { wikiSlug: "daemon" },
       grants:          { islandUrl: daemonHandle.url },

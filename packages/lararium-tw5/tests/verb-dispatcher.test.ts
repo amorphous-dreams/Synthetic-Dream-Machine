@@ -7,7 +7,7 @@
  * real `$tw.wiki` the dispatcher subscribes to. No regex, no shim over the dedup logic itself.
  *
  * `requestId` names an ATTEMPT (fresh per retry); `effectKey` names the EFFECT an attempt would
- * produce. The dispatcher reads `<daemon bag>/effects/<effectKey>` before running a handler: a
+ * produce. The dispatcher reads `<control home>/effects/<effectKey>` before running a handler: a
  * prior `done` attempt with a MATCHING input digest answers the new attempt with a copy of that
  * result (`effect-of: <prior requestId>`) and never re-runs the handler. A changed-digest reuse of
  * the same effectKey string skips the shortcut and runs fresh — the key names an effect, not a
@@ -21,6 +21,7 @@ import {
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { VerbDispatcher, VerbTable } from "../src/verb-dispatcher.js";
 import { EFFECT_URI_PREFIX } from "../src/verb-vm.js";
+import { memoryControlStore } from "./control-store-fixture.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
 
 type TiddlerFields = Record<string, unknown>;
@@ -74,6 +75,11 @@ function makeDaemon(): CompositeStore {
   return composite;
 }
 
+/** The daemon composite (holding no ledger) beside the control store the ledger rests in. */
+function makeStores(): { daemon: CompositeStore; control: CompositeStore } {
+  return { daemon: makeDaemon(), control: memoryControlStore() };
+}
+
 /** Flush N real macrotask turns — the dispatcher's getLive→dedup→writeOutcome chain crosses a
  *  genuine async boundary (verbInputDigest rides Web Crypto's subtle.digest, which resolves on
  *  the platform's own task queue, not a bare microtask), so a `Promise.resolve()` spin isn't
@@ -82,8 +88,8 @@ async function settle(turns = 20): Promise<void> {
   for (let i = 0; i < turns; i++) await new Promise((r) => setTimeout(r, 0));
 }
 
-async function outcomeOf(daemon: CompositeStore, requestId: string) {
-  const rec = await daemon.getLive(OUTCOME_URI_PREFIX + requestId);
+async function outcomeOf(control: CompositeStore, requestId: string) {
+  const rec = await control.getLive(OUTCOME_URI_PREFIX + requestId);
   if (!rec) return null;
   const results = JSON.parse(String(rec.tiddler["results"] ?? "{}")) as Record<string, { ok: boolean; output?: unknown }>;
   return { fields: rec.tiddler, results };
@@ -92,7 +98,7 @@ async function outcomeOf(daemon: CompositeStore, requestId: string) {
 describe("VerbDispatcher — redelivered requestId vs. the already-landed outcome's stamped digest", () => {
   test("a redelivered requestId carrying a CHANGED digest against its landed outcome is skipped and logged by name; a matching redelivery is skipped silently (control)", async () => {
     const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
-    const daemon = makeDaemon();
+    const { daemon: daemonComposite, control } = makeStores();
     let runCount = 0;
     const registry = new VerbTable();
     registry.register("do-redeliver", async (args) => {
@@ -100,7 +106,7 @@ describe("VerbDispatcher — redelivered requestId vs. the already-landed outcom
       return { ran: runCount, echo: args["x"] };
     });
 
-    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon, registry });
+    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon: daemonComposite, control, registry });
     dispatcher.start();
 
     dispatcher.placeVerb({
@@ -108,7 +114,7 @@ describe("VerbDispatcher — redelivered requestId vs. the already-landed outcom
     });
     await settle();
     expect(runCount).toBe(1);
-    const landed = await outcomeOf(daemon, "req-redeliver");
+    const landed = await outcomeOf(control, "req-redeliver");
     expect(landed?.fields.status).toBe("done");
 
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
@@ -131,7 +137,7 @@ describe("VerbDispatcher — redelivered requestId vs. the already-landed outcom
     await settle();
 
     expect(runCount).toBe(1); // still skipped — never re-runs the handler
-    const stillLanded = await outcomeOf(daemon, "req-redeliver");
+    const stillLanded = await outcomeOf(control, "req-redeliver");
     expect(stillLanded?.results[VERB_RESULT_KEY]?.output).toEqual({ ran: 1, echo: 1 }); // unchanged
     expect(warnSpy).toHaveBeenCalledTimes(1);
     expect(warnSpy.mock.calls[0]?.[0]).toContain("req-redeliver");
@@ -145,20 +151,20 @@ describe("VerbDispatcher — redelivered requestId vs. the already-landed outcom
 describe("VerbDispatcher — a redelivered invocation leaves the VM (Sol's delta read)", () => {
   test("RED: a redelivery against a landed outcome is removed from the VM, so no stamp rides a standing invocation; CONTROL: the outcome stands unchanged", async () => {
     const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
-    const daemon = makeDaemon();
+    const { daemon: daemonComposite, control } = makeStores();
     const registry = new VerbTable();
     registry.register("do-once", async () => ({ ran: true }));
-    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon, registry });
+    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon: daemonComposite, control, registry });
     dispatcher.start();
     dispatcher.placeVerb({ verb: "do-once", args: {}, requestedBy: "did:key:test", requestId: "req-once" });
     await settle();
-    expect((await outcomeOf(daemon, "req-once"))?.fields.status).toBe("done");
+    expect((await outcomeOf(control, "req-once"))?.fields.status).toBe("done");
     dispatcher.placeVerb({ verb: "do-once", args: { again: true }, requestedBy: "did:key:test", requestId: "req-once" });
     const wiki = (tw5 as unknown as { $tw: { wiki: { getTiddler(t: string): unknown } } }).$tw.wiki;
     expect(wiki.getTiddler(`${VERB_URI_PREFIX}req-once`), "the redelivery stands placed").toBeDefined();
     await settle();
     expect(wiki.getTiddler(`${VERB_URI_PREFIX}req-once`)).toBeUndefined();
-    expect((await outcomeOf(daemon, "req-once"))?.fields.status).toBe("done");
+    expect((await outcomeOf(control, "req-once"))?.fields.status).toBe("done");
     dispatcher.stop();
   });
 });
@@ -166,21 +172,21 @@ describe("VerbDispatcher — a redelivered invocation leaves the VM (Sol's delta
 describe("VerbDispatcher — effect dedup (D1)", () => {
   test("RED (Sol's read, slice 4): a ROUTED verb's replay asks the routed admission too; a refused presenter never reads the prior result", async () => {
     const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
-    const daemon = makeDaemon();
+    const { daemon: daemonComposite, control } = makeStores();
     let routed = 0;
     const registry = new VerbTable();
     registry.fence({ open: {}, check: (verb, context) => {
       if (context.presenter !== "did:key:mounted") throw Object.assign(new Error(`${verb}: fenced`), { reason: "content-mounted-only" });
     } });
     // Both attempts arrive over the vessel's own channel and address a wiki, so the fence reads their presenters.
-    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon, registry, localOf: () => true, routeFn: async () => ({ routed: ++routed, secret: "mounted-only" }) });
+    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon: daemonComposite, control, registry, localOf: () => true, routeFn: async () => ({ routed: ++routed, secret: "mounted-only" }) });
     dispatcher.start();
     dispatcher.placeVerb({ verb: "wiki-act", args: { wiki: "home" }, requestedBy: "did:key:mounted", requestId: "route-1", effectKey: "eff-route" });
     await settle();
-    expect((await outcomeOf(daemon, "route-1"))?.fields.status).toBe("done");
+    expect((await outcomeOf(control, "route-1"))?.fields.status).toBe("done");
     dispatcher.placeVerb({ verb: "wiki-act", args: { wiki: "home" }, requestedBy: "did:key:sibling", requestId: "route-2", effectKey: "eff-route" });
     await settle();
-    const refused = await outcomeOf(daemon, "route-2");
+    const refused = await outcomeOf(control, "route-2");
     expect(refused?.fields["effect-of"]).toBeUndefined();
     expect(refused?.fields.status).toBe("error");
     expect(JSON.stringify(refused?.results ?? {})).not.toContain("mounted-only");
@@ -190,35 +196,35 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
 
   test("a presenter the table's fence refuses never reads a prior attempt's result through the effect replay; it concludes refused by the fence's name (the mounted control replays)", async () => {
     const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
-    const daemon = makeDaemon();
+    const { daemon: daemonComposite, control } = makeStores();
     let runCount = 0;
     const registry = new VerbTable();
     registry.register("do-effect", async () => ({ ran: ++runCount, secret: "mounted-only" }));
     registry.fence({ open: {}, check: (verb, context) => {
       if (context.presenter !== "did:key:mounted") throw Object.assign(new Error(`${verb}: fenced`), { reason: "content-mounted-only" });
     } });
-    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon, registry });
+    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon: daemonComposite, control, registry });
     dispatcher.start();
     dispatcher.placeVerb({ verb: "do-effect", args: { x: 1 }, requestedBy: "did:key:mounted", requestId: "fence-1", effectKey: "eff-fence" });
     await settle();
-    expect((await outcomeOf(daemon, "fence-1"))?.fields.status).toBe("done");
+    expect((await outcomeOf(control, "fence-1"))?.fields.status).toBe("done");
     dispatcher.placeVerb({ verb: "do-effect", args: { x: 1 }, requestedBy: "did:key:sibling", requestId: "fence-2", effectKey: "eff-fence" });
     await settle();
-    const refused = await outcomeOf(daemon, "fence-2");
+    const refused = await outcomeOf(control, "fence-2");
     expect(refused?.fields["effect-of"]).toBeUndefined();
     expect(refused?.fields.status).toBe("error");
     expect(JSON.stringify(refused?.results ?? {})).not.toContain("mounted-only");
     // CONTROL: the mounted presenter under a new attempt replays the effect.
     dispatcher.placeVerb({ verb: "do-effect", args: { x: 1 }, requestedBy: "did:key:mounted", requestId: "fence-3", effectKey: "eff-fence" });
     await settle();
-    expect((await outcomeOf(daemon, "fence-3"))?.fields["effect-of"]).toBe("fence-1");
+    expect((await outcomeOf(control, "fence-3"))?.fields["effect-of"]).toBe("fence-1");
     expect(runCount).toBe(1);
     dispatcher.stop();
   });
 
   test("a second attempt under a NEW requestId with the SAME effectKey answers with effect-of and the handler runs ONCE; a changed digest skips the shortcut and runs fresh", async () => {
     const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
-    const daemon = makeDaemon();
+    const { daemon: daemonComposite, control } = makeStores();
     let runCount = 0;
     const registry = new VerbTable();
     registry.register("do-effect", async (args) => {
@@ -226,7 +232,7 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
       return { ran: runCount, echo: args["x"] };
     });
 
-    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon, registry });
+    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon: daemonComposite, control, registry });
     dispatcher.start();
 
     dispatcher.placeVerb({
@@ -236,12 +242,12 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
     await settle();
 
     expect(runCount).toBe(1);
-    const first = await outcomeOf(daemon, "req-1");
+    const first = await outcomeOf(control, "req-1");
     expect(first?.fields.status).toBe("done");
     expect(first?.fields["effect-key"]).toBe("eff-1");
     expect(first?.fields["effect-of"]).toBeUndefined();
     expect(first?.results[VERB_RESULT_KEY]?.output).toEqual({ ran: 1, echo: 1 });
-    const fact = await daemon.getLive(EFFECT_URI_PREFIX + "eff-1");
+    const fact = await control.getLive(EFFECT_URI_PREFIX + "eff-1");
     expect(fact?.tiddler["request-id"]).toBe("req-1");
 
     // SAME effectKey, SAME args, a NEW requestId — the handler must not run again.
@@ -252,7 +258,7 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
     await settle();
 
     expect(runCount).toBe(1); // still once — the second attempt borrowed the first's effect.
-    const second = await outcomeOf(daemon, "req-2");
+    const second = await outcomeOf(control, "req-2");
     expect(second?.fields.status).toBe("done");
     expect(second?.fields["effect-of"]).toBe("req-1");
     expect(second?.results[VERB_RESULT_KEY]?.output).toEqual({ ran: 1, echo: 1 }); // copied, not re-derived
@@ -266,7 +272,7 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
     await settle();
 
     expect(runCount).toBe(2); // ran again — digest mismatch, not a reuse
-    const third = await outcomeOf(daemon, "req-3");
+    const third = await outcomeOf(control, "req-3");
     expect(third?.fields.status).toBe("done");
     expect(third?.fields["effect-of"]).toBeUndefined();
     expect(third?.results[VERB_RESULT_KEY]?.output).toEqual({ ran: 2, echo: 999 });
@@ -276,7 +282,7 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
 
   test("CONTROL/mutation — stripping effectKey disables dedup entirely: two attempts, same args, no effectKey, the handler runs TWICE", async () => {
     const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
-    const daemon = makeDaemon();
+    const { daemon: daemonComposite, control } = makeStores();
     let runCount = 0;
     const registry = new VerbTable();
     registry.register("do-plain", async () => {
@@ -284,7 +290,7 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
       return { ran: runCount };
     });
 
-    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon, registry });
+    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon: daemonComposite, control, registry });
     dispatcher.start();
 
     dispatcher.placeVerb({ verb: "do-plain", args: { x: 1 }, requestedBy: "did:key:test", requestId: "req-a" });
@@ -294,8 +300,8 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
 
     expect(runCount).toBe(2); // no effectKey on either attempt → no dedup path at all
 
-    const a = await outcomeOf(daemon, "req-a");
-    const b = await outcomeOf(daemon, "req-b");
+    const a = await outcomeOf(control, "req-a");
+    const b = await outcomeOf(control, "req-b");
     expect(a?.fields["effect-key"]).toBeUndefined();
     expect(b?.fields["effect-key"]).toBeUndefined();
     expect(b?.fields["effect-of"]).toBeUndefined();
@@ -305,7 +311,7 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
 
   test("a same-effect attempt already IN FLIGHT awaits the first, then re-reads — the handler still runs exactly ONCE", async () => {
     const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
-    const daemon = makeDaemon();
+    const { daemon: daemonComposite, control } = makeStores();
     let runCount = 0;
     let releaseFirstRun: (() => void) | null = null;
     const registry = new VerbTable();
@@ -315,7 +321,7 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
       return { ran: runCount, echo: args["x"] };
     });
 
-    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon, registry });
+    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon: daemonComposite, control, registry });
     dispatcher.start();
 
     dispatcher.placeVerb({
@@ -327,7 +333,7 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
     await settle();
     expect(runCount).toBe(1);
     expect(releaseFirstRun).not.toBeNull();
-    expect(await outcomeOf(daemon, "req-slow-1")).toBeNull(); // not yet written — still running
+    expect(await outcomeOf(control, "req-slow-1")).toBeNull(); // not yet written — still running
 
     // A second attempt under a NEW requestId, same effectKey, arrives WHILE the first is in flight.
     dispatcher.placeVerb({
@@ -338,18 +344,18 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
 
     // The second attempt must not have started a second handler call — it chained onto the first.
     expect(runCount).toBe(1);
-    expect(await outcomeOf(daemon, "req-slow-2")).toBeNull(); // still waiting on the first
+    expect(await outcomeOf(control, "req-slow-2")).toBeNull(); // still waiting on the first
 
     // Release the first attempt's handler; it completes, writes its outcome + the effect index.
     releaseFirstRun?.();
     await settle();
 
     expect(runCount).toBe(1); // the second attempt re-read and copied — it never called the handler
-    const first = await outcomeOf(daemon, "req-slow-1");
+    const first = await outcomeOf(control, "req-slow-1");
     expect(first?.fields.status).toBe("done");
     expect(first?.fields["effect-of"]).toBeUndefined();
 
-    const second = await outcomeOf(daemon, "req-slow-2");
+    const second = await outcomeOf(control, "req-slow-2");
     expect(second?.fields.status).toBe("done");
     expect(second?.fields["effect-of"]).toBe("req-slow-1");
     expect(second?.results[VERB_RESULT_KEY]?.output).toEqual({ ran: 1, echo: 7 });
@@ -359,7 +365,7 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
 
   test("E1 — an effect-index hit whose prior outcome is EVICTED refuses (retention-gap) and never runs the handler; a digest-mismatch control falls through to a fresh run", async () => {
     const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
-    const daemon = makeDaemon();
+    const { daemon: daemonComposite, control } = makeStores();
     let runCount = 0;
     const registry = new VerbTable();
     registry.register("do-evictable", async (args) => {
@@ -367,7 +373,7 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
       return { ran: runCount, echo: args["x"] };
     });
 
-    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon, registry });
+    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon: daemonComposite, control, registry });
     dispatcher.start();
 
     // First attempt lands normally — handler runs once, effect index + outcome both written.
@@ -377,16 +383,16 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
     });
     await settle();
     expect(runCount).toBe(1);
-    const first = await outcomeOf(daemon, "req-evict-1");
+    const first = await outcomeOf(control, "req-evict-1");
     expect(first?.fields.status).toBe("done");
-    const factBefore = await daemon.getLive(EFFECT_URI_PREFIX + "eff-evict");
+    const factBefore = await control.getLive(EFFECT_URI_PREFIX + "eff-evict");
     expect(factBefore?.tiddler["request-id"]).toBe("req-evict-1");
 
     // Simulate a CAS-sweep eviction: the outcome tiddler is gone, but the effect-index
     // fact (a separate bag write) survives — exactly the retention-gap shape.
-    await daemon.tombstone(OUTCOME_URI_PREFIX + "req-evict-1", { kind: "lares-verb", requestId: "req-evict-1" });
-    expect(await outcomeOf(daemon, "req-evict-1")).toBeNull();
-    const factAfter = await daemon.getLive(EFFECT_URI_PREFIX + "eff-evict");
+    await control.tombstone(OUTCOME_URI_PREFIX + "req-evict-1", { kind: "lares-verb", requestId: "req-evict-1" });
+    expect(await outcomeOf(control, "req-evict-1")).toBeNull();
+    const factAfter = await control.getLive(EFFECT_URI_PREFIX + "eff-evict");
     expect(factAfter?.tiddler["request-id"]).toBe("req-evict-1"); // the index survives the eviction
 
     // A SECOND attempt, same effectKey, SAME args (digest would have matched the gone outcome)
@@ -398,7 +404,7 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
     await settle();
 
     expect(runCount).toBe(1); // handler did NOT run for the evicted-effect attempt
-    const second = await outcomeOf(daemon, "req-evict-2");
+    const second = await outcomeOf(control, "req-evict-2");
     expect(second?.fields.status).toBe("error");
     expect(second?.fields.refusal).toBe("retention-gap");
     // The refused attempt is itself an "error" outcome, which writeOutcome's own law never
@@ -406,7 +412,7 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
     // index still names the original, now-evicted req-evict-1, and a future retention policy
     // can tell "the thing this index points at is gone" from "nothing was ever indexed" — the
     // two read differently on purpose.
-    const factAfterRefusal = await daemon.getLive(EFFECT_URI_PREFIX + "eff-evict");
+    const factAfterRefusal = await control.getLive(EFFECT_URI_PREFIX + "eff-evict");
     expect(factAfterRefusal?.tiddler["request-id"]).toBe("req-evict-1");
 
     dispatcher.stop();
@@ -414,7 +420,7 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
 
   test("CONTROL (eviction-guard specificity) — an effect-index hit whose prior outcome is STILL LIVE dedups normally, same effectKey shape as the eviction test above", async () => {
     const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
-    const daemon = makeDaemon();
+    const { daemon: daemonComposite, control } = makeStores();
     let runCount = 0;
     const registry = new VerbTable();
     registry.register("do-evictable-live", async (args) => {
@@ -422,7 +428,7 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
       return { ran: runCount, echo: args["x"] };
     });
 
-    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon, registry });
+    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon: daemonComposite, control, registry });
     dispatcher.start();
 
     dispatcher.placeVerb({
@@ -442,7 +448,7 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
     await settle();
 
     expect(runCount).toBe(1); // dedup shortcut, not a refusal and not a fresh run
-    const second = await outcomeOf(daemon, "req-live-2");
+    const second = await outcomeOf(control, "req-live-2");
     expect(second?.fields.status).toBe("done");
     expect(second?.fields["effect-of"]).toBe("req-live-1");
     expect(second?.fields.refusal).toBeUndefined();
@@ -452,7 +458,7 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
 
   test("CONTROL — a fresh requestId with a fresh effectKey runs normally (no prior effect to find)", async () => {
     const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
-    const daemon = makeDaemon();
+    const { daemon: daemonComposite, control } = makeStores();
     let runCount = 0;
     const registry = new VerbTable();
     registry.register("do-fresh", async () => {
@@ -460,7 +466,7 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
       return { ran: runCount };
     });
 
-    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon, registry });
+    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon: daemonComposite, control, registry });
     dispatcher.start();
 
     dispatcher.placeVerb({
@@ -470,10 +476,10 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
     await settle();
 
     expect(runCount).toBe(1);
-    const outcome = await outcomeOf(daemon, "req-fresh-1");
+    const outcome = await outcomeOf(control, "req-fresh-1");
     expect(outcome?.fields.status).toBe("done");
     expect(outcome?.fields["effect-of"]).toBeUndefined();
-    const fact = await daemon.getLive(EFFECT_URI_PREFIX + "eff-fresh");
+    const fact = await control.getLive(EFFECT_URI_PREFIX + "eff-fresh");
     expect(fact?.tiddler["request-id"]).toBe("req-fresh-1");
 
     dispatcher.stop();
