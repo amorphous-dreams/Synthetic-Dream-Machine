@@ -18,7 +18,7 @@
  */
 import { describe, expect, test } from "vitest";
 import type { DocumentId } from "@automerge/automerge-repo";
-import { DeterministicFederationGate, crossroadsDocUrl, type FederationGate } from "@lararium/mesh";
+import { DeterministicFederationGate, crossroadsDocUrl, makeVesselOnlyDocs, type FederationGate } from "@lararium/mesh";
 import { interpretAsDocumentId } from "@automerge/automerge-repo";
 import { browserShareConfig } from "../src/open-browser-vessel.js";
 
@@ -27,6 +27,14 @@ const PRIVATE_DOC = "4NMNnkMhL8jXrkWJZWFqQnhkWkpq" as DocumentId;   // a random-
 const CROSSROADS  = interpretAsDocumentId(crossroadsDocUrl(NEXUS)) as DocumentId;
 
 describe("browserShareConfig", () => {
+  test("vessel-only documents reach only in-tab workers", async () => {
+    const docs = makeVesselOnlyDocs();
+    docs.add(PRIVATE_DOC);
+    const cfg = browserShareConfig(new Set(["relay"]), () => null, { isSibling: (id) => id === "sibling", gate: () => ({ mayFederate: () => true }) }, docs, new Set(["worker"]));
+    expect(await cfg.access("relay" as never, PRIVATE_DOC)).toBe(false);
+    expect(await cfg.access("sibling" as never, PRIVATE_DOC)).toBe(false);
+    expect(await cfg.access("worker" as never, PRIVATE_DOC)).toBe(true);
+  });
   test("a peer the decision refuses is refused on access too", async () => {
     const cfg = browserShareConfig(new Set(["relay"]), () => null);
     // No federation gate and no ring: a relay peer draws the decision's floor on BOTH hooks, identically.
@@ -54,7 +62,7 @@ describe("browserShareConfig", () => {
 
   test("the ring composed onto the gate is the verdict — no second ring socket stands beside it", async () => {
     // The config reads the relay set, the gate and the siblings, nothing else.
-    expect(browserShareConfig.length).toBe(3);
+    expect(browserShareConfig.length).toBe(5);
     const base = new DeterministicFederationGate(NEXUS);
     let fedGate: FederationGate | null = base;
     const cfg = browserShareConfig(new Set(["relay"]), () => fedGate);

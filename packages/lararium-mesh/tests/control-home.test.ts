@@ -6,10 +6,25 @@ import { describe, expect, test } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import {
   CONTROL_HOME_ID, DAEMON_BAG_ID, MAILBOX_URI_PREFIX, OUTCOME_URI_PREFIX, RECEIPT_FACT_URI_PREFIX, SUMMONS_URI_PREFIX, WARD_AUDIT_URI_PREFIX, EFFECT_URI_PREFIX,
-  controlHomeUrlOf, controlStoreOf, emptyLarDoc, expandRecipe, leaseEpochPrefix, standControlHome, wornFaceWikiBags, type LarDoc,
+  controlHomeUrlOf, controlStoreOf, emptyLarDoc, expandRecipe, leaseEpochPrefix, standControlHome, wornFaceWikiBags, vesselOnlyDocIds, makeVesselOnlyDocs, storedLarRecord, type LarDoc,
 } from "../src/index.js";
 
 describe("the vessel's control document", () => {
+  test("vessel-only names include control and daemon bindings alone, and refresh preserves additions", () => {
+    const doc = emptyLarDoc();
+    for (const [title, text] of [[`${CONTROL_HOME_ID}/daemon-slot/draft/g`, "automerge:slot"], [`${CONTROL_HOME_ID}/daemon-canon/face`, "automerge:canon"], ["user/wiki", "automerge:user"]]) {
+      doc.tiddlers[title] = storedLarRecord(title, { text }, "test");
+    }
+    expect(vesselOnlyDocIds(doc, "automerge:control")).toEqual(new Set(["control", "slot", "canon"]));
+    const live = makeVesselOnlyDocs();
+    live.add("secret");
+    live.refresh(doc, "automerge:control");
+    expect(live.has("secret")).toBe(true);
+    expect(live.has("slot")).toBe(true);
+    expect(live.has("user")).toBe(false);
+    live.refresh(emptyLarDoc(), "automerge:control");
+    expect(live.has("slot")).toBe(false);
+  });
   test("RED: the first stand mints one control document and names it in the daemon document; CONTROL: a second stand returns that same document", async () => {
     const repo = new Repo({});
     const daemon = repo.create<LarDoc>(emptyLarDoc());

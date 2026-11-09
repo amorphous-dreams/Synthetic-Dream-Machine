@@ -124,6 +124,8 @@ import { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
 import type { SessionSignDoor } from "@lararium/mesh";
 import type { SparseFormVector, AntigenRing, FederationGate, FederationPosture, NexusMembership, PeerClass, PersonaGroupIdentityRing } from "@lararium/mesh";
 import { selfSlotShareDecision } from "./self-slot-share.js";
+import { vesselOnlyShareVerdict } from "./vessel-only-share.js";
+import { makeVesselOnlyDocs } from "@lararium/mesh";
 import { classDeviceLedgers, readBootTiddlers, vesselPrivateBook, vesselPrivateRelationOpens } from "./vessel-private.js";
 import { makeAntigenRingHolder } from "./antigen-ring.js";
 import { makePersonaKelRingHolder, carryPersonaKelUpTheGradient } from "./persona-kel-ring.js";
@@ -1299,6 +1301,7 @@ async function prepareNodeBootOn(
   // its own islands (`islandPeersOf`). Read through this cell, which the Repo's own set fills once the Repo stands; until
   // then no peer reads as the house's own.
   let houseIslands: { has(peerId: string): boolean } = new Set<string>();
+  const vesselOnly = makeVesselOnlyDocs();
   const repo = new Repo({
     storage: sealedRest.store,
     // THE PROTOTYPE-KEY SHORE: a sync message carrying a `__proto__` key never reaches the Repo.
@@ -1324,6 +1327,8 @@ async function prepareNodeBootOn(
       // single byte is decided (measured: a stranger at the floor read a private plane).
       await new Promise<void>((settle) => queueMicrotask(settle));
       const wsSocket = (network.sockets as Record<string, unknown> | undefined)?.[peerId];
+      const vesselVerdict = vesselOnlyShareVerdict(vesselOnly, houseIslands, peerId, documentId, !!wsSocket, Boolean(siblings?.provenKeyOf(peerId as PeerId)));
+      if (vesselVerdict !== undefined) return vesselVerdict;
       // OUTER peer-admission gate (unchanged): a WS peer whose session no face gate opened is not in
       // `peerIdentifierMap` → deny; an in-process island peer (no WS socket) is a house member → admit.
       if (wsSocket && !peerIdentifierMap.has(peerId)) return false;
@@ -2352,6 +2357,9 @@ async function prepareNodeBootOn(
   const readControlDoc = async (): Promise<DocHandle<LarDoc>> => {
     const handle = await standControlHome(repo, await readDaemonDoc());
     if (controlDocId !== handle.documentId) {
+      const refresh = () => vesselOnly.refresh(handle.doc(), handle.url);
+      refresh();
+      handle.on("change", refresh);
       controlDocId = handle.documentId;
       sealedRest.store.mapMoved();
       sealNowMapped(handle.documentId);
@@ -3184,7 +3192,7 @@ async function prepareNodeBootOn(
     // THE DAEMON WIKI'S CANON FOLLOWS THE WORN FACE (`daemonFaceCanonBag`): `bags/daemon-<F>`, the document the face's own
     // catalog names, minted at the face's first worn stand. A face that stands unproven, or the floor, reads no daemon canon.
     const wornRelation = wornFaceProved && wornFaceProjection && personaGroupId ? (await import("@lararium/mesh")).faceRelationOf(wornFaceProjection) : null;
-    const daemonCanon = wornRelation ? await standFaceDaemonCanon({ repo, control: await standControlHome(repo, await readDaemonDoc()), faceRelation: wornRelation }) : null;
+    const daemonCanon = wornRelation ? await standFaceDaemonCanon({ repo, control: await readControlDoc(), faceRelation: wornRelation }) : null;
     // R1: the bags the sealed rest seals, the worn face's own wiki bags, the daemon wiki's slots and canon (U1's D half), only
     // while that face stands lit and proved; the face's hive registers each (`wornFaceWikiBags`).
     const faceWikiBags = wornFaceWikiBags({ slot, lit: faceLit && !!personaGroupId && wornFaceProved, ...(daemonCanon ? { daemonCanon: daemonCanon.bagId } : {}) });

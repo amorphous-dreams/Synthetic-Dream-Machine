@@ -21,6 +21,27 @@ import { storedLarRecord } from "./stored-record.js";
 import { CompositeStore } from "./composite-store.js";
 import { AutomergeDocStore } from "./automerge-doc-store.js";
 
+export function vesselOnlyDocIds(controlDoc: LarDoc | null | undefined, controlUrl: string | null): Set<string> {
+  const ids = new Set<string>();
+  const addUrl = (url: string | null) => { if (url?.startsWith("automerge:") && url.length > 10) ids.add(url.slice(10)); };
+  addUrl(controlUrl);
+  for (const [title, record] of Object.entries(controlDoc?.tiddlers ?? {})) {
+    if (title.startsWith(`${CONTROL_HOME_ID}/daemon-slot/`) || title.startsWith(`${CONTROL_HOME_ID}/daemon-canon/`)) addUrl(tiddlerText(record));
+  }
+  return ids;
+}
+
+export function makeVesselOnlyDocs() {
+  let named = new Set<string>();
+  const added = new Set<string>();
+  return {
+    has: (documentId: string) => named.has(documentId) || added.has(documentId),
+    refresh: (controlDoc: LarDoc | null | undefined, controlUrl: string | null) => { named = vesselOnlyDocIds(controlDoc, controlUrl); },
+    // The secret document joins through add when item A lands.
+    add: (documentId: string) => { added.add(documentId); },
+  };
+}
+
 /** The control document's url, as the daemon document names it; null where it names none. */
 export function controlHomeUrlOf(daemonDoc: LarDoc | null | undefined): string | null {
   const url = tiddlerText(ownEntry(daemonDoc?.tiddlers, CONTROL_HOME_ID));
