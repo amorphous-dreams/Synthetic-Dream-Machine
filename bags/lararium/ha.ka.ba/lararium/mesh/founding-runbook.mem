@@ -58,10 +58,10 @@ Set `LARES_HOUSE` to the first operator's house root (an absolute path; its `hea
 export LARES_HOUSE="$HOME/lares-house"
 export LARES_WORKSPACE="$PWD"
 mkdir -p "$LARES_HOUSE"
-GIT_REV=$(git rev-parse HEAD) docker compose -f docker-compose.surface.yml build lares
+tools/lares-container.sh build
 ```
 
-Run these from the root of the household checkout; the house path shown stands as an example, and any local directory outside the checkout serves. The shim makes the house's five bound classes before a container stands. Under PowerShell, assign `$env:LARES_HOUSE` and `$env:LARES_WORKSPACE` before calling the `.ps1` shim.
+Run these from the root of the household checkout; the house path shown stands as an example, and any local directory outside the checkout serves. `build` runs `docker compose build lares` through the env file (a bare `docker compose build` reads no `lares-surface.env` and refuses on `LARES_HOUSE`) and bakes the checkout's HEAD into the image's revision label; a checkout holding uncommitted tracked changes refuses, so commit first. The shim makes the house's five bound classes before a container stands. Under PowerShell, assign `$env:LARES_HOUSE` and `$env:LARES_WORKSPACE` before calling the `.ps1` shim.
 
 Use `tools/lares-container.sh` on Unix-like hosts or `tools/lares-container.ps1` on Windows. The shims read the same environment or `lares-surface.env` and route CLI work through the image.
 
@@ -77,7 +77,7 @@ Use `tools/lares-container.sh` on Unix-like hosts or `tools/lares-container.ps1`
 
 Three acts stand between a landed head and the first `found --hearth`. Each one closes a failure the walks measured, and each one waits for the one before it.
 
-# ''Rebuild the image LAST, at the landed head.'' Land every branch the rite needs, then check out that head, and only then run `GIT_REV=$(git rev-parse HEAD) docker compose -f docker-compose.surface.yml build lares` (under PowerShell: `$env:GIT_REV = git rev-parse HEAD`, then the same `docker compose` line); the compose file passes `GIT_REV` into the image's revision label, and a build without it leaves the label `unknown`. An image built before the last landing runs older code than the checkout holds, and nothing else tells the operator. The image carries `org.opencontainers.image.revision`; `tools/lares-container.sh up` compares that label to `git rev-parse HEAD` and warns, naming both, when they differ. A warning means the rebuild stays owed: rebuild with the command the warning prints, then `up` again. A dirty checkout labels `<sha>-dirty` and warns too, so commit first.
+# ''Rebuild the image LAST, at the landed head.'' Land every branch the rite needs, then check out that head, and only then run `tools/lares-container.sh build` (under PowerShell: `tools/lares-container.ps1 build`); the shim reads the env file, passes the checkout's HEAD as `GIT_REV` into the image's revision label, and refuses a dirty checkout by name, so the label always names a real commit. An image built before the last landing runs older code than the checkout holds, and nothing else tells the operator. The image carries `org.opencontainers.image.revision`; `tools/lares-container.sh up` compares that label to `git rev-parse HEAD` and warns, naming both, when they differ. A warning means the rebuild stays owed: rebuild with `tools/lares-container.sh build`, the command the warning prints, then `up` again. A dirty checkout warns too and `build` refuses it, so commit first.
 # ''Move old homes aside by RENAME alone.'' Stop the vessel first (`tools/lares-container.sh down`). `down` asks the standing vessel's census first (`lares vessel census`: saves its sealed rest holds in memory, carriers its disk projector has not settled); a clean census stops at once, and any item, or a census that cannot answer (a wedged vessel, an image older than the census door), lists what it learned and stops only after `vault unlock` lets it settle or after `accept-loss` typed on the terminal. A house root or workspace mirror from an earlier walk then gets a new name (`mv ~/lares-house ~/lares-house.before-rite`), never a delete, never an overwrite. The rename keeps the old bytes readable for a repair or a comparison, and the fresh `LARES_HOUSE` starts empty so the founding reads no leftover. Nothing in this runbook removes a home; `tools/lares-container.sh reset` clears `$LARES_HOUSE/hearth` alone, after a typed `re-found`, and leaves the sensoriums, projections, library and config standing.
 # ''Check the projection before trusting the layout.'' The canon source (`bags/` under the checkout) sources no `daemon` slug, and the face's working top projects under `$LARES_HOUSE/projections/wikis/daemon-<F>`, never under `wikis/daemon/`. After the first `persona new 0`, look for `$LARES_HOUSE/projections/wikis/daemon-<F>` and for `$LARES_HOUSE/projections/bags/kahua-<F>`; `$LARES_HOUSE/projections/bags/daemon` holds the daemon wiki's authored canon alone; a control or house record there (a `bags/daemon/**`, `bags/persona/**` or `dreamnet/**` path) means the control plane projected, and the rite stops there (its one disk form reads one way under `projections/observe/daemon/`). The bag-paths suite pins both placements (`projectionRoots` over this checkout's real `bags/`, and `daemonWorkingMirror`), so a mismatch on a live disk names a stale image first.
 
@@ -384,6 +384,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;892gukNWKOUDnxSwvInMnE3Mi2aCqP2NBOa1DVPZ_wY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;guBS1ARYmxLmReYdninzYyFnIWnpc3eAIhrZ2bfoSVM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

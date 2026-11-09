@@ -24,7 +24,7 @@ const havePwsh = spawnSync("pwsh", ["-NoProfile", "-Command", "1"]).status === 0
  * and a scratch house root, so no test reads a real `~/.lares`. `envAt: "clone"` plants the file beside the compose
  * file instead, where the shim must not look. `@HOUSE@` in an env value or an env file names the run's scratch house.
  */
-async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty } = {}) {
+async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, checkout } = {}) {
   const dir = await mkdtemp(join(tmpdir(), "lares-container-"));
   try {
     const log = join(dir, "calls.log");
@@ -36,6 +36,7 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty } = {}
       `case " $* " in *" vault status --json "*) printf '%s\\n' "\${FAKE_CUSTODY_OUTPUT:-}"; exit 0;; esac\n` +
       `case " $* " in *" ps -q lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}"; exit 0;; esac\n` +
       `case " $* " in *"inspect --format"*) printf '%s\\n' "\${FAKE_IMAGE_REV:-}"; exit 0;; esac\n` +
+      `case " $* " in *" build "*) printf 'GIT_REV=%s\\n' "\${GIT_REV:-}" >> "$CALL_LOG"; exit 0;; esac\n` +
       `case " $* " in *" exec "*) exit "\${FAKE_EXEC_RC:-0}";; esac\n`);
     await chmod(join(dir, "docker"), 0o755);
     const compose = join(dir, "docker-compose.surface.yml");
@@ -45,10 +46,26 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty } = {}
     const home = env.HOME ? fill(env.HOME) : join(dir, "home");
     await mkdir(join(home, ".lares"), { recursive: true });
     if (envFile) await writeFile(join(envAt === "clone" ? dir : join(home, ".lares"), "lares-surface.env"), fill(envFile));
-    const cmd = shim === SH ? ["sh", [SH, ...argv]] : ["pwsh", ["-NoProfile", "-File", PS1, ...argv]];
+    // `checkout` copies the shim into a scratch repo: "clean" (committed), "dirty" (a tracked change uncommitted) or
+    // "none" (no git above it), so the revision the shim reads comes from that repo, never from this checkout.
+    let script = shim;
+    const gitEnv = {};
+    if (checkout) {
+      const repo = join(dir, "repo");
+      await mkdir(join(repo, "tools"), { recursive: true });
+      script = join(repo, "tools", shim === SH ? "lares-container.sh" : "lares-container.ps1");
+      await writeFile(script, await readFile(shim, "utf8"));
+      gitEnv.GIT_CEILING_DIRECTORIES = dir;
+      if (checkout !== "none") {
+        const git = (...a) => spawnSync("git", ["-C", repo, "-c", "user.name=t", "-c", "user.email=t@t", ...a], { encoding: "utf8" });
+        git("init", "-q"); git("add", "."); git("commit", "-qm", "seed");
+        if (checkout === "dirty") await writeFile(script, (await readFile(script, "utf8")) + "\n# edited\n");
+      }
+    }
+    const cmd = shim === SH ? ["sh", [script, ...argv]] : ["pwsh", ["-NoProfile", "-File", script, ...argv]];
     // A standing vessel answers a steady verdict unless a test scripts another answer.
     const steady = '{"data":{"standing":{"act":"attach","reason":"steady"}}}';
-    const base = { PATH: `${dir}:${process.env.PATH}`, CALL_LOG: log, HOME: home, LARES_COMPOSE_FILE: compose, FAKE_OBSERVE_OUTPUT: steady };
+    const base = { PATH: `${dir}:${process.env.PATH}`, CALL_LOG: log, HOME: home, LARES_COMPOSE_FILE: compose, FAKE_OBSERVE_OUTPUT: steady, ...gitEnv };
     const filled = Object.fromEntries(Object.entries(env).map(([k, v]) => [k, fill(v)]));
     // `tty` names the bytes typed on a pseudo-terminal (`script`), which then carries stdout and stderr as one stream.
     const r = tty === undefined
@@ -237,11 +254,11 @@ for (const [name, shim] of shims) {
     assert.match(r.stderr, /image names revision 0123456789abcdef0123456789abcdef01234567 and the checkout /);
     if (!head.endsWith("-dirty")) {
       assert.ok(r.stderr.includes(head), "the warning names the checkout's head");
-      assert.match(r.stderr, name === "sh" ? /GIT_REV=\S+ docker compose -f "\S+" build lares/ : /\$env:GIT_REV='\S+'; docker compose -f "\S+" build lares/, "the hint names the build that bakes the label, in the shim's own shell form");
+      assert.ok(r.stderr.includes(`rebuild with \`tools/lares-container.${name} build\``), "the hint names the shim's build verb, never a bare compose build");
     } else {
       assert.match(r.stderr, /commit first/);
-      assert.doesNotMatch(r.stderr, /-dirty build|GIT_REV='\S*-dirty/, "a dirty tree prints no -dirty build line");
     }
+    assert.doesNotMatch(r.stderr, /docker compose -f \S+ build|GIT_REV=/, "no hint names a bare compose build that skips the env file");
     assert.doesNotMatch(r.stderr, /rebuild the image \(`docker compose build`\)/);
   });
 
@@ -521,6 +538,35 @@ for (const [name, shim] of shims) {
     }
     const offline = await run(shim, ["vessel", "read"], { env: MOUNTS });
     assert.deepEqual(offline.made, { hearth: true, sensoriums: true, projections: true, library: true, config: true });
+  });
+
+  // THE IMAGE BUILDS THROUGH THE SHIM: a bare `docker compose build` reads no env file and fails on LARES_HOUSE.
+  test(`${name}: build runs compose build through the env file, baking the checkout's HEAD`, async () => {
+    const r = await run(shim, ["build", "--no-cache"], { envFile: "LARES_HOUSE=@HOUSE@\nLARES_WORKSPACE=/w\n", checkout: "clean" });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.calls, /compose --env-file \S*\/home\/\.lares\/lares-surface\.env -f \S+ build --no-cache lares/);
+    assert.match(r.calls, /^GIT_REV=[0-9a-f]{40}$/m, r.calls);
+    assert.match(r.stderr, /building the vessel image at revision [0-9a-f]{40}/);
+  });
+
+  test(`${name}: build over a dirty checkout refuses by name, before docker builds`, async () => {
+    const r = await run(shim, ["build"], { env: MOUNTS, checkout: "dirty" });
+    assert.equal(r.status, 2, r.stderr);
+    assert.match(r.stderr, /build refuses: the checkout holds uncommitted tracked changes[\s\S]*commit first/);
+    assert.doesNotMatch(r.calls, / build /);
+  });
+
+  test(`${name}: build with no checkout refuses by name, before docker builds`, async () => {
+    const r = await run(shim, ["build"], { env: MOUNTS, checkout: "none" });
+    assert.equal(r.status, 2, r.stderr);
+    assert.match(r.stderr, /build refuses: no git checkout answers/);
+    assert.doesNotMatch(r.calls, / build /);
+  });
+
+  test(`${name}: the usage line names build`, async () => {
+    const r = await run(shim, [], { env: MOUNTS });
+    assert.equal(r.status, 2);
+    assert.match(r.stderr, /usage: lares-container\.(sh|ps1) [^\n]*\|build\|/);
   });
 
   test(`${name}: no argv carries the docker socket`, async () => {

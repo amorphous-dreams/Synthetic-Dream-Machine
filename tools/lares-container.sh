@@ -10,6 +10,8 @@
 #                                                and/or a paper pin, and `--hearth` prints the seed card and reads it
 #                                                back; with no TTY the CLI refuses CredentialTtyRefusal)
 #   lares-container.sh logs [compose-logs args]  follow the vessel's log
+#   lares-container.sh build [compose-build args] build the vessel image through the env file, baking the checkout's
+#                                                HEAD into its revision label; a dirty checkout, or none, refuses
 #   lares-container.sh vessel stand              stand the vessel when none stands; restart it when its standing no
 #                                                longer matches its state on disk; otherwise print the standing
 #   lares-container.sh vessel stop               stop the vessel's container (state stays; `up` stands it again)
@@ -166,9 +168,9 @@ warn_image_revision() {
   label=$(docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' "$cid" 2>/dev/null | LC_ALL=C sed -e 's/[[:cntrl:]]//g' -e 's/\xc2[\x80-\x9f]//g') || return 0
   [ "$label" != "$GIT_REV" ] || return 0
   if [ -n "$GIT_DIRTY" ]; then
-    printf 'lares-container: the image names revision %s and the checkout holds uncommitted changes; commit first, then rebuild with `GIT_REV=$(git rev-parse HEAD) docker compose -f "%s" build lares` and `up` again\n' "${label:-none}" "$COMPOSE_FILE_PATH" >&2
+    printf 'lares-container: the image names revision %s and the checkout holds uncommitted changes; commit first, then rebuild with `tools/lares-container.sh build` and `up` again\n' "${label:-none}" >&2
   else
-    printf 'lares-container: the image names revision %s and the checkout stands at %s; rebuild with `GIT_REV=%s docker compose -f "%s" build lares`, then `up` again\n' "${label:-none}" "$GIT_REV" "$GIT_REV" "$COMPOSE_FILE_PATH" >&2
+    printf 'lares-container: the image names revision %s and the checkout stands at %s; rebuild with `tools/lares-container.sh build`, then `up` again\n' "${label:-none}" "$GIT_REV" >&2
   fi
 }
 
@@ -274,7 +276,7 @@ HAVE_TTY=""
 if [ -t 0 ] && [ -t 1 ]; then HAVE_TTY=yes; fi
 tty_flag() { if [ -z "$HAVE_TTY" ]; then printf -- '-T'; fi; }
 
-[ "$#" -gt 0 ] || die "usage: lares-container.sh up|down|reset|found|logs|vessel stand|<lares verb…>"
+[ "$#" -gt 0 ] || die "usage: lares-container.sh up|down|reset|found|logs|build|vessel stand|<lares verb…>"
 verb=$1; shift
 
 case "$verb" in
@@ -366,6 +368,14 @@ case "$verb" in
     [ -z "$failed" ] || exit 1
     printf '%s\n' 'lares-container: hearth cleared; sensoriums, projections, library and config stand; the hearth can be founded again.' ;;
   logs)  compose logs "$@" lares ;;
+  build)
+    # THE IMAGE BUILDS THROUGH THE SHIM: compose reads the env file (LARES_HOUSE, LARES_WORKSPACE interpolate), and the
+    # revision label names the commit the checkout stands at. A label must name a real commit, so a dirty checkout
+    # refuses (commit first), and so does a shim outside any checkout (the label would read empty).
+    [ -n "$GIT_REV" ] || die "build refuses: no git checkout answers at $SHIM_DIR, so the image's revision label would name no commit; build from a checkout"
+    [ -z "$GIT_DIRTY" ] || die "build refuses: the checkout holds uncommitted tracked changes, so the image's revision label ($GIT_REV) would name no real commit; commit first, then run build again"
+    printf 'lares-container: building the vessel image at revision %s\n' "$GIT_REV" >&2
+    compose build "$@" lares ;;
   found)
     ensure_house
     # shellcheck disable=SC2046
