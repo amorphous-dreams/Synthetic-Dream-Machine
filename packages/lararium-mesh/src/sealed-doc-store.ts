@@ -285,6 +285,17 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     let sealed = 0;
     for (const [name, { key, data }] of [...this.#waiting]) {
       const bag = this.#bagOf(key);
+      // A HELD HOME WHOSE KEY NOW STANDS (the vessel's custody opened): its waiting saves seal under the held key, no session.
+      if (bag !== null && isHeld(bag)) {
+        const role = ROLES[key[1] ?? ""];
+        if (role === undefined) { this.#waiting.delete(name); continue; }
+        const out = sealHeld({ bagId: bag.bagId, held: bag.held, role, ref: logicalRefOf(key), plaintext: data });
+        if (!("chunk" in out)) continue;
+        await this.#ports.inner.save(key, out.chunk.sealed);
+        this.#waiting.delete(name);
+        sealed++;
+        continue;
+      }
       const session = this.#ports.sessionOf(key[0]!, data);
       if (bag === null || isKeyed(bag) || session === null || !this.#wears(bag.face, session.subject)) continue;
       try { await this.#inTurn(() => this.#seal(bag, key, data, session)); }

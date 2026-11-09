@@ -7,13 +7,14 @@
  * document that no recipe mounts and no mirror names: they never stand in a layer a projector reads.
  *
  * THE VESSEL HOLDS THE HANDLE BESIDE ITS DAEMON DOCUMENT. The daemon document names the control document's url under the
- * control home's own bag coordinate (`CONTROL_HOME_ID`), the same pointer shape the daemon document keeps for itself. A
- * vessel whose daemon document names none mints the control document at its first stand and names it there, so the one
- * document outlives every restart and every face.
+ * control home's own bag coordinate (`CONTROL_HOME_ID`), the same pointer shape the daemon document keeps for itself. The
+ * founding mints it beside the vessel's secret home and names it there, so the one document outlives every restart and face.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/control-home
  */
-import type { AutomergeUrl, DocHandle, Repo } from "@automerge/automerge-repo";
+import * as A from "@automerge/automerge";
+import { parseAutomergeUrl, type AutomergeUrl, type DocHandle, type DocumentId, type Repo } from "@automerge/automerge-repo";
+import { heldHomeSeed, secretHomeRestOf } from "./secret-home.js";
 import { CONTROL_HOME_ID } from "./lar-uris.js";
 import { emptyLarDoc, tiddlerText, type LarDoc } from "./base-doc.js";
 import { ownEntry } from "./stored-value.js";
@@ -48,25 +49,61 @@ export function controlHomeUrlOf(daemonDoc: LarDoc | null | undefined): string |
   return url && url.startsWith("automerge:") ? url : null;
 }
 
+export class ControlHomeUnavailable extends Error {
+  override readonly name = "ControlHomeUnavailable";
+  constructor(why: string) { super(`control-home-unavailable: ${why}`); }
+}
+
+/** Name the control document in the daemon document (the founding does, beside the secret home's custody row). The first
+ *  name the daemon document took holds. */
+export function nameControlHome(daemonHandle: DocHandle<LarDoc>, controlUrl: string): string {
+  let landed = controlUrl;
+  daemonHandle.change((doc) => {
+    const prior = controlHomeUrlOf(doc);
+    if (prior) { landed = prior; return; }
+    doc.tiddlers[CONTROL_HOME_ID] = storedLarRecord(CONTROL_HOME_ID, { text: controlUrl }, "lararium-control");
+  });
+  return landed;
+}
+
 /**
- * Stand the vessel's control document: the one the daemon document names, else a fresh one, minted here and named in the
- * daemon document in the same breath. The daemon document must already read (the caller resolved it).
+ * Stand the vessel's control document, the one the daemon document names (operator ruling A6, 2026-11-09).
+ *
+ * MINTED AT FOUNDING, SEALED UNDER THE VESSEL'S KEY. The founding mints the control document beside the secret home: it
+ * maps on the store holder's rest under the vessel's held key (bound to its own bag) before its first byte, its id rests in
+ * the same custody row, and the daemon document names it. A stand here maps it again before the Repo reads a byte.
+ *
+ * HELD IN MEMORY WHILE THE KEY STAYS SHUT. A vessel that stands with its custody locked (the waking floor) maps the
+ * document sealed with no key: the stand hands back a handle over the founding's own seed, every write lands there and
+ * waits in memory, never clear, and once the key opens the document's rest merges in and the waiting saves seal.
+ *
+ * A Repo that rests bytes with no sealed rest bound mints nothing here (`control-home-unavailable`). A storage-less Repo (a
+ * suite's) mints one in memory, where nothing rests at all.
  */
 export async function standControlHome(repo: Repo, daemonHandle: DocHandle<LarDoc>): Promise<DocHandle<LarDoc>> {
   const named = controlHomeUrlOf(daemonHandle.doc());
-  if (named) return repo.find<LarDoc>(named as AutomergeUrl);
+  const rest = secretHomeRestOf(repo);
+  if (named) {
+    if (rest === null) return repo.find<LarDoc>(named as AutomergeUrl);
+    const documentId = parseAutomergeUrl(named as AutomergeUrl).documentId;
+    if (rest.enrollBeside(documentId, CONTROL_HOME_ID)) return repo.find<LarDoc>(named as AutomergeUrl);
+    const held = repo.handles[documentId] as DocHandle<LarDoc> | undefined;
+    if (held) return held;
+    const handle = repo.import<LarDoc>(heldHomeSeed(documentId), { docId: documentId as DocumentId });
+    rest.whenKeyed(() => {
+      void (async () => {
+        const rested = await repo.storageSubsystem?.loadDoc<LarDoc>(documentId as DocumentId);
+        if (rested) handle.update((d) => A.merge(d, rested));
+      })().catch(() => { /* the rest's next open merges it */ });
+    });
+    return handle;
+  }
+  if (rest !== null || (repo as unknown as { storageSubsystem?: unknown }).storageSubsystem !== undefined) {
+    throw new ControlHomeUnavailable("the daemon document names no control document; the founding mints it beside the secret home");
+  }
   const handle = repo.create<LarDoc>(emptyLarDoc());
-  handle.change((doc) => {
-    doc.tiddlers[CONTROL_HOME_ID] = storedLarRecord(CONTROL_HOME_ID, { text: handle.url }, "lararium-control");
-  });
-  let landed = handle.url as string;
-  daemonHandle.change((doc) => {
-    const prior = controlHomeUrlOf(doc);
-    // Two stands that raced: the first name the daemon document took holds, and this mint stands unused.
-    if (prior) { landed = prior; return; }
-    doc.tiddlers[CONTROL_HOME_ID] = storedLarRecord(CONTROL_HOME_ID, { text: handle.url }, "lararium-control");
-  });
-  return landed === handle.url ? handle : repo.find<LarDoc>(landed as AutomergeUrl);
+  nameControlHome(daemonHandle, handle.url);
+  return handle;
 }
 
 /**

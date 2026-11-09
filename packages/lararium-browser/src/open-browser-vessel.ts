@@ -24,7 +24,7 @@ import type { PortIslandToVesselMsg, VesselRestState } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import { Repo }                              from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter }           from "@automerge/automerge-repo-storage-indexeddb";
-import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, sealedBagMap, vesselDocStoreDoor, bindSecretHomeRest, vesselHeldHomes, SecretHomeUnavailable, type SecretHome, type SealedBag } from "@lararium/mesh";
+import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, sealedBagMap, vesselDocStoreDoor, bindSecretHomeRest, vesselHeldHomes, enrollBesideSecretHome, nameControlHome, daemonFaceCanonBag, wikiSlotUri, SecretHomeUnavailable, type SecretHome, type SealedBag } from "@lararium/mesh";
 import { openBrowserSecretHome, standBrowserSecretHome } from "./browser-secret-home.js";
 import { faceProofSubjectRef } from "@lararium/mesh/face-proof-subjects";
 import * as A from "@automerge/automerge";
@@ -683,6 +683,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     return handle?.isReady() ? A.save(handle.doc() as A.Doc<unknown>) : null;
   }, {
     onSlot: (bagId, documentId) => {
+      // A daemon device slot named before its first byte seals under the vessel's key (`classDeviceDaemonDoc`).
+      if (bagId.startsWith(wikiSlotUri("daemon", "working").replace(/working$/, ""))) { classDeviceDaemonDoc(bagId, `automerge:${documentId}`); return; }
       const named = slotDocsNamed.get(bagId) ?? new Set<string>();
       if (named.has(documentId)) return;
       named.add(documentId);
@@ -730,14 +732,31 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     }, { has: (id) => vesselOnly.has(id) || secretHomes.has(id) }, { has: (peerId) => houseIslands.has(peerId) }),
   });
   // THE SECRET HOME'S REST, bound to this Repo: an enrollment or an open maps the home before its first byte.
-  bindSecretHomeRest(repo, secretHomes.rest((documentId) => sealedRest.restsSealed(documentId), () => sealedRest.store.mapMoved()));
+  bindSecretHomeRest(repo, secretHomes.rest((documentId) => sealedRest.restsSealed(documentId), () => {
+    sealedRest.store.mapMoved();
+    void sealedRest.store.reseal().catch(() => { /* each keeps waiting, never clear */ });
+  }));
+  // THE DEVICE DAEMON DOCUMENTS the control document names (the daemon wiki's device slots, the face's daemon canon): on a
+  // browser leaf, whose sealed map holds no daemon wiki bag, each seals beside the control document under the vessel's key.
+  const classDeviceDaemonDoc = (bagId: string, url: string | null): void => {
+    const documentId = documentIdOfUrl(url);
+    if (documentId && !secretHomes.has(documentId)) enrollBesideSecretHome(repo, documentId, bagId);
+  };
+  const classDeviceDaemonDocs = (controlDoc: LarDoc | undefined): void => {
+    for (const [title, record] of Object.entries(controlDoc?.tiddlers ?? {})) {
+      const slot = /^lar:\/\/\/ha\.ka\.ba\/bags\/control\/daemon-slot\/([^/]+)\//.exec(title);
+      const canon = /^lar:\/\/\/ha\.ka\.ba\/bags\/control\/daemon-canon\/(.+)$/.exec(title);
+      if (slot) classDeviceDaemonDoc(wikiSlotUri("daemon", slot[1] as never), tiddlerText(record));
+      else if (canon) classDeviceDaemonDoc(daemonFaceCanonBag(decodeURIComponent(canon[1]!)), tiddlerText(record));
+    }
+  };
   houseIslands = islandPeersOf(repo);
   let watchedControl: DocHandle<LarDoc> | null = null;
   const watchControl = async (daemon: DocHandle<LarDoc>): Promise<DocHandle<LarDoc>> => {
     const handle = await standControlHome(repo, daemon);
     if (watchedControl !== handle) {
       watchedControl = handle;
-      const refresh = () => vesselOnly.refresh(handle.doc(), handle.url);
+      const refresh = () => { vesselOnly.refresh(handle.doc(), handle.url); classDeviceDaemonDocs(handle.doc()); };
       refresh();
       handle.on("change", refresh);
     }
@@ -879,6 +898,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // THE SECRET HOME STANDS BEFORE THE ADMISSION'S FIRST SECRET WRITE, on this vessel's sealed rest.
       const secret = await standBrowserSecretHome(idbName, repo);
       const place = await foundThePlace({ repo, hearthTrueName: admit.hearthTrueName });
+      // The control document minted beside the home: the daemon document names it, for a locked boot's stand.
+      if (secret.controlUrl) nameControlHome(place.daemonHandle, secret.controlUrl);
       a = await runApplyAdmitPayload({
         repo,
         daemonHandle:       place.daemonHandle,
@@ -971,6 +992,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         // pop inside that ward act; a founding that runs again signs the pop inside a fresh ward act under the same route.
         vesselTag: browserVesselFaceTagDoor(idbName, { route: async () => wardRoute }, founder),
       });
+      // The control document minted beside the home: the daemon document names it, for a locked boot's stand.
+      if (secret.controlUrl) nameControlHome(await repo.find<LarDoc>(f.daemonUrl as AutomergeUrl), secret.controlUrl);
     } finally { signerSeed.fill(0); }
     // THE CEREMONY NAMED THE GROUP: the founder's tree takes its anchor and its index entry, and every later row names the group.
     await nameFace(idbName, founder, f.personaGroupId);
@@ -1515,7 +1538,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         });
         if (!proof.ok) throw new Error(`[lararium-browser] Face proof: ${proof.refusal.why}${"plane" in proof.refusal ? ` ${proof.refusal.plane}` : ""}; re-found or re-admit the face`);
         wornRelation = faceRelationOf(proof.projection);
-        if (wornRelation) daemonCanon = await standFaceDaemonCanon({ repo, control: await watchControl(await repo.find<LarDoc>(social.daemonUrl as AutomergeUrl)), faceRelation: wornRelation });
+        if (wornRelation) daemonCanon = await standFaceDaemonCanon({ repo, control: await watchControl(await repo.find<LarDoc>(social.daemonUrl as AutomergeUrl)), faceRelation: wornRelation,
+          beforeFirstByte: (bagId, documentId) => classDeviceDaemonDoc(bagId, `automerge:${documentId}`) });
         const kahua = adoptKahuaPlane(proof.projection, wornGroup, kahuaCatalogRow(assembly.catalogHandle.doc()));
         if (kahua.staleRow) console.warn(`[lararium-browser] kahua stage: the catalog row names ${kahua.staleRow}, a stale hint (the face pins ${"mount" in kahua ? kahua.mount : "none"}); the pin decides`);
         provenKahuaUrl = adoptedKahuaUrl(kahua);

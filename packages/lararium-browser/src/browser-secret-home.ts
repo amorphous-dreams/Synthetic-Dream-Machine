@@ -11,7 +11,7 @@
  */
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  decodeSecretHomeAddress, encodeSecretHomeAddress, enrollSecretHome, mintSecretHomeAddress, openSecretHome,
+  decodeSecretHomeAddress, encodeSecretHomeAddress, enrollSecretHome, mintSecretHomeAddress, mintVesselDocumentId, openSecretHome,
   SecretHomeUnavailable, type SecretHome,
 } from "@lararium/mesh";
 import { readKeystoreRow, withCustodyRows } from "./browser-custody.js";
@@ -29,20 +29,21 @@ export async function openBrowserSecretHome(idbName: string, repo: Repo): Promis
 
 /** Stand the browser's secret home: open the one its keystore names, or enroll a fresh one and keep its address after
  *  the document rests sealed. */
-export async function standBrowserSecretHome(idbName: string, repo: Repo): Promise<SecretHome> {
+export async function standBrowserSecretHome(idbName: string, repo: Repo): Promise<SecretHome & { readonly controlUrl: string | null }> {
   const held = await readKeystoreRow(idbName, SECRET_HOME_ROW);
   if (held !== undefined) {
     const address = held instanceof Uint8Array ? decodeSecretHomeAddress(held) : null;
     if (address === null) throw new SecretHomeUnavailable("the keystore's secret-home row reads malformed");
-    return openSecretHome(repo, address);
+    return { ...await openSecretHome(repo, address), controlUrl: address.controlId ? `automerge:${address.controlId}` : null };
   }
-  const address = mintSecretHomeAddress();
+  // THE CONTROL DOCUMENT MINTS BESIDE THE HOME (operator ruling A6): one row names both, one vessel key seals both.
+  const address = { ...mintSecretHomeAddress(), controlId: mintVesselDocumentId() };
   const home = await enrollSecretHome(repo, address);
-  await repo.flush([home.handle.documentId]);
+  await repo.flush([home.handle.documentId, ...(home.control ? [home.control.documentId] : [])]);
   await withCustodyRows(idbName, async (rows) => {
     const standing = await rows.read(SECRET_HOME_ROW);
     if (standing !== undefined) throw new SecretHomeUnavailable("another secret home's address landed first");
     await rows.write(SECRET_HOME_ROW, encodeSecretHomeAddress(address));
   });
-  return home;
+  return { ...home, controlUrl: `automerge:${address.controlId}` };
 }

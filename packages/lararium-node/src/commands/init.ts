@@ -22,7 +22,7 @@ import { wardCredentialOfRoute, type WardCredential } from "../ward-credential.j
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  DAEMON_BAG_ID, personaMembershipEntries, personaScopedBagIds,
+  DAEMON_BAG_ID, personaMembershipEntries, personaScopedBagIds, nameControlHome,
   seedDaemonDoc,
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   nexusIdentity, nexusScopeOrThrow, nexusAidOf,
@@ -65,7 +65,7 @@ import {
   retireFaceCheckpoint, retireApplyCheckpoint,
 } from "@lararium/keyhive";
 import { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "../open-node-vessel.js";
-import { standVesselSecretHome } from "../secret-home-store.js";
+import { openVesselSecretHome, standVesselSecretHome } from "../secret-home-store.js";
 
 export interface InitOptions {
   readonly placeFoundingCard?: PlaceFoundingCard;
@@ -195,9 +195,8 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
       const group = readPackedTiddlers(bootstrap)[PERSONA_GROUP_ID_TIDDLER]?.text;
       const atomSeed = group ? await loadFaceAtomOfGroup(group) : null;
       if (!atomSeed) throw new Error("this face holds no atom; re-found or re-admit it");
-      const daemonUrl = readPackedTiddlers(bootstrap)[DAEMON_BAG_ID]?.text;
-      if (!daemonUrl) throw new Error("[lares fleet join land] the bootstrap names no daemon doc");
-      await retireApplyCheckpoint(await opts.repo.find<LarDoc>(daemonUrl as AutomergeUrl), atomSeed);
+      // THE CHECKPOINT RESTS IN THE SECRET HOME (operator ruling A5): it retires there.
+      await retireApplyCheckpoint((await openVesselSecretHome(opts.repo)).handle, atomSeed);
       await opts.repo.flush();
     }
     console.log(`[lares vessel found] ${bootstrap} already exists — skipping.`);
@@ -298,9 +297,7 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
     const admitSeed = await loadFaceAtomOfGroup(payload.personaGroupId);
     if (!admitSeed) throw new Error("this face holds no atom; re-found or re-admit it");
     if (stoodIndex !== undefined) {
-      const daemonUrl = readPackedTiddlers(bootstrap)[DAEMON_BAG_ID]?.text;
-      if (!daemonUrl) throw new Error("[lares fleet join land] the bootstrap names no daemon doc");
-      await retireApplyCheckpoint(await repo.find<LarDoc>(daemonUrl as AutomergeUrl), admitSeed);
+      await retireApplyCheckpoint((await openVesselSecretHome(repo)).handle, admitSeed);
       await repo.flush();
       return { skipped: true, bootstrapPath: bootstrap, storageDir, genesisDir };
     }
@@ -318,6 +315,8 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
     // THE SECRET HOME STANDS BEFORE THE ADMISSION'S FIRST SECRET WRITE: the joinee's dyad, its group-secret seal and the
     // cap events it ingests rest in this vessel's own sealed home, enrolled on the holder's rest (custody stood above).
     const secret = await standVesselSecretHome(repo);
+    // THE CONTROL DOCUMENT the founding minted beside the home: the daemon document names it, for the floor's stand.
+    if (secret.controlUrl) nameControlHome(admitDaemon, secret.controlUrl);
     const { archive, identitiesUrl, circlesUrl, sessionsUrl, intentsUrl, daemonUrl, personaUrl, deviceEdge } = await runApplyAdmitPayload({
       repo,
       atomSeed: admitSeed,
@@ -366,7 +365,7 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
         ...readPackedTiddlers(bootstrap),
         ...facePlaneTiddlers(identitiesUrl, circlesUrl, sessionsUrl, intentsUrl, personaUrl, payload.personaGroupId),
       }), null, 2), "utf8");
-      await retireApplyCheckpoint(admitDaemon, admitSeed);
+      await retireApplyCheckpoint(secret.handle, admitSeed);
       await repo.flush();
       return { skipped: false, bootstrapPath: bootstrap, storageDir, genesisDir };
     }
@@ -396,7 +395,7 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
         scope: payload.hearthIslandScope,
       }, payload.hearthGatePin, payload.islandDocUrl),
     }), null, 2), "utf8");
-    await retireApplyCheckpoint(admitDaemon, admitSeed);
+    await retireApplyCheckpoint(secret.handle, admitSeed);
     await repo.flush();
 
     console.log(`[lares fleet join land] vessel ${operatorIdentity.verifyingKey.slice(0, 16)}… admitted`);
@@ -421,8 +420,11 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
   // THE SECRET HOME ENROLLS AFTER CUSTODY AND BEFORE ANY SECRET WRITE (placement over patterns, the founding order): the
   // custody seated above seals its address row, and its document maps onto the holder's rest under its held key before
   // its first byte. The place itself writes nothing secret; the face's seals, dyads and cap events land there later.
-  await standVesselSecretHome(repo);
+  const secret = await standVesselSecretHome(repo);
   const place = await foundThePlace({ repo, hearthTrueName });
+  // THE CONTROL DOCUMENT MINTED BESIDE THE HOME (operator ruling A6): the daemon document names it, so a floor's stand
+  // finds it before the custody row opens.
+  if (secret.controlUrl) nameControlHome(place.daemonHandle, secret.controlUrl);
 
   // THE FLUSH COMES FIRST, and the catalog pointer already carries the reason: a pointer written
   // after its referent is durable can be stale; one written BEFORE can be a LIE. Automerge saves ride
@@ -574,7 +576,7 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
       await settleAddressSecret(already, opts.addressSecret);
       const daemonUrl = packed[DAEMON_BAG_ID]?.text;
       if (!daemonUrl) throw new Error("[lares persona new] the bootstrap names no daemon doc");
-      await retireFaceCheckpoint(await opts.repo.find<LarDoc>(daemonUrl as AutomergeUrl), atomSeed);
+      await retireFaceCheckpoint((await openVesselSecretHome(opts.repo)).handle, atomSeed);
       const hearthTrueName = hearthAid();
       if (hearthTrueName) await retirePendingFoundingSeed({ hearthTrueName, bindingMode: "self-stood", personaKelPrefix: null, mount: mounts, handleIndex });
       await opts.repo.flush();
@@ -589,7 +591,7 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
       await settleAddressSecret(priorAnchors.personaGroupId, opts.addressSecret);
       const daemonUrl = packed[DAEMON_BAG_ID]?.text;
       if (!daemonUrl) throw new Error("[lares persona new] the bootstrap names no daemon doc");
-      await retireFaceCheckpoint(await opts.repo.find<LarDoc>(daemonUrl as AutomergeUrl), atomSeed);
+      await retireFaceCheckpoint((await openVesselSecretHome(opts.repo)).handle, atomSeed);
       const hearthTrueName = hearthAid();
       if (hearthTrueName) await retirePendingFoundingSeed({ hearthTrueName, bindingMode: "self-stood", personaKelPrefix: null, mount: mounts, handleIndex });
       await opts.repo.flush();
@@ -644,13 +646,13 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   // The ask's first row founds the face's own custody (never the vessel's route), keyed by this ask until its group exists;
   // an interrupted founding re-enters the face it already holds.
   const askDigest = foundingAskDigest(foundingAsk);
-  const atomSeed = (await loadPendingFoundingSeed(foundingAsk))
-    ?? await recoverFoundingSeedFromGroup(foundingAsk, daemonHandle.doc()?.tiddlers ?? {})
-    ?? await standPendingFoundingSeed(foundingAsk);
-
   // THE SECRET HOME STANDS BEFORE THE FACE'S FIRST SEAL, DYAD OR CAP EVENT: the one the place enrolled opens on this
-  // holder's rest (the direct holder's, or the standing vessel's), mapped sealed before the Repo reads a byte of it.
+  // holder's rest (the direct holder's, or the standing vessel's), mapped sealed before the Repo reads a byte of it. Its
+  // founding checkpoint rests there (A5), so an interrupted founding recovers its seed from the home.
   const secret = await standVesselSecretHome(repo);
+  const atomSeed = (await loadPendingFoundingSeed(foundingAsk))
+    ?? await recoverFoundingSeedFromGroup(foundingAsk, secret.handle.doc()?.tiddlers ?? {})
+    ?? await standPendingFoundingSeed(foundingAsk);
   const face = await foundTheFace({
     repo,
     daemonHandle,
@@ -731,7 +733,7 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   };
   await persistIdentityAnchors(founderAnchors, handleIndex);
   writeFileSync(bootstrap, JSON.stringify(bootstrapPlugin({ ...packed, ...faceEntry }), null, 2), "utf8");
-  await retireFaceCheckpoint(daemonHandle, atomSeed);
+  await retireFaceCheckpoint(secret.handle, atomSeed);
   await repo.flush();
 
   return {

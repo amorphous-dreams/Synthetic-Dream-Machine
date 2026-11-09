@@ -41,7 +41,7 @@
  */
 
 import { type LarDoc, tiddlerText } from "./base-doc.js";
-import { BAG_IDS, CATALOG_DOC_URI, CONTROL_HOME_ID, DAEMON_BAG_ID, isBagId } from "./lar-uris.js";
+import { BAG_IDS, CATALOG_DOC_URI, DAEMON_BAG_ID, isBagId } from "./lar-uris.js";
 import { isFaceScopedBag, personaScopedBagIds } from "./persona-scope.js";
 import { ownEntry } from "./stored-value.js";
 import { wikiSlotUri } from "./wiki-recipe.js";
@@ -152,7 +152,7 @@ export interface WikiSlotBags {
 /** The bag the face's own catalog document answers to (`catalog-view`), sealed under the lit face. */
 export const FACE_CATALOG_BAG_ID = `${CATALOG_DOC_URI}/face`;
 
-export const DAEMON_WIKI_SLOT_BAGS: readonly string[] = [wikiSlotUri("daemon", "working"), wikiSlotUri("daemon", "draft")];
+export const DAEMON_WIKI_SLOT_BAGS: readonly string[] = [wikiSlotUri("daemon", "working"), wikiSlotUri("daemon", "draft"), wikiSlotUri("daemon", "personal")];
 
 /**
  * The wiki bags a vessel's worn face carries: `registered`, the wiki bags the face's hive registers (`deriveRegisterBags`'s
@@ -168,9 +168,9 @@ export function wornFaceWikiBags(input: { readonly slot?: WikiSlotBags | undefin
   const user = input.slot ? [input.slot.wikiBagId, input.slot.workingBagId, input.slot.draftBagId] : [];
   // The face's own catalog (U1's D half of the catalog) rides with the daemon wiki's slots: the island registers it at
   // boot, so its holder holds the catalog's key before the lift opens the sealed document. The vessel's control document
-  // (`control-home`) rides with them: the outcome ledger and the receipt facts it rests seal under the lit face.
+  // seals beside the secret home under the vessel's own key (`secret-home`), never under one face.
   // The worn face's daemon canon (`bags/daemon-<F>`, `daemonFaceCanonBag`) rides with them too: a face's daemon wiki content.
-  const faceOwn = input.lit ? [...DAEMON_WIKI_SLOT_BAGS, ...(input.daemonCanon ? [input.daemonCanon] : []), FACE_CATALOG_BAG_ID, CONTROL_HOME_ID] : [];
+  const faceOwn = input.lit ? [...DAEMON_WIKI_SLOT_BAGS, ...(input.daemonCanon ? [input.daemonCanon] : []), FACE_CATALOG_BAG_ID] : [];
   return {
     registered: [...user, ...faceOwn],
     sealed: [...(input.lit ? user : []), ...faceOwn],

@@ -469,7 +469,8 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   const atom = faceAtomKeyFromSeed(atomSeed, "founding");
   if (atom.key === placeVerifyingKey.toLowerCase()) throw new Error("[founding] the place key cannot stand as a face atom");
   const foundingScope = JSON.stringify([input.hearthTrueName, input.binding.mode, input.binding.mode === "contracted" ? input.binding.personaKelPrefix : null, input.mount !== false, ...(input.askDigest === undefined ? [] : [input.askDigest])]);
-  const prior = await readFaceCheckpoint(daemonHandle, atomSeed, foundingScope);
+  // THE CHECKPOINT RESTS IN THE SECRET HOME (operator ruling A5): it carries the seal, the dyad and the cap events.
+  const prior = await readFaceCheckpoint(secretHandle, atomSeed, foundingScope);
   if (prior) {
     if (prior.secretUrl !== secretHandle.url) throw new Error("secret-home-mismatch: the founding checkpoint names another secret document");
     if (!prior.result.intentsUrl) throw new Error("[founding] checkpoint names no intents plane; re-found the face.");
@@ -678,7 +679,8 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   const checkpoint: FaceCheckpoint = { scope: foundingScope, secretUrl: secretHandle.url, result: { ...publicResult, veilArchive: bytesToBase64(veilArchive) }, dyad: dyadRecord, mount, events };
   const checkpointText = await sealCheckpoint(checkpoint, atomSeed);
   const foundingCheckpointTitle = `${FACE_FOUNDING_CHECKPOINT_PREFIX}${await checkpointId(atomSeed)}`;
-  daemonHandle.change((doc) => {
+  await requireSecretHandle(secretHandle, daemonHandle, input.secretRest);
+  secretHandle.change((doc) => {
     const title = foundingCheckpointTitle;
     doc.tiddlers[title] = storedRecord({ tiddler: { title, text: checkpointText, kind: "face-founding-checkpoint" }, meta: { authority: "lares-init" } });
   });
@@ -980,7 +982,7 @@ export async function runApplyAdmitPayload(
   const atom = faceAtomKeyFromSeed(atomSeed, payload.personaGroupId);
   const mount = input.mount !== false;
   const applyScope = JSON.stringify([payload.deviceEdge, payload.personaKelPrefix, payload.hearthTrueName, payload.personaGroupId, mount]);
-  const checkpoint = await readApplyCheckpoint(daemonHandle, atomSeed, applyScope);
+  const checkpoint = await readApplyCheckpoint(secretHandle, atomSeed, applyScope);
   if (checkpoint && checkpoint.result.secretUrl !== secretHandle.url) throw new Error("secret-home-mismatch: the admission checkpoint names another secret document");
 
   // Fail-closed: the binding is the joinee's whole authority — a missing field MUST halt,
@@ -1104,7 +1106,8 @@ export async function runApplyAdmitPayload(
     const stored: ApplyCheckpoint = { scope: applyScope, result: { ...result, archive: bytesToBase64(archive) }, events };
     const checkpointText = await sealCheckpoint(stored, atomSeed);
     const applyCheckpointTitle = `${APPLY_ADMIT_CHECKPOINT_PREFIX}${await checkpointId(atomSeed)}`;
-    daemonHandle.change((doc) => {
+    await requireSecretHandle(secretHandle, daemonHandle, input.secretRest);
+    secretHandle.change((doc) => {
       const title = applyCheckpointTitle;
       doc.tiddlers[title] = storedRecord({
         tiddler: { title, text: checkpointText, kind: "apply-admit-checkpoint" },

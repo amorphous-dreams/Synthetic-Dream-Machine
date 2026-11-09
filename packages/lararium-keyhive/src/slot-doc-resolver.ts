@@ -28,10 +28,11 @@
 
 import {
   CONTROL_HOME_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX,
-  computeRecipeFingerprint, emptyLarDoc, storedLarRecord, mutableLarRecord, resolveSlotDoc, resolveFaceWorkingSlot, tiddlerText,
+  computeRecipeFingerprint, emptyLarDoc, mintVesselDocumentId, storedLarRecord, mutableLarRecord, resolveSlotDoc, resolveFaceWorkingSlot, tiddlerText,
   wikiBagUri, wikiDraftDocKey, wikiWorkingFloorKey, requireLarDid,
   type CompositeStore, type WorkingFloorAnchor, type LarDoc, type SlotReach, type WikiSlotKind,
 } from "@lararium/mesh";
+import * as A from "@automerge/automerge";
 import type { CatalogAccessor } from "@lararium/tw5";
 import type { CapabilityProvider } from "./capability-provider.js";
 import type { FaceBagDoor } from "./face-bag-door.js";
@@ -49,6 +50,8 @@ export interface SlotDocResolverArgs {
   readonly repo: SlotDocRepo;
   readonly deviceScoped?: (slug: string) => boolean;
   readonly control?: CompositeStore;
+  /** Name a device slot's document to the vessel's sealed map BEFORE its first byte moves (`announceSlotDoc`). */
+  readonly announceDevice?: (kind: Exclude<WikiSlotKind, "temp">, documentId: string) => void;
   /** The daemon-bag composite — binding records live here. */
   readonly daemonStore: CompositeStore;
   /** Absent at the faceless floor: a floor document carries no Keyhive registration. */
@@ -267,10 +270,24 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
     const created = (async (): Promise<SlotDoc> => {
       const existing = tiddlerText(await control.get(title));
       if (existing) return { url: existing, reach: "vessel-only" };
-      const handle = args.repo.create<LarDoc>(emptyLarDoc());
+      // NAMED BEFORE ITS FIRST BYTE: the id mints ahead, the vessel's sealed map hears it (the device slot seals under the
+      // lit face, or beside the control document under the vessel's key at the floor), the control document names it, and
+      // only then does the document stand and rest.
+      const minter = args.repo;
+      if (typeof minter.import !== "function") {
+        const created = minter.create<LarDoc>(emptyLarDoc());
+        args.announceDevice?.(kind, created.documentId);
+        await created.whenReady?.();
+        await minter.flush([created.documentId]);
+        await control.put(mutableLarRecord(title, { text: created.url, kind: "oracle", "face-reach": "vessel-only" }, "slot-doc:device"), { kind: "lares-verb", requestId: "slot-doc:device" });
+        return { url: created.url, reach: "vessel-only" };
+      }
+      const documentId = mintVesselDocumentId();
+      args.announceDevice?.(kind, documentId);
+      await control.put(mutableLarRecord(title, { text: `automerge:${documentId}`, kind: "oracle", "face-reach": "vessel-only" }, "slot-doc:device"), { kind: "lares-verb", requestId: "slot-doc:device" });
+      const handle = minter.import(A.save(A.from(emptyLarDoc() as unknown as Record<string, unknown>)), { docId: documentId as never });
       await handle.whenReady?.();
       await args.repo.flush([handle.documentId]);
-      await control.put(mutableLarRecord(title, { text: handle.url, kind: "oracle", "face-reach": "vessel-only" }, "slot-doc:device"), { kind: "lares-verb", requestId: "slot-doc:device" });
       return { url: handle.url, reach: "vessel-only" };
     })();
     deviceMints.set(title, created);

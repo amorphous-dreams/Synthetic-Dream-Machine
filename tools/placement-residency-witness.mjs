@@ -40,8 +40,12 @@ if (/flushCapEvents\([^,]+,\s*daemonHandle/.test(ceremony)) throw new Error("cer
 for (const [path, needle] of [
   ["packages/lararium-node/src/owned-store.ts", "bindSecretHomeRest("],
   ["packages/lararium-node/src/open-node-vessel.ts", "bindSecretHomeRest("],
-  ["packages/lararium-node/src/open-node-vessel.ts", "secretHomes.has(documentId)) return !wsSocket && houseIslands.has(peerId)"],
+  ["packages/lararium-node/src/open-node-vessel.ts", "vesselOnlyShareVerdict({ has: (id) => vesselOnly.has(id) || secretHomes.has(id) }"],
+  ["packages/lararium-browser/src/open-browser-vessel.ts", "{ has: (id) => vesselOnly.has(id) || secretHomes.has(id) }"],
+  // A6: the control document seals beside the secret home under the vessel's key; the per-face bridge is retired.
+  ["packages/lararium-mesh/src/control-home.ts", "rest.enrollBeside(documentId, CONTROL_HOME_ID)"],
 ]) if (!read(path).includes(needle)) throw new Error(`${path} lost its secret-home seat: ${needle}`);
+if (/CONTROL_HOME_ID/.test(read("packages/lararium-mesh/src/register-bags.ts"))) throw new Error("register-bags: the control home rides the per-face sealed set again (the bridge retired, A6)");
 for (const path of ["packages/lararium-mesh/src/wiki-recipe.ts", "packages/lararium-node/src/bag-paths.ts", "packages/lararium-tw5/src/daemon-vm-core.ts", "packages/lararium-node/src/disk-projector.ts"]) {
   if (/SECRET_HOME_ID|bags\/secret/.test(read(path))) throw new Error(`${path} names the secret home: no recipe or mirror may`);
 }

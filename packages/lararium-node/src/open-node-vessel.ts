@@ -17,7 +17,7 @@
  * in sovereign islands (daemon + wiki). FPI-5 (trim tab): all Node-specific code lives here.
  */
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
-import { WardRefused, wornAtOf, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, bindSecretHomeRest, vesselHeldHomes, SecretHomeUnavailable, type SecretHome, type SealedBag, type BookedSession, type SessionOwnChain, preparePlaceFace, signAsFaceAtom } from "@lararium/mesh";
+import { WardRefused, wornAtOf, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, bindSecretHomeRest, vesselHeldHomes, enrollBesideSecretHome, daemonFaceCanonBag, SecretHomeUnavailable, type SecretHome, type SealedBag, type BookedSession, type SessionOwnChain, preparePlaceFace, signAsFaceAtom } from "@lararium/mesh";
 import * as A from "@automerge/automerge";
 
 /** A summoned panel verb's ward: the ref the CLI parked, spent only on the verb and arguments it was bound to. */
@@ -927,9 +927,16 @@ async function prepareNodeBootOn(
   // T2: the face's own catalog, by the document its secret derives, named sealed from the moment the face proves and
   // before the document opens (`expectFaceCatalog`); null at the floor and on a herm.
   let faceCatalogDocId: string | null = null;
-  // The vessel's control document (`control-home`), by the document the daemon document names: sealed under the lit face
-  // with the daemon wiki's slots (`wornFaceWikiBags`), named here once the vessel stands it.
+  // The vessel's control document (`control-home`): minted at founding beside the secret home and sealed under the vessel's
+  // own key (`secretHomes`, operator ruling A6), named here once the vessel stands it.
   let controlDocId: string | null = null;
+  // THE PER-DEVICE DAEMON DOCUMENTS the control document names (`daemon-slot/<kind>/<group>`, `daemon-canon/<face>`): the
+  // daemon wiki's device slots and the face's daemon canon, the AI's memory on this device. Each seals under the LIT FACE
+  // with its bag (the sealed map's `docsOf`), by bag; a floor's own slot seals beside the control document under the
+  // vessel's key, held in memory until the key opens.
+  const deviceDaemonDocs = new Map<string, Set<string>>();
+  let wornDeviceGroup: string | null = null;
+  let wornDeviceRelation: string | null = null;
   // V3: a bag's document by every name it carries: the layer the mount resolved (a working slot's derived address, a
   // draft binding: no catalog row names either), then the catalog's row.
   const sealedMap = sealedBagMap({
@@ -938,8 +945,7 @@ async function prepareNodeBootOn(
     catalog: () => sealedCells.catalog(),
     docsOf: (bagId) => bagId === FACE_CATALOG_BAG_ID
       ? [faceCatalogDocId]
-      : bagId === CONTROL_HOME_ID ? [controlDocId]
-      : [sealedCells.mounted(bagId), ...(slotDocsNamed.get(bagId) ?? []), documentIdOfUrl(tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId)))],
+      : [...(deviceDaemonDocs.get(bagId) ?? []), sealedCells.mounted(bagId), ...(slotDocsNamed.get(bagId) ?? []), documentIdOfUrl(tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId)))],
   });
   // The session that stands for the worn face now: a call's, else a seated one (the dial's own, V6).
   const standingSaveSession = (): NodeSaveSession | null => {
@@ -963,9 +969,12 @@ async function prepareNodeBootOn(
     if (session === null) return;
     void sealedRest.rebook(saveSessionOf(session)).catch((e: unknown) => console.log(`[sealed-rest] a waiting save stays in memory after ${why}: ${e instanceof Error ? e.message : String(e)}`));
     for (const named of slotDocsNamed.values()) for (const documentId of named) sealNowMapped(documentId);
-    if (controlDocId) sealNowMapped(controlDocId);
+    for (const named of deviceDaemonDocs.values()) for (const documentId of named) sealNowMapped(documentId);
   };
   const onSlotNamed = (bagId: string, documentId: string): void => {
+    // A DAEMON DEVICE SLOT NAMED WITH NO FACE LIT (the floor's own slot) seals beside the control document under the vessel's
+    // key, held in memory until the key opens; a lit face's seals under that face (below).
+    if (sealedCells.face() === null && bagId.startsWith(wikiSlotUri("daemon", "working").replace(/working$/, ""))) enrollBesideSecretHome(repo, documentId, bagId);
     // THE HOST'S WORKING LAYER FOLLOWS THE ISLAND'S: a main-side write to the daemon wiki lands on the document the island
     // reads (the seat's lift moves it to the face's). The outcome ledger rests in the control document, never here.
     if (bagId === DAEMON_WORKING_SLOT) followHostWorking(documentId);
@@ -1411,7 +1420,12 @@ async function prepareNodeBootOn(
   houseIslands = islandPeersOf(repo);
   // THE SECRET HOME'S REST, bound to this Repo: an enrollment or an open maps the home before its first byte, and the rest
   // alone answers whether it holds the home sealed (`@lararium/mesh` `secret-home`).
-  bindSecretHomeRest(repo, secretHomes.rest((documentId) => sealedRest.restsSealed(documentId), () => sealedRest.store.mapMoved()));
+  // The map moved (a home enrolled, or the vessel's key opened): every hydration waiting on it reads again, and a held
+  // home's waiting saves (a floor's control writes) seal under the key that now stands.
+  bindSecretHomeRest(repo, secretHomes.rest((documentId) => sealedRest.restsSealed(documentId), () => {
+    sealedRest.store.mapMoved();
+    void sealedRest.store.reseal().catch(() => { /* each keeps waiting, never clear */ });
+  }));
   // R2's booking, by the change's own writer (T4): a save of a sealed bag's document reads its change's actor off its
   // bytes; a change this replica made books the session whose call stands, and a peer's change books its peer writer
   // and rests as received under that session.
@@ -2365,16 +2379,50 @@ async function prepareNodeBootOn(
       // a doc nobody wrote: a founding seeds it moments earlier in this same process.
       { tideline: "hearth-private", label: PLANE_LABELS.daemon, settled: () => repo.flush() });
 
-  // The vessel's control document, named by the daemon document (`control-home`): minted at its first stand.
+  // The per-device daemon documents the control document names, by the bag each seals under (answers whether any moved).
+  const readDeviceDaemonDocs = (controlDoc: LarDoc | undefined): boolean => {
+    let moved = false;
+    const put = (bagId: string, url: string | null) => {
+      const documentId = documentIdOfUrl(url);
+      if (!documentId) return;
+      const named = deviceDaemonDocs.get(bagId) ?? new Set<string>();
+      if (named.has(documentId)) return;
+      named.add(documentId); deviceDaemonDocs.set(bagId, named); moved = true;
+    };
+    const slotPrefix = `${CONTROL_HOME_ID}/daemon-slot/`;
+    const canonPrefix = `${CONTROL_HOME_ID}/daemon-canon/`;
+    for (const [title, record] of Object.entries(controlDoc?.tiddlers ?? {})) {
+      if (title.startsWith(slotPrefix)) {
+        const [kind, group] = title.slice(slotPrefix.length).split("/");
+        if (!kind || !group) continue;
+        const bagId = wikiSlotUri("daemon", kind as never);
+        if (decodeURIComponent(group) === "floor") {
+          // THE FLOOR'S OWN SLOT seals beside the control document under the vessel's key: held in memory until it opens.
+          const documentId = documentIdOfUrl(tiddlerText(record));
+          if (documentId && !secretHomes.has(documentId)) { enrollBesideSecretHome(repo, documentId, bagId); moved = true; }
+        } else if (wornDeviceGroup !== null && decodeURIComponent(group) === wornDeviceGroup) put(bagId, tiddlerText(record));
+      } else if (title.startsWith(canonPrefix) && wornDeviceRelation !== null && decodeURIComponent(title.slice(canonPrefix.length)) === wornDeviceRelation) {
+        put(daemonFaceCanonBag(wornDeviceRelation), tiddlerText(record));
+      }
+    }
+    return moved;
+  };
+
+  // The vessel's control document, named by the daemon document (`control-home`): minted at founding beside the secret home.
   const readControlDoc = async (): Promise<DocHandle<LarDoc>> => {
     const handle = await standControlHome(repo, await readDaemonDoc());
     if (controlDocId !== handle.documentId) {
-      const refresh = () => vesselOnly.refresh(handle.doc(), handle.url);
+      const refresh = () => {
+        vesselOnly.refresh(handle.doc(), handle.url);
+        if (readDeviceDaemonDocs(handle.doc())) {
+          sealedRest.store.mapMoved();
+          for (const named of deviceDaemonDocs.values()) for (const documentId of named) sealNowMapped(documentId);
+        }
+      };
       refresh();
       handle.on("change", refresh);
       controlDocId = handle.documentId;
       sealedRest.store.mapMoved();
-      sealNowMapped(handle.documentId);
     }
     return handle;
   };
@@ -3214,16 +3262,28 @@ async function prepareNodeBootOn(
     // THE DAEMON WIKI'S CANON FOLLOWS THE WORN FACE (`daemonFaceCanonBag`): `bags/daemon-<F>`, the document the face's own
     // catalog names, minted at the face's first worn stand. A face that stands unproven, or the floor, reads no daemon canon.
     const wornRelation = wornFaceProved && wornFaceProjection && personaGroupId ? (await import("@lararium/mesh")).faceRelationOf(wornFaceProjection) : null;
-    const daemonCanon = wornRelation ? await standFaceDaemonCanon({ repo, control: await readControlDoc(), faceRelation: wornRelation }) : null;
     // R1: the bags the sealed rest seals, the worn face's own wiki bags, the daemon wiki's slots and canon (U1's D half), only
-    // while that face stands lit and proved; the face's hive registers each (`wornFaceWikiBags`).
-    const faceWikiBags = wornFaceWikiBags({ slot, lit: faceLit && !!personaGroupId && wornFaceProved, ...(daemonCanon ? { daemonCanon: daemonCanon.bagId } : {}) });
+    // while that face stands lit and proved; the face's hive registers each (`wornFaceWikiBags`). The canon's bag derives from
+    // the face, so the map names it before the canon's document moves a byte.
+    const canonBagId = wornRelation ? daemonFaceCanonBag(wornRelation) : null;
+    const faceWikiBags = wornFaceWikiBags({ slot, lit: faceLit && !!personaGroupId && wornFaceProved, ...(canonBagId ? { daemonCanon: canonBagId } : {}) });
+    sealedCells.bags = () => faceWikiBags.sealed;
+    // THE LIT FACE'S DEVICE DAEMON DOCUMENTS (the control document names them): they seal under that face from here on.
+    wornDeviceGroup = faceLit && wornFaceProved && personaGroupId ? personaGroupId : null;
+    wornDeviceRelation = wornDeviceGroup !== null ? wornRelation : null;
+    readDeviceDaemonDocs((await readControlDoc()).doc());
+    sealedRest.store.mapMoved();
+    const daemonCanon = wornRelation ? await standFaceDaemonCanon({ repo, control: await readControlDoc(), faceRelation: wornRelation,
+      beforeFirstByte: (bagId, documentId) => {
+        const named = deviceDaemonDocs.get(bagId) ?? new Set<string>();
+        named.add(documentId); deviceDaemonDocs.set(bagId, named);
+        sealedRest.store.mapMoved();
+      } }) : null;
     placeFace = faceLit && !!personaGroupId && wornFaceProved && activeAtom !== null && placeAid !== null
       ? placeProofSubjectRef({ atomKey: activeAtom.key, place: placeAid } as never) : null;
     await standPlaceSession(placeFace !== null && personaGroupId && activeAtom ? { group: personaGroupId, atomKey: activeAtom.key } : null);
-    sealedCells.bags = () => faceWikiBags.sealed;
     // The control document stands before the daemon island opens over it, and the map names it from here on.
-    await readControlDoc();
+    readDeviceDaemonDocs((await readControlDoc()).doc());
     sealedRest.store.mapMoved();
     const workingFloorAnchor = workingFloorAnchorOf({ place: placeAid });
     // A sibling's planes need their own face proof before registration; joinedFaceAuth hands each sibling the vessel ground alone.

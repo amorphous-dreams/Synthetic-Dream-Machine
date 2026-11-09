@@ -23,7 +23,7 @@ import { hex, hexToBytes, utf8Bytes, type RandomProvider } from "./crypto.js";
 import { emptyLarDoc, type LarDoc } from "./base-doc.js";
 import { mintHeldRestKey, readHeldRestKey, type HeldRestKey } from "./held-rest-key.js";
 import { AutomergeDocStore } from "./automerge-doc-store.js";
-import { SECRET_HOME_ID } from "./lar-uris.js";
+import { CONTROL_HOME_ID, SECRET_HOME_ID } from "./lar-uris.js";
 import type { LarTiddlerStore } from "./tiddler-store.js";
 
 /** The rest a store's one holder binds to its Repo: it maps the secret home sealed under its held key, and answers whether
@@ -35,8 +35,13 @@ export interface SecretHomeRest {
   restsSealed(documentId: string): Promise<boolean>;
   /** VESSEL-SCOPED CLASSIFICATION BESIDE THE SECRET HOME: map another vessel document (the control document) as `bagId`,
    *  sealed under the vessel's held key (bound to `bagId`, so each home opens under its own content key), before any byte
-   *  of it moves. Answers false, mapping nothing, while no secret home's key stands on this rest. */
+   *  of it moves. It maps at once; it answers whether the key stands now. While it does not (custody locked), the document
+   *  rests sealed with no key: its saves wait in memory and its loads wait, never clear, until the key opens. */
   enrollBeside(documentId: string, bagId: string): boolean;
+  /** Does the vessel's held key stand on this rest now (a secret home enrolled or opened)? */
+  holdsKey(): boolean;
+  /** Run `cb` once the vessel's held key stands (at once where it already does). Returns the unsubscribe. */
+  whenKeyed(cb: () => void): () => void;
 }
 
 /**
@@ -44,7 +49,9 @@ export interface SecretHomeRest {
  * (`enrollBeside`). A holder's bag map reads it first (`bagOf`); its share verdict keeps every one on the vessel (`has`).
  */
 export interface VesselHeldHomes {
-  bagOf(documentId: string): { readonly bagId: string; readonly face: null; readonly held: HeldRestKey } | null;
+  /** The held bag a document belongs to. `held` absent: the document rests sealed under the vessel's key, which has not
+   *  opened yet (custody locked): its saves wait in memory and its loads wait, never clear. */
+  bagOf(documentId: string): { readonly bagId: string; readonly face: null; readonly held?: HeldRestKey } | null;
   has(documentId: string): boolean;
   /** Every vessel-only document this table holds (the secret home, and what enrolled beside it): the read a share verdict's
    *  vessel-only deny set takes. */
@@ -56,23 +63,37 @@ export interface VesselHeldHomes {
 }
 
 export function vesselHeldHomes(): VesselHeldHomes {
-  const homes = new Map<string, { readonly bagId: string; readonly key: HeldRestKey }>();
+  const homes = new Map<string, string>();
+  const keyed = new Set<() => void>();
   let vesselKey: HeldRestKey | null = null;
   return {
-    bagOf(documentId) { const h = homes.get(documentId); return h ? { bagId: h.bagId, face: null, held: h.key } : null; },
+    bagOf(documentId) {
+      const bagId = homes.get(documentId);
+      if (bagId === undefined) return null;
+      return vesselKey ? { bagId, face: null, held: vesselKey } : { bagId, face: null };
+    },
     has: (documentId) => homes.has(documentId),
     ids: () => [...homes.keys()],
     rest(restsSealed, moved) {
       return {
-        enroll(documentId, key) { vesselKey ??= key; homes.set(documentId, { bagId: SECRET_HOME_ID, key }); moved?.(); },
-        enrollBeside(documentId, bagId) {
-          if (vesselKey === null || bagId === SECRET_HOME_ID) return false;
-          homes.set(documentId, { bagId, key: vesselKey }); moved?.(); return true;
+        enroll(documentId, key) {
+          const first = vesselKey === null;
+          vesselKey ??= key;
+          homes.set(documentId, SECRET_HOME_ID);
+          moved?.();
+          if (first) for (const cb of [...keyed]) { try { cb(); } catch { /* one listener's fault never holds the rest */ } }
         },
+        enrollBeside(documentId, bagId) {
+          if (bagId === SECRET_HOME_ID) return false;
+          homes.set(documentId, bagId); moved?.();
+          return vesselKey !== null;
+        },
+        holdsKey: () => vesselKey !== null,
+        whenKeyed(cb) { if (vesselKey !== null) { cb(); return () => {}; } keyed.add(cb); return () => { keyed.delete(cb); }; },
         restsSealed: async (documentId) => homes.has(documentId) && await restsSealed(documentId),
       };
     },
-    wipe() { for (const { key } of homes.values()) key.fill(0); homes.clear(); vesselKey = null; },
+    wipe() { vesselKey?.fill(0); homes.clear(); vesselKey = null; keyed.clear(); },
   };
 }
 
@@ -90,6 +111,9 @@ export interface SecretRestAnswer {
 export interface SecretHomeAddress {
   readonly documentId: string;
   readonly key: HeldRestKey;
+  /** The vessel's CONTROL document, minted at founding beside the secret home and sealed under the same vessel key, bound
+   *  to its own bag (operator ruling A6, 2026-11-09). */
+  readonly controlId?: string;
 }
 
 /** A standing secret home: its handle, and the rest's sealed-rest answer for it. */
@@ -97,6 +121,8 @@ export interface SecretHome {
   readonly url: AutomergeUrl;
   readonly handle: DocHandle<LarDoc>;
   readonly rest: SecretRestAnswer;
+  /** The control document the address names beside the home; absent where it names none. */
+  readonly control?: DocHandle<LarDoc>;
 }
 
 export class SecretHomeUnavailable extends Error {
@@ -117,6 +143,11 @@ export function secretHomeRestOf(repo: Repo): SecretHomeRest | null {
   return rests.get(repo) ?? null;
 }
 
+/** Mint a fresh vessel document id (a home beside the secret home: the control document). */
+export function mintVesselDocumentId(): string {
+  return parseAutomergeUrl(generateAutomergeUrl()).documentId;
+}
+
 /** Mint a fresh address: a new document id and a fresh held key. */
 export function mintSecretHomeAddress(random?: Pick<RandomProvider, "getRandomValues">): SecretHomeAddress {
   return { documentId: parseAutomergeUrl(generateAutomergeUrl()).documentId, key: mintHeldRestKey(random) };
@@ -126,7 +157,7 @@ const ADDRESS_MAGIC = "lares-secret-home-address";
 
 /** The address as its custody row keeps it. */
 export function encodeSecretHomeAddress(address: SecretHomeAddress): Uint8Array {
-  return utf8Bytes(JSON.stringify({ kind: ADDRESS_MAGIC, documentId: address.documentId, key: hex(address.key) }));
+  return utf8Bytes(JSON.stringify({ kind: ADDRESS_MAGIC, documentId: address.documentId, key: hex(address.key), ...(address.controlId ? { controlId: address.controlId } : {}) }));
 }
 
 /** Read an address off its custody row's bytes; null: the bytes name no address of this kind. */
@@ -137,12 +168,14 @@ export function decodeSecretHomeAddress(bytes: Uint8Array): SecretHomeAddress | 
     const key = readHeldRestKey(hexToBytes(v["key"] as string));
     if (key === null) return null;
     parseAutomergeUrl(`automerge:${v["documentId"]}` as AutomergeUrl);
-    return { documentId: v["documentId"] as string, key };
+    if (v["controlId"] !== undefined && typeof v["controlId"] !== "string") return null;
+    if (typeof v["controlId"] === "string") parseAutomergeUrl(`automerge:${v["controlId"]}` as AutomergeUrl);
+    return { documentId: v["documentId"] as string, key, ...(typeof v["controlId"] === "string" ? { controlId: v["controlId"] } : {}) };
   } catch { return null; }
 }
 
 /** The seed every secret home's history begins with: one deterministic change, so a seed imported twice merges as one. */
-function seedBytes(documentId: string): Uint8Array {
+export function heldHomeSeed(documentId: string): Uint8Array {
   const actor = hex(sha256(utf8Bytes(`lares-secret-home-seed\u0000${documentId}`))).slice(0, 32);
   return A.save(A.change(A.init<LarDoc>({ actor }), { time: 0, message: "secret-home" }, (d) => { Object.assign(d, emptyLarDoc()); }));
 }
@@ -165,8 +198,14 @@ export async function enrollSecretHome(repo: Repo, address: SecretHomeAddress): 
   const rest = requireRest(repo);
   rest.enroll(address.documentId, address.key);
   if (!await rest.restsSealed(address.documentId)) throw new SecretHomeUnavailable("the rest does not hold the enrolled document sealed");
-  const handle = repo.import<LarDoc>(seedBytes(address.documentId), { docId: address.documentId as DocumentId });
-  return { url: handle.url, handle, rest: restAnswer(rest, address.documentId) };
+  const handle = repo.import<LarDoc>(heldHomeSeed(address.documentId), { docId: address.documentId as DocumentId });
+  // THE CONTROL DOCUMENT MINTS BESIDE THE HOME (A6): mapped under the vessel's key, bound to its own bag, before its first byte.
+  let control: DocHandle<LarDoc> | undefined;
+  if (address.controlId) {
+    if (!rest.enrollBeside(address.controlId, CONTROL_HOME_ID)) throw new SecretHomeUnavailable("the vessel's key did not stand for the control document");
+    control = repo.import<LarDoc>(heldHomeSeed(address.controlId), { docId: address.controlId as DocumentId });
+  }
+  return { url: handle.url, handle, rest: restAnswer(rest, address.documentId), ...(control ? { control } : {}) };
 }
 
 /** OPEN a standing secret home: map it under its held key before the Repo reads a byte, then find it. A home the rest
@@ -178,6 +217,8 @@ export async function openSecretHome(repo: Repo, address: SecretHomeAddress): Pr
   let handle: DocHandle<LarDoc>;
   try { handle = await repo.find<LarDoc>(`automerge:${address.documentId}` as AutomergeUrl); }
   catch (e) { throw new SecretHomeUnavailable(`the secret home did not open: ${e instanceof Error ? e.message : String(e)}`); }
+  // The control document maps beside it before any reader asks for it; the control home's stand finds it.
+  if (address.controlId) rest.enrollBeside(address.controlId, CONTROL_HOME_ID);
   return { url: handle.url, handle, rest: restAnswer(rest, address.documentId) };
 }
 

@@ -84,6 +84,36 @@ describe("★ the ONE slot-doc resolver, floor-falling ★", () => {
     await repo.shutdown();
   });
 
+  test("RED: a device slot's document is named to the vessel's sealed map and in the control document BEFORE its first byte rests", async () => {
+    const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
+    const control = new CompositeStore();
+    control.addLayer({ bagId: CONTROL_HOME_ID, store: new MemoryTiddlerStore(CONTROL_HOME_ID), writable: true, defaultWritable: true });
+    const events: string[] = [];
+    const minter = {
+      create: (v: never) => { events.push("create"); return repo.create(v); },
+      import: (bytes: Uint8Array, args: { docId: never }) => {
+        events.push(`import:${args.docId}:pointer=${Boolean(controlNamed[args.docId as string])}`);
+        return repo.import(bytes, args as never);
+      },
+      flush: (ids?: string[]) => { events.push("flush"); return repo.flush(ids as never); },
+    };
+    const controlNamed: Record<string, boolean> = {};
+    const resolver = makeSlotDocResolver({ repo: minter as never, daemonStore: control, control, catalog: null, vesselDid: () => DID, mintedByHex: () => VERIFYING_KEY,
+      personaGroupId: "face", faceSeated: async () => true, faceDoor: { mint: async () => {} } as never, deviceScoped: (slug) => slug === "daemon",
+      announceDevice: (kind, documentId) => { events.push(`announce:${kind}:${documentId}`); } });
+    const put = control.put.bind(control);
+    control.put = (async (record: { tiddler: { text?: string } }, ...rest: never[]) => {
+      const id = record.tiddler.text?.replace(/^automerge:/, "");
+      if (id) { controlNamed[id] = true; events.push(`pointer:${id}`); }
+      return put(record as never, ...rest);
+    }) as never;
+    const slot = await resolver.slotDoc("daemon", "working");
+    const id = slot!.url.replace(/^automerge:/, "");
+    expect(events).toEqual([`announce:working:${id}`, `pointer:${id}`, `import:${id}:pointer=true`, "flush"]);
+    expect(events).not.toContain("create");
+    await repo.shutdown();
+  });
+
   test("S1 — seated: the draft is the PersonaGroup × fingerprint binding, reach = face", async () => {
     const r = await rig({ seated: true });
     const doc = await r.resolver.draft("garden");

@@ -407,6 +407,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       repo: askReceipt ? restingMinter(ctx.repo, (ids) => askReceipt(ids,
         gateCleared ? undefined : gateClear, islandHeadsOf(ctx.repo, ids))) : ctx.repo,
       deviceScoped: (slug) => slug === DAEMON_WIKI_SLUG, control: controlOf(ctx),
+      ...(docStoreDoor ? { announceDevice: (kind: Exclude<WikiSlotKind, "temp">, documentId: string) => announceSlotDoc(docStoreDoor, wikiSlotUri(DAEMON_WIKI_SLUG, kind), documentId) } : {}),
       daemonStore: ctx.composite, ...(kh ? { keyhive: kh } : {}),
       catalog: ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl, ctx.faceCatalogUrl) : null,
       vesselDid: () => didFromVerifyingKey(mintedByHex),

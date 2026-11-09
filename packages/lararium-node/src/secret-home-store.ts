@@ -11,6 +11,9 @@
  *   · the row never leaves its vessel (bundle `stays`): each vessel holds its own dyad, its own device's group-secret seal
  *     and the cap events it ingested, and a fleet-join carries what a joinee needs on its own payload.
  *
+ * THE CONTROL DOCUMENT RIDES THE SAME ROW (operator ruling A6, 2026-11-09): the founding mints it beside the home, under the
+ * same vessel key bound to its own bag, and the row names its id; the daemon document names it too, for the floor's stand.
+ *
  * ORDER (placement-over-patterns, the founding order): the custody seats first; the home enrolls on the Repo's bound
  * rest, and its first byte rests sealed; the row lands after the document flushed, so it never names a document no rest
  * holds; only then does any seal, dyad or cap event write. A founding that stops between the flush and the row leaves an
@@ -19,7 +22,7 @@
 import { mkdirSync } from "node:fs";
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  bytesEqual, decodeSecretHomeAddress, encodeSecretHomeAddress, enrollSecretHome, mintSecretHomeAddress, openSecretHome,
+  bytesEqual, decodeSecretHomeAddress, encodeSecretHomeAddress, enrollSecretHome, mintSecretHomeAddress, mintVesselDocumentId, openSecretHome,
   SecretHomeUnavailable, type SecretHome, type SecretHomeAddress,
 } from "@lararium/mesh";
 import { CustodyRowUnavailable } from "./custody-holder.js";
@@ -63,12 +66,16 @@ export async function openVesselSecretHome(repo: Repo): Promise<SecretHome> {
  * enrollment maps the document on the Repo's bound rest before its first byte, flushes it sealed, and only then keeps the
  * address. The custody must stand open: the row seals under the S key, so a locked vessel refuses `CustodyLocked` first.
  */
-export async function standVesselSecretHome(repo: Repo): Promise<SecretHome> {
+export async function standVesselSecretHome(repo: Repo): Promise<VesselSecretHome> {
   const standing = await readSecretHomeAddress();
-  if (standing !== null) return openSecretHome(repo, standing);
-  const address = mintSecretHomeAddress();
+  if (standing !== null) return { ...await openSecretHome(repo, standing), controlUrl: standing.controlId ? `automerge:${standing.controlId}` : null };
+  // THE CONTROL DOCUMENT MINTS BESIDE THE HOME (operator ruling A6): one custody row names both, one key seals both.
+  const address = { ...mintSecretHomeAddress(), controlId: mintVesselDocumentId() };
   const home = await enrollSecretHome(repo, address);
-  await repo.flush([home.handle.documentId]);
+  await repo.flush([home.handle.documentId, ...(home.control ? [home.control.documentId] : [])]);
   await keepSecretHomeAddress(address);
-  return home;
+  return { ...home, controlUrl: `automerge:${address.controlId}` };
 }
+
+/** The vessel's secret home, and the url of the control document its custody row names beside it (null: none). */
+export type VesselSecretHome = SecretHome & { readonly controlUrl: string | null };

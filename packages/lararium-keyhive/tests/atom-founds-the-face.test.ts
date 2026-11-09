@@ -62,7 +62,7 @@ describe("one random atom founds the face", () => {
     expect(JSON.stringify(place.daemonHandle.doc())).toBe(bytes);
   });
 
-  it("names its write-ahead checkpoint opaquely and retires it at commit", async () => {
+  it("A5: its write-ahead checkpoint rests in the secret home (never the daemon document), named opaquely, and retires there at commit", async () => {
     const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
     const atomSeed = mintFaceAtomSeed();
     const placeKey = await key(vesselSeed);
@@ -71,10 +71,14 @@ describe("one random atom founds the face", () => {
       vesselDisplayName: "place", binding: { mode: "self-stood", signerSeed: rootSeed }, hearthTrueName: "hearth",
       nexusPubkey: placeKey, atomSeed });
     const atomKey = faceAtomKeyFromSeed(atomSeed, "founding").key;
-    const titles = Object.keys(place.daemonHandle.doc()!.tiddlers).filter((title) => title.includes("face-founding-checkpoint/"));
+    const checkpointsIn = (doc: { tiddlers: Record<string, unknown> } | undefined) => Object.keys(doc?.tiddlers ?? {}).filter((title) => title.includes("face-founding-checkpoint/"));
+    const titles = checkpointsIn(place.secretHandle.doc());
     expect(titles).toHaveLength(1);
     expect(titles[0]).not.toContain(atomKey);
-    await retireFaceCheckpoint(place.daemonHandle, atomSeed);
-    expect(Object.keys(place.daemonHandle.doc()!.tiddlers).filter((title) => title.includes("face-founding-checkpoint/"))).toEqual([]);
+    // No state of the daemon document's whole history ever held one.
+    const A = await import("@automerge/automerge");
+    for (const { snapshot } of A.getHistory(place.daemonHandle.doc() as never)) expect(checkpointsIn(snapshot as never)).toEqual([]);
+    await retireFaceCheckpoint(place.secretHandle, atomSeed);
+    expect(checkpointsIn(place.secretHandle.doc())).toEqual([]);
   });
 });
