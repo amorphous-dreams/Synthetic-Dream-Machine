@@ -17,8 +17,8 @@
 
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, resolve, sep, extname } from "node:path";
-import { newChangeId, taskContentId, carrierHash, digestsEqual, BAG_MANIFEST_FILE } from "@lararium/mesh";
-import { SyncedTree, syncedTreeKey, syncedTreeDir, bagsFileToUri, mirrorDirFileToUri, larProjectionCheckpointDir, KAPAE_EXT, readKapaeShadow, isObserveProjectionPath } from "@lararium/node";
+import { newChangeId, taskContentId, carrierHash, digestsEqual, BAG_MANIFEST_FILE, isControlPlaneUri, DAEMON_BAG_ID } from "@lararium/mesh";
+import { SyncedTree, syncedTreeKey, syncedTreeDir, bagsFileToUri, mirrorDirFileToUri, larProjectionCheckpointDir, KAPAE_EXT, readKapaeShadow, isObserveProjectionPath, isDaemonCanonWithheld } from "@lararium/node";
 import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
 import { summaryOutput, type SubmitResult } from "./verb-result.js";
 import { runVerb } from "./verb-call.js";
@@ -88,6 +88,9 @@ export interface ScanResult {
   readonly shadows?: string[];
   /** The shadow files that proved no kāpae, each with the refusal that names why. */
   readonly refusedShadows?: Array<{ readonly file: string; readonly refusal: string }>;
+  /** The files whose title no disk may write: a control-plane title into any bag, or a house record of the daemon bag
+   *  into `bags/daemon` (`isDaemonCanonWithheld`). Each stays out of every wave, by name. */
+  readonly withheld?: string[];
 }
 
 /** Open the Synced tree at the canonical projection checkpoint (larProjectionCheckpointDir() —
@@ -209,9 +212,13 @@ export function scanFiles(
   const skipped: string[] = [];
   const shadows = new Set<string>();
   const refusedShadows: Array<{ file: string; refusal: string }> = [];
+  const withheld: string[] = [];
   for (const file of files) {
     const uri = fileToUri(root, file);
     if (!uri) { skipped.push(file); continue; }
+    // NO DISK WRITES THE CONTROL PLANE, and none writes the house's identity records into the daemon bag: a file that
+    // names such a title stays out of the wave whatever its bytes say.
+    if (isControlPlaneUri(uri) || (toBag === DAEMON_BAG_ID && isDaemonCanonWithheld(uri))) { withheld.push(file); continue; }
     const ext = extname(file);
     // A KĀPAE SHADOW speaks an exclusion: it names a title and carries no record of its own.
     if (ext === KAPAE_EXT) {
@@ -270,6 +277,7 @@ export function scanFiles(
     rows: kept, skipped,
     ...(shadows.size > 0 ? { shadows: [...shadows].sort() } : {}),
     ...(refusedShadows.length > 0 ? { refusedShadows } : {}),
+    ...(withheld.length > 0 ? { withheld } : {}),
   };
 }
 
@@ -746,6 +754,7 @@ export function scanSource(
     rows, skipped: scan.skipped, ...(renameDeletions.length > 0 ? { renameDeletions } : {}),
     ...(scan.shadows !== undefined ? { shadows: scan.shadows } : {}),
     ...(scan.refusedShadows !== undefined ? { refusedShadows: scan.refusedShadows } : {}),
+    ...(scan.withheld !== undefined ? { withheld: scan.withheld } : {}),
   };
 }
 
@@ -817,6 +826,8 @@ export interface SubmitIngestOpts {
    * executes daemon-side (canon bags).
    */
   readonly inWiki?: boolean;
+  /** With `inWiki`, the wiki the INGEST runs in by name (the `wiki-act` road's own `wiki`), never the active one. */
+  readonly wiki?: string;
   /**
    * NO PERSON STANDS BEHIND THIS WAVE. The watcher sets it on every wave it settles by itself; `lares
    * ingest` and every other gesture a person names leave it absent. The island's gate then never adopts
@@ -864,7 +875,7 @@ export async function submitIngest(opts: SubmitIngestOpts): Promise<SubmitResult
   // composite (where working lives), mirroring `lares act --in-wiki`. The
   // default submits daemon-side for canon bags.
   const submitName = opts.inWiki ? "wiki-act" : "INGEST";
-  const submitArgs = opts.inWiki ? { verb: "INGEST", args: actionArgs } : actionArgs;
+  const submitArgs = opts.inWiki ? { verb: "INGEST", args: actionArgs, ...(opts.wiki !== undefined ? { wiki: opts.wiki } : {}) } : actionArgs;
   const requestId = await taskContentId({ subject: opts.toBag, command: submitName, args: submitArgs, nonce: "" });
   const timeoutMs = Math.max(10_000, 10_000 + (opts.candidates.length + deletions.length + (opts.kapae?.length ?? 0)) * 400);
   return await runVerb(submitName, submitArgs, opts.did, { requestId, timeoutMs });

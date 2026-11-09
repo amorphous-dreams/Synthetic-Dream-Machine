@@ -14,7 +14,9 @@
  *   3. maps each face folder (`daemon-<F>`, `kahua-<F>`) to the face that wears it, keyed by PET-NAME; a face that holds
  *      memory and no pet-name, or two that share one, refuses;
  *   4. copies the face's working carriers + `.kapae` shadows, draft recovery files, consented temp carriers, kahua stage
- *      carriers and the stage's standing heads; other wikis' draft and consented temp files; house-minted bags;
+ *      carriers and the stage's standing heads; the daemon wiki's canon (`bags/daemon`, authored records alone); every
+ *      other wiki's working, draft and consented temp files; house-minted bags (a user wiki's own canon among them); and
+ *      lists the acquired library's collections by index digest (the originals survive in place and never travel);
  *   5. writes `manifest.json` and `re-declare.json`, reads every byte back against the manifest, and only then moves
  *      the bundle into place.
  *
@@ -27,8 +29,9 @@
  *      stands off through the Confluence gate and never overwrites), raising each kāpae a shadow speaks;
  *   5. re-lifts each kahua head under the new face's grant, keyed by title + body digest (a title already holding that
  *      digest reads landed, a title holding a body the bundle never carried stands off);
- *   6. lands draft and temp files back beside the new face's working folder where none stands (a different file there
- *      stands off), and re-pours house-minted bags through the same gesture.
+ *   6. lands draft and temp files back where none stands (a different file there stands off); re-pours the daemon canon
+ *      into `bags/daemon`, each house-minted bag into its bag and each other wiki's working rows into its working layer
+ *      through the same gesture, minting first (CREATE) any slug this vessel does not hold, named in the preview.
  *   A journal under `<root>/config/carry-journal/<bundle-id>.ndjson` records each landed act: an interrupted import
  *   re-enters to the same end, and a second import of the same bundle lands nothing.
  *
@@ -38,10 +41,11 @@ import { appendFileSync, copyFileSync, existsSync, lstatSync, mkdirSync, readFil
 import { randomBytes } from "node:crypto";
 import { basename, dirname, join, resolve, sep } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
-import { wikiBagUri, wikiSlotUri, KAHUA_BAG, defaultChairLabel, declarePersonaHandle, renameOwnPersona, standForKahuSeat } from "@lararium/mesh";
+import { wikiBagUri, wikiSlotUri, KAHUA_BAG, DAEMON_BAG_ID, defaultChairLabel, declarePersonaHandle, renameOwnPersona, standForKahuSeat } from "@lararium/mesh";
 import {
   larHouseRoot, larProjectionsHome, larConfigHome, mirrorDirFileToUri, readKapaeShadow, KAPAE_EXT, SyncedTree, OBSERVE_DIR, TEMP_LAYER_DIR,
-  daemonFaceFolder, isDaemonFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug, loadLaresConfig, tempConsentedSlugs,
+  daemonFaceFolder, isDaemonFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug, loadLaresConfig, tempConsentedSlugs, isDaemonCanonWithheld,
+  listCollections, libraryCollectionDir,
 } from "@lararium/node";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor } from "../render.js";
@@ -49,6 +53,8 @@ import { readCensus, censusLine, type CensusReading } from "./census.js";
 import { scanFiles, candidatesOf, settleIngest, type ScanRow } from "../ingest-core.js";
 import { summaryOutput } from "../verb-result.js";
 import { vesselDid } from "../env.js";
+import { runVerb } from "../verb-call.js";
+import { newChangeId, newRequestId, taskContentId } from "@lararium/mesh";
 import { storeVerb } from "../store-door.js";
 import { readPersonaRoots, sealedPetnameStore, sealedDeclarationStore } from "../sealed-rows.js";
 import { makeFleetPetnameStore, makeFleetDeclarationStore } from "../daemon-persona-store.js";
@@ -91,7 +97,11 @@ export interface CarryDoors {
   readonly rename: (handleIndex: number, petname: string) => Promise<void>;
   readonly declareHandle: (handleIndex: number, handle: string) => Promise<void>;
   readonly standSeat: (handleIndex: number, chair: string | null) => Promise<void>;
-  readonly ingest: (wave: { readonly source: string; readonly toBag: string; readonly candidates: readonly ScanRow[]; readonly kapae: readonly string[] }) => Promise<CarryIngestAnswer>;
+  readonly ingest: (wave: { readonly source: string; readonly toBag: string; readonly candidates: readonly ScanRow[]; readonly kapae: readonly string[]; readonly inWiki?: boolean; readonly wiki?: string }) => Promise<CarryIngestAnswer>;
+  /** The wiki slugs this vessel's catalog registers. */
+  readonly heldSlugs: () => Promise<ReadonlySet<string>>;
+  /** Mint a bag (and the wiki it opens as) through the existing CREATE road. */
+  readonly mintBag: (bagUri: string) => Promise<void>;
   readonly kahuaLift: (handleIndex: number, lift: { readonly title: string; readonly text: string; readonly fields: Readonly<Record<string, string>>; readonly taint: readonly string[]; readonly sources: CarryKahuaHead["sources"]; readonly parent: string | null }) => Promise<{ readonly cid: string }>;
 }
 
@@ -136,6 +146,7 @@ export const LIVE_CARRY_DOORS: CarryDoors = {
   ingest: async (wave) => {
     // A tree held in memory: the gesture pins no base at a bundle path, and the projector pins its own where it writes.
     const settled = await settleIngest({ source: wave.source, toBag: wave.toBag, candidates: wave.candidates, did: await vesselDid(), unattended: true,
+      ...(wave.inWiki === true ? { inWiki: true } : {}), ...(wave.wiki !== undefined ? { wiki: wave.wiki } : {}),
       ...(wave.kapae.length > 0 ? { kapae: wave.kapae } : {}) }, new SyncedTree(null));
     if (settled.first.status === "error") throw new Error(settled.first.errorMessage ?? "INGEST refused");
     const kapae = (summaryOutput(settled.first) as { kapae?: { raised?: unknown; standing?: unknown; refused?: unknown } } | null)?.kapae;
@@ -146,6 +157,19 @@ export const LIVE_CARRY_DOORS: CarryDoors = {
       kapaeRaised: [...list(kapae?.raised), ...list(kapae?.standing)],
       kapaeRefused: (Array.isArray(kapae?.refused) ? kapae.refused as Array<Record<string, unknown>> : []).map((r) => ({ uri: String(r["uri"]), why: String(r["code"]) })),
     };
+  },
+  heldSlugs: async () => {
+    const r = await runVerb("list-wikis", {}, await vesselDid());
+    if (r.status === "error") throw new Error(r.errorMessage ?? "list-wikis refused");
+    const wikis = (summaryOutput(r) as { wikis?: Array<{ slug?: unknown }> } | null)?.wikis ?? [];
+    return new Set(wikis.map((w) => String(w.slug)));
+  },
+  mintBag: async (bagUri) => {
+    // The CREATE road `lares act CREATE --bag` walks (`act.ts`): the catalog plane, a fresh change nonce in the effect key.
+    const actionArgs = { bag: bagUri, plane: "catalog" };
+    const effectKey = await taskContentId({ subject: bagUri, command: "CREATE", args: actionArgs, nonce: newChangeId() });
+    const r = await runVerb("CREATE", actionArgs, await vesselDid(), { requestId: newRequestId(), effectKey });
+    if (r.status === "error") throw new Error(r.errorMessage ?? `CREATE ${bagUri} refused`);
   },
   kahuaLift: async (face, lift) => {
     const { output } = await storeVerb("kahua-lift", { face, title: lift.title, text: lift.text, fields: lift.fields, taint: lift.taint, sources: lift.sources, parent: lift.parent });
@@ -268,8 +292,7 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
   const plan: Array<{ from: string; to: string; row: Omit<CarryRow, "sha256" | "path"> | null }> = [];
   const tempBytes: Record<string, number> = {};
   const consented = new Set(doors.tempConsented());
-  let strays = 0, odd = 0, wikiWorking = 0;
-  const wikiWorkingSlugs = new Set<string>();
+  let strays = 0, odd = 0, withheld = 0;
   const addTree = (srcDir: string, toDir: string, rowOf: (rel: string, abs: string) => Omit<CarryRow, "sha256" | "path"> | null, skipTop: readonly string[] = []): void => {
     const listed = plainFiles(srcDir);
     odd += listed.odd.length;
@@ -312,10 +335,7 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
         return { face: null, bag, layer: "temp", title: null, rowKey: null };
       });
     }
-    for (const rel of plainFiles(src).files) {
-      const top = rel.split("/")[0]!;
-      if (top !== "recovery" && top !== TEMP_LAYER_DIR && !rel.endsWith(".meta")) { wikiWorking++; wikiWorkingSlugs.add(name); }
-    }
+    addTree(src, `wikis/${name}/working`, (_rel, abs) => ({ face: null, bag: wikiSlotUri(name, "working"), layer: "wiki-working", title: mirrorDirFileToUri(wikisDir, abs), rowKey: null }), ["recovery", TEMP_LAYER_DIR]);
   }
   for (const name of folders(bagsDir)) {
     const src = join(bagsDir, name);
@@ -326,12 +346,22 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
       addTree(src, `faces/${fk}/kahua`, () => ({ face: face.petname!, bag: KAHUA_BAG, layer: "kahua-carrier", title: null, rowKey: null }));
       continue;
     }
+    if (name === "daemon") {
+      // THE DAEMON WIKI'S CANON: its authored records alone; a house record standing there by hand never travels.
+      const before = plan.length;
+      addTree(src, "daemon/canon", (_rel, abs) => ({ face: null, bag: DAEMON_BAG_ID, layer: "daemon-canon", title: mirrorDirFileToUri(bagsDir, abs), rowKey: null }));
+      for (let i = plan.length - 1; i >= before; i--) {
+        const title = plan[i]!.row?.title;
+        if (title !== null && title !== undefined && isDaemonCanonWithheld(title)) { plan.splice(i, 1); withheld++; }
+      }
+      continue;
+    }
     if (isPrivateProjectionSlug(name)) continue;
     addTree(src, `bags/${name}`, (_rel, abs) => ({ face: null, bag: wikiBagUri(name), layer: "bag", title: mirrorDirFileToUri(bagsDir, abs), rowKey: null }));
   }
   if (strays > 0) omissions.push({ kind: "atomic-write-strays", detail: "orphan *.lar-tmp-* files an atomic write left; none carries a record", count: strays });
   if (odd > 0) omissions.push({ kind: "links-or-special-files", detail: "entries under the projections root that stand as neither a plain file nor a directory", count: odd });
-  if (wikiWorking > 0) omissions.push({ kind: "wiki-working", detail: `working carriers of wikis outside the daemon wiki (${[...wikiWorkingSlugs].sort().join(", ")}); they stay under the projections root, outside the hearth`, count: wikiWorking });
+  if (withheld > 0) omissions.push({ kind: "daemon-house-records", detail: "files under projections/bags/daemon that name a control-plane or house identity title; no bundle carries them", count: withheld });
   omissions.push(daemonBagOmission(projections));
   omissions.push({ kind: "parallel-drafts", detail: "another place's unmerged drafts rest in its draft floor doc (wikis/<slug>/drafts/<did>) and project nowhere; no door names them yet, so none travels" });
 
@@ -372,7 +402,7 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
     };
     put(REDECLARE_FILE, `${JSON.stringify(redeclare, null, 2)}\n`);
     files.sort((a, b) => (a.path < b.path ? -1 : 1));
-    const manifest: CarryManifest = { schema: CARRY_SCHEMA, bundleId: bundleIdOf(files), faces: bundleFaces, files, rows, counts, tempBytes, omissions };
+    const manifest: CarryManifest = { schema: CARRY_SCHEMA, bundleId: bundleIdOf(files), faces: bundleFaces, files, rows, counts, tempBytes, omissions, library: libraryListing() };
     writeFileSync(join(staging, MANIFEST_FILE), `${JSON.stringify(manifest, null, 2)}\n`, { flag: "wx" });
     verifyBundle(staging);      // every byte read back against the manifest before the bundle takes its name
     renameSync(staging, target);
@@ -381,6 +411,20 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
     rmSync(staging, { recursive: true, force: true });
     throw e;
   }
+}
+
+/**
+ * What the acquired library held, by collection, with its index carrier's digest. The originals survive a re-founding in
+ * place (`<root>/library`, outside the hearth) and never enter a bundle; this listing lets a reader see what stood there.
+ */
+function libraryListing(): Array<{ readonly collection: string; readonly indexSha256: string | null }> {
+  let collections: string[];
+  try { collections = listCollections(); } catch { return []; }
+  return collections.map((collection) => {
+    let indexSha256: string | null = null;
+    try { indexSha256 = sha256Hex(readFileSync(join(libraryCollectionDir(collection), "index.mem"))); } catch { /* no index yet */ }
+    return { collection, indexSha256 };
+  });
 }
 
 /** What the daemon's control plane leaves behind, counted by title family off its observe render where one stands. */
@@ -437,7 +481,9 @@ export interface CarryImportResult {
   /** Bundle face pet-name -> the handle index it lands on. */
   readonly faceMap: Readonly<Record<string, number>>;
   readonly redeclare: readonly string[];
-  readonly tallies: Readonly<Record<"working" | "kapae" | "kahua" | "draft" | "temp" | "bag", CarryTally>>;
+  readonly tallies: Readonly<Record<"working" | "kapae" | "kahua" | "draft" | "temp" | "bag" | "daemonCanon" | "wikiWorking", CarryTally>>;
+  /** The bags (and the wikis they open as) this import mints, or would mint in a preview, before it re-pours them. */
+  readonly minted: readonly string[];
   readonly skipped: readonly string[];
 }
 
@@ -499,14 +545,16 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     target.set(bf.key, face);
   }
 
-  const tallies = { working: tally(), kapae: tally(), kahua: tally(), draft: tally(), temp: tally(), bag: tally() };
+  const tallies = { working: tally(), kapae: tally(), kahua: tally(), draft: tally(), temp: tally(), bag: tally(), daemonCanon: tally(), wikiWorking: tally() };
+  const minted: string[] = [];
   const skipped: string[] = [];
 
   // WORKING ROWS AND KĀPAE: one wave per face, through the ingest gesture, keyed by content.
-  const wave = async (sourceDir: string, mirrorDir: string, toBag: string, files: readonly string[], keyPrefix: string, workTally: CarryTally, kapaeTally: CarryTally | null): Promise<void> => {
+  const wave = async (sourceDir: string, mirrorDir: string, toBag: string, files: readonly string[], keyPrefix: string, workTally: CarryTally, kapaeTally: CarryTally | null, wiki: string | null = null): Promise<void> => {
     if (files.length === 0) return;
     const scan = scanFiles(bundle.root, files.map((f) => join(bundle.root, ...f.split("/"))), toBag, new SyncedTree(null), (_r, file) => mirrorDirFileToUri(mirrorDir, file));
     for (const s of scan.skipped) if (!s.endsWith(".meta")) skipped.push(s);
+    for (const w of scan.withheld ?? []) workTally.refused.push(`${w} (a control-plane or house title no disk writes)`);
     for (const r of scan.refusedShadows ?? []) kapaeTally?.refused.push(`${r.file} (${r.refusal})`);
     const keyed = (r: ScanRow): string => `${keyPrefix}:${r.uri}:${r.diskHash}`;
     const candidates = candidatesOf(scan.rows).filter((r) => { if (journal.done.has(keyed(r))) { workTally.already++; return false; } return true; });
@@ -515,7 +563,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     workTally.planned += candidates.length;
     if (kapaeTally) kapaeTally.planned += kapae.length;
     if (!apply || (candidates.length === 0 && kapae.length === 0)) return;
-    const answer = await doors.ingest({ source: sourceDir, toBag, candidates, kapae });
+    const answer = await doors.ingest({ source: sourceDir, toBag, candidates, kapae, ...(wiki !== null ? { inWiki: true, wiki } : {}) });
     const landed = new Set(answer.landed);
     for (const r of candidates) if (landed.has(r.uri)) { workTally.landed++; journal.mark(keyed(r), "landed"); }
     for (const c of answer.conflicts) workTally.stoodOff.push(`${c.uri} (${c.why})`);
@@ -592,14 +640,35 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     place(join(bundle.root, ...f.path.split("/")), to, f.sha256, t);
   }
 
-  // HOUSE-MINTED BAGS: one wave per bag, through the same gesture.
-  const bagSlugs = [...new Set(manifest.files.map((f) => /^bags\/([^/]+)\//.exec(f.path)?.[1]).filter((s): s is string => s !== undefined))].sort();
+  // THE DAEMON WIKI'S CANON: re-poured into `bags/daemon` through the ingest gesture, the road seed walks for a bag the vessel
+  // mints at boot. (Seed's LOAD-then-MOVE road would carry the daemon wiki's WHOLE working layer into canon, the face's
+  // working memory with it, so the canon re-pour never takes it.)
+  const canonFiles = manifest.files.map((f) => f.path).filter((p) => p.startsWith("daemon/canon/"));
+  await wave(join(bundle.root, "daemon", "canon"), join(bundle.root, "daemon"), DAEMON_BAG_ID, canonFiles, "daemon-canon", tallies.daemonCanon, null);
+
+  // EVERY OTHER WIKI AND HOUSE-MINTED BAG, by slug: a slug this vessel does not hold mints first, through CREATE.
+  const slugsOf = (re: RegExp): string[] => [...new Set(manifest.files.map((f) => re.exec(f.path)?.[1]).filter((s): s is string => s !== undefined))].sort();
+  const bagSlugs = slugsOf(/^bags\/([^/]+)\//), wikiSlugs = slugsOf(/^wikis\/([^/]+)\/working\//);
+  if (bagSlugs.length + wikiSlugs.length > 0) {
+    const held = await doors.heldSlugs();
+    for (const slug of [...new Set([...bagSlugs, ...wikiSlugs])].sort()) {
+      if (held.has(slug)) continue;
+      minted.push(wikiBagUri(slug));
+      if (!apply || journal.done.has(`mint:${slug}`)) continue;
+      try { await doors.mintBag(wikiBagUri(slug)); journal.mark(`mint:${slug}`, "minted"); }
+      catch (e) { tallies.bag.refused.push(`${wikiBagUri(slug)} (mint refused: ${e instanceof Error ? e.message : String(e)})`); }
+    }
+  }
   for (const slug of bagSlugs) {
     const files = manifest.files.map((f) => f.path).filter((p) => p.startsWith(`bags/${slug}/`));
     await wave(join(bundle.root, "bags", slug), join(bundle.root, "bags"), wikiBagUri(slug), files, `bag:${slug}`, tallies.bag, null);
   }
+  for (const slug of wikiSlugs) {
+    const files = manifest.files.map((f) => f.path).filter((p) => p.startsWith(`wikis/${slug}/working/`));
+    await wave(join(bundle.root, "wikis", slug, "working"), join(bundle.root, "wikis", slug), wikiSlotUri(slug, "working"), files, `wiki-working:${slug}`, tallies.wikiWorking, tallies.kapae, slug);
+  }
 
-  return { bundleId: manifest.bundleId, applied: apply, faceMap, redeclare: acts, tallies, skipped };
+  return { bundleId: manifest.bundleId, applied: apply, faceMap, redeclare: acts, tallies, skipped, minted };
 }
 
 // ── the commands' shared refusal ─────────────────────────────────────────────────────────────────────────────

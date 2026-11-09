@@ -8,7 +8,8 @@
  *   · every other bag and wiki (house-minted, a user's own) projects under the house's projections root
  *     (`<root>/projections`), never the state root it sits in and never the hearth;
  *   · a PRIVATE plane (the daemon wiki at `wikis/daemon-<F>`, the kahua stage at `bags/kahua-<F>`) projects under the
- *     projections root even where a source dir of its name stands; no `bags/daemon` dir stands anywhere.
+ *     projections root even where a source dir of its name stands; the daemon wiki's canon (`bags/daemon`, non-control
+ *     records alone) projects to `<projections>/bags/daemon`, never beside the canon source.
  *
  * Membership reads the source tree; no bag name is listed, save the private planes.
  */
@@ -69,21 +70,21 @@ describe("projectionRoots — the mirror root splits by origin", () => {
 });
 
 describe("the daemon VM's mirrors under distinct state, canon and projection roots", () => {
-  test("house bags and both face folders land under projections, canon in the checkout, and no bags/daemon mirror", () => {
+  test("house bags, both face folders and the daemon canon land under projections; canon sources in the checkout", () => {
     const { state, projections, canon } = tree("crossroads");
     const mirrors = daemonDiskMirrors({ projectionRoot: projections, canonBags: canon, faceRelation: TAG });
     const byBag = new Map(mirrors.map((m) => [m.bagId, m.mirrorRoot]));
     expect(byBag.get(wikiSlotUri("daemon", "working"))).toBe(join(projections, "wikis", `daemon-${TAG}`));
     expect(byBag.get(KAHUA_BAG)).toBe(join(projections, "bags", `kahua-${TAG}`));
     expect(byBag.get(CROSSROADS_DOC_URI)).toBe(join(canon, "crossroads"));
-    expect(byBag.has(DAEMON_BAG_ID)).toBe(false);                     // the toggle names no observe render here
+    expect(mirrors.filter((m) => m.bagId === DAEMON_BAG_ID)).toEqual([{ bagId: DAEMON_BAG_ID, mirrorRoot: join(projections, "bags", "daemon"), scope: "daemon-canon" }]);
     for (const root of byBag.values()) expect(root.startsWith(join(state, "bags")) || root.startsWith(join(state, "wikis"))).toBe(false);
-    expect(mirrors.some((m) => m.mirrorRoot.endsWith(join("bags", "daemon")))).toBe(false);
+    expect(mirrors.some((m) => m.mirrorRoot.startsWith(join(canon, "daemon")))).toBe(false);
   });
-  test("the observe toggle adds the daemon bag's one-way render under projections/observe/daemon, and no bags/daemon dir", () => {
+  test("the observe toggle adds the daemon bag's one-way render under projections/observe/daemon", () => {
     const { projections, canon } = tree();
     const mirrors = daemonDiskMirrors({ projectionRoot: projections, canonBags: canon, faceRelation: TAG, observeDaemon: true });
-    const observe = mirrors.find((m) => m.bagId === DAEMON_BAG_ID);
+    const observe = mirrors.find((m) => m.bagId === DAEMON_BAG_ID && m.mirrorClass === "observe");
     expect(observe).toEqual({ bagId: DAEMON_BAG_ID, mirrorRoot: daemonObserveRoot(projections), scope: "daemon-observe", mirrorClass: "observe" });
     expect(observe!.mirrorRoot).toBe(join(projections, "observe", "daemon"));
   });

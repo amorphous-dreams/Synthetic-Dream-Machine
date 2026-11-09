@@ -8,7 +8,7 @@
 
 import { resolve as resolvePath, join as joinPath, dirname, basename, isAbsolute, sep } from "path";
 import { readdirSync } from "fs";
-import { stripMemeExt, wikiSlotUri, isBagManifestUri, isVolatileVmUri, KAHUA_BAG, CROSSROADS_DOC_URI, DAEMON_BAG_ID } from "@lararium/mesh";
+import { stripMemeExt, wikiSlotUri, isBagManifestUri, isVolatileVmUri, isControlPlaneUri, resolvedTitlePath, KAHUA_BAG, CROSSROADS_DOC_URI, DAEMON_BAG_ID } from "@lararium/mesh";
 
 export interface BagMirrorConfig {
   /** The bag whose changes this mirror reflects. */
@@ -212,9 +212,9 @@ export function isObserveProjectionPath(projectionRoot: string, path: string): b
  * mints the grant once, by name.
  *
  * THE RULED LAYOUT: the working top projects to `<projections>/wikis/daemon-<F>`, the lift-only fleet bag `bags/kahua`
- * to `<projections>/bags/kahua-<F>` (`kahuaStageMirror`), and the daemon bag (`bags/daemon`) stays the CRDT-only control
- * plane: no `bags/daemon` dir stands on disk, and its one disk form reads one-way under `observe/daemon`
- * (`daemonObserveRoot`), never ingested back.
+ * to `<projections>/bags/kahua-<F>` (`kahuaStageMirror`), and the daemon bag (`bags/daemon`) projects its non-control
+ * records as the daemon wiki's canon to `<projections>/bags/daemon` (`daemonCanonMirror`); its control records stay
+ * CRDT-only and read one-way under `observe/daemon` (`daemonObserveRoot`), never ingested back.
  */
 export function daemonWorkingMirror(projectionRoot: string, faceRelation: string): BagMirrorConfig {
   return { bagId: wikiSlotUri("daemon", "working"), mirrorRoot: joinPath(privateProjectionRoot(projectionRoot), "wikis", daemonFaceFolder(faceRelation)) };
@@ -242,14 +242,42 @@ export function daemonTempMirror(projectionRoot: string, faceRelation: string): 
   };
 }
 
+/**
+ * The daemon wiki's CANON mirror: the bag `bags/daemon` projects as a two-way canon mirror to `<projections>/bags/daemon/`,
+ * under the projections root alone (never beside a canon source), with its Confluence agreement, take-disk door and kāpae
+ * like every other canon mirror. A meme promoted into the daemon wiki's canon (a memory, a thought, a stage note) lands
+ * there and survives a re-founding. What else shares the bag never lands: the projector bars every title
+ * `isDaemonCanonWithheld` names from any mirror of this bag (the control plane, `bags/daemon/**` with the cap family and
+ * `$:/lares/swarm/**`, which keeps its one-way observe render alone; and the house's identity records). This stands until
+ * the control records leave the bag for a face-bound canon.
+ */
+export function daemonCanonMirror(projectionRoot: string): BagMirrorConfig {
+  return { bagId: DAEMON_BAG_ID, mirrorRoot: joinPath(privateProjectionRoot(projectionRoot), "bags", "daemon") };
+}
+
+/**
+ * Whether a title in the daemon bag names a HOUSE record rather than an authored one, so it never crosses the daemon
+ * canon mirror in either direction. Measured (2026-11-08): beside its control plane the daemon doc carries the house's own
+ * identity records under two namespaces: `bags/**` (the persona namespace: the signer binding, the hearth's true name,
+ * the face's group id, the sealed group-secret seals) and `dreamnet/**` (the sealed founding and admit checkpoints, the
+ * dyads, the persona acts). Withheld with them: the control plane (`isControlPlaneUri`) and TiddlyWiki's system namespace
+ * (`$:/`). The line runs by namespace, read through the same path resolution the control-plane law reads, so a dot segment
+ * folds no title out of it; an authored meme or memory (`lar:///ha.ka.ba/kahua/memory/<key>`, a plain title) projects.
+ */
+export function isDaemonCanonWithheld(title: string): boolean {
+  if (isControlPlaneUri(title) || title.startsWith("$:/")) return true;
+  const path = resolvedTitlePath(title);
+  return path.startsWith("lar:///ha.ka.ba/bags/") || path.startsWith("lar:///ha.ka.ba/dreamnet/") || path.startsWith("$:/");
+}
+
 /** A daemon VM disk mirror: the grant plus the scope its island names it by. */
 export type DaemonDiskMirror = BagMirrorConfig & { readonly scope: string };
 
 /**
- * THE DAEMON VM'S DISK MIRRORS, the one list its island receives: the worn face's working top
- * (`<projections>/wikis/daemon-<F>`), its kahua stage (`<projections>/bags/kahua-<F>`, items sited by title), and the
- * public crossroads bag, split by origin back to its canon source where one stands. The daemon bag holds no mirror here:
- * its observe-only render rides its own one-way writer (`daemon-observe.ts`).
+ * THE DAEMON VM'S DISK MIRRORS, the one list its island receives: the daemon wiki's canon (`<projections>/bags/daemon`,
+ * non-control records alone), the worn face's working top (`<projections>/wikis/daemon-<F>`), its kahua stage
+ * (`<projections>/bags/kahua-<F>`, items sited by title), and the public crossroads bag, split by origin back to its canon
+ * source where one stands. The daemon bag's observe-only render rides its own one-way writer (`daemon-observe.ts`).
  *
  * `faceRelation` names the face the composition wears (from the verified founding record). With no face worn (`null`) the list holds no private
  * kahua mirror at all, and never an untagged `kahua` folder; a later composition wearing a face mirrors under its tag.
@@ -270,6 +298,7 @@ export function daemonDiskMirrors(opts: {
   const { projectionRoot, canonBags, faceRelation, guardCrossroadsNexusHandles = true, observeDaemon = false, temp = false } = opts;
   return [
     ...(observeDaemon ? [{ bagId: DAEMON_BAG_ID, mirrorRoot: daemonObserveRoot(projectionRoot), scope: "daemon-observe", mirrorClass: "observe" as const }] : []),
+    { ...daemonCanonMirror(projectionRoot), scope: "daemon-canon" },
     ...(faceRelation === null ? [] : [
       { ...daemonWorkingMirror(projectionRoot, faceRelation), scope: "daemon" },
       { ...kahuaStageMirror(projectionRoot, faceRelation), scope: "kahua" },

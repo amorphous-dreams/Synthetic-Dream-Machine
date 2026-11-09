@@ -20,7 +20,9 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { createHash } from "node:crypto";
 import { repoRoot } from "@lararium/mesh/node";
-import { kapaeShadowBody } from "@lararium/node";
+import { kapaeShadowBody, SyncedTree } from "@lararium/node";
+import { DAEMON_BAG_ID } from "@lararium/mesh";
+import { scanFiles } from "../src/ingest-core.js";
 import { carryExport, carryImport, carryJournalPath, CarryRefused, type CarryDoors, type CarryVesselFace } from "../src/commands/carry.js";
 import { CarryBundleRefused, MANIFEST_FILE } from "../src/carry-manifest.js";
 import type { CensusReading } from "../src/commands/census.js";
@@ -41,6 +43,9 @@ class FakeVessel {
   lifts: Array<{ face: number; title: string; text: string; signer: string; parent: string | null }> = [];
   stage = new Map<number, CarryKahuaHead[]>();
   ingestCalls = 0;
+  inWikiBags: string[] = [];
+  held = new Set<string>(["garden"]);
+  mints: string[] = [];
   acts: string[] = [];
   census: CensusReading = { clean: true, items: [], unanswered: [] };
   constructor(faces: Array<Partial<CarryVesselFace> & { handleIndex: number }>, readonly grant: string) {
@@ -55,8 +60,11 @@ class FakeVessel {
       rename: async (i, petname) => { this.acts.push(`rename h${i} ${petname}`); this.faces = this.faces.map((f) => (f.handleIndex === i ? { ...f, petname } : f)); },
       declareHandle: async (i, handle) => { this.acts.push(`handle h${i} ${handle}`); this.faces = this.faces.map((f) => (f.handleIndex === i ? { ...f, handle } : f)); },
       standSeat: async (i, chair) => { this.acts.push(`seat h${i} ${chair}`); this.faces = this.faces.map((f) => (f.handleIndex === i ? { ...f, seat: true, chair } : f)); },
-      ingest: async ({ toBag, candidates, kapae }) => {
+      heldSlugs: async () => new Set(this.held),
+      mintBag: async (bag) => { this.mints.push(bag); this.held.add(bag.slice(bag.lastIndexOf("/") + 1)); },
+      ingest: async ({ toBag, candidates, kapae, inWiki, wiki }) => {
         this.ingestCalls++;
+        if (inWiki === true) this.inWikiBags.push(`${toBag} in ${wiki}`);
         const store = toBag === "lar:///ha.ka.ba/wikis/daemon/working" ? this.records : (this.bagRecords.get(toBag) ?? this.bagRecords.set(toBag, new Map()).get(toBag)!);
         const landed: string[] = [], conflicts: Array<{ uri: string; why: string }> = [];
         for (const c of candidates) {
@@ -251,6 +259,62 @@ describe("the carry verbs", () => {
     await carryImport(out, { apply: true, doors: after.doors() });
     expect(after.acts[0]).toBe("rename h0 hearth-one");
     expect(after.records.get(MEMORY)).toBeDefined();
+  });
+
+  test("C10 — the daemon wiki's canon travels and re-pours into bags/daemon; a house record standing there never travels", async () => {
+    const STAGE = "lar:///ha.ka.ba/kahua/memory/stage-note";
+    put("projections/bags/daemon/ha.ka.ba/kahua/memory/stage-note.tid", tid(STAGE, "a committed memory"));
+    put("projections/bags/daemon/ha.ka.ba/bags/persona/group-secret/abc.tid", tid("lar:///ha.ka.ba/bags/persona/group-secret/abc", "sealed"));
+    const { manifest } = await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    expect(manifest.rows.filter((r) => r.layer === "daemon-canon").map((r) => r.title)).toEqual([STAGE]);
+    expect(manifest.files.some((f) => f.path.includes("persona"))).toBe(false);
+    expect(manifest.omissions.find((o) => o.kind === "daemon-house-records")?.count).toBe(1);
+    const after = refound();
+    const result = await carryImport(out, { apply: true, doors: after.doors() });
+    expect(after.bagRecords.get(DAEMON_BAG_ID)?.get(STAGE)).toBe(tid(STAGE, "a committed memory"));
+    expect(result.tallies.daemonCanon.landed).toBe(1);
+    const calls = after.ingestCalls;
+    await carryImport(out, { apply: true, doors: after.doors() });
+    expect(after.ingestCalls).toBe(calls);
+  });
+
+  test("C11 — every other wiki's working rows travel; a slug the fresh vessel lacks mints first, named in the preview", async () => {
+    const PAGE = "lar:///ha.ka.ba/notes/field-page";
+    put("projections/wikis/field-notes/ha.ka.ba/notes/field-page.tid", tid(PAGE, "a field note"));
+    put("projections/wikis/field-notes/recovery/half.tid", tid("half", "a draft"));
+    const { manifest } = await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    expect(manifest.rows.filter((r) => r.layer === "wiki-working").map((r) => [r.bag, r.title])).toEqual([["lar:///ha.ka.ba/wikis/field-notes/working", PAGE]]);
+    const after = refound();
+    after.held = new Set();
+    const preview = await carryImport(out, { apply: false, doors: after.doors() });
+    expect(preview.minted).toEqual(["lar:///ha.ka.ba/bags/field-notes", "lar:///ha.ka.ba/bags/garden"]);
+    expect(after.mints).toEqual([]);
+    await carryImport(out, { apply: true, doors: after.doors() });
+    expect(after.mints).toEqual(["lar:///ha.ka.ba/bags/field-notes", "lar:///ha.ka.ba/bags/garden"]);
+    expect(after.bagRecords.get("lar:///ha.ka.ba/wikis/field-notes/working")?.get(PAGE)).toBe(tid(PAGE, "a field note"));
+    expect(after.inWikiBags).toEqual(["lar:///ha.ka.ba/wikis/field-notes/working in field-notes"]);
+    expect(readFileSync(join(root, "projections/wikis/field-notes/recovery/half.tid"), "utf8")).toBe(tid("half", "a draft"));
+  });
+
+  test("C12 — the manifest lists the library's collections by index digest; no original enters the bundle", async () => {
+    put("library/books/index.mem", "the books index\n");
+    put("library/books/abc123/moby-dick.txt", "Call me Ishmael.");
+    const { manifest } = await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    expect(manifest.library).toEqual([{ collection: "books", indexSha256: sha("the books index\n") }]);
+    expect(manifest.files.some((f) => f.path.includes("moby") || f.path.includes("library"))).toBe(false);
+  });
+
+  test("C13 — no ingest wave carries a control-plane title, nor a house record into bags/daemon", () => {
+    const dir = mkdtempSync(join(tmpdir(), "lar-withheld-"));
+    const files = ["h/ha.ka.ba/bags/daemon/outcomes/o1.tid", "h/ha.ka.ba/bags/persona/binding/signer-did.tid", "h/ha.ka.ba/kahua/memory/m.tid"].map((r) => {
+      const p = join(dir, ...r.split("/")); mkdirSync(dirname(p), { recursive: true }); writeFileSync(p, "x\n"); return p;
+    });
+    const scan = scanFiles(dir, files, DAEMON_BAG_ID, new SyncedTree(null), (_r, f) => `lar:///${f.slice(join(dir, "h").length + 1).replace(/\.tid$/, "")}`);
+    expect(scan.rows.map((r) => r.uri)).toEqual(["lar:///ha.ka.ba/kahua/memory/m"]);
+    expect(scan.withheld).toHaveLength(2);
+    const other = scanFiles(dir, files, "lar:///ha.ka.ba/bags/garden", new SyncedTree(null), (_r, f) => `lar:///${f.slice(join(dir, "h").length + 1).replace(/\.tid$/, "")}`);
+    expect(other.withheld).toHaveLength(1);
+    rmSync(dir, { recursive: true, force: true });
   });
 
   test("C9 — the refusal classes carry their codes", () => {

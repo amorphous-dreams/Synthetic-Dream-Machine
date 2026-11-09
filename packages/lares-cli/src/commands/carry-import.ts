@@ -18,12 +18,13 @@ export async function cmdImport(args: ParsedArgs, doors: CarryDoors = LIVE_CARRY
   const code = refused > 0 ? exitFor("verb-error") : stood > 0 ? exitFor("conflict") : 0;
   emit(args, {
     ok: code === 0,
-    data: { bundleId: result.bundleId, applied: result.applied, faceMap: result.faceMap, redeclare: result.redeclare, tallies: result.tallies, skipped: result.skipped },
+    data: { bundleId: result.bundleId, applied: result.applied, faceMap: result.faceMap, redeclare: result.redeclare, minted: result.minted, tallies: result.tallies, skipped: result.skipped },
     ...(refused > 0 ? { error: { code: "verb-error", message: `${refused} row(s) refused` } } : stood > 0 ? { error: { code: "conflict", message: `${stood} row(s) stand off; nothing overwrote them` } } : {}),
     human: () => {
       console.log(`import: bundle ${result.bundleId.slice(0, 16)} verified whole${result.applied ? "" : " · preview only (pass --apply)"}`);
       for (const [pet, i] of Object.entries(result.faceMap)) console.log(`  face "${pet}" -> h${i}`);
       for (const a of result.redeclare) console.log(`  re-declare ${a}`);
+      for (const b of result.minted) console.log(`  ${result.applied ? "minted" : "would mint"} ${b} (this vessel held no such wiki)`);
       for (const [cls, t] of Object.entries(result.tallies)) {
         if (t.landed + t.already + t.planned + t.stoodOff.length + t.refused.length === 0) continue;
         console.log(`  ${cls.padEnd(8)} ${result.applied ? `landed ${t.landed}` : `would land ${t.planned}`} · already ${t.already} · stood off ${t.stoodOff.length} · refused ${t.refused.length}`);
