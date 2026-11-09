@@ -2,6 +2,8 @@
 import { createRequire } from "node:module";
 import { describe, expect, test, vi } from "vitest";
 import { emptyLarDoc, type IslandMsg_Manifest, type LarDoc, type Repo as RepoType } from "@lararium/mesh";
+import { makeMemeGetReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
+import type { VerbContext } from "../src/verb-dispatcher.js";
 import { openDaemonVmCore, type DaemonVmHost } from "../src/daemon-vm-core.js";
 
 const Repo = createRequire(import.meta.resolve("@lararium/mesh"))("@automerge/automerge-repo").Repo as new (options: { sharePolicy?: () => Promise<boolean> }) => RepoType;
@@ -133,5 +135,26 @@ test.each(["dropped", "bags"] as const)("B2 — a face change under op %s settle
     await new Promise((resolve) => setImmediate(resolve));
     expect(settled, `the ${op} answer settles the ask`).toBe(true);
     await pending;
+  } finally { core.dispose(); ports.forEach((port) => port.close()); await repo.shutdown(); }
+});
+
+test("the persona plane stays outside the daemon composite", async () => {
+  const repo = new Repo({ sharePolicy: async () => true });
+  const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
+  const personaHandle = repo.create<LarDoc>(emptyLarDoc());
+  const ports: MessagePort[] = [];
+  const host: DaemonVmHost = {
+    spawnWorker: () => ({ post: () => {}, listen: () => () => {}, onError: () => () => {}, terminate: () => {} }),
+    newSyncChannel: () => { const { port1, port2 } = new MessageChannel(); ports.push(port1, port2); return { mainPort: port1 as IslandMsg_Manifest["syncPort"], syncPort: port2 as IslandMsg_Manifest["syncPort"] }; },
+  };
+  const bagId = "lar:///ha.ka.ba/bags/private-group";
+  const core = openDaemonVmCore(host, { repo, daemonHandle, personaHandle, personaBagId: bagId, recipe: { wikiSlug: "daemon" }, grants: { islandUrl: daemonHandle.url }, coreHash: null, workerScriptUrl: new URL("file:///unused"), eaSilenceMs: 2 ** 30 });
+  core.workerEa.catch(() => {});
+  try {
+    expect(core.composite.storeForBag(bagId)).toBeNull();
+    expect(core.personaPlane).toEqual({ bagId, handle: personaHandle });
+    const opts = { composite: core.composite, tw5: { $tw: { wiki: {} } } } as unknown as MemeVerbOptions;
+    const ctx = { invocation: { requestId: "test" }, cap: async () => ({ ok: true }) } as unknown as VerbContext;
+    await expect(makeMemeGetReactor(opts)({ bag: bagId, uri: "lar:///acts/example" }, ctx)).rejects.toThrow(/nothing reaches it/);
   } finally { core.dispose(); ports.forEach((port) => port.close()); await repo.shutdown(); }
 });

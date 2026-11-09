@@ -3075,16 +3075,16 @@ async function prepareNodeBootOn(
     const faceViews = faceViewBook(wornView?.floorHandle ?? assembly.catalogHandle, personaGroupId && wornFaceProved ? { group: personaGroupId, view: assembly.catalogHandle } : null);
     catalogForViews = () => faceViews.everyRow();
     const bagTierOfRow = makeBagTierReader();
-    const registerInCatalogOf = (group: string | null | undefined) => (bagId: string, url: string | null | undefined): void => {
+    const registerInCatalogOf = (group: string | null | undefined) => (bagId: string, url: string | null | undefined, privateSynced = false): void => {
       const into = group ? faceViews.viewOf(group) : assembly.catalogHandle;
       if (!url) return;
       // THE DECLARED TIER RIDES THE ROW: a bag whose own declaration reads `public` stamps `cap-tier = public`, which routes
       // its row onto the floor catalog (a public book a herm lists); any other tier stamps nothing and the row stays the face's.
-      const tier = bagTierOfRow(bagId) === "public" ? "public" : null;
+      const tier = !privateSynced && bagTierOfRow(bagId) === "public" ? "public" : null;
       const standing = ownEntry(into.doc()?.tiddlers, bagId);
-      if (tiddlerText(standing) === url && (plainField(standing, CATALOG_ROW_TIER_FIELD) ?? null) === tier) return;
+      if (tiddlerText(standing) === url && (plainField(standing, CATALOG_ROW_TIER_FIELD) ?? null) === tier && (plainField(standing, "kind") === "private-synced") === privateSynced) return;
       into.change((doc) => {
-        doc.tiddlers[bagId] = storedLarRecord(bagId, { text: url, kind: "oracle", ...(tier ? { [CATALOG_ROW_TIER_FIELD]: tier } : {}) }, "vessel-boot");
+        doc.tiddlers[bagId] = storedLarRecord(bagId, { text: url, kind: privateSynced ? "private-synced" : "oracle", ...(tier ? { [CATALOG_ROW_TIER_FIELD]: tier } : {}) }, "vessel-boot");
       });
     };
     const registerInCatalog = registerInCatalogOf(personaGroupId);
@@ -3128,7 +3128,7 @@ async function prepareNodeBootOn(
     for (const plane of bootstrap.personaPlanes) {
       // Each proven face's plane row lands in that face's own catalog, never the worn face's.
       const registerInCatalog = registerInCatalogOf(plane.personaGroupId);
-      if (provenPlanes.get(plane.personaGroupId) === plane.url) registerInCatalog(personaBagIdFor(plane.personaGroupId), plane.url);
+      if (provenPlanes.get(plane.personaGroupId) === plane.url) registerInCatalog(personaBagIdFor(plane.personaGroupId), plane.url, true);
     }
     // The mounted face's siblings ride the bootstrap under their own derived names; register them beside a PROVEN mounted face.
     const wornFace = wornFaceProved && bootstrap.personaBagId ? personaSiblingBagIds(bootstrap.personaBagId) : null;
