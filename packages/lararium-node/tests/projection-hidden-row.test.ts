@@ -36,8 +36,9 @@ function engine(fields: Record<string, unknown> | null): unknown {
 const mem = (text: string): CarrierFile => ({ ext: ".mem", body: text, defaultRelPath: "x.mem" });
 
 /** A fresh projector over the working mirror: the resolved render reads the view, the record render reads the bag. */
-function projectorOver(view: Record<string, unknown> | null, work: MemoryTiddlerStore, withRecords = true): LarDiskProjector {
+function projectorOver(view: Record<string, unknown> | null, work: MemoryTiddlerStore, withRecords = true, top?: MemoryTiddlerStore): LarDiskProjector {
   return new LarDiskProjector({
+    ...(top ? { topRecordFn: async (uri: string) => (await top.get(uri)) ?? (await work.get(uri)) } : {}),
     mirrors: [{ bagId: WORK, mirrorRoot: root }],
     carrierFileFn: async (uri) => { const f = (engine(view) as { $tw: { wiki: { getTiddler(t: string): { fields: Record<string, unknown> } | undefined } } }).$tw.wiki.getTiddler(uri)?.fields; return f ? mem(String(f["text"])) : null; },
     recoveryStore: (bag) => bag === WORK ? work : null,
@@ -101,6 +102,32 @@ test("CONTROL: without a record renderer the projector follows the resolved view
   const view = { title: TITLE, text: "draft words", "$origin-bag": DRAFT };
   const projector = projectorOver(view, work, false);
   const stop = projector.start(engine(view) as never);
+  await projector.idle();
+  expect(existsSync(carrier())).toBe(false);
+  await stop();
+});
+
+test("CONTROL: a tombstone topping the composition (a deliberate deletion) keeps the shadowed working record off disk", async () => {
+  root = mkdtempSync(join(tmpdir(), "hidden-row-tomb-"));
+  const work = new MemoryTiddlerStore(WORK);
+  const draft = new MemoryTiddlerStore(DRAFT);
+  await work.put({ tiddler: { title: TITLE, text: "working words" } }, origin);
+  await draft.put({ tiddler: { title: TITLE, text: "gone" } }, origin);
+  await draft.tombstone(TITLE, origin);
+  const projector = projectorOver(null, work, true, draft);
+  const stop = projector.start(engine(null) as never);
+  await projector.idle();
+  expect(existsSync(carrier())).toBe(false);
+  await stop();
+});
+
+test("CONTROL: a pack member the bag's own provenance names stays inside its pack, never its own file", async () => {
+  root = mkdtempSync(join(tmpdir(), "hidden-row-pack-"));
+  const work = new MemoryTiddlerStore(WORK);
+  await work.put({ tiddler: { title: TITLE, text: "member words" } }, origin);
+  await work.put({ tiddler: { title: "$:/config/OriginalTiddlerPaths", text: JSON.stringify({ [TITLE]: "pack.json" }) } }, origin);
+  const projector = projectorOver(null, work);
+  const stop = projector.start(engine(null) as never);
   await projector.idle();
   expect(existsSync(carrier())).toBe(false);
   await stop();

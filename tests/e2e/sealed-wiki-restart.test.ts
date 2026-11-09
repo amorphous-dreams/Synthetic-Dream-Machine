@@ -93,8 +93,8 @@ async function rowsAtRest(store: string, url: string): Promise<number | null> {
   } catch { return 0; }
   finally { await repo.shutdown().catch(() => undefined); }
 }
-/** The operator's own cleartext: the bare disk projection under the root's `bags/` and `wikis/` (R1's carve-out). */
-const projected = (rel: string): boolean => rel.startsWith("bags/") || rel.startsWith("wikis/");
+/** The operator's own cleartext: the bare disk projection under the root's `projections/` (R1's carve-out). */
+const projected = (rel: string): boolean => rel.startsWith("projections/");
 /** Every file of the root OUTSIDE the disk projection that holds the sealed marker. */
 const restingClear = (root: string): string[] => filesHolding(root, SEALED_MARK).filter((rel) => !projected(rel));
 

@@ -110,6 +110,12 @@ export interface LarDiskProjectorOptions {
    */
   readonly recordFileFn?: (bagId: string, tiddlerUri: string) => Promise<CarrierFile | null>;
   /**
+   * The highest record of a carrier root across the composition, a tombstone included (`CompositeStore.get`). The own-record
+   * pass reads it so a DELIBERATE deletion above a mirrored bag (a person's `shore remove`, a hand's delete) stays a
+   * deletion: a tombstone on top shadows by intent, where a live draft or personal row shadows by accident.
+   */
+  readonly topRecordFn?: (tiddlerUri: string) => Promise<{ readonly meta?: { readonly deleted?: boolean } } | null>;
+  /**
    * Resolve a POINTER's raw bytes from the local cid/ tier (the island's `resolveByCid`). A
    * pointer carrier (`CarrierFile.pointerCid`) projects as the WHOLE FILE beside its `.meta`
    * (THE BLOB LAW): the projector pulls the bytes here, verifies `sha256(bytes) == cid`, and
@@ -392,6 +398,7 @@ export class LarDiskProjector {
   private readonly recoveryStore: LarDiskProjectorOptions["recoveryStore"];
   private readonly recoveryFileFn: LarDiskProjectorOptions["recoveryFileFn"];
   private readonly recordFileFn: LarDiskProjectorOptions["recordFileFn"];
+  private readonly topRecordFn: LarDiskProjectorOptions["topRecordFn"];
   private readonly carrierFileFn: (tiddlerUri: string) => Promise<CarrierFile | null>;
   private readonly resolveByCid: ((cid: string) => Promise<Uint8Array | null>) | undefined;
   private readonly bagsHolding: ((tiddlerUri: string) => Promise<readonly string[]>) | undefined;
@@ -439,6 +446,7 @@ export class LarDiskProjector {
     this.recoveryStore = opts.recoveryStore;
     this.recoveryFileFn = opts.recoveryFileFn;
     this.recordFileFn = opts.recordFileFn;
+    this.topRecordFn = opts.topRecordFn;
     this.resolveByCid = opts.resolveByCid;
     this.bagsHolding  = opts.bagsHolding;
     this.layerIndexOf = opts.layerIndexOf;
@@ -783,13 +791,25 @@ export class LarDiskProjector {
     return hash > 0 ? title.slice(0, hash) : title;
   }
 
-  /** The ordinary mirrored bags (other than the view's winner) holding a live, projecting record of `rootUri`. */
+  /**
+   * The ordinary mirrored bags (other than the view's winner) holding a live, projecting record of `rootUri`. None where a
+   * tombstone tops the composition (a deliberate deletion shadows by intent), and none for a pack member: a member
+   * lives inside its pack file, read off the bag's own provenance aside, since the view may not hold it yet.
+   */
   private async shadowedOwnRecords(rootUri: string, winner: string | undefined): Promise<string[]> {
+    const mirrors = this.ownRecordMirrors();
+    if (mirrors.length === 0) return [];
+    if ((await this.topRecordFn?.(rootUri))?.meta?.deleted) return [];
     const out: string[] = [];
-    for (const mirror of this.ownRecordMirrors()) {
+    for (const mirror of mirrors) {
       if (mirror.bagId === winner || out.includes(mirror.bagId)) continue;
-      const record = await this.recoveryStore!(mirror.bagId)!.get(rootUri);
-      if (record && !record.meta?.deleted && record.tiddler["disk-projection"] !== "no") out.push(mirror.bagId);
+      const store = this.recoveryStore!(mirror.bagId)!;
+      const record = await store.get(rootUri);
+      if (!record || record.meta?.deleted || record.tiddler["disk-projection"] === "no") continue;
+      const provenance = await store.get(ORIGINAL_TIDDLER_PATHS);
+      const provText = provenance && !provenance.meta?.deleted ? provenance.tiddler["text"] : undefined;
+      if (typeof provText === "string" && packOfMember(parseProvenance(provText), rootUri) !== undefined) continue;
+      out.push(mirror.bagId);
     }
     return out;
   }
@@ -1189,8 +1209,8 @@ export class LarDiskProjector {
     const keptRoots = new Set<string>();
     for (const mirror of this.mirrors) {
       if (!holdingBags?.has(mirror.bagId)) continue;
-      // A carrier shadowed from the resolved view no longer projects here, unless its own record does: the standoff
-      // between its sides names a conflict nobody weighs.
+      // A carrier the resolved view shadows stops projecting here, unless its own record does: the standoff between
+      // its sides names a conflict nobody weighs.
       if (!spare?.has(mirror.bagId)) this._leaveStandoff(mirror.bagId, title, "sides");
       keptRoots.add(resolvePath(mirror.mirrorRoot));
     }
@@ -1843,8 +1863,8 @@ export class LarDiskProjector {
       // A pointer whose bytes the tier lacks writes no content file at all.
       //
       // THE ORDER: BODY FIRST, THEN `.meta`. Each lands atomically and durably before the next starts, so a crash
-      // between them leaves a NEW body beside the OLD sidecar, never a new sidecar over an old body: a `.meta`
-      // names the fields of the body it sits beside, and a stale body under fresh fields would read as a carrier
+      // between them leaves the fresh body beside the prior sidecar, never a fresh sidecar over a prior body: a
+      // `.meta` names the fields of the body it sits beside, and a stale body under fresh fields would read as a carrier
       // nobody wrote. The Synced-tree agreement lands after both, so a crash between them leaves no agreement
       // claiming the pair, and the next reconcile reads the disk against the records afresh.
       if (!bodyPending) this.atomicWrite(candidate, writeBytes);
