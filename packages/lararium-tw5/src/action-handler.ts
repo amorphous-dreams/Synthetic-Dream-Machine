@@ -208,7 +208,7 @@ export const LOAD_YIELD_QUANTUM = 25;
 export interface ActionHandlerOptions {
   readonly composite: CompositeStore;
   /** Concrete mirror grants from the vessel manifest. An empty list closes disk INGEST. */
-  readonly diskMirrors?: readonly { readonly bagId: string; readonly mirrorRoot: string; readonly scope: string; readonly mirrorClass?: "recovery" | "observe" }[];
+  readonly diskMirrors?: readonly { readonly bagId: string; readonly mirrorRoot: string; readonly scope: string; readonly mirrorClass?: "recovery" }[];
   /** The host-task yield a LOAD takes between landing slices; `yieldToHost` when absent. */
   readonly yieldHostTask?: HostTaskYield;
   /** Native TW5 filetype deserialization (LOAD), closing over the island's $tw. */
@@ -302,7 +302,7 @@ function normalizedAbsolutePath(path: string): string | null {
 function assertDiskWavePlacement(action: IngestAction, mirrors: ActionHandlerOptions["diskMirrors"]): void {
   if (mirrors === undefined) return; // non-vessel unit callers carry no filesystem capability
   const source = normalizedAbsolutePath(action.sourceUri);
-  const candidates = mirrors.filter((m) => m.bagId === action.toBag && m.mirrorClass !== "observe");
+  const candidates = mirrors.filter((m) => m.bagId === action.toBag);
   if (source === null || candidates.length === 0) {
     throw new DiskWavePlacementRefusal(action.sourceUri, action.toBag, "the vessel grants no writable mirror for this source and destination");
   }

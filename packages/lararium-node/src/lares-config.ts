@@ -64,12 +64,10 @@ export interface LaresConfig {
   readonly herm?: LaresHermConfig;
   /** What this hearth gives the walkers it hosts. Absent, the house defaults stand. */
   readonly hosting?: LaresHostingConfig;
-  /** The projection knobs. `observeDaemon` toggles the one-way render of the daemon bag (`daemon-observe.ts`); ON when absent.
-   *  `temp.<slug>` consents to projecting that wiki's user temp layer (absent = no projection); `tempExpiryDays.<slug>`
+  /** The projection knobs. `temp.<slug>` consents to projecting that wiki's user temp layer (absent = no projection); `tempExpiryDays.<slug>`
    *  opts that layer into age expiry through the trash (`temp-layer.ts`). Each keys by the wiki's slug, which survives
    *  a re-founding. */
   readonly projection?: {
-    readonly observeDaemon?: boolean;
     readonly temp?: Readonly<Record<string, boolean>>;
     readonly tempExpiryDays?: Readonly<Record<string, number>>;
   };

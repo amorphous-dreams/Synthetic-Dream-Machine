@@ -440,8 +440,7 @@ export class LarDiskProjector {
   private readonly projectedBags = new Set<string>();
 
   constructor(opts: LarDiskProjectorOptions) {
-    // An observe render never rides the projector: it keeps no agreement and no ingest reads it (`daemon-observe.ts`).
-    this.mirrors      = opts.mirrors.filter((mirror) => !isFaceScopedBag(mirror.bagId) && mirror.mirrorClass !== "observe");
+    this.mirrors      = opts.mirrors.filter((mirror) => !isFaceScopedBag(mirror.bagId));
     this.carrierFileFn = opts.carrierFileFn;
     this.recoveryStore = opts.recoveryStore;
     this.recoveryFileFn = opts.recoveryFileFn;

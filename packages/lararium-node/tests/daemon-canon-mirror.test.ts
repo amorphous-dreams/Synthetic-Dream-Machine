@@ -18,7 +18,6 @@ describe("the daemon wiki's mirrors follow the worn face", () => {
     expect(list.find((m) => m.scope === "daemon-canon")).toMatchObject({ bagId: daemonFaceCanonBag(F), mirrorRoot: `/p/bags/daemon-${F}` });
     expect(list.map((m) => m.scope)).toEqual(expect.arrayContaining(["kahua", "crossroads"]));
     expect(list.some((m) => m.bagId === DAEMON_BAG_ID || m.bagId === CONTROL_HOME_ID)).toBe(false);
-    expect(list.some((m) => m.scope === "daemon-observe")).toBe(false);
   });
 
   test("CONTROL: the floor (no face worn) mirrors no private layer; a face whose catalog names no canon mirrors no canon", () => {
