@@ -18,7 +18,7 @@
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, resolve, sep, extname } from "node:path";
 import { newChangeId, taskContentId, carrierHash, digestsEqual, BAG_MANIFEST_FILE } from "@lararium/mesh";
-import { SyncedTree, syncedTreeKey, syncedTreeDir, bagsFileToUri, mirrorDirFileToUri, larProjectionCheckpointDir, KAPAE_EXT, readKapaeShadow, isObserveProjectionPath } from "@lararium/node";
+import { SyncedTree, syncedTreeKey, syncedTreeDir, bagsFileToUri, mirrorDirFileToUri, larProjectionCheckpointDir, KAPAE_EXT, readKapaeShadow } from "@lararium/node";
 import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
 import { summaryOutput, type SubmitResult } from "./verb-result.js";
 import { runVerb } from "./verb-call.js";
@@ -152,21 +152,8 @@ export type FileToUriFn = (root: string, file: string) => string | null;
 
 /** The mirror directories a vessel reads — `LAR_BAGS` / `LAR_WIKIS` (cli `larBagsDir()` / `larWikisDir()`),
  *  which may sit outside `LAR_ROOT`, and the house's projections root (`<root>/projections`), whose `bags/` and
- *  `wikis/` read the same way and whose `observe/` no ingest reads. */
+ *  `wikis/` read the same way. */
 export interface MirrorDirs { readonly bags: string; readonly wikis: string; readonly projections?: string }
-
-/** The refusal a source under `<projections>/observe` raises: an observe render reads one way, never back. */
-export class ObserveIngestRefused extends Error {
-  override readonly name = "ObserveIngestRefused";
-  constructor(source: string) {
-    super(`observe-ingest-refused: ${source} sits under the observe plane (projections/observe), a one-way render of a control-plane bag; nothing there ingests back`);
-  }
-}
-
-/** Throw {@link ObserveIngestRefused} when `source` sits under `<projections>/observe`. */
-export function refuseObserveSource(source: string, dirs: MirrorDirs): void {
-  if (dirs.projections !== undefined && isObserveProjectionPath(dirs.projections, source)) throw new ObserveIngestRefused(source);
-}
 
 /**
  * Pick the address reverse-derivation by which mirror plane the source sits in.
@@ -187,9 +174,7 @@ export function fileToUriForSource(
     : under(join(dirs.projections, "bags")) ? join(dirs.projections, "bags")
     : null;
   const dir = projected ?? (under(dirs.wikis) ? dirs.wikis : dirs.bags);
-  const observe = dirs.projections;
-  // An observe file derives no address: whatever source names it, it never reaches a wave.
-  return (_root, file) => observe !== undefined && isObserveProjectionPath(observe, file) ? null : mirrorDirFileToUri(dir, file);
+  return (_root, file) => mirrorDirFileToUri(dir, file);
 }
 
 /**

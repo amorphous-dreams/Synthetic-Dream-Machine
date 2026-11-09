@@ -5,7 +5,7 @@
  *       every working row reads back by content key in the new face's wiki, the memory row among them; each kahua head
  *       lands once, signed under the new grant; drafts and consented temp land beside the new face's folder.
  *   C2  a second import of the same bundle lands nothing, journal or no journal.
- *   C3  the bundle holds no sensorium file and nothing from projections/observe or bags/daemon; the manifest counts
+ *   C3  the bundle holds no sensorium file and nothing from bags/daemon; the manifest counts
  *       what the daemon bag leaves behind; faces key by pet-name and no face relation rides the bundle.
  *   C4  a tampered byte, an unlisted file or an unsafe path refuses before any write.
  *   C5  a dest inside the house root or the workspace refuses; an unsettled census refuses unless --accept-omissions
@@ -102,8 +102,6 @@ function seedHouse(): void {
   put(`projections/wikis/daemon-${F1}/temp/scratch.tid`, tid("scratch", "a passing note"));
   put(`projections/bags/kahua-${F1}/ha.ka.ba/kahua/memory/heron.tid`, tid(MEMORY, "remember the heron"));
   put("projections/bags/garden/ha.ka.ba/garden/rose.tid", tid("lar:///ha.ka.ba/garden/rose", "a rose"));
-  put("projections/observe/daemon/ha.ka.ba/bags/daemon/outcome/req-1.tid", tid("lar:///ha.ka.ba/bags/daemon/outcome/req-1", "an outcome"));
-  put("projections/observe/daemon/ha.ka.ba/bags/daemon/outcome/req-2.tid", tid("lar:///ha.ka.ba/bags/daemon/outcome/req-2", "an outcome"));
   put("sensoriums/memory/persistence/testimony.ndjson", "{\"witness\":1}\n");
   put("hearth/vessel/store.bin", "old keys");
 }
@@ -203,15 +201,15 @@ describe("the carry verbs", () => {
     expect(after.stage.get(0)!.filter((h) => h.title === MEMORY)).toHaveLength(1);
   });
 
-  test("C3 — the bundle holds no sensorium, observe or bags/daemon file; the daemon bag counts by family; faces key by pet-name", async () => {
+  test("C3 — the bundle holds no sensorium or bags/daemon file; the daemon bag counts by family; faces key by pet-name", async () => {
     const { manifest } = await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
-    for (const f of manifest.files) expect(f.path).not.toMatch(/sensorium|observe|bags\/daemon|hearth/);
+    for (const f of manifest.files) expect(f.path).not.toMatch(/sensorium|bags\/daemon|hearth/);
     const bundleText = manifest.files.map((f) => readFileSync(join(out, ...f.path.split("/")), "utf8")).join("\n") + readFileSync(join(out, MANIFEST_FILE), "utf8");
     expect(bundleText).not.toContain(F1);
     expect(manifest.faces).toEqual([{ key: "f0", petname: "hearth-one" }]);
     const daemon = manifest.omissions.find((o) => o.kind === "daemon-bag")!;
-    expect(daemon.count).toBe(2);
-    expect(daemon.items).toEqual(["ha.ka.ba/bags/daemon/outcome  2"]);
+    expect(daemon.count).toBe(0);
+    expect(daemon.items).toEqual([]);
     expect(manifest.counts).toMatchObject({ working: 0, kapae: 0, draft: 1, temp: 1, "kahua-carrier": 1, "kahua-head": 1, bag: 1 });
     expect(manifest.tempBytes["lar:///ha.ka.ba/wikis/daemon/temp"]).toBe(tid("scratch", "a passing note").length);
     const redeclare = JSON.parse(readFileSync(join(out, "re-declare.json"), "utf8"));
@@ -311,7 +309,7 @@ describe("the carry verbs", () => {
     expect(manifest.rows.some((r) => r.layer === "daemon-canon")).toBe(false);
     expect(manifest.files.some((f) => f.path.startsWith("daemon/canon/"))).toBe(false);
     expect(manifest.files.some((f) => f.path.includes("persona"))).toBe(false);
-    expect(manifest.omissions.find((o) => o.kind === "daemon-bag")?.count).toBe(4);
+    expect(manifest.omissions.find((o) => o.kind === "daemon-bag")?.count).toBe(2);
     const after = refound();
     const result = await carryImport(out, { apply: true, doors: after.doors() });
     expect(after.bagRecords.get(DAEMON_BAG_ID)?.get(STAGE)).toBeUndefined();

@@ -42,7 +42,7 @@ import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
 import { wikiBagUri, wikiSlotUri, KAHUA_BAG, defaultChairLabel, declarePersonaHandle, renameOwnPersona, standForKahuSeat } from "@lararium/mesh";
 import {
-  larHouseRoot, larProjectionsHome, larConfigHome, mirrorDirFileToUri, SyncedTree, OBSERVE_DIR, TEMP_LAYER_DIR,
+  larHouseRoot, larProjectionsHome, larConfigHome, mirrorDirFileToUri, SyncedTree, TEMP_LAYER_DIR,
   daemonFaceFolder, isDaemonFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug, loadLaresConfig, tempConsentedSlugs,
   listCollections, libraryCollectionDir, atomicWriteFileSync,
 } from "@lararium/node";
@@ -410,9 +410,9 @@ function libraryListing(): Array<{ readonly collection: string; readonly indexSh
   });
 }
 
-/** Unmirrored daemon and one-way observe files stay out of the disk carry. */
+/** Unmirrored daemon files stay out of the disk carry. */
 function daemonBagOmission(projections: string): CarryOmission {
-  const roots = [join(projections, "bags", "daemon"), join(projections, OBSERVE_DIR, "daemon")];
+  const roots = [join(projections, "bags", "daemon")];
   const families = new Map<string, number>();
   for (const root of roots) {
     if (!existsSync(root)) continue;
@@ -423,7 +423,7 @@ function daemonBagOmission(projections: string): CarryOmission {
     }
   }
   const items = [...families].sort(([a], [b]) => (a < b ? -1 : 1)).map(([f, n]) => `${f}  ${n}`);
-  return { kind: "daemon-bag", detail: "daemon control and observe files have no disk-ingress grant", items, count: [...families.values()].reduce((a, b) => a + b, 0) };
+  return { kind: "daemon-bag", detail: "daemon control files have no disk-ingress grant", items, count: [...families.values()].reduce((a, b) => a + b, 0) };
 }
 
 // ── import ─────────────────────────────────────────────────────────────────────────────────────────────────────

@@ -21,7 +21,6 @@ import type { IslandBehavior, IslandContext } from "@lararium/tw5";
 import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
 import { LarDiskProjector } from "./disk-projector.js";
 import { namedBagMirror } from "./bag-paths.js";
-import { mountDaemonObserve } from "./daemon-observe.js";
 import { SyncedTree, syncedTreeDir, syncedTreeKey } from "./synced-tree.js";
 import { larProjectionCheckpointDir, larProjectionsHome } from "./vessel-paths.js";
 import { readBackTempCarriers, TempLayerHousekeeper } from "./temp-layer.js";
@@ -118,23 +117,15 @@ export function mountDiskProjection(
 ): (() => Promise<void>) | undefined {
   const allDefs = manifest.diskMirrors;
   if (!allDefs?.length) return undefined;
-  // THE OBSERVE RENDERS stand apart from the projector: a one-way writer over the bag's own store, no agreement, no
-  // ingest (`daemon-observe.ts`).
-  const observes = allDefs.filter((def) => def.mirrorClass === "observe").flatMap(({ bagId, mirrorRoot }) => {
-    const store = ctx.composite.storeForBag(bagId);
-    return store ? [mountDaemonObserve(store, mirrorRoot)] : [];
-  });
-  const mirrorDefs = allDefs.filter((def) => def.mirrorClass !== "observe");
-  if (!mirrorDefs.length) return async () => { for (const o of observes) o.stop(); };
   // THE USER TEMP LAYER stands only for this island's own wiki and only under `<root>/projections`: any other temp grant
   // drops here, before the projector learns of it.
   const tempSlug = manifest.recipe?.wikiSlug ?? "";
-  const tempDefs = mirrorDefs.filter((def) => def.tempLayer);
+  const tempDefs = allDefs.filter((def) => def.tempLayer);
   const projectionsRoot = tempDefs.length === 0 ? null : (() => { try { return resolvePath(larProjectionsHome()); } catch { return null; } })();
   const tempMirrors = tempDefs.filter((def) =>
     tempSlug !== "" && def.bagId === wikiSlotUri(tempSlug, "temp") && projectionsRoot !== null && resolvePath(def.mirrorRoot).startsWith(projectionsRoot + sep)
     && ctx.composite.storeForBag(def.bagId) !== null);
-  const mirrors = mirrorDefs.filter((def) => !def.tempLayer || tempMirrors.includes(def)).map(({ bagId, mirrorRoot, scope, titlePaths, mirrorClass, tempLayer }) =>
+  const mirrors = allDefs.filter((def) => !def.tempLayer || tempMirrors.includes(def)).map(({ bagId, mirrorRoot, scope, titlePaths, mirrorClass, tempLayer }) =>
     namedBagMirror(bagId, scope, mirrorRoot, titlePaths, mirrorClass, tempLayer),
   );
   // READ-BACK AHEAD OF THE FIRST PASS: the temp layer comes up empty at every restart, so each carrier its mirror holds
@@ -147,7 +138,7 @@ export function mountDiskProjection(
       return record !== null && record !== undefined && record.meta?.deleted !== true;
     };
     const read = readBackTempCarriers({
-      mirrorRoot: def.mirrorRoot, projectionsRoot: projectionsRoot!, holds,
+      mirrorRoot: def.mirrorRoot, holds,
       put: (fields) => { void store.put({ tiddler: fields }, { kind: "operator-import", sessionId: "temp-read-back" }); },
     });
     if (read.read > 0 || read.refused > 0) console.log(`[temp-layer] ${tempSlug}: ${read.read} carrier(s) read back, ${read.refused} refused`);
@@ -279,7 +270,6 @@ export function mountDiskProjection(
   if (housekeepers.length > 0) void projector.idle().then(() => { for (const h of housekeepers) h.start(); });
   return async () => {
     for (const h of housekeepers) await h.stop();
-    for (const o of observes) o.stop();
     bindRecoveryAtRest(ctx.tw5, null);
     if (mountedProjector === projector) mountedProjector = null;
     await stop();

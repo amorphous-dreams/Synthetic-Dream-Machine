@@ -15,8 +15,8 @@ export interface BagMirrorConfig {
   readonly bagId: string;
   /** Absolute filesystem path; all writes are constrained under this root. */
   readonly mirrorRoot: string;
-  /** Marks a grant intended for bag-specific recovery projection, or (`observe`) a one-way render no ingest reads. */
-  readonly mirrorClass?: "recovery" | "observe";
+  /** Marks a grant intended for bag-specific recovery projection,. */
+  readonly mirrorClass?: "recovery";
   /**
    * Widened grant (capability, rides the manifest's diskMirrors): the mirror
    * MAY place files DIRECTLY in the root-bags-dir — the nearest ancestor of
@@ -136,7 +136,7 @@ export function carrierBaseRelPath(uri: string): string | null {
  * stable name whole; the mirrorRoot = the bag's residency dir.
  */
 export function namedBagMirror(
-  bagId: string, scope: string, mirrorRoot: string, titlePaths?: boolean, mirrorClass?: "recovery" | "observe",
+  bagId: string, scope: string, mirrorRoot: string, titlePaths?: boolean, mirrorClass?: "recovery",
   tempLayer?: boolean,
 ): BagMirrorConfig {
   void scope;
@@ -169,23 +169,6 @@ export function daemonFaceFolder(faceRelation: string): string {
 }
 export function isDaemonFaceFolder(name: string): boolean {
   return name.startsWith("daemon-") && KAHUA_FACE_RELATION.test(name.slice(7));
-}
-
-/**
- * THE OBSERVE PLANE: `<projections>/observe/` holds one-way, read-only renders of control-plane bags (the daemon bag
- * at `observe/daemon/`). Nothing there ingests back: it carries no agreement record and no take-disk door, and the
- * ingest path refuses any file under it by name ({@link isObserveProjectionPath}).
- */
-export const OBSERVE_DIR = "observe";
-/** The observe-only mirror dir of the daemon bag: `<projections>/observe/daemon`. */
-export function daemonObserveRoot(projectionRoot: string): string {
-  return joinPath(projectionRoot, OBSERVE_DIR, "daemon");
-}
-/** Whether `path` sits at or under `<projectionRoot>/observe` — a subtree no ingest reads. */
-export function isObserveProjectionPath(projectionRoot: string, path: string): boolean {
-  const observe = resolvePath(projectionRoot, OBSERVE_DIR);
-  const abs = resolvePath(path);
-  return abs === observe || abs.startsWith(observe + sep);
 }
 
 /**

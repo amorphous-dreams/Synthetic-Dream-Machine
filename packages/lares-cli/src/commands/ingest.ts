@@ -22,7 +22,7 @@ import { emit, wantsJson, exitFor } from "../render.js";
 import { summaryOutput } from "../verb-result.js";
 import { OUTCOME_URI_PREFIX } from "@lararium/mesh";
 import { larRoot, larBagsDir, larWikisDir, larProjectionsDirOrNone, vesselDid } from "../env.js";
-import { openSyncedTree, scanSource, fileToUriForSource, candidatesOf, settleIngest, ingestVerdict, applyConfirmedRenames, refuseObserveSource, ObserveIngestRefused } from "../ingest-core.js";
+import { openSyncedTree, scanSource, fileToUriForSource, candidatesOf, settleIngest, ingestVerdict, applyConfirmedRenames } from "../ingest-core.js";
 import { carrierNeedsTag, tagBlobs } from "../tag-blobs.js";
 import { verbFailure } from "../verb-call.js";
 import { askShore, askSettle, type SettleReading } from "../shore-core.js";
@@ -48,12 +48,6 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
   // scan — observations only, never a work queue
   const projections = larProjectionsDirOrNone();
   const dirs = { bags: larBagsDir(), wikis: larWikisDir(), ...(projections !== undefined ? { projections } : {}) };
-  // THE OBSERVE PLANE READS ONE WAY: a source under `<projections>/observe` refuses by name before any scan.
-  try { refuseObserveSource(source, dirs); } catch (err) {
-    if (!(err instanceof ObserveIngestRefused)) throw err;
-    emit(args, { ok: false, error: { code: "usage", message: err.message }, human: () => console.error(`lares ingest: ${err.message}`) });
-    return exitFor("usage");
-  }
   const scan = scanSource(root, source, toBag, tree, fileToUriForSource(root, source, dirs));
   if (scan === null) {
     emit(args, { ok: false, error: { code: "usage", message: `source "${source}" does not resolve` }, human: () => console.error(`lares ingest: source "${source}" does not resolve`) });

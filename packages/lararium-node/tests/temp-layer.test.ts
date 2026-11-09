@@ -172,7 +172,7 @@ describe("projection", () => {
 });
 
 describe("read-back", () => {
-  test("a temp carrier reads back into the layer; the observe plane and house internal titles refuse", async () => {
+  test("a temp carrier reads back into the layer; house internal titles refuse", async () => {
     const r = rig();
     await r.store.put({ tiddler: { title: "Shopping", text: "eggs\nmilk", tags: "[[to do]]" } }, ORIGIN);
     await r.reconcile("Shopping");
@@ -182,7 +182,7 @@ describe("read-back", () => {
 
     const fresh = new MemoryTiddlerStore(BAG);
     const read = readBackTempCarriers({
-      mirrorRoot: r.mirrorRoot, projectionsRoot: r.projections,
+      mirrorRoot: r.mirrorRoot,
       holds: (t) => fresh.readNow(t).record !== null,
       put: (fields) => { void fresh.put({ tiddler: fields }, ORIGIN); },
     });
@@ -190,11 +190,6 @@ describe("read-back", () => {
     expect(fresh.readNow("Shopping").record?.tiddler).toMatchObject({ title: "Shopping", text: "eggs\nmilk", tags: "[[to do]]" });
     expect(fresh.readNow("torn").record).toBeNull();
 
-    const observe = join(r.projections, "observe", "daemon");
-    mkdirSync(observe, { recursive: true });
-    writeFileSync(join(observe, "a.tid"), "title: A\n\nx");
-    expect(readBackTempCarriers({ mirrorRoot: observe, projectionsRoot: r.projections, holds: () => false, put: () => { throw new Error("no"); } }))
-      .toEqual({ read: 0, refused: 1 });
   });
 });
 

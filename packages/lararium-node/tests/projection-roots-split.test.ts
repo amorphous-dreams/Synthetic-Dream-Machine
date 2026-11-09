@@ -80,12 +80,6 @@ describe("the daemon VM's mirrors under distinct state, canon and projection roo
     for (const root of byBag.values()) expect(root.startsWith(join(state, "bags")) || root.startsWith(join(state, "wikis"))).toBe(false);
     expect(mirrors.some((m) => m.mirrorRoot.startsWith(join(canon, "daemon")))).toBe(false);
   });
-  test("the daemon store receives no observe render", () => {
-    const { projections, canon } = tree();
-    const mirrors = daemonDiskMirrors({ projectionRoot: projections, canonBags: canon, faceRelation: TAG });
-    const observe = mirrors.find((m) => m.bagId === DAEMON_BAG_ID && m.mirrorClass === "observe");
-    expect(observe).toBeUndefined();
-  });
   test("the daemon wiki's folder names the face as daemon-<F>; the kahua stage keeps kahua-<F>", () => {
     expect(daemonFaceFolder(TAG)).toBe(`daemon-${TAG}`);
     expect(kahuaFaceFolder(TAG)).toBe(`kahua-${TAG}`);
