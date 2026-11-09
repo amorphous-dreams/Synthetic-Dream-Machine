@@ -21,6 +21,29 @@ export class CardReadBackRefused extends Error {
   override readonly name = "CardReadBackRefused";
 }
 
+/** A card's code holds 72 characters once its dashes and spaces drop. */
+const CODE_CHARACTERS = 72;
+const CARD_LINES = 3;
+
+/**
+ * One read-back attempt gathers the card's three lines: typed one per line, pasted as three lines (the terminal
+ * hands them over one line at a time), or pasted onto one line. It stops once 72 characters stand, after three
+ * lines, or on an empty line. The input stays hidden, so each further line names how many characters it still needs.
+ */
+async function readCardLines(chair: string): Promise<string> {
+  let code = "";
+  for (let line = 0; line < CARD_LINES; line++) {
+    const label = line === 0
+      ? `type or paste ${chair}'s three code lines (dashes and spaces optional), not the confirm words; the input stays hidden\n  `
+      : `  line ${line + 1} of ${CARD_LINES} (${CODE_CHARACTERS - code.length} characters to go): `;
+    const typed = (await promptSecret(label)).replace(/[\s-]/g, "");
+    if (typed.length === 0) break;
+    code += typed;
+    if (code.length >= CODE_CHARACTERS) break;
+  }
+  return code;
+}
+
 /**
  * Print each card and read it back. A card a person mis-copies would freeze the
  * chair at its next roll, so the rite asks each one back on the terminal and writes nothing until every card reads
@@ -51,7 +74,7 @@ export async function readBack(args: ParsedArgs, cards: readonly ColdCard[], gen
       }
       if (standIn) continue;
       for (let tries = 0; ; tries++) {
-        const typed = (await promptSecret(`type ${card.chair}'s three code lines (dashes and spaces optional), not the confirm words`)).trim();
+        const typed = await readCardLines(card.chair);
         let back: Uint8Array | null = null;
         let reason = "reads as another card";
         try { back = coldKeySeedFromCode(typed); } catch (err) {

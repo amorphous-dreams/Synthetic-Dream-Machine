@@ -21,14 +21,16 @@ test("terminal read-back names faults without echoing input and accepts the card
   const code = coldKeyCode(seed);
   const output = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
   for (const [bad, reason] of [["abc", "3 of 72 characters"], ["z".repeat(72), "a character outside 0-9 a-f"], ["0".repeat(72), "a typo somewhere (checksum)"], [coldKeyCode(new Uint8Array(32).fill(8)), "reads as another card"]]) {
-    secret.mockResolvedValueOnce(bad!).mockResolvedValueOnce(code);
+    secret.mockResolvedValueOnce(bad!);
+    if (bad!.length < 72) secret.mockResolvedValueOnce(""); // an empty line ends a short attempt
+    secret.mockResolvedValueOnce(code);
     await readBack({ command: null, positional: [], options: {}, flags: {} }, [{ chair: "test chair", seed: seed.slice(), digest: "x" }], 1, "");
     const lines = output.mock.calls.map((c) => String(c[0])).join("");
     expect(lines).toContain(reason);
     expect(lines).not.toContain(bad);
     output.mockClear();
   }
-  expect(secret.mock.calls[0]?.[0]).toContain("three code lines (dashes and spaces optional), not the confirm words");
+  expect(secret.mock.calls[0]?.[0]).toContain("three code lines (dashes and spaces optional), not the confirm words; the input stays hidden");
 });
 
 test("multiple cards announce their order", async () => {
@@ -59,4 +61,24 @@ test("without a CLI seat JSON card output refuses and clears the seed even if th
     .rejects.toBeInstanceOf(CardReadBackRefused);
   expect(seed.every((byte) => byte === 0)).toBe(true);
   expect(sealedAct).not.toHaveBeenCalled();
+});
+
+test("one attempt gathers the card's three lines, typed or pasted one per line, and a one-line paste reads whole", async () => {
+  seatReadBackStandIn(false);
+  vi.spyOn(prompt, "canPromptSecret").mockReturnValue(true);
+  const secret = vi.spyOn(prompt, "promptSecret");
+  const seed = new Uint8Array(32).fill(7);
+  const code = coldKeyCode(seed);
+  const hex = code.replace(/[\s-]/g, "");
+  const lines = [hex.slice(0, 24), hex.slice(24, 48), hex.slice(48)].map((l) => l.replace(/(.{4})(?=.)/g, "$1-"));
+  vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+  // three lines, one prompt each, inside ONE attempt
+  for (const line of lines) secret.mockResolvedValueOnce(line);
+  await readBack({ command: null, positional: [], options: {}, flags: {} }, [{ chair: "place", seed: seed.slice(), digest: "x" }], 0, "");
+  expect(secret).toHaveBeenCalledTimes(3);
+  secret.mockReset();
+  // the three lines on one line, spaces between
+  secret.mockResolvedValueOnce(lines.join(" "));
+  await readBack({ command: null, positional: [], options: {}, flags: {} }, [{ chair: "place", seed: seed.slice(), digest: "x" }], 0, "");
+  expect(secret).toHaveBeenCalledTimes(1);
 });
