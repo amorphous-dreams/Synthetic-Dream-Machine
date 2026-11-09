@@ -479,15 +479,14 @@ describe("foreign-title projection — the CONTROLs", () => {
     expect(existsSync(join(root, "My Notes.md"))).toBe(false);
   });
 
-  test("★ CONTROL — a `lar:` name the LOCI law refuses never falls through to the flatten ★", async () => {
-    // A fragment owns no file (its carrier root does) and a bag manifest belongs to the declare verb.
-    // Both are deliberate refusals, so the flattened default must not resurrect them.
+  test("fragment and bag-manifest titles project through their selected mirror", async () => {
     const { projector, root } = rig((uri) => ({
-      ext: ".mem", body: "x", defaultRelPath: `${uri.replace(/[:/]/g, "_")}.mem`,
+      ext: ".mem", body: "x", relPath: uri.includes("#") ? "placed/fragment.mem" : "placed/manifest.mem",
     }));
     await projector.flush("wiki", "lar:///ha.ka.ba/lares/parity/note#slot");
     await projector.flush("wiki", "lar:///ha.ka.ba/bags/lares");
-    expect(readdirSync(root)).toEqual([]);
+    expect(readFileSync(join(root, "placed/fragment.mem"), "utf8")).toBe("x");
+    expect(readFileSync(join(root, "placed/manifest.mem"), "utf8")).toBe("x");
   });
 
   test("CONTROL — a carrier with neither rule, loci, nor default sites nowhere", async () => {
