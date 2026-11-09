@@ -46,7 +46,9 @@ export interface TempHousekeepingClock {
   every(ms: number, fn: () => void): () => void;
 }
 
-/** The node clock: `Date.now` and an unref'd interval, so a standing schedule never holds a process open. */
+/** The node clock, the temp layer's ONE wall read: age expiry and the orphan settle window measure a file's age against
+ *  wall time, so every housekeeping run reads `now` here alone (a suite injects its own), with an unref'd interval, so a
+ *  standing schedule never holds a process open. */
 export const systemHousekeepingClock: TempHousekeepingClock = {
   now: () => Date.now(),
   every: (ms, fn) => {
@@ -81,7 +83,9 @@ export function tempAuditPath(projectionsRoot: string, date: string): string {
   return join(projectionsRoot, "audit", `${date}.ndjson`);
 }
 
-const isoDate = (ms: number): string => new Date(ms).toISOString().slice(0, 10);
+/** A clock reading's ISO forms: every time this layer writes comes off the one clock seam, never off a wall read. */
+const isoTime = (ms: number): string => new Date(ms).toISOString();
+const isoDate = (ms: number): string => isoTime(ms).slice(0, 10);
 const idOf = (text: string): string => `sha256:${createHash("sha256").update(text, "utf8").digest("hex")}`;
 
 /**
@@ -284,7 +288,7 @@ export class TempLayerHousekeeper {
   private act(action: TempAuditLine["action"], id: string, fn: () => void, now: number): void {
     let outcome = "ok";
     try { fn(); } catch (err) { outcome = `error:${(err as NodeJS.ErrnoException).code ?? "unknown"}`; }
-    const line: TempAuditLine = { ts: new Date(now).toISOString(), action, bag: this.opts.slug, id, outcome };
+    const line: TempAuditLine = { ts: isoTime(now), action, bag: this.opts.slug, id, outcome };
     const path = tempAuditPath(this.opts.projectionsRoot, isoDate(now));
     try {
       mkdirSync(dirname(path), { recursive: true, mode: 0o700 });
