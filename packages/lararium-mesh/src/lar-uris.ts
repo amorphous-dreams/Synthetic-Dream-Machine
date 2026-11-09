@@ -352,6 +352,21 @@ export function isControlPlaneUri(title: string): boolean {
   return resolvedTitlePath(title).startsWith(`${DAEMON_BAG_ID}/`) || isSwarmUri(title);
 }
 
+/**
+ * Whether a title in the daemon bag names a HOUSE record rather than an authored one, so it never crosses between disk and
+ * `bags/daemon` in either direction. Measured (2026-11-08): beside its control plane the daemon doc carries the house's own
+ * identity records under two namespaces: `bags/**` (the persona namespace: the signer binding, the hearth's true name, the
+ * face's group id, the sealed group-secret seals) and `dreamnet/**` (the sealed founding and admit checkpoints, the dyads,
+ * the persona acts). Withheld with them: the control plane (`isControlPlaneUri`) and TiddlyWiki's system namespace (`$:/`).
+ * The line runs by namespace, read through `resolvedTitlePath`, so a dot segment folds no title out of it; an authored meme
+ * or memory (`lar:///ha.ka.ba/kahua/memory/<key>`, a plain title) crosses.
+ */
+export function isDaemonCanonWithheld(title: string): boolean {
+  if (isControlPlaneUri(title) || title.startsWith("$:/")) return true;
+  const path = resolvedTitlePath(title);
+  return path.startsWith("lar:///ha.ka.ba/bags/") || path.startsWith("lar:///ha.ka.ba/dreamnet/") || path.startsWith("$:/");
+}
+
 /** The swarm's live controls (house cap, lane shares, go, lane state, roster, receipts) rest in the daemon wiki under this prefix. */
 export const SWARM_URI_PREFIX = "$:/lares/swarm/";
 

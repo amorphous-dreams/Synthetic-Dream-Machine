@@ -17,8 +17,9 @@
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { join, sep } from "node:path";
+import { isDaemonCanonWithheld } from "@lararium/mesh";
 import { openStaged, awaitRendezvous, daemonWikiDir, stageDir, type LarInstance } from "../harness/instance.js";
 import { expectEntry } from "../harness/journal-expect.js";
 
@@ -91,7 +92,12 @@ describe.skipIf(gaps.length > 0)("★ the outbound bridge and the daemon mirror,
     expect(existsSync(at), `the working wiki did not project ${at}`).toBe(true);
   });
 
-  test("CONTROL: the daemon's private bag projects NOWHERE — no bags/daemon/ under the root", () => {
-    expect(existsSync(join(lar.root, "projections/bags", "daemon"))).toBe(false);
+  test("CONTROL: the daemon bag projects its authored canon alone — no control or house title under bags/daemon", () => {
+    // The daemon wiki's canon mirror (operator, 2026-11-08) may stand at <projections>/bags/daemon; every file there derives
+    // a title the withheld-title law lets cross (`isDaemonCanonWithheld`: no `bags/**`, `dreamnet/**` or `$:/` record).
+    const canon = join(lar.root, "projections/bags", "daemon");
+    const files = existsSync(canon) ? (readdirSync(canon, { recursive: true }) as string[]).filter((p) => statSync(join(canon, p)).isFile()) : [];
+    const titles = files.filter((p) => !p.endsWith(".meta")).map((p) => `lar:///${p.split(sep).join("/").replace(/\.[^/.]+$/, "")}`);
+    expect(titles.filter((t) => isDaemonCanonWithheld(t)), "a withheld title stands under bags/daemon").toEqual([]);
   });
 });

@@ -8,7 +8,7 @@
 
 import { resolve as resolvePath, join as joinPath, dirname, basename, isAbsolute, sep } from "path";
 import { readdirSync } from "fs";
-import { stripMemeExt, wikiSlotUri, isBagManifestUri, isVolatileVmUri, isControlPlaneUri, resolvedTitlePath, KAHUA_BAG, CROSSROADS_DOC_URI, DAEMON_BAG_ID } from "@lararium/mesh";
+import { stripMemeExt, wikiSlotUri, isBagManifestUri, isVolatileVmUri, isDaemonCanonWithheld, KAHUA_BAG, CROSSROADS_DOC_URI, DAEMON_BAG_ID } from "@lararium/mesh";
 
 export interface BagMirrorConfig {
   /** The bag whose changes this mirror reflects. */
@@ -255,20 +255,8 @@ export function daemonCanonMirror(projectionRoot: string): BagMirrorConfig {
   return { bagId: DAEMON_BAG_ID, mirrorRoot: joinPath(privateProjectionRoot(projectionRoot), "bags", "daemon") };
 }
 
-/**
- * Whether a title in the daemon bag names a HOUSE record rather than an authored one, so it never crosses the daemon
- * canon mirror in either direction. Measured (2026-11-08): beside its control plane the daemon doc carries the house's own
- * identity records under two namespaces: `bags/**` (the persona namespace: the signer binding, the hearth's true name,
- * the face's group id, the sealed group-secret seals) and `dreamnet/**` (the sealed founding and admit checkpoints, the
- * dyads, the persona acts). Withheld with them: the control plane (`isControlPlaneUri`) and TiddlyWiki's system namespace
- * (`$:/`). The line runs by namespace, read through the same path resolution the control-plane law reads, so a dot segment
- * folds no title out of it; an authored meme or memory (`lar:///ha.ka.ba/kahua/memory/<key>`, a plain title) projects.
- */
-export function isDaemonCanonWithheld(title: string): boolean {
-  if (isControlPlaneUri(title) || title.startsWith("$:/")) return true;
-  const path = resolvedTitlePath(title);
-  return path.startsWith("lar:///ha.ka.ba/bags/") || path.startsWith("lar:///ha.ka.ba/dreamnet/") || path.startsWith("$:/");
-}
+/** The daemon bag's withheld titles (`@lararium/mesh`), re-read here beside the mirror they bound. */
+export { isDaemonCanonWithheld };
 
 /** A daemon VM disk mirror: the grant plus the scope its island names it by. */
 export type DaemonDiskMirror = BagMirrorConfig & { readonly scope: string };
