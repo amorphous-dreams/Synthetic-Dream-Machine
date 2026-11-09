@@ -43,6 +43,7 @@ import { posturePlan, posturePlanNotice } from "./posture-plan.js";
 import { cmdSeed }     from "./seed.js";
 import { cmdRead, cmdStop } from "./read.js";
 import { cmdRotatePlace } from "./rotate-place.js";
+import { cmdCensus } from "./census.js";
 import { cmdStandForeground, cmdStandWithWeb, cmdRestart, cmdRiteRebuild, cmdRiteRefresh } from "./scripted.js";
 import { vesselDid } from "../env.js";
 import { runVerb } from "../verb-call.js";
@@ -175,6 +176,7 @@ const SUBS: Readonly<Record<string, { readonly summary: string; readonly run: Su
   stop:  { summary: "halt the daemon on the port (graceful → forced); a free port reads as stopped",     run: (a) => cmdStop(under(a)) },
   seed:  { summary: "plant every bags/* holding back into its doc, kind-routed and diff-gated",         run: (a) => cmdSeed(under(a)) },
   read:  { summary: "inspect and start nothing — bootstrap, storage, port, seal, personas, quorum",      run: (a) => cmdRead(under(a)) },
+  census: { summary: "name what a stop would drop: saves held in memory, carriers the projector owes — [--json]", run: (a) => cmdCensus(under(a)) },
   rite:  { summary: "the pet-named procedures: founding · refresh · rebuild",                            run: runRite },
 };
 
