@@ -23,7 +23,7 @@ import { projectionDrained, settleWordOver } from "../harness/settle-word.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const BOOT_MEME = join(REPO_ROOT, "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem");
-const BOOT_PROJ = "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem";
+const BOOT_PROJ = "projections/bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem";
 const LARES_URI = "lar:///ha.ka.ba/bags/lares";
 
 let lar: LarInstance;

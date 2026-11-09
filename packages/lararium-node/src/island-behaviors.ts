@@ -166,6 +166,8 @@ export function mountDiskProjection(
     }
     return carrierFileOf((u) => exportRecordCarrierFile(ctx.tw5, u, records))(uri);
   },
+  // The composition's top record, a tombstone included: a deliberate deletion above a mirrored bag stays a deletion.
+  topRecordFn: (uri) => ctx.composite.get(uri),
   // A POINTER projects as the whole file beside its `.meta`: the bytes come from the same
   // cid/ tier the lazy resolver reads (THE BLOB LAW, content-handle.ts).
   ...(ctx.resolveByCid ? { resolveByCid: ctx.resolveByCid } : {}),
