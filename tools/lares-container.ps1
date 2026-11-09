@@ -1,5 +1,5 @@
 # lares-container — the HOST shim for the surface vessel (docker-compose.surface.yml), PowerShell form.
-# Same contract as tools/lares-container.sh: up [--capture <dir>]...  down  found [vessel-found args]  logs
+# Same contract as tools/lares-container.sh: up [--capture <dir>]...  down [compose-down args]  found [vessel-found args]  logs
 # vessel stand  <lares verb…>. The CLI runs by exec while a vessel stands and through the offline door while none
 # stands. The host holds the engine: the shim reads the CLI's standing verdict after a verb and restarts the vessel
 # itself when the verdict reads `restand`. The app gets no docker socket.
@@ -10,6 +10,11 @@
 # A VESSEL STANDS HOLDING NO KEY. Every start returns it to the floor, so after `up`, after `vessel stand`, and after
 # each restart this shim performs, it runs `vault unlock` attached when this shell holds a TTY, and otherwise names
 # that one command. `vault lock` routes to the CLI like any other verb. No flag, env var or pipe carries a credential.
+# A STOP NEVER DROPS CONTENT SILENTLY. While a vessel stands, `down` asks it first (`vessel census`, by compose exec,
+# bounded): the saves its sealed rest holds in memory and the carriers its disk projector has not settled. A clean
+# answer stops as before; any item, or a census that cannot answer, prints what it learned and refuses, naming two ways
+# on: unlock and let it settle (`vault unlock`, then `down` again), or type `accept-loss` on this terminal. With no
+# terminal it refuses. With no vessel standing, `down` runs as it always has.
 $ErrorActionPreference = 'Stop'
 
 function Die([string]$m) { [Console]::Error.WriteLine("lares-container: $m"); exit 2 }
@@ -170,6 +175,50 @@ function RouteCli([string[]]$argv, [bool]$followUp) {
   }
 }
 
+# THE CENSUS BEFORE A STOP, bounded over the whole exec, so a wedged vessel never hangs `down`.
+$CensusWaitSeconds = 60
+function OfferAcceptLoss {
+  [Console]::Error.WriteLine('lares-container: the vessel stands. Two ways on:')
+  [Console]::Error.WriteLine('  - unlock it and let it settle: tools/lares-container.ps1 vault unlock, then tools/lares-container.ps1 down again')
+  [Console]::Error.WriteLine('  - stop anyway, dropping what the list names: type accept-loss below')
+  if (-not $script:Tty) { Die 'down refuses: no terminal stands here to type accept-loss on; the vessel stands' }
+  [Console]::Out.Write('Type accept-loss to stop anyway: ')
+  $answer = [Console]::In.ReadLine()
+  if ($null -eq $answer) { Die 'down: no answer read; the vessel stands' }
+  if ($answer.TrimEnd("`r") -ne 'accept-loss') { Die 'down: the answer did not read accept-loss; the vessel stands' }
+  [Console]::Error.WriteLine('lares-container: accept-loss typed; stopping the vessel')
+}
+function Indent([string]$text) {
+  foreach ($line in ($text -split "`r?`n")) { if ($line) { [Console]::Error.WriteLine("  $line") } }
+}
+function CensusBeforeStop {
+  $psi = [System.Diagnostics.ProcessStartInfo]::new('docker')
+  foreach ($a in (@('compose') + $Base + @('exec', '-T', 'lares', 'node', $Cli, 'vessel', 'census', '--no-json'))) { $psi.ArgumentList.Add([string]$a) }
+  $psi.UseShellExecute = $false
+  $psi.RedirectStandardOutput = $true; $psi.RedirectStandardError = $true; $psi.RedirectStandardInput = $true
+  $out = ''; $err = ''; $rc = -1; $timedOut = $false
+  try {
+    $p = [System.Diagnostics.Process]::Start($psi)
+    $p.StandardInput.Close()
+    $outTask = $p.StandardOutput.ReadToEndAsync(); $errTask = $p.StandardError.ReadToEndAsync()
+    if ($p.WaitForExit($CensusWaitSeconds * 1000)) { $p.WaitForExit(); $rc = $p.ExitCode }
+    else { $timedOut = $true; try { $p.Kill($true) } catch {} }
+    if ($outTask.Wait(5000)) { $out = $outTask.Result }
+    if ($errTask.Wait(5000)) { $err = $errTask.Result }
+  } catch { $err = $_.Exception.Message }
+  if ($rc -eq 0 -and ($out -split "`r?`n" | Where-Object { $_ -like 'census: clean*' })) { return }
+  if ($rc -eq 3 -and -not $timedOut) {
+    [Console]::Error.WriteLine('lares-container: down refuses a silent stop: the census names content that rests nowhere yet, and a stop now drops it:')
+    Indent $out
+  } else {
+    $why = if ($timedOut) { "no answer within ${CensusWaitSeconds}s (the vessel may stand wedged)" } else { "the census exec ended with status $rc" }
+    [Console]::Error.WriteLine("lares-container: down refuses a silent stop: the census could not answer ($why), so what a stop would drop reads unknown")
+    Indent $out
+    Indent $err
+  }
+  OfferAcceptLoss
+}
+
 $script:Tty = (-not [Console]::IsInputRedirected) -and (-not [Console]::IsOutputRedirected)
 $Tty = $script:Tty
 $NoTty = if ($Tty) { @() } else { @('-T') }
@@ -210,7 +259,16 @@ switch ($verb) {
     WarnImageRevision
     UnlockOrName
   }
-  'down'  { Compose (@('down', '--remove-orphans') + $rest) }
+  'down'  {
+    # A ps that fails reads as UNKNOWN: whether a vessel stands, and what it holds, goes uncounted, so the same typed
+    # acceptance guards the stop.
+    $ids = & docker compose @Base ps -q --status running lares
+    if ($LASTEXITCODE -ne 0) {
+      [Console]::Error.WriteLine('lares-container: down refuses a silent stop: docker compose ps failed, so whether a vessel stands reads unknown')
+      OfferAcceptLoss
+    } elseif (-not [string]::IsNullOrWhiteSpace(($ids -join ''))) { CensusBeforeStop }
+    Compose (@('down', '--remove-orphans') + $rest)
+  }
   'logs'  { Compose (@('logs') + $rest + @('lares')) }
   'found' {
     EnsureHouse

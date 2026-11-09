@@ -44,7 +44,7 @@
  */
 import { dropWardTickets, parkWardTicket, wardCredential, type WardCredential } from "./ward-credential.js";
 import type { Socket } from "node:net";
-import type { Credential, SlotSpec } from "@lararium/mesh";
+import type { Credential, HeldSaves, SlotSpec } from "@lararium/mesh";
 import { parkFaceRoute } from "./face-route.js";
 import { mountedFaceOrdinal, setMountedFace, sovereignStands } from "./node-vessel-identity.js";
 import { listFaceOrdinals } from "./identity-anchors.js";
@@ -56,6 +56,8 @@ export type CustodyFrame =
   | { readonly op: "unlock"; readonly credentials: readonly Credential[]; readonly face?: number; readonly all?: boolean }
   | { readonly op: "lock"; readonly face?: number }
   | { readonly op: "custody" }
+  /** The census of saves held in memory, read before a stop: no credential, no act, no chain. */
+  | { readonly op: "census" }
   | { readonly op: "act"; readonly act: string; readonly args?: Readonly<Record<string, unknown>> }
   /** Cut face `face`'s bundle body, sealed under `key` (a bundle key, 64 lower hex), once `credentials` prove the vessel's own route. */
   | { readonly op: "backup"; readonly credentials: readonly Credential[]; readonly face: number; readonly key: string }
@@ -78,6 +80,9 @@ export type CustodyAnswer =
   | ({ readonly op: "lock"; readonly locked: true; readonly was: "unlocked" | "locked"; readonly face?: number } & Partial<CustodyStanding>)
   | { readonly op: "custody"; readonly unlocked: boolean; readonly slot: string | null; readonly attemptsLeft: number; readonly standing: string; readonly wikiAwaits: string | null; readonly testScratch: boolean; readonly composing: boolean; readonly facesOpen?: number }
   | { readonly op: "act"; readonly act: string; readonly result: Record<string, unknown> }
+  /** Each document with saves held in memory (`SealedDocumentStore.held`), by id and never by body; `standing` names
+   *  the composition that answered ("recomposing" while none sits, when `held` reads null). */
+  | { readonly op: "census"; readonly held: readonly HeldSaves[] | null; readonly standing: string }
   | { readonly op: "face-route"; readonly ref: string }
   | { readonly op: "ward"; readonly ref: string }
   | { readonly op: "backup"; readonly sealedBody: string; readonly holds: FaceBundleCut["holds"]; readonly face: FaceBundleCut["face"]; readonly carries: FaceBundleCut["carries"] }
@@ -95,6 +100,9 @@ export interface CustodyFrameDeps {
   readonly wikiAwaits?: () => string | null;
   /** Whether this vessel's root carries the harness's scratch marker. */
   readonly testScratch: boolean;
+  /** The saves the standing composition holds in memory, by document; null while no composition sits. Absent: every
+   *  `census` frame answers `held: null`. */
+  readonly heldSaves?: () => readonly HeldSaves[] | null;
   readonly onLog: (line: string) => void;
   /**
    * Run one act of the sealed-act table against the seated holder (`runSealedAct`, bound to what the standing
@@ -109,7 +117,7 @@ export interface CustodyFrameDeps {
   readonly backup?: (face: number, bundleKey: Uint8Array, ward: WardCredential) => Promise<FaceBundleCut>;
 }
 
-const OPS: ReadonlySet<string> = new Set(["unlock", "lock", "custody", "act", "backup", "face-route", "ward"]);
+const OPS: ReadonlySet<string> = new Set(["unlock", "lock", "custody", "census", "act", "backup", "face-route", "ward"]);
 const WARD_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "credentials", "verb", "argsDigest"]);
 /** The keys a `face-route` frame may carry. */
 const FACE_ROUTE_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "slots", "purpose", "argsDigest"]);
@@ -433,6 +441,13 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
         return true;
       }
       act = face === undefined ? lock : () => lockFaceOf(face as number);
+    } else if (op === "census") {
+      // THE CENSUS IS READ-ONLY, like the state query: it answers at once, beside the chain, so a stop that asks it
+      // while an unlock recomposes never waits behind the recomposition. It names documents and never a body.
+      let held: readonly HeldSaves[] | null = null;
+      try { held = deps.heldSaves?.() ?? null; } catch { held = null; }
+      answer(sock, { op: "census", held, standing: deps.standing() });
+      return true;
     } else {
       // THE STATE QUERY IS READ-ONLY: it answers at once, beside the chain, so a caller asking while an unlock
       // recomposes hears `composing: true` instead of waiting behind the recomposition.
