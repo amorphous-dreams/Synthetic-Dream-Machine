@@ -68,12 +68,12 @@
 
 import { writeFileSync, mkdirSync, unlinkSync, existsSync, readFileSync, readdirSync } from "fs";
 import { dirname, basename, extname, relative as relativePath, resolve as resolvePath } from "path";
-import { confineMirrorWrite, carrierBaseRelPath, titleRelPath, isTempLayerInternalTitle } from "./bag-paths.js";
+import { confineMirrorWrite, carrierBaseRelPath, titleRelPath, isTempLayerInternalTitle, isDaemonCanonWithheld } from "./bag-paths.js";
 import { KAPAE_EXT, kapaeShadowBody } from "./kapae-shadow.js";
 import { contentHash, syncedTreeKey, SyncedTree } from "./synced-tree.js";
 import { decideProjection } from "./projection-gate.js";
 import { MEME_EXT } from "@lararium/mesh/mirror-paths";
-import { isEffectRecordUri, isControlPlaneUri, isBagManifestUri, isVolatileVmUri, isNexusHandlesUri, isRealmBagAnnounceUri, isFaceScopedBag, KeyedReconcileGate, carrierHash, sha256HexBytesSync, digestsEqual } from "@lararium/mesh";
+import { DAEMON_BAG_ID, isEffectRecordUri, isControlPlaneUri, isBagManifestUri, isVolatileVmUri, isNexusHandlesUri, isRealmBagAnnounceUri, isFaceScopedBag, KeyedReconcileGate, carrierHash, sha256HexBytesSync, digestsEqual } from "@lararium/mesh";
 import { ORIGINAL_TIDDLER_PATHS, parseProvenance, packOfMember } from "@lararium/mesh";
 import type { ReadinessMap, VesselJournal, LarTiddlerStore } from "@lararium/mesh";
 import type { TW5Engine, CarrierFile } from "@lararium/tw5";
@@ -1615,6 +1615,9 @@ export class LarDiskProjector {
     // The daemon stays the control plane, CRDT only: a `bags/daemon/**` title writes no file from any mirror, whichever layer
     // holds it (a verb outcome, a flow, a cap event).
     if (isControlPlaneUri(uri)) return true;
+    // THE DAEMON WIKI'S CANON projects authored records alone: the house's identity records that share its bag (the persona
+    // namespace, the sealed checkpoints, dyads and persona acts) never write a file (`isDaemonCanonWithheld`).
+    if (mirror.bagId === DAEMON_BAG_ID && isDaemonCanonWithheld(uri)) return true;
     // A realm-bag announce pointer comes from the house, minted into the live crossroads document on each
     // registration. The crossroads mirror roots in the canon tree, so writing it would leave a house-minted
     // record beside the curated library; the pointer rests in the document alone.

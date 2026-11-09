@@ -4,9 +4,11 @@
  *
  * THE LAYOUT (operator ruling, 2026-11-01, revised): the kahua wiki's working top (`wikis/daemon/working`) writes flat
  * files to `<projections>/wikis/daemon-<F>`, as every wiki writes its working layer; a lift lands in `bags/kahua`, projected at
- * `<projections>/bags/kahua-<F>/<title path>`; the daemon bag (`bags/daemon`) stays the CRDT-only control plane, so no control
- * record (checkpoint, persona act, cap event, group-secret seal, binding) and no `bags/daemon` dir ever reaches disk,
- * under the projections root or the workspace, even with the canon source (`LAR_BAGS`) at a checkout-like tree.
+ * `<projections>/bags/kahua-<F>/<title path>`; the daemon bag (`bags/daemon`) projects its AUTHORED records alone as the
+ * daemon wiki's canon (`<projections>/bags/daemon`, operator 2026-11-08), so no control or house record (checkpoint,
+ * persona act, cap event, group-secret seal, binding) ever reaches disk, and no `bags/daemon` dir stands while the bag
+ * holds nothing authored, under the projections root or the workspace, even with the canon source (`LAR_BAGS`) at a
+ * checkout-like tree.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
@@ -79,16 +81,17 @@ const daemonBagDirs = (dir: string): string[] =>
   walk(dir).filter((p) => basename(p) === "daemon" && basename(dirname(join(dir, p))) === "bags");
 
 describe("the daemon VM's mirror list names the ruled layout", () => {
-  test("RED: the working top, the kahua stage and crossroads; never the daemon bag", () => {
+  test("RED: the daemon canon, the working top, the kahua stage and crossroads; the canon under projections alone", () => {
     const state = "/house/state";
     const mirrors = daemonDiskMirrors({ projectionRoot: state, canonBags: "/house/workspace/bags-absent", faceRelation: TAG });
     expect(mirrors.map((m) => [m.bagId, m.mirrorRoot])).toEqual([
+      [DAEMON_BAG_ID, join(state, "bags", "daemon")],
       [WORKING, join(state, "wikis", WFACE)],
       [KAHUA_BAG, join(state, "bags", FACE)],
       [CROSSROADS_DOC_URI, join(state, "bags", "crossroads")],
     ]);
-    expect(mirrors.some((m) => m.bagId === DAEMON_BAG_ID), "the control plane holds a mirror").toBe(false);
-    expect(mirrors.some((m) => m.mirrorRoot.endsWith(join("bags", "daemon"))), "a mirror roots at bags/daemon").toBe(false);
+    expect(mirrors.filter((m) => m.bagId === DAEMON_BAG_ID).map((m) => m.scope), "the daemon bag holds its canon mirror alone").toEqual(["daemon-canon"]);
+    expect(mirrors.some((m) => m.mirrorRoot.startsWith("/house/workspace")), "a mirror roots in the workspace").toBe(false);
     // The crossroads guard defaults ON; only a proven charter lifts it.
     expect(mirrors.find((m) => m.bagId === CROSSROADS_DOC_URI)?.guardNexusHandles).toBe(true);
     expect(daemonDiskMirrors({ projectionRoot: state, canonBags: "/x", faceRelation: TAG, guardCrossroadsNexusHandles: false })

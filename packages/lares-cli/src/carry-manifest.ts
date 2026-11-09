@@ -19,7 +19,9 @@
  *   faces/<fk>/kahua-heads.json    the stage's standing heads as the fold read them: what the import re-lifts
  *   wikis/<slug>/drafts/<path>     another wiki's draft recovery files
  *   wikis/<slug>/temp/<path>       another wiki's consented temp carriers
- *   bags/<slug>/<path>             a house-minted bag's carriers
+ *   bags/<slug>/<path>             a house-minted bag's carriers (a user wiki's own canon, `self`, among them)
+ *   daemon/canon/<interior>        the daemon wiki's canon (`bags/daemon`), its authored records alone
+ *   wikis/<slug>/working/<interior> another wiki's working carriers
  *
  * Isomorphic by intent: every class names a capability (a vessel that holds a disk store, a session that wears a face),
  * never a host, so a browser vessel's OPFS projection reads into the same tree.
@@ -37,8 +39,8 @@ export const REDECLARE_FILE = "re-declare.json";
 export const KAHUA_HEADS_FILE = "kahua-heads.json";
 
 /** A row's layer: what it carries and how the import lands it. */
-export type CarryLayer = "working" | "kapae" | "draft" | "temp" | "kahua-carrier" | "kahua-head" | "bag";
-export const CARRY_LAYERS: readonly CarryLayer[] = ["working", "kapae", "draft", "temp", "kahua-carrier", "kahua-head", "bag"];
+export type CarryLayer = "working" | "kapae" | "draft" | "temp" | "kahua-carrier" | "kahua-head" | "bag" | "daemon-canon" | "wiki-working";
+export const CARRY_LAYERS: readonly CarryLayer[] = ["working", "kapae", "draft", "temp", "kahua-carrier", "kahua-head", "bag", "daemon-canon", "wiki-working"];
 
 /** One file the bundle holds, with the bytes' sha-256: the tamper check reads every one. */
 export interface CarryFile { readonly path: string; readonly sha256: string; readonly bytes: number }
@@ -75,6 +77,8 @@ export interface CarryManifest {
   /** The temp carriers' bytes, per temp bag. */
   readonly tempBytes: Readonly<Record<string, number>>;
   readonly omissions: readonly CarryOmission[];
+  /** The acquired library's collections and each index carrier's sha-256. The originals survive in place and never travel. */
+  readonly library?: ReadonlyArray<{ readonly collection: string; readonly indexSha256: string | null }>;
 }
 
 /** One face's re-declare row: the strings the operator chose, replayed as fresh acts under the new keys. */
