@@ -56,7 +56,7 @@ import {
   isEffectRecordUri, effectRecordUri, RETIRED_EVENT_ID, isRetirementMarker, storeIsRetired,
   writesBag, VerbRefusal,
   neverProjects, NeverProjectedPathRefusal,
-  yieldToHost,
+  yieldToHost, isDaemonCanonWithheld, DAEMON_BAG_ID,
 } from "@lararium/mesh";
 import type { HostTaskYield } from "@lararium/mesh";
 import type { VerbReactor, VerbTable } from "./verb-dispatcher.js";
@@ -1059,6 +1059,18 @@ function neverProjectedRow(uri: string, file: string | undefined, title: string)
   return { uri, decision: "refuse", code: refusal.code, reason: refusal.message, warnings: [refusal.message] };
 }
 
+/**
+ * THE DAEMON BAG TAKES NO HOUSE RECORD FROM DISK. A wave into `bags/daemon` (an ingest, a take-disk, the canon mirror's
+ * disk-to-store leg, all of which ride INGEST) never writes, tombstones or re-links a title `isDaemonCanonWithheld` names:
+ * the control plane, the persona namespace (the group-secret seals), the sealed checkpoints. The island holds this line
+ * whatever its caller scanned.
+ */
+function withheldFromDaemon(toBag: string, title: string): boolean {
+  return toBag === DAEMON_BAG_ID && isDaemonCanonWithheld(title);
+}
+const DAEMON_WITHHELD_CODE = "daemon-withheld-title";
+const daemonWithheldWhy = (title: string): string => `${title} names a control or house record of the daemon bag, and no disk writes one`;
+
 async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5Deserializer, resolveByCid?: CarrierResolver): Promise<Record<string, unknown>> {
   const o = origin(action);
   const deletions = action.deletions ?? [];
@@ -1080,7 +1092,8 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
     // A re-link never re-homes a record onto an address whose records never project, nor onto a
     // session-form address (`title-law.ts`): that carrier falls to the gate below and refuses by name,
     // and its vanished source stands as it stood.
-    const lawful = paired.renames.filter((r) => !neverProjects(r.toUri) && storableTitleFault(r.toUri) === null);
+    const lawful = paired.renames.filter((r) => !neverProjects(r.toUri) && storableTitleFault(r.toUri) === null
+      && !withheldFromDaemon(action.toBag, r.toUri) && !withheldFromDaemon(action.toBag, r.fromUri));
     // A RE-LINK RE-HOMES RECORDS THAT STAND. A vanished source that holds no live record leaves nothing
     // to re-home: answered as a rename, the target would skip its own ingest, land no record, and the
     // gesture would still pin a base for it. So such a pair reads as no rename, the target carrier falls
@@ -1120,6 +1133,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       const fault = storableTitleFault(title);
       if (fault !== null) { refused.push({ uri: title, code: SESSION_FORM_TITLE_CODE, reason: fault }); continue; }
       if (neverProjects(title)) { refused.push({ uri: title, code: "kapae-never-projected", reason: `${title} never projects to disk, so no shadow file speaks for it` }); continue; }
+      if (withheldFromDaemon(action.toBag, title)) { refused.push({ uri: title, code: DAEMON_WITHHELD_CODE, reason: daemonWithheldWhy(title) }); continue; }
       shadowed.add(title);
       const fragments = live.filter((t) => t === title || t.startsWith(`${title}#`));
       const rootRecord = await readFromBag(access, action.toBag, title);
@@ -1144,6 +1158,11 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
     if (shadowed.has(uri)) {
       const reason = `a kāpae shadow in the same wave sets ${uri} aside, and the shadow holds (remove-wins)`;
       results.push({ uri, decision: "refuse", code: "kapae-holds", reason, warnings: [reason] });
+      continue;
+    }
+    if (withheldFromDaemon(action.toBag, uri)) {
+      const reason = daemonWithheldWhy(uri);
+      results.push({ uri, decision: "refuse", code: DAEMON_WITHHELD_CODE, reason, warnings: [reason] });
       continue;
     }
     if (neverProjects(uri) || declaresNoProjection(carrier.meta)) {
