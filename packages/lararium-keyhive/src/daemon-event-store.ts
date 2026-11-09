@@ -19,7 +19,7 @@
  */
 
 import {
-  SECRET_HOME_ID, type LarTiddlerStore,
+  SECRET_HOME_ID, type SecretHomeStore,
   CAP_EVENT_TAG, CAP_EVENT_PREKEY_TAG, CAP_EVENT_CGKA_TAG,
   CAP_EVENT_DELEGATION_TAG, CAP_EVENT_REVOCATION_TAG,
 } from "@lararium/mesh";
@@ -70,7 +70,7 @@ async function hashBytes(bytes: Uint8Array): Promise<string> {
 
 export interface DaemonEventStoreOptions {
   /** The vessel grants this store only to the secret holder, outside every page recipe. */
-  readonly secretStore?: LarTiddlerStore;
+  readonly secretStore?: SecretHomeStore;
   /** A trusted storage capability confirms that this store's underlying document rests sealed. */
   readonly secretRest?: SecretRestCapability;
   readonly face: string;
@@ -84,7 +84,7 @@ export interface SecretRestCapability {
 export class DaemonEventStore implements EventStore {
   constructor(private readonly opts: DaemonEventStoreOptions) {}
 
-  private async home(): Promise<LarTiddlerStore> {
+  private async home(): Promise<SecretHomeStore> {
     if (!this.opts.secretStore || !this.opts.secretRest || !await this.opts.secretRest.assertSealed()) {
       throw new Error("secret-home-unavailable: Keyhive events require a secret store with confirmed sealed rest");
     }

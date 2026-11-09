@@ -278,6 +278,11 @@ export interface IslandMsg_Manifest {
      *  `face-address-secret` row, the browser's keystore row): the face's working documents derive their addresses from
      *  it (`faceWorkingDocUrl`). It crosses the worker boundary beside the atom seed, and only with a face lit. */
     faceAddressSecret?:    string;
+    /** THE VESSEL'S SECRET HOME, read from main-thread custody at the manifest's build (`secret-home-store`): the document
+     *  group-secret seals, dyads and Keyhive cap events rest in. Only its url crosses; the island reaches it by its own sync
+     *  (the vessel shares it with its own islands alone) and asks the vessel's rest before each secret act. Absent: every
+     *  Keyhive secret write refuses `secret-home-unavailable`. */
+    secretUrl?:            string;
     /** The FACE's pins, present only when a face stands. A place founded and never lit carries NONE of
      *  them, and that names the WAKING FLOOR rather than a fault — canon has a vessel boot permissionlessly
      *  on its own key. The worker refuses a TORN face (some pins, not all), so absence buys FEWER CAPS and

@@ -14,6 +14,7 @@ import {
 import { foundTheFace, foundThePlace, runApplyAdmitPayload, runDeviceAdmitEdge } from "../src/index.js";
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { withMemorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 
 const key = (seed: Uint8Array) => groupSecretOpenerFromSeed(seed).deviceKey;
 const repo = () => makeIslandRepo({ syncPort: new MessageChannel().port1 });
@@ -22,7 +23,7 @@ async function founderAndJoinee() {
   const founderRepo = repo();
   const founderSeed = new Uint8Array(32).fill(81), signerSeed = new Uint8Array(32).fill(82);
   const atomSeed = new Uint8Array(32).fill(83), joineeAtom = new Uint8Array(32).fill(84);
-  const founder = await foundThePlace({ repo: founderRepo, vesselSeed: founderSeed, hearthTrueName: "hearth" });
+  const founder = withMemorySecretHome(await foundThePlace({ repo: founderRepo, vesselSeed: founderSeed, hearthTrueName: "hearth" }), founderRepo);
   const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
     repo: founderRepo, daemonHandle: founder.daemonHandle, secretHandle: founder.secretHandle, secretRest: { assertSealed: async () => true }, placeVerifyingKey: key(founderSeed), vesselDisplayName: "founder",
     binding: { mode: "self-stood", signerSeed }, hearthTrueName: "hearth", nexusPubkey: key(founderSeed), atomSeed,
@@ -98,7 +99,7 @@ describe("a face's circles and identities follow the face", () => {
 
   test("CONTROL: a vessel with no PersonaGroup reads only the floor, with no face documents", async () => {
     const placeRepo = repo();
-    const place = await foundThePlace({ repo: placeRepo, vesselSeed: new Uint8Array(32).fill(91), hearthTrueName: "hearth" });
+    const place = withMemorySecretHome(await foundThePlace({ repo: placeRepo, vesselSeed: new Uint8Array(32).fill(91), hearthTrueName: "hearth" }), placeRepo);
     const doc = place.daemonHandle.doc() as LarDoc;
     expect(personaActRecordsOfGroup(doc, "any")).toEqual([]);
     expect(Object.keys(place).filter((k) => /identities|circles|sessions|intents|persona/i.test(k))).toEqual([]);

@@ -3,6 +3,7 @@ import { makeIslandRepo, groupSecretOpenerFromSeed, mintFaceAtomSeed, groupSecre
 import { foundTheFace, foundThePlace, replayCapEvents, runApplyAdmitPayload, runFoundingCeremony } from "../src/index.js";
 import { KeyhiveProvider } from "../src/keyhive-provider.js";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { withMemorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 
 describe("a place carries no Keyhive identity", () => {
   it("seeds only the daemon and hearth name; a real face founding mints its own identity", async () => {
@@ -12,9 +13,11 @@ describe("a place carries no Keyhive identity", () => {
     const atomSeed = mintFaceAtomSeed();
     const placeKey = groupSecretOpenerFromSeed(placeSeed).deviceKey;
     const init = vi.spyOn(KeyhiveProvider.prototype, "init");
-    const place = await foundThePlace({ repo, hearthTrueName: "hearth" });
+    const founded = await foundThePlace({ repo, hearthTrueName: "hearth" });
     expect(init).not.toHaveBeenCalled();
-    expect(Object.keys(place).sort()).toEqual(["daemonHandle", "daemonUrl", "secretHandle", "secretUrl"]);
+    // THE PLACE WRITES NOTHING SECRET: it neither creates nor names the secret home, which its vessel's rest enrolls.
+    expect(Object.keys(founded).sort()).toEqual(["daemonHandle", "daemonUrl"]);
+    const place = withMemorySecretHome(founded, repo);
     expect(place.secretUrl).not.toBe(place.daemonUrl);
     const titles = Object.keys(place.daemonHandle.doc()!.tiddlers);
     expect(titles.some((title) => title.includes("/cap/"))).toBe(false);
@@ -39,7 +42,7 @@ describe("a place carries no Keyhive identity", () => {
 
   it("refuses a missing or aliased secret handle before founding a face", async () => {
     const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
-    const place = await foundThePlace({ repo, hearthTrueName: "hearth" });
+    const place = withMemorySecretHome(await foundThePlace({ repo, hearthTrueName: "hearth" }), repo);
     const bare = { repo, daemonHandle: place.daemonHandle } as Parameters<typeof foundTheFace>[0];
     await expect(foundTheFace(bare)).rejects.toThrow("secret-home-unavailable");
     await expect(foundTheFace({ ...bare, secretHandle: place.daemonHandle })).rejects.toThrow("secret-home-shared");

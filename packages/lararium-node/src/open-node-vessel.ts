@@ -17,7 +17,7 @@
  * in sovereign islands (daemon + wiki). FPI-5 (trim tab): all Node-specific code lives here.
  */
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
-import { WardRefused, wornAtOf, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, type SealedBag, type BookedSession, type SessionOwnChain, preparePlaceFace, signAsFaceAtom } from "@lararium/mesh";
+import { WardRefused, wornAtOf, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, bindSecretHomeRest, vesselHeldHomes, SecretHomeUnavailable, type SecretHome, type SealedBag, type BookedSession, type SessionOwnChain, preparePlaceFace, signAsFaceAtom } from "@lararium/mesh";
 import * as A from "@automerge/automerge";
 
 /** A summoned panel verb's ward: the ref the CLI parked, spent only on the verb and arguments it was bound to. */
@@ -229,6 +229,7 @@ import { faceFleetViews, bridgeBooks }                from "./face-fleet-view.js
 import { heldRootHoldings }                      from "./face-root-holdings.js";
 import { gateGrantRing }                         from "./gate-rings.js";
 import { readFaceJoinRecord, readFaceAddressSecret } from "./fleet-join-custody.js";
+import { openVesselSecretHome } from "./secret-home-store.js";
 import { gateMemoryRows }                        from "./gate-memory-rows.js";
 import { custodyGateDoor }                       from "./custody-seat.js";
 import { intentRelayService, type IntentRelayService } from "./intent-relay.js";
@@ -981,7 +982,13 @@ async function prepareNodeBootOn(
   };
   // The map as it reads now, named in the log each time it moves: the face, and each sealed bag's document.
   let sealedMapNamed = "";
+  // THE SECRET HOME (placement over patterns): the vessel's own secret document rests sealed under the held key its custody
+  // keeps. Enrollment or an open (`secret-home-store`) names it here before the Repo moves a byte of it; it maps with no
+  // face and no session, and no page recipe, disk mirror or peer ever reaches it.
+  const secretHomes = vesselHeldHomes();
   const sealedBagOf = (documentId: string): SealedBag | null => {
+    const held = secretHomes.bagOf(documentId);
+    if (held !== null) return held;
     const face = sealedCells.face();
     const named = face === null ? "none" : `${face.slice(0, 16)}… ${sealedCells.bags().map((b) => `${b}=${sealedMap.docOf(b)?.slice(0, 8) ?? "?"}`).join(" ")}`;
     if (named !== sealedMapNamed) { sealedMapNamed = named; console.log(`[sealed-rest] the map names: ${named}`); }
@@ -1324,6 +1331,10 @@ async function prepareNodeBootOn(
       // single byte is decided (measured: a stranger at the floor read a private plane).
       await new Promise<void>((settle) => queueMicrotask(settle));
       const wsSocket = (network.sockets as Record<string, unknown> | undefined)?.[peerId];
+      // THE SECRET HOME STAYS ON THIS VESSEL: it syncs to the house's own proven islands (the daemon island reads it) and to
+      // no wire peer, sibling or other device, whatever lane would otherwise admit it. Each vessel holds its own dyad, its
+      // own device's seal and the cap events it ingested; a joinee's arrive on its admit payload, never by sync.
+      if (documentId !== undefined && secretHomes.has(documentId)) return !wsSocket && houseIslands.has(peerId);
       // OUTER peer-admission gate (unchanged): a WS peer whose session no face gate opened is not in
       // `peerIdentifierMap` → deny; an in-process island peer (no WS socket) is a house member → admit.
       if (wsSocket && !peerIdentifierMap.has(peerId)) return false;
@@ -1395,6 +1406,9 @@ async function prepareNodeBootOn(
     await repo.shutdown();
   } });
   houseIslands = islandPeersOf(repo);
+  // THE SECRET HOME'S REST, bound to this Repo: an enrollment or an open maps the home before its first byte, and the rest
+  // alone answers whether it holds the home sealed (`@lararium/mesh` `secret-home`).
+  bindSecretHomeRest(repo, secretHomes.rest((documentId) => sealedRest.restsSealed(documentId), () => sealedRest.store.mapMoved()));
   // R2's booking, by the change's own writer (T4): a save of a sealed bag's document reads its change's actor off its
   // bytes; a change this replica made books the session whose call stands, and a peer's change books its peer writer
   // and rests as received under that session.
@@ -2612,6 +2626,15 @@ async function prepareNodeBootOn(
     const addressSecretBytes = atomSeed && personaGroupId ? await readFaceAddressSecret(personaGroupId) : null;
     const faceAddressSecret = addressSecretBytes ? Buffer.from(addressSecretBytes).toString("hex") : null;
     addressSecretBytes?.fill(0);
+    // THE SECRET HOME OPENS WITH THE FACE'S CUSTODY (placement over patterns): its address rests in this vessel's custody,
+    // so it opens only once the key that holds the atom opened; it maps on this Repo's rest before a byte of it moves, and
+    // the daemon island reaches it by its own sync, never through a recipe. A vessel whose custody names none boots with
+    // every Keyhive secret write refusing `secret-home-unavailable`, by name.
+    let secretHome: SecretHome | null = null;
+    if (atomSeed) {
+      try { secretHome = await openVesselSecretHome(repo); }
+      catch (e) { if (!(e instanceof SecretHomeUnavailable)) throw e; console.warn(`[secret-home] ${e.message}`); }
+    }
     // THE FACE'S OWN CATALOG (sealed-store#/owed, U1 · T2): the address the face's secret derives, sealed under the face
     // with the daemon wiki's slots (`wornFaceWikiBags` names `FACE_CATALOG_BAG_ID`), laid over the floor's catalog. It
     // rests sealed, so it hydrates only through the daemon island's holder: the boot reads the floor alone, EXPECTS the
@@ -2660,7 +2683,8 @@ async function prepareNodeBootOn(
     // standing beside ZERO slots names a doc minted before the ruling, and that drift gets SAID at
     // boot rather than discovered the day a fleet tries to gather it. Warn, never throw: the dyad
     // read carries no caps, and the cure is a re-found, not a softened gate.
-    const dyads = vesselDyads(daemonDoc);
+    // THE DYADS REST IN THE SECRET HOME (placement over patterns), never in the daemon document.
+    const dyads = vesselDyads(secretHome?.handle.doc());
     if (deviceEdge && dyads.length === 0) {
       console.log("[dyad] a face stands and no dyad slot is minted — a pre-ruling daemon doc; re-found or admit to mint the derived veil.");
     } else if (dyads.length > 0) {
@@ -3242,6 +3266,7 @@ async function prepareNodeBootOn(
       ...(faceLit && personaGroupId ? { personaGroupId } : {}),
       ...(faceLit && standingAnchor ? { faceAnchor: standingAnchor } : {}),
       ...(faceLit && faceAddressSecret ? { faceAddressSecret } : {}),
+      ...(faceLit && secretHome ? { secretUrl: secretHome.url } : {}),
       ...(meshCabalDocIdHex      ? { meshCabalDocIdHex }      : {}),
       // Derived, never enumerated — one derivation both vessels share, so the node and the browser
       // cannot drift apart on which bags a cap check can resolve. A wiki slot's bags ride only when a
@@ -3390,7 +3415,8 @@ async function prepareNodeBootOn(
       ?? (process.env["LAR_SIBLING_HERMS"] ?? "").split(",").map((h) => h.trim()).filter((h) => h.length > 0);
     if (siblingHerms.length > 0 && personaGroupId && personaKelPrefix && deviceEdge && siblingGate) {
       if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
-      const sealRecord = tiddlerText(ownEntry(daemonDoc?.tiddlers, groupSecretSealTitle(personaGroupId)));
+      // THE SEAL RESTS IN THE SECRET HOME (placement over patterns), never in the daemon document.
+      const sealRecord = tiddlerText(ownEntry(secretHome?.handle.doc()?.tiddlers, groupSecretSealTitle(personaGroupId)));
       let sealRaw: unknown = null;
       try { sealRaw = sealRecord ? JSON.parse(sealRecord) : null; } catch { sealRaw = null; }
       const seal = await verifyGroupSecretSeal(sealRaw);

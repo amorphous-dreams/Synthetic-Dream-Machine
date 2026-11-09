@@ -65,6 +65,7 @@ import {
   retireFaceCheckpoint, retireApplyCheckpoint,
 } from "@lararium/keyhive";
 import { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "../open-node-vessel.js";
+import { standVesselSecretHome } from "../secret-home-store.js";
 
 export interface InitOptions {
   readonly placeFoundingCard?: PlaceFoundingCard;
@@ -314,10 +315,15 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
       await repo.flush();
       writeFileSync(bootstrap, JSON.stringify(bootstrapPlugin(placeTiddlers(admitDaemon.url))), "utf8");
     }
+    // THE SECRET HOME STANDS BEFORE THE ADMISSION'S FIRST SECRET WRITE: the joinee's dyad, its group-secret seal and the
+    // cap events it ingests rest in this vessel's own sealed home, enrolled on the holder's rest (custody stood above).
+    const secret = await standVesselSecretHome(repo);
     const { archive, identitiesUrl, circlesUrl, sessionsUrl, intentsUrl, daemonUrl, personaUrl, deviceEdge } = await runApplyAdmitPayload({
       repo,
       atomSeed: admitSeed,
       daemonHandle: admitDaemon,
+      secretHandle: secret.handle,
+      secretRest:   secret.rest,
       ...(standingAdmitArchive ? { archiveBytes: standingAdmitArchive } : {}),
       vesselDisplayName:  operatorIdentity.displayName ?? "operator",
       payload,
@@ -412,6 +418,10 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
   // The FACE lands later, by an operator act: `lares persona new 0 --name '<label>'` runs `runFoundTheFace`
   // below. A hearth whose operator stands right here types two commands instead of one, and a crossroads
   // never types the second at all.
+  // THE SECRET HOME ENROLLS AFTER CUSTODY AND BEFORE ANY SECRET WRITE (placement over patterns, the founding order): the
+  // custody seated above seals its address row, and its document maps onto the holder's rest under its held key before
+  // its first byte. The place itself writes nothing secret; the face's seals, dyads and cap events land there later.
+  await standVesselSecretHome(repo);
   const place = await foundThePlace({ repo, hearthTrueName });
 
   // THE FLUSH COMES FIRST, and the catalog pointer already carries the reason: a pointer written
@@ -638,9 +648,14 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
     ?? await recoverFoundingSeedFromGroup(foundingAsk, daemonHandle.doc()?.tiddlers ?? {})
     ?? await standPendingFoundingSeed(foundingAsk);
 
+  // THE SECRET HOME STANDS BEFORE THE FACE'S FIRST SEAL, DYAD OR CAP EVENT: the one the place enrolled opens on this
+  // holder's rest (the direct holder's, or the standing vessel's), mapped sealed before the Repo reads a byte of it.
+  const secret = await standVesselSecretHome(repo);
   const face = await foundTheFace({
     repo,
     daemonHandle,
+    secretHandle: secret.handle,
+    secretRest:   secret.rest,
     atomSeed,
     askDigest: foundingAskDigest(foundingAsk),
     placeVerifyingKey: vesselIdentity.verifyingKey,

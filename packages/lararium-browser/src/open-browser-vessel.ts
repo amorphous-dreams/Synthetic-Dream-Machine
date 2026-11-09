@@ -24,7 +24,8 @@ import type { PortIslandToVesselMsg, VesselRestState } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import { Repo }                              from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter }           from "@automerge/automerge-repo-storage-indexeddb";
-import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, sealedBagMap, vesselDocStoreDoor, type SealedBag } from "@lararium/mesh";
+import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, sealedBagMap, vesselDocStoreDoor, bindSecretHomeRest, vesselHeldHomes, SecretHomeUnavailable, type SecretHome, type SealedBag } from "@lararium/mesh";
+import { openBrowserSecretHome, standBrowserSecretHome } from "./browser-secret-home.js";
 import { faceProofSubjectRef } from "@lararium/mesh/face-proof-subjects";
 import * as A from "@automerge/automerge";
 import type { DocHandle, AutomergeUrl, PeerId } from "@automerge/automerge-repo";
@@ -668,7 +669,12 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     catalog: () => sealedCells.catalog(),
     docsOf: (bagId) => [sealedCells.mounted(bagId), ...(slotDocsNamed.get(bagId) ?? []), documentIdOfUrl(tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId)))],
   });
-  const sealedBagOf = (documentId: string): SealedBag | null => sealedMap.bagOf(documentId);
+  // THE SECRET HOME (placement over patterns): this vessel's own secret document maps sealed under its held key, with no
+  // face and no session, from the moment an enrollment or an open names it (`browser-secret-home`).
+  const secretHomes = vesselHeldHomes();
+  const sealedBagOf = (documentId: string): SealedBag | null => {
+    return secretHomes.bagOf(documentId) ?? sealedMap.bagOf(documentId);
+  };
   const docStorePort = docStorePortCell(async (bagId) => {
     const documentId = sealedMap.docOf(bagId);
     const handle = documentId ? (repo.handles as Record<string, { isReady(): boolean; doc(): unknown } | undefined>)[documentId] : undefined;
@@ -719,8 +725,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       gate: () => siblingGate,
       // THE DYAD'S SHADOW (kapae#/reach): a sibling whose device the fleet root set aside reaches nothing.
       aside: (peerId) => siblingAside(peerId),
-    }),
+    }, (documentId) => secretHomes.has(documentId)),
   });
+  // THE SECRET HOME'S REST, bound to this Repo: an enrollment or an open maps the home before its first byte.
+  bindSecretHomeRest(repo, secretHomes.rest((documentId) => sealedRest.restsSealed(documentId), () => sealedRest.store.mapMoved()));
   held.stood.push({ what: "repo", down: () => { sealedRest.store.endHydration(); return repo.shutdown(); } });
   // R2's booking, by the change's own writer (T4): a change this replica made books the vessel's unlocked session while
   // it stands, and a peer's change books its peer writer and rests as received under that session.
@@ -854,10 +862,14 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // belongs to B's atom; any other offers it nothing.
       const rowAtomArchive = await loadBrowserVeilArchive(idbName, admit.personaGroupId);
       const keptAtomArchive = rowAtomArchive && await archiveIsOf(atomSeed, rowAtomArchive) ? rowAtomArchive : undefined;
+      // THE SECRET HOME STANDS BEFORE THE ADMISSION'S FIRST SECRET WRITE, on this vessel's sealed rest.
+      const secret = await standBrowserSecretHome(idbName, repo);
       const place = await foundThePlace({ repo, hearthTrueName: admit.hearthTrueName });
       a = await runApplyAdmitPayload({
         repo,
         daemonHandle:       place.daemonHandle,
+        secretHandle:       secret.handle,
+        secretRest:         secret.rest,
         atomSeed,
         vesselDisplayName:  displayName ?? "Browser Operator",
         payload:              admit,
@@ -925,8 +937,13 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     let f: Awaited<ReturnType<typeof runFoundingCeremony>>;
     try {
       await wearBrowserPersona(idbName, FOUNDING_PERSONA_INDEX);   // the selector points at the founded root
+      // THE SECRET HOME STANDS BEFORE THE FACE'S FIRST SEAL, DYAD OR CAP EVENT: the root's slot stood above, so the place
+      // tree holds its address row; its document maps on this vessel's sealed rest before its first byte.
+      const secret = await standBrowserSecretHome(idbName, repo);
       f = await runFoundingCeremony({
         repo,
+        secretHandle: secret.handle,
+        secretRest:   secret.rest,
         placeVerifyingKey: vesselIdentity.verifyingKey,
         vesselDisplayName:  displayName ?? "Browser Operator",
         // The persona-root SIGNS (signerDid == the root DID, DISTINCT from deviceDid). The self-signed anon
@@ -1030,12 +1047,16 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // (`vesselDyads`, mesh): the ceremony-minted slots are the only source, and a face standing
   // beside zero slots is a doc minted before the ruling — said aloud here, warned never thrown.
   // Every vessel class inherits this read verbatim; the pattern integrity is the ONE door.
-  // The daemon doc AS THIS BOOT READS IT, kept for the sibling channel's enrolment seal below.
-  let bootDaemonDoc: LarDoc | undefined;
+  // The vessel's secret home, opened from its keystore row once a face stands; null where none opens.
+  let secretHome: SecretHome | null = null;
   try {
-    const dhandle = await repo.find<LarDoc>(social.daemonUrl as never);
-    bootDaemonDoc = dhandle.doc();
-    const dyads = vesselDyads(dhandle.doc());
+    await repo.find<LarDoc>(social.daemonUrl as never);
+    // THE DYADS AND SEALS REST IN THE SECRET HOME (placement over patterns), opened here once the keystore stands.
+    if (social.deviceEdge) {
+      try { secretHome = await openBrowserSecretHome(idbName, repo); }
+      catch (e) { if (!(e instanceof SecretHomeUnavailable)) throw e; console.warn(`[secret-home] ${e.message}`); }
+    }
+    const dyads = vesselDyads(secretHome?.handle.doc());
     if (social.deviceEdge && dyads.length === 0) {
       console.log("[dyad] a face stands and no dyad slot is minted — a pre-ruling daemon doc; re-found or admit to mint the derived veil.");
     } else if (dyads.length > 0) {
@@ -1637,6 +1658,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         // the boot and the seed leaves this closure with the manifest.
         atom: { seed: hex(wornAtomSeed), key: wornAtom.key },
         ...(wornAddressSecret ? { faceAddressSecret: wornAddressSecret } : {}),
+        ...(secretHome ? { secretUrl: secretHome.url } : {}),
         ...(workingFloorAnchor ? { workingFloorAnchor } : {}),
         ...(wornAtomArchive ? { veilArchiveBytes: wornAtomArchive } : {}),
         personaGroupId: wornMount?.personaGroupId   ?? social.personaGroupId,
@@ -1871,7 +1893,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       const siblingEdge = daemonAuth.deviceEdge;
       if (siblingHerms && siblingHerms.length > 0 && siblingEdge && siblingGate) {
         const group = daemonAuth.personaGroupId;
-        const sealText = tiddlerText(ownEntry(bootDaemonDoc?.tiddlers, groupSecretSealTitle(group)));
+        const sealText = tiddlerText(ownEntry(secretHome?.handle.doc()?.tiddlers, groupSecretSealTitle(group)));
         let sealRaw: unknown = null;
         try { sealRaw = sealText ? JSON.parse(sealText) : null; } catch { sealRaw = null; }
         const seal = await verifyGroupSecretSeal(sealRaw);
@@ -2359,7 +2381,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
  * A SIBLING — a peer the sibling channel proved — never reads as a house member: `siblings` hands it to the
  * sibling gate, the ring's sibling path, and nothing else reaches it.
  */
-export function browserShareConfig(relayPeers: ReadonlySet<string>, fedGateOf: () => FederationGate | null, siblings?: SiblingShare | null) {
+export function browserShareConfig(relayPeers: ReadonlySet<string>, fedGateOf: () => FederationGate | null, siblings?: SiblingShare | null, secretHome?: (documentId: string) => boolean) {
   // `siblings.aside` carries the dyad's shadow: mesh's one law reads it ahead of the sibling gate.
-  return shareConfigOf((peerId, documentId) => federationShareDecision(relayPeers, fedGateOf(), peerId, documentId, siblings ?? null));
+  // THE SECRET HOME STAYS ON THIS VESSEL: no relay peer and no sibling reaches it; only this vessel's own islands do.
+  return shareConfigOf(async (peerId, documentId) => documentId !== undefined && secretHome?.(documentId)
+    ? !relayPeers.has(peerId) && !siblings?.isSibling(peerId)
+    : federationShareDecision(relayPeers, fedGateOf(), peerId, documentId, siblings ?? null));
 }

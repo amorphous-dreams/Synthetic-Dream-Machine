@@ -80,7 +80,7 @@ describe("a production founding keeps its face's rows under the face's own tree"
     expect(keys, "the face's tree stands").toContain(`face-slots/${fcid}`);
     // The face's root rests under its own ward, never under a custody tree; the ward's public roster rests beside the place seed.
     expect(keys, "the face's root rests under its ward").toContain("ward/h0/persona-root");
-    expect(keys.filter((k) => k.startsWith("sealed/")), "CONTROL: the shared tree keeps the place seed and the ward's public roster alone").toEqual(["sealed/persona-root-roster", "sealed/vessel-key"]);
+    expect(keys.filter((k) => k.startsWith("sealed/")), "CONTROL: the shared tree keeps the place seed, the ward's public roster and the vessel's secret home's address alone").toEqual(["sealed/persona-root-roster", "sealed/secret-home", "sealed/vessel-key"]);
   }, SLOW);
 
   test("FR2 RED a face whose last session left reads nothing, and a second face opens only under its own unlock — CONTROL: the face's own unlock reads again", async () => {

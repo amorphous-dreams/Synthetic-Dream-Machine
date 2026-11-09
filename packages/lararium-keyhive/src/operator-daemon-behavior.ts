@@ -144,7 +144,7 @@ import { bootDaemonKeyhive } from "./boot-daemon-keyhive.js";
 import { daemonBagDocLedger, planeBagDocLedger, registerBagsDurably, type BagDocLedger } from "./bag-doc-ledger.js";
 import { persistArchiveFloor } from "./archive-floor-write.js";
 import { replicaHeads, hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, holdsKahuReach, isSystemCanonBag, realmStandingDocUrl, materializeFaceWorkingDoc } from "@lararium/mesh";
-import { DaemonEventStore, absorbCapEvents, type SecretRestCapability } from "./daemon-event-store.js";
+import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
 import { readLeaseUnderFace, controlLayerOf, type LeaseFrontier } from "./lease-frontier.js";
 import { readFace, answerDocStoreAsks, announceSlotDoc, documentIdOfUrl, type WikiSlotKind } from "@lararium/mesh";
 import { makeSlotDocResolver, type SlotDocResolver } from "./slot-doc-resolver.js";
@@ -221,8 +221,7 @@ const lightAFace = (verb: string): VerbReactor => async () => {
 
 export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: DaemonExtra = {}): DaemonBehaviorOptions {
   const secretEvents = (ctx: IslandContext, face: string): DaemonEventStore => {
-    const rest = (ctx as IslandContext & { secretRest?: SecretRestCapability }).secretRest;
-    return new DaemonEventStore({ ...(ctx.secretStore ? { secretStore: ctx.secretStore } : {}), ...(rest ? { secretRest: rest } : {}), face });
+    return new DaemonEventStore({ ...(ctx.secretStore ? { secretStore: ctx.secretStore } : {}), ...(ctx.secretRest ? { secretRest: ctx.secretRest } : {}), face });
   };
   // The face archive writer stays on the island shore.
   const {

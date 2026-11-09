@@ -44,6 +44,7 @@ import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { fixtureKey } from "./fixture-keys.js";
 import { loadPersonaGroupRootVerifyingKey } from "../src/node-vessel-identity.js";
 import { ownedStore } from "../src/owned-store.js";
+import { openVesselSecretHome } from "../src/secret-home-store.js";
 import { heldSeatKey, listSeatKeys } from "../src/seat-key-store.js";
 import { armGenesis } from "../src/seal-ceremony.js";
 import { larBootstrapPath, larDataDir, larIdentityDir, larSealHome } from "../src/vessel-paths.js";
@@ -81,6 +82,11 @@ function packed(): Record<string, { text?: string }> {
 }
 
 /** The daemon doc the bootstrap names, read on the store's one holder. */
+/** The vessel's secret home, reopened from its custody row by a fresh direct holder: the dyads rest there. */
+async function secretDoc(): Promise<LarDoc> {
+  return ownedStore(larDataDir(), async (repo) => (await openVesselSecretHome(repo)).handle.doc() as LarDoc);
+}
+
 async function daemonDoc(): Promise<LarDoc> {
   const url = packed()[DAEMON_BAG_ID]!.text!;
   return ownedStore(larDataDir(), async (repo) => (await repo.find<LarDoc>(url as AutomergeUrl)).doc() as LarDoc);
@@ -127,7 +133,9 @@ describe("the Stable founding act", () => {
       expect(tiddlerText(doc.tiddlers[HEARTH_TRUE_NAME_TIDDLER])).toBe(aid);
       // A committed founding leaves no write-ahead checkpoint and no title that spells its atom on the vessel-wide doc.
       expect(Object.keys(doc.tiddlers).filter((title) => /checkpoint/.test(title) || title.includes(edge.deviceVerifyingKey))).toEqual([]);
-      const dyads = vesselDyads(doc);
+      // THE DYADS REST IN THE SECRET HOME (placement over patterns), and none in the daemon document.
+      expect(vesselDyads(doc)).toEqual([]);
+      const dyads = vesselDyads(await secretDoc());
       expect(dyads.length).toBeGreaterThan(0);
       expect(dyads.every((d) => d.binding?.epochCid === aid)).toBe(true);
       expect(await verifiedFleetOfGroup(dyads, edge.personaRootDid, new Set(), aid)).toHaveLength(dyads.length);

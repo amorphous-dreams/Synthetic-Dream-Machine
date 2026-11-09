@@ -16,6 +16,7 @@ import {
 import { foundTheFace, foundThePlace, runApplyAdmitPayload, runDeviceAdmitEdge } from "../src/index.js";
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { withMemorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 
 const key = (seed: Uint8Array) => groupSecretOpenerFromSeed(seed).deviceKey;
 const repo = () => makeIslandRepo({ syncPort: new MessageChannel().port1 });
@@ -26,7 +27,7 @@ async function admitWith(extra: (head: { seq: number; cid: string }, group: stri
   const founderRepo = repo();
   const founderSeed = new Uint8Array(32).fill(61), signerSeed = new Uint8Array(32).fill(62);
   const atomSeed = new Uint8Array(32).fill(63), joineeAtom = new Uint8Array(32).fill(64);
-  const founder = await foundThePlace({ repo: founderRepo, vesselSeed: founderSeed, hearthTrueName: "hearth" });
+  const founder = withMemorySecretHome(await foundThePlace({ repo: founderRepo, vesselSeed: founderSeed, hearthTrueName: "hearth" }), founderRepo);
   const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
     repo: founderRepo, daemonHandle: founder.daemonHandle, secretHandle: founder.secretHandle, secretRest: { assertSealed: async () => true }, placeVerifyingKey: key(founderSeed), vesselDisplayName: "founder",
     binding: { mode: "self-stood", signerSeed }, hearthTrueName: "hearth", nexusPubkey: key(founderSeed), atomSeed,

@@ -24,6 +24,7 @@ import { tiddlerText } from "@lararium/mesh";
 
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { memorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 /** The founder's own persona-KEL chain, read back off the per-Nexus board the founding seated — REQUIRED
  *  on every device-admit payload now (early alpha, no back-compat): a payload minted without it would have
  *  the joinee RE-FOUND rather than join, so this reads it the same way the production CLI does. */
@@ -56,7 +57,7 @@ const JOINEE_ATOM  = new Uint8Array(32).fill(12);
 async function found() {
   const repo = new Repo({ sharePolicy: async () => true });
   const verifyingKey = await pubOf(FOUNDER_SEED);
-  const f = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), repo,
+  const f = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), ...memorySecretHome(repo), repo,
     vesselSeed:         FOUNDER_SEED,
     placeVerifyingKey: verifyingKey,
     vesselDisplayName:  "The Strandbeest Shrine",
@@ -96,7 +97,7 @@ describe("the admit ceremony — found · admit · carry · apply · BOUND", () 
 
     // ── APPLY. A DIFFERENT Repo — a different vessel entirely.
     const joineeRepo = new Repo({ sharePolicy: async () => true });
-    const applied = await runApplyAdmitPayload({ repo: joineeRepo, daemonHandle: seedDaemonDoc(joineeRepo),
+    const applied = await runApplyAdmitPayload({ repo: joineeRepo, daemonHandle: seedDaemonDoc(joineeRepo), ...memorySecretHome(joineeRepo),
       atomSeed: JOINEE_ATOM,
       vesselDisplayName:  "Ichi",
       payload:              carried,
@@ -113,7 +114,7 @@ describe("the admit ceremony — found · admit · carry · apply · BOUND", () 
     expect(readFleetFrontier({ fleetRoot: root, board: landed.doc(), lineage, seenRaises: [], pinned: null }).status).toBe("known");
     expect(readFleetFrontier({ fleetRoot: root, board: undefined, lineage, seenRaises: [], pinned: null }).status).toBe("unknown");
     const refusedRepo = new Repo({ sharePolicy: async () => true });
-    await expect(runApplyAdmitPayload({ repo: refusedRepo, daemonHandle: seedDaemonDoc(refusedRepo), atomSeed: JOINEE_ATOM,
+    await expect(runApplyAdmitPayload({ repo: refusedRepo, daemonHandle: seedDaemonDoc(refusedRepo), ...memorySecretHome(refusedRepo), atomSeed: JOINEE_ATOM,
       vesselDisplayName: "Ichi", payload: { ...carried, edgeFrontier: undefined } as never,
       nexusPubkey: await pubOf(JOINEE_SEED) })).rejects.toThrow("lacks edgeFrontier");
 
@@ -124,7 +125,7 @@ describe("the admit ceremony — found · admit · carry · apply · BOUND", () 
     await kept.init({ seed: JOINEE_ATOM, eventStore: new InMemoryEventStore(), archiveBytes: applied.archive });
     const marker = await kept.createSentinelDoc("lar:///t.witness/kept-by-the-joinee-archive");
     const anotherRepo = new Repo({ sharePolicy: async () => true });
-    const again = await runApplyAdmitPayload({ repo: anotherRepo, daemonHandle: seedDaemonDoc(anotherRepo), atomSeed: JOINEE_ATOM,
+    const again = await runApplyAdmitPayload({ repo: anotherRepo, daemonHandle: seedDaemonDoc(anotherRepo), ...memorySecretHome(anotherRepo), atomSeed: JOINEE_ATOM,
       vesselDisplayName: "Ichi", payload: carried, nexusPubkey: await pubOf(JOINEE_SEED), archiveBytes: await kept.exportArchive(),
     });
     const restored = new KeyhiveProvider();
@@ -171,11 +172,11 @@ describe("the admit ceremony — found · admit · carry · apply · BOUND", () 
     const payload = { ...base, capEvents };
 
     const joineeRepo = new Repo({ sharePolicy: async () => true });
-    const applied = await runApplyAdmitPayload({ repo: joineeRepo, daemonHandle: seedDaemonDoc(joineeRepo), atomSeed: JOINEE_ATOM,
+    const applied = await runApplyAdmitPayload({ repo: joineeRepo, daemonHandle: seedDaemonDoc(joineeRepo), ...memorySecretHome(joineeRepo), atomSeed: JOINEE_ATOM,
       vesselDisplayName: "Ichi", payload, nexusPubkey: await pubOf(JOINEE_SEED),
     });
 
-    const handle = await joineeRepo.find(applied.daemonUrl as AutomergeUrl);
+    const handle = await joineeRepo.find(applied.secretUrl as AutomergeUrl);
     const doc = await handle.doc() as { tiddlers: Record<string, unknown> };
     const capTiddlers = Object.keys(doc.tiddlers).filter((t) => t.includes("/cap/"));
     // The crossing's own events, PLUS the ones the joinee's keyhive fires standing itself (its card mint) —
@@ -228,7 +229,7 @@ describe("the admit ceremony — found · admit · carry · apply · BOUND", () 
 
     // The binding IS the joinee's whole authority. A half-applied admit is the confused-deputy hole: a
     // vessel that believes it holds a delegation nobody signed.
-    await expect(runApplyAdmitPayload({ repo, daemonHandle: seedDaemonDoc(repo),
+    await expect(runApplyAdmitPayload({ repo, daemonHandle: seedDaemonDoc(repo), ...memorySecretHome(repo),
       atomSeed: JOINEE_ATOM,
       vesselDisplayName:  "Ichi",
       nexusPubkey:          await pubOf(JOINEE_SEED),
