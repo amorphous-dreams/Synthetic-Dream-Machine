@@ -5,7 +5,9 @@
  * stage come up empty under a new face relation F. This pair carries what the operator wrote across that line as
  * CONTENT, never as identity: no key, signature, CRDT history or AID travels, and the import writes NEW changes under
  * the new face's authority. The sensoriums (captured conversation memory, `<root>/sensoriums`) survive by where they
- * stand and never enter a bundle; the daemon's control plane (`bags/daemon`) and the observe renders never travel.
+ * stand and never enter a bundle. Control records rest in the vessel control document and never travel in a bundle;
+ * the daemon wiki travels through the face's working (`wikis/daemon-<F>`) and canon (`bags/daemon-<F>`) mirrors,
+ * and kahua travels through `bags/kahua-<F>`. Observe renders never travel.
  *
  * EXPORT (a vessel that holds a disk store and wears its faces, standing):
  *   1. refuses a dest inside the house root or the workspace, or one that already stands;
@@ -29,7 +31,7 @@
  *   5. re-lifts each kahua head under the new face's grant, keyed by title + body digest (a title already holding that
  *      digest reads landed, a title holding a body the bundle never carried stands off);
  *   6. lands draft and temp files back where none stands (a different file there stands off); re-pours the daemon canon
- *      into `bags/daemon`, each house-minted bag into its bag and each other wiki's working rows into its working layer
+ *      into `bags/daemon-<F>`, each house-minted bag into its bag and each other wiki's working rows into its working layer
  *      through the same gesture, minting first (CREATE) any slug this vessel does not hold, named in the preview.
  *   A journal under `<root>/config/carry-journal/<bundle-id>.ndjson` records each landed act: an interrupted import
  *   re-enters to the same end, and a second import of the same bundle lands nothing.
