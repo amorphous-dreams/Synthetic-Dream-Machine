@@ -21,7 +21,7 @@
 import { describe, test, expect } from "vitest";
 import { makeIslandRepo, type Repo } from "@lararium/mesh";
 import {
-  CompositeStore, DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, computeRecipeFingerprint, didFromVerifyingKey, emptyLarDoc,
+  CompositeStore, CONTROL_HOME_ID, DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, computeRecipeFingerprint, didFromVerifyingKey, emptyLarDoc,
   mutableLarRecord, wikiBagUri, wikiDraftDocKey, wikiSlotUri, wikiWorkingFloorKey, faceWorkingDocUrl, materializeFaceWorkingDoc,
   type LarDoc, type LarTiddlerRecord, type WorkingFloorAnchor,
 } from "@lararium/mesh";
@@ -66,6 +66,24 @@ async function rig(opts: { seated: boolean | (() => boolean); secret?: () => Pro
 }
 
 describe("★ the ONE slot-doc resolver, floor-falling ★", () => {
+  test("device-scoped slots stay in each control store with a seated face", async () => {
+    const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
+    const store = () => { const s = new CompositeStore(); s.addLayer({ bagId: CONTROL_HOME_ID, store: new MemoryTiddlerStore(CONTROL_HOME_ID), writable: true, defaultWritable: true }); return s; };
+    const control = store(), otherControl = store();
+    const mints: string[] = [];
+    const resolver = (home: CompositeStore) => makeSlotDocResolver({ repo, daemonStore: home, control: home, catalog: null, vesselDid: () => DID, mintedByHex: () => VERIFYING_KEY, personaGroupId: "face", faceSeated: async () => true, faceDoor: { mint: async (url: string) => { mints.push(url); } } as never, deviceScoped: slug => slug === "daemon" });
+    const a = resolver(control), b = resolver(otherControl);
+    for (const kind of ["working", "draft", "personal"] as const) {
+      const first = await a.slotDoc("daemon", kind);
+      expect(first?.reach).toBe("vessel-only");
+      expect((await control.get(`${CONTROL_HOME_ID}/daemon-slot/${kind}/face`))?.tiddler.text).toBe(first?.url);
+      expect((await a.slotDoc("daemon", kind))?.url).toBe(first?.url);
+      expect((await b.slotDoc("daemon", kind))?.url).not.toBe(first?.url);
+    }
+    expect(mints).toEqual([]);
+    await repo.shutdown();
+  });
+
   test("S1 — seated: the draft is the PersonaGroup × fingerprint binding, reach = face", async () => {
     const r = await rig({ seated: true });
     const doc = await r.resolver.draft("garden");

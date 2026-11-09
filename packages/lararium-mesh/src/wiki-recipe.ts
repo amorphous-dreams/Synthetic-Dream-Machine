@@ -383,6 +383,8 @@ const FACE_RELATION = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[
  * same F its `wikis/daemon-<F>` and `bags/kahua-<F>` folders carry). Minted at the face's first worn stand and named in
  * that face's own catalog; the daemon document (`bags/daemon`) keeps no canon role.
  */
+export const DAEMON_WIKI_SLUG = "daemon";
+
 export function daemonFaceCanonBag(faceRelation: string): SlotUri {
   if (!FACE_RELATION.test(faceRelation)) throw new Error(`daemon face canon: invalid relation ${JSON.stringify(faceRelation)}`);
   return bagUri(`daemon-${faceRelation}`);

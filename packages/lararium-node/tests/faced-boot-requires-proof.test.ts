@@ -22,7 +22,7 @@ describe("a faced boot proves its face", () => {
       const before = src.slice(Math.max(0, proofAt - 900), proofAt);
       expect(before).toContain(`if (!${plane}) throw new Error(`);
       expect(before).toContain("names no persona plane for a face with a sealed anchor");
-      const block = src.slice(proofAt, proofAt + 2200);
+      const block = src.slice(proofAt, proofAt + 3000);
       expect(block).toMatch(/edge: (deviceEdge|wornEdge)/);
       expect(block).toContain(pin);
     });

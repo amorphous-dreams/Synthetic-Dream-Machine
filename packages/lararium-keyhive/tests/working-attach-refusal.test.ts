@@ -40,6 +40,7 @@ function context(options: { daemonHandle?: boolean; composite?: CompositeStore }
   }
   return {
     composite,
+    control: new CompositeStore(),
     repo: {
       create: () => { throw new Error("working-slot resolver failed: resolver planted"); },
       find: async () => ({ doc: () => ({ tiddlers: {} }), heads: () => [], on: () => () => {} }),

@@ -3184,7 +3184,7 @@ async function prepareNodeBootOn(
     // THE DAEMON WIKI'S CANON FOLLOWS THE WORN FACE (`daemonFaceCanonBag`): `bags/daemon-<F>`, the document the face's own
     // catalog names, minted at the face's first worn stand. A face that stands unproven, or the floor, reads no daemon canon.
     const wornRelation = wornFaceProved && wornFaceProjection && personaGroupId ? (await import("@lararium/mesh")).faceRelationOf(wornFaceProjection) : null;
-    const daemonCanon = wornRelation ? await standFaceDaemonCanon({ repo, catalog: faceViews.viewOf(personaGroupId!), faceRelation: wornRelation }) : null;
+    const daemonCanon = wornRelation ? await standFaceDaemonCanon({ repo, control: await standControlHome(repo, await readDaemonDoc()), faceRelation: wornRelation }) : null;
     // R1: the bags the sealed rest seals, the worn face's own wiki bags, the daemon wiki's slots and canon (U1's D half), only
     // while that face stands lit and proved; the face's hive registers each (`wornFaceWikiBags`).
     const faceWikiBags = wornFaceWikiBags({ slot, lit: faceLit && !!personaGroupId && wornFaceProved, ...(daemonCanon ? { daemonCanon: daemonCanon.bagId } : {}) });

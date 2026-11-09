@@ -27,8 +27,8 @@
  */
 
 import {
-  DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX,
-  computeRecipeFingerprint, emptyLarDoc, storedLarRecord, resolveSlotDoc, resolveFaceWorkingSlot, tiddlerText,
+  CONTROL_HOME_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX,
+  computeRecipeFingerprint, emptyLarDoc, storedLarRecord, mutableLarRecord, resolveSlotDoc, resolveFaceWorkingSlot, tiddlerText,
   wikiBagUri, wikiDraftDocKey, wikiWorkingFloorKey, requireLarDid,
   type CompositeStore, type WorkingFloorAnchor, type LarDoc, type SlotReach, type WikiSlotKind,
 } from "@lararium/mesh";
@@ -47,6 +47,8 @@ export interface SlotDocResolverArgs {
   /** How long the floor lift waits on a silent floor document before it names it and skips it (default: the house document-ready bound). */
   readonly liftReadBoundMs?: number;
   readonly repo: SlotDocRepo;
+  readonly deviceScoped?: (slug: string) => boolean;
+  readonly control?: CompositeStore;
   /** The daemon-bag composite — binding records live here. */
   readonly daemonStore: CompositeStore;
   /** Absent at the faceless floor: a floor document carries no Keyhive registration. */
@@ -252,10 +254,34 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
     return { fingerprint: await computeRecipeFingerprint(recipeTrace), recipeTrace };
   };
 
+  const deviceMints = new Map<string, Promise<SlotDoc>>();
+  const deviceSlot = async (kind: Exclude<WikiSlotKind, "temp">, mint: boolean): Promise<SlotDoc | null> => {
+    if (!args.control) throw new Error("slot-doc: device-scoped slots require control store");
+    const title = `${CONTROL_HOME_ID}/daemon-slot/${kind}/${encodeURIComponent(args.personaGroupId ?? "floor")}`;
+    const named = tiddlerText(await args.control.get(title));
+    if (named) return { url: named, reach: "vessel-only" };
+    if (!mint) return null;
+    const pending = deviceMints.get(title);
+    if (pending) return pending;
+    const control = args.control;
+    const created = (async (): Promise<SlotDoc> => {
+      const existing = tiddlerText(await control.get(title));
+      if (existing) return { url: existing, reach: "vessel-only" };
+      const handle = args.repo.create<LarDoc>(emptyLarDoc());
+      await handle.whenReady?.();
+      await args.repo.flush([handle.documentId]);
+      await control.put(mutableLarRecord(title, { text: handle.url, kind: "oracle", "face-reach": "vessel-only" }, "slot-doc:device"), { kind: "lares-verb", requestId: "slot-doc:device" });
+      return { url: handle.url, reach: "vessel-only" };
+    })();
+    deviceMints.set(title, created);
+    try { return await created; } finally { deviceMints.delete(title); }
+  };
+
   const slotDoc = async (slug: string, kind: WikiSlotKind, opts?: { mint?: boolean }): Promise<SlotDoc | null> => {
     await args.seatSettled?.();
     if (kind === "temp") return null;
     const mint = opts?.mint ?? true;
+    if (args.deviceScoped?.(slug)) return deviceSlot(kind, mint);
     // The working kind derives from the face and the wiki's slug, never from the recipe's trace.
     if (kind === "working") return workingDoc(slug, mint);
     const { fingerprint, recipeTrace } = await traceOf(slug);
@@ -278,6 +304,12 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
     bindings: async (fingerprint, recipeTrace, slug) => {
       await args.seatSettled?.();
       mounted.set(slug, { fingerprint, recipeTrace });
+      if (args.deviceScoped?.(slug)) {
+        const personal = (await deviceSlot("personal", true))!;
+        const draft = (await deviceSlot("draft", true))!;
+        const working = (await deviceSlot("working", true))!;
+        return { personalUrl: personal.url, draftUrl: draft.url, workingUrl: working.url };
+      }
       const personal = await binding("personal", fingerprint, recipeTrace);
       const draft    = await draftDoc(slug, fingerprint, recipeTrace);
       const working  = (await workingDoc(slug, true))!;
