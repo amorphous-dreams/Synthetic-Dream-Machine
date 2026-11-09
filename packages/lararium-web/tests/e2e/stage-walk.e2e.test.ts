@@ -16,8 +16,8 @@
  * THE KAHUA STAGE WALK (the lift-only fleet stage; meme lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage):
  *   S4 — the page PROPOSES its draft: a tiddler the page saves carries a TW5 button whose `$action-setfield` writes the
  *        island's verb tiddler (`lar:///lararium.local.vm/verb/kahua-propose`, `verb`, `lares-dispatch`, `arg-titles`), and
- *        a `$list` renders the verb's outcome back into the pane, so the pane hands over the proposal id. Digests only
- *        cross: before any lift, `<root>/bags/kahua` holds no file, `kahua get` answers null, `meme get` misses.
+ *        its proposal id comes from the face's intents plane through the CLI. Digests only cross: before any lift,
+ *        `<root>/bags/kahua` holds no file, `kahua get` answers null, `meme get` misses.
  *   S5 — the OPERATOR'S HAND lifts: `lares kahua lift <title> --proposal <id>` binds the body by digest; the item
  *        projects at `<root>/bags/kahua/<title path>.tid`; `lares kahua get`, `lares meme get --recipe default` and the
  *        seat's read (the door the MCP seat's `kahua_get` rides: a `seat`-hand session's `kahua-read`) read the same body.
@@ -127,20 +127,21 @@ async function reviseInPage(page: Page, title: string, body: string): Promise<vo
 /** The draft S3 authored and the walk lifts. */
 const DRAFT = { title: "L4/page-new", body: "NEW FROM THE PAGE stage-walk", body2: "REVISED IN THE PAGE stage-walk" };
 /**
- * THE PROPOSE TIDDLER the page authors: a TW5 button that dispatches `kahua-propose` for the draft, a dump of every
- * `kahua-propose` outcome's fields, and the shadow mark the draft casts. The operator authors the same by hand in QA.
+ * THE PROPOSE TIDDLER the page authors: a TW5 button that dispatches `kahua-propose` for the draft and the shadow mark
+ * the draft casts. Proposal ids come from the face's intents plane through the CLI.
  */
 const PROPOSE_TITLE = "L4/propose";
 const PROPOSE_BODY = [
   `<$button class="walk-propose"><$action-setfield $tiddler="lar:///lararium.local.vm/verb/kahua-propose" verb="kahua-propose" lares-dispatch="1" arg-titles="${DRAFT.title}"/>propose</$button>`,
-  `<$list filter="[prefix[lar:///ha.ka.ba/bags/daemon/outcomes/]field:verb[kahua-propose]]"><div class="walk-outcome"><$list filter="[all[current]fields[]]" variable="f"><<f>>=<$text text={{{ [all[current]get<f>] }}}/>;</$list></div></$list>`,
   `<$list filter="[[${DRAFT.title}]kahua-shadow[]]" variable="hit"><span class="walk-shadow"><<hit>></span></$list>`,
 ].join("\n\n");
 
-/** Every DISTINCT proposal id the pane's outcome dumps show, in document order: the pane may paint one outcome twice. */
-const proposalIds = async (page: Page): Promise<string[]> => {
-  const dumps = await page.evaluate(() => [...(document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection")?.querySelectorAll("div.walk-outcome") ?? [])].map((d) => d.textContent ?? ""));
-  return [...new Set(dumps.flatMap((d) => [...d.matchAll(/"id":"([0-9a-f]{64})"/g)].map((m) => m[1]!)))];
+/** Distinct `kahua-propose` intent ids read from the face's intents plane. */
+const proposalIds = async (hearth: Hearth): Promise<string[]> => {
+  const read = await hearth.cli(["intent", "--json"]);
+  if (read.code !== 0) return [];
+  const intents = (JSON.parse(read.stdout) as { intents?: Array<{ id?: string; verb?: string }> }).intents ?? [];
+  return [...new Set(intents.filter((intent) => intent.verb === "kahua-propose" && typeof intent.id === "string").map((intent) => intent.id!))];
 };
 /** Whether a RENDERED element matches `sel` in the pane: the edit textarea serialises its source, so a substring read lies. */
 const paneHas = (page: Page, sel: string) => page.evaluate((s) => !!document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection")?.querySelector(s), sel);
@@ -309,10 +310,8 @@ describe("the stage walk: the node half, the join, and the page's save route", (
     expect(await waitSel(page!, ".tc-tiddler-edit-frame", false), "the edit frame stayed open after the save").toBe(true);
     expect(await shadowed(page!), `a draft with no kahua twin casts no shadow; the span reads: ${await shadowText(page!)}`).toBe(false);
     expect(await clickIn(page!, "button.walk-propose"), "no propose button in the pane").toBe(true);
-    expect(await waitSel(page!, "div.walk-outcome"), `the kahua-propose verb wrote no outcome into the pane\n${tail()}`).toBe(true);
-    const ids = await settle(() => proposalIds(page!), (v) => v.length > 0, 10_000);
-    const dump = await page!.evaluate(() => document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection")?.querySelector("div.walk-outcome")?.textContent ?? "");
-    expect(ids.length, `the outcome names no proposal id:\n${dump.slice(0, 1500)}\n${tail()}`).toBe(1);
+    const ids = await settle(() => proposalIds(hearth!), (v) => v.length > 0, 10_000);
+    expect(ids.length, `the intents plane names no proposal id\n${tail()}`).toBe(1);
     proposal = ids[0]!;
     // Digests only crossed: nothing stands on the stage until the operator's hand lifts.
     expect(existsSync(stagePath(DRAFT.title))).toBe(false);
@@ -356,8 +355,8 @@ describe("the stage walk: the node half, the join, and the page's save route", (
     await reviseInPage(page, DRAFT.title, DRAFT.body2);
     expect(await waitSel(page, "span.walk-shadow"), `the revised draft cast no shadow: the stage never reached the page\n${tail()}`).toBe(true);
     expect(await clickIn(page, "button.walk-propose"), "no propose button in the pane").toBe(true);
-    const ids = await settle(() => proposalIds(page), (v) => v.length >= 2, WAIT);
-    expect(ids.length, `the second propose wrote no outcome\n${tail()}`).toBe(2);
+    const ids = await settle(() => proposalIds(hearth!), (v) => v.length >= 2, WAIT);
+    expect(ids.length, `the second propose wrote no intent\n${tail()}`).toBe(2);
     const second = ids.find((id) => id !== proposal)!;
     expect(second).toMatch(/^[0-9a-f]{64}$/);
     const lifted = await hearth!.cli(["kahua", "lift", DRAFT.title, "--proposal", second, "--text", DRAFT.body2, "--taint", "none"]);
