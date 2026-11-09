@@ -19,6 +19,7 @@
 
 import {
   emptyLarDoc,
+  daemonFaceCanonBag,
   standControlHome,
   type Repo, type AutomergeUrl, type LarDoc,
   type WikiRecipe,
@@ -50,6 +51,7 @@ export interface BrowserDaemonVmOptions {
   pluginCids?:      readonly string[];
   /** Canonical one-recipe model for the daemon island. */
   recipe:           WikiRecipe;
+  faceRelation?:    string | null;
   /** Typed structural capabilities (engine doc, daemon bag, the lares bag, catalog registry access). */
   grants:           IslandGrants;
   /**
@@ -117,6 +119,8 @@ export async function openBrowserDaemonVm(
   opts: BrowserDaemonVmOptions,
 ): Promise<DaemonVmCore> {
   const { repo, daemonUrl, personaUrl, personaBagId, coreHash, pluginCids, recipe, grants, daemonAuth, ownedDocument = false, workerScriptUrl, spawnWorker, onManifestReplay, caps } = opts;
+  const canonBag = opts.faceRelation && grants.canonUrl ? daemonFaceCanonBag(opts.faceRelation) : undefined;
+  const daemonRecipe: WikiRecipe = { ...recipe, ...(canonBag ? { canonBag } : {}) };
 
   // ── Daemon doc handle (browser strategy: find-or-create) ────────────────────
   const daemonHandle = await (async () => {
@@ -150,7 +154,7 @@ export async function openBrowserDaemonVm(
   // The wrapper IS the shore — host pieces + find-or-create daemonHandle; the lifecycle and the
   // whole result surface (DaemonVmCore) live once in the core. Return it directly, no re-spread.
   return openDaemonVmCore(host, {
-    repo, daemonHandle, controlHandle, recipe, grants, coreHash,
+    repo, daemonHandle, controlHandle, recipe: daemonRecipe, grants, coreHash,
     ...(personaHandle ? { personaHandle } : {}),
     ...(personaBagId  ? { personaBagId }  : {}),
     ...(pluginCids?.length ? { pluginCids } : {}),

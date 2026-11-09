@@ -88,10 +88,11 @@ import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
 import { runFoundingCeremony, runApplyAdmitPayload, foundThePlace, assemblePersonaGroupRing, archiveIsOf } from "@lararium/keyhive";
 import {
   promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteBoardRecords, writePromoteAct, promoteWiring, promoteWikiItems, faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, readFace, faceRecordsOf, adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard, KAHUA_BAG, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog,
-  readFleetFrontier, fleetFrontierLinks, fleetRaiseCids, readFrontierPins, writeFrontierPin, FLEET_HAND,
+  readFleetFrontier, fleetFrontierLinks, fleetRaiseCids, readFrontierPins, writeFrontierPin, FLEET_HAND, faceRelationOf,
   type WideningRead,
 } from "@lararium/mesh";
 import { keepBrowserFaceAnchor, loadBrowserFaceAnchor, requireBrowserFaceAnchor } from "./browser-face-anchor.js";
+import { standFaceDaemonCanon, type FaceDaemonCanon } from "./face-daemon-canon.js";
 import { browserVesselFaceTagDoor, keepBrowserFaceAtomSeed, mintBrowserFaceAddressSecret, readBrowserFaceAddressSecret, requireBrowserFaceAtomSeed, standBrowserFaceAtomSeed } from "./browser-face-atom.js";
 import {
   loadBrowserVeilArchive, saveBrowserVeilArchive,
@@ -1458,6 +1459,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       let provenPromoteUrl: string | null = null;
       const provenPlanes = new Map<string, string>();
       let wornFaceProjection: Parameters<typeof provenPlaneUrls>[0] | null = null;
+      let wornRelation: string | null = null;
+      let daemonCanon: FaceDaemonCanon | undefined;
       {
         // A FACED BOOT PROVES ITS FACE: a social record that omits the persona plane cannot skip the proof.
         // The founding bootstrap names ONE face's shared documents: the worn face's persona plane reads off its own plane entry,
@@ -1476,6 +1479,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           planes: { persona: wornPlaneUrl, intents: wornIntentsUrl, ...(foundingFace ? { identities: social.identitiesUrl, circles: social.circlesUrl } : {}) },   // the face's shared documents; sessions stay per vessel
         });
         if (!proof.ok) throw new Error(`[lararium-browser] Face proof: ${proof.refusal.why}${"plane" in proof.refusal ? ` ${proof.refusal.plane}` : ""}; re-found or re-admit the face`);
+        wornRelation = faceRelationOf(proof.projection);
+        if (wornRelation) daemonCanon = await standFaceDaemonCanon({ repo, catalog: assembly.catalogHandle, faceRelation: wornRelation });
         const kahua = adoptKahuaPlane(proof.projection, wornGroup, kahuaCatalogRow(assembly.catalogHandle.doc()));
         if (kahua.staleRow) console.warn(`[lararium-browser] kahua stage: the catalog row names ${kahua.staleRow}, a stale hint (the face pins ${"mount" in kahua ? kahua.mount : "none"}); the pin decides`);
         provenKahuaUrl = adoptedKahuaUrl(kahua);
@@ -1792,12 +1797,14 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         },
         onManifestReplay: (factory) => { replayManifest = factory; },
         recipe: { wikiSlug: "daemon" } satisfies WikiRecipe,
+        faceRelation: wornRelation,
         grants: {
           islandUrl: assembly.islandHandle.url,
           // The daemon island's OWN bag (daemon = wikiBagUri("daemon"), one-recipe model).
           wikiUrl:   social.daemonUrl,
           // ACCESS grant, not a LOAD slot — the worker reaches the catalog registry via the accessor.
           catalogUrl: catalogHandle.url,
+          ...(daemonCanon ? { canonUrl: daemonCanon.url } : {}),
           // The face's kahua stage, from the verified pin alone: the daemon recipe stacks this device's own top over it.
           ...(provenKahuaUrl ? { kahuaUrl: provenKahuaUrl } : {}),
         },
