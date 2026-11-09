@@ -81,21 +81,16 @@ const daemonBagDirs = (dir: string): string[] =>
   walk(dir).filter((p) => basename(p) === "daemon" && basename(dirname(join(dir, p))) === "bags");
 
 describe("the daemon VM's mirror list names the ruled layout", () => {
-  test("RED: the daemon canon, the working top, the kahua stage and crossroads; the canon under projections alone", () => {
+  test("the kahua stage and crossroads mirror while daemon control writers await their home", () => {
     const state = "/house/state";
     const mirrors = daemonDiskMirrors({ projectionRoot: state, canonBags: "/house/workspace/bags-absent", faceRelation: TAG });
     expect(mirrors.map((m) => [m.bagId, m.mirrorRoot])).toEqual([
-      [DAEMON_BAG_ID, join(state, "bags", "daemon")],
-      [WORKING, join(state, "wikis", WFACE)],
       [KAHUA_BAG, join(state, "bags", FACE)],
       [CROSSROADS_DOC_URI, join(state, "bags", "crossroads")],
     ]);
-    expect(mirrors.filter((m) => m.bagId === DAEMON_BAG_ID).map((m) => m.scope), "the daemon bag holds its canon mirror alone").toEqual(["daemon-canon"]);
+    expect(mirrors.some((m) => m.bagId === DAEMON_BAG_ID), "the legacy daemon bag carries no canon mirror").toBe(false);
     expect(mirrors.some((m) => m.mirrorRoot.startsWith("/house/workspace")), "a mirror roots in the workspace").toBe(false);
-    // The crossroads guard defaults ON; only a proven charter lifts it.
-    expect(mirrors.find((m) => m.bagId === CROSSROADS_DOC_URI)?.guardNexusHandles).toBe(true);
-    expect(daemonDiskMirrors({ projectionRoot: state, canonBags: "/x", faceRelation: TAG, guardCrossroadsNexusHandles: false })
-      .find((m) => m.bagId === CROSSROADS_DOC_URI)?.guardNexusHandles).toBe(false);
+    expect(mirrors.find((m) => m.bagId === CROSSROADS_DOC_URI)).toMatchObject({ bagId: CROSSROADS_DOC_URI, mirrorRoot: join(state, "bags", "crossroads") });
   });
 
   test("CONTROL: the working top and the stage mirror by their own minters", () => {
@@ -137,17 +132,15 @@ describe("the kahua disk witnesses", () => {
     }
   });
 
-  test("(d) a daemon title the working top holds (a verb outcome, any bags/daemon/** record) never projects under <projections>/wikis/daemon-<F>", async () => {
-    // The daemon stays the control plane, never projected (operator, 2026-11-01). A verb outcome or a daemon flow record
-    // that reaches the working top by any road still writes no file: the projector reads the title, never the layer.
+  test("a control-shaped title projects when this selected mirror holds the record", async () => {
     const { projector, state } = rig();
     await projector.flush(WORKING, `${OUTCOME_URI_PREFIX}req-0001`);
     await projector.flush(WORKING, `${DAEMON_BAG_ID}/flows/couple`);
     await projector.flush(WORKING, "Plain Note");
     const kahua = walk(join(state, "wikis", WFACE));
-    expect(kahua, "the ordinary write landed: the absence below proves something").toContain("Plain Note.tid");
-    expect(kahua.filter((p) => p.split("/").includes("outcomes")), "an outcomes/ path under <projections>/wikis/daemon-<F>").toEqual([]);
-    expect(kahua.filter((p) => p.split("/").includes("daemon")), "a bags/daemon record under <projections>/wikis/daemon-<F>").toEqual([]);
+    expect(kahua).toContain("Plain Note.tid");
+    expect(kahua).toContain("ha.ka.ba/lararium/daemon/outcomes/req-0001.tid");
+    expect(kahua).toContain("ha.ka.ba/bags/daemon/flows/couple.tid");
   });
 
   test("CONTROL (c): a canon source holding stale daemon/ and kahua/ dirs receives nothing into them", async () => {

@@ -134,8 +134,8 @@ export function mountDiskProjection(
   const tempMirrors = tempDefs.filter((def) =>
     tempSlug !== "" && def.bagId === wikiSlotUri(tempSlug, "temp") && projectionsRoot !== null && resolvePath(def.mirrorRoot).startsWith(projectionsRoot + sep)
     && ctx.composite.storeForBag(def.bagId) !== null);
-  const mirrors = mirrorDefs.filter((def) => !def.tempLayer || tempMirrors.includes(def)).map(({ bagId, mirrorRoot, scope, guardNexusHandles, titlePaths, mirrorClass, tempLayer }) =>
-    namedBagMirror(bagId, scope, mirrorRoot, guardNexusHandles, titlePaths, mirrorClass, tempLayer),
+  const mirrors = mirrorDefs.filter((def) => !def.tempLayer || tempMirrors.includes(def)).map(({ bagId, mirrorRoot, scope, titlePaths, mirrorClass, tempLayer }) =>
+    namedBagMirror(bagId, scope, mirrorRoot, titlePaths, mirrorClass, tempLayer),
   );
   // READ-BACK AHEAD OF THE FIRST PASS: the temp layer comes up empty at every restart, so each carrier its mirror holds
   // re-enters the layer's store before the projector starts; the start scan then finds every record standing, and no

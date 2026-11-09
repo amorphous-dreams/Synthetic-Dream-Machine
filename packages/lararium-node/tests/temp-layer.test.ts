@@ -1,6 +1,5 @@
 /**
- * temp-layer — the USER temp layer on disk: a consented row lands, an unconsented one never does, the volatile VM plane
- * and the house's internal state never do; read-back restores a carrier before the projector's first pass;
+ * temp-layer — the USER temp layer on disk: a consented row lands, an unconsented one never does, and the house's internal state never does; read-back restores a carrier before the projector's first pass;
  * housekeeping removes an orphan temp and a settled obsolete carrier and spares an edited, a pending and a sole-copy
  * file; opt-in expiry moves to the trash and purges after the window; the audit holds one content-free line per act.
  *
@@ -158,9 +157,10 @@ describe("projection", () => {
     expect(filesUnder(scratch)).toEqual([]);
   });
 
-  test("a VM-volatile title and the house's internal state never land, by namespace", async () => {
+  test("the temp preference withholds house state while the VM title remains ordinary content", async () => {
     const r = rig();
-    const barred = [volatileVmUri("verb/save"), "$:/state/popup/x", "$:/temp/lares/alert/k", "lar:///ha.ka.ba/lararium/config/current-wiki-bag"];
+    const barred = ["$:/state/popup/x", "$:/temp/lares/alert/k", "lar:///ha.ka.ba/lararium/config/current-wiki-bag"];
+    expect(isTempLayerInternalTitle(volatileVmUri("verb/save"))).toBe(false);
     for (const title of barred) {
       expect(isTempLayerInternalTitle(title), title).toBe(true);
       r.store._seed({ tiddler: { title, text: "internal" } });
@@ -172,7 +172,7 @@ describe("projection", () => {
 });
 
 describe("read-back", () => {
-  test("a temp carrier reads back into the layer; the observe plane and internal titles refuse", async () => {
+  test("a temp carrier reads back into the layer; the observe plane and house internal titles refuse", async () => {
     const r = rig();
     await r.store.put({ tiddler: { title: "Shopping", text: "eggs\nmilk", tags: "[[to do]]" } }, ORIGIN);
     await r.reconcile("Shopping");

@@ -546,7 +546,7 @@ export function runSovereignKernel(
               // reconciling the SAME path boot just walked.
               // The CID plane the kernel already pulls engine/plugin bytes from, lifted to
               // behaviors: a residency handler resolves a carrier body a verb rode by reference.
-              _ctx = { wikiUri: msg.wikiUri, composite: _composite!, tw5, handles: _handles, post: _post, requestDrain: () => _adaptor?.requestDrain(), repo: _repo!, kahuaUrl: msg.grants.kahuaUrl ?? null, kahuaFace, kahuaFaceWatch, ...(_receipt ? { receipt: _receipt } : {}), catalogUrl, faceCatalogUrl, oracleUrl: msg.grants.islandUrl, engine, recipe: msg.recipe, resolveByCid, ...(resolved ? { resolvedMount: true } : {}), ...(view ? { viewCatalog: (name: string) => view.catalog(name) } : {}) };
+              _ctx = { wikiUri: msg.wikiUri, composite: _composite!, tw5, handles: _handles, post: _post, requestDrain: () => _adaptor?.requestDrain(), repo: _repo!, kahuaUrl: msg.grants.kahuaUrl ?? null, kahuaFace, kahuaFaceWatch, ...(_receipt ? { receipt: _receipt } : {}), catalogUrl, faceCatalogUrl, oracleUrl: msg.grants.islandUrl, engine, recipe: msg.recipe, resolveByCid, diskMirrors: msg.diskMirrors ?? [], ...(resolved ? { resolvedMount: true } : {}), ...(view ? { viewCatalog: (name: string) => view.catalog(name) } : {}) };
               // Read-side skinny-handle rehydration: answer TW5's own `lazyLoad` event (fired when
               // `getTiddlerText` meets a bodyless `_is_skinny` tiddler) by pulling the body from the corpus
               // CAS through the SAME resolveByCid shore the kernel already rides for engine/plugin blobs. The

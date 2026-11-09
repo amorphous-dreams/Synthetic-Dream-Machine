@@ -55,8 +55,8 @@ import {
   crossingDirection, type CapTier,
   isEffectRecordUri, effectRecordUri, RETIRED_EVENT_ID, isRetirementMarker, storeIsRetired,
   writesBag, VerbRefusal,
-  neverProjects, NeverProjectedPathRefusal,
-  yieldToHost, projectionWithheld, DAEMON_BAG_ID,
+  CONTROL_HOME_ID, SECRET_HOME_ID,
+  yieldToHost,
 } from "@lararium/mesh";
 import type { HostTaskYield } from "@lararium/mesh";
 import type { VerbReactor, VerbTable } from "./verb-dispatcher.js";
@@ -207,6 +207,8 @@ export const LOAD_YIELD_QUANTUM = 25;
 
 export interface ActionHandlerOptions {
   readonly composite: CompositeStore;
+  /** Concrete mirror grants from the vessel manifest. An empty list closes disk INGEST. */
+  readonly diskMirrors?: readonly { readonly bagId: string; readonly mirrorRoot: string; readonly scope: string; readonly mirrorClass?: "recovery" | "observe" }[];
   /** The host-task yield a LOAD takes between landing slices; `yieldToHost` when absent. */
   readonly yieldHostTask?: HostTaskYield;
   /** Native TW5 filetype deserialization (LOAD), closing over the island's $tw. */
@@ -272,6 +274,43 @@ export interface ActionHandlerOptions {
    * sentinel, so it trusts that gate and asks nothing; any other composition leaves this unset and asks itself.
    */
   readonly kahuReachClearedAtGate?: boolean;
+}
+
+export class DiskWavePlacementRefusal extends Error {
+  override readonly name = "DiskWavePlacementRefusal";
+  readonly code = "disk-wave-placement";
+  constructor(readonly source: string, readonly toBag: string, reason: string) {
+    super(`disk-wave-placement: ${reason} (source ${JSON.stringify(source)}, destination ${JSON.stringify(toBag)})`);
+  }
+}
+
+function normalizedAbsolutePath(path: string): string | null {
+  if (!path || path.includes("\0")) return null;
+  const slashed = path.replaceAll("\\", "/");
+  const drive = /^[A-Za-z]:\//.exec(slashed)?.[0] ?? "";
+  if (!slashed.startsWith("/") && !drive) return null;
+  const body = drive ? slashed.slice(drive.length) : slashed.slice(1);
+  const parts: string[] = [];
+  for (const part of body.split("/")) {
+    if (!part || part === ".") continue;
+    if (part === "..") { if (!parts.length) return null; parts.pop(); }
+    else parts.push(part);
+  }
+  return `${drive || "/"}${parts.join("/")}`.replace(/\/$/, drive ? "/" : "") || "/";
+}
+
+function assertDiskWavePlacement(action: IngestAction, mirrors: ActionHandlerOptions["diskMirrors"]): void {
+  if (mirrors === undefined) return; // non-vessel unit callers carry no filesystem capability
+  const source = normalizedAbsolutePath(action.sourceUri);
+  const candidates = mirrors.filter((m) => m.bagId === action.toBag && m.mirrorClass !== "observe");
+  if (source === null || candidates.length === 0) {
+    throw new DiskWavePlacementRefusal(action.sourceUri, action.toBag, "the vessel grants no writable mirror for this source and destination");
+  }
+  const allowed = candidates.some((m) => {
+    const root = normalizedAbsolutePath(m.mirrorRoot);
+    return root !== null && (source === root || source.startsWith(root.endsWith("/") ? root : `${root}/`));
+  });
+  if (!allowed) throw new DiskWavePlacementRefusal(action.sourceUri, action.toBag, "the selected source does not rest under this bag's granted mirror");
 }
 
 /**
@@ -459,6 +498,11 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
   return async (args, ctx) => {
     const action = residencyFromContext(verb, args, ctx.invocation);
     if (!action) throw new Error(`action-handler/${verb}: malformed args — required fields missing or wrong type`);
+
+    if (action.verb === "INGEST") assertDiskWavePlacement(action, opts.diskMirrors);
+    if (action.verb === "LOAD" && (action.toBag === CONTROL_HOME_ID || action.toBag === SECRET_HOME_ID)) {
+      throw new VerbRefusal("private-home-load", "private-home-load: LOAD cannot target the control or secret home; land through a working layer");
+    }
 
     // THE ONE PREDICATE, before any other check: a hand outside the Kahu cabal lands nothing in system canon.
     if (opts.kahuReachClearedAtGate !== true) {
@@ -908,7 +952,6 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
     if (carrier.skinny && carrier.textCid) {
       const title = carrier.title;
       if (!title) throw new Error("LOAD: a skinny carrier needs a title (its `lar:` URI) — the handle names the body");
-      if (neverProjects(title) || declaresNoProjection(carrier.meta)) throw new NeverProjectedPathRefusal(title, title);
       families.push([skinnyHandleRecord(action.toBag, title, carrier.textCid, carrier.size ?? 0, carrier.ext, action.changeId, tw5, carrier.meta)]);
       continue;
     }
@@ -919,7 +962,6 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
     // (never OOM the doc), provided it names a cid to point at and carries no memetic wrapper.
     if (carrier.textCid && !CARRIER_SOH.test(carrierText) && isOversizedBody(carrier.size ?? carrierText.length) && carrier.title) {
       const title = carrier.title, cid = carrier.textCid;
-      if (neverProjects(title) || declaresNoProjection(carrier.meta)) throw new NeverProjectedPathRefusal(title, title);
       families.push([skinnyHandleRecord(action.toBag, title, cid, carrier.size ?? carrierText.length, carrier.ext, action.changeId, tw5, carrier.meta)]);
       continue;
     }
@@ -955,14 +997,6 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
     const tear = tearOf(fieldsList);
     if (tear !== null) {
       throw new Error(`LOAD: carrier ${carrier.title ?? "(carrier)"} REFUSED — its frame is torn (${tear}); nothing landed, and any family under that title stands as it stood`);
-    }
-    const refusedField = fieldsList.find((fields) => {
-      const title = typeof fields["title"] === "string" ? fields["title"] as string : carrier.title ?? "";
-      return neverProjects(title) || fields["disk-projection"] === "no";
-    });
-    if (refusedField) {
-      const title = typeof refusedField["title"] === "string" ? refusedField["title"] as string : carrier.title ?? "(carrier)";
-      throw new NeverProjectedPathRefusal(carrier.title ?? title, title);
     }
     // The title law, ahead of any slice: a LOAD lands in slices, so the refusal rides before the first one
     // and no family of the wave lands beside it.
@@ -1052,29 +1086,6 @@ async function landedHeads(access: BagAccess, bag: string): Promise<{ heads?: st
   return heads !== null && heads !== undefined && heads.length > 0 ? { heads: [...heads] } : {};
 }
 
-/** True when a carrier's `.meta` sidecar text declares the per-record disk opt-out (`disk-projection: no`). */
-function declaresNoProjection(meta: string | undefined): boolean {
-  return meta !== undefined && /^disk-projection:[ \t]*no[ \t]*$/m.test(meta);
-}
-
-/** The per-carrier answer for a file whose ingest would write a record that never projects to disk. */
-function neverProjectedRow(uri: string, file: string | undefined, title: string): Record<string, unknown> {
-  const refusal = new NeverProjectedPathRefusal(file ?? uri, title);
-  return { uri, decision: "refuse", code: refusal.code, reason: refusal.message, warnings: [refusal.message] };
-}
-
-/**
- * THE DAEMON BAG TAKES NO HOUSE RECORD FROM DISK. A wave into `bags/daemon` (an ingest, a take-disk, the canon mirror's
- * disk-to-store leg, all of which ride INGEST) never writes, tombstones or re-links a title `isDaemonCanonWithheld` names:
- * the control plane, the persona namespace (the group-secret seals), the sealed checkpoints. The island holds this line
- * whatever its caller scanned.
- */
-function withheldFromDaemon(toBag: string, title: string, tw5?: Tw5Deserializer): boolean {
-  return toBag === DAEMON_BAG_ID && projectionWithheld(title, ["daemon"], tw5?.configText ? (t: string) => tw5.configText!(t) : undefined);
-}
-const DAEMON_WITHHELD_CODE = "daemon-withheld-title";
-const daemonWithheldWhy = (title: string): string => `${title} names a control or house record of the daemon bag, and no disk writes one`;
-
 async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5Deserializer, resolveByCid?: CarrierResolver): Promise<Record<string, unknown>> {
   const o = origin(action);
   const deletions = action.deletions ?? [];
@@ -1096,14 +1107,13 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
     // A re-link never re-homes a record onto an address whose records never project, nor onto a
     // session-form address (`title-law.ts`): that carrier falls to the gate below and refuses by name,
     // and its vanished source stands as it stood.
-    const lawful = paired.renames.filter((r) => !neverProjects(r.toUri) && storableTitleFault(r.toUri) === null
-      && !withheldFromDaemon(action.toBag, r.toUri, tw5) && !withheldFromDaemon(action.toBag, r.fromUri, tw5));
+    const lawful = paired.renames.filter((r) => storableTitleFault(r.toUri) === null);
     // A RE-LINK RE-HOMES RECORDS THAT STAND. A vanished source that holds no live record leaves nothing
     // to re-home: answered as a rename, the target would skip its own ingest, land no record, and the
     // gesture would still pin a base for it. So such a pair reads as no rename, the target carrier falls
     // to the gate below and lands as itself, and the summary names the source `absent`: the records hold
     // nothing under it, so nothing stays owed for it.
-    const sources = (await listLiveTitlesInBag(access, action.toBag)).filter((t) => !isEffectRecordUri(t) && !neverProjects(t));
+    const sources = (await listLiveTitlesInBag(access, action.toBag)).filter((t) => !isEffectRecordUri(t));
     const absent = lawful.filter((r) => groupOf(sources, r.fromUri).length === 0).map((r) => r.fromUri);
     // A RE-LINK NEVER LANDS OVER RECORDS THAT STAND AT ITS TARGET. A re-link skips the target's own gate,
     // so over a target that already holds records it would replace them unweighed. Such a pair reads as
@@ -1136,8 +1146,6 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
     for (const title of kapaeTitles) {
       const fault = storableTitleFault(title);
       if (fault !== null) { refused.push({ uri: title, code: SESSION_FORM_TITLE_CODE, reason: fault }); continue; }
-      if (neverProjects(title)) { refused.push({ uri: title, code: "kapae-never-projected", reason: `${title} never projects to disk, so no shadow file speaks for it` }); continue; }
-      if (withheldFromDaemon(action.toBag, title, tw5)) { refused.push({ uri: title, code: DAEMON_WITHHELD_CODE, reason: daemonWithheldWhy(title) }); continue; }
       shadowed.add(title);
       const fragments = live.filter((t) => t === title || t.startsWith(`${title}#`));
       const rootRecord = await readFromBag(access, action.toBag, title);
@@ -1162,15 +1170,6 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
     if (shadowed.has(uri)) {
       const reason = `a kāpae shadow in the same wave sets ${uri} aside, and the shadow holds (remove-wins)`;
       results.push({ uri, decision: "refuse", code: "kapae-holds", reason, warnings: [reason] });
-      continue;
-    }
-    if (withheldFromDaemon(action.toBag, uri, tw5)) {
-      const reason = daemonWithheldWhy(uri);
-      results.push({ uri, decision: "refuse", code: DAEMON_WITHHELD_CODE, reason, warnings: [reason] });
-      continue;
-    }
-    if (neverProjects(uri) || declaresNoProjection(carrier.meta)) {
-      results.push(neverProjectedRow(uri, carrier.file, uri));
       continue;
     }
     // The carrier's own address, ahead of every write path below (a skinny handle lands before any parse).
@@ -1248,12 +1247,6 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
     let packInfo: { packPath: string; members: string[] } | null = null;
     if (memetic) {
       const parsedFields = memeticWikitextDeserializer(carrierText, { title: uri });
-      const refusedField = parsedFields.find((fields) => neverProjects(String(fields["title"] ?? uri)) || fields["disk-projection"] === "no");
-      if (refusedField) {
-        const title = String(refusedField["title"] ?? uri);
-        results.push(neverProjectedRow(uri, carrier.file, title));
-        continue;
-      }
       const sessionForm = sessionFormRow(uri, parsedFields.map((fields) => String(fields["title"] ?? uri)));
       if (sessionForm) { results.push(sessionForm); continue; }
       // The ONE placement law (place-meme.ts): group · gate · land · tombstone, over a bag sink.
@@ -1308,12 +1301,6 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
         const own = typeof fields["title"] === "string" ? (fields["title"] as string) : "";
         return { ...fields, title: own || uri };
       });
-      const refusedRecord = freshRecords.find((record) => neverProjects(String(record["title"] ?? "")) || record["disk-projection"] === "no");
-      if (refusedRecord) {
-        const title = String(refusedRecord["title"] ?? uri);
-        results.push(neverProjectedRow(uri, carrier.file, title));
-        continue;
-      }
       const sessionForm = sessionFormRow(uri, freshRecords.map((record) => String(record["title"] ?? uri)));
       if (sessionForm) { results.push(sessionForm); continue; }
       // Pack detection: any member whose title is NOT the carrier's own `lar:` URI
@@ -1530,7 +1517,6 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
     const live = await listLiveTitlesInBag(access, action.toBag);
     let relinked = 0;
     for (const t of groupOf(live, fromUri)) {
-      if (neverProjects(t)) continue;
       const rec = await readFromBag(access, action.toBag, t);
       if (!rec) continue;
       const newTitle = toUri + t.slice(fromUri.length);

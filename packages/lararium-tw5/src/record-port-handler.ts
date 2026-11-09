@@ -169,7 +169,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
       return table;
     }
     const table = new VerbTable();
-    registerActionReactors(table, { composite: ctx.composite, tw5: makeTw5Deserializer(ctx.tw5),
+    registerActionReactors(table, { composite: ctx.composite, diskMirrors: ctx.diskMirrors ?? [], tw5: makeTw5Deserializer(ctx.tw5),
       ...(ctx.resolveByCid ? { resolveByCid: ctx.resolveByCid } : {}),
       ...(opts.kahuReach ? { kahuReach: () => opts.kahuReach?.(portId)?.() ?? null } : {}) });
     verbs.set(portId, table);

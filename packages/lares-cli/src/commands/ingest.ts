@@ -114,7 +114,6 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
         kapae: shadows,
         refusedShadows,
         skipped,
-        withheld: scan.withheld ?? [],
         rows: rows.filter((r) => r.status !== "unchanged").map((r) => ({ uri: r.uri, status: r.status })),
       },
       human: () => {
@@ -122,7 +121,6 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
         for (const t of shadows) console.log(`  ${"KAPAE".padEnd(10)} ${t}`);
         for (const r of refusedShadows) console.error(`  ${"REFUSE".padEnd(10)} ${r.file} (${r.refusal})`);
         for (const f of skipped) console.log(`  SKIPPED    ${f} (no address derivation — outside bags//wikis/, non-.md, or rootless interior)`);
-        for (const f of scan.withheld ?? []) console.error(`  WITHHELD   ${f} (a control-plane or house title no disk writes)`);
         console.log(`\n  ${rows.length} scanned · ${candidates.length} would submit · preview only (pass --apply)`);
         if (wouldFault.length > 0) console.log(`  ${wouldFault.length} large un-flagged file(s) would fault during ingest — run \`--tag-blobs\` to flag them.`);
       },

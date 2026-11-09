@@ -79,7 +79,7 @@ test("the toggle: ON when absent, off mints no observe render", () => {
   expect(observeDaemonEnabled({ projection: {} })).toBe(true);
   expect(observeDaemonEnabled({ projection: { observeDaemon: false } })).toBe(false);
   expect(() => observeDaemonEnabled({ projection: { observeDaemon: "no" } })).toThrow(/boolean/);
-  const off = daemonDiskMirrors({ projectionRoot: "/p", canonBags: "/absent", faceRelation: null, observeDaemon: false });
+  const off = daemonDiskMirrors({ projectionRoot: "/p", canonBags: "/absent", faceRelation: null });
   expect(off.some((m) => m.bagId === DAEMON_BAG_ID && m.mirrorClass === "observe")).toBe(false);
 });
 

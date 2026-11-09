@@ -26,7 +26,7 @@ async function founded() {
   const place = await foundThePlace({ repo, vesselSeed, hearthTrueName: "hearth" });
   const input = {
     vesselTag: testVesselTagDoor(1),
-    repo, daemonHandle: place.daemonHandle, placeVerifyingKey: key(vesselSeed), vesselDisplayName: "founder",
+    repo, daemonHandle: place.daemonHandle, secretHandle: place.secretHandle, secretRest: { assertSealed: async () => true }, placeVerifyingKey: key(vesselSeed), vesselDisplayName: "founder",
     binding: { mode: "self-stood" as const, signerSeed }, hearthTrueName: "hearth", nexusPubkey: key(vesselSeed), atomSeed,
   };
   const face = await foundTheFace(input);

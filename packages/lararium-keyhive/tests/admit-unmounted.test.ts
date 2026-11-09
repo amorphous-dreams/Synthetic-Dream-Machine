@@ -4,6 +4,7 @@ import {
   MESH_CABAL_DOC_ID_TIDDLER, PERSONA_GROUP_ID_TIDDLER, PERSONA_KEL_PREFIX_TIDDLER,
   SIGNER_DID_TIDDLER, groupSecretOpenerFromSeed, makeIslandRepo, materializeSharedLarDoc,
   personaKelBoardDocUrl, personaKelChainForPrefix, seedDaemonDoc, vesselDyads,
+  groupSecretSealTitle, PERSONA_ACT_ENTRY_PREFIX,
 } from "@lararium/mesh";
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
 import { foundTheFace, foundThePlace, runApplyAdmitPayload, runDeviceAdmitEdge } from "../src/index.js";
@@ -24,7 +25,7 @@ async function admitInput() {
   const atomSeed = new Uint8Array(32).fill(43);
   const founder = await foundThePlace({ repo: founderRepo, vesselSeed: founderSeed, hearthTrueName: "hearth" });
   const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
-    repo: founderRepo, daemonHandle: founder.daemonHandle, placeVerifyingKey: key(founderSeed),
+    repo: founderRepo, daemonHandle: founder.daemonHandle, secretHandle: founder.secretHandle, secretRest: { assertSealed: async () => true }, placeVerifyingKey: key(founderSeed),
     vesselDisplayName: "founder", binding: { mode: "self-stood", signerSeed },
     hearthTrueName: "hearth", nexusPubkey: key(founderSeed), atomSeed: new Uint8Array(32).fill(44),
   });
@@ -40,7 +41,8 @@ async function admitInput() {
   });
   const joineeRepo = repo();
   const daemonHandle = seedDaemonDoc(joineeRepo);
-  return { repo: joineeRepo, daemonHandle, atomSeed, vesselDisplayName: "joinee", payload, nexusPubkey: key(founderSeed) };
+  const secretHandle = seedDaemonDoc(joineeRepo);
+  return { repo: joineeRepo, daemonHandle, secretHandle, secretRest: { assertSealed: async () => true }, atomSeed, vesselDisplayName: "joinee", payload, nexusPubkey: key(founderSeed) };
 }
 
 const pinImage = (doc: ReturnType<Awaited<ReturnType<typeof admitInput>>["daemonHandle"]["doc"]>) =>
@@ -51,6 +53,10 @@ describe("an admitted face chooses whether to mount", () => {
     const input = await admitInput();
     await runApplyAdmitPayload(input);
     for (const title of pins) expect(input.daemonHandle.doc().tiddlers[title]).toBeDefined();
+    expect(input.secretHandle.doc().tiddlers[groupSecretSealTitle(input.payload.personaGroupId)]).toBeDefined();
+    expect(vesselDyads(input.secretHandle.doc())).toHaveLength(1);
+    expect(Object.keys(input.daemonHandle.doc().tiddlers).some((title) => title.startsWith(PERSONA_ACT_ENTRY_PREFIX))).toBe(false);
+    expect(vesselDyads(input.daemonHandle.doc())).toHaveLength(0);
   });
 
   test("mount false keeps every singular pin already at rest", async () => {
@@ -63,6 +69,6 @@ describe("an admitted face chooses whether to mount", () => {
     const before = pinImage(input.daemonHandle.doc());
     await runApplyAdmitPayload({ ...input, mount: false });
     expect(pinImage(input.daemonHandle.doc())).toEqual(before);
-    expect(vesselDyads(input.daemonHandle.doc())).toHaveLength(1);
+    expect(vesselDyads(input.secretHandle.doc())).toHaveLength(1);
   });
 });

@@ -122,16 +122,16 @@ beforeEach(() => {
 afterEach(() => { rmSync(root, { recursive: true, force: true }); rmSync(dirname(out), { recursive: true, force: true }); });
 
 describe("the carry verbs", () => {
-  test("C1 — export, re-found, import --apply: working rows, the memory row, kahua heads, drafts and temp land under the new face", async () => {
+  test("C1 — carry follows active mirrors: kahua heads, drafts and temp land under the new face", async () => {
     const before = oldVessel();
     const { manifest } = await carryExport(out, { acceptOmissions: false, doors: before.doors() });
-    expect(manifest.rows.some((r) => r.title === MEMORY && r.layer === "working")).toBe(true);
+    expect(manifest.rows.some((r) => r.layer === "working" || r.layer === "kapae")).toBe(false);
 
     const after = refound();
     const result = await carryImport(out, { apply: true, doors: after.doors() });
     expect(result.faceMap).toEqual({ "hearth-one": 0 });
-    expect(after.records.get(MEMORY)).toBe(tid(MEMORY, "remember the heron"));
-    expect(after.records.get(NOTE)).toBe(tid(NOTE, "the pond at dusk"));
+    expect(after.records.has(MEMORY)).toBe(false);
+    expect(after.records.has(NOTE)).toBe(false);
     expect([...after.kapae]).toEqual(["lar:///ha.ka.ba/notes/gone"]);
     expect(after.bagRecords.get("lar:///ha.ka.ba/bags/garden")?.get("lar:///ha.ka.ba/garden/rose")).toBe(tid("lar:///ha.ka.ba/garden/rose", "a rose"));
     expect(after.lifts).toEqual([{ face: 0, title: MEMORY, text: "remember the heron", signer: "new-grant", parent: null }]);
@@ -170,7 +170,7 @@ describe("the carry verbs", () => {
     const daemon = manifest.omissions.find((o) => o.kind === "daemon-bag")!;
     expect(daemon.count).toBe(2);
     expect(daemon.items).toEqual(["ha.ka.ba/bags/daemon/outcome  2"]);
-    expect(manifest.counts).toMatchObject({ working: 2, kapae: 1, draft: 1, temp: 1, "kahua-carrier": 1, "kahua-head": 1, bag: 1 });
+    expect(manifest.counts).toMatchObject({ working: 0, kapae: 0, draft: 1, temp: 1, "kahua-carrier": 1, "kahua-head": 1, bag: 1 });
     expect(manifest.tempBytes["lar:///ha.ka.ba/wikis/daemon/temp"]).toBe(tid("scratch", "a passing note").length);
     const redeclare = JSON.parse(readFileSync(join(out, "re-declare.json"), "utf8"));
     expect(redeclare.faces).toEqual([{ face: "f0", handleIndex: 0, petname: "hearth-one", handle: "Heron", seat: true, chair: "east" }]);
@@ -239,7 +239,7 @@ describe("the carry verbs", () => {
     put(`projections/wikis/daemon-${F2}/recovery/draft-one.tid`, "someone else's draft");
     const result = await carryImport(out, { apply: true, doors: after.doors() });
     expect(after.records.get(NOTE)).toBe(tid(NOTE, "the pond rewritten"));
-    expect(result.tallies.working.stoodOff.join()).toContain(NOTE);
+    expect(result.tallies.working.stoodOff).toEqual([]);
     expect(result.tallies.kahua.stoodOff.join()).toContain(MEMORY);
     expect(after.lifts).toEqual([]);
     expect(result.tallies.draft.stoodOff).toHaveLength(1);
@@ -251,28 +251,28 @@ describe("the carry verbs", () => {
     const after = refound({ petname: null });
     const preview = await carryImport(out, { apply: false, doors: after.doors() });
     expect(preview.redeclare).toEqual(['h0: pet-name "hearth-one"', 'h0: Handle "Heron"', 'h0: stands for the chair "east"']);
-    expect(preview.tallies.working.planned).toBe(2);
+    expect(preview.tallies.working.planned).toBe(0);
     expect(preview.tallies.kahua.planned).toBe(1);
     expect(after.ingestCalls + after.lifts.length + after.acts.length).toBe(0);
     expect(existsSync(join(root, `projections/wikis/daemon-${F2}`))).toBe(false);
     expect(existsSync(join(root, "config", "carry-journal"))).toBe(false);
     await carryImport(out, { apply: true, doors: after.doors() });
     expect(after.acts[0]).toBe("rename h0 hearth-one");
-    expect(after.records.get(MEMORY)).toBeDefined();
+    expect(after.records.has(MEMORY)).toBe(false);
   });
 
-  test("C10 — the daemon wiki's canon travels and re-pours into bags/daemon; a house record standing there never travels", async () => {
+  test("C10 — files under bags/daemon have no carry grant", async () => {
     const STAGE = "lar:///ha.ka.ba/kahua/memory/stage-note";
     put("projections/bags/daemon/ha.ka.ba/kahua/memory/stage-note.tid", tid(STAGE, "a committed memory"));
     put("projections/bags/daemon/ha.ka.ba/bags/persona/group-secret/abc.tid", tid("lar:///ha.ka.ba/bags/persona/group-secret/abc", "sealed"));
     const { manifest } = await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
-    expect(manifest.rows.filter((r) => r.layer === "daemon-canon").map((r) => r.title)).toEqual([STAGE]);
+    expect(manifest.rows.some((r) => r.layer === "daemon-canon")).toBe(false);
+    expect(manifest.files.some((f) => f.path.startsWith("daemon/canon/"))).toBe(false);
     expect(manifest.files.some((f) => f.path.includes("persona"))).toBe(false);
-    expect(manifest.omissions.find((o) => o.kind === "daemon-house-records")?.count).toBe(1);
+    expect(manifest.omissions.find((o) => o.kind === "daemon-bag")?.count).toBe(4);
     const after = refound();
     const result = await carryImport(out, { apply: true, doors: after.doors() });
-    expect(after.bagRecords.get(DAEMON_BAG_ID)?.get(STAGE)).toBe(tid(STAGE, "a committed memory"));
-    expect(result.tallies.daemonCanon.landed).toBe(1);
+    expect(after.bagRecords.get(DAEMON_BAG_ID)?.get(STAGE)).toBeUndefined();
     const calls = after.ingestCalls;
     await carryImport(out, { apply: true, doors: after.doors() });
     expect(after.ingestCalls).toBe(calls);
@@ -304,16 +304,19 @@ describe("the carry verbs", () => {
     expect(manifest.files.some((f) => f.path.includes("moby") || f.path.includes("library"))).toBe(false);
   });
 
-  test("C13 — no ingest wave carries a control-plane title, nor a house record into bags/daemon", () => {
+  test("C13 — source title does not select the bag that receives a carry wave", () => {
     const dir = mkdtempSync(join(tmpdir(), "lar-withheld-"));
     const files = ["h/ha.ka.ba/bags/daemon/outcomes/o1.tid", "h/ha.ka.ba/bags/persona/binding/signer-did.tid", "h/ha.ka.ba/kahua/memory/m.tid"].map((r) => {
       const p = join(dir, ...r.split("/")); mkdirSync(dirname(p), { recursive: true }); writeFileSync(p, "x\n"); return p;
     });
-    const scan = scanFiles(dir, files, DAEMON_BAG_ID, new SyncedTree(null), (_r, f) => `lar:///${f.slice(join(dir, "h").length + 1).replace(/\.tid$/, "")}`);
-    expect(scan.rows.map((r) => r.uri)).toEqual(["lar:///ha.ka.ba/kahua/memory/m"]);
-    expect(scan.withheld).toHaveLength(2);
-    const other = scanFiles(dir, files, "lar:///ha.ka.ba/bags/garden", new SyncedTree(null), (_r, f) => `lar:///${f.slice(join(dir, "h").length + 1).replace(/\.tid$/, "")}`);
-    expect(other.withheld).toHaveLength(1);
+    const titles = [
+      "lar:///ha.ka.ba/bags/daemon/outcomes/o1", "lar:///ha.ka.ba/bags/persona/binding/signer-did", "lar:///ha.ka.ba/kahua/memory/m",
+    ];
+    const titleOf = (_r: string, f: string) => `lar:///${f.slice(join(dir, "h").length + 1).replace(/\.tid$/, "")}`;
+    const selected = scanFiles(dir, files, "lar:///ha.ka.ba/bags/garden", new SyncedTree(null), titleOf);
+    expect(selected.rows.map((r) => r.uri)).toEqual(titles);
+    const other = scanFiles(dir, files, "lar:///ha.ka.ba/bags/crossroads", new SyncedTree(null), titleOf);
+    expect(other.rows.map((r) => r.uri)).toEqual(titles);
     rmSync(dir, { recursive: true, force: true });
   });
 

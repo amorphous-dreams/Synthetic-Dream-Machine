@@ -1,20 +1,17 @@
 /**
- * DaemonEventStore — persist Keyhive events as tiddlers in the daemon Automerge doc.
+ * DaemonEventStore — persist Keyhive events in the vessel's separately held secret store.
  *
- * Implements the EventStore interface against a CompositeStore writable layer
- * (the daemon VM's composite). Each Keyhive event becomes one tiddler:
+ * Implements EventStore against a directly held store outside every page recipe.
+ * Each Keyhive event becomes one tiddler:
  *
- *   title:    lar:///ha.ka.ba/bags/daemon/cap/<eventHash>
+ *   title:    lar:///ha.ka.ba/bags/secret/cap/<face>/<eventHash>
  *   tag:      lar:///ha.ka.ba/tags/cap-event (sub-tags by variant: .../prekey, .../cgka,
  *             .../delegation, .../revocation)
  *   fields:   variant, hash, bytes-len, is-delegated, is-revoked
  *   text:     base64-encoded `event.toBytes()` payload
  *
- * Scope (minimum-viable). All events route to the daemon doc, regardless
- * of their semantic scope (operator-principal vs document vs group-CGKA).
- * The daemon doc is operator-private, which keeps routing simple and leaks no
- * metadata. Per-bag routing remains a known future refinement; this store
- * will fan out across multiple writable layers when that lands.
+ * All events rest in the secret home, regardless of their semantic scope
+ * (operator-principal vs document vs group-CGKA).
  *
  * Hash: a content hash of `event.toBytes()` keyed via sha256. Used as the
  * tiddler title suffix and as a stable de-dup key — the same event ingested
@@ -22,7 +19,7 @@
  */
 
 import {
-  DAEMON_BAG_ID, type CompositeStore,
+  SECRET_HOME_ID, type LarTiddlerStore,
   CAP_EVENT_TAG, CAP_EVENT_PREKEY_TAG, CAP_EVENT_CGKA_TAG,
   CAP_EVENT_DELEGATION_TAG, CAP_EVENT_REVOCATION_TAG,
 } from "@lararium/mesh";
@@ -55,10 +52,10 @@ function subTagFor(variant: string): string | null {
   }
 }
 
-/** Title for a cap-event tiddler under the daemon doc. */
+/** Title for a cap-event tiddler in the secret home. */
 export function capEventTitle(face: string, hash: string): string {
   const scope = sha256HexBytesSync(new TextEncoder().encode(face)).slice(0, 24);
-  return `${DAEMON_BAG_ID}/cap/${scope}/${hash}`;
+  return `${SECRET_HOME_ID}/cap/${scope}/${hash}`;
 }
 
 /** Base64-encode bytes for tiddler `text` storage (tiddler.text is string). */
@@ -72,19 +69,34 @@ async function hashBytes(bytes: Uint8Array): Promise<string> {
 }
 
 export interface DaemonEventStoreOptions {
-  /** Composite store with the daemon bag as its writable layer. */
-  readonly daemon: CompositeStore;
+  /** The vessel grants this store only to the secret holder, outside every page recipe. */
+  readonly secretStore?: LarTiddlerStore;
+  /** A trusted storage capability confirms that this store's underlying document rests sealed. */
+  readonly secretRest?: SecretRestCapability;
   readonly face: string;
+}
+
+export interface SecretRestCapability {
+  /** Resolve true only after the secret document's storage confirms sealed rest. */
+  assertSealed(): Promise<boolean>;
 }
 
 export class DaemonEventStore implements EventStore {
   constructor(private readonly opts: DaemonEventStoreOptions) {}
 
+  private async home(): Promise<LarTiddlerStore> {
+    if (!this.opts.secretStore || !this.opts.secretRest || !await this.opts.secretRest.assertSealed()) {
+      throw new Error("secret-home-unavailable: Keyhive events require a secret store with confirmed sealed rest");
+    }
+    return this.opts.secretStore;
+  }
+
   async put(rec: EventRecord): Promise<void> {
+    const home = await this.home();
     const hash    = rec.hash || (await hashBytes(rec.bytes));
     const title   = capEventTitle(this.opts.face, hash);
-    // Skip de-dup: composite.get is cheap; avoid re-writing identical events.
-    const existing = await this.opts.daemon.get(title);
+    // Avoid re-writing identical events.
+    const existing = await home.get(title);
     if (existing && existing.meta?.deleted !== true) return;
 
     const subTag = subTagFor(rec.variant);
@@ -101,21 +113,22 @@ export class DaemonEventStore implements EventStore {
         "bytes-len": String(rec.bytes.length),
         // CIV-3 — stamp the island scope (a keyhive DocumentId hex) so list(islandId) fetches one
         // slice; absent leaves the event cross-cutting (co-loaded by every island). Stamping stays
-        // operator-private (the daemon bag), so it leaks no new metadata.
+        // in the secret home.
         ...(rec.island !== undefined ? { island: rec.island } : {}),
       },
       { authority: "lares-keyhive" },
     );
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: `cap-event-${hash.slice(0, 8)}` };
-    await this.opts.daemon.put(record, origin, { bag: DAEMON_BAG_ID });
+    await home.put(record, origin);
   }
 
   async list(islandId?: string): Promise<readonly EventRecord[]> {
+    const home = await this.home();
     const out: EventRecord[] = [];
-    const titles = await this.opts.daemon.listVisible();
+    const titles = await home.listVisible();
     for (const title of titles) {
-      if (!title.startsWith(`${DAEMON_BAG_ID}/cap/`)) continue;
-      const rec = await this.opts.daemon.get(title);
+      if (!title.startsWith(`${SECRET_HOME_ID}/cap/`)) continue;
+      const rec = await home.get(title);
       if (!rec || rec.meta?.deleted) continue;
       const fields = rec.tiddler as Record<string, string>;
       if (fields["face"] !== this.opts.face) continue;

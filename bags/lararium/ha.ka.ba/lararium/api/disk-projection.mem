@@ -57,7 +57,7 @@ Disk projection serves ''content'' bags (definitions + instances). State and vie
 | `@temp` | volatile session layer | `wikis/{slug}/temp/` only where the recipe designates it and the operator's consent row names the slug (`projection.temp.<slug>`); its internal volatile state never |
 | `@daemon` | operator's sovereign authority doc | ''none'' — private; syncs to operator devices via the admin-doc surface |
 
-The daemon wiki's working layer projects under `wikis/daemon/`, while the daemon control bag projects nowhere. The records the daemon seeds from source at every boot, its UI surfaces and its flow set, carry the per-record opt-out below (`SEED_OFF_DISK`, `packages/lararium-tw5/src/daemon-ui-tiddlers.ts`): a file of one would hold nothing the source lacks, and the next boot's seed would write over a hand's edit to it. So a founding leaves no file under `wikis/daemon/`, and a record a person writes into that layer projects like any other.
+The daemon working layer carries no mirror while swarm controls and ward audits still rest there. The daemon document also carries no mirror. The active grant list includes the face's kahua stage and the public crossroads bag; each writes only records from its own selected store. A future daemon working mirror requires every control writer to target the unmirrored control home first.
 
 ''Draft recovery and rest.'' A granted recovery mirror reads the draft bag's own record, including `draft.of`, `draft.title` and the open-base fields, even when another bag shadows its wiki view. The recovery subtree carries no canon or publication authority. The shore uses one keyed latest-state drain: one write runs at a time, its durable acknowledgement paces the next coalesced state, and lifecycle signals only request a pass. One drain state machine owns each title's generation: callers only mark or await, one pump issues the writes and yields to a macrotask between them, one typed flight closes each generation as `acked`, `failed`, `superseded` or `abandoned`, an act's removals wait on an explicit edge to their target's acknowledgement, and memory stays bounded by the number of titles. No timer decides a flush. A draft reaches recovery rest only after the storage-backed repository acknowledges its heads and the projector confirms the file hash; a warning or the worker's in-memory flush never supplies that acknowledgement. SAVE and RENAME retain the recovery copy until the target receives durable acknowledgement.
 
@@ -119,16 +119,17 @@ A hand MAY add a future debug-only disk projection behind an explicit flag; it M
 
 <<~ ahu slot=`#/projection-filter`>>
 
-!! The projection filter ~ the one rule for what reaches plaintext disk
+!! Placement ~ where a record rests decides disk
 
-TiddlyWiki's syncer saves what `$:/config/SyncFilter` selects; the disk projector syncs to files, and its rule takes the same shape. ''One filter tiddler per mirror class'', in TiddlyWiki's own `$:/config/` namespace, shipped as the memetic-wikitext plugin's shadows (an operator's override replaces a shadow by title), each run naming one title family:
+''A record reaches plaintext only through the layer that holds it.'' A layer writes when its vessel registry grants it a mirror. The title and a `bag` field remain content; neither selects a store or mirror.
 
-* `$:/config/lares/ProjectionFilter` ~ every mirror: the volatile VM plane, residency effect records, the daemon's control plane (`bags/daemon/**`, read through its resolved path, and `$:/lares/swarm/**`), realm-bag announces, bag manifests.
-* `$:/config/lares/ProjectionFilter/daemon` ~ a mirror of the daemon bag and every wave into it: TiddlyWiki's system namespace and the house's identity records (`bags/**`, `dreamnet/**`).
-* `$:/config/lares/ProjectionFilter/temp` ~ a wiki's user temp layer: the system namespace and the house config plane.
-* `$:/config/lares/ProjectionFilter/nexus-handles` ~ a mirror baked from no charter: the per-Nexus WHO-face pointer.
+''A disk wave follows its mirror.'' INGEST accepts a source only when the vessel grants that mirror root to the selected bag. A wave has no route into an unmirrored control or secret home. Arbitrary-directory LOAD lands into a working layer; promotion moves content from its selected store.
 
-''A filter selects what stays off disk.'' Each runs over a one-title source; a title any run of the base filter, or of its mirror's class filter, selects never writes a file and never ingests from one (an ingest wave, a take-disk, an import). `[lar-path[]]` maps a title to the path it resolves to (scheme lower-cased, escapes decoded, `.` and `..` folded), so `[lar-path[]prefix[…]]` reads a family whatever its spelling. ''The same text runs everywhere'': the projector and the island's INGEST guard read the filter as their wiki holds it, and a CLI scan reads the shipped text; one evaluator (`projectionWithheld`, `@lararium/mesh` `projection-filter`) reads the operator subset these filters use (`prefix`, `suffix`, `match`, `regexp`, `lar-path`), TiddlyWiki's own engine gives the same verdicts on the same text, and a text the evaluator cannot read withholds. The observe render (#/write-ward) keeps its own one-way rule over the control plane, and the siting law keeps a bag manifest at `meta.mem`.
+`$:/config/lares/ProjectionFilter` remains an operator preference: TW5's `$:/temp/` and `$:/state/` namespaces stay off disk, and the temp class may withhold house config. It carries no control, secret, residency, manifest, or effect-title list. Residency effects stay with the affected bag and the projector recognizes their record kind. The control observe view reads one way and redacts its fields.
+
+''Bag manifests belong to declaration.'' The catalog owns each bag-root `meta.mem`; a directory LOAD omits only that root declaration, by ownership.
+
+''Meme:'' `lar:///ha.ka.ba/lararium/api/disk-projection`
 
 <<~/ahu>>
 
@@ -238,6 +239,6 @@ between casual chat-use and the defined parser core.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;xodqgHuVKFNVBVNXeaV8_npZ3MwfZm9tiHWqiLjmq2E`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZAqz5wq58TlX6e48R4W8CNvIf9NSVwfSEj0W7yz1_Gs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

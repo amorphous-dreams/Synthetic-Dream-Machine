@@ -17,7 +17,7 @@
  */
 
 import type { DocHandle }                        from "@lararium/mesh";
-import type { CompositeStore, IslandToVesselMsg, LarDoc, Repo, WikiRecipe } from "@lararium/mesh";
+import type { CompositeStore, IslandToVesselMsg, LarDoc, LarTiddlerStore, Repo, WikiRecipe } from "@lararium/mesh";
 import type { TW5Engine }                        from "./tw5-vm.js";
 import type { ReceiptCapability }                        from "./receipt.js";
 
@@ -96,6 +96,10 @@ export interface IslandContext {
    * refuses. Present only on a session island, which holds no catalog document of its own.
    */
   viewCatalog?: (name: string) => Promise<string | null>;
+  /** The vessel's concrete disk mirror grants intersected with this recipe; absent for older/test contexts. */
+  diskMirrors?: readonly { readonly bagId: string; readonly mirrorRoot: string; readonly scope: string; readonly mirrorClass?: "recovery" | "observe"; readonly titlePaths?: boolean; readonly tempLayer?: boolean }[];
+  /** Privileged secret home exposed only to the daemon behavior, never composed into a page recipe. */
+  secretStore?: LarTiddlerStore;
 }
 
 /**

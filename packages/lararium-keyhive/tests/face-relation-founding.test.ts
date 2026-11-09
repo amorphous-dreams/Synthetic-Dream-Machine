@@ -29,7 +29,7 @@ async function founded(n: number, relation?: string) {
   const place = await foundThePlace({ repo, vesselSeed, hearthTrueName: "hearth" });
   const input = {
     vesselTag: testVesselTagDoor(1),
-    repo, daemonHandle: place.daemonHandle, placeVerifyingKey: key(vesselSeed), vesselDisplayName: "founder",
+    repo, daemonHandle: place.daemonHandle, secretHandle: place.secretHandle, secretRest: { assertSealed: async () => true }, placeVerifyingKey: key(vesselSeed), vesselDisplayName: "founder",
     binding: { mode: "self-stood" as const, signerSeed }, hearthTrueName: "hearth", nexusPubkey: key(vesselSeed), atomSeed,
     ...(relation ? { faceRelation: relation } : {}),
   };
@@ -76,7 +76,7 @@ async function admitWith(extra: (head: { seq: number; cid: string }, group: stri
   const atomSeed = new Uint8Array(32).fill(63), joineeAtom = new Uint8Array(32).fill(64);
   const founder = await foundThePlace({ repo: founderRepo, vesselSeed: founderSeed, hearthTrueName: "hearth" });
   const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
-    repo: founderRepo, daemonHandle: founder.daemonHandle, placeVerifyingKey: key(founderSeed), vesselDisplayName: "founder",
+    repo: founderRepo, daemonHandle: founder.daemonHandle, secretHandle: founder.secretHandle, secretRest: { assertSealed: async () => true }, placeVerifyingKey: key(founderSeed), vesselDisplayName: "founder",
     binding: { mode: "self-stood", signerSeed }, hearthTrueName: "hearth", nexusPubkey: key(founderSeed), atomSeed,
   });
   const board = await materializeSharedLarDoc(founderRepo, personaKelBoardDocUrl(key(founderSeed)), "board:persona-kel");
@@ -90,7 +90,7 @@ async function admitWith(extra: (head: { seq: number; cid: string }, group: stri
     meshCabalDocIdHex: face.meshCabalDocIdHex, syncUrl: null, hearthDaemonUrl: founder.daemonUrl, personaUrl: face.personaUrl,
   });
   const joineeRepo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
-  const applied = await runApplyAdmitPayload({ repo: joineeRepo, daemonHandle: seedDaemonDoc(joineeRepo), atomSeed: joineeAtom, vesselDisplayName: "joinee", payload, nexusPubkey: key(founderSeed) });
+  const applied = await runApplyAdmitPayload({ repo: joineeRepo, daemonHandle: seedDaemonDoc(joineeRepo), secretHandle: seedDaemonDoc(joineeRepo), secretRest: { assertSealed: async () => true }, atomSeed: joineeAtom, vesselDisplayName: "joinee", payload, nexusPubkey: key(founderSeed) });
   return { ...applied, founderRelation: (face as unknown as { faceRelation: string }).faceRelation };
 }
 const faceAct = async (head: { seq: number; cid: string }, group: string, epoch: number, seed: Uint8Array) =>

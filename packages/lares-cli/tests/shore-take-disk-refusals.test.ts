@@ -13,7 +13,7 @@ import { afterEach, describe, test, expect } from "vitest";
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { carrierHash, VERB_RESULT_KEY, DAEMON_BAG_ID } from "@lararium/mesh";
+import { carrierHash, VERB_RESULT_KEY } from "@lararium/mesh";
 import { SyncedTree } from "@lararium/node";
 import { takeDisk, type TakeDiskDeps } from "../src/shore-take-disk.js";
 import type { ShoreAnswer } from "../src/shore-core.js";
@@ -46,13 +46,14 @@ const landing = async (o: SubmitIngestOpts): Promise<SubmitResult> => ({
   results: { [VERB_RESULT_KEY]: { ok: true, output: { carriers: o.candidates.map((c) => ({ uri: c.uri, decision: "ingest", grade: "clean", landed: 1 })) } } },
 }) as SubmitResult;
 
-describe("take-disk never lands a withheld title", () => {
-  test("RED: a standoff in bags/daemon over a group-secret seal or a cap event refuses by name, and no wave leaves the door", async () => {
-    for (const uri of ["lar:///ha.ka.ba/bags/persona/group-secret/abc", `${DAEMON_BAG_ID}/cap/0123456789abcdef01234567/deadbeef`]) {
-      const s = standing("seal.tid", "words\n", uri, (one) => [{ ...one, bagId: DAEMON_BAG_ID, island: "daemon" }]);
-      const taken = await takeDisk({ uri, key: KEY }, s.deps(async () => { throw new Error("no wave may ride for a withheld title"); }));
-      expect(taken, uri).toMatchObject({ ok: false, refusal: "daemon-withheld-title" });
-      expect(s.waves).toEqual([]);
+describe("take-disk follows the standoff's selected store", () => {
+  test("secret-shaped titles stay ordinary content when the selected store is an ordinary bag", async () => {
+    for (const uri of ["lar:///ha.ka.ba/bags/persona/group-secret/abc", "lar:///ha.ka.ba/bags/daemon/cap/0123456789abcdef01234567/deadbeef"]) {
+      const s = standing("record.tid", "words\n", uri);
+      const taken = await takeDisk({ uri, key: KEY }, s.deps(landing));
+      expect(taken, uri).toMatchObject({ ok: true, uri, bag: BAG });
+      expect(s.waves).toHaveLength(1);
+      expect(s.waves[0]!.toBag).toBe(BAG);
       rmSync(tmp, { recursive: true, force: true }); tmp = "";
     }
   });

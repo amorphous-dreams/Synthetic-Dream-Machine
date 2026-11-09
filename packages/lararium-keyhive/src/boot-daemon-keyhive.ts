@@ -26,7 +26,7 @@ import { checkFacePins, leaseEpochUnderAnchor, verifyEdgeAgainstPersonaKel, type
 export interface BootDaemonKeyhiveInput {
   /** The selected face's 32-byte atom seed. */
   readonly atomSeed?: Uint8Array;
-  /** Cap-event store — DaemonEventStore over the daemon CompositeStore in-island. */
+  /** Cap-event store — the daemon's direct handle to the secret home. */
   readonly eventStore: CapabilityProviderInitOpts["eventStore"];
   /** The mounted face atom that Gate A and the device edge must name. */
   readonly faceVerifyingKey?: string;

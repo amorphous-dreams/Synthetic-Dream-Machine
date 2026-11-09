@@ -122,6 +122,7 @@ export function makeWikiBehavior(opts: WikiBehaviorOptions = {}): IslandBehavior
       // island (no CAS dir); the ingest path faults loud there rather than fabricating a body.
       registerActionReactors(registry, {
         composite: ctx.composite,
+        diskMirrors: ctx.diskMirrors ?? [],
         tw5: makeTw5Deserializer(ctx.tw5),
         ...(ctx.resolveByCid ? { resolveByCid: ctx.resolveByCid } : {}),
         // The keyholder island's gate asked the Kahu predicate for every system bag the routed verb names.

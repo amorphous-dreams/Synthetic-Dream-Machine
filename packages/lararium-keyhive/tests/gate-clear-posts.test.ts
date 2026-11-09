@@ -2,7 +2,7 @@
 import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
 import { deviceEdgeDigest, ed25519SignerFromSeed, makeIslandRepo, mintFaceAnchor, signLeaseAdvance, type AutomergeUrl, type DeviceDelegationTiddler } from "@lararium/mesh";
 import {
-  AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, leaseEpochSlotUri,
+  AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, SECRET_HOME_ID, leaseEpochSlotUri,
   emptyLarDoc, materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix,
   wikiSlotUri, type LarDoc,
 } from "@lararium/mesh";
@@ -20,6 +20,8 @@ let verifyingKey: string;
 let signedEpoch: (n: number) => string;   // the root-signed lease slots the fixture writes
 let kel: { prefix: string; chain: NonNullable<ReturnType<typeof personaKelChainForPrefix>> };
 let daemonHandle: Awaited<ReturnType<ReturnType<typeof makeIslandRepo>["find"]>>;
+let secretHandle: Awaited<ReturnType<ReturnType<typeof makeIslandRepo>["find"]>>;
+const secretRest = { assertSealed: async () => true }; // This fixture's Repo holds no disk storage.
 
 beforeAll(async () => {
   repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
@@ -27,8 +29,9 @@ beforeAll(async () => {
   await probe.init({ seed, eventStore: { put: async () => {}, list: async () => [] } });
   verifyingKey = (await probe.whoami()).replace(/^0x/, "");
   await probe.dispose();
+  secretHandle = repo.create<LarDoc>(emptyLarDoc());
   ceremony = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1),
-    repo, vesselSeed: seed, placeVerifyingKey: verifyingKey, vesselDisplayName: "Gate witness",
+    repo, secretHandle, secretRest, vesselSeed: seed, placeVerifyingKey: verifyingKey, vesselDisplayName: "Gate witness",
     binding: { mode: "self-stood", signerSeed: seed }, hearthTrueName: "", nexusPubkey: verifyingKey,
   });
   const board = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(verifyingKey), "board:persona-kel");
@@ -60,7 +63,9 @@ function island(options: { floor?: boolean; epoch?: number; dyad?: "clear" | "as
   const workingHandle = repo.create<LarDoc>(emptyLarDoc());
   composite.addLayer({ bagId: working, store: new AutomergeDocStore(workingHandle, working), writable: true, defaultWritable: true });
   const post = vi.fn();
-  const ctx = { composite, repo, recipe: { wikiSlug: "daemon" }, handles: new Map(), post };
+  const secretStore = new AutomergeDocStore(secretHandle as never, SECRET_HOME_ID);
+  secretStore.markSyncComplete();
+  const ctx = { composite, secretStore, secretRest, repo, recipe: { wikiSlug: "daemon" }, handles: new Map(), post };
   const daemonAuth = {
     placeVerifyingKey: verifyingKey, registerBags: [DAEMON_BAG_ID], archiveOpens: false,
     ...(options.floor ? {} : {

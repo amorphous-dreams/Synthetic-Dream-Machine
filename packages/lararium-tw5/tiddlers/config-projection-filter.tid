@@ -1,10 +1,5 @@
 title: $:/config/lares/ProjectionFilter
 type: text/vnd.tiddlywiki
 
-[prefix[lar:///lararium.local.vm/]]
-[regexp[^lar:///(?:(?!/).)+/.+/ledger/residency/(?:(?!/).)+$]]
-[lar-path[]prefix[lar:///ha.ka.ba/bags/daemon/]]
-[prefix[$:/lares/swarm/]]
-[lar-path[]prefix[$:/lares/swarm/]]
-[prefix[lar:///ha.ka.ba/dreamnet/realm-bag-announce/]]
-[regexp[^lar:///ha\.ka\.ba/bags/(?:(?!/|#|\?).)+$]]
+[prefix[$:/temp/]]
+[prefix[$:/state/]]

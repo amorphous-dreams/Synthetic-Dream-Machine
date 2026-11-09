@@ -73,7 +73,7 @@ import { KAPAE_EXT, kapaeShadowBody } from "./kapae-shadow.js";
 import { contentHash, syncedTreeKey, SyncedTree } from "./synced-tree.js";
 import { decideProjection } from "./projection-gate.js";
 import { MEME_EXT } from "@lararium/mesh/mirror-paths";
-import { DAEMON_BAG_ID, isVolatileVmUri, isFaceScopedBag, KeyedReconcileGate, carrierHash, sha256HexBytesSync, digestsEqual, projectionWithheld, type ProjectionClass } from "@lararium/mesh";
+import { isFaceScopedBag, KeyedReconcileGate, carrierHash, sha256HexBytesSync, digestsEqual, projectionWithheld, hasEffectRecordKind, type ProjectionClass } from "@lararium/mesh";
 import { ORIGINAL_TIDDLER_PATHS, parseProvenance, packOfMember } from "@lararium/mesh";
 import type { ReadinessMap, VesselJournal, LarTiddlerStore } from "@lararium/mesh";
 import type { TW5Engine, CarrierFile } from "@lararium/tw5";
@@ -603,7 +603,7 @@ export class LarDiskProjector {
       return;
     }
     const record = await store.get(title);
-    if (!record || record.meta?.deleted || record.tiddler["disk-projection"] === "no") throw new Error("recovery record missing");
+    if (!record || record.meta?.deleted) throw new Error("recovery record missing");
     const stableFields = (fields: Record<string, unknown>): string => JSON.stringify(Object.fromEntries(Object.entries(fields).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)));
     const captured = stableFields(written);
     if (stableFields(record.tiddler) !== captured) throw new Error("recovery record superseded");
@@ -731,11 +731,11 @@ export class LarDiskProjector {
       // A recovery-class mirror reads its bag's own store, ahead of the view's volatile bar below: the namespace bar
       // (`neverOnDisk`) answers here first, so neither the volatile VM plane nor a temp layer's internal state reaches
       // the flush or the unlink.
-      if (this.neverOnDisk(mirror, rootUri)) continue;
+      if (await this.neverOnDisk(mirror, rootUri)) continue;
       const store = this.recoveryStore?.(mirror.bagId);
       if (store) {
         const record = await store.get(rootUri);
-        if (record && !record.meta?.deleted && record.tiddler["disk-projection"] !== "no") {
+        if (record && !record.meta?.deleted) {
           await this.flush(mirror.bagId, rootUri, record.tiddler);
         } else {
           await this._scheduleUnlinkByTitle(rootUri, mirror.bagId);
@@ -745,17 +745,11 @@ export class LarDiskProjector {
       }
     }
     if (this.isPackMember(rootUri)) return;
-    // THE VOLATILE PLANE NEVER PROJECTS — a RESIDENCY bar, not a form one: `lararium.local.vm` is a
-    // reserved root whose whole meaning is "this vessel's own scratch, never persisted, never synced"
-    // (lar-uris). Nothing there carries a mirrored `$origin-bag` today, because the island adaptor
-    // refuses it before the store; stating it here too keeps the bar readable at the shore that now
-    // admits every title, and no cascade edit can lift it.
-    if (isVolatileVmUri(rootUri)) return;
     const tiddler = this._tw5?.$tw.wiki.getTiddler?.(rootUri);
     const fields = tiddler?.fields as Record<string, string | string[] | undefined> | undefined;
     // The host's provenance stamp (nalu-engine) names the mirror; `bag` is the author's field.
     const origin = typeof fields?.["$origin-bag"] === "string" ? fields["$origin-bag"] as string : undefined;
-    const winner = fields !== undefined && fields["disk-projection"] !== "no" && origin !== undefined
+    const winner = fields !== undefined && origin !== undefined
       && this.mirrors.some((m) => m.bagId === origin && m.mirrorClass !== "recovery") ? origin : undefined;
     // THE SHADOWED OWN RECORDS: each ordinary mirror whose bag holds a live record of this root the view does not show
     // from that bag projects that record, rendered off its own fields.
@@ -805,7 +799,7 @@ export class LarDiskProjector {
       if (mirror.bagId === winner || out.includes(mirror.bagId)) continue;
       const store = this.recoveryStore!(mirror.bagId)!;
       const record = await store.get(rootUri);
-      if (!record || record.meta?.deleted || record.tiddler["disk-projection"] === "no") continue;
+      if (!record || record.meta?.deleted) continue;
       const provenance = await store.get(ORIGINAL_TIDDLER_PATHS);
       const provText = provenance && !provenance.meta?.deleted ? provenance.tiddler["text"] : undefined;
       if (typeof provText === "string" && packOfMember(parseProvenance(provText), rootUri) !== undefined) continue;
@@ -1251,7 +1245,7 @@ export class LarDiskProjector {
    * answers; a projector with no store door reads no kāpae and writes no shadow.
    */
   private async settleShadow(mirror: BagMirrorConfig, title: string, base: string): Promise<void> {
-    if (this.neverOnDisk(mirror, title)) return;
+    if (await this.neverOnDisk(mirror, title)) return;
     const gate = confineMirrorWrite(mirror.mirrorRoot, base + KAPAE_EXT, mirror.allowBagsRootFiles);
     if (!gate.ok) {
       console.error(`[disk-ward] kāpae shadow refused (${mirror.bagId}): ${gate.reason}`);
@@ -1608,17 +1602,19 @@ export class LarDiskProjector {
   }
 
   /**
-   * The titles that never write a file through this mirror, whatever the records say, read alike by a carrier's write and
-   * by its kāpae shadow: THE PROJECTION FILTERS (`@lararium/mesh` `projection-filter`). Every mirror reads the base filter
-   * (`$:/config/lares/ProjectionFilter`); a mirror of the daemon bag, a user temp layer and a grant baked from no charter
-   * each read their class's filter beside it. The texts come from this island's wiki where it stands (the plugin's shadow,
-   * or an operator's override), else the shipped default.
+   * Disk residency comes from this mirror's bag. The effect ledger shape stays audit metadata and never becomes a file;
+   * the ProjectionFilter only provides operator-configurable TW5 temp/state and temp-layer preferences.
    */
-  private neverOnDisk(mirror: BagMirrorConfig, uri: string): boolean {
+  private async neverOnDisk(mirror: BagMirrorConfig, uri: string, fields?: Record<string, unknown>): Promise<boolean> {
+    let recordFields = fields;
+    if (recordFields === undefined) {
+      const record = await this.recoveryStore?.(mirror.bagId)?.get(uri);
+      if (record && !record.meta?.deleted) recordFields = record.tiddler as Record<string, unknown>;
+      else recordFields = this._tw5?.$tw.wiki.getTiddler?.(uri)?.fields as Record<string, unknown> | undefined;
+    }
+    if (recordFields && hasEffectRecordKind(recordFields)) return true;
     const classes: ProjectionClass[] = [
-      ...(mirror.bagId === DAEMON_BAG_ID ? ["daemon" as const] : []),
       ...(mirror.tempLayer ? ["temp" as const] : []),
-      ...(mirror.guardNexusHandles ? ["nexus-handles" as const] : []),
     ];
     const wiki = this._tw5?.$tw.wiki as { getTiddlerText?: (t: string) => string | undefined } | undefined;
     return projectionWithheld(uri, classes, wiki?.getTiddlerText ? (t: string) => wiki.getTiddlerText!(t) || undefined : undefined);
@@ -1628,7 +1624,7 @@ export class LarDiskProjector {
     const mirror = this.mirrors.find((m) => m.bagId === bagId);
     if (!mirror) return;
 
-    if (this.neverOnDisk(mirror, tiddlerUri)) return;
+    if (await this.neverOnDisk(mirror, tiddlerUri, recoveryFields)) return;
 
     // Site the carrier by its own filetype — ONE render shore. The VM registry
     // hands back the chosen extension + bytes + any `.meta` sidecar, so a

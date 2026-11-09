@@ -13,8 +13,7 @@
  *      unless `--accept-omissions` names the export partial, and then each lands in the manifest's omissions;
  *   3. maps each face folder (`daemon-<F>`, `kahua-<F>`) to the face that wears it, keyed by PET-NAME; a face that holds
  *      memory and no pet-name, or two that share one, refuses;
- *   4. copies the face's working carriers + `.kapae` shadows, draft recovery files, consented temp carriers, kahua stage
- *      carriers and the stage's standing heads; the daemon wiki's canon (`bags/daemon`, authored records alone); every
+ *   4. copies granted draft recovery files, consented temp carriers, kahua stage carriers and the stage's standing heads; every
  *      other wiki's working, draft and consented temp files; house-minted bags (a user wiki's own canon among them); and
  *      lists the acquired library's collections by index digest (the originals survive in place and never travel);
  *   5. writes `manifest.json` and `re-declare.json`, reads every byte back against the manifest, and only then moves
@@ -41,10 +40,10 @@ import { appendFileSync, copyFileSync, existsSync, lstatSync, mkdirSync, readFil
 import { randomBytes } from "node:crypto";
 import { basename, dirname, join, resolve, sep } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
-import { wikiBagUri, wikiSlotUri, KAHUA_BAG, DAEMON_BAG_ID, defaultChairLabel, declarePersonaHandle, renameOwnPersona, standForKahuSeat } from "@lararium/mesh";
+import { wikiBagUri, wikiSlotUri, KAHUA_BAG, defaultChairLabel, declarePersonaHandle, renameOwnPersona, standForKahuSeat } from "@lararium/mesh";
 import {
-  larHouseRoot, larProjectionsHome, larConfigHome, mirrorDirFileToUri, readKapaeShadow, KAPAE_EXT, SyncedTree, OBSERVE_DIR, TEMP_LAYER_DIR,
-  daemonFaceFolder, isDaemonFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug, loadLaresConfig, tempConsentedSlugs, isDaemonCanonWithheld,
+  larHouseRoot, larProjectionsHome, larConfigHome, mirrorDirFileToUri, SyncedTree, OBSERVE_DIR, TEMP_LAYER_DIR,
+  daemonFaceFolder, isDaemonFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug, loadLaresConfig, tempConsentedSlugs,
   listCollections, libraryCollectionDir,
 } from "@lararium/node";
 import type { ParsedArgs } from "../parse-args.js";
@@ -104,8 +103,6 @@ export interface CarryDoors {
   readonly mintBag: (bagUri: string) => Promise<void>;
   readonly kahuaLift: (handleIndex: number, lift: { readonly title: string; readonly text: string; readonly fields: Readonly<Record<string, string>>; readonly taint: readonly string[]; readonly sources: CarryKahuaHead["sources"]; readonly parent: string | null }) => Promise<{ readonly cid: string }>;
 }
-
-const DAEMON_WORKING = wikiSlotUri("daemon", "working");
 
 // ── the live doors ─────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -292,7 +289,7 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
   const plan: Array<{ from: string; to: string; row: Omit<CarryRow, "sha256" | "path"> | null }> = [];
   const tempBytes: Record<string, number> = {};
   const consented = new Set(doors.tempConsented());
-  let strays = 0, odd = 0, withheld = 0;
+  let strays = 0, odd = 0;
   const addTree = (srcDir: string, toDir: string, rowOf: (rel: string, abs: string) => Omit<CarryRow, "sha256" | "path"> | null, skipTop: readonly string[] = []): void => {
     const listed = plainFiles(srcDir);
     odd += listed.odd.length;
@@ -309,13 +306,6 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
     if (isDaemonFaceFolder(name)) {
       if (face === null) continue;
       const fk = keyOf.get(face.handleIndex)!, pet = face.petname!;
-      addTree(src, `faces/${fk}/working`, (rel, abs) => {
-        if (rel.endsWith(KAPAE_EXT)) {
-          const read = readKapaeShadow(readFileSync(abs, "utf8"));
-          return { face: pet, bag: DAEMON_WORKING, layer: "kapae", title: "title" in read ? read.title : null, rowKey: null };
-        }
-        return { face: pet, bag: DAEMON_WORKING, layer: "working", title: mirrorDirFileToUri(wikisDir, abs), rowKey: null };
-      }, [TEMP_LAYER_DIR, "recovery"]);
       addTree(join(src, "recovery"), `faces/${fk}/drafts`, () => ({ face: pet, bag: wikiSlotUri("daemon", "draft"), layer: "draft", title: null, rowKey: null }));
       if (consented.has("daemon")) {
         addTree(join(src, TEMP_LAYER_DIR), `faces/${fk}/temp`, (_rel, abs) => {
@@ -347,13 +337,7 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
       continue;
     }
     if (name === "daemon") {
-      // THE DAEMON WIKI'S CANON: its authored records alone; a house record standing there by hand never travels.
-      const before = plan.length;
-      addTree(src, "daemon/canon", (_rel, abs) => ({ face: null, bag: DAEMON_BAG_ID, layer: "daemon-canon", title: mirrorDirFileToUri(bagsDir, abs), rowKey: null }));
-      for (let i = plan.length - 1; i >= before; i--) {
-        const title = plan[i]!.row?.title;
-        if (title !== null && title !== undefined && isDaemonCanonWithheld(title)) { plan.splice(i, 1); withheld++; }
-      }
+      // This directory has no disk mirror grant, so its files stay out of the carry bundle.
       continue;
     }
     if (isPrivateProjectionSlug(name)) continue;
@@ -361,7 +345,6 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
   }
   if (strays > 0) omissions.push({ kind: "atomic-write-strays", detail: "orphan *.lar-tmp-* files an atomic write left; none carries a record", count: strays });
   if (odd > 0) omissions.push({ kind: "links-or-special-files", detail: "entries under the projections root that stand as neither a plain file nor a directory", count: odd });
-  if (withheld > 0) omissions.push({ kind: "daemon-house-records", detail: "files under projections/bags/daemon that name a control-plane or house identity title; no bundle carries them", count: withheld });
   omissions.push(daemonBagOmission(projections));
   omissions.push({ kind: "parallel-drafts", detail: "another place's unmerged drafts rest in its draft floor doc (wikis/<slug>/drafts/<did>) and project nowhere; no door names them yet, so none travels" });
 
@@ -427,18 +410,20 @@ function libraryListing(): Array<{ readonly collection: string; readonly indexSh
   });
 }
 
-/** What the daemon's control plane leaves behind, counted by title family off its observe render where one stands. */
+/** Unmirrored daemon and one-way observe files stay out of the disk carry. */
 function daemonBagOmission(projections: string): CarryOmission {
-  const root = join(projections, OBSERVE_DIR, "daemon");
-  if (!existsSync(root)) return { kind: "daemon-bag", detail: "the daemon's control plane (bags/daemon) never travels; no observe render stands to count it (projection.observeDaemon)" };
+  const roots = [join(projections, "bags", "daemon"), join(projections, OBSERVE_DIR, "daemon")];
   const families = new Map<string, number>();
-  for (const rel of plainFiles(root).files) {
-    if (rel.endsWith(".meta") || isStray(rel)) continue;
-    const family = rel.split("/").slice(0, -1).slice(0, 4).join("/") || "(root)";
-    families.set(family, (families.get(family) ?? 0) + 1);
+  for (const root of roots) {
+    if (!existsSync(root)) continue;
+    for (const rel of plainFiles(root).files) {
+      if (rel.endsWith(".meta") || isStray(rel)) continue;
+      const family = rel.split("/").slice(0, -1).slice(0, 4).join("/") || "(root)";
+      families.set(family, (families.get(family) ?? 0) + 1);
+    }
   }
   const items = [...families].sort(([a], [b]) => (a < b ? -1 : 1)).map(([f, n]) => `${f}  ${n}`);
-  return { kind: "daemon-bag", detail: "the daemon's control plane (bags/daemon) never travels; its records counted by title family", items, count: [...families.values()].reduce((a, b) => a + b, 0) };
+  return { kind: "daemon-bag", detail: "daemon control and observe files have no disk-ingress grant", items, count: [...families.values()].reduce((a, b) => a + b, 0) };
 }
 
 // ── import ─────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -481,7 +466,7 @@ export interface CarryImportResult {
   /** Bundle face pet-name -> the handle index it lands on. */
   readonly faceMap: Readonly<Record<string, number>>;
   readonly redeclare: readonly string[];
-  readonly tallies: Readonly<Record<"working" | "kapae" | "kahua" | "draft" | "temp" | "bag" | "daemonCanon" | "wikiWorking", CarryTally>>;
+  readonly tallies: Readonly<Record<"working" | "kapae" | "kahua" | "draft" | "temp" | "bag" | "wikiWorking", CarryTally>>;
   /** The bags (and the wikis they open as) this import mints, or would mint in a preview, before it re-pours them. */
   readonly minted: readonly string[];
   readonly skipped: readonly string[];
@@ -545,7 +530,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     target.set(bf.key, face);
   }
 
-  const tallies = { working: tally(), kapae: tally(), kahua: tally(), draft: tally(), temp: tally(), bag: tally(), daemonCanon: tally(), wikiWorking: tally() };
+  const tallies = { working: tally(), kapae: tally(), kahua: tally(), draft: tally(), temp: tally(), bag: tally(), wikiWorking: tally() };
   const minted: string[] = [];
   const skipped: string[] = [];
 
@@ -554,7 +539,6 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     if (files.length === 0) return;
     const scan = scanFiles(bundle.root, files.map((f) => join(bundle.root, ...f.split("/"))), toBag, new SyncedTree(null), (_r, file) => mirrorDirFileToUri(mirrorDir, file));
     for (const s of scan.skipped) if (!s.endsWith(".meta")) skipped.push(s);
-    for (const w of scan.withheld ?? []) workTally.refused.push(`${w} (a control-plane or house title no disk writes)`);
     for (const r of scan.refusedShadows ?? []) kapaeTally?.refused.push(`${r.file} (${r.refusal})`);
     const keyed = (r: ScanRow): string => `${keyPrefix}:${r.uri}:${r.diskHash}`;
     const candidates = candidatesOf(scan.rows).filter((r) => { if (journal.done.has(keyed(r))) { workTally.already++; return false; } return true; });
@@ -572,12 +556,6 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     for (const t of answer.kapaeRaised) { kapaeTally!.landed++; journal.mark(`${keyPrefix}:kapae:${t}`, "raised"); }
     for (const k of answer.kapaeRefused) kapaeTally!.refused.push(`${k.uri} (${k.why})`);
   };
-  for (const bf of manifest.faces) {
-    const prefix = `faces/${bf.key}/working/`;
-    const files = manifest.files.map((f) => f.path).filter((p) => p.startsWith(prefix));
-    await wave(join(bundle.root, "faces", bf.key, "working"), join(bundle.root, "faces", bf.key), DAEMON_WORKING, files, `working:${bf.key}`, tallies.working, tallies.kapae);
-  }
-
   // KAHUA HEADS: re-lifted under the new face's grant, keyed by title + body digest.
   for (const bf of manifest.faces) {
     const face = target.get(bf.key)!;
@@ -639,12 +617,6 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     const to = join(projections, "wikis", folder, kind === "drafts" ? "recovery" : TEMP_LAYER_DIR, ...rest.split("/"));
     place(join(bundle.root, ...f.path.split("/")), to, f.sha256, t);
   }
-
-  // THE DAEMON WIKI'S CANON: re-poured into `bags/daemon` through the ingest gesture, the road seed walks for a bag the vessel
-  // mints at boot. (Seed's LOAD-then-MOVE road would carry the daemon wiki's WHOLE working layer into canon, the face's
-  // working memory with it, so the canon re-pour never takes it.)
-  const canonFiles = manifest.files.map((f) => f.path).filter((p) => p.startsWith("daemon/canon/"));
-  await wave(join(bundle.root, "daemon", "canon"), join(bundle.root, "daemon"), DAEMON_BAG_ID, canonFiles, "daemon-canon", tallies.daemonCanon, null);
 
   // EVERY OTHER WIKI AND HOUSE-MINTED BAG, by slug: a slug this vessel does not hold mints first, through CREATE.
   const slugsOf = (re: RegExp): string[] => [...new Set(manifest.files.map((f) => re.exec(f.path)?.[1]).filter((s): s is string => s !== undefined))].sort();

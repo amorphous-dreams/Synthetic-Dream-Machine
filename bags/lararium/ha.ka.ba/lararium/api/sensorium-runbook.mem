@@ -136,9 +136,7 @@ founding reads as the ''CONSEQUENCE'' of belonging to the house, never the reaso
 protection STRUCTURAL: a tier kept safe by its absence from a removal list stays safe until somebody widens the
 list by one path segment, while a tier standing in its own class leaves no edge to widen.
 
-''Two types of memory, two homes.'' The sensoriums hold CAPTURED conversation memory, and they never project to
-disk. The daemon wiki's working layer and its tiers hold AUTHORED memes (the memory stage), and those project as
-plaintext under `<root>/projections` (`wikis/daemon-<F>`, `bags/kahua-<F>`). Neither stands in for the other.
+''Two types of memory, two homes.'' The sensoriums hold CAPTURED conversation memory outside projection. Authored memes rest in wiki layers; each reaches plaintext only through its layer's registered mirror. The lift-only stage and eligible working layers carry separate mirrors. The daemon working layer stays unmirrored while its control records rest there; control and secret homes carry no mirror. Neither stands in for the other.
 
 !!! What feeds what ~ four planes over four bases
 
@@ -491,6 +489,6 @@ reports whether they carry a flow between them.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;jumgJ7Xgo06izMZB6g9L4RMzVrE6FdLiAuGqdPpqgmw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dwfBj9NMzFx8HjJ79PlBrv-GrTzJRcxNHfmm7FX5d0Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>

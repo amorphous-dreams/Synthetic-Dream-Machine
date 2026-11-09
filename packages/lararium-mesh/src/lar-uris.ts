@@ -3,7 +3,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/lar-uris — the law this file enacts.
  */
 
-import { resolvedTitlePath, projectionWithheld } from "./projection-filter.js";
+import { resolvedTitlePath } from "./projection-filter.js";
 import type { LarDoc } from "./base-doc.js";
 import { emptyLarDoc } from "./base-doc.js";
 
@@ -346,26 +346,14 @@ export function parseMeshScale(s: string | null | undefined): MeshScale | undefi
 /** Daemon wiki bag id — the lararium's own central daemon `daemon` bag (one-recipe model).
  *  SOVEREIGN-per-vessel: this vessel's own control-plane, never shared across vessels. */
 export const DAEMON_BAG_ID    = bagUri("daemon");
-
-/** A title the daemon's control plane owns (`bags/daemon/**`: verb outcomes, effects, flows, cap events; and the swarm's `$:/lares/swarm/**` controls). It lands in the
- *  daemon doc alone and never projects: the daemon stays CRDT only (operator, 2026-11-01). */
-export function isControlPlaneUri(title: string): boolean {
-  return resolvedTitlePath(title).startsWith(`${DAEMON_BAG_ID}/`) || isSwarmUri(title);
-}
-
-/**
- * Whether a title stays off disk for the daemon bag: off its canon mirror, and out of every wave into it. The rule lives in
- * the projection filters (`projection-filter.ts`: the base and `$:/config/lares/ProjectionFilter/daemon`); this reads them.
- */
-export function isDaemonCanonWithheld(title: string): boolean {
-  return projectionWithheld(title, ["daemon"]);
-}
+/** Vessel-private homes: hosts address these documents by bag coordinate; pages never mount them. */
+export const CONTROL_HOME_ID = bagUri("control");
+export const SECRET_HOME_ID = bagUri("secret");
 
 /** The swarm's live controls (house cap, lane shares, go, lane state, roster, receipts) rest in the daemon wiki under this prefix. */
 export const SWARM_URI_PREFIX = "$:/lares/swarm/";
 
-/** True for a title that starts with `SWARM_URI_PREFIX` as spelled, or resolves under it the way `isControlPlaneUri` reads a path: a dot
- *  segment that folds the title out of the prefix still reads as the swarm's, so no spelling of either side slips past the law. */
+/** True for a title that starts with `SWARM_URI_PREFIX` as spelled, or resolves under it through a dot segment. */
 export function isSwarmUri(title: string): boolean {
   return title.startsWith(SWARM_URI_PREFIX) || resolvedTitlePath(title).startsWith(SWARM_URI_PREFIX);
 }
@@ -487,18 +475,6 @@ export function nexusRegistryUri(nexusPubkey: string): string {
  */
 export function nexusHandlesUri(nexusPubkey: string): string {
   return `${NEXUS_DOC_URI}/${nexusPubkey}/handles`;
-}
-
-/**
- * Does this address name a per-Nexus WHO-face pointer — `bags/nexus/<pubkey>/handles`, exactly the
- * shape `nexusHandlesUri` mints? Shape-only, on purpose: it tells a projector "this is a WHO-board
- * pointer" without knowing WHICH pubkey or whether that pubkey resolves to a charter, an anchor, or
- * a private nexus-of-one — the RESOLVED kind is a separate fact a caller must combine with this one
- * (crossroads-charter-only-mirror). Keying on the URI shape alone would let a private-nexus-of-one's
- * throwaway pointer through just because it LOOKS like a handles record.
- */
-export function isNexusHandlesUri(uri: string): boolean {
-  return uri.startsWith(`${NEXUS_DOC_URI}/`) && uri.endsWith("/handles");
 }
 
 // ── Social plane doc-type aliases + empty constructors ────────────────────

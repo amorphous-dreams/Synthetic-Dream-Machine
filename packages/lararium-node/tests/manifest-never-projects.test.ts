@@ -35,9 +35,9 @@ describe("the manifest address", () => {
   });
 });
 
-describe("the siting function refuses the manifest", () => {
-  test("lar:///ha.ka.ba/bags/crossroads sites nowhere", () => {
-    expect(carrierBaseRelPath("lar:///ha.ka.ba/bags/crossroads")).toBeNull();
+describe("manifest ownership does not become title-based projection policy", () => {
+  test("the address sites like any other stable carrier", () => {
+    expect(carrierBaseRelPath("lar:///ha.ka.ba/bags/crossroads")).toBe("ha.ka.ba/bags/crossroads");
   });
 
   test("CONTROL — a foreign carrier under a bag address still sites whole", () => {
@@ -45,8 +45,8 @@ describe("the siting function refuses the manifest", () => {
   });
 });
 
-describe("the projector never writes bags/<bag>/ha.ka.ba/bags/<bag>.mem", () => {
-  test("a flush of the manifest record writes nothing", async () => {
+describe("a selected mirror projects its records by placement", () => {
+  test("a manifest-shaped title in this mirrored bag writes as ordinary content", async () => {
     root = mkdtempSync(join(tmpdir(), "lar-descriptor-"));
     let rendered = 0;
     const projector = new LarDiskProjector({
@@ -55,9 +55,8 @@ describe("the projector never writes bags/<bag>/ha.ka.ba/bags/<bag>.mem", () => 
     });
     const flush = (projector as unknown as { flush: (b: string, u: string) => Promise<void> }).flush.bind(projector);
     await flush("crossroads", "lar:///ha.ka.ba/bags/crossroads");
-    expect(existsSync(join(root, "bags/crossroads/ha.ka.ba/bags/crossroads.mem"))).toBe(false);
-    expect(existsSync(join(root, "bags/crossroads/ha.ka.ba"))).toBe(false);
-    expect(rendered).toBe(0);
+    expect(existsSync(join(root, "bags/crossroads/ha.ka.ba/bags/crossroads.mem"))).toBe(true);
+    expect(rendered).toBe(1);
   });
 
   test("CONTROL — a carrier in the same bag still lands at its uri-path", async () => {

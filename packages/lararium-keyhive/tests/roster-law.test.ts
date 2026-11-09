@@ -36,7 +36,7 @@ describe("THE_ROSTER_LAW", () => {
     const founderPlace = await foundThePlace({ repo: founderRepo, hearthTrueName: "hearth" });
     const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
       repo: founderRepo,
-      daemonHandle: founderPlace.daemonHandle,
+      daemonHandle: founderPlace.daemonHandle, secretHandle: founderPlace.secretHandle, secretRest: { assertSealed: async () => true },
       placeVerifyingKey: key(founderVesselSeed),
       vesselDisplayName: "founder",
       binding: { mode: "self-stood", signerSeed: rootSeed },
@@ -75,7 +75,7 @@ describe("THE_ROSTER_LAW", () => {
     const joineePlace = await foundThePlace({ repo: joineeRepo, hearthTrueName: "hearth" });
     const joinee = await runApplyAdmitPayload({
       repo: joineeRepo,
-      daemonHandle: joineePlace.daemonHandle,
+      daemonHandle: joineePlace.daemonHandle, secretHandle: joineePlace.secretHandle, secretRest: { assertSealed: async () => true },
       atomSeed: joineeAtomSeed,
       vesselDisplayName: "joinee",
       payload,
@@ -107,7 +107,7 @@ describe("THE_ROSTER_LAW", () => {
     const founderPlace = await foundThePlace({ repo: founderRepo, hearthTrueName: "hearth" });
     const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
       repo: founderRepo,
-      daemonHandle: founderPlace.daemonHandle,
+      daemonHandle: founderPlace.daemonHandle, secretHandle: founderPlace.secretHandle, secretRest: { assertSealed: async () => true },
       placeVerifyingKey: key(founderVesselSeed),
       vesselDisplayName: "founder",
       binding: { mode: "self-stood", signerSeed: rootSeed },

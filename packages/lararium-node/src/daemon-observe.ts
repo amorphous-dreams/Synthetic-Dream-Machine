@@ -2,8 +2,7 @@
  * daemon-observe — the ONE-WAY, read-only render of the daemon bag (`bags/daemon`) under
  * `<projections>/observe/daemon/`.
  *
- * The daemon bag stays the CRDT-only control plane: its titles, `DAEMON_BAG_ID` and `isControlPlaneUri` hold as they
- * stand, and the ordinary disk projector never mirrors it. This writer gives an operator something to READ: each record
+ * The daemon document has no ordinary disk mirror. This writer gives an operator something to READ: each record
  * under the bag path lands as one JSON file at `<observe>/<path under the bag>.json`, and each swarm control
  * (`$:/lares/swarm/**`) at `<observe>/swarm/<path under the prefix>.json`, rewritten as the record moves and removed as
  * it leaves.

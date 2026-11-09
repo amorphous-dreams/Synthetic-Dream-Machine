@@ -1,12 +1,4 @@
-/**
- * A realm-bag ANNOUNCE never projects as a carrier.
- *
- * A registration mints one announce pointer per bag into the crossroads plane
- * (`lar:///ha.ka.ba/dreamnet/realm-bag-announce/<encoded bag uri>`), a record the HOUSE writes into the
- * live document, never a curated canon file. The crossroads bag projects back into the canon tree, so a
- * mirror that wrote the pointer left `realm-bag-announce/lar%3A%2F%2F%2F….tid` beside the tracked
- * library on every seeded boot. Like an effect record, an announce rests in the CRDT alone.
- */
+/** A mirrored crossroads record projects by placement even when its title names a realm announcement. */
 import { describe, expect, test, afterEach } from "vitest";
 import { mkdtempSync, rmSync, existsSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -25,14 +17,14 @@ function projectorOver(dir: string, bodyOf: () => { ext: string; body: string; m
   return { flush: (projector as unknown as { flush: (b: string, u: string) => Promise<void> }).flush.bind(projector) };
 }
 
-describe("the projector never writes a realm-bag announce", () => {
-  test("a flush of an announce pointer writes nothing", async () => {
+describe("realm announcement titles follow the selected mirror", () => {
+  test("a mirrored announce record writes as ordinary content", async () => {
     root = mkdtempSync(join(tmpdir(), "lar-announce-"));
     let rendered = 0;
     const { flush } = projectorOver(root, () => { rendered += 1; return { ext: ".tid", body: "title: announce\n\n" }; });
     await flush("crossroads", realmBagAnnounceKey(bagUri("lares")));
-    expect(existsSync(join(root, "bags/crossroads/ha.ka.ba"))).toBe(false);
-    expect(rendered).toBe(0);
+    expect(existsSync(join(root, "bags/crossroads/ha.ka.ba/dreamnet/realm-bag-announce"))).toBe(true);
+    expect(rendered).toBe(1);
   });
 
   test("CONTROL — a carrier in the same bag still lands at its uri-path", async () => {

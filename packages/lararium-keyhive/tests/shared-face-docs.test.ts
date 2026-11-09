@@ -24,7 +24,7 @@ async function founderAndJoinee() {
   const atomSeed = new Uint8Array(32).fill(83), joineeAtom = new Uint8Array(32).fill(84);
   const founder = await foundThePlace({ repo: founderRepo, vesselSeed: founderSeed, hearthTrueName: "hearth" });
   const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
-    repo: founderRepo, daemonHandle: founder.daemonHandle, placeVerifyingKey: key(founderSeed), vesselDisplayName: "founder",
+    repo: founderRepo, daemonHandle: founder.daemonHandle, secretHandle: founder.secretHandle, secretRest: { assertSealed: async () => true }, placeVerifyingKey: key(founderSeed), vesselDisplayName: "founder",
     binding: { mode: "self-stood", signerSeed }, hearthTrueName: "hearth", nexusPubkey: key(founderSeed), atomSeed,
   });
   const board = await materializeSharedLarDoc(founderRepo, personaKelBoardDocUrl(key(founderSeed)), "board:persona-kel");
@@ -36,7 +36,7 @@ async function founderAndJoinee() {
     meshCabalDocIdHex: face.meshCabalDocIdHex, syncUrl: null, hearthDaemonUrl: founder.daemonUrl, personaUrl: face.personaUrl,
   });
   const joineeRepo = repo();
-  const applied = await runApplyAdmitPayload({ repo: joineeRepo, daemonHandle: seedDaemonDoc(joineeRepo), atomSeed: joineeAtom, vesselDisplayName: "joinee", payload, nexusPubkey: key(founderSeed) });
+  const applied = await runApplyAdmitPayload({ repo: joineeRepo, daemonHandle: seedDaemonDoc(joineeRepo), secretHandle: seedDaemonDoc(joineeRepo), secretRest: { assertSealed: async () => true }, atomSeed: joineeAtom, vesselDisplayName: "joinee", payload, nexusPubkey: key(founderSeed) });
   return { face, chain, applied, payload, signerSeed, joineeKey: key(joineeAtom), personaActs };
 }
 
@@ -79,7 +79,7 @@ describe("a face's circles and identities follow the face", () => {
     const joineeAtom = new Uint8Array(32).fill(84);
     const adopt = (personaActs: unknown[]) => {
       const r = repo();
-      return { r, run: runApplyAdmitPayload({ repo: r, daemonHandle: seedDaemonDoc(r), atomSeed: joineeAtom, vesselDisplayName: "joinee",
+      return { r, run: runApplyAdmitPayload({ repo: r, daemonHandle: seedDaemonDoc(r), secretHandle: seedDaemonDoc(r), secretRest: { assertSealed: async () => true }, atomSeed: joineeAtom, vesselDisplayName: "joinee",
         payload: { ...f.payload, personaActs: personaActs as never }, nexusPubkey: key(new Uint8Array(32).fill(81)) }) };
     };
     const forgedFirst = await adopt([forged, ...(f.personaActs as unknown[])]).run;
@@ -92,7 +92,7 @@ describe("a face's circles and identities follow the face", () => {
     // A bundle with no founded log, or no signed fleet frontier record, joins nothing and writes nothing.
     await expect(adopt([]).run).rejects.toThrow(/empty, unfounded or forked/);
     const noFrontier = repo();
-    await expect(runApplyAdmitPayload({ repo: noFrontier, daemonHandle: seedDaemonDoc(noFrontier), atomSeed: joineeAtom, vesselDisplayName: "joinee",
+    await expect(runApplyAdmitPayload({ repo: noFrontier, daemonHandle: seedDaemonDoc(noFrontier), secretHandle: seedDaemonDoc(noFrontier), secretRest: { assertSealed: async () => true }, atomSeed: joineeAtom, vesselDisplayName: "joinee",
       payload: { ...f.payload, edgeFrontier: { records: [], snapshots: [] } }, nexusPubkey: key(new Uint8Array(32).fill(81)) })).rejects.toThrow(/no signed fleet frontier/);
   });
 

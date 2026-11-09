@@ -20,7 +20,7 @@
  */
 import { afterEach, describe, test, expect, vi } from "vitest";
 import { createServer, type Server, type Socket } from "node:net";
-import { mkdtempSync, rmSync, mkdirSync } from "node:fs";
+import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { rendezvousPath } from "@lararium/mesh/rendezvous-path";
@@ -103,6 +103,30 @@ function doneReply(landed: number, effectOf?: string): (inv: Invocation) => unkn
 function abandonedReply(): (inv: Invocation) => unknown {
   return (inv) => ({ status: "error", errorMessage: `request ${inv.requestId} abandoned`, refusal: { reason: "abandoned" } });
 }
+
+describe("directory LOAD respects catalog ownership", () => {
+  test("omits only the root manifest and carries nested names and receipt-fact carriers to the ward", async () => {
+    const { received } = await standScripted([doneReply(3)]);
+    const source = join(dir, "bag");
+    mkdirSync(join(source, "nested"), { recursive: true });
+    writeFileSync(join(source, "meta.mem"), '```toml meta\ntitle = "lar:///ha.ka.ba/bags/bag"\n```\n');
+    writeFileSync(join(source, "nested", "meta.mem"), "nested authored content");
+    writeFileSync(join(source, "receipt.mem"), "receipt fact carrier");
+    await cmdAct(parseArgs(["act", "LOAD", "--source-uri", source, "--to", "lar:///test/catalog", "--yes", "--json"]));
+    const action = received[0]!.args as { carriers: { text: string }[] };
+    expect(action.carriers.map((c) => c.text).sort()).toEqual(["nested authored content", "receipt fact carrier"]);
+  });
+  test("carries an unrelated root meta.mem as authored content", async () => {
+    const { received } = await standScripted([doneReply(1)]);
+    const source = join(dir, "ordinary");
+    mkdirSync(source);
+    writeFileSync(join(source, "meta.mem"), '```toml meta\ntitle = "lar:///authored/example"\n```\n');
+    await cmdAct(parseArgs(["act", "LOAD", "--source-uri", source, "--to", "lar:///test/catalog", "--yes", "--json"]));
+    const action = received[0]!.args as { carriers: { text: string }[] };
+    expect(action.carriers).toHaveLength(1);
+    expect(action.carriers[0]!.text).toContain("lar:///authored/example");
+  });
+});
 
 describe("lares act — the split requestId/effectKey, every action verb (H4, widened E1 commit 4′)", () => {
   test("★ every LOAD mints a FRESH requestId per attempt, but the SAME effectKey across identical args ★", async () => {

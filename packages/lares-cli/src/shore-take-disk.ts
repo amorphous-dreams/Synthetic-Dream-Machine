@@ -84,8 +84,6 @@ export async function takeDisk(req: TakeDiskRequest, deps: TakeDiskDeps): Promis
 
   // 2 — the file, read through the scan's own door, against the disk state the key folded.
   const scan = scanFiles(deps.root, [path], bag, deps.tree, () => uri);
-  // NO DISK WRITES A WITHHELD TITLE: a control-plane record, or a house record of the daemon bag (`isDaemonCanonWithheld`).
-  if ((scan.withheld ?? []).length > 0) return { ok: false, refusal: "daemon-withheld-title", why: `${uri} names a control or house record no disk writes, so no file's words land under it` };
   const row = scan.rows[0];
   if (row === undefined || row.status === "deleted") return { ok: false, refusal: "standoff-key-moved", why: `no file stands at ${path}; the standoff the key names moved` };
   if (row.status === "non-nfc") return { ok: false, refusal: "disk-refused", why: `the file at ${path} holds text outside NFC; nothing lands` };

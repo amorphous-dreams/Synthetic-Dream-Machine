@@ -137,17 +137,15 @@ describe("the lift and withdraw doors", () => {
     expect((await kahuaDoor(f.ports()).get("t"))?.heads[0]?.cid).toBe(lifted.cid);
   });
 
-  test("RED: a lift of a control-plane title (a verb outcome, a summons) refuses `control-plane-title` before any root opens; CONTROL: an ordinary draft lifts", async () => {
+  test("a control-shaped title remains content in the selected kahua store", async () => {
     const f = await face();
     await kahuaDoor(f.ports()).mint();
-    const before = f.roots.n;
     for (const title of ["lar:///ha.ka.ba/bags/daemon/outcomes/req-1", "lar:///ha.ka.ba/bags/daemon/summons/r1"]) {
-      await expect(kahuaDoor(f.ports()).lift({ title, text: "x", taint: [], sources: src })).rejects.toThrow(/control-plane-title/);
+      await kahuaDoor(f.ports()).lift({ title, text: "x", taint: [], sources: src });
     }
-    expect(f.roots.n).toBe(before);
-    expect(await kahuaDoor(f.ports()).list()).toEqual([]);
-    await kahuaDoor(f.ports()).lift({ title: "lares-dev/notes/draft", text: "x", taint: [], sources: src });
-    expect((await kahuaDoor(f.ports()).list()).map((i) => i.title)).toEqual(["lares-dev/notes/draft"]);
+    expect((await kahuaDoor(f.ports()).list()).map((i) => i.title)).toEqual([
+      "lar:///ha.ka.ba/bags/daemon/outcomes/req-1", "lar:///ha.ka.ba/bags/daemon/summons/r1",
+    ]);
   });
 
   test("RED: the lōkahi cap gates apart from the grant: no island reads it, or the face does not hold it, and the lift refuses; CONTROL: held, it lifts", async () => {

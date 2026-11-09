@@ -35,7 +35,6 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
-import { isControlPlaneUri } from "./lar-uris.js";
 import type { AutomergeUrl, Repo } from "@automerge/automerge-repo";
 import type { LarDoc } from "./base-doc.js";
 import { tiddlerText } from "./base-doc.js";
@@ -85,7 +84,7 @@ export interface KahuaFoldFace {
   readonly signedAt?: (epoch: number, signer: string) => boolean;
 }
 export interface SignedKahuaAct { readonly body: KahuaActBody; readonly signer: string; readonly sig: string }
-export type KahuaActRefusal = "shape" | "domain" | "group" | "signature" | "grant" | "origin" | "taint" | "sources" | "parent" | "control-plane-title";
+export type KahuaActRefusal = "shape" | "domain" | "group" | "signature" | "grant" | "origin" | "taint" | "sources" | "parent";
 type Signer = { readonly key: string; readonly sign: (bytes: Uint8Array) => Promise<string> };
 
 const object = (x: unknown): x is Record<string, unknown> => typeof x === "object" && x !== null && !Array.isArray(x);
@@ -106,7 +105,6 @@ function liftFault(b: Record<string, unknown>): KahuaActRefusal | null {
   // A lift title names its path plainly: a `.` or `..` segment refuses, so no spelling resolves elsewhere than it reads.
   if (b.title.split("/").some((segment) => segment === "." || segment === "..")) return "shape";
   // No control record rides the fleet-synced stage: a title the daemon's control plane owns never lifts.
-  if (isControlPlaneUri(b.title)) return "control-plane-title";
   if (!Object.entries(b.fields).every(([k, v]) => liftField(k, v))) return "shape";
   if (b.proposal !== undefined && !hex64(b.proposal)) return "shape";
   return null;

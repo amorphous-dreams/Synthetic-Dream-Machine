@@ -33,12 +33,12 @@ describe.skipIf(wikiSkip)(`the island holds the daemon bag's withheld titles${sk
   let engine: TW5Engine;
   beforeAll(async () => { engine = await bootTestWiki(); }, 60_000);
 
-  function rig(bag: string) {
+  function rig(bag: string, diskMirrors?: readonly { bagId: string; mirrorRoot: string; scope: string }[]) {
     const composite = new CompositeStore();
     const store = new MemoryTiddlerStore(bag);
     composite.addLayer({ bagId: bag, store, writable: true });
     const table = new VerbTable();
-    registerActionReactors(table, { composite, tw5: makeTw5Deserializer(engine) });
+    registerActionReactors(table, { composite, tw5: makeTw5Deserializer(engine), ...(diskMirrors ? { diskMirrors } : {}) });
     return { composite, store, table, carriersIn: async () => (await store.listVisible()).filter((t) => !isEffectRecordUri(t)).sort() };
   }
 
@@ -63,5 +63,24 @@ describe.skipIf(wikiSkip)(`the island holds the daemon bag's withheld titles${sk
     const args = { "source-uri": "file:///scratch", "to-bag": BAG, "change-id": "chg-w2", carriers: [carrier(MEMORY)] };
     const rows = (await r.table.get("INGEST")!(args, ctx(r.composite, args)) as Record<string, unknown>)["carriers"] as Array<Record<string, unknown>>;
     expect(rows[0]!["decision"]).toBe("ingest");
+  });
+
+  test("placement grants reject cross-mirror waves and let an ordinary mirror ingest a receipt-fact title", async () => {
+    const BAG_A = "lar:///ha.ka.ba/wikis/alpha/working";
+    const BAG_B = "lar:///ha.ka.ba/wikis/beta/working";
+    const r = rig(BAG_A, [{ bagId: BAG_A, mirrorRoot: "/scratch/mirror-a", scope: "alpha" }]);
+    const receiptTitle = "lar:///ha.ka.ba/bags/daemon/receipts/looks-like-a-receipt";
+    const receiptCarrier = carrier(receiptTitle);
+    const valid = { "source-uri": "/scratch/mirror-a", "to-bag": BAG_A, "change-id": "chg-place-a", carriers: [receiptCarrier] };
+    const rows = (await r.table.get("INGEST")!(valid, ctx(r.composite, valid)) as Record<string, unknown>)["carriers"] as Array<Record<string, unknown>>;
+    expect(rows[0]?.["decision"]).toBe("ingest");
+    expect(await r.store.get(receiptTitle)).not.toBeNull();
+
+    const foreign = { ...valid, "to-bag": BAG_B, "change-id": "chg-place-b" };
+    await expect(r.table.get("INGEST")!(foreign, ctx(r.composite, foreign))).rejects.toMatchObject({ code: "disk-wave-placement" });
+    for (const [home, changeId] of [["lar:///ha.ka.ba/bags/control", "chg-place-control"], ["lar:///ha.ka.ba/bags/secret", "chg-place-secret"]] as const) {
+      const privateHome = { ...valid, "to-bag": home, "change-id": changeId };
+      await expect(r.table.get("INGEST")!(privateHome, ctx(r.composite, privateHome))).rejects.toMatchObject({ code: "disk-wave-placement" });
+    }
   });
 });

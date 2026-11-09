@@ -43,7 +43,6 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/verb-tiddler
  */
 
-import { projectionWithheld } from "./projection-filter.js";
 import {
   DAEMON_BAG_ID, VOLATILE_VM_PREFIX,
   LARES_VERB_EVENT_TAG, LARES_VERB_TAG,
@@ -120,26 +119,6 @@ export const RECEIPT_FACT_URI_PREFIX = `${DAEMON_BAG_ID}/receipts/`;
 
 /** Durable ward audits: `<daemon bag>/ledger/ward/<id>`. */
 export const WARD_AUDIT_URI_PREFIX = `${DAEMON_BAG_ID}/ledger/ward/`;
-
-/**
- * True for a title whose record never projects to disk: whatever the base projection filter withholds from every mirror
- * (`projection-filter.ts`: the daemon's control plane with its receipt facts, summons and ward audits, the swarm's controls,
- * the volatile VM plane, effect records, realm-bag announces, bag manifests). No file for such a record ever comes from the
- * projector, so a file standing at its address counts as foreign, and no wave lands it.
- */
-export function neverProjects(title: string): boolean {
-  return projectionWithheld(title);
-}
-
-/** A file whose ingest would write a record that never projects to disk. */
-export class NeverProjectedPathRefusal extends Error {
-  override readonly name = "NeverProjectedPathRefusal";
-  readonly code = "never-projected-path";
-
-  constructor(readonly path: string, readonly title: string) {
-    super(`${path} (${title}): records at this address never project to disk, so a file here never ingests; remove the file`);
-  }
-}
 
 export type ReceiptFactState = "committed" | "interrupted" | "abandoned" | "done" | "error" | "evicted";
 

@@ -3,19 +3,14 @@
  *
  * TiddlyWiki's syncer saves what `$:/config/SyncFilter` selects; the house's disk projector is a syncer to files, and its
  * rule takes the same shape: filter tiddlers in TiddlyWiki's own `$:/config/` namespace, shipped in the memetic-wikitext
- * plugin (so each wiki reads them as shadows an operator may override), one run per title family:
+ * plugin (so each wiki reads them as shadows an operator may override):
  *
- *   $:/config/lares/ProjectionFilter                  every mirror: the volatile VM plane, effect records, the daemon's
- *                                                     control plane, realm-bag announces, bag manifests
- *   $:/config/lares/ProjectionFilter/daemon           a mirror of the daemon bag, and a wave into it: TiddlyWiki's system
- *                                                     namespace and the house's identity records (`bags/**`, `dreamnet/**`)
+ *   $:/config/lares/ProjectionFilter                  every mirror: TW5's own volatile temp and state namespaces
  *   $:/config/lares/ProjectionFilter/temp             a wiki's user temp layer: the system namespace and the house config
- *   $:/config/lares/ProjectionFilter/nexus-handles    a mirror baked from no charter: the per-Nexus WHO-face pointer
  *
- * A filter here SELECTS what stays OFF disk: each runs over a one-title source, and a title any run selects never writes a
- * file and never ingests from one. (SyncFilter selects what syncs; a one-title source reads simplest the other way round,
- * one family per run.) A mirror class reads the base filter and its own, so each class's rule stays one short list beside
- * the others rather than one filter branching on a variable.
+ * The filter carries operator preferences for TW5's temp/state namespaces and the user temp class. It does not choose a
+ * record's home and does not authorize disk ingress. A mirror class reads the base filter and its own, so each class's
+ * preference stays in a short list beside the others.
  *
  * Where a TiddlyWiki engine stands (an island), the live tiddler text runs through `wiki.filterTiddlers`, and the house's
  * `[lar-path[]]` operator (`@lararium/tw5` `filters/lar-path`) maps a title to {@link resolvedTitlePath} there. Where none
@@ -30,34 +25,19 @@
 
 /** The base filter's title, and each mirror class's own. */
 export const PROJECTION_FILTER = "$:/config/lares/ProjectionFilter";
-export type ProjectionClass = "daemon" | "temp" | "nexus-handles";
+export type ProjectionClass = "temp";
 export const projectionFilterTitle = (cls: ProjectionClass): string => `${PROJECTION_FILTER}/${cls}`;
 
 /**
- * The shipped texts, one run per family. The plugin build writes each into its `$:/config/` tiddler from here
+ * The shipped preferences. The plugin build writes each into its `$:/config/` tiddler from here
  * (`tiddlers/config-projection-filter*.tid`), so the shipped shadow and this default read one source.
  */
 export const PROJECTION_FILTER_TEXT: Readonly<Record<"base" | ProjectionClass, string>> = {
   base: [
-    "[prefix[lar:///lararium.local.vm/]]",
-    "[regexp[^lar:///(?:(?!/).)+/.+/ledger/residency/(?:(?!/).)+$]]",
-    "[lar-path[]prefix[lar:///ha.ka.ba/bags/daemon/]]",
-    "[prefix[$:/lares/swarm/]]",
-    "[lar-path[]prefix[$:/lares/swarm/]]",
-    "[prefix[lar:///ha.ka.ba/dreamnet/realm-bag-announce/]]",
-    "[regexp[^lar:///ha\\.ka\\.ba/bags/(?:(?!/|#|\\?).)+$]]",
+    "[prefix[$:/temp/]]",
+    "[prefix[$:/state/]]",
   ].join("\n"),
-  daemon: [
-    "[prefix[$:/]]",
-    "[lar-path[]prefix[lar:///ha.ka.ba/bags/]]",
-    "[lar-path[]prefix[lar:///ha.ka.ba/dreamnet/]]",
-    "[lar-path[]prefix[$:/]]",
-  ].join("\n"),
-  temp: [
-    "[prefix[$:/]]",
-    "[prefix[lar:///ha.ka.ba/lararium/config/]]",
-  ].join("\n"),
-  "nexus-handles": "[prefix[lar:///ha.ka.ba/bags/nexus/]suffix[/handles]]",
+  temp: "[prefix[lar:///ha.ka.ba/lararium/config/]]",
 };
 
 /**

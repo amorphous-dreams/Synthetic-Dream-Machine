@@ -144,7 +144,7 @@ import { bootDaemonKeyhive } from "./boot-daemon-keyhive.js";
 import { daemonBagDocLedger, planeBagDocLedger, registerBagsDurably, type BagDocLedger } from "./bag-doc-ledger.js";
 import { persistArchiveFloor } from "./archive-floor-write.js";
 import { replicaHeads, hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, holdsKahuReach, isSystemCanonBag, realmStandingDocUrl, materializeFaceWorkingDoc } from "@lararium/mesh";
-import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
+import { DaemonEventStore, absorbCapEvents, type SecretRestCapability } from "./daemon-event-store.js";
 import { readLeaseUnderFace, daemonLayerOf, type LeaseFrontier } from "./lease-frontier.js";
 import { readFace, answerDocStoreAsks, announceSlotDoc, documentIdOfUrl, type WikiSlotKind } from "@lararium/mesh";
 import { makeSlotDocResolver, type SlotDocResolver } from "./slot-doc-resolver.js";
@@ -220,6 +220,10 @@ const lightAFace = (verb: string): VerbReactor => async () => {
 };
 
 export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: DaemonExtra = {}): DaemonBehaviorOptions {
+  const secretEvents = (ctx: IslandContext, face: string): DaemonEventStore => {
+    const rest = (ctx as IslandContext & { secretRest?: SecretRestCapability }).secretRest;
+    return new DaemonEventStore({ ...(ctx.secretStore ? { secretStore: ctx.secretStore } : {}), ...(rest ? { secretRest: rest } : {}), face });
+  };
   // The face archive writer stays on the island shore.
   const {
     persistVeilArchive, shore, events, journalAppend,
@@ -282,7 +286,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     const lease = await readLeaseUnderFace(ctx.composite, face.personaGroupId, readFace(face.personaKel.chain, face.faceAnchor));
     const joined = await bootDaemonKeyhive({
       atomSeed: meshHexToBytes(face.atom.seed), faceVerifyingKey: face.atom.key,
-      eventStore: new DaemonEventStore({ daemon: ctx.composite, face: face.personaGroupId }),
+      eventStore: secretEvents(ctx, face.personaGroupId),
       personaGroupId: face.personaGroupId,
       faceAnchor: face.faceAnchor, personaKel: face.personaKel, deviceEdge: face.deviceEdge,
       signerDid: face.signerDid, ...(face.meshCabalDocIdHex ? { meshCabalDocIdHex: face.meshCabalDocIdHex } : {}),
@@ -629,7 +633,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       try {
         booted = await bootDaemonKeyhive({
           ...(daemonAuth.atom ? { atomSeed: meshHexToBytes(daemonAuth.atom.seed) } : {}),
-          eventStore:            new DaemonEventStore({ daemon: ctx.composite, face: daemonAuth.personaGroupId! }),
+          eventStore:            secretEvents(ctx, daemonAuth.personaGroupId!),
           ...(daemonAuth.atom ? { faceVerifyingKey: daemonAuth.atom.key } : {}),
           // The face pins ride CONDITIONALLY — the gate runs in full or grants no persona caps at all.
           ...(daemonAuth.personaGroupId   ? { personaGroupId:   daemonAuth.personaGroupId }   : {}),
@@ -1401,7 +1405,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           // The founder's standing, off this vessel's own fold of the face's fleet board: no reader composed reads nothing as clear.
           founderStanding: async (key) => requireDyadReader(dyadReader(ctx), "the grant founder")(edge.personaRootDid, key),
           verify: verifyFaceGrantRecord,
-          ingest: async (record, admit) => { await absorbCapEvents(veil, new DaemonEventStore({ daemon: ctx.composite, face: daemonAuth.personaGroupId! }), record.capEvents.map(base64ToBytes), { admit }); },
+          ingest: async (record, admit) => { await absorbCapEvents(veil, secretEvents(ctx, daemonAuth.personaGroupId!), record.capEvents.map(base64ToBytes), { admit }); },
           lift: async () => {
             const lifted = await slotDocsOf(ctx).liftFloor();
             if (lifted.moved.length + lifted.finished.length > 0)

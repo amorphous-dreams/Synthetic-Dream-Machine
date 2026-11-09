@@ -21,7 +21,6 @@
 import { writeKahuaIndex } from "./kahua-index.js";
 import { daemonDiskMirrors } from "./bag-paths.js";
 import { daemonBagsDir, loadLaresConfig, tempProjectionConsented } from "./lares-config.js";
-import { observeDaemonEnabled } from "./daemon-observe.js";
 import { parseAutomergeUrl } from "@automerge/automerge-repo";
 import { join }                                          from "path";
 import {
@@ -99,15 +98,6 @@ export interface DaemonVmOptions {
   projectionRoot?:   string;
   /** Override the daemon island script URL (tests). */
   workerScriptUrl?:  URL;
-  /**
-   * The charter-only mirror guard (crossroads WHO-board leak, 2026-09-20): true unless this vessel's
-   * resolved `nexusIdentity().kind === "charter"`. The daemon wiki's own crossroads mirror grant
-   * (below) is baked with this flag so a private-nexus-of-one's or a dialed anchor's WHO-handles
-   * pointer never disk-mirrors, while the real charter-backed crossroads library still projects.
-   * Defaults true (guard ON) — a caller that never resolved a kind gets the SAFE reading, never the
-   * open one; only an explicit `false` (a proven charter) lifts it.
-   */
-  guardCrossroadsNexusHandles?: boolean;
 }
 
 /**
@@ -123,8 +113,7 @@ export function faceRelationStance(input: { personaBagId?: string | null | undef
 }
 
 export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore> {
-  const { repo, caps, daemonUrl, personaUrl, personaBagId, faceRelation, faceGroup, faceLabel, personaLate = false, coreHash, pluginCids, grants, libraryBags, daemonAuth, storageDir, ownedDocument = false, projectionRoot, workerScriptUrl, casData,
-          guardCrossroadsNexusHandles = true } = opts;
+  const { repo, caps, daemonUrl, personaUrl, personaBagId, faceRelation, faceGroup, faceLabel, personaLate = false, coreHash, pluginCids, grants, libraryBags, daemonAuth, storageDir, ownedDocument = false, projectionRoot, workerScriptUrl, casData } = opts;
 
   // An explicitly supplied empty path must not silently downgrade the worker to
   // memory-only storage. Omit `storageDir` when the caller intends the
@@ -203,7 +192,7 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
     // its kahua stage under `<projections>/bags/kahua-<F>/`, crossroads back to its canon source where one stands; the control
     // plane holds none. The verified founding relation names the folders that face projects on
     // every device; no worn face projects no private kahua layer.
-    ...(projectionRoot ? { diskMirrors: daemonDiskMirrors({ projectionRoot, canonBags: daemonBagsDir(), faceRelation: faceRelation ?? null, guardCrossroadsNexusHandles, observeDaemon: observeDaemonEnabled(daemonConfig), temp: tempMirror }) } : {}),
+    ...(projectionRoot ? { diskMirrors: daemonDiskMirrors({ projectionRoot, canonBags: daemonBagsDir(), faceRelation: faceRelation ?? null, temp: tempMirror }) } : {}),
     workerScriptUrl: workerScriptUrl ?? DEFAULT_ADMIN_WORKER_URL,
   });
 }
