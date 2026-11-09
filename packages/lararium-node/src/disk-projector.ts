@@ -17,7 +17,8 @@
  * projection surfaces split by bag role (see api/lararium/disk-projection):
  *   - wiki content (@<slug>)      → `wikis/{slug}/...`   (projection / output)
  *   - seed/canon bags (lares/lararium/sdm) → `bags/NAME/...` (seed / canon)
- * State/runtime bags (personal/draft/temp/daemon) carry no mirror.
+ * State/runtime bags (personal/draft/temp/daemon) carry no ordinary mirror; a recovery-class grant projects a draft
+ * bag under `recovery/`, and a consented user temp layer under `temp/` (internal volatile state barred by namespace).
  * A residency MOVE (the canon ACTION verb)
  * that relocates a tiddler between bags has the disk side effect of a file move
  * between surfaces; the git diff IS the operator's signature on the change.
@@ -67,7 +68,7 @@
 
 import { writeFileSync, mkdirSync, unlinkSync, existsSync, readFileSync, readdirSync } from "fs";
 import { dirname, basename, extname, relative as relativePath, resolve as resolvePath } from "path";
-import { confineMirrorWrite, carrierBaseRelPath, titleRelPath } from "./bag-paths.js";
+import { confineMirrorWrite, carrierBaseRelPath, titleRelPath, isTempLayerInternalTitle } from "./bag-paths.js";
 import { KAPAE_EXT, kapaeShadowBody } from "./kapae-shadow.js";
 import { contentHash, syncedTreeKey, SyncedTree } from "./synced-tree.js";
 import { decideProjection } from "./projection-gate.js";
@@ -727,6 +728,10 @@ export class LarDiskProjector {
     // file to unlink — its home is the pack).
     for (const mirror of this.mirrors) {
       if (mirror.mirrorClass !== "recovery") continue;
+      // A recovery-class mirror reads its bag's own store, ahead of the view's volatile bar below: the namespace bar
+      // (`neverOnDisk`) answers here first, so neither the volatile VM plane nor a temp layer's internal state reaches
+      // the flush or the unlink.
+      if (LarDiskProjector.neverOnDisk(mirror, rootUri)) continue;
       const store = this.recoveryStore?.(mirror.bagId);
       if (store) {
         const record = await store.get(rootUri);
@@ -1594,6 +1599,13 @@ export class LarDiskProjector {
     // re-derived from the tiddler, which carries no kind of its own); this shore only tests the
     // URI's SHAPE. Curated crossroads library content carries no such shape and always projects.
     if (mirror.guardNexusHandles && isNexusHandlesUri(uri)) return true;
+
+    // THE VOLATILE VM PLANE NEVER PROJECTS, through any mirror: `lararium.local.vm` names this vessel's own scratch,
+    // and the line runs by namespace, never by a guess at a title's meaning.
+    if (isVolatileVmUri(uri)) return true;
+    // A USER TEMP LAYER projects user temp content alone: the house's internal volatile state that shares its bag
+    // (TiddlyWiki's system namespace, the house's config plane) stays in memory (`isTempLayerInternalTitle`).
+    if (mirror.tempLayer && isTempLayerInternalTitle(uri)) return true;
 
     // Projection FILTER ⊥ siting (lar-uri #five-planes): the siting function
     // carries every name; WHAT projects = carriers only. Ledger/observation

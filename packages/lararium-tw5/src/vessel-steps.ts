@@ -184,12 +184,13 @@ export async function buildWikiMountSpec(
   // primaries. The pool's self-canon grant authorizes a minted user wiki to
   // bags/{slug}; for the system wikis (lares/lararium) the slug-bag already
   // sits in PRIMARY via a literal grant, so resolveDiskMirrors skips the dup.
+  // The temp slot rides the designation too; its grant yields only for a slug the operator's consent row names.
   const recipe: WikiRecipe = {
     wikiSlug: inputs.wikiSlug,
     ...(inputs.libraryBags?.length ? { libraryBags: inputs.libraryBags } : {}),
     ...(inputs.pluginOfferings?.length ? { pluginOfferings: inputs.pluginOfferings } : {}),
     ...(inputs.pluginOfferingsFault !== undefined ? { pluginOfferingsFault: inputs.pluginOfferingsFault } : {}),
-    mirrorBags: [...PRIMARY_MIRROR_BAGS, wikiSlotUri(inputs.wikiSlug, "draft"), wikiSlotUri(inputs.wikiSlug, "working"), wikiBagUri(inputs.wikiSlug)],
+    mirrorBags: [...PRIMARY_MIRROR_BAGS, wikiSlotUri(inputs.wikiSlug, "temp"), wikiSlotUri(inputs.wikiSlug, "draft"), wikiSlotUri(inputs.wikiSlug, "working"), wikiBagUri(inputs.wikiSlug)],
   };
 
   return { spec: { coreHash: inputs.coreHash, recipe, grants }, personalUrl, draftUrl, workingUrl };

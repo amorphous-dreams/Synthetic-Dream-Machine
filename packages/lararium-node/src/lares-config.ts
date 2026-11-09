@@ -64,8 +64,52 @@ export interface LaresConfig {
   readonly herm?: LaresHermConfig;
   /** What this hearth gives the walkers it hosts. Absent, the house defaults stand. */
   readonly hosting?: LaresHostingConfig;
-  /** The projection knobs. `observeDaemon` toggles the one-way render of the daemon bag (`daemon-observe.ts`); ON when absent. */
-  readonly projection?: { readonly observeDaemon?: boolean };
+  /** The projection knobs. `observeDaemon` toggles the one-way render of the daemon bag (`daemon-observe.ts`); ON when absent.
+   *  `temp.<slug>` consents to projecting that wiki's user temp layer (absent = no projection); `tempExpiryDays.<slug>`
+   *  opts that layer into age expiry through the trash (`temp-layer.ts`). Each keys by the wiki's slug, which survives
+   *  a re-founding. */
+  readonly projection?: {
+    readonly observeDaemon?: boolean;
+    readonly temp?: Readonly<Record<string, boolean>>;
+    readonly tempExpiryDays?: Readonly<Record<string, number>>;
+  };
+}
+
+/** One `projection.<key>` map read whole: absent reads empty, a non-object throws so a typo surfaces. */
+function projectionMap(cfg: LaresConfig, key: "temp" | "tempExpiryDays"): Readonly<Record<string, unknown>> {
+  const projection: unknown = cfg.projection;
+  if (projection === undefined) return {};
+  if (projection === null || typeof projection !== "object" || Array.isArray(projection)) throw new Error("[lares config] projection must be an object");
+  const map: unknown = (projection as Record<string, unknown>)[key];
+  if (map === undefined) return {};
+  if (map === null || typeof map !== "object" || Array.isArray(map)) throw new Error(`[lares config] projection.${key} must be an object keyed by wiki slug`);
+  return map as Record<string, unknown>;
+}
+
+/** The wiki slugs whose user temp layer the operator consents to project: each `projection.temp.<slug>` set true.
+ *  A non-boolean row throws. */
+export function tempConsentedSlugs(cfg: LaresConfig): string[] {
+  const out: string[] = [];
+  for (const [slug, value] of Object.entries(projectionMap(cfg, "temp"))) {
+    if (typeof value !== "boolean") throw new Error(`[lares config] projection.temp.${slug} must be true or false`);
+    if (value) out.push(slug);
+  }
+  return out.sort();
+}
+
+/** Whether `projection.temp.<slug>` consents to projecting that wiki's user temp layer. */
+export function tempProjectionConsented(cfg: LaresConfig, slug: string): boolean {
+  return tempConsentedSlugs(cfg).includes(slug);
+}
+
+/** The age-expiry window a wiki's temp layer opts into (`projection.tempExpiryDays.<slug>`, whole days, at least 1), or
+ *  null where the config names none: housekeeping alone runs then. */
+export function tempExpiryDays(cfg: LaresConfig, slug: string): number | null {
+  const map = projectionMap(cfg, "tempExpiryDays");
+  if (!Object.hasOwn(map, slug)) return null;
+  const value = map[slug];
+  if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 1) throw new Error(`[lares config] projection.tempExpiryDays.${slug} must be a whole number of days, at least 1`);
+  return value;
 }
 
 /** The hearth's hosting knobs. */

@@ -46,7 +46,7 @@ export type { AcquireOutcome, AcquireOptions, LibraryVerdict } from "./library-s
 // sites bags/genesis/cas away from the repo-relative default; genesis artifacts stay checked-in by default).
 export {
   loadLaresConfig, laresConfigPath, daemonCorpusRoot, daemonGenesisDir, daemonBagsDir, daemonCasDir,
-  runtimeCasOverride, originDeclaration,
+  runtimeCasOverride, originDeclaration, tempConsentedSlugs, tempProjectionConsented, tempExpiryDays,
 } from "./lares-config.js";
 export type { LaresConfig, LaresResourceRoots, LaresVesselState, LaresOriginConfig } from "./lares-config.js";
 
@@ -187,7 +187,9 @@ export type { NodeReadiness, ReadinessState, ReadinessFace } from "./readiness-f
 
 export { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "./open-node-vessel.js";
 export { SyncedTree, contentHash, syncedTreeKey, syncedTreeDir, type SyncedBase } from "./synced-tree.js";
-export { bagsFileToUri, wikisFileToUri, mirrorDirFileToUri, isObserveProjectionPath, daemonObserveRoot, OBSERVE_DIR } from "./bag-paths.js";
+export { bagsFileToUri, wikisFileToUri, mirrorDirFileToUri, isObserveProjectionPath, daemonObserveRoot, OBSERVE_DIR, isTempLayerInternalTitle, TEMP_LAYER_DIR } from "./bag-paths.js";
+export { parseTidCarrier, readBackTempCarriers, TempLayerHousekeeper, tempAuditPath, TEMP_ORPHAN_SETTLE_MS, HOUSEKEEPING_PERIOD_MS } from "./temp-layer.js";
+export type { TempHousekeepingClock, TempHousekeepingPolicy, TempAuditLine, TempRecordState, TidFields } from "./temp-layer.js";
 
 export { runInit, runFoundTheFace, faceStands, armRecoveryAtFounding } from "./commands/init.js";
 export { recoveryContactOffer } from "./recovery-contact-enrolment.js";

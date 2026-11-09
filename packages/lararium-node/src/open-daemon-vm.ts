@@ -20,7 +20,7 @@
 
 import { writeKahuaIndex } from "./kahua-index.js";
 import { daemonDiskMirrors } from "./bag-paths.js";
-import { daemonBagsDir, loadLaresConfig } from "./lares-config.js";
+import { daemonBagsDir, loadLaresConfig, tempProjectionConsented } from "./lares-config.js";
 import { observeDaemonEnabled } from "./daemon-observe.js";
 import { parseAutomergeUrl } from "@automerge/automerge-repo";
 import { join }                                          from "path";
@@ -29,6 +29,7 @@ import {
   type WikiRecipe,
   type IslandMsg_Manifest,
   type IslandGrants,
+  wikiSlotUri,
 } from "@lararium/mesh";
 import {
   openDaemonVmCore,
@@ -166,10 +167,15 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
   // by ACCESS per residency action (ephemeral mount, released after — the
   // edit/action split, wiki-layer-ontology#write-law). The daemon's own composite
   // stays its recipe alone — it mounts no standing write facet.
+  // The recipe designates the daemon wiki's temp layer for mirroring; the mirror stands only where the operator's consent
+  // row names the `daemon` slug (`projection.temp.daemon`).
   const recipe: WikiRecipe = {
     wikiSlug: "daemon",
     ...(libraryBags?.length ? { libraryBags } : {}),
+    mirrorBags: [wikiSlotUri("daemon", "temp")],
   };
+  const daemonConfig = loadLaresConfig();
+  const tempMirror = Boolean(recipe.mirrorBags?.includes(wikiSlotUri("daemon", "temp"))) && tempProjectionConsented(daemonConfig, "daemon");
   const storage = storageDir
     ? { type: "nodefs" as const, dir: join(storageDir, "daemon") }
     : undefined;
@@ -197,7 +203,7 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
     // its kahua stage under `<projections>/bags/kahua-<F>/`, crossroads back to its canon source where one stands; the control
     // plane holds none. The verified founding relation names the folders that face projects on
     // every device; no worn face projects no private kahua layer.
-    ...(projectionRoot ? { diskMirrors: daemonDiskMirrors({ projectionRoot, canonBags: daemonBagsDir(), faceRelation: faceRelation ?? null, guardCrossroadsNexusHandles, observeDaemon: observeDaemonEnabled(loadLaresConfig()) }) } : {}),
+    ...(projectionRoot ? { diskMirrors: daemonDiskMirrors({ projectionRoot, canonBags: daemonBagsDir(), faceRelation: faceRelation ?? null, guardCrossroadsNexusHandles, observeDaemon: observeDaemonEnabled(daemonConfig), temp: tempMirror }) } : {}),
     workerScriptUrl: workerScriptUrl ?? DEFAULT_ADMIN_WORKER_URL,
   });
 }

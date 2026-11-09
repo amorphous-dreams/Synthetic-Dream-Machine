@@ -8,7 +8,7 @@
 
 import { resolve as resolvePath, join as joinPath, dirname, basename, isAbsolute, sep } from "path";
 import { readdirSync } from "fs";
-import { stripMemeExt, wikiSlotUri, isBagManifestUri, KAHUA_BAG, CROSSROADS_DOC_URI, DAEMON_BAG_ID } from "@lararium/mesh";
+import { stripMemeExt, wikiSlotUri, isBagManifestUri, isVolatileVmUri, KAHUA_BAG, CROSSROADS_DOC_URI, DAEMON_BAG_ID } from "@lararium/mesh";
 
 export interface BagMirrorConfig {
   /** The bag whose changes this mirror reflects. */
@@ -43,6 +43,28 @@ export interface BagMirrorConfig {
    * loci law; a `$:/` system title and a `$FileSystemPaths` rule keep their own sitings.
    */
   readonly titlePaths?: boolean;
+  /**
+   * The wiki's USER temp layer (`wikis/{slug}/temp`), granted under the operator's consent row: a recovery-class mirror
+   * whose bag also carries the house's own volatile state, so the projector bars that state by namespace
+   * ({@link isTempLayerInternalTitle}) and projects only what a hand or a verb set down in the layer on purpose.
+   */
+  readonly tempLayer?: boolean;
+}
+
+/** The leaf a wiki's user temp layer projects under, beside its working mirror: `wikis/<wiki-folder>/temp`. */
+export const TEMP_LAYER_DIR = "temp";
+
+/** The house's own config plane: the per-wiki pointers the island seeds into the temp layer at every mount. */
+const HOUSE_CONFIG_PLANE = "lar:///ha.ka.ba/lararium/config/";
+
+/**
+ * Whether a title in the temp layer names the house's INTERNAL volatile state rather than user temp content. The line
+ * runs by namespace alone: the volatile VM plane (`lararium.local.vm`), TiddlyWiki's whole system namespace (`$:/`,
+ * whose state, status, boot and history planes the bag-paths cascade routes to temp), and the house's config plane
+ * (the pointers each mount seeds). Every other title in the layer counts as user temp content.
+ */
+export function isTempLayerInternalTitle(title: string): boolean {
+  return isVolatileVmUri(title) || title.startsWith("$:/") || title.startsWith(HOUSE_CONFIG_PLANE);
 }
 
 // ── Write confinement — the sovereign-island disk ward ─────────────────────
@@ -132,9 +154,10 @@ export function carrierBaseRelPath(uri: string): string | null {
  */
 export function namedBagMirror(
   bagId: string, scope: string, mirrorRoot: string, guardNexusHandles?: boolean, titlePaths?: boolean, mirrorClass?: "recovery" | "observe",
+  tempLayer?: boolean,
 ): BagMirrorConfig {
   void scope;
-  return { bagId, mirrorRoot, ...(guardNexusHandles ? { guardNexusHandles } : {}), ...(titlePaths ? { titlePaths } : {}), ...(mirrorClass ? { mirrorClass } : {}) };
+  return { bagId, mirrorRoot, ...(guardNexusHandles ? { guardNexusHandles } : {}), ...(titlePaths ? { titlePaths } : {}), ...(mirrorClass ? { mirrorClass } : {}), ...(tempLayer ? { tempLayer } : {}) };
 }
 
 /**
@@ -206,6 +229,19 @@ export function kahuaStageMirror(projectionRoot: string, faceRelation: string): 
   return { bagId: KAHUA_BAG, mirrorRoot: joinPath(privateProjectionRoot(projectionRoot), "bags", kahuaFaceFolder(faceRelation)), titlePaths: true };
 }
 
+/**
+ * The daemon wiki's USER temp layer mirror: `wikis/daemon/temp` projects beside its working top, under
+ * `<projections>/wikis/daemon-<F>/temp`, as a recovery-class mirror the projector reads off the layer's own store.
+ */
+export function daemonTempMirror(projectionRoot: string, faceRelation: string): BagMirrorConfig {
+  return {
+    bagId: wikiSlotUri("daemon", "temp"),
+    mirrorRoot: joinPath(privateProjectionRoot(projectionRoot), "wikis", daemonFaceFolder(faceRelation), TEMP_LAYER_DIR),
+    mirrorClass: "recovery",
+    tempLayer: true,
+  };
+}
+
 /** A daemon VM disk mirror: the grant plus the scope its island names it by. */
 export type DaemonDiskMirror = BagMirrorConfig & { readonly scope: string };
 
@@ -227,13 +263,17 @@ export function daemonDiskMirrors(opts: {
   readonly guardCrossroadsNexusHandles?: boolean;
   /** The `projection.observeDaemon` toggle: true adds the daemon bag's observe-only render under `observe/daemon`. */
   readonly observeDaemon?: boolean;
+  /** True where the daemon recipe designates its temp layer AND the operator's consent row names the `daemon` slug:
+   *  the list then carries the temp layer's mirror (`daemonTempMirror`). */
+  readonly temp?: boolean;
 }): readonly DaemonDiskMirror[] {
-  const { projectionRoot, canonBags, faceRelation, guardCrossroadsNexusHandles = true, observeDaemon = false } = opts;
+  const { projectionRoot, canonBags, faceRelation, guardCrossroadsNexusHandles = true, observeDaemon = false, temp = false } = opts;
   return [
     ...(observeDaemon ? [{ bagId: DAEMON_BAG_ID, mirrorRoot: daemonObserveRoot(projectionRoot), scope: "daemon-observe", mirrorClass: "observe" as const }] : []),
     ...(faceRelation === null ? [] : [
       { ...daemonWorkingMirror(projectionRoot, faceRelation), scope: "daemon" },
       { ...kahuaStageMirror(projectionRoot, faceRelation), scope: "kahua" },
+      ...(temp ? [{ ...daemonTempMirror(projectionRoot, faceRelation), scope: "daemon-temp" }] : []),
     ]),
     { bagId: CROSSROADS_DOC_URI, mirrorRoot: projectionRoots({ projectionRoot, canonBags }).bagRoot("crossroads"), scope: "crossroads",
       guardNexusHandles: guardCrossroadsNexusHandles },
