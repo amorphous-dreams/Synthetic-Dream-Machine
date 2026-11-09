@@ -17,8 +17,8 @@
 
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, resolve, sep, extname } from "node:path";
-import { newChangeId, taskContentId, carrierHash, digestsEqual, BAG_MANIFEST_FILE, isControlPlaneUri, DAEMON_BAG_ID } from "@lararium/mesh";
-import { SyncedTree, syncedTreeKey, syncedTreeDir, bagsFileToUri, mirrorDirFileToUri, larProjectionCheckpointDir, KAPAE_EXT, readKapaeShadow, isObserveProjectionPath, isDaemonCanonWithheld } from "@lararium/node";
+import { newChangeId, taskContentId, carrierHash, digestsEqual, BAG_MANIFEST_FILE, DAEMON_BAG_ID, projectionWithheld, type ProjectionClass } from "@lararium/mesh";
+import { SyncedTree, syncedTreeKey, syncedTreeDir, bagsFileToUri, mirrorDirFileToUri, larProjectionCheckpointDir, KAPAE_EXT, readKapaeShadow, isObserveProjectionPath } from "@lararium/node";
 import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
 import { summaryOutput, type SubmitResult } from "./verb-result.js";
 import { runVerb } from "./verb-call.js";
@@ -88,8 +88,8 @@ export interface ScanResult {
   readonly shadows?: string[];
   /** The shadow files that proved no kāpae, each with the refusal that names why. */
   readonly refusedShadows?: Array<{ readonly file: string; readonly refusal: string }>;
-  /** The files whose title no disk may write: a control-plane title into any bag, or a house record of the daemon bag
-   *  into `bags/daemon` (`isDaemonCanonWithheld`). Each stays out of every wave, by name. */
+  /** The files whose title the projection filters withhold from the target bag (`projectionWithheld`): the control plane
+   *  into any bag, a house record into `bags/daemon`. Each stays out of every wave, by name. */
   readonly withheld?: string[];
 }
 
@@ -201,6 +201,12 @@ export function fileToUriForSource(
  * here; the CLI feeds the whole walked source. `fileToUri` names the mirror
  * plane (default bags/ canon; wikis/ for working ingest-back).
  */
+/** The projection classes a wave into `toBag` reads beside the base filter: the daemon bag's, or a temp layer's. */
+export function projectionClassesOf(toBag: string): ProjectionClass[] {
+  if (toBag === DAEMON_BAG_ID) return ["daemon"];
+  return /^lar:\/\/\/ha\.ka\.ba\/wikis\/[^/]+\/temp$/.test(toBag) ? ["temp"] : [];
+}
+
 export function scanFiles(
   root:  string,
   files: readonly string[],
@@ -216,9 +222,9 @@ export function scanFiles(
   for (const file of files) {
     const uri = fileToUri(root, file);
     if (!uri) { skipped.push(file); continue; }
-    // NO DISK WRITES THE CONTROL PLANE, and none writes the house's identity records into the daemon bag: a file that
-    // names such a title stays out of the wave whatever its bytes say.
-    if (isControlPlaneUri(uri) || (toBag === DAEMON_BAG_ID && isDaemonCanonWithheld(uri))) { withheld.push(file); continue; }
+    // WHAT NEVER PROJECTS NEVER INGESTS: a file naming a title the projection filters withhold from the target bag (the
+    // control plane, the house's identity records into the daemon bag) stays out of the wave whatever its bytes say.
+    if (projectionWithheld(uri, projectionClassesOf(toBag))) { withheld.push(file); continue; }
     const ext = extname(file);
     // A KĀPAE SHADOW speaks an exclusion: it names a title and carries no record of its own.
     if (ext === KAPAE_EXT) {

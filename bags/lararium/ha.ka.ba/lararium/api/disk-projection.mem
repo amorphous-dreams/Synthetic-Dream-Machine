@@ -117,6 +117,21 @@ A hand MAY add a future debug-only disk projection behind an explicit flag; it M
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/projection-filter`>>
+
+!! The projection filter ~ the one rule for what reaches plaintext disk
+
+TiddlyWiki's syncer saves what `$:/config/SyncFilter` selects; the disk projector syncs to files, and its rule takes the same shape. ''One filter tiddler per mirror class'', in TiddlyWiki's own `$:/config/` namespace, shipped as the memetic-wikitext plugin's shadows (an operator's override replaces a shadow by title), each run naming one title family:
+
+* `$:/config/lares/ProjectionFilter` ~ every mirror: the volatile VM plane, residency effect records, the daemon's control plane (`bags/daemon/**`, read through its resolved path, and `$:/lares/swarm/**`), realm-bag announces, bag manifests.
+* `$:/config/lares/ProjectionFilter/daemon` ~ a mirror of the daemon bag and every wave into it: TiddlyWiki's system namespace and the house's identity records (`bags/**`, `dreamnet/**`).
+* `$:/config/lares/ProjectionFilter/temp` ~ a wiki's user temp layer: the system namespace and the house config plane.
+* `$:/config/lares/ProjectionFilter/nexus-handles` ~ a mirror baked from no charter: the per-Nexus WHO-face pointer.
+
+''A filter selects what stays off disk.'' Each runs over a one-title source; a title any run of the base filter, or of its mirror's class filter, selects never writes a file and never ingests from one (an ingest wave, a take-disk, an import). `[lar-path[]]` maps a title to the path it resolves to (scheme lower-cased, escapes decoded, `.` and `..` folded), so `[lar-path[]prefix[…]]` reads a family whatever its spelling. ''The same text runs everywhere'': the projector and the island's INGEST guard read the filter as their wiki holds it, and a CLI scan reads the shipped text; one evaluator (`projectionWithheld`, `@lararium/mesh` `projection-filter`) reads the operator subset these filters use (`prefix`, `suffix`, `match`, `regexp`, `lar-path`), TiddlyWiki's own engine gives the same verdicts on the same text, and a text the evaluator cannot read withholds. The observe render (#/write-ward) keeps its own one-way rule over the control plane, and the siting law keeps a bag manifest at `meta.mem`.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/granularity`>>
 
 !! Granularity — carrier-whole at rest (operator ruling, 2026-06-11)
@@ -223,6 +238,6 @@ between casual chat-use and the defined parser core.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;yBeMx34aT1p8DLpVac5B0cibCzcL3mu1luW_0_EvxoA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xodqgHuVKFNVBVNXeaV8_npZ3MwfZm9tiHWqiLjmq2E`>>
 
 <<^ code=`&#x0004;` to=`?`>>

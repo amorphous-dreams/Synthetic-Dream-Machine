@@ -8,7 +8,7 @@
 
 import { resolve as resolvePath, join as joinPath, dirname, basename, isAbsolute, sep } from "path";
 import { readdirSync } from "fs";
-import { stripMemeExt, wikiSlotUri, isBagManifestUri, isVolatileVmUri, isDaemonCanonWithheld, KAHUA_BAG, CROSSROADS_DOC_URI, DAEMON_BAG_ID } from "@lararium/mesh";
+import { stripMemeExt, wikiSlotUri, isBagManifestUri, isDaemonCanonWithheld, projectionWithheld, KAHUA_BAG, CROSSROADS_DOC_URI, DAEMON_BAG_ID } from "@lararium/mesh";
 
 export interface BagMirrorConfig {
   /** The bag whose changes this mirror reflects. */
@@ -54,17 +54,14 @@ export interface BagMirrorConfig {
 /** The leaf a wiki's user temp layer projects under, beside its working mirror: `wikis/<wiki-folder>/temp`. */
 export const TEMP_LAYER_DIR = "temp";
 
-/** The house's own config plane: the per-wiki pointers the island seeds into the temp layer at every mount. */
-const HOUSE_CONFIG_PLANE = "lar:///ha.ka.ba/lararium/config/";
-
 /**
- * Whether a title in the temp layer names the house's INTERNAL volatile state rather than user temp content. The line
- * runs by namespace alone: the volatile VM plane (`lararium.local.vm`), TiddlyWiki's whole system namespace (`$:/`,
- * whose state, status, boot and history planes the bag-paths cascade routes to temp), and the house's config plane
- * (the pointers each mount seeds). Every other title in the layer counts as user temp content.
+ * Whether a title in the temp layer names the house's INTERNAL state rather than user temp content: what the projection
+ * filters withhold from a temp mirror (`@lararium/mesh` `projection-filter`: the base and
+ * `$:/config/lares/ProjectionFilter/temp`, TiddlyWiki's system namespace and the house's config plane among them). The
+ * read-back reads the same line the projector writes by.
  */
 export function isTempLayerInternalTitle(title: string): boolean {
-  return isVolatileVmUri(title) || title.startsWith("$:/") || title.startsWith(HOUSE_CONFIG_PLANE);
+  return projectionWithheld(title, ["temp"]);
 }
 
 // ── Write confinement — the sovereign-island disk ward ─────────────────────

@@ -3,6 +3,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/lar-uris — the law this file enacts.
  */
 
+import { resolvedTitlePath, projectionWithheld } from "./projection-filter.js";
 import type { LarDoc } from "./base-doc.js";
 import { emptyLarDoc } from "./base-doc.js";
 
@@ -353,18 +354,11 @@ export function isControlPlaneUri(title: string): boolean {
 }
 
 /**
- * Whether a title in the daemon bag names a HOUSE record rather than an authored one, so it never crosses between disk and
- * `bags/daemon` in either direction. Measured (2026-11-08): beside its control plane the daemon doc carries the house's own
- * identity records under two namespaces: `bags/**` (the persona namespace: the signer binding, the hearth's true name, the
- * face's group id, the sealed group-secret seals) and `dreamnet/**` (the sealed founding and admit checkpoints, the dyads,
- * the persona acts). Withheld with them: the control plane (`isControlPlaneUri`) and TiddlyWiki's system namespace (`$:/`).
- * The line runs by namespace, read through `resolvedTitlePath`, so a dot segment folds no title out of it; an authored meme
- * or memory (`lar:///ha.ka.ba/kahua/memory/<key>`, a plain title) crosses.
+ * Whether a title stays off disk for the daemon bag: off its canon mirror, and out of every wave into it. The rule lives in
+ * the projection filters (`projection-filter.ts`: the base and `$:/config/lares/ProjectionFilter/daemon`); this reads them.
  */
 export function isDaemonCanonWithheld(title: string): boolean {
-  if (isControlPlaneUri(title) || title.startsWith("$:/")) return true;
-  const path = resolvedTitlePath(title);
-  return path.startsWith("lar:///ha.ka.ba/bags/") || path.startsWith("lar:///ha.ka.ba/dreamnet/") || path.startsWith("$:/");
+  return projectionWithheld(title, ["daemon"]);
 }
 
 /** The swarm's live controls (house cap, lane shares, go, lane state, roster, receipts) rest in the daemon wiki under this prefix. */
@@ -376,27 +370,7 @@ export function isSwarmUri(title: string): boolean {
   return title.startsWith(SWARM_URI_PREFIX) || resolvedTitlePath(title).startsWith(SWARM_URI_PREFIX);
 }
 
-/**
- * The path a title resolves to, read the way a reader resolves a URL: the scheme lower-cased, each percent escape decoded
- * (a malformed one keeps its bytes), and the `.` and `..` segments folded. A law that reads a title by prefix reads it
- * here first, so no spelling of a path slips past the prefix it resolves to.
- */
-export function resolvedTitlePath(title: string): string {
-  const scheme = /^[A-Za-z][A-Za-z0-9+.-]*:/.exec(title)?.[0] ?? "";
-  let rest = title.slice(scheme.length);
-  try { rest = decodeURIComponent(rest); } catch { /* a malformed escape keeps its bytes */ }
-  const segments = rest.split("/");
-  let leading = 0;
-  while (leading < segments.length && segments[leading] === "") leading++;
-  const out: string[] = Array(leading).fill("");
-  for (const segment of segments.slice(leading)) {
-    if (segment === "") continue;
-    if (segment === ".") continue;
-    if (segment === ".." && out.length > leading && out[out.length - 1] !== "") { out.pop(); continue; }
-    out.push(segment);
-  }
-  return scheme.toLowerCase() + out.join("/");
-}
+export { resolvedTitlePath };
 
 /** e.g. flowUri("crystal") → "lar:///ha.ka.ba/lararium/daemon/flows/crystal" — a Flow's
  *  pet-name IS its address: a callable, composed cap-stack tiddler in the daemon bag. */
