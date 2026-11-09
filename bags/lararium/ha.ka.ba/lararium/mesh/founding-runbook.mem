@@ -61,7 +61,7 @@ mkdir -p "$LARES_HOUSE"
 tools/lares-container.sh build
 ```
 
-Run these from the root of the household checkout; the house path shown stands as an example, and any local directory outside the checkout serves. `build` runs `docker compose build lares` through the env file (a bare `docker compose build` reads no `lares-surface.env` and refuses on `LARES_HOUSE`) and bakes the checkout's HEAD into the image's revision label; a checkout holding uncommitted tracked changes refuses, so commit first. The shim makes the house's five bound classes before a container stands. Under PowerShell, assign `$env:LARES_HOUSE` and `$env:LARES_WORKSPACE` before calling the `.ps1` shim.
+Run these from the root of the household checkout; the house path shown stands as an example, and any local directory outside the checkout serves. `build` rebuilds the vessel image, every package the vessel runs, from the committed checkout: it runs `docker compose build lares` through the env file (a bare `docker compose build` reads no `lares-surface.env` and refuses on `LARES_HOUSE`) and bakes the checkout's HEAD into the image's revision label; a checkout holding uncommitted tracked changes refuses, so commit first. The shim makes the house's five bound classes before a container stands. Under PowerShell, assign `$env:LARES_HOUSE` and `$env:LARES_WORKSPACE` before calling the `.ps1` shim.
 
 Use `tools/lares-container.sh` on Unix-like hosts or `tools/lares-container.ps1` on Windows. The shims read the same environment or `lares-surface.env` and route CLI work through the image.
 
@@ -384,6 +384,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;guBS1ARYmxLmReYdninzYyFnIWnpc3eAIhrZ2bfoSVM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7utWjOF25nZsdyhJnTx83zWePP3rhVYn4WRvVaG13SA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

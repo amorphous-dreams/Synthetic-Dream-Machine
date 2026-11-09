@@ -10,8 +10,9 @@
 #                                                and/or a paper pin, and `--hearth` prints the seed card and reads it
 #                                                back; with no TTY the CLI refuses CredentialTtyRefusal)
 #   lares-container.sh logs [compose-logs args]  follow the vessel's log
-#   lares-container.sh build [compose-build args] build the vessel image through the env file, baking the checkout's
-#                                                HEAD into its revision label; a dirty checkout, or none, refuses
+#   lares-container.sh build [compose-build args] rebuild the vessel image (every package the vessel runs) from the
+#                                                committed checkout, through the env file, stamping HEAD as its
+#                                                revision label; a dirty checkout, or none, refuses
 #   lares-container.sh vessel stand              stand the vessel when none stands; restart it when its standing no
 #                                                longer matches its state on disk; otherwise print the standing
 #   lares-container.sh vessel stop               stop the vessel's container (state stays; `up` stands it again)
@@ -276,7 +277,7 @@ HAVE_TTY=""
 if [ -t 0 ] && [ -t 1 ]; then HAVE_TTY=yes; fi
 tty_flag() { if [ -z "$HAVE_TTY" ]; then printf -- '-T'; fi; }
 
-[ "$#" -gt 0 ] || die "usage: lares-container.sh up|down|reset|found|logs|build|vessel stand|<lares verb…>"
+[ "$#" -gt 0 ] || die "usage: lares-container.sh up|down|reset|found|logs|build|vessel stand|<lares verb…> (build rebuilds the vessel image, every package, from the committed checkout)"
 verb=$1; shift
 
 case "$verb" in
@@ -374,8 +375,9 @@ case "$verb" in
     # refuses (commit first), and so does a shim outside any checkout (the label would read empty).
     [ -n "$GIT_REV" ] || die "build refuses: no git checkout answers at $SHIM_DIR, so the image's revision label would name no commit; build from a checkout"
     [ -z "$GIT_DIRTY" ] || die "build refuses: the checkout holds uncommitted tracked changes, so the image's revision label ($GIT_REV) would name no real commit; commit first, then run build again"
-    printf 'lares-container: building the vessel image at revision %s\n' "$GIT_REV" >&2
-    compose build "$@" lares ;;
+    printf 'lares-container: rebuilding the vessel image (every package) from the committed checkout at %s\n' "$GIT_REV" >&2
+    compose build "$@" lares
+    printf 'lares-container: the vessel image stands rebuilt, stamped revision %s; `up` stands it\n' "$GIT_REV" >&2 ;;
   found)
     ensure_house
     # shellcheck disable=SC2046

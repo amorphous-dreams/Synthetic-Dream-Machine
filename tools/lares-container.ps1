@@ -1,7 +1,8 @@
 # lares-container — the HOST shim for the surface vessel (docker-compose.surface.yml), PowerShell form.
 # Same contract as tools/lares-container.sh: up [--capture <dir>]...  down [compose-down args]  found [vessel-found args]  logs
-# build [compose-build args]  vessel stand  <lares verb…>. `build` builds the image through the env file with the
-# checkout's HEAD as its revision label; a dirty checkout, or none, refuses by name. The CLI runs by exec while a vessel stands and through the offline door while none
+# build [compose-build args]  vessel stand  <lares verb…>. `build` rebuilds the vessel image (every package the
+# vessel runs) from the committed checkout, through the env file, stamping HEAD as its revision label; a dirty checkout,
+# or none, refuses by name. The CLI runs by exec while a vessel stands and through the offline door while none
 # stands. The host holds the engine: the shim reads the CLI's standing verdict after a verb and restarts the vessel
 # itself when the verdict reads `restand`. The app gets no docker socket.
 # LARES_HOUSE / LARES_WORKSPACE come from the environment or the operator's `~/.lares/lares-surface.env` (outside every
@@ -224,7 +225,7 @@ $script:Tty = (-not [Console]::IsInputRedirected) -and (-not [Console]::IsOutput
 $Tty = $script:Tty
 $NoTty = if ($Tty) { @() } else { @('-T') }
 
-if ($args.Count -eq 0) { Die 'usage: lares-container.ps1 up|down|found|logs|build|vessel stand|<lares verb…>' }
+if ($args.Count -eq 0) { Die 'usage: lares-container.ps1 up|down|found|logs|build|vessel stand|<lares verb…> (build rebuilds the vessel image, every package, from the committed checkout)' }
 $verb = [string]$args[0]
 $rest = @(); if ($args.Count -gt 1) { $rest = @($args[1..($args.Count - 1)]) }
 
@@ -277,8 +278,9 @@ switch ($verb) {
     ResolveGitRev
     if (-not $script:GitRev) { Die "build refuses: no git checkout answers at $PSScriptRoot, so the image's revision label would name no commit; build from a checkout" }
     if ($script:GitDirty) { Die "build refuses: the checkout holds uncommitted tracked changes, so the image's revision label ($($script:GitRev)) would name no real commit; commit first, then run build again" }
-    [Console]::Error.WriteLine("lares-container: building the vessel image at revision $($script:GitRev)")
+    [Console]::Error.WriteLine("lares-container: rebuilding the vessel image (every package) from the committed checkout at $($script:GitRev)")
     Compose (@('build') + $rest + @('lares'))
+    [Console]::Error.WriteLine("lares-container: the vessel image stands rebuilt, stamped revision $($script:GitRev); ``up`` stands it")
   }
   'found' {
     EnsureHouse

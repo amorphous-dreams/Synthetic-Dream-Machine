@@ -546,7 +546,9 @@ for (const [name, shim] of shims) {
     assert.equal(r.status, 0, r.stderr);
     assert.match(r.calls, /compose --env-file \S*\/home\/\.lares\/lares-surface\.env -f \S+ build --no-cache lares/);
     assert.match(r.calls, /^GIT_REV=[0-9a-f]{40}$/m, r.calls);
-    assert.match(r.stderr, /building the vessel image at revision [0-9a-f]{40}/);
+    assert.match(r.stderr, /rebuilding the vessel image \(every package\) from the committed checkout at [0-9a-f]{40}/);
+    const stamped = r.calls.match(/^GIT_REV=([0-9a-f]{40})$/m)[1];
+    assert.ok(r.stderr.includes(`stands rebuilt, stamped revision ${stamped}`), "the done line names the revision it stamped");
   });
 
   test(`${name}: build over a dirty checkout refuses by name, before docker builds`, async () => {
@@ -567,6 +569,7 @@ for (const [name, shim] of shims) {
     const r = await run(shim, [], { env: MOUNTS });
     assert.equal(r.status, 2);
     assert.match(r.stderr, /usage: lares-container\.(sh|ps1) [^\n]*\|build\|/);
+    assert.match(r.stderr, /build rebuilds the vessel image, every package, from the committed checkout/);
   });
 
   test(`${name}: no argv carries the docker socket`, async () => {
