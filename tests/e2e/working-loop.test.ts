@@ -56,15 +56,15 @@ describe.skipIf(!stagedTarget)("working→canon live loop (island-local, --in-wi
   test("W1 — LOAD --to working --in-wiki projects to wikis/ (the live write layer)", async () => {
     const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", WORKING, "--in-wiki", "--yes", "--json"]);
     expect(r.json?.["ok"], `LOAD --to working --in-wiki failed: ${JSON.stringify(r.json)}`).toBe(true);
-    expect(await awaitCarrier(join(lar.root, "wikis"), true), "carrier did not project under wikis/").toBe(true);
+    expect(await awaitCarrier(join(lar.root, "projections/wikis"), true), "carrier did not project under wikis/").toBe(true);
     // and NOT into canon yet — promotion is a separate, deliberate act.
-    expect(existsSync(join(lar.root, "bags/lares", REL)), "carrier reached canon without promotion").toBe(false);
+    expect(existsSync(join(lar.root, "projections/bags/lares", REL)), "carrier reached canon without promotion").toBe(false);
   }, 90_000);
 
   test("W2 — MOVE working→lares canon --in-wiki (promotion) publishes to bags/lares + retracts wikis/", async () => {
     const r = await lar.cli(["act", "MOVE", "--title", BOOT_URI, "--from", WORKING, "--to", LARES, "--in-wiki", "--yes", "--json"]);
     expect(r.json?.["ok"], `MOVE working→lares canon --in-wiki failed: ${JSON.stringify(r.json)}`).toBe(true);
-    expect(await awaitCarrier(join(lar.root, "bags/lares"), true), "carrier did not publish to bags/lares (canon)").toBe(true);
-    expect(await awaitCarrier(join(lar.root, "wikis"), false), "carrier still sits in wikis/ after promotion").toBe(true);
+    expect(await awaitCarrier(join(lar.root, "projections/bags/lares"), true), "carrier did not publish to bags/lares (canon)").toBe(true);
+    expect(await awaitCarrier(join(lar.root, "projections/wikis"), false), "carrier still sits in wikis/ after promotion").toBe(true);
   }, 90_000);
 });

@@ -39,8 +39,6 @@ export default defineConfig({
   },
   test: {
     globalSetup: ["../../tools/vitest-dist-guard.mjs"],
-    // A worker that inherits no house root names a scratch one (the resolvers refuse an unnamed root).
-    setupFiles: ["../../tools/vitest-scratch-house.mjs"],
     // STATED, not inherited. `isolate: true` is vitest's default, and suites here depend on it:
     // several modules hold process-global registries (a Map of holders, memo caches) that no reset
     // clears, so a fresh module registry per file is the only thing returning them to zero. Left

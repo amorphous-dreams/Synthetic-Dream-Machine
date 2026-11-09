@@ -92,6 +92,6 @@ describe.skipIf(gaps.length > 0)("★ the outbound bridge and the daemon mirror,
   });
 
   test("CONTROL: the daemon's private bag projects NOWHERE — no bags/daemon/ under the root", () => {
-    expect(existsSync(join(lar.root, "bags", "daemon"))).toBe(false);
+    expect(existsSync(join(lar.root, "projections/bags", "daemon"))).toBe(false);
   });
 });

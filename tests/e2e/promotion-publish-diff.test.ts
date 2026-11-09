@@ -60,7 +60,7 @@ beforeAll(async () => {
   const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", WORKING_LARES, "--yes", "--json"]);
   if (r.json?.["ok"] !== true) throw new Error(`seed LOAD failed: ${JSON.stringify(r.json)}`);
   await promoteLoadedTitles(lar, ((r.json["data"] as { titles?: string[] }).titles ?? []), "lares");
-  if (!(await awaitFileState(join(lar.root, "bags/lares", REL), true)))
+  if (!(await awaitFileState(join(lar.root, "projections/bags/lares", REL), true)))
     throw new Error("seed: the lares-bag projection never materialized");
 }, 120_000);
 afterAll(async () => { await lar.stop(); });
@@ -79,8 +79,8 @@ describe.skipIf(!stagedTarget)("promotion publish-diff — the cap-gated carrier
 
   test("P2 — the disk publish-diff: the whole carrier moves bags/lares → bags/lararium", async () => {
     const { gained, lost } = await awaitPublishDiff(
-      join(lar.root, "bags/lararium", REL),
-      join(lar.root, "bags/lares",    REL),
+      join(lar.root, "projections/bags/lararium", REL),
+      join(lar.root, "projections/bags/lares",    REL),
     );
     expect(gained, "the carrier did not publish under bags/lararium").toBe(true);
     expect(lost,   "the carrier still sits under bags/lares").toBe(true);

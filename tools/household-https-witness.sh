@@ -167,6 +167,20 @@ services:
         source: $SCRATCH/witness
         target: /witness
         read_only: true
+  # The scratch marker rests at the house root, which the surface binds no part of: the vessel and its offline door read
+  # it through this one read-only file bind, so the test route seats (seed-test-custody stages the file first).
+  lares:
+    volumes:
+      - type: bind
+        source: $SCRATCH/house/.lar-test-scratch
+        target: /lar/.lar-test-scratch
+        read_only: true
+  offline:
+    volumes:
+      - type: bind
+        source: $SCRATCH/house/.lar-test-scratch
+        target: /lar/.lar-test-scratch
+        read_only: true
 YAML
 
 mkdir -p "$SCRATCH/house/hearth" "$SCRATCH/house/sensoriums" "$SCRATCH/house/projections" "$SCRATCH/house/library" "$SCRATCH/house/config"

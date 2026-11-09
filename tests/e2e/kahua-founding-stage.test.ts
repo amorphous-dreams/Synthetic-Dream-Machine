@@ -15,8 +15,8 @@
  */
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
-import { basename, join } from "node:path";
-import { daemonWikiDir, openStaged, stageDir, stagedTarget, type CliResult, type LarInstance } from "../harness/instance.js";
+import { join } from "node:path";
+import { daemonWikiDir, kahuaStageDir, openStaged, stageDir, stagedTarget, type CliResult, type LarInstance } from "../harness/instance.js";
 import { expectEntry } from "../harness/journal-expect.js";
 import { kahuaStageDocUrl } from "../../packages/lararium-mesh/src/kahua-stage.js";
 import { KAHUA_BAG } from "../../packages/lararium-mesh/src/wiki-recipe.js";
@@ -80,7 +80,6 @@ describe.skipIf(!stagedTarget || !built)("the founding pins the face's kahua sta
     // Trued from the seed form: `vessel seed` reads the canon source, which a scratch LAR_ROOT holds empty, and the
     // fleet bag projects under its own bag id (`bags/kahua`), never `bags/kahua-<F>`. A write to each layer drives
     // its projection; the face rides the folder name alone.
-    const faceFolder = basename(daemonWikiDir(hearth!.root));
     const source = join(hearth!.root, "stage-row.mem");
     const uri = "lar:///ha.ka.ba/kahua/memory/kahua-founding-stage-row";
     writeFileSync(source, `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${uri.slice("lar:///".length)}"\nrow-key = "kahua-founding-stage-row"\n\`\`\`\n\n! A stage row\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`);
@@ -95,11 +94,12 @@ describe.skipIf(!stagedTarget || !built)("the founding pins the face's kahua sta
     expect(lift.code, said(lift)).toBe(0);
     await expectEntry(hearth!, { kind: "bag-projected", match: (event) => {
       const data = event.data as Record<string, unknown>;
-      return data["bagId"] === KAHUA_BAG && data["path"] === join(hearth!.root, "bags", faceFolder);
+      return data["bagId"] === KAHUA_BAG && data["path"] === kahuaStageDir(hearth!.root);
     } }, { budgetMs: 60_000 });
     expect(existsSync(join(daemonWikiDir(hearth!.root), "ha.ka.ba/kahua/memory/kahua-founding-stage-row.mem"))).toBe(true);
-    expect(existsSync(join(hearth!.root, "bags", faceFolder))).toBe(true);
+    expect(existsSync(kahuaStageDir(hearth!.root))).toBe(true);
     // CONTROL: the daemon's private identity bag never becomes a filesystem projection.
     expect(existsSync(join(hearth!.root, "bags", "daemon"))).toBe(false);
+    expect(existsSync(join(hearth!.root, "projections", "bags", "daemon"))).toBe(false);
   });
 });
