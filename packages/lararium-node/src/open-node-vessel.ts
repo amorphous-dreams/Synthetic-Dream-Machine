@@ -2345,7 +2345,7 @@ async function prepareNodeBootOn(
       onWikiCooled: (id) => console.log(`[residency] cooled wiki ${id} (island unmounted)`),
       onBagCooled:  (id) => console.log(`[residency] cooled bag ${id} (compact-then-drop reserved for repo#358)`),
       alertArgs:    (kind) => ({ kind: kind ?? "" }),
-      onUndeliverableAlert: (wikiId, verbOpts) => { void mailbox.park(wikiId, verbOpts); },
+      onUndeliverableAlert: (wikiId, verbOpts) => { void mailbox.park(wikiId, verbOpts).catch((e: unknown) => { console.log(`[mailbox] ${wikiId} parks nothing: ${e instanceof Error ? e.message : String(e)}`); }); },
     },
   );
   const residency = residencyWiring.residency;
@@ -4226,7 +4226,9 @@ async function prepareNodeBootOn(
         if (msg.type !== "event") return;   // a camera's frame or answer from an island outside any session has no ring to ride on this vessel
         eventBus.enqueueToRing("vm-ring", "worker.event", { wikiId, listenable: msg.listenable, payload: msg.payload });
       },
-      onEa: (wikiId) => { void mailbox.drain(wikiId); },   // breath → parked verbs deliver
+      // breath → parked verbs deliver. A locked (or faceless) floor's mailbox refuses by name: its parked verbs wait for the
+      // unlocked composition, and the refusal says so once rather than rejecting unheard.
+      onEa: (wikiId) => { void mailbox.drain(wikiId).catch((e: unknown) => { console.log(`[mailbox] ${wikiId} drains nothing: ${e instanceof Error ? e.message : String(e)}`); }); },
     });
 
     // Wire the pool through the SHARED residency factory: resolveWikiSpec (the UNKNOWN-grain

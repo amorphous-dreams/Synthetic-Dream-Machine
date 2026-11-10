@@ -78,7 +78,7 @@ export type ControlHomeRefusal = typeof VESSEL_LOCKED | typeof CONTROL_HOME_UNNA
 
 export class ControlHomeUnavailable extends Error {
   override readonly name = "ControlHomeUnavailable";
-  constructor(why: string, readonly refusal: ControlHomeRefusal = "control-home-unavailable") {
+  constructor(readonly why: string, readonly refusal: ControlHomeRefusal = "control-home-unavailable") {
     super(refusal === "control-home-unavailable" ? `control-home-unavailable: ${why}` : `control-home-unavailable: ${refusal}: ${why}`);
   }
 }
@@ -97,7 +97,7 @@ export function controlHomeRefusal(handle: DocHandle<LarDoc>): ControlHomeUnavai
 /** Throw the stand-in's refusal by name; a handle over the control document itself passes. */
 export function assertControlHomeOpen(handle: DocHandle<LarDoc>): void {
   const refused = standIns.get(handle);
-  if (refused) throw refused;
+  if (refused) throw new ControlHomeUnavailable(refused.why, refused.refusal);
 }
 
 /**
@@ -122,7 +122,8 @@ function standIn(repo: Repo, key: string, documentId: string | null, refusal: ()
 
 /** A control store that refuses every read and write by name: the shape a stand-in's store takes. */
 export function refusingControlStore(refusal: ControlHomeUnavailable): CompositeStore {
-  const refuse = async (): Promise<never> => { throw refusal; };
+  // Each refusal throws fresh, so its stack names the act that asked.
+  const refuse = async (): Promise<never> => { throw new ControlHomeUnavailable(refusal.why, refusal.refusal); };
   const store: LarTiddlerStore = {
     listVisible: refuse,
     get: refuse as (title: string) => Promise<LarTiddlerRecord | null>,
