@@ -33,7 +33,7 @@ import { DAEMON_WIKI_SLUG, ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes,
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor, VerbTable } from "@lararium/tw5";
 import type { IslandMsg_Manifest, JoinedFaceAuth } from "@lararium/mesh";
 import { boardDyadReader, intentDoorStandings } from "./board-dyad-reader.js";
-import type { DocHandle, LarDoc, AutomergeUrl, CapabilityVerifier, Verb } from "@lararium/mesh";
+import type { DocHandle, LarDoc, AutomergeUrl, CapabilityVerifier, Verb, LarTiddlerStore } from "@lararium/mesh";
 
 /** Vessel-injected daemon shore the platform entry supplies (node folds the telemetry capture SINK here; a
  *  browser/node entry folds the projection `onBoot` mount so the daemon inherits the wiki render cap).
@@ -104,6 +104,12 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
 };
 
 /** What a shore injects so the content-key holder can stand in the daemon island. */
+
+/** THE PERSONA PLANE'S ROAD: it rests as a private-synced home, which the catalog's store road passes by; its own readers and
+ *  writers (the face-join grant and its operation record, the face seat's grants, the face-bag ledger) take the home road. */
+const homeStoreOf = (catalog: { storeOf(bag: string): Promise<LarTiddlerStore | null>; homeStoreOf?(bag: string): Promise<LarTiddlerStore | null> }, bag: string): Promise<LarTiddlerStore | null> =>
+  catalog.homeStoreOf ? catalog.homeStoreOf(bag) : catalog.storeOf(bag);
+
 export interface SealedStoreShore {
   /** Durable rest for lockboxes, signed records and index rows. It holds no secret. */
   readonly rest:   SealedStoreRest;
@@ -697,7 +703,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             const planeBag = personaBagIdFor(daemonAuth.personaGroupId);
             const mounted = ctx.composite.hasBag(planeBag) ? ctx.composite.storeForBag(planeBag) : null;
             if (!mounted && !ctx.catalogUrl) throw new Error("catalog unavailable");
-            const store = mounted ?? await makeCatalogAccessor(ctx.repo, ctx.catalogUrl!, ctx.faceCatalogUrl).storeOf(planeBag);
+            const store = mounted ?? await homeStoreOf(makeCatalogAccessor(ctx.repo, ctx.catalogUrl!, ctx.faceCatalogUrl), planeBag);
             if (!store) throw new Error("face plane absent");
             await store.listVisible();
             faceLedger = planeBagDocLedger(store);
@@ -995,7 +1001,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               throw new Error("[daemon] face-join: no summons in args — carry {contactCard, deviceEdge}.");
             }
             const operationStore = ctx.catalogUrl
-              ? await makeCatalogAccessor(ctx.repo, ctx.catalogUrl, ctx.faceCatalogUrl).storeOf(personaBagIdFor(faceGroup()))
+              ? await homeStoreOf(makeCatalogAccessor(ctx.repo, ctx.catalogUrl, ctx.faceCatalogUrl), personaBagIdFor(faceGroup()))
               : null;
             if (!operationStore) throw new Error("[daemon] face-join: the face's PersonaGroup plane is unresolved");
             // A HEARTH NEVER SEATS ITSELF.
@@ -1407,7 +1413,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           personaKel: daemonAuth.personaKel,
           knowsAgent: (agent) => veil.knowsAgent(agent),
           grants: async () => {
-            const store = await catalog.storeOf(personaBagIdFor(group));
+            const store = await homeStoreOf(catalog, personaBagIdFor(group));
             if (!store) return [];
             const prefix = `${FACE_GRANT_PREFIX}${group}/`;
             const self = edge.deviceVerifyingKey.toLowerCase();
