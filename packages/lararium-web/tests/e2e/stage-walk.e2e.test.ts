@@ -136,12 +136,16 @@ const PROPOSE_BODY = [
   `<$list filter="[[${DRAFT.title}]kahua-shadow[]]" variable="hit"><span class="walk-shadow"><<hit>></span></$list>`,
 ].join("\n\n");
 
-/** Distinct `kahua-propose` intent ids read from the face's intents plane. */
+/**
+ * Distinct `kahua-propose` intent ids read from the face's intents plane: `lares intent show --json` answers the plane's
+ * pane rows (`{ rows: [{ id, verb, status, … }] }`). A bare `lares intent` names no act and refuses its usage, so a read
+ * that refuses throws with the CLI's own words rather than reading as "no proposal yet".
+ */
 const proposalIds = async (hearth: Hearth): Promise<string[]> => {
-  const read = await hearth.cli(["intent", "--json"]);
-  if (read.code !== 0) return [];
-  const intents = (JSON.parse(read.stdout) as { intents?: Array<{ id?: string; verb?: string }> }).intents ?? [];
-  return [...new Set(intents.filter((intent) => intent.verb === "kahua-propose" && typeof intent.id === "string").map((intent) => intent.id!))];
+  const read = await hearth.cli(["intent", "show", "--json"]);
+  if (read.code !== 0) throw new Error(`lares intent show refused (exit ${read.code}):\n${read.stdout.slice(-400)}\n${read.stderr.slice(-400)}`);
+  const rows = (JSON.parse(read.stdout.trim().split("\n").pop() ?? "{}") as { rows?: Array<{ id?: string; verb?: string }> }).rows ?? [];
+  return [...new Set(rows.filter((row) => row.verb === "kahua-propose" && typeof row.id === "string").map((row) => row.id!))];
 };
 /** Whether a RENDERED element matches `sel` in the pane: the edit textarea serialises its source, so a substring read lies. */
 const paneHas = (page: Page, sel: string) => page.evaluate((s) => !!document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection")?.querySelector(s), sel);
