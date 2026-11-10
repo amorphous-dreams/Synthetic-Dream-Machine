@@ -518,7 +518,6 @@
     "tests/worker-entry-census.test.ts": 1,
     "tests/worker-handle-exit.test.ts": 1,
     "tests/working-attach-real-wiki.test.ts": 1,
-    "tests/working-layer-boot-order.test.ts": 1,
     "tests/working-layer-host-binding-bound.test.ts": 1,
     "tests/working-layer-host-composite.test.ts": 1,
     "tests/working-layer-records-off-disk.test.ts": 1,
