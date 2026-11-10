@@ -3,6 +3,7 @@ import { makeIslandRepo, groupSecretOpenerFromSeed, materializeSharedLarDoc, per
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
 import { foundThePlace, foundTheFace, runDeviceAdmitEdge, runApplyAdmitPayload } from "../src/index.js";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { withMemorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 
 const rootSeed = new Uint8Array(32).fill(52);
 const vesselSeed = new Uint8Array(32).fill(53);
@@ -15,8 +16,8 @@ const repo = () => makeIslandRepo({ syncPort: new MessageChannel().port1 });
 describe("atom admit re-entry", () => {
   it("the joinee completes the root half and re-entry lands one atom seat", async () => {
     const founderRepo = repo();
-    const place = await foundThePlace({ repo: founderRepo, vesselSeed, hearthTrueName: "hearth" });
-    const face = await foundTheFace({ vesselTag: testVesselTagDoor(1), repo: founderRepo, daemonHandle: place.daemonHandle, vesselSeed,
+    const place = withMemorySecretHome(await foundThePlace({ repo: founderRepo, vesselSeed, hearthTrueName: "hearth" }), founderRepo);
+    const face = await foundTheFace({ vesselTag: testVesselTagDoor(1), repo: founderRepo, daemonHandle: place.daemonHandle, secretHandle: place.secretHandle, secretRest: { assertSealed: async () => true }, vesselSeed,
       placeVerifyingKey: key(vesselSeed), vesselDisplayName: "founder", binding: { mode: "self-stood", signerSeed: rootSeed },
       hearthTrueName: "hearth", nexusPubkey: key(vesselSeed), atomSeed });
     const board = await materializeSharedLarDoc(founderRepo, personaKelBoardDocUrl(key(vesselSeed)), "board:persona-kel");
@@ -30,7 +31,8 @@ describe("atom admit re-entry", () => {
     expect(await verifyDeviceDelegation(payload.deviceEdge as DeviceDelegationTiddler, payload.signerDid)).toMatchObject({ ok: false, reason: "atom countersignature missing" });
     const joineeRepo = repo();
     const daemonHandle = seedDaemonDoc(joineeRepo);
-    const input = { repo: joineeRepo, daemonHandle, vesselSeed: joineeVesselSeed, placeVerifyingKey: key(joineeVesselSeed),
+    const secretHandle = seedDaemonDoc(joineeRepo);
+    const input = { repo: joineeRepo, daemonHandle, secretHandle, secretRest: { assertSealed: async () => true }, vesselSeed: joineeVesselSeed, placeVerifyingKey: key(joineeVesselSeed),
       atomSeed: joineeAtomSeed, vesselDisplayName: "joinee", payload, nexusPubkey: key(joineeVesselSeed),
       };
     const original = daemonHandle.change.bind(daemonHandle);
@@ -48,8 +50,7 @@ describe("atom admit re-entry", () => {
     const second = await runApplyAdmitPayload(input);
     expect(second).toEqual(first);
     expect(JSON.stringify(daemonHandle.doc())).toBe(landed);
-    const daemon = await joineeRepo.find(first.daemonUrl as never);
-    const slots = vesselDyads(daemon.doc() as never);
+    const slots = vesselDyads(secretHandle.doc() as never);
     expect(slots).toHaveLength(1);
     expect(slots[0]!.ref.deviceDid).toBe("0x" + key(joineeAtomSeed));
     expect(slots[0]!.edge).toHaveProperty("atomSignature");

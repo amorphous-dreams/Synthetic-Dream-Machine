@@ -40,6 +40,8 @@ export interface DocMinter {
   create<T = LarDoc>(initialValue: T): { readonly url: string; readonly documentId: string; whenReady?(): Promise<unknown> };
   /** Resolve once the named documents rest durably in this Repo's storage. */
   flush(documents?: string[]): Promise<void>;
+  /** Stand a document under an id minted ahead (a slot named to the vessel before its first byte). */
+  import?(binary: Uint8Array, args: { docId: never }): { readonly url: string; readonly documentId: string; whenReady?(): Promise<unknown> };
 }
 
 /**
@@ -48,7 +50,7 @@ export interface DocMinter {
  * store that does save it. `flush` resolves only after both, and rejects when either does.
  */
 export function restingMinter(repo: DocMinter, rest: (documentIds: readonly string[]) => Promise<void>): DocMinter {
-  const more = repo as unknown as { find?: (url: string) => unknown; delete?: (url: string) => unknown };
+  const more = repo as unknown as { find?: (url: string) => unknown; delete?: (url: string) => unknown; import?: DocMinter["import"] };
   return {
     create: (initialValue) => repo.create(initialValue),
     flush: async (documents) => {
@@ -57,6 +59,7 @@ export function restingMinter(repo: DocMinter, rest: (documentIds: readonly stri
     },
     // The lift reads and deletes documents through the same repo that mints them.
     ...(typeof more.find === "function" ? { find: (url: string) => more.find!.call(repo, url) } : {}),
+    ...(typeof more.import === "function" ? { import: (binary: Uint8Array, args: { docId: never }) => more.import!.call(repo, binary, args) } : {}),
     ...(typeof more.delete === "function" ? { delete: (url: string) => more.delete!.call(repo, url) } : {}),
   } as DocMinter;
 }

@@ -14,12 +14,12 @@
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { spawn } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, statSync } from "node:fs";
-import { join, sep } from "node:path";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { createInterface } from "node:readline";
 import { daemonWikiDir, openStaged, awaitRendezvous, stageDir, type LarInstance } from "../harness/instance.js";
 import { expectEntry } from "../harness/journal-expect.js";
-import { isDaemonCanonWithheld } from "../../packages/lararium-mesh/src/lar-uris.js";
+import { privateTitlesProjected } from "../harness/placement-mirrors.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -177,11 +177,10 @@ describe.skipIf(gaps.length > 0)("★ THE MCP SEAT BINDS THE HEARTH — a harnes
     }, { budgetMs: 60_000 });
     expect(existsSync(projection), `MCP write never projected to ${projection}`).toBe(true);
     expect(readFileSync(projection, "utf8")).toContain(`uri-path = "${PATH}"`);
-    // CONTROL: the daemon bag's canon mirror carries authored records alone; no control or house title projects there.
-    const canon = join(lar.root, "projections/bags", "daemon");
-    const files = existsSync(canon) ? (readdirSync(canon, { recursive: true }) as string[]).filter((p) => statSync(join(canon, p)).isFile()) : [];
-    const titles = files.filter((p) => !p.endsWith(".meta")).map((p) => `lar:///${p.split(sep).join("/").replace(/\.[^/.]+$/, "")}`);
-    expect(titles.filter((t) => isDaemonCanonWithheld(t)), "control: a withheld daemon title projected").toEqual([]);
+    // CONTROL (placement over patterns): the seat's write lands in the worn face's `wikis/daemon-<F>`, and the outcome and
+    // receipt it raised rest in the control document, which names no mirror: no projected file names a private home.
+    expect(existsSync(join(lar.root, "projections", "bags", "daemon")), "control: the daemon document gained a mirror").toBe(false);
+    expect(privateTitlesProjected(lar.root), "control: a control, secret or daemon-document title projected").toEqual([]);
   }, 120_000);
 
   test("control: the same seat without the entry's LAR_ROOT names no house and reaches no daemon", async () => {

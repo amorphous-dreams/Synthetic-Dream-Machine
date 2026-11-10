@@ -14,10 +14,10 @@ import { describe, expect, test } from "vitest";
 import { Repo } from "./wiki-shore-rig.js";
 import {
   CompositeStore, emptyLarDoc, faceCatalogDocUrl, openFaceCatalog, standLitFaceCatalog, tiddlerText, ownEntry,
-  type LarDoc, type Verb,
+  storedLarRecord, AutomergeDocStore, type LarDoc, type Verb,
 } from "@lararium/mesh";
 import { makeActionReactorFor } from "../src/action-handler.js";
-import { makeCatalogAccessor } from "../src/catalog-accessor.js";
+import { makeCatalogAccessor, libraryDocUrl } from "../src/catalog-accessor.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 
 const secret = new Uint8Array(32).fill(0x5c);
@@ -69,4 +69,20 @@ describe("a register act lands its row on its half", () => {
     const out = await reactor({ bag }, ctx());
     expect(tiddlerText(ownEntry(floor.doc()?.tiddlers, bag))).toBe(out.docUrl);
   });
+});
+
+ test("private-synced placement keeps the bag off verb access and island mounts while direct readers retain it", async () => {
+  const { repo, floor } = await stand();
+  const plane = repo.create<LarDoc>(emptyLarDoc());
+  const bag = "lar:///ha.ka.ba/bags/private-group";
+  const title = "lar:///acts/example";
+  plane.change((d) => { d.tiddlers[title] = storedLarRecord(title, { text: "proof act" }, "test"); });
+  floor.change((d) => { d.tiddlers[bag] = storedLarRecord(bag, { text: plane.url, kind: "private-synced" }, "test"); });
+  const catalog = makeCatalogAccessor(repo, floor.url, null);
+  expect(await catalog.find(bag)).toBeNull();
+  expect(await catalog.storeOf(bag)).toBeNull();
+  expect(await libraryDocUrl(catalog, bag)).toBeNull();
+  expect(await catalog.urlOf(bag)).toBe(plane.url);
+  expect((await new AutomergeDocStore(plane, bag).get(title))?.tiddler.text).toBe("proof act");
+  await repo.shutdown();
 });

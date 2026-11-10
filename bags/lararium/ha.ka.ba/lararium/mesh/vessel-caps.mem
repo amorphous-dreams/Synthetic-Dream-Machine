@@ -121,6 +121,7 @@ The `#has {rhizome}` carriage names ''built code'' (the sealed-sharing model, #c
 
 * ''`rhizome.forward` = the authenticated carriage relay'' — it runs an Ed25519 proof-of-possession handshake, STAMPS every envelope's `from` with the sender's PROVEN key (a forged `from` never crosses), moves sealed `@cad` ciphertext (`cid = BLAKE3(ciphertext)`, verify-cap ⊥ read-cap), and reads NOTHING. "sealed mana along the leylines" reads literal: the disclosure shore at the wire (#/lares-viales) made code. A ''standing relay'' keeps this cap active while its configured Socket-B relay runs — the Herm's whole reason to sit at the crossroads.
 * ''custody ⊥ findability = the bag-tracker'' (#/the-shore) — a tuber announces //"I hold cid X"// into the Herm's DHT-free `cid → holders` hint index; any rhizome serves the hint. The Herm holds the HINT, never the read-cap; a fetcher re-verifies `BLAKE3(bytes)==cid` itself, so the hint stays a hint, never an authority on the bytes.
+* ''the carriage log = what the Herm says it carried'' (lamplighters#/the-carriage-log) — each carriage lands one place-signed receipt keyed by its own cid in the place's append-only, unsealed log, and `GET /carried/<id>` on the relay port answers from it; the log names carriage ids and the place key, never a peer or a payload.
 * ''the Herm decides WHO-CONNECTS, never WHO-READS.'' The read-scope it never holds follows the cap-tier chain (`VEIL ⊂ PERSONAGROUP ⊂ CONTRACT ⊂ PUBLIC`, #cap-tier); the Herm carries every tier's ciphertext and holds a read-cap for NONE. The member-carry gate + the read-scope live in the SERVED vessels (the cas-wire serve side), never the wayfarer. The connect gate stands near-open — proof-of-possession as built, the lease + rate + cost-to-vouch anti-Sybil economy the unbuilt layer (#the-relay-floor names it open).
 * ''two sockets stay two'' (#dreamnet-architecture gate-model) — the Herm runs as a Socket-B carriage relay (sealed `@cad` envelopes); it NEVER carries the cleartext Automerge `/ws` doc sync (Socket A). Carry ⊥ read holds at the transport because the two never cross.
 
@@ -194,6 +195,6 @@ What stays to ''write'' runs narrow and named — the cap //vocabulary// itself 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;bq1X9UkjJmiNYPhBZlHECYzOClMs0ctK8rklxuIIKkk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hFvwXNGxAnPy2yYnVbu4uTiExh_9-_2k94_gd-Y9_Ps`>>
 
 <<^ code=`&#x0004;` to=`?`>>

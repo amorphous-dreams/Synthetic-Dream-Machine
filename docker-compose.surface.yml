@@ -11,8 +11,8 @@
 #                                                                  mesh, memetic-wikitext): never projected, and no
 #                                                                  re-founding reaches it
 #                 ${LARES_HOUSE}/projections  -> /lar/projections  the house's plaintext projection (wikis/daemon-<F>,
-#                                                                  bags/kahua-<F>, every bag or wiki with no source in
-#                                                                  the workspace, observe/daemon)
+#                                                                  bags/daemon-<F>, bags/kahua-<F>, every bag or wiki
+#                                                                  with no source in the workspace); a re-founding keeps it
 #                 ${LARES_HOUSE}/library      -> /lar/library      the acquired library
 #                 ${LARES_HOUSE}/config       -> /lar/config       config.json, meta.json, the repo registry (written)
 #               /lar/cache (container filesystem) and /lar/run (tmpfs) stay inside the container: scratch and

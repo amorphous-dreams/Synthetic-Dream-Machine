@@ -521,8 +521,8 @@ describe("the custody state query answers beside the chain (L7)", () => {
  *   N2  while no composition sits it answers `held: null`, never an empty list.     control: no census wired reads null too
  */
 describe("the census frame", () => {
-  const door = (heldSaves?: () => readonly import("@lararium/mesh").HeldSaves[] | null) => custodyFrameHandler({
-    holder: { isUnlocked: () => false, openedSlot: () => null, attemptsLeft: () => 3, unlockedFaces: () => [] } as unknown as CustodyHolder,
+  const door = (heldSaves?: () => readonly import("@lararium/mesh").HeldSaves[] | null, unlocked = false) => custodyFrameHandler({
+    holder: { isUnlocked: () => unlocked, openedSlot: () => null, attemptsLeft: () => 3, unlockedFaces: () => [] } as unknown as CustodyHolder,
     testScratch: false, standing: () => "hearth", recompose: async () => ({ standing: "hearth" }), onLog: () => {},
     ...(heldSaves ? { heldSaves } : {}),
   });
@@ -530,11 +530,16 @@ describe("the census frame", () => {
 
   test("N1 — each held document answers by id, refusal, count and bag, and never a body", async () => {
     const held = [{ documentId: "doc-a", refusal: "save-unbooked" as const, saves: 2, bagId: "lar:///ha.ka.ba/bags/notes" }];
-    expect(await ask(door(() => held))).toEqual({ op: "census", held, standing: "hearth" });
+    expect(await ask(door(() => held))).toEqual({ op: "census", held, standing: "hearth", locked: true });
   });
 
   test("N2 — no composition sitting answers held null; CONTROL: a door with no census wired answers null", async () => {
-    expect(await ask(door(() => null))).toEqual({ op: "census", held: null, standing: "hearth" });
-    expect(await ask(door())).toEqual({ op: "census", held: null, standing: "hearth" });
+    expect(await ask(door(() => null))).toEqual({ op: "census", held: null, standing: "hearth", locked: true });
+    expect(await ask(door())).toEqual({ op: "census", held: null, standing: "hearth", locked: true });
+  });
+
+  test("N3 — the census names whether the key stands shut, so a stop can say unlock first", async () => {
+    expect(await ask(door(() => [], true))).toEqual({ op: "census", held: [], standing: "hearth", locked: false });
+    expect(await ask(door(() => [], false))).toMatchObject({ locked: true });
   });
 });

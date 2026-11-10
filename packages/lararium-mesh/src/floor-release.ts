@@ -4,7 +4,8 @@
  * The ruling (`lar:///ha.ka.ba/lares/docs/stable-founding-road` #/rulings, one owner per registry): the release
  * answer names the Nexus AID, the charter epoch, the release before it and the floor manifest CID. The steward
  * seals it under its own signing domain (`floor-release`), the cabal's promotion approval over the manifest's EXACT
- * BYTES rides attached, and the crossroads board carries it. A herm carries the answer and signs nothing.
+ * BYTES rides attached, and the Nexus's publication board (`publicationDocUrl`) carries it, a board no recipe mounts and no
+ * mirror names. A herm carries the answer and signs nothing.
  *
  * THE BODY. `canonicalJsonBytes({kind, nexus, epoch, prior, manifest})`, `kind` the signing domain itself. The
  * release's CID names the body's own canonical bytes (sha-256 hex); it keys the board row (`$:/lar/floor-release/<cid>`)
@@ -42,7 +43,7 @@ export { FLOOR_RELEASE_DOMAIN };
 /** The surface and purpose the cabal's promotion approval names for a release. */
 export const FLOOR_RELEASE_SURFACE = "floor-release" as const;
 
-/** The tiddler prefix a release lands under on the crossroads board, keyed by the release CID. */
+/** The tiddler prefix a release lands under on the publication board, keyed by the release CID. */
 export const FLOOR_RELEASE_PREFIX = "$:/lar/floor-release/" as const;
 
 const HEX64 = /^[0-9a-f]{64}$/;

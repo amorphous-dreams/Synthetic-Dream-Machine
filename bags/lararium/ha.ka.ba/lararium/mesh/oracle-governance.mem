@@ -73,7 +73,7 @@ address would not trigger anyway.
 
 !! The Board Model — per-Nexus Address, Local Causal State
 
-Each Nexus has one WHO board address, derived from its Nexus key. One porch answer per Nexus, the floor release, names the Nexus AID, the charter epoch, the release before it and the floor manifest CID; a seated Kahu key seals it as the steward, the cabal's approval of the manifest's exact bytes rides attached, the crossroads board carries it, and a herm carries and presents it without signing it (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu`>> #/floor-release). No tender name reaches a stranger; the steward seal carries the authority.
+Each Nexus has one WHO board address, derived from its Nexus key. One porch answer per Nexus, the floor release, names the Nexus AID, the charter epoch, the release before it and the floor manifest CID; a seated Kahu key seals it as the steward, the cabal's approval of the manifest's exact bytes rides attached, the Nexus's publication board carries it, and a herm carries and presents it without signing it (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu`>> #/floor-release). No tender name reaches a stranger; the steward seal carries the authority.
 
 The public floor exposes the system rows named by the genesis seed. Its read-face projects those rows alone as a history-free content-addressed snapshot; the snapshot carries the seed CID beside its own CID. The Kahu Plane road owes the floor's frozen seed-derived address and no-writer rule.
 
@@ -189,6 +189,6 @@ it through a different door (<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/peer-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;DYUqXc7Q0xgWZzxu7I4fwjvwy2M3mIBfs-niit_RY8w`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Lk7qsathYg0E2WneMs0SMaRb5HtoTcsIHAN0WzF2Uss`>>
 
 <<^ code=`&#x0004;` to=`?`>>

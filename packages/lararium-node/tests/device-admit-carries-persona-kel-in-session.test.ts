@@ -51,6 +51,7 @@ import { admitBoardIsland } from "../src/commands/device-admit.js";
 import { nodeNexusIslandsBelow } from "../src/nexus-standing.js";
 import { larSealHome } from "../src/vessel-paths.js";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { memorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 
 const pubOf = async (s: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(s));
 const seed  = (n: number): Uint8Array => new Uint8Array(32).fill(n);
@@ -67,7 +68,7 @@ async function foundAtOwnIsland(vesselSeed: Uint8Array) {
   const ownKey   = await pubOf(vesselSeed);
   const founding = nexusIdentity({ ownVesselKey: ownKey });
   expect(founding.kind, "a fresh founding stands a PRIVATE NEXUS OF ONE").toBe("own");
-  const cer = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), repo, vesselSeed, placeVerifyingKey: ownKey, vesselDisplayName: "A",
+  const cer = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), ...memorySecretHome(repo), repo, vesselSeed, placeVerifyingKey: ownKey, vesselDisplayName: "A",
     binding: { mode: "self-stood", signerSeed: vesselSeed }, hearthTrueName: "",
     nexusPubkey: nexusScopeOrThrow(founding),
   });

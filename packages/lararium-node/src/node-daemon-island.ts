@@ -73,10 +73,10 @@ runSovereignWorker((manifest) => {
   const islandStorageDir = islandStorageDirOf(manifest);
   // THE ISOMORPHIC SEED LIFT: a NODE vessel reaches py/R, so it passes HULLS_FULL — makeDaemonBehavior's
   // ONE cap-gated seedDaemonProtocol (onEa) then seeds this vessel's FULL enactable flow-set (all three)
-  // plus the Ui/Persona/Circle seeds, from the single site. This entry seeds nothing of its own. The seeded flow-set IS this vessel's advertised enactable-list a personagroup peer reads.
+  // plus the Ui/Persona/Circle seeds, from the single site, into the daemon wiki's shadow layer. This entry seeds nothing of its own.
   const base = makeOperatorDaemonBehavior(manifest, {
-    // The daemon wiki projects to `<projections>/wikis/daemon-<F>/` through the same projector a wiki island mounts
-    // (its working layer's carriers reach disk; the control-plane bag beneath reaches disk only as its one-way observe render); the
+    // The daemon wiki projects to `<projections>/wikis/daemon-<F>/` through the same projector a wiki island mounts: its working
+    // layer's records reach disk, and the control document, which no recipe composes and no mirror names, never does; the
     // option also lights the daemon's projection cap.
     onBoot:         (ctx: IslandContext) => mountDiskProjection(manifest, ctx, { journal }),
     ...(receiptFromVessel ? { askReceipt: receiptFromVessel } : {}),

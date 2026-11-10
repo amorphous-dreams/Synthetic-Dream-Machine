@@ -15,17 +15,18 @@
 import { describe, test, expect } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import { foundThePlace, foundTheFace, replayCapEvents } from "@lararium/keyhive";
-import { DAEMON_BAG_ID, hex } from "@lararium/mesh";
+import { SECRET_HOME_ID, hex } from "@lararium/mesh";
 import * as ed from "@noble/ed25519";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { MEMORY_SEALED, withMemorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 
 const SEED = new Uint8Array(32).fill(9);
 
 async function foundedFace() {
   const repo = new Repo({ sharePolicy: async () => true });
   const treeKey = hex(await ed.getPublicKeyAsync(SEED));
-  const place = await foundThePlace({ repo, vesselSeed: SEED, hearthTrueName: "" });
-  const face = await foundTheFace({ vesselTag: testVesselTagDoor(1), repo, daemonHandle: place.daemonHandle, vesselSeed: SEED, placeVerifyingKey: treeKey,
+  const place = withMemorySecretHome(await foundThePlace({ repo, vesselSeed: SEED, hearthTrueName: "" }), repo);
+  const face = await foundTheFace({ vesselTag: testVesselTagDoor(1), repo, daemonHandle: place.daemonHandle, secretHandle: place.secretHandle, secretRest: { assertSealed: async () => true }, vesselSeed: SEED, placeVerifyingKey: treeKey,
     vesselDisplayName: "Island Witness",
     binding: { mode: "self-stood", signerSeed: new Uint8Array(32).fill(1) },
     hearthTrueName: "", nexusPubkey: treeKey,
@@ -36,15 +37,15 @@ async function foundedFace() {
 describe("a ceremony-written cap event keeps its causal island", () => {
   test("★ the island reaches the daemon doc, and replays back off it ★", async () => {
     const { repo, place, face } = await foundedFace();
-    const doc = place.daemonHandle.doc() as { tiddlers?: Record<string, { tiddler?: Record<string, string> }> };
-    const caps = Object.entries(doc.tiddlers ?? {}).filter(([t]) => t.startsWith(`${DAEMON_BAG_ID}/cap/`));
+    const doc = place.secretHandle.doc() as { tiddlers?: Record<string, { tiddler?: Record<string, string> }> };
+    const caps = Object.entries(doc.tiddlers ?? {}).filter(([t]) => t.startsWith(`${SECRET_HOME_ID}/cap/`));
 
     expect(caps.length, "the founding writes cap events at all").toBeGreaterThan(0);
     const written = caps.filter(([, r]) => r.tiddler?.["island"]);
     expect(written.length, "an event minted WITH an island keeps it on the way in").toBeGreaterThan(0);
 
     // …and the read half: what the doc holds comes back on the record, not just in the tiddler.
-    const replayed = await (await replayCapEvents(place.daemonHandle, face.personaGroupId)).list();
+    const replayed = await (await replayCapEvents(place.secretHandle, face.personaGroupId, MEMORY_SEALED)).list();
     expect(replayed.filter((r) => r.island !== undefined).length,
       "an island in the doc reaches the record").toBe(written.length);
 
@@ -57,7 +58,7 @@ describe("a ceremony-written cap event keeps its causal island", () => {
 
   test("CONTROL — every replayed record still round-trips its bytes and variant", async () => {
     const { repo, place, face } = await foundedFace();
-    const replayed = await (await replayCapEvents(place.daemonHandle, face.personaGroupId)).list();
+    const replayed = await (await replayCapEvents(place.secretHandle, face.personaGroupId, MEMORY_SEALED)).list();
     expect(replayed.length).toBeGreaterThan(0);
     for (const r of replayed) {
       expect(r.bytes.length, "bytes survive — the island change moves no payload").toBeGreaterThan(0);

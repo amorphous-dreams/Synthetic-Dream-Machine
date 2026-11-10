@@ -18,7 +18,14 @@ function refuse(refusal: string): void {
   $("ceremony-form").hidden = true;
 }
 
+/** The card leaves the document as the ask settles: no code row stays painted. */
+function unpaintCard(): void {
+  const card = document.getElementById("ceremony-card");
+  if (card) { card.textContent = ""; card.hidden = true; }
+}
+
 function done(words: string): void {
+  unpaintCard();
   document.body.dataset["settled"] = "true";
   $("ceremony-state").textContent = words;
   $("ceremony-form").hidden = true;
@@ -32,12 +39,18 @@ function paint(ask: CeremonyAsk, port: MessagePort): void {
     ask.kind === "unlock" ? `Unlock this browser's vessel (${ask.act})${ask.words ? ` — ${ask.words}` : ""}`
       : ask.kind === "bind-first" ? "Bind a passphrase to this browser before it holds a face's secrets. Keep it: nothing here recovers it."
         : ask.kind === "ward" ? ask.words || `Enter this face's passphrase for one ward act (${ask.act}).`
+          : ask.kind === "card" ? ask.words
           : "Enter this browser's passphrase to clear it. Its secrets will then rest in the clear in this browser's storage.";
   $("ceremony-face").textContent = ask.face ?? "this browser";
   $("ceremony-digest").textContent = ask.digest;
+  // A CARD ASK paints its card for the person to copy onto paper; the typed code rows answer it. No other ask paints one.
+  const card = $("ceremony-card");
+  card.textContent = ask.kind === "card" ? (ask.card ?? []).join("\n") : "";
+  card.hidden = ask.kind !== "card";
   const pass = $("ceremony-pass") as HTMLInputElement;
   const again = $("ceremony-again") as HTMLInputElement;
-  pass.autocomplete = ask.kind === "bind-first" ? "new-password" : "current-password";
+  pass.autocomplete = ask.kind === "bind-first" ? "new-password" : ask.kind === "card" ? "off" : "current-password";
+  pass.placeholder = ask.kind === "card" ? "the three code rows" : "";
   again.required = ask.kind === "bind-first";
   again.hidden = ask.kind !== "bind-first";
   const passkey = $("ceremony-passkey") as HTMLButtonElement;
@@ -52,9 +65,10 @@ function paint(ask: CeremonyAsk, port: MessagePort): void {
     }
     if (pass.value.length === 0) return;
     sendPassphrase(port, ask.askId, [pass, again]);
+    unpaintCard();
     $("ceremony-state").textContent = "Sent to the vessel.";
   });
-  $("ceremony-decline").addEventListener("click", () => { pass.value = ""; again.value = ""; sendDecline(port, ask.askId); });
+  $("ceremony-decline").addEventListener("click", () => { pass.value = ""; again.value = ""; unpaintCard(); sendDecline(port, ask.askId); });
   passkey.addEventListener("click", () => {
     void sendPasskey(port, ask.askId, ask.passkeys, navigator.credentials).catch((err: unknown) => {
       $("ceremony-state").textContent = `The passkey answered nothing (${err instanceof Error ? err.message : String(err)}); the passphrase still opens.`;

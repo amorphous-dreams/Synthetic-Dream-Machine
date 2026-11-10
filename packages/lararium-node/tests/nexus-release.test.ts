@@ -1,7 +1,7 @@
 /**
  * nexus-release.test.ts — W26 slice 4's door: a one-seat hearth publishes its floor release. The seat opens a
  * promotion approval over the manifest file's EXACT bytes (`nexus promote open`), the door seals the release body as the
- * steward and lands it on the Nexus's crossroads board, and a reader folds the chain from that board.
+ * steward and lands it on the Nexus's publication board, and a reader folds the chain from that board.
  *
  * Proven: a release lands and reads back as the chain's head; a second release links to the first by `prior`;
  * CONTROLS: an approval over other bytes, an approval of another surface, a vessel that holds no seat, a manifest
@@ -16,7 +16,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  crossroadsDocUrl, floorReleaseRowsFromBoard, materializeSharedLarDoc, sha256HexBytesSync, verifyFloorRelease, writeFloorRelease,
+  crossroadsDocUrl, publicationDocUrl, floorReleaseRowsFromBoard, materializeSharedLarDoc, sha256HexBytesSync, verifyFloorRelease, writeFloorRelease,
   assembleFloorRelease, openFloorReleaseBody, foundingRoster, readPromotionApproval, FLOOR_RELEASE_SURFACE, cutFloorSnapshot, floorManifestBytes,
 } from "@lararium/mesh";
 import { readCasBlobFromFs, writeCasEntriesFs } from "../src/node-cas.js";
@@ -106,10 +106,13 @@ describe("a one-seat hearth publishes its floor release", () => {
     expect(second.release.body.prior).toBe(first.release.cid);
     const head = await standing(0, known);
     expect(head).toMatchObject({ standing: "released", head: { cid: second.release.cid } });
-    // The row rests on the crossroads board under the release's own CID.
+    // The row rests on the publication board under the release's own CID, and never in the mirrored crossroads document.
     await withRoot(0, async (repo) => {
-      const board = await materializeSharedLarDoc(repo, crossroadsDocUrl(nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey(), sealHome: larSealHome() })), "board:crossroads");
+      const island = nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey(), sealHome: larSealHome() });
+      const board = await materializeSharedLarDoc(repo, publicationDocUrl(island), "board:publication");
       expect(floorReleaseRowsFromBoard(board.doc()).map((r) => r.keyCid).sort()).toEqual([first.release.cid, second.release.cid].sort());
+      const crossroads = await materializeSharedLarDoc(repo, crossroadsDocUrl(island), "board:crossroads");
+      expect(floorReleaseRowsFromBoard(crossroads.doc()), "the crossroads mirror would write it to disk").toEqual([]);
     });
   });
 
@@ -141,7 +144,7 @@ describe("a one-seat hearth publishes its floor release", () => {
     const first = await release(0, one.file, await approve(one.file));
     // Two releases name the first as their prior: written by hand, as two cabals' replicas would merge them.
     await withRoot(0, async (repo) => {
-      const board = await materializeSharedLarDoc(repo, crossroadsDocUrl(nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey(), sealHome: larSealHome() })), "board:crossroads");
+      const board = await materializeSharedLarDoc(repo, publicationDocUrl(nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey(), sealHome: larSealHome() })), "board:publication");
       const roster = foundingRoster(readNexusDoc(larSealHome()));
       const lineage = readNexusDoc(larSealHome())!.sealLineage!;
       const chair = (await seatChairs([0])).hands[0]!;

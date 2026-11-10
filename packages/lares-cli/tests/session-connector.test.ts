@@ -1,4 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
+import { controlStoreOf } from "@lararium/mesh";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -32,7 +33,7 @@ describe("local session connector", () => {
     const placed: Array<{ face?: string; requestedBy: string }> = [];
     const write = vi.spyOn(Socket.prototype, "write");
     const front = serveUdsFront({ claim });
-    front.attach(makeUdsSeat({ daemonHandle, composite, claim, repo, switchActs: { write: async () => {} },
+    front.attach(makeUdsSeat({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo, switchActs: { write: async () => {} },
       sessions: { anchorNow: async () => ({ kind: "place" as const, aid: "place-fixture", head: "place-head" }), open: async ({ faceRef }) => faceRef === "refuse"
         ? { ok: false, refusal: "face-unverified" }
         : { ok: true, supply: { face: faceRef === "b" ? faceB : faceRef === "c" ? faceC : face, ordinal: Math.max(0, "abc".indexOf(faceRef.slice(-1))), profile: "seat", presenter: `verified-${faceRef}`,

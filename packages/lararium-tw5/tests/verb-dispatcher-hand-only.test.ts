@@ -8,6 +8,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 
+import { memoryControlStore } from "./control-store-fixture.js";
 import { describe, test, expect } from "vitest";
 import { CompositeStore, DAEMON_BAG_ID, OUTCOME_URI_PREFIX } from "@lararium/mesh";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
@@ -105,12 +106,13 @@ describe("hand-only verbs", () => {
   async function stand() {
     const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
     const daemon = makeDaemon();
+    const control = memoryControlStore();
     const book = makeLocalAskBook();
     const routed: string[] = [];
     const registry = new VerbTable();
     registry.handOnly(HAND_ONLY);
     const dispatcher = new VerbDispatcher({
-      daemonVm: tw5, daemon, registry,
+      daemonVm: tw5, daemon, control, registry,
       routeFn: async (inv) => { routed.push(inv.action); return { routed: true }; },
       localOf: (inv) => book.has(inv), surfaceOf: (inv) => book.isSurface(inv),
     });
@@ -120,7 +122,7 @@ describe("hand-only verbs", () => {
       if (origin !== "content") book.add({ ...inv, origin });
       dispatcher.placeVerb({ verb, args, requestedBy: "me", requestId });
       await settle();
-      return outcomeOf(daemon, requestId);
+      return outcomeOf(control, requestId);
     };
     return { place, routed, stop: () => dispatcher.stop() };
   }
@@ -164,7 +166,7 @@ describe("hand-only verbs", () => {
     const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
     const registry = new VerbTable();
     registry.handOnly(HAND_ONLY);
-    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon: makeDaemon(), registry, routeFn: async () => ({}), localOf: () => true, surfaceOf: () => false });
+    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon: makeDaemon(), control: memoryControlStore(), registry, routeFn: async () => ({}), localOf: () => true, surfaceOf: () => false });
     const inv = { requestId: "s1", action: "promote-commit", args: { digest: "d" }, requestedBy: "me" } as never;
     await expect(dispatcher.clearRouted(inv, { local: true, presenter: "me" })).resolves.toBeUndefined();
     await expect(dispatcher.clearRouted(inv)).rejects.toMatchObject({ reason: "promote-needs-hand" });
@@ -176,18 +178,19 @@ describe("the daemon island's hand-only table carries the swarm verbs", () => {
   async function standIsland() {
     const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
     const daemon = makeDaemon();
+    const control = memoryControlStore();
     const book = makeLocalAskBook();
     const routed: string[] = [];
     const registry = new VerbTable();
     registry.handOnly(DAEMON_HAND_ONLY_CODES);
-    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon, registry, routeFn: async (inv) => { routed.push(inv.action); return { routed: true }; }, localOf: (inv) => book.has(inv), surfaceOf: (inv) => book.isSurface(inv) });
+    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon, control, registry, routeFn: async (inv) => { routed.push(inv.action); return { routed: true }; }, localOf: (inv) => book.has(inv), surfaceOf: (inv) => book.isSurface(inv) });
     dispatcher.start();
     const place = async (requestId: string, verb: string, origin: "surface" | "channel" | "content") => {
       const inv = { requestId, action: verb, args: { value: 1 }, requestedBy: "me" };
       if (origin !== "content") book.add({ ...inv, origin });
       dispatcher.placeVerb({ verb, args: { value: 1 }, requestedBy: "me", requestId });
       await settle();
-      return outcomeOf(daemon, requestId);
+      return outcomeOf(control, requestId);
     };
     return { place, routed, dispatcher, stop: () => dispatcher.stop() };
   }

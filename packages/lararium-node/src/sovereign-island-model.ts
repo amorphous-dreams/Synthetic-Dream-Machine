@@ -235,6 +235,7 @@ export function runSovereignWorker(
       if (msg.storage?.type === "nodefs" && !handed.cidDir) casDir = casDirFromIslandStorageDir(msg.storage.dir);
       return _buildStorage(msg.storage, restsAtVessel);
     },
+    restsAtVessel,
     // Resolve by content-address — the vessel's cas capability (basket-one #/the-fetch-door), composed here as
     // `makeCidResolver(localRead, portTransit, cacheWriteThrough)` (@lararium/mesh):
     //   · localRead — the runtime CID plane first (engine/plugin bytes), then the corpus CAS (staged

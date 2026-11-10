@@ -38,6 +38,7 @@ describe("a routed envelope's system bags reach the Kahu gate", () => {
 describe("a recipe's library bag mounts from the registry row, else from the Kahu realm for a system bag", () => {
   const accessor = (rows: Record<string, string>, doc: unknown): CatalogAccessor => ({
     urlOf: async (bag) => rows[bag] ?? null,
+    recordOf: async () => null,
     handle: async () => ({ doc: () => doc }) as never,
   }) as unknown as CatalogAccessor;
 

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { makeIslandRepo, groupSecretOpenerFromSeed, materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix } from "@lararium/mesh";
 import { foundTheFace, foundThePlace, InMemoryEventStore, KeyhiveProvider, runApplyAdmitPayload, runDeviceAdmitEdge } from "../src/index.js";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { withMemorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 
 const rootSeed = new Uint8Array(32).fill(71);
 const founderVesselSeed = new Uint8Array(32).fill(72);
@@ -33,10 +34,10 @@ async function readMembership(provider: KeyhiveProvider, groupId: string, identi
 describe("THE_ROSTER_LAW", () => {
   it("witnesses the place absent and the atoms present on the face roster after a founding, an admit and a fleet join seat", async () => {
     const founderRepo = repo();
-    const founderPlace = await foundThePlace({ repo: founderRepo, hearthTrueName: "hearth" });
+    const founderPlace = withMemorySecretHome(await foundThePlace({ repo: founderRepo, hearthTrueName: "hearth" }), founderRepo);
     const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
       repo: founderRepo,
-      daemonHandle: founderPlace.daemonHandle,
+      daemonHandle: founderPlace.daemonHandle, secretHandle: founderPlace.secretHandle, secretRest: { assertSealed: async () => true },
       placeVerifyingKey: key(founderVesselSeed),
       vesselDisplayName: "founder",
       binding: { mode: "self-stood", signerSeed: rootSeed },
@@ -72,10 +73,10 @@ describe("THE_ROSTER_LAW", () => {
     });
 
     const joineeRepo = repo();
-    const joineePlace = await foundThePlace({ repo: joineeRepo, hearthTrueName: "hearth" });
+    const joineePlace = withMemorySecretHome(await foundThePlace({ repo: joineeRepo, hearthTrueName: "hearth" }), joineeRepo);
     const joinee = await runApplyAdmitPayload({
       repo: joineeRepo,
-      daemonHandle: joineePlace.daemonHandle,
+      daemonHandle: joineePlace.daemonHandle, secretHandle: joineePlace.secretHandle, secretRest: { assertSealed: async () => true },
       atomSeed: joineeAtomSeed,
       vesselDisplayName: "joinee",
       payload,
@@ -104,10 +105,10 @@ describe("THE_ROSTER_LAW", () => {
 
   it("control — the founded atom reads present on its own face roster", async () => {
     const founderRepo = repo();
-    const founderPlace = await foundThePlace({ repo: founderRepo, hearthTrueName: "hearth" });
+    const founderPlace = withMemorySecretHome(await foundThePlace({ repo: founderRepo, hearthTrueName: "hearth" }), founderRepo);
     const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
       repo: founderRepo,
-      daemonHandle: founderPlace.daemonHandle,
+      daemonHandle: founderPlace.daemonHandle, secretHandle: founderPlace.secretHandle, secretRest: { assertSealed: async () => true },
       placeVerifyingKey: key(founderVesselSeed),
       vesselDisplayName: "founder",
       binding: { mode: "self-stood", signerSeed: rootSeed },

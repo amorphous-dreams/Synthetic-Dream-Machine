@@ -72,14 +72,16 @@ Same kernel (`packages/lararium-node/src/open-daemon-vm.ts`; browser `open-brows
 
 | layer (top wins) | writable | default | sync class | disk mirror |
 |---|---|---|---|---|
-| `wikis/daemon/temp` | yes | never | device | none |
-| `wikis/daemon/working` (late-attached) | yes | ''YES'' | fleet | `wikis/daemon/` (node) — `daemonWorkingMirror` (`packages/lararium-node/src/bag-paths.ts`) rides the daemon manifest's `diskMirrors` (`open-daemon-vm.ts`), mounted by `node-daemon-island.ts`'s `onBoot` → `mountDiskProjection` (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge`>>, `#/daemon-mirror`) |
-| `bags/daemon` (the daemon bag: verbs, outcomes, bindings — the control plane) | yes | no | fleet (private plane) | none — excluded by design |
-| `bags/crossroads` | yes | no | fleet · federatable | `bags/crossroads/` (node) — the daemon designates it in its own mirror set (`open-daemon-vm.ts`), so a residency MOVE out of `wikis/daemon/working` publishes there |
+| `wikis/daemon/temp` | yes | never | device | `<projections>/wikis/daemon-<F>/temp/` only where the recipe designates it and the consent row names the slug (`daemonTempMirror`); else none |
+| `wikis/daemon/working` (late-attached) | yes | ''YES'' | fleet | `<projections>/wikis/daemon-<F>/` (node, the worn face's folder) — `daemonWorkingMirror` (`packages/lararium-node/src/bag-paths.ts`) rides the daemon manifest's `diskMirrors` (`open-daemon-vm.ts`), mounted by `node-daemon-island.ts`'s `onBoot` → `mountDiskProjection` (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge`>>, `#/daemon-mirror`) |
+| `bags/daemon-<F>` (the worn face's daemon canon, mounted while the face stands lit and proved) | yes | no | fleet (private plane) | `<projections>/bags/daemon-<F>/` — `daemonCanonMirror` |
+| `bags/kahua` (the face's lift-only stage) | yes | no | fleet (private plane) | `<projections>/bags/kahua-<F>/` — `kahuaStageMirror` |
+| `bags/daemon` (the daemon document: bindings; no control family rests here) | yes | no | fleet (private plane) | none — no mirror names it |
+| `bags/crossroads` | yes | no | fleet · federatable | the crossroads bag root by origin (`projectionRoots`: the canon source's `crossroads/` where it stands there, else `<projections>/bags/crossroads/`) (node) — the daemon designates it in its own mirror set (`open-daemon-vm.ts`), so a residency MOVE out of `wikis/daemon/working` publishes there |
 | `bags/lares` · `bags/lararium` | yes | no | fleet | none here |
 | `bags/oracle` | no | no | fleet · federatable | none |
 
-The two-vessel e2e witnesses the attach (`[daemon] working layer attached: lar:///ha.ka.ba/wikis/daemon/working`). A draft in the daemon wiki routes to `wikis/daemon/draft` — a bag with NO layer — and `composite.put` refuses loud; the daemon mounts `working` by ruling, never draft or personal. On a node the working layer projects to `wikis/daemon/` (`open-daemon-vm.ts` `diskMirrors`); the daemon's receipts, ward audits and summons follow the working layer and carry `disk-projection: no`, which the disk projector skips (`packages/lararium-node/src/disk-projector.ts`).
+The two-vessel e2e witnesses the attach (`[daemon] working layer attached: lar:///ha.ka.ba/wikis/daemon/working`). A draft in the daemon wiki routes to `wikis/daemon/draft` — a bag with NO layer — and `composite.put` refuses loud; the daemon mounts `working` by ruling, never draft or personal. On a node the working layer projects to `<projections>/wikis/daemon-<F>/` (`open-daemon-vm.ts` `diskMirrors`, `daemonDiskMirrors` in `bag-paths.ts`); the daemon's receipts, ward audits and summons rest in the vessel control document (`packages/lararium-mesh/src/control-home.ts`), which no recipe composes and no mirror names, so the disk projector never meets them.
 
 !!! C. The HOST composite (VM-free, one per vessel)
 
@@ -303,6 +305,6 @@ The spiral walked every carrier the #/as-written table names and evergreened the
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;lupq2nuAje4WTiCznbyPbqmzNwXy1T9O7pro0LtbuF8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zQtpCYg90PxkigUki185NSl8DEbMkCX_6FKuVV89c7I`>>
 
 <<^ code=`&#x0004;` to=`?`>>

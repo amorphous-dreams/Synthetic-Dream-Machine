@@ -154,6 +154,14 @@ async function resolved(input: SurfaceRecipeInput): Promise<SurfaceRecipe> {
 }
 
 describe("one function resolves a session's effective recipe at surface mount", () => {
+  test("a supplied canonBag resolves as the canon", async () => {
+    const v = vessel();
+    const bag = "lar:///ha.ka.ba/bags/daemon-custom";
+    v.point(v.catalog, bag, v.later.url);
+    const result = await resolved(inputOf(v, "player", { recipe: { wikiSlug: SLUG, canonBag: bag } }));
+    expect(result.slots.find(slot => slot.slot === bag)).toMatchObject({ layer: "canon", document: v.later.url });
+  });
+
   test("it returns absolute ids, top first, and a revision that names them", async () => {
     const v = vessel();
     v.writeRecipe("catalog", { wikiSlug: SLUG, libraryBags: [SHARED_BAG, LARES_BAG] });

@@ -1,102 +1,80 @@
 /**
- * daemon-canon-mirror — the daemon wiki's canon (`bags/daemon`) projects its non-control records to
- * `<projections>/bags/daemon/`, a two-way canon mirror like any other, so a promoted memory survives a re-founding.
- *
- * Reds: a promoted memory meme in `bags/daemon` lands under `projections/bags/daemon/`; the daemon VM's mirror list
- * carries the canon mirror beside the observe render. Controls: a `bags/daemon/outcomes/*` row, a cap event and a swarm
- * control never land; a file a hand wrote there with other words, with no agreement behind it, stands: the gate never
- * writes over it.
- *
- * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
+ * daemon-canon-mirror — the daemon wiki's mirrors follow the worn face: its working top projects to
+ * `<projections>/wikis/daemon-<F>`, its canon `bags/daemon-<F>` to `<projections>/bags/daemon-<F>`. The daemon document
+ * (`bags/daemon`) and the control document (`bags/control`) carry no mirror, so no control family reaches disk by placement.
  */
-import { describe, test, expect, afterEach } from "vitest";
-import { mkdirSync, mkdtempSync, rmSync, existsSync, readFileSync, writeFileSync, readdirSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
-import { DAEMON_BAG_ID, PROJECTION_FILTER_TEXT, projectionFilterTitle } from "@lararium/mesh";
-import { LarDiskProjector } from "../src/disk-projector.js";
-import { SyncedTree } from "../src/synced-tree.js";
-import { daemonCanonMirror, daemonDiskMirrors, daemonObserveRoot, isDaemonCanonWithheld } from "../src/bag-paths.js";
+import { describe, test, expect } from "vitest";
+import { Repo } from "@automerge/automerge-repo";
+import { CONTROL_HOME_ID, DAEMON_BAG_ID, KAHUA_BAG, daemonFaceCanonBag, emptyLarDoc, expandRecipe, kahuaRecipe, ownEntry, tiddlerText, wikiSlotUri, type LarDoc } from "@lararium/mesh";
+import { daemonDiskMirrors } from "../src/bag-paths.js";
+import { standFaceDaemonCanon } from "@lararium/mesh";
 
-type Flushable = { flush: (b: string, u: string) => Promise<void> };
-const MEMORY = "lar:///ha.ka.ba/kahua/memory/heron";
-const OUTCOME = `${DAEMON_BAG_ID}/outcomes/req-1`;
-const CAP = `${DAEMON_BAG_ID}/cap/0123456789abcdef01234567/deadbeef`;
-const SWARM = "$:/lares/swarm/lanes/one";
-/** The house's identity records the daemon doc carries beside its control plane (measured, ceremony-core.ts). */
-const HOUSE = [
-  "lar:///ha.ka.ba/bags/persona/group-secret/abc", "lar:///ha.ka.ba/bags/persona/binding/signer-did",
-  "lar:///ha.ka.ba/dreamnet/face-founding-checkpoint/c1", "lar:///ha.ka.ba/dreamnet/dyad/d1", "lar:///ha.ka.ba/dreamnet/persona-act/g/1/x",
-  "lar:///ha.ka.ba/kahua/../bags/persona/hearth/true-name",
-];
-let base = "";
-afterEach(() => { if (base) { rmSync(base, { recursive: true, force: true }); base = ""; } });
+const F = "123e4567-e89b-42d3-a456-426614174000";
 
-const body = (uri: string): string => `<<^ code=\`&#x0001;\` to=\`${uri}\`>>\n\nthe words of ${uri}\n`;
-
-function rig(): { projector: Flushable; projections: string; refusals: string[] } {
-  base = mkdtempSync(join(tmpdir(), "lar-daemon-canon-"));
-  const projections = join(base, "projections");
-  const refusals: string[] = [];
-  const projector = new LarDiskProjector({
-    mirrors: [daemonCanonMirror(projections)],
-    syncedTree: new SyncedTree(null),
-    carrierFileFn: async (uri) => (uri.startsWith("lar:") ? { ext: ".mem", body: body(uri) } : { ext: ".tid", body: `title: ${uri}\n\ngo\n`, defaultRelPath: "swarm.tid" }),
-    onRefusal: (r) => refusals.push(r.reason),
-  } as never) as unknown as Flushable;
-  return { projector, projections, refusals };
-}
-
-describe("the daemon wiki's canon projects", () => {
-  test("RED: the canon mirror roots at <projections>/bags/daemon, and the daemon VM's list carries it", () => {
-    expect(daemonCanonMirror("/house/projections")).toEqual({ bagId: DAEMON_BAG_ID, mirrorRoot: join("/house/projections", "bags", "daemon") });
-    const list = daemonDiskMirrors({ projectionRoot: "/p", canonBags: "/absent", faceRelation: null, observeDaemon: true });
-    expect(list.filter((m) => m.bagId === DAEMON_BAG_ID).map((m) => [m.scope, m.mirrorRoot, m.mirrorClass ?? "canon"])).toEqual([
-      ["daemon-observe", daemonObserveRoot("/p"), "observe"],
-      ["daemon-canon", join("/p", "bags", "daemon"), "canon"],
-    ]);
+describe("the daemon wiki's mirrors follow the worn face", () => {
+  test("RED: a worn face with its canon mirrors the working top at wikis/daemon-<F> and the canon at bags/daemon-<F>; neither the daemon nor the control document mirrors", () => {
+    const list = daemonDiskMirrors({ projectionRoot: "/p", canonBags: "/absent", faceRelation: F, canon: true });
+    expect(list.find((m) => m.scope === "daemon")).toMatchObject({ bagId: wikiSlotUri("daemon", "working"), mirrorRoot: `/p/wikis/daemon-${F}` });
+    expect(list.find((m) => m.scope === "daemon-canon")).toMatchObject({ bagId: daemonFaceCanonBag(F), mirrorRoot: `/p/bags/daemon-${F}` });
+    expect(list.map((m) => m.scope)).toEqual(expect.arrayContaining(["kahua", "crossroads"]));
+    expect(list.some((m) => m.bagId === DAEMON_BAG_ID || m.bagId === CONTROL_HOME_ID)).toBe(false);
   });
 
-  test("RED: a promoted memory meme in bags/daemon lands under projections/bags/daemon", async () => {
-    const { projector, projections } = rig();
-    await projector.flush(DAEMON_BAG_ID, MEMORY);
-    const at = join(projections, "bags", "daemon", "ha.ka.ba", "kahua", "memory", "heron.mem");
-    expect(existsSync(at), `nothing at ${at}`).toBe(true);
-    expect(readFileSync(at, "utf8")).toBe(body(MEMORY));
+  test("CONTROL: the floor (no face worn) mirrors no private layer; a face whose catalog names no canon mirrors no canon", () => {
+    const floor = daemonDiskMirrors({ projectionRoot: "/p", canonBags: "/absent", faceRelation: null });
+    expect(floor.map((m) => m.scope)).toEqual(["crossroads"]);
+    const noCanon = daemonDiskMirrors({ projectionRoot: "/p", canonBags: "/absent", faceRelation: F });
+    expect(noCanon.some((m) => m.scope === "daemon-canon")).toBe(false);
+    expect(noCanon.some((m) => m.scope === "daemon")).toBe(true);
+  });
+});
+
+describe("the daemon wiki's canon per face", () => {
+  test("RED: the daemon recipe reads working -> bags/daemon-<F> -> bags/kahua, and the daemon document rides beneath every canon", () => {
+    const slots = expandRecipe(kahuaRecipe({ wikiSlug: "daemon", canonBag: daemonFaceCanonBag(F) }));
+    const at = (slot: string) => slots.indexOf(slot);
+    expect(at(wikiSlotUri("daemon", "working"))).toBeLessThan(at(daemonFaceCanonBag(F)));
+    expect(at(daemonFaceCanonBag(F))).toBe(at(wikiSlotUri("daemon", "working")) + 1);
+    expect(at(KAHUA_BAG)).toBe(at(daemonFaceCanonBag(F)) + 1);
+    expect(at(DAEMON_BAG_ID)).toBeGreaterThan(at(KAHUA_BAG));
+    expect(slots).not.toContain(CONTROL_HOME_ID);
   });
 
-  test("CONTROL: an outcome row, a cap event and a swarm control never land anywhere under projections", async () => {
-    const { projector, projections } = rig();
-    for (const t of [OUTCOME, CAP, SWARM]) await projector.flush(DAEMON_BAG_ID, t);
-    const walk = (d: string): string[] => (existsSync(d) ? readdirSync(d, { recursive: true }) as string[] : []);
-    expect(walk(projections).filter((p) => /outcomes|cap|swarm/.test(p))).toEqual([]);
+  test("CONTROL: a recipe naming no canonBag keeps its own bag as canon", () => {
+    const slots = expandRecipe({ wikiSlug: "notes" });
+    expect(slots.indexOf("lar:///ha.ka.ba/bags/notes")).toBe(slots.indexOf(wikiSlotUri("notes", "working")) + 1);
   });
 
-  test("CONTROL: the house's identity records (persona namespace, sealed checkpoints, dyads, persona acts) never land", async () => {
-    const { projector, projections } = rig();
-    for (const t of HOUSE) { expect(isDaemonCanonWithheld(t), t).toBe(true); await projector.flush(DAEMON_BAG_ID, t); }
-    expect(isDaemonCanonWithheld(MEMORY)).toBe(false);
-    expect(isDaemonCanonWithheld("A Plain Note")).toBe(false);
-    const walk = (d: string): string[] => (existsSync(d) ? (readdirSync(d, { recursive: true }) as string[]).filter((p) => p.includes(".")) : []);
-    expect(walk(projections)).toEqual([]);
+  test("RED: the face's first stand mints its daemon canon and names it in the vessel control document; CONTROL: a second stand returns that same document", async () => {
+    const repo = new Repo({});
+    const catalog = repo.create<LarDoc>(emptyLarDoc());
+    const first = await standFaceDaemonCanon({ repo, control: catalog, faceRelation: F });
+    expect(first.bagId).toBe(daemonFaceCanonBag(F));
+    expect(tiddlerText(ownEntry(catalog.doc()?.tiddlers, `${CONTROL_HOME_ID}/daemon-canon/${encodeURIComponent(F)}`))).toBe(first.url);
+    const second = await standFaceDaemonCanon({ repo, control: catalog, faceRelation: F });
+    expect(second.documentId).toBe(first.documentId);
   });
 
-  test("RED: the projector reads the filter as its wiki holds it: an override adding the memory family stops it projecting", async () => {
-    const { projector, projections } = rig();
-    const override = `${PROJECTION_FILTER_TEXT.daemon}\n[prefix[lar:///ha.ka.ba/kahua/memory/]]`;
-    const wiki = { getTiddlerText: (t: string) => (t === projectionFilterTitle("daemon") ? override : undefined), getTiddler: () => undefined };
-    const stop = (projector as unknown as { start: (tw5: unknown) => () => Promise<void> }).start({ $tw: { wiki } });
-    await projector.flush(DAEMON_BAG_ID, MEMORY);
-    await stop();
-    expect(existsSync(join(projections, "bags", "daemon", "ha.ka.ba", "kahua", "memory", "heron.mem"))).toBe(false);
+  test("a face relation that is no relation names no canon", () => {
+    expect(() => daemonFaceCanonBag("not-a-relation")).toThrow(/invalid relation/);
+  });
+  test("control names a vessel's canon separately from another device and the face catalog", async () => {
+    const deviceRepo = new Repo();
+    const otherRepo = new Repo();
+    const catalog = deviceRepo.create<LarDoc>(emptyLarDoc());
+    const control = deviceRepo.create<LarDoc>(emptyLarDoc());
+    const otherControl = otherRepo.create<LarDoc>(emptyLarDoc());
+    const faceRelation = "123e4567-e89b-42d3-a456-426614174000";
+    const first = await standFaceDaemonCanon({ repo: deviceRepo, control, faceRelation });
+    const again = await standFaceDaemonCanon({ repo: deviceRepo, control, faceRelation });
+    const other = await standFaceDaemonCanon({ repo: otherRepo, control: otherControl, faceRelation });
+    const title = `lar:///ha.ka.ba/bags/control/daemon-canon/${encodeURIComponent(faceRelation)}`;
+    expect(tiddlerText(ownEntry(control.doc()?.tiddlers, title))).toBe(first.url);
+    expect(catalog.doc()?.tiddlers[title]).toBeUndefined();
+    expect(catalog.doc()?.tiddlers[first.bagId]).toBeUndefined();
+    expect(again.url).toBe(first.url);
+    expect(other.url).not.toBe(first.url);
+    await deviceRepo.shutdown(); await otherRepo.shutdown();
   });
 
-  test("CONTROL: a file a hand wrote with other words and no agreement stands; the gate never writes over it", async () => {
-    const { projector, projections } = rig();
-    const at = join(projections, "bags", "daemon", "ha.ka.ba", "kahua", "memory", "heron.mem");
-    mkdirSync(dirname(at), { recursive: true });
-    writeFileSync(at, "a hand's own words\n");
-    await projector.flush(DAEMON_BAG_ID, MEMORY);
-    expect(readFileSync(at, "utf8")).toBe("a hand's own words\n");
-  });
 });

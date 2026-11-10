@@ -62,6 +62,31 @@ export function carriageDocUrl(nexusPubkey: string): AutomergeUrl {
 }
 
 /**
+ * The Nexus's REALM-ANNOUNCE board URL — deterministic, so every island member and every carrier resolves the one board
+ * that carries each realm's public announces (`writeRealmBagAnnounce`). It stands apart from the crossroads document: the
+ * crossroads bag mounts in a recipe and mirrors to its canon source, and a board no recipe mounts reaches no mirror, so a
+ * house-minted announce never writes to disk and a file under the crossroads mirror never folds as a book. The federation
+ * gate federates it beside the crossroads document, so a carrier replicates it the way it replicates the public plane.
+ */
+export function realmAnnounceDocUrl(nexusPubkey: string): AutomergeUrl {
+  return deterministicDocUrl(`${nexusRegistryUri(nexusPubkey)}#realm-announce`);
+}
+
+/**
+ * The Nexus's PUBLICATION board URL — deterministic, so every island member, joinee and carrier resolves the one board that
+ * carries the Nexus's signed publications: each plugin offering's announce (`writeOfferingAnnounce`, `nexus publish`) and
+ * each floor release (`writeFloorRelease`, `nexus release`), which the porch answers from. Each row self-certifies, so a
+ * reader re-verifies it off the board alone; that sets it apart from the realm-announce board, whose rows project a record
+ * kept on the realm doc and carry no signature to re-check. Like that board it stands apart from the crossroads document: the
+ * crossroads bag mounts in a recipe and mirrors to its canon source, and a board no recipe mounts reaches no mirror, so a
+ * house-minted publication never writes to disk and a file under the crossroads mirror never reads as one. The federation
+ * gate federates it beside the crossroads document.
+ */
+export function publicationDocUrl(nexusPubkey: string): AutomergeUrl {
+  return deterministicDocUrl(`${nexusRegistryUri(nexusPubkey)}#publication`);
+}
+
+/**
  * ONE HEARTH'S HOSTING DOC in one Nexus — deterministic over (the Nexus, the hearth's gate key). It carries that
  * hearth's signed hosting acts and nothing else: no carrier contract, no other hearth's act, no guest. A walker
  * reaches exactly this doc beside the shelf, computed from what its invite already names — the Nexus and the gate

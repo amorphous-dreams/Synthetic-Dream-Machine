@@ -17,7 +17,7 @@
  */
 
 import type { DocHandle }                        from "@lararium/mesh";
-import type { CompositeStore, IslandToVesselMsg, LarDoc, Repo, WikiRecipe } from "@lararium/mesh";
+import type { CompositeStore, IslandToVesselMsg, LarDoc, Repo, SecretHomeStore, SecretRestAnswer, WikiRecipe } from "@lararium/mesh";
 import type { TW5Engine }                        from "./tw5-vm.js";
 import type { ReceiptCapability }                        from "./receipt.js";
 
@@ -96,6 +96,19 @@ export interface IslandContext {
    * refuses. Present only on a session island, which holds no catalog document of its own.
    */
   viewCatalog?: (name: string) => Promise<string | null>;
+  /** The vessel's concrete disk mirror grants intersected with this recipe; absent for older/test contexts. */
+  diskMirrors?: readonly { readonly bagId: string; readonly mirrorRoot: string; readonly scope: string; readonly mirrorClass?: "recovery"; readonly titlePaths?: boolean; readonly tempLayer?: boolean }[];
+  /**
+   * The vessel's CONTROL document as a store (`controlStoreOf` over `grants.controlUrl`): the daemon island's control
+   * families rest here (summons, outcomes, the effect index, ward audits). Never a recipe layer and never mirrored; absent
+   * on every wiki island.
+   */
+  control?: CompositeStore;
+  /** THE VESSEL'S SECRET HOME, on the daemon island alone (`islandSecretHome`): never composed into a recipe, a composite
+   *  or a mirror. Absent on every wiki island and on a daemon whose vessel named no home. */
+  secretStore?: SecretHomeStore;
+  /** The vessel's rest answering whether it holds the secret home sealed; asked before each secret act. */
+  secretRest?: SecretRestAnswer;
 }
 
 /**
@@ -124,4 +137,10 @@ export interface IslandBehavior {
   onEa(ctx: IslandContext): void | Promise<void>;
   onSignal(type: string, raw: unknown, ctx: IslandContext): boolean;
   onHooAnu(ctx: IslandContext): void | Promise<void>;
+}
+
+/** The daemon island's control store, or a refusal by name: a daemon island granted no control document writes no control family. */
+export function controlOf(ctx: Pick<IslandContext, "control">): CompositeStore {
+  if (!ctx.control) throw new Error("control-home-unavailable: the daemon island carries no control document grant; the vessel stands its control document (`standControlHome`) before it opens the daemon VM");
+  return ctx.control;
 }

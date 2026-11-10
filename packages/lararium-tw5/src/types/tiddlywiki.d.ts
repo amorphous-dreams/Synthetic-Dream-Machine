@@ -368,6 +368,10 @@ export interface TW5Wiki {
 
   getPluginTypes(): string[];
   readPluginInfo(titles?: string[]): { modifiedPlugins: string[]; deletedPlugins: string[] };
+  getPluginInfo(title: string): { tiddlers?: Record<string, Record<string, unknown>> } | undefined;
+  registerPluginTiddlers(pluginType: string | null, titles?: string[]): string[];
+  unregisterPluginTiddlers(pluginType: string | null, titles?: string[]): string[];
+  unpackPluginTiddlers(): void;
 
   // ── Indexers ──────────────────────────────────────────────────────────────
 

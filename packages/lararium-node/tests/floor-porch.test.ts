@@ -1,7 +1,7 @@
 /**
  * floor-porch.test — W26 slice 4: the Nexus answers a stranger with its floor at the porch, and the stranger verifies it.
  *
- * Over a REAL http server with the vessel's one dispatcher: `GET /floor/<AID>` hands the release rows the crossroads board
+ * Over a REAL http server with the vessel's one dispatcher: `GET /floor/<AID>` hands the release rows the publication board
  * carries (each with its charter lineage), and `GET /cas/<cid>` the blobs the HEAD release names. A reader holding the AID
  * alone reads the whole floor across the wire (`readFloorAnswer`), every step verified.
  *
@@ -15,7 +15,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
 import {
-  assembleFloorRelease, crossroadsDocUrl, cutFloorSnapshot, floorManifestBytes, materializeSharedLarDoc, openFloorReleaseBody, readFloorAnswer,
+  assembleFloorRelease, crossroadsDocUrl, publicationDocUrl, cutFloorSnapshot, floorManifestBytes, materializeSharedLarDoc, openFloorReleaseBody, readFloorAnswer,
   sha256HexBytesSync, writeFloorRelease, type FloorRelease,
 } from "@lararium/mesh";
 import { mountHttpFaceDispatcher } from "../src/http-face-dispatcher.js";
@@ -48,13 +48,14 @@ async function rig(opts: { serveCas?: boolean } = {}) {
     body: openFloorReleaseBody({ nexus: c.aid, epoch: c.head.epochCid, prior: null, manifest: manifestCid }),
     lineage: c.chain, manifestBytes, steward: steward!, approvers: [...await c.signers()],
   });
-  const board = await materializeSharedLarDoc(repo, crossroadsDocUrl(c.aid), "board:crossroads");
+  const board = await materializeSharedLarDoc(repo, publicationDocUrl(c.aid), "board:publication");
+  const crossroads = await materializeSharedLarDoc(repo, crossroadsDocUrl(c.aid), "board:crossroads");
   const server = createServer(); servers.push(server);
   const dispatcher = mountHttpFaceDispatcher(server);
   const porch = mountFloorPorch({ httpServer: server, dispatcher, repo, nexusPubkey: c.aid, casDir, serveCas: opts.serveCas ?? true });
   await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
   const origin = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
-  return { c, board, release, casDir, origin, porch, ids: { lares: lares.cid, lararium: lararium.cid, manifest: manifestCid, secret: secretCid } };
+  return { c, board, crossroads, release, casDir, origin, porch, ids: { lares: lares.cid, lararium: lararium.cid, manifest: manifestCid, secret: secretCid } };
 }
 const land = (r: Awaited<ReturnType<typeof rig>>, release: FloorRelease) => r.board.change((d) => writeFloorRelease(d, release));
 const bodyOf = async (res: Response) => ({ status: res.status, text: await res.text(), cache: res.headers.get("cache-control") });
@@ -95,6 +96,17 @@ describe("the porch answers for the Nexus's floor", () => {
     // CONTROL: the lawful release names exactly the manifest and its two snapshots
     land(r, r.release);
     expect([...await releasedFloorCids({ board: r.board.doc(), nexus: r.c.aid, casDir: r.casDir })].sort()).toEqual([r.ids.lares, r.ids.lararium, r.ids.manifest].sort());
+  });
+
+  test("a release hand-placed in the mirrored crossroads document answers as no release and opens no blob", async () => {
+    const r = await rig();
+    r.crossroads.change((d) => writeFloorRelease(d, r.release));
+    const answer = await (await fetch(`${r.origin}/floor/${r.c.aid}`)).json() as { releases?: unknown[] };
+    expect(answer.releases, "the porch read a release off the crossroads mirror").toEqual([]);
+    expect((await bodyOf(await fetch(`${r.origin}/cas/${r.ids.manifest}`))).status).toBe(404);
+    // CONTROL: the same release on the publication board answers.
+    land(r, r.release);
+    expect((await bodyOf(await fetch(`${r.origin}/cas/${r.ids.manifest}`))).status).toBe(200);
   });
 
   test("a herm's porch (no /cas of its own) answers the floor route and leaves /cas to its bulb face", async () => {

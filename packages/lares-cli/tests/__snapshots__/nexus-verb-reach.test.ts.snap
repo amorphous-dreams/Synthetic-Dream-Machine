@@ -84,7 +84,7 @@ lares nexus — the Nexus relation doors: charter ceremony, admission, carriage,
   cabal standing <group> [--nexus <aid>]    where one group stands in the cabal, as of this vessel's last sync
   release <manifest-file> --approval <file> [--nexus <aid>]   publish the Nexus's FLOOR RELEASE: a held seat seals the porch body naming the
                                             manifest, the seats' approval of its exact bytes (\`promote open --surface floor-release\`) rides
-                                            attached, and it lands on the crossroads board once it counts
+                                            attached, and it lands on the Nexus's publication board once it counts
 
 Examples:
   lares nexus rite quorum

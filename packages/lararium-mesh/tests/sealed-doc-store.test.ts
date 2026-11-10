@@ -276,10 +276,16 @@ describe("the browser vessel names its face by one subject", () => {
     .replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
   it("B1 — the sealed rest carries no wornAt, the map face and the session subject are one value, and nothing reassigns the face from a dial", () => {
     expect(src).toMatch(/composeSealedRest</);
-    expect(src).toMatch(/const sealedBagOf = \(documentId: string\): SealedBag \| null => sealedMap\.bagOf\(documentId\)/);
+    // The face map, beneath the vessel's held bags: device documents by owner, then the held homes (the secret home rests under
+    // the vessel's key, never a face's), in the one order the node reads (`vesselHeldBagOf`).
+    // The vessel files through `browserDeviceFiling`, whose one reading is `vesselHeldBagOf`.
+    expect(src).toMatch(/const sealedBagOf = \(documentId: string\): SealedBag \| null => filing\.bagOf\(documentId\) \?\? sealedMap\.bagOf\(documentId\);/);
+    const filing = readFileSync(new URL("../../lararium-browser/src/browser-device-filing.ts", import.meta.url), "utf8");
+    expect(filing).toMatch(/bagOf: \(documentId\) => vesselHeldBagOf\(deviceDocs, secretHomes, opts\.litDevice\(\), documentId\) \?\? null/);
     expect(src).toMatch(/composeSealedRest<BrowserSaveSession>\(\{[\s\S]*?bagOf: sealedBagOf,[\s\S]*?sessionFace: \(\) => sealedCells\.face\(\),/);
     expect(src).not.toMatch(/\bwornAt\b/);
-    expect(src).toMatch(/const face = faceProofSubjectRef\(certificate\.scope as never\);/);
+    // The face reads by its subject at the session's anchor: a Nexus session's face-proof subject, a place session's place subject.
+    expect(src).toMatch(/const face = lift\.subject;/);
     expect(src).toMatch(/subject: face \}/);
     // `sealedCells.face` is set once on the lift and cleared on the lock, never from a dial.
     expect([...src.matchAll(/sealedCells\.face = /g)].length).toBe(2);

@@ -33,6 +33,7 @@
  *       own write refuses too, the plane's document holds neither name, and the sealed rows keep both.
  *       CONTROL: a clear still runs there, and removes a name an older vessel of the face left on the plane.
  */
+import { controlStoreOf } from "@lararium/mesh";
 import { seatSuiteWard } from "./support/scratch-custody-setup.js";
 // This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
 seatSuiteWard();
@@ -88,7 +89,7 @@ async function stand(door: (parsed: unknown, sock: Socket) => boolean, rest: Pla
   const claim: StoreClaim & { readonly holder: "vessel" } = await claimStore(dir, { holder: "vessel" });
   const front: UdsFront = serveUdsFront({ claim, onFrame: door });
   front.attach(makeUdsSeat({
-    daemonHandle, composite, claim, repo, timeoutMs: 2_000,
+    controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo, timeoutMs: 2_000,
     // The worker lands a verb's OUTPUT in its outcome, as a store verb's reactor does.
     placeVerb: (o) => {
       const p = o as Placed;

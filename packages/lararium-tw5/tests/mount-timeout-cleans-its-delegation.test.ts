@@ -8,6 +8,7 @@
  * AbortSignal that aborts once the ask settles, and the book drops an aborted entry. CONTROL: an answered ask leaves
  * the book empty by its own settle, and an ask still awaiting its answer holds one entry.
  */
+import { memoryControlStore } from "./control-store-fixture.js";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { CompositeStore, DAEMON_BAG_ID, OUTCOME_URI_PREFIX, type CapabilityVerifier } from "@lararium/mesh";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
@@ -77,7 +78,7 @@ describe("a mount the gate waits on ends on main's answer, never on a clock", ()
     const routed: string[] = [];
     let answerMount: (answer: Record<string, unknown>) => void = () => {};
     const dispatcher = new VerbDispatcher({
-      daemonVm: new FakeWiki() as unknown as TW5Engine, daemon, registry: new VerbTable(), verifier, localOf: () => true,
+      daemonVm: new FakeWiki() as unknown as TW5Engine, daemon, control: memoryControlStore(), registry: new VerbTable(), verifier, localOf: () => true,
       routeFn: (inv, signal) => {
         routed.push(inv.action);
         if (inv.action !== "wiki-switch") return Promise.resolve({ landed: true });

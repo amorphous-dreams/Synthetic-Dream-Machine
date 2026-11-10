@@ -15,6 +15,8 @@ import { KeyhiveProvider, runFaceJoin, type FaceJoinContext } from "@lararium/ke
 import { buildDeviceDelegation } from "@lararium/mesh";
 import { tiddlerText } from "@lararium/mesh";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { withMemorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
+import { memorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 
 const noopStore = { put: async () => {}, list: async () => [] };
 const seedOf = (n: number): Uint8Array => new Uint8Array(32).fill(n);
@@ -266,9 +268,9 @@ describe("the hearth's door — kept where a joinee always reads it", () => {
     const founderRepo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
     const founderSeed = new Uint8Array(32).fill(81), signerSeed = new Uint8Array(32).fill(82);
     const atomSeed = new Uint8Array(32).fill(83), joineeAtom = new Uint8Array(32).fill(72);
-    const founder = await foundThePlace({ repo: founderRepo, vesselSeed: founderSeed, hearthTrueName: HEARTH });
+    const founder = withMemorySecretHome(await foundThePlace({ repo: founderRepo, vesselSeed: founderSeed, hearthTrueName: HEARTH }), founderRepo);
     const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
-      repo: founderRepo, daemonHandle: founder.daemonHandle, placeVerifyingKey: key(founderSeed), vesselDisplayName: "founder",
+      repo: founderRepo, daemonHandle: founder.daemonHandle, secretHandle: founder.secretHandle, secretRest: { assertSealed: async () => true }, placeVerifyingKey: key(founderSeed), vesselDisplayName: "founder",
       binding: { mode: "self-stood", signerSeed }, hearthTrueName: HEARTH, nexusPubkey: key(founderSeed), atomSeed,
     });
     const board = await materializeSharedLarDoc(founderRepo, personaKelBoardDocUrl(key(founderSeed)), "board:persona-kel");
@@ -280,7 +282,7 @@ describe("the hearth's door — kept where a joinee always reads it", () => {
       meshCabalDocIdHex: face.meshCabalDocIdHex, syncUrl: null, hearthDaemonUrl: HEARTH_DOOR, personaUrl: face.personaUrl,
     });
     const repo = new Repo({});
-    const applied = await runApplyAdmitPayload({ repo, atomSeed: joineeAtom, daemonHandle: seedDaemonDoc(repo), vesselDisplayName: "a joining leaf", nexusPubkey: key(founderSeed), payload });
+    const applied = await runApplyAdmitPayload({ repo, atomSeed: joineeAtom, daemonHandle: seedDaemonDoc(repo), ...memorySecretHome(repo), vesselDisplayName: "a joining leaf", nexusPubkey: key(founderSeed), payload });
 
     // The RESULT carries it into this boot's bootstrap …
     expect(applied.hearthDaemonUrl).toBe(HEARTH_DOOR);

@@ -618,7 +618,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
     vesselId:   selfKey,
     nexus:      raiseNexus ?? "",
     floor:      standing,
-    leaseEpoch: () => (raiseNexus ? leaseEpochOnBoard(herm.daemon.daemonHandle, raiseNexus, leaseLineageOfNexus(sealHome, raiseNexus)) : null),
+    leaseEpoch: () => (raiseNexus ? leaseEpochOnBoard(herm.daemon.controlHandle, raiseNexus, leaseLineageOfNexus(sealHome, raiseNexus)) : null),
     readings:   raiseReadings,
     verify:     verifyNymSignature,
     nonce:      () => randomBytes(32).toString("hex"),
@@ -666,8 +666,8 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
   console.log(`[herm] phase → daemon-ea`);
   publishStanding(storageDir, standing, faceLit);
   front.attach(makeUdsSeat({
-    daemonHandle: herm.daemon.daemonHandle,
-    composite:    herm.daemon.composite,
+    controlHandle: herm.daemon.controlHandle,
+    control:      herm.daemon.control,
     placeVerb:    (o) => herm.daemon.placeVerb(o),
     claim:        floor.storeClaim,
     repo:         herm.repo,
@@ -802,8 +802,8 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   // answers: a marker that outlives what it names repeats the fault this vessel already met.
   publishStanding(storageDir, standing, faceLit);
   front.attach(makeUdsSeat({
-    daemonHandle: result.daemon.daemonHandle,
-    composite:    result.daemon.composite,
+    controlHandle: result.daemon.controlHandle,
+    control:      result.daemon.control,
     placeVerb:    (o) => result.daemon.placeVerb(o),
     retireAsk:    (requestId) => result.daemon.retireAsk(requestId),
     claim:        floor.storeClaim,

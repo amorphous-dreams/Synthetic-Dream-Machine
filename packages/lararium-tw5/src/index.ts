@@ -142,6 +142,7 @@ export { parseTaploFields, patchTomlKey, lintToml } from "./toml-ast.js";
 export { recipeUri } from "@lararium/mesh/lar-uris";
 
 export type { IslandContext, IslandBehavior, WritableOutcome } from "./island-context.js";
+export { controlOf } from "./island-context.js";
 export { composeIsland } from "./island-caps.js";
 export type { IslandCap, CapTeardown } from "./island-caps.js";
 export { hasCapture, TELEMETRY_FRAME } from "./capture/has-capture.js";
@@ -163,7 +164,7 @@ export { seedDaemonFlowTiddlers } from "./daemon-flow-tiddlers.js";
 export { seedDaemonProtocol } from "./daemon-protocol-seed.js";
 export { seedDaemonRosterTiddlers, DAEMON_ROSTER_TIDDLERS, ROSTER_STATE_TITLE, LIFECYCLE_APPROVE_CAP } from "./daemon-roster-tiddlers.js";
 export { seedDaemonIntentTiddlers, DAEMON_INTENT_TIDDLERS, makeIntentViewReactor, INTENT_VIEW_CAP, INTENT_STATE_TITLE, INTENT_PANE_TITLE } from "./daemon-intent-tiddlers.js";
-export { SEED_OFF_DISK } from "./daemon-ui-tiddlers.js";
+export { seedShadows, DAEMON_SEED_PLUGIN_PREFIX } from "./daemon-ui-tiddlers.js";
 
 export { IslandKernel } from "./island-kernel.js";
 export { runSovereignKernel } from "./sovereign-kernel.js";

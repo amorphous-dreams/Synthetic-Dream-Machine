@@ -1,10 +1,11 @@
 /**
- * working-layer-host-composite — the host's composite writes into the SAME working document the worker attached.
+ * working-layer-host-composite — the host's composite mounts the SAME working document the worker attached, and the
+ * receipt ledger rests in neither.
  *
  * The worker attaches the daemon wiki's working layer through the real `operatorDaemonOptions` boot; the host
  * composite then mounts the document the worker's own binding resolver names. A receipt fact recorded through a
- * real FactLedger over the host composite lands in that document and in neither the daemon bag nor the persona
- * layer, with and without a persona layer on the host.
+ * real FactLedger over the host's CONTROL store lands in the control document and in neither that working document,
+ * the daemon bag nor the persona layer, with and without a persona layer on the host.
  */
 import { afterEach, describe, expect, test } from "vitest";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
@@ -21,7 +22,7 @@ const teardown: Array<() => void> = [];
 afterEach(() => { while (teardown.length) { try { teardown.pop()!(); } catch { /* best-effort */ } } });
 
 describe("daemon VM host composite working binding", () => {
-  test.each([false, true])("a receipt fact recorded on the host composite lands in the worker's working document (persona layer on the host: %s)", async (seated) => {
+  test.each([false, true])("a receipt fact recorded on the host's control store lands in the control document, never the worker's working document (persona layer on the host: %s)", async (seated) => {
     const st = await standFoundedIsland(teardown);
     const opts = operatorDaemonOptions({ daemonAuth: st.daemonAuth } as never, { dyadReading: () => "clear" });
     const kh = await opts.verifierFactory!(st.ctx);
@@ -49,7 +50,7 @@ describe("daemon VM host composite working binding", () => {
       },
     };
     const core = openDaemonVmCore(host, {
-      repo: st.vesselRepo, daemonHandle: st.daemonHandle,
+      repo: st.vesselRepo, daemonHandle: st.daemonHandle, controlHandle: st.vesselRepo.create<LarDoc>(emptyLarDoc()),
       ...(personaHandle ? { personaHandle, personaBagId: "lar:///ha.ka.ba/personas/test" } : {}),
       recipe: { wikiSlug: "daemon" }, grants: { islandUrl: st.daemonHandle.url }, coreHash: null,
       workerScriptUrl: new URL("file:///unused-fake-worker"),
@@ -70,12 +71,13 @@ describe("daemon VM host composite working binding", () => {
     expect(core.composite.defaultWritableBagId()).toBe(working);
     expect(answer.workingUrl, "the host named a different document than the worker attached").toBe(workerHandle.url);
 
-    const ledger = new FactLedger(core.composite, st.vesselRepo, 8, 1);
+    const ledger = new FactLedger(core.control, st.vesselRepo, 8, 1);
     const requestId = `host-fact-${seated}`;
     await ledger.arbitrate(requestId, "digest-1");
     const title = `${RECEIPT_FACT_URI_PREFIX}${requestId}`;
     const hostWorking = await st.vesselRepo.find<LarDoc>(answer.workingUrl as AutomergeUrl);
-    expect(hostWorking.doc()?.tiddlers[title], "the receipt fact is absent from the working document").toBeDefined();
+    expect(core.controlHandle.doc()?.tiddlers[title], "the receipt fact rests in the control document").toBeDefined();
+    expect(hostWorking.doc()?.tiddlers[title], "the receipt fact reached the mirrored working document").toBeUndefined();
     expect(st.daemonHandle.doc()?.tiddlers[title]).toBeUndefined();
     expect(personaHandle?.doc()?.tiddlers[title]).toBeUndefined();
     expect(await ledger.get(requestId)).toMatchObject({ requestId });

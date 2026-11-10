@@ -23,9 +23,9 @@ const PLANE_B = generateAutomergeUrl();                        // face B's circl
 const ORDINARY = generateAutomergeUrl();                       // an ordinary wiki canon
 const idOf = (url: string): string => url.replace(/^automerge:/, "");
 
-function rig(refused: ((wikiUrl: string) => string | null) | undefined) {
+function rig(refused: ((wikiUrl: string) => string | null) | undefined, privateSynced = false) {
   const catalog = { tiddlers: {
-    [wikiBagUri("borrowed")]: storedLarRecord(wikiBagUri("borrowed"), { text: PLANE_B }, "alias"),
+    [wikiBagUri("borrowed")]: storedLarRecord(wikiBagUri("borrowed"), { text: PLANE_B, ...(privateSynced ? { kind: "private-synced" } : {}) }, "alias"),
     [wikiBagUri("ordinary")]: storedLarRecord(wikiBagUri("ordinary"), { text: ORDINARY }, "lararium-seed"),
   } } as unknown as LarDoc;
   const taught: Array<{ wikiId: string; wikiUrl: unknown }> = [];
@@ -74,4 +74,11 @@ test("a wiki designates its draft for a held recovery grant alongside its workin
   expect(spec.recipe.mirrorBags).toContain(wikiBagUri("notes"));
   expect(spec.recipe.mirrorBags).not.toContain(wikiSlotUri("notes", "personal"));
   expect(spec.recipe.mirrorBags).toContain(wikiSlotUri("notes", "draft"));
+});
+
+test("private-synced catalog placement refuses a cold wiki mount", async () => {
+  const { cap, taught } = rig(undefined, true);
+  const res = await cap.ensureActive("borrowed").catch((e: unknown) => ({ ok: false, cause: String(e) }));
+  expect(res).toMatchObject({ ok: false, cause: "no-such-bag" });
+  expect(taught.map((t) => t.wikiUrl)).not.toContain(PLANE_B);
 });

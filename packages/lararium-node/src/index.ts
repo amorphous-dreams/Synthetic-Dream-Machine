@@ -187,8 +187,8 @@ export type { NodeReadiness, ReadinessState, ReadinessFace } from "./readiness-f
 
 export { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "./open-node-vessel.js";
 export { SyncedTree, contentHash, syncedTreeKey, syncedTreeDir, type SyncedBase } from "./synced-tree.js";
-export { bagsFileToUri, wikisFileToUri, mirrorDirFileToUri, isObserveProjectionPath, daemonObserveRoot, OBSERVE_DIR, isTempLayerInternalTitle, TEMP_LAYER_DIR,
-  daemonFaceFolder, isDaemonFaceFolder, daemonCanonMirror, isDaemonCanonWithheld, kahuaFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug } from "./bag-paths.js";
+export { bagsFileToUri, wikisFileToUri, mirrorDirFileToUri, isTempLayerInternalTitle, TEMP_LAYER_DIR,
+  daemonFaceFolder, isDaemonFaceFolder, kahuaFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug } from "./bag-paths.js";
 export { parseTidCarrier, readBackTempCarriers, TempLayerHousekeeper, tempAuditPath, TEMP_ORPHAN_SETTLE_MS, HOUSEKEEPING_PERIOD_MS } from "./temp-layer.js";
 export type { TempHousekeepingClock, TempHousekeepingPolicy, TempAuditLine, TempRecordState, TidFields } from "./temp-layer.js";
 
@@ -414,6 +414,8 @@ export type { HermRelayPort } from "./herm-relay-port.js";
 // The CARRIAGE relay capability: the herm's relay port and the DHT-free bag-tracker, one service.
 export { startCarriageRelay } from "./carriage-relay.js";
 export type { CarriageRelay } from "./carriage-relay.js";
+export { fileCarriageJournal, CARRIAGE_LOG_FILE } from "./carriage-log-file.js";
+export { CARRIED_ROUTE } from "./herm-relay-port.js";
 // The immune keel's RE-KEY (the Nexus or realm charter quorum advances its signed lease) + RE-SHARE
 // (list held sealed bodies to re-announce) teeth at the Herm's own tier — the `nexus-rekey` / `nexus-reshare` daemon verbs' cores.
 export { rollQuorumLeaseOnBoard, rollSignedLeaseEpochOnBoard } from "./lease-rekey.js";

@@ -86,8 +86,8 @@ function makeHolder(repo: Repo, options: {
   leafAidOf?: (peerId: string) => string | null; dialedHearth?: () => { readonly pinned: boolean; readonly aid: string | null }; charter?: RealmCharterConsult;
 } = {}) {
   const registry = repo.create<LarDoc>(emptyLarDoc());
-  const crossroadsHandle = repo.create<LarDoc>(emptyLarDoc());
-  const holder = makeRealmPlane({ repo, registry, crossroadsHandle, membership: options.membership ?? noMembers,
+  const announceHandle = repo.create<LarDoc>(emptyLarDoc());
+  const holder = makeRealmPlane({ repo, registry, announceHandle, membership: options.membership ?? noMembers,
     base: options.base ?? denyAll,
     // A bare name reads as a realm the ledger notes under no Nexus yet.
     ...(options.realms ? { realms: async () => (await options.realms!()).map((r) => typeof r === "string" ? { realm: r, nexus: null } : r) } : {}),
@@ -99,7 +99,7 @@ function makeHolder(repo: Repo, options: {
     ...(options.charter ? { charter: options.charter } : {}),
   });
   catalogs.set(holder, registry);
-  return { holder, registry, crossroadsHandle };
+  return { holder, registry, announceHandle };
 }
 async function bag(holder: ReturnType<typeof makeHolder>["holder"], args: Record<string, unknown>, who: Actor, docs: ReadonlyArray<[string, string]>) {
   return runRealmBag({ plane: holder as RealmDoorPlanes, args, vault: who.vault, registryDocs: () => [registryDoc(docs)] });

@@ -12,6 +12,8 @@
  *                 wallet's blind tokens and the hearth-signed grant over a per-Nexus public leaf: a walk at that hearth, no
  *                 face secret. A carry receipt (a document key the face's carry secret derives) would read D, and the walk
  *                 store refuses one by name (`walk-receipt-unhomed`, `browser-walk.ts`).
+ *   `secret-home` S: the vessel's secret home's address, its document id and the held key its rest seals it under
+ *                 (`browser-secret-home.ts`). The home holds this vessel's group-secret seals, dyads and Keyhive cap events.
  * THE FACE ROWS rest under their own face's tree (`browser-face-custody.ts`, `face-sealed/<fcid>/<row>`), each named by the
  * face's PersonaGroup and never by a handle index: `veil-archive-g<G>`, `face-atom/<G>`, `face-anchor/<G>`,
  * `face-address-secret/<G>`, `vessel-face-tag/<G>`, `fleet-join-pending/<G>`, `vessel-face-key/<G>|<nexus>|<faceKey>`,
@@ -64,7 +66,7 @@
 import {
   bindSlot, unbindSlot, openTreeKey, nobleKdf, encodeSlotTree, decodeSlotTree, confirmHeldPaper, mintTreeKey, treeKeyEquals,
   writeSealedCarrier, openSealedCarrier, removeSealedCarrier, commitSlotTree, settleRotation, SEALING_SUFFIX, ROTATING_SUFFIX,
-  constantTimeBytesEqual, isWalkRecord, type CustodyIo, type SealedCarrier, type Credential, type PinSpec, type SlotTree, type TreeKey,
+  constantTimeBytesEqual, isWalkRecord, VESSEL_LOCKED, type CustodyIo, type SealedCarrier, type Credential, type PinSpec, type SlotTree, type TreeKey,
 } from "@lararium/mesh";
 import { openVesselIdb } from "./browser-vessel-identity.js";
 import { clearCustodyQuestion } from "@lararium/mesh/lar-uris";
@@ -76,7 +78,7 @@ export const SEALED_ROW_PREFIX = "sealed/";
 export const KEYSTORE_CARRIER_PREFIX = "browser-keystore/";
 
 const DEVICE_SEED_ROW = "vessel-key";
-const CUSTODY_ROW = /^(?:vessel-key|persona-root-roster|walk\/.+)$/;
+const CUSTODY_ROW = /^(?:vessel-key|persona-root-roster|secret-home|walk\/.+)$/;
 
 /** Is `row` one the place tree wraps: the place seed, the ward's public roster or a walk. */
 export function isCustodyRow(row: string): boolean { return CUSTODY_ROW.test(row); }
@@ -168,6 +170,9 @@ export class BrowserCustodyRefused extends Error {
   constructor(readonly reading: BrowserCustodyRefusalReading, readonly idbName: string, readonly row?: string, detail?: string) {
     super(`[browser-custody] ${reading} — "${idbName}"${row ? ` row ${row}` : ""}: ${SAYS[reading]}${detail ? ` (${detail})` : ""}`);
   }
+  /** THE NAME A CALLER READS, one across platforms: a sealed keystore this page holds no unlock for refuses `vessel-locked`,
+   *  the name a node vessel's control acts and the CLI's direct holder answer; every other reading names itself. */
+  get refusal(): string { return this.reading === "sealed-locked" ? VESSEL_LOCKED : this.reading; }
 }
 
 // ── the page's unlocks ──────────────────────────────────────────────────────────────────────────────

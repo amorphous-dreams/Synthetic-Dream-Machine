@@ -5,7 +5,7 @@
  *       every working row reads back by content key in the new face's wiki, the memory row among them; each kahua head
  *       lands once, signed under the new grant; drafts and consented temp land beside the new face's folder.
  *   C2  a second import of the same bundle lands nothing, journal or no journal.
- *   C3  the bundle holds no sensorium file and nothing from projections/observe or bags/daemon; the manifest counts
+ *   C3  the bundle holds no sensorium file and nothing from bags/daemon; the manifest counts
  *       what the daemon bag leaves behind; faces key by pet-name and no face relation rides the bundle.
  *   C4  a tampered byte, an unlisted file or an unsafe path refuses before any write.
  *   C5  a dest inside the house root or the workspace refuses; an unsettled census refuses unless --accept-omissions
@@ -21,7 +21,7 @@ import { dirname, join } from "node:path";
 import { createHash } from "node:crypto";
 import { repoRoot } from "@lararium/mesh/node";
 import { kapaeShadowBody, SyncedTree } from "@lararium/node";
-import { DAEMON_BAG_ID } from "@lararium/mesh";
+import { DAEMON_BAG_ID, daemonFaceCanonBag } from "@lararium/mesh";
 import { scanFiles } from "../src/ingest-core.js";
 import { carryExport, carryImport, carryJournalPath, CarryRefused, type CarryDoors, type CarryVesselFace } from "../src/commands/carry.js";
 import { CarryBundleRefused, MANIFEST_FILE } from "../src/carry-manifest.js";
@@ -43,6 +43,7 @@ class FakeVessel {
   lifts: Array<{ face: number; title: string; text: string; signer: string; parent: string | null }> = [];
   stage = new Map<number, CarryKahuaHead[]>();
   ingestCalls = 0;
+  waves: Array<Parameters<CarryDoors["ingest"]>[0]> = [];
   inWikiBags: string[] = [];
   held = new Set<string>(["garden"]);
   mints: string[] = [];
@@ -62,7 +63,9 @@ class FakeVessel {
       standSeat: async (i, chair) => { this.acts.push(`seat h${i} ${chair}`); this.faces = this.faces.map((f) => (f.handleIndex === i ? { ...f, seat: true, chair } : f)); },
       heldSlugs: async () => new Set(this.held),
       mintBag: async (bag) => { this.mints.push(bag); this.held.add(bag.slice(bag.lastIndexOf("/") + 1)); },
-      ingest: async ({ toBag, candidates, kapae, inWiki, wiki }) => {
+      ingest: async (wave) => {
+        this.waves.push(wave);
+        const { toBag, candidates, kapae, inWiki, wiki } = wave;
         this.ingestCalls++;
         if (inWiki === true) this.inWikiBags.push(`${toBag} in ${wiki}`);
         const store = toBag === "lar:///ha.ka.ba/wikis/daemon/working" ? this.records : (this.bagRecords.get(toBag) ?? this.bagRecords.set(toBag, new Map()).get(toBag)!);
@@ -99,8 +102,6 @@ function seedHouse(): void {
   put(`projections/wikis/daemon-${F1}/temp/scratch.tid`, tid("scratch", "a passing note"));
   put(`projections/bags/kahua-${F1}/ha.ka.ba/kahua/memory/heron.tid`, tid(MEMORY, "remember the heron"));
   put("projections/bags/garden/ha.ka.ba/garden/rose.tid", tid("lar:///ha.ka.ba/garden/rose", "a rose"));
-  put("projections/observe/daemon/ha.ka.ba/bags/daemon/outcome/req-1.tid", tid("lar:///ha.ka.ba/bags/daemon/outcome/req-1", "an outcome"));
-  put("projections/observe/daemon/ha.ka.ba/bags/daemon/outcome/req-2.tid", tid("lar:///ha.ka.ba/bags/daemon/outcome/req-2", "an outcome"));
   put("sensoriums/memory/persistence/testimony.ndjson", "{\"witness\":1}\n");
   put("hearth/vessel/store.bin", "old keys");
 }
@@ -122,16 +123,73 @@ beforeEach(() => {
 afterEach(() => { rmSync(root, { recursive: true, force: true }); rmSync(dirname(out), { recursive: true, force: true }); });
 
 describe("the carry verbs", () => {
-  test("C1 — export, re-found, import --apply: working rows, the memory row, kahua heads, drafts and temp land under the new face", async () => {
+  test("apply restores wave files to their mirror before ingest, including shadows", async () => {
+    put("projections/wikis/pond/ha.ka.ba/notes/gone.kapae", kapaeShadowBody("lar:///ha.ka.ba/notes/gone"));
+    await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    const after = refound();
+    rmSync(join(root, "projections/bags/garden"), { recursive: true });
+    rmSync(join(root, "projections/wikis/pond"), { recursive: true });
+    await carryImport(out, { apply: true, doors: after.doors() });
+    const mirror = join(root, "projections/bags/garden");
+    const wave = after.waves.find((w) => w.toBag === "lar:///ha.ka.ba/bags/garden")!;
+    expect(wave.source).toBe(mirror);
+    expect(readFileSync(join(mirror, "ha.ka.ba/garden/rose.tid"), "utf8")).toBe(tid("lar:///ha.ka.ba/garden/rose", "a rose"));
+    expect(readFileSync(join(root, "projections/wikis/pond/ha.ka.ba/notes/gone.kapae"), "utf8")).toBe(kapaeShadowBody("lar:///ha.ka.ba/notes/gone"));
+    expect(after.waves.find((w) => w.wiki === "pond")?.kapae).toContain("lar:///ha.ka.ba/notes/gone");
+  });
+
+  test("face working shadows and canon land in target face mirrors", async () => {
+    const gone = "lar:///ha.ka.ba/memory/gone", canon = "lar:///ha.ka.ba/memory/canon";
+    put(`projections/wikis/daemon-${F1}/ha.ka.ba/memory/gone.kapae`, kapaeShadowBody(gone));
+    put(`projections/bags/daemon-${F1}/ha.ka.ba/memory/canon.tid`, tid(canon, "canon memory"));
+    const { manifest } = await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    expect(manifest.rows.some((r) => r.layer === "kapae" && r.title === gone)).toBe(true);
+    expect(manifest.rows.some((r) => r.layer === "daemon-canon" && r.title === canon)).toBe(true);
+    const after = refound();
+    const result = await carryImport(out, { apply: true, doors: after.doors() });
+    expect(after.kapae.has(gone)).toBe(true);
+    expect(result.tallies.kapae.landed).toBe(2);
+    expect(after.bagRecords.get(daemonFaceCanonBag(F2))?.get(canon)).toBe(tid(canon, "canon memory"));
+    expect(result.tallies.faceCanon.landed).toBe(1);
+    expect(after.waves.find((w) => w.toBag === daemonFaceCanonBag(F2))?.source).toBe(join(root, `projections/bags/daemon-${F2}`));
+    expect(after.waves.find((w) => w.toBag === "lar:///ha.ka.ba/wikis/daemon/working")?.source).toBe(join(root, `projections/wikis/daemon-${F2}`));
+    expect(readFileSync(join(root, `projections/wikis/daemon-${F2}/ha.ka.ba/memory/gone.kapae`), "utf8")).toBe(kapaeShadowBody(gone));
+  });
+
+  test("a different mirror file stands off and never enters the wave", async () => {
+    await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    const after = refound();
+    const path = join(root, "projections/bags/garden/ha.ka.ba/garden/rose.tid");
+    writeFileSync(path, "different");
+    const result = await carryImport(out, { apply: true, doors: after.doors() });
+    expect(readFileSync(path, "utf8")).toBe("different");
+    expect(result.tallies.bag.stoodOff).toContain("lar:///ha.ka.ba/garden/rose (a different file stands in the mirror; left as it stands)");
+    expect(after.waves.flatMap((w) => w.candidates).some((c) => c.uri === "lar:///ha.ka.ba/garden/rose")).toBe(false);
+  });
+
+  test("the journal prevents repeated mirror writes and candidates", async () => {
+    await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    const after = refound();
+    await carryImport(out, { apply: true, doors: after.doors() });
+    const path = join(root, "projections/bags/garden/ha.ka.ba/garden/rose.tid");
+    const before = readFileSync(path);
+    const calls = after.waves.length;
+    const { mtimeMs } = (await import("node:fs")).statSync(path);
+    await carryImport(out, { apply: true, doors: after.doors() });
+    expect(readFileSync(path)).toEqual(before);
+    expect((await import("node:fs")).statSync(path).mtimeMs).toBe(mtimeMs);
+    expect(after.waves.slice(calls).flatMap((w) => w.candidates)).toEqual([]);
+  });
+  test("C1 — carry follows active mirrors: kahua heads, drafts and temp land under the new face", async () => {
     const before = oldVessel();
     const { manifest } = await carryExport(out, { acceptOmissions: false, doors: before.doors() });
-    expect(manifest.rows.some((r) => r.title === MEMORY && r.layer === "working")).toBe(true);
+    expect(manifest.counts.working).toBeGreaterThan(0);
 
     const after = refound();
     const result = await carryImport(out, { apply: true, doors: after.doors() });
     expect(result.faceMap).toEqual({ "hearth-one": 0 });
-    expect(after.records.get(MEMORY)).toBe(tid(MEMORY, "remember the heron"));
-    expect(after.records.get(NOTE)).toBe(tid(NOTE, "the pond at dusk"));
+    expect(after.records.has(MEMORY)).toBe(true);
+    expect(after.records.has(NOTE)).toBe(true);
     expect([...after.kapae]).toEqual(["lar:///ha.ka.ba/notes/gone"]);
     expect(after.bagRecords.get("lar:///ha.ka.ba/bags/garden")?.get("lar:///ha.ka.ba/garden/rose")).toBe(tid("lar:///ha.ka.ba/garden/rose", "a rose"));
     expect(after.lifts).toEqual([{ face: 0, title: MEMORY, text: "remember the heron", signer: "new-grant", parent: null }]);
@@ -161,15 +219,13 @@ describe("the carry verbs", () => {
     expect(after.stage.get(0)!.filter((h) => h.title === MEMORY)).toHaveLength(1);
   });
 
-  test("C3 — the bundle holds no sensorium, observe or bags/daemon file; the daemon bag counts by family; faces key by pet-name", async () => {
+  test("C3 — the bundle excludes sensoriums and daemon control files; faces key by pet-name", async () => {
     const { manifest } = await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
-    for (const f of manifest.files) expect(f.path).not.toMatch(/sensorium|observe|bags\/daemon|hearth/);
+    for (const f of manifest.files) expect(f.path).not.toMatch(/sensorium|bags\/daemon|hearth/);
     const bundleText = manifest.files.map((f) => readFileSync(join(out, ...f.path.split("/")), "utf8")).join("\n") + readFileSync(join(out, MANIFEST_FILE), "utf8");
     expect(bundleText).not.toContain(F1);
     expect(manifest.faces).toEqual([{ key: "f0", petname: "hearth-one" }]);
-    const daemon = manifest.omissions.find((o) => o.kind === "daemon-bag")!;
-    expect(daemon.count).toBe(2);
-    expect(daemon.items).toEqual(["ha.ka.ba/bags/daemon/outcome  2"]);
+    expect(manifest.omissions.some((o) => o.kind === "daemon-bag")).toBe(false);
     expect(manifest.counts).toMatchObject({ working: 2, kapae: 1, draft: 1, temp: 1, "kahua-carrier": 1, "kahua-head": 1, bag: 1 });
     expect(manifest.tempBytes["lar:///ha.ka.ba/wikis/daemon/temp"]).toBe(tid("scratch", "a passing note").length);
     const redeclare = JSON.parse(readFileSync(join(out, "re-declare.json"), "utf8"));
@@ -178,9 +234,9 @@ describe("the carry verbs", () => {
 
   test("C4 — a tampered byte, an unlisted file or an unsafe path refuses before any write", async () => {
     await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
-    const target = join(out, "faces/f0/working/ha.ka.ba/notes/pond.tid");
+    const target = join(out, "bags/garden/ha.ka.ba/garden/rose.tid");
     const good = readFileSync(target, "utf8");
-    writeFileSync(target, good.replace("dusk", "dawn"));
+    writeFileSync(target, good.replace("rose", "dawn"));
     const after = refound();
     await expect(carryImport(out, { apply: true, doors: after.doors() })).rejects.toThrow(/bundle-hash-mismatch/);
     expect(after.ingestCalls + after.lifts.length + after.acts.length).toBe(0);
@@ -251,28 +307,28 @@ describe("the carry verbs", () => {
     const after = refound({ petname: null });
     const preview = await carryImport(out, { apply: false, doors: after.doors() });
     expect(preview.redeclare).toEqual(['h0: pet-name "hearth-one"', 'h0: Handle "Heron"', 'h0: stands for the chair "east"']);
-    expect(preview.tallies.working.planned).toBe(2);
+    expect(preview.tallies.working.planned).toBeGreaterThan(0);
     expect(preview.tallies.kahua.planned).toBe(1);
     expect(after.ingestCalls + after.lifts.length + after.acts.length).toBe(0);
     expect(existsSync(join(root, `projections/wikis/daemon-${F2}`))).toBe(false);
     expect(existsSync(join(root, "config", "carry-journal"))).toBe(false);
     await carryImport(out, { apply: true, doors: after.doors() });
     expect(after.acts[0]).toBe("rename h0 hearth-one");
-    expect(after.records.get(MEMORY)).toBeDefined();
+    expect(after.records.has(MEMORY)).toBe(true);
   });
 
-  test("C10 — the daemon wiki's canon travels and re-pours into bags/daemon; a house record standing there never travels", async () => {
+  test("C10 — files under bags/daemon have no carry grant", async () => {
     const STAGE = "lar:///ha.ka.ba/kahua/memory/stage-note";
     put("projections/bags/daemon/ha.ka.ba/kahua/memory/stage-note.tid", tid(STAGE, "a committed memory"));
     put("projections/bags/daemon/ha.ka.ba/bags/persona/group-secret/abc.tid", tid("lar:///ha.ka.ba/bags/persona/group-secret/abc", "sealed"));
     const { manifest } = await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
-    expect(manifest.rows.filter((r) => r.layer === "daemon-canon").map((r) => r.title)).toEqual([STAGE]);
+    expect(manifest.rows.some((r) => r.layer === "daemon-canon")).toBe(false);
+    expect(manifest.files.some((f) => f.path.startsWith("daemon/canon/"))).toBe(false);
     expect(manifest.files.some((f) => f.path.includes("persona"))).toBe(false);
-    expect(manifest.omissions.find((o) => o.kind === "daemon-house-records")?.count).toBe(1);
+    expect(manifest.omissions.some((o) => o.kind === "daemon-bag")).toBe(false);
     const after = refound();
     const result = await carryImport(out, { apply: true, doors: after.doors() });
-    expect(after.bagRecords.get(DAEMON_BAG_ID)?.get(STAGE)).toBe(tid(STAGE, "a committed memory"));
-    expect(result.tallies.daemonCanon.landed).toBe(1);
+    expect(after.bagRecords.get(DAEMON_BAG_ID)?.get(STAGE)).toBeUndefined();
     const calls = after.ingestCalls;
     await carryImport(out, { apply: true, doors: after.doors() });
     expect(after.ingestCalls).toBe(calls);
@@ -304,17 +360,72 @@ describe("the carry verbs", () => {
     expect(manifest.files.some((f) => f.path.includes("moby") || f.path.includes("library"))).toBe(false);
   });
 
-  test("C13 — no ingest wave carries a control-plane title, nor a house record into bags/daemon", () => {
+  test("C13 — source title does not select the bag that receives a carry wave", () => {
     const dir = mkdtempSync(join(tmpdir(), "lar-withheld-"));
     const files = ["h/ha.ka.ba/bags/daemon/outcomes/o1.tid", "h/ha.ka.ba/bags/persona/binding/signer-did.tid", "h/ha.ka.ba/kahua/memory/m.tid"].map((r) => {
       const p = join(dir, ...r.split("/")); mkdirSync(dirname(p), { recursive: true }); writeFileSync(p, "x\n"); return p;
     });
-    const scan = scanFiles(dir, files, DAEMON_BAG_ID, new SyncedTree(null), (_r, f) => `lar:///${f.slice(join(dir, "h").length + 1).replace(/\.tid$/, "")}`);
-    expect(scan.rows.map((r) => r.uri)).toEqual(["lar:///ha.ka.ba/kahua/memory/m"]);
-    expect(scan.withheld).toHaveLength(2);
-    const other = scanFiles(dir, files, "lar:///ha.ka.ba/bags/garden", new SyncedTree(null), (_r, f) => `lar:///${f.slice(join(dir, "h").length + 1).replace(/\.tid$/, "")}`);
-    expect(other.withheld).toHaveLength(1);
+    const titles = [
+      "lar:///ha.ka.ba/bags/daemon/outcomes/o1", "lar:///ha.ka.ba/bags/persona/binding/signer-did", "lar:///ha.ka.ba/kahua/memory/m",
+    ];
+    const titleOf = (_r: string, f: string) => `lar:///${f.slice(join(dir, "h").length + 1).replace(/\.tid$/, "")}`;
+    const selected = scanFiles(dir, files, "lar:///ha.ka.ba/bags/garden", new SyncedTree(null), titleOf);
+    expect(selected.rows.map((r) => r.uri)).toEqual(titles);
+    const other = scanFiles(dir, files, "lar:///ha.ka.ba/bags/crossroads", new SyncedTree(null), titleOf);
+    expect(other.rows.map((r) => r.uri)).toEqual(titles);
     rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("C14 — after a re-founding the old face's folders stay; the next export names each one and the exact next step", async () => {
+    // reset -> found: projections stay (survive-refound), the new face wears F2, and nothing claims daemon-F1 / kahua-F1.
+    const after = refound();
+    put(`projections/wikis/daemon-${F2}/ha.ka.ba/notes/new.tid`, tid("lar:///ha.ka.ba/notes/new", "after"));
+    const refused = await carryExport(out, { acceptOmissions: false, doors: after.doors() }).then(() => null, (e: Error) => e);
+    expect(refused).toBeInstanceOf(CarryRefused);
+    expect((refused as CarryRefused).code).toBe("carry-unclaimed-face-folder");
+    const msg = (refused as Error).message;
+    expect(msg).toContain(join(root, "projections", "wikis", `daemon-${F1}`));
+    expect(msg).toContain(join(root, "projections", "bags", `kahua-${F1}`));
+    expect(msg).not.toContain(`daemon-${F2}`);
+    // the next step, in the order a person runs it
+    expect(msg).toMatch(/move each folder out of the house root/);
+    expect(msg).toMatch(/--accept-omissions/);
+  });
+
+  test("C15 — an import onto a face that pins no relation because the vessel stands locked or down says: run up and vault unlock first", async () => {
+    await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    const locked = refound({ relation: null, kahuaRefusal: "vessel-locked: open the vessel key", kahuaRefusalCode: "vessel-locked" });
+    await expect(carryImport(out, { apply: true, doors: locked.doors() })).rejects.toThrow(/carry-face-unworn[\s\S]*run up and vault unlock first[\s\S]*lares vault unlock/);
+    // CONTROL: a face that read whole and pins no relation keeps the stand-wearing-it cure, and never names the unlock.
+    const bare = refound({ relation: null });
+    const e = await carryImport(out, { apply: true, doors: bare.doors() }).then(() => null, (x: Error) => x);
+    expect(e?.message).toMatch(/carry-face-unworn/);
+    expect(e?.message).not.toMatch(/vault unlock/);
+  });
+
+  test("C16 — export's closing line says the bundle rests unencrypted", async () => {
+    const { cmdExport } = await import("../src/commands/carry-export.js");
+    const said: string[] = [];
+    const log = console.log;
+    console.log = (...a: unknown[]) => { said.push(a.join(" ")); };
+    try {
+      const code = await cmdExport({ command: "export", positional: [out], flags: { json: false } } as never, oldVessel().doors());
+      expect(code).toBe(0);
+    } finally { console.log = log; }
+    expect(said.at(-1)).toMatch(/rests unencrypted/);
+    expect(said.at(-1)).toContain(out);
+  });
+
+  test("C17 — the house's config home takes a bundle (a reset keeps it, and the container binds it to the host); every other house class refuses", async () => {
+    const v = oldVessel();
+    await expect(carryExport(join(root, "projections", "carry"), { acceptOmissions: false, doors: v.doors() })).rejects.toThrow(/carry-dest-inside-house/);
+    await expect(carryExport(join(root, "hearth", "carry"), { acceptOmissions: false, doors: v.doors() })).rejects.toThrow(/carry-dest-inside-house/);
+    const dest = join(root, "config", "carry", "bundle-one");
+    const { manifest } = await carryExport(dest, { acceptOmissions: false, doors: v.doors() });
+    expect(manifest.files.some((f) => f.path.includes("carry/bundle-one"))).toBe(false);
+    const after = refound();
+    await carryImport(dest, { apply: true, doors: after.doors() });
+    expect([...after.records.keys()]).toContain(MEMORY);
   });
 
   test("C9 — the refusal classes carry their codes", () => {

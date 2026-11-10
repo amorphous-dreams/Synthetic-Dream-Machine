@@ -28,7 +28,9 @@ describe.skipIf(wikiSkip)(`the promote panel as tiddlers${skipNote}`, () => {
     seedPromoteUiTiddlers(engine);
     const panel = engine.wiki.getTiddler(PROMOTE_PANEL_TITLE);
     expect(PROMOTE_PANEL_TITLE.startsWith("$:/lares/ui/promote")).toBe(true);
-    expect(panel?.fields["disk-projection"]).toBe("no");
+    expect(engine.wiki.isShadowTiddler(PROMOTE_PANEL_TITLE), "the panel rests in the shadow layer, never a store").toBe(true);
+    expect(engine.wiki.tiddlerExists(PROMOTE_PANEL_TITLE)).toBe(false);
+    expect(panel?.fields).not.toHaveProperty("disk-projection");
     expect(engine.wiki.getTiddler(PROMOTE_STATE_TITLE)).toBeUndefined();
     const out = await makePromoteStateReactor(engine)({ data: JSON.stringify(SNAPSHOT) } as never, undefined as never);
     expect(out).toMatchObject({ seeded: true });
@@ -79,7 +81,7 @@ describe.skipIf(wikiSkip)(`the promote panel as tiddlers${skipNote}`, () => {
   test("RED: the panel text names the six hand-only verbs and `promote-refresh`, and no other island verb; CONTROL: the six are exactly the mesh's list", async () => {
     const engine = await bootTestWiki();
     seedPromoteUiTiddlers(engine);
-    const all = engine.wiki.filterTiddlers("[prefix[$:/lares/ui/promote]]").map((t) => String(engine.wiki.getTiddler(t)!.fields["text"] ?? "")).join("\n");
+    const all = engine.wiki.filterTiddlers("[all[shadows+tiddlers]prefix[$:/lares/ui/promote]]").map((t) => String(engine.wiki.getTiddler(t)!.fields["text"] ?? "")).join("\n");
     const named = new Set([...all.matchAll(/verb="([a-z-]+)"/g)].map((m) => m[1]!));
     expect(named).toEqual(new Set([...PROMOTE_PANEL_VERBS, "promote-refresh"]));
     expect([...PROMOTE_PANEL_VERBS].sort()).toEqual(["kapae-lower", "kapae-raise", "promote-commit", "promote-drop", "promote-keep", "promote-orphan-drop"]);

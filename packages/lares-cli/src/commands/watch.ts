@@ -49,6 +49,7 @@ import { larRoot, larBagsDir, larWikisDir, larProjectionsDirOrNone, vesselDid } 
 const projectionsDirs = (): { projections?: string } => { const p = larProjectionsDirOrNone(); return p === undefined ? {} : { projections: p }; };
 import { openSyncedTree, scanFiles, fileToUriForSource, candidatesOf, deletionsOf, settleIngest, applyConfirmedRenames, standingAfterWave, standingAfterFault, standsClean, renamedSources, absentSources, NO_STANDING_ASKS, type ArmedDeletion, type StandingAsks } from "../ingest-core.js";
 import { askShore } from "../shore-core.js";
+import { OUTCOME_URI_PREFIX } from "@lararium/mesh";
 
 const DEFAULT_DEBOUNCE_MS = 400;   // twillm's field-tested trailing window
 const COOKIE_TIMEOUT_MS   = 2_000; // a live backend echoes our own write well under this
@@ -250,7 +251,7 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
       // R2: a confirmed rename moves its observation to the new location, so a moved
       // carrier reads `unchanged` next settle instead of re-landing (echo-survival).
       applyConfirmedRenames(tree, toBag, candidates, del);
-      console.log(`  wave ${n}: ${candidates.length} change(s) + ${ride.length} rename(s) submitted · audit lar:///ha.ka.ba/bags/daemon/outcomes/${result.requestId}`);
+      console.log(`  wave ${n}: ${candidates.length} change(s) + ${ride.length} rename(s) submitted · audit ${OUTCOME_URI_PREFIX}${result.requestId}`);
       for (const c of carriers) console.log(`    ${String(c["decision"]).toUpperCase().padEnd(10)} ${c["uri"]}`);
       for (const r of [...settled.refused, ...settled.conflicts]) console.error(`    ⚠ ${r.decision} ${r.uri}: ${r.why}`);
       if (settled.conflicts.length > 0) console.error(`    ${settled.conflicts.length} carrier(s) stand off: nothing landed for them; \`lares shore\` names each with its key`);

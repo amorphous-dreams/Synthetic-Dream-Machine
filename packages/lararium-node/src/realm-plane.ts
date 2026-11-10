@@ -4,8 +4,8 @@
  * names each realm doc, the id pointer names the default realm, the steward pointer names a realm's worn key,
  * and the standing pointer carries that realm's folded registrations. The holder materializes each shared CRDT,
  * charter names, pins the pointer on the vessel's own catalog plane (so the daemon island's reach walks it),
- * folds the standing registrations into the wire gate, and lands a steward's registration + its crossroads-plane
- * announce.
+ * folds the standing registrations into the wire gate, and lands a steward's registration + its announce on the
+ * Nexus's realm-announce board.
  *
  * A vessel that holds no primary or carried charter stands no realm: the holder rests INERT (no doc, no pointer,
  * the base gate unchanged). A charter import (`nexus seal import`, carried or primary) on a standing vessel stands it: the
@@ -88,7 +88,7 @@ export interface RealmPlaneHolder {
   /** Has this steward name SEALED HERE: does some record of this realm on the doc this vessel holds carry that
    *  name's own verifying seal? The steward door asks before it writes a name another hand holds. */
   sealedHere(name: string): Promise<boolean>;
-  /** Register a bag this vessel's steward keeps: seal, land on the realm doc, announce on crossroads-plane.
+  /** Register a bag this vessel's steward keeps: seal, land on the realm doc, announce on the realm-announce board.
    *  `propose` names stewards whose hands have NOT sealed this record — it accretes their names and counts
    *  nothing until each proposed hand co-signs (n-of-n; a named-but-unsigned steward is conscription). A
    *  proposed name must already have sealed a record of this realm, else `steward-name-unproven`.
@@ -143,8 +143,8 @@ export function makeRealmPlane(opts: {
   readonly repo: Repo;
   /** The vessel's own catalog plane — the pointer to the realm doc lands here. */
   readonly registry: DocHandle<LarDoc>;
-  /** The public crossroads doc the announce lands on. */
-  readonly crossroadsHandle: DocHandle<LarDoc>;
+  /** The Nexus's realm-announce board the announce lands on (`realmAnnounceDocUrl`): no recipe mounts it, no mirror names it. */
+  readonly announceHandle: DocHandle<LarDoc>;
   readonly membership: NexusMembership;
   readonly base: FederationGate;
   /** The realm's OWN consult — the proven contract nym behind a wire key, and who holds which charter. Absent,
@@ -199,7 +199,7 @@ export function makeRealmPlane(opts: {
    */
   readonly dialedHearth?: () => { readonly pinned: boolean; readonly aid: string | null };
 }): RealmPlanesHolder {
-  const { repo, registry, crossroadsHandle, membership, base } = opts;
+  const { repo, registry, announceHandle, membership, base } = opts;
   const log = opts.onLog ?? (() => {});
 
   /** One realm's plane as the holder keeps it: the plane a verb acts through, its gate, and its teardown. */
@@ -380,8 +380,8 @@ export function makeRealmPlane(opts: {
         const by = signers[0]!.signer.toLowerCase();
         realmHandle.change((d) => writeRealmBagRegistration(d, rec, by, counts));
         // The announce carries the ford's existence — and only once the record actually counts, so a proposal
-        // never tells the crossroads a ford stands that no fold has seated.
-        if (counts) crossroadsHandle.change((d) => writeRealmBagAnnounce(d, rec));
+        // never tells the board a ford stands that no fold has seated.
+        if (counts) announceHandle.change((d) => writeRealmBagAnnounce(d, rec));
         pinSteward(by);
         await refold();
         return rec;
@@ -447,8 +447,8 @@ export function makeRealmPlane(opts: {
         const rec = await coSignRealmBagRegistration(proposal, { ...cosigner, signer: nym });
         const counts = await realmBagRegistrationCounts(rec, realmId, opts.sealReading);
         realmHandle.change((d) => writeRealmBagRegistration(d, rec, nym, counts));
-        // The announce follows a counted record alone: a record still short of a hand tells the crossroads nothing.
-        if (counts) crossroadsHandle.change((d) => writeRealmBagAnnounce(d, rec));
+        // The announce follows a counted record alone: a record still short of a hand tells the board nothing.
+        if (counts) announceHandle.change((d) => writeRealmBagAnnounce(d, rec));
         pinSteward(nym);
         await refold();
         return rec;

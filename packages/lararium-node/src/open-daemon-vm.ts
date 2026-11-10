@@ -21,7 +21,6 @@
 import { writeKahuaIndex } from "./kahua-index.js";
 import { daemonDiskMirrors } from "./bag-paths.js";
 import { daemonBagsDir, loadLaresConfig, tempProjectionConsented } from "./lares-config.js";
-import { observeDaemonEnabled } from "./daemon-observe.js";
 import { parseAutomergeUrl } from "@automerge/automerge-repo";
 import { join }                                          from "path";
 import {
@@ -39,7 +38,7 @@ import {
 import { isStillJoining, resolveBootDoc } from "./repo-helpers.js";
 import { nodeNewSyncChannel, nodeSpawnDaemonWorker } from "./worker-handle.js";
 import type { IslandCasData } from "./node-cas.js";
-import { PLANE_LABELS, personaScopeTag, type CapabilityRecord } from "@lararium/mesh";
+import { PLANE_LABELS, personaScopeTag, standControlHome, daemonFaceCanonBag, type CapabilityRecord } from "@lararium/mesh";
 
 const DEFAULT_ADMIN_WORKER_URL = new URL("./node-daemon-island.js", import.meta.url);
 
@@ -99,15 +98,6 @@ export interface DaemonVmOptions {
   projectionRoot?:   string;
   /** Override the daemon island script URL (tests). */
   workerScriptUrl?:  URL;
-  /**
-   * The charter-only mirror guard (crossroads WHO-board leak, 2026-09-20): true unless this vessel's
-   * resolved `nexusIdentity().kind === "charter"`. The daemon wiki's own crossroads mirror grant
-   * (below) is baked with this flag so a private-nexus-of-one's or a dialed anchor's WHO-handles
-   * pointer never disk-mirrors, while the real charter-backed crossroads library still projects.
-   * Defaults true (guard ON) — a caller that never resolved a kind gets the SAFE reading, never the
-   * open one; only an explicit `false` (a proven charter) lifts it.
-   */
-  guardCrossroadsNexusHandles?: boolean;
 }
 
 /**
@@ -123,8 +113,7 @@ export function faceRelationStance(input: { personaBagId?: string | null | undef
 }
 
 export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore> {
-  const { repo, caps, daemonUrl, personaUrl, personaBagId, faceRelation, faceGroup, faceLabel, personaLate = false, coreHash, pluginCids, grants, libraryBags, daemonAuth, storageDir, ownedDocument = false, projectionRoot, workerScriptUrl, casData,
-          guardCrossroadsNexusHandles = true } = opts;
+  const { repo, caps, daemonUrl, personaUrl, personaBagId, faceRelation, faceGroup, faceLabel, personaLate = false, coreHash, pluginCids, grants, libraryBags, daemonAuth, storageDir, ownedDocument = false, projectionRoot, workerScriptUrl, casData } = opts;
 
   // An explicitly supplied empty path must not silently downgrade the worker to
   // memory-only storage. Omit `storageDir` when the caller intends the
@@ -143,6 +132,8 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
     // flight rather than as an absent doc, and earns the grace before it gets believed.
     { tideline: "hearth-private", label: PLANE_LABELS.daemon, settled: () => repo.flush() },
   );
+  // ── The vessel's control document, beside the daemon document that names it (`control-home`) ──
+  const controlHandle = await standControlHome(repo, daemonHandle);
   // ── Persona doc handle (same strategy) — the one VM tends both bags ──────────
   // A plane this replica already HOLDS (a joinee's admit landed it, or a sync delivered it) is read where it stands: the
   // library's boot query can answer `unavailable` for a document its own handle table already holds ready, and a held
@@ -169,8 +160,12 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
   // stays its recipe alone — it mounts no standing write facet.
   // The recipe designates the daemon wiki's temp layer for mirroring; the mirror stands only where the operator's consent
   // row names the `daemon` slug (`projection.temp.daemon`).
+  // THE DAEMON WIKI'S CANON FOLLOWS THE WORN FACE: `bags/daemon-<F>`, the document the face's catalog names (`grants.canonUrl`).
+  // At the floor, or before the face proves, the daemon wiki reads no canon, and the daemon document keeps no canon role.
+  const canonBag = faceRelation && grants.canonUrl ? daemonFaceCanonBag(faceRelation) : undefined;
   const recipe: WikiRecipe = {
     wikiSlug: "daemon",
+    ...(canonBag ? { canonBag } : {}),
     ...(libraryBags?.length ? { libraryBags } : {}),
     mirrorBags: [wikiSlotUri("daemon", "temp")],
   };
@@ -189,7 +184,7 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
   // The wrapper IS the shore — host pieces + recipe/storage + merge-on-arrival daemonHandle;
   // the lifecycle and the whole result surface (DaemonVmCore) live once in the core.
   return openDaemonVmCore(host, {
-    repo, daemonHandle, recipe, grants, coreHash,
+    repo, daemonHandle, controlHandle, recipe, grants, coreHash,
     ...(personaHandle ? { personaHandle } : {}),
     ...(personaBagId  ? { personaBagId }  : {}),
     ...(pluginCids?.length ? { pluginCids } : {}),
@@ -200,10 +195,10 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
       storage: { type: "nodefs" as const, dir: join(storageDir!, "daemon-owned") },
     } } : {}),
     // The daemon VM's mirrors, one list (`daemonDiskMirrors`): the worn face's working top under `<projections>/wikis/daemon-<F>/`,
-    // its kahua stage under `<projections>/bags/kahua-<F>/`, crossroads back to its canon source where one stands; the control
-    // plane holds none. The verified founding relation names the folders that face projects on
+    // its daemon canon under `<projections>/bags/daemon-<F>/`, its kahua stage under `<projections>/bags/kahua-<F>/`, crossroads
+    // back to its canon source where one stands; the control document and the daemon document hold none. The verified founding relation names the folders that face projects on
     // every device; no worn face projects no private kahua layer.
-    ...(projectionRoot ? { diskMirrors: daemonDiskMirrors({ projectionRoot, canonBags: daemonBagsDir(), faceRelation: faceRelation ?? null, guardCrossroadsNexusHandles, observeDaemon: observeDaemonEnabled(daemonConfig), temp: tempMirror }) } : {}),
+    ...(projectionRoot ? { diskMirrors: daemonDiskMirrors({ projectionRoot, canonBags: daemonBagsDir(), faceRelation: faceRelation ?? null, canon: canonBag !== undefined, temp: tempMirror }) } : {}),
     workerScriptUrl: workerScriptUrl ?? DEFAULT_ADMIN_WORKER_URL,
   });
 }

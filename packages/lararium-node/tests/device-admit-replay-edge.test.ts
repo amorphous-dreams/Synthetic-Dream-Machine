@@ -97,11 +97,12 @@ vi.mock("@lararium/mesh", async (real) => {
 vi.mock("../src/persona-act-store.js", () => ({ readFacePersonaRecords: async () => seam.records, appendPersonaActs: (_handle: unknown, acts: unknown[]) => { seam.appended.push(...acts); } }));
 
 import { runDeviceAdmit } from "../src/commands/device-admit.js";
-import { edgeBodyDigest } from "@lararium/mesh";
+import { edgeBodyDigest, CONTROL_HOME_ID } from "@lararium/mesh";
 import { MemoryTiddlerStore } from "@lararium/tw5";
 import { testVesselTag } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
-const daemonDoc = { tiddlers: { [T.group]: { text: "group-zero" }, [T.kel]: { text: "kel-zero" } } };
+// The daemon doc names the vessel's control document, where the lease slots rest (a fence read refuses where it names none).
+const daemonDoc = { tiddlers: { [T.group]: { text: "group-zero" }, [T.kel]: { text: "kel-zero" }, [CONTROL_HOME_ID]: { text: "automerge:control", tiddler: { text: "automerge:control" } } } };
 const repo = {
   find: async (url: string) => ({ url, doc: () => (url === "automerge:daemon" ? daemonDoc : {}) }),
   flush: async () => {},

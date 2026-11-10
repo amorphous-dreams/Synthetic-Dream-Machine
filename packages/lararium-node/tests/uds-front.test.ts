@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, test } from "vitest";
+import { controlStoreOf } from "@lararium/mesh";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -110,7 +111,7 @@ describe("uds front", () => {
     composite.addLayer({ bagId: DAEMON_BAG_ID, store: new AutomergeDocStore(daemonHandle, DAEMON_BAG_ID), writable: true, defaultWritable: false });
     composite.addLayer({ bagId: wikiSlotUri("daemon", "working"), store: new AutomergeDocStore(repo.create<LarDoc>(emptyLarDoc()), wikiSlotUri("daemon", "working")), writable: true });
     const ctlClaim = await setup();
-    const channel = startUdsChannel({ daemonHandle, composite, placeVerb: (o) => {
+    const channel = startUdsChannel({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), placeVerb: (o) => {
       daemonHandle.change((doc) => { doc.tiddlers[`${OUTCOME_URI_PREFIX}${o.requestId}`] = { tiddler: { status: "done", requestId: o.requestId }, meta: {} } as never; });
     }, claim: ctlClaim, repo });
     const result = dial(ctlClaim.socketPath, { verb: "ok", requestedBy: "did:key:test", requestId: "front-control" });
@@ -196,7 +197,7 @@ describe("uds front", () => {
     const front = serveUdsFront({ claim });
     let land: (() => void) | null = null;
     const placed = new Promise<void>((resolve) => {
-      front.attach(makeUdsSeat({ daemonHandle, composite, claim, repo, placeVerb: (o) => {
+      front.attach(makeUdsSeat({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo, placeVerb: (o) => {
         land = () => daemonHandle.change((doc) => { doc.tiddlers[`${OUTCOME_URI_PREFIX}${o.requestId}`] = { tiddler: { status: "done", requestId: o.requestId }, meta: {} } as never; });
         resolve();
       } }));
@@ -234,7 +235,7 @@ describe("uds front", () => {
       let began!: () => void, release!: () => void;
       const flushBegan = new Promise<void>((r) => { began = r; });
       const gate = new Promise<void>((r) => { release = r; });
-      front.attach(makeUdsSeat({ daemonHandle, composite, placeVerb: () => {}, claim, repo: { flush: async () => { began(); if (hold) await gate; } } }));
+      front.attach(makeUdsSeat({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), placeVerb: () => {}, claim, repo: { flush: async () => { began(); if (hold) await gate; } } }));
       const caller = dial(claim.socketPath, { op: "cancel", requestId: `front-cancel-${hold}` });
       await caller.sent;
       await flushBegan;

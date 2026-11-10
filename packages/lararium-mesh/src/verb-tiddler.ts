@@ -8,18 +8,18 @@
  *                         Automerge. Tombstoned by the dispatcher after the
  *                         outcome lands. Local intent lives here, not shared truth.
  *
- *   bags/daemon/outcomes/<id>  DURABLE outcome tiddler in the Automerge-backed
+ *   bags/control/outcomes/<id>  DURABLE outcome tiddler in the Automerge-backed
  *                         daemon bag. Written by the dispatcher on done/error.
  *                         Syncs to all vessels. CRDT convergence here IS the result.
  *                         Shared aftermath lives here.
  *
  * Verb invocation paths:
  *   Local (in-process):   placeVerb() → wiki.addTiddler() → TW5 change event
- *                         → dispatcher runs → outcome to bags/daemon/outcomes/
- *   Remote (CLI/vessels): vessel writes bags/daemon/summons/<id> to Automerge →
+ *                         → dispatcher runs → outcome to bags/control/outcomes/
+ *   Remote (CLI/vessels): vessel writes bags/control/summons/<id> to Automerge →
  *                         IslandAdaptor flows it into TW5 wiki →
  *                         dispatcher translates to volatile invocation → processes →
- *                         outcome to bags/daemon/outcomes/
+ *                         outcome to bags/control/outcomes/
  *
  * Batch contract:
  *   One invocation tiddler may carry N targets (tiddler URIs, file paths, edge resource
@@ -43,9 +43,8 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/verb-tiddler
  */
 
-import { projectionWithheld } from "./projection-filter.js";
 import {
-  DAEMON_BAG_ID, VOLATILE_VM_PREFIX,
+  CONTROL_HOME_ID, VOLATILE_VM_PREFIX,
   LARES_VERB_EVENT_TAG, LARES_VERB_TAG,
 } from "./lar-uris.js";
 import { sha256Hex, canonicalJsonBytes, defaultCryptoProvider, type DigestProvider } from "./crypto.js";
@@ -57,12 +56,12 @@ import type { LarTiddlerRecord } from "./tiddler-store.js";
 /** Volatile verb invocation tiddlers — daemon TW5 wiki scratch, never synced. */
 export const VERB_URI_PREFIX = `${VOLATILE_VM_PREFIX}verbs/`;
 
-/** Automerge-backed verb summons — remote vessels write here; dispatcher translates
- *  to volatile invocation and tombstones after pickup. */
-export const SUMMONS_URI_PREFIX = `${DAEMON_BAG_ID}/summons/`;
+/** Automerge-backed verb summons, resting in the vessel's control document (`control-home`); the dispatcher translates
+ *  each to a volatile invocation and tombstones it after pickup. */
+export const SUMMONS_URI_PREFIX = `${CONTROL_HOME_ID}/summons/`;
 
-/** Durable outcome tiddlers — Automerge-backed, sync to all vessels. */
-export const OUTCOME_URI_PREFIX = `${DAEMON_BAG_ID}/outcomes/`;
+/** Durable outcome tiddlers, resting in the vessel's control document (`control-home`), never in a mirrored layer. */
+export const OUTCOME_URI_PREFIX = `${CONTROL_HOME_ID}/outcomes/`;
 
 /** Result map key for single-result (no explicit targets) verbs. */
 export const VERB_RESULT_KEY = "summary" as const;
@@ -115,31 +114,17 @@ export async function taskContentId(
 // outcome tiddler, which the channel observes. One writer per field, so no two
 // processes race a `state` transition.
 
-/** Durable per-request fact tiddlers — `<daemon bag>/receipts/<requestId>`. */
-export const RECEIPT_FACT_URI_PREFIX = `${DAEMON_BAG_ID}/receipts/`;
+/** Durable per-request fact tiddlers — `<control home>/receipts/<requestId>`, in the vessel's control document. */
+export const RECEIPT_FACT_URI_PREFIX = `${CONTROL_HOME_ID}/receipts/`;
 
-/** Durable ward audits: `<daemon bag>/ledger/ward/<id>`. */
-export const WARD_AUDIT_URI_PREFIX = `${DAEMON_BAG_ID}/ledger/ward/`;
+/** Durable ward audits: `<control home>/ledger/ward/<id>`, in the vessel's control document. */
+export const WARD_AUDIT_URI_PREFIX = `${CONTROL_HOME_ID}/ledger/ward/`;
 
-/**
- * True for a title whose record never projects to disk: whatever the base projection filter withholds from every mirror
- * (`projection-filter.ts`: the daemon's control plane with its receipt facts, summons and ward audits, the swarm's controls,
- * the volatile VM plane, effect records, realm-bag announces, bag manifests). No file for such a record ever comes from the
- * projector, so a file standing at its address counts as foreign, and no wave lands it.
- */
-export function neverProjects(title: string): boolean {
-  return projectionWithheld(title);
-}
+/** The durable mailbox: `<control home>/mailbox/<wiki>/<id>`, in the vessel's control document. */
+export const MAILBOX_URI_PREFIX = `${CONTROL_HOME_ID}/mailbox/`;
 
-/** A file whose ingest would write a record that never projects to disk. */
-export class NeverProjectedPathRefusal extends Error {
-  override readonly name = "NeverProjectedPathRefusal";
-  readonly code = "never-projected-path";
-
-  constructor(readonly path: string, readonly title: string) {
-    super(`${path} (${title}): records at this address never project to disk, so a file here never ingests; remove the file`);
-  }
-}
+/** The effect index: `<control home>/effects/<effectKey>`, in the vessel's control document. */
+export const EFFECT_URI_PREFIX = `${CONTROL_HOME_ID}/effects/`;
 
 export type ReceiptFactState = "committed" | "interrupted" | "abandoned" | "done" | "error" | "evicted";
 
@@ -224,8 +209,6 @@ export function buildReceiptFact(fact: ReceiptFact): LarTiddlerRecord {
       "request-id":   fact.requestId,
       state:          fact.state,
       seq:            String(fact.seq),
-      // Control-plane record: it follows the working layer and never projects to a disk mirror.
-      "disk-projection": "no",
       ...(fact.inputDigest !== undefined && { "input-digest": fact.inputDigest }),
       ...(fact.effectKey   !== undefined && { "effect-key":   fact.effectKey }),
       ...(fact.face !== undefined && { face: fact.face }),
@@ -482,8 +465,6 @@ export function concludeVerb(opts: {
     status:          opts.status,
     "completed-at":  new Date().toISOString(),
     cause:           opts.cause,
-    // Bookkeeping of the control bag: no mirror writes a file for an outcome, whatever layer holds it.
-    "disk-projection": "no",
   };
   return {
     tiddler: {
@@ -585,8 +566,6 @@ export function summon(opts: {
       "batch-mode":    opts.batchMode ?? "best-effort",
       "request-id":    requestId,
       status:          "pending",
-      // Control-plane record: it follows the working layer and never projects to a disk mirror.
-      "disk-projection": "no",
       "requested-by":  opts.requestedBy,
       "requested-at":  new Date().toISOString(),
       ...(opts.fromUri    !== undefined && { "from-uri":   opts.fromUri }),

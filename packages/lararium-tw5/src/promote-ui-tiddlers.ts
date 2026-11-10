@@ -1,4 +1,4 @@
-import { LARES_SURFACE_STATE, LARES_SURFACE_TAG, SEED_OFF_DISK } from "./daemon-ui-tiddlers.js";
+import { LARES_SURFACE_STATE, LARES_SURFACE_TAG, seedShadows } from "./daemon-ui-tiddlers.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
 
@@ -37,8 +37,10 @@ const PANEL = `\u005cwhitespace trim
 </section></$let></$list></$list>`;
 
 export function seedPromoteUiTiddlers(tw5: TW5Engine): void {
-  tw5.setTiddler({ title: PROMOTE_PANEL_TITLE, type: "text/vnd.tiddlywiki", tags: LARES_SURFACE_TAG, caption: "promote", text: PANEL, ...SEED_OFF_DISK });
-  tw5.setTiddler({ title: "$:/lares/ui/promote/PageControls", type: "text/vnd.tiddlywiki", tags: "$:/tags/PageControls", text: `<$button class="tc-btn-invisible" tooltip="Open promote"><$action-setfield $tiddler="${LARES_SURFACE_STATE}" text="${PROMOTE_PANEL_TITLE}"/>promote</$button>`, ...SEED_OFF_DISK });
+  seedShadows(tw5, "promote", [
+    { title: PROMOTE_PANEL_TITLE, type: "text/vnd.tiddlywiki", tags: LARES_SURFACE_TAG, caption: "promote", text: PANEL },
+    { title: "$:/lares/ui/promote/PageControls", type: "text/vnd.tiddlywiki", tags: "$:/tags/PageControls", text: `<$button class="tc-btn-invisible" tooltip="Open promote"><$action-setfield $tiddler="${LARES_SURFACE_STATE}" text="${PROMOTE_PANEL_TITLE}"/>promote</$button>` },
+  ]);
 }
 export function makePromoteStateReactor(tw5: TW5Engine): VerbReactor {
   return async (args) => {

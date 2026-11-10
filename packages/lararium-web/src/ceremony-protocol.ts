@@ -14,12 +14,14 @@
 /** What the ceremony may take for this ask. The ward takes a passphrase alone; a bind-first takes a passphrase alone. */
 export type CeremonyRoute = "passphrase" | "passkey";
 
-export type CeremonyAskKind = "unlock" | "bind-first" | "clear" | "ward";
+/** `card`: a founding's cold card to write on paper and type back (the place card); its lines ride the brokered port alone. */
+export type CeremonyAskKind = "unlock" | "bind-first" | "clear" | "ward" | "card";
 
 /** A passkey pin's public half: the authenticator's credential id and the PRF salt it evaluates. */
 export interface CeremonyPasskey { readonly credentialId: Uint8Array; readonly prfSalt: Uint8Array }
 
-/** The ask as the ceremony paints it: a public label and its digest, the face, the kind. Never a route, key, seed or row. */
+/** The ask as the ceremony paints it: a public label and its digest, the face, the kind. Never a route, key or row; a card
+ *  ask alone carries its card's printed lines, for the person to copy, on this brokered port and never to the page. */
 export interface CeremonyAsk {
   readonly t: "ask";
   readonly askId: string;
@@ -34,6 +36,8 @@ export interface CeremonyAsk {
   readonly passkeys: readonly CeremonyPasskey[];
   /** Public words: an attempt count, a note. */
   readonly words: string;
+  /** A card ask's printed card (its fields, its three code rows, its confirm phrase). Absent on every other ask. */
+  readonly card?: readonly string[];
 }
 
 /** The ceremony's answer. Every byte rides a transferred ArrayBuffer, so it detaches from the ceremony's heap as it leaves. */

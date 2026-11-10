@@ -7,9 +7,7 @@
  *     composes to `<canon parent>/wikis/<slug>`;
  *   · every other bag and wiki (house-minted, a user's own) projects under the house's projections root
  *     (`<root>/projections`), never the state root it sits in and never the hearth;
- *   · a PRIVATE plane (the daemon wiki at `wikis/daemon-<F>`, the kahua stage at `bags/kahua-<F>`) projects under the
- *     projections root even where a source dir of its name stands; the daemon wiki's canon (`bags/daemon`, non-control
- *     records alone) projects to `<projections>/bags/daemon`, never beside the canon source.
+ *   · the kahua stage projects under the projections root; daemon control writers await their unmirrored home.
  *
  * Membership reads the source tree; no bag name is listed, save the private planes.
  */
@@ -17,10 +15,10 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, statSync } fro
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
-import { CROSSROADS_DOC_URI, DAEMON_BAG_ID, KAHUA_BAG, wikiSlotUri } from "@lararium/mesh";
+import { CROSSROADS_DOC_URI, DAEMON_BAG_ID, KAHUA_BAG, wikiSlotUri, CONTROL_HOME_ID } from "@lararium/mesh";
 import {
   projectionRoots, daemonWorkingMirror, kahuaStageMirror, daemonDiskMirrors, daemonFaceFolder, kahuaFaceFolder,
-  isPrivateProjectionSlug, daemonObserveRoot,
+  isPrivateProjectionSlug,
 } from "../src/bag-paths.js";
 import { atomicWriteFileSync, durableSyncIo } from "../src/fs-atomic.js";
 import { LarDiskProjector, PROJECTION_FILE_MODE } from "../src/disk-projector.js";
@@ -70,23 +68,17 @@ describe("projectionRoots — the mirror root splits by origin", () => {
 });
 
 describe("the daemon VM's mirrors under distinct state, canon and projection roots", () => {
-  test("house bags, both face folders and the daemon canon land under projections; canon sources in the checkout", () => {
+  test("the daemon working top, kahua and crossroads receive mirrors; the daemon and control documents remain unmirrored", () => {
     const { state, projections, canon } = tree("crossroads");
     const mirrors = daemonDiskMirrors({ projectionRoot: projections, canonBags: canon, faceRelation: TAG });
     const byBag = new Map(mirrors.map((m) => [m.bagId, m.mirrorRoot]));
     expect(byBag.get(wikiSlotUri("daemon", "working"))).toBe(join(projections, "wikis", `daemon-${TAG}`));
+    expect(byBag.has(CONTROL_HOME_ID)).toBe(false);
     expect(byBag.get(KAHUA_BAG)).toBe(join(projections, "bags", `kahua-${TAG}`));
     expect(byBag.get(CROSSROADS_DOC_URI)).toBe(join(canon, "crossroads"));
-    expect(mirrors.filter((m) => m.bagId === DAEMON_BAG_ID)).toEqual([{ bagId: DAEMON_BAG_ID, mirrorRoot: join(projections, "bags", "daemon"), scope: "daemon-canon" }]);
+    expect(mirrors.some((m) => m.bagId === DAEMON_BAG_ID)).toBe(false);
     for (const root of byBag.values()) expect(root.startsWith(join(state, "bags")) || root.startsWith(join(state, "wikis"))).toBe(false);
     expect(mirrors.some((m) => m.mirrorRoot.startsWith(join(canon, "daemon")))).toBe(false);
-  });
-  test("the observe toggle adds the daemon bag's one-way render under projections/observe/daemon", () => {
-    const { projections, canon } = tree();
-    const mirrors = daemonDiskMirrors({ projectionRoot: projections, canonBags: canon, faceRelation: TAG, observeDaemon: true });
-    const observe = mirrors.find((m) => m.bagId === DAEMON_BAG_ID && m.mirrorClass === "observe");
-    expect(observe).toEqual({ bagId: DAEMON_BAG_ID, mirrorRoot: daemonObserveRoot(projections), scope: "daemon-observe", mirrorClass: "observe" });
-    expect(observe!.mirrorRoot).toBe(join(projections, "observe", "daemon"));
   });
   test("the daemon wiki's folder names the face as daemon-<F>; the kahua stage keeps kahua-<F>", () => {
     expect(daemonFaceFolder(TAG)).toBe(`daemon-${TAG}`);

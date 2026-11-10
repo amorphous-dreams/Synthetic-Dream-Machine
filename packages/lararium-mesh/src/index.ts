@@ -134,6 +134,8 @@ export * from "./text-stream-adapter.js";
 export * from "./sensorium-pc.js";
 export * from "./aperture-selector.js";
 export * from "./epoch-lease.js";
+export { controlHomeUrlOf, standControlHome, readControlHome, nameControlHome, ControlHomeUnavailable, controlStoreOf, vesselOnlyDocIds, makeVesselOnlyDocs, VESSEL_LOCKED, CONTROL_HOME_UNNAMED, controlHomeRefusal, assertControlHomeOpen, refusingControlStore, floorAnswerStore, isFloorAnswerTitle, FLOOR_ANSWER_RING, vesselLockedRefusal, type ControlHomeRefusal } from "./control-home.js";
+export { vesselOnlyBook, repoReverdict } from "./vessel-only-book.js";
 export * from "./lar-did.js";
 export * from "./device-delegation.js";
 export { holderSessionProofBytes, signHolderSessionProof, verifyHolderSessionProof } from "./holder-session-proof.js";
@@ -249,6 +251,7 @@ export * from "./kapae-antigen.js";
 export { antigenEntriesFromBoard, writeAntigenEntry, antigenEntryKey, ANTIGEN_ENTRY_PREFIX } from "./antigen-board.js";
 // The operator MEMBERS-registry — the Kapae-antigen's ALLOW-twin (members{} ⊥ blocked{}); contracts, never identities.
 export * from "./carriage-registry.js";
+export * from "./carriage-log.js";
 // The root of one Nexus as a vessel holds it, and the one door a presented admit reads through: the socket
 // seat, the raise and the admit bundle hand the verifier a held root, never a roster of their own making.
 export {
@@ -291,11 +294,11 @@ export { RECIPE_PLANES, effectiveRecipe, recipeRecordStands } from "./recipe-pla
 export type { EffectiveRecipe, RecipePlane } from "./recipe-planes.js";
 export { resolveRecipePluginCids, deriveWikiRecipe, wikiSlugOfBag } from "./surface-recipe.js";
 export type { WikiRecipeDerivation } from "./surface-recipe.js";
-export { makeIslandRepo, attachMessageChannelSync, replicaHeads, islandPeersOf, markIslandArrival } from "./island-repo.js";
+export { makeIslandRepo, attachMessageChannelSync, replicaHeads, islandPeersOf, markIslandArrival, markWikiIslandPeer, wikiIslandPeersOf } from "./island-repo.js";
 export { peerArrivals, type PeerArrival, type PeerArrivals } from "./peer-arrivals.js";
 export { answerReceiptWithHeads, RECEIPT_STALL_ROUNDS } from "./receipt-with-heads.js";
 export type { CapabilityRecord, ReceiptIssuer, CasFetcher, DyadReader, CustodyWriter, SessionSignDoor } from "./capability-record.js";
-export { answerReceipt, answerDyad, answerCustodyWrite, answerSessionSign, answerRestAsk, answerIslandAsks, receiptSettlement, RECORD_ASKS } from "./capability-record.js";
+export { islandCustodyWriter, answerReceipt, answerDyad, answerCustodyWrite, answerSessionSign, answerRestAsk, answerIslandAsks, receiptSettlement, RECORD_ASKS } from "./capability-record.js";
 export { SessionSignBook, standingSessionSeat, type BookedSession, type BookedSessionSigner } from "./session-sign-book.js";
 export { GatedSyncLeg, oneWayDocumentsGate, carriesPrototypeKeyReason } from "./gated-sync-leg.js";
 export { shoreInbound, shoreStorage, syncMessagePrototypeKey, chunkPrototypeKey, docPrototypeKeyFault, assertNoPrototypeKeys, type PrototypeKeyRefusal } from "./prototype-key-shore.js";
@@ -488,6 +491,7 @@ export * from "./handle-announce.js";
 export * from "./who-face.js";
 export * from "./who-face-cap.js";
 export * from "./deterministic-doc.js";
+export { standFaceDaemonCanon, type FaceDaemonCanon } from "./face-daemon-canon.js";
 export * from "./face-working-address.js";
 export * from "./catalog-view.js";
 export { pinnedDoc, PINNED_ACTOR } from "./pinned-doc.js";
@@ -581,7 +585,7 @@ export { waitHandle, LOCAL_READY_MS } from "./wait-handle.js";
 
 // The registered bag set, derived from the persona BINDING — founded stays private, admitted carries the fleet's.
 export type { FleetMembership, RegisterBagsInput } from "./register-bags.js";
-export { deriveRegisterBags, catalogNamedBags, isVesselGround, wornFaceWikiBags, DAEMON_WIKI_SLOT_BAGS, type WikiSlotBags } from "./register-bags.js";
+export { deriveRegisterBags, catalogNamedBags, isVesselGround, wornFaceWikiBags, standingDaemonCanonBag, DAEMON_WIKI_SLOT_BAGS, type WikiSlotBags } from "./register-bags.js";
 export * from "./persona-scope.js";
 export * from "./persona-planes.js";
 export * from "./holdings-witness.js";
@@ -650,7 +654,10 @@ export * from "./lockbox-wrap.js";
 export * from "./content-key-holder.js";
 export * from "./sealed-doc-store.js";
 export * from "./sealed-rest.js";
+export { deviceDaemonDocs, vesselHeldBagOf, DAEMON_SLOT_PREFIX, type DeviceDaemonDocs, type LitDeviceFace } from "./device-daemon-docs.js";
 export * from "./published-bag-key.js";
+export * from "./held-rest-key.js";
+export * from "./secret-home.js";
 export * from "./memory-section.js";
 export * from "./face-bundle.js";
 export * from "./face-log-view.js";

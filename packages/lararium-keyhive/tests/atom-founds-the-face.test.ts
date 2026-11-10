@@ -3,6 +3,7 @@ import { makeIslandRepo } from "@lararium/mesh";
 import { foundThePlace, foundTheFace, retireFaceCheckpoint, KeyhiveProvider } from "../src/index.js";
 import { faceAtomKeyFromSeed, groupSecretOpenerFromSeed, mintFaceAtomSeed, sealGroupSecret, verifyDeviceDelegation, personaGroupSecret } from "@lararium/mesh";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { withMemorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 
 const vesselSeed = new Uint8Array(32).fill(41);
 const rootSeed = new Uint8Array(32).fill(42);
@@ -13,8 +14,8 @@ describe("one random atom founds the face", () => {
     const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
     const atomSeed = mintFaceAtomSeed();
     const placeKey = await key(vesselSeed);
-    const place = await foundThePlace({ repo, vesselSeed, hearthTrueName: "hearth" });
-    const face = await foundTheFace({ vesselTag: testVesselTagDoor(1), repo, daemonHandle: place.daemonHandle, vesselSeed, placeVerifyingKey: placeKey,
+    const place = withMemorySecretHome(await foundThePlace({ repo, vesselSeed, hearthTrueName: "hearth" }), repo);
+    const face = await foundTheFace({ vesselTag: testVesselTagDoor(1), repo, daemonHandle: place.daemonHandle, secretHandle: place.secretHandle, secretRest: { assertSealed: async () => true }, vesselSeed, placeVerifyingKey: placeKey,
       vesselDisplayName: "place", binding: { mode: "self-stood", signerSeed: rootSeed }, hearthTrueName: "hearth",
       nexusPubkey: placeKey, atomSeed });
     const atom = faceAtomKeyFromSeed(atomSeed, face.personaGroupId);
@@ -41,8 +42,8 @@ describe("one random atom founds the face", () => {
     const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
     const atomSeed = mintFaceAtomSeed();
     const placeKey = await key(vesselSeed);
-    const place = await foundThePlace({ repo, vesselSeed, hearthTrueName: "hearth" });
-    const input = { vesselTag: testVesselTagDoor(1), repo, daemonHandle: place.daemonHandle, vesselSeed, placeVerifyingKey: placeKey,
+    const place = withMemorySecretHome(await foundThePlace({ repo, vesselSeed, hearthTrueName: "hearth" }), repo);
+    const input = { vesselTag: testVesselTagDoor(1), repo, daemonHandle: place.daemonHandle, secretHandle: place.secretHandle, secretRest: { assertSealed: async () => true }, vesselSeed, placeVerifyingKey: placeKey,
       vesselDisplayName: "place", binding: { mode: "self-stood" as const, signerSeed: rootSeed }, hearthTrueName: "hearth",
       nexusPubkey: placeKey, atomSeed };
     const original = place.daemonHandle.change.bind(place.daemonHandle);
@@ -61,19 +62,23 @@ describe("one random atom founds the face", () => {
     expect(JSON.stringify(place.daemonHandle.doc())).toBe(bytes);
   });
 
-  it("names its write-ahead checkpoint opaquely and retires it at commit", async () => {
+  it("A5: its write-ahead checkpoint rests in the secret home (never the daemon document), named opaquely, and retires there at commit", async () => {
     const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
     const atomSeed = mintFaceAtomSeed();
     const placeKey = await key(vesselSeed);
-    const place = await foundThePlace({ repo, vesselSeed, hearthTrueName: "hearth" });
-    await foundTheFace({ vesselTag: testVesselTagDoor(1), repo, daemonHandle: place.daemonHandle, placeVerifyingKey: placeKey,
+    const place = withMemorySecretHome(await foundThePlace({ repo, vesselSeed, hearthTrueName: "hearth" }), repo);
+    await foundTheFace({ vesselTag: testVesselTagDoor(1), repo, daemonHandle: place.daemonHandle, secretHandle: place.secretHandle, secretRest: { assertSealed: async () => true }, placeVerifyingKey: placeKey,
       vesselDisplayName: "place", binding: { mode: "self-stood", signerSeed: rootSeed }, hearthTrueName: "hearth",
       nexusPubkey: placeKey, atomSeed });
     const atomKey = faceAtomKeyFromSeed(atomSeed, "founding").key;
-    const titles = Object.keys(place.daemonHandle.doc()!.tiddlers).filter((title) => title.includes("face-founding-checkpoint/"));
+    const checkpointsIn = (doc: { tiddlers: Record<string, unknown> } | undefined) => Object.keys(doc?.tiddlers ?? {}).filter((title) => title.includes("face-founding-checkpoint/"));
+    const titles = checkpointsIn(place.secretHandle.doc());
     expect(titles).toHaveLength(1);
     expect(titles[0]).not.toContain(atomKey);
-    await retireFaceCheckpoint(place.daemonHandle, atomSeed);
-    expect(Object.keys(place.daemonHandle.doc()!.tiddlers).filter((title) => title.includes("face-founding-checkpoint/"))).toEqual([]);
+    // No state of the daemon document's whole history ever held one.
+    const A = await import("@automerge/automerge");
+    for (const { snapshot } of A.getHistory(place.daemonHandle.doc() as never)) expect(checkpointsIn(snapshot as never)).toEqual([]);
+    await retireFaceCheckpoint(place.secretHandle, atomSeed);
+    expect(checkpointsIn(place.secretHandle.doc())).toEqual([]);
   });
 });

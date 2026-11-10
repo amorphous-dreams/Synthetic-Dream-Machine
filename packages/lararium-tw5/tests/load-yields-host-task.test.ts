@@ -1,4 +1,5 @@
 import { describe, expect, test } from "vitest";
+import { memoryControlStore } from "./control-store-fixture.js";
 import { CompositeStore, DAEMON_BAG_ID, type CapabilityAccess, type CapabilityVerifyResult, type Verb, type VerbContext } from "@lararium/mesh";
 import { LOAD_YIELD_QUANTUM, registerActionReactors } from "../src/action-handler.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
@@ -136,7 +137,7 @@ describe("LOAD yields a host task by landing quantum", () => {
       return { startedAt: invocationStartedAt };
     });
     registerActionReactors(table, { composite });
-    const dispatcher = new VerbDispatcher({ daemonVm: daemonVm as never, daemon: composite, registry: table });
+    const dispatcher = new VerbDispatcher({ daemonVm: daemonVm as never, daemon: composite, control: memoryControlStore(), registry: table });
     dispatcher.start();
     store.onLanding = (count) => {
       if (count === 10) setImmediate(() => dispatcher.placeVerb({

@@ -126,8 +126,12 @@ jobs:
           # `tools/e2e-shard-weights.json`, and the merge gate still reads every tracked file run exactly once.
           mapfile -t files < <(node "$GITHUB_WORKSPACE/tools/e2e-shards.mjs" shard-files --set "${{ matrix.set }}" --shard "${{ matrix.shard }}" --repo-root "$GITHUB_WORKSPACE")
           test "${#files[@]}" -gt 0
+          # THE SHARD SPEAKS AS IT GOES: the dealt files print first, and the default reporter names each file and test as it
+          # settles beside the blob and JSON reports, so a shard the step timeout cuts names the file still running (the one
+          # dealt and never reported), where the blob alone wrote nothing until the end.
+          printf 'shard %s/%s deals %s file(s):\n' "${{ matrix.set }}" "${{ matrix.shard }}" "${#files[@]}"; printf '  %s\n' "${files[@]}"
           npx vitest run --config "${{ matrix.config }}" "${files[@]}" \
-            --reporter=blob --reporter=json \
+            --reporter=default --reporter=blob --reporter=json \
             --outputFile.json=".vitest/blob/report-shard-${{ matrix.set }}-${{ matrix.shard }}.json"
         timeout-minutes: 45
       # The dogfood vessel suites above enter the normal tracked-file shard set. These no-socket
@@ -147,8 +151,9 @@ jobs:
           mkdir -p "$LAR_ROOT"
           mapfile -t files < <(node "$GITHUB_WORKSPACE/tools/e2e-shards.mjs" shard-files --set "${{ matrix.companion }}" --shard 1 --repo-root "$GITHUB_WORKSPACE")
           test "${#files[@]}" -gt 0
+          printf 'companion %s deals %s file(s):\n' "${{ matrix.companion }}" "${#files[@]}"; printf '  %s\n' "${files[@]}"
           npx vitest run --config vitest.e2e.config.ts "${files[@]}" \
-            --reporter=blob --reporter=json \
+            --reporter=default --reporter=blob --reporter=json \
             --outputFile.json=".vitest/blob/report-shard-${{ matrix.companion }}-1.json"
         timeout-minutes: 15
       - name: Upload this shard's blob + JSON report (always, even on a red shard)

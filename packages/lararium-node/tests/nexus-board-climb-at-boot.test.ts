@@ -12,7 +12,7 @@
  *
  *     own (a private nexus of one) → charter (the genesis epoch of a seated charter)
  *
- * and that walk carries the antigen and re-announces crossroads books onto the resolved island.
+ * and that walk carries the antigen and re-announces realm books onto the resolved island.
  *
  * ── THE HALT IS THE OTHER HALF ─────────────────────────────────────────────────────────────────────
  * A charter that STANDS on disk and reads TORN must not re-key anything, and must not skip quietly either:
@@ -40,7 +40,7 @@ import {
   nexusIdentity, nexusIslandsBelow, nexusScopeOrThrow, type NexusIdentityAt,
   nexusAidOf, realmDocUrl,
   materializeSharedLarDoc,
-  kapaeAntigenDocUrl, crossroadsDocUrl,
+  kapaeAntigenDocUrl, realmAnnounceDocUrl,
   writeAntigenEntry, antigenEntriesFromBoard, signAntigenEntry,
   signRealmBagRegistration, writeRealmBagRegistration, publicRealmBooksFromDoc,
   hex,
@@ -135,7 +135,7 @@ describe("the boot's own climb — own → charter, the founding walk", () => {
     // `nexus-board-climb.test` and is deliberately not re-derived here.
   }, 30_000);
 
-  test("RED — the crossroads RE-ANNOUNCES the realm's books onto the resolved island", async () => {
+  test("RED — the realm RE-ANNOUNCES the realm's books onto the resolved island", async () => {
     const r      = repo();
     const ownKey = await pubOf(seedOf(13));
     const home   = sealHomeAt();
@@ -151,12 +151,12 @@ describe("the boot's own climb — own → charter, the founding walk", () => {
       [{ signer: await pubOf(seedOf(31)), sign: signer(seedOf(31)) }]);
     (await board(r, realmDocUrl(CHARTER))).change((d) => writeRealmBagRegistration(d, rec));
 
-    expect(publicRealmBooksFromDoc((await board(r, crossroadsDocUrl(island))).doc())).toEqual([]);
+    expect(publicRealmBooksFromDoc((await board(r, realmAnnounceDocUrl(island))).doc())).toEqual([]);
     const climb = await bootClimb(r, at);
-    const act   = climb.acts.find((a) => a.board === "crossroads")!;
+    const act   = climb.acts.find((a) => a.board === "realm-announce")!;
     expect(act.act, "a projection is RE-ANNOUNCED — a copy would launder an unsigned row").toBe("re-announce");
     expect(act.landed).toBe(1);
-    expect(publicRealmBooksFromDoc((await board(r, crossroadsDocUrl(island))).doc()).map((b) => b.bagUri))
+    expect(publicRealmBooksFromDoc((await board(r, realmAnnounceDocUrl(island))).doc()).map((b) => b.bagUri))
       .toEqual([bag]);
   }, 30_000);
 });
@@ -202,7 +202,7 @@ describe("the gradient law holds AT THE BOOT", () => {
     const climb = await bootClimb(r, at);
     expect(climb.landed).toBe(0);
     for (const act of climb.acts) expect(act.from).toEqual([]);
-    for (const url of [kapaeAntigenDocUrl(ownKey), crossroadsDocUrl(ownKey)]) {
+    for (const url of [kapaeAntigenDocUrl(ownKey), realmAnnounceDocUrl(ownKey)]) {
       expect(await keysOn(r, url)).toEqual([]);
     }
   }, 30_000);
@@ -250,7 +250,7 @@ describe("the boot climb stays scoped to antigen and crossroads", () => {
     expect(call, "the climb must read the boot's OWN gradient, never a literal")
       .toContain("nexusIslandsBelow(nexusStandsAt)");
     expect(call, "the island is the one `nexusScopeOrThrow` resolved").toContain("nexusPubkey");
-    expect(call, "the crossroads re-announce needs the realm the charter names")
+    expect(call, "the realm re-announce needs the realm the charter names")
       .toMatch(/realmId:\s*nexusAidOf\(readNexusDoc\(sealHome\)\)/);
 
     // ③ THE THREE REFUSALS, at the boot. A hand passing one more board here would be compiling a

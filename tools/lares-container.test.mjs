@@ -121,6 +121,9 @@ test("sh: reset clears the hearth alone, after its refusals; sensoriums, project
     const done = reset({});
     assert.equal(done.status, 0, done.stdout);
     assert.match(done.stdout, /sensoriums, projections, library, config, the env file and the image stay/);
+    // THE PROMPT SAYS PLAINLY that projections stay, private cleartext memory among them, and where a former face's folders go.
+    assert.match(done.stdout, /projections stay, and with them the private memory of every face in cleartext/);
+    assert.match(done.stdout, /the next export names those folders/);
     assert.deepEqual(await readdir(hearth), []);
     for (const k of kept) assert.equal(await readFile(join(k, "keep"), "utf8"), "stays");
     assert.equal(await readFile(join(dir, ".lares", "lares-surface.env"), "utf8"), "# stays\n");
@@ -466,6 +469,14 @@ for (const [name, shim] of shims) {
     const mute = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_RC: "0" } });
     assert.equal(mute.status, 2);
     assert.equal(stopped(mute.calls), false, mute.calls);
+  });
+
+  test(`${name}: a locked hearth's census says unlock first, then down, never "could not answer"`, async () => {
+    const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_RC: "2", FAKE_CENSUS_ERR: "census: vessel locked: run `lares vault unlock`, then down" } });
+    assert.equal(r.status, 2);
+    assert.match(r.stderr, /vessel locked: run tools\/lares-container\.(sh|ps1) vault unlock, then down/);
+    assert.doesNotMatch(r.stderr, /could not answer/);
+    assert.equal(stopped(r.calls), false, r.calls);
   });
 
   test(`${name}: up translates compose failure after its own error`, async () => {

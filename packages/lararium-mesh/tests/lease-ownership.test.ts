@@ -40,11 +40,11 @@ describe("lease-ownership — one fold, two planes, two spaces", () => {
     expect(feed).not.toBe(fence);
   });
 
-  it("★ the FENCE is rooted in the daemon bag; the FEED is relative to its board ★", () => {
-    // The fence names an absolute bag — one specific doc, this vessel's own. The feed carries no
+  it("★ the FENCE is rooted in the control home; the FEED is relative to its board ★", () => {
+    // The fence names an absolute bag — one specific doc, this vessel's own control document (`control-home`). The feed carries no
     // scheme and no bag, so it addresses whichever board holds it and can follow a realm onto a
     // shared one without dragging the daemon's authority space along.
-    expect(leaseEpochPrefix(REALM)).toContain("/bags/daemon/");
+    expect(leaseEpochPrefix(REALM)).toContain("/bags/control/");
     expect(realmFeedPrefix(REALM)).not.toContain("bags/daemon");
     expect(realmFeedPrefix(REALM)).not.toContain("lar:///");
   });

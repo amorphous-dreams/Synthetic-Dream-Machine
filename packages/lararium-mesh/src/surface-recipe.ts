@@ -39,7 +39,7 @@ import { effectiveRecipe, type RecipePlane } from "./recipe-planes.js";
 import { isCapabilityProfile, type CapabilityProfile } from "./session-contract.js";
 import type { DocumentFacet, FacetLayer, SessionDocumentFacets } from "./session-document-view.js";
 import {
-  ORACLE_BAG, expandRecipe, recipeFromRecord, wikiBagUri, wikiSlotKindOf,
+  ORACLE_BAG, expandRecipe, recipeFromRecord, wikiBagUri, wikiCanonOf, wikiSlotKindOf,
   type SlotUri, type WikiRecipe, type WikiSlotKind,
 } from "./wiki-recipe.js";
 
@@ -77,6 +77,7 @@ export interface SurfacePluginInputs {
 
 export interface SurfaceRecipeInput {
   readonly wikiSlug: string;
+  readonly recipe?: WikiRecipe;
   readonly planes:   VesselRecipePlanes;
   readonly face:     SurfaceFace;
   /** May this face read the bag? The grant's answer; the recipe never widens it. */
@@ -206,10 +207,10 @@ export async function resolveSurfaceRecipe(input: SurfaceRecipeInput): Promise<S
     return tiddlerText(planes.read(plane, bag));
   };
 
-  const canon = wikiBagUri(slug);
+  const canon = wikiCanonOf(input.recipe ?? { wikiSlug: slug });
   const derived = deriveWikiRecipe({ slug, record: standing?.record, canonUrl: documentOf(canon) });
   if (!derived.ok) return refused(derived.cause === "no-such-bag" ? "wiki-unknown" : "recipe-malformed", derived.detail);
-  const recipe = derived.recipe;
+  const recipe = input.recipe ?? derived.recipe;
 
   const slots: SurfaceSlot[] = [];
   const unresolved: SlotUri[] = [];

@@ -277,7 +277,7 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
     // it and the pair would stand off for a person (`disk-projection#/projection-law`, no base and a real
     // difference). This witness measures what the daemon's mirror WRITES and then unlinks, so the hand
     // lays its files in a holding tree shaped as a wiki's own (LOAD derives the loci title from the path)
-    // and the projector lays every file fresh under the daemon wiki's folder (`wikis/kahua-<tag>/`).
+    // and the projector lays every file fresh under the daemon wiki's folder (`wikis/daemon-<F>/`).
     const HAND_META = "type: image/png\ntags: witness\n";
     const holding = join(scratch, "wikis", "holding", "ha.ka.ba/t/witness");
     mkdirSync(holding, { recursive: true });

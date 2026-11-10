@@ -492,11 +492,11 @@ A vessel that imports a bag from a foreign cabalGroup parses its memes, verifies
 
 <<~ ahu slot=`#/publication-and-discovery`>>
 
-!! Publication & Discovery — the offering, the crossroads announce, the handle card
+!! Publication & Discovery — the offering, the Nexus's public boards, the handle card
 
 ''The lamplighter carries the basket; the kahu decides to plant'' (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/offering`>> #/charge, operator 2026-09-13, quote license). `nexus publish` names a LAMPLIGHTER act (the offering's own cap names `offer` · `carry` · `witness`; how they sit against the ruled Lamplighter stack `carry` · `tend/island` · `tend/reach` stands OPEN, `offering.mem` #/the-caps) that never ratchets, distinct from the grammar cadence (`nexus kahuli grammar`) that installs. That cadence turns on a joint apart from the Nexus kahu quorum's admit, kapae and seal: infrastructure operators ratify it on their own hearth and device users adopt (`kahu.mem` ``kahu#/nexus-scale``). ''`--apply` MUST'' mint a signed offering naming a collection by its region cid and announce it on the crossroads plane, and it ''MUST NOT'' install anything, ratchet anything, reach another vessel, compile a list of offerings, or carry a second signing hand (`offering.mem` #/apply). Only the RECEIVING hearth's own `kāhuli grammar` ratchets, at the operator's own hand. ''Status, honestly'': the record + recompute + antigen fold stand BUILT (`dcec1ef0b`, `6df13cffc`); `--apply` itself stands HELD at `packages/lares-cli/src/commands/nexus-publish.ts:60-66`, and the announce record, the taker's `--from` door, and the `offer`/`carry`/`witness` cap names all stand UNBUILT (`offering.mem` meta `status-why`).
 
-''The crossroads announce'' — crossroads-plane carries a kūkala (a public cry: notice, tombstone, or kāpae) and //"names only that it exists"//, never the doc (<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/crossroads`>> #/open, quote license). One crossroads serves ONE Nexus, by ruling (2026-09-03): ''no confederation-wide floor exists, by design''. Crossing costs a DECLARING ACT — bytes sitting in a vessel's mirror publish nothing; an act carries them across, and the declaration duplicates while the content never does (`crossroads.mem` #/open).
+''The crossroads announce'' — crossroads-plane carries a kūkala (a public cry: notice, tombstone, or kāpae) and //"names only that it exists"//, never the doc (<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/crossroads`>> #/open, quote license). One crossroads serves ONE Nexus, by ruling (2026-09-03): ''no confederation-wide floor exists, by design''. Crossing costs a DECLARING ACT — bytes sitting in a vessel's mirror publish nothing; an act carries them across, and the declaration duplicates while the content never does (`crossroads.mem` #/open). ''Where each announce rests, by placement:'' the Nexus's signed publications (each offering's announce from `nexus publish`, each floor release from `nexus release`) rest on its publication board (`publicationDocUrl`), and each realm-bag announce on its realm-announce board (`realmAnnounceDocUrl`); the federation gate carries both beside the crossroads document, no recipe mounts either and no mirror names either, so no announce reaches `bags/crossroads/` and a file hand-placed under the crossroads mirror reads as neither.
 
 ''Handle announce cards'' ride the same law: WRITE-OPEN, READ-CERTIFIED (#/the-planes). The board gates nothing at write time — gating there would require a compiled who-may-announce set, which builds the rejected registry (`handle-announce.mem`/`handle-announce.ts:18-25`) — and standing arrives only from a READ verdict against the card's own chain.
 
@@ -679,6 +679,6 @@ The carriage-client fetch row stays OWED (measured 2026-10-22). The vessel-side 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;19hUbqH1f0Eb_XFqOc-VKMcIcI6P8ZP0FfhNwUpd9oQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xjk66XhOc58HrPNq_9vegdB0N3nqBM_frBbEcPuZabA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

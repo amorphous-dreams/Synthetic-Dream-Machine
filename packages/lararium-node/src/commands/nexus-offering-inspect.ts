@@ -1,7 +1,7 @@
 /**
  * nexus-offering-inspect — inspect one exact immutable gift already carried by this Nexus.
  *
- * This is deliberately a read seam. It opens the deterministic Crossroads board only when the
+ * This is deliberately a read seam. It opens the deterministic publication board only when the
  * board already exists, verifies the signed offering, and reports the local CAS gradient. It does
  * not create a board, fetch bytes, consult Offering Antigen, install anything, or touch genesis.
  *
@@ -12,7 +12,7 @@
 
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  crossroadsDocUrl,
+  publicationDocUrl,
   inspectPluginOffering,
   offeringAnnounceKey,
   PLUGIN_OFFERING_ANNOUNCE_DOMAIN,
@@ -42,7 +42,7 @@ export interface NexusOfferingInspectResult {
   /** The read transport completed locally; this says nothing about semantic acceptance or adoption. */
   readonly transport: {
     readonly status: "complete";
-    readonly source: "local-crossroads";
+    readonly source: "local-publication-board";
     readonly remoteFetch: false;
   };
   /** Signed descriptor inspection and byte materialization are observations, not a take decision. */
@@ -71,18 +71,18 @@ export interface NexusOfferingInspectResult {
 
 function parseAnnounce(raw: unknown, cid: string): PluginOfferingAnnounce {
   if (typeof raw !== "object" || raw === null) {
-    throw new NexusOfferingInspectError(`offering ${cid} is malformed on the Crossroads board`);
+    throw new NexusOfferingInspectError(`offering ${cid} is malformed on the publication board`);
   }
   const text = tiddlerText(raw as StoredLarRecord);
   if (text === null) {
-    throw new NexusOfferingInspectError(`offering ${cid} is malformed on the Crossroads board`);
+    throw new NexusOfferingInspectError(`offering ${cid} is malformed on the publication board`);
   }
   let parsed: unknown;
   try { parsed = JSON.parse(text); } catch {
-    throw new NexusOfferingInspectError(`offering ${cid} is malformed on the Crossroads board`);
+    throw new NexusOfferingInspectError(`offering ${cid} is malformed on the publication board`);
   }
   if (typeof parsed !== "object" || parsed === null) {
-    throw new NexusOfferingInspectError(`offering ${cid} is malformed on the Crossroads board`);
+    throw new NexusOfferingInspectError(`offering ${cid} is malformed on the publication board`);
   }
   const announce = parsed as Partial<PluginOfferingAnnounce>;
   if (
@@ -91,7 +91,7 @@ function parseAnnounce(raw: unknown, cid: string): PluginOfferingAnnounce {
     typeof announce.offering !== "object" ||
     announce.offering === null
   ) {
-    throw new NexusOfferingInspectError(`offering ${cid} is malformed on the Crossroads board`);
+    throw new NexusOfferingInspectError(`offering ${cid} is malformed on the publication board`);
   }
   return announce as PluginOfferingAnnounce;
 }
@@ -105,19 +105,19 @@ export async function runNexusInspectOffering(
   }
   const storageDir = opts.storageDir ?? larDataDir();
   const vesselKey = opts.ownVesselKey ?? await loadVesselVerifyingKey();
-  const boardUrl = crossroadsDocUrl(nodeNexusIsland({ ownVesselKey: vesselKey }));
+  const boardUrl = publicationDocUrl(nodeNexusIsland({ ownVesselKey: vesselKey }));
   const { repo } = opts;
   let board: { doc(): LarDoc | undefined };
   try {
     board = await resolveBootDoc<LarDoc>(repo, boardUrl, {
-      tideline: "hearth-private", label: "board:crossroads",
+      tideline: "hearth-private", label: "board:publication",
     });
   } catch {
-    throw new NexusOfferingInspectError(`offering ${opts.offeringCid} is not present on the local Crossroads board`);
+    throw new NexusOfferingInspectError(`offering ${opts.offeringCid} is not present on the local publication board`);
   }
   const record = ownEntry(board.doc()?.tiddlers, offeringAnnounceKey(opts.offeringCid));
   if (record === undefined) {
-    throw new NexusOfferingInspectError(`offering ${opts.offeringCid} is not present on the local Crossroads board`);
+    throw new NexusOfferingInspectError(`offering ${opts.offeringCid} is not present on the local publication board`);
   }
   const announce = parseAnnounce(record, opts.offeringCid);
   const casDir = opts.casDir ?? casDirForStorage(storageDir);
@@ -137,7 +137,7 @@ export async function runNexusInspectOffering(
   return {
     offeringCid: opts.offeringCid,
     boardUrl,
-    transport: { status: "complete", source: "local-crossroads", remoteFetch: false },
+    transport: { status: "complete", source: "local-publication-board", remoteFetch: false },
     inspection: { status: "verified", byteStatus, adoption: "not-requested" },
     verification: observed.verification,
     bytes: { held: observed.bytes.held, missing: observed.bytes.pending, invalid: observed.bytes.corrupt },

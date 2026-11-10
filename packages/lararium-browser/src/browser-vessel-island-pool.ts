@@ -16,7 +16,8 @@
  */
 
 import {
-  VesselIslandPoolCore,
+  VesselIslandPoolCore, answerRestAsk,
+  type IslandMsg_RestAsk, type VesselWorkerHandle,
   type Repo,
   type IslandMsg_Event,
   type LarIslandToVesselMsg,
@@ -50,6 +51,8 @@ export interface BrowserVesselIslandPoolOptions {
   portPolicy?: PortPolicy;
   onPortMessage?: (binding: string, islandKey: string, msg: PortIslandToVesselMsg) => void;
   onPortDrop?: (islandKey: string, type: string, reason: "no-port-lease") => void;
+  /** V2: does the vessel's rest hold a document sealed or held? A wiki island's store asks before it rests a byte of one. */
+  restsSealed?: (documentId: string) => Promise<boolean>;
   /** What the vessel read of its receipt requests, each time it moves; the page shows it, so a person's tooling waits on the vessel's own word. */
   onRest?: (state: VesselRestState) => void;
   /** Called when an island outside any session emits a verse-event reaction or one of the camera's kinds
@@ -83,6 +86,9 @@ export class BrowserVesselIslandPool extends VesselIslandPoolCore {
           // A wiki island reaches no dyad capability: its ask draws `aside` and one named warning.
           const handle = browserSpawnWorker(workerUrl);
           refuseBrowserDyadAsks(handle);
+          // THE REST ASK (sealed-store#/owed, V2): the island's store asks before it rests a byte of a document, and the
+          // vessel answers from its sealed rest, as it answers the daemon island; a pool with no rest answers unsealed.
+          answerBrowserRestAsks(handle, opts.restsSealed);
           // The browser vessel's lift stands its main Repo beside the pool, and that Repo is the browser's receipt
           // capability: a wiki island's receipt ask draws the pool's answer (the one answerer) exactly where the pool holds
           // one, since the page carries no record a worker could refuse from. A pool built with no Repo grants none.
@@ -102,4 +108,17 @@ export class BrowserVesselIslandPool extends VesselIslandPoolCore {
       ...(opts.onRest ? { onRest: opts.onRest } : {}),
     });
   }
+}
+
+/** Answer one island's `rest:ask` over its handle from the vessel's sealed rest (`answerRestAsk`); a pool with no rest
+ *  answers unsealed, so an island never waits on silence. */
+export function answerBrowserRestAsks(handle: Pick<VesselWorkerHandle, "post" | "listen">, restsSealed?: (documentId: string) => Promise<boolean>): void {
+  const caps = restsSealed ? { restsSealed } : {};
+  handle.listen((raw: unknown) => {
+    const m = raw as Partial<IslandMsg_RestAsk> | null;
+    if (!m || m.type !== "rest:ask" || typeof m.requestId !== "string") return;
+    void answerRestAsk(caps, m as Partial<IslandMsg_RestAsk> & { requestId: string }).then((reply) => {
+      try { handle.post(reply); } catch { /* the island went away: nothing to answer */ }
+    });
+  });
 }

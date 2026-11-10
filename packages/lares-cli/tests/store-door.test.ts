@@ -19,6 +19,7 @@
  *     wasted `ownedStore` act for a no-op row.
  */
 import { describe, expect, it, vi } from "vitest";
+import { ControlHomeUnavailable, VESSEL_LOCKED, CONTROL_HOME_UNNAMED } from "@lararium/mesh";
 
 vi.mock("../src/local-connector.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../src/local-connector.js")>();
@@ -178,6 +179,13 @@ describe("storeVerb — a locked vessel refuses by name before the door parks (L
     expect((err as Error).message).toBe("the vessel stands locked: `lares vault unlock`");
     expect(storeFailure(err).code).toBe("vessel-locked");
     expect(invokeLocal).not.toHaveBeenCalled();
+  });
+
+  it("RED (CLI refused unlock): a direct-holder row whose control document could not open names the refusal, never a bare error", () => {
+    const locked = storeFailure(new ControlHomeUnavailable("the vessel's key did not open: custody locked", VESSEL_LOCKED));
+    expect(locked.code).toBe(VESSEL_LOCKED);
+    expect(locked.hint).toMatch(/vault unlock/);
+    expect(storeFailure(new ControlHomeUnavailable("no face", CONTROL_HOME_UNNAMED)).code).toBe(CONTROL_HOME_UNNAMED);
   });
 
   it("CONTROL: an unlocked vessel carries the row through the door", async () => {

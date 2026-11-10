@@ -1,4 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
+import { controlStoreOf } from "@lararium/mesh";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -78,7 +79,7 @@ describe("face bound session receipts", () => {
     let releaseHold: (() => void) | undefined;
     const holdStarted = new Promise<void>((resolve) => { releaseHold = resolve; });
     let held: { requestId: string; verb: string; requestedBy: string; face?: string } | undefined;
-    const seat = () => makeUdsSeat({ daemonHandle, composite, claim, repo, sessions: door,
+    const seat = () => makeUdsSeat({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo, sessions: door,
       placeVerb: (o) => {
         placed.push(o);
         if (o.verb === "hold") { held = o; releaseHold?.(); return; }
@@ -157,7 +158,7 @@ describe("face bound session receipts", () => {
       expect((pending.receipt as { position: { durable?: unknown } }).position.durable).toBeUndefined();
       const later = await open("a");
       expect(await ask(later.peer, later.env, "session:receipt", "a-only")).toMatchObject({ receipt: { state: "done" } });
-      await composite.put(buildReceiptFact({ requestId: faceScopedId("proof-a", "unlanded"), state: "committed",
+      await controlStoreOf(daemonHandle).put(buildReceiptFact({ requestId: faceScopedId("proof-a", "unlanded"), state: "committed",
         inputDigest: "digest", bootEpoch: claim.bootEpoch, seq: 1000, face: "proof-a", action: "hold" }),
         { kind: "lares-verb", requestId: "unlanded" });
       await repo.flush();
@@ -193,7 +194,7 @@ describe("face bound session receipts", () => {
     const door: UdsSessionDoor = { anchorNow: async () => ({ kind: "place" as const, aid: "place-fixture", head: "place-head" }), open: async ({ faceRef }) => ({ ok: true, supply: {
       face: face(faceRef), ordinal: Math.max(0, "abc".indexOf(faceRef.slice(-1))), profile: "seat", presenter: `verified-${faceRef}`, anchor: { kind: "place" as const, aid: "place-fixture", head: "place-head" }, mint: fixtureMint } }) };
     const front = serveUdsFront({ claim });
-    front.attach(makeUdsSeat({ daemonHandle, composite, claim, repo, sessions: door, ring: 1,
+    front.attach(makeUdsSeat({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo, sessions: door, ring: 1,
       placeVerb: (o) => {
         const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done",
           ...(o.face !== undefined && { face: o.face }), cause: "test-worker", batchMode: "best-effort", results: { summary: { ok: true } } });

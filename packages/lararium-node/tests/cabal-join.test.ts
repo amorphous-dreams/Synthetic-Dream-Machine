@@ -18,6 +18,7 @@ import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import * as ed from "@noble/ed25519";
 import { hex, hexToBytes, signCabalInvite, writeVouch, realmVouchBoardDocUrl, materializeSharedLarDoc, DEFAULT_JOIN_POLICY, DAEMON_BAG_ID, seedDaemonDoc } from "@lararium/mesh";
+import { seedFoundedDaemonDoc } from "./daemon-control-fixture.js";
 import {
   generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootVerifyingKey,
 } from "../src/node-vessel-identity.js";
@@ -55,8 +56,9 @@ const verify = (bytes: Uint8Array, sigHex: string, did: string) =>
  */
 async function seedDaemonBootstrap(): Promise<void> {
   await ownedStore(larDataDir(), async (repo) => {
-    const handle = seedDaemonDoc(repo);
-    await repo.flush();
+    // The founding mints the control document beside the secret home and names it in the daemon document: the lease fence
+    // reads there, and a crossing refuses where it reads none.
+    const handle = await seedFoundedDaemonDoc(repo);
     mkdirSync(dirname(larBootstrapPath()), { recursive: true });
     const packedTiddlers = { [DAEMON_BAG_ID]: { title: DAEMON_BAG_ID, text: handle.url, kind: "oracle" } };
     writeFileSync(larBootstrapPath(), JSON.stringify({ text: JSON.stringify({ tiddlers: packedTiddlers }) }), "utf8");
@@ -262,6 +264,34 @@ describe("cabal join — the crossing, and what it refuses", () => {
     // must never block.
     const explicit = await direct(runCabalJoin)({ realm: REALM, applicant: joiner2, epoch: 0 });
     expect(explicit.refusal).toBe("no-invite");   // reaches the REAL gate (no vouch for joiner2), not the view refusal
+  });
+
+  it("★ M16 ON THE CONTROL DOCUMENT — a daemon doc that names no control document refuses the crossing and the mint, never prices at genesis ★", async () => {
+    const joiner = await foreignNym(22);
+    await direct(runCabalVouch)({ joiner, realm: REALM, boundEpoch: 0 }, NOW);
+    // MUTATION: the bootstrap points at a daemon document that names no control document, and the custody row's address
+    // drops its control id: nothing names the control document. The old read priced this at genesis epoch 0 and admitted.
+    await ownedStore(larDataDir(), async (repo) => {
+      const handle = seedDaemonDoc(repo);
+      await repo.flush();
+      const packedTiddlers = { [DAEMON_BAG_ID]: { title: DAEMON_BAG_ID, text: handle.url, kind: "oracle" } };
+      writeFileSync(larBootstrapPath(), JSON.stringify({ text: JSON.stringify({ tiddlers: packedTiddlers }) }), "utf8");
+    });
+    const { updateCustodyRow } = await import("../src/custody-seat.js");
+    const { SECRET_HOME_FILE } = await import("../src/secret-home-store.js");
+    const { decodeSecretHomeAddress, encodeSecretHomeAddress } = await import("@lararium/mesh");
+    await updateCustodyRow("identity", SECRET_HOME_FILE, (standing) => {
+      const address = standing ? decodeSecretHomeAddress(standing) : null;
+      if (!address) throw new Error("fixture: no secret home address stands");
+      return { plaintext: encodeSecretHomeAddress({ documentId: address.documentId, key: address.key }), value: undefined };
+    });
+    await expect(direct(runCabalJoin)({ realm: REALM, applicant: joiner }))
+      .rejects.toMatchObject({ message: expect.stringMatching(/incomplete-view.*control-home-unavailable/) });
+    await expect(direct(runCabalVouch)({ joiner: await foreignNym(23), realm: REALM }, NOW))
+      .rejects.toMatchObject({ message: expect.stringContaining("control-home-unavailable") });
+    // An explicit --epoch still states the caller's own fence.
+    const explicit = await direct(runCabalJoin)({ realm: REALM, applicant: joiner, epoch: 0 });
+    expect(explicit.admitted).toBe(true);
   });
 
   it("refuses before reading a board when the realm is not 64 hex", async () => {

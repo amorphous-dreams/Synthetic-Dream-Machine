@@ -36,7 +36,7 @@
 
 import { createInterface } from "node:readline/promises";
 import { stdin, stdout } from "node:process";
-import { join, extname, resolve, relative, sep } from "node:path";
+import { join, extname, resolve, relative, sep, basename } from "node:path";
 import { statSync, readdirSync, readFileSync, existsSync, writeFileSync } from "node:fs";
 import { larRoot, larBagsDir, larWikisDir, larProjectionsDirOrNone, vesselDid } from "../env.js";
 
@@ -44,7 +44,8 @@ import { larRoot, larBagsDir, larWikisDir, larProjectionsDirOrNone, vesselDid } 
 const projectionsDirs = (): { projections?: string } => { const p = larProjectionsDirOrNone(); return p === undefined ? {} : { projections: p }; };
 import { readCarrierText, fileToUriForSource } from "../ingest-core.js";
 import { stageBodyToCas, carrierCasFlagged, declaredType } from "../cas-stage.js";
-import { ACTION_VERBS, isActionVerb, isTransferVerb, isBagVerb, newChangeId, newRequestId, taskContentId, OUTCOME_URI_PREFIX, wikiSlugOfBag } from "@lararium/mesh";
+import { metaTableFromBody } from "@lararium/node";
+import { bagManifestUri, BAG_MANIFEST_FILE, ACTION_VERBS, isActionVerb, isTransferVerb, isBagVerb, newChangeId, newRequestId, taskContentId, OUTCOME_URI_PREFIX, wikiSlugOfBag } from "@lararium/mesh";
 import { summaryOutput, type SubmitResult } from "../verb-result.js";
 import { runVerb } from "../verb-call.js";
 import { LocalWaitExpired, queryReceipt, type ReceiptAnswer } from "../local-connector.js";
@@ -360,7 +361,13 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
             .filter((f) => { try { return statSync(f).isFile(); } catch { return false; } })
         : [sourceUri])
         // A `.meta` sidecar rides WITH its content file, never as a carrier of its own.
-        .filter((f) => !f.endsWith(".meta"));
+        .filter((f) => !f.endsWith(".meta"))
+        // The catalog owns only a declaration naming this source bag; authored meta.mem files still travel.
+        .filter((f) => {
+          if (!isDir || f !== join(sourceUri, BAG_MANIFEST_FILE)) return true;
+          try { return metaTableFromBody(readFileSync(f, "utf8"))["title"] !== bagManifestUri(basename(resolve(sourceUri))); }
+          catch { return true; }
+        });
       // The feed lands BOTH memetic-wikitext memes AND every other legal TW5
       // filetype: each carrier rides its text + a `lar:` title + its extension, and
       // the island routes by content (an SOH heading → the memetic shore; else

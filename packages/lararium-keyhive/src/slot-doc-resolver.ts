@@ -27,11 +27,12 @@
  */
 
 import {
-  DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX,
-  computeRecipeFingerprint, emptyLarDoc, storedLarRecord, resolveSlotDoc, resolveFaceWorkingSlot, tiddlerText,
+  CONTROL_HOME_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX,
+  computeRecipeFingerprint, emptyLarDoc, mintVesselDocumentId, storedLarRecord, mutableLarRecord, resolveSlotDoc, resolveFaceWorkingSlot, tiddlerText,
   wikiBagUri, wikiDraftDocKey, wikiWorkingFloorKey, requireLarDid,
   type CompositeStore, type WorkingFloorAnchor, type LarDoc, type SlotReach, type WikiSlotKind,
 } from "@lararium/mesh";
+import * as A from "@automerge/automerge";
 import type { CatalogAccessor } from "@lararium/tw5";
 import type { CapabilityProvider } from "./capability-provider.js";
 import type { FaceBagDoor } from "./face-bag-door.js";
@@ -47,6 +48,10 @@ export interface SlotDocResolverArgs {
   /** How long the floor lift waits on a silent floor document before it names it and skips it (default: the house document-ready bound). */
   readonly liftReadBoundMs?: number;
   readonly repo: SlotDocRepo;
+  readonly deviceScoped?: (slug: string) => boolean;
+  readonly control?: CompositeStore;
+  /** Name a device slot's document to the vessel's sealed map BEFORE its first byte moves (`announceSlotDoc`). */
+  readonly announceDevice?: (kind: Exclude<WikiSlotKind, "temp">, documentId: string) => void;
   /** The daemon-bag composite — binding records live here. */
   readonly daemonStore: CompositeStore;
   /** Absent at the faceless floor: a floor document carries no Keyhive registration. */
@@ -252,10 +257,48 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
     return { fingerprint: await computeRecipeFingerprint(recipeTrace), recipeTrace };
   };
 
+  const deviceMints = new Map<string, Promise<SlotDoc>>();
+  const deviceSlot = async (kind: Exclude<WikiSlotKind, "temp">, mint: boolean): Promise<SlotDoc | null> => {
+    if (!args.control) throw new Error("slot-doc: device-scoped slots require control store");
+    const title = `${CONTROL_HOME_ID}/daemon-slot/${kind}/${encodeURIComponent(args.personaGroupId ?? "floor")}`;
+    const named = tiddlerText(await args.control.get(title));
+    if (named) return { url: named, reach: "vessel-only" };
+    if (!mint) return null;
+    const pending = deviceMints.get(title);
+    if (pending) return pending;
+    const control = args.control;
+    const created = (async (): Promise<SlotDoc> => {
+      const existing = tiddlerText(await control.get(title));
+      if (existing) return { url: existing, reach: "vessel-only" };
+      // NAMED BEFORE ITS FIRST BYTE: the id mints ahead, the vessel's sealed map hears it (the device slot seals under the
+      // lit face, or beside the control document under the vessel's key at the floor), the control document names it, and
+      // only then does the document stand and rest.
+      const minter = args.repo;
+      if (typeof minter.import !== "function") {
+        const created = minter.create<LarDoc>(emptyLarDoc());
+        args.announceDevice?.(kind, created.documentId);
+        await created.whenReady?.();
+        await minter.flush([created.documentId]);
+        await control.put(mutableLarRecord(title, { text: created.url, kind: "oracle", "face-reach": "vessel-only" }, "slot-doc:device"), { kind: "lares-verb", requestId: "slot-doc:device" });
+        return { url: created.url, reach: "vessel-only" };
+      }
+      const documentId = mintVesselDocumentId();
+      args.announceDevice?.(kind, documentId);
+      await control.put(mutableLarRecord(title, { text: `automerge:${documentId}`, kind: "oracle", "face-reach": "vessel-only" }, "slot-doc:device"), { kind: "lares-verb", requestId: "slot-doc:device" });
+      const handle = minter.import(A.save(A.from(emptyLarDoc() as unknown as Record<string, unknown>)), { docId: documentId as never });
+      await handle.whenReady?.();
+      await args.repo.flush([handle.documentId]);
+      return { url: handle.url, reach: "vessel-only" };
+    })();
+    deviceMints.set(title, created);
+    try { return await created; } finally { deviceMints.delete(title); }
+  };
+
   const slotDoc = async (slug: string, kind: WikiSlotKind, opts?: { mint?: boolean }): Promise<SlotDoc | null> => {
     await args.seatSettled?.();
     if (kind === "temp") return null;
     const mint = opts?.mint ?? true;
+    if (args.deviceScoped?.(slug)) return deviceSlot(kind, mint);
     // The working kind derives from the face and the wiki's slug, never from the recipe's trace.
     if (kind === "working") return workingDoc(slug, mint);
     const { fingerprint, recipeTrace } = await traceOf(slug);
@@ -278,6 +321,12 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
     bindings: async (fingerprint, recipeTrace, slug) => {
       await args.seatSettled?.();
       mounted.set(slug, { fingerprint, recipeTrace });
+      if (args.deviceScoped?.(slug)) {
+        const personal = (await deviceSlot("personal", true))!;
+        const draft = (await deviceSlot("draft", true))!;
+        const working = (await deviceSlot("working", true))!;
+        return { personalUrl: personal.url, draftUrl: draft.url, workingUrl: working.url };
+      }
       const personal = await binding("personal", fingerprint, recipeTrace);
       const draft    = await draftDoc(slug, fingerprint, recipeTrace);
       const working  = (await workingDoc(slug, true))!;

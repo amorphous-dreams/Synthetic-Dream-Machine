@@ -2,7 +2,7 @@
  * floor-porch — the Nexus's floor at the porch: the release chain it answers a stranger with, and the floor blobs it
  * names, each by a name the stranger brings.
  *
- *   GET /floor/<Nexus AID>   → the porch answer (`floor-answer`): the release rows this vessel's crossroads board carries,
+ *   GET /floor/<Nexus AID>   → the porch answer (`floor-answer`): the release rows this vessel's publication board carries,
  *                              each with the charter's epoch lineage riding its record. Public by construction: the
  *                              answer holds signatures and public keys, and a reader verifies every step itself.
  *   GET /cas/<cid>           → a floor blob the chain's HEAD release names (its manifest and the two snapshots) and
@@ -21,7 +21,7 @@
 import type { IncomingMessage, Server, ServerResponse } from "node:http";
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  NEXUS_AID_PATTERN, crossroadsDocUrl, floorAnswerOf, floorReleaseRowsFromBoard, foldFloorReleases, materializeSharedLarDoc, readFloorManifest,
+  NEXUS_AID_PATTERN, publicationDocUrl, floorAnswerOf, floorReleaseRowsFromBoard, foldFloorReleases, materializeSharedLarDoc, readFloorManifest,
   type LarDoc,
 } from "@lararium/mesh";
 import { CAS_BLOB_RE, answerClosedDoor } from "./bulb-routes.js";
@@ -65,7 +65,7 @@ export function mountFloorPorch(args: {
   const { httpServer, dispatcher, repo, nexusPubkey, casDir, serveCas } = args;
   const answers = NEXUS_AID_PATTERN.test(nexusPubkey);
   let board: Promise<{ doc(): LarDoc | undefined }> | null = null;
-  const boardOf = () => (board ??= materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads"));
+  const boardOf = () => (board ??= materializeSharedLarDoc(repo, publicationDocUrl(nexusPubkey), "board:publication"));
 
   const pathOf = (req: IncomingMessage): string => { try { return new URL(req.url ?? "/", "http://localhost").pathname; } catch { return ""; } };
   const owns = (req: IncomingMessage): boolean => {

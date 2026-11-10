@@ -15,7 +15,7 @@
  */
 
 import { tiddlerText, mkDaemonResidencyOp, mkDaemonWikiAlert, bagStackFromRec, recipeUri, SYSTEM_BAGS, wikiBagUri, wikiSlotUri, WARD_AUDIT_URI_PREFIX, type CompositeStore, type DaemonMsg_ResidencyOp, type DaemonMsg_WikiAlert, type LarDoc, type LarTiddlerRecord, type Repo, type WikiSlotKind, ownEntry } from "@lararium/mesh";
-import { plainEntries, storedDeleted, SYSTEM_CANON_BAGS } from "@lararium/mesh";
+import { plainEntries, plainField, storedDeleted, SYSTEM_CANON_BAGS } from "@lararium/mesh";
 import { ACTIVE_WIKI_URI } from "./active-wiki.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import { findOrThrow, makeCatalogAccessor, type CatalogAccessor } from "./catalog-accessor.js";
@@ -53,7 +53,7 @@ function listRegisteredDocUris(doc: LarDoc | undefined): string[] {
   const out: string[] = [];
   for (const [title, rec] of Object.entries(doc?.tiddlers ?? {})) {
     const text = tiddlerText(rec);
-    if (text && text.startsWith("automerge:")) out.push(title);
+    if (text && text.startsWith("automerge:") && plainField(rec, "kind") !== "private-synced") out.push(title);
   }
   return out;
 }
@@ -279,9 +279,10 @@ export function makeWikiUnpinReactor(catalog: CatalogAccessor, post: ResidencyOp
 /** Register as "ward-alert". `post` = ctx.post (DaemonMsg_WikiAlert rides it). */
 export function makeWardAlertReactor(
   composite: CompositeStore,
+  control: CompositeStore,
   post: (msg: DaemonMsg_WikiAlert) => void,
 ): VerbReactor {
-  return async (args) => fileWardRefusal(composite, post, args);
+  return async (args) => fileWardRefusal(composite, control, post, args);
 }
 
 /**
@@ -294,6 +295,8 @@ export function makeWardAlertReactor(
  */
 export async function fileWardRefusal(
   composite: CompositeStore,
+  /** The vessel's control document as a store (`controlStoreOf`): the audit row rests there, never in a wiki layer. */
+  control: CompositeStore,
   post: (msg: DaemonMsg_WikiAlert) => void,
   args: Readonly<Record<string, unknown>>,
 ): Promise<Record<string, unknown>> {
@@ -327,12 +330,12 @@ export async function fileWardRefusal(
       return { cleared: standoff, alerted: slug ?? "none", bagId, uri };
     }
 
-    // (a) Durable audit in the composite's default writable working layer: append-only, never coalesced.
+    // (a) Durable audit in the vessel's control document: append-only, never coalesced, never in a mirrored layer.
     // A standoff's row carries its key as its title and lands on ENTERING the standoff, once.
     const auditTitle = `${WARD_AUDIT_URI_PREFIX}${standoff ?? crypto.randomUUID()}`;
-    if (standoff === null || (await composite.get(auditTitle)) === null) {
-      await composite.put(
-        { tiddler: { title: auditTitle, "alert-kind": wardKind, bag: bagId, uri, reason, ts, ...(standoff !== null ? { standoff } : {}), "disk-projection": "no" }, meta: { authority: "disk-ward" } },
+    if (standoff === null || (await control.get(auditTitle)) === null) {
+      await control.put(
+        { tiddler: { title: auditTitle, "alert-kind": wardKind, bag: bagId, uri, reason, ts, ...(standoff !== null ? { standoff } : {}) }, meta: { authority: "disk-ward" } },
         { kind: "lares-verb", requestId: `ward-${ts}` },
       );
     }

@@ -8,15 +8,15 @@
  *                 directly to the daemon TW5 wiki. The dispatcher watches wiki
  *                 change events and picks these up immediately.
  *
- *   REMOTE path — external vessels write a verb-summons tiddler at
- *                 bags/daemon/summons/<id> to the Automerge doc. IslandAdaptor flows
+ *   REMOTE path — a verb-summons tiddler at bags/control/summons/<id> lands in the
+ *                 vessel's control document (`control-home`). IslandAdaptor flows
  *                 it into the TW5 wiki. The dispatcher's Automerge subscriber
  *                 sees the summons, calls placeVerb() to create the volatile
  *                 invocation, then tombstones the summons tiddler.
  *                 The summons carries edge transport, not durable coordination state.
  *
- * Outcome flow: handler result → concludeVerb → daemon composite store (its default writable, the
- *   daemon wiki's working slot, sealed under the lit face) → bags/daemon/outcomes/<id> in Automerge → syncs.
+ * Outcome flow: handler result → concludeVerb → the control store (the vessel's control document, no recipe layer and
+ *   no mirror, sealed under the lit face) → bags/control/outcomes/<id> in Automerge.
  *   Durable shared meaning begins at the outcome, not at the summons.
  *
  * Daemon-only law: ONLY the daemon VM runs a VerbDispatcher. Pinned wiki and
@@ -262,6 +262,12 @@ export class VerbTable {
 export interface VerbDispatcherOptions {
   readonly daemonVm:   TW5Engine;
   readonly daemon:    CompositeStore;
+  /**
+   * The vessel's CONTROL document as a store (`controlStoreOf`): the summons this dispatcher heeds, the outcome ledger and
+   * effect index it writes and reads. No recipe composes it and no mirror names it, so no control record reaches a
+   * projected layer by placement.
+   */
+  readonly control:   CompositeStore;
   readonly registry:  VerbTable;
   readonly verifier?: CapabilityVerifier;
   /** Who a verb presents as. Absent: the invocation's own `requestedBy`. The one place every cap check resolves it. */
@@ -293,10 +299,10 @@ export class VerbDispatcher {
   startupScan: Promise<void> = Promise.resolve();
 
   private async scanSummons(): Promise<void> {
-    const titles = (await this.opts.daemon.listVisible()).filter((title) => title.startsWith(SUMMONS_URI_PREFIX));
+    const titles = (await this.opts.control.listVisible()).filter((title) => title.startsWith(SUMMONS_URI_PREFIX));
     for (const title of titles) {
       if (!this.unsubAutomerge) return;
-      const top = await this.opts.daemon.resolveTopmost(title);
+      const top = await this.opts.control.resolveTopmost(title);
       if (!top) continue;
       await this.receiveSummons({
         title,
@@ -309,7 +315,7 @@ export class VerbDispatcher {
 
   private receiveSummons(change: LarTiddlerChange): Promise<void> {
     return heedSummons(change, {
-      daemon: this.opts.daemon,
+      control: this.opts.control,
       isInFlight: (requestId) => this.inFlight.has(requestId),
       seenRequestIds: this.seenSummons,
       placeVerb: (invocation) => { this.placeVerb(invocation); },
@@ -448,10 +454,10 @@ export class VerbDispatcher {
       verb: invocation.action, args: invocation.args, face: invocation.face, effectKey,
     });
 
-    const priorFact = await this.opts.daemon.getLive(EFFECT_URI_PREFIX + effectKey);
+    const priorFact = await this.opts.control.getLive(EFFECT_URI_PREFIX + effectKey);
     const priorRequestId = priorFact ? String(priorFact.tiddler["request-id"] ?? "") : "";
     if (priorRequestId) {
-      const priorOutcome = await this.opts.daemon.getLive(OUTCOME_URI_PREFIX + priorRequestId);
+      const priorOutcome = await this.opts.control.getLive(OUTCOME_URI_PREFIX + priorRequestId);
       if (!priorOutcome) {
         // The effect index still names a prior requestId, but that attempt's own outcome
         // is GONE (evicted by the CAS sweep's retention window) — the dedup shortcut has
@@ -459,7 +465,7 @@ export class VerbDispatcher {
         // effect whose prior record a caller can no longer check. Conclude THIS attempt
         // as refused; never run the handler.
         console.log(`[verb-dispatcher] effect "${effectKey}" indexes prior request "${priorRequestId}" whose outcome is evicted — refusing (retention-gap), handler not run`);
-        await writeOutcome(this.opts.daemon, {
+        await writeOutcome(this.opts.control, {
           invocation, status: "error",
           errorMessage: `effect "${effectKey}" indexes a prior outcome ("${priorRequestId}") that is no longer retained`,
           refusal: "retention-gap",
@@ -470,7 +476,7 @@ export class VerbDispatcher {
       const priorDigest = String(priorOutcome.tiddler["input-digest"] ?? "");
       if (priorDigest === inputDigest && this.replayAdmitted(invocation)) {
         const priorResults = JSON.parse(String(priorOutcome.tiddler["results"] ?? "{}")) as Record<string, VerbTargetResult>;
-        await copyEffectOutcome(this.opts.daemonVm, this.opts.daemon, invocation, {
+        await copyEffectOutcome(this.opts.daemonVm, this.opts.control, invocation, {
           priorRequestId, priorResults, inputDigest,
         });
         return;
@@ -478,7 +484,7 @@ export class VerbDispatcher {
       if (priorDigest !== inputDigest) console.log(`[verb-dispatcher] effect "${effectKey}" reused with a changed digest (request=${invocation.requestId}, prior=${priorRequestId}) — running fresh, no dedup`);
     }
 
-    await dispatchVerb(this.opts.daemonVm, this.opts.daemon, invocation, () => this.runHandler(invocation, signal));
+    await dispatchVerb(this.opts.daemonVm, this.opts.control, invocation, () => this.runHandler(invocation, signal));
   }
 
   start(): void {
@@ -500,7 +506,7 @@ export class VerbDispatcher {
         const abort = new AbortController();
         this.inFlight.add(invocation.requestId);
         this.inFlightAbort.set(invocation.requestId, abort);
-        void this.opts.daemon.getLive(OUTCOME_URI_PREFIX + invocation.requestId).then(async (prior) => {
+        void this.opts.control.getLive(OUTCOME_URI_PREFIX + invocation.requestId).then(async (prior) => {
           // Durable idempotency — the CRDT is the dedup store: a verb whose
           // outcome already landed has already taken effect, so skip re-execution
           // (exactly-once EFFECT, not delivery). See project_asymmetric_peer_handoff.
@@ -527,7 +533,7 @@ export class VerbDispatcher {
           // Effect dedup (D1): a distinct requestId naming the SAME effect skips the
           // handler entirely when a prior done attempt's digest matches; see above.
           if (invocation.effectKey) return this.dispatchWithEffectDedup(invocation, abort.signal);
-          return dispatchVerb(this.opts.daemonVm, this.opts.daemon, invocation, () => this.runHandler(invocation, abort.signal));
+          return dispatchVerb(this.opts.daemonVm, this.opts.control, invocation, () => this.runHandler(invocation, abort.signal));
         }).catch((err) => {
           console.error("[verb-dispatcher] verb dispatch crashed:", err);
         }).finally(() => {
@@ -539,7 +545,7 @@ export class VerbDispatcher {
     wiki.addEventListener("change", onWikiChange);
     this.unsubWiki = () => wiki.removeEventListener("change", onWikiChange);
 
-    this.unsubAutomerge = this.opts.daemon.subscribe((change) => {
+    this.unsubAutomerge = this.opts.control.subscribe((change) => {
       this.receiveSummons(change).catch((err) => {
         console.error("[verb-dispatcher] summons relay crashed:", err);
       });

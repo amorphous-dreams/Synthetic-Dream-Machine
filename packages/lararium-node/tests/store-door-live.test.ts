@@ -24,7 +24,7 @@ import { restEvery, restingRepo } from "./resting-repo.js";
 import {
   antigenEntriesFromBoard, edgeKapaeActsFromBoard, offeringAnnouncesFromDoc,
   verifiedVouchesFromBoard, hexToBytes, hex, materializeSharedLarDoc, kapaeAntigenDocUrl, sha256HexBytesSync,
-  fleetEdgeBoardDocUrl, realmVouchBoardDocUrl, crossroadsDocUrl, computePluginsCid, DAEMON_BAG_ID, seedDaemonDoc,
+  fleetEdgeBoardDocUrl, realmVouchBoardDocUrl, publicationDocUrl, computePluginsCid, DAEMON_BAG_ID, seedDaemonDoc,
   GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_GRAMMAR_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER,
   nexusAidOf, custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, signCarriageQuorum, signCarriageContract, admitCarriageCommit, openAdmitCarriage, federationPostureFromDoc,
   type NexusDoc, type LarDoc, type GenesisSeed,
@@ -46,6 +46,7 @@ import { seedFaceAtom } from "./atom-fixture.js";
 import { seedFleet } from "./fleet-seed-fixture.js";
 import { FIXTURE_PASSPHRASE } from "./custody-seat-fixture.js";
 import { seatScratchFaceRoute } from "./support/scratch-custody-setup.js";
+import { seedFoundedDaemonDoc } from "./daemon-control-fixture.js";
 
 // The faces this suite stands are founded under the fixture's route (the last auto-founder seated), so the twin's custody
 // opens them by that route when it first needs a face.
@@ -100,10 +101,10 @@ async function seatVessel(root: string): Promise<void> {
   // §2.1 — `cabal-vouch`'s `resolveBoundEpoch` reads the social bootstrap for a daemon doc URL
   // (`daemonDocUrlFromBootstrap`) and refuses fail-closed when it finds none. Seed a REAL daemon doc +
   // the bootstrap pointer in the EXACT shape `runInit` writes (flat `tiddlers[DAEMON_BAG_ID].text`), so
-  // `cabal-vouch`'s writer-test row reads a genesis (empty) fence rather than refusing "unreadable" —
-  // this fixture exercises the LIVE-PEER proof, not the daemon-doc-unreadable path.
+  // `cabal-vouch`'s writer-test row reads a genesis (empty) fence off the control document the founding names, rather
+  // than refusing "unreadable" — this fixture exercises the LIVE-PEER proof, not the fence-unreadable path.
   await ownedStore(larDataDir(), async (repo) => {
-    const handle = seedDaemonDoc(repo);
+    const handle = await seedFoundedDaemonDoc(repo);
     await repo.flush();
     mkdirSync(dirname(larBootstrapPath()), { recursive: true });
     const packedTiddlers = { [DAEMON_BAG_ID]: { title: DAEMON_BAG_ID, text: handle.url, kind: "oracle" } };
@@ -183,7 +184,7 @@ const WRITERS: readonly Writer[] = [
     // `args.source` is filled in per-test (below) once `base` exists — the WRITERS table is built at
     // module scope, before any test's own scratch dir.
     verb: "nexus-publish", args: { handleIndex: 0 },
-    board: (i) => crossroadsDocUrl(i), label: "board:crossroads",
+    board: (i) => publicationDocUrl(i), label: "board:publication",
     id: (o) => String(o["offeringCid"]),
     carries: (doc, id) => offeringAnnouncesFromDoc(doc).some((a) => a.offeringCid === id),
   },
@@ -202,7 +203,7 @@ describe("the store door — a writer reaches the standing vessel's live peers",
       // ── the twin stands a vessel: its Repo holds the store, a peer syncs it live ──
       at(twin);
       const { port1, port2 } = new MessageChannel();
-      const live = restingRepo(larDataDir(), { network: [new MessageChannelNetworkAdapter(port1)], sharePolicy: async () => true });
+      const live = restingRepo(larDataDir(), { network: [new MessageChannelNetworkAdapter(port1)], sharePolicy: async () => true }, { heldHomes: true });
       const peer = new Repo({ network: [new MessageChannelNetworkAdapter(port2)], sharePolicy: async () => true });
       let liveOut: Record<string, unknown>;
       let liveSig: string | undefined;

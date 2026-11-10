@@ -63,6 +63,21 @@ export function isArchivalVerb(verb: string): verb is ArchivalVerb {
 /** Tag carried by every effect-record tiddler in the bag's residency ledger. */
 export const LARES_EFFECT_RECORD_TAG = stableTagUri("lares-effect-record");
 
+/** Recognize an audit record by its declared record shape, independently of its address. */
+export function hasEffectRecordKind(fields: Record<string, unknown>): boolean {
+  const tags = fields["tags"];
+  const tagged = typeof tags === "string" ? tags.split(/\s+/).includes(LARES_EFFECT_RECORD_TAG)
+    : Array.isArray(tags) && tags.includes(LARES_EFFECT_RECORD_TAG);
+  return tagged
+    && typeof fields["event-id"] === "string" && fields["event-id"] !== ""
+    && typeof fields["request-id"] === "string" && fields["request-id"] !== ""
+    && typeof fields["bag"] === "string" && fields["bag"] !== ""
+    && typeof fields["actor"] === "string" && fields["actor"] !== ""
+    && typeof fields["timestamp"] === "string" && fields["timestamp"] !== ""
+    && typeof fields["action-verb"] === "string" && fields["action-verb"] !== ""
+    && typeof fields["archival-verb"] === "string" && isArchivalVerb(fields["archival-verb"]);
+}
+
 // ── URI shape ───────────────────────────────────────────────────────────────
 
 /** `lar:///ha.ka.ba/bags/<bag>/ledger/residency/` — residency-ledger prefix for one bag. */

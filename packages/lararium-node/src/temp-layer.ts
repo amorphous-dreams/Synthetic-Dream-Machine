@@ -10,7 +10,7 @@
  *
  *   READ-BACK  at mount, ahead of the projector's first pass, every `.tid` under the mirror re-enters the layer's store,
  *              so the projector's start scan finds each record standing and never reads a carrier as dropped. A file
- *              under `<projections>/observe` never reads back, an internal-volatile title never re-enters, and an
+ *              with an internal-volatile title never re-enters, and an
  *              atomic write's stray temp never parses.
  *   HOUSEKEEP  at start and then once a day (an injectable clock): an orphan `*.lar-tmp-*` past the settle window goes,
  *              and so does a settled carrier whose record left the layer (a tombstone stands) or whose consent the
@@ -29,7 +29,7 @@ import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, renam
 import { createHash } from "node:crypto";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { carrierHash } from "@lararium/mesh";
-import { isObserveProjectionPath, isTempLayerInternalTitle } from "./bag-paths.js";
+import { isTempLayerInternalTitle } from "./bag-paths.js";
 
 /** One day, the housekeeping period. */
 export const HOUSEKEEPING_PERIOD_MS = 24 * 60 * 60 * 1000;
@@ -126,21 +126,18 @@ function walkFiles(dir: string): string[] {
 
 /**
  * READ-BACK: every `.tid` carrier under a temp mirror re-enters the layer through `put`, synchronously before this
- * returns its count. A file under `<projections>/observe` refuses, an internal-volatile title never re-enters, an
+ * returns its count. An internal-volatile title never re-enters, an
  * orphan temp and a `.meta` sidecar never parse, and a title the layer already holds stays as the layer holds it.
  */
 export function readBackTempCarriers(opts: {
   readonly mirrorRoot: string;
-  readonly projectionsRoot: string;
   readonly holds: (title: string) => boolean;
   readonly put: (fields: TidFields) => void;
 }): { readonly read: number; readonly refused: number } {
   let read = 0;
   let refused = 0;
-  if (isObserveProjectionPath(opts.projectionsRoot, opts.mirrorRoot)) return { read, refused: 1 };
   for (const file of walkFiles(opts.mirrorRoot)) {
     if (!file.endsWith(".tid") || file.includes(ORPHAN_MARK)) continue;
-    if (isObserveProjectionPath(opts.projectionsRoot, file)) { refused++; continue; }
     let fields: TidFields | null = null;
     try { fields = parseTidCarrier(readFileSync(file, "utf8")); } catch { /* unreadable: no record */ }
     if (fields === null || isTempLayerInternalTitle(fields["title"]!)) { refused++; continue; }

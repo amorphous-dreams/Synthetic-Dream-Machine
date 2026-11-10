@@ -58,6 +58,9 @@ const LIVE_LINES: CensusLines = {
   socketPresent: () => udsSocketPresent(),
 };
 
+/** The one line a locked hearth's census answers: the cure, in the order a person runs it. */
+export const VESSEL_LOCKED_CENSUS = "vessel locked: run `lares vault unlock`, then down";
+
 const HELD_REFUSALS: ReadonlySet<string> = new Set(["save-unbooked", "save-unmapped", "save-unsealed"]);
 
 /** Read both lines into one census. */
@@ -91,6 +94,13 @@ export async function readCensus(lines: CensusLines = LIVE_LINES): Promise<Censu
   catch (e) { shore = { carriers: [], unanswered: [{ part: "the disk projector", why: e instanceof Error ? e.message : String(e) }] }; }
   for (const c of shore.carriers) items.push({ kind: "carrier", state: c.state, uri: c.uri, bagId: c.bagId, island: c.island });
   unanswered.push(...shore.unanswered);
+  // A LOCKED HEARTH SAYS SO IN ONE LINE. Its key stands shut, so the islands refuse `vessel-locked` and nothing the census
+  // asks can answer; the cure reads "unlock, then down", never "could not answer". A herm never unlocks, so it never hears it.
+  const lockedHearth = (custody?.["locked"] === true && custody["standing"] !== "herm")
+    || unanswered.some((u) => /\bvessel-locked\b/.test(u.why));
+  if (lockedHearth && items.length === 0) {
+    return { clean: false, items, unanswered: [{ part: "the vessel", why: VESSEL_LOCKED_CENSUS }] };
+  }
   return { clean: items.length === 0 && unanswered.length === 0, items, unanswered };
 }
 
@@ -107,12 +117,13 @@ export async function cmdCensus(args: ParsedArgs, lines: CensusLines = LIVE_LINE
   emit(args, {
     ok: code === 0,
     data: { census: reading },
-    ...(code === 2 ? { error: { code: "census-unanswered", message: reading.unanswered.map((u) => `${u.part}: ${u.why}`).join("; ") } } : {}),
+    ...(code === 2 && reading.unanswered[0]?.why === VESSEL_LOCKED_CENSUS ? { error: { code: "vessel-locked", message: VESSEL_LOCKED_CENSUS } } : {}),
+    ...(code === 2 && reading.unanswered[0]?.why !== VESSEL_LOCKED_CENSUS ? { error: { code: "census-unanswered", message: reading.unanswered.map((u) => `${u.part}: ${u.why}`).join("; ") } } : {}),
     ...(code === 3 ? { error: { code: "census-items", message: `${reading.items.length} item(s) rest nowhere yet; a stop now drops them` } } : {}),
     human: () => {
       if (code === 0) { console.log("census: clean — no save waits in memory, and the disk projector owes no carrier"); return; }
       for (const item of reading.items) console.log(censusLine(item));
-      for (const u of reading.unanswered) console.error(`census: unanswered — ${u.part}: ${u.why}`);
+      for (const u of reading.unanswered) console.error(u.why === VESSEL_LOCKED_CENSUS ? `census: ${u.why}` : `census: unanswered — ${u.part}: ${u.why}`);
       if (reading.items.length > 0) console.error(`census: ${reading.items.length} item(s) rest nowhere yet; a stop now drops them`);
     },
   });

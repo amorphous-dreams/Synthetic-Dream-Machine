@@ -27,6 +27,7 @@ import type { DocumentValue, HolderRefusal, OpenedValue } from "./content-key-ho
 import { DOCUMENT_HANG_BOUND_MS } from "./find-or-throw.js";
 import { readSealedAddress } from "./sealed-chunk.js";
 import { SealedDocumentStore, type SaveSession, type SealedValueAddresses } from "./sealed-doc-store.js";
+import type { HeldRestKey } from "./held-rest-key.js";
 import type { CompositeStore } from "./composite-store.js";
 import type { LarTiddlerStore } from "./tiddler-store.js";
 import type { LarDoc } from "./base-doc.js";
@@ -368,7 +369,11 @@ export function answerSlotNotices(port: Port, onSlot: (bagId: string, documentId
 // ── The composer ──────────────────────────────────────────────────────────────────────────────────
 /** A bag a document belongs to, and that bag's face (`faceProofSubjectRef`); a null face: the bag rests sealed and no face
  *  that could wear it has lit, so its document opens for no one and its save waits in memory. */
-export interface SealedBag { readonly bagId: string; readonly face: string | null }
+export interface SealedBag {
+  readonly bagId: string; readonly face: string | null;
+  /** The vessel's secret home: it rests sealed under this held key, with no session and no face (`held-rest-key`). */
+  readonly held?: HeldRestKey;
+}
 
 export interface SealedRest<S extends SaveSession = SaveSession> {
   /** The storage adapter the Repo stands on. */

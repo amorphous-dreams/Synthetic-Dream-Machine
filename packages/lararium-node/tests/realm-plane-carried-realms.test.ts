@@ -13,10 +13,10 @@ describe("carried realm planes without a primary charter", () => {
   test("boot and refresh list every carried plane and leave the primary default empty", async () => {
     const repo = new Repo({});
     const registry = repo.create(emptyLarDoc());
-    const crossroadsHandle = repo.create(emptyLarDoc());
+    const announceHandle = repo.create(emptyLarDoc());
     let carried = [charter("carried-a"), charter("carried-b")];
     const holder = makeRealmPlane({
-      repo, registry, crossroadsHandle,
+      repo, registry, announceHandle,
       membership: { holdsCarriagePeer: () => false },
       base: { mayFederate: async () => false },
       carried: () => carried,

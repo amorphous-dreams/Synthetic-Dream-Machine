@@ -21,7 +21,7 @@
  */
 
 import * as ed from "@noble/ed25519";
-import { hex, type MembershipEnvelope } from "@lararium/mesh";
+import { hex, type CarriageLog, type MembershipEnvelope } from "@lararium/mesh";
 import {
   startHermRelayPort,
   type HermRelayPort, type RelayAnnounceObserver,
@@ -54,6 +54,8 @@ export function startCarriageRelay(cfg: {
   onSiblingFrame?: RelayAnnounceObserver["onSiblingFrame"];
   /** Where the relay journals the successor drops it verified, so a restarted herm keeps them. */
   dropJournalPath?: string;
+  /** The place's carriage log: every drop the relay keeps lands its receipt there (`/carried/<id>` answers it). */
+  carriageLog?: CarriageLog;
 }): Promise<CarriageRelay> {
   return (async (): Promise<CarriageRelay> => {
     const tracker = makeBagTracker();
@@ -81,7 +83,7 @@ export function startCarriageRelay(cfg: {
         heldByHolder.delete(from);
       },
       ...(cfg.onSiblingFrame ? { onSiblingFrame: cfg.onSiblingFrame } : {}),
-    }, cfg.dropJournalPath ? { dropJournalPath: cfg.dropJournalPath } : {});
+    }, { ...(cfg.dropJournalPath ? { dropJournalPath: cfg.dropJournalPath } : {}), ...(cfg.carriageLog ? { carriageLog: cfg.carriageLog } : {}) });
     const gatePubKey = hex(await ed.getPublicKeyAsync(cfg.gateSeed));
     return {
       port: relay.port,

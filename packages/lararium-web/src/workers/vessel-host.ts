@@ -49,6 +49,7 @@ import {
 import { didFromVerifyingKey, foldLarFrame, parseMeshPeer, readLarFrame, type MeshPeer } from "@lararium/mesh";
 import type { PageToVessel, SeedRest, VesselBoot, VesselError, VesselStatus, VesselToPage } from "../vessel-protocol.js";
 import { CeremonyRefused, standCeremonyDoor } from "./ceremony-door.js";
+import { ceremonyPlaceCard, PlaceCardRefused } from "./place-card.js";
 
 export interface VesselScope {
   postMessage(msg: VesselToPage, transfer?: Transferable[]): void;
@@ -57,7 +58,7 @@ export interface VesselScope {
 const errorOf = (err: unknown): VesselError => ({
   name: err instanceof Error ? err.name : "Error",
   message: err instanceof Error ? err.message : String(err),
-  ...(err instanceof BrowserFleetJoinRefused || err instanceof CeremonyRefused || err instanceof VesselSessionRefused ? { refusal: err.refusal } : {}),
+  ...(err instanceof BrowserFleetJoinRefused || err instanceof CeremonyRefused || err instanceof VesselSessionRefused || err instanceof PlaceCardRefused ? { refusal: err.refusal } : {}),
 });
 
 export interface VesselHostEnv {
@@ -224,6 +225,9 @@ export function standVesselHost(env: VesselHostEnv = {}) {
         const target = owner ? conns.get(owner) : undefined;
         if (target && wearsLitFace(target)) target.post({ t: "port-msg", binding, islandKey, msg });
       }),
+      // THE FOUNDING'S PLACE CARD rides this session's ceremony door: the card shows in the ceremony document alone, and the
+      // place KEL arms only once the person types it back.
+      placeFoundingCard: ceremonyPlaceCard(conn.door),
       ...(b.relayUrl ? { relayUrl: b.relayUrl } : {}),
       ...(b.floorCard ? { floorCard: b.floorCard } : {}),
       ...(b.floorAnchor ? { floorAnchor: b.floorAnchor } : {}),

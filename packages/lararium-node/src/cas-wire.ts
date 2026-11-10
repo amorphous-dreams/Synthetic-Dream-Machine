@@ -30,7 +30,7 @@
 import {
   carrierShareDecision, muVoidBytes, verifyCidBytes, cidDigestClass,
   type MembershipChannel, type MembershipEnvelope,
-  type AntigenRing, type FederationGate, type NexusMembership, type PlaneSeal,
+  type AntigenRing, type CarriageLog, type FederationGate, type NexusMembership, type PlaneSeal,
 } from "@lararium/mesh";
 import type { DocumentId } from "@automerge/automerge-repo";
 import type { ShadowConsult } from "@lararium/mesh";
@@ -74,6 +74,9 @@ export interface CasWireServerDeps {
    *  document belongs to? A member set aside fetches none of the realm's blocks, sealed or not, and draws the
    *  same Mu a miss draws. Absent → no document reads as closed to anyone by a realm's shadow. */
   readonly realmAside?: (peerId: string, documentId: DocumentId) => boolean;
+  /** The place's carriage log: each sealed block served lands one receipt keyed by its cid (the peer never rides it).
+   *  Absent → nothing logs. */
+  readonly carriageLog?: CarriageLog;
 }
 
 /**
@@ -119,6 +122,10 @@ export async function decideAndServeWantBlock(
   if (!mayCarry) return { kind: CAS_MU, bytes: muVoidBytes() };            // DENY → Mu (byte-identical to satiety)
   const bytes = readVerifiedCasBlobFromFs(cid, deps.cadDir);
   if (!bytes) return { kind: CAS_MU, bytes: muVoidBytes() };              // NOTHING TO SERVE, or altered at rest → the SAME Mu (satiety)
+  // THE CARRIAGE LOG: the block's receipt lands before it leaves, keyed by its cid; a second fetch appends nothing. A log
+  // that refuses names the fault and the carriage still runs: the log claims what it carried, never an absence.
+  try { await deps.carriageLog?.carry(cid, "cas-block"); }
+  catch (e) { console.warn(`[carriage-log] the receipt for ${cid} did not land (${e instanceof Error ? e.message : String(e)})`); }
   return { kind: CAS_BLOCK, cid, bytes };                                  // MEMBER + sealed + held → carry the ciphertext
 }
 

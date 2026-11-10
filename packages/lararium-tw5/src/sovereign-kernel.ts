@@ -46,6 +46,7 @@ import {
   wikiBagUri,
   wikiSlotUri,
   expandRecipe,
+  recipeLayerIndex,
   mkBreath,
   mkFault,
   isVesselToIslandMsg,
@@ -57,6 +58,7 @@ import {
   GENESIS_FLOOR_TIDDLER,
   plainRecordOrNull,
   resolveFloor,
+  islandSecretHome,
   type KahuaStageFace,
   type Repo,
   type DocHandle,
@@ -66,7 +68,8 @@ import {
   type IslandMsg_Manifest,
   type IslandToVesselMsg,
   type SlotUri,
-  type LarTiddlerRecord, ownEntry} from "@lararium/mesh";
+  type LarTiddlerRecord, ownEntry, CONTROL_HOME_ID, controlStoreOf, floorAnswerStore, mkDaemonFloorAnswer, ControlHomeUnavailable,
+  AutomergeDocStore, slotLayerFlags } from "@lararium/mesh";
 import { IslandKernel } from "./island-kernel.js";
 import { waitForSlotDocument } from "./slot-wait.js";
 import { buildIslandRecipe, seedDrained } from "./island-recipe.js";
@@ -117,6 +120,9 @@ export interface IslandHostShore {
   listen(onMessage: (raw: unknown) => void): void;
   /** Build the Repo storage adapter for this manifest (undefined = in-memory). */
   storage(msg: IslandMsg_Manifest): StorageAdapterInterface | undefined;
+  /** Ask the vessel's rest whether it holds a document sealed (`vesselRestAsker`); the daemon's secret home asks it before
+   *  each secret act. Absent: the island reaches no secret home. */
+  restsAtVessel?: (documentId: string) => Promise<boolean>;
   /** Optional IoC handshake fired after the listener registers (browser mkReady). */
   ready?(): void;
   /**
@@ -161,6 +167,8 @@ export function runSovereignKernel(
   /** This island has said `receipt:asks-done`: only then may the vessel's `receipt:close` end its receipts. */
   let _asksDonePosted = false;
   let _composite: CompositeStore | null = null;
+  /** The daemon island's control store (`grants.controlUrl`); null on every wiki island. */
+  let _control: CompositeStore | null = null;
   let _ctx:       IslandContext | null  = null;
   let _lazyUnsub: (() => void) | null   = null;
   let _bridgeUnsub: (() => void) | null = null;   // the outbound bridge (Road B) — one listener, cancelled at teardown
@@ -168,6 +176,14 @@ export function runSovereignKernel(
   let _activeWikiUri                    = "";
   // A session island's two asked gates (catalog names, content addresses) ride this channel; null outside a session.
   let _view: ViewChannel | null         = null;
+  // THE SECRET HOME rides the daemon manifest alone (`daemonAuth.secretUrl`), and only where the host can ask the vessel's
+  // rest; a wiki island's manifest carries no daemonAuth and reaches none.
+  const secretHomeOf = (msg: IslandMsg_Manifest): Pick<IslandContext, "secretStore" | "secretRest"> => {
+    const url = msg.daemonAuth?.secretUrl;
+    if (!url || !host.restsAtVessel || !_repo) return {};
+    const home = islandSecretHome(_repo, url, host.restsAtVessel);
+    return { secretStore: home.store, secretRest: home.rest };
+  };
 
   // Live CRDT patches flow through AutomergeDocStore.handle.on("change") →
   // MemeProvider → IslandAdaptor → the shore queue. The packed engine is a synchronous applier;
@@ -392,20 +408,44 @@ export function runSovereignKernel(
       if (slot === wikiSlotUri(slug, "draft"))    return msg.grants.draftUrl    ?? null;
       if (slot === wikiSlotUri(slug, "working"))  return msg.grants.workingUrl  ?? null;
       if (slot === wikiSlotUri(slug, "personal")) return msg.grants.personalUrl ?? null;
+      // A canon that follows the face (`canonBag`) mounts from its own grant; the wiki's own bag then rides as vessel state.
+      if (msg.recipe.canonBag !== undefined && slot === msg.recipe.canonBag) return msg.grants.canonUrl ?? null;
       if (slot === wikiBagUri(slug))              return msg.ownedDocument?.documentUrl ?? msg.grants.wikiUrl ?? null;
       if (slot === ORACLE_BAG)                 return msg.grants.islandUrl;
       // `bags/kahua` answers from the grant the face proof filled, never from a catalog row (`kahua-layer`).
       return librarySlotUrl(slot, msg.grants, catalog ? (s) => libraryDocUrl(catalog, s) : null);
     };
 
+    // THE CONTROL DOCUMENT, an access grant the daemon island alone carries: resolved here and held as its own store, never
+    // laid into the recipe's composite, so no control record reaches the engine's wiki or a mirrored layer.
+    _control = null;
+    if (msg.grants.controlRefusal) {
+      // A LOCKED (or faceless) VESSEL FAILS CLOSED: the island resolves no control document and every control act refuses by name.
+      // The floor still answers the acts that write no control fact: each answer crosses to the vessel's own floor store, the
+      // memory the verb door waits on, and rests nowhere.
+      _control = floorAnswerStore(new ControlHomeUnavailable("the vessel cannot read its control document now", msg.grants.controlRefusal),
+        (record) => _post(mkDaemonFloorAnswer({ tiddler: { ...record.tiddler }, ...(record.meta ? { meta: { ...record.meta } } : {}) })));
+    } else if (msg.grants.controlUrl) {
+      const controlHandle = await _resolveSlot(_repo, msg.grants.controlUrl, CONTROL_HOME_ID, msg.wikiUri);
+      if (!controlHandle) return;
+      _handles.set(CONTROL_HOME_ID, controlHandle);
+      _control = controlStoreOf(controlHandle);
+    }
+
     const slots = expandRecipe(msg.recipe);
     const ready: Array<{ slot: SlotUri; handle: DocHandle<LarDoc> }> = [];
+    // THE FACE'S CANON MOUNTS AFTER EA. It rests sealed under the face, and its values open only through this island's own
+    // document-store door, which stands with the island's holder at `onEa`: a restart that waited on it here, before ea,
+    // would wait on itself (the vessel's load refuses `holder-locked` until the door answers). So it mounts once ea lands,
+    // the way the daemon's working slot lifts onto the face's document after the seat stands.
+    let deferredCanon: { readonly slot: SlotUri; readonly url: string } | null = null;
 
     for (const slot of slots) {
       if (slot === wikiSlotUri(slug, "temp")) continue;
       if (slot === ORACLE_BAG) { ready.push({ slot, handle: laraiumHandle }); continue; }
       const docUrl = await slotUrl(slot);
       if (!docUrl) continue;   // ungranted/unregistered slot — in-memory or absent
+      if (msg.recipe.canonBag !== undefined && slot === msg.recipe.canonBag) { deferredCanon = { slot, url: docUrl }; continue; }
       const handle = await _resolveSlot(
         slot === wikiBagUri(slug) && _ownedRepo ? _ownedRepo : _repo,
         docUrl, slot, msg.wikiUri,
@@ -546,7 +586,7 @@ export function runSovereignKernel(
               // reconciling the SAME path boot just walked.
               // The CID plane the kernel already pulls engine/plugin bytes from, lifted to
               // behaviors: a residency handler resolves a carrier body a verb rode by reference.
-              _ctx = { wikiUri: msg.wikiUri, composite: _composite!, tw5, handles: _handles, post: _post, requestDrain: () => _adaptor?.requestDrain(), repo: _repo!, kahuaUrl: msg.grants.kahuaUrl ?? null, kahuaFace, kahuaFaceWatch, ...(_receipt ? { receipt: _receipt } : {}), catalogUrl, faceCatalogUrl, oracleUrl: msg.grants.islandUrl, engine, recipe: msg.recipe, resolveByCid, ...(resolved ? { resolvedMount: true } : {}), ...(view ? { viewCatalog: (name: string) => view.catalog(name) } : {}) };
+              _ctx = { wikiUri: msg.wikiUri, composite: _composite!, ...(_control ? { control: _control } : {}), tw5, handles: _handles, post: _post, requestDrain: () => _adaptor?.requestDrain(), repo: _repo!, kahuaUrl: msg.grants.kahuaUrl ?? null, kahuaFace, kahuaFaceWatch, ...(_receipt ? { receipt: _receipt } : {}), catalogUrl, faceCatalogUrl, oracleUrl: msg.grants.islandUrl, engine, recipe: msg.recipe, resolveByCid, diskMirrors: msg.diskMirrors ?? [], ...(resolved ? { resolvedMount: true } : {}), ...(view ? { viewCatalog: (name: string) => view.catalog(name) } : {}), ...secretHomeOf(msg) };
               // Read-side skinny-handle rehydration: answer TW5's own `lazyLoad` event (fired when
               // `getTiddlerText` meets a bodyless `_is_skinny` tiddler) by pulling the body from the corpus
               // CAS through the SAME resolveByCid shore the kernel already rides for engine/plugin blobs. The
@@ -587,6 +627,44 @@ export function runSovereignKernel(
 
     tick("ea");
     handler.sendEa(msg.wikiUri);
+    if (deferredCanon) void _mountDeferredCanon(msg, deferredCanon.slot, deferredCanon.url);
+  }
+
+  /**
+   * Mount the face's canon once ea stands (see `deferredCanon`): resolve its document, then splice its layer in just above the
+   * nearest layer the recipe lays beneath it. A canon that never arrives, or an island torn down meanwhile, mounts nothing and
+   * says so; the daemon wiki stands on its other layers.
+   */
+  async function _mountDeferredCanon(msg: IslandMsg_Manifest, slot: SlotUri, docUrl: string): Promise<void> {
+    const composite = _composite;
+    const repo = _repo;
+    if (!composite || !repo) return;
+    const out = await waitForSlotDocument<DocHandle<LarDoc>>({
+      find:      () => repo.find<LarDoc>(docUrl as AutomergeUrl),
+      peerCount: () => repo.peers.length,
+      absence:   (rejection) => rejection instanceof Error && /is unavailable/.test(rejection.message),
+      now:       mono,
+      lastHeard: () => _lastSyncHeardAt,
+      sleep:     (ms) => new Promise((res) => setTimeout(res, ms)),
+      defer,
+      onWake: (wake) => {
+        _syncWakes.add(wake);
+        repo.networkSubsystem.on("peer", wake);
+        return () => { _syncWakes.delete(wake); repo.networkSubsystem.off("peer", wake); };
+      },
+      budgets:   { silenceMs: SLOT_SILENCE_TIMEOUT_MS, hardCapMs: SLOT_READY_HARD_CAP_MS, pollMs: SLOT_POLL_MS },
+    }).catch((error: unknown) => ({ outcome: "refused" as const, why: error instanceof Error ? error.message : String(error) }));
+    if (_composite !== composite) return;
+    if (out.outcome !== "ready") {
+      console.warn(`[island] the face's canon ${slot} did not mount after ea (${out.outcome}${"why" in out ? `: ${String(out.why)}` : ""}): the daemon wiki stands on its other layers`);
+      return;
+    }
+    if (composite.hasBag(slot)) return;
+    const store = new AutomergeDocStore(out.handle, slot);
+    composite.addLayer({ bagId: slot, store, ...slotLayerFlags(slot, msg.recipe.wikiSlug) }, recipeLayerIndex(composite, msg.recipe, slot));
+    _handles.set(slot, out.handle);
+    store.emitInitialReplay();
+    store.markSyncComplete();
   }
 
   // ── Teardown / Demote (OTP terminate) ──────────────────────────────────────

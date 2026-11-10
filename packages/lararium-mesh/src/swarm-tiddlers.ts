@@ -1,7 +1,7 @@
 /**
- * swarm-tiddlers — the swarm's live controls as signed records in the daemon wiki, under `$:/lares/swarm/`.
+ * swarm-tiddlers — the swarm's live controls as signed records in the vessel's control document, under `$:/lares/swarm/`.
  *
- * The title law (control plane, never projected) lives in `lar-uris.ts`; this module holds the records. Each record rests as the JSON of
+ * Placement keeps them off disk: the control document has no mirror (`control-home`); this module holds the records. Each record rests as the JSON of
  * `{ body, signer, sig }` in a tiddler's text, the body naming the `swarm-act` domain, and a READ verifies it before it trusts a byte:
  * shape, domain, face group, signature, the title the body belongs at, and the role of the signer. Any failure reads as refused, and the
  * caller treats a refused record as absent, so a read fails closed.
@@ -97,8 +97,8 @@ export const swarmGoSpentTitle = (goCid: string): string => `${SWARM_URI_PREFIX}
 export const swarmRosterTitle = (seat: string): string => `${SWARM_URI_PREFIX}roster/${segment(seat)}`;
 export const swarmReceiptTitle = (tree: string): string => `${SWARM_URI_PREFIX}receipt/${segment(tree)}`;
 
-/** The fields a swarm record rests under: its text, and the mark that no mirror projects it. */
-export const swarmRecordFields = (text: string): Record<string, string> => ({ text, "disk-projection": "no" });
+/** The fields a swarm record rests under: its text. The record rests in the control document, which no mirror names. */
+export const swarmRecordFields = (text: string): Record<string, string> => ({ text });
 
 /** `after` names the go this one follows at the branch's title (its cid), or null for the branch's first: one issue, one go. */
 export interface SwarmGoBody { readonly act: "go"; readonly group: string; readonly branch: string; readonly head: string; readonly after: string | null }

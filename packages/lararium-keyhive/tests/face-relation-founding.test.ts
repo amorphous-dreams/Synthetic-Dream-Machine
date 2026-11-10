@@ -18,6 +18,7 @@ import {
 import { foundTheFace, foundThePlace, runApplyAdmitPayload, runDeviceAdmitEdge } from "../src/index.js";
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { withMemorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 
 const key = (seed: Uint8Array) => groupSecretOpenerFromSeed(seed).deviceKey;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
@@ -26,10 +27,10 @@ const RECOVERED = "5d2c9e70-1b3a-4f68-8a47-c0e91d3b7a25";
 async function founded(n: number, relation?: string) {
   const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
   const vesselSeed = new Uint8Array(32).fill(80 + n), signerSeed = new Uint8Array(32).fill(90 + n), atomSeed = new Uint8Array(32).fill(100 + n);
-  const place = await foundThePlace({ repo, vesselSeed, hearthTrueName: "hearth" });
+  const place = withMemorySecretHome(await foundThePlace({ repo, vesselSeed, hearthTrueName: "hearth" }), repo);
   const input = {
     vesselTag: testVesselTagDoor(1),
-    repo, daemonHandle: place.daemonHandle, placeVerifyingKey: key(vesselSeed), vesselDisplayName: "founder",
+    repo, daemonHandle: place.daemonHandle, secretHandle: place.secretHandle, secretRest: { assertSealed: async () => true }, placeVerifyingKey: key(vesselSeed), vesselDisplayName: "founder",
     binding: { mode: "self-stood" as const, signerSeed }, hearthTrueName: "hearth", nexusPubkey: key(vesselSeed), atomSeed,
     ...(relation ? { faceRelation: relation } : {}),
   };
@@ -74,9 +75,9 @@ async function admitWith(extra: (head: { seq: number; cid: string }, group: stri
   const founderRepo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
   const founderSeed = new Uint8Array(32).fill(61), signerSeed = new Uint8Array(32).fill(62);
   const atomSeed = new Uint8Array(32).fill(63), joineeAtom = new Uint8Array(32).fill(64);
-  const founder = await foundThePlace({ repo: founderRepo, vesselSeed: founderSeed, hearthTrueName: "hearth" });
+  const founder = withMemorySecretHome(await foundThePlace({ repo: founderRepo, vesselSeed: founderSeed, hearthTrueName: "hearth" }), founderRepo);
   const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
-    repo: founderRepo, daemonHandle: founder.daemonHandle, placeVerifyingKey: key(founderSeed), vesselDisplayName: "founder",
+    repo: founderRepo, daemonHandle: founder.daemonHandle, secretHandle: founder.secretHandle, secretRest: { assertSealed: async () => true }, placeVerifyingKey: key(founderSeed), vesselDisplayName: "founder",
     binding: { mode: "self-stood", signerSeed }, hearthTrueName: "hearth", nexusPubkey: key(founderSeed), atomSeed,
   });
   const board = await materializeSharedLarDoc(founderRepo, personaKelBoardDocUrl(key(founderSeed)), "board:persona-kel");
@@ -90,7 +91,7 @@ async function admitWith(extra: (head: { seq: number; cid: string }, group: stri
     meshCabalDocIdHex: face.meshCabalDocIdHex, syncUrl: null, hearthDaemonUrl: founder.daemonUrl, personaUrl: face.personaUrl,
   });
   const joineeRepo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
-  const applied = await runApplyAdmitPayload({ repo: joineeRepo, daemonHandle: seedDaemonDoc(joineeRepo), atomSeed: joineeAtom, vesselDisplayName: "joinee", payload, nexusPubkey: key(founderSeed) });
+  const applied = await runApplyAdmitPayload({ repo: joineeRepo, daemonHandle: seedDaemonDoc(joineeRepo), secretHandle: seedDaemonDoc(joineeRepo), secretRest: { assertSealed: async () => true }, atomSeed: joineeAtom, vesselDisplayName: "joinee", payload, nexusPubkey: key(founderSeed) });
   return { ...applied, founderRelation: (face as unknown as { faceRelation: string }).faceRelation };
 }
 const faceAct = async (head: { seq: number; cid: string }, group: string, epoch: number, seed: Uint8Array) =>

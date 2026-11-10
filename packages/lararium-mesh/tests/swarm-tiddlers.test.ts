@@ -45,8 +45,8 @@ describe("the titles and the signing domain", () => {
     for (const bad of ["", ".", "..", "a\u0000b"]) expect(() => swarmGoTitle(bad), JSON.stringify(bad)).toThrow(SwarmRefused);
   });
 
-  test("RED: a swarm record carries disk-projection no; CONTROL: the fields hold the text and nothing that projects", () => {
-    expect(swarmRecordFields("{}")).toEqual({ text: "{}", "disk-projection": "no" });
+  test("a swarm record's fields hold its text and no residency field (the control document keeps it off disk)", () => {
+    expect(swarmRecordFields("{}")).toEqual({ text: "{}" });
   });
 });
 

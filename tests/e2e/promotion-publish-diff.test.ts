@@ -20,6 +20,7 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { stagedTarget, targetInstance, type LarInstance } from "../harness/instance.js";
 import { promoteLoadedTitles } from "../harness/promote.js";
+import { OUTCOME_URI_PREFIX } from "../../packages/lararium-mesh/src/verb-tiddler.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const BOOT_MEME = join(REPO_ROOT, "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem");
@@ -70,10 +71,10 @@ describe.skipIf(!stagedTarget)("promotion publish-diff — the cap-gated carrier
     const r = await lar.cli(["act", "MOVE", "--title", BOOT_URI, "--from", LARES_URI, "--to", LARARIUM_URI, "--yes", "--json"]);
     expect(r.json?.["ok"]).toBe(true);
     const data = r.json?.["data"] as Record<string, unknown>;
-    // THE PREFIX THIS READS IS BUILT, NEVER SPELLED. `OUTCOME_URI_PREFIX = `${DAEMON_BAG_ID}/outcomes/``
-    // resolves to `lar:///ha.ka.ba/bags/daemon/outcomes/`, so a marked spelling here matched nothing the
-    // code could produce — and the staged-mode early return above kept that red from ever surfacing.
-    expect(String(data?.["audit"])).toMatch(/bags\/daemon\/outcomes\//);  // the effect-record audit URI
+    // THE AUDIT NAMES THE OUTCOME BY THE BUILT PREFIX: `OUTCOME_URI_PREFIX = `${CONTROL_HOME_ID}/outcomes/`` (the outcome
+    // rests in the vessel's control document, placement over patterns), so the record reads under `bags/control/outcomes/`.
+    expect(String(data?.["audit"]).startsWith(OUTCOME_URI_PREFIX), String(data?.["audit"])).toBe(true);
+    expect(String(data?.["audit"])).toMatch(/^lar:\/\/\/ha\.ka\.ba\/bags\/control\/outcomes\/\S+$/);  // the effect-record audit URI
     expect(Number(data?.["moved"])).toBeGreaterThan(1);             // the WHOLE carrier group, not one title
   }, 60_000);
 

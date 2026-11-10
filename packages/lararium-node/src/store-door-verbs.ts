@@ -17,7 +17,7 @@
  *                                                the seat quorum's admission into the Kahu cabal, on the
  *                                                carriage board under its own prefix (`commands/nexus-cabal`)
  *   nexus-release                                the steward's seal of a floor release, with the cabal's approval of the
- *                                                manifest's exact bytes, landed on the crossroads board (`commands/nexus-release`)
+ *                                                manifest's exact bytes, landed on the publication board (`commands/nexus-release`)
  *   nexus-posture                                the per-Nexus federation posture joint (`nexus-doc`)
  *   nexus-admit-take                             a carried admit bundle's offline take + live re-present
  *                                                (`admit-bundle`)
@@ -34,8 +34,8 @@
  *   persona-new                                  a face onto a standing place (`commands/init`)
  *   persona-lease                                a signed lease advance for a face (`commands/persona-lease`)
  *   persona-kel-head                             a persona-KEL head off the local board (`local-persona-kel`)
- *   nexus-publish                                the Crossroads offering (`commands/nexus-publish`)
- *   nexus-offering-inspect                       one carried offering, read off the Crossroads board
+ *   nexus-publish                                an offering onto the publication board (`commands/nexus-publish`)
+ *   nexus-offering-inspect                       one carried offering, read off the publication board
  *                                                (`commands/nexus-offering-inspect`)
  *   raise-sign                                   a raise grant off the carriage board (`commands/raise-sign`)
  *   kahua-mint · kahua-propose · kahua-lift · kahua-withdraw · kahua-carry · kahua-read

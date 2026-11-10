@@ -34,6 +34,7 @@ import { didFromVerifyingKey, faceAtomKeyFromSeed } from "@lararium/mesh";
  *  on `ctx.oracleUrl`; `catalogUrl` stands the (lazy, never-dialed-here) facePlane accessor). */
 const fakeCtx = () => ({
   composite: {} as never,
+  control:   {} as never,
   repo:      {} as never,
   catalogUrl: "automerge:fakeCatalog",
   oracleUrl:  "automerge:fakeOracle",

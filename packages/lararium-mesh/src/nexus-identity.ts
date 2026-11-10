@@ -247,7 +247,7 @@ export function admittedJoineeIsland(opts: {
  *   · CARRY, verbatim — persona-KEL (`carryPersonaKelUpTheGradient`, `persona-kel-climb`: the gate REFUSES
  *     rather than degrades, so a moved board would take the vessel down) · antigen (an empty deny set
  *     RE-ADMITS a Kapae'd presenter; the quorum epoch check makes the carry self-limiting).
- *   · RE-ANNOUNCE, re-derived — the crossroads realm-bag announce. It carries no signature a reader could
+ *   · RE-ANNOUNCE, re-derived — the realm-bag announce on the realm-announce board. It carries no signature a reader could
  *     re-check, so a copied row would launder a lapsed, equivocated or FOREIGN-REALM registration; the
  *     projection recomputes from the realm doc's counted registrations instead.
  *   · DELIBERATELY NEITHER — WHO (a boot-time announce would DISCLOSE a face the operator published only to

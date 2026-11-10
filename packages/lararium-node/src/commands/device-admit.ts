@@ -27,11 +27,12 @@ import {
   personaKelBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc,
   buildDeviceDelegationRootHalf,
   faceAtomKeyFromSeed,
-  leaseEpochPrefix, readFace,
+  leaseEpochPrefix, readControlHome, readFace,
   signPersonaAct, actCid, edgeBodyDigest, vesselFaceTagHolds, wardKeyPopHolds, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
   tiddlerText, FLEET_HAND, AutomergeDocStore, type LarDoc, ownEntry, findOrThrow, DOCUMENT_HANG_BOUND_MS} from "@lararium/mesh";
 import { makeCatalogAccessor } from "@lararium/tw5";
 import { larBootstrapPath, larSealHome } from "../vessel-paths.js";
+import { openVesselSecretHomeIfNamed } from "../secret-home-store.js";
 import { runDeviceAdmitEdge, type DeviceAdmitPayload } from "@lararium/keyhive";
 import { loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { readVesselEdgeBoard } from "../edge-board.js";
@@ -356,13 +357,19 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     throw new Error("[lares fleet join answer] no seed charter stands here, so no hearth stands to admit a device to — found the hearth with `lares vessel found --hearth`.");
   }
 
-  // THE LEASE READ — off the SAME daemon doc already open above, the same fold `gateFaceJoin` runs
-  // (leaseEpochPrefix → per-writer slot values → signedLeaseEpoch = max). The minted edge binds to
+  // THE LEASE READ — off the vessel's control document the daemon doc above names (`control-home`), the same fold
+  // `gateFaceJoin` runs (leaseEpochPrefix → per-writer slot values → signedLeaseEpoch = max). The minted edge binds to
   // THIS PersonaGroup's current epoch, so a device admitted here reads fresh at the door until a later
   // roll leases it stale; its next answer renews the seated edge at the epoch then current (the renewal below).
   const leasePrefix = leaseEpochPrefix(personaGroupId);
   const leaseSlotValues: string[] = [];
-  for (const [title, entry] of Object.entries(tiddlerMap)) {
+  // The admission READS the lease through the vessel's own stand (the secret home's custody row opens first, the key stands
+  // before a byte reads); it mints no control document. FAIL CLOSED (M16): an unnamed or unread control document refuses
+  // the admission by name, never signs at the genesis epoch.
+  const controlMap = await readControlHome(repo, daemonHandle).then(
+    (control) => (control.doc() as LarDoc | undefined)?.tiddlers ?? {},
+    (e: unknown) => { throw new Error(`[lares fleet join answer] the lease fence reads unread: ${e instanceof Error ? e.message : String(e)}; open the vessel's custody and retry`); });
+  for (const [title, entry] of Object.entries(controlMap)) {
     if (!title.startsWith(leasePrefix)) continue;
     const text = tiddlerText(entry);
     if (typeof text === "string") leaseSlotValues.push(text);
@@ -387,7 +394,8 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   if (!atomSeed) throw new Error("this face holds no atom; re-found or re-admit it");
   const personaHandle = await repo.find<LarDoc>(personaUrl as AutomergeUrl);
   const records = await readFacePersonaRecords(repo, { personaUrl, group: personaGroupId,
-    extraDocs: [daemonDoc as LarDoc | undefined] });
+    // This face's carried admit acts rest in the vessel's secret home until its plane syncs (never the daemon document).
+    extraDocs: [(await openVesselSecretHomeIfNamed(repo))?.handle.doc() as LarDoc | undefined] });
   const projection = reading.project(records, personaGroupId);
   if (!projection.founded || projection.fork || !projection.head) {
     throw new Error("[lares fleet join answer] Face proof: founding log absent or forked; re-found the face");

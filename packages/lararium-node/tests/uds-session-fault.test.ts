@@ -6,6 +6,7 @@
  * the flush stands again, and the log holds the detail the wire never carried.
  * The harness borrows uds-session-switch.test.ts's.
  */
+import { controlStoreOf } from "@lararium/mesh";
 import { describe, expect, test } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -109,7 +110,7 @@ async function stand(label: string, opts: {
     logged.push(act);
   } };
   const lines: string[] = [];
-  const channel = startUdsChannel({ daemonHandle, composite, claim, repo: flushing, sessions: door, switchActs, sessionVerbs: new Set(["face-row"]),
+  const channel = startUdsChannel({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo: flushing, sessions: door, switchActs, sessionVerbs: new Set(["face-row"]),
     onLog: (line) => { lines.push(line); },
     placeVerb: (o) => {
       placed.push(o);

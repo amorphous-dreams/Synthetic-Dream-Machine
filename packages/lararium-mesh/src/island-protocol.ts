@@ -171,6 +171,15 @@ export interface IslandGrants {
   /** The face's kahua stage, the url its VERIFIED `plane` act pins (`adoptKahuaPlane`); `bags/kahua` mounts from this
    *  grant alone and never from a catalog row. Absent/null: the layer stands absent. */
   kahuaUrl?:    string | null;
+  /** The vessel's CONTROL document (`control-home`), granted to the daemon island alone: an access grant, never a recipe
+   *  slot. The island's control store stands over it; absent on every wiki island. */
+  controlUrl?:  string | null;
+  /** The control document's refusal while the vessel cannot read it (`vessel-locked`: the key stays shut; `control-home-unnamed`:
+   *  the place holds no face). The island resolves nothing then: its control store refuses every read and write by this name. */
+  controlRefusal?: "vessel-locked" | "control-home-unnamed" | "control-home-unavailable";
+  /** The worn face's daemon canon (`daemonFaceCanonBag`), the document its catalog row names: the daemon recipe's
+   *  `canonBag` slot mounts from this grant alone. Absent at the floor, where the daemon wiki reads no canon. */
+  canonUrl?:    string | null;
 }
 export interface IslandMsg_Manifest {
   type: "manifest";
@@ -245,7 +254,7 @@ export interface IslandMsg_Manifest {
    * via `namedBagMirror(scope, mirrorRoot)` from `bag-paths`.
    * Absent = no disk projection for this island.
    */
-  diskMirrors?: readonly { bagId: string; mirrorRoot: string; scope: string; mirrorClass?: "recovery" | "observe"; guardNexusHandles?: boolean; titlePaths?: boolean; tempLayer?: boolean }[];
+  diskMirrors?: readonly { bagId: string; mirrorRoot: string; scope: string; mirrorClass?: "recovery"; titlePaths?: boolean; tempLayer?: boolean }[];
   /**
    * DAEMON-ISLAND ONLY — operator authn/z material for in-worker keyhive boot
    * (isomorphic-vessel epic, Stage 1). The daemon worker's `onEa` calls
@@ -272,6 +281,11 @@ export interface IslandMsg_Manifest {
      *  `face-address-secret` row, the browser's keystore row): the face's working documents derive their addresses from
      *  it (`faceWorkingDocUrl`). It crosses the worker boundary beside the atom seed, and only with a face lit. */
     faceAddressSecret?:    string;
+    /** THE VESSEL'S SECRET HOME, read from main-thread custody at the manifest's build (`secret-home-store`): the document
+     *  group-secret seals, dyads and Keyhive cap events rest in. Only its url crosses; the island reaches it by its own sync
+     *  (the vessel shares it with its own islands alone) and asks the vessel's rest before each secret act. Absent: every
+     *  Keyhive secret write refuses `secret-home-unavailable`. */
+    secretUrl?:            string;
     /** The FACE's pins, present only when a face stands. A place founded and never lit carries NONE of
      *  them, and that names the WAKING FLOOR rather than a fault — canon has a vessel boot permissionlessly
      *  on its own key. The worker refuses a TORN face (some pins, not all), so absence buys FEWER CAPS and
@@ -679,6 +693,21 @@ export interface DaemonMsg_ResidencyOpResult {
  * island so the operator sees it. Fire-and-forget (best-effort UX); main skips wikis
  * that aren't mounted. The daemon computes "affected by content"; main filters "live".
  */
+/**
+ * Island → vessel: one verb ANSWER the daemon island's floor store took (`floorAnswerStore`): an outcome, or the effect
+ * index beside a done one, for an act a place answered with no readable control document. The vessel holds it in its own
+ * floor store for the caller that waits on it; nothing rests.
+ */
+export interface DaemonMsg_FloorAnswer {
+  type: "daemon:floor-answer";
+  /** The answer record, under an outcome or effect title (the vessel's floor store refuses any other). */
+  record: { tiddler: Record<string, unknown>; meta?: Record<string, unknown> };
+}
+
+export function mkDaemonFloorAnswer(record: DaemonMsg_FloorAnswer["record"]): DaemonMsg_FloorAnswer {
+  return { type: "daemon:floor-answer", record };
+}
+
 export interface DaemonMsg_WikiAlert {
   type: "daemon:wiki-alert";
   /** The affected wiki's slug — main maps it to `${hostId}:${slug}` to find the island. */
@@ -1099,6 +1128,7 @@ export type IslandToVesselMsg =
   | DaemonMsg_EvictRequest
   | DaemonMsg_ResidencyOp
   | DaemonMsg_WikiAlert
+  | DaemonMsg_FloorAnswer
   | IslandMsg_CasWant
   | IslandMsg_DyadAsk
   | IslandMsg_ReceiptRequest
@@ -1162,8 +1192,13 @@ export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
   if (v.type === LAR_CONTROL_RESULT) return readLarControlResult(v) !== null;
   if (v.type === LAR_SERVICE) return readLarService(v) !== null;
   if (isPortKind(v.type)) return readPortIslandMsg(v) !== null;
+  if (v.type === "daemon:floor-answer") {
+    const record = (v as Record<string, unknown>).record as Record<string, unknown> | undefined;
+    const tiddler = record?.tiddler as Record<string, unknown> | undefined;
+    return typeof record === "object" && record !== null && typeof tiddler === "object" && tiddler !== null && typeof tiddler.title === "string";
+  }
   return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "gate:clear", "gate:refused", "wiki:verb-result", "daemon:face-settled", "daemon:delegate-verb", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:gate-verb-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "receipt:request", "rest:ask", "custody:write", "session:sign", "view:catalog", "view:content", "view:settle", "docstore:sealed", "docstore:opened", "docstore:live", "docstore:slot", "docstore:answering", "docstore:silent"] as const).includes(
-    v.type as Exclude<IslandToVesselMsg["type"], "receipt:asks-done" | LarIslandToVesselMsg["type"] | PortIslandToVesselMsg["type"]>,
+    v.type as Exclude<IslandToVesselMsg["type"], "receipt:asks-done" | "daemon:floor-answer" | LarIslandToVesselMsg["type"] | PortIslandToVesselMsg["type"]>,
   );
 }
 
@@ -1199,7 +1234,7 @@ export function mkManifest(
   opts?: {
     storage?:        IslandStorageConfig;
     ownedDocument?:  IslandOwnedDocumentScope;
-    diskMirrors?:    readonly { bagId: string; mirrorRoot: string; scope: string; mirrorClass?: "recovery" | "observe"; guardNexusHandles?: boolean; titlePaths?: boolean; tempLayer?: boolean }[];
+    diskMirrors?:    readonly { bagId: string; mirrorRoot: string; scope: string; mirrorClass?: "recovery"; titlePaths?: boolean; tempLayer?: boolean }[];
     daemonAuth?:      IslandMsg_Manifest["daemonAuth"];
     pluginCids?:     readonly string[];
     view?:           IslandViewStanding;

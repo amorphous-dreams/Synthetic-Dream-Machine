@@ -258,6 +258,12 @@ offer_accept_loss() {
 census_before_stop() {
   if run_census; then rc=0; else rc=$?; fi
   if [ "$rc" -eq 0 ] && printf '%s\n' "$census_out" | grep -q '^census: clean'; then return 0; fi
+  # A LOCKED HEARTH: the census names the cure in one line (`census: vessel locked: …`); say it plainly, not "could not answer".
+  if [ -z "$census_timed_out" ] && printf '%s\n' "$census_err" | grep -q '^census: vessel locked'; then
+    printf '%s\n' 'lares-container: down refuses a silent stop: vessel locked: run tools/lares-container.sh vault unlock, then down' >&2
+    offer_accept_loss
+    return 0
+  fi
   if [ "$rc" -eq 3 ] && [ -z "$census_timed_out" ]; then
     printf '%s\n' 'lares-container: down refuses a silent stop: the census names content that rests nowhere yet, and a stop now drops it:' >&2
     printf '%s\n' "$census_out" | sed -e '/^$/d' -e 's/^/  /' >&2
@@ -361,7 +367,7 @@ case "$verb" in
     # Any running container that binds the hearth holds the store: a founding run, a harness, a hand-started one.
     holders=$(docker ps -q --filter "volume=$hearth") || die "cannot read running containers (docker ps failed); nothing removed"
     [ -z "$holders" ] || die "reset refuses while a running container binds $hearth: $holders"
-    printf 'LARES_HOUSE: %s\nReset removes every entry inside %s; the hearth directory itself, sensoriums, projections, library, config, the env file and the image stay.\nType re-found to proceed: ' "$house" "$hearth"
+    printf 'LARES_HOUSE: %s\nReset removes every entry inside %s; the hearth directory itself, sensoriums, projections, library, config, the env file and the image stay.\nThe projections stay, and with them the private memory of every face in cleartext (%s/projections/wikis/daemon-*, bags/daemon-*, bags/kahua-*): a re-founding never clears them. Export first (lares export <dest>) to carry that memory to the new face; the next export names those folders and the step that clears them.\nType re-found to proceed: ' "$house" "$hearth" "$house"
     IFS= read -r answer || die "reset confirmation not read; nothing removed"
     [ "$answer" = re-found ] || die "reset confirmation did not match; nothing removed"
     failed=""

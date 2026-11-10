@@ -43,7 +43,7 @@ const PUBLISH_USAGE: readonly string[] = [
   "             descriptor this persona signs fresh, as PUBLISHER.",
   "",
   "  --source   the offering source directory (required).",
-  "  --apply    sign the offering (when unsigned) + announce it on the crossroads plane.",
+  "  --apply    sign the offering (when unsigned) + announce it on the Nexus's publication board.",
 ];
 
 /**

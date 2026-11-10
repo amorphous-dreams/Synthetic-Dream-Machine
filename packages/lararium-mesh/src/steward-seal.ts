@@ -3,7 +3,7 @@
  *
  * THE RULING. A scoped face signs acts that belong to one person; a transparent quorum Handle signs acts the
  * collective owns; the root never appears publicly. A realm record travels: the realm doc crosses to every
- * member, and the `@crossroads` announce names `keptBy` in public. So whatever key a record names gets
+ * member, and the announce on the Nexus's realm-announce board names `keptBy` in public. So whatever key a record names gets
  * published, and a steward's NAME reads one of two classes and nothing else:
  *
  *   · a FACE name — the ed25519 verifying key the steward's worn face presents at the Nexus the realm stands

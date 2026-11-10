@@ -174,7 +174,7 @@ export function deriveCabalRealmLiveness(
  *   · `unread`    — this vessel never looked.
  *
  * ⚠ NO INSTRUMENT HERE SEES THE COLLECTIVE, and `realmStanding` does not either. Its per-writer lease
- * slots ride `bags/daemon/lease-epoch/`, whose bag URL each vessel reads off its OWN social bootstrap,
+ * slots ride `bags/control/lease-epoch/`, whose bag URL each vessel reads off its OWN social bootstrap,
  * so a contracted peer's offering never arrives — measured on two hearths through a live relay, where
  * the founder counted her own faces and never her partner's. Both readings answer for the vessel
  * holding them; they differ in WHAT they answer about, never in how far they see.

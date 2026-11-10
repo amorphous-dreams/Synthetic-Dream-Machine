@@ -7,7 +7,7 @@
 cacheable  = true
 l-space    = "lararium"
 namespace  = "&#x2695;"
-revised-on = "2026-11-01"
+revised-on = "2026-11-09"
 role       = "a household walk for founding a fresh Dockerized node, establishing custody, and naming the built and owed browser, membership, and aftercare steps"
 status-why = "a fresh household founding walk with explicit built steps and owed reach and browser work"
 tags       = ["mesh/carry-contract", "api/pono/persona-policy", "mesh/siege-resilience", "mesh/kahu", "kind/rite"]
@@ -79,7 +79,7 @@ Three acts stand between a landed head and the first `found --hearth`. Each one 
 
 # ''Rebuild the image LAST, at the landed head.'' Land every branch the rite needs, then check out that head, and only then run `tools/lares-container.sh build` (under PowerShell: `tools/lares-container.ps1 build`); the shim reads the env file, passes the checkout's HEAD as `GIT_REV` into the image's revision label, and refuses a dirty checkout by name, so the label always names a real commit. An image built before the last landing runs older code than the checkout holds, and nothing else tells the operator. The image carries `org.opencontainers.image.revision`; `tools/lares-container.sh up` compares that label to `git rev-parse HEAD` and warns, naming both, when they differ. A warning means the rebuild stays owed: rebuild with `tools/lares-container.sh build`, the command the warning prints, then `up` again. A dirty checkout warns too and `build` refuses it, so commit first.
 # ''Move old homes aside by RENAME alone.'' Stop the vessel first (`tools/lares-container.sh down`). `down` asks the standing vessel's census first (`lares vessel census`: saves its sealed rest holds in memory, carriers its disk projector has not settled); a clean census stops at once, and any item, or a census that cannot answer (a wedged vessel, an image older than the census door), lists what it learned and stops only after `vault unlock` lets it settle or after `accept-loss` typed on the terminal. A house root or workspace mirror from an earlier walk then gets a new name (`mv ~/lares-house ~/lares-house.before-rite`), never a delete, never an overwrite. The rename keeps the old bytes readable for a repair or a comparison, and the fresh `LARES_HOUSE` starts empty so the founding reads no leftover. Nothing in this runbook removes a home; `tools/lares-container.sh reset` clears `$LARES_HOUSE/hearth` alone, after a typed `re-found`, and leaves the sensoriums, projections, library and config standing.
-# ''Check the projection before trusting the layout.'' The canon source (`bags/` under the checkout) sources no `daemon` slug, and the face's working top projects under `$LARES_HOUSE/projections/wikis/daemon-<F>`, never under `wikis/daemon/`. After the first `persona new 0`, look for `$LARES_HOUSE/projections/wikis/daemon-<F>` and for `$LARES_HOUSE/projections/bags/kahua-<F>`; `$LARES_HOUSE/projections/bags/daemon` holds the daemon wiki's authored canon alone; a control or house record there (a `bags/daemon/**`, `bags/persona/**` or `dreamnet/**` path) means the control plane projected, and the rite stops there (its one disk form reads one way under `projections/observe/daemon/`). The bag-paths suite pins both placements (`projectionRoots` over this checkout's real `bags/`, and `daemonWorkingMirror`), so a mismatch on a live disk names a stale image first.
+# ''Check the projection before trusting the layout.'' The canon source (`bags/` under the checkout) sources no `daemon` slug, and the face's working top projects under `$LARES_HOUSE/projections/wikis/daemon-<F>`, never under `wikis/daemon/`. After the first `persona new 0`, look for `$LARES_HOUSE/projections/wikis/daemon-<F>` and for `$LARES_HOUSE/projections/bags/kahua-<F>`; `$LARES_HOUSE/projections/bags/daemon-<F>` holds the face daemon canon and its authored memory; a control or house record there (a `bags/control/**`, `bags/persona/**` or `dreamnet/**` path) means a control record rested in a mirrored bag, and the rite stops there. Placement keeps control records off disk: they rest in the vessel control document, which no mirror names. The bag-paths suite pins both placements (`projectionRoots` over this checkout's real `bags/`, and `daemonWorkingMirror`), so a mismatch on a live disk names a stale image first.
 
 ''Proves'': the image names the revision the checkout holds, the old bytes rest beside the new home under their own names, and the projection lands where the ruled layout says.
 
@@ -332,6 +332,37 @@ A live vessel may continue with its local corpus while household HTTPS, browser 
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/carry-across-refound`>>
+
+!! 11a · Carry memory across a re-founding
+
+A re-founding clears `$LARES_HOUSE/hearth` alone; the face's memory crosses as content, by `lares export` and `lares import`, onto the new face that carries the same pet-name.
+
+''Do'': in this order.
+
+```sh
+tools/lares-container.sh export /lar/config/carry/bundle-one    # the host reads it at $LARES_HOUSE/config/carry/bundle-one
+tools/lares-container.sh down                                    # a locked hearth's census says: vault unlock, then down
+tools/lares-container.sh reset                                   # type re-found; projections stay
+tools/lares-container.sh found --hearth --name 'operator-one' --chair 'first-chair'
+tools/lares-container.sh up                                      # up unlocks on the attached terminal
+tools/lares-container.sh vault unlock                            # where up named it (no terminal attached)
+tools/lares-container.sh import /lar/config/carry/bundle-one    # a preview: writes nothing
+tools/lares-container.sh import /lar/config/carry/bundle-one --apply
+```
+
+''The bundle rests unencrypted.'' Export copies a face's private memory as plain files and says so on its closing line. It refuses a destination inside the workspace or inside the house root, save the house's config home: a reset keeps `config/`, and the container binds `/lar/config` to `$LARES_HOUSE/config`, so the bundle rests where the host reads it (the vault backup's own precedent). Keep it on a disk only the operator holds, and remove it once the import reads back.
+
+''Up and unlock come before import.'' The import lands each face's memory in that face's own folders, named by the face relation the standing, unlocked vessel reads; on a vessel that stands down or locked it refuses `carry-face-unworn` and names `up` and `vault unlock`.
+
+''The old face's folders stay.'' The reset keeps `projections/` (survive-refound ruling), and with it the former face's cleartext folders (`projections/wikis/daemon-<old relation>`, `projections/bags/daemon-<old relation>`, `projections/bags/kahua-<old relation>`), which no face of the new founding claims. The next export refuses `carry-unclaimed-face-folder`, lists each folder, and names the step: once the import has read back, move each listed folder out of the house root (a rename, never a delete), then export again; or pass `--accept-omissions` to leave them where they stand, out of the bundle.
+
+''See'': `import --apply` prints each wave's tallies; the AI's memories read back through MCP (`meme_get`) on the new face.
+
+''Proves'': a face's authored memory survives a re-founding as content, under a new relation and a new grant.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/key-replacement-cost`>>
 
 !! Key replacement cost
@@ -384,6 +415,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;7utWjOF25nZsdyhJnTx83zWePP3rhVYn4WRvVaG13SA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GeO5MzbiGQ4GDpZXao40qu8IoNE8j4X8k5bHUHDjY6U`>>
 
 <<^ code=`&#x0004;` to=`?`>>

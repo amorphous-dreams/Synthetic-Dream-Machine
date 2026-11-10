@@ -47,7 +47,7 @@ function open(answer: (msg: { requestId: string; verb: string; requestedBy: stri
     },
   };
   const core = openDaemonVmCore(host, {
-    repo, daemonHandle, recipe: { wikiSlug: "daemon" }, grants: { islandUrl: daemonHandle.url }, coreHash: null,
+    repo, daemonHandle, controlHandle: repo.create<LarDoc>(emptyLarDoc()), recipe: { wikiSlug: "daemon" }, grants: { islandUrl: daemonHandle.url }, coreHash: null,
     workerScriptUrl: new URL("file:///unused-scripted-island"), eaSilenceMs: 2 ** 30, askLivenessMs: opts.livenessMs ?? 50,
   } as never);
   if (opts.awake !== false) say(mkEa(DAEMON_BAG_ID));

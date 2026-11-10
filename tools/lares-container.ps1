@@ -209,6 +209,12 @@ function CensusBeforeStop {
     if ($errTask.Wait(5000)) { $err = $errTask.Result }
   } catch { $err = $_.Exception.Message }
   if ($rc -eq 0 -and ($out -split "`r?`n" | Where-Object { $_ -like 'census: clean*' })) { return }
+  # A LOCKED HEARTH: the census names the cure in one line (`census: vessel locked: ...`); say it plainly, not "could not answer".
+  if (-not $timedOut -and ($err -split "`r?`n" | Where-Object { $_ -like 'census: vessel locked*' })) {
+    [Console]::Error.WriteLine('lares-container: down refuses a silent stop: vessel locked: run tools/lares-container.ps1 vault unlock, then down')
+    OfferAcceptLoss
+    return
+  }
   if ($rc -eq 3 -and -not $timedOut) {
     [Console]::Error.WriteLine('lares-container: down refuses a silent stop: the census names content that rests nowhere yet, and a stop now drops it:')
     Indent $out

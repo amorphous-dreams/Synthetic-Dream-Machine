@@ -31,10 +31,10 @@ let vessel: NodeVesselResult | null = null;
 let call = 0;
 afterAll(async () => { if (vessel) await withLarRoot(root, () => vessel!.teardown()); rmSync(root, { recursive: true, force: true }); });
 
-// The ask hands the island the ports the host's own ask hands it (`islandAsk`): the daemon composite, whose working slot holds each outcome.
+// The ask hands the island the ports the host's own ask hands it (`islandAsk`): the control store, where each outcome rests.
 const ask = async (resource: string) => {
   const vm = vessel!.daemon;
-  return withLarRoot(root, async () => askIslandVerb({ composite: vm.composite, placeVerb: (o) => vm.placeVerb({ ...o, origin: "channel" }),
+  return withLarRoot(root, async () => askIslandVerb({ control: vm.control, placeVerb: (o) => vm.placeVerb({ ...o, origin: "channel" }),
     verb: "nexus-rekey", args: { resource }, requestedBy: `0x${await loadVesselVerifyingKey()}`, requestId: `rekey-${++call}` }).answer);
 };
 
@@ -50,10 +50,10 @@ describe("nexus-rekey on a booted vessel", () => {
     await withLarRoot(root, async () => writeNexusDoc(carriedCharterHome(larSealHome(), foreign.aid), foreign.doc()));
     vessel = await withLarRoot(root, () => openNodeVessel({ hostId: "rekey", wikiId: "rekey", storageDir, genesisDir,
       wss: new EventEmitter() as never }));
-    // The vessel stands as the boot stands it (main.ts): the island's ea, then the host's daemon working layer, where each outcome lands.
+    // The vessel stands as the boot stands it (main.ts): the island's ea; the lease slots rest in the control document.
     await vessel.daemon.workerEa;
     await withLarRoot(root, () => vessel!.daemon.mountHostWorkingLayer());
-    const daemon = vessel.daemon.daemonHandle;
+    const daemon = vessel.daemon.controlHandle;
     await expect(ask(foreign.aid)).rejects.toThrow(/seats-not-held/);
     expect(Object.keys(daemon.doc()?.tiddlers ?? {}).filter((title) => title.startsWith(leaseEpochPrefix(foreign.aid)))).toEqual([]);
 

@@ -30,7 +30,7 @@ import {
   type DocHandle,
   type LarDoc,
   type LarTiddlerRecord,
-  type LarTiddlerStore, ownEntry} from "@lararium/mesh";
+  type LarTiddlerStore, ownEntry, plainField} from "@lararium/mesh";
 import { catalogRowHalf, isSystemCanonBag, litFaceCatalogOf, makeCatalogView, plainRecordOrNull, realmStandingDocUrl } from "@lararium/mesh";
 
 export interface CatalogAccessor {
@@ -52,6 +52,13 @@ export interface CatalogAccessor {
    *  syncs — it MOUNTS nothing into a composite (access≠load). Authority rides
    *  the cap-gate upstream, never a composite read-only flag. */
   storeOf(bagUri: string): Promise<LarTiddlerStore | null>;
+  /**
+   * THE DIRECT ROAD to a private-synced home (the face's persona plane): `find`/`storeOf` pass such a row by, so no verb
+   * lookup, library mount or membership scan reaches it, and the home's own readers and writers (the face-join grant, the
+   * PersonaGroup ring) resolve it here by the url its row names. Any other row answers as `find`/`storeOf` would.
+   */
+  homeOf?(bagUri: string): Promise<DocHandle<LarDoc> | null>;
+  homeStoreOf?(bagUri: string): Promise<LarTiddlerStore | null>;
 }
 
 /**
@@ -122,6 +129,8 @@ function accessorOver(handle: () => Promise<DocHandle<LarDoc>>, catalogUrl: stri
 
   const find = async (bagUri: string): Promise<DocHandle<LarDoc> | null> => {
     if (bagUri === CATALOG_DOC_URI) return handle();
+    const row = await recordOf(bagUri);
+    if (plainField(row, "kind") === "private-synced") return null;
     const url = await urlOf(bagUri);
     if (!url) return null;
     return findOrThrow(repo, url, `bag ${bagUri}`);
@@ -132,7 +141,17 @@ function accessorOver(handle: () => Promise<DocHandle<LarDoc>>, catalogUrl: stri
     return h ? new AutomergeDocStore(h, bagUri) : null;
   };
 
-  return { handle, floor: floorHandle ?? handle, urlOf, recordOf, find, storeOf };
+  const homeOf = async (bagUri: string): Promise<DocHandle<LarDoc> | null> => {
+    if (bagUri === CATALOG_DOC_URI) return handle();
+    const url = await urlOf(bagUri);
+    return url ? findOrThrow(repo, url, `home ${bagUri}`) : null;
+  };
+  const homeStoreOf = async (bagUri: string): Promise<LarTiddlerStore | null> => {
+    const h = await homeOf(bagUri);
+    return h ? new AutomergeDocStore(h, bagUri) : null;
+  };
+
+  return { handle, floor: floorHandle ?? handle, urlOf, recordOf, find, storeOf, homeOf, homeStoreOf };
 }
 
 /**
@@ -141,6 +160,7 @@ function accessorOver(handle: () => Promise<DocHandle<LarDoc>>, catalogUrl: stri
  * url and grants no reach: every write into the document clears the Kahu predicate at its own door.
  */
 export async function libraryDocUrl(catalog: CatalogAccessor, bagUri: string): Promise<string | null> {
+  if (plainField(await catalog.recordOf(bagUri), "kind") === "private-synced") return null;
   const row = await catalog.urlOf(bagUri);
   if (row !== null || !isSystemCanonBag(bagUri)) return row;
   return realmStandingDocUrl((await (catalog.floor ?? catalog.handle)()).doc(), bagUri);

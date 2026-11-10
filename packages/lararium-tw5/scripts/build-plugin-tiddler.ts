@@ -138,7 +138,9 @@ function writeProjectionFilterTiddlers(): void {
     entries.push([`config-projection-filter-${cls}.tid`, projectionFilterTitle(cls), PROJECTION_FILTER_TEXT[cls]]);
   }
   for (const [file, title, text] of entries) {
-    const body = `title: ${title}\ntype: text/vnd.tiddlywiki\n\n${text}\n`;
+    const body = text.length > 0
+      ? `title: ${title}\ntype: text/vnd.tiddlywiki\n\n${text}\n`
+      : `title: ${title}\ntype: text/vnd.tiddlywiki\n`;
     const at = path.join(ROOT, TIDDLERS_DIR, file);
     let held = "";
     try { held = readFileSync(at, "utf8"); } catch { /* first write */ }

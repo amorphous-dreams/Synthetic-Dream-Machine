@@ -104,8 +104,8 @@ export function wikiDraftDocKey(slug: string, placeDid: LarDid): SlotUri {
 }
 
 /** THE FLOOR'S OWN ANCHOR, read from the vessel and never inferred: on a node its place, the W29 place KEL prefix; on a
- *  browser leaf, which holds no place KEL, the private Nexus of one it stands as at the floor, the key it resolves its
- *  shared planes under. A vessel that holds neither names no floor anchor. */
+ *  browser leaf its place KEL prefix where its founding armed one through the place card, else the private Nexus of one it
+ *  stands as at the floor, the key it resolves its shared planes under. A vessel that holds neither names no floor anchor. */
 export type WorkingFloorAnchor =
   | { readonly kind: "place"; readonly aid: string }
   | { readonly kind: "private-nexus"; readonly key: string };
@@ -226,6 +226,12 @@ export interface WikiRecipe {
    * libraryBags[0] wins ties over libraryBags[1]. Read-only from this wiki.
    */
   readonly libraryBags?: readonly SlotUri[];
+  /**
+   * THE WIKI'S CANON, where it is not `bags/<wikiSlug>`: the daemon wiki's canon follows the worn face
+   * (`daemonFaceCanonBag`), so its recipe names that bag here, and the daemon document beneath (`bags/daemon`) keeps no
+   * canon role. Absent: the canon reads `wikiBagUri(wikiSlug)`.
+   */
+  readonly canonBag?: SlotUri;
   /**
    * Canon bag URIs this wiki DESIGNATES for local disk projection (write-back).
    * A synced, platform-neutral *wish* (the shape half of disk-mirroring). The
@@ -353,13 +359,52 @@ export function expandRecipe(r: WikiRecipe): readonly SlotUri[] {
     // the read-only library member, published to only by a promotion MOVE
     // (wiki-layer-ontology#shore-law). Working (live) and canon stay distinct layers.
     wikiSlotUri(slug, "working"),
-    wikiBagUri(slug),
+    wikiCanonOf(r),
     ...(r.libraryBags ?? []),
+    // A wiki whose canon follows its face keeps its own bag beneath the libraries, below every canon: the daemon
+    // document, the vessel's own state, in no canon role.
+    ...(r.canonBag !== undefined ? [wikiBagUri(slug)] : []),
     // oracle = the universal floor (engine + grammar + bag-oracle). The lares and
     // lararium bags never stand as the floor — they ride a wiki's libraryBags (the lares
     // wiki-recipe = oracle floor + lararium bag + lares bag).
     ORACLE_BAG,
   ])];
+}
+
+/**
+ * WHERE A SLOT MOUNTED LATE SEATS: the composite index (`addLayer`'s `at`, lowest priority = 0) that lays `slot` just above
+ * the nearest slot beneath it in the recipe's order that the composite already mounts, else at the foot. A layer that mounts
+ * after the boot (the daemon's working and edit slots, the face canon after ea) reads its place off the recipe, never off one
+ * neighbour that may not stand yet: an index read off an absent neighbour seats the slot beneath every library (the kahua
+ * stage then shadows each working edit of a lifted title).
+ */
+export function recipeLayerIndex(composite: { layerIndexOf(bagId: string): number }, recipe: WikiRecipe, slot: SlotUri): number {
+  const order = expandRecipe(recipe);
+  const from = order.indexOf(slot);
+  for (const below of from < 0 ? [] : order.slice(from + 1)) {
+    const index = composite.layerIndexOf(below);
+    if (index >= 0) return index + 1;
+  }
+  return 0;
+}
+
+/** The bag a recipe reads as its wiki's canon: `canonBag` where it names one, else `bags/<wikiSlug>`. */
+export function wikiCanonOf(r: Pick<WikiRecipe, "wikiSlug" | "canonBag">): SlotUri {
+  return r.canonBag ?? wikiBagUri(r.wikiSlug);
+}
+
+const FACE_RELATION = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+
+/**
+ * THE DAEMON WIKI'S CANON FOR ONE FACE: `bags/daemon-<F>`, F the relation the face's verified founding record pins (the
+ * same F its `wikis/daemon-<F>` and `bags/kahua-<F>` folders carry). Minted at the face's first worn stand and named in
+ * that face's own catalog; the daemon document (`bags/daemon`) keeps no canon role.
+ */
+export const DAEMON_WIKI_SLUG = "daemon";
+
+export function daemonFaceCanonBag(faceRelation: string): SlotUri {
+  if (!FACE_RELATION.test(faceRelation)) throw new Error(`daemon face canon: invalid relation ${JSON.stringify(faceRelation)}`);
+  return bagUri(`daemon-${faceRelation}`);
 }
 
 /**

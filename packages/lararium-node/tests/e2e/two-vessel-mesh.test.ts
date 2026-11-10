@@ -7,9 +7,10 @@
  *
  * Assertions:
  *   1. Vessel A: runInit produces sentinel oracle tiddlers in daemon doc + bootstrap
- *   2. Vessel A: daemon doc cap events carry lar URI tags (not $:/tags/CapEvent)
+ *   2. Vessel A: cap events rest in the vessel's SECRET HOME (placement over patterns), never in the daemon
+ *      document, and carry lar URI tags (not $:/tags/CapEvent)
  *   3. Vessel A: cap events parse cleanly as Keyhive event records — the founder MINTS the
- *      capability history, so the event records live in A's bag
+ *      capability history, so the event records rest in A's secret home
  *   4. Vessel A: its fleet-join answer signs an edge over the key B already holds
  *   5. Vessel B: admission delivers a LINEAGE — the persona KEL prefix, the signer that vouched,
  *      the hearth the edge binds to, and a self-delegation — and copies NO cap events
@@ -42,7 +43,7 @@ import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import {
-  DAEMON_BAG_ID,
+  DAEMON_BAG_ID, SECRET_HOME_ID,
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   CAP_EVENT_TAG,
   PERSONA_KEL_PREFIX_TIDDLER, SIGNER_DID_TIDDLER,
@@ -51,6 +52,8 @@ import {
 import { InMemoryEventStore } from "@lararium/keyhive";
 import { runFoundTheFace, runFleetJoinOffer, runFleetJoinRequest, runFleetJoinAnswer, runFleetJoinLand } from "../../src/index.js";
 import { larSealHome } from "../../src/vessel-paths.js";
+import { ownedStore } from "../../src/owned-store.js";
+import { openVesselSecretHome } from "../../src/secret-home-store.js";
 import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
 import { direct } from "../direct-store.js";
 import { standFacePlane } from "../face-plane-fixture.js";
@@ -143,6 +146,17 @@ async function openDaemonDocTiddlers(storageDir: string, daemonUrl: string): Pro
   return tiddlers;
 }
 
+/** The vessel's secret home, read through the direct holder with its custody open: the home rests sealed under the
+ *  vessel's key, so no reader of the raw store reads a byte of it. */
+async function openSecretHomeTiddlers(storageDir: string): Promise<Record<string, unknown>> {
+  await openTestCustody();
+  return await ownedStore(storageDir, async (repo) => {
+    const home = await openVesselSecretHome(repo);
+    const doc = home.handle.doc() as Record<string, unknown> | null;
+    return Object.fromEntries(plainEntries((doc?.["tiddlers"] ?? {}) as never)) as Record<string, unknown>;
+  });
+}
+
 function daemonTiddlerText(tiddlers: Record<string, unknown>, key: string): string | null {
   return tiddlerText(tiddlers[key] as never);
 }
@@ -154,6 +168,7 @@ const HEX_RE = /^(0x)?[0-9a-f]{60,}$/;
 // ---------------------------------------------------------------------------
 
 let vesselADaemonTiddlers: Record<string, unknown> = {};
+let vesselASecretTiddlers: Record<string, unknown> = {};
 let admitPayload: Record<string, unknown> = {};
 let vesselBDaemonTiddlers: Record<string, unknown> = {};
 let vesselABootstrapPath = "";
@@ -180,6 +195,7 @@ beforeAll(async () => {
   const daemonUrlA   = bootstrapA[DAEMON_BAG_ID]?.text;
   if (!daemonUrlA) throw new Error("Vessel A: daemon URL missing from bootstrap");
   vesselADaemonTiddlers = await openDaemonDocTiddlers(VESSEL_A.storage, daemonUrlA);
+  vesselASecretTiddlers = await withLarRoot(VESSEL_A.root, () => openSecretHomeTiddlers(VESSEL_A.storage));
 
   // Step 2 — B founds a PLACE under its OWN root, before anyone admits it.
   //
@@ -233,9 +249,11 @@ describe("Vessel A — founding ceremony", () => {
     expect(daemonTiddlerText(vesselADaemonTiddlers, MESH_CABAL_DOC_ID_TIDDLER)).toMatch(HEX_RE);
   });
 
-  test("daemon doc cap events use lar URI tag — never $:/tags/CapEvent", () => {
-    const capEntries = Object.entries(vesselADaemonTiddlers).filter(([title]) =>
-      title.startsWith(`${DAEMON_BAG_ID}/cap/`),
+  test("cap events rest in the secret home, never the daemon document, and use the lar URI tag — never $:/tags/CapEvent", () => {
+    // PLACEMENT OVER PATTERNS: the ceremony flushes its cap events through the secret handle alone.
+    expect(Object.keys(vesselADaemonTiddlers).filter((t) => t.includes("/cap/")), "a cap event rests in the daemon document").toEqual([]);
+    const capEntries = Object.entries(vesselASecretTiddlers).filter(([title]) =>
+      title.startsWith(`${SECRET_HOME_ID}/cap/`),
     );
     expect(capEntries.length).toBeGreaterThan(0);
 
@@ -309,12 +327,12 @@ describe("Vessel B — admitted vessel", () => {
   });
 
   test("the founder's cap events parse as valid Keyhive event records", async () => {
-    // The founder mints the capability history, so the event records live in A's bag. An admitted
+    // The founder mints the capability history, so the event records rest in A's secret home. An admitted
     // vessel receives a lineage edge instead (below), which is why this reads A rather than B.
     const store     = new InMemoryEventStore();
-    const capPrefix = `${DAEMON_BAG_ID}/cap/`;
+    const capPrefix = `${SECRET_HOME_ID}/cap/`;
 
-    for (const [title, entry] of Object.entries(vesselADaemonTiddlers)) {
+    for (const [title, entry] of Object.entries(vesselASecretTiddlers)) {
       if (!title.startsWith(capPrefix)) continue;
       const t       = (entry as Record<string,unknown>)?.["tiddler"] as Record<string,unknown>;
       const variant = t?.["variant"] as string | undefined;
@@ -347,7 +365,7 @@ describe("Vessel B — admitted vessel", () => {
 
     // And the negative half, which carries the design: an admitted vessel copies NO cap events.
     const capCount = Object.keys(vesselBDaemonTiddlers)
-      .filter((t) => t.startsWith(`${DAEMON_BAG_ID}/cap/`)).length;
+      .filter((t) => t.includes("/cap/")).length;
     expect(capCount).toBe(0);
   });
 });

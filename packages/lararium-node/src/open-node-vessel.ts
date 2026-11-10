@@ -17,7 +17,7 @@
  * in sovereign islands (daemon + wiki). FPI-5 (trim tab): all Node-specific code lives here.
  */
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
-import { WardRefused, wornAtOf, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, type SealedBag, type BookedSession, type SessionOwnChain, preparePlaceFace, signAsFaceAtom } from "@lararium/mesh";
+import { WardRefused, wornAtOf, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, bindSecretHomeRest, vesselHeldHomes, enrollBesideSecretHome, SecretHomeUnavailable, type SecretHome, type SealedBag, type BookedSession, type SessionOwnChain, preparePlaceFace, signAsFaceAtom } from "@lararium/mesh";
 import * as A from "@automerge/automerge";
 
 /** A summoned panel verb's ward: the ref the CLI parked, spent only on the verb and arguments it was bound to. */
@@ -54,12 +54,12 @@ import {
   LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI, CROSSROADS_DOC_URI, recipeHostFacets,
   DAEMON_BAG_ID,
   BAG_IDS, slugFromUri, islandEventAsk, registerCrossroadsPointer,
-  whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl,
+  whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl, realmAnnounceDocUrl, publicationDocUrl,
   type RealmBagRegistration, MEMORY_CUT_SHADOW_READ,
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   DEVICE_DELEGATION_SELF_TIDDLER, type DeviceDelegationTiddler,
   ENGINE_CORE_ID, BagStowage,
-  deriveRegisterBags, catalogNamedBags, wornFaceWikiBags, FACE_CATALOG_BAG_ID, faceViewBook, makeCatalogView, catalogViewOf, openFaceCatalog, faceCatalogDocUrl, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, liftFaceCatalogRows, standLitFaceCatalog, faceCatalogUrlOf, wikiSlotUri, personaBagIdFor, personaSiblingBagIds,
+  deriveRegisterBags, catalogNamedBags, wornFaceWikiBags, standingDaemonCanonBag, standFaceDaemonCanon, FACE_CATALOG_BAG_ID, faceViewBook, makeCatalogView, catalogViewOf, openFaceCatalog, faceCatalogDocUrl, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, liftFaceCatalogRows, standLitFaceCatalog, faceCatalogUrlOf, wikiSlotUri, personaBagIdFor, personaSiblingBagIds,
   coupleMesh, crystallize, guardHitl,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, foundingRoster, type NexusIdentityAt,
   climbNexusBoards, sha256HexBytesSync, RealmBoardGate,
@@ -81,7 +81,7 @@ import type { HeldSaves, MountManifest } from "@lararium/mesh";
 import { nodePromoteStores, nodePromoteCas } from "./promoted-store.js";
 import { casDirForStorage, casFetchReading, corpusCasDirFromEnv, makeNodeCasResolver, type IslandCasData, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
 import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard } from "@lararium/mesh";
-import { answerReceiptWithHeads, workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, peerArrivals, admitGatePinDigest, ownEntry, plainField, CATALOG_ROW_TIER_FIELD } from "@lararium/mesh";
+import { answerReceiptWithHeads, workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, wikiIslandPeersOf, peerArrivals, admitGatePinDigest, ownEntry, plainField, CATALOG_ROW_TIER_FIELD } from "@lararium/mesh";
 import { makeBagTierReader } from "./vessel-bag-tier.js";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
 import type { CapabilityRecord, CustodyWriter, DyadReader, LarVessel, ReceiptIssuer } from "@lararium/mesh";
@@ -116,7 +116,7 @@ import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
 import { DeterministicFederationGate, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
 import {
   standSiblingChannel, siblingRefusalLine, groupSecretSealTitle, verifyGroupSecretSeal,
-  leaseEpochPrefix, readFace, proveFaceFromLog, adoptKahuaStage, joinFaceDocumentsOnArrival, raiseFaceFrontier, heldDocOf, personaKelChainForPrefix, personaKelBoardDocUrl,
+  leaseEpochPrefix, standControlHome, readFace, proveFaceFromLog, adoptKahuaStage, joinFaceDocumentsOnArrival, raiseFaceFrontier, heldDocOf, personaKelChainForPrefix, personaKelBoardDocUrl,
   type SiblingNetworkAdapter, type SiblingChannelStatus,
 } from "@lararium/mesh";
 import { nodeHandleBookReading, runRealmBag, runRealmBags, stewardGuard } from "./realm-steward.js";
@@ -124,6 +124,9 @@ import { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
 import type { SessionSignDoor } from "@lararium/mesh";
 import type { SparseFormVector, AntigenRing, FederationGate, FederationPosture, NexusMembership, PeerClass, PersonaGroupIdentityRing } from "@lararium/mesh";
 import { selfSlotShareDecision } from "./self-slot-share.js";
+import { vesselOnlyShareVerdict, vesselOnlyClass } from "./vessel-only-share.js";
+import { deviceDaemonDocs, vesselHeldBagOf, DAEMON_SLOT_PREFIX, type LitDeviceFace } from "@lararium/mesh";
+import { vesselOnlyBook } from "@lararium/mesh";
 import { classDeviceLedgers, readBootTiddlers, vesselPrivateBook, vesselPrivateRelationOpens } from "./vessel-private.js";
 import { makeAntigenRingHolder } from "./antigen-ring.js";
 import { makePersonaKelRingHolder, carryPersonaKelUpTheGradient } from "./persona-kel-ring.js";
@@ -146,6 +149,8 @@ import { makeSealedPlaneRegistry } from "./plane-seal.js";
 import { cadSealDir, registerSealedCarrier } from "./seal-carrier-federation.js";
 import { makeBagTracker } from "./bag-tracker.js";
 import { startCarriageRelay, type CarriageRelay } from "./carriage-relay.js";
+import { makeCarriageLog, placeSignerKeyAt, type PlaceKelEvent } from "@lararium/mesh";
+import { CARRIAGE_LOG_FILE, fileCarriageJournal } from "./carriage-log-file.js";
 import { openRelayGateSeed } from "./relay-gate-seed.js";
 import { maybeStartNexusClientDial, type NexusClientDial } from "./nexus-client-dial.js";
 import { nodeDialSocket } from "./node-dial-socket.js";
@@ -229,6 +234,7 @@ import { faceFleetViews, bridgeBooks }                from "./face-fleet-view.js
 import { heldRootHoldings }                      from "./face-root-holdings.js";
 import { gateGrantRing }                         from "./gate-rings.js";
 import { readFaceJoinRecord, readFaceAddressSecret } from "./fleet-join-custody.js";
+import { openVesselSecretHome } from "./secret-home-store.js";
 import { gateMemoryRows }                        from "./gate-memory-rows.js";
 import { custodyGateDoor }                       from "./custody-seat.js";
 import { intentRelayService, type IntentRelayService } from "./intent-relay.js";
@@ -249,7 +255,7 @@ import { landEveryHostingAct }                    from "./commands/host.js";
 import { loadNodeWardCosignPort }                  from "./commands/intent.js";
 import { listWalkRecords }        from "./node-walk-store.js";
 import { storeDoorReactors, awaitOnRolled }       from "./store-door-verbs.js";
-import { daemonSwarmWiki }                        from "./swarm-wiki.js";
+import { controlSwarmWiki }                       from "./swarm-wiki.js";
 import { carriedSet, readCarriedCharters }       from "./carried-set.js";
 import { composeLararium, composeHerm, carriageStack, type MeshSelf } from "./node-caps.js";
 import { PLANE_LABELS } from "@lararium/mesh";
@@ -923,6 +929,17 @@ async function prepareNodeBootOn(
   // T2: the face's own catalog, by the document its secret derives, named sealed from the moment the face proves and
   // before the document opens (`expectFaceCatalog`); null at the floor and on a herm.
   let faceCatalogDocId: string | null = null;
+  // The vessel's control document (`control-home`): minted at founding beside the secret home and sealed under the vessel's
+  // own key (`secretHomes`, operator ruling A6), named here once the vessel stands it.
+  let controlDocId: string | null = null;
+  // THE PER-DEVICE DAEMON DOCUMENTS the control document names (`daemon-slot/<kind>/<group>`, `daemon-canon/<face>`): the
+  // daemon wiki's device slots and the face's daemon canon, the AI's memory on this device. Each files by the face that OWNS
+  // it (`device-daemon-docs`): a group's slot or a face's canon seals under that face's key while it stands lit and waits
+  // held otherwise; a floor's own slot seals beside the control document under the vessel's key, held until the key opens.
+  const deviceDocs = deviceDaemonDocs({ enrollFloor: (documentId, bagId) => { if (!secretHomes.has(documentId)) enrollBesideSecretHome(repo, documentId, bagId); } });
+  let wornDeviceGroup: string | null = null;
+  let wornDeviceRelation: string | null = null;
+  const litDevice = (): LitDeviceFace => ({ group: wornDeviceGroup, relation: wornDeviceRelation, face: sealedCells.face() });
   // V3: a bag's document by every name it carries: the layer the mount resolved (a working slot's derived address, a
   // draft binding: no catalog row names either), then the catalog's row.
   const sealedMap = sealedBagMap({
@@ -931,7 +948,7 @@ async function prepareNodeBootOn(
     catalog: () => sealedCells.catalog(),
     docsOf: (bagId) => bagId === FACE_CATALOG_BAG_ID
       ? [faceCatalogDocId]
-      : [sealedCells.mounted(bagId), ...(slotDocsNamed.get(bagId) ?? []), documentIdOfUrl(tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId)))],
+      : [...deviceDocs.docsOf(bagId, litDevice()), sealedCells.mounted(bagId), ...(slotDocsNamed.get(bagId) ?? []), documentIdOfUrl(tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId)))],
   });
   // The session that stands for the worn face now: a call's, else a seated one (the dial's own, V6).
   const standingSaveSession = (): NodeSaveSession | null => {
@@ -955,11 +972,19 @@ async function prepareNodeBootOn(
     if (session === null) return;
     void sealedRest.rebook(saveSessionOf(session)).catch((e: unknown) => console.log(`[sealed-rest] a waiting save stays in memory after ${why}: ${e instanceof Error ? e.message : String(e)}`));
     for (const named of slotDocsNamed.values()) for (const documentId of named) sealNowMapped(documentId);
+    for (const documentId of deviceDocs.ids()) sealNowMapped(documentId);
   };
   const onSlotNamed = (bagId: string, documentId: string): void => {
-    // THE HOST'S WORKING LAYER FOLLOWS THE ISLAND'S: the outcome ledger rests in the daemon working slot, so the side that
-    // reads a verb's answer stands on the document the island writes it into (the seat's lift moves it to the face's).
+    // THE HOST'S WORKING LAYER FOLLOWS THE ISLAND'S: a main-side write to the daemon wiki lands on the document the island
+    // reads (the seat's lift moves it to the face's). The outcome ledger rests in the control document, never here.
     if (bagId === DAEMON_WORKING_SLOT) followHostWorking(documentId);
+    // A DAEMON DEVICE SLOT files by the group the control document names for it, never by the face lit as it announces: it
+    // maps held (never clear, never under another face's key) until the control document names its owner.
+    if (bagId.startsWith(DAEMON_SLOT_PREFIX)) {
+      if (deviceDocs.announced(bagId, documentId)) { sealedRest.store.mapMoved(); reverdictLater(); }
+      sealNowMapped(documentId);
+      return;
+    }
     const named = slotDocsNamed.get(bagId) ?? new Set<string>();
     if (named.has(documentId)) return;
     named.add(documentId);
@@ -975,7 +1000,14 @@ async function prepareNodeBootOn(
   };
   // The map as it reads now, named in the log each time it moves: the face, and each sealed bag's document.
   let sealedMapNamed = "";
+  // THE SECRET HOME (placement over patterns): the vessel's own secret document rests sealed under the held key its custody
+  // keeps. Enrollment or an open (`secret-home-store`) names it here before the Repo moves a byte of it; it maps with no
+  // face and no session, and no page recipe, disk mirror or peer ever reaches it.
+  const secretHomes = vesselHeldHomes();
   const sealedBagOf = (documentId: string): SealedBag | null => {
+    // A device document files by its owner first, then the held homes (`vesselHeldBagOf`, the browser's one order).
+    const held = vesselHeldBagOf(deviceDocs, secretHomes, litDevice(), documentId);
+    if (held !== undefined) return held;
     const face = sealedCells.face();
     const named = face === null ? "none" : `${face.slice(0, 16)}… ${sealedCells.bags().map((b) => `${b}=${sealedMap.docOf(b)?.slice(0, 8) ?? "?"}`).join(" ")}`;
     if (named !== sealedMapNamed) { sealedMapNamed = named; console.log(`[sealed-rest] the map names: ${named}`); }
@@ -1293,6 +1325,10 @@ async function prepareNodeBootOn(
   // its own islands (`islandPeersOf`). Read through this cell, which the Repo's own set fills once the Repo stands; until
   // then no peer reads as the house's own.
   let houseIslands: { has(peerId: string): boolean } = new Set<string>();
+  // The wiki islands among them (the pool marks each): they render pages and receive no custody document.
+  let wikiIslands: { has(peerId: string): boolean } = new Set<string>();
+  // The deny set GROWS as the control document names device documents: each growth re-asks every cached verdict.
+  const vesselOnly = vesselOnlyBook(() => repo);
   const repo = new Repo({
     storage: sealedRest.store,
     // THE PROTOTYPE-KEY SHORE: a sync message carrying a `__proto__` key never reaches the Repo.
@@ -1318,6 +1354,12 @@ async function prepareNodeBootOn(
       // single byte is decided (measured: a stranger at the floor read a private plane).
       await new Promise<void>((settle) => queueMicrotask(settle));
       const wsSocket = (network.sockets as Record<string, unknown> | undefined)?.[peerId];
+      // VESSEL-ONLY DOCUMENTS STAY ON THIS VESSEL: the secret home and every document the control document names reach the
+      // house's own proven islands alone, never a wire peer, sibling or other device, whatever lane would otherwise admit them.
+      // It reads BY BAG as well as by name: a device-private document any boot-time source files (a held home, an announced
+      // device slot, a catalog row) stays here before the control document hydrates and while its custody row cannot read.
+      const vesselVerdict = vesselOnlyShareVerdict(vesselOnlyClass({ named: vesselOnly, held: secretHomes, device: deviceDocs, catalog: () => sealedCells.catalog() }), { has: (p) => houseIslands.has(p) && !wikiIslands.has(p) }, peerId, documentId, !!wsSocket, Boolean(siblings?.provenKeyOf(peerId as PeerId)));
+      if (vesselVerdict !== undefined) return vesselVerdict;
       // OUTER peer-admission gate (unchanged): a WS peer whose session no face gate opened is not in
       // `peerIdentifierMap` → deny; an in-process island peer (no WS socket) is a house member → admit.
       if (wsSocket && !peerIdentifierMap.has(peerId)) return false;
@@ -1389,6 +1431,20 @@ async function prepareNodeBootOn(
     await repo.shutdown();
   } });
   houseIslands = islandPeersOf(repo);
+  wikiIslands = wikiIslandPeersOf(repo);
+  // THE SECRET HOME'S REST, bound to this Repo: an enrollment or an open maps the home before its first byte, and the rest
+  // alone answers whether it holds the home sealed (`@lararium/mesh` `secret-home`).
+  // The map moved (a home enrolled, or the vessel's key opened): every hydration waiting on it reads again, and a held
+  // home's waiting saves (a floor's control writes) seal under the key that now stands.
+  bindSecretHomeRest(repo, secretHomes.rest((documentId) => sealedRest.restsSealed(documentId), () => {
+    sealedRest.store.mapMoved();
+    void sealedRest.store.reseal().catch(() => { /* each keeps waiting, never clear */ });
+    // The held homes ARE vessel-only: a home filed now re-asks every verdict a peer was handed before it.
+    reverdictLater();
+  }, async () => {
+    // The key stands where this vessel's custody stands open; a locked vessel answers false and its control writes wait held.
+    try { await openVesselSecretHome(repo); return true; } catch { return false; }
+  }));
   // R2's booking, by the change's own writer (T4): a save of a sealed bag's document reads its change's actor off its
   // bytes; a change this replica made books the session whose call stands, and a peer's change books its peer writer
   // and rests as received under that session.
@@ -1734,6 +1790,13 @@ async function prepareNodeBootOn(
         if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
         return activeAtom.sign(image);
       },
+      // THE SEATED SESSION ANSWERS THE ROLL'S SIGNER: a vessel that dials no Nexus still wears its face at its place, so a roll
+      // the verb leaves owed settles under that session inside the act, never waiting on a face-sealed save to come by.
+      hold: (requestId, verb) => {
+        const book = sealedCells.book;
+        const seated = book?.seated()[0] ?? null;
+        return book && seated ? book.hold(requestId, verb, seated) : () => {};
+      },
     }));
   };
   const seatSettler = sovereign ? makeSeatSettler({
@@ -1916,10 +1979,20 @@ async function prepareNodeBootOn(
   const relayPort = relayPortRaw !== undefined && relayPortRaw !== "" ? Number(relayPortRaw) : null;
   // The herm's sight of a sibling channel stays transient: the vessel hands the relay no frame observer, so carried
   // frames are routed and forgotten. A witness of that sight stands its own relay and passes its own observer.
+  // THE PLACE'S CARRIAGE LOG — every place keeps one, herm and hearth alike (lamplighters#/the-carriage-log): an append-only,
+  // unsealed journal on the place's floor, one receipt per carriage signed by the place signer and keyed by the carriage's
+  // own id. A receipt under any signer the place's KEL seated reads back; a rotated place keeps its earlier receipts.
+  const placeSignerKeys = new Set<string>([placeSigner.key]);
+  for (const event of await loadPlaceKelChain().catch(() => [] as readonly PlaceKelEvent[])) {
+    try { placeSignerKeys.add(placeSignerKeyAt(event)); } catch { /* a row that does not read seats nobody */ }
+  }
+  const carriageLog = makeCarriageLog({
+    signer: placeSigner, journal: fileCarriageJournal(join(storageDir, CARRIAGE_LOG_FILE)), signedByPlace: (key) => placeSignerKeys.has(key),
+  });
   const carriageRelay: CarriageRelay | null = await (async () => {
     if (relayPort === null || Number.isNaN(relayPort)) return null;
     const gateSeed = openRelayGateSeed();
-    try { return await startCarriageRelay({ gateSeed, port: relayPort, dropJournalPath: join(storageDir, "persona-kel-drops.jsonl") }); }
+    try { return await startCarriageRelay({ gateSeed, port: relayPort, dropJournalPath: join(storageDir, "persona-kel-drops.jsonl"), carriageLog }); }
     finally { gateSeed.fill(0); }
   })();
   if (carriageRelay) {
@@ -2181,9 +2254,9 @@ async function prepareNodeBootOn(
   let hostWorkingMounted: Promise<void> | null = null;
   const mountHostWorking = (): Promise<void> => (hostWorkingMounted ??= daemonVm.workerEa.then(() => daemonVm.mountHostWorkingLayer()));
   let eventBus!:  LarEventBusImpl;         // set in makePool
-  // R3 — the Crossroads board this vessel materializes ONCE (openDaemon), read by every later
+  // R3 — the publication board this vessel materializes ONCE (openDaemon), read by every later
   // per-island plugin-offering resolution (makePool's pool, and the daemon VM's own recipe).
-  let crossroadsOfferingsHandle: DocHandle<LarDoc> | undefined;
+  let publicationHandle: DocHandle<LarDoc> | undefined;
   let bootstrap!: VesselBootstrap;         // captured in loadGenesis
   let personaSelves: PersonaSelvesPlane | null = null;   // the carried faces' planes, built at the first ask
   let slotActiveWikiId = "";               // captured in wikiSlot
@@ -2282,7 +2355,7 @@ async function prepareNodeBootOn(
       onWikiCooled: (id) => console.log(`[residency] cooled wiki ${id} (island unmounted)`),
       onBagCooled:  (id) => console.log(`[residency] cooled bag ${id} (compact-then-drop reserved for repo#358)`),
       alertArgs:    (kind) => ({ kind: kind ?? "" }),
-      onUndeliverableAlert: (wikiId, verbOpts) => { void mailbox.park(wikiId, verbOpts); },
+      onUndeliverableAlert: (wikiId, verbOpts) => { void mailbox.park(wikiId, verbOpts).catch((e: unknown) => { console.log(`[mailbox] ${wikiId} parks nothing: ${e instanceof Error ? e.message : String(e)}`); }); },
     },
   );
   const residency = residencyWiring.residency;
@@ -2341,6 +2414,25 @@ async function prepareNodeBootOn(
       // THE BOOTSTRAP NAMES THIS DOC, so an `unavailable` here waits for this vessel's own flush rather than reading as
       // a doc nobody wrote: a founding seeds it moments earlier in this same process.
       { tideline: "hearth-private", label: PLANE_LABELS.daemon, settled: () => repo.flush() });
+
+  // The per-device daemon documents the control document names, each filed by its owner (answers whether any moved).
+  const readDeviceDaemonDocs = (controlDoc: LarDoc | undefined): boolean => deviceDocs.readControl(controlDoc);
+
+  // The vessel's control document, named by the daemon document (`control-home`): minted at founding beside the secret home.
+  const readControlDoc = async (): Promise<DocHandle<LarDoc>> => {
+    const handle = await standControlHome(repo, await readDaemonDoc());
+    if (controlDocId !== handle.documentId) {
+      const refresh = () => {
+        vesselOnly.refresh(handle.doc(), handle.url);
+        if (readDeviceDaemonDocs(handle.doc())) { rebookWaiting(standingSaveSession(), "the control document named a device document"); reverdictLater(); }
+      };
+      refresh();
+      handle.on("change", refresh);
+      controlDocId = handle.documentId;
+      sealedRest.store.mapMoved();
+    }
+    return handle;
+  };
 
   const keel: VesselOrchestration<VesselIslandPool>["keel"] = {
     repo,
@@ -2595,6 +2687,15 @@ async function prepareNodeBootOn(
     const addressSecretBytes = atomSeed && personaGroupId ? await readFaceAddressSecret(personaGroupId) : null;
     const faceAddressSecret = addressSecretBytes ? Buffer.from(addressSecretBytes).toString("hex") : null;
     addressSecretBytes?.fill(0);
+    // THE SECRET HOME OPENS WITH THE FACE'S CUSTODY (placement over patterns): its address rests in this vessel's custody,
+    // so it opens only once the key that holds the atom opened; it maps on this Repo's rest before a byte of it moves, and
+    // the daemon island reaches it by its own sync, never through a recipe. A vessel whose custody names none boots with
+    // every Keyhive secret write refusing `secret-home-unavailable`, by name.
+    let secretHome: SecretHome | null = null;
+    if (atomSeed) {
+      try { secretHome = await openVesselSecretHome(repo); }
+      catch (e) { if (!(e instanceof SecretHomeUnavailable)) throw e; console.warn(`[secret-home] ${e.message}`); }
+    }
     // THE FACE'S OWN CATALOG (sealed-store#/owed, U1 · T2): the address the face's secret derives, sealed under the face
     // with the daemon wiki's slots (`wornFaceWikiBags` names `FACE_CATALOG_BAG_ID`), laid over the floor's catalog. It
     // rests sealed, so it hydrates only through the daemon island's holder: the boot reads the floor alone, EXPECTS the
@@ -2643,7 +2744,8 @@ async function prepareNodeBootOn(
     // standing beside ZERO slots names a doc minted before the ruling, and that drift gets SAID at
     // boot rather than discovered the day a fleet tries to gather it. Warn, never throw: the dyad
     // read carries no caps, and the cure is a re-found, not a softened gate.
-    const dyads = vesselDyads(daemonDoc);
+    // THE DYADS REST IN THE SECRET HOME (placement over patterns), never in the daemon document.
+    const dyads = vesselDyads(secretHome?.handle.doc());
     if (deviceEdge && dyads.length === 0) {
       console.log("[dyad] a face stands and no dyad slot is minted — a pre-ruling daemon doc; re-found or admit to mint the derived veil.");
     } else if (dyads.length > 0) {
@@ -2694,7 +2796,8 @@ async function prepareNodeBootOn(
         // A FACED BOOT PROVES ITS FACE: a bootstrap that omits the persona plane cannot skip the proof, it refuses by name.
         if (!bootstrap.personaUrl) throw new Error("[lararium] Face proof: plane persona; the bootstrap names no persona plane for a face with a sealed anchor; re-found or re-admit the face");
         const records = await readFacePersonaRecords(repo, {
-          personaUrl: bootstrap.personaUrl, group: personaGroupId, extraDocs: [daemonDoc], heldOnly: true,
+          // The carried admit acts rest in the secret home until the plane syncs, never in the daemon document.
+          personaUrl: bootstrap.personaUrl, group: personaGroupId, extraDocs: [secretHome?.handle.doc()], heldOnly: true,
         });
         const proof = proveFaceFromLog({ records, chain: personaKelChain, group: personaGroupId,
           anchor: faceAnchor, deviceKey: activeAtom.key, ...(deviceEdge ? { edge: deviceEdge } : {}),
@@ -2843,7 +2946,7 @@ async function prepareNodeBootOn(
       realmPlane = makeRealmPlane({
         repo,
         registry:         assembly.catalogHandle,
-        crossroadsHandle: await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads"),
+        announceHandle:   await materializeSharedLarDoc(repo, realmAnnounceDocUrl(nexusPubkey), "board:realm-announce"),
         membership:       nexusMembership,
         base:             selfSlotFedGate,
         // THE REALM LEG: the realm's own registration answers which documents cross — the ROOT MAP (empty: no
@@ -3058,16 +3161,16 @@ async function prepareNodeBootOn(
     const faceViews = faceViewBook(wornView?.floorHandle ?? assembly.catalogHandle, personaGroupId && wornFaceProved ? { group: personaGroupId, view: assembly.catalogHandle } : null);
     catalogForViews = () => faceViews.everyRow();
     const bagTierOfRow = makeBagTierReader();
-    const registerInCatalogOf = (group: string | null | undefined) => (bagId: string, url: string | null | undefined): void => {
+    const registerInCatalogOf = (group: string | null | undefined) => (bagId: string, url: string | null | undefined, privateSynced = false): void => {
       const into = group ? faceViews.viewOf(group) : assembly.catalogHandle;
       if (!url) return;
       // THE DECLARED TIER RIDES THE ROW: a bag whose own declaration reads `public` stamps `cap-tier = public`, which routes
       // its row onto the floor catalog (a public book a herm lists); any other tier stamps nothing and the row stays the face's.
-      const tier = bagTierOfRow(bagId) === "public" ? "public" : null;
+      const tier = !privateSynced && bagTierOfRow(bagId) === "public" ? "public" : null;
       const standing = ownEntry(into.doc()?.tiddlers, bagId);
-      if (tiddlerText(standing) === url && (plainField(standing, CATALOG_ROW_TIER_FIELD) ?? null) === tier) return;
+      if (tiddlerText(standing) === url && (plainField(standing, CATALOG_ROW_TIER_FIELD) ?? null) === tier && (plainField(standing, "kind") === "private-synced") === privateSynced) return;
       into.change((doc) => {
-        doc.tiddlers[bagId] = storedLarRecord(bagId, { text: url, kind: "oracle", ...(tier ? { [CATALOG_ROW_TIER_FIELD]: tier } : {}) }, "vessel-boot");
+        doc.tiddlers[bagId] = storedLarRecord(bagId, { text: url, kind: privateSynced ? "private-synced" : "oracle", ...(tier ? { [CATALOG_ROW_TIER_FIELD]: tier } : {}) }, "vessel-boot");
       });
     };
     const registerInCatalog = registerInCatalogOf(personaGroupId);
@@ -3081,7 +3184,7 @@ async function prepareNodeBootOn(
         const board = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(nexusPubkey), "board:persona-kel");
         const chain = personaKelChainForPrefix(board.doc(), other.personaKelPrefix);
         if (!chain || chain.length === 0) return null;
-        const records = await readFacePersonaRecords(repo, { personaUrl: plane.url, group: plane.personaGroupId, extraDocs: [daemonDoc], heldOnly: true });
+        const records = await readFacePersonaRecords(repo, { personaUrl: plane.url, group: plane.personaGroupId, extraDocs: [secretHome?.handle.doc()], heldOnly: true });
         const otherFace = faceBootTiddlers ? bootFacePlanes(faceBootTiddlers, plane.personaGroupId) : null;
         if (!otherFace?.intentsUrl) return null;
         const proof = proveFaceFromLog({ records, chain, group: plane.personaGroupId, anchor: other, planes: { persona: plane.url, intents: otherFace.intentsUrl } });
@@ -3111,7 +3214,7 @@ async function prepareNodeBootOn(
     for (const plane of bootstrap.personaPlanes) {
       // Each proven face's plane row lands in that face's own catalog, never the worn face's.
       const registerInCatalog = registerInCatalogOf(plane.personaGroupId);
-      if (provenPlanes.get(plane.personaGroupId) === plane.url) registerInCatalog(personaBagIdFor(plane.personaGroupId), plane.url);
+      if (provenPlanes.get(plane.personaGroupId) === plane.url) registerInCatalog(personaBagIdFor(plane.personaGroupId), plane.url, true);
     }
     // The mounted face's siblings ride the bootstrap under their own derived names; register them beside a PROVEN mounted face.
     const wornFace = wornFaceProved && bootstrap.personaBagId ? personaSiblingBagIds(bootstrap.personaBagId) : null;
@@ -3155,21 +3258,40 @@ async function prepareNodeBootOn(
     // THE ANCHOR THE DAEMON STANDS ON ALREADY CARRIES THE VERIFIED LEASE: this runs before the first open snapshots `standingAnchor`; a re-open snapshots the anchor the vessel holds now, so the
     // daemon's live join and grant reads floor under the anchor this boot raised, never an older copy (read 6, opening row 2).
     // The sealed frontier rises only on a VERIFIED observation (`lease-observation`): a signed advance from a key the KEL
-    // lineage seats. An unsigned slot on the mirrored daemon doc raises nothing, so a forged high slot cannot ratchet custody.
+    // lineage seats. An unsigned slot on the control document raises nothing, so a forged high slot cannot ratchet custody.
     if (faceAnchor && personaGroupId && personaKelChain) {
       const prefix = leaseEpochPrefix(personaGroupId);
-      const slots = Object.entries(daemonDoc?.tiddlers ?? {}).filter(([t]) => t.startsWith(prefix)).map(([, r]) => tiddlerText(r));
+      const leaseDoc = (await readControlDoc()).doc();
+      const slots = Object.entries(leaseDoc?.tiddlers ?? {}).filter(([t]) => t.startsWith(prefix)).map(([, r]) => tiddlerText(r));
       const raised = raiseAnchorFromSlots(standingAnchor!, slots, personaKelChain);
       if (raised !== standingAnchor) { await keepFaceAnchorOfGroup(raised); standingAnchor = raised; }
     }
     const faceLit = activeAtom !== null && atomSeed !== null;
-    // R1: the bags the sealed rest seals, the worn face's own wiki bags and the daemon wiki's slots (U1's D half), only
-    // while that face stands lit and proved; the face's hive registers each (`wornFaceWikiBags`).
-    const faceWikiBags = wornFaceWikiBags({ slot, lit: faceLit && !!personaGroupId && wornFaceProved });
+    // THE DAEMON WIKI'S CANON FOLLOWS THE WORN FACE (`daemonFaceCanonBag`): `bags/daemon-<F>`, the document the control
+    // document names, minted at the face's first lit stand. A face that stands unlit or unproven, and the floor, read no canon.
+    const wornRelation = wornFaceProved && wornFaceProjection && personaGroupId ? (await import("@lararium/mesh")).faceRelationOf(wornFaceProjection) : null;
+    // R1: the bags the sealed rest seals, the worn face's own wiki bags, the daemon wiki's slots and canon (U1's D half), only
+    // while that face stands lit and proved; the face's hive registers each (`wornFaceWikiBags`). The canon stands only where
+    // its bag stands registered (`standingDaemonCanonBag`), and the map names it before the canon's document moves a byte.
+    const faceStandsLit = faceLit && !!personaGroupId && wornFaceProved;
+    const canonBagId = standingDaemonCanonBag({ lit: faceStandsLit, faceRelation: wornRelation });
+    const faceWikiBags = wornFaceWikiBags({ slot, lit: faceStandsLit, ...(canonBagId ? { daemonCanon: canonBagId } : {}) });
+    sealedCells.bags = () => faceWikiBags.sealed;
+    // THE LIT FACE'S DEVICE DAEMON DOCUMENTS (the control document names them): they seal under that face from here on.
+    wornDeviceGroup = faceLit && wornFaceProved && personaGroupId ? personaGroupId : null;
+    wornDeviceRelation = wornDeviceGroup !== null ? wornRelation : null;
+    readDeviceDaemonDocs((await readControlDoc()).doc());
+    sealedRest.store.mapMoved();
+    const daemonCanon = canonBagId && wornRelation ? await standFaceDaemonCanon({ repo, control: await readControlDoc(), faceRelation: wornRelation,
+      beforeFirstByte: (bagId, documentId) => {
+        if (deviceDocs.canonMinted(bagId, documentId, wornRelation)) reverdictLater();
+        sealedRest.store.mapMoved();
+      } }) : null;
     placeFace = faceLit && !!personaGroupId && wornFaceProved && activeAtom !== null && placeAid !== null
       ? placeProofSubjectRef({ atomKey: activeAtom.key, place: placeAid } as never) : null;
     await standPlaceSession(placeFace !== null && personaGroupId && activeAtom ? { group: personaGroupId, atomKey: activeAtom.key } : null);
-    sealedCells.bags = () => faceWikiBags.sealed;
+    // The control document stands before the daemon island opens over it, and the map names it from here on.
+    readDeviceDaemonDocs((await readControlDoc()).doc());
     sealedRest.store.mapMoved();
     const workingFloorAnchor = workingFloorAnchorOf({ place: placeAid });
     // A sibling's planes need their own face proof before registration; joinedFaceAuth hands each sibling the vessel ground alone.
@@ -3218,6 +3340,7 @@ async function prepareNodeBootOn(
       ...(faceLit && personaGroupId ? { personaGroupId } : {}),
       ...(faceLit && standingAnchor ? { faceAnchor: standingAnchor } : {}),
       ...(faceLit && faceAddressSecret ? { faceAddressSecret } : {}),
+      ...(faceLit && secretHome ? { secretUrl: secretHome.url } : {}),
       ...(meshCabalDocIdHex      ? { meshCabalDocIdHex }      : {}),
       // Derived, never enumerated — one derivation both vessels share, so the node and the browser
       // cannot drift apart on which bags a cap check can resolve. A wiki slot's bags ride only when a
@@ -3246,8 +3369,8 @@ async function prepareNodeBootOn(
     // island does (`resolveNodeIslandPluginCids`), never a vessel-wide hand-off. The
     // daemon's own one-recipe-model record names no offerings today, so this call is the floor
     // alone in practice — but it is the floor PROVEN through the selector, not assumed past it.
-    crossroadsOfferingsHandle ??= await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
-    const offerings = crossroadsOfferingsHandle;
+    publicationHandle ??= await materializeSharedLarDoc(repo, publicationDocUrl(nexusPubkey), "board:publication");
+    const offerings = publicationHandle;
     daemonHolder = await standDaemonIsland({
       readJoinedFaces,
       resolvePlugins: () => resolveNodeIslandPluginCids({
@@ -3286,6 +3409,8 @@ async function prepareNodeBootOn(
           ...((faceCatalogUrlOf(catalogHandle) ?? faceCatalogExpected) ? { faceCatalogUrl: (faceCatalogUrlOf(catalogHandle) ?? faceCatalogExpected)! } : {}),
           // The face's kahua stage, from the verified pin alone: the daemon recipe stacks this device's own top over it.
           ...(wornKahua ? { kahuaUrl: wornKahua.url } : {}),
+          // The worn face's daemon canon (`bags/daemon-<F>`), the document its catalog names; none at the floor.
+          ...(daemonCanon ? { canonUrl: daemonCanon.url } : {}),
         },
         daemonAuth: daemonAuthNow(joinedFaces),
         storageDir,
@@ -3293,7 +3418,6 @@ async function prepareNodeBootOn(
         // ordinary oracle/recipe documents remain parent-attached in the primary worker Repo.
         ownedDocument: true,
         projectionRoot: larProjectionsHome(),
-        guardCrossroadsNexusHandles: nexusStanding.kind !== "charter",
       }),
     });
     daemonVm = daemonHolder.vm;
@@ -3365,16 +3489,17 @@ async function prepareNodeBootOn(
       ?? (process.env["LAR_SIBLING_HERMS"] ?? "").split(",").map((h) => h.trim()).filter((h) => h.length > 0);
     if (siblingHerms.length > 0 && personaGroupId && personaKelPrefix && deviceEdge && siblingGate) {
       if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
-      const sealRecord = tiddlerText(ownEntry(daemonDoc?.tiddlers, groupSecretSealTitle(personaGroupId)));
+      // THE SEAL RESTS IN THE SECRET HOME (placement over patterns), never in the daemon document.
+      const sealRecord = tiddlerText(ownEntry(secretHome?.handle.doc()?.tiddlers, groupSecretSealTitle(personaGroupId)));
       let sealRaw: unknown = null;
       try { sealRaw = sealRecord ? JSON.parse(sealRecord) : null; } catch { sealRaw = null; }
       const seal = await verifyGroupSecretSeal(sealRaw);
       if (!seal) {
         console.warn("[sibling] this face holds no PersonaGroup secret sealed to this device — its enrolment delivered none, so no sibling channel stands.");
       } else {
-        // THE LEASE READER: the face reading over the live daemon doc's lease slots, read at every licensing act, so a
+        // THE LEASE READER: the face reading over the control document's lease slots, read at every licensing act, so a
         // roll that lands after the channel stood refuses an edge bound below it at the next act.
-        const leaseHandle = await readDaemonDoc();
+        const leaseHandle = await readControlDoc();
         const leasePrefix = leaseEpochPrefix(personaGroupId);
         const leaseSlotsNow = (): Array<string | null> => Object.entries(leaseHandle.doc()?.tiddlers ?? {})
           .filter(([title]) => title.startsWith(leasePrefix)).map(([, rec]) => tiddlerText(rec));
@@ -3734,7 +3859,7 @@ async function prepareNodeBootOn(
       worldlineVerbCap(),
     ]);
 
-    return { workerEa: daemonVm.workerEa, mountMainVerbs: daemonVm.mountMainVerbs, resolveBinding: daemonVm };
+    return { workerEa: daemonVm.workerEa, mountMainVerbs: daemonVm.mountMainVerbs, resolveBinding: daemonVm, control: daemonVm.control };
   };
 
   // Thin main verb plane. Every daemon verb that touches the catalog / recipe /
@@ -3790,7 +3915,7 @@ async function prepareNodeBootOn(
       casDir: cidDir, restartWiki: reloadWikiAfterVerb,
       onRolled: afterRoll,
       // The swarm's controls rest in the daemon wiki, device-local by the daemon document's anchor.
-      swarmWiki: daemonSwarmWiki(readDaemonDoc),
+      swarmWiki: controlSwarmWiki(readControlDoc),
       // The key side of a removal answers a SOVEREIGN vessel alone: the facts read the sealed roster, and a
       // floor's island holds no veil.
       ...(sovereign ? { seatDuties: (facts) => askSeatDutiesAsVessel(facts).answer } : {}),
@@ -3806,7 +3931,7 @@ async function prepareNodeBootOn(
 
     // realm-bag — REGISTER a bag this vessel's steward keeps on the realm's shared CRDT (realm-bag-brief): the
     // record `{ bagUri, docUrl, keptBy, readTier }` sealed by the key the acting face (`face`, else the one face standing open) presents to the
-    // realm's Nexus, landed on the realm doc, and announced on crossroads-plane as `{ bagUri, keptBy }` alone. The
+    // realm's Nexus, landed on the realm doc, and announced on the realm-announce board as `{ bagUri, keptBy }` alone. The
     // steward door holds the whole verb (`realm-steward`): it picks the signer, and it never reaches a root.
     // The verb names its realm (`args.realm`); an act in a cabal realm stands the vessel there.
     registry.register("realm-bag", (args) => runRealmBag({
@@ -3830,7 +3955,7 @@ async function prepareNodeBootOn(
         ...(named ? { named } : {}) });
       const held = await selectHeldQuorumSigners(charter.roster, (count, threshold) =>
         new Error(`nexus-rekey: seats-not-held: ${count} of ${threshold} charter seats held`));
-      const r = await rollQuorumLeaseOnBoard(await readDaemonDoc(), resource,
+      const r = await rollQuorumLeaseOnBoard(await readControlDoc(), resource,
         { lineage: charter.lineage, signers: held.map((s) => ({ key: s.verifyingKey, sign: s.sign })) });
       return { verb: "nexus-rekey", nexus: charter.nexus, ...r };
     });
@@ -4015,12 +4140,12 @@ async function prepareNodeBootOn(
   };
 
   // Island pool (worker_threads) + the event bus + the sovereign-worker command bindings.
-  const makePool: VesselOrchestration<VesselIslandPool>["makePool"] = (_daemon, assembly) => {
+  const makePool: VesselOrchestration<VesselIslandPool>["makePool"] = (daemonForPool, assembly) => {
     // ── Durable mailbox (lane law §7) — keel mechanism (vessel-mailbox.ts,
     // substrate-agnostic); this vessel supplies only its live-delivery path. Assigned to the
     // forward-declared ref so the shared residency wiring's undeliverable-alert hook parks here.
     mailbox = makeDurableMailbox(
-      assembly.composite,
+      daemonForPool.control,
       // Delivery activates on reference: a drain to a cold grain re-mounts it first
       // (on `ea` the grain is already live → a cheap no-op; this covers a drain raced
       // ahead of the breath). A grain that cannot activate rejects → stays parked.
@@ -4051,14 +4176,7 @@ async function prepareNodeBootOn(
       // bags/crossroads like the other seed bags. Safe to project ONLY with the skinny-handle
       // rule in place (T3): a book too big for the CRDT lands as a skinny handle, and the
       // projector writes only its handle — the body stays in the cid/ CAS, never re-overflowing.
-      // THE CHARTER-ONLY MIRROR GUARD (crossroads WHO-board leak, 2026-09-20): a private-nexus-of-one
-      // or a dialed anchor still mints its per-Nexus WHO-handles pointer into the crossroads doc on
-      // first boot (who-face.ts), and without this flag every throwaway dev boot's pointer disk-mirrors
-      // alongside the real charter-backed library. Baked from the RESOLVED kind, once, here — never
-      // re-derived from the tiddler inside the projector (which crosses a worker boundary and carries
-      // no kind of its own).
-      { bagId: CROSSROADS_DOC_URI, mirrorRoot: projection.bagRoot("crossroads"), scope: "crossroads",
-        guardNexusHandles: nexusStanding.kind !== "charter" },
+      { bagId: CROSSROADS_DOC_URI, mirrorRoot: projection.bagRoot("crossroads"), scope: "crossroads" },
       // VIRTUAL BAGS. `working` (and `self` below) name LAYER COORDINATES, never bags on disk — a write
       // layer and a per-wiki canon authority the mount expands from the slug. They carry no `@` for the
       // same reason a bag does not: the SEGMENT and the FLAGS say what a name is, so the name says only
@@ -4108,7 +4226,7 @@ async function prepareNodeBootOn(
       resolvePluginCids: (recipe) => resolveNodeIslandPluginCids({
         islandBlobs: assembly.islandHandle.doc()?.blobs,
         recipe,
-        lookup:      nodeOfferingLookup(crossroadsOfferingsHandle?.doc()),
+        lookup:      nodeOfferingLookup(publicationHandle?.doc()),
         readBytes:   (cid) => readCasBlobFromFs(cid, casDir),
         promoted: (slug) => promoteWiringRef ? promoteWiringRef.boot.promotedFor(slug) : Promise.resolve([]),
         onPromotedVoided: (wiki, digests) => console.warn(`[promote] ${wiki}: promoted digest(s) ${digests.join(", ")} failed the local byte check and were dropped from the plugin union`),
@@ -4118,7 +4236,9 @@ async function prepareNodeBootOn(
         if (msg.type !== "event") return;   // a camera's frame or answer from an island outside any session has no ring to ride on this vessel
         eventBus.enqueueToRing("vm-ring", "worker.event", { wikiId, listenable: msg.listenable, payload: msg.payload });
       },
-      onEa: (wikiId) => { void mailbox.drain(wikiId); },   // breath → parked verbs deliver
+      // breath → parked verbs deliver. A locked (or faceless) floor's mailbox refuses by name: its parked verbs wait for the
+      // unlocked composition, and the refusal says so once rather than rejecting unheard.
+      onEa: (wikiId) => { void mailbox.drain(wikiId).catch((e: unknown) => { console.log(`[mailbox] ${wikiId} drains nothing: ${e instanceof Error ? e.message : String(e)}`); }); },
     });
 
     // Wire the pool through the SHARED residency factory: resolveWikiSpec (the UNKNOWN-grain
@@ -4466,6 +4586,8 @@ async function composeNodeHermOn(
   // BANS (the antigen ring rides its carriage), so reading the WHO plane completes the pair: it recognises
   // the presenters those bans name. The cap cannot betray the asymmetry, because it holds no card to publish.
   const hermCrossroads = await materializeSharedLarDoc(p.repo, crossroadsDocUrl(p.nexusPubkey), "board:crossroads");
+  // The realm-announce board the herm folds its carriable PUBLIC books from: a public board apart from the crossroads bag.
+  const hermAnnounces = await materializeSharedLarDoc(p.repo, realmAnnounceDocUrl(p.nexusPubkey), "board:realm-announce");
   // A SOVEREIGN HERM CARRIES ITS FACE'S CUSTODY AND SIGNS NOTHING: on a sovereign composition its lift seats `custodyWrite`
   // alone (the island's veil export seals through it), never a session sign; at the floor no lift stands. It composes before the
   // island boots (the island reads the record at ask time); its dispose IS the lock, run first in the herm's own dispose.
@@ -4504,11 +4626,11 @@ async function composeNodeHermOn(
       // and the tier it declared; the PUBLIC ones reach the shore, and the rest draw the same 404 as before.
       // THE ANNOUNCE ROAD rides beside it (2026-09-13): a Herm that imported a charter still folds NOTHING
       // through the registration road — the realm doc withholds its registrations from a carrier by design —
-      // so the public plane it already replicates carries the address of every PUBLIC-tier book, and only
-      // those, and the carrier learns which books it may carry BY HASH off the board alone.
+      // so the realm-announce board it replicates beside the crossroads document carries the address of every
+      // PUBLIC-tier book, and only those, and the carrier learns which books it may carry BY HASH off that board alone.
       // THE FORK THIS ONCE NAMED STANDS RULED AND CURED. The operator ruled NEXUS-keyed boards (2026-09-13),
       // and `p.nexusPubkey` now resolves through `nexusIdentity`: a keeper and a carrier holding ONE charter
-      // derive ONE island name (the charter's genesis epoch) and therefore ONE crossroads board, so the
+      // derive ONE island name (the charter's genesis epoch) and therefore ONE realm-announce board, so the
       // announce lands where the carrier reads it. e2e ⑦ (`tests/e2e/herm-reshares-public-blob.e2e.test.ts`)
       // stands UNMEASURED against this cure. Its second half is independent and still owed:
       // the Herm holds no carriage CLIENT (it IS the relay), so nothing in the product ever makes it FETCH the
@@ -4517,7 +4639,7 @@ async function composeNodeHermOn(
       realmReferences: () => hermRealmShoreBooks({
         realmStanding: () => p.realmStanding(),
         findDoc:       async (docUrl) => (await p.repo.find<LarDoc>(docUrl as AutomergeUrl).catch(() => null))?.doc() ?? null,
-        crossroadsDoc: () => hermCrossroads.doc(),
+        announceDoc:   () => hermAnnounces.doc(),
         onLog:         (line) => console.log(`[herm] ${line}`),
       }),
     }),

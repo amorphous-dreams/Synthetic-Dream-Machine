@@ -5,7 +5,9 @@
  * stage come up empty under a new face relation F. This pair carries what the operator wrote across that line as
  * CONTENT, never as identity: no key, signature, CRDT history or AID travels, and the import writes NEW changes under
  * the new face's authority. The sensoriums (captured conversation memory, `<root>/sensoriums`) survive by where they
- * stand and never enter a bundle; the daemon's control plane (`bags/daemon`) and the observe renders never travel.
+ * stand and never enter a bundle. Control records rest in the vessel control document and never travel in a bundle;
+ * the daemon wiki travels through the face's working (`wikis/daemon-<F>`) and canon (`bags/daemon-<F>`) mirrors,
+ * and kahua travels through `bags/kahua-<F>`.
  *
  * EXPORT (a vessel that holds a disk store and wears its faces, standing):
  *   1. refuses a dest inside the house root or the workspace, or one that already stands;
@@ -13,8 +15,7 @@
  *      unless `--accept-omissions` names the export partial, and then each lands in the manifest's omissions;
  *   3. maps each face folder (`daemon-<F>`, `kahua-<F>`) to the face that wears it, keyed by PET-NAME; a face that holds
  *      memory and no pet-name, or two that share one, refuses;
- *   4. copies the face's working carriers + `.kapae` shadows, draft recovery files, consented temp carriers, kahua stage
- *      carriers and the stage's standing heads; the daemon wiki's canon (`bags/daemon`, authored records alone); every
+ *   4. copies face working and canon mirrors, granted draft recovery files, consented temp carriers, kahua stage carriers and the stage's standing heads; every
  *      other wiki's working, draft and consented temp files; house-minted bags (a user wiki's own canon among them); and
  *      lists the acquired library's collections by index digest (the originals survive in place and never travel);
  *   5. writes `manifest.json` and `re-declare.json`, reads every byte back against the manifest, and only then moves
@@ -30,7 +31,7 @@
  *   5. re-lifts each kahua head under the new face's grant, keyed by title + body digest (a title already holding that
  *      digest reads landed, a title holding a body the bundle never carried stands off);
  *   6. lands draft and temp files back where none stands (a different file there stands off); re-pours the daemon canon
- *      into `bags/daemon`, each house-minted bag into its bag and each other wiki's working rows into its working layer
+ *      into `bags/daemon-<F>`, each house-minted bag into its bag and each other wiki's working rows into its working layer
  *      through the same gesture, minting first (CREATE) any slug this vessel does not hold, named in the preview.
  *   A journal under `<root>/config/carry-journal/<bundle-id>.ndjson` records each landed act: an interrupted import
  *   re-enters to the same end, and a second import of the same bundle lands nothing.
@@ -39,13 +40,13 @@
  */
 import { appendFileSync, copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, realpathSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
-import { basename, dirname, join, resolve, sep } from "node:path";
+import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
-import { wikiBagUri, wikiSlotUri, KAHUA_BAG, DAEMON_BAG_ID, defaultChairLabel, declarePersonaHandle, renameOwnPersona, standForKahuSeat } from "@lararium/mesh";
+import { wikiBagUri, wikiSlotUri, daemonFaceCanonBag, KAHUA_BAG, defaultChairLabel, declarePersonaHandle, renameOwnPersona, standForKahuSeat } from "@lararium/mesh";
 import {
-  larHouseRoot, larProjectionsHome, larConfigHome, mirrorDirFileToUri, readKapaeShadow, KAPAE_EXT, SyncedTree, OBSERVE_DIR, TEMP_LAYER_DIR,
-  daemonFaceFolder, isDaemonFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug, loadLaresConfig, tempConsentedSlugs, isDaemonCanonWithheld,
-  listCollections, libraryCollectionDir,
+  larHouseRoot, larProjectionsHome, larConfigHome, mirrorDirFileToUri, SyncedTree, TEMP_LAYER_DIR,
+  KAPAE_EXT, readKapaeShadow, daemonFaceFolder, isDaemonFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug, loadLaresConfig, tempConsentedSlugs,
+  listCollections, libraryCollectionDir, atomicWriteFileSync,
 } from "@lararium/node";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor } from "../render.js";
@@ -55,7 +56,7 @@ import { summaryOutput } from "../verb-result.js";
 import { vesselDid } from "../env.js";
 import { runVerb } from "../verb-call.js";
 import { newChangeId, newRequestId, taskContentId } from "@lararium/mesh";
-import { storeVerb } from "../store-door.js";
+import { storeVerb, storeFailure } from "../store-door.js";
 import { readPersonaRoots, sealedPetnameStore, sealedDeclarationStore } from "../sealed-rows.js";
 import { makeFleetPetnameStore, makeFleetDeclarationStore } from "../daemon-persona-store.js";
 import {
@@ -77,6 +78,8 @@ export interface CarryVesselFace {
   /** The stage's standing heads, or null where the stage would not read (`kahuaRefusal` says why). */
   readonly kahua: readonly CarryKahuaHead[] | null;
   readonly kahuaRefusal?: string;
+  /** The store door's name for that refusal (`storeFailure`): `vessel-locked`, `daemon-unreachable`, … */
+  readonly kahuaRefusalCode?: string;
 }
 
 /** What one ingest wave settled, as the carry verbs read it. */
@@ -105,8 +108,6 @@ export interface CarryDoors {
   readonly kahuaLift: (handleIndex: number, lift: { readonly title: string; readonly text: string; readonly fields: Readonly<Record<string, string>>; readonly taint: readonly string[]; readonly sources: CarryKahuaHead["sources"]; readonly parent: string | null }) => Promise<{ readonly cid: string }>;
 }
 
-const DAEMON_WORKING = wikiSlotUri("daemon", "working");
-
 // ── the live doors ─────────────────────────────────────────────────────────────────────────────────────────────
 
 function fleetStores() {
@@ -118,19 +119,19 @@ async function liveFaces(): Promise<CarryVesselFace[]> {
   const out: CarryVesselFace[] = [];
   for (const { handleIndex } of (await readPersonaRoots()).roots) {
     const declaration = await declarations.get(handleIndex);
-    let kahua: CarryKahuaHead[] | null = null, relation: string | null = null, kahuaRefusal: string | undefined;
+    let kahua: CarryKahuaHead[] | null = null, relation: string | null = null, kahuaRefusal: string | undefined, kahuaRefusalCode: string | undefined;
     try {
       const { output } = await storeVerb("kahua-read", { face: handleIndex, action: "list" });
       relation = typeof output["relation"] === "string" ? output["relation"] : null;
       const items = Array.isArray(output["items"]) ? (output["items"] as Array<{ heads?: unknown }>) : [];
       kahua = items.flatMap((item) => (Array.isArray(item.heads) ? item.heads as CarryKahuaHead[] : []))
         .map((h) => ({ title: h.title, cid: h.cid, text: h.text, fields: { ...h.fields }, taint: [...h.taint], sources: h.sources.map((s) => ({ title: s.title, revision: s.revision })) }));
-    } catch (e) { kahuaRefusal = e instanceof Error ? e.message : String(e); }
+    } catch (e) { kahuaRefusal = e instanceof Error ? e.message : String(e); kahuaRefusalCode = storeFailure(e).code; }
     out.push({
       handleIndex, petname: (await petnames.get(handleIndex)) ?? null, relation,
       handle: declaration?.handle ?? null, seat: declaration?.seat === true,
       chair: declaration?.seat === true ? declaration.chair?.trim() || defaultChairLabel(handleIndex) : null,
-      kahua, ...(kahuaRefusal !== undefined ? { kahuaRefusal } : {}),
+      kahua, ...(kahuaRefusal !== undefined ? { kahuaRefusal } : {}), ...(kahuaRefusalCode !== undefined ? { kahuaRefusalCode } : {}),
     });
   }
   return out;
@@ -237,7 +238,10 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
   const { doors, acceptOmissions } = opts;
   const target = resolve(dest);
   const house = larHouseRoot();
-  if (inside(house, target)) throw new CarryRefused("carry-dest-inside-house", `${target} stands inside the house root ${resolve(house)}; a bundle carries memory across a re-founding, so it rests outside the house`);
+  // THE CONFIG HOME TAKES A BUNDLE: a reset clears the hearth alone and keeps config, and the container binds config to the host
+  // (`/lar/config` ← `$LARES_HOUSE/config`), so a bundle exported through the shim rests where the host reads it and the
+  // re-founding never reaches (the vault backup's own precedent). Every other house class refuses.
+  if (inside(house, target) && !inside(larConfigHome(), target)) throw new CarryRefused("carry-dest-inside-house", `${target} stands inside the house root ${resolve(house)}; a bundle carries memory across a re-founding, so it rests outside the house, or under its config home ${resolve(larConfigHome())}, which a reset keeps`);
   if (inside(repoRoot, target)) throw new CarryRefused("carry-dest-inside-workspace", `${target} stands inside the workspace ${repoRoot}; a bundle holds private memory and never rests in a tracked tree`);
   if (existsSync(target)) throw new CarryRefused("carry-dest-stands", `${target} already stands; name a fresh path, and the export never writes over one`);
   const omissions: CarryOmission[] = [];
@@ -264,15 +268,22 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
     const relation = isDaemonFaceFolder(name) ? name.slice("daemon-".length) : isKahuaFaceFolder(name) ? name.slice("kahua-".length) : null;
     return relation === null ? null : byRelation.get(relation) ?? null;
   };
-  let unclaimed = 0;
-  for (const name of [...folders(wikisDir).filter(isDaemonFaceFolder), ...folders(bagsDir).filter(isKahuaFaceFolder)]) if (faceFolderOf(name) === null) unclaimed++;
+  // A RE-FOUNDING KEEPS PROJECTIONS (survive-refound ruling), so a former face's folders stay under the projections root,
+  // claimed by no face this vessel wears. The refusal names each folder and the step that clears it.
+  const unclaimedFolders: string[] = [];
+  for (const name of folders(wikisDir).filter(isDaemonFaceFolder)) if (faceFolderOf(name) === null) unclaimedFolders.push(join(wikisDir, name));
+  for (const name of folders(bagsDir).filter((name) => isKahuaFaceFolder(name) || isDaemonFaceFolder(name))) if (faceFolderOf(name) === null) unclaimedFolders.push(join(bagsDir, name));
+  const unclaimed = unclaimedFolders.length;
   if (unclaimed > 0) {
-    if (!acceptOmissions) throw new CarryRefused("carry-unclaimed-face-folder", `${unclaimed} face folder(s) under ${projections} belong to no face this vessel wears (unlock every face, or export with --accept-omissions to leave them behind)`);
-    omissions.push({ kind: "unclaimed-face-folders", detail: "face folders no face this vessel wears claims; they stay under the projections root", count: unclaimed });
+    if (!acceptOmissions) throw new CarryRefused("carry-unclaimed-face-folder", `${unclaimed} face folder(s) belong to no face this vessel wears:\n  ${unclaimedFolders.join("\n  ")}\n`
+      + `each holds a face's private memory in cleartext: a face whose key stands shut (unlock every face and export again), or a former face a re-founding left behind (projections survive a re-founding). `
+      + `For a former face whose bundle you already imported, move each folder out of the house root (\`mv <folder> <a place outside ${resolve(house)}>\`) and export again; `
+      + `or export with --accept-omissions to leave them where they stand, out of the bundle`);
+    omissions.push({ kind: "unclaimed-face-folders", detail: "face folders no face this vessel wears claims; they stay under the projections root", items: unclaimedFolders, count: unclaimed });
   }
 
   // THE FACES KEY BY PET-NAME. A face that carries memory needs one, and no two may share it.
-  const carries = (f: CarryVesselFace): boolean => f.relation !== null && (existsSync(join(wikisDir, daemonFaceFolder(f.relation))) || existsSync(join(bagsDir, `kahua-${f.relation}`)) || (f.kahua?.length ?? 0) > 0);
+  const carries = (f: CarryVesselFace): boolean => f.relation !== null && (existsSync(join(wikisDir, daemonFaceFolder(f.relation))) || existsSync(join(bagsDir, `kahua-${f.relation}`)) || existsSync(join(bagsDir, daemonFaceFolder(f.relation))) || (f.kahua?.length ?? 0) > 0);
   for (const f of faces) {
     if (carries(f) && (f.petname === null || f.petname.trim() === "")) throw new CarryRefused("carry-face-unnamed", `the face at h${f.handleIndex} carries memory and no pet-name, and a bundle keys each face by its pet-name: name it (\`lares persona new ${f.handleIndex} --name '<label>'\`) and export again`);
     if (f.kahuaRefusal !== undefined && f.relation === null && !acceptOmissions) throw new CarryRefused("carry-face-unread", `the face at h${f.handleIndex} would not read its stage or relation (${f.kahuaRefusal}); unlock it, or export with --accept-omissions to leave its memory behind`);
@@ -292,7 +303,7 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
   const plan: Array<{ from: string; to: string; row: Omit<CarryRow, "sha256" | "path"> | null }> = [];
   const tempBytes: Record<string, number> = {};
   const consented = new Set(doors.tempConsented());
-  let strays = 0, odd = 0, withheld = 0;
+  let strays = 0, odd = 0;
   const addTree = (srcDir: string, toDir: string, rowOf: (rel: string, abs: string) => Omit<CarryRow, "sha256" | "path"> | null, skipTop: readonly string[] = []): void => {
     const listed = plainFiles(srcDir);
     odd += listed.odd.length;
@@ -312,9 +323,9 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
       addTree(src, `faces/${fk}/working`, (rel, abs) => {
         if (rel.endsWith(KAPAE_EXT)) {
           const read = readKapaeShadow(readFileSync(abs, "utf8"));
-          return { face: pet, bag: DAEMON_WORKING, layer: "kapae", title: "title" in read ? read.title : null, rowKey: null };
+          return { face: pet, bag: wikiSlotUri("daemon", "working"), layer: "kapae", title: "title" in read ? read.title : null, rowKey: null };
         }
-        return { face: pet, bag: DAEMON_WORKING, layer: "working", title: mirrorDirFileToUri(wikisDir, abs), rowKey: null };
+        return { face: pet, bag: wikiSlotUri("daemon", "working"), layer: "working", title: mirrorDirFileToUri(wikisDir, abs), rowKey: null };
       }, [TEMP_LAYER_DIR, "recovery"]);
       addTree(join(src, "recovery"), `faces/${fk}/drafts`, () => ({ face: pet, bag: wikiSlotUri("daemon", "draft"), layer: "draft", title: null, rowKey: null }));
       if (consented.has("daemon")) {
@@ -339,6 +350,13 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
   }
   for (const name of folders(bagsDir)) {
     const src = join(bagsDir, name);
+    if (isDaemonFaceFolder(name)) {
+      const face = faceFolderOf(name);
+      if (face === null) continue;
+      const fk = keyOf.get(face.handleIndex)!;
+      addTree(src, `faces/${fk}/canon`, (_rel, abs) => ({ face: face.petname!, bag: daemonFaceCanonBag(face.relation!), layer: "daemon-canon", title: mirrorDirFileToUri(bagsDir, abs), rowKey: null }));
+      continue;
+    }
     if (isKahuaFaceFolder(name)) {
       const face = faceFolderOf(name);
       if (face === null) continue;
@@ -347,13 +365,7 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
       continue;
     }
     if (name === "daemon") {
-      // THE DAEMON WIKI'S CANON: its authored records alone; a house record standing there by hand never travels.
-      const before = plan.length;
-      addTree(src, "daemon/canon", (_rel, abs) => ({ face: null, bag: DAEMON_BAG_ID, layer: "daemon-canon", title: mirrorDirFileToUri(bagsDir, abs), rowKey: null }));
-      for (let i = plan.length - 1; i >= before; i--) {
-        const title = plan[i]!.row?.title;
-        if (title !== null && title !== undefined && isDaemonCanonWithheld(title)) { plan.splice(i, 1); withheld++; }
-      }
+      // This directory has no disk mirror grant, so its files stay out of the carry bundle.
       continue;
     }
     if (isPrivateProjectionSlug(name)) continue;
@@ -361,8 +373,6 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
   }
   if (strays > 0) omissions.push({ kind: "atomic-write-strays", detail: "orphan *.lar-tmp-* files an atomic write left; none carries a record", count: strays });
   if (odd > 0) omissions.push({ kind: "links-or-special-files", detail: "entries under the projections root that stand as neither a plain file nor a directory", count: odd });
-  if (withheld > 0) omissions.push({ kind: "daemon-house-records", detail: "files under projections/bags/daemon that name a control-plane or house identity title; no bundle carries them", count: withheld });
-  omissions.push(daemonBagOmission(projections));
   omissions.push({ kind: "parallel-drafts", detail: "another place's unmerged drafts rest in its draft floor doc (wikis/<slug>/drafts/<did>) and project nowhere; no door names them yet, so none travels" });
 
   // WRITE BESIDE THE DEST, VERIFY, THEN MOVE INTO PLACE.
@@ -427,19 +437,6 @@ function libraryListing(): Array<{ readonly collection: string; readonly indexSh
   });
 }
 
-/** What the daemon's control plane leaves behind, counted by title family off its observe render where one stands. */
-function daemonBagOmission(projections: string): CarryOmission {
-  const root = join(projections, OBSERVE_DIR, "daemon");
-  if (!existsSync(root)) return { kind: "daemon-bag", detail: "the daemon's control plane (bags/daemon) never travels; no observe render stands to count it (projection.observeDaemon)" };
-  const families = new Map<string, number>();
-  for (const rel of plainFiles(root).files) {
-    if (rel.endsWith(".meta") || isStray(rel)) continue;
-    const family = rel.split("/").slice(0, -1).slice(0, 4).join("/") || "(root)";
-    families.set(family, (families.get(family) ?? 0) + 1);
-  }
-  const items = [...families].sort(([a], [b]) => (a < b ? -1 : 1)).map(([f, n]) => `${f}  ${n}`);
-  return { kind: "daemon-bag", detail: "the daemon's control plane (bags/daemon) never travels; its records counted by title family", items, count: [...families.values()].reduce((a, b) => a + b, 0) };
-}
 
 // ── import ─────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -481,7 +478,7 @@ export interface CarryImportResult {
   /** Bundle face pet-name -> the handle index it lands on. */
   readonly faceMap: Readonly<Record<string, number>>;
   readonly redeclare: readonly string[];
-  readonly tallies: Readonly<Record<"working" | "kapae" | "kahua" | "draft" | "temp" | "bag" | "daemonCanon" | "wikiWorking", CarryTally>>;
+  readonly tallies: Readonly<Record<"working" | "kapae" | "faceCanon" | "kahua" | "draft" | "temp" | "bag" | "wikiWorking", CarryTally>>;
   /** The bags (and the wikis they open as) this import mints, or would mint in a preview, before it re-pours them. */
   readonly minted: readonly string[];
   readonly skipped: readonly string[];
@@ -491,6 +488,9 @@ export interface CarryImportResult {
  * Import the bundle at `src`. The bundle verifies whole before anything moves; preview (`apply` false) reads the vessel
  * and plans every act, and writes nothing. Throws {@link CarryRefused} (or {@link CarryBundleRefused}) by name.
  */
+/** The store door's names for a vessel that stands down or locked: a face reads no relation under any of them. */
+const SHUT_VESSEL_CODES: ReadonlySet<string> = new Set(["vessel-locked", "daemon-unreachable", "vessel-composing"]);
+
 export async function carryImport(src: string, opts: { readonly apply: boolean; readonly doors: CarryDoors }): Promise<CarryImportResult> {
   const { doors, apply } = opts;
   const bundle: VerifiedBundle = verifyBundle(resolve(src));
@@ -540,42 +540,75 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   for (const bf of manifest.faces) {
     const p = planned.find((x) => x.row.face === bf.key)!;
     const face = faces.find((f) => f.handleIndex === p.handleIndex)!;
-    if (face.relation === null) throw new CarryRefused("carry-face-unworn", `the face h${face.handleIndex} ("${bf.petname}") pins no face relation, so its daemon wiki has no folder to land in: stand the vessel wearing it and import again${face.kahuaRefusal ? ` (${face.kahuaRefusal})` : ""}`);
+    if (face.relation === null) {
+      // A face reads no relation while its vessel stands down or locked: the cure reads "up, then unlock", before anything else.
+      const shut = face.kahuaRefusalCode !== undefined && SHUT_VESSEL_CODES.has(face.kahuaRefusalCode);
+      throw new CarryRefused("carry-face-unworn", shut
+        ? `the face h${face.handleIndex} ("${bf.petname}") reads no face relation because the vessel's key stands shut or no vessel answers (${face.kahuaRefusal}): run up and vault unlock first (\`tools/lares-container.sh up\` or \`lares vessel stand\`, then \`lares vault unlock\`), and import again`
+        : `the face h${face.handleIndex} ("${bf.petname}") pins no face relation, so its daemon wiki has no folder to land in: stand the vessel wearing it and import again${face.kahuaRefusal ? ` (${face.kahuaRefusal})` : ""}`);
+    }
     faceMap[bf.petname] = face.handleIndex;
     target.set(bf.key, face);
   }
 
-  const tallies = { working: tally(), kapae: tally(), kahua: tally(), draft: tally(), temp: tally(), bag: tally(), daemonCanon: tally(), wikiWorking: tally() };
+  const tallies = { working: tally(), kapae: tally(), faceCanon: tally(), kahua: tally(), draft: tally(), temp: tally(), bag: tally(), wikiWorking: tally() };
   const minted: string[] = [];
   const skipped: string[] = [];
 
-  // WORKING ROWS AND KĀPAE: one wave per face, through the ingest gesture, keyed by content.
-  const wave = async (sourceDir: string, mirrorDir: string, toBag: string, files: readonly string[], keyPrefix: string, workTally: CarryTally, kapaeTally: CarryTally | null, wiki: string | null = null): Promise<void> => {
+  // An import restores each file into its mirror, then ingest reads it there so the placement ward sees the bag's own mirror.
+  const wave = async (sourceDir: string, uriDir: string, mirrorDir: string, toBag: string, files: readonly string[], keyPrefix: string, workTally: CarryTally, kapaeTally: CarryTally | null, wiki: string | null = null): Promise<void> => {
     if (files.length === 0) return;
-    const scan = scanFiles(bundle.root, files.map((f) => join(bundle.root, ...f.split("/"))), toBag, new SyncedTree(null), (_r, file) => mirrorDirFileToUri(mirrorDir, file));
+    const scan = scanFiles(bundle.root, files.map((f) => join(bundle.root, ...f.split("/"))), toBag, new SyncedTree(null), (_r, file) => mirrorDirFileToUri(uriDir, file));
     for (const s of scan.skipped) if (!s.endsWith(".meta")) skipped.push(s);
-    for (const w of scan.withheld ?? []) workTally.refused.push(`${w} (a control-plane or house title no disk writes)`);
     for (const r of scan.refusedShadows ?? []) kapaeTally?.refused.push(`${r.file} (${r.refusal})`);
     const keyed = (r: ScanRow): string => `${keyPrefix}:${r.uri}:${r.diskHash}`;
-    const candidates = candidatesOf(scan.rows).filter((r) => { if (journal.done.has(keyed(r))) { workTally.already++; return false; } return true; });
+    let candidates = candidatesOf(scan.rows).filter((r) => { if (journal.done.has(keyed(r))) { workTally.already++; return false; } return true; });
     for (const r of scan.rows) if (r.status === "non-nfc") workTally.refused.push(`${r.uri} (non-NFC bytes)`);
-    const kapae = (scan.shadows ?? []).filter((t) => { if (journal.done.has(`${keyPrefix}:kapae:${t}`)) { kapaeTally!.already++; return false; } return true; });
+    const shadowTally = kapaeTally ?? workTally;
+    let kapae = (scan.shadows ?? []).filter((t) => { if (journal.done.has(`${keyPrefix}:kapae:${t}`)) { shadowTally.already++; return false; } return true; });
     workTally.planned += candidates.length;
-    if (kapaeTally) kapaeTally.planned += kapae.length;
+    shadowTally.planned += kapae.length;
     if (!apply || (candidates.length === 0 && kapae.length === 0)) return;
-    const answer = await doors.ingest({ source: sourceDir, toBag, candidates, kapae, ...(wiki !== null ? { inWiki: true, wiki } : {}) });
+    const wanted = new Set([...candidates.map((r) => r.uri), ...kapae]);
+    const blocked = new Set<string>();
+    const pending: Array<{ uri: string; to: string; bytes: Buffer }> = [];
+    for (const f of files) {
+      const from = join(bundle.root, ...f.split("/"));
+      const uri = mirrorDirFileToUri(uriDir, from.endsWith(".meta") ? from.slice(0, -5) : from);
+      if (!uri || !wanted.has(uri)) continue;
+      const to = join(mirrorDir, relative(sourceDir, from));
+      const bytes = readFileSync(from);
+      if (existsSync(to)) {
+        if (!readFileSync(to).equals(bytes)) blocked.add(uri);
+      } else pending.push({ uri, to, bytes });
+    }
+    for (const uri of blocked) workTally.stoodOff.push(`${uri} (a different file stands in the mirror; left as it stands)`);
+    for (const { uri, to, bytes } of pending) {
+      if (blocked.has(uri)) continue;
+      mkdirSync(dirname(to), { recursive: true });
+      atomicWriteFileSync(to, bytes, undefined, { mode: 0o600 });
+    }
+    candidates = candidates.filter((r) => !blocked.has(r.uri));
+    kapae = kapae.filter((uri) => !blocked.has(uri));
+    if (candidates.length === 0 && kapae.length === 0) return;
+    const answer = await doors.ingest({ source: mirrorDir, toBag, candidates, kapae, ...(wiki !== null ? { inWiki: true, wiki } : {}) });
     const landed = new Set(answer.landed);
     for (const r of candidates) if (landed.has(r.uri)) { workTally.landed++; journal.mark(keyed(r), "landed"); }
     for (const c of answer.conflicts) workTally.stoodOff.push(`${c.uri} (${c.why})`);
     for (const c of answer.refused) workTally.refused.push(`${c.uri} (${c.why})`);
     for (const u of answer.unanswered) workTally.refused.push(`${u} (no answer; import again)`);
-    for (const t of answer.kapaeRaised) { kapaeTally!.landed++; journal.mark(`${keyPrefix}:kapae:${t}`, "raised"); }
-    for (const k of answer.kapaeRefused) kapaeTally!.refused.push(`${k.uri} (${k.why})`);
+    for (const t of answer.kapaeRaised) { shadowTally.landed++; journal.mark(`${keyPrefix}:kapae:${t}`, "raised"); }
+    for (const k of answer.kapaeRefused) shadowTally.refused.push(`${k.uri} (${k.why})`);
   };
   for (const bf of manifest.faces) {
-    const prefix = `faces/${bf.key}/working/`;
-    const files = manifest.files.map((f) => f.path).filter((p) => p.startsWith(prefix));
-    await wave(join(bundle.root, "faces", bf.key, "working"), join(bundle.root, "faces", bf.key), DAEMON_WORKING, files, `working:${bf.key}`, tallies.working, tallies.kapae);
+    const relation = target.get(bf.key)!.relation!;
+    for (const kind of ["working", "canon"] as const) {
+      const files = manifest.files.map((f) => f.path).filter((p) => p.startsWith(`faces/${bf.key}/${kind}/`));
+      const mirror = join(projections, kind === "working" ? "wikis" : "bags", daemonFaceFolder(relation));
+      await wave(join(bundle.root, "faces", bf.key, kind), join(bundle.root, "faces", bf.key), mirror,
+        kind === "working" ? wikiSlotUri("daemon", "working") : daemonFaceCanonBag(relation), files,
+        `${kind}:${bf.key}`, kind === "working" ? tallies.working : tallies.faceCanon, kind === "working" ? tallies.kapae : null);
+    }
   }
 
   // KAHUA HEADS: re-lifted under the new face's grant, keyed by title + body digest.
@@ -640,12 +673,6 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     place(join(bundle.root, ...f.path.split("/")), to, f.sha256, t);
   }
 
-  // THE DAEMON WIKI'S CANON: re-poured into `bags/daemon` through the ingest gesture, the road seed walks for a bag the vessel
-  // mints at boot. (Seed's LOAD-then-MOVE road would carry the daemon wiki's WHOLE working layer into canon, the face's
-  // working memory with it, so the canon re-pour never takes it.)
-  const canonFiles = manifest.files.map((f) => f.path).filter((p) => p.startsWith("daemon/canon/"));
-  await wave(join(bundle.root, "daemon", "canon"), join(bundle.root, "daemon"), DAEMON_BAG_ID, canonFiles, "daemon-canon", tallies.daemonCanon, null);
-
   // EVERY OTHER WIKI AND HOUSE-MINTED BAG, by slug: a slug this vessel does not hold mints first, through CREATE.
   const slugsOf = (re: RegExp): string[] => [...new Set(manifest.files.map((f) => re.exec(f.path)?.[1]).filter((s): s is string => s !== undefined))].sort();
   const bagSlugs = slugsOf(/^bags\/([^/]+)\//), wikiSlugs = slugsOf(/^wikis\/([^/]+)\/working\//);
@@ -661,11 +688,11 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   }
   for (const slug of bagSlugs) {
     const files = manifest.files.map((f) => f.path).filter((p) => p.startsWith(`bags/${slug}/`));
-    await wave(join(bundle.root, "bags", slug), join(bundle.root, "bags"), wikiBagUri(slug), files, `bag:${slug}`, tallies.bag, null);
+    await wave(join(bundle.root, "bags", slug), join(bundle.root, "bags"), join(projections, "bags", slug), wikiBagUri(slug), files, `bag:${slug}`, tallies.bag, null);
   }
   for (const slug of wikiSlugs) {
     const files = manifest.files.map((f) => f.path).filter((p) => p.startsWith(`wikis/${slug}/working/`));
-    await wave(join(bundle.root, "wikis", slug, "working"), join(bundle.root, "wikis", slug), wikiSlotUri(slug, "working"), files, `wiki-working:${slug}`, tallies.wikiWorking, tallies.kapae, slug);
+    await wave(join(bundle.root, "wikis", slug, "working"), join(bundle.root, "wikis", slug), join(projections, "wikis", slug), wikiSlotUri(slug, "working"), files, `wiki-working:${slug}`, tallies.wikiWorking, tallies.kapae, slug);
   }
 
   return { bundleId: manifest.bundleId, applied: apply, faceMap, redeclare: acts, tallies, skipped, minted };

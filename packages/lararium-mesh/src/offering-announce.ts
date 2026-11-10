@@ -1,5 +1,6 @@
 /**
- * plugin-offering Crossroads announce — a public, additive projection of immutable signed gifts.
+ * plugin-offering announce — a public, additive projection of immutable signed gifts, resting on the Nexus's
+ * publication board (`publicationDocUrl`), which no recipe mounts and no mirror names.
  *
  * The offering's own signature and content CID carry authority and integrity. This board record carries
  * the complete signed offering under its CID, so a peer can reannounce the exact bytes without a second
@@ -17,7 +18,7 @@ import { type LarDoc } from "./base-doc.js";
 import { plainField, type StoredLarRecord } from "./stored-value.js";
 import { storedLarRecord } from "./stored-record.js";
 
-/** The public Crossroads namespace for immutable offering records. */
+/** The publication board's namespace for immutable offering records. */
 export const PLUGIN_OFFERING_ANNOUNCE_PREFIX = "lar:///ha.ka.ba/dreamnet/plugin-offering-announces/" as const;
 
 /** A board projection. The nested record remains the signed, content-addressed authority. */

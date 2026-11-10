@@ -142,6 +142,39 @@ export function receiptSettlement(close: () => void): { answering<T>(answer: Pro
   };
 }
 
+/**
+ * THE CUSTODY WRITE, island side, over any port: the island holds bytes to rest under the vessel's key and never the key;
+ * it asks `custody:write` and the vessel's record answers through the lift's `custodyWrite` (`answerIslandAsks`). An
+ * answer that wrote nothing rejects by its own words, without the bytes. The node's daemon island asks the same over its
+ * `worker_threads` channel (`vesselCustodyWriter`); a browser daemon island asks here, so its key shore's Archive rests
+ * and every wrap it seals can open again.
+ */
+export function islandCustodyWriter(
+  port: { post(msg: unknown): void; listen(cb: (msg: unknown) => void): unknown },
+  opts: { readonly idPrefix: string },
+): (carrier: CustodyWriteCarrier, bytes: Uint8Array) => Promise<void> {
+  const pending = new Map<string, (answer: IslandMsg_CustodyWritten) => void>();
+  port.listen((raw) => {
+    const m = raw as Partial<IslandMsg_CustodyWritten> | null;
+    if (!m || m.type !== "custody:written" || typeof m.requestId !== "string") return;
+    const settle = pending.get(m.requestId);
+    if (!settle) return;
+    pending.delete(m.requestId);
+    settle(m as IslandMsg_CustodyWritten);
+  });
+  let seq = 0;
+  return (carrier, bytes) => new Promise<void>((resolve, reject) => {
+    const requestId = `${opts.idPrefix}-${++seq}`;
+    pending.set(requestId, (answer) => {
+      if (answer.written === true) resolve();
+      else reject(new Error(`the vessel did not seal the ${carrier} carrier (${answer.why ?? "unwritten"})`));
+    });
+    // A post that fails refuses at once by name: the island holds no key to fall back on.
+    try { port.post({ type: "custody:write", requestId, carrier, bytes } satisfies IslandMsg_CustodyWrite); }
+    catch (e) { pending.delete(requestId); reject(e instanceof Error ? e : new Error(String(e))); }
+  });
+}
+
 /** The island-to-vessel kinds the record answers, each by the member of its own name. */
 export const RECORD_ASKS = ["cas:want", "receipt:request", "dyad:ask", "custody:write", "session:sign"] as const;
 

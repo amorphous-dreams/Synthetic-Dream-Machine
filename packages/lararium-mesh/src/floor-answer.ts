@@ -1,7 +1,7 @@
 /**
  * floor-answer — the Nexus's floor, read by a vessel that holds no charter: the porch's answer, verified whole.
  *
- * A Nexus answers a stranger with ONE public document at the porch (`/floor/<Nexus AID>`): the release rows its crossroads
+ * A Nexus answers a stranger with ONE public document at the porch (`/floor/<Nexus AID>`): the release rows its publication
  * board carries, each with the charter's epoch lineage riding its record (`floor-release`). The reader holds the AID on
  * its own trust line (the hearth floor card) and nothing else, and refuses at each step BEFORE the floor is used:
  *

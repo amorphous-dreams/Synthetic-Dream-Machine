@@ -27,13 +27,13 @@ import {
   makeCircleStateReactor,
   makeCircleReactors,
   makeCabalRealmReactors,
-  makeIntentViewReactor, runLocalVerb, INTENT_VIEW_CAP, SEED_OFF_DISK,
+  makeIntentViewReactor, runLocalVerb, INTENT_VIEW_CAP, controlOf, MemoryTiddlerStore,
 } from "@lararium/tw5";
-import { ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, type ChangeOrigin } from "@lararium/mesh";
+import { DAEMON_WIKI_SLUG, ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, recipeLayerIndex, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, ControlHomeUnavailable, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor, VerbTable } from "@lararium/tw5";
 import type { IslandMsg_Manifest, JoinedFaceAuth } from "@lararium/mesh";
 import { boardDyadReader, intentDoorStandings } from "./board-dyad-reader.js";
-import type { DocHandle, LarDoc, AutomergeUrl, CapabilityVerifier, Verb } from "@lararium/mesh";
+import type { DocHandle, LarDoc, AutomergeUrl, CapabilityVerifier, Verb, LarTiddlerStore } from "@lararium/mesh";
 
 /** Vessel-injected daemon shore the platform entry supplies (node folds the telemetry capture SINK here; a
  *  browser/node entry folds the projection `onBoot` mount so the daemon inherits the wiki render cap).
@@ -104,6 +104,12 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
 };
 
 /** What a shore injects so the content-key holder can stand in the daemon island. */
+
+/** THE PERSONA PLANE'S ROAD: it rests as a private-synced home, which the catalog's store road passes by; its own readers and
+ *  writers (the face-join grant and its operation record, the face seat's grants, the face-bag ledger) take the home road. */
+const homeStoreOf = (catalog: { storeOf(bag: string): Promise<LarTiddlerStore | null>; homeStoreOf?(bag: string): Promise<LarTiddlerStore | null> }, bag: string): Promise<LarTiddlerStore | null> =>
+  catalog.homeStoreOf ? catalog.homeStoreOf(bag) : catalog.storeOf(bag);
+
 export interface SealedStoreShore {
   /** Durable rest for lockboxes, signed records and index rows. It holds no secret. */
   readonly rest:   SealedStoreRest;
@@ -145,7 +151,7 @@ import { daemonBagDocLedger, planeBagDocLedger, registerBagsDurably, type BagDoc
 import { persistArchiveFloor } from "./archive-floor-write.js";
 import { replicaHeads, hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, holdsKahuReach, isSystemCanonBag, realmStandingDocUrl, materializeFaceWorkingDoc } from "@lararium/mesh";
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
-import { readLeaseUnderFace, daemonLayerOf, type LeaseFrontier } from "./lease-frontier.js";
+import { readLeaseUnderFace, controlLayerOf, type LeaseFrontier } from "./lease-frontier.js";
 import { readFace, answerDocStoreAsks, announceSlotDoc, documentIdOfUrl, type WikiSlotKind } from "@lararium/mesh";
 import { makeSlotDocResolver, type SlotDocResolver } from "./slot-doc-resolver.js";
 import { type FaceJoinSummons } from "./face-join.js";
@@ -220,6 +226,9 @@ const lightAFace = (verb: string): VerbReactor => async () => {
 };
 
 export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: DaemonExtra = {}): DaemonBehaviorOptions {
+  const secretEvents = (ctx: IslandContext, face: string): DaemonEventStore => {
+    return new DaemonEventStore({ ...(ctx.secretStore ? { secretStore: ctx.secretStore } : {}), ...(ctx.secretRest ? { secretRest: ctx.secretRest } : {}), face });
+  };
   // The face archive writer stays on the island shore.
   const {
     persistVeilArchive, shore, events, journalAppend,
@@ -279,10 +288,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       if (litInputs.get(key) === faceInputsDigest(face)) return;
       throw new Error(`face-lit-changed: face ${key} stands lit from other inputs (anchor, KEL, edge, bags or veil); drop it before it lights again`);
     }
-    const lease = await readLeaseUnderFace(ctx.composite, face.personaGroupId, readFace(face.personaKel.chain, face.faceAnchor));
+    const lease = await readLeaseUnderFace(ctx.control, face.personaGroupId, readFace(face.personaKel.chain, face.faceAnchor));
     const joined = await bootDaemonKeyhive({
       atomSeed: meshHexToBytes(face.atom.seed), faceVerifyingKey: face.atom.key,
-      eventStore: new DaemonEventStore({ daemon: ctx.composite, face: face.personaGroupId }),
+      eventStore: secretEvents(ctx, face.personaGroupId),
       personaGroupId: face.personaGroupId,
       faceAnchor: face.faceAnchor, personaKel: face.personaKel, deviceEdge: face.deviceEdge,
       signerDid: face.signerDid, ...(face.meshCabalDocIdHex ? { meshCabalDocIdHex: face.meshCabalDocIdHex } : {}),
@@ -403,6 +412,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     slotDocs = announcing(makeSlotDocResolver({
       repo: askReceipt ? restingMinter(ctx.repo, (ids) => askReceipt(ids,
         gateCleared ? undefined : gateClear, islandHeadsOf(ctx.repo, ids))) : ctx.repo,
+      deviceScoped: (slug) => slug === DAEMON_WIKI_SLUG, control: controlOf(ctx),
+      ...(docStoreDoor ? { announceDevice: (kind: Exclude<WikiSlotKind, "temp">, documentId: string) => announceSlotDoc(docStoreDoor, wikiSlotUri(DAEMON_WIKI_SLUG, kind), documentId) } : {}),
       daemonStore: ctx.composite, ...(kh ? { keyhive: kh } : {}),
       catalog: ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl, ctx.faceCatalogUrl) : null,
       vesselDid: () => didFromVerifyingKey(mintedByHex),
@@ -436,6 +447,43 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     return slotDocs;
   };
 
+  /**
+   * THE DAEMON WIKI'S EDIT SLOTS: its draft and personal layers, device documents the control document names beside its
+   * working slot (`deviceSlot`). A projected daemon surface edits: TW5 writes each `Draft of …` to the draft slot and its
+   * story list to the personal slot through the recipe's own routing (`current-wiki-draft`, `current-wiki-personal`). With
+   * neither mounted, every such write refused `unrouted-save`, and a control event that wrote one never settled, so the
+   * frame's save click after it fell as `control-event-pending` (e2e stage-walk S6). A floor that reads no control
+   * document holds each in this island's memory alone, as it holds its working layer.
+   */
+  const attachDaemonEditSlots = async (ctx: IslandContext): Promise<void> => {
+    const slug = ctx.recipe.wikiSlug;
+    for (const kind of ["personal", "draft"] as const) {
+      const bag = wikiSlotUri(slug, kind);
+      if (ctx.composite.hasBag(bag)) continue;
+      // Each lays just above the layer beneath it in the recipe's order (temp · draft · personal · working).
+      // Each seat reads at its own addLayer: the face canon may mount across the awaits between.
+      if (!ctx.composite.hasBag(wikiSlotUri(slug, "working"))) return;
+      let resolved: Awaited<ReturnType<SlotDocResolver["slotDoc"]>>;
+      try { resolved = await slotDocsOf(ctx).slotDoc(slug, kind); }
+      catch (cause) {
+        if (!(cause instanceof ControlHomeUnavailable)) { console.warn(`[daemon] the ${kind} slot stands not: ${cause instanceof Error ? cause.message : String(cause)}`); continue; }
+        ctx.composite.addLayer({ bagId: bag, store: new MemoryTiddlerStore(bag), writable: true, defaultWritable: false }, recipeLayerIndex(ctx.composite, ctx.recipe, bag));
+        floorBags.add(bag);
+        continue;
+      }
+      if (!resolved) continue;
+      const handle = await findOrThrow(ctx.repo, resolved.url, `${bag} (the daemon's ${kind} layer)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS });
+      const store = new AutomergeDocStore(handle, bag);
+      ctx.composite.addLayer({ bagId: bag, store, writable: true, defaultWritable: false }, recipeLayerIndex(ctx.composite, ctx.recipe, bag));
+      ctx.handles.set(bag, handle);
+      store.emitInitialReplay();
+      store.markSyncComplete();
+      if (faceDoor() && await kh!.knowsAgent(daemonAuth.personaGroupId!)) await faceDoor()!.mint(bag, "admin");
+      else if (kh) await registerBagsDurably({ provider: kh, bags: [bag], ledger: daemonBagDocLedger(ctx.composite, daemonAuth.personaGroupId) });
+      else floorBags.add(bag);
+    }
+  };
+
   // Every write made by the daemon wiki, including its receipts and audit records, lands in its working
   // layer. The daemon bag beneath holds only records the daemon wiki names explicitly.
   const attachDaemonWorking = async (ctx: IslandContext): Promise<void> => {
@@ -448,13 +496,31 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       }
       const daemonUrl = ctx.handles.get(wikiBagUri(slug))?.url;
       if (!daemonUrl) throw new Error(`daemon bag ${wikiBagUri(slug)} is unavailable`);
-      const resolved = await slotDocsOf(ctx).slotDoc(slug, "working");
+      let resolved: Awaited<ReturnType<SlotDocResolver["slotDoc"]>>;
+      try { resolved = await slotDocsOf(ctx).slotDoc(slug, "working"); }
+      catch (cause) {
+        // A LOCKED (OR FACELESS) FLOOR FAILS CLOSED: the daemon wiki's working slot is a device document the control
+        // document names, and a control document the vessel cannot read names none and mints none. The floor's daemon wiki
+        // writes its engine state into a layer held in this island's memory alone: no document, no rest, no sync, gone at
+        // the next composition. Every control act still refuses by name; nothing here waits for a key.
+        if (!(cause instanceof ControlHomeUnavailable)) throw cause;
+        const scratch = new MemoryTiddlerStore(working);
+        ctx.composite.addLayer({ bagId: working, store: scratch, writable: true, defaultWritable: true }, recipeLayerIndex(ctx.composite, ctx.recipe, working));
+        floorBags.add(working);
+        const temp = wikiSlotUri(slug, "temp");
+        if (ctx.composite.hasWritableBag(temp)) {
+          await ctx.composite.put(mutableLarRecord("lar:///ha.ka.ba/lararium/config/current-wiki-bag", { text: working }, "daemon-working-attach"), { kind: "canon-hydrate", receipt: "daemon-working-attach" }, { bag: temp });
+        }
+        console.log(`[daemon] working layer held in memory at the floor (${cause.refusal}): nothing it holds rests`);
+        return;
+      }
       if (!resolved) throw new Error("working slot did not resolve");
       const workingUrl = resolved.url;
       const handle = await findOrThrow(ctx.repo, workingUrl, `${working} (the daemon's working layer)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS });
       const store = new AutomergeDocStore(handle, working);
-      const at = ctx.composite.layerIndexOf(wikiBagUri(slug)) + 1;
-      ctx.composite.addLayer({ bagId: working, store, writable: true, defaultWritable: true }, at);
+      // The face canon mounts after ea, so the working layer reads its seat off the recipe, never off the canon alone: an
+      // absent canon read as index -1 seated working beneath the kahua stage, which then shadowed every working edit.
+      ctx.composite.addLayer({ bagId: working, store, writable: true, defaultWritable: true }, recipeLayerIndex(ctx.composite, ctx.recipe, working));
       ctx.handles.set(working, handle);
       store.emitInitialReplay();
       store.markSyncComplete();
@@ -494,9 +560,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // TWO VERDICTS (`lease-frontier.ts`): an empty, readable slot set reads 0, the founding epoch; no group pinned,
   // no daemon layer, or a read fault reads UNAVAILABLE — and a mutation gate names that frontier rather than
   // silently licensing from the signature and wall-clock window alone.
-  const readLeaseEpoch = (composite: IslandContext["composite"] | null | undefined): Promise<LeaseFrontier> =>
+  const readLeaseEpoch = (control: IslandContext["control"] | null | undefined): Promise<LeaseFrontier> =>
     // THE ONE DOOR: the current roster's signed advances, floored under the sealed anchor this daemon stands on.
-    readLeaseUnderFace(composite, daemonAuth.personaGroupId, readFace(daemonAuth.personaKel?.chain, daemonAuth.faceAnchor));
+    readLeaseUnderFace(control, daemonAuth.personaGroupId, readFace(daemonAuth.personaKel?.chain, daemonAuth.faceAnchor));
 
   // One authority and archive stand serves both the writable marker and ea.
   // The memory keys the island's own context: one island asks twice (the marker, then ea) and reads one stand; a second context is a
@@ -621,7 +687,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // THE BINDING GATE'S OWN LEASE READ — the same fold, done once here (boot only re-runs the gate at
       // boot, so a single read at this moment is exactly as fresh as the gate itself). An UNAVAILABLE frontier
       // threads no epoch, and the gate refuses a persona-bound boot on it.
-      const bindingGateLease = await readLeaseEpoch(ctx.composite);
+      const bindingGateLease = await readLeaseEpoch(ctx.control);
       if (bindingGateLease.kind === "unavailable" && daemonAuth.personaGroupId) {
         console.log(`[daemon] Binding Gate lease read: current lease frontier unavailable (${bindingGateLease.why})`);
       }
@@ -629,7 +695,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       try {
         booted = await bootDaemonKeyhive({
           ...(daemonAuth.atom ? { atomSeed: meshHexToBytes(daemonAuth.atom.seed) } : {}),
-          eventStore:            new DaemonEventStore({ daemon: ctx.composite, face: daemonAuth.personaGroupId! }),
+          eventStore:            secretEvents(ctx, daemonAuth.personaGroupId!),
           ...(daemonAuth.atom ? { faceVerifyingKey: daemonAuth.atom.key } : {}),
           // The face pins ride CONDITIONALLY — the gate runs in full or grants no persona caps at all.
           ...(daemonAuth.personaGroupId   ? { personaGroupId:   daemonAuth.personaGroupId }   : {}),
@@ -675,7 +741,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             const planeBag = personaBagIdFor(daemonAuth.personaGroupId);
             const mounted = ctx.composite.hasBag(planeBag) ? ctx.composite.storeForBag(planeBag) : null;
             if (!mounted && !ctx.catalogUrl) throw new Error("catalog unavailable");
-            const store = mounted ?? await makeCatalogAccessor(ctx.repo, ctx.catalogUrl!, ctx.faceCatalogUrl).storeOf(planeBag);
+            const store = mounted ?? await homeStoreOf(makeCatalogAccessor(ctx.repo, ctx.catalogUrl!, ctx.faceCatalogUrl), planeBag);
             if (!store) throw new Error("face plane absent");
             await store.listVisible();
             faceLedger = planeBagDocLedger(store);
@@ -699,6 +765,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         exportVeilArchive: () => keyhive.exportArchiveAfterTheCard(),
       });
       await attachDaemonWorking(ctx);
+      // The edit slots stand beside the working layer; one that stands not names itself and holds no boot.
+      await attachDaemonEditSlots(ctx).catch((cause: unknown) => console.warn(`[daemon] the daemon wiki's edit slots stand not: ${cause instanceof Error ? cause.message : String(cause)}`));
       return { keyhive, floor };
   })();
 
@@ -892,15 +960,14 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           registry.register("circle-list",    lightAFace("circle-list"));
         }
 
-        // The CABAL-REALM verbs over the daemon bag, where the per-writer lease slots live. `realm-feed` rolls the
+        // The CABAL-REALM verbs over the control document, where the per-writer lease slots rest. `realm-feed` rolls the
         // presenter's own leaf slot, its writer bound through the face→leaf bond — the offering a realm lives by; `realm-clock` reads every slot back and reports
         // who feeds and how deep, VERDICT-FREE (what spread counts as capture stays the operator's
         // calibration, and mechanizing it here would recreate the root a realm exists without).
-        // The slots live in the island's OWN daemon layer — the composite holds it on every platform, and under
-        // an owned document the main repo denies the daemon doc, so no registry walk over `ctx.repo` reaches it.
+        // The slots rest in the vessel's control document — the island's control store holds it on every platform.
         const resolveDaemonStore = async () => {
-          const store = daemonLayerOf(ctx.composite);
-          if (!store) throw new Error("cabal-realm-verb: daemon bag unresolved — the daemon layer is absent from this island's composite");
+          const store = controlLayerOf(ctx.control);
+          if (!store) throw new Error("cabal-realm-verb: control home unresolved — the control layer is absent from this island's control store");
           return store;
         };
         const realmReactors = makeCabalRealmReactors({ resolveStore: resolveDaemonStore });
@@ -958,6 +1025,14 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               sink: announceSeatRoll,
               signReceipt: faceAtom().sign,
             });
+            // A ROLL THE ANSWER LEFT OWED SETTLES UNDER THE SESSION THAT BOOKED THIS ASK, inside the act: a seat roll names no
+            // signer, and under placement the verb's own outcome rests in the control document, so no face-sealed save follows
+            // to settle it. An ask no session booked settles nothing here, and the roll stays owed for the next session act.
+            if (contentKeys) {
+              let signer: RecordSigner | null = null;
+              try { signer = await sessionOf("seat-duties", context); } catch { signer = null; }
+              if (signer) await contentKeys.settle(signer).catch(() => undefined);
+            }
             return { verb: "seat-duties", ran: true, ...answered };
           });
           faceJoinEffect = async (args, at) => {
@@ -974,7 +1049,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               throw new Error("[daemon] face-join: no summons in args — carry {contactCard, deviceEdge}.");
             }
             const operationStore = ctx.catalogUrl
-              ? await makeCatalogAccessor(ctx.repo, ctx.catalogUrl, ctx.faceCatalogUrl).storeOf(personaBagIdFor(faceGroup()))
+              ? await homeStoreOf(makeCatalogAccessor(ctx.repo, ctx.catalogUrl, ctx.faceCatalogUrl), personaBagIdFor(faceGroup()))
               : null;
             if (!operationStore) throw new Error("[daemon] face-join: the face's PersonaGroup plane is unresolved");
             // A HEARTH NEVER SEATS ITSELF.
@@ -993,7 +1068,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             }
             // The lease read, off the island's own daemon layer: every slot under this group's prefix, folded
             // by max — the SAME read every admission door shares. An unavailable frontier seats nobody.
-            const lease = await readLeaseEpoch(ctx.composite);
+            const lease = await readLeaseEpoch(ctx.control);
             if (lease.kind === "unavailable") {
               throw new Error(`[daemon] face-join: current lease frontier unavailable (${lease.why}) — no seat moves`);
             }
@@ -1020,7 +1095,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             if (!daemonAuth.personaKel) throw new Error("[daemon] face-join: founder persona-KEL proof unavailable — no seat moves");
             const founderKel = daemonAuth.personaKel;
             if (!facePlane) throw new Error("[daemon] face-join: the face's PersonaGroup plane is unresolved");
-            const planeHandle = await facePlane.find(personaBagIdFor(faceGroup()));
+            // The plane rests as a private-synced home: the grant, its own writer, takes the home road (`homeOf`).
+            const planeHandle = facePlane.homeOf ? await facePlane.homeOf(personaBagIdFor(faceGroup())) : await facePlane.find(personaBagIdFor(faceGroup()));
             if (!planeHandle) throw new Error("[daemon] face-join: the face's PersonaGroup plane is unresolved");
             // THE LATER GRANT LANDS AS A RECORD on the PersonaGroup plane — the doc the joinee already syncs by
             // membership — signed under this face's atom and carrying its root-signed edge, so the joinee's own kit
@@ -1052,7 +1128,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
 
       // Disk-ward refusals (wiki-island projector → worker.event bridge) — audit
       // in the daemon bag + $:/tags/Alert into the operator's pinned VM.
-      registry.register("ward-alert", makeWardAlertReactor(ctx.composite, ctx.post));
+      registry.register("ward-alert", makeWardAlertReactor(ctx.composite, controlOf(ctx), ctx.post));
 
       // ── THE SEALED STORE'S VERBS (sealed-store#/the-store) ───────────────────────────────────────────────
       // The content-key holder lives in this island, so every act that needs a content key runs here. No verb
@@ -1385,7 +1461,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           personaKel: daemonAuth.personaKel,
           knowsAgent: (agent) => veil.knowsAgent(agent),
           grants: async () => {
-            const store = await catalog.storeOf(personaBagIdFor(group));
+            const store = await homeStoreOf(catalog, personaBagIdFor(group));
             if (!store) return [];
             const prefix = `${FACE_GRANT_PREFIX}${group}/`;
             const self = edge.deviceVerifyingKey.toLowerCase();
@@ -1401,7 +1477,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           // The founder's standing, off this vessel's own fold of the face's fleet board: no reader composed reads nothing as clear.
           founderStanding: async (key) => requireDyadReader(dyadReader(ctx), "the grant founder")(edge.personaRootDid, key),
           verify: verifyFaceGrantRecord,
-          ingest: async (record, admit) => { await absorbCapEvents(veil, new DaemonEventStore({ daemon: ctx.composite, face: daemonAuth.personaGroupId! }), record.capEvents.map(base64ToBytes), { admit }); },
+          ingest: async (record, admit) => { await absorbCapEvents(veil, secretEvents(ctx, daemonAuth.personaGroupId!), record.capEvents.map(base64ToBytes), { admit }); },
           lift: async () => {
             const lifted = await slotDocsOf(ctx).liftFloor();
             if (lifted.moved.length + lifted.finished.length > 0)
@@ -1515,8 +1591,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
                   return { verb: "kahua-propose", id: out.id, cid: out.cid, proposals: out.proposals.map((p) => ({ ...p })) };
                 });
               if (intentVerifier) void intentVerifier.verify({ presenter: atom.key, bagUrl: intentsBag, access: "read", channel: "local" })
-                .then((proof) => ctx.tw5.setTiddler({ title: INTENT_VIEW_CAP, text: proof.ok ? "1" : "0", ...SEED_OFF_DISK }))
-                .catch(() => ctx.tw5.setTiddler({ title: INTENT_VIEW_CAP, text: "0", ...SEED_OFF_DISK }));
+                .then((proof) => ctx.tw5.setTiddler({ title: INTENT_VIEW_CAP, text: proof.ok ? "1" : "0" }))
+                .catch(() => ctx.tw5.setTiddler({ title: INTENT_VIEW_CAP, text: "0" }));
             };
             registerIntentView();
             // THE JOINEE'S HALF: a joined, unseated leaf summons its own seat on this plane, once, pinned to the founding
@@ -1578,7 +1654,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         for (const r of floor.refusals) {
           console.warn(`[daemon] ${r.carrier} archive export REFUSED: ${r.message}`);
           try {
-            await fileWardRefusal(ctx.composite, ctx.post, {
+            await fileWardRefusal(ctx.composite, controlOf(ctx), ctx.post, {
               bagId:    DAEMON_BAG_ID,
               uri:      `lar:///ha.ka.ba/identity/${r.carrier}-archive`,
               reason:   r.message,
