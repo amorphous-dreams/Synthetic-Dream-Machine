@@ -21,7 +21,7 @@ import { dirname, join } from "node:path";
 import { createHash } from "node:crypto";
 import { repoRoot } from "@lararium/mesh/node";
 import { kapaeShadowBody, SyncedTree } from "@lararium/node";
-import { DAEMON_BAG_ID } from "@lararium/mesh";
+import { DAEMON_BAG_ID, daemonFaceCanonBag } from "@lararium/mesh";
 import { scanFiles } from "../src/ingest-core.js";
 import { carryExport, carryImport, carryJournalPath, CarryRefused, type CarryDoors, type CarryVesselFace } from "../src/commands/carry.js";
 import { CarryBundleRefused, MANIFEST_FILE } from "../src/carry-manifest.js";
@@ -138,6 +138,24 @@ describe("the carry verbs", () => {
     expect(after.waves.find((w) => w.wiki === "pond")?.kapae).toContain("lar:///ha.ka.ba/notes/gone");
   });
 
+  test("face working shadows and canon land in target face mirrors", async () => {
+    const gone = "lar:///ha.ka.ba/memory/gone", canon = "lar:///ha.ka.ba/memory/canon";
+    put(`projections/wikis/daemon-${F1}/ha.ka.ba/memory/gone.kapae`, kapaeShadowBody(gone));
+    put(`projections/bags/daemon-${F1}/ha.ka.ba/memory/canon.tid`, tid(canon, "canon memory"));
+    const { manifest } = await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    expect(manifest.rows.some((r) => r.layer === "kapae" && r.title === gone)).toBe(true);
+    expect(manifest.rows.some((r) => r.layer === "daemon-canon" && r.title === canon)).toBe(true);
+    const after = refound();
+    const result = await carryImport(out, { apply: true, doors: after.doors() });
+    expect(after.kapae.has(gone)).toBe(true);
+    expect(result.tallies.kapae.landed).toBe(2);
+    expect(after.bagRecords.get(daemonFaceCanonBag(F2))?.get(canon)).toBe(tid(canon, "canon memory"));
+    expect(result.tallies.daemonCanon.landed).toBe(1);
+    expect(after.waves.find((w) => w.toBag === daemonFaceCanonBag(F2))?.source).toBe(join(root, `projections/bags/daemon-${F2}`));
+    expect(after.waves.find((w) => w.toBag === "lar:///ha.ka.ba/wikis/daemon/working")?.source).toBe(join(root, `projections/wikis/daemon-${F2}`));
+    expect(readFileSync(join(root, `projections/wikis/daemon-${F2}/ha.ka.ba/memory/gone.kapae`), "utf8")).toBe(kapaeShadowBody(gone));
+  });
+
   test("a different mirror file stands off and never enters the wave", async () => {
     await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     const after = refound();
@@ -165,14 +183,14 @@ describe("the carry verbs", () => {
   test("C1 — carry follows active mirrors: kahua heads, drafts and temp land under the new face", async () => {
     const before = oldVessel();
     const { manifest } = await carryExport(out, { acceptOmissions: false, doors: before.doors() });
-    expect(manifest.rows.some((r) => r.layer === "working" || r.layer === "kapae")).toBe(false);
+    expect(manifest.counts.working).toBeGreaterThan(0);
 
     const after = refound();
     const result = await carryImport(out, { apply: true, doors: after.doors() });
     expect(result.faceMap).toEqual({ "hearth-one": 0 });
-    expect(after.records.has(MEMORY)).toBe(false);
-    expect(after.records.has(NOTE)).toBe(false);
-    expect([...after.kapae]).toEqual([]);
+    expect(after.records.has(MEMORY)).toBe(true);
+    expect(after.records.has(NOTE)).toBe(true);
+    expect([...after.kapae]).toEqual(["lar:///ha.ka.ba/notes/gone"]);
     expect(after.bagRecords.get("lar:///ha.ka.ba/bags/garden")?.get("lar:///ha.ka.ba/garden/rose")).toBe(tid("lar:///ha.ka.ba/garden/rose", "a rose"));
     expect(after.lifts).toEqual([{ face: 0, title: MEMORY, text: "remember the heron", signer: "new-grant", parent: null }]);
     expect(readFileSync(join(root, `projections/wikis/daemon-${F2}/recovery/draft-one.tid`), "utf8")).toBe(tid("draft one", "half a thought"));
@@ -201,16 +219,14 @@ describe("the carry verbs", () => {
     expect(after.stage.get(0)!.filter((h) => h.title === MEMORY)).toHaveLength(1);
   });
 
-  test("C3 — the bundle holds no sensorium or bags/daemon file; the daemon bag counts by family; faces key by pet-name", async () => {
+  test("C3 — the bundle excludes sensoriums and daemon control files; faces key by pet-name", async () => {
     const { manifest } = await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     for (const f of manifest.files) expect(f.path).not.toMatch(/sensorium|bags\/daemon|hearth/);
     const bundleText = manifest.files.map((f) => readFileSync(join(out, ...f.path.split("/")), "utf8")).join("\n") + readFileSync(join(out, MANIFEST_FILE), "utf8");
     expect(bundleText).not.toContain(F1);
     expect(manifest.faces).toEqual([{ key: "f0", petname: "hearth-one" }]);
-    const daemon = manifest.omissions.find((o) => o.kind === "daemon-bag")!;
-    expect(daemon.count).toBe(0);
-    expect(daemon.items).toEqual([]);
-    expect(manifest.counts).toMatchObject({ working: 0, kapae: 0, draft: 1, temp: 1, "kahua-carrier": 1, "kahua-head": 1, bag: 1 });
+    expect(manifest.omissions.some((o) => o.kind === "daemon-bag")).toBe(false);
+    expect(manifest.counts).toMatchObject({ working: 2, kapae: 1, draft: 1, temp: 1, "kahua-carrier": 1, "kahua-head": 1, bag: 1 });
     expect(manifest.tempBytes["lar:///ha.ka.ba/wikis/daemon/temp"]).toBe(tid("scratch", "a passing note").length);
     const redeclare = JSON.parse(readFileSync(join(out, "re-declare.json"), "utf8"));
     expect(redeclare.faces).toEqual([{ face: "f0", handleIndex: 0, petname: "hearth-one", handle: "Heron", seat: true, chair: "east" }]);
@@ -279,7 +295,7 @@ describe("the carry verbs", () => {
     put(`projections/wikis/daemon-${F2}/recovery/draft-one.tid`, "someone else's draft");
     const result = await carryImport(out, { apply: true, doors: after.doors() });
     expect(after.records.get(NOTE)).toBe(tid(NOTE, "the pond rewritten"));
-    expect(result.tallies.working.stoodOff).toEqual([]);
+    expect(result.tallies.working.stoodOff.join()).toContain(NOTE);
     expect(result.tallies.kahua.stoodOff.join()).toContain(MEMORY);
     expect(after.lifts).toEqual([]);
     expect(result.tallies.draft.stoodOff).toHaveLength(1);
@@ -291,14 +307,14 @@ describe("the carry verbs", () => {
     const after = refound({ petname: null });
     const preview = await carryImport(out, { apply: false, doors: after.doors() });
     expect(preview.redeclare).toEqual(['h0: pet-name "hearth-one"', 'h0: Handle "Heron"', 'h0: stands for the chair "east"']);
-    expect(preview.tallies.working.planned).toBe(0);
+    expect(preview.tallies.working.planned).toBeGreaterThan(0);
     expect(preview.tallies.kahua.planned).toBe(1);
     expect(after.ingestCalls + after.lifts.length + after.acts.length).toBe(0);
     expect(existsSync(join(root, `projections/wikis/daemon-${F2}`))).toBe(false);
     expect(existsSync(join(root, "config", "carry-journal"))).toBe(false);
     await carryImport(out, { apply: true, doors: after.doors() });
     expect(after.acts[0]).toBe("rename h0 hearth-one");
-    expect(after.records.has(MEMORY)).toBe(false);
+    expect(after.records.has(MEMORY)).toBe(true);
   });
 
   test("C10 — files under bags/daemon have no carry grant", async () => {
@@ -309,7 +325,7 @@ describe("the carry verbs", () => {
     expect(manifest.rows.some((r) => r.layer === "daemon-canon")).toBe(false);
     expect(manifest.files.some((f) => f.path.startsWith("daemon/canon/"))).toBe(false);
     expect(manifest.files.some((f) => f.path.includes("persona"))).toBe(false);
-    expect(manifest.omissions.find((o) => o.kind === "daemon-bag")?.count).toBe(2);
+    expect(manifest.omissions.some((o) => o.kind === "daemon-bag")).toBe(false);
     const after = refound();
     const result = await carryImport(out, { apply: true, doors: after.doors() });
     expect(after.bagRecords.get(DAEMON_BAG_ID)?.get(STAGE)).toBeUndefined();

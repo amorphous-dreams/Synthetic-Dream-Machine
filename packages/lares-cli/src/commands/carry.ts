@@ -15,7 +15,7 @@
  *      unless `--accept-omissions` names the export partial, and then each lands in the manifest's omissions;
  *   3. maps each face folder (`daemon-<F>`, `kahua-<F>`) to the face that wears it, keyed by PET-NAME; a face that holds
  *      memory and no pet-name, or two that share one, refuses;
- *   4. copies granted draft recovery files, consented temp carriers, kahua stage carriers and the stage's standing heads; every
+ *   4. copies face working and canon mirrors, granted draft recovery files, consented temp carriers, kahua stage carriers and the stage's standing heads; every
  *      other wiki's working, draft and consented temp files; house-minted bags (a user wiki's own canon among them); and
  *      lists the acquired library's collections by index digest (the originals survive in place and never travel);
  *   5. writes `manifest.json` and `re-declare.json`, reads every byte back against the manifest, and only then moves
@@ -42,10 +42,10 @@ import { appendFileSync, copyFileSync, existsSync, lstatSync, mkdirSync, readFil
 import { randomBytes } from "node:crypto";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
-import { wikiBagUri, wikiSlotUri, KAHUA_BAG, defaultChairLabel, declarePersonaHandle, renameOwnPersona, standForKahuSeat } from "@lararium/mesh";
+import { wikiBagUri, wikiSlotUri, daemonFaceCanonBag, KAHUA_BAG, defaultChairLabel, declarePersonaHandle, renameOwnPersona, standForKahuSeat } from "@lararium/mesh";
 import {
   larHouseRoot, larProjectionsHome, larConfigHome, mirrorDirFileToUri, SyncedTree, TEMP_LAYER_DIR,
-  daemonFaceFolder, isDaemonFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug, loadLaresConfig, tempConsentedSlugs,
+  KAPAE_EXT, readKapaeShadow, daemonFaceFolder, isDaemonFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug, loadLaresConfig, tempConsentedSlugs,
   listCollections, libraryCollectionDir, atomicWriteFileSync,
 } from "@lararium/node";
 import type { ParsedArgs } from "../parse-args.js";
@@ -264,14 +264,14 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
     return relation === null ? null : byRelation.get(relation) ?? null;
   };
   let unclaimed = 0;
-  for (const name of [...folders(wikisDir).filter(isDaemonFaceFolder), ...folders(bagsDir).filter(isKahuaFaceFolder)]) if (faceFolderOf(name) === null) unclaimed++;
+  for (const name of [...folders(wikisDir).filter(isDaemonFaceFolder), ...folders(bagsDir).filter((name) => isKahuaFaceFolder(name) || isDaemonFaceFolder(name))]) if (faceFolderOf(name) === null) unclaimed++;
   if (unclaimed > 0) {
     if (!acceptOmissions) throw new CarryRefused("carry-unclaimed-face-folder", `${unclaimed} face folder(s) under ${projections} belong to no face this vessel wears (unlock every face, or export with --accept-omissions to leave them behind)`);
     omissions.push({ kind: "unclaimed-face-folders", detail: "face folders no face this vessel wears claims; they stay under the projections root", count: unclaimed });
   }
 
   // THE FACES KEY BY PET-NAME. A face that carries memory needs one, and no two may share it.
-  const carries = (f: CarryVesselFace): boolean => f.relation !== null && (existsSync(join(wikisDir, daemonFaceFolder(f.relation))) || existsSync(join(bagsDir, `kahua-${f.relation}`)) || (f.kahua?.length ?? 0) > 0);
+  const carries = (f: CarryVesselFace): boolean => f.relation !== null && (existsSync(join(wikisDir, daemonFaceFolder(f.relation))) || existsSync(join(bagsDir, `kahua-${f.relation}`)) || existsSync(join(bagsDir, daemonFaceFolder(f.relation))) || (f.kahua?.length ?? 0) > 0);
   for (const f of faces) {
     if (carries(f) && (f.petname === null || f.petname.trim() === "")) throw new CarryRefused("carry-face-unnamed", `the face at h${f.handleIndex} carries memory and no pet-name, and a bundle keys each face by its pet-name: name it (\`lares persona new ${f.handleIndex} --name '<label>'\`) and export again`);
     if (f.kahuaRefusal !== undefined && f.relation === null && !acceptOmissions) throw new CarryRefused("carry-face-unread", `the face at h${f.handleIndex} would not read its stage or relation (${f.kahuaRefusal}); unlock it, or export with --accept-omissions to leave its memory behind`);
@@ -308,6 +308,13 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
     if (isDaemonFaceFolder(name)) {
       if (face === null) continue;
       const fk = keyOf.get(face.handleIndex)!, pet = face.petname!;
+      addTree(src, `faces/${fk}/working`, (rel, abs) => {
+        if (rel.endsWith(KAPAE_EXT)) {
+          const read = readKapaeShadow(readFileSync(abs, "utf8"));
+          return { face: pet, bag: wikiSlotUri("daemon", "working"), layer: "kapae", title: "title" in read ? read.title : null, rowKey: null };
+        }
+        return { face: pet, bag: wikiSlotUri("daemon", "working"), layer: "working", title: mirrorDirFileToUri(wikisDir, abs), rowKey: null };
+      }, [TEMP_LAYER_DIR, "recovery"]);
       addTree(join(src, "recovery"), `faces/${fk}/drafts`, () => ({ face: pet, bag: wikiSlotUri("daemon", "draft"), layer: "draft", title: null, rowKey: null }));
       if (consented.has("daemon")) {
         addTree(join(src, TEMP_LAYER_DIR), `faces/${fk}/temp`, (_rel, abs) => {
@@ -331,6 +338,13 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
   }
   for (const name of folders(bagsDir)) {
     const src = join(bagsDir, name);
+    if (isDaemonFaceFolder(name)) {
+      const face = faceFolderOf(name);
+      if (face === null) continue;
+      const fk = keyOf.get(face.handleIndex)!;
+      addTree(src, `faces/${fk}/canon`, (_rel, abs) => ({ face: face.petname!, bag: daemonFaceCanonBag(face.relation!), layer: "daemon-canon", title: mirrorDirFileToUri(bagsDir, abs), rowKey: null }));
+      continue;
+    }
     if (isKahuaFaceFolder(name)) {
       const face = faceFolderOf(name);
       if (face === null) continue;
@@ -347,7 +361,6 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
   }
   if (strays > 0) omissions.push({ kind: "atomic-write-strays", detail: "orphan *.lar-tmp-* files an atomic write left; none carries a record", count: strays });
   if (odd > 0) omissions.push({ kind: "links-or-special-files", detail: "entries under the projections root that stand as neither a plain file nor a directory", count: odd });
-  omissions.push(daemonBagOmission(projections));
   omissions.push({ kind: "parallel-drafts", detail: "another place's unmerged drafts rest in its draft floor doc (wikis/<slug>/drafts/<did>) and project nowhere; no door names them yet, so none travels" });
 
   // WRITE BESIDE THE DEST, VERIFY, THEN MOVE INTO PLACE.
@@ -412,21 +425,6 @@ function libraryListing(): Array<{ readonly collection: string; readonly indexSh
   });
 }
 
-/** Unmirrored daemon files stay out of the disk carry. */
-function daemonBagOmission(projections: string): CarryOmission {
-  const roots = [join(projections, "bags", "daemon")];
-  const families = new Map<string, number>();
-  for (const root of roots) {
-    if (!existsSync(root)) continue;
-    for (const rel of plainFiles(root).files) {
-      if (rel.endsWith(".meta") || isStray(rel)) continue;
-      const family = rel.split("/").slice(0, -1).slice(0, 4).join("/") || "(root)";
-      families.set(family, (families.get(family) ?? 0) + 1);
-    }
-  }
-  const items = [...families].sort(([a], [b]) => (a < b ? -1 : 1)).map(([f, n]) => `${f}  ${n}`);
-  return { kind: "daemon-bag", detail: "daemon control files have no disk-ingress grant", items, count: [...families.values()].reduce((a, b) => a + b, 0) };
-}
 
 // ── import ─────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -468,7 +466,7 @@ export interface CarryImportResult {
   /** Bundle face pet-name -> the handle index it lands on. */
   readonly faceMap: Readonly<Record<string, number>>;
   readonly redeclare: readonly string[];
-  readonly tallies: Readonly<Record<"working" | "kapae" | "kahua" | "draft" | "temp" | "bag" | "wikiWorking", CarryTally>>;
+  readonly tallies: Readonly<Record<"working" | "kapae" | "daemonCanon" | "kahua" | "draft" | "temp" | "bag" | "wikiWorking", CarryTally>>;
   /** The bags (and the wikis they open as) this import mints, or would mint in a preview, before it re-pours them. */
   readonly minted: readonly string[];
   readonly skipped: readonly string[];
@@ -532,7 +530,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     target.set(bf.key, face);
   }
 
-  const tallies = { working: tally(), kapae: tally(), kahua: tally(), draft: tally(), temp: tally(), bag: tally(), wikiWorking: tally() };
+  const tallies = { working: tally(), kapae: tally(), daemonCanon: tally(), kahua: tally(), draft: tally(), temp: tally(), bag: tally(), wikiWorking: tally() };
   const minted: string[] = [];
   const skipped: string[] = [];
 
@@ -581,6 +579,17 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     for (const t of answer.kapaeRaised) { shadowTally.landed++; journal.mark(`${keyPrefix}:kapae:${t}`, "raised"); }
     for (const k of answer.kapaeRefused) shadowTally.refused.push(`${k.uri} (${k.why})`);
   };
+  for (const bf of manifest.faces) {
+    const relation = target.get(bf.key)!.relation!;
+    for (const kind of ["working", "canon"] as const) {
+      const files = manifest.files.map((f) => f.path).filter((p) => p.startsWith(`faces/${bf.key}/${kind}/`));
+      const mirror = join(projections, kind === "working" ? "wikis" : "bags", daemonFaceFolder(relation));
+      await wave(join(bundle.root, "faces", bf.key, kind), join(bundle.root, "faces", bf.key), mirror,
+        kind === "working" ? wikiSlotUri("daemon", "working") : daemonFaceCanonBag(relation), files,
+        `${kind}:${bf.key}`, kind === "working" ? tallies.working : tallies.daemonCanon, kind === "working" ? tallies.kapae : null);
+    }
+  }
+
   // KAHUA HEADS: re-lifted under the new face's grant, keyed by title + body digest.
   for (const bf of manifest.faces) {
     const face = target.get(bf.key)!;
