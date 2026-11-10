@@ -138,7 +138,7 @@ function UnlockOrName {
   if (KeyHeld) { return }
   if ($script:Tty) {
     [Console]::Error.WriteLine('lares-container: the vessel stands holding no vessel key; unlocking it on this terminal')
-    & docker compose @Base exec lares node $Cli vault unlock
+    & docker compose @Base exec @PassEnv lares node $Cli vault unlock
     if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the vessel still stands at the floor; open it with `lares-container.ps1 vault unlock`') }
   } else {
     [Console]::Error.WriteLine('lares-container: the vessel stands holding no vessel key; open it on a terminal: lares-container.ps1 vault unlock')
@@ -160,7 +160,7 @@ function LiftVessel([string[]]$output) {
 # vessel gets followed by one standing check, and the shim lifts the vessel when the verdict asks for it.
 function RouteCli([string[]]$argv, [bool]$followUp) {
   if (HasRunningVessel) {
-    Compose (@('exec') + $NoTty + @('lares', 'node', $Cli) + $argv)
+    Compose (@('exec') + $PassEnv + $NoTty + @('lares', 'node', $Cli) + $argv)
     if ($followUp) {
       # The verb landed. A standing check that fails leaves a possible lift unperformed, so it never passes silently.
       $answer = ObserveStanding
@@ -173,7 +173,7 @@ function RouteCli([string[]]$argv, [bool]$followUp) {
   } else {
     [Console]::Error.WriteLine('lares-container: no vessel stands; this act runs offline on the store')
     EnsureHouse
-    Compose (@('--profile', 'offline', 'run', '--rm') + $NoTty + @('offline') + $argv)
+    Compose (@('--profile', 'offline', 'run', '--rm') + $PassEnv + $NoTty + @('offline') + $argv)
   }
 }
 
@@ -230,6 +230,12 @@ function CensusBeforeStop {
 $script:Tty = (-not [Console]::IsInputRedirected) -and (-not [Console]::IsOutputRedirected)
 $Tty = $script:Tty
 $NoTty = if ($Tty) { @() } else { @('-T') }
+# DISPLAY AND DEBUG RIDE BY NAME: each one the caller's environment sets crosses into the vessel as `-e NAME` (compose
+# reads the value from this environment), so no value rides argv; no other name crosses, and no credential.
+$PassEnv = @()
+foreach ($name in @('NO_COLOR', 'TERM', 'COLORTERM', 'LARES_DEBUG')) {
+  if (Test-Path "env:$name") { $PassEnv += @('-e', $name) }
+}
 
 if ($args.Count -eq 0) { Die 'usage: lares-container.ps1 up|down|found|logs|build|vessel stand|<lares verb…> (build rebuilds the vessel image, every package, from the committed checkout)' }
 $verb = [string]$args[0]
@@ -294,7 +300,7 @@ switch ($verb) {
   }
   'found' {
     EnsureHouse
-    Compose (@('--profile', 'offline', 'run', '--rm') + $NoTty + @('offline', 'vessel', 'found', '--skip-build', '--root', '/lar', '--genesis', '/app/genesis') + $rest)
+    Compose (@('--profile', 'offline', 'run', '--rm') + $PassEnv + $NoTty + @('offline', 'vessel', 'found', '--skip-build', '--root', '/lar', '--genesis', '/app/genesis') + $rest)
   }
   'vessel' {
     $observing = $rest -contains '--observe'

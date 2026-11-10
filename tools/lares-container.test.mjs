@@ -206,6 +206,23 @@ for (const [name, shim] of shims) {
     assert.match(r.calls, /compose .*exec -T lares node packages\/lares-cli\/bin\/lares\.mjs vessel read --json/);
   });
 
+  test(`${name}: display and debug names cross into the vessel by name alone; no value and no other name`, async () => {
+    const shown = { NO_COLOR: "1", TERM: "xterm-256color", COLORTERM: "truecolor", LARES_DEBUG: "1", SOME_TOKEN: "s3cret" };
+    const r = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", ...shown } });
+    assert.equal(r.status, 0, r.stderr);
+    const exec = r.calls.split("\n").find((l) => / exec /.test(l) && / vessel read$/.test(l));
+    assert.ok(exec, r.calls);
+    for (const n of ["NO_COLOR", "TERM", "COLORTERM", "LARES_DEBUG"]) assert.match(exec, new RegExp(`(^| )-e ${n}( |$)`));
+    assert.doesNotMatch(r.calls, /xterm-256color|truecolor|s3cret|SOME_TOKEN/);
+    const offline = await run(shim, ["persona", "list"], { env: { ...MOUNTS, TERM: "dumb" } });
+    assert.match(offline.calls, /--profile offline run --rm -e TERM -T offline persona list/);
+  });
+
+  test(`${name}: CONTROL with none of the names set, no -e rides`, async () => {
+    const r = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
+    assert.doesNotMatch(r.calls, /(^| )-e /m);
+  });
+
   test(`${name}: a verb with no running vessel uses the offline door`, async () => {
     const r = await run(shim, ["persona", "new", "0", "--name", "ci-face"], { env: MOUNTS });
     assert.equal(r.status, 0, r.stderr);

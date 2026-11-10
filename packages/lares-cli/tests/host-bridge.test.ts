@@ -1,0 +1,334 @@
+/**
+ * host-bridge — the host `lares` forwards a vessel verb to the container house when LAR_ROOT names no root.
+ *
+ * Two halves. `decideRoute` reads argv, env and a file probe and answers `local`, `forward` or a named refusal;
+ * every branch stands below. Then the built binary runs with LAR_ROOT unset against a scratch HOME holding a
+ * container env file, the REAL `tools/lares-container.sh`, and a fake `docker` on PATH that logs its argv, so the
+ * whole bridge (argv fidelity, stdout passthrough, exit codes, TTY, env names, Ctrl+C) reads off one log. No
+ * container stands and no real docker runs.
+ */
+import { describe, it, expect } from "vitest";
+import { spawn, spawnSync } from "node:child_process";
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import {
+  decideRoute, commandScope, CREDENTIAL_TTY_EXIT, HOUSE_ABSENT_EXIT, SHIM_ABSENT_EXIT, FORWARDED_ENV,
+  type RouteInput,
+} from "../src/host-bridge.js";
+import { COMMAND_NAMES } from "../src/bin/lares.js";
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const REPO = resolve(HERE, "..", "..", "..");
+const SHIM = join(REPO, "tools", "lares-container.sh");
+const BIN = join(HERE, "..", "bin", "lares.mjs");
+
+const HOME = "/home/op";
+const ENV_FILE = `${HOME}/.lares/lares-surface.env`;
+
+function input(argv: string[], over: Partial<RouteInput> = {}, files: string[] = [ENV_FILE, SHIM]): RouteInput {
+  return {
+    argv,
+    env: { HOME },
+    fsProbe: { exists: (p: string) => files.includes(p) },
+    tty: true,
+    shim: SHIM,
+    commands: COMMAND_NAMES,
+    ...over,
+  };
+}
+
+describe("decideRoute — every branch", () => {
+  it("LAR_ROOT named: always local, even for a vessel verb and a shim verb", () => {
+    expect(decideRoute(input(["meme", "get", "x", "--bag", "b"], { env: { HOME, LAR_ROOT: "/h" } }))).toBe("local");
+    expect(decideRoute(input(["up"], { env: { HOME, LAR_ROOT: "/h" } }))).toBe("local");
+  });
+
+  it("a blank LAR_ROOT reads as unset", () => {
+    expect(decideRoute(input(["meme", "get", "x", "--bag", "b"], { env: { HOME, LAR_ROOT: "  " } }))).toBe("forward");
+  });
+
+  it("inside the vessel (the image's marker, or /.dockerenv) never forwards, so a missing LAR_ROOT cannot loop", () => {
+    expect(decideRoute(input(["meme", "get", "x", "--bag", "b"], { env: { HOME, LARES_IN_CONTAINER: "1" } }))).toBe("local");
+    expect(decideRoute(input(["meme", "get", "x", "--bag", "b"], {}, [ENV_FILE, SHIM, "/.dockerenv"]))).toBe("local");
+  });
+
+  it("a vessel verb with the container house standing forwards", () => {
+    for (const argv of [["meme", "get", "x", "--bag", "b"], ["vault", "status"], ["vessel", "read"], ["vessel", "stand"], ["persona", "list"]]) {
+      expect(decideRoute(input(argv)), argv.join(" ")).toBe("forward");
+    }
+  });
+
+  it("the shim's own verbs forward (up, down, reset, found, logs, build)", () => {
+    for (const v of ["up", "down", "reset", "found", "logs", "build"]) expect(decideRoute(input([v])), v).toBe("forward");
+  });
+
+  it("host verbs stay local: home, repo, help, wing-of, mempalace", () => {
+    for (const argv of [["home", "read"], ["home", "tend"], ["repo", "tend"], ["help"], ["wing-of", "t.jsonl"], ["mempalace", "status"]]) {
+      expect(decideRoute(input(argv)), argv.join(" ")).toBe("local");
+    }
+  });
+
+  it("global and per-command help stays local, and so does bare `lares` and --version", () => {
+    for (const argv of [[], ["--help"], ["-h"], ["--version"], ["meme", "--help"], ["vault", "unlock", "-h"]]) {
+      expect(decideRoute(input(argv, {}, [])), argv.join(" ")).toBe("local");
+    }
+  });
+
+  it("a `--help` after `--` reads as a positional and the verb forwards", () => {
+    expect(decideRoute(input(["meme", "get", "x", "--bag", "b", "--", "--help"]))).toBe("forward");
+  });
+
+  it("meme's local seats stay local; its store seats forward", () => {
+    expect(decideRoute(input(["meme", "normalize", "a.mem"]))).toBe("local");
+    expect(decideRoute(input(["meme", "check", "a.mem", "--gradient"]))).toBe("local");
+    expect(decideRoute(input(["meme", "project", "a.mem", "--to", "md"]))).toBe("local");
+    expect(decideRoute(input(["meme", "project", "a.mem", "--to=md", "--bag", "b"]))).toBe("local");
+    expect(decideRoute(input(["meme", "project", "lar:///x", "--to", "md", "--bag", "b"]))).toBe("forward");
+    expect(decideRoute(input(["meme", "project", "a.mem", "--to", "html", "--bag", "b"]))).toBe("forward");
+  });
+
+  it("an unknown command stays local, so the CLI names it unknown rather than reaching for a house", () => {
+    expect(decideRoute(input(["nosuchverb"], {}, []))).toBe("local");
+  });
+
+  it("argv the grammar refuses stays local, where the dispatcher names the refusal", () => {
+    expect(decideRoute(input(["meme", "get", "x", "--bag", "b", "--=v"], {}, []))).toBe("local");
+  });
+
+  it("no env file: a vessel verb refuses with the distinct house-absent code, naming LAR_ROOT and the shim", () => {
+    const r = decideRoute(input(["vault", "unlock"], {}, [SHIM]));
+    expect(typeof r).toBe("object");
+    if (typeof r !== "object") return;
+    expect(r.error.code).toBe(HOUSE_ABSENT_EXIT);
+    expect(r.error.lines.length).toBeLessThanOrEqual(3);
+    const text = r.error.lines.join("\n");
+    expect(text).toMatch(/^lares: no house root/);
+    expect(text).toContain("LAR_ROOT");
+    expect(text).toContain(ENV_FILE);
+    expect(text).toContain(`${SHIM} up`);
+  });
+
+  it("no HOME: the env file cannot be named, so it reads as absent", () => {
+    const r = decideRoute(input(["meme", "get", "x", "--bag", "b"], { env: {} }));
+    expect(typeof r === "object" && r.error.code).toBe(HOUSE_ABSENT_EXIT);
+  });
+
+  it("the env file stands and the shim does not: the distinct shim-absent code", () => {
+    const r = decideRoute(input(["meme", "get", "x", "--bag", "b"], {}, [ENV_FILE]));
+    expect(typeof r === "object" && r.error.code).toBe(SHIM_ABSENT_EXIT);
+    expect(typeof r === "object" && r.error.lines.join("\n")).toContain(SHIM);
+  });
+
+  it("no shim located at all (an installed CLI outside a checkout): shim-absent", () => {
+    const r = decideRoute(input(["meme", "get", "x", "--bag", "b"], { shim: null }));
+    expect(typeof r === "object" && r.error.code).toBe(SHIM_ABSENT_EXIT);
+  });
+
+  it("credential verbs refuse by name with no TTY, never falling back to -T", () => {
+    for (const argv of [["vault", "unlock"], ["vault", "bind"], ["vault", "unbind"], ["found"], ["vessel", "found", "--hearth"]]) {
+      const r = decideRoute(input(argv, { tty: false }));
+      expect(typeof r === "object" && r.error.code, argv.join(" ")).toBe(CREDENTIAL_TTY_EXIT);
+      expect(typeof r === "object" && r.error.lines.join("\n")).toMatch(/terminal/);
+    }
+  });
+
+  it("CONTROL: credential verbs forward on a TTY; other verbs forward without one", () => {
+    expect(decideRoute(input(["vault", "unlock"]))).toBe("forward");
+    expect(decideRoute(input(["vault", "status"], { tty: false }))).toBe("forward");
+    expect(decideRoute(input(["up"], { tty: false }))).toBe("forward");
+  });
+});
+
+describe("commandScope — help marks every verb", () => {
+  it("every command in the table carries a scope", () => {
+    for (const name of COMMAND_NAMES) expect(["host", "vessel", "mixed"], name).toContain(commandScope(name));
+  });
+  it("home and repo read host; vault reads vessel; meme reads mixed", () => {
+    expect(commandScope("home")).toBe("host");
+    expect(commandScope("repo")).toBe("host");
+    expect(commandScope("vault")).toBe("vessel");
+    expect(commandScope("meme")).toBe("mixed");
+  });
+  it("the forwarded env names carry display and debug alone", () => {
+    expect([...FORWARDED_ENV].sort()).toEqual(["COLORTERM", "LARES_DEBUG", "NO_COLOR", "TERM"]);
+  });
+});
+
+// ── the built binary, the real shim, a fake docker ─────────────────────────────────────────────────
+
+interface Bench { dir: string; home: string; log: string; env: Record<string, string> }
+
+function bench(opts: { envFile?: boolean; running?: boolean } = {}): Bench {
+  const dir = mkdtempSync(join(tmpdir(), "host-bridge-"));
+  const home = join(dir, "home");
+  mkdirSync(join(home, ".lares"), { recursive: true });
+  const house = join(dir, "house");
+  if (opts.envFile !== false) writeFileSync(join(home, ".lares", "lares-surface.env"), `LARES_HOUSE=${house}\nLARES_WORKSPACE=/w\n`);
+  const log = join(dir, "calls.log");
+  // One argv per call, each arg on its own line between markers, so quoting and empty strings read exact.
+  writeFileSync(join(dir, "docker"), [
+    "#!/bin/sh",
+    `{ printf 'CALL\\n'; for a in "$@"; do printf '[%s]\\n' "$a"; done; } >> "$CALL_LOG"`,
+    `case " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}"; exit 0;; esac`,
+    `case " $* " in *" --observe --json "*) printf '%s\\n' '{"data":{"standing":{"act":"attach","reason":"steady"}}}'; exit 0;; esac`,
+    `case " $* " in *" exec "*|*" run "*) [ -n "\${FAKE_SLEEP:-}" ] && { echo $$ > "$CALL_LOG.pid"; exec sleep 30; }; printf 'stdout-from-the-vessel\\n'; printf 'stderr-from-the-vessel\\n' >&2; exit "\${FAKE_EXEC_RC:-0}";; esac`,
+    "exit 0",
+  ].join("\n") + "\n");
+  chmodSync(join(dir, "docker"), 0o755);
+  writeFileSync(join(dir, "compose.yml"), "services: {}\n");
+  const env: Record<string, string> = {
+    PATH: `${dir}:${process.env.PATH ?? ""}`,
+    HOME: home,
+    CALL_LOG: log,
+    LARES_COMPOSE_FILE: join(dir, "compose.yml"),
+    ...(opts.running !== false ? { FAKE_RUNNING_ID: "cid" } : {}),
+  };
+  return { dir, home, log, env };
+}
+
+const calls = (b: Bench): string[][] => {
+  if (!existsSync(b.log)) return [];
+  return readFileSync(b.log, "utf8").split("CALL\n").filter(Boolean)
+    .map((c) => c.split("\n").filter(Boolean).map((l) => l.slice(1, -1)));
+};
+const execCall = (b: Bench): string[] | undefined => calls(b).find((c) => c.includes("exec") && !c.includes("--observe"));
+
+const builtExists = existsSync(join(HERE, "..", "dist", "src", "host-bridge.js"));
+const haveScript = spawnSync("script", ["--version"]).status === 0;
+
+describe.skipIf(!builtExists)("the built `lares` forwards through the real shim", () => {
+  it("a vessel verb forwards: argv faithful (quotes, spaces, empty, --), stdout untouched, -T off a TTY", () => {
+    const b = bench();
+    try {
+      const argv = ["meme", "get", "lar:///a b", "--bag", "", "it's", "--", "--json"];
+      const r = spawnSync(process.execPath, [BIN, ...argv], { env: b.env, encoding: "utf8" });
+      expect(r.status, r.stderr).toBe(0);
+      expect(r.stdout).toBe("stdout-from-the-vessel\n");
+      expect(r.stderr).toContain("stderr-from-the-vessel");
+      const exec = execCall(b);
+      expect(exec).toBeDefined();
+      const at = exec!.indexOf("packages/lares-cli/bin/lares.mjs");
+      expect(exec!.slice(at + 1)).toEqual(argv);
+      expect(exec).toContain("-T");
+    } finally { rmSync(b.dir, { recursive: true, force: true }); }
+  });
+
+  it("the vessel's exit code returns unchanged", () => {
+    const b = bench();
+    try {
+      const r = spawnSync(process.execPath, [BIN, "meme", "get", "x", "--bag", "b"], { env: { ...b.env, FAKE_EXEC_RC: "4" }, encoding: "utf8" });
+      expect(r.status).toBe(4);
+    } finally { rmSync(b.dir, { recursive: true, force: true }); }
+  });
+
+  it("display and debug env ride by NAME alone; nothing else crosses", () => {
+    const b = bench();
+    try {
+      spawnSync(process.execPath, [BIN, "meme", "get", "x", "--bag", "b"], {
+        env: { ...b.env, NO_COLOR: "1", TERM: "xterm-256color", LARES_DEBUG: "1", SOME_TOKEN: "s3cret" }, encoding: "utf8",
+      });
+      const exec = execCall(b)!;
+      const named = exec.flatMap((a, i) => a === "-e" ? [exec[i + 1]] : []);
+      expect(named.sort()).toEqual(["LARES_DEBUG", "NO_COLOR", "TERM"]);
+      expect(exec.join(" ")).not.toMatch(/xterm-256color|s3cret|SOME_TOKEN/);
+    } finally { rmSync(b.dir, { recursive: true, force: true }); }
+  });
+
+  it("with no vessel standing the offline door carries the same argv and names", () => {
+    const b = bench({ running: false });
+    try {
+      const r = spawnSync(process.execPath, [BIN, "persona", "list"], { env: { ...b.env, TERM: "dumb" }, encoding: "utf8" });
+      expect(r.status, r.stderr).toBe(0);
+      const run = calls(b).find((c) => c.includes("run"))!;
+      expect(run.slice(-2)).toEqual(["persona", "list"]);
+      expect(run).toContain("TERM");
+    } finally { rmSync(b.dir, { recursive: true, force: true }); }
+  });
+
+  it("a host verb stays local: no docker call", () => {
+    const b = bench();
+    try {
+      spawnSync(process.execPath, [BIN, "home", "--help"], { env: b.env, encoding: "utf8" });
+      expect(calls(b)).toEqual([]);
+    } finally { rmSync(b.dir, { recursive: true, force: true }); }
+  });
+
+  it("no env file and LAR_ROOT unset: the short refusal, no stack, the distinct code; LARES_DEBUG adds nothing secret", () => {
+    const b = bench({ envFile: false });
+    try {
+      const r = spawnSync(process.execPath, [BIN, "vault", "unlock"], { env: b.env, encoding: "utf8" });
+      expect(r.status).toBe(HOUSE_ABSENT_EXIT);
+      expect(r.stdout).toBe("");
+      expect(r.stderr).toMatch(/^lares: no house root/);
+      expect(r.stderr.trim().split("\n").length).toBeLessThanOrEqual(3);
+      expect(r.stderr).not.toMatch(/\n\s+at /);
+      expect(calls(b)).toEqual([]);
+    } finally { rmSync(b.dir, { recursive: true, force: true }); }
+  });
+
+  it("a credential verb with no TTY refuses by name before docker runs", () => {
+    const b = bench();
+    try {
+      const r = spawnSync(process.execPath, [BIN, "vault", "unlock"], { env: b.env, encoding: "utf8", stdio: ["pipe", "pipe", "pipe"] });
+      expect(r.status).toBe(CREDENTIAL_TTY_EXIT);
+      expect(r.stderr).toMatch(/vault unlock/);
+      expect(calls(b)).toEqual([]);
+    } finally { rmSync(b.dir, { recursive: true, force: true }); }
+  });
+
+  it.skipIf(!haveScript)("on a pseudo-terminal the exec runs attached (no -T)", () => {
+    const b = bench();
+    try {
+      spawnSync("script", ["-qec", `'${process.execPath}' '${BIN}' vault unlock`, "/dev/null"], { env: b.env, encoding: "utf8" });
+      const exec = execCall(b)!;
+      expect(exec).toBeDefined();
+      expect(exec).not.toContain("-T");
+      expect(exec.slice(-2)).toEqual(["vault", "unlock"]);
+    } finally { rmSync(b.dir, { recursive: true, force: true }); }
+  });
+
+  it("Ctrl+C ends the host process with the child: no orphan", async () => {
+    const b = bench();
+    try {
+      const child = spawn(process.execPath, [BIN, "meme", "get", "x", "--bag", "b"], { env: { ...b.env, FAKE_SLEEP: "1" }, stdio: "ignore", detached: true });
+      const pidFile = `${b.log}.pid`;
+      for (let i = 0; i < 100 && !existsSync(pidFile); i++) await new Promise((r) => setTimeout(r, 50));
+      expect(existsSync(pidFile)).toBe(true);
+      const sleeper = Number(readFileSync(pidFile, "utf8").trim());
+      // The terminal's Ctrl+C reaches the whole foreground group: this test's own child group, never -1.
+      process.kill(-child.pid!, "SIGINT");
+      const ended = await new Promise<{ code: number | null; signal: NodeJS.Signals | null }>((r) => child.on("exit", (code, signal) => r({ code, signal })));
+      expect(ended.signal === "SIGINT" || ended.code === 130).toBe(true);
+      let alive = true;
+      try { process.kill(sleeper, 0); } catch { alive = false; }
+      expect(alive).toBe(false);
+    } finally { rmSync(b.dir, { recursive: true, force: true }); }
+  });
+});
+
+describe("crashReading — an unnamed house root reads in two lines, no stack", () => {
+  it("names the cure; LARES_DEBUG=1 hands back the whole error", async () => {
+    const { crashReading } = await import("../src/bin/lares.js");
+    const err = Object.assign(new Error("LAR_ROOT names no house root"), { name: "HouseRootUnnamed" });
+    const short = crashReading(err, {});
+    expect(typeof short).toBe("string");
+    expect(String(short).split("\n").length).toBe(2);
+    expect(String(short)).toMatch(/^lares: no house root/);
+    expect(crashReading(err, { LARES_DEBUG: "1" })).toBe(err);
+    const other = new Error("other");
+    expect(crashReading(other, {})).toBe(other);
+  });
+});
+
+describe.skipIf(!builtExists)("a local verb that reaches for the root inside the vessel", () => {
+  it("exits with the house-absent code and the short reading", () => {
+    const env = { ...process.env, LARES_IN_CONTAINER: "1" } as Record<string, string>;
+    delete env["LAR_ROOT"];
+    const r = spawnSync(process.execPath, [BIN, "hooks", "status"], { env, encoding: "utf8" });
+    expect(r.status).toBe(HOUSE_ABSENT_EXIT);
+    expect(r.stderr).toMatch(/^lares: no house root/);
+    expect(r.stderr).not.toMatch(/\n\s+at /);
+  });
+});
