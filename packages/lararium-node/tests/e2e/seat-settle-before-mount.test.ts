@@ -8,8 +8,8 @@
  * nothing, and waits on the composite's change events with no timer.
  *
  *   S1  THE WINDOW CLOSED (slice 5b, red 3: `composer-mounts-working-first.test.ts`): the composer now mounts the layer
- *       before the settle asks and before `openNodeVessel` returns, so the outcome reads through the composite as it
- *       lands, and the settle reports by name (`[edge-seats] settled on a fold …` or `… stay owed: the key shore did
+ *       before the settle asks and before `openNodeVessel` returns, so the outcome reads through the control document
+ *       (where placement rests the ledger) as it lands, and the settle reports by name (`[edge-seats] settled on a fold …` or `… stay owed: the key shore did
  *       not run (<reason>)`), never hangs; a caller's later mount stands idempotent. The composite still hands every
  *       title a late layer holds to its subscribers (`CompositeStore.addLayer`), the cure this file first pinned.
  *   S2  CONTROL: a vessel whose board owes no raise places no `seat-duties` before the mount; the same instrument
@@ -97,14 +97,16 @@ function edgeSeatsLines(): { lines: string[]; first: Promise<string> } {
 }
 
 describe("the boot's own seat-duties ask, placed before the host working layer mounts", () => {
-  test("S1 — the outcome reads through the composite, and the settle reports by name; a caller's mount stands idempotent", async () => {
+  test("S1 — the outcome reads through the control document, and the settle reports by name; a caller's mount stands idempotent", async () => {
     const report = edgeSeatsLines();
     const { root, vessel } = await stand(true);
     const title = await seatDutiesOutcomeLands(vessel.repo);
     expect(seatDutiesOutcomes(vessel.repo)).toEqual([title]);
     await withLarRoot(root, () => vessel.daemon.mountHostWorkingLayer());
     expect(await report.first).toMatch(/^\[edge-seats\] (settled on a fold: 1 raise\(s\) owed|1 raise\(s\) stay owed: the key shore did not run \(.+\))/);
-    expect(await vessel.daemon.composite.get(title)).not.toBeNull();
+    // PLACEMENT: the outcome ledger rests in the vessel's control document (`daemon.control`), never in a wiki layer.
+    expect(await vessel.daemon.control.get(title)).not.toBeNull();
+    expect(await vessel.daemon.composite.get(title), "an outcome reached a wiki layer").toBeNull();
   }, 180_000);
 
   test("S2 — CONTROL: a vessel whose board owes no raise asks nothing before the mount", async () => {

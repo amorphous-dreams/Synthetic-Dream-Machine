@@ -1,13 +1,12 @@
 import { runBrowserSovereignWorker, type BrowserIslandScope } from "./browser-sovereign-island-model.js";
 import { islandSessionDoor, makeOperatorDaemonBehavior } from "@lararium/keyhive/operator-daemon-behavior";
 import { mountProjection } from "@lararium/tw5";
-import { HULLS_TS_ONLY, freshBasePort, islandLiveDocDoor } from "@lararium/mesh";
+import { HULLS_TS_ONLY, freshBasePort, islandCustodyWriter, islandLiveDocDoor } from "@lararium/mesh";
 import { edgeLedgerDocUrl, materializeSharedLarDoc } from "@lararium/mesh";
 import { Repo } from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
 import { shoreStorage } from "@lararium/mesh";
 import { idbSealedStoreShore, sealedStoreDbName } from "./browser-sealed-store.js";
-import { islandCustodyWriter } from "./browser-island-caps.js";
 
 // The daemon INHERITS the wiki render cap (hasProjection). Mount its projection DORMANT at island-boot —
 // exactly as a pool wiki mounts its camera — so summoning the daemon is a pure active-surface gate flip,
@@ -21,13 +20,14 @@ const port = scope
   ? { post: (msg: unknown) => scope.post(msg as never), listen: (cb: (msg: unknown) => void) => scope.listen(cb) }
   : { post: (msg: unknown) => self.postMessage(msg), listen: (cb: (msg: unknown) => void) => self.addEventListener("message", (e: MessageEvent) => cb(e.data)) };
 const sessionsOnVessel = islandSessionDoor(port, { idPrefix: `session-sign-${crypto.randomUUID()}` });
-// THE ARCHIVE WRITER (the node's `sealOnVessel`): a lockbox wrap rests the face's Archive through the vessel worker's
-// `custody:write`, which the lift seats while the face stands unlocked; at the floor it answers unwritten and the wrap refuses.
-const sealOnVessel = islandCustodyWriter(port as never, `custody-${crypto.randomUUID()}`);
 // THE FRESH BASE (sealed-store#/owed, T6): a from-now admission cuts its fresh base off the bag's live document, which
 // this island asks of the vessel worker across the document store's door, as the node's island does.
 const docStorePort = { post: port.post, listen: (cb: (msg: unknown) => void) => { port.listen(cb); return () => {}; } };
 const liveOnVessel = islandLiveDocDoor(docStorePort, { idPrefix: `docstore-live-${crypto.randomUUID()}` });
+// THE CUSTODY WRITE (the node island's `persistVeilArchive`, isomorphic by intent): the key shore rests the face's Archive
+// before any wrap it seals can open again, and this island holds no vessel key, so it hands the bytes to the vessel worker,
+// whose record answers through the lift's `custodyWrite`. A vessel at its floor seats none and the write refuses by name.
+const custodyOnVessel = islandCustodyWriter(port, { idPrefix: `custody-${crypto.randomUUID()}` });
 runBrowserSovereignWorker((manifest) => {
   // Same-origin writes are accepted within one custody context: api/pono/session-contract.mem #/the-trust-line.
   const key = manifest.daemonAuth?.atom?.key;
@@ -46,7 +46,7 @@ runBrowserSovereignWorker((manifest) => {
     // under the ask its book holds for the session that booked the change, and opens each value it hydrates.
     docStoreDoor: docStorePort,
     freshBase: freshBasePort(liveOnVessel),
-    persistVeilArchive: (bytes: Uint8Array) => sealOnVessel("veil", bytes),
+    persistVeilArchive: (bytes: Uint8Array) => custodyOnVessel("veil", bytes),
     // ONE SEED SITE: `makeDaemonBehavior` runs the cap-gated `seedDaemonProtocol` in onEa, so the daemon
     // protocol seed (Ui+Persona+Circle+Flow) stands identically on either boot. This ts-only browser vessel
     // passes HULLS_TS_ONLY → it seeds crystal alone, and its onBoot carries the projection mount.

@@ -16,8 +16,7 @@
  */
 import {
   answerReceiptWithHeads, SessionSignBook,
-  type BookedSessionSigner, type CustodyWriter, type CustodyWriteCarrier, type IslandLift, type IslandMsg_CustodyWrite, type IslandMsg_CustodyWritten,
-  type ReceiptIssuer, type Repo, type SessionOwnChain,
+  type BookedSessionSigner, type CustodyWriter, type IslandLift, type ReceiptIssuer, type Repo, type SessionOwnChain,
 } from "@lararium/mesh";
 import { faceProofSubjectRef, placeProofSubjectRef } from "@lararium/mesh/face-proof-subjects";
 
@@ -79,33 +78,4 @@ export function browserSessionLift(session: BrowserUnlockedSession, custodyWrite
     lift, book, subject,
     hold: (requestId, verb) => (dropped ? () => {} : book.hold(requestId, verb, { signer, anchor: { kind }, subject })),
   };
-}
-
-/**
- * THE ISLAND'S ARCHIVE WRITER, island side (the node's `vesselCustodyWriter`, isomorphic by intent): a lockbox wrap rests
- * the wrapping identity's Archive through the vessel's `custody:write`, which the lift seats while a face stands unlocked
- * and the lock takes back. The island hands bytes and never holds the vessel key; a vessel at its floor answers
- * `written: false`, and the wrap refuses by that name.
- */
-export function islandCustodyWriter(port: { post(msg: IslandMsg_CustodyWrite): void; listen(cb: (msg: unknown) => void): void }, idPrefix: string):
-  (carrier: CustodyWriteCarrier, bytes: Uint8Array) => Promise<void> {
-  const pending = new Map<string, (answer: IslandMsg_CustodyWritten) => void>();
-  port.listen((raw) => {
-    const m = raw as Partial<IslandMsg_CustodyWritten> | null;
-    if (!m || m.type !== "custody:written" || typeof m.requestId !== "string") return;
-    const settle = pending.get(m.requestId);
-    if (!settle) return;
-    pending.delete(m.requestId);
-    settle(m as IslandMsg_CustodyWritten);
-  });
-  let seq = 0;
-  return (carrier, bytes) => new Promise<void>((resolve, reject) => {
-    const requestId = `${idPrefix}-${++seq}`;
-    pending.set(requestId, (answer) => {
-      if (answer.written === true) resolve();
-      else reject(new Error(`the vessel did not seal the ${carrier} carrier (${answer.why ?? "unwritten"})`));
-    });
-    try { port.post({ type: "custody:write", requestId, carrier, bytes }); }
-    catch (e) { pending.delete(requestId); reject(e instanceof Error ? e : new Error(String(e))); }
-  });
 }

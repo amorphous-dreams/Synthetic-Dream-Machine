@@ -38,6 +38,7 @@ import { mintStagedNexusKey } from "../../../../tests/harness/vessel-key.js";
 // The published test route answers the custody form a fresh vessel raises (a harness door; never a person's passphrase).
 import { armTestCustody } from "../../../lararium-node/dist/probes/browser-test-custody.js";
 import { daemonFaceFolder, kahuaFaceFolder } from "../../../lararium-node/dist/src/bag-paths.js";
+import { KAHUA_PROPOSE_VERB } from "../../../lararium-mesh/dist/kahua-stage.js";
 
 const REPO = resolve(import.meta.dirname, "../../../..");
 const WEB_ROOT = join(REPO, "packages/lararium-web/dist");
@@ -137,15 +138,16 @@ const PROPOSE_BODY = [
 ].join("\n\n");
 
 /**
- * Distinct `kahua-propose` intent ids read from the face's intents plane: `lares intent show --json` answers the plane's
- * pane rows (`{ rows: [{ id, verb, status, … }] }`). A bare `lares intent` names no act and refuses its usage, so a read
+ * Distinct proposal intent ids read from the face's intents plane: `lares intent show --json` answers the plane's
+ * pane rows (`{ rows: [{ id, verb, status, … }] }`). The page's `kahua-propose` verb writes each proposal as an intent of
+ * the canon's own verb, `KAHUA_PROPOSE_VERB` (`kahua-lift`), the one `lares kahua lift --proposal` binds. A bare `lares intent` names no act and refuses its usage, so a read
  * that refuses throws with the CLI's own words rather than reading as "no proposal yet".
  */
 const proposalIds = async (hearth: Hearth): Promise<string[]> => {
   const read = await hearth.cli(["intent", "show", "--json"]);
   if (read.code !== 0) throw new Error(`lares intent show refused (exit ${read.code}):\n${read.stdout.slice(-400)}\n${read.stderr.slice(-400)}`);
   const rows = (JSON.parse(read.stdout.trim().split("\n").pop() ?? "{}") as { rows?: Array<{ id?: string; verb?: string }> }).rows ?? [];
-  return [...new Set(rows.filter((row) => row.verb === "kahua-propose" && typeof row.id === "string").map((row) => row.id!))];
+  return [...new Set(rows.filter((row) => row.verb === KAHUA_PROPOSE_VERB && typeof row.id === "string").map((row) => row.id!))];
 };
 /** Whether a RENDERED element matches `sel` in the pane: the edit textarea serialises its source, so a substring read lies. */
 const paneHas = (page: Page, sel: string) => page.evaluate((s) => !!document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection")?.querySelector(s), sel);
