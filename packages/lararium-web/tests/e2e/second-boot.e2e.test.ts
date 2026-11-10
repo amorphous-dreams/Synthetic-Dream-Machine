@@ -10,8 +10,8 @@
  * carries `[documentId, kind, id]`; `snapshot` and `incremental` chunks load to one Automerge document whose heads
  * are read here, `sync-state` rows name the peer storage id they rest for.
  *
- * A SEALED DOCUMENT RESTS AS CIPHERTEXT (its chunks open `SEALED_CHUNK_MARK`: the vessel's held homes and a face's sealed
- * documents), and no key reaches this reader, so its heads stay unread here: it reads by presence (minted, dropped) and
+ * A SEALED DOCUMENT RESTS AS CIPHERTEXT (its chunks open `SEALED_CHUNK_MARK`: the vessel's held homes; or a pointer at the
+ * holder's sealed value: a face's sealed documents, which a self-founded face's lift seals at its place), and no key reaches this reader, so its heads stay unread here: it reads by presence (minted, dropped) and
  * by its sealed chunk set, which the CONTROL may see move. Handing one to Automerge raw threw `Invalid magic bytes` in the
  * READER, never in the vessel.
  *
@@ -73,8 +73,10 @@ const dump = (page: Page): Promise<Row[]> => page.evaluate(async () => {
 
 interface Reading { readonly heads: Map<string, string>; readonly sealed: Map<string, string>; readonly peers: Set<string> }
 
-/** Whether a chunk rests sealed: it opens with the sealed-chunk mark, never Automerge's own magic. */
-const sealedChunk = (c: Uint8Array): boolean => SEALED_CHUNK_MARK.every((b, i) => c[i] === b);
+/** A face's sealed document rests a POINTER at its sealed value (the holder keeps the value itself): `lares-sealed-value:<address>`. */
+const SEALED_POINTER = new TextEncoder().encode("lares-sealed-value:");
+/** Whether a chunk rests sealed: it opens with the sealed-chunk mark or names a sealed value, never Automerge's own magic. */
+const sealedChunk = (c: Uint8Array): boolean => SEALED_CHUNK_MARK.every((b, i) => c[i] === b) || SEALED_POINTER.every((b, i) => c[i] === b);
 
 /** Heads per Document (store plus document id) and the peer ids the sync rows rest for. */
 function read(rows: readonly Row[]): Reading {
