@@ -126,6 +126,8 @@ export function makePersonaGroupIdentityRing(opts: {
 export interface PlaneCatalog {
   urlOf(bagUri: string): Promise<string | null>;
   storeOf(bagUri: string): Promise<{ listVisible(): Promise<string[]>; get(title: string): Promise<unknown> } | null>;
+  /** The direct road to a private-synced home (the persona plane rests as one): its own readers take it. */
+  homeStoreOf?(bagUri: string): Promise<{ listVisible(): Promise<string[]>; get(title: string): Promise<unknown> } | null>;
 }
 
 /**

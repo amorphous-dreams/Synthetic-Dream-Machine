@@ -1041,7 +1041,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             if (!daemonAuth.personaKel) throw new Error("[daemon] face-join: founder persona-KEL proof unavailable — no seat moves");
             const founderKel = daemonAuth.personaKel;
             if (!facePlane) throw new Error("[daemon] face-join: the face's PersonaGroup plane is unresolved");
-            const planeHandle = await facePlane.find(personaBagIdFor(faceGroup()));
+            // The plane rests as a private-synced home: the grant, its own writer, takes the home road (`homeOf`).
+            const planeHandle = facePlane.homeOf ? await facePlane.homeOf(personaBagIdFor(faceGroup())) : await facePlane.find(personaBagIdFor(faceGroup()));
             if (!planeHandle) throw new Error("[daemon] face-join: the face's PersonaGroup plane is unresolved");
             // THE LATER GRANT LANDS AS A RECORD on the PersonaGroup plane — the doc the joinee already syncs by
             // membership — signed under this face's atom and carrying its root-signed edge, so the joinee's own kit

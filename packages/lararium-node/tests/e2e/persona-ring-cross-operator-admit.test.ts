@@ -256,7 +256,8 @@ describe("PersonaGroup identity-slot ring — a real boot, a real grant, a real 
     // face-join verb's publish step writes (operator-daemon-behavior.ts).
     const catalog = makeCatalogAccessor(vessel.repo, vessel.catalogHandleUrl);
     const personaBagUri = personaScopedBagIds(personaGroupId).persona;
-    const store = await catalog.storeOf(personaBagUri);
+    // The plane rests as a private-synced home: its grant writer takes the home road, as the production face-join does.
+    const store = await catalog.homeStoreOf!(personaBagUri);
     if (!store) throw new Error("[persona-ring-cross-operator-admit] the face's persona-plane bag is unresolved");
     await store.put(
       { tiddler: { title: grantTitle, text: JSON.stringify(rec), kind: "face-join-grant" }, meta: { authority: "test-mint" } },
