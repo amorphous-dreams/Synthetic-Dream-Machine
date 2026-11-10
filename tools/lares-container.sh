@@ -258,6 +258,12 @@ offer_accept_loss() {
 census_before_stop() {
   if run_census; then rc=0; else rc=$?; fi
   if [ "$rc" -eq 0 ] && printf '%s\n' "$census_out" | grep -q '^census: clean'; then return 0; fi
+  # A LOCKED HEARTH: the census names the cure in one line (`census: vessel locked: …`); say it plainly, not "could not answer".
+  if [ -z "$census_timed_out" ] && printf '%s\n' "$census_err" | grep -q '^census: vessel locked'; then
+    printf '%s\n' 'lares-container: down refuses a silent stop: vessel locked: run tools/lares-container.sh vault unlock, then down' >&2
+    offer_accept_loss
+    return 0
+  fi
   if [ "$rc" -eq 3 ] && [ -z "$census_timed_out" ]; then
     printf '%s\n' 'lares-container: down refuses a silent stop: the census names content that rests nowhere yet, and a stop now drops it:' >&2
     printf '%s\n' "$census_out" | sed -e '/^$/d' -e 's/^/  /' >&2

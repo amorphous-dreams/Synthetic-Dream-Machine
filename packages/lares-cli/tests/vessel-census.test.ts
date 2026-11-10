@@ -71,6 +71,26 @@ describe("the vessel census", () => {
     expect(island.unanswered).toEqual([{ part: "the disk projector", why: "daemon unreachable" }]);
     expect(await cmdCensus(args(false), lines({ custody: async () => null }))).toBe(2);
   });
+
+  test("V5 — a locked hearth's census says unlock first, then down, in one line; never a bare 'could not answer'", async () => {
+    const c = capture();
+    const lockedLines = lines({
+      custody: async () => ({ op: "census", held: null, standing: "hearth", locked: true }),
+      shore: async () => ({ carriers: [], unanswered: [{ part: "the daemon island's disk projector", why: "vessel-locked: the vessel's key stays shut" }] }),
+    });
+    const reading = await readCensus(lockedLines);
+    expect(reading.clean).toBe(false);
+    expect(reading.unanswered).toEqual([{ part: "the vessel", why: "vessel locked: run `lares vault unlock`, then down" }]);
+    expect(await cmdCensus(args(false), lockedLines)).toBe(2);
+    expect(c.err.join("\n")).toMatch(/^census: vessel locked: run `lares vault unlock`, then down$/m);
+    // CONTROL: an open key with a refusing island keeps naming that island.
+    const open = await readCensus(lines({ custody: async () => ({ op: "census", held: [], standing: "hearth", locked: false }),
+      shore: async () => ({ carriers: [], unanswered: [{ part: "the daemon island's disk projector", why: "shore-op-unknown" }] }) }));
+    expect(open.unanswered.map((u) => u.part)).toEqual(["the daemon island's disk projector"]);
+    // CONTROL: a herm never unlocks, so its census never names the unlock.
+    const herm = await readCensus(lines({ custody: async () => ({ op: "census", held: [], standing: "herm", locked: true }) }));
+    expect(herm.unanswered).toEqual([]);
+  });
 });
 
 describe("the shore census", () => {

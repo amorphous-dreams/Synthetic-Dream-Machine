@@ -82,7 +82,7 @@ export type CustodyAnswer =
   | { readonly op: "act"; readonly act: string; readonly result: Record<string, unknown> }
   /** Each document with saves held in memory (`SealedDocumentStore.held`), by id and never by body; `standing` names
    *  the composition that answered ("recomposing" while none sits, when `held` reads null). */
-  | { readonly op: "census"; readonly held: readonly HeldSaves[] | null; readonly standing: string }
+  | { readonly op: "census"; readonly held: readonly HeldSaves[] | null; readonly standing: string; readonly locked: boolean }
   | { readonly op: "face-route"; readonly ref: string }
   | { readonly op: "ward"; readonly ref: string }
   | { readonly op: "backup"; readonly sealedBody: string; readonly holds: FaceBundleCut["holds"]; readonly face: FaceBundleCut["face"]; readonly carries: FaceBundleCut["carries"] }
@@ -446,7 +446,8 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       // while an unlock recomposes never waits behind the recomposition. It names documents and never a body.
       let held: readonly HeldSaves[] | null = null;
       try { held = deps.heldSaves?.() ?? null; } catch { held = null; }
-      answer(sock, { op: "census", held, standing: deps.standing() });
+      // `locked` names a shut key, so a stop's census can say "unlock, then down" instead of "could not answer".
+      answer(sock, { op: "census", held, standing: deps.standing(), locked: !holder.isUnlocked() });
       return true;
     } else {
       // THE STATE QUERY IS READ-ONLY: it answers at once, beside the chain, so a caller asking while an unlock
