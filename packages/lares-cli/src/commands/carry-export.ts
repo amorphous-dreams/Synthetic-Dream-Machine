@@ -22,6 +22,8 @@ export async function cmdExport(args: ParsedArgs, doors: CarryDoors = LIVE_CARRY
       console.log(`  faces: ${m.faces.map((f) => f.petname).join(", ") || "(none)"}`);
       for (const [layer, n] of Object.entries(m.counts)) if (n > 0) console.log(`  ${layer.padEnd(14)} ${n}`);
       for (const o of m.omissions) console.log(`  left behind: ${o.kind}${o.count !== undefined ? ` (${o.count})` : ""} — ${o.detail}`);
+      // THE BUNDLE IS CLEARTEXT: private memory copied as plain files. Say so last, where a person reads before moving it.
+      console.log(`export: the bundle at ${result.dest} rests unencrypted (private memory as plain files); keep it on a disk only you hold, and remove it once imported`);
     },
   });
   return 0;

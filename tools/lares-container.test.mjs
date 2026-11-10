@@ -121,6 +121,9 @@ test("sh: reset clears the hearth alone, after its refusals; sensoriums, project
     const done = reset({});
     assert.equal(done.status, 0, done.stdout);
     assert.match(done.stdout, /sensoriums, projections, library, config, the env file and the image stay/);
+    // THE PROMPT SAYS PLAINLY that projections stay, private cleartext memory among them, and where a former face's folders go.
+    assert.match(done.stdout, /projections stay, and with them the private memory of every face in cleartext/);
+    assert.match(done.stdout, /the next export names those folders/);
     assert.deepEqual(await readdir(hearth), []);
     for (const k of kept) assert.equal(await readFile(join(k, "keep"), "utf8"), "stays");
     assert.equal(await readFile(join(dir, ".lares", "lares-surface.env"), "utf8"), "# stays\n");

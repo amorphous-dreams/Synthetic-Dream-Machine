@@ -376,6 +376,46 @@ describe("the carry verbs", () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
+  test("C14 — after a re-founding the old face's folders stay; the next export names each one and the exact next step", async () => {
+    // reset -> found: projections stay (survive-refound), the new face wears F2, and nothing claims daemon-F1 / kahua-F1.
+    const after = refound();
+    put(`projections/wikis/daemon-${F2}/ha.ka.ba/notes/new.tid`, tid("lar:///ha.ka.ba/notes/new", "after"));
+    const refused = await carryExport(out, { acceptOmissions: false, doors: after.doors() }).then(() => null, (e: Error) => e);
+    expect(refused).toBeInstanceOf(CarryRefused);
+    expect((refused as CarryRefused).code).toBe("carry-unclaimed-face-folder");
+    const msg = (refused as Error).message;
+    expect(msg).toContain(join(root, "projections", "wikis", `daemon-${F1}`));
+    expect(msg).toContain(join(root, "projections", "bags", `kahua-${F1}`));
+    expect(msg).not.toContain(`daemon-${F2}`);
+    // the next step, in the order a person runs it
+    expect(msg).toMatch(/move each folder out of the house root/);
+    expect(msg).toMatch(/--accept-omissions/);
+  });
+
+  test("C15 — an import onto a face that pins no relation because the vessel stands locked or down says: run up and vault unlock first", async () => {
+    await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    const locked = refound({ relation: null, kahuaRefusal: "vessel-locked: open the vessel key", kahuaRefusalCode: "vessel-locked" });
+    await expect(carryImport(out, { apply: true, doors: locked.doors() })).rejects.toThrow(/carry-face-unworn[\s\S]*run up and vault unlock first[\s\S]*lares vault unlock/);
+    // CONTROL: a face that read whole and pins no relation keeps the stand-wearing-it cure, and never names the unlock.
+    const bare = refound({ relation: null });
+    const e = await carryImport(out, { apply: true, doors: bare.doors() }).then(() => null, (x: Error) => x);
+    expect(e?.message).toMatch(/carry-face-unworn/);
+    expect(e?.message).not.toMatch(/vault unlock/);
+  });
+
+  test("C16 — export's closing line says the bundle rests unencrypted", async () => {
+    const { cmdExport } = await import("../src/commands/carry-export.js");
+    const said: string[] = [];
+    const log = console.log;
+    console.log = (...a: unknown[]) => { said.push(a.join(" ")); };
+    try {
+      const code = await cmdExport({ command: "export", positional: [out], flags: { json: false } } as never, oldVessel().doors());
+      expect(code).toBe(0);
+    } finally { console.log = log; }
+    expect(said.at(-1)).toMatch(/rests unencrypted/);
+    expect(said.at(-1)).toContain(out);
+  });
+
   test("C9 — the refusal classes carry their codes", () => {
     expect(new CarryRefused("carry-x", "why").message).toBe("carry-x: why");
   });

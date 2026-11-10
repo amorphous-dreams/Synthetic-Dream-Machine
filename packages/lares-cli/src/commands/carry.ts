@@ -56,7 +56,7 @@ import { summaryOutput } from "../verb-result.js";
 import { vesselDid } from "../env.js";
 import { runVerb } from "../verb-call.js";
 import { newChangeId, newRequestId, taskContentId } from "@lararium/mesh";
-import { storeVerb } from "../store-door.js";
+import { storeVerb, storeFailure } from "../store-door.js";
 import { readPersonaRoots, sealedPetnameStore, sealedDeclarationStore } from "../sealed-rows.js";
 import { makeFleetPetnameStore, makeFleetDeclarationStore } from "../daemon-persona-store.js";
 import {
@@ -78,6 +78,8 @@ export interface CarryVesselFace {
   /** The stage's standing heads, or null where the stage would not read (`kahuaRefusal` says why). */
   readonly kahua: readonly CarryKahuaHead[] | null;
   readonly kahuaRefusal?: string;
+  /** The store door's name for that refusal (`storeFailure`): `vessel-locked`, `daemon-unreachable`, … */
+  readonly kahuaRefusalCode?: string;
 }
 
 /** What one ingest wave settled, as the carry verbs read it. */
@@ -117,19 +119,19 @@ async function liveFaces(): Promise<CarryVesselFace[]> {
   const out: CarryVesselFace[] = [];
   for (const { handleIndex } of (await readPersonaRoots()).roots) {
     const declaration = await declarations.get(handleIndex);
-    let kahua: CarryKahuaHead[] | null = null, relation: string | null = null, kahuaRefusal: string | undefined;
+    let kahua: CarryKahuaHead[] | null = null, relation: string | null = null, kahuaRefusal: string | undefined, kahuaRefusalCode: string | undefined;
     try {
       const { output } = await storeVerb("kahua-read", { face: handleIndex, action: "list" });
       relation = typeof output["relation"] === "string" ? output["relation"] : null;
       const items = Array.isArray(output["items"]) ? (output["items"] as Array<{ heads?: unknown }>) : [];
       kahua = items.flatMap((item) => (Array.isArray(item.heads) ? item.heads as CarryKahuaHead[] : []))
         .map((h) => ({ title: h.title, cid: h.cid, text: h.text, fields: { ...h.fields }, taint: [...h.taint], sources: h.sources.map((s) => ({ title: s.title, revision: s.revision })) }));
-    } catch (e) { kahuaRefusal = e instanceof Error ? e.message : String(e); }
+    } catch (e) { kahuaRefusal = e instanceof Error ? e.message : String(e); kahuaRefusalCode = storeFailure(e).code; }
     out.push({
       handleIndex, petname: (await petnames.get(handleIndex)) ?? null, relation,
       handle: declaration?.handle ?? null, seat: declaration?.seat === true,
       chair: declaration?.seat === true ? declaration.chair?.trim() || defaultChairLabel(handleIndex) : null,
-      kahua, ...(kahuaRefusal !== undefined ? { kahuaRefusal } : {}),
+      kahua, ...(kahuaRefusal !== undefined ? { kahuaRefusal } : {}), ...(kahuaRefusalCode !== undefined ? { kahuaRefusalCode } : {}),
     });
   }
   return out;
@@ -263,11 +265,18 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
     const relation = isDaemonFaceFolder(name) ? name.slice("daemon-".length) : isKahuaFaceFolder(name) ? name.slice("kahua-".length) : null;
     return relation === null ? null : byRelation.get(relation) ?? null;
   };
-  let unclaimed = 0;
-  for (const name of [...folders(wikisDir).filter(isDaemonFaceFolder), ...folders(bagsDir).filter((name) => isKahuaFaceFolder(name) || isDaemonFaceFolder(name))]) if (faceFolderOf(name) === null) unclaimed++;
+  // A RE-FOUNDING KEEPS PROJECTIONS (survive-refound ruling), so a former face's folders stay under the projections root,
+  // claimed by no face this vessel wears. The refusal names each folder and the step that clears it.
+  const unclaimedFolders: string[] = [];
+  for (const name of folders(wikisDir).filter(isDaemonFaceFolder)) if (faceFolderOf(name) === null) unclaimedFolders.push(join(wikisDir, name));
+  for (const name of folders(bagsDir).filter((name) => isKahuaFaceFolder(name) || isDaemonFaceFolder(name))) if (faceFolderOf(name) === null) unclaimedFolders.push(join(bagsDir, name));
+  const unclaimed = unclaimedFolders.length;
   if (unclaimed > 0) {
-    if (!acceptOmissions) throw new CarryRefused("carry-unclaimed-face-folder", `${unclaimed} face folder(s) under ${projections} belong to no face this vessel wears (unlock every face, or export with --accept-omissions to leave them behind)`);
-    omissions.push({ kind: "unclaimed-face-folders", detail: "face folders no face this vessel wears claims; they stay under the projections root", count: unclaimed });
+    if (!acceptOmissions) throw new CarryRefused("carry-unclaimed-face-folder", `${unclaimed} face folder(s) belong to no face this vessel wears:\n  ${unclaimedFolders.join("\n  ")}\n`
+      + `each holds a face's private memory in cleartext: a face whose key stands shut (unlock every face and export again), or a former face a re-founding left behind (projections survive a re-founding). `
+      + `For a former face whose bundle you already imported, move each folder out of the house root (\`mv <folder> <a place outside ${resolve(house)}>\`) and export again; `
+      + `or export with --accept-omissions to leave them where they stand, out of the bundle`);
+    omissions.push({ kind: "unclaimed-face-folders", detail: "face folders no face this vessel wears claims; they stay under the projections root", items: unclaimedFolders, count: unclaimed });
   }
 
   // THE FACES KEY BY PET-NAME. A face that carries memory needs one, and no two may share it.
@@ -476,6 +485,9 @@ export interface CarryImportResult {
  * Import the bundle at `src`. The bundle verifies whole before anything moves; preview (`apply` false) reads the vessel
  * and plans every act, and writes nothing. Throws {@link CarryRefused} (or {@link CarryBundleRefused}) by name.
  */
+/** The store door's names for a vessel that stands down or locked: a face reads no relation under any of them. */
+const SHUT_VESSEL_CODES: ReadonlySet<string> = new Set(["vessel-locked", "daemon-unreachable", "vessel-composing"]);
+
 export async function carryImport(src: string, opts: { readonly apply: boolean; readonly doors: CarryDoors }): Promise<CarryImportResult> {
   const { doors, apply } = opts;
   const bundle: VerifiedBundle = verifyBundle(resolve(src));
@@ -525,7 +537,13 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   for (const bf of manifest.faces) {
     const p = planned.find((x) => x.row.face === bf.key)!;
     const face = faces.find((f) => f.handleIndex === p.handleIndex)!;
-    if (face.relation === null) throw new CarryRefused("carry-face-unworn", `the face h${face.handleIndex} ("${bf.petname}") pins no face relation, so its daemon wiki has no folder to land in: stand the vessel wearing it and import again${face.kahuaRefusal ? ` (${face.kahuaRefusal})` : ""}`);
+    if (face.relation === null) {
+      // A face reads no relation while its vessel stands down or locked: the cure reads "up, then unlock", before anything else.
+      const shut = face.kahuaRefusalCode !== undefined && SHUT_VESSEL_CODES.has(face.kahuaRefusalCode);
+      throw new CarryRefused("carry-face-unworn", shut
+        ? `the face h${face.handleIndex} ("${bf.petname}") reads no face relation because the vessel's key stands shut or no vessel answers (${face.kahuaRefusal}): run up and vault unlock first (\`tools/lares-container.sh up\` or \`lares vessel stand\`, then \`lares vault unlock\`), and import again`
+        : `the face h${face.handleIndex} ("${bf.petname}") pins no face relation, so its daemon wiki has no folder to land in: stand the vessel wearing it and import again${face.kahuaRefusal ? ` (${face.kahuaRefusal})` : ""}`);
+    }
     faceMap[bf.petname] = face.handleIndex;
     target.set(bf.key, face);
   }
