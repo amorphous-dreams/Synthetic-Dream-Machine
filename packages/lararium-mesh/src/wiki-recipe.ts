@@ -371,6 +371,23 @@ export function expandRecipe(r: WikiRecipe): readonly SlotUri[] {
   ])];
 }
 
+/**
+ * WHERE A SLOT MOUNTED LATE SEATS: the composite index (`addLayer`'s `at`, lowest priority = 0) that lays `slot` just above
+ * the nearest slot beneath it in the recipe's order that the composite already mounts, else at the foot. A layer that mounts
+ * after the boot (the daemon's working and edit slots, the face canon after ea) reads its place off the recipe, never off one
+ * neighbour that may not stand yet: an index read off an absent neighbour seats the slot beneath every library (the kahua
+ * stage then shadows each working edit of a lifted title).
+ */
+export function recipeLayerIndex(composite: { layerIndexOf(bagId: string): number }, recipe: WikiRecipe, slot: SlotUri): number {
+  const order = expandRecipe(recipe);
+  const from = order.indexOf(slot);
+  for (const below of from < 0 ? [] : order.slice(from + 1)) {
+    const index = composite.layerIndexOf(below);
+    if (index >= 0) return index + 1;
+  }
+  return 0;
+}
+
 /** The bag a recipe reads as its wiki's canon: `canonBag` where it names one, else `bags/<wikiSlug>`. */
 export function wikiCanonOf(r: Pick<WikiRecipe, "wikiSlug" | "canonBag">): SlotUri {
   return r.canonBag ?? wikiBagUri(r.wikiSlug);

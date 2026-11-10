@@ -46,6 +46,7 @@ import {
   wikiBagUri,
   wikiSlotUri,
   expandRecipe,
+  recipeLayerIndex,
   mkBreath,
   mkFault,
   isVesselToIslandMsg,
@@ -659,14 +660,8 @@ export function runSovereignKernel(
       return;
     }
     if (composite.hasBag(slot)) return;
-    const order = expandRecipe(msg.recipe);
-    let at = 0;
-    for (const below of order.slice(order.indexOf(slot) + 1)) {
-      const index = composite.layerIndexOf(below);
-      if (index >= 0) { at = index + 1; break; }
-    }
     const store = new AutomergeDocStore(out.handle, slot);
-    composite.addLayer({ bagId: slot, store, ...slotLayerFlags(slot, msg.recipe.wikiSlug) }, at);
+    composite.addLayer({ bagId: slot, store, ...slotLayerFlags(slot, msg.recipe.wikiSlug) }, recipeLayerIndex(composite, msg.recipe, slot));
     _handles.set(slot, out.handle);
     store.emitInitialReplay();
     store.markSyncComplete();

@@ -29,7 +29,7 @@ import {
   makeCabalRealmReactors,
   makeIntentViewReactor, runLocalVerb, INTENT_VIEW_CAP, controlOf, MemoryTiddlerStore,
 } from "@lararium/tw5";
-import { DAEMON_WIKI_SLUG, ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, wikiCanonOf, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, ControlHomeUnavailable, type ChangeOrigin } from "@lararium/mesh";
+import { DAEMON_WIKI_SLUG, ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, recipeLayerIndex, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, ControlHomeUnavailable, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor, VerbTable } from "@lararium/tw5";
 import type { IslandMsg_Manifest, JoinedFaceAuth } from "@lararium/mesh";
 import { boardDyadReader, intentDoorStandings } from "./board-dyad-reader.js";
@@ -461,20 +461,20 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       const bag = wikiSlotUri(slug, kind);
       if (ctx.composite.hasBag(bag)) continue;
       // Each lays just above the layer beneath it in the recipe's order (temp · draft · personal · working).
-      const below = ctx.composite.layerIndexOf(kind === "draft" && ctx.composite.hasBag(wikiSlotUri(slug, "personal")) ? wikiSlotUri(slug, "personal") : wikiSlotUri(slug, "working"));
-      if (below < 0) return;
+      // Each seat reads at its own addLayer: the face canon may mount across the awaits between.
+      if (!ctx.composite.hasBag(wikiSlotUri(slug, "working"))) return;
       let resolved: Awaited<ReturnType<SlotDocResolver["slotDoc"]>>;
       try { resolved = await slotDocsOf(ctx).slotDoc(slug, kind); }
       catch (cause) {
         if (!(cause instanceof ControlHomeUnavailable)) { console.warn(`[daemon] the ${kind} slot stands not: ${cause instanceof Error ? cause.message : String(cause)}`); continue; }
-        ctx.composite.addLayer({ bagId: bag, store: new MemoryTiddlerStore(bag), writable: true, defaultWritable: false }, below + 1);
+        ctx.composite.addLayer({ bagId: bag, store: new MemoryTiddlerStore(bag), writable: true, defaultWritable: false }, recipeLayerIndex(ctx.composite, ctx.recipe, bag));
         floorBags.add(bag);
         continue;
       }
       if (!resolved) continue;
       const handle = await findOrThrow(ctx.repo, resolved.url, `${bag} (the daemon's ${kind} layer)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS });
       const store = new AutomergeDocStore(handle, bag);
-      ctx.composite.addLayer({ bagId: bag, store, writable: true, defaultWritable: false }, below + 1);
+      ctx.composite.addLayer({ bagId: bag, store, writable: true, defaultWritable: false }, recipeLayerIndex(ctx.composite, ctx.recipe, bag));
       ctx.handles.set(bag, handle);
       store.emitInitialReplay();
       store.markSyncComplete();
@@ -505,7 +505,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         // the next composition. Every control act still refuses by name; nothing here waits for a key.
         if (!(cause instanceof ControlHomeUnavailable)) throw cause;
         const scratch = new MemoryTiddlerStore(working);
-        ctx.composite.addLayer({ bagId: working, store: scratch, writable: true, defaultWritable: true }, ctx.composite.layerIndexOf(wikiCanonOf(ctx.recipe)) + 1);
+        ctx.composite.addLayer({ bagId: working, store: scratch, writable: true, defaultWritable: true }, recipeLayerIndex(ctx.composite, ctx.recipe, working));
         floorBags.add(working);
         const temp = wikiSlotUri(slug, "temp");
         if (ctx.composite.hasWritableBag(temp)) {
@@ -518,8 +518,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       const workingUrl = resolved.url;
       const handle = await findOrThrow(ctx.repo, workingUrl, `${working} (the daemon's working layer)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS });
       const store = new AutomergeDocStore(handle, working);
-      const at = ctx.composite.layerIndexOf(wikiCanonOf(ctx.recipe)) + 1;
-      ctx.composite.addLayer({ bagId: working, store, writable: true, defaultWritable: true }, at);
+      // The face canon mounts after ea, so the working layer reads its seat off the recipe, never off the canon alone: an
+      // absent canon read as index -1 seated working beneath the kahua stage, which then shadowed every working edit.
+      ctx.composite.addLayer({ bagId: working, store, writable: true, defaultWritable: true }, recipeLayerIndex(ctx.composite, ctx.recipe, working));
       ctx.handles.set(working, handle);
       store.emitInitialReplay();
       store.markSyncComplete();
