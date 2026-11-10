@@ -1072,7 +1072,9 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, bases and acts${skipNote}`, ()
 });
 
 describe.skipIf(wikiSkip)(`wiki shore draft road, retries and shadows${skipNote}`, () => {
-  test("a rename of a draft whose source overrides a shadow writes the shadow state the wiki shows", async () => {
+  // THE SHADOW LAYER RESTS IN MEMORY ALONE: the rename's delete of the source's override lands a tombstone, and the shadow
+  // it uncovers stays in the shadow layer, so the next boot shows the shadow from its plugin and no store pins a copy of it.
+  test("a rename of a draft whose source overrides a shadow tombstones the source; the wiki shows the shadow and no store copies it", async () => {
     const boundary = new ManualBoundary();
     const r = await shoreRig({ boundary });
     const x = "lar:///t/road/shadowed";
@@ -1093,7 +1095,8 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, retries and shadows${skipNote}
     boundary.fire();
     await turns(32);
     expect(storeText(r, workingBag, y)).toBe("renamed");
-    expect(storeText(r, workingBag, x), "the store's source equals what the wiki shows at next boot").toBe("shadow text");
+    expect(storeDeleted(r, workingBag, x), "the source's override leaves as a tombstone, never as a copy of the shadow").toBe(true);
+    expect(String(r.wiki.getTiddler(x)!.fields.text), "the wiki still shows the shadow").toBe("shadow text");
     await r.stop();
   }, 120_000);
 
