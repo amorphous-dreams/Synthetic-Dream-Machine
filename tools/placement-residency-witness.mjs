@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /** Residency decisions may read a mirror grant or the record's kind, never title families. */
 import { readFileSync } from "node:fs";
+import { execSync } from "node:child_process";
 import { PROJECTION_FILTER_TEXT } from "../packages/lararium-mesh/dist/projection-filter.js";
 
 const root = new URL("../", import.meta.url);
@@ -91,4 +92,31 @@ for (const [path, must, mustNot] of controlWriters) {
   const stray = mustNot.exec(text);
   if (stray) throw new Error(`${path} writes a control family where a mirror may read it: ${stray[0]}`);
 }
-console.log("placement-residency-witness: projection and ingest decisions read placement, not title patterns; every control family rests in the unmirrored control document");
+
+// ── HOUSE-MINTED WRITERS INTO A MIRRORED DOCUMENT ─────────────────────────────────────────────────────────────────
+// The crossroads bag mirrors to its canon source, so a record the house mints at runtime and writes into the crossroads
+// board lands in the tracked tree. A realm announce rests on the realm-announce board no recipe mounts: its writers and
+// its carrier's fold name that board, and no source writes an announce through a crossroads handle.
+const sourceFiles = execSync("git ls-files 'packages/*/src/**/*.ts'", { cwd: new URL(".", root), encoding: "utf8" }).split("\n").filter(Boolean);
+for (const path of sourceFiles) {
+  const text = read(path);
+  for (const m of text.matchAll(/(\w+)\.change\(\s*\(?\w+\)?\s*=>\s*writeRealmBagAnnounce\(/g)) {
+    if (/crossroads/i.test(m[1])) throw new Error(`${path} writes a realm announce into the mirrored crossroads document: ${m[0]}`);
+  }
+  // A dead residency field: placement decides disk, so no source stamps one.
+  if (/["']disk-projection["']\s*:/.test(text)) throw new Error(`${path} stamps a disk-projection field, which no projector reads`);
+}
+const climb = read("packages/lararium-mesh/src/nexus-board-climb.ts");
+if (!/materializeSharedLarDoc\(repo, realmAnnounceDocUrl\(nexusPubkey\)/.test(climb) || /crossroadsDocUrl/.test(climb)) {
+  throw new Error("nexus-board-climb: the realm re-announce writes somewhere other than the realm-announce board");
+}
+for (const [path, needle] of [
+  ["packages/lararium-node/src/open-node-vessel.ts", 'announceHandle:   await materializeSharedLarDoc(repo, realmAnnounceDocUrl(nexusPubkey)'],
+  ["packages/lararium-node/src/open-node-vessel.ts", "announceDoc:   () => hermAnnounces.doc()"],
+  ["packages/lararium-mesh/src/federation-gate.ts", "realmAnnounceDocUrl(key)"],
+]) if (!read(path).includes(needle)) throw new Error(`${path} lost the realm-announce board's seat: ${needle}`);
+// The daemon's born-from-source seeds rest in the shadow layer: each seed module lays its records through `seedShadows`.
+for (const path of ["daemon-ui-tiddlers", "promote-ui-tiddlers", "daemon-persona-tiddlers", "daemon-circle-tiddlers", "daemon-roster-tiddlers", "daemon-intent-tiddlers", "daemon-flow-tiddlers"]) {
+  if (!/seedShadows\(tw5, "/.test(read(`packages/lararium-tw5/src/${path}.ts`))) throw new Error(`${path}: a daemon seed writes outside the shadow layer`);
+}
+console.log("placement-residency-witness: projection and ingest decisions read placement, not title patterns; every control family rests in the unmirrored control document; no house-minted announce or seed writes into a mirrored document");

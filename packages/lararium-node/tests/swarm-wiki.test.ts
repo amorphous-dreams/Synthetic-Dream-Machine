@@ -1,5 +1,6 @@
 /**
- * swarm-wiki — the control document as the swarm's wiki: a record reads back what wrote it, rests stamped `disk-projection: "no"`, a
+ * swarm-wiki — the control document as the swarm's wiki: a record reads back what wrote it, carries no residency field (the control
+ * document no mirror names keeps it off disk), a
  * `writeNew` claim lands once however many writers race it, and a prototype-keyed title reads as absent. Every red pairs with a CONTROL.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
@@ -14,13 +15,13 @@ function stand() {
   return { handle, wiki: controlSwarmWiki(async () => handle) };
 }
 
-test("RED: a written record reads back and rests with disk-projection no; CONTROL: an unwritten title reads null and a rewrite replaces", async () => {
+test("RED: a written record reads back and carries no residency field; CONTROL: an unwritten title reads null and a rewrite replaces", async () => {
   const { handle, wiki } = stand();
   const title = swarmGoTitle("feature/x");
   expect(await wiki.read(title)).toBeNull();
   await wiki.write(title, "one");
   expect(await wiki.read(title)).toBe("one");
-  expect(JSON.stringify(ownEntry(handle.doc()?.tiddlers, title))).toContain("disk-projection");
+  expect(JSON.stringify(ownEntry(handle.doc()?.tiddlers, title))).not.toContain("disk-projection");
   await wiki.write(title, "two");
   expect(await wiki.read(title)).toBe("two");
 });

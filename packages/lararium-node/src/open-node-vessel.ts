@@ -54,12 +54,12 @@ import {
   LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI, CROSSROADS_DOC_URI, recipeHostFacets,
   DAEMON_BAG_ID,
   BAG_IDS, slugFromUri, islandEventAsk, registerCrossroadsPointer,
-  whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl,
+  whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl, realmAnnounceDocUrl,
   type RealmBagRegistration, MEMORY_CUT_SHADOW_READ,
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   DEVICE_DELEGATION_SELF_TIDDLER, type DeviceDelegationTiddler,
   ENGINE_CORE_ID, BagStowage,
-  deriveRegisterBags, catalogNamedBags, wornFaceWikiBags, FACE_CATALOG_BAG_ID, faceViewBook, makeCatalogView, catalogViewOf, openFaceCatalog, faceCatalogDocUrl, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, liftFaceCatalogRows, standLitFaceCatalog, faceCatalogUrlOf, wikiSlotUri, personaBagIdFor, personaSiblingBagIds,
+  deriveRegisterBags, catalogNamedBags, wornFaceWikiBags, standingDaemonCanonBag, standFaceDaemonCanon, FACE_CATALOG_BAG_ID, faceViewBook, makeCatalogView, catalogViewOf, openFaceCatalog, faceCatalogDocUrl, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, liftFaceCatalogRows, standLitFaceCatalog, faceCatalogUrlOf, wikiSlotUri, personaBagIdFor, personaSiblingBagIds,
   coupleMesh, crystallize, guardHitl,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, foundingRoster, type NexusIdentityAt,
   climbNexusBoards, sha256HexBytesSync, RealmBoardGate,
@@ -253,7 +253,6 @@ import { loadNodeWardCosignPort }                  from "./commands/intent.js";
 import { listWalkRecords }        from "./node-walk-store.js";
 import { storeDoorReactors, awaitOnRolled }       from "./store-door-verbs.js";
 import { controlSwarmWiki }                       from "./swarm-wiki.js";
-import { standFaceDaemonCanon }                   from "./face-daemon-canon.js";
 import { carriedSet, readCarriedCharters }       from "./carried-set.js";
 import { composeLararium, composeHerm, carriageStack, type MeshSelf } from "./node-caps.js";
 import { PLANE_LABELS } from "@lararium/mesh";
@@ -2942,7 +2941,7 @@ async function prepareNodeBootOn(
       realmPlane = makeRealmPlane({
         repo,
         registry:         assembly.catalogHandle,
-        crossroadsHandle: await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads"),
+        announceHandle:   await materializeSharedLarDoc(repo, realmAnnounceDocUrl(nexusPubkey), "board:realm-announce"),
         membership:       nexusMembership,
         base:             selfSlotFedGate,
         // THE REALM LEG: the realm's own registration answers which documents cross — the ROOT MAP (empty: no
@@ -3263,21 +3262,22 @@ async function prepareNodeBootOn(
       if (raised !== standingAnchor) { await keepFaceAnchorOfGroup(raised); standingAnchor = raised; }
     }
     const faceLit = activeAtom !== null && atomSeed !== null;
-    // THE DAEMON WIKI'S CANON FOLLOWS THE WORN FACE (`daemonFaceCanonBag`): `bags/daemon-<F>`, the document the face's own
-    // catalog names, minted at the face's first worn stand. A face that stands unproven, or the floor, reads no daemon canon.
+    // THE DAEMON WIKI'S CANON FOLLOWS THE WORN FACE (`daemonFaceCanonBag`): `bags/daemon-<F>`, the document the control
+    // document names, minted at the face's first lit stand. A face that stands unlit or unproven, and the floor, read no canon.
     const wornRelation = wornFaceProved && wornFaceProjection && personaGroupId ? (await import("@lararium/mesh")).faceRelationOf(wornFaceProjection) : null;
     // R1: the bags the sealed rest seals, the worn face's own wiki bags, the daemon wiki's slots and canon (U1's D half), only
-    // while that face stands lit and proved; the face's hive registers each (`wornFaceWikiBags`). The canon's bag derives from
-    // the face, so the map names it before the canon's document moves a byte.
-    const canonBagId = wornRelation ? daemonFaceCanonBag(wornRelation) : null;
-    const faceWikiBags = wornFaceWikiBags({ slot, lit: faceLit && !!personaGroupId && wornFaceProved, ...(canonBagId ? { daemonCanon: canonBagId } : {}) });
+    // while that face stands lit and proved; the face's hive registers each (`wornFaceWikiBags`). The canon stands only where
+    // its bag stands registered (`standingDaemonCanonBag`), and the map names it before the canon's document moves a byte.
+    const faceStandsLit = faceLit && !!personaGroupId && wornFaceProved;
+    const canonBagId = standingDaemonCanonBag({ lit: faceStandsLit, faceRelation: wornRelation });
+    const faceWikiBags = wornFaceWikiBags({ slot, lit: faceStandsLit, ...(canonBagId ? { daemonCanon: canonBagId } : {}) });
     sealedCells.bags = () => faceWikiBags.sealed;
     // THE LIT FACE'S DEVICE DAEMON DOCUMENTS (the control document names them): they seal under that face from here on.
     wornDeviceGroup = faceLit && wornFaceProved && personaGroupId ? personaGroupId : null;
     wornDeviceRelation = wornDeviceGroup !== null ? wornRelation : null;
     readDeviceDaemonDocs((await readControlDoc()).doc());
     sealedRest.store.mapMoved();
-    const daemonCanon = wornRelation ? await standFaceDaemonCanon({ repo, control: await readControlDoc(), faceRelation: wornRelation,
+    const daemonCanon = canonBagId && wornRelation ? await standFaceDaemonCanon({ repo, control: await readControlDoc(), faceRelation: wornRelation,
       beforeFirstByte: (bagId, documentId) => {
         const named = deviceDaemonDocs.get(bagId) ?? new Set<string>();
         named.add(documentId); deviceDaemonDocs.set(bagId, named);
@@ -4580,6 +4580,8 @@ async function composeNodeHermOn(
   // BANS (the antigen ring rides its carriage), so reading the WHO plane completes the pair: it recognises
   // the presenters those bans name. The cap cannot betray the asymmetry, because it holds no card to publish.
   const hermCrossroads = await materializeSharedLarDoc(p.repo, crossroadsDocUrl(p.nexusPubkey), "board:crossroads");
+  // The realm-announce board the herm folds its carriable PUBLIC books from: a public board apart from the crossroads bag.
+  const hermAnnounces = await materializeSharedLarDoc(p.repo, realmAnnounceDocUrl(p.nexusPubkey), "board:realm-announce");
   // A SOVEREIGN HERM CARRIES ITS FACE'S CUSTODY AND SIGNS NOTHING: on a sovereign composition its lift seats `custodyWrite`
   // alone (the island's veil export seals through it), never a session sign; at the floor no lift stands. It composes before the
   // island boots (the island reads the record at ask time); its dispose IS the lock, run first in the herm's own dispose.
@@ -4618,11 +4620,11 @@ async function composeNodeHermOn(
       // and the tier it declared; the PUBLIC ones reach the shore, and the rest draw the same 404 as before.
       // THE ANNOUNCE ROAD rides beside it (2026-09-13): a Herm that imported a charter still folds NOTHING
       // through the registration road — the realm doc withholds its registrations from a carrier by design —
-      // so the public plane it already replicates carries the address of every PUBLIC-tier book, and only
-      // those, and the carrier learns which books it may carry BY HASH off the board alone.
+      // so the realm-announce board it replicates beside the crossroads document carries the address of every
+      // PUBLIC-tier book, and only those, and the carrier learns which books it may carry BY HASH off that board alone.
       // THE FORK THIS ONCE NAMED STANDS RULED AND CURED. The operator ruled NEXUS-keyed boards (2026-09-13),
       // and `p.nexusPubkey` now resolves through `nexusIdentity`: a keeper and a carrier holding ONE charter
-      // derive ONE island name (the charter's genesis epoch) and therefore ONE crossroads board, so the
+      // derive ONE island name (the charter's genesis epoch) and therefore ONE realm-announce board, so the
       // announce lands where the carrier reads it. e2e ⑦ (`tests/e2e/herm-reshares-public-blob.e2e.test.ts`)
       // stands UNMEASURED against this cure. Its second half is independent and still owed:
       // the Herm holds no carriage CLIENT (it IS the relay), so nothing in the product ever makes it FETCH the
@@ -4631,7 +4633,7 @@ async function composeNodeHermOn(
       realmReferences: () => hermRealmShoreBooks({
         realmStanding: () => p.realmStanding(),
         findDoc:       async (docUrl) => (await p.repo.find<LarDoc>(docUrl as AutomergeUrl).catch(() => null))?.doc() ?? null,
-        crossroadsDoc: () => hermCrossroads.doc(),
+        announceDoc:   () => hermAnnounces.doc(),
         onLog:         (line) => console.log(`[herm] ${line}`),
       }),
     }),

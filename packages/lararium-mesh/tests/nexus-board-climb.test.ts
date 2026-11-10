@@ -2,7 +2,7 @@
  * nexus-board-climb — the boards a climb moves, and the ones it leaves where they stand.
  *
  * A vessel that climbs re-keys every per-Nexus board, and nothing carries across on its own
- * (`nexusScopeMoved`). The antigen fails OPEN when it mints blank, so it carries; the crossroads announce
+ * (`nexusScopeMoved`). The antigen fails OPEN when it mints blank, so it carries; the realm announce
  * projects a record kept elsewhere, so it re-announces. Every RED here rides ONE board.
  *
  * WHO and carriage stay un-migrated on purpose. Each refusal carries a behavioural pin (content on an island
@@ -22,7 +22,7 @@ import {
   climbNexusBoards, carryAntigenUpTheGradient,
   reAnnounceRealmBooksAtIsland,
   nexusIdentity, nexusIslandsBelow, nexusScopeOrThrow,
-  materializeSharedLarDoc, kapaeAntigenDocUrl, crossroadsDocUrl,
+  materializeSharedLarDoc, kapaeAntigenDocUrl, realmAnnounceDocUrl,
   whoBoardDocUrl, carriageDocUrl,
   writeAntigenEntry, antigenEntriesFromBoard, signAntigenEntry, foldAntigenSet,
   makeMultiSigQuorumVerifier, type KahuQuorumSeats,
@@ -155,8 +155,8 @@ async function publicBook(realmId: string, bagUri: string) {
   );
 }
 
-describe("③ the crossroads RE-ANNOUNCES — the announce carries no signature to re-check", () => {
-  test("RED — a PUBLIC book the realm keeps reaches the crossroads board of the island the boot resolved", async () => {
+describe("③ the realm RE-ANNOUNCES — the announce carries no signature to re-check", () => {
+  test("RED — a PUBLIC book the realm keeps reaches the realm-announce board of the island the boot resolved", async () => {
     const r = repo();
     const bag = "lar:///ha.ka.ba/books/the-offering";
     const rec = await publicBook(CHARTER, bag);
@@ -164,24 +164,24 @@ describe("③ the crossroads RE-ANNOUNCES — the announce carries no signature 
     (await board(r, realmDocUrl(CHARTER))).change((d) => writeRealmBagRegistration(d, rec));
 
     const island = nexusScopeOrThrow(nexusIdentity(AT_EXPLICIT));
-    // THE HARM, measured: the crossroads board the island reads announces nothing, so the book is invisible.
-    expect(publicRealmBooksFromDoc((await board(r, crossroadsDocUrl(island))).doc())).toEqual([]);
+    // THE HARM, measured: the realm-announce board the island reads announces nothing, so the book is invisible.
+    expect(publicRealmBooksFromDoc((await board(r, realmAnnounceDocUrl(island))).doc())).toEqual([]);
 
     const act = await reAnnounceRealmBooksAtIsland({ repo: r, nexusPubkey: island, realmId: CHARTER });
     expect(act.act, "a projection is RE-ANNOUNCED, never carried").toBe("re-announce");
     expect(act.landed).toBe(1);
 
-    const books = publicRealmBooksFromDoc((await board(r, crossroadsDocUrl(island))).doc());
+    const books = publicRealmBooksFromDoc((await board(r, realmAnnounceDocUrl(island))).doc());
     expect(books).toEqual([{ bagUri: bag, docUrl: BOOK_DOC }]);
   }, 30_000);
 
   test("FAULT-PIN — the re-announce RE-DERIVES: a stale row on the board below never travels", async () => {
     const r = repo();
     const ghost = "lar:///ha.ka.ba/books/never-registered";
-    // A row that once stood on the LOWER island's crossroads and names a book no registration counts.
+    // A row that once stood on the LOWER island's realm-announce board and names a book no registration counts.
     const key = realmBagAnnounceKey(ghost);
     const stale = JSON.stringify(crossroadsAnnounceOf(await publicBook(CHARTER, ghost)));
-    (await board(r, crossroadsDocUrl(CHARTER))).change((d) => {
+    (await board(r, realmAnnounceDocUrl(CHARTER))).change((d) => {
       d.tiddlers[key] = mutableLarRecord(key, { text: stale }, "test:stale");
     });
     // And a live registration for a DIFFERENT realm on the realm doc — the realm filter must drop it too.
@@ -190,18 +190,18 @@ describe("③ the crossroads RE-ANNOUNCES — the announce carries no signature 
 
     await reAnnounceRealmBooksAtIsland({ repo: r, nexusPubkey: EXPLICIT, realmId: CHARTER });
 
-    const books = publicRealmBooksFromDoc((await board(r, crossroadsDocUrl(EXPLICIT))).doc());
+    const books = publicRealmBooksFromDoc((await board(r, realmAnnounceDocUrl(EXPLICIT))).doc());
     expect(books, "a copy would launder the stale row and the foreign realm's book; a re-derivation cannot")
       .toEqual([]);
     // And the island below keeps its own row — a migration never edits what it read.
-    expect(await keysOn(r, crossroadsDocUrl(CHARTER))).toContain(key);
+    expect(await keysOn(r, realmAnnounceDocUrl(CHARTER))).toContain(key);
   }, 30_000);
 
   test("CONTROL — a vessel in NO realm announces nothing (it registers nothing either)", async () => {
     const r = repo();
     const act = await reAnnounceRealmBooksAtIsland({ repo: r, nexusPubkey: OWN, realmId: null });
-    expect(act).toEqual({ board: "crossroads", act: "re-announce", landed: 0, from: [] });
-    expect(await keysOn(r, crossroadsDocUrl(OWN))).toEqual([]);
+    expect(act).toEqual({ board: "realm-announce", act: "re-announce", landed: 0, from: [] });
+    expect(await keysOn(r, realmAnnounceDocUrl(OWN))).toEqual([]);
   }, 30_000);
 });
 
@@ -258,7 +258,7 @@ describe("⑤ the climb runs every boot, and ratchets on INTENT alone", () => {
 
     const climb = await climbNexusBoards({ repo: r, nexusPubkey: island, priorIslands: nexusIslandsBelow(at) });
     expect(climb.landed).toBe(0);
-    for (const url of [kapaeAntigenDocUrl(OWN), crossroadsDocUrl(OWN)]) {
+    for (const url of [kapaeAntigenDocUrl(OWN), realmAnnounceDocUrl(OWN)]) {
       expect(await keysOn(r, url)).toEqual([]);
     }
   }, 30_000);
@@ -291,7 +291,7 @@ describe("⑤ the climb runs every boot, and ratchets on INTENT alone", () => {
     expect(first.landed, "one entry per board, both boards").toBe(2);
     const after = {
       antigen: await keysOn(r, kapaeAntigenDocUrl(EXPLICIT)),
-      cross:   await keysOn(r, crossroadsDocUrl(EXPLICIT)),
+      cross:   await keysOn(r, realmAnnounceDocUrl(EXPLICIT)),
     };
 
     for (const pass of [2, 3]) {
@@ -299,7 +299,7 @@ describe("⑤ the climb runs every boot, and ratchets on INTENT alone", () => {
       expect(again.landed, `boot ${pass} must write nothing`).toBe(0);
     }
     expect(await keysOn(r, kapaeAntigenDocUrl(EXPLICIT))).toEqual(after.antigen);
-    expect(await keysOn(r, crossroadsDocUrl(EXPLICIT))).toEqual(after.cross);
+    expect(await keysOn(r, realmAnnounceDocUrl(EXPLICIT))).toEqual(after.cross);
   }, 45_000);
 
   test("CONTROL — the ISLAND BELOW keeps its content: a carry copies, it never empties", async () => {

@@ -164,7 +164,7 @@ export { seedDaemonFlowTiddlers } from "./daemon-flow-tiddlers.js";
 export { seedDaemonProtocol } from "./daemon-protocol-seed.js";
 export { seedDaemonRosterTiddlers, DAEMON_ROSTER_TIDDLERS, ROSTER_STATE_TITLE, LIFECYCLE_APPROVE_CAP } from "./daemon-roster-tiddlers.js";
 export { seedDaemonIntentTiddlers, DAEMON_INTENT_TIDDLERS, makeIntentViewReactor, INTENT_VIEW_CAP, INTENT_STATE_TITLE, INTENT_PANE_TITLE } from "./daemon-intent-tiddlers.js";
-export { SEED_OFF_DISK } from "./daemon-ui-tiddlers.js";
+export { seedShadows, DAEMON_SEED_PLUGIN_PREFIX } from "./daemon-ui-tiddlers.js";
 
 export { IslandKernel } from "./island-kernel.js";
 export { runSovereignKernel } from "./sovereign-kernel.js";

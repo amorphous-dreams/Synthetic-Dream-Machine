@@ -112,7 +112,7 @@ export { REALM_BAG_DOMAIN };
 /** The tiddler prefix registrations accrete under on the realm doc. */
 export const REALM_BAG_PREFIX = "lar:///ha.ka.ba/dreamnet/realm-bags/" as const;
 
-/** The tiddler prefix the crossroads-plane announce rides under — `{ bagUri, keptBy }` and nothing more. */
+/** The tiddler prefix a realm announce rides under on the Nexus's realm-announce board (`realmAnnounceDocUrl`). */
 export const REALM_BAG_ANNOUNCE_PREFIX = "lar:///ha.ka.ba/dreamnet/realm-bag-announce/" as const;
 
 /** The steward's seal and signer, and the reading of a steward's name: the record's own vocabulary. */
@@ -471,7 +471,7 @@ export function mayWriteRealmBag(
   return rec.keptBy.some((s) => s.toLowerCase() === want);
 }
 
-// ── THE @CROSSROADS ANNOUNCE ─────────────────────────────────────────────────────────────────────
+// ── THE REALM ANNOUNCE ───────────────────────────────────────────────────────────────────────────
 
 /**
  * What the public plane carries about a realm bag — that it exists, who keeps it, and (for a PUBLIC-tier book
@@ -483,6 +483,10 @@ export function mayWriteRealmBag(
  * could never learn WHICH books it may carry. The public plane closes that circle and nothing else moves: a
  * CONTRACT-tier announce carries `{ bagUri, keptBy }` exactly as before, and a public one adds only the address
  * of a book the registration already declared readable by hash to anyone.
+ *
+ * The announce rests on the Nexus's realm-announce board (`realmAnnounceDocUrl`), a public board the federation gate
+ * carries beside the crossroads document. No recipe mounts it and no mirror names it, so a house-minted announce never
+ * reaches plaintext disk, and a record in the crossroads mirror never folds here as a book.
  */
 export interface RealmBagAnnounce {
   readonly kind:   typeof REALM_BAG_ANNOUNCE_DOMAIN;
@@ -512,8 +516,8 @@ export interface PublicRealmBook {
 }
 
 /**
- * THE CARRIER'S FOLD — every PUBLIC book the crossroads-plane board announces, read off a carrier's OWN replica of
- * that board. A place that holds no charter and no realm doc learns here which books it may carry BY HASH, and
+ * THE CARRIER'S FOLD — every PUBLIC book the realm-announce board names, read off a carrier's OWN replica of
+ * that board (`realmAnnounceDocUrl`). A place that holds no charter and no realm doc learns here which books it may carry BY HASH, and
  * learns nothing else: an announce without a doc url (every tier tighter than PUBLIC) names no book, a torn
  * payload skips, and an empty board folds empty. The fold grants no read cap — the wire gate still decides
  * which documents cross, and the tier the REGISTRATION declared still decides what the shore serves.
@@ -538,7 +542,7 @@ export function publicRealmBooksFromDoc(doc: LarDoc | undefined | null): PublicR
   return out;
 }
 
-/** Land the announce on the crossroads draft. Call INSIDE a `handle.change()` callback. */
+/** Land the announce on the realm-announce board's draft. Call INSIDE a `handle.change()` callback. */
 export function writeRealmBagAnnounce(draft: LarDoc, rec: RealmBagRegistration): void {
   const key = realmBagAnnounceKey(rec.bagUri);
   draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(crossroadsAnnounceOf(rec)) }, "realm-bag");

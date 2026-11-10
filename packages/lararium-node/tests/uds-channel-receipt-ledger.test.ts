@@ -1096,7 +1096,7 @@ describe("a cancelled id leaves the ring as every other fact does", () => {
     for (const id of IDS) await b.ledger.cancel(id);
     expect(IDS.map((id) => s.stored(id)["state"])).toEqual(["evicted", "evicted", "evicted", "abandoned", "abandoned"]);
     // What a stored record holds once a cancelled id left the ring: its id, its place in the order, its state.
-    expect(Object.keys(s.stored("req-c1")).sort()).toEqual(["disk-projection", "request-id", "seq", "state", "title"]);
+    expect(Object.keys(s.stored("req-c1")).sort()).toEqual(["request-id", "seq", "state", "title"]);
     expect(await b.ledger.arbitrate("req-c1", "sha256:any")).toEqual({ verdict: "refuse", reason: "retention-gap" });
     expect(await b.ledger.arbitrate("req-c5", "sha256:any")).toEqual({ verdict: "refuse", reason: "abandoned" });
     await s.repo.shutdown();

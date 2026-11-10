@@ -8,7 +8,7 @@
  * frames and bound session frames. The daemon hands an invocation to its worker, awaits the
  * durable bags/control/outcomes/<id> outcome, and returns it over the socket. The outcome and the
  * receipt facts both rest in the vessel's CONTROL document (`control-home`), which no recipe composes and no
- * mirror names; it seals under the lit face (sealed-store#/owed, U1's D half).
+ * mirror names; it seals beside the secret home under the vessel's own key (`control-home`).
  *
  *   transport  = this socket (kernel-local, authority-agnostic)
  *   authority  = the session's verified face and worker-held profile on a bound socket;

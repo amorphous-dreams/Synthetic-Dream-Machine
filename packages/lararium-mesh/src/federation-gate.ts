@@ -44,7 +44,7 @@ import {
   type DocumentId,
   type PeerId,
 } from "@automerge/automerge-repo";
-import { crossroadsDocUrl, whoBoardDocUrl, kapaeAntigenDocUrl, personaKelBoardDocUrl, carriageDocUrl } from "./deterministic-doc.js";
+import { crossroadsDocUrl, whoBoardDocUrl, kapaeAntigenDocUrl, personaKelBoardDocUrl, carriageDocUrl, realmAnnounceDocUrl } from "./deterministic-doc.js";
 import type { IdentitySlot } from "./identity-slot.js";
 import type { PeerClass } from "./island-protocol.js";
 import { type CapTierRing, resolveTierForDoc, tierPermitsRelayPeer } from "./cap-tier.js";
@@ -65,16 +65,16 @@ export interface FederationGate {
  *
  * The federatable surface spans the per-island PUBLIC boards, addressed
  * deterministically from each confederation (relay-gate) key the gate holds. For
- * EVERY key it federates that island's five boards: the crossroads public-plane
+ * EVERY key it federates that island's six boards: the crossroads public-plane
  * doc, the WHO board, the Kapae-ANTIGEN board (the immune antigen rides the
  * mandatory-carry plane, carry-contract MANDATORY tier), the carriage-contracts
- * board, and the persona-KEL board. Automerge-repo does NOT auto-follow doc refs
+ * board, the persona-KEL board, and the realm-announce board. Automerge-repo does NOT auto-follow doc refs
  * (each doc syncs independently under its own sharePolicy verdict), so these board
  * ids name the WHOLE relay surface — no transitive dep-set to chase and ZERO
  * hand-maintenance (the key set alone derives the set).
  *
  * `nexusPubkey` takes one key or a carried key set. A single string federates
- * exactly that island's five boards; an empty set federates nothing. Federating a
+ * exactly that island's six boards; an empty set federates nothing. Federating a
  * carried set sends every carried island's PUBLIC boards to this vessel's
  * cross-operator peers — that is CARRY, and carry ⊥ read holds: the gate admits
  * only the derived public addresses, never a private plane (private planes carry
@@ -96,6 +96,7 @@ export class DeterministicFederationGate implements FederationGate {
         kapaeAntigenDocUrl(key),   // the immune antigen (DENY-twin) rides the always-carried plane (MANDATORY tier)
         carriageDocUrl(key),        // the operator carriage-contracts board (ALLOW-twin) — quorum-signed contracts, MANDATORY tier
         personaKelBoardDocUrl(key), // the persona-KEL board — PUBLIC identifier→head mapping (federates once)
+        realmAnnounceDocUrl(key),   // the realm-announce board — each realm's PUBLIC book addresses, read by carriers
       ]),
       ...extraBoardUrls,
     ];

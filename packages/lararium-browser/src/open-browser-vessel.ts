@@ -90,10 +90,9 @@ import { runFoundingCeremony, runApplyAdmitPayload, foundThePlace, assemblePerso
 import {
   standControlHome, promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteBoardRecords, writePromoteAct, promoteWiring, promoteWikiItems, faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, readFace, faceRecordsOf, adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard, KAHUA_BAG, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog,
   readFleetFrontier, fleetFrontierLinks, fleetRaiseCids, readFrontierPins, writeFrontierPin, FLEET_HAND, faceRelationOf,
-  type WideningRead,
+  standFaceDaemonCanon, type FaceDaemonCanon, type WideningRead,
 } from "@lararium/mesh";
 import { keepBrowserFaceAnchor, loadBrowserFaceAnchor, requireBrowserFaceAnchor } from "./browser-face-anchor.js";
-import { standFaceDaemonCanon, type FaceDaemonCanon } from "./face-daemon-canon.js";
 import { browserVesselFaceTagDoor, keepBrowserFaceAtomSeed, mintBrowserFaceAddressSecret, readBrowserFaceAddressSecret, requireBrowserFaceAtomSeed, standBrowserFaceAtomSeed } from "./browser-face-atom.js";
 import {
   loadBrowserVeilArchive, saveBrowserVeilArchive,

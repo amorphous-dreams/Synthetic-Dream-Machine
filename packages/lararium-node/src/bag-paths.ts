@@ -15,7 +15,7 @@ export interface BagMirrorConfig {
   readonly bagId: string;
   /** Absolute filesystem path; all writes are constrained under this root. */
   readonly mirrorRoot: string;
-  /** Marks a grant intended for bag-specific recovery projection,. */
+  /** Marks a grant intended for bag-specific recovery projection. */
   readonly mirrorClass?: "recovery";
   /**
    * Widened grant (capability, rides the manifest's diskMirrors): the mirror
@@ -46,7 +46,7 @@ export const TEMP_LAYER_DIR = "temp";
 /**
  * Whether a title in the temp layer names the house's INTERNAL state rather than user temp content: what the projection
  * filters withhold from a temp mirror (`@lararium/mesh` `projection-filter`: the base and
- * `$:/config/lares/ProjectionFilter/temp`, TiddlyWiki's system namespace and the house's config plane among them). The
+ * `$:/config/lares/ProjectionFilter/temp`: TiddlyWiki's temp and state namespaces and the house's config plane). The
  * read-back reads the same line the projector writes by.
  */
 export function isTempLayerInternalTitle(title: string): boolean {

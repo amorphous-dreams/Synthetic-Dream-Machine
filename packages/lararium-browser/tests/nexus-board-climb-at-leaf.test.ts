@@ -46,7 +46,7 @@ import {
   climbNexusBoards, carryPersonaKelUpTheGradient,
   nexusIdentity, nexusIslandsBelow, nexusScopeOrThrow, type NexusIdentityAt,
   materializeSharedLarDoc,
-  kapaeAntigenDocUrl, crossroadsDocUrl,
+  kapaeAntigenDocUrl, realmAnnounceDocUrl,
   personaKelBoardDocUrl,
   writeAntigenEntry, antigenEntriesFromBoard, signAntigenEntry,
   writePersonaKelEvent, personaKelChainForPrefix, mintPersonaInception,
@@ -209,7 +209,7 @@ describe("★ RED — the LEAF BRICKS: the Binding Gate's own read goes blank wh
     expect(carried[0]!.nym).toBe(victim);
   }, 30_000);
 
-  test("the crossroads RE-ANNOUNCE stands INERT at a leaf — it holds no charter, so no realm", async () => {
+  test("the realm RE-ANNOUNCE stands INERT at a leaf — it holds no charter, so no realm", async () => {
     const r        = repo();
     const own      = await pubOf(seedOf(115));
     const anchor   = await pubOf(seedOf(215));
@@ -217,11 +217,11 @@ describe("★ RED — the LEAF BRICKS: the Binding Gate's own read goes blank wh
     const island   = nexusScopeOrThrow(nexusIdentity(at));
 
     const climb = await leafClimb(r, at);
-    const act   = climb.acts.find((a) => a.board === "crossroads")!;
+    const act   = climb.acts.find((a) => a.board === "realm-announce")!;
     expect(act.act).toBe("re-announce");
     expect(act.landed, "no realm → nothing to re-derive; a leaf registers nothing either").toBe(0);
     expect(act.from, "and it read no realm doc at all").toEqual([]);
-    expect(publicRealmBooksFromDoc((await board(r, crossroadsDocUrl(island))).doc())).toEqual([]);
+    expect(publicRealmBooksFromDoc((await board(r, realmAnnounceDocUrl(island))).doc())).toEqual([]);
   }, 30_000);
 });
 
@@ -265,7 +265,7 @@ describe("the gradient law holds AT THE LEAF", () => {
     expect(climb.landed).toBe(0);
     for (const act of climb.acts) expect(act.from).toEqual([]);
     expect(carry).toEqual({ carried: 0, from: null });
-    for (const url of [kapaeAntigenDocUrl(own), crossroadsDocUrl(own), personaKelBoardDocUrl(own)]) {
+    for (const url of [kapaeAntigenDocUrl(own), realmAnnounceDocUrl(own), personaKelBoardDocUrl(own)]) {
       expect(await keysOn(r, url)).toEqual([]);
     }
   }, 30_000);

@@ -11,7 +11,7 @@
  *
  * A board whose entries PROJECT a record kept elsewhere takes a RE-ANNOUNCE: the projection re-derives from
  * the record's current state onto the new address. Copying such a row launders it, since the row carries no
- * signature to re-check. The crossroads announce reads as this kind.
+ * signature to re-check. The realm announce reads as this kind.
  *
  * ── TWO PER-NEXUS BOARDS TAKE NEITHER ──────────────────────────────────────────────────────────────
  * A migration compiles an about-set at a new address, which the registry filter refuses. So:
@@ -52,14 +52,14 @@
  *
  * Platform-blind: rides ./deterministic-doc + ./base-doc + ./realm-bag only. NO node: imports — a browser
  * leaf climbing from its own island to the anchor it dials composes the identical call. A leaf's gradient
- * runs three rungs (own → anchor → explicit) where a node's runs two, and its crossroads re-announce stands
+ * runs three rungs (own → anchor → explicit) where a node's runs two, and its realm re-announce stands
  * inert: a leaf keeps no seal home, holds no charter, and passes `realmId: null`.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/nexus-identity
  */
 import type { AutomergeUrl, DocHandle, Repo } from "@automerge/automerge-repo";
 import { type LarDoc, tiddlerText } from "./base-doc.js";
-import { kapaeAntigenDocUrl, crossroadsDocUrl, materializeSharedLarDoc } from "./deterministic-doc.js";
+import { kapaeAntigenDocUrl, realmAnnounceDocUrl, materializeSharedLarDoc } from "./deterministic-doc.js";
 import { ANTIGEN_ENTRY_PREFIX } from "./antigen-board.js";
 import {
   crossroadsAnnounceOf, foldRealmBags, realmBagAnnounceKey, realmDocUrl,
@@ -69,7 +69,7 @@ import { storedLarRecord } from "./stored-record.js";
 /** What one act of the climb did. `from` names the islands actually READ, so a caller can say where it looked. */
 export interface BoardClimbResult {
   /** Which board moved — the name a log line and a test both read. */
-  readonly board:  "antigen" | "crossroads";
+  readonly board:  "antigen" | "realm-announce";
   /** CARRY moves bytes verbatim; RE-ANNOUNCE re-derives a projection from the record it projects. */
   readonly act:    "carry" | "re-announce";
   /** How many entries CHANGED the destination. Zero on every boot after the one that landed them. */
@@ -170,7 +170,7 @@ export function carryAntigenUpTheGradient(opts: {
 }
 
 /**
- * THE CROSSROADS RE-ANNOUNCE — and the reason a CARRY here would be a fault rather than a shortcut.
+ * THE REALM RE-ANNOUNCE — and the reason a CARRY here would be a fault rather than a shortcut.
  *
  * The announce carries NO signature: `crossroadsAnnounceOf` strips the record down to `{kind, bagUri, keptBy}`
  * plus, for a PUBLIC-tier book alone, its `docUrl`. The n-of-n-signed registration stays on the REALM doc.
@@ -192,29 +192,29 @@ export function carryAntigenUpTheGradient(opts: {
  * The reachable case, named honestly: `register` refuses without a realm, and a realm exists only where a
  * charter does, so a vessel at its own island holds no realm books to lose. The climb that orphans them is
  * the one that moves the island while the charter STANDS — an explicit scope named above a standing charter.
- * There the realm doc keeps every registration and the crossroads board mints blank, and this is the cure.
+ * There the realm doc keeps every registration and the realm-announce board mints blank, and this is the cure.
  * At an own→charter climb it does the other useful thing: it states the realm's books, including a peer's
  * that synced in, onto the board the island actually reads.
  */
 export async function reAnnounceRealmBooksAtIsland(opts: {
   repo:        Repo;
-  /** The island this boot RESOLVED — the crossroads board the announce lands on. */
+  /** The island this boot RESOLVED — the realm-announce board the announce lands on. */
   nexusPubkey: string;
   /** The realm this vessel stands in (`nexusAidOf`). Null/absent ⇒ no realm, so nothing to announce. */
   realmId:     string | null | undefined;
 }): Promise<BoardClimbResult> {
   const { repo, nexusPubkey, realmId } = opts;
-  const nothing: BoardClimbResult = { board: "crossroads", act: "re-announce", landed: 0, from: [] };
+  const nothing: BoardClimbResult = { board: "realm-announce", act: "re-announce", landed: 0, from: [] };
   if (!realmId) return nothing;   // a vessel outside every realm announces nothing — it registers nothing either
 
   let realmDoc: LarDoc | undefined;
   try { realmDoc = (await materializeSharedLarDoc(repo, realmDocUrl(realmId), "realm")).doc(); }
-  catch (err) { sourceFault("crossroads", realmId, err); return nothing; }
+  catch (err) { sourceFault("realm-announce", realmId, err); return nothing; }
 
   const standing = await foldRealmBags(realmDoc, realmId);
   if (standing.size === 0) return { ...nothing, from: [realmId] };
 
-  const board = await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
+  const board = await materializeSharedLarDoc(repo, realmAnnounceDocUrl(nexusPubkey), "board:realm-announce");
   const already = board.doc()?.tiddlers ?? {};
   // Write only what the board does not already STATE — the projection is content-addressed by its own text,
   // so an unchanged announce writes nothing and the every-boot run has no second effect.
@@ -231,11 +231,11 @@ export async function reAnnounceRealmBooksAtIsland(opts: {
         draft.tiddlers[key] = storedLarRecord(key, { text }, "board-climb:re-announce");
       }
     });
-    console.log(`[crossroads] re-announced ${owed.size} book(s) of realm ${realmId.slice(0, 18)}… onto island `
+    console.log(`[realm-announce] re-announced ${owed.size} book(s) of realm ${realmId.slice(0, 18)}… onto island `
               + `${nexusPubkey.slice(0, 18)}…. Re-derived from the realm's counted registrations, never copied `
               + "from a lower board — the announce carries no signature a reader could re-check.");
   }
-  return { board: "crossroads", act: "re-announce", landed: owed.size, from: [realmId] };
+  return { board: "realm-announce", act: "re-announce", landed: owed.size, from: [realmId] };
 }
 
 /**
@@ -255,7 +255,7 @@ export async function climbNexusBoards(opts: {
   nexusPubkey:  string;
   /** The islands beneath it (`nexusIslandsBelow`). Empty ⇒ standing at the bottom, or torn: nothing moves. */
   priorIslands: readonly string[];
-  /** The realm this vessel stands in (`nexusAidOf`), for the crossroads re-announce alone. */
+  /** The realm this vessel stands in (`nexusAidOf`), for the realm re-announce alone. */
   realmId?:     string | null;
 }): Promise<NexusBoardClimb> {
   const acts: BoardClimbResult[] = [

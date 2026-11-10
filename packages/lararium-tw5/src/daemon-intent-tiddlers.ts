@@ -3,9 +3,9 @@ import { LARES_DISPATCH_FIELD } from "@lararium/mesh/lar-uris";
 import type { IntentPaneModel } from "@lararium/mesh";
 import type { TW5Engine } from "./tw5-vm.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
-import { LARES_SURFACE_STATE, LARES_SURFACE_TAG, SEED_OFF_DISK } from "./daemon-ui-tiddlers.js";
+import { LARES_SURFACE_STATE, LARES_SURFACE_TAG, seedShadows } from "./daemon-ui-tiddlers.js";
 
-export const INTENT_VIEW_CAP = "$:/lares/caps/intent-view";
+export const INTENT_VIEW_CAP = "$:/temp/lares/caps/intent-view";
 export const INTENT_STATE_TITLE = "$:/temp/lares/face-intents";
 export const INTENT_PANE_TITLE = "$:/lares/ui/face-intents";
 const PAGECTRL_TITLE = "$:/lares/ui/PageControls/face-intents";
@@ -51,7 +51,7 @@ export const DAEMON_INTENT_TIDDLERS: readonly TiddlerSpec[] = [
 ];
 
 export function seedDaemonIntentTiddlers(tw5: TW5Engine): void {
-  for (const spec of DAEMON_INTENT_TIDDLERS) tw5.setTiddler({ ...spec, ...SEED_OFF_DISK } as Record<string, string>);
+  seedShadows(tw5, "intent", DAEMON_INTENT_TIDDLERS);
 }
 
 /** Only a verifier-approved read fills the local state slot; a denial removes stale data. */
@@ -59,7 +59,7 @@ export function makeIntentViewReactor(tw5: TW5Engine, intentBag: string, describ
   return async (_args, context) => {
     const proof = await context.cap("read", intentBag);
     if (!proof.ok) {
-      tw5.setTiddler({ title: INTENT_VIEW_CAP, text: "0", ...SEED_OFF_DISK });
+      tw5.setTiddler({ title: INTENT_VIEW_CAP, text: "0" });
       tw5.setTiddler({ title: INTENT_STATE_TITLE, text: "", list: "", strays: "", refused: "" });
       throw new Error("intent-view-no-capability");
     }
@@ -80,7 +80,7 @@ export function makeIntentViewReactor(tw5: TW5Engine, intentBag: string, describ
       fields[`void-${n}`] = row.voidAfterAct.join(" ");
     });
     tw5.setTiddler(fields);
-    tw5.setTiddler({ title: INTENT_VIEW_CAP, text: "1", ...SEED_OFF_DISK });
+    tw5.setTiddler({ title: INTENT_VIEW_CAP, text: "1" });
     return { title: INTENT_STATE_TITLE, rows: pane.rows.length };
   };
 }
