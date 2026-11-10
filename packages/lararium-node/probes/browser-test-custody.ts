@@ -6,7 +6,7 @@
  * ceremony document (`lararium-web` `ceremony.html`) in its own window, and only that document takes the secret. No flag,
  * env var, URL or tiddler carries a credential into it. A harness that drives the page as a person does presses the
  * page's button, then types the published test passphrase (`tools/test-custody-route.mjs`) into the ceremony document's
- * form, and nothing else.
+ * form, and nothing else. A founding's place card it copies back off the ceremony document, as a person types it off paper.
  *
  * THE SCRATCH MARK. The node door acts only on a root a harness staged (`.lar-test-scratch`). The browser twin acts
  * only on a page a harness itself serves on the loopback, in a browser the harness launched: it answers a ceremony only
@@ -54,7 +54,12 @@ export async function armTestCustody(target: BrowserContext | Page, label: strin
     loopbackOrRefuse(ceremony.url());
     const form = ceremony.locator("#ceremony-form");
     await form.waitFor({ state: "visible", timeout: 30_000 });
-    for (const field of await form.locator('input[type="password"]:visible').all()) await field.fill(TEST_PASSPHRASE);
+    // A CARD ASK (a founding's place card): the harness copies the card's three code rows back, as a person types them off
+    // the paper they wrote; every other ask takes the published test passphrase.
+    const typed = (await form.getAttribute("data-kind")) === "card"
+      ? (await ceremony.locator("#ceremony-card").innerText()).split("\n").map((l) => l.trim()).filter((l) => /^[0-9a-f]{4}(?:-[0-9a-f]{4}){5}$/.test(l)).join("-")
+      : TEST_PASSPHRASE;
+    for (const field of await form.locator('input[type="password"]:visible').all()) await field.fill(typed);
     await form.locator('button[type="submit"]').click();
   });
   await target.addInitScript(() => {

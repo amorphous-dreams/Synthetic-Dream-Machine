@@ -104,8 +104,8 @@ export function wikiDraftDocKey(slug: string, placeDid: LarDid): SlotUri {
 }
 
 /** THE FLOOR'S OWN ANCHOR, read from the vessel and never inferred: on a node its place, the W29 place KEL prefix; on a
- *  browser leaf, which holds no place KEL, the private Nexus of one it stands as at the floor, the key it resolves its
- *  shared planes under. A vessel that holds neither names no floor anchor. */
+ *  browser leaf its place KEL prefix where its founding armed one through the place card, else the private Nexus of one it
+ *  stands as at the floor, the key it resolves its shared planes under. A vessel that holds neither names no floor anchor. */
 export type WorkingFloorAnchor =
   | { readonly kind: "place"; readonly aid: string }
   | { readonly kind: "private-nexus"; readonly key: string };

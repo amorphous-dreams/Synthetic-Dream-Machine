@@ -121,6 +121,7 @@ function paintAsk(ask: VesselAsk, vessel: VesselPort): void {
     ask.kind === "unlock" ? `This browser's vessel asks for its unlock (${ask.act}${ask.words ? `, ${ask.words}` : ""}).`
       : ask.kind === "bind-first" ? "This browser's vessel asks for a first passphrase before it holds a face's secrets."
         : ask.kind === "ward" ? `This face asks for its passphrase for one ward act (${ask.act}).`
+          : ask.kind === "card" ? "This browser founds its place: the ceremony shows its place card to write on paper and type back. Nothing is written until it reads back."
           : "This browser's vessel asks for its passphrase to clear its custody.";
   const go = document.createElement("button");
   go.type = "button"; go.className = "ceremony-open"; go.textContent = "open the unlock ceremony";

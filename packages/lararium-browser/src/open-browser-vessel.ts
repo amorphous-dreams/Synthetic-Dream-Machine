@@ -240,7 +240,8 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
   /** The Web Locks host the one-holder-per-store law rides; the platform's own when omitted (the test door). */
   locks?:          LockHost | null;
   displayName?:    string;
-  /** The ceremony that reads the new place's cold card back; seated, the founding arms the place KEL, and absent the leaf founds none. */
+  /** The ceremony that reads the new place's cold card back; seated, a founding arms the place KEL (a vessel that holds a face
+   *  already keeps the place it stands on), and absent the leaf founds none. */
   placeFoundingCard?: PlaceFoundingCard;
   /**
    * The PLAIN-DATA genesis seed (seed.json) — the oracle doc's initial state the
@@ -788,7 +789,11 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   emit("repo-open");
 
   // ── Keypair (WebCrypto substrate) + founding (the personaGroup capability) ───
-  const vesselIdentity = await generateOrLoadBrowserVesselIdentity(idbName, displayName, placeFoundingCard ? { placeFoundingCard } : {});
+  // THE FOUNDING ARMS THE PLACE KEL (W29): a browser that holds no face yet reads its place card back before its first key
+  // writes, as the node's `found` does; one that founded already keeps the place it stands on (a founding torn before its face
+  // stood asks the card again, and a KEL that stands is kept). The card's ceremony rides the vessel's own thread.
+  const founding = placeFoundingCard !== undefined && (await readBootKeys(idbName)).bootstrap === undefined;
+  const vesselIdentity = await generateOrLoadBrowserVesselIdentity(idbName, displayName, founding ? { placeFoundingCard } : {});
   const vesselVerifyingKey      = vesselIdentity.verifyingKey;
 
   // ── THE ISLAND THIS LEAF STANDS IN — the SAME mesh ruling the node composes ──────────────────────────
