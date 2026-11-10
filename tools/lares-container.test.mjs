@@ -8,7 +8,7 @@
  */
 import assert from "node:assert/strict";
 import { mkdir, mkdtemp, readFile, readdir, writeFile, chmod, rm } from "node:fs/promises";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { test } from "node:test";
@@ -622,3 +622,61 @@ for (const [name, shim] of shims) {
     }
   });
 }
+
+// A LONE SIGNAL TO THE SHIM: docker forwards none to an exec'd process and a killed `compose run` client leaves its
+// container running (tests/host-bridge-real-docker.test.ts measured it), so the shim's own stop must run on a TERM,
+// HUP or QUIT sent to its pid alone. The fake docker sleeps on the act and logs every call, the stop among them.
+async function loneSignal(shim, sig, { standing }) {
+  const dir = await mkdtemp(join(tmpdir(), "lares-container-sig-"));
+  try {
+    const log = join(dir, "calls.log");
+    await writeFile(join(dir, "docker"), `#!/bin/sh\nprintf '%s\\n' "$*" >> "$CALL_LOG"\n` +
+      `case " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}"; exit 0;; esac\n` +
+      `case " $* " in *" sh -c "*|*" stop "*|*" rm -f "*) exit 0;; esac\n` +
+      `case " $* " in *" exec "*|*" run "*) echo $$ > "$CALL_LOG.pid"; exec sleep 30;; esac\nexit 0\n`);
+    await chmod(join(dir, "docker"), 0o755);
+    const compose = join(dir, "docker-compose.surface.yml");
+    await writeFile(compose, "services: {}\n");
+    const home = join(dir, "home");
+    await mkdir(join(home, ".lares"), { recursive: true });
+    const env = { PATH: `${dir}:${process.env.PATH}`, CALL_LOG: log, HOME: home, LARES_COMPOSE_FILE: compose,
+      LARES_HOUSE: join(dir, "house"), LARES_WORKSPACE: "/w", ...(standing ? { FAKE_RUNNING_ID: "cid" } : {}) };
+    const cmd = shim === SH ? ["sh", [shim, "persona", "list"]] : ["pwsh", ["-NoProfile", "-File", shim, "persona", "list"]];
+    const child = spawn(cmd[0], cmd[1], { env, stdio: "ignore" });
+    const ended = new Promise((r) => child.on("exit", (code, signal) => r({ code, signal })));
+    let pid = 0;
+    for (let i = 0; i < 200 && !pid; i++) {
+      try { pid = Number((await readFile(`${log}.pid`, "utf8")).trim()); } catch { await new Promise((r) => setTimeout(r, 50)); }
+    }
+    assert.ok(pid > 0, "the fake act never started");
+    await new Promise((r) => setTimeout(r, 300));
+    process.kill(child.pid, sig);
+    const exit = await Promise.race([ended, new Promise((r) => setTimeout(() => r({ code: "hung", signal: null }), 20_000))]);
+    await new Promise((r) => setTimeout(r, 300));
+    let alive = true;
+    try { process.kill(pid, 0); } catch { alive = false; }
+    if (alive) process.kill(pid, "SIGKILL");
+    if (exit.code === "hung") child.kill("SIGKILL");
+    return { exit, alive, calls: await readFile(log, "utf8") };
+  } finally { await rm(dir, { recursive: true, force: true }); }
+}
+
+const CODE = { SIGTERM: 143, SIGHUP: 129, SIGQUIT: 131 };
+for (const [name, shim] of shims) {
+  for (const sig of ["SIGTERM", "SIGHUP"]) {
+    test(`${name}: a lone ${sig} to the shim stops the tagged vessel process and leaves no compose client`, async () => {
+      const { exit, alive, calls } = await lone(shim, sig, true);
+      assert.ok(exit.signal === sig || exit.code === CODE[sig], JSON.stringify(exit));
+      assert.equal(alive, false, "the fake compose client outlived the shim");
+      assert.match(calls, new RegExp(`exec -T lares sh -c .* stop ${sig.slice(3)} [0-9a-f]{16}`));
+    });
+  }
+  test(`${name}: a lone SIGTERM over the offline door stops and removes the named run container`, async () => {
+    const { exit, alive, calls } = await lone(shim, "SIGTERM", false);
+    assert.ok(exit.signal === "SIGTERM" || exit.code === 143, JSON.stringify(exit));
+    assert.equal(alive, false);
+    assert.match(calls, /stop -t 10 lares-offline-[0-9a-f]{16}/);
+    assert.match(calls, /rm -f lares-offline-[0-9a-f]{16}/);
+  });
+}
+async function lone(shim, sig, standing) { return loneSignal(shim, sig, { standing }); }
