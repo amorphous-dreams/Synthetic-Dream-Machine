@@ -238,7 +238,10 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
   const { doors, acceptOmissions } = opts;
   const target = resolve(dest);
   const house = larHouseRoot();
-  if (inside(house, target)) throw new CarryRefused("carry-dest-inside-house", `${target} stands inside the house root ${resolve(house)}; a bundle carries memory across a re-founding, so it rests outside the house`);
+  // THE CONFIG HOME TAKES A BUNDLE: a reset clears the hearth alone and keeps config, and the container binds config to the host
+  // (`/lar/config` ← `$LARES_HOUSE/config`), so a bundle exported through the shim rests where the host reads it and the
+  // re-founding never reaches (the vault backup's own precedent). Every other house class refuses.
+  if (inside(house, target) && !inside(larConfigHome(), target)) throw new CarryRefused("carry-dest-inside-house", `${target} stands inside the house root ${resolve(house)}; a bundle carries memory across a re-founding, so it rests outside the house, or under its config home ${resolve(larConfigHome())}, which a reset keeps`);
   if (inside(repoRoot, target)) throw new CarryRefused("carry-dest-inside-workspace", `${target} stands inside the workspace ${repoRoot}; a bundle holds private memory and never rests in a tracked tree`);
   if (existsSync(target)) throw new CarryRefused("carry-dest-stands", `${target} already stands; name a fresh path, and the export never writes over one`);
   const omissions: CarryOmission[] = [];

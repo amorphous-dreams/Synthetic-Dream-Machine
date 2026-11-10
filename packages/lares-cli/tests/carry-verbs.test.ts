@@ -416,6 +416,18 @@ describe("the carry verbs", () => {
     expect(said.at(-1)).toContain(out);
   });
 
+  test("C17 — the house's config home takes a bundle (a reset keeps it, and the container binds it to the host); every other house class refuses", async () => {
+    const v = oldVessel();
+    await expect(carryExport(join(root, "projections", "carry"), { acceptOmissions: false, doors: v.doors() })).rejects.toThrow(/carry-dest-inside-house/);
+    await expect(carryExport(join(root, "hearth", "carry"), { acceptOmissions: false, doors: v.doors() })).rejects.toThrow(/carry-dest-inside-house/);
+    const dest = join(root, "config", "carry", "bundle-one");
+    const { manifest } = await carryExport(dest, { acceptOmissions: false, doors: v.doors() });
+    expect(manifest.files.some((f) => f.path.includes("carry/bundle-one"))).toBe(false);
+    const after = refound();
+    await carryImport(dest, { apply: true, doors: after.doors() });
+    expect([...after.records.keys()]).toContain(MEMORY);
+  });
+
   test("C9 — the refusal classes carry their codes", () => {
     expect(new CarryRefused("carry-x", "why").message).toBe("carry-x: why");
   });
