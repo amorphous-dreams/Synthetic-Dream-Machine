@@ -17,7 +17,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { sha256HexBytesSync, utf8Bytes, type CasReferenceEntry, type CapTier } from "@lararium/mesh";
 import { announcedRealmBooks, hermRealmShoreBooks, publicCasShore } from "../src/bulb-read-face.js";
-import { crossroadsAnnounceOf, writeRealmBagAnnounce, signRealmBagRegistration, type LarDoc } from "@lararium/mesh";
+import { realmBagAnnounceOf, writeRealmBagAnnounce, signRealmBagRegistration, type LarDoc } from "@lararium/mesh";
 import * as ed from "@noble/ed25519";
 import { writeCasEntriesFs } from "../src/node-cas.js";
 
@@ -130,7 +130,7 @@ describe("the Herm folds its shore off the @crossroads announces, holding no cha
   test("CONTROL: the announce a CONTRACT registration projects still carries no doc url", async () => {
     const rec = await signRealmBagRegistration(
       { realmId: "r", bagUri: CONTRACT_BAG, docUrl: "automerge:3EuA8kB7XEZ5MP1oBBKdxzoLzXMn", readTier: "contract" }, [await steward()]);
-    expect(crossroadsAnnounceOf(rec)).not.toHaveProperty("docUrl");
+    expect(realmBagAnnounceOf(rec)).not.toHaveProperty("docUrl");
   });
 
   // ── THE WELD (`hermRealmShoreBooks`) — the lane the Herm vessel actually wires ──────────────────

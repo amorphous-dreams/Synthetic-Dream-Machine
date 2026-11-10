@@ -250,7 +250,7 @@ The lift amends the 2026-11-04 line that named it free (operator, 2026-11-05, af
 A user's wiki runs actions live with full caps. On the daemon and kahua wikis, `meme-act` stands under these laws:
 * A code-bearing action there REFUSES outright until row 7's ward stands, then rides it. It never rides the advisory hand label.
 * The action string runs in a THROWAWAY COPY of the wiki (a cloned store with its own root widget; plugin shadows read-only). The copy records every create, change and delete, and every message the action dispatched (captured, never executed).
-* The recorded diff gets judged. Any touch to the code class (`codeClassOf`), to a control-plane title (`isControlPlaneUri`) or to a custody verb refuses the whole act by name. Any captured `tm-*` message outside an allowlist refuses; the allowlist starts EMPTY, and a message joins it only when a real act needs it, by name.
+* The recorded diff gets judged. Any touch to the code class (`codeClassOf`), to a control family (whose records rest in the vessel's control document alone, which no wiki composes, so a diff touching one names a breach) or to a custody verb refuses the whole act by name. Any captured `tm-*` message outside an allowlist refuses; the allowlist starts EMPTY, and a message joins it only when a real act needs it, by name.
 * A clean diff APPLIES AS ITSELF in one batch and never re-runs, which closes the gap between check and use (a transcluded value can change between two runs). Non-determinism such as `<<now>>` stays fine, since the diff records the one result.
 * A static parse never serves as the ward. The slice's first red MEASURES the copy's cost on a realistic daemon wiki.
 
@@ -337,6 +337,6 @@ Two research spirits read in parallel: Naʻau-Scout through neuroscience, Manaʻ
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;BySP3Id3RgYTgKWnJri4tjNJh9u-NHh1p1PySLkdI3o`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3Y8HWEd2z-WIStAkpkPIcgSTXueXxx3O8iNN3ja3kJM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

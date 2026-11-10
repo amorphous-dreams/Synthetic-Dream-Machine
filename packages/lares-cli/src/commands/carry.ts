@@ -7,7 +7,7 @@
  * the new face's authority. The sensoriums (captured conversation memory, `<root>/sensoriums`) survive by where they
  * stand and never enter a bundle. Control records rest in the vessel control document and never travel in a bundle;
  * the daemon wiki travels through the face's working (`wikis/daemon-<F>`) and canon (`bags/daemon-<F>`) mirrors,
- * and kahua travels through `bags/kahua-<F>`. Observe renders never travel.
+ * and kahua travels through `bags/kahua-<F>`.
  *
  * EXPORT (a vessel that holds a disk store and wears its faces, standing):
  *   1. refuses a dest inside the house root or the workspace, or one that already stands;

@@ -3,7 +3,7 @@
  *
  * THE RULING. A scoped face signs acts that belong to one person; a transparent quorum Handle signs acts the
  * collective owns; the root never appears publicly. A realm-bag registration names its stewards in `keptBy`,
- * and that record travels: the realm doc crosses to every member, and the `@crossroads` announce names
+ * and that record travels: the realm doc crosses to every member, and the announce on the Nexus's realm-announce board names
  * `keptBy` in public. So whatever key seals here gets published.
  *
  * THE ONE SIGNER. This door hands out the key the vessel's acting face presents to the Nexus the realm stands

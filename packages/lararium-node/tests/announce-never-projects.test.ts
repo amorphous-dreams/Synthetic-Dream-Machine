@@ -7,7 +7,7 @@ import { describe, expect, test } from "vitest";
 import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import * as ed from "@noble/ed25519";
 import {
-  REALM_BAG_ANNOUNCE_PREFIX, CROSSROADS_DOC_URI, crossroadsAnnounceOf, crossroadsDocUrl, hex, materializeSharedLarDoc,
+  REALM_BAG_ANNOUNCE_PREFIX, CROSSROADS_DOC_URI, realmBagAnnounceOf, crossroadsDocUrl, hex, materializeSharedLarDoc,
   mutableLarRecord, publicRealmBooksFromDoc, realmAnnounceDocUrl, publicationDocUrl, whoBoardDocUrl, realmBagAnnounceKey, realmDocUrl,
   reAnnounceRealmBooksAtIsland, signRealmBagRegistration, writeRealmBagRegistration, type LarDoc,
 } from "@lararium/mesh";
@@ -54,7 +54,7 @@ describe("a realm announce rests where no mirror reaches", () => {
     const r = repo();
     const ghost = "lar:///ha.ka.ba/books/hand-placed";
     const key = realmBagAnnounceKey(ghost);
-    const text = JSON.stringify(crossroadsAnnounceOf(await publicBook(ghost)));
+    const text = JSON.stringify(realmBagAnnounceOf(await publicBook(ghost)));
     (await board(r, crossroadsDocUrl(ISLAND))).change((d) => { d.tiddlers[key] = mutableLarRecord(key, { text }, "test:hand-placed"); });
     const announceBoard = await board(r, realmAnnounceDocUrl(ISLAND));
     const books = await hermRealmShoreBooks({

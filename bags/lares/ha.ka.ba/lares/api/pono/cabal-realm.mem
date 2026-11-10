@@ -174,7 +174,7 @@ The Ostrom principles above still hold ''unchanged'' under the cut; they govern 
 
 > ''Operator ruling.'' A scoped face signs acts that belong to one person; a transparent quorum Handle signs acts the collective owns; the root never appears publicly. A human wears many faces and many public Handles, each in many cabals, and signs a steward edge with the face or Handle worn in that cabal.
 
-''A realm record publishes whatever key it names.'' A realm-bag registration names its stewards in `keptBy`. The realm doc crosses to every member, and the `@crossroads` announce names `keptBy` on the public plane. So a steward's name reads one of two classes and nothing else:
+''A realm record publishes whatever key it names.'' A realm-bag registration names its stewards in `keptBy`. The realm doc crosses to every member, and its announce on the Nexus's realm-announce board (`realmAnnounceDocUrl`) names `keptBy` on the public plane. So a steward's name reads one of two classes and nothing else:
 
 |! class |! the name |! the seal |
 | ''face'' | the key the steward's acting face presents at the Nexus the realm stands under | that key signs the record's own bytes |
@@ -299,6 +299,6 @@ The honest wall, kept lit: ''"valid trace to lineage L" reads as a hard crypto f
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/multi-fractal`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/carry-contract`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;DmQnTL6nFyVClW4UcF1LfgDO-ieUbWriYGlNACgW35w`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;84DCsLIQ7yAV_JBOxonIvkW62Ndbg1YEDJMEvX17Ctk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

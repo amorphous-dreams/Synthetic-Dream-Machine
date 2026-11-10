@@ -40,7 +40,7 @@
  * Herm could never learn WHICH books it may carry off the realm doc alone.
  *
  * ★ THE 2026-09-13 RULING — shape (ii): "the ANNOUNCE carries the doc url for PUBLIC-tier books only; the realm doc
- * never emits a public face; the Herm follows announces." `crossroadsAnnounceOf` (`realm-bag.ts`) carries `docUrl` for a
+ * never emits a public face; the Herm follows announces." `realmBagAnnounceOf` (`realm-bag.ts`) carries `docUrl` for a
  * PUBLIC-tier registration and withholds it at every tighter tier, `publicRealmBooksFromDoc` folds the board back, and the
  * Herm's shore reads that fold (`announcedRealmBooks`) beside the realm lane it could never reach.
  *

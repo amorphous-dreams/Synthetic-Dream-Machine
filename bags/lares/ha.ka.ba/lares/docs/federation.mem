@@ -24,8 +24,8 @@ A Lararium runs as a ''swarm of one operator's vessels'' (a PersonaGroup) — ea
 * the tracked genesis seed — `genesis/seed.json` and `genesis/cas/`, the baked bundle every vessel shares (engine + memes; no private identity).
 
 ''What NEVER enters github'' (identity-bearing — each lives in the vessel's own data home, outside the clone):
-* `<lares>/identity/.vessel-key*.json` — this vessel's OWN private signing key. The device mints it and it never leaves the device.
-* `<lares>/vessel/social-bootstrap.json` — the PersonaGroup pointers (admin/identities/circles/sessions doc-URLs + the PersonaGroup's id and the MeshCabal sentinel's id). Each vessel writes its own, at founding or at join.
+* `<LAR_ROOT>/hearth/identity/.vessel-key.json` — this vessel's OWN private signing key, one name in the identity home (`node-vessel-identity.ts`), beside its place KEL `.vessel-kel.json`. The device mints it and it never leaves the device; a re-founding clears it with `hearth/`.
+* `<LAR_ROOT>/hearth/vessel/social-bootstrap.json` — the PersonaGroup pointers (admin/identities/circles/sessions doc-URLs + the PersonaGroup's id and the MeshCabal sentinel's id). Each vessel writes its own, at founding or at join.
 
 ''What crosses between two vessels'': `lares fleet join offer` → `request` → `answer` → `land`, with `abandon` for an unlanded exchange. The request names the joinee's key. The face root signs the answer: the `device-admit/v1` edge, the gate pin, canon list, island reach, that face's sealed address secret, vessel face-key certificates and add-a-face grants. The edge format stays internal; `cabal-join` still names people and realm admission. A clone alone grants no fleet standing.
 
@@ -145,6 +145,6 @@ A QA vessel on native Windows 11 (PowerShell, not WSL) stands up through the sam
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;k19dxAYmhvZRw9GdzBW4Wgda0CFJ6eA8yDYesr0E6eo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gTnrKgaE2t8vT-elnmbilD5lrFeSwP1ceO_a0N60yfM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

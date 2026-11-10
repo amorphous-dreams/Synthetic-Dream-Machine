@@ -19,7 +19,7 @@ import { hex } from "../src/crypto.js";
 import {
   realmDocUrl, signRealmBagRegistration, realmBagRegistrationCounts,
   writeRealmBagRegistration, realmBagRegistrationsFromDoc, foldRealmBags,
-  crossroadsAnnounceOf, writeRealmBagAnnounce, realmBagAnnounceKey, publicRealmBooksFromDoc, RealmBagGate,
+  realmBagAnnounceOf, writeRealmBagAnnounce, realmBagAnnounceKey, publicRealmBooksFromDoc, RealmBagGate,
 } from "../src/realm-bag.js";
 import { deterministicDocUrl } from "../src/deterministic-doc.js";
 import { emptyFoundingCharterDoc, nexusAidOf, type NexusDoc } from "../src/nexus-seal-seed.js";
@@ -151,7 +151,7 @@ describe("realm-bag — what @crossroads carries", () => {
   test("a PUBLIC-tier announce carries the doc url, and the public-book fold reads it back", async () => {
     const pub = await signRealmBagRegistration(
       { realmId: REALM, bagUri: BAG, docUrl: DOC_A, readTier: "public" }, [await stewardA()]);
-    expect(crossroadsAnnounceOf(pub)).toEqual({
+    expect(realmBagAnnounceOf(pub)).toEqual({
       kind: REALM_BAG_ANNOUNCE_DOMAIN, bagUri: BAG, keptBy: [await pubOf(A)], docUrl: DOC_A,
     });
     const cross = emptyDoc();
@@ -174,7 +174,7 @@ describe("realm-bag — what @crossroads carries", () => {
   });
   test("the announce names the bag and its keepers, never the doc", async () => {
     const rec = await registrationByA();
-    const ann = crossroadsAnnounceOf(rec);
+    const ann = realmBagAnnounceOf(rec);
     expect(ann).toEqual({ kind: REALM_BAG_ANNOUNCE_DOMAIN, bagUri: BAG, keptBy: [await pubOf(A)] });
     const cross = emptyDoc();
     writeRealmBagAnnounce(cross, rec);

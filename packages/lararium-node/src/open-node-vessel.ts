@@ -3921,7 +3921,7 @@ async function prepareNodeBootOn(
 
     // realm-bag — REGISTER a bag this vessel's steward keeps on the realm's shared CRDT (realm-bag-brief): the
     // record `{ bagUri, docUrl, keptBy, readTier }` sealed by the key the acting face (`face`, else the one face standing open) presents to the
-    // realm's Nexus, landed on the realm doc, and announced on crossroads-plane as `{ bagUri, keptBy }` alone. The
+    // realm's Nexus, landed on the realm doc, and announced on the realm-announce board as `{ bagUri, keptBy }` alone. The
     // steward door holds the whole verb (`realm-steward`): it picks the signer, and it never reaches a root.
     // The verb names its realm (`args.realm`); an act in a cabal realm stands the vessel there.
     registry.register("realm-bag", (args) => runRealmBag({

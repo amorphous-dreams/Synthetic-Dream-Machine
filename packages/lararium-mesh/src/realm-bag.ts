@@ -26,8 +26,8 @@
  * HANDLE's prefix, for a bag the collective keeps. A persona root never stands here: the realm doc crosses to
  * every member and the announce names `keptBy` in public, so whatever key a record carries gets published.
  *
- * WHAT @CROSSROADS CARRIES: `{ bagUri, keptBy }` — that a ford stands here and who keeps it — never the doc,
- * never a tiddler, never the read cap (`crossroadsAnnounceOf`).
+ * WHAT THE REALM-ANNOUNCE BOARD CARRIES (`realmAnnounceDocUrl`): `{ bagUri, keptBy }` — that a ford stands here and who
+ * keeps it — plus the doc for a PUBLIC-tier book alone; never a tiddler, never the read cap (`realmBagAnnounceOf`).
  *
  * THE READ CAP: CONTRACT — `{your-fleet ∪ a-cabal}` (cap-tier.ts). At the wire the `RealmBagGate` federates
  * the realm doc and each registered bag's doc to a peer the nexus-doc consult names a MEMBER, and to nobody
@@ -500,9 +500,9 @@ export function realmBagAnnounceKey(bagUri: string): string {
   return `${REALM_BAG_ANNOUNCE_PREFIX}${encodeURIComponent(bagUri)}`;
 }
 
-/** The announce a registration projects onto crossroads-plane — the exists · kept-by pair, plus the doc for a
+/** The announce a registration lands on the realm-announce board — the exists · kept-by pair, plus the doc for a
  *  PUBLIC-tier book alone; every tighter tier withholds the address exactly as it always did. */
-export function crossroadsAnnounceOf(rec: RealmBagRegistration): RealmBagAnnounce {
+export function realmBagAnnounceOf(rec: RealmBagRegistration): RealmBagAnnounce {
   return {
     kind: REALM_BAG_ANNOUNCE_DOMAIN, bagUri: rec.bagUri, keptBy: [...rec.keptBy],
     ...(rec.readTier === "public" ? { docUrl: rec.docUrl } : {}),
@@ -545,7 +545,7 @@ export function publicRealmBooksFromDoc(doc: LarDoc | undefined | null): PublicR
 /** Land the announce on the realm-announce board's draft. Call INSIDE a `handle.change()` callback. */
 export function writeRealmBagAnnounce(draft: LarDoc, rec: RealmBagRegistration): void {
   const key = realmBagAnnounceKey(rec.bagUri);
-  draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(crossroadsAnnounceOf(rec)) }, "realm-bag");
+  draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(realmBagAnnounceOf(rec)) }, "realm-bag");
 }
 
 // ── THE WIRE GATE ────────────────────────────────────────────────────────────────────────────────

@@ -27,7 +27,7 @@ import {
   writeAntigenEntry, antigenEntriesFromBoard, signAntigenEntry, foldAntigenSet,
   makeMultiSigQuorumVerifier, type KahuQuorumSeats,
   signRealmBagRegistration, writeRealmBagRegistration, realmDocUrl, realmBagAnnounceKey,
-  publicRealmBooksFromDoc, crossroadsAnnounceOf,
+  publicRealmBooksFromDoc, realmBagAnnounceOf,
   HANDLE_ANNOUNCE_PREFIX, CARRIAGE_ENTRY_PREFIX,
   mutableLarRecord,
 } from "../src/index.js";
@@ -180,7 +180,7 @@ describe("③ the realm RE-ANNOUNCES — the announce carries no signature to re
     const ghost = "lar:///ha.ka.ba/books/never-registered";
     // A row that once stood on the LOWER island's realm-announce board and names a book no registration counts.
     const key = realmBagAnnounceKey(ghost);
-    const stale = JSON.stringify(crossroadsAnnounceOf(await publicBook(CHARTER, ghost)));
+    const stale = JSON.stringify(realmBagAnnounceOf(await publicBook(CHARTER, ghost)));
     (await board(r, realmAnnounceDocUrl(CHARTER))).change((d) => {
       d.tiddlers[key] = mutableLarRecord(key, { text: stale }, "test:stale");
     });

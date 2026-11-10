@@ -62,7 +62,7 @@ import { type LarDoc, tiddlerText } from "./base-doc.js";
 import { kapaeAntigenDocUrl, realmAnnounceDocUrl, materializeSharedLarDoc } from "./deterministic-doc.js";
 import { ANTIGEN_ENTRY_PREFIX } from "./antigen-board.js";
 import {
-  crossroadsAnnounceOf, foldRealmBags, realmBagAnnounceKey, realmDocUrl,
+  realmBagAnnounceOf, foldRealmBags, realmBagAnnounceKey, realmDocUrl,
 } from "./realm-bag.js";
 import { storedLarRecord } from "./stored-record.js";
 
@@ -172,7 +172,7 @@ export function carryAntigenUpTheGradient(opts: {
 /**
  * THE REALM RE-ANNOUNCE — and the reason a CARRY here would be a fault rather than a shortcut.
  *
- * The announce carries NO signature: `crossroadsAnnounceOf` strips the record down to `{kind, bagUri, keptBy}`
+ * The announce carries NO signature: `realmBagAnnounceOf` strips the record down to `{kind, bagUri, keptBy}`
  * plus, for a PUBLIC-tier book alone, its `docUrl`. The n-of-n-signed registration stays on the REALM doc.
  * So a copied row has nothing a reader could re-check, and three different stale rows would arrive wearing
  * the same clothes as a live one:
@@ -221,7 +221,7 @@ export async function reAnnounceRealmBooksAtIsland(opts: {
   const owed = new Map<string, string>();
   for (const rec of standing.values()) {
     const key  = realmBagAnnounceKey(rec.bagUri);
-    const text = JSON.stringify(crossroadsAnnounceOf(rec));
+    const text = JSON.stringify(realmBagAnnounceOf(rec));
     if (tiddlerText(already[key]) === text) continue;
     owed.set(key, text);
   }

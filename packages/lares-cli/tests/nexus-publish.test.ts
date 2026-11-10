@@ -9,8 +9,8 @@
  * `publish` takes the region back. It reads tier-parameterized exactly as `kahuli` does — one case per
  * publishable thing — so a second cap arrives as a case rather than a door.
  *
- * STAGE 1 READS. The signed offering and its crossroads announce land next; `--apply` names that hold the
- * way `kahuli engine` names its own, because a deliberate not-yet must never read as an unknown verb.
+ * `--apply` reaches the production adapter: the signed offering and its announce land on the Nexus's publication board
+ * (`publicationDocUrl`), never on the crossroads document, and an unseated local face refuses by name.
  */
 import { seatSuiteWard } from "./support/scratch-custody-setup.js";
 // This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).

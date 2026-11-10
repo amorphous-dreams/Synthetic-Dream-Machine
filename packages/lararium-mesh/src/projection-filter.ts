@@ -1,5 +1,6 @@
 /**
- * projection-filter — THE ONE RULE for what may reach plaintext disk, written as TiddlyWiki filters.
+ * projection-filter — THE OPERATOR'S TITLE PREFERENCE over what a granted mirror writes, as TiddlyWiki filters. Placement
+ * decides what may reach plaintext disk (the bag a record rests in and that bag's mirror grant); this filter only narrows it.
  *
  * TiddlyWiki's syncer saves what `$:/config/SyncFilter` selects; the house's disk projector is a syncer to files, and its
  * rule takes the same shape: filter tiddlers in TiddlyWiki's own `$:/config/` namespace, shipped in the memetic-wikitext

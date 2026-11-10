@@ -113,7 +113,7 @@ it holds stay ephemeral: they leave with that device. Joining a PersonaGroup's f
 under a persona root — gives the vessel a face whose durability lives in the root, and a binding minted at
 the floor carries its document across when a face lifts the vessel
 (`packages/lararium-keyhive/src/resolve-binding.ts`). ''Built'': the place KEL arms (`packages/lararium-mesh/src/vessel-kel.ts`). Its inception seats the online signer
-that signs the floor's five duties and commits the digest of a cold next key, which rests on the founding card alone.
+that signs the floor's six duties and commits the digest of a cold next key, which rests on the founding card alone.
 A rotation reveals that key, signs under it, seats a replacement signer and commits the following cold key; the online
 signer never selects its successor. A load of a standing key reads the chain and refuses by name where it fails to
 prove the key. A lost or stolen online signer answers by the card's rotation; a lost card beside a stolen signer
@@ -694,6 +694,6 @@ Three walls hold this design, and each stays named:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;BMEPXm-cQ4msmO03HBM_x6hKLnnQSShsHLyNTMdDjtU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Atux5l-VCMiC0zJTtIB1PPp_GQSiPID1q5Mcbu1lceQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>
