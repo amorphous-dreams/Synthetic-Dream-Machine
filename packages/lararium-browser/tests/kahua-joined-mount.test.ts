@@ -75,10 +75,14 @@ async function joinedPage(opts: { readonly pin: boolean; readonly catalogRow?: (
     meshCabalDocIdHex: face.meshCabalDocIdHex, syncUrl: null, hearthDaemonUrl: founder.daemonUrl, personaUrl: face.personaUrl,
   });
   const daemonHandle = seedDaemonDoc(joineeRepo);
-  const applied = await runApplyAdmitPayload({ repo: joineeRepo, daemonHandle, ...memorySecretHome(joineeRepo), atomSeed: joineeAtom, vesselDisplayName: "joinee", payload, nexusPubkey: key(founderSeed) });
+  const secret = memorySecretHome(joineeRepo);
+  const applied = await runApplyAdmitPayload({ repo: joineeRepo, daemonHandle, ...secret, atomSeed: joineeAtom, vesselDisplayName: "joinee", payload, nexusPubkey: key(founderSeed) });
   // THE PAGE'S BOOT: the face proof over the daemon doc the admit wrote, then the adoption against the catalog hint.
   const anchor = mintFaceAnchor({ personaGroup: face.personaGroupId, personaKelPrefix: face.personaKelPrefix, personaRootDid: face.founderEdge.personaRootDid, edge: applied.deviceEdge, leaseEpoch: 0 });
-  const proof = proveFaceFromLog({ records: faceRecordsOf([daemonHandle.doc()], face.personaGroupId), chain, group: face.personaGroupId, anchor,
+  // THE PAGE'S BOOT proves from the persona plane and the admit's carried acts the secret home keeps until the plane syncs;
+  // the daemon document carries none.
+  expect(faceRecordsOf([daemonHandle.doc()], face.personaGroupId)).toEqual([]);
+  const proof = proveFaceFromLog({ records: faceRecordsOf([secret.secretHandle.doc()], face.personaGroupId), chain, group: face.personaGroupId, anchor,
     deviceKey: key(joineeAtom), planes: { intents: applied.intentsUrl, kahua: applied.kahuaUrl } });
   if (!proof.ok) throw new Error(`face proof refused: ${proof.refusal.why}`);
   const catalog = emptyLarDoc();

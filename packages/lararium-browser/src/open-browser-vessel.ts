@@ -1535,7 +1535,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         const planeDoc = heldDocOf(repo, wornPlaneUrl);   // an unsynced plane proves from the admit bundle in the daemon doc
         const daemonDoc = heldDocOf(repo, social.daemonUrl);
         const proof = proveFaceFromLog({
-          records: faceRecordsOf([planeDoc, daemonDoc], wornGroup),
+          // THE CARRIED ACTS rest in the secret home until the plane syncs (an unsynced plane proves from the admit's acts there).
+          records: faceRecordsOf([planeDoc, secretHome?.handle.doc()], wornGroup),
           chain: personaKelChain, group: wornGroup, anchor: faceAnchor, deviceKey: wornAtom.key, ...(wornEdge ? { edge: wornEdge } : {}),
           planes: { persona: wornPlaneUrl, intents: wornIntentsUrl, ...(foundingFace ? { identities: social.identitiesUrl, circles: social.circlesUrl } : {}) },   // the face's shared documents; sessions stay per vessel
         });
@@ -1582,7 +1583,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           const otherIntentsUrl = tiddlerText(ownEntry(assembly.catalogHandle.doc()?.tiddlers, otherIntentsBag));
           if (!otherIntentsUrl) continue;
           if (proveFaceFromLog({
-            records: faceRecordsOf([otherDoc, daemonDoc], plane.personaGroupId),
+            records: faceRecordsOf([otherDoc, secretHome?.handle.doc()], plane.personaGroupId),
             chain, group: plane.personaGroupId, anchor: other, planes: { persona: plane.url, intents: otherIntentsUrl },
           }).ok) provenPlanes.set(plane.personaGroupId, plane.url);
         }
@@ -1609,7 +1610,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         const browserCosignPortOf = async () => {
           const intents = await repo.find<LarDoc>(wornIntentsUrl as AutomergeUrl);
           return browserWardCosignPort({ group: wornGroup, atom: wornAtom, plane: intents, flush: () => repo.flush(),
-            fold: browserFaceFold({ records: () => faceRecordsOf([heldDocOf(repo, wornPlaneUrl), heldDocOf(repo, social.daemonUrl)], wornGroup),
+            fold: browserFaceFold({ records: () => faceRecordsOf([heldDocOf(repo, wornPlaneUrl), secretHome?.handle.doc()], wornGroup),
               chain: liveKelChain, group: wornGroup, anchor: pinned, deviceKey: wornAtom.key, ...(wornEdge ? { edge: wornEdge } : {}),
               planes: { persona: wornPlaneUrl, intents: wornIntentsUrl } }),
             lineage: () => { const lineage = readFace(liveKelChain())?.lineage; if (!lineage) throw new Error("[lararium-browser] the worn face's KEL folds no lineage"); return lineage; },

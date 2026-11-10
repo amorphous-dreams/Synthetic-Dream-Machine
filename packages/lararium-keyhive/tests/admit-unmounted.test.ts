@@ -58,6 +58,9 @@ describe("an admitted face chooses whether to mount", () => {
     expect(vesselDyads(input.secretHandle.doc())).toHaveLength(1);
     expect(Object.keys(input.daemonHandle.doc().tiddlers).some((title) => title.startsWith(PERSONA_ACT_ENTRY_PREFIX))).toBe(false);
     expect(vesselDyads(input.daemonHandle.doc())).toHaveLength(0);
+    // The carried persona acts rest in the secret home until the plane syncs: every act the payload carried, none in the daemon document.
+    const carried = Object.keys(input.secretHandle.doc().tiddlers).filter((title) => title.startsWith(PERSONA_ACT_ENTRY_PREFIX));
+    expect(carried.length).toBe(input.payload.personaActs.length);
   });
 
   test("mount false keeps every singular pin already at rest", async () => {

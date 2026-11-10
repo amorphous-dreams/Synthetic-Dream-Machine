@@ -1123,6 +1123,11 @@ export async function runApplyAdmitPayload(
   secretHandle.change((doc) => {
     writeDyad(doc, joineeDyad);
     writeGroupSecretSeal(doc, payload.personaGroupId, seal, "lares-init-admit");
+    // THE CARRIED PERSONA ACTS, kept in the vessel's secret home until the face's PersonaGroup plane syncs: a joined face
+    // proves from the plane and these together. They never rest in the daemon document. A write into this device's replica
+    // of the plane is unsound before it syncs: the founder minted the plane's root map, and a replica that does not descend
+    // from that history would mint a concurrent root, whose acts the merge hides behind the founder's.
+    for (const act of payload.personaActs) writePersonaAct(doc, act as Parameters<typeof writePersonaAct>[1]);
   });
   daemonHandle.change((doc) => {
     if (!mount) {
