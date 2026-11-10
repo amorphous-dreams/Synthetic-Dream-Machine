@@ -17,7 +17,7 @@
  * in sovereign islands (daemon + wiki). FPI-5 (trim tab): all Node-specific code lives here.
  */
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
-import { WardRefused, wornAtOf, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, bindSecretHomeRest, vesselHeldHomes, enrollBesideSecretHome, daemonFaceCanonBag, SecretHomeUnavailable, type SecretHome, type SealedBag, type BookedSession, type SessionOwnChain, preparePlaceFace, signAsFaceAtom } from "@lararium/mesh";
+import { WardRefused, wornAtOf, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, bindSecretHomeRest, vesselHeldHomes, enrollBesideSecretHome, SecretHomeUnavailable, type SecretHome, type SealedBag, type BookedSession, type SessionOwnChain, preparePlaceFace, signAsFaceAtom } from "@lararium/mesh";
 import * as A from "@automerge/automerge";
 
 /** A summoned panel verb's ward: the ref the CLI parked, spent only on the verb and arguments it was bound to. */

@@ -466,7 +466,7 @@ export interface CarryImportResult {
   /** Bundle face pet-name -> the handle index it lands on. */
   readonly faceMap: Readonly<Record<string, number>>;
   readonly redeclare: readonly string[];
-  readonly tallies: Readonly<Record<"working" | "kapae" | "daemonCanon" | "kahua" | "draft" | "temp" | "bag" | "wikiWorking", CarryTally>>;
+  readonly tallies: Readonly<Record<"working" | "kapae" | "faceCanon" | "kahua" | "draft" | "temp" | "bag" | "wikiWorking", CarryTally>>;
   /** The bags (and the wikis they open as) this import mints, or would mint in a preview, before it re-pours them. */
   readonly minted: readonly string[];
   readonly skipped: readonly string[];
@@ -530,7 +530,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     target.set(bf.key, face);
   }
 
-  const tallies = { working: tally(), kapae: tally(), daemonCanon: tally(), kahua: tally(), draft: tally(), temp: tally(), bag: tally(), wikiWorking: tally() };
+  const tallies = { working: tally(), kapae: tally(), faceCanon: tally(), kahua: tally(), draft: tally(), temp: tally(), bag: tally(), wikiWorking: tally() };
   const minted: string[] = [];
   const skipped: string[] = [];
 
@@ -586,7 +586,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
       const mirror = join(projections, kind === "working" ? "wikis" : "bags", daemonFaceFolder(relation));
       await wave(join(bundle.root, "faces", bf.key, kind), join(bundle.root, "faces", bf.key), mirror,
         kind === "working" ? wikiSlotUri("daemon", "working") : daemonFaceCanonBag(relation), files,
-        `${kind}:${bf.key}`, kind === "working" ? tallies.working : tallies.daemonCanon, kind === "working" ? tallies.kapae : null);
+        `${kind}:${bf.key}`, kind === "working" ? tallies.working : tallies.faceCanon, kind === "working" ? tallies.kapae : null);
     }
   }
 

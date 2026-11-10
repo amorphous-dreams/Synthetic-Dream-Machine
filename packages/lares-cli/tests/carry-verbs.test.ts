@@ -150,7 +150,7 @@ describe("the carry verbs", () => {
     expect(after.kapae.has(gone)).toBe(true);
     expect(result.tallies.kapae.landed).toBe(2);
     expect(after.bagRecords.get(daemonFaceCanonBag(F2))?.get(canon)).toBe(tid(canon, "canon memory"));
-    expect(result.tallies.daemonCanon.landed).toBe(1);
+    expect(result.tallies.faceCanon.landed).toBe(1);
     expect(after.waves.find((w) => w.toBag === daemonFaceCanonBag(F2))?.source).toBe(join(root, `projections/bags/daemon-${F2}`));
     expect(after.waves.find((w) => w.toBag === "lar:///ha.ka.ba/wikis/daemon/working")?.source).toBe(join(root, `projections/wikis/daemon-${F2}`));
     expect(readFileSync(join(root, `projections/wikis/daemon-${F2}/ha.ka.ba/memory/gone.kapae`), "utf8")).toBe(kapaeShadowBody(gone));
