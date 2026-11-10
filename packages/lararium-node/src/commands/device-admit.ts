@@ -27,7 +27,7 @@ import {
   personaKelBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc,
   buildDeviceDelegationRootHalf,
   faceAtomKeyFromSeed,
-  leaseEpochPrefix, controlHomeUrlOf, readFace,
+  leaseEpochPrefix, readControlHome, readFace,
   signPersonaAct, actCid, edgeBodyDigest, vesselFaceTagHolds, wardKeyPopHolds, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
   tiddlerText, FLEET_HAND, AutomergeDocStore, type LarDoc, ownEntry, findOrThrow, DOCUMENT_HANG_BOUND_MS} from "@lararium/mesh";
 import { makeCatalogAccessor } from "@lararium/tw5";
@@ -363,9 +363,12 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   // roll leases it stale; its next answer renews the seated edge at the epoch then current (the renewal below).
   const leasePrefix = leaseEpochPrefix(personaGroupId);
   const leaseSlotValues: string[] = [];
-  // The admission READS the lease; it mints no control document. A daemon doc naming none holds no slot: the founding epoch.
-  const controlUrl = controlHomeUrlOf(daemonDoc as LarDoc | undefined);
-  const controlMap = controlUrl ? ((await repo.find<LarDoc>(controlUrl as AutomergeUrl)).doc() as LarDoc | undefined)?.tiddlers ?? {} : {};
+  // The admission READS the lease through the vessel's own stand (the secret home's custody row opens first, the key stands
+  // before a byte reads); it mints no control document. FAIL CLOSED (M16): an unnamed or unread control document refuses
+  // the admission by name, never signs at the genesis epoch.
+  const controlMap = await readControlHome(repo, daemonHandle).then(
+    (control) => (control.doc() as LarDoc | undefined)?.tiddlers ?? {},
+    (e: unknown) => { throw new Error(`[lares fleet join answer] the lease fence reads unread: ${e instanceof Error ? e.message : String(e)}; open the vessel's custody and retry`); });
   for (const [title, entry] of Object.entries(controlMap)) {
     if (!title.startsWith(leasePrefix)) continue;
     const text = tiddlerText(entry);

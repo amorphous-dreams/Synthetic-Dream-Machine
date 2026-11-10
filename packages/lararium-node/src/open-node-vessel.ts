@@ -116,7 +116,7 @@ import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
 import { DeterministicFederationGate, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
 import {
   standSiblingChannel, siblingRefusalLine, groupSecretSealTitle, verifyGroupSecretSeal,
-  leaseEpochPrefix, standControlHome, CONTROL_HOME_ID, readFace, proveFaceFromLog, adoptKahuaStage, joinFaceDocumentsOnArrival, raiseFaceFrontier, heldDocOf, personaKelChainForPrefix, personaKelBoardDocUrl,
+  leaseEpochPrefix, standControlHome, readFace, proveFaceFromLog, adoptKahuaStage, joinFaceDocumentsOnArrival, raiseFaceFrontier, heldDocOf, personaKelChainForPrefix, personaKelBoardDocUrl,
   type SiblingNetworkAdapter, type SiblingChannelStatus,
 } from "@lararium/mesh";
 import { nodeHandleBookReading, runRealmBag, runRealmBags, stewardGuard } from "./realm-steward.js";
@@ -124,7 +124,8 @@ import { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
 import type { SessionSignDoor } from "@lararium/mesh";
 import type { SparseFormVector, AntigenRing, FederationGate, FederationPosture, NexusMembership, PeerClass, PersonaGroupIdentityRing } from "@lararium/mesh";
 import { selfSlotShareDecision } from "./self-slot-share.js";
-import { vesselOnlyShareVerdict } from "./vessel-only-share.js";
+import { vesselOnlyShareVerdict, vesselOnlyClass } from "./vessel-only-share.js";
+import { deviceDaemonDocs, vesselHeldBagOf, DAEMON_SLOT_PREFIX, type LitDeviceFace } from "@lararium/mesh";
 import { makeVesselOnlyDocs } from "@lararium/mesh";
 import { classDeviceLedgers, readBootTiddlers, vesselPrivateBook, vesselPrivateRelationOpens } from "./vessel-private.js";
 import { makeAntigenRingHolder } from "./antigen-ring.js";
@@ -931,12 +932,13 @@ async function prepareNodeBootOn(
   // own key (`secretHomes`, operator ruling A6), named here once the vessel stands it.
   let controlDocId: string | null = null;
   // THE PER-DEVICE DAEMON DOCUMENTS the control document names (`daemon-slot/<kind>/<group>`, `daemon-canon/<face>`): the
-  // daemon wiki's device slots and the face's daemon canon, the AI's memory on this device. Each seals under the LIT FACE
-  // with its bag (the sealed map's `docsOf`), by bag; a floor's own slot seals beside the control document under the
-  // vessel's key, held in memory until the key opens.
-  const deviceDaemonDocs = new Map<string, Set<string>>();
+  // daemon wiki's device slots and the face's daemon canon, the AI's memory on this device. Each files by the face that OWNS
+  // it (`device-daemon-docs`): a group's slot or a face's canon seals under that face's key while it stands lit and waits
+  // held otherwise; a floor's own slot seals beside the control document under the vessel's key, held until the key opens.
+  const deviceDocs = deviceDaemonDocs({ enrollFloor: (documentId, bagId) => { if (!secretHomes.has(documentId)) enrollBesideSecretHome(repo, documentId, bagId); } });
   let wornDeviceGroup: string | null = null;
   let wornDeviceRelation: string | null = null;
+  const litDevice = (): LitDeviceFace => ({ group: wornDeviceGroup, relation: wornDeviceRelation, face: sealedCells.face() });
   // V3: a bag's document by every name it carries: the layer the mount resolved (a working slot's derived address, a
   // draft binding: no catalog row names either), then the catalog's row.
   const sealedMap = sealedBagMap({
@@ -945,7 +947,7 @@ async function prepareNodeBootOn(
     catalog: () => sealedCells.catalog(),
     docsOf: (bagId) => bagId === FACE_CATALOG_BAG_ID
       ? [faceCatalogDocId]
-      : [...(deviceDaemonDocs.get(bagId) ?? []), sealedCells.mounted(bagId), ...(slotDocsNamed.get(bagId) ?? []), documentIdOfUrl(tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId)))],
+      : [...deviceDocs.docsOf(bagId, litDevice()), sealedCells.mounted(bagId), ...(slotDocsNamed.get(bagId) ?? []), documentIdOfUrl(tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId)))],
   });
   // The session that stands for the worn face now: a call's, else a seated one (the dial's own, V6).
   const standingSaveSession = (): NodeSaveSession | null => {
@@ -969,15 +971,19 @@ async function prepareNodeBootOn(
     if (session === null) return;
     void sealedRest.rebook(saveSessionOf(session)).catch((e: unknown) => console.log(`[sealed-rest] a waiting save stays in memory after ${why}: ${e instanceof Error ? e.message : String(e)}`));
     for (const named of slotDocsNamed.values()) for (const documentId of named) sealNowMapped(documentId);
-    for (const named of deviceDaemonDocs.values()) for (const documentId of named) sealNowMapped(documentId);
+    for (const documentId of deviceDocs.ids()) sealNowMapped(documentId);
   };
   const onSlotNamed = (bagId: string, documentId: string): void => {
-    // A DAEMON DEVICE SLOT NAMED WITH NO FACE LIT (the floor's own slot) seals beside the control document under the vessel's
-    // key, held in memory until the key opens; a lit face's seals under that face (below).
-    if (sealedCells.face() === null && bagId.startsWith(wikiSlotUri("daemon", "working").replace(/working$/, ""))) enrollBesideSecretHome(repo, documentId, bagId);
     // THE HOST'S WORKING LAYER FOLLOWS THE ISLAND'S: a main-side write to the daemon wiki lands on the document the island
     // reads (the seat's lift moves it to the face's). The outcome ledger rests in the control document, never here.
     if (bagId === DAEMON_WORKING_SLOT) followHostWorking(documentId);
+    // A DAEMON DEVICE SLOT files by the group the control document names for it, never by the face lit as it announces: it
+    // maps held (never clear, never under another face's key) until the control document names its owner.
+    if (bagId.startsWith(DAEMON_SLOT_PREFIX)) {
+      if (deviceDocs.announced(bagId, documentId)) { sealedRest.store.mapMoved(); reverdictLater(); }
+      sealNowMapped(documentId);
+      return;
+    }
     const named = slotDocsNamed.get(bagId) ?? new Set<string>();
     if (named.has(documentId)) return;
     named.add(documentId);
@@ -998,8 +1004,9 @@ async function prepareNodeBootOn(
   // face and no session, and no page recipe, disk mirror or peer ever reaches it.
   const secretHomes = vesselHeldHomes();
   const sealedBagOf = (documentId: string): SealedBag | null => {
-    const held = secretHomes.bagOf(documentId);
-    if (held !== null) return held;
+    // A device document files by its owner first, then the held homes (`vesselHeldBagOf`, the browser's one order).
+    const held = vesselHeldBagOf(deviceDocs, secretHomes, litDevice(), documentId);
+    if (held !== undefined) return held;
     const face = sealedCells.face();
     const named = face === null ? "none" : `${face.slice(0, 16)}… ${sealedCells.bags().map((b) => `${b}=${sealedMap.docOf(b)?.slice(0, 8) ?? "?"}`).join(" ")}`;
     if (named !== sealedMapNamed) { sealedMapNamed = named; console.log(`[sealed-rest] the map names: ${named}`); }
@@ -1317,7 +1324,8 @@ async function prepareNodeBootOn(
   // its own islands (`islandPeersOf`). Read through this cell, which the Repo's own set fills once the Repo stands; until
   // then no peer reads as the house's own.
   let houseIslands: { has(peerId: string): boolean } = new Set<string>();
-  const vesselOnly = makeVesselOnlyDocs();
+  // The deny set GROWS as the control document names device documents: each growth re-asks every cached verdict.
+  const vesselOnly = makeVesselOnlyDocs({ onGrow: () => reverdictLater() });
   const repo = new Repo({
     storage: sealedRest.store,
     // THE PROTOTYPE-KEY SHORE: a sync message carrying a `__proto__` key never reaches the Repo.
@@ -1345,7 +1353,9 @@ async function prepareNodeBootOn(
       const wsSocket = (network.sockets as Record<string, unknown> | undefined)?.[peerId];
       // VESSEL-ONLY DOCUMENTS STAY ON THIS VESSEL: the secret home and every document the control document names reach the
       // house's own proven islands alone, never a wire peer, sibling or other device, whatever lane would otherwise admit them.
-      const vesselVerdict = vesselOnlyShareVerdict({ has: (id) => vesselOnly.has(id) || secretHomes.has(id) }, houseIslands, peerId, documentId, !!wsSocket, Boolean(siblings?.provenKeyOf(peerId as PeerId)));
+      // It reads BY BAG as well as by name: a device-private document any boot-time source files (a held home, an announced
+      // device slot, a catalog row) stays here before the control document hydrates and while its custody row cannot read.
+      const vesselVerdict = vesselOnlyShareVerdict(vesselOnlyClass({ named: vesselOnly, held: secretHomes, device: deviceDocs, catalog: () => sealedCells.catalog() }), houseIslands, peerId, documentId, !!wsSocket, Boolean(siblings?.provenKeyOf(peerId as PeerId)));
       if (vesselVerdict !== undefined) return vesselVerdict;
       // OUTER peer-admission gate (unchanged): a WS peer whose session no face gate opened is not in
       // `peerIdentifierMap` → deny; an in-process island peer (no WS socket) is a house member → admit.
@@ -1425,6 +1435,8 @@ async function prepareNodeBootOn(
   bindSecretHomeRest(repo, secretHomes.rest((documentId) => sealedRest.restsSealed(documentId), () => {
     sealedRest.store.mapMoved();
     void sealedRest.store.reseal().catch(() => { /* each keeps waiting, never clear */ });
+    // The held homes ARE vessel-only: a home filed now re-asks every verdict a peer was handed before it.
+    reverdictLater();
   }, async () => {
     // The key stands where this vessel's custody stands open; a locked vessel answers false and its control writes wait held.
     try { await openVesselSecretHome(repo); return true; } catch { return false; }
@@ -2382,34 +2394,8 @@ async function prepareNodeBootOn(
       // a doc nobody wrote: a founding seeds it moments earlier in this same process.
       { tideline: "hearth-private", label: PLANE_LABELS.daemon, settled: () => repo.flush() });
 
-  // The per-device daemon documents the control document names, by the bag each seals under (answers whether any moved).
-  const readDeviceDaemonDocs = (controlDoc: LarDoc | undefined): boolean => {
-    let moved = false;
-    const put = (bagId: string, url: string | null) => {
-      const documentId = documentIdOfUrl(url);
-      if (!documentId) return;
-      const named = deviceDaemonDocs.get(bagId) ?? new Set<string>();
-      if (named.has(documentId)) return;
-      named.add(documentId); deviceDaemonDocs.set(bagId, named); moved = true;
-    };
-    const slotPrefix = `${CONTROL_HOME_ID}/daemon-slot/`;
-    const canonPrefix = `${CONTROL_HOME_ID}/daemon-canon/`;
-    for (const [title, record] of Object.entries(controlDoc?.tiddlers ?? {})) {
-      if (title.startsWith(slotPrefix)) {
-        const [kind, group] = title.slice(slotPrefix.length).split("/");
-        if (!kind || !group) continue;
-        const bagId = wikiSlotUri("daemon", kind as never);
-        if (decodeURIComponent(group) === "floor") {
-          // THE FLOOR'S OWN SLOT seals beside the control document under the vessel's key: held in memory until it opens.
-          const documentId = documentIdOfUrl(tiddlerText(record));
-          if (documentId && !secretHomes.has(documentId)) { enrollBesideSecretHome(repo, documentId, bagId); moved = true; }
-        } else if (wornDeviceGroup !== null && decodeURIComponent(group) === wornDeviceGroup) put(bagId, tiddlerText(record));
-      } else if (title.startsWith(canonPrefix) && wornDeviceRelation !== null && decodeURIComponent(title.slice(canonPrefix.length)) === wornDeviceRelation) {
-        put(daemonFaceCanonBag(wornDeviceRelation), tiddlerText(record));
-      }
-    }
-    return moved;
-  };
+  // The per-device daemon documents the control document names, each filed by its owner (answers whether any moved).
+  const readDeviceDaemonDocs = (controlDoc: LarDoc | undefined): boolean => deviceDocs.readControl(controlDoc);
 
   // The vessel's control document, named by the daemon document (`control-home`): minted at founding beside the secret home.
   const readControlDoc = async (): Promise<DocHandle<LarDoc>> => {
@@ -2417,10 +2403,7 @@ async function prepareNodeBootOn(
     if (controlDocId !== handle.documentId) {
       const refresh = () => {
         vesselOnly.refresh(handle.doc(), handle.url);
-        if (readDeviceDaemonDocs(handle.doc())) {
-          sealedRest.store.mapMoved();
-          for (const named of deviceDaemonDocs.values()) for (const documentId of named) sealNowMapped(documentId);
-        }
+        if (readDeviceDaemonDocs(handle.doc())) { rebookWaiting(standingSaveSession(), "the control document named a device document"); reverdictLater(); }
       };
       refresh();
       handle.on("change", refresh);
@@ -3279,8 +3262,7 @@ async function prepareNodeBootOn(
     sealedRest.store.mapMoved();
     const daemonCanon = wornRelation ? await standFaceDaemonCanon({ repo, control: await readControlDoc(), faceRelation: wornRelation,
       beforeFirstByte: (bagId, documentId) => {
-        const named = deviceDaemonDocs.get(bagId) ?? new Set<string>();
-        named.add(documentId); deviceDaemonDocs.set(bagId, named);
+        if (deviceDocs.canonMinted(bagId, documentId, wornRelation)) reverdictLater();
         sealedRest.store.mapMoved();
       } }) : null;
     placeFace = faceLit && !!personaGroupId && wornFaceProved && activeAtom !== null && placeAid !== null

@@ -24,7 +24,7 @@ import type { PortIslandToVesselMsg, VesselRestState } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import { Repo }                              from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter }           from "@automerge/automerge-repo-storage-indexeddb";
-import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, sealedBagMap, vesselDocStoreDoor, bindSecretHomeRest, vesselHeldHomes, enrollBesideSecretHome, nameControlHome, daemonFaceCanonBag, wikiSlotUri, SecretHomeUnavailable, type SecretHome, type SealedBag } from "@lararium/mesh";
+import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, sealedBagMap, vesselDocStoreDoor, bindSecretHomeRest, vesselHeldHomes, enrollBesideSecretHome, nameControlHome, daemonFaceCanonBag, SecretHomeUnavailable, deviceDaemonDocs, vesselHeldBagOf, DAEMON_SLOT_PREFIX, DAEMON_WIKI_SLOT_BAGS, type LitDeviceFace, type SecretHome, type SealedBag } from "@lararium/mesh";
 import { openBrowserSecretHome, standBrowserSecretHome } from "./browser-secret-home.js";
 import { faceProofSubjectRef } from "@lararium/mesh/face-proof-subjects";
 import * as A from "@automerge/automerge";
@@ -625,7 +625,11 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // (a DENY-BY-DEFAULT FederationGate) is armed ONLY for a cross-operator crossing. Absent a
   // gate the relay is the operator's OWN node (same-operator leaf, own DID) → full device sync.
   const relayPeers = new Set<string>();
-  const vesselOnly = makeVesselOnlyDocs();
+  // automerge-repo asks a document's access verdict once per peer and again only on `shareConfigChanged`: every growth of the
+  // vessel-only deny set (the control document's names, a held home filed) re-asks, so a peer handed a document before it
+  // grew meets the new answer. `repo` reads late: no growth comes before it stands.
+  const reverdict = (): void => { try { repo.shareConfigChanged(); } catch { /* the repo may be closing */ } };
+  const vesselOnly = makeVesselOnlyDocs({ onGrow: () => reverdict() });
   let houseIslands: { has(peerId: string): boolean } = new Set<string>();
   let   fedGate: FederationGate | null = null;
   // THE SIBLINGS — peers this face's sibling channel PROVED (below, once the KEL is walked). A sibling holds
@@ -665,17 +669,26 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // draft binding), then the catalog's row.
   // Each slot document the daemon island's resolver named, by bag (`announceSlotDoc`).
   const slotDocsNamed = new Map<string, Set<string>>();
+  // THE PER-DEVICE DAEMON DOCUMENTS the control document names (the daemon wiki's device slots, each face's daemon canon),
+  // filed by the face that OWNS each through the one table the node files by (`deviceDaemonDocs`, isomorphic by intent): a
+  // group's slot or a face's canon seals under that face's key while its lift stands and waits held otherwise; the floor's
+  // slot seals beside the control document under the vessel's key. `litDevice` names the face whose lift stands.
+  let litDeviceGroup: string | null = null;
+  let litDeviceRelation: string | null = null;
+  const litDevice = (): LitDeviceFace => ({ group: litDeviceGroup, relation: litDeviceRelation, face: sealedCells.face() });
+  const deviceDocs = deviceDaemonDocs({ enrollFloor: (documentId, bagId) => { if (!secretHomes.has(documentId)) enrollBesideSecretHome(repo, documentId, bagId); } });
   const sealedMap = sealedBagMap({
     face: () => sealedCells.face(),
     bags: () => sealedCells.bags(),
     catalog: () => sealedCells.catalog(),
-    docsOf: (bagId) => [sealedCells.mounted(bagId), ...(slotDocsNamed.get(bagId) ?? []), documentIdOfUrl(tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId)))],
+    docsOf: (bagId) => [...deviceDocs.docsOf(bagId, litDevice()), sealedCells.mounted(bagId), ...(slotDocsNamed.get(bagId) ?? []), documentIdOfUrl(tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId)))],
   });
   // THE SECRET HOME (placement over patterns): this vessel's own secret document maps sealed under its held key, with no
   // face and no session, from the moment an enrollment or an open names it (`browser-secret-home`).
   const secretHomes = vesselHeldHomes();
   const sealedBagOf = (documentId: string): SealedBag | null => {
-    return secretHomes.bagOf(documentId) ?? sealedMap.bagOf(documentId);
+    // A device document files by its owner first, then the held homes (`vesselHeldBagOf`, the node's one order).
+    return vesselHeldBagOf(deviceDocs, secretHomes, litDevice(), documentId) ?? sealedMap.bagOf(documentId);
   };
   const docStorePort = docStorePortCell(async (bagId) => {
     const documentId = sealedMap.docOf(bagId);
@@ -683,8 +696,14 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     return handle?.isReady() ? A.save(handle.doc() as A.Doc<unknown>) : null;
   }, {
     onSlot: (bagId, documentId) => {
-      // A daemon device slot named before its first byte seals under the vessel's key (`classDeviceDaemonDoc`).
-      if (bagId.startsWith(wikiSlotUri("daemon", "working").replace(/working$/, ""))) { classDeviceDaemonDoc(bagId, `automerge:${documentId}`); return; }
+      // A daemon device slot named before its first byte files by the group the control document names for it, never by
+      // the face lit as it announces: it waits held (never clear, never under another face's key) until then.
+      if (bagId.startsWith(DAEMON_SLOT_PREFIX)) {
+        if (deviceDocs.announced(bagId, documentId)) { sealedRest.store.mapMoved(); reverdict(); }
+        const session = sealedCells.session;
+        if (session !== null) void sealedRest.sealMapped(documentId, session).catch(() => { /* it seals at its next booked save */ });
+        return;
+      }
       const named = slotDocsNamed.get(bagId) ?? new Set<string>();
       if (named.has(documentId)) return;
       named.add(documentId);
@@ -702,6 +721,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       if (session === null) return;
       void sealedRest.rebook(session).catch(() => { /* each keeps waiting, never clear, for the next session */ });
       for (const named of slotDocsNamed.values()) for (const documentId of named) void sealedRest.sealMapped(documentId, session).catch(() => { /* it seals at its next booked save */ });
+      for (const documentId of deviceDocs.ids()) void sealedRest.sealMapped(documentId, session).catch(() => { /* it seals at its next booked save */ });
     },
   });
   const docStoreDoor = vesselDocStoreDoor<BrowserSaveSession>(() => docStorePort.port(), {
@@ -735,23 +755,19 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   bindSecretHomeRest(repo, secretHomes.rest((documentId) => sealedRest.restsSealed(documentId), () => {
     sealedRest.store.mapMoved();
     void sealedRest.store.reseal().catch(() => { /* each keeps waiting, never clear */ });
+    reverdict();
   }, async () => {
     // The key stands where this browser's keystore stands open; a locked keystore answers false and control writes wait held.
     try { await openBrowserSecretHome(idbName, repo); return true; } catch { return false; }
   }));
-  // THE DEVICE DAEMON DOCUMENTS the control document names (the daemon wiki's device slots, the face's daemon canon): on a
-  // browser leaf, whose sealed map holds no daemon wiki bag, each seals beside the control document under the vessel's key.
-  const classDeviceDaemonDoc = (bagId: string, url: string | null): void => {
-    const documentId = documentIdOfUrl(url);
-    if (documentId && !secretHomes.has(documentId)) enrollBesideSecretHome(repo, documentId, bagId);
-  };
+  // THE DEVICE DAEMON DOCUMENTS the control document names, filed by their owners (answers whether any filing moved): the
+  // map re-reads, and the lifted session seals what now maps to its face.
   const classDeviceDaemonDocs = (controlDoc: LarDoc | undefined): void => {
-    for (const [title, record] of Object.entries(controlDoc?.tiddlers ?? {})) {
-      const slot = /^lar:\/\/\/ha\.ka\.ba\/bags\/control\/daemon-slot\/([^/]+)\//.exec(title);
-      const canon = /^lar:\/\/\/ha\.ka\.ba\/bags\/control\/daemon-canon\/(.+)$/.exec(title);
-      if (slot) classDeviceDaemonDoc(wikiSlotUri("daemon", slot[1] as never), tiddlerText(record));
-      else if (canon) classDeviceDaemonDoc(daemonFaceCanonBag(decodeURIComponent(canon[1]!)), tiddlerText(record));
-    }
+    if (!deviceDocs.readControl(controlDoc)) return;
+    sealedRest.store.mapMoved();
+    reverdict();
+    const session = sealedCells.session;
+    if (session !== null) void sealedRest.rebook(session).catch(() => { /* each keeps waiting, never clear */ });
   };
   houseIslands = islandPeersOf(repo);
   let watchedControl: DocHandle<LarDoc> | null = null;
@@ -1543,7 +1559,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         if (!proof.ok) throw new Error(`[lararium-browser] Face proof: ${proof.refusal.why}${"plane" in proof.refusal ? ` ${proof.refusal.plane}` : ""}; re-found or re-admit the face`);
         wornRelation = faceRelationOf(proof.projection);
         if (wornRelation) daemonCanon = await standFaceDaemonCanon({ repo, control: await watchControl(await repo.find<LarDoc>(social.daemonUrl as AutomergeUrl)), faceRelation: wornRelation,
-          beforeFirstByte: (bagId, documentId) => classDeviceDaemonDoc(bagId, `automerge:${documentId}`) });
+          beforeFirstByte: (bagId, documentId) => { if (deviceDocs.canonMinted(bagId, documentId, wornRelation!)) reverdict(); sealedRest.store.mapMoved(); } });
         const kahua = adoptKahuaPlane(proof.projection, wornGroup, kahuaCatalogRow(assembly.catalogHandle.doc()));
         if (kahua.staleRow) console.warn(`[lararium-browser] kahua stage: the catalog row names ${kahua.staleRow}, a stale hint (the face pins ${"mount" in kahua ? kahua.mount : "none"}); the pin decides`);
         provenKahuaUrl = adoptedKahuaUrl(kahua);
@@ -1716,7 +1732,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
             personaGroupId,
             catalogNamed: personaGroupId === wornGroup ? catalogNamedBags(catalogHandle.doc()) : [],
           })),
-          wikiBags: [slot.wikiBagId, slot.workingBagId, slot.draftBagId, ...(provenKahuaUrl ? [KAHUA_BAG] : [])],
+          // The daemon wiki's device slots and the worn face's daemon canon ride with the lit face, which seals them (as the node).
+          wikiBags: [slot.wikiBagId, slot.workingBagId, slot.draftBagId, ...DAEMON_WIKI_SLOT_BAGS, ...(wornRelation ? [daemonFaceCanonBag(wornRelation)] : []), ...(provenKahuaUrl ? [KAHUA_BAG] : [])],
         }),
         // The WORN persona-root's binding (founder-signed): the gate pins personaKel.prefix and walks the KEL
         // to the current head; deviceEdge is the signed device→hearth edge. From the single bootstrap.
@@ -1805,13 +1822,17 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         const face = faceProofSubjectRef(certificate.scope as never);
         const session: BrowserSaveSession = { id: `browser-session-${crypto.randomUUID()}`, subject: face };
         sealedCells.face = () => face;
-        sealedCells.bags = () => [slot.wikiBagId, slot.workingBagId, slot.draftBagId];
+        // THE LIT FACE'S DEVICE DAEMON DOCUMENTS seal under its key while the lift stands (the node's law, isomorphic by intent).
+        litDeviceGroup = wornGroup;
+        litDeviceRelation = wornRelation;
+        sealedCells.bags = () => [slot.wikiBagId, slot.workingBagId, slot.draftBagId, ...DAEMON_WIKI_SLOT_BAGS, ...(wornRelation ? [daemonFaceCanonBag(wornRelation)] : [])];
         sealedCells.catalog = () => catalogHandle.doc() as LarDoc | undefined;
         sealedCells.mounted = (bagId) => mountedDocumentId(assembly.composite.storeForBag(bagId));
         sealedCells.hold = (ask, verb) => lift.hold(ask, verb);
         sealedCells.session = session;
         sealedRest.store.mapMoved();
         for (const named of slotDocsNamed.values()) for (const documentId of named) void sealedRest.sealMapped(documentId, session).catch(() => { /* it seals at its next booked save */ });
+        for (const documentId of deviceDocs.ids()) void sealedRest.sealMapped(documentId, session).catch(() => { /* it seals at its next booked save */ });
         void sealedRest.rebook(session).catch((e: unknown) => console.log(`[sealed-rest] a waiting save stays in memory: ${e instanceof Error ? e.message : String(e)}`));
         // THE LOCK FLUSHES FIRST: every pending save lands sealed under the lift's session, then the lift drops its signer.
         // THE LOCK UNMAPS (P2-2): once the flush lands, the face and its bags leave the map, so a later save waits in memory
@@ -1824,6 +1845,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           try { await sealedRest.lock(); } catch { /* a refused flush keeps its changes in memory */ }
           sealedCells.face = () => null;
           sealedCells.bags = () => [];
+          litDeviceGroup = null; litDeviceRelation = null;
           sealedCells.hold = null;
           docStoreDoor.lock();
           await lifted.dispose();

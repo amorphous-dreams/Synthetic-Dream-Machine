@@ -276,8 +276,9 @@ describe("the browser vessel names its face by one subject", () => {
     .replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
   it("B1 — the sealed rest carries no wornAt, the map face and the session subject are one value, and nothing reassigns the face from a dial", () => {
     expect(src).toMatch(/composeSealedRest</);
-    // The face map, beneath the vessel's held homes (the secret home rests under the vessel's key, never a face's).
-    expect(src).toMatch(/const sealedBagOf = \(documentId: string\): SealedBag \| null => \{\s*return secretHomes\.bagOf\(documentId\) \?\? sealedMap\.bagOf\(documentId\);/);
+    // The face map, beneath the vessel's held bags: device documents by owner, then the held homes (the secret home rests under
+    // the vessel's key, never a face's), in the one order the node reads (`vesselHeldBagOf`).
+    expect(src).toMatch(/const sealedBagOf = \(documentId: string\): SealedBag \| null => \{\s*return vesselHeldBagOf\(deviceDocs, secretHomes, litDevice\(\), documentId\) \?\? sealedMap\.bagOf\(documentId\);/);
     expect(src).toMatch(/composeSealedRest<BrowserSaveSession>\(\{[\s\S]*?bagOf: sealedBagOf,[\s\S]*?sessionFace: \(\) => sealedCells\.face\(\),/);
     expect(src).not.toMatch(/\bwornAt\b/);
     expect(src).toMatch(/const face = faceProofSubjectRef\(certificate\.scope as never\);/);
