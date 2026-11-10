@@ -27,7 +27,6 @@ import { IndexedDBStorageAdapter }           from "@automerge/automerge-repo-sto
 import { browserDeviceFiling } from "./browser-device-filing.js";
 import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, sealedBagMap, vesselDocStoreDoor, bindSecretHomeRest, nameControlHome, daemonFaceCanonBag, SecretHomeUnavailable, DAEMON_SLOT_PREFIX, DAEMON_WIKI_SLOT_BAGS, type LitDeviceFace, type SecretHome, type SealedBag } from "@lararium/mesh";
 import { openBrowserSecretHome, standBrowserSecretHome } from "./browser-secret-home.js";
-import { faceProofSubjectRef } from "@lararium/mesh/face-proof-subjects";
 import * as A from "@automerge/automerge";
 import type { DocHandle, AutomergeUrl, PeerId } from "@automerge/automerge-repo";
 import {
@@ -62,7 +61,8 @@ import {
 import { browserGatePins, type BrowserFacePresentation, dialDeadlines, fileFloorCard, fileOwnHearthPins, hearthNameOf, flowNexusFor } from "./browser-gate-pins.js";
 import { readHearthFloor, type HearthFloorRead } from "./browser-floor-read.js";
 import { composeBrowserFacePresentation } from "./browser-face-presentation.js";
-import { browserIslandReceipt, browserSessionLift } from "./browser-island-caps.js";
+import { browserIslandReceipt, browserSessionLift, type BrowserUnlockedSession } from "./browser-island-caps.js";
+import { browserLiftsAtPlace, mintBrowserPlaceSession } from "./browser-place-session.js";
 import { composeVessel, islandFloorStack, islandLiftStack, larVesselOf } from "@lararium/mesh";
 import { admittedCanonDocs, hearthCanonDocIds, hearthCrossingOf, provenCrossingPlanes, seatHearthCanon, type HearthCanonDocs } from "./hearth-canon.js";
 import { makeSurfaceReturnLeg, type ReturnLegVerdict } from "./surface-return-leg.js";
@@ -1796,8 +1796,11 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // through (slice 5b, @lararium/mesh lar-vessel): the FLOOR stack at construction (receipt, cas, the document store
       // door and the sealed-rest reading; the island reads its own fleet board, so no dyad member stands), and the LIFT
       // as a nested stack on unlock. The lift seats `custodyWrite` and `sessionSign` while this vessel's custody stands
-      // open and a joined face's Nexus session stands; its dispose IS the lock: both leave the record and the session's
-      // signer drops. A vessel at its floor carries neither, and its island's `session:sign` answers `signer-unavailable`.
+      // open and a session of the worn face stands: a joined face's Nexus session, or a SELF-FOUNDED face's PLACE SESSION
+      // (its atom presented to the place KEL this browser armed at its founding, `mintBrowserPlaceSession`, the node's
+      // `placeSessionCell` ported). Its dispose IS the lock: both leave the record and the session's signer drops. A vessel
+      // at its floor carries neither (a device joined to another's face stays there until admitted, ruling 2026-10-16),
+      // and its island's `session:sign` answers `signer-unavailable`.
       const islandFloor = await composeVessel(islandFloorStack({
         receipt: browserIslandReceipt(repo),
         cas: readCasBlobFromOpfs,
@@ -1810,16 +1813,29 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       held.stood.push({ what: "the island's floor", down: () => islandFloor.dispose() });
       // The lift's lock-and-flush, once a lift stands: the stand-down runs it again ahead of the daemon worker (P2-3).
       let flushLift: (() => Promise<void>) | null = null;
+      // THE SESSION THE LIFT STANDS ON: the joined face's Nexus presentation, else the self-founded face's place session.
+      let unlocked: { readonly session: BrowserUnlockedSession; readonly close: () => void } | null = null;
       if (facePresentation !== null) {
         const certificate = facePresentation.certificate;
-        const lift = browserSessionLift(
-          { signer: facePresentation.signer, chain: { scope: certificate.scope, vesselFaceKey: certificate.vesselFaceKey } },
-          (_carrier, bytes) => saveBrowserVeilArchive(idbName, wornGroup, bytes),
-        );
+        unlocked = { session: { signer: facePresentation.signer, chain: { scope: certificate.scope, vesselFaceKey: certificate.vesselFaceKey } }, close: () => {} };
+      } else if (browserLiftsAtPlace({
+        presented: false,
+        joined: faceJoined || Boolean(admit) || Boolean(social.hearthDaemonUrl),
+        rootHeld: await browserPersonaRootHeld(idbName, wornMount?.handleIndex ?? FOUNDING_PERSONA_INDEX).catch(() => false),
+        proved: provenWornPlaneUrl !== null,
+        placeStands: placeKel?.ok === true,
+      })) {
+        const minted = await mintBrowserPlaceSession({ idbName, personaGroup: wornGroup, atomKey: wornAtom.key });
+        if ("refusal" in minted) console.log(`[sealed-rest] the place session stands not (${minted.refusal}): the face's saves wait in memory, never clear`);
+        else unlocked = minted;
+      }
+      if (unlocked !== null) {
+        const closeSession = unlocked.close;
+        const lift = browserSessionLift(unlocked.session, (_carrier, bytes) => saveBrowserVeilArchive(idbName, wornGroup, bytes));
         const lifted = await composeVessel(islandLiftStack(islandVessel, lift.lift));
         // R1 · R2: while the lift stands, the worn face's wiki bags map sealed and the vessel's session books each change;
-        // every save that waited for a session seals under it now.
-        const face = faceProofSubjectRef(certificate.scope as never);
+        // every save that waited for a session seals under it now. The face reads by its subject at the session's anchor.
+        const face = lift.subject;
         const session: BrowserSaveSession = { id: `browser-session-${crypto.randomUUID()}`, subject: face };
         sealedCells.face = () => face;
         // THE LIT FACE'S DEVICE DAEMON DOCUMENTS seal under its key while the lift stands (the node's law, isomorphic by intent).
@@ -1849,6 +1865,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           sealedCells.hold = null;
           docStoreDoor.lock();
           await lifted.dispose();
+          closeSession();
         };
         flushLift = lockThenDrop;
         held.stood.push({ what: "the island's lift", down: lockThenDrop });
