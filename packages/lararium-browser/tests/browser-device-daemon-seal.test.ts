@@ -13,9 +13,10 @@
 import { describe, expect, test } from "vitest";
 import { Repo, type Chunk, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
 import {
-  CONTROL_HOME_ID, SealedDocumentStore, bindSecretHomeRest, daemonFaceCanonBag, deviceDaemonDocs, emptyLarDoc, enrollBesideSecretHome, enrollSecretHome,
-  mintSecretHomeAddress, mintVesselDocumentId, openSecretHome, storedLarRecord, vesselHeldBagOf, vesselHeldHomes, wikiSlotUri, type LarDoc, type LitDeviceFace,
+  CONTROL_HOME_ID, SealedDocumentStore, bindSecretHomeRest, daemonFaceCanonBag, emptyLarDoc, enrollSecretHome,
+  mintSecretHomeAddress, mintVesselDocumentId, openSecretHome, storedLarRecord, wikiSlotUri, type LarDoc, type LitDeviceFace,
 } from "@lararium/mesh";
+import { browserDeviceFiling } from "../src/browser-device-filing.js";
 
 const WORKING = wikiSlotUri("daemon", "working");
 const G1 = "group-one";
@@ -25,16 +26,20 @@ const LIT: LitDeviceFace = { group: G1, relation: F1, face: FACE1 };
 const UNLIT: LitDeviceFace = { group: null, relation: null, face: null };
 const slot = (group: string) => `${CONTROL_HOME_ID}/daemon-slot/working/${encodeURIComponent(group)}`;
 
-/** The browser vessel's composition: its held homes over its rest, its device table enrolling the floor beside them. */
+/** The browser vessel's composition: its sealed rest over the vessel's OWN filing (`browserDeviceFiling`, which
+ *  `openBrowserVessel` composes), so a filing the vessel changes moves this suite with it. */
 function browserVessel(inner: StorageAdapterInterface) {
-  const homes = vesselHeldHomes();
   let repo!: Repo;
-  const device = deviceDaemonDocs({ enrollFloor: (documentId, bagId) => { if (!homes.has(documentId)) enrollBesideSecretHome(repo, documentId, bagId); } });
+  let lit: LitDeviceFace = UNLIT;
+  const filing = browserDeviceFiling({ repo: () => repo, litDevice: () => lit });
   const refuse = async () => ({ refusal: "signer-unavailable" }) as never;
-  const store = new SealedDocumentStore({ inner, bagOf: (id) => vesselHeldBagOf(device, homes, UNLIT, id) ?? null, sessionFace: () => null, sessionOf: () => null, seal: refuse, open: refuse, waitOverSealed: true, hydrates: false });
+  const store = new SealedDocumentStore({ inner, bagOf: (id) => filing.bagOf(id), sessionFace: () => null, sessionOf: () => null, seal: refuse, open: refuse, waitOverSealed: true, hydrates: false });
   repo = new Repo({ storage: store, network: [] });
-  bindSecretHomeRest(repo, homes.rest((id) => store.holdsSealed(id), () => { store.mapMoved(); void store.reseal(); }));
-  return { repo, homes, device, bagOf: (id: string, lit: LitDeviceFace) => vesselHeldBagOf(device, homes, lit, id) };
+  bindSecretHomeRest(repo, filing.secretHomes.rest((id) => store.holdsSealed(id), () => { store.mapMoved(); void store.reseal(); }));
+  return {
+    repo, homes: filing.secretHomes, device: filing.deviceDocs,
+    bagOf: (id: string, face: LitDeviceFace) => { const prior = lit; lit = face; try { return filing.bagOf(id) ?? undefined; } finally { lit = prior; } },
+  };
 }
 
 function control(entries: Record<string, string>): LarDoc {

@@ -1,41 +1,21 @@
 /**
- * A bag's MANIFEST never projects as a carrier.
- *
- * The bag manifest (`bags/<bag>/meta.mem`) addresses `lar:///ha.ka.ba/bags/<bag>` — the bag's own name.
- * Ingest carries it into the store like any carrier, `[lar-kind[]]` reads it as `content` (no `$:/`, no
- * draft field), and the address siting rule then sited it at `<uri-path>.mem` INSIDE the bag it describes:
- * `bags/crossroads/ha.ka.ba/bags/crossroads.mem` — a second copy of the manifest, at an address the
- * manifest itself mints, written by a projector that never owned it. `bag-declare` owns `meta.mem`.
- *
- * The seat: a record whose address IS a bag's own address (the oracle's `<bag>/descriptor` record is
- * another thing — a label-and-policies record, addressed BENEATH the bag) reads as the bag's manifest, and the
- * siting function refuses it — the same way a fragment or an effect record refuses.
+ * A record titled at a bag's own address (`lar:///ha.ka.ba/bags/<bag>`, the address a bag manifest's meta mints) sites and
+ * projects as ordinary content: placement decides residency, never a title's shape (operator ruling 2026-11-09, placement
+ * over patterns). The manifest file itself (`bags/<bag>/meta.mem`) belongs to the declare verb; a projector never reads a
+ * title to decide whether a record may rest on disk, so a manifest-shaped record resting in a mirrored bag writes at its
+ * uri-path like any carrier, and a carrier under a bag address sites whole.
  */
 import { describe, expect, test, afterEach } from "vitest";
 import { mkdtempSync, rmSync, existsSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { isBagManifestUri } from "@lararium/mesh";
 import { carrierBaseRelPath } from "../src/bag-paths.js";
 import { LarDiskProjector } from "../src/disk-projector.js";
 
 let root = "";
 afterEach(() => { if (root) { rmSync(root, { recursive: true, force: true }); root = ""; } });
 
-describe("the manifest address", () => {
-  test("a bag's own address reads as its manifest", () => {
-    expect(isBagManifestUri("lar:///ha.ka.ba/bags/crossroads")).toBe(true);
-    expect(isBagManifestUri("lar:///ha.ka.ba/bags/lares")).toBe(true);
-  });
-
-  test("CONTROL — a carrier living UNDER a bag address stays a carrier", () => {
-    expect(isBagManifestUri("lar:///ha.ka.ba/bags/other/v2/notes/thing")).toBe(false);
-    expect(isBagManifestUri("lar:///ha.ka.ba/bags/oracle/blobs/tiddlywikicore")).toBe(false);
-    expect(isBagManifestUri("lar:///ha.ka.ba/lares/api/pono/meme")).toBe(false);
-  });
-});
-
-describe("manifest ownership does not become title-based projection policy", () => {
+describe("a manifest-shaped address sites by the carrier law, never by a title rule", () => {
   test("the address sites like any other stable carrier", () => {
     expect(carrierBaseRelPath("lar:///ha.ka.ba/bags/crossroads")).toBe("ha.ka.ba/bags/crossroads");
   });

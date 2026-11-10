@@ -135,6 +135,7 @@ export * from "./sensorium-pc.js";
 export * from "./aperture-selector.js";
 export * from "./epoch-lease.js";
 export { controlHomeUrlOf, standControlHome, readControlHome, nameControlHome, ControlHomeUnavailable, controlStoreOf, vesselOnlyDocIds, makeVesselOnlyDocs, VESSEL_LOCKED, CONTROL_HOME_UNNAMED, controlHomeRefusal, assertControlHomeOpen, refusingControlStore, vesselLockedRefusal, type ControlHomeRefusal } from "./control-home.js";
+export { vesselOnlyBook, repoReverdict } from "./vessel-only-book.js";
 export * from "./lar-did.js";
 export * from "./device-delegation.js";
 export { holderSessionProofBytes, signHolderSessionProof, verifyHolderSessionProof } from "./holder-session-proof.js";

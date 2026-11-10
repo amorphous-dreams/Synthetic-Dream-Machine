@@ -5,9 +5,9 @@
  * unlit registers no daemon bag (`wornFaceWikiBags`), so it stands no canon either: `standingDaemonCanonBag` answers the
  * canon's bag under the one condition the register set reads.
  */
-import { readFileSync } from "node:fs";
+import { Repo } from "@automerge/automerge-repo";
 import { describe, expect, test } from "vitest";
-import { daemonFaceCanonBag, standingDaemonCanonBag, wornFaceWikiBags } from "../src/index.js";
+import { CONTROL_HOME_ID, daemonFaceCanonBag, emptyLarDoc, standFaceDaemonCanon, standingDaemonCanonBag, tiddlerText, wornFaceWikiBags, type LarDoc } from "../src/index.js";
 
 const F = "123e4567-e89b-42d3-a456-426614174000";
 
@@ -22,9 +22,24 @@ describe("the face daemon canon follows its registration", () => {
     expect(bags.sealed).toContain(bag);
   });
 
-  test("the node vessel stands the canon off the registered bag alone", () => {
-    const src = readFileSync(new URL("../../lararium-node/src/open-node-vessel.ts", import.meta.url), "utf8");
-    expect(src).toMatch(/const canonBagId = standingDaemonCanonBag\(/);
-    expect(src).toMatch(/const daemonCanon = canonBagId && wornRelation \? await standFaceDaemonCanon\(/);
+  test("the canon stands under the registered bag, maps before its first byte, and the control document names it once", async () => {
+    const repo = new Repo({ network: [] });
+    const control = repo.create<LarDoc>(emptyLarDoc());
+    const registered = standingDaemonCanonBag({ lit: true, faceRelation: F })!;
+    const mapped: Array<{ bagId: string; documentId: string; held: boolean }> = [];
+    const beforeFirstByte = (bagId: string, documentId: string): void => {
+      // THE MAP STANDS BEFORE THE DOCUMENT: at this call no handle for the id stands on the Repo yet.
+      mapped.push({ bagId, documentId, held: Object.keys(repo.handles).includes(documentId) });
+    };
+    const first = await standFaceDaemonCanon({ repo, control, faceRelation: F, beforeFirstByte });
+    expect(first.bagId).toBe(registered);
+    expect(wornFaceWikiBags({ lit: true, daemonCanon: first.bagId }).sealed).toContain(first.bagId);
+    expect(mapped).toEqual([{ bagId: registered, documentId: first.handle.documentId, held: false }]);
+    const named = tiddlerText(control.doc()?.tiddlers?.[`${CONTROL_HOME_ID}/daemon-canon/${encodeURIComponent(F)}`] as never);
+    expect(named).toBe(first.url);
+    // A second stand reads the control document's name and stands the same document: one canon per face.
+    const second = await standFaceDaemonCanon({ repo, control, faceRelation: F, beforeFirstByte });
+    expect(second.url).toBe(first.url);
+    expect(mapped[1]).toMatchObject({ bagId: registered, documentId: first.handle.documentId });
   });
 });

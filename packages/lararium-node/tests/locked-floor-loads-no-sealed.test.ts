@@ -53,6 +53,11 @@ describe("a locked floor reaches for no sealed document", () => {
     await withLarRoot(root, () => herm!.daemon.workerEa);
     await new Promise((r) => setTimeout(r, 500));
 
+    // THE STRUCTURED PROBE: the floor's control handle names the control document's own id over a private Repo, and the
+    // vessel's Repo holds no handle for that id, so nothing at the floor found, synced or loaded it.
+    const controlId = herm.daemon.controlHandle.documentId;
+    expect(controlId, "the floor's stand-in names the founded control document").toMatch(/\w{20,}/);
+    expect(Object.keys(herm.repo.handles), "the floor's Repo holds a handle for the sealed control document").not.toContain(controlId);
     expect(said.filter((line) => /SealedDocumentRefusal|session-absent/.test(line))).toEqual([]);
     await expect(herm.daemon.control.get(`${OUTCOME_URI_PREFIX}floor`)).rejects.toMatchObject({ refusal: VESSEL_LOCKED });
 
@@ -70,5 +75,7 @@ describe("a locked floor reaches for no sealed document", () => {
     leaving.push(async () => { await withLarRoot(root, () => vessel.teardown()); });
     await withLarRoot(root, () => vessel.daemon.workerEa);
     expect(await vessel.daemon.control.get(`${OUTCOME_URI_PREFIX}floor`)).toBeNull();
+    // The probe above read the REAL control document's id: the unlocked composition stands that very document.
+    expect(vessel.daemon.controlHandle.documentId).toBe(controlId);
   }, 240_000);
 });

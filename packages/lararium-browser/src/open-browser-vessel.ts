@@ -24,7 +24,8 @@ import type { PortIslandToVesselMsg, VesselRestState } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import { Repo }                              from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter }           from "@automerge/automerge-repo-storage-indexeddb";
-import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, sealedBagMap, vesselDocStoreDoor, bindSecretHomeRest, vesselHeldHomes, enrollBesideSecretHome, nameControlHome, daemonFaceCanonBag, SecretHomeUnavailable, deviceDaemonDocs, vesselHeldBagOf, DAEMON_SLOT_PREFIX, DAEMON_WIKI_SLOT_BAGS, type LitDeviceFace, type SecretHome, type SealedBag } from "@lararium/mesh";
+import { browserDeviceFiling } from "./browser-device-filing.js";
+import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, sealedBagMap, vesselDocStoreDoor, bindSecretHomeRest, nameControlHome, daemonFaceCanonBag, SecretHomeUnavailable, DAEMON_SLOT_PREFIX, DAEMON_WIKI_SLOT_BAGS, type LitDeviceFace, type SecretHome, type SealedBag } from "@lararium/mesh";
 import { openBrowserSecretHome, standBrowserSecretHome } from "./browser-secret-home.js";
 import { faceProofSubjectRef } from "@lararium/mesh/face-proof-subjects";
 import * as A from "@automerge/automerge";
@@ -39,7 +40,7 @@ import {
   GatedSyncLeg, oneWayDocumentsGate,
   LarWSClientAdapter,
   standSiblingChannel, siblingRefusalLine, groupSecretSealTitle, verifyGroupSecretSeal,
-  leaseEpochPrefix, controlHomeUrlOf, tiddlerText, makeVesselOnlyDocs, islandPeersOf, type SiblingNetworkAdapter, type SiblingShare, type SiblingChannelStatus,
+  leaseEpochPrefix, controlHomeUrlOf, tiddlerText, vesselOnlyBook, islandPeersOf, type SiblingNetworkAdapter, type SiblingShare, type SiblingChannelStatus,
   BAG_IDS, slugFromUri, islandEventAsk, bagStackFromRec, recipeHostFacets, type WikiActivationCap,
   carriageStack, deriveMeshLeaf, type MeshPeer,
   materializeGenesisIsland, genesisCasManifestFromSeed, genesisCasCidsFromOracle, sha256HexBytesSync,
@@ -628,7 +629,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // vessel-only deny set (the control document's names, a held home filed) re-asks, so a peer handed a document before it
   // grew meets the new answer. `repo` reads late: no growth comes before it stands.
   const reverdict = (): void => { try { repo.shareConfigChanged(); } catch { /* the repo may be closing */ } };
-  const vesselOnly = makeVesselOnlyDocs({ onGrow: () => reverdict() });
+  const vesselOnly = vesselOnlyBook(() => repo);
   let houseIslands: { has(peerId: string): boolean } = new Set<string>();
   let   fedGate: FederationGate | null = null;
   // THE SIBLINGS — peers this face's sibling channel PROVED (below, once the KEL is walked). A sibling holds
@@ -675,20 +676,20 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   let litDeviceGroup: string | null = null;
   let litDeviceRelation: string | null = null;
   const litDevice = (): LitDeviceFace => ({ group: litDeviceGroup, relation: litDeviceRelation, face: sealedCells.face() });
-  const deviceDocs = deviceDaemonDocs({ enrollFloor: (documentId, bagId) => { if (!secretHomes.has(documentId)) enrollBesideSecretHome(repo, documentId, bagId); } });
+  // THE SECRET HOME (placement over patterns): this vessel's own secret document maps sealed under its held key, with no
+  // face and no session, from the moment an enrollment or an open names it (`browser-secret-home`). The device table and the
+  // held homes file through one composition (`browserDeviceFiling`), the path a suite stands.
+  const filing = browserDeviceFiling({ repo: () => repo, litDevice });
+  const deviceDocs = filing.deviceDocs;
+  const secretHomes = filing.secretHomes;
   const sealedMap = sealedBagMap({
     face: () => sealedCells.face(),
     bags: () => sealedCells.bags(),
     catalog: () => sealedCells.catalog(),
     docsOf: (bagId) => [...deviceDocs.docsOf(bagId, litDevice()), sealedCells.mounted(bagId), ...(slotDocsNamed.get(bagId) ?? []), documentIdOfUrl(tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId)))],
   });
-  // THE SECRET HOME (placement over patterns): this vessel's own secret document maps sealed under its held key, with no
-  // face and no session, from the moment an enrollment or an open names it (`browser-secret-home`).
-  const secretHomes = vesselHeldHomes();
-  const sealedBagOf = (documentId: string): SealedBag | null => {
-    // A device document files by its owner first, then the held homes (`vesselHeldBagOf`, the node's one order).
-    return vesselHeldBagOf(deviceDocs, secretHomes, litDevice(), documentId) ?? sealedMap.bagOf(documentId);
-  };
+  // A device document files by its owner first, then the held homes (`vesselHeldBagOf`, the node's one order), then the map.
+  const sealedBagOf = (documentId: string): SealedBag | null => filing.bagOf(documentId) ?? sealedMap.bagOf(documentId);
   const docStorePort = docStorePortCell(async (bagId) => {
     const documentId = sealedMap.docOf(bagId);
     const handle = documentId ? (repo.handles as Record<string, { isReady(): boolean; doc(): unknown } | undefined>)[documentId] : undefined;

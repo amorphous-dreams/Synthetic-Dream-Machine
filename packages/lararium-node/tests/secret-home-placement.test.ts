@@ -247,7 +247,9 @@ describe("the vessel's secret home, by placement", () => {
       const leaks = files.filter((f) => { const bytes = readFileSync(f); return needles.some((n) => holds(bytes, n)); });
       expect(leaks).toEqual([]);
       const homeChunks = files.filter((f) => f.includes(secrets.documentId.slice(2)) || f.includes(secrets.documentId));
-      for (const f of homeChunks) expect(MAGIC.every((b, i) => readFileSync(f)[i] === b)).toBe(false);
+      // A scan of no chunk proves nothing: the home's document must rest at least one chunk under the root.
+      expect(homeChunks.length, `no chunk of the secret home ${secrets.documentId} rests under the root`).toBeGreaterThan(0);
+      for (const f of homeChunks) expect(MAGIC.every((b, i) => readFileSync(f)[i] === b), `the home's chunk ${f} rests as a raw engine chunk`).toBe(false);
     });
   }, 240_000);
 });

@@ -126,7 +126,7 @@ import type { SparseFormVector, AntigenRing, FederationGate, FederationPosture, 
 import { selfSlotShareDecision } from "./self-slot-share.js";
 import { vesselOnlyShareVerdict, vesselOnlyClass } from "./vessel-only-share.js";
 import { deviceDaemonDocs, vesselHeldBagOf, DAEMON_SLOT_PREFIX, type LitDeviceFace } from "@lararium/mesh";
-import { makeVesselOnlyDocs } from "@lararium/mesh";
+import { vesselOnlyBook } from "@lararium/mesh";
 import { classDeviceLedgers, readBootTiddlers, vesselPrivateBook, vesselPrivateRelationOpens } from "./vessel-private.js";
 import { makeAntigenRingHolder } from "./antigen-ring.js";
 import { makePersonaKelRingHolder, carryPersonaKelUpTheGradient } from "./persona-kel-ring.js";
@@ -1326,7 +1326,7 @@ async function prepareNodeBootOn(
   // then no peer reads as the house's own.
   let houseIslands: { has(peerId: string): boolean } = new Set<string>();
   // The deny set GROWS as the control document names device documents: each growth re-asks every cached verdict.
-  const vesselOnly = makeVesselOnlyDocs({ onGrow: () => reverdictLater() });
+  const vesselOnly = vesselOnlyBook(() => repo);
   const repo = new Repo({
     storage: sealedRest.store,
     // THE PROTOTYPE-KEY SHORE: a sync message carrying a `__proto__` key never reaches the Repo.
