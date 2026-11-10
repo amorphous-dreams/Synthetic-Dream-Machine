@@ -64,6 +64,31 @@ function Compose([string[]]$more) {
   if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
+# A STOP NEVER STRANDS AN ACT INSIDE THE VESSEL. Docker forwards no signal to an exec'd process, and a killed
+# `compose run` client leaves its container running. An exec carries LARES_EXEC_TAG (by name, a random value of this
+# run) and a run names its container; when Ctrl+C stops the act before it ends, the finally block signals each vessel
+# process holding the tag, or stops and removes the named run container.
+$env:LARES_EXEC_TAG = -join ((1..8) | ForEach-Object { '{0:x2}' -f (Get-Random -Maximum 256) })
+$RunName = "lares-offline-$($env:LARES_EXEC_TAG)"
+function Act([string]$kind, [string[]]$more) {
+  $ended = $false
+  try {
+    & docker compose @Base @more
+    $ended = $true
+  } finally {
+    if (-not $ended) {
+      if ($kind -eq 'run') {
+        & docker stop -t 10 $RunName *> $null
+        & docker rm -f $RunName *> $null
+      } else {
+        $stop = 'for p in /proc/[0-9]*; do pid=${p#/proc/}; [ "$pid" = "$$" ] && continue; if tr "\0" "\n" < "$p/environ" 2>/dev/null | grep -qx "LARES_EXEC_TAG=$2"; then kill -s "$1" "$pid" 2>/dev/null; fi; done'
+        & docker compose @Base exec -T lares sh -c $stop stop INT $env:LARES_EXEC_TAG *> $null
+      }
+    }
+  }
+  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+}
+
 # Whether a vessel stands. A `ps` that fails reads as UNKNOWN, never as "none stands": the offline door opens only
 # on a reading, so a broken engine never routes an act beside a live holder.
 function HasRunningVessel {
@@ -138,7 +163,7 @@ function UnlockOrName {
   if (KeyHeld) { return }
   if ($script:Tty) {
     [Console]::Error.WriteLine('lares-container: the vessel stands holding no vessel key; unlocking it on this terminal')
-    & docker compose @Base exec @PassEnv lares node $Cli vault unlock
+    & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv lares node $Cli vault unlock
     if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the vessel still stands at the floor; open it with `lares-container.ps1 vault unlock`') }
   } else {
     [Console]::Error.WriteLine('lares-container: the vessel stands holding no vessel key; open it on a terminal: lares-container.ps1 vault unlock')
@@ -160,7 +185,7 @@ function LiftVessel([string[]]$output) {
 # vessel gets followed by one standing check, and the shim lifts the vessel when the verdict asks for it.
 function RouteCli([string[]]$argv, [bool]$followUp) {
   if (HasRunningVessel) {
-    Compose (@('exec') + $PassEnv + $NoTty + @('lares', 'node', $Cli) + $argv)
+    Act 'exec' (@('exec', '-e', 'LARES_EXEC_TAG') + $PassEnv + $NoTty + @('lares', 'node', $Cli) + $argv)
     if ($followUp) {
       # The verb landed. A standing check that fails leaves a possible lift unperformed, so it never passes silently.
       $answer = ObserveStanding
@@ -173,7 +198,7 @@ function RouteCli([string[]]$argv, [bool]$followUp) {
   } else {
     [Console]::Error.WriteLine('lares-container: no vessel stands; this act runs offline on the store')
     EnsureHouse
-    Compose (@('--profile', 'offline', 'run', '--rm') + $PassEnv + $NoTty + @('offline') + $argv)
+    Act 'run' (@('--profile', 'offline', 'run', '--rm', '--name', $RunName) + $PassEnv + $NoTty + @('offline') + $argv)
   }
 }
 
@@ -300,7 +325,7 @@ switch ($verb) {
   }
   'found' {
     EnsureHouse
-    Compose (@('--profile', 'offline', 'run', '--rm') + $PassEnv + $NoTty + @('offline', 'vessel', 'found', '--skip-build', '--root', '/lar', '--genesis', '/app/genesis') + $rest)
+    Act 'run' (@('--profile', 'offline', 'run', '--rm', '--name', $RunName) + $PassEnv + $NoTty + @('offline', 'vessel', 'found', '--skip-build', '--root', '/lar', '--genesis', '/app/genesis') + $rest)
   }
   'vessel' {
     $observing = $rest -contains '--observe'

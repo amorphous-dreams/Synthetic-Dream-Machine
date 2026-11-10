@@ -15,7 +15,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   decideRoute, commandScope, CREDENTIAL_TTY_EXIT, HOUSE_ABSENT_EXIT, SHIM_ABSENT_EXIT, FORWARDED_ENV,
-  type RouteInput,
+  PATH_OUTSIDE_EXIT, mountsOf, translatePaths, type Mount, type RouteInput,
 } from "../src/host-bridge.js";
 import { COMMAND_NAMES } from "../src/bin/lares.js";
 
@@ -141,6 +141,93 @@ describe("decideRoute — every branch", () => {
   });
 });
 
+describe("translatePaths — a host path in a forwarded argv reads as the vessel spells it", () => {
+  const H = "/home/op/lares-house", W = "/home/op/checkout";
+  const mounts: Mount[] = mountsOf({ LARES_HOUSE: H, LARES_WORKSPACE: W }, null, (p) => p);
+  const fs = { realpath: (p: string) => p, exists: () => true };
+  const tr = (argv: string[], cwd = "/home/op") => translatePaths({ argv, cwd, home: "/home/op", mounts, fs });
+  const ok = (argv: string[], cwd?: string) => { const r = tr(argv, cwd); if ("error" in r) throw new Error(r.error.lines.join("\n")); return r.argv; };
+
+  it("the mount table: five house classes under /lar, the checkout under /workspace", () => {
+    expect(mounts).toEqual(expect.arrayContaining([
+      { host: `${H}/hearth`, container: "/lar/hearth" }, { host: `${H}/sensoriums`, container: "/lar/sensoriums" },
+      { host: `${H}/projections`, container: "/lar/projections" }, { host: `${H}/library`, container: "/lar/library" },
+      { host: `${H}/config`, container: "/lar/config" }, { host: W, container: "/workspace" },
+    ]));
+  });
+
+  it("the env file names the mounts when the environment does not; the environment wins", () => {
+    expect(mountsOf({}, `LARES_HOUSE=/a\nLARES_WORKSPACE=/b\nLARES_HOUSE=/c\n`, (p) => p)).toContainEqual({ host: "/c/config", container: "/lar/config" });
+    expect(mountsOf({ LARES_WORKSPACE: "/env" }, "LARES_WORKSPACE=/file\n", (p) => p)).toContainEqual({ host: "/env", container: "/workspace" });
+  });
+
+  it("translation table: positional and option paths, both option spellings", () => {
+    expect(ok(["export", `${H}/config/carry/b1`])).toEqual(["export", "/lar/config/carry/b1"]);
+    expect(ok(["import", `${H}/config/carry/b1`, "--apply"])).toEqual(["import", "/lar/config/carry/b1", "--apply"]);
+    expect(ok(["vault", "backup", "--face", "0", "--out", `${H}/config/f.bundle`])).toEqual(["vault", "backup", "--face", "0", "--out", "/lar/config/f.bundle"]);
+    expect(ok(["ingest", `--source=${W}/notes`, "--to", "b"])).toEqual(["ingest", "--source=/workspace/notes", "--to", "b"]);
+    expect(ok(["meme", "put", "lar:///x", "--bag", "b", "--file", `${W}/bags/x.mem`])).toEqual(["meme", "put", "lar:///x", "--bag", "b", "--file", "/workspace/bags/x.mem"]);
+    expect(ok(["nexus", "admit-take", `${W}/admit.json`])).toEqual(["nexus", "admit-take", "/workspace/admit.json"]);
+    expect(ok(["fleet", "join", "land", `${H}/config/answer.json`])).toEqual(["fleet", "join", "land", "/lar/config/answer.json"]);
+    expect(ok(["nexus", "seal", "roll", "file", `${W}/r.mem`])).toEqual(["nexus", "seal", "roll", "file", "/workspace/r.mem"]);
+    expect(ok(["circle", "card", `@${W}/card.txt`])).toEqual(["circle", "card", "@/workspace/card.txt"]);
+  });
+
+  it("a relative path reads from the cwd: inside the checkout it lands under /workspace", () => {
+    expect(ok(["export", "./carry/b1"], `${H}/config`)).toEqual(["export", "/lar/config/carry/b1"]);
+    expect(ok(["meme", "project", "bags/x.mem", "--to", "html", "--bag", "b"], W)).toEqual(["meme", "project", "/workspace/bags/x.mem", "--to", "html", "--bag", "b"]);
+  });
+
+  it("~ expands to HOME", () => {
+    expect(ok(["export", "~/lares-house/config/b1"])).toEqual(["export", "/lar/config/b1"]);
+  });
+
+  it("realpath where the path exists: a symlinked spelling lands where it resolves", () => {
+    const linked = translatePaths({ argv: ["export", "/home/op/link/b1"], cwd: "/", home: "/home/op", mounts,
+      fs: { exists: () => true, realpath: (p: string) => p.replace("/home/op/link", `${H}/config`) } });
+    expect(linked).toEqual({ argv: ["export", "/lar/config/b1"] });
+  });
+
+  it("a container spelling passes unchanged", () => {
+    expect(ok(["export", "/lar/config/carry/b1"])).toEqual(["export", "/lar/config/carry/b1"]);
+    expect(ok(["nexus", "seal", "import", "--carry", "/workspace/founding-roster.mem"])).toEqual(["nexus", "seal", "import", "--carry", "/workspace/founding-roster.mem"]);
+    expect(ok(["vessel", "found", "--genesis", "/app/genesis"])).toEqual(["vessel", "found", "--genesis", "/app/genesis"]);
+  });
+
+  it("an argument that only looks like a path stays untouched", () => {
+    expect(ok(["act", "REPACK", "--source", `${W}/b.tid`, "--from", "some/bag/like"])).toEqual(["act", "REPACK", "--source", "/workspace/b.tid", "--from", "some/bag/like"]);
+    expect(ok(["meme", "get", "lar:///a/b", "--bag", "./not/a/path"])).toEqual(["meme", "get", "lar:///a/b", "--bag", "./not/a/path"]);
+    expect(ok(["meme", "project", "lar:///x/y", "--to", "html", "--bag", "b"])).toEqual(["meme", "project", "lar:///x/y", "--to", "html", "--bag", "b"]);
+    expect(ok(["persona", "new", "0", "--name", "/etc/passwd"])).toEqual(["persona", "new", "0", "--name", "/etc/passwd"]);
+  });
+
+  it("cabal --bundle translates a file that exists and leaves literal JSON alone", () => {
+    const has = (p: string) => p === `${W}/b.json`;
+    const r1 = translatePaths({ argv: ["cabal", "join", "--bundle", `${W}/b.json`], cwd: "/", home: "/home/op", mounts, fs: { exists: has, realpath: (p) => p } });
+    expect(r1).toEqual({ argv: ["cabal", "join", "--bundle", "/workspace/b.json"] });
+    const r2 = translatePaths({ argv: ["cabal", "join", "--bundle", '{"a":1}'], cwd: "/", home: "/home/op", mounts, fs: { exists: has, realpath: (p) => p } });
+    expect(r2).toEqual({ argv: ["cabal", "join", "--bundle", '{"a":1}'] });
+  });
+
+  it("a host path outside every mount refuses by name, in three lines, with the distinct code", () => {
+    const r = tr(["export", "/tmp/carry"]);
+    expect("error" in r).toBe(true);
+    if (!("error" in r)) return;
+    expect(r.error.code).toBe(PATH_OUTSIDE_EXIT);
+    expect(r.error.lines.length).toBeLessThanOrEqual(3);
+    const text = r.error.lines.join("\n");
+    expect(text).toContain("/tmp/carry");
+    expect(text).toContain("/lar/config");
+    expect(text).toContain(`${H}/config`);
+    expect(text).toContain(W);
+  });
+
+  it("a prefix that only shares letters with a mount stays outside it", () => {
+    expect("error" in tr(["export", `${H}/configs/b1`])).toBe(true);
+    expect("error" in tr(["export", `${W}-old/b1`])).toBe(true);
+  });
+});
+
 describe("commandScope — help marks every verb", () => {
   it("every command in the table carries a scope", () => {
     for (const name of COMMAND_NAMES) expect(["host", "vessel", "mixed"], name).toContain(commandScope(name));
@@ -173,6 +260,7 @@ function bench(opts: { envFile?: boolean; running?: boolean } = {}): Bench {
     `{ printf 'CALL\\n'; for a in "$@"; do printf '[%s]\\n' "$a"; done; } >> "$CALL_LOG"`,
     `case " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}"; exit 0;; esac`,
     `case " $* " in *" --observe --json "*) printf '%s\\n' '{"data":{"standing":{"act":"attach","reason":"steady"}}}'; exit 0;; esac`,
+    `case " $* " in *" sh -c "*|*" stop "*|*" rm -f "*) exit 0;; esac`,
     `case " $* " in *" exec "*|*" run "*) [ -n "\${FAKE_SLEEP:-}" ] && { echo $$ > "$CALL_LOG.pid"; exec sleep 30; }; printf 'stdout-from-the-vessel\\n'; printf 'stderr-from-the-vessel\\n' >&2; exit "\${FAKE_EXEC_RC:-0}";; esac`,
     "exit 0",
   ].join("\n") + "\n");
@@ -231,7 +319,7 @@ describe.skipIf(!builtExists)("the built `lares` forwards through the real shim"
       });
       const exec = execCall(b)!;
       const named = exec.flatMap((a, i) => a === "-e" ? [exec[i + 1]] : []);
-      expect(named.sort()).toEqual(["LARES_DEBUG", "NO_COLOR", "TERM"]);
+      expect(named.sort()).toEqual(["LARES_DEBUG", "LARES_EXEC_TAG", "NO_COLOR", "TERM"]);
       expect(exec.join(" ")).not.toMatch(/xterm-256color|s3cret|SOME_TOKEN/);
     } finally { rmSync(b.dir, { recursive: true, force: true }); }
   });
@@ -244,6 +332,25 @@ describe.skipIf(!builtExists)("the built `lares` forwards through the real shim"
       const run = calls(b).find((c) => c.includes("run"))!;
       expect(run.slice(-2)).toEqual(["persona", "list"]);
       expect(run).toContain("TERM");
+    } finally { rmSync(b.dir, { recursive: true, force: true }); }
+  });
+
+  it("a host path under the house reaches the vessel as /lar/<class>; a path outside every mount refuses before docker runs", () => {
+    const b = bench();
+    try {
+      const house = join(b.dir, "house");
+      mkdirSync(join(house, "config"), { recursive: true });
+      const r = spawnSync(process.execPath, [BIN, "export", "carry/b1"], { env: b.env, cwd: join(house, "config"), encoding: "utf8" });
+      expect(r.status, r.stderr).toBe(0);
+      expect(execCall(b)!.slice(-2)).toEqual(["export", "/lar/config/carry/b1"]);
+      const b2 = bench();
+      try {
+        const out = spawnSync(process.execPath, [BIN, "export", join(b2.dir, "elsewhere")], { env: b2.env, encoding: "utf8" });
+        expect(out.status).toBe(PATH_OUTSIDE_EXIT);
+        expect(out.stderr.trim().split("\n").length).toBeLessThanOrEqual(3);
+        expect(out.stderr).toContain(join(b2.dir, "elsewhere"));
+        expect(calls(b2)).toEqual([]);
+      } finally { rmSync(b2.dir, { recursive: true, force: true }); }
     } finally { rmSync(b.dir, { recursive: true, force: true }); }
   });
 
@@ -304,6 +411,50 @@ describe.skipIf(!builtExists)("the built `lares` forwards through the real shim"
       let alive = true;
       try { process.kill(sleeper, 0); } catch { alive = false; }
       expect(alive).toBe(false);
+    } finally { rmSync(b.dir, { recursive: true, force: true }); }
+  });
+});
+
+describe.skipIf(!builtExists)("a lone SIGTERM to the host process leaves nothing running", () => {
+  async function lone(sig: NodeJS.Signals, running: boolean): Promise<{ b: Bench; ended: { code: number | null; signal: NodeJS.Signals | null }; sleeperAlive: boolean }> {
+    const b = bench({ running });
+    const child = spawn(process.execPath, [BIN, "persona", "list"], { env: { ...b.env, FAKE_SLEEP: "1" }, stdio: "ignore" });
+    const pidFile = `${b.log}.pid`;
+    for (let i = 0; i < 100 && !existsSync(pidFile); i++) await new Promise((r) => setTimeout(r, 50));
+    expect(existsSync(pidFile)).toBe(true);
+    const sleeper = Number(readFileSync(pidFile, "utf8").trim());
+    // The host node pid ALONE: no terminal, no group.
+    process.kill(child.pid!, sig);
+    const ended = await new Promise<{ code: number | null; signal: NodeJS.Signals | null }>((r) => child.on("exit", (code, signal) => r({ code, signal })));
+    await new Promise((r) => setTimeout(r, 200));
+    let sleeperAlive = true;
+    try { process.kill(sleeper, 0); } catch { sleeperAlive = false; }
+    if (sleeperAlive) process.kill(sleeper, "SIGKILL");
+    return { b, ended, sleeperAlive };
+  }
+
+  it("standing vessel: the compose client ends, and the shim stops the tagged process inside the vessel", async () => {
+    const { b, ended, sleeperAlive } = await lone("SIGTERM", true);
+    try {
+      expect(ended.signal === "SIGTERM" || ended.code === 143).toBe(true);
+      expect(sleeperAlive).toBe(false);
+      const exec = execCall(b)!;
+      expect(exec).toContain("LARES_EXEC_TAG");
+      const cleanup = calls(b).find((c) => c.includes("sh") && c.includes("-c"));
+      expect(cleanup, JSON.stringify(calls(b))).toBeDefined();
+      expect(cleanup).toContain("TERM");
+    } finally { rmSync(b.dir, { recursive: true, force: true }); }
+  });
+
+  it("offline door: the compose client ends, and the shim removes the named run container", async () => {
+    const { b, ended, sleeperAlive } = await lone("SIGHUP", false);
+    try {
+      expect(ended.signal === "SIGHUP" || ended.code === 129).toBe(true);
+      expect(sleeperAlive).toBe(false);
+      const run = calls(b).find((c) => c.includes("run"))!;
+      const name = run[run.indexOf("--name") + 1];
+      expect(name).toMatch(/^lares-offline-[0-9a-f]+$/);
+      expect(calls(b).some((c) => c.includes("rm") && c.includes(name))).toBe(true);
     } finally { rmSync(b.dir, { recursive: true, force: true }); }
   });
 });

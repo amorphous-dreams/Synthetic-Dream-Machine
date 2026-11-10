@@ -157,7 +157,7 @@ test("sh: found under a TTY runs attached, with no -T", { skip: !haveScript }, a
       encoding: "utf8",
     });
     const calls = await readFile(log, "utf8");
-    assert.match(calls, /--profile offline run --rm offline vessel found --skip-build --root \/lar --genesis \/app\/genesis\s*$/m);
+    assert.match(calls, /--profile offline run --rm (?:--name lares-offline-[0-9a-f]+ )?offline vessel found --skip-build --root \/lar --genesis \/app\/genesis\s*$/m);
     assert.doesNotMatch(calls, /(^|\s)-T(\s|$)/);
   } finally { await rm(dir, { recursive: true, force: true }); }
 });
@@ -203,7 +203,7 @@ for (const [name, shim] of shims) {
   test(`${name}: any other argv with a running vessel runs the CLI by exec`, async () => {
     const r = await run(shim, ["vessel", "read", "--json"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /compose .*exec -T lares node packages\/lares-cli\/bin\/lares\.mjs vessel read --json/);
+    assert.match(r.calls, /compose .*exec (?:-e LARES_EXEC_TAG )?-T lares node packages\/lares-cli\/bin\/lares\.mjs vessel read --json/);
   });
 
   test(`${name}: display and debug names cross into the vessel by name alone; no value and no other name`, async () => {
@@ -215,24 +215,32 @@ for (const [name, shim] of shims) {
     for (const n of ["NO_COLOR", "TERM", "COLORTERM", "LARES_DEBUG"]) assert.match(exec, new RegExp(`(^| )-e ${n}( |$)`));
     assert.doesNotMatch(r.calls, /xterm-256color|truecolor|s3cret|SOME_TOKEN/);
     const offline = await run(shim, ["persona", "list"], { env: { ...MOUNTS, TERM: "dumb" } });
-    assert.match(offline.calls, /--profile offline run --rm -e TERM -T offline persona list/);
+    assert.match(offline.calls, /--profile offline run --rm --name lares-offline-[0-9a-f]+ -e TERM -T offline persona list/);
+  });
+
+  test(`${name}: an act carries its stop handle: an exec its LARES_EXEC_TAG by name, a run its lares-offline-<tag> name`, async () => {
+    const standing = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
+    assert.match(standing.calls, /exec -e LARES_EXEC_TAG -T lares node \S+ vessel read$/m);
+    assert.doesNotMatch(standing.calls, /LARES_EXEC_TAG=/);
+    const offline = await run(shim, ["persona", "list"], { env: MOUNTS });
+    assert.match(offline.calls, /run --rm --name lares-offline-[0-9a-f]{16} -T offline persona list$/m);
   });
 
   test(`${name}: CONTROL with none of the names set, no -e rides`, async () => {
     const r = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
-    assert.doesNotMatch(r.calls, /(^| )-e /m);
+    assert.doesNotMatch(r.calls, /(^| )-e (?!LARES_EXEC_TAG )/m);
   });
 
   test(`${name}: a verb with no running vessel uses the offline door`, async () => {
     const r = await run(shim, ["persona", "new", "0", "--name", "ci-face"], { env: MOUNTS });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /--profile offline run --rm -T offline persona new 0 --name ci-face/);
+    assert.match(r.calls, /--profile offline run --rm (?:--name lares-offline-[0-9a-f]+ )?-T offline persona new 0 --name ci-face/);
     assert.doesNotMatch(r.calls, /compose .*exec/);
   });
 
   test(`${name}: found uses the offline CLI door`, async () => {
     const r = await run(shim, ["found", "--json"], { env: MOUNTS });
-    assert.match(r.calls, /--profile offline run --rm -T offline vessel found --skip-build --root \/lar --genesis \/app\/genesis --json\s*$/m);
+    assert.match(r.calls, /--profile offline run --rm (?:--name lares-offline-[0-9a-f]+ )?-T offline vessel found --skip-build --root \/lar --genesis \/app\/genesis --json\s*$/m);
   });
 
   test(`${name}: a successful exec with a restand verdict restarts and waits healthy`, async () => {
@@ -250,7 +258,7 @@ for (const [name, shim] of shims) {
   test(`${name}: up names vault unlock when the vessel holds no key`, async () => {
     const r = await run(shim, ["up"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: '{"ok":true,"data":{"door":{"op":"custody","unlocked":false}}}' } });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /up -d --wait lares[\s\S]*exec -T lares node \S+ vault status --json/);
+    assert.match(r.calls, /up -d --wait lares[\s\S]*exec (?:-e LARES_EXEC_TAG )?-T lares node \S+ vault status --json/);
     assert.match(r.stderr, NAMES_UNLOCK);
     assert.doesNotMatch(r.calls, /vault unlock/, "no TTY: the shim sends no unlock, it only names it");
   });
@@ -309,7 +317,7 @@ for (const [name, shim] of shims) {
   test(`${name}: vault lock routes to the CLI inside the standing vessel`, async () => {
     const r = await run(shim, ["vault", "lock"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /exec -T lares node \S+ vault lock/);
+    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node \S+ vault lock/);
   });
 
   test(`${name}: CONTROL attach verdict does not restart`, async () => {
@@ -327,7 +335,7 @@ for (const [name, shim] of shims) {
     // The one exec a fresh stand makes: the custody door's read, after which the shim names the unlock.
     const execs = r.calls.split("\n").filter((line) => /compose .*exec /.test(line) || /^compose exec |(^| )exec /.test(line));
     assert.equal(execs.length, 1, r.calls);
-    assert.match(execs[0], /exec -T lares node \S+ vault status --json/);
+    assert.match(execs[0], /exec (?:-e LARES_EXEC_TAG )?-T lares node \S+ vault status --json/);
     assert.match(r.stderr, NAMES_UNLOCK);
   });
 
@@ -336,7 +344,7 @@ for (const [name, shim] of shims) {
       env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"restand","reason":"face lit"}}}' },
     });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /exec -T lares node \S+ vessel stand --observe --json[\s\S]*restart lares[\s\S]*up -d --wait lares/);
+    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node \S+ vessel stand --observe --json[\s\S]*restart lares[\s\S]*up -d --wait lares/);
     // The acting stand never runs inside the container: the one exec carries --observe.
     assert.doesNotMatch(r.calls, /vessel stand\s*$/m);
   });
@@ -355,7 +363,7 @@ for (const [name, shim] of shims) {
       env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"restand","reason":"face lit"}}}' },
     });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /exec -T lares node \S+ vessel stand --json --observe/);
+    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node \S+ vessel stand --json --observe/);
     assert.doesNotMatch(r.calls, /restart lares/);
   });
 
@@ -364,7 +372,7 @@ for (const [name, shim] of shims) {
       env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"attach","reason":"steady"}}}' },
     });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /exec -T lares node packages\/lares-cli\/bin\/lares\.mjs vessel stand --observe --json/);
+    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node packages\/lares-cli\/bin\/lares\.mjs vessel stand --observe --json/);
     assert.equal((r.calls.match(/--observe --json/g) ?? []).length, 1);
     assert.doesNotMatch(r.calls, /restart lares/);
   });
@@ -400,7 +408,7 @@ for (const [name, shim] of shims) {
   test(`${name}: option-bearing host stand routes to the CLI`, async () => {
     const r = await run(shim, ["vessel", "stand", "--init"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /exec -T lares node packages\/lares-cli\/bin\/lares\.mjs vessel stand --init/);
+    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node packages\/lares-cli\/bin\/lares\.mjs vessel stand --init/);
   });
 
   test(`${name}: vessel stop stops the container from the host, never from inside it`, async () => {
@@ -414,7 +422,7 @@ for (const [name, shim] of shims) {
     for (const argv of [["vessel", "clear", "--force"], ["vessel", "rite", "rebirth"]]) {
       const r = await run(shim, argv, { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_EXEC_RC: "2" } });
       assert.equal(r.status, 2, argv.join(" "));
-      assert.match(r.calls, /exec -T lares node packages\/lares-cli\/bin\/lares\.mjs/);
+      assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node packages\/lares-cli\/bin\/lares\.mjs/);
       assert.doesNotMatch(r.stderr, /no pave or wipe command/);
     }
   });
@@ -423,14 +431,14 @@ for (const [name, shim] of shims) {
     const argv = ["vessel", "stand", "--restart"];
     const r = await run(shim, argv, { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_EXEC_RC: "2" } });
     assert.equal(r.status, 2, argv.join(" "));
-    assert.match(r.calls, /exec -T lares node packages\/lares-cli\/bin\/lares\.mjs vessel stand --restart\s*$/m);
+    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node packages\/lares-cli\/bin\/lares\.mjs vessel stand --restart\s*$/m);
     assert.doesNotMatch(r.stderr, /takes no option through this shim/);
   });
 
   test(`${name}: CONTROL another vessel rite still routes to the CLI`, async () => {
     const r = await run(shim, ["vessel", "rite", "quorum"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /exec -T lares node \S+ vessel rite quorum/);
+    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node \S+ vessel rite quorum/);
   });
 
   test(`${name}: a capture path holding a quote and a dollar sign rides the override as a literal`, async () => {
@@ -458,7 +466,7 @@ for (const [name, shim] of shims) {
   test(`${name}: down over a standing vessel asks the census first, and a clean answer stops it`, async () => {
     const r = await run(shim, ["down", "--timeout", "5"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN } });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /exec -T lares node packages\/lares-cli\/bin\/lares\.mjs vessel census --no-json/);
+    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node packages\/lares-cli\/bin\/lares\.mjs vessel census --no-json/);
     assert.ok(r.calls.indexOf("vessel census") < r.calls.indexOf("down --remove-orphans"), r.calls);
     // down's own flags still pass through.
     assert.match(r.calls, /down --remove-orphans --timeout 5/);

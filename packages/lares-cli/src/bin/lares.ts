@@ -267,6 +267,8 @@ function printHelp(surface: string = VERB_SURFACE.cli, executableOnly = false): 
   }
   console.log("\n  host = runs on this machine. vessel = answers from the house: LAR_ROOT's, or, with LAR_ROOT unset and");
   console.log("  ~/.lares/lares-surface.env standing, the container house through tools/lares-container.sh. mixed = some of each.");
+  console.log("  Forwarded, a path argument reads from this machine and crosses in the vessel's spelling ($LARES_HOUSE/<class> ->");
+  console.log("  /lar/<class>, $LARES_WORKSPACE -> /workspace); a path outside those mounts refuses by name.");
   if (shown.some((c) => c.signs)) {
     console.log("\n  ✍ = holds a key. An agent surface may compose these and MUST NOT execute them.");
   }

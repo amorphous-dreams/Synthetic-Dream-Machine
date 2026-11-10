@@ -26,10 +26,10 @@
  */
 
 import { spawn } from "node:child_process";
-import { existsSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { existsSync, readFileSync, realpathSync } from "node:fs";
+import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { parseArgs, ArgsError, type ParsedArgs } from "./parse-args.js";
+import { parseArgs, ArgsError, BOOLEAN_FLAGS, type ParsedArgs } from "./parse-args.js";
 
 /** No house root here, and no container house stands to answer (sysexits EX_CONFIG). */
 export const HOUSE_ABSENT_EXIT = 78;
@@ -37,6 +37,9 @@ export const HOUSE_ABSENT_EXIT = 78;
 export const SHIM_ABSENT_EXIT = 69;
 /** A credential verb with no terminal on both ends: the usage code the CLI's CredentialTtyRefusal reads. */
 export const CREDENTIAL_TTY_EXIT = 2;
+
+/** A host path in a forwarded argv that rests under no mount the container house binds. */
+export const PATH_OUTSIDE_EXIT = 64;
 
 /** The names the shim hands into the vessel by `-e NAME`: display and debug alone, never a credential. */
 export const FORWARDED_ENV: readonly string[] = ["NO_COLOR", "TERM", "COLORTERM", "LARES_DEBUG"];
@@ -155,6 +158,177 @@ export function decideRoute(input: RouteInput): Route {
   return "forward";
 }
 
+// ── host paths in a forwarded argv ──────────────────────────────────────────────────────────────
+
+/**
+ * WHICH ARGUMENTS NAME PATHS, declared per command beside its scope. Only a declared argument translates: a bag
+ * slug, a `lar:` address or a petname that happens to hold a slash never moves. Read off each verb's parser.
+ */
+const PATH_OPTIONS: Readonly<Record<string, readonly string[]>> = {
+  act:     ["out", "source"],                       // REPACK --source <bundle> [--out <file>]; --from names a bag
+  ingest:  ["source"],
+  watch:   ["source"],
+  meme:    ["file", "out", "root"],
+  bag:     ["dir", "root"],                         // bag repo add --root <path>; --dir <bags dir>
+  vault:   ["out"],
+  library: ["out"],
+  fleet:   ["out"],
+  nexus:   ["out", "carry", "from", "source"],      // --from <partial|anchor file>; publish --source <dir>
+  edge:    ["from"],                                // cosign --from <file>
+  circle:  ["card"],
+  handle:  ["card"],
+  vessel:  ["genesis", "root", "restore", "storage"],
+  sense:   ["sensorium-root", "trial-root", "model-home"],
+  flow:    ["sensorium-root"],
+};
+/** Options that take a path OR inline text: a value translates only when a host file stands there. */
+const PATH_OR_TEXT_OPTIONS: Readonly<Record<string, readonly string[]>> = { cabal: ["bundle"] };
+
+/** The positional indexes (past the command) that name paths, and those that take an `@file` carriage. */
+function pathPositions(args: ParsedArgs): { paths: number[]; atFiles: number[] } {
+  const [p0, p1, p2] = args.positional;
+  switch (args.command) {
+    case "export": case "import": return { paths: [0], atFiles: [] };
+    case "vault":     return { paths: p0 === "restore" ? [1] : [], atFiles: [] };
+    case "library":   return { paths: p0 === "acquire" ? [1] : [], atFiles: [] };
+    case "sensorium": return { paths: p0 === "run" || p0 === "open" ? [1] : [], atFiles: [] };
+    case "fleet":     return { paths: p0 === "join" && (p1 === "request" || p1 === "answer" || p1 === "land") ? [2] : [], atFiles: [] };
+    case "meme":      return { paths: p0 === "project" && !(p1 ?? "").startsWith("lar:") ? [1] : [], atFiles: [] };
+    case "handle":    return { paths: [], atFiles: p0 === "verify-attestation" ? [1] : [] };
+    case "circle":    return { paths: [], atFiles: p0 === "card" ? [1] : [] };
+    case "nexus":
+      if (p0 === "admit-take" || p0 === "carry-take") return { paths: [1], atFiles: [] };
+      if (p0 === "seal" && p1 === "cofound" && (p2 === "join" || p2 === "seal")) return { paths: [3], atFiles: [] };
+      if (p0 === "seal" && p1 === "roll" && (p2 === "join" || p2 === "sign" || p2 === "file")) return { paths: [3], atFiles: [] };
+      return { paths: [], atFiles: [] };
+    default: return { paths: [], atFiles: [] };
+  }
+}
+
+/** One host directory the container house binds, and where the vessel reads it. */
+export interface Mount { readonly host: string; readonly container: string }
+
+const HOUSE_CLASSES = ["hearth", "sensoriums", "projections", "library", "config"] as const;
+/** Spellings already inside the vessel: they pass unchanged. */
+const CONTAINER_ROOTS = ["/lar", "/workspace", "/app"] as const;
+
+/** The value one name carries: the environment first, else the env file's last plain KEY=VALUE line (as the shim reads). */
+function envValue(name: string, env: Readonly<Record<string, string | undefined>>, envFileText: string | null): string {
+  const set = env[name]?.trim();
+  if (set) return set;
+  let last = "";
+  for (const line of (envFileText ?? "").split("\n")) {
+    const m = new RegExp(`^\\s*${name}=(.*)$`).exec(line);
+    if (m) last = m[1]!.trim();
+  }
+  return last;
+}
+
+/** The mounts the surface compose file binds: `$LARES_HOUSE/<class>` at `/lar/<class>`, `$LARES_WORKSPACE` at `/workspace`. */
+export function mountsOf(env: Readonly<Record<string, string | undefined>>, envFileText: string | null, real: (p: string) => string): Mount[] {
+  const mounts: Mount[] = [];
+  const house = envValue("LARES_HOUSE", env, envFileText);
+  if (house.startsWith("/")) for (const c of HOUSE_CLASSES) mounts.push({ host: real(join(house, c)), container: `/lar/${c}` });
+  const workspace = envValue("LARES_WORKSPACE", env, envFileText);
+  if (workspace.startsWith("/")) mounts.push({ host: real(workspace), container: "/workspace" });
+  return mounts;
+}
+
+const under = (path: string, root: string): boolean => path === root || path.startsWith(root.endsWith("/") ? root : `${root}/`);
+
+/** The realpath of the longest prefix that exists, with the rest appended (an output path need not exist yet). */
+function realpathPrefix(abs: string, realpath: (p: string) => string): string {
+  const rest: string[] = [];
+  let at = abs;
+  for (;;) {
+    try { return join(realpath(at), ...rest.reverse()); }
+    catch {
+      const up = dirname(at);
+      if (up === at) return abs;
+      rest.push(basename(at));
+      at = up;
+    }
+  }
+}
+
+export interface TranslateInput {
+  readonly argv: readonly string[];
+  readonly cwd: string;
+  readonly home: string;
+  readonly mounts: readonly Mount[];
+  readonly fs: { exists(path: string): boolean; realpath(path: string): string };
+}
+
+/**
+ * Rewrite each declared path argument from its host spelling to the vessel's, or refuse naming the one that rests
+ * under no mount. A value already spelled inside the vessel (`/lar/…`, `/workspace/…`, `/app/…`), an empty value and
+ * `-` (stdin) pass unchanged. `~` expands to HOME, a relative path reads from the cwd, and the longest existing prefix
+ * resolves through its symlinks before the mount match.
+ */
+export function translatePaths(input: TranslateInput): { argv: string[] } | { error: RouteError } {
+  const { argv, mounts, fs } = input;
+  let args: ParsedArgs;
+  try { args = parseArgs(argv); } catch { return { argv: [...argv] }; }
+  const name = args.command ?? "";
+  const pathOpts = new Set(PATH_OPTIONS[name] ?? []);
+  const textOpts = new Set(PATH_OR_TEXT_OPTIONS[name] ?? []);
+  const { paths, atFiles } = pathPositions(args);
+  const byDepth = [...mounts].sort((a, b) => b.host.length - a.host.length);
+  let refusal: RouteError | null = null;
+
+  const toVessel = (value: string): string => {
+    if (value === "" || value === "-" || refusal !== null) return value;
+    if (CONTAINER_ROOTS.some((r) => under(value, r))) return value;
+    const expanded = value === "~" ? input.home : value.startsWith("~/") ? join(input.home, value.slice(2)) : value;
+    const real = realpathPrefix(resolve(input.cwd, expanded), fs.realpath);
+    const mount = byDepth.find((m) => under(real, m.host));
+    if (mount) return real === mount.host ? mount.container : `${mount.container}${real.slice(mount.host.length)}`;
+    const config = mounts.find((m) => m.container === "/lar/config");
+    const roots = mounts.length === 0
+      ? "no mount stands named (LARES_HOUSE and LARES_WORKSPACE read unset)"
+      : `${dirname(config?.host ?? mounts[0]!.host)}/{${HOUSE_CLASSES.join(",")}} -> /lar/<class>, ${mounts.find((m) => m.container === "/workspace")?.host ?? "(no workspace)"} -> /workspace`;
+    refusal = { code: PATH_OUTSIDE_EXIT, lines: [
+      `lares: ${value} rests outside every mount the container house binds, so the vessel cannot reach it; nothing ran`,
+      `lares: mounts: ${roots}`,
+      `lares: put it under ${config?.host ?? "$LARES_HOUSE/config"} (the vessel reads /lar/config/<name>), or pass a path spelled inside the vessel`,
+    ] };
+    return value;
+  };
+  const optionValue = (key: string, value: string): string => {
+    if (pathOpts.has(key)) return toVessel(value);
+    if (textOpts.has(key)) {
+      const expanded = value.startsWith("~/") ? join(input.home, value.slice(2)) : value;
+      return fs.exists(resolve(input.cwd, expanded)) ? toVessel(value) : value;
+    }
+    return value;
+  };
+
+  // Walk the raw tokens the way parseArgs reads them, so each value keeps its own spelling and place.
+  const out: string[] = [argv[0]!];
+  let positional = 0;
+  let endOfOptions = false;
+  for (let i = 1; i < argv.length; i++) {
+    const tok = argv[i]!;
+    if (!endOfOptions && tok === "--") { endOfOptions = true; out.push(tok); continue; }
+    if (!endOfOptions && tok.startsWith("--")) {
+      const body = tok.slice(2);
+      const eq = body.indexOf("=");
+      if (body.startsWith("no-")) { out.push(tok); continue; }
+      if (eq !== -1) { const key = body.slice(0, eq); out.push(`--${key}=${optionValue(key, body.slice(eq + 1))}`); continue; }
+      if (BOOLEAN_FLAGS.has(body)) { out.push(tok); continue; }
+      const next = argv[i + 1];
+      if (next !== undefined && !next.startsWith("--")) { out.push(tok, optionValue(body, next)); i++; continue; }
+      out.push(tok);
+      continue;
+    }
+    if (paths.includes(positional)) out.push(toVessel(tok));
+    else if (atFiles.includes(positional) && tok.startsWith("@") && tok !== "@-") out.push(`@${toVessel(tok.slice(1))}`);
+    else out.push(tok);
+    positional++;
+  }
+  return refusal !== null ? { error: refusal } : { argv: out };
+}
+
 /** The checkout's shim, found by walking up from this module (a symlinked bin resolves to its real path). */
 export function locateShim(from: string = fileURLToPath(import.meta.url)): string | null {
   let dir = dirname(from);
@@ -215,5 +389,18 @@ export async function bridge(argv: readonly string[], commands: readonly string[
     for (const line of route.error.lines) console.error(line);
     return route.error.code;
   }
-  return await forwardToShim(shim as string, argv);
+  const envFile = surfaceEnvPath(process.env);
+  let envFileText: string | null = null;
+  try { envFileText = envFile === null ? null : readFileSync(envFile, "utf8"); } catch { envFileText = null; }
+  const real = (p: string): string => { try { return realpathSync(p); } catch { return p; } };
+  const translated = translatePaths({
+    argv, cwd: process.cwd(), home: process.env["HOME"] ?? "",
+    mounts: mountsOf(process.env, envFileText, real),
+    fs: { exists: existsSync, realpath: realpathSync },
+  });
+  if ("error" in translated) {
+    for (const line of translated.error.lines) console.error(line);
+    return translated.error.code;
+  }
+  return await forwardToShim(shim as string, translated.argv);
 }

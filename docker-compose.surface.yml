@@ -222,6 +222,9 @@ services:
     <<: *vessel
     profiles: [offline]
     entrypoint: ["node", "packages/lares-cli/bin/lares.mjs"]
+    # An init stands as PID 1, so the stop the host shim sends a run container (`docker stop lares-offline-<tag>`
+    # when the shim catches TERM, HUP or INT) reaches node; node as PID 1 ignores a TERM it holds no handler for.
+    init: true
     stdin_open: true   # the route prompt reads the attached terminal; `run` allocates the TTY itself
     command: ["help"]
     restart: "no"

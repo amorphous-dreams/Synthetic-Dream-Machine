@@ -65,7 +65,7 @@ Run these from the root of the household checkout; the house path shown stands a
 
 Use `tools/lares-container.sh` on Unix-like hosts or `tools/lares-container.ps1` on Windows. The shims read the same environment or `lares-surface.env` and route CLI work through the image.
 
-''The host `lares` answers through the container house.'' With `LAR_ROOT` unset and `~/.lares/lares-surface.env` standing, the host's own `lares <verb>` hands every vessel verb to the checkout's `tools/lares-container.sh` with the same argv, so `lares up`, `lares vessel read` and `lares meme get … --json | jq` work from the WSL shell as the shim lines below do; the exit code and stdout pass through untouched, and no socket crosses the container wall. Host verbs stay on the host: `home`, `repo`, `help` and every `--help`, `wing-of`, `mempalace`, and `meme normalize|check|project <file> --to md`; `lares --help` marks each verb `host`, `vessel` or `mixed`. A credential verb (`vault unlock|bind|unbind`, `found`) refuses by name without a terminal. With neither `LAR_ROOT` nor the env file, a vessel verb refuses in two lines naming both cures. A shell that names `LAR_ROOT` (a scratch house, a suite, the container itself) never forwards. Windows runs `lares` inside WSL.
+''The host `lares` answers through the container house.'' With `LAR_ROOT` unset and `~/.lares/lares-surface.env` standing, the host's own `lares <verb>` hands every vessel verb to the checkout's `tools/lares-container.sh` with the same argv, so `lares up`, `lares vessel read` and `lares meme get … --json | jq` work from the WSL shell as the shim lines below do; the exit code and stdout pass through untouched, and no socket crosses the container wall. Host verbs stay on the host: `home`, `repo`, `help` and every `--help`, `wing-of`, `mempalace`, and `meme normalize|check|project <file> --to md`; `lares --help` marks each verb `host`, `vessel` or `mixed`. A credential verb (`vault unlock|bind|unbind`, `found`) refuses by name without a terminal. With neither `LAR_ROOT` nor the env file, a vessel verb refuses in two lines naming both cures. A path argument (`export <dest>`, `import <bundle>`, `vault backup --out <file>`, `ingest --source <dir>`, …) reads from the host, relative paths and `~` included, and crosses in the vessel's spelling: `$LARES_HOUSE/<class>` reads at `/lar/<class>` and `$LARES_WORKSPACE` at `/workspace`; a path already spelled `/lar/…` or `/workspace/…` passes as written, and a host path outside those mounts refuses by name before docker runs, so `lares export "$LARES_HOUSE/config/carry/bundle-one"` and the shim's `/lar/config/carry/bundle-one` name one place. A Ctrl+C or a lone SIGTERM stops the act inside the vessel too: the shim stops the tagged process it exec'd, or the run container it named. A shell that names `LAR_ROOT` (a scratch house, a suite, the container itself) never forwards. Windows runs `lares` inside WSL.
 
 ''See'': Docker reports a successful image build; the house root exists and the workspace checkout holds tracked `bags/`.
 
@@ -416,6 +416,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;JaKUkP3LMH5FLInhP2_N2GabqfWGT-uG5NYR9GLnuBc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;X9cjqN-he3PQ916QlEbpSipOYjjJYEThGNAPHdd-jdQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>
