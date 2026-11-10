@@ -120,10 +120,29 @@ async function reviseInPage(page: Page, title: string, body: string): Promise<vo
   const frame = `[data-tiddler-title="${title}"]`;
   expect(await clickIn(page, `${frame} [class*="Buttons%2Fedit"][data-lar-rid]`), `no edit button on ${title}\n${tail()}`).toBe(true);
   expect(await waitPane(page, "tc-tiddler-edit-frame"), "the edit frame never opened").toBe(true);
+  const before = await frameText(page, title);
   expect(await fillIn(page, ".tc-tiddler-edit-frame textarea[data-lar-rid]", body)).toBe(true);
+  const typed = await page.evaluate(() => (document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection")?.querySelector(".tc-tiddler-edit-frame textarea") as HTMLTextAreaElement | null)?.value ?? "(no textarea)");
   expect(await clickIn(page, '.tc-tiddler-edit-frame [class*="Buttons%2Fsave"][data-lar-rid]'), "no save button in the edit frame").toBe(true);
-  expect(await waitPane(page, body), `the revised body never painted\n${tail()}`).toBe(true);
+  const painted = await waitPane(page, body);
+  if (!painted) {
+    expect(painted, [
+      "the revised body never painted",
+      `  wanted:        ${JSON.stringify(body)}`,
+      `  frame before:  ${JSON.stringify(before)}`,
+      `  textarea held: ${JSON.stringify(typed)}`,
+      `  frame now:     ${JSON.stringify(await frameText(page, title))}`,
+      tail(),
+    ].join("\n")).toBe(true);
+  }
 }
+
+/** The text a title's rendered frame carries in the pane (its body, as painted), or a note that none stands. */
+const frameText = (page: Page, title: string) => page.evaluate((t) => {
+  const frames = [...(document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection")?.querySelectorAll("[data-tiddler-title]") ?? [])]
+    .filter((el) => el.getAttribute("data-tiddler-title") === t);
+  return frames.length ? frames.map((el) => (el.querySelector(".tc-tiddler-body")?.textContent ?? el.textContent ?? "").trim().slice(0, 300)).join(" | ") : "(no frame)";
+}, title);
 
 /** The draft S3 authored and the walk lifts. */
 const DRAFT = { title: "L4/page-new", body: "NEW FROM THE PAGE stage-walk", body2: "REVISED IN THE PAGE stage-walk" };
