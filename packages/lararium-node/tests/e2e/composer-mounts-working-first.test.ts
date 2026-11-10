@@ -9,7 +9,7 @@
  * on that mount, and the result returns only once the layer stands as the composite's default writable.
  *
  *   R3a  RED: the composed vessel returns with the daemon working layer mounted as the composite's default writable, and the
- *        settle the boot owes reports by name with no caller mount; the outcome reads through the composite.
+ *        settle the boot owes reports by name with no caller mount; the outcome reads through the control document.
  *   R3b  RED (static): no boot caller mounts the host working layer (main.ts's lararium and herm branches): one owner, the
  *        composer.
  *   R3c  CONTROL: a caller's mount over a composed vessel stands idempotent (the layer stays the default writable), and a
@@ -94,7 +94,9 @@ describe("red 3: the composer mounts the host working layer before any internal 
     expect(await report.first).toMatch(/^\[edge-seats\] (settled on a fold: 1 raise\(s\) owed|1 raise\(s\) stay owed: the key shore did not run \(.+\))/);
     const [title] = seatDutiesOutcomes(vessel.repo);
     expect(title, "the settle reported with no seat-duties outcome").toBeDefined();
-    expect(await vessel.daemon.composite.get(title!)).not.toBeNull();
+    // PLACEMENT: the outcome ledger rests in the vessel's control document (`daemon.control`), never in a wiki layer.
+    expect(await vessel.daemon.control.get(title!)).not.toBeNull();
+    expect(await vessel.daemon.composite.get(title!), "an outcome reached a wiki layer").toBeNull();
   }, 180_000);
 
   test("R3b RED (static): no boot caller mounts the host working layer; the composer owns the mount", () => {
