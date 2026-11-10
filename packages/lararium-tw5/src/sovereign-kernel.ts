@@ -67,7 +67,8 @@ import {
   type IslandMsg_Manifest,
   type IslandToVesselMsg,
   type SlotUri,
-  type LarTiddlerRecord, ownEntry, CONTROL_HOME_ID, controlStoreOf, floorAnswerStore, mkDaemonFloorAnswer, ControlHomeUnavailable} from "@lararium/mesh";
+  type LarTiddlerRecord, ownEntry, CONTROL_HOME_ID, controlStoreOf, floorAnswerStore, mkDaemonFloorAnswer, ControlHomeUnavailable,
+  AutomergeDocStore, slotLayerFlags } from "@lararium/mesh";
 import { IslandKernel } from "./island-kernel.js";
 import { waitForSlotDocument } from "./slot-wait.js";
 import { buildIslandRecipe, seedDrained } from "./island-recipe.js";
@@ -432,12 +433,18 @@ export function runSovereignKernel(
 
     const slots = expandRecipe(msg.recipe);
     const ready: Array<{ slot: SlotUri; handle: DocHandle<LarDoc> }> = [];
+    // THE FACE'S CANON MOUNTS AFTER EA. It rests sealed under the face, and its values open only through this island's own
+    // document-store door, which stands with the island's holder at `onEa`: a restart that waited on it here, before ea,
+    // would wait on itself (the vessel's load refuses `holder-locked` until the door answers). So it mounts once ea lands,
+    // the way the daemon's working slot lifts onto the face's document after the seat stands.
+    let deferredCanon: { readonly slot: SlotUri; readonly url: string } | null = null;
 
     for (const slot of slots) {
       if (slot === wikiSlotUri(slug, "temp")) continue;
       if (slot === ORACLE_BAG) { ready.push({ slot, handle: laraiumHandle }); continue; }
       const docUrl = await slotUrl(slot);
       if (!docUrl) continue;   // ungranted/unregistered slot — in-memory or absent
+      if (msg.recipe.canonBag !== undefined && slot === msg.recipe.canonBag) { deferredCanon = { slot, url: docUrl }; continue; }
       const handle = await _resolveSlot(
         slot === wikiBagUri(slug) && _ownedRepo ? _ownedRepo : _repo,
         docUrl, slot, msg.wikiUri,
@@ -619,6 +626,50 @@ export function runSovereignKernel(
 
     tick("ea");
     handler.sendEa(msg.wikiUri);
+    if (deferredCanon) void _mountDeferredCanon(msg, deferredCanon.slot, deferredCanon.url);
+  }
+
+  /**
+   * Mount the face's canon once ea stands (see `deferredCanon`): resolve its document, then splice its layer in just above the
+   * nearest layer the recipe lays beneath it. A canon that never arrives, or an island torn down meanwhile, mounts nothing and
+   * says so; the daemon wiki stands on its other layers.
+   */
+  async function _mountDeferredCanon(msg: IslandMsg_Manifest, slot: SlotUri, docUrl: string): Promise<void> {
+    const composite = _composite;
+    const repo = _repo;
+    if (!composite || !repo) return;
+    const out = await waitForSlotDocument<DocHandle<LarDoc>>({
+      find:      () => repo.find<LarDoc>(docUrl as AutomergeUrl),
+      peerCount: () => repo.peers.length,
+      absence:   (rejection) => rejection instanceof Error && /is unavailable/.test(rejection.message),
+      now:       mono,
+      lastHeard: () => _lastSyncHeardAt,
+      sleep:     (ms) => new Promise((res) => setTimeout(res, ms)),
+      defer,
+      onWake: (wake) => {
+        _syncWakes.add(wake);
+        repo.networkSubsystem.on("peer", wake);
+        return () => { _syncWakes.delete(wake); repo.networkSubsystem.off("peer", wake); };
+      },
+      budgets:   { silenceMs: SLOT_SILENCE_TIMEOUT_MS, hardCapMs: SLOT_READY_HARD_CAP_MS, pollMs: SLOT_POLL_MS },
+    }).catch((error: unknown) => ({ outcome: "refused" as const, why: error instanceof Error ? error.message : String(error) }));
+    if (_composite !== composite) return;
+    if (out.outcome !== "ready") {
+      console.warn(`[island] the face's canon ${slot} did not mount after ea (${out.outcome}${"why" in out ? `: ${String(out.why)}` : ""}): the daemon wiki stands on its other layers`);
+      return;
+    }
+    if (composite.hasBag(slot)) return;
+    const order = expandRecipe(msg.recipe);
+    let at = 0;
+    for (const below of order.slice(order.indexOf(slot) + 1)) {
+      const index = composite.layerIndexOf(below);
+      if (index >= 0) { at = index + 1; break; }
+    }
+    const store = new AutomergeDocStore(out.handle, slot);
+    composite.addLayer({ bagId: slot, store, ...slotLayerFlags(slot, msg.recipe.wikiSlug) }, at);
+    _handles.set(slot, out.handle);
+    store.emitInitialReplay();
+    store.markSyncComplete();
   }
 
   // ── Teardown / Demote (OTP terminate) ──────────────────────────────────────

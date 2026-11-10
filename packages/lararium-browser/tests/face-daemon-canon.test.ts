@@ -38,7 +38,7 @@ describe("browser daemon face canon", () => {
     const first = await standFaceDaemonCanon({ repo, control: catalog, faceRelation: relation });
     const second = await standFaceDaemonCanon({ repo, control: catalog, faceRelation: relation });
     expect(second.url).toBe(first.url);
-    expect(second.handle.url).toBe(first.handle.url);
+    expect(second.url).toBe(first.url);
   });
   test("control names a vessel's canon separately from another device and the face catalog", async () => {
     const deviceRepo = new Repo();

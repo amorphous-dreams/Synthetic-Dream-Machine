@@ -12,7 +12,7 @@ import { daemonFaceCanonBag } from "./wiki-recipe.js";
 export interface FaceDaemonCanon {
   readonly bagId: string;
   readonly url: string;
-  readonly handle: DocHandle<LarDoc>;
+  readonly documentId: string;
 }
 
 /** Reopen or mint the document named in the vessel control home.
@@ -20,7 +20,12 @@ export interface FaceDaemonCanon {
  * NAMED BEFORE ITS FIRST BYTE. A fresh canon's id mints ahead; `beforeFirstByte` hands the vessel's sealed map that id
  * under the canon's bag (it seals under the lit face) before the document's first byte moves, and only then does the
  * document stand and the control document name it. A reopen finds a document the map already names from the control
- * document. */
+ * document.
+ *
+ * A REOPEN NAMES, IT NEVER READS. The canon rests sealed under the face, and a restart's load of it waits on the daemon
+ * island's door (`door-unanswered`), which opens only after the composition this stand serves. So the reopen hands back
+ * the name the control document carries and the island opens the document once its door stands; awaiting the document
+ * here would hold the composition on itself. */
 export async function standFaceDaemonCanon(opts: {
   readonly repo: Repo;
   /** The vessel control document. */
@@ -32,8 +37,9 @@ export async function standFaceDaemonCanon(opts: {
   const title = `${CONTROL_HOME_ID}/daemon-canon/${encodeURIComponent(opts.faceRelation)}`;
   const named = tiddlerText(ownEntry(opts.control.doc()?.tiddlers, title));
   if (named && named.startsWith("automerge:")) {
-    opts.beforeFirstByte?.(bagId, parseAutomergeUrl(named as AutomergeUrl).documentId);
-    return { bagId, url: named, handle: await opts.repo.find<LarDoc>(named as AutomergeUrl) };
+    const documentId = parseAutomergeUrl(named as AutomergeUrl).documentId;
+    opts.beforeFirstByte?.(bagId, documentId);
+    return { bagId, url: named, documentId };
   }
   const documentId = parseAutomergeUrl(generateAutomergeUrl()).documentId;
   opts.beforeFirstByte?.(bagId, documentId);
@@ -41,5 +47,5 @@ export async function standFaceDaemonCanon(opts: {
   opts.control.change((doc) => {
     doc.tiddlers[title] = storedLarRecord(title, { text: handle.url, kind: "oracle" }, "daemon-face-canon");
   });
-  return { bagId, url: handle.url, handle };
+  return { bagId, url: handle.url, documentId };
 }

@@ -52,7 +52,7 @@ describe("the daemon wiki's canon per face", () => {
     expect(first.bagId).toBe(daemonFaceCanonBag(F));
     expect(tiddlerText(ownEntry(catalog.doc()?.tiddlers, `${CONTROL_HOME_ID}/daemon-canon/${encodeURIComponent(F)}`))).toBe(first.url);
     const second = await standFaceDaemonCanon({ repo, control: catalog, faceRelation: F });
-    expect(second.handle.documentId).toBe(first.handle.documentId);
+    expect(second.documentId).toBe(first.documentId);
   });
 
   test("a face relation that is no relation names no canon", () => {
