@@ -67,7 +67,7 @@ import {
   type IslandMsg_Manifest,
   type IslandToVesselMsg,
   type SlotUri,
-  type LarTiddlerRecord, ownEntry, CONTROL_HOME_ID, controlStoreOf, refusingControlStore, ControlHomeUnavailable} from "@lararium/mesh";
+  type LarTiddlerRecord, ownEntry, CONTROL_HOME_ID, controlStoreOf, floorAnswerStore, mkDaemonFloorAnswer, ControlHomeUnavailable} from "@lararium/mesh";
 import { IslandKernel } from "./island-kernel.js";
 import { waitForSlotDocument } from "./slot-wait.js";
 import { buildIslandRecipe, seedDrained } from "./island-recipe.js";
@@ -419,7 +419,10 @@ export function runSovereignKernel(
     _control = null;
     if (msg.grants.controlRefusal) {
       // A LOCKED (or faceless) VESSEL FAILS CLOSED: the island resolves no control document and every control act refuses by name.
-      _control = refusingControlStore(new ControlHomeUnavailable("the vessel cannot read its control document now", msg.grants.controlRefusal));
+      // The floor still answers the acts that write no control fact: each answer crosses to the vessel's own floor store, the
+      // memory the verb door waits on, and rests nowhere.
+      _control = floorAnswerStore(new ControlHomeUnavailable("the vessel cannot read its control document now", msg.grants.controlRefusal),
+        (record) => _post(mkDaemonFloorAnswer({ tiddler: { ...record.tiddler }, ...(record.meta ? { meta: { ...record.meta } } : {}) })));
     } else if (msg.grants.controlUrl) {
       const controlHandle = await _resolveSlot(_repo, msg.grants.controlUrl, CONTROL_HOME_ID, msg.wikiUri);
       if (!controlHandle) return;

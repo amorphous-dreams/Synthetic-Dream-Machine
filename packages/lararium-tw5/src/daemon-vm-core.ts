@@ -77,6 +77,8 @@ import {
   type DaemonMsg_DelegateVerb,
   type DaemonMsg_ResolveBindingResult,
   type DaemonMsg_GateVerbResult,
+  type DaemonMsg_FloorAnswer,
+  type LarTiddlerRecord,
   type DaemonMsg_WorldlineCompareResult,
   type DaemonMsg_WorldlineTrajectoryResult,
   type WorldlineStubWire,
@@ -592,6 +594,16 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     // awaitIslandMsg subscription — neither needs a console echo.
     if (raw.type === "fault") {
       console.error(`[daemon-island:fault] ${JSON.stringify(raw).slice(0, 240)}`);
+    }
+
+    // A FLOOR'S VERB ANSWER: the island's floor store took it; the vessel's floor store holds it for the verb door that waits.
+    if (raw.type === "daemon:floor-answer") {
+      const msg = raw as DaemonMsg_FloorAnswer;
+      if (controlRefused) {
+        void control.put(msg.record as unknown as LarTiddlerRecord, { kind: "lares-verb", requestId: String(msg.record.tiddler["request-id"] ?? "") })
+          .catch((e: unknown) => console.warn(`[daemon] a floor answer for ${String(msg.record.tiddler.title)} found no floor: ${e instanceof Error ? e.message : String(e)}`));
+      }
+      return;
     }
 
     if (raw.type === "daemon:gate-verb-result") {

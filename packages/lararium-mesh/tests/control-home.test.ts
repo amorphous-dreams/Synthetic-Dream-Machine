@@ -71,7 +71,9 @@ describe("the vessel's control document", () => {
     const daemon = repo.create<LarDoc>(emptyLarDoc());
     const control = await standControlHome(repo, daemon);
     expect(controlHomeRefusal(control)?.refusal).toBe(CONTROL_HOME_UNNAMED);
-    await expect(controlStoreOf(control).get(`${OUTCOME_URI_PREFIX}r1`)).rejects.toMatchObject({ refusal: CONTROL_HOME_UNNAMED });
+    // The floor answers a verb's answer from memory alone (none waits) and refuses every control fact by the stand-in's name.
+    expect(await controlStoreOf(control).get(`${OUTCOME_URI_PREFIX}r1`)).toBeNull();
+    await expect(controlStoreOf(control).get(`${RECEIPT_FACT_URI_PREFIX}r1`)).rejects.toMatchObject({ refusal: CONTROL_HOME_UNNAMED });
     expect(controlHomeUrlOf(daemon.doc())).toBeNull();
     await repo.flush();
     expect(restsAny(inner, control.documentId)).toBe(false);

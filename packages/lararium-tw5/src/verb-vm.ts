@@ -12,7 +12,7 @@
 import type { BatchMode, CompositeStore, Verb, VerbTargetResult } from "@lararium/mesh";
 import {
   EFFECT_URI_PREFIX, VERB_RESULT_KEY, concludeVerb, buildVerb, buildRunningPatch,
-  canonicalJsonBytes, sha256HexBytesSync, verbInputDigest, isVerbRefusal,
+  canonicalJsonBytes, sha256HexBytesSync, verbInputDigest, isVerbRefusal, ControlHomeUnavailable,
 } from "@lararium/mesh";
 import type { TW5Engine } from "./tw5-vm.js";
 
@@ -268,8 +268,10 @@ export async function dispatchVerb(
     await writeOutcome(control, {
       invocation, status: "error", errorMessage: errorText(err),
       // A reactor that refuses by name hands its machine-read reason to the outcome; a plain
-      // failure carries none.
+      // failure carries none. An act that wrote a control fact on a place with no readable control
+      // document refuses by that document's name (`control-home-unnamed`, `vessel-locked`).
       ...(isVerbRefusal(err) && { refusal: err.reason }),
+      ...(err instanceof ControlHomeUnavailable && { refusal: err.refusal }),
     });
   }
 

@@ -17,7 +17,7 @@ import { createServer } from "node:http";
 import { cpSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { OUTCOME_URI_PREFIX, VESSEL_LOCKED } from "@lararium/mesh";
+import { OUTCOME_URI_PREFIX, RECEIPT_FACT_URI_PREFIX, VESSEL_LOCKED } from "@lararium/mesh";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 import { direct } from "./direct-store.js";
 import { TEST_CUSTODY, TEST_SLOT } from "./found-route.js";
@@ -59,7 +59,10 @@ describe("a locked floor reaches for no sealed document", () => {
     expect(controlId, "the floor's stand-in names the founded control document").toMatch(/\w{20,}/);
     expect(Object.keys(herm.repo.handles), "the floor's Repo holds a handle for the sealed control document").not.toContain(controlId);
     expect(said.filter((line) => /SealedDocumentRefusal|session-absent/.test(line))).toEqual([]);
-    await expect(herm.daemon.control.get(`${OUTCOME_URI_PREFIX}floor`)).rejects.toMatchObject({ refusal: VESSEL_LOCKED });
+    // The floor's control store answers a verb answer from its memory alone (none waits here) and refuses every control
+    // fact by the stand-in's name: a receipt fact never reads off a locked floor.
+    expect(await herm.daemon.control.get(`${OUTCOME_URI_PREFIX}floor`)).toBeNull();
+    await expect(herm.daemon.control.get(`${RECEIPT_FACT_URI_PREFIX}floor`)).rejects.toMatchObject({ refusal: VESSEL_LOCKED });
 
     // F2 — THE UNLOCK RECOMPOSES: the floor stands down, the key opens, and the sovereign composition reads its control document.
     await withLarRoot(root, () => herm!.teardown());

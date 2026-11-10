@@ -693,6 +693,21 @@ export interface DaemonMsg_ResidencyOpResult {
  * island so the operator sees it. Fire-and-forget (best-effort UX); main skips wikis
  * that aren't mounted. The daemon computes "affected by content"; main filters "live".
  */
+/**
+ * Island → vessel: one verb ANSWER the daemon island's floor store took (`floorAnswerStore`): an outcome, or the effect
+ * index beside a done one, for an act a place answered with no readable control document. The vessel holds it in its own
+ * floor store for the caller that waits on it; nothing rests.
+ */
+export interface DaemonMsg_FloorAnswer {
+  type: "daemon:floor-answer";
+  /** The answer record, under an outcome or effect title (the vessel's floor store refuses any other). */
+  record: { tiddler: Record<string, unknown>; meta?: Record<string, unknown> };
+}
+
+export function mkDaemonFloorAnswer(record: DaemonMsg_FloorAnswer["record"]): DaemonMsg_FloorAnswer {
+  return { type: "daemon:floor-answer", record };
+}
+
 export interface DaemonMsg_WikiAlert {
   type: "daemon:wiki-alert";
   /** The affected wiki's slug — main maps it to `${hostId}:${slug}` to find the island. */
@@ -1113,6 +1128,7 @@ export type IslandToVesselMsg =
   | DaemonMsg_EvictRequest
   | DaemonMsg_ResidencyOp
   | DaemonMsg_WikiAlert
+  | DaemonMsg_FloorAnswer
   | IslandMsg_CasWant
   | IslandMsg_DyadAsk
   | IslandMsg_ReceiptRequest
@@ -1176,8 +1192,13 @@ export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
   if (v.type === LAR_CONTROL_RESULT) return readLarControlResult(v) !== null;
   if (v.type === LAR_SERVICE) return readLarService(v) !== null;
   if (isPortKind(v.type)) return readPortIslandMsg(v) !== null;
+  if (v.type === "daemon:floor-answer") {
+    const record = (v as Record<string, unknown>).record as Record<string, unknown> | undefined;
+    const tiddler = record?.tiddler as Record<string, unknown> | undefined;
+    return typeof record === "object" && record !== null && typeof tiddler === "object" && tiddler !== null && typeof tiddler.title === "string";
+  }
   return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "gate:clear", "gate:refused", "wiki:verb-result", "daemon:face-settled", "daemon:delegate-verb", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:gate-verb-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "receipt:request", "rest:ask", "custody:write", "session:sign", "view:catalog", "view:content", "view:settle", "docstore:sealed", "docstore:opened", "docstore:live", "docstore:slot", "docstore:answering", "docstore:silent"] as const).includes(
-    v.type as Exclude<IslandToVesselMsg["type"], "receipt:asks-done" | LarIslandToVesselMsg["type"] | PortIslandToVesselMsg["type"]>,
+    v.type as Exclude<IslandToVesselMsg["type"], "receipt:asks-done" | "daemon:floor-answer" | LarIslandToVesselMsg["type"] | PortIslandToVesselMsg["type"]>,
   );
 }
 

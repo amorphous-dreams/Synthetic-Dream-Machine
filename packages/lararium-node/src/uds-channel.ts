@@ -41,6 +41,7 @@
 import { type Socket } from "node:net";
 import { randomUUID } from "node:crypto";
 import { PARK_LIMIT } from "./owned-store.js";
+import { FLOOR_VERBS } from "./floor-verbs.js";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import {
   CompositeStore,
@@ -104,6 +105,8 @@ export interface UdsChannelOptions {
   readonly beforeSignerDrops?: (signer: UdsSessionSigner) => Promise<void>;
   /** The vessel's control document (`standControlHome`): its heads name a receipt's durability. */
   readonly controlHandle: DocHandle<LarDoc>;
+  /** The verbs a one-shot runs while the control document stands as a stand-in (`floor-verbs`); every other refuses by its name. */
+  readonly floorVerbs?: ReadonlySet<string>;
   /** The control document as a store (result.daemon.control): the outcome ledger and the receipt facts rest here. */
   readonly control: CompositeStore;
   /**
@@ -754,6 +757,7 @@ export function serveUdsFront(a: {
 
 export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   const { controlHandle, claim } = opts;
+  const floorVerbs = opts.floorVerbs ?? FLOOR_VERBS;
   const timeoutMs = opts.timeoutMs ?? 30_000;
   const log = opts.onLog ?? (() => { /* quiet */ });
 
@@ -1315,10 +1319,20 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         queueSession(parsed, sock);
         return;
       }
-      // A LOCKED VESSEL FAILS CLOSED: with its control document unread (the key shut, or no face named one), every
-      // invocation, receipt and cancel refuses by that name before it reads or writes a fact; nothing runs, nothing rests.
+      // A LOCKED VESSEL FAILS CLOSED, AND A FACELESS PLACE HOLDS NO CONTROL DOCUMENT: with the control document unread (the
+      // key shut, or no face named one), a session's act and a cancel refuse by that name before they read or write a fact.
+      // THE FLOOR STILL ANSWERS: a one-shot invocation runs unledgered on the floor (below), and an act that writes a control
+      // fact refuses by the same name at that write; its answer waits in the floor store's memory and rests nowhere.
       const controlRefused = controlHomeRefusal(controlHandle);
-      if (controlRefused) return fail(controlRefused.message, controlRefused.refusal);
+      if (controlRefused && (sessionRequestId !== undefined || isCancelQuery(parsed))) return fail(controlRefused.message, controlRefused.refusal);
+      if (controlRefused && isReceiptQuery(parsed)) {
+        // The floor keeps no receipt fact: an answer its memory still holds reads back; any other refuses by name.
+        void readOutcomeFor(parsed.requestId).then((held) => held
+          ? respond({ requestId: parsed.requestId, state: held["status"], ...(held["results"] !== undefined ? { results: held["results"] } : {}),
+            ...(held["errorMessage"] !== undefined ? { errorMessage: held["errorMessage"] } : {}), ...(held["refusal"] !== undefined ? { refusal: held["refusal"] } : {}) })
+          : fail(controlRefused.message, controlRefused.refusal), (err) => fail(err instanceof Error ? err.message : String(err)));
+        return;
+      }
       // READ-ONLY QUERIES NEVER REACH `placeVerb` (H1 fix item 3).
       // BOTH DOORS BELOW COUNT AS WORK THE SEAT WAITS OUT: a caller that hangs up while its cancel still writes, or
       // while its read still holds the ledger, never lets the seat read as drained under them.
@@ -1375,6 +1389,27 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         // The worker's own digest formula (`verbInputDigest`, mesh) — async, so computed inside
         // this deferred tick rather than synchronously in the `data` handler above.
         const inputDigest = await inputDigestOf(inv);
+        const floorRefused = controlHomeRefusal(controlHandle);
+        if (floorRefused) {
+          if (!floorVerbs.has(inv.verb)) return fail(floorRefused.message, floorRefused.refusal);
+          // THE FLOOR'S ONE-SHOT: no receipt fact records it (the floor holds no control document to rest one in), so a
+          // caller gone before dispatch leaves nothing to arbitrate and the act never runs; an id whose answer the floor
+          // still holds reads that answer back and never runs twice.
+          if (sock.destroyed || sock.readableEnded) {
+            log(`dropped a hung-up "${inv.verb}" floor invocation (request ${requestId}): its caller's socket ended before this vessel read it, so it never ran`);
+            return;
+          }
+          const held = await readOutcomeFor(requestId);
+          if (held) return respond(held);
+          runVerb(inv, requestId).then(
+            (outcome) => { respond(outcome); },
+            (err) => {
+              if (err instanceof VesselWaitExpired) return answerUnknown(requestId);
+              fail(err instanceof Error ? err.message : String(err));
+            },
+          );
+          return;
+        }
         if (sock.destroyed || sock.readableEnded) {
           // H1, now DURABLE: this id is recorded ABANDONED (flushed) before this vessel lets go of
           // the connection, so a LATER connection carrying the SAME request id (a read-back, a

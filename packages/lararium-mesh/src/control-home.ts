@@ -20,7 +20,9 @@ import { ownEntry } from "./stored-value.js";
 import { storedLarRecord } from "./stored-record.js";
 import { CompositeStore } from "./composite-store.js";
 import { AutomergeDocStore } from "./automerge-doc-store.js";
-import type { LarTiddlerRecord, LarTiddlerStore } from "./tiddler-store.js";
+import type { ChangeOrigin, LarTiddlerChange, LarTiddlerRecord, LarTiddlerStore } from "./tiddler-store.js";
+import { EFFECT_URI_PREFIX, OUTCOME_URI_PREFIX } from "./verb-tiddler.js";
+import { RETIRED_EVENT_ID, effectRecordUri } from "./effect-record.js";
 
 export function vesselOnlyDocIds(controlDoc: LarDoc | null | undefined, controlUrl: string | null): Set<string> {
   const ids = new Set<string>();
@@ -118,6 +120,57 @@ function standIn(repo: Repo, key: string, documentId: string | null, refusal: ()
   standIns.set(handle, refusal());
   held.set(key, handle);
   return handle;
+}
+
+/** How many floor answers a floor store holds before the oldest leaves: answers serve the caller that waits on them. */
+export const FLOOR_ANSWER_RING = 1024;
+
+/** Whether `title` names a verb's answer (its outcome, or the effect index a done outcome writes beside it). */
+export function isFloorAnswerTitle(title: string): boolean {
+  return title.startsWith(OUTCOME_URI_PREFIX) || title.startsWith(EFFECT_URI_PREFIX);
+}
+
+/**
+ * THE FLOOR'S ANSWER CHANNEL: the control store a stand-in stands as (a herm, a hearth before its face, a locked hearth).
+ *
+ * A place with no readable control document still answers the acts that write no control fact: a read-only query, a row
+ * of the place (a herm taking a carry bundle, a lift's founding refused by name). Such an act's ANSWER (its outcome and
+ * the effect index beside a done one) is held here in memory alone, for the caller that waits on it, and never rests:
+ * no Repo holds it, no document merges it into the control document a later unlock stands, and the oldest leaves once
+ * {@link FLOOR_ANSWER_RING} wait. Every other read and write refuses by the stand-in's name, so an act that writes a control
+ * fact (a receipt fact, a summons, a mailbox row, a lease slot) refuses `control-home-unnamed` on a faceless place and
+ * `vessel-locked` on a locked hearth, at the write it asked for.
+ *
+ * `onAnswer` hears each answer this store takes: the daemon island hands its answers to the vessel this way, since the
+ * island's floor store and the vessel's are two memories in two realms.
+ */
+export function floorAnswerStore(refusal: ControlHomeUnavailable, onAnswer?: (record: LarTiddlerRecord, origin: ChangeOrigin) => void): CompositeStore {
+  // Each refusal throws fresh, so its stack names the act that asked.
+  const refuse = async (): Promise<never> => { throw new ControlHomeUnavailable(refusal.why, refusal.refusal); };
+  const answers = new Map<string, LarTiddlerRecord>();
+  // The control bag's retirement marker, which every write through a composite reads first: a floor never retires it.
+  const retiredMarker = effectRecordUri(CONTROL_HOME_ID, RETIRED_EVENT_ID);
+  const listeners = new Set<(change: LarTiddlerChange) => void>();
+  const store: LarTiddlerStore = {
+    listVisible: refuse,
+    get: async (title: string) => isFloorAnswerTitle(title) ? answers.get(title) ?? null : title === retiredMarker ? null : refuse(),
+    put: async (record: LarTiddlerRecord, origin: ChangeOrigin) => {
+      const title = String(record.tiddler.title);
+      if (!isFloorAnswerTitle(title)) return refuse();
+      answers.delete(title);
+      answers.set(title, record);
+      while (answers.size > FLOOR_ANSWER_RING) answers.delete(answers.keys().next().value as string);
+      for (const fn of [...listeners]) { try { fn({ title, record, origin, bag: CONTROL_HOME_ID }); } catch { /* a listener's fault stays its own */ } }
+      onAnswer?.(record, origin);
+    },
+    tombstone: refuse,
+    remove: refuse,
+    writeFamily: refuse,
+    subscribe: (fn) => { listeners.add(fn); return () => { listeners.delete(fn); }; },
+  };
+  const control = new CompositeStore();
+  control.addLayer({ bagId: CONTROL_HOME_ID, store, writable: true, defaultWritable: true });
+  return control;
 }
 
 /** A control store that refuses every read and write by name: the shape a stand-in's store takes. */
@@ -241,11 +294,12 @@ export async function readControlHome(repo: Repo, daemonHandle: DocHandle<LarDoc
 /**
  * The control document as a store: one layer under `CONTROL_HOME_ID`, its own default writable, so a control writer's put
  * lands there and nowhere else. No recipe composes it and no mirror names its bag. A stand-in's store refuses every read
- * and write by its refusal's name (`vessel-locked`, `control-home-unnamed`).
+ * and write by its refusal's name (`vessel-locked`, `control-home-unnamed`), save the floor's verb answers it holds in memory
+ * alone (`floorAnswerStore`).
  */
 export function controlStoreOf(handle: DocHandle<LarDoc>): CompositeStore {
   const refused = standIns.get(handle);
-  if (refused) return refusingControlStore(refused);
+  if (refused) return floorAnswerStore(refused);
   const control = new CompositeStore();
   const store = new AutomergeDocStore(handle, CONTROL_HOME_ID);
   control.addLayer({ bagId: CONTROL_HOME_ID, store, writable: true, defaultWritable: true });
