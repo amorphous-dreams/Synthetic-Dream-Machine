@@ -41,6 +41,8 @@ class _FakeDaemon:
         self.path = path
         self.lines: "list[dict]" = []
         self.output = None
+        # A refusal the seat itself answers (`{status: "error", errorMessage, refusal: {reason}}`), in place of a receipt.
+        self.error: "dict | None" = None
         self._srv = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self._srv.bind(path)
         self._srv.listen(4)
@@ -61,8 +63,9 @@ class _FakeDaemon:
                         break
                     buf += chunk
                 self.lines.append(json.loads(buf.split(b"\n", 1)[0].decode()))
-                receipt = {"status": "ok", "requestId": "r1",
-                           "results": {"summary": {"ok": True, "output": self.output}}}
+                receipt = ({"status": "error", "requestId": "r1", **self.error} if self.error is not None else
+                           {"status": "ok", "requestId": "r1",
+                            "results": {"summary": {"ok": True, "output": self.output}}})
                 conn.sendall((json.dumps(receipt) + "\n").encode())
 
     def close(self) -> None:
@@ -158,11 +161,42 @@ def test_meme_put_bag(daemon):
 
 def test_meme_put_carries_the_base(daemon):
     # `base` = the canonical hash the writer read back from meme_get — the merge base the gate reads.
-    daemon.output = dict(_PUT_OUTPUT, decision="conflict")
+    daemon.output = _PUT_OUTPUT
     out = _put(uri=_URI, text="the body", recipe="sdm", base="sha256-get")
     assert daemon.wire() == {"verb": "meme-put",
                              "args": {"recipe": "sdm", "uri": _URI, "text": "the body", "base": "sha256-get"}}
-    assert out["decision"] == "conflict"
+    assert out["decision"] == "ingest"
+
+
+def test_meme_put_conflict_raises_a_tool_error_naming_the_live_hash(daemon):
+    # A WRITE THAT NEVER LANDED NEVER READS AS SUCCESS: a stale base answers `decision: conflict` inside the
+    # receipt, and the tool raises (the MCP skin answers isError), naming the decision, its reason and the live
+    # hash the writer re-reads against. An AI that skips `decision` still hears the refusal.
+    daemon.output = dict(_PUT_OUTPUT, decision="conflict", reason="both-moved", landed=[], canonicalHash="sha256-live")
+    with pytest.raises(uds.LaresVerbError, match=r"meme-put conflict.*both-moved.*sha256-live"):
+        _put(uri=_URI, text="the body", recipe="sdm", base="sha256-stale")
+
+
+def test_meme_put_refuse_raises_a_tool_error_naming_the_warnings(daemon):
+    daemon.output = dict(_PUT_OUTPUT, decision="refuse", landed=[], warnings=["the carrier names no title"])
+    with pytest.raises(uds.LaresVerbError, match=r"meme-put refuse.*the carrier names no title"):
+        _put(uri=_URI, text="the body", recipe="sdm")
+
+
+def test_meme_put_noop_answers_success(daemon):
+    # CONTROL: a noop moved nothing because the records already say it; that write stands, so it answers.
+    daemon.output = dict(_PUT_OUTPUT, decision="noop", reason="canonical-equivalent", landed=[])
+    assert _put(uri=_URI, text="the body", recipe="sdm")["decision"] == "noop"
+
+
+def test_meme_put_on_a_locked_vessel_names_the_unlock(daemon):
+    # A LOCKED VESSEL FAILS CLOSED and the seat refuses by name: the tool error leads with `vessel-locked` and
+    # names the one act that opens it.
+    daemon.error = {"errorMessage": "control-home-unavailable: vessel-locked: the vessel's key stays shut",
+                    "refusal": {"reason": "vessel-locked"}}
+    with pytest.raises(uds.LaresVerbError, match=r"^vessel-locked: run `?lares vault unlock`?") as caught:
+        _put(uri=_URI, text="the body", recipe="default")
+    assert caught.value.refusal == "vessel-locked"
 
 
 def test_meme_put_refuses_recipe_and_bag_together(daemon):

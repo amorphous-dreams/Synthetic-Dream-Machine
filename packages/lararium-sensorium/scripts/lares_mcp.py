@@ -964,11 +964,25 @@ def build_mcp(coordinator: LaresCoordinator):
         island cannot write it); neither, or both, refuses as `no-container`. Slugs ride bare (`sdm`, `lares`). `base` carries the
         canonical hash the writer read back from `meme_get` — the merge base: stale → the receipt's
         `decision` reads "conflict"; absent → adopt. Returns the receipt {uri, decision, grade, landed,
-        tombstoned, canonicalHash, warnings, diagnostics}. Rides the @daemon wire, never a store."""
+        tombstoned, canonicalHash, warnings, diagnostics} for a write that stands (`ingest`, or `noop` where the
+        records already say it). A WRITE THAT NEVER LANDED RAISES: `refuse` and `conflict` answer a tool error
+        naming the decision, its reason or warnings, and the live hash to re-read against; a locked vessel
+        answers `vessel-locked: run lares vault unlock`. Rides the @daemon wire, never a store."""
         args: dict = {**_meme_container("meme_put", recipe, bag), "uri": uri, "text": text}
         if base is not None:
             args["base"] = base
-        return _meme_wire("meme-put", args)
+        receipt = _meme_wire("meme-put", args)
+        decision = (receipt or {}).get("decision")
+        if decision in ("refuse", "conflict"):
+            said = [f"meme-put {decision}: nothing landed at {uri}"]
+            if receipt.get("reason"):
+                said.append(f"reason {receipt['reason']}")
+            if receipt.get("warnings"):
+                said.append("; ".join(str(w) for w in receipt["warnings"]))
+            if receipt.get("canonicalHash"):
+                said.append(f"the records read canonicalHash {receipt['canonicalHash']}: meme_get, merge, put with that base")
+            raise uds.LaresVerbError(" · ".join(said), f"meme-put-{decision}")
+        return receipt
 
     @mcp.tool()
     def meme_get(uri: str, recipe: "str | None" = None, bag: "str | None" = None) -> "dict | None":

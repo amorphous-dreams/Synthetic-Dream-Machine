@@ -41,7 +41,31 @@ class LaresDaemonUnreachable(Exception):
 
 
 class LaresVerbError(Exception):
-    """The daemon ran the verb and it failed. Carries the daemon's own message."""
+    """The daemon ran the verb and it failed, or refused it by name. Carries the daemon's own message, and the
+    refusal's name in `refusal` where the vessel gave one (`vessel-locked`, `control-home-unnamed`, ...)."""
+
+    def __init__(self, message: str, refusal: "str | None" = None) -> None:
+        super().__init__(message)
+        self.refusal = refusal
+
+
+# The one next step each refusal a person can clear names, leading the message so a reader meets it first.
+_REFUSAL_NEXT = {
+    "vessel-locked": "run `lares vault unlock`, then ask again",
+    "control-home-unnamed": "this place holds no face; light one with `lares persona new 0 --name '<label>'`",
+}
+
+
+def refused(out: dict, fallback: str) -> LaresVerbError:
+    """The error a seat's `{status: "error"}` answer raises: led by the refusal's name and its next step where the
+    vessel named one (`vessel-locked: run lares vault unlock, then ask again — <the vessel's words>`)."""
+    reason = (out.get("refusal") or {}).get("reason") if isinstance(out.get("refusal"), dict) else None
+    words = out.get("errorMessage") or fallback
+    if reason in _REFUSAL_NEXT:
+        return LaresVerbError(f"{reason}: {_REFUSAL_NEXT[reason]} — {words}", reason)
+    if reason:
+        return LaresVerbError(words if reason in words else f"{reason}: {words}", reason)
+    return LaresVerbError(words)
 
 
 def data_dir() -> str:
@@ -144,7 +168,7 @@ def call(verb: str, args: "dict | None" = None, *, timeout: float = 30.0,
 
     out = json.loads(buf.split(b"\n", 1)[0].decode())
     if out.get("status") == "error":
-        raise LaresVerbError(out.get("errorMessage") or f"verb {verb!r} failed")
+        raise refused(out, f"verb {verb!r} failed")
     return out
 
 
