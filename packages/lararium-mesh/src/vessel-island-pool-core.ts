@@ -24,7 +24,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/vessel-island-pool-core
  */
 
-import { attachMessageChannelSync } from "./island-repo.js";
+import { attachMessageChannelSync, markWikiIslandPeer } from "./island-repo.js";
 import { awaitIslandMsg } from "./vessel-host.js";
 import { SYSTEM_BAGS, wikiBagUri, wikiSlotUri, type WikiSlotKind } from "./wiki-recipe.js";
 import { isFaceScopedBag } from "./persona-scope.js";
@@ -707,8 +707,10 @@ export class VesselIslandPoolCore {
     const { mainPort, syncPort } = this._host.newSyncChannel();
     // A session island's port rides its view and nothing wider; an island outside any session rides the port bare.
     if (this._mainRepo) {
-      if (view) view.attach(this._mainRepo, mainPort);
-      else attachMessageChannelSync(this._mainRepo, mainPort, (peerId) => { this._islandPeerOf.set(wikiId, peerId); });
+      // EVERY POOL ISLAND IS A WIKI ISLAND: it renders pages and syncs no custody document (`markWikiIslandPeer`).
+      const repo = this._mainRepo;
+      if (view) { markWikiIslandPeer(repo, view.peerId); view.attach(this._mainRepo, mainPort); }
+      else attachMessageChannelSync(repo, mainPort, (peerId) => { markWikiIslandPeer(repo, peerId); this._islandPeerOf.set(wikiId, peerId); });
     }
 
     // A session's island spawns without the vessel's own doors: its view answers what it may ask.

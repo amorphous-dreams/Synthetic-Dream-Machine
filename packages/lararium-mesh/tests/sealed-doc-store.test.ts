@@ -284,7 +284,8 @@ describe("the browser vessel names its face by one subject", () => {
     expect(filing).toMatch(/bagOf: \(documentId\) => vesselHeldBagOf\(deviceDocs, secretHomes, opts\.litDevice\(\), documentId\) \?\? null/);
     expect(src).toMatch(/composeSealedRest<BrowserSaveSession>\(\{[\s\S]*?bagOf: sealedBagOf,[\s\S]*?sessionFace: \(\) => sealedCells\.face\(\),/);
     expect(src).not.toMatch(/\bwornAt\b/);
-    expect(src).toMatch(/const face = faceProofSubjectRef\(certificate\.scope as never\);/);
+    // The face reads by its subject at the session's anchor: a Nexus session's face-proof subject, a place session's place subject.
+    expect(src).toMatch(/const face = lift\.subject;/);
     expect(src).toMatch(/subject: face \}/);
     // `sealedCells.face` is set once on the lift and cleared on the lock, never from a dial.
     expect([...src.matchAll(/sealedCells\.face = /g)].length).toBe(2);

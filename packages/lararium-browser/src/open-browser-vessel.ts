@@ -39,7 +39,7 @@ import {
   GatedSyncLeg, oneWayDocumentsGate,
   LarWSClientAdapter,
   standSiblingChannel, siblingRefusalLine, groupSecretSealTitle, verifyGroupSecretSeal,
-  leaseEpochPrefix, controlHomeUrlOf, tiddlerText, vesselOnlyBook, islandPeersOf, type SiblingNetworkAdapter, type SiblingShare, type SiblingChannelStatus,
+  leaseEpochPrefix, controlHomeUrlOf, tiddlerText, vesselOnlyBook, islandPeersOf, wikiIslandPeersOf, type SiblingNetworkAdapter, type SiblingShare, type SiblingChannelStatus,
   BAG_IDS, slugFromUri, islandEventAsk, bagStackFromRec, recipeHostFacets, type WikiActivationCap,
   carriageStack, deriveMeshLeaf, type MeshPeer,
   materializeGenesisIsland, genesisCasManifestFromSeed, genesisCasCidsFromOracle, sha256HexBytesSync,
@@ -632,6 +632,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   const reverdict = (): void => { try { repo.shareConfigChanged(); } catch { /* the repo may be closing */ } };
   const vesselOnly = vesselOnlyBook(() => repo);
   let houseIslands: { has(peerId: string): boolean } = new Set<string>();
+  // The wiki islands among them (the pool marks each): they render pages and receive no custody document.
+  let wikiIslands: { has(peerId: string): boolean } = new Set<string>();
   let   fedGate: FederationGate | null = null;
   // THE SIBLINGS — peers this face's sibling channel PROVED (below, once the KEL is walked). A sibling holds
   // standing, never the house: it never shares freely, and only `siblingGate` (the ring's sibling path over the
@@ -750,7 +752,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       gate: () => siblingGate,
       // THE DYAD'S SHADOW (kapae#/reach): a sibling whose device the fleet root set aside reaches nothing.
       aside: (peerId) => siblingAside(peerId),
-    }, { has: (id) => vesselOnly.has(id) || secretHomes.has(id) }, { has: (peerId) => houseIslands.has(peerId) }),
+    }, { has: (id) => vesselOnly.has(id) || secretHomes.has(id) }, { has: (peerId) => houseIslands.has(peerId) }, { has: (peerId) => wikiIslands.has(peerId) }),
   });
   // THE SECRET HOME'S REST, bound to this Repo: an enrollment or an open maps the home before its first byte.
   bindSecretHomeRest(repo, secretHomes.rest((documentId) => sealedRest.restsSealed(documentId), () => {
@@ -771,6 +773,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     if (session !== null) void sealedRest.rebook(session).catch(() => { /* each keeps waiting, never clear */ });
   };
   houseIslands = islandPeersOf(repo);
+  wikiIslands = wikiIslandPeersOf(repo);
   let watchedControl: DocHandle<LarDoc> | null = null;
   const watchControl = async (daemon: DocHandle<LarDoc>): Promise<DocHandle<LarDoc>> => {
     const handle = await standControlHome(repo, daemon);
@@ -2243,6 +2246,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // shared with the daemon VM's own resolution above) and is read fresh per mount.
       vmManager = new BrowserVesselIslandPool({
         mainRepo: repo,
+        // V2: a wiki island's store asks the vessel's sealed rest before it rests a byte (secret home, face-sealed documents).
+        restsSealed: (documentId) => sealedRest.restsSealed(documentId),
         // D4 lends the actor grant; this vessel opens a read-only port until then.
         portPolicy: opts.portPolicy ?? ((binding, islandKey) => pagePortGrant({ binding, islandKey, faceId: portFaceId, daemonKey: DAEMON_SURFACE_ID })),
         ...(opts.onPortMessage ? { onPortMessage: opts.onPortMessage } : {}),
@@ -2466,11 +2471,12 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
  * A SIBLING — a peer the sibling channel proved — never reads as a house member: `siblings` hands it to the
  * sibling gate, the ring's sibling path, and nothing else reaches it.
  */
-export function browserShareConfig(relayPeers: ReadonlySet<string>, fedGateOf: () => FederationGate | null, siblings?: SiblingShare | null, vesselOnly?: { has(id: string): boolean }, islands?: { has(id: string): boolean }) {
+export function browserShareConfig(relayPeers: ReadonlySet<string>, fedGateOf: () => FederationGate | null, siblings?: SiblingShare | null, vesselOnly?: { has(id: string): boolean }, islands?: { has(id: string): boolean }, wikiIslands?: { has(id: string): boolean }) {
   // `siblings.aside` carries the dyad's shadow: mesh's one law reads it ahead of the sibling gate.
-  // VESSEL-ONLY DOCUMENTS (the secret home, the control document and what it names) reach only this vessel's own islands.
+  // VESSEL-ONLY DOCUMENTS (the secret home, the control document and what it names) reach only this vessel's own DAEMON
+  // island: a wiki island renders pages and never needs a custody document, so it never receives one (`wikiIslands`).
   return shareConfigOf(async (peerId, documentId) => {
-    if (documentId && vesselOnly?.has(documentId)) return !relayPeers.has(peerId) && !siblings?.isSibling(peerId) && !!islands?.has(peerId);
+    if (documentId && vesselOnly?.has(documentId)) return !relayPeers.has(peerId) && !siblings?.isSibling(peerId) && !!islands?.has(peerId) && !wikiIslands?.has(peerId);
     return federationShareDecision(relayPeers, fedGateOf(), peerId, documentId, siblings ?? null);
   });
 }

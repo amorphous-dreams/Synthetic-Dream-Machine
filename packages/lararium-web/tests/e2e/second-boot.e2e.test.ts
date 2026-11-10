@@ -18,6 +18,8 @@
  *   B1 — CONTROL: a saved edit between boots moves a Document's heads (the instrument reads a real write)
  *   B2 — the second and third boot hold every Document's heads, mint no Document, and add no peer row for a peer
  *        the second boot did not already hold
+ *   B3 — no island's store rests a clear copy of a Document the vessel holds sealed (a wiki island renders pages and
+ *        holds no custody document)
  *
  * The stand reads quiescence by its own event: two consecutive readings of the store that agree, taken after the
  * page reports live.
@@ -155,6 +157,12 @@ test("B1/B2 — a browser vessel's second and third boot hold every Document's h
     await page.reload();
     const three = await settled(page);
 
+    // B3 — A DOCUMENT THE VESSEL HOLDS SEALED RESTS CLEAR IN NO ISLAND'S STORE (the secret home, a face's sealed documents).
+    for (const [label, r] of [["boot 1", one], ["boot 2", two], ["boot 3", three]] as const) {
+      const sealedIds = new Set([...r.sealed.keys()].map((k) => k.split("|")[1]));
+      const clearCopies = [...r.heads.keys()].filter((k) => sealedIds.has(k.split("|")[1]));
+      assert.deepEqual(clearCopies, [], `${label}: no island store rests a clear copy of a document the vessel holds sealed`);
+    }
     for (const [label, before, after] of [["boot 2", edited, two], ["boot 3", two, three]] as const) {
       assert.deepEqual(names(after.heads), names(before.heads), `${label} mints no Document and drops none`);
       assert.deepEqual(names(after.sealed), names(before.sealed), `${label} mints no sealed Document and drops none`);

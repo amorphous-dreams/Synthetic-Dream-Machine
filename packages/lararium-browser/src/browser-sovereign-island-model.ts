@@ -35,7 +35,7 @@ import type { IslandBehavior } from "@lararium/tw5";
 import { readCasBlobFromOpfs } from "./browser-genesis.js";
 
 /** Browser storage composition: preserve ordinary wiki durability while the
- * D-VR daemon primary crossing stays ephemeral. */
+ * D-VR daemon primary crossing stays ephemeral; every island store stands behind the vessel's rest guard. */
 export function browserIslandStorage(msg: IslandMsg_Manifest, restsAtVessel?: (documentId: string) => Promise<boolean>) {
   // V2: the daemon island's owned store rests no document the vessel's rest seals (`islandRestGuard`).
   if (msg.storage?.type === "idb") {
@@ -43,7 +43,10 @@ export function browserIslandStorage(msg: IslandMsg_Manifest, restsAtVessel?: (d
     return restsAtVessel ? islandRestGuard(inner, restsAtVessel) : inner;
   }
   if (msg.storage?.type === "memory" || msg.ownedDocument) return undefined;
-  return shoreStorage(new IndexedDBStorageAdapter(msg.wikiUri));
+  // A WIKI ISLAND'S STORE rests no byte of a document the vessel holds sealed or held (the node's island rest guard, every
+  // island store): the pool answers its `rest:ask` from the vessel's sealed rest.
+  const inner = shoreStorage(new IndexedDBStorageAdapter(msg.wikiUri));
+  return restsAtVessel ? islandRestGuard(inner, restsAtVessel) : inner;
 }
 
 export interface BrowserIslandScope {

@@ -126,6 +126,26 @@ export function islandPeersOf(repo: Repo): { has(peerId: string): boolean } {
   return { has: (peerId) => arrivals.of(peerId)?.relation === HOUSE };
 }
 /**
+ * THE WIKI ISLANDS AMONG THE HOUSE'S ISLANDS. A wiki island renders pages and never needs a custody document (the secret
+ * home, the control document and what it names): only the daemon island, which holds the keys, syncs those. The pool marks
+ * each wiki island's peer as it arrives on the leg the pool attached (before the leg joins the network, so the mark
+ * precedes every share decision), and a vessel-only share verdict refuses such a peer while it still serves it every page
+ * document a house island reads. The mark keys on the peer id the island's own leg proved; a fresh island mints a fresh id.
+ */
+const WIKI_ISLANDS = new WeakMap<Repo, Set<string>>();
+/** Mark `peerId` as a wiki island of `repo`'s house; answers its unmark. */
+export function markWikiIslandPeer(repo: Repo, peerId: string): () => void {
+  let peers = WIKI_ISLANDS.get(repo);
+  if (!peers) { peers = new Set(); WIKI_ISLANDS.set(repo, peers); }
+  peers.add(peerId);
+  return () => { WIKI_ISLANDS.get(repo)?.delete(peerId); };
+}
+/** The peers the pool marked as wiki islands of `repo`'s house. */
+export function wikiIslandPeersOf(repo: Repo): { has(peerId: string): boolean } {
+  return { has: (peerId) => WIKI_ISLANDS.get(repo)?.has(peerId) === true };
+}
+
+/**
  * Mark one island arrival on `adapter`: call it from the island adapter's OWN `peer-candidate` listener, attached before the
  * adapter joins the Repo's network, so the mark precedes the subsystem's `peer` event. Answers this arrival's own unseat.
  */
