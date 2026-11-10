@@ -1706,11 +1706,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       const daemonAuth = {
         placeVerifyingKey: vesselIdentity.verifyingKey,
         // A BROWSER VESSEL HOLDS NO SEALED IDENTITY HOME, so the archive-write door's reading is
-        // vacuously open here: no seal stands that could hold it shut.
-        // It stays INERT regardless: this entry injects no `persistArchive`/`persistVeilArchive`, so
-        // the door has no writer to call and the island's per-boot export never lands; the keystore keeps
-        // the Archive each founding act handed out. The field rides
-        // REQUIRED so a populator that answers nothing fails at the compiler rather than at review.
+        // vacuously open here: no seal stands that could hold it shut. The island's writer is its custody write
+        // (`daemon-island-start`, `custody:write`), which the lift's `custodyWrite` answers while a lift stands and the
+        // floor refuses. The field rides REQUIRED so a populator that answers nothing fails at the compiler rather than at review.
         archiveOpens: true,
         // THE ATOM rides to the island as the face's own Individual: hex seed and its key. The island holds it for
         // the boot and the seed leaves this closure with the manifest.
