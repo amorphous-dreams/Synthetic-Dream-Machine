@@ -12,8 +12,10 @@
  * from the table; `wing-of` reads a transcript on this disk; `mempalace` tends the guest comparator in this home;
  * `meme normalize|check` and `meme project <file> --to md` run over a file with no daemon. They never forward.
  *
- * NEVER INSIDE THE VESSEL. The image sets `LAR_ROOT=/lar` and `LARES_IN_CONTAINER=1`, and docker plants `/.dockerenv`;
- * any of them keeps the route local, so a vessel whose environment lost its root refuses by name instead of looping.
+ * NEVER INSIDE THE VESSEL. The image sets `LAR_ROOT=/lar` and `LARES_IN_CONTAINER=1`; either keeps the route local, so
+ * a vessel whose environment lost its root refuses by name instead of looping (and the vessel holds neither the env
+ * file, under its own HOME, nor the shim's docker). `/.dockerenv` reads nothing here: a CI job or a devcontainer that
+ * drives docker stands in a container too, and it is a host.
  *
  * THE BRIDGE ADDS TWO CODES AND NO OTHER: {@link HOUSE_ABSENT_EXIT} (no root, no container house) and
  * {@link SHIM_ABSENT_EXIT} (the container house stands, its shim does not). Everything else returns the shim's own
@@ -121,7 +123,7 @@ function readsCredential(args: ParsedArgs): boolean {
 export function decideRoute(input: RouteInput): Route {
   const { argv, env, fsProbe } = input;
   if ((env["LAR_ROOT"] ?? "").trim() !== "") return "local";
-  if ((env[IN_CONTAINER_ENV] ?? "").trim() !== "" || fsProbe.exists("/.dockerenv")) return "local";
+  if ((env[IN_CONTAINER_ENV] ?? "").trim() !== "") return "local";
   const head = argv[0];
   if (head === undefined || head.startsWith("-") || asksHelp(argv)) return "local";
   let args: ParsedArgs;

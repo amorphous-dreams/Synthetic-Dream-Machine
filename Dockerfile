@@ -172,7 +172,8 @@ ENV HOME=/lar/cache
 # standing verdict and never stops or spawns a daemon; the host shim restarts the container.
 ENV LAR_ENGINE=host
 # THE VESSEL NAMES ITSELF. A host `lares` with no LAR_ROOT forwards vessel verbs to tools/lares-container.sh; this
-# marker (beside LAR_ROOT and /.dockerenv) keeps the CLI inside from ever forwarding to itself.
+# marker (beside LAR_ROOT) keeps the CLI inside from ever forwarding to itself; /.dockerenv cannot, since a CI job or
+# a devcontainer driving docker stands in a container and is a host.
 ENV LARES_IN_CONTAINER=1
 # Peer port — single surface: WS /ws + GET /api/health
 ENV LAR_PORT=4321

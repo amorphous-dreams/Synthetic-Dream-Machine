@@ -49,9 +49,12 @@ describe("decideRoute — every branch", () => {
     expect(decideRoute(input(["meme", "get", "x", "--bag", "b"], { env: { HOME, LAR_ROOT: "  " } }))).toBe("forward");
   });
 
-  it("inside the vessel (the image's marker, or /.dockerenv) never forwards, so a missing LAR_ROOT cannot loop", () => {
+  it("inside the vessel (the image's marker) never forwards, so a missing LAR_ROOT cannot loop", () => {
     expect(decideRoute(input(["meme", "get", "x", "--bag", "b"], { env: { HOME, LARES_IN_CONTAINER: "1" } }))).toBe("local");
-    expect(decideRoute(input(["meme", "get", "x", "--bag", "b"], {}, [ENV_FILE, SHIM, "/.dockerenv"]))).toBe("local");
+  });
+
+  it("a host that itself runs in a container (a CI job, a devcontainer: /.dockerenv stands) still forwards", () => {
+    expect(decideRoute(input(["meme", "get", "x", "--bag", "b"], {}, [ENV_FILE, SHIM, "/.dockerenv"]))).toBe("forward");
   });
 
   it("a vessel verb with the container house standing forwards", () => {
