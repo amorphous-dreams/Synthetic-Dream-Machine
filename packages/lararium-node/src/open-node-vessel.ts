@@ -1787,6 +1787,13 @@ async function prepareNodeBootOn(
         if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
         return activeAtom.sign(image);
       },
+      // THE SEATED SESSION ANSWERS THE ROLL'S SIGNER: a vessel that dials no Nexus still wears its face at its place, so a roll
+      // the verb leaves owed settles under that session inside the act, never waiting on a face-sealed save to come by.
+      hold: (requestId, verb) => {
+        const book = sealedCells.book;
+        const seated = book?.seated()[0] ?? null;
+        return book && seated ? book.hold(requestId, verb, seated) : () => {};
+      },
     }));
   };
   const seatSettler = sovereign ? makeSeatSettler({
