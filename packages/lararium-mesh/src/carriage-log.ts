@@ -29,7 +29,7 @@ import { frameFloorDuty, verifyPlaceDuty, type PlaceSigner } from "./place-signe
 export const CARRIAGE_LANES = ["persona-kel-drop", "cas-block"] as const;
 export type CarriageLane = (typeof CARRIAGE_LANES)[number];
 
-/** One positive receipt: this place carried this carriage on this lane. */
+/** One positive receipt: this place carried this carriage along the named carriage lane. */
 export interface CarriageReceipt {
   readonly kind:     typeof CARRIAGE_RECEIPT_DOMAIN;
   /** The carriage's own content or causal id. */
