@@ -26,6 +26,8 @@ export const THRASHERS = [
 
 /** The suites the serial project takes. Kept complete by the reader that imports {@link THRASHERS}. */
 export const heavy = [
+  // a real floor composition and a sovereign one, each with its worker island: the locked floor reaches for no sealed document
+  "tests/locked-floor-loads-no-sealed.test.ts",
   // binds a real HTTP listener to prove the desk-named Web root serves GET / as 200
   "tests/pronaos-desk.test.ts",
   // real WebSocketServer + Repo + sealed-gate crossings
