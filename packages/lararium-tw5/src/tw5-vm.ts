@@ -216,6 +216,24 @@ export class TW5Engine {
     this._tw.wiki.addTiddler(new this._tw.Tiddler(fields as Record<string, unknown>));
   }
 
+  /**
+   * Lay records into TiddlyWiki's SHADOW layer as one plugin: the records read like any tiddler, no store holds them,
+   * and a hand's save writes an ordinary tiddler that overrides the shadow and outlives the next call. The plugin's own
+   * tiddler takes `pluginTitle`, which a caller names under the volatile `$:/temp/` slot so it rests in memory alone.
+   * Re-laying the same plugin replaces its shadows and raises a change for each, so a live render repaints.
+   */
+  setShadowTiddlers(pluginTitle: string, records: ReadonlyArray<Record<string, string | string[]>>): void {
+    if (!this._tw) throw new Error("TW5Engine: call boot() before setShadowTiddlers()");
+    const wiki = this._tw.wiki;
+    const packed = new Map<string, Record<string, string | string[]>>(records.map((record) => [String(record["title"]), { ...record }]));
+    const before = Object.keys(wiki.getPluginInfo(pluginTitle)?.tiddlers ?? {});
+    wiki.addTiddler(new this._tw.Tiddler({ title: pluginTitle, type: "application/json", "plugin-type": "plugin", text: JSON.stringify({ tiddlers: Object.fromEntries(packed) }) }));
+    wiki.readPluginInfo([pluginTitle]);
+    wiki.registerPluginTiddlers(null, [pluginTitle]);
+    wiki.unpackPluginTiddlers();
+    for (const title of new Set([...before, ...packed.keys()])) wiki.enqueueTiddlerEvent(title, !packed.has(title), true);
+  }
+
   /** Dispose this VM — clear internal refs so GC can collect. */
   dispose(): void {
     this._tw          = null;

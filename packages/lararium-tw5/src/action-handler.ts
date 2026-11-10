@@ -1104,9 +1104,9 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       deletes: deletions.map((d) => ({ uri: d.uri, syncedHash: d.syncedHash })),
       adds:    action.carriers.map((c) => ({ uri: c.uri, diskHash: c.diskHash })),
     });
-    // A re-link never re-homes a record onto an address whose records never project, nor onto a
-    // session-form address (`title-law.ts`): that carrier falls to the gate below and refuses by name,
-    // and its vanished source stands as it stood.
+    // A re-link never re-homes a record onto a title no store may hold (`title-law.ts`: a prototype key, a
+    // session-form address): that carrier falls to the gate below and refuses by name, and its vanished
+    // source stands as it stood.
     const lawful = paired.renames.filter((r) => storableTitleFault(r.toUri) === null);
     // A RE-LINK RE-HOMES RECORDS THAT STAND. A vanished source that holds no live record leaves nothing
     // to re-home: answered as a rename, the target would skip its own ingest, land no record, and the

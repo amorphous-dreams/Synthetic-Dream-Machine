@@ -1,7 +1,12 @@
-/** Stand a vessel-local daemon canon for a worn face. The control document names the canon; the face still seals it. */
+/** Stand a vessel-local daemon canon for a worn face: the node and the browser vessel share this one door. The control
+ *  document names the canon; the face still seals it. */
 import * as A from "@automerge/automerge";
 import { generateAutomergeUrl, parseAutomergeUrl, type AutomergeUrl, type DocHandle, type DocumentId, type Repo } from "@automerge/automerge-repo";
-import { CONTROL_HOME_ID, daemonFaceCanonBag, emptyLarDoc, ownEntry, storedLarRecord, tiddlerText, type LarDoc } from "@lararium/mesh";
+import { emptyLarDoc, tiddlerText, type LarDoc } from "./base-doc.js";
+import { CONTROL_HOME_ID } from "./lar-uris.js";
+import { storedLarRecord } from "./stored-record.js";
+import { ownEntry } from "./stored-value.js";
+import { daemonFaceCanonBag } from "./wiki-recipe.js";
 
 /** The daemon canon for this face and vessel. */
 export interface FaceDaemonCanon {

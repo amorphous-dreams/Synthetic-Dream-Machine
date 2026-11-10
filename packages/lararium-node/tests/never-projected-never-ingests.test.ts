@@ -35,11 +35,11 @@ describe("INGEST admits content by selected store, not title", () => {
     expect((await store.get(title))?.tiddler.title).toBe(title);
   });
 
-  test("disk-projection metadata does not select residency", async () => {
+  test("a control-family record carries no residency field, and a content title ingests", async () => {
     const { store, ingest } = rig();
     const title = "lar:///ha.ka.ba/lares/docs/no-projection-flag";
     const receipt = buildReceiptFact({ requestId: "sample", state: "committed", seq: 0, inputDigest: "d" });
-    expect(receipt.tiddler["disk-projection"]).toBe("no");
+    expect(receipt.tiddler).not.toHaveProperty("disk-projection");
     await ingest(title);
     expect((await store.get(title))?.tiddler.title).toBe(title);
   });

@@ -322,7 +322,7 @@
     "tests/nexus-dial-presentation.test.ts": 2,
     "tests/nexus-dial-reconnect.test.ts": 1,
     "tests/nexus-doc.test.ts": 7,
-    "tests/nexus-handles-charter-only.test.ts": 1,
+    "tests/nexus-handles-follow-placement.test.ts": 1,
     "tests/nexus-kapae-two-vault.test.ts": 35,
     "tests/nexus-kapae.test.ts": 27,
     "tests/nexus-offering-inspect.test.ts": 13,

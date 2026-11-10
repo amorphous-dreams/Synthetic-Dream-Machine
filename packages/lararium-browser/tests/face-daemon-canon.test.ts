@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import { daemonFaceCanonBag, emptyLarDoc, ownEntry, tiddlerText, type LarDoc } from "@lararium/mesh";
-import { standFaceDaemonCanon } from "../src/face-daemon-canon.js";
+import { daemonFaceCanonBag, emptyLarDoc, ownEntry, standFaceDaemonCanon, tiddlerText, type LarDoc } from "@lararium/mesh";
 import { openBrowserDaemonVm } from "../src/open-browser-daemon-vm.js";
 
 vi.mock("@lararium/tw5", async (importOriginal) => ({

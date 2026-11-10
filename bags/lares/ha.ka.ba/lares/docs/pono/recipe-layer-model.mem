@@ -79,7 +79,7 @@ Same kernel (`packages/lararium-node/src/open-daemon-vm.ts`; browser `open-brows
 | `bags/lares` · `bags/lararium` | yes | no | fleet | none here |
 | `bags/oracle` | no | no | fleet · federatable | none |
 
-The two-vessel e2e witnesses the attach (`[daemon] working layer attached: lar:///ha.ka.ba/wikis/daemon/working`). A draft in the daemon wiki routes to `wikis/daemon/draft` — a bag with NO layer — and `composite.put` refuses loud; the daemon mounts `working` by ruling, never draft or personal. On a node the working layer projects to `wikis/daemon/` (`open-daemon-vm.ts` `diskMirrors`); the daemon's receipts, ward audits and summons follow the working layer and carry `disk-projection: no`, which the disk projector skips (`packages/lararium-node/src/disk-projector.ts`).
+The two-vessel e2e witnesses the attach (`[daemon] working layer attached: lar:///ha.ka.ba/wikis/daemon/working`). A draft in the daemon wiki routes to `wikis/daemon/draft` — a bag with NO layer — and `composite.put` refuses loud; the daemon mounts `working` by ruling, never draft or personal. On a node the working layer projects to `wikis/daemon/` (`open-daemon-vm.ts` `diskMirrors`); the daemon's receipts, ward audits and summons rest in the vessel control document (`packages/lararium-mesh/src/control-home.ts`), which no recipe composes and no mirror names, so the disk projector never meets them.
 
 !!! C. The HOST composite (VM-free, one per vessel)
 
@@ -303,6 +303,6 @@ The spiral walked every carrier the #/as-written table names and evergreened the
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;lupq2nuAje4WTiCznbyPbqmzNwXy1T9O7pro0LtbuF8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;H5K83g3-pb7od6LVWf-VLoNHO9CuKWmJ7-zbaEqaJ7Y`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -7,7 +7,7 @@ import { describe, test, expect } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import { CONTROL_HOME_ID, DAEMON_BAG_ID, KAHUA_BAG, daemonFaceCanonBag, emptyLarDoc, expandRecipe, kahuaRecipe, ownEntry, tiddlerText, wikiSlotUri, type LarDoc } from "@lararium/mesh";
 import { daemonDiskMirrors } from "../src/bag-paths.js";
-import { standFaceDaemonCanon } from "../src/face-daemon-canon.js";
+import { standFaceDaemonCanon } from "@lararium/mesh";
 
 const F = "123e4567-e89b-42d3-a456-426614174000";
 
@@ -45,7 +45,7 @@ describe("the daemon wiki's canon per face", () => {
     expect(slots.indexOf("lar:///ha.ka.ba/bags/notes")).toBe(slots.indexOf(wikiSlotUri("notes", "working")) + 1);
   });
 
-  test("RED: the face's first stand mints its daemon canon and names it in the face's catalog; CONTROL: a second stand returns that same document", async () => {
+  test("RED: the face's first stand mints its daemon canon and names it in the vessel control document; CONTROL: a second stand returns that same document", async () => {
     const repo = new Repo({});
     const catalog = repo.create<LarDoc>(emptyLarDoc());
     const first = await standFaceDaemonCanon({ repo, control: catalog, faceRelation: F });

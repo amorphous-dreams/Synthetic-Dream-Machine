@@ -44,7 +44,7 @@ import { type LarDoc, tiddlerText } from "./base-doc.js";
 import { BAG_IDS, CATALOG_DOC_URI, DAEMON_BAG_ID, isBagId } from "./lar-uris.js";
 import { isFaceScopedBag, personaScopedBagIds } from "./persona-scope.js";
 import { ownEntry } from "./stored-value.js";
-import { wikiSlotUri } from "./wiki-recipe.js";
+import { daemonFaceCanonBag, wikiSlotUri } from "./wiki-recipe.js";
 
 /**
  * The bag URIs the `catalog` registry NAMES — the PersonaGroup's own work, read from the projection.
@@ -153,6 +153,15 @@ export interface WikiSlotBags {
 export const FACE_CATALOG_BAG_ID = `${CATALOG_DOC_URI}/face`;
 
 export const DAEMON_WIKI_SLOT_BAGS: readonly string[] = [wikiSlotUri("daemon", "working"), wikiSlotUri("daemon", "draft"), wikiSlotUri("daemon", "personal")];
+
+/**
+ * The daemon canon bag a worn face stands (`daemonFaceCanonBag`), or null. The canon's document seals under the face, so it
+ * stands only where {@link wornFaceWikiBags} registers and seals its bag: a face that stands lit and proved. A worn face
+ * that stands unlit, and the floor, stand none.
+ */
+export function standingDaemonCanonBag(input: { readonly lit: boolean; readonly faceRelation: string | null }): string | null {
+  return input.lit && input.faceRelation ? daemonFaceCanonBag(input.faceRelation) : null;
+}
 
 /**
  * The wiki bags a vessel's worn face carries: `registered`, the wiki bags the face's hive registers (`deriveRegisterBags`'s

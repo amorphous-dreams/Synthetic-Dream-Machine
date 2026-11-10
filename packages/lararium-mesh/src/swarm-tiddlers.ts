@@ -97,8 +97,8 @@ export const swarmGoSpentTitle = (goCid: string): string => `${SWARM_URI_PREFIX}
 export const swarmRosterTitle = (seat: string): string => `${SWARM_URI_PREFIX}roster/${segment(seat)}`;
 export const swarmReceiptTitle = (tree: string): string => `${SWARM_URI_PREFIX}receipt/${segment(tree)}`;
 
-/** The fields a swarm record rests under: its text, and the mark that no mirror projects it. */
-export const swarmRecordFields = (text: string): Record<string, string> => ({ text, "disk-projection": "no" });
+/** The fields a swarm record rests under: its text. The record rests in the control document, which no mirror names. */
+export const swarmRecordFields = (text: string): Record<string, string> => ({ text });
 
 /** `after` names the go this one follows at the branch's title (its cid), or null for the branch's first: one issue, one go. */
 export interface SwarmGoBody { readonly act: "go"; readonly group: string; readonly branch: string; readonly head: string; readonly after: string | null }

@@ -27,7 +27,7 @@ import {
   makeCircleStateReactor,
   makeCircleReactors,
   makeCabalRealmReactors,
-  makeIntentViewReactor, runLocalVerb, INTENT_VIEW_CAP, SEED_OFF_DISK, controlOf,
+  makeIntentViewReactor, runLocalVerb, INTENT_VIEW_CAP, controlOf,
 } from "@lararium/tw5";
 import { DAEMON_WIKI_SLUG, ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, wikiCanonOf, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor, VerbTable } from "@lararium/tw5";
@@ -1519,8 +1519,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
                   return { verb: "kahua-propose", id: out.id, cid: out.cid, proposals: out.proposals.map((p) => ({ ...p })) };
                 });
               if (intentVerifier) void intentVerifier.verify({ presenter: atom.key, bagUrl: intentsBag, access: "read", channel: "local" })
-                .then((proof) => ctx.tw5.setTiddler({ title: INTENT_VIEW_CAP, text: proof.ok ? "1" : "0", ...SEED_OFF_DISK }))
-                .catch(() => ctx.tw5.setTiddler({ title: INTENT_VIEW_CAP, text: "0", ...SEED_OFF_DISK }));
+                .then((proof) => ctx.tw5.setTiddler({ title: INTENT_VIEW_CAP, text: proof.ok ? "1" : "0" }))
+                .catch(() => ctx.tw5.setTiddler({ title: INTENT_VIEW_CAP, text: "0" }));
             };
             registerIntentView();
             // THE JOINEE'S HALF: a joined, unseated leaf summons its own seat on this plane, once, pinned to the founding

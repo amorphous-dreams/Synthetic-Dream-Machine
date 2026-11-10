@@ -92,11 +92,11 @@ describe("the realm fold moves the wire verdict, and the caller must hear it", (
   test("a realm-doc change refolds the plane and the caller hears it", async () => {
     const repo = new Repo({});
     const registry = repo.create<LarDoc>(emptyLarDoc());
-    const crossroadsHandle = repo.create<LarDoc>(emptyLarDoc());
+    const announceHandle = repo.create<LarDoc>(emptyLarDoc());
     let refolds = 0;
     let heard: Arrival<void> | null = null;
     const plane = makeRealmPlane({
-      repo, registry, crossroadsHandle,
+      repo, registry, announceHandle,
       membership: noMembers,
       base: denyAll,
       onRefold: () => { refolds += 1; heard?.arrive(); },
