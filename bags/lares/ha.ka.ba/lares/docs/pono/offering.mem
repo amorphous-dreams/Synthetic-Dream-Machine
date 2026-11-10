@@ -26,7 +26,7 @@ uri-path   = "ha.ka.ba/lares/docs/pono/offering"
 
 ''The lean the charge agreed with, stated as the thing this carrier tests to destruction:''
 
-# `--apply` ''signs and announces'' on the crossroads plane, and does nothing else.
+# `--apply` ''signs and announces'' on the crossroads plane, its record resting on the Nexus's publication board (`publicationDocUrl`), which the federation gate carries beside the crossroads document and no recipe mounts, and does nothing else.
 # The receiving hearth's `kāhuli grammar` — the fast ratchet — remains intended as ''the only door that installs''; no offering reader runs live yet.
 # `--apply` ''never ratchets''. A gift announces itself; the receiver ratchets.
 # ''The lamplighter carries the basket; the kahu decides to plant.''
@@ -280,7 +280,7 @@ The CLI verb remains HELD. This section bounds the source-local `publish plugins
 
 # ''RATCHET ANYTHING.'' It writes no `island.cid-*` sidecar, moves no `engineCid`, moves no `grammarCid`, and re-derives no island. ''The word `bake` MUST NOT appear on this path.''
 # ''INSTALL ANYTHING, INCLUDING LOCALLY.'' Publishing a collection never adopts it. A hearth that wants its own offering installed runs the ratchet, like any other taker.
-# ''REACH ANOTHER VESSEL.'' It writes one record on its own crossroads replica. It dials nobody, pushes to nobody, and notifies nobody — carriage does the rest, as-of-each-peer's-last-sync.
+# ''REACH ANOTHER VESSEL.'' It writes one record on its own replica of the publication board. It dials nobody, pushes to nobody, and notifies nobody — carriage does the rest, as-of-each-peer's-last-sync.
 # ''COMPILE A LIST.'' No `offerings-by-offeror` index, no `my-offerings` roll-up, no surface accepting a collection of OTHERS' offerings. `handle-kel.ts:41-43` already holds this exact line for Handles; the offering inherits it.
 # ''CARRY A SECOND HAND.'' No steward set, no co-signer, no proposal/co-sign flow (operator ruling, `dcec1ef0b`; the field set at `plugin-offering.ts:36-45` carries the ruling). ⚠ Note the deliberate asymmetry: `realm-bag` DOES carry a propose/co-sign path (`realm-plane.ts:166-169`) — the offering path MUST NOT borrow it, however similar the announce looks.
 # ''CONSULT THE ANTIGEN.'' An offeror checking whether their own gift stands condemned before announcing makes the offering a permissioned act. ''Condemnation stays the RECEIVER's opt-in, at the receiving Nexus.''
@@ -307,7 +307,7 @@ The CLI verb remains HELD. This section bounds the source-local `publish plugins
 
 Run the registry filter mechanically (memory `project_registry_filter_law.md`): ''announced-BY-the-subject · replicated causally · read as-of-last-sync = CARRIAGE → passes''; ''compiled-ABOUT-subjects · authoritative-now · enumerable = REGISTRY → rejected at any scope.''
 
-<<~ has entity=`Filter` name=`Announce` params=`announced-by/the offeror's own signed record replicated/causally onto each peer's crossroads replica read/as-of-last-sync ~ CARRIAGE, PASSES`>>
+<<~ has entity=`Filter` name=`Announce` params=`announced-by/the offeror's own signed record replicated/causally onto each peer's publication-board replica read/as-of-last-sync ~ CARRIAGE, PASSES`>>
 <<~ has entity=`Filter` name=`Witness` params=`announced-by/the subject, appended in ORDER keyed-on/the offering cid, never the offeror read/as-of-last-sync ~ a future witness may pass; the current announcement carries no order claim`>>
 <<~ has entity=`Filter` name=`Index` params=`an INDEX cap over the announce plane ~ PASSES ONLY IF reconstructible + non-authoritative (memory project_nexus_identity_kahuli_onboarding, discovery layer 2: 'carriage, not a registry')`>>
 <<~ has entity=`Filter` name=`Store` params=`a curated list of blessed offerors, at ANY scope, even ONE Nexus ~ REGISTRY, REJECTED`>>
@@ -457,6 +457,6 @@ an ordered announce claim, or a receiver caller by implication.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ba-QdiBc7VBVv7FvEIy8VS0XJsBbyk3HiIcwY56aIWY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;prSCHIkeDxeWBPLQX47mLK1xqxqoXknyZKsJoG-jWXg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

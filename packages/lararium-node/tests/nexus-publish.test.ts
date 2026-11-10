@@ -20,6 +20,7 @@ import { restEvery, restingRepo } from "./resting-repo.js";
 import {
   computePluginsCid,
   crossroadsDocUrl,
+  publicationDocUrl,
   ed25519SignerFromSeed,
   ed25519VerifyingKeyFromSeed,
   GENESIS_CID_ENGINE_TIDDLER,
@@ -138,14 +139,14 @@ async function standPersona(): Promise<void> {
 }
 
 describe("runNexusPublishPlugins — immutable offering boundary (H3, F2-3)", () => {
-  it("signs an UNSIGNED source as PUBLISHER, announces, and retrieves the exact gift from a persisted Crossroads board", async () => {
+  it("signs an UNSIGNED source as PUBLISHER, announces, and retrieves the exact gift from the persisted publication board, and the mirrored crossroads document carries no announce", async () => {
     const source = seedUnsignedSource();
     seedMinimalGenesis();
     await standPersona();
 
     const first = await direct(runNexusPublishPlugins)({ source, storageDir: larDataDir() });
     expect(first.offeringCid).toBe(pluginOfferingCid(first.offering));
-    expect(first.boardUrl).toBe(crossroadsDocUrl(await loadVesselVerifyingKey()));
+    expect(first.boardUrl).toBe(publicationDocUrl(await loadVesselVerifyingKey()));
     expect(first.blobCount).toBe(1);
     // The bytes landed in THIS publisher's own CAS, keyed by the SAME sha256 the offering declares.
     const blobSha = first.offering.blobs[0]!.sha256;
@@ -156,9 +157,12 @@ describe("runNexusPublishPlugins — immutable offering boundary (H3, F2-3)", ()
     expect(second.offering).toEqual(first.offering);
 
     const repo = restingRepo(larDataDir());
-    const board = await materializeSharedLarDoc(repo, first.boardUrl, "board:crossroads");
+    const board = await materializeSharedLarDoc(repo, first.boardUrl, "board:publication");
     const records = offeringAnnouncesFromDoc(board.doc());
     expect(records).toHaveLength(1);
+    // The crossroads document mirrors to its canon source; an announce written there would land in the tracked tree.
+    const crossroads = await materializeSharedLarDoc(repo, crossroadsDocUrl(await loadVesselVerifyingKey()), "board:crossroads");
+    expect(offeringAnnouncesFromDoc(crossroads.doc()), "the crossroads mirror would write it to disk").toEqual([]);
     expect(records[0]?.offeringCid).toBe(first.offeringCid);
     expect(records[0]?.offering).toEqual(first.offering);
     await repo.rest();

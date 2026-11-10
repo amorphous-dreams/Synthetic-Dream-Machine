@@ -96,13 +96,34 @@ for (const [path, must, mustNot] of controlWriters) {
 
 // ── HOUSE-MINTED WRITERS INTO A MIRRORED DOCUMENT ─────────────────────────────────────────────────────────────────
 // The crossroads bag mirrors to its canon source, so a record the house mints at runtime and writes into the crossroads
-// board lands in the tracked tree. A realm announce rests on the realm-announce board no recipe mounts: its writers and
-// its carrier's fold name that board, and no source writes an announce through a crossroads handle.
-const sourceFiles = execSync("git ls-files 'packages/*/src/**/*.ts'", { cwd: new URL(".", root), encoding: "utf8" }).split("\n").filter(Boolean);
+// board lands in the tracked tree. Each house-minted family rests on a board no recipe mounts: a realm announce on the
+// realm-announce board, a plugin offering's announce and a floor release on the publication board, a handle card on the
+// WHO board. No source writes one through a crossroads handle, no writer of an offering or a release names the crossroads
+// document at all, and no reader folds one off a crossroads document.
+const HOUSE_WRITERS = {
+  writeRealmBagAnnounce: "a realm announce",
+  writeOfferingAnnounce: "a plugin offering announce",
+  writeFloorRelease:     "a floor release",
+  writeHandleAnnounce:   "a handle card",
+  announceToWhoFace:     "a handle card",
+};
+const HOUSE_READERS = ["publicRealmBooksFromDoc", "offeringAnnouncesFromDoc", "readOfferingAnnounces", "floorReleaseRowsFromBoard", "nodeOfferingLookup", "browserOfferingLookup", "ingestAnnounceDoc"];
+const writerCall = new RegExp(`(\\w+)\\.change\\(\\s*\\(?\\w+\\)?\\s*=>\\s*\\{?\\s*(${Object.keys(HOUSE_WRITERS).filter((w) => w.startsWith("write")).join("|")})\\(`, "g");
+const readerCall = new RegExp(`\\b(${HOUSE_READERS.join("|")})\\(\\s*(?:[\\w.]+,\\s*)?([\\w.]+)`, "g");
+const sourceFiles = execSync("git ls-files 'packages/*/src/*.ts'", { cwd: new URL(".", root), encoding: "utf8" }).split("\n").filter(Boolean);
 for (const path of sourceFiles) {
   const text = read(path);
-  for (const m of text.matchAll(/(\w+)\.change\(\s*\(?\w+\)?\s*=>\s*writeRealmBagAnnounce\(/g)) {
-    if (/crossroads/i.test(m[1])) throw new Error(`${path} writes a realm announce into the mirrored crossroads document: ${m[0]}`);
+  for (const m of text.matchAll(writerCall)) {
+    if (/crossroads/i.test(m[1])) throw new Error(`${path} writes ${HOUSE_WRITERS[m[2]]} into the mirrored crossroads document: ${m[0]}`);
+    if (/^write(OfferingAnnounce|FloorRelease)$/.test(m[2]) && /\bcrossroadsDocUrl\(|CROSSROADS_DOC_URI/.test(text)) {
+      throw new Error(`${path} writes ${HOUSE_WRITERS[m[2]]} beside a crossroads handle: it rests on the publication board alone`);
+    }
+  }
+  for (const m of text.matchAll(/announceToWhoFace\(\s*(\w+)/g)) {
+    if (/crossroads/i.test(m[1])) throw new Error(`${path} writes a handle card into the mirrored crossroads document: ${m[0]}`);
+  }
+  for (const m of text.matchAll(readerCall)) {
+    if (/crossroads/i.test(m[2])) throw new Error(`${path} folds a house-minted family off a crossroads document: ${m[0]}`);
   }
   // A dead residency field: placement decides disk, so no source stamps one.
   if (/["']disk-projection["']\s*:/.test(text)) throw new Error(`${path} stamps a disk-projection field, which no projector reads`);
@@ -116,8 +137,21 @@ for (const [path, needle] of [
   ["packages/lararium-node/src/open-node-vessel.ts", "announceDoc:   () => hermAnnounces.doc()"],
   ["packages/lararium-mesh/src/federation-gate.ts", "realmAnnounceDocUrl(key)"],
 ]) if (!read(path).includes(needle)) throw new Error(`${path} lost the realm-announce board's seat: ${needle}`);
+// The publication board's seats: its two writers, every reader, and the gate that federates it.
+for (const [path, needle] of [
+  ["packages/lararium-node/src/commands/nexus-publish.ts", "const boardUrl = publicationDocUrl("],
+  ["packages/lararium-node/src/commands/nexus-release.ts", "materializeSharedLarDoc(repo, publicationDocUrl("],
+  ["packages/lararium-node/src/commands/nexus-offering-inspect.ts", "const boardUrl = publicationDocUrl("],
+  ["packages/lararium-node/src/floor-porch.ts", "materializeSharedLarDoc(repo, publicationDocUrl(nexusPubkey)"],
+  ["packages/lararium-node/src/open-node-vessel.ts", "publicationHandle ??= await materializeSharedLarDoc(repo, publicationDocUrl(nexusPubkey)"],
+  ["packages/lararium-browser/src/open-browser-vessel.ts", "publicationHandle ??= await materializeSharedLarDoc(repo, publicationDocUrl(nexusPubkey)"],
+  ["packages/lararium-mesh/src/federation-gate.ts", "publicationDocUrl(key)"],
+]) if (!read(path).includes(needle)) throw new Error(`${path} lost the publication board's seat: ${needle}`);
+// The browser's face verbs write handle cards onto the WHO board the who-plane reads, never onto the crossroads document.
+const whoResolver = /const resolveWhoBoard = [\s\S]*?materializeSharedLarDoc\(repo, (\w+)\(/.exec(read("packages/lararium-browser/src/open-browser-vessel.ts"));
+if (whoResolver?.[1] !== "whoBoardDocUrl") throw new Error(`open-browser-vessel: the face verbs write handle cards onto ${whoResolver?.[1] ?? "no board"}, not the WHO board`);
 // The daemon's born-from-source seeds rest in the shadow layer: each seed module lays its records through `seedShadows`.
 for (const path of ["daemon-ui-tiddlers", "promote-ui-tiddlers", "daemon-persona-tiddlers", "daemon-circle-tiddlers", "daemon-roster-tiddlers", "daemon-intent-tiddlers", "daemon-flow-tiddlers"]) {
   if (!/seedShadows\(tw5, "/.test(read(`packages/lararium-tw5/src/${path}.ts`))) throw new Error(`${path}: a daemon seed writes outside the shadow layer`);
 }
-console.log("placement-residency-witness: projection and ingest decisions read placement, not title patterns; every control family rests in the unmirrored control document; no house-minted announce or seed writes into a mirrored document");
+console.log("placement-residency-witness: projection and ingest decisions read placement, not title patterns; every control family rests in the unmirrored control document; no house-minted announce, offering, release, handle card or seed writes into a mirrored document");

@@ -10,7 +10,7 @@
  *
  * TWO SOURCE SHAPES (offerings-handoff.md "Who signs"):
  *   - A SIGNED GIFT (`offering.json` already carries `sig`/`offeror`/`pluginsCid`): a friend's offering,
- *     carried here to republish toward this Nexus's own Crossroads. `verifyPluginOffering` must pass,
+ *     carried here to republish toward this Nexus's own publication board. `verifyPluginOffering` must pass,
  *     and it is announced EXACTLY as signed — never re-signed, never re-derived (the friend's-gift law).
  *     Its blobs' bytes sit at `<dir>/<sha256>` (content-addressed; the signed record itself carries no
  *     filename field to ride unsigned on the same CID).
@@ -24,7 +24,7 @@
  * own CAS, so `nexus offering inspect` reads them held and a joinee can take them. A boot-set id never
  * verifies (`boot-set-collision`); an empty source never verifies (`empty-offering`).
  *
- * The active persona is explicit custody. A faceless Node can carry a Crossroads board, but it cannot
+ * The active persona is explicit custody. A faceless Node can carry a publication board, but it cannot
  * publish in a human's name; an unset selector therefore refuses instead of choosing handle zero.
  */
 
@@ -34,7 +34,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  crossroadsDocUrl,
+  publicationDocUrl,
   materializeSharedLarDoc,
   pluginOfferingCid,
   signPluginOffering,
@@ -105,7 +105,7 @@ function sourceBlobPath(sourceDir: string, blob: { readonly sha256: string; read
   return join(sourceDir, blob.file ?? blob.sha256);
 }
 
-/** Sign and announce an offering source on this vessel's Nexus Crossroads. */
+/** Sign and announce an offering source on this vessel's Nexus publication board. */
 export async function runNexusPublishPlugins(
   opts: NexusPublishPluginsOptions,
 ): Promise<NexusPublishPluginsResult> {
@@ -217,10 +217,10 @@ export async function runNexusPublishPlugins(
   writeCasEntriesFs(offering.blobs.map((b) => ({ cid: b.sha256, bytes: bytesByCid.get(b.sha256)! })), casDir);
 
   const vesselKey = await loadVesselVerifyingKey();
-  const boardUrl = crossroadsDocUrl(nodeNexusIsland({ ownVesselKey: vesselKey }));
+  const boardUrl = publicationDocUrl(nodeNexusIsland({ ownVesselKey: vesselKey }));
   const repo = opts.repo;
   try {
-    const board = await materializeSharedLarDoc(repo, boardUrl, "board:crossroads");
+    const board = await materializeSharedLarDoc(repo, boardUrl, "board:publication");
     // The key is the complete signed offering CID. Re-running therefore replaces only the same exact
     // projection; a changed collection or signing hand receives a distinct additive address.
     board.change((draft) => writeOfferingAnnounce(draft, offering));

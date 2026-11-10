@@ -43,7 +43,7 @@ import {
   BAG_IDS, slugFromUri, islandEventAsk, bagStackFromRec, recipeHostFacets, type WikiActivationCap,
   carriageStack, deriveMeshLeaf, type MeshPeer,
   materializeGenesisIsland, genesisCasManifestFromSeed, genesisCasCidsFromOracle, sha256HexBytesSync,
-  whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl, registerCrossroadsPointer,
+  whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl, publicationDocUrl, whoBoardDocUrl, registerCrossroadsPointer,
   personaKelBoardDocUrl, personaKelChainForPrefix,
   deriveRegisterBags, catalogNamedBags, personaBagIdFor, personaSiblingBagIds,
   handleClaimFrom, HANDLE_CLAIM_SURFACES,
@@ -514,12 +514,12 @@ export async function resolveBrowserIslandPluginCids(opts: {
   return resolveRecipePluginCids(opts.recipe, { islandBlobs: opts.islandBlobs, lookup: opts.lookup, readBytes: readCasBlobFromOpfs, ...(opts.promoted ? { promoted: opts.promoted } : {}), ...(opts.onPromotedVoided ? { onPromotedVoided: opts.onPromotedVoided } : {}) });
 }
 
-/** Build the browser Crossroads board's offering lookup (R4): a verified selection re-verifies
+/** Build the browser's offering lookup over the Nexus's publication board (R4): a verified selection re-verifies
  *  every offering it resolves (`selectPluginBlobs` → `verifyPluginOffering`), so this lookup
  *  stays a shape-only projection (`offeringAnnouncesFromDoc`) — never a second, redundant certify
  *  pass. The exact mirror of node's `nodeOfferingLookup`. */
-export function browserOfferingLookup(crossroadsDoc: LarDoc | undefined | null): OfferingLookup {
-  const byOfferingCid = new Map(offeringAnnouncesFromDoc(crossroadsDoc).map((a) => [a.offeringCid, a.offering]));
+export function browserOfferingLookup(publicationDoc: LarDoc | undefined | null): OfferingLookup {
+  const byOfferingCid = new Map(offeringAnnouncesFromDoc(publicationDoc).map((a) => [a.offeringCid, a.offering]));
   return (cid) => byOfferingCid.get(cid);
 }
 
@@ -1218,10 +1218,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   let wikiSense!:  WikiSenseSupervisor;   // set in wireVerbs (post-daemon)
   let slotActiveWikiId = "";
   let wikiAwaitsFace: FloorWikiRefusal | null = null;   // captured in wikiSlot
-  // R4 — the Crossroads board this vessel materializes ONCE, read by every later per-island
+  // R4 — the publication board this vessel materializes ONCE, read by every later per-island
   // plugin-offering resolution (the daemon VM's own recipe, and the pool's resolver). Mirrors
-  // node's `crossroadsOfferingsHandle`.
-  let crossroadsOfferingsHandle: DocHandle<LarDoc> | undefined;
+  // node's `publicationHandle`.
+  let publicationHandle: DocHandle<LarDoc> | undefined;
 
   // Push the live switcher state INTO the daemon widget (main → local, reactive — never
   // a poll): the switcher-state worker verb writes $:/temp/lares/switcher (volatile, local)
@@ -1746,12 +1746,12 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // off. The daemon's own one-recipe-model record names no offerings today, so this call is
       // the floor alone in practice — but it is the floor PROVEN through the selector, not
       // assumed past it.
-      crossroadsOfferingsHandle ??= await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
+      publicationHandle ??= await materializeSharedLarDoc(repo, publicationDocUrl(nexusPubkey), "board:publication");
       const resolveDaemonPlugins = async () => {
         const daemonPluginResolution = await resolveBrowserIslandPluginCids({
           islandBlobs: assembly.islandHandle.doc()?.blobs,
           recipe: { wikiSlug: "daemon" },
-          lookup: browserOfferingLookup(crossroadsOfferingsHandle!.doc()),
+          lookup: browserOfferingLookup(publicationHandle!.doc()),
           promoted: (slug) => promoteWiringRef ? promoteWiringRef.boot.promotedFor(slug) : Promise.resolve([]),
           onPromotedVoided: (wiki, digests) => console.warn(`[promote] ${wiki}: promoted digest(s) ${digests.join(", ")} failed the local byte check and were dropped from the plugin union`),
         });
@@ -2100,7 +2100,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // ── The FACE surface (the public "here I am" door) ──────────────────────────
       // The browser twins of the node `handle` adapters (publish · burn · attest), surfaced as DELIBERATE
       // holder acts — a face NEVER federates as a boot side-effect; only an explicit invocation here posts a
-      // glamour. Each resolves the per-Nexus WHO board off the crossroads address the who-plane already reads,
+      // glamour. Each resolves the per-Nexus WHO board at the address the who-plane already reads (`whoBoardDocUrl`),
       // seats the persona index (the arg, else the worn persona, else the founding index), and calls the
       // shared act. WITHHELD boots hold no public board, so a face verb fails closed with an honest reason.
       const resolveFaceIndex = async (args: Record<string, unknown>): Promise<number> => {
@@ -2111,7 +2111,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         if (!relayGated || !relayAdapter?.session) {
           throw new Error(`[face-${verb}] this vessel holds no public WHO board — it has not crossed to a hearth, so it has no board to name a face on.`);
         }
-        return materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
+        return materializeSharedLarDoc(repo, whoBoardDocUrl(nexusPubkey), "board:who-face");
       };
       // The owner of a face rides its SEALED ANCHOR through `readFace`'s door (`readFaceOwner`): the publish and burn adapters load
       // the selected persona's anchor from the origin's custody and read its chain off this per-Nexus persona-KEL board.
@@ -2227,11 +2227,11 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         ...(opts.onPortMessage ? { onPortMessage: opts.onPortMessage } : {}),
         ...(opts.onRest ? { onRest: opts.onRest } : {}),
         resolvePluginCids: async (recipe) => {
-          crossroadsOfferingsHandle ??= await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
+          publicationHandle ??= await materializeSharedLarDoc(repo, publicationDocUrl(nexusPubkey), "board:publication");
           return resolveBrowserIslandPluginCids({
             islandBlobs: assembly.islandHandle.doc()?.blobs,
             recipe,
-            lookup: browserOfferingLookup(crossroadsOfferingsHandle.doc()),
+            lookup: browserOfferingLookup(publicationHandle.doc()),
             promoted: (slug) => promoteWiringRef ? promoteWiringRef.boot.promotedFor(slug) : Promise.resolve([]),
             onPromotedVoided: (wiki, digests) => console.warn(`[promote] ${wiki}: promoted digest(s) ${digests.join(", ")} failed the local byte check and were dropped from the plugin union`),
           });

@@ -154,7 +154,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "  cabal standing <group> [--nexus <aid>]    where one group stands in the cabal, as of this vessel's last sync",
       "  release <manifest-file> --approval <file> [--nexus <aid>]   publish the Nexus's FLOOR RELEASE: a held seat seals the porch body naming the",
       "                                            manifest, the seats' approval of its exact bytes (`promote open --surface floor-release`) rides",
-      "                                            attached, and it lands on the crossroads board once it counts",
+      "                                            attached, and it lands on the Nexus's publication board once it counts",
     ],
     examples: [
       "lares nexus rite quorum",
@@ -166,7 +166,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
 
   "nexus offering": {
     usage: "usage: lares nexus offering inspect <offering-cid>",
-    synopsis: "inspect one exact signed offering already carried by this Nexus Crossroads board. It reads local CAS only and never fetches, installs, mutates genesis, or changes grammar.",
+    synopsis: "inspect one exact signed offering already carried by this Nexus's publication board. It reads local CAS only and never fetches, installs, mutates genesis, or changes grammar.",
     examples: ["lares nexus offering inspect sha256:<offering-cid>"],
   },
 

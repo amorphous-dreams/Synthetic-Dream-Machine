@@ -1,7 +1,7 @@
 /**
  * `lares nexus release <manifest-file> --approval <file> [--nexus <aid>]` — publish the Nexus's FLOOR RELEASE: the one
  * porch body naming the floor manifest the Kahu cabal released. A seat held in this vault seals it as the steward, the
- * seats' approval of the manifest file's exact bytes rides attached, and the release lands on the Nexus's crossroads
+ * seats' approval of the manifest file's exact bytes rides attached, and the release lands on the Nexus's publication
  * board once it counts (w26-floor-lane#/the-slices).
  *
  * The approval comes first, from the doors that already carry one between vaults:
@@ -43,7 +43,7 @@ export async function cmdNexusRelease(args: ParsedArgs): Promise<number> {
         console.log(`  prior:    ${r.release.body.prior ?? "(the Nexus's first release)"}`);
         console.log(`  manifest: ${r.release.body.manifest}`);
         console.log(`  approval: ${r.counted} of ${r.threshold} seats over the manifest's exact bytes`);
-        console.log("  the release rests on this Nexus's crossroads board; a face accepts it by its own act");
+        console.log("  the release rests on this Nexus's publication board; a face accepts it by its own act");
       },
     });
     return 0;

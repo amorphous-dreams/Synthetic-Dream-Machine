@@ -8,7 +8,7 @@ import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import * as ed from "@noble/ed25519";
 import {
   REALM_BAG_ANNOUNCE_PREFIX, CROSSROADS_DOC_URI, crossroadsAnnounceOf, crossroadsDocUrl, hex, materializeSharedLarDoc,
-  mutableLarRecord, publicRealmBooksFromDoc, realmAnnounceDocUrl, realmBagAnnounceKey, realmDocUrl,
+  mutableLarRecord, publicRealmBooksFromDoc, realmAnnounceDocUrl, publicationDocUrl, whoBoardDocUrl, realmBagAnnounceKey, realmDocUrl,
   reAnnounceRealmBooksAtIsland, signRealmBagRegistration, writeRealmBagRegistration, type LarDoc,
 } from "@lararium/mesh";
 import { daemonDiskMirrors } from "../src/bag-paths.js";
@@ -64,4 +64,13 @@ describe("a realm announce rests where no mirror reaches", () => {
     });
     expect(books).toEqual([]);
   }, 30_000);
+});
+
+describe("a Nexus publication rests where no mirror reaches", () => {
+  test("the publication board is no bag: no daemon mirror names it, and it stands apart from every other board", () => {
+    const url = publicationDocUrl(ISLAND);
+    for (const other of [crossroadsDocUrl(ISLAND), realmAnnounceDocUrl(ISLAND), whoBoardDocUrl(ISLAND)]) expect(url).not.toBe(other);
+    const mirrors = daemonDiskMirrors({ projectionRoot: "/w", canonBags: "/w-absent", faceRelation: null });
+    expect(mirrors.map((m) => m.bagId)).toEqual([CROSSROADS_DOC_URI]);
+  });
 });

@@ -54,7 +54,7 @@ import {
   LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI, CROSSROADS_DOC_URI, recipeHostFacets,
   DAEMON_BAG_ID,
   BAG_IDS, slugFromUri, islandEventAsk, registerCrossroadsPointer,
-  whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl, realmAnnounceDocUrl,
+  whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl, realmAnnounceDocUrl, publicationDocUrl,
   type RealmBagRegistration, MEMORY_CUT_SHADOW_READ,
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   DEVICE_DELEGATION_SELF_TIDDLER, type DeviceDelegationTiddler,
@@ -2232,9 +2232,9 @@ async function prepareNodeBootOn(
   let hostWorkingMounted: Promise<void> | null = null;
   const mountHostWorking = (): Promise<void> => (hostWorkingMounted ??= daemonVm.workerEa.then(() => daemonVm.mountHostWorkingLayer()));
   let eventBus!:  LarEventBusImpl;         // set in makePool
-  // R3 — the Crossroads board this vessel materializes ONCE (openDaemon), read by every later
+  // R3 — the publication board this vessel materializes ONCE (openDaemon), read by every later
   // per-island plugin-offering resolution (makePool's pool, and the daemon VM's own recipe).
-  let crossroadsOfferingsHandle: DocHandle<LarDoc> | undefined;
+  let publicationHandle: DocHandle<LarDoc> | undefined;
   let bootstrap!: VesselBootstrap;         // captured in loadGenesis
   let personaSelves: PersonaSelvesPlane | null = null;   // the carried faces' planes, built at the first ask
   let slotActiveWikiId = "";               // captured in wikiSlot
@@ -3347,8 +3347,8 @@ async function prepareNodeBootOn(
     // island does (`resolveNodeIslandPluginCids`), never a vessel-wide hand-off. The
     // daemon's own one-recipe-model record names no offerings today, so this call is the floor
     // alone in practice — but it is the floor PROVEN through the selector, not assumed past it.
-    crossroadsOfferingsHandle ??= await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
-    const offerings = crossroadsOfferingsHandle;
+    publicationHandle ??= await materializeSharedLarDoc(repo, publicationDocUrl(nexusPubkey), "board:publication");
+    const offerings = publicationHandle;
     daemonHolder = await standDaemonIsland({
       readJoinedFaces,
       resolvePlugins: () => resolveNodeIslandPluginCids({
@@ -4204,7 +4204,7 @@ async function prepareNodeBootOn(
       resolvePluginCids: (recipe) => resolveNodeIslandPluginCids({
         islandBlobs: assembly.islandHandle.doc()?.blobs,
         recipe,
-        lookup:      nodeOfferingLookup(crossroadsOfferingsHandle?.doc()),
+        lookup:      nodeOfferingLookup(publicationHandle?.doc()),
         readBytes:   (cid) => readCasBlobFromFs(cid, casDir),
         promoted: (slug) => promoteWiringRef ? promoteWiringRef.boot.promotedFor(slug) : Promise.resolve([]),
         onPromotedVoided: (wiki, digests) => console.warn(`[promote] ${wiki}: promoted digest(s) ${digests.join(", ")} failed the local byte check and were dropped from the plugin union`),

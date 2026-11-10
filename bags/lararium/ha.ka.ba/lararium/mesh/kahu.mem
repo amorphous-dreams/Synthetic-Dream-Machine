@@ -554,7 +554,7 @@ browser Kahu hand rides Wave C's face context.
 ''ONE PORCH BODY PER NEXUS.'' The Kahu cabal releases a floor by one body, `{kind, nexus, epoch, prior, manifest}`: the
 `floor-release` signing domain as `kind`, the Nexus AID, the charter epoch whose seats sign, the CID of the release
 before it (null opens a Nexus's first) and the floor manifest's CID (`floor-release.ts`). Its canonical bytes name its
-CID, which keys its row on the crossroads board (`$:/lar/floor-release/<cid>`); a reader RE-DERIVES that CID from the
+CID, which keys its row on the Nexus's publication board (`$:/lar/floor-release/<cid>`); a reader RE-DERIVES that CID from the
 body and refuses on a mismatch before it trusts anything else.
 
 ''TWO HANDS, KEPT APART.'' A seated Kahu key seals the body's bytes as the steward (the publisher, face-free). The
@@ -685,6 +685,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;IVA7fHHk8Sbh7601PDkEY-d9BLNMcLbuzVfFvRx6Hvs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YmkTci2-SXoofp2GLCyYtnNKoWnO3LUKlqyZRXFGj-Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>

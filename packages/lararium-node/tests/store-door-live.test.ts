@@ -24,7 +24,7 @@ import { restEvery, restingRepo } from "./resting-repo.js";
 import {
   antigenEntriesFromBoard, edgeKapaeActsFromBoard, offeringAnnouncesFromDoc,
   verifiedVouchesFromBoard, hexToBytes, hex, materializeSharedLarDoc, kapaeAntigenDocUrl, sha256HexBytesSync,
-  fleetEdgeBoardDocUrl, realmVouchBoardDocUrl, crossroadsDocUrl, computePluginsCid, DAEMON_BAG_ID, seedDaemonDoc,
+  fleetEdgeBoardDocUrl, realmVouchBoardDocUrl, publicationDocUrl, computePluginsCid, DAEMON_BAG_ID, seedDaemonDoc,
   GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_GRAMMAR_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER,
   nexusAidOf, custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, signCarriageQuorum, signCarriageContract, admitCarriageCommit, openAdmitCarriage, federationPostureFromDoc,
   type NexusDoc, type LarDoc, type GenesisSeed,
@@ -184,7 +184,7 @@ const WRITERS: readonly Writer[] = [
     // `args.source` is filled in per-test (below) once `base` exists — the WRITERS table is built at
     // module scope, before any test's own scratch dir.
     verb: "nexus-publish", args: { handleIndex: 0 },
-    board: (i) => crossroadsDocUrl(i), label: "board:crossroads",
+    board: (i) => publicationDocUrl(i), label: "board:publication",
     id: (o) => String(o["offeringCid"]),
     carries: (doc, id) => offeringAnnouncesFromDoc(doc).some((a) => a.offeringCid === id),
   },
