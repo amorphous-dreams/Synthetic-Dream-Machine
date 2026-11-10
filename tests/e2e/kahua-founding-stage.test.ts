@@ -14,13 +14,13 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, statSync, writeFileSync } from "node:fs";
-import { join, sep } from "node:path";
+import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import { daemonWikiDir, kahuaStageDir, openStaged, stageDir, stagedTarget, type CliResult, type LarInstance } from "../harness/instance.js";
 import { expectEntry } from "../harness/journal-expect.js";
 import { kahuaStageDocUrl } from "../../packages/lararium-mesh/src/kahua-stage.js";
 import { KAHUA_BAG } from "../../packages/lararium-mesh/src/wiki-recipe.js";
-import { isDaemonCanonWithheld } from "../../packages/lararium-mesh/src/lar-uris.js";
+import { faceDaemonMirrors, privateTitlesProjected } from "../harness/placement-mirrors.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const built = existsSync(join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js")) && existsSync(join(REPO_ROOT, "packages/lararium-node/dist/src/main.js"));
@@ -101,12 +101,12 @@ describe.skipIf(!stagedTarget || !built)("the founding pins the face's kahua sta
     } }, { budgetMs: 60_000 });
     expect(existsSync(join(daemonWikiDir(hearth!.root), "ha.ka.ba/kahua/memory/kahua-founding-stage-row.mem"))).toBe(true);
     expect(existsSync(kahuaStageDir(hearth!.root))).toBe(true);
-    // CONTROL: the daemon bag never projects into the tracked-shape bags/ beside the root, and its canon mirror under
-    // <projections>/bags/daemon carries authored records alone: no control or house title (`isDaemonCanonWithheld`).
+    // CONTROL (placement over patterns): the daemon wiki's mirrors stand under the worn face's F alone, `wikis/daemon-<F>`
+    // and `bags/daemon-<F>`; the daemon document and the control document name no mirror, so neither the tracked-shape
+    // bags/ beside the root nor <projections>/bags/daemon holds anything, and no projected file names a private home.
+    expect(faceDaemonMirrors(hearth!.root).working).toBe(daemonWikiDir(hearth!.root));
     expect(existsSync(join(hearth!.root, "bags", "daemon"))).toBe(false);
-    const canon = join(hearth!.root, "projections", "bags", "daemon");
-    const files = existsSync(canon) ? (readdirSync(canon, { recursive: true }) as string[]).filter((p) => statSync(join(canon, p)).isFile()) : [];
-    const titles = files.filter((p) => !p.endsWith(".meta")).map((p) => `lar:///${p.split(sep).join("/").replace(/\.[^/.]+$/, "")}`);
-    expect(titles.filter((t) => isDaemonCanonWithheld(t)), "a withheld title stands under bags/daemon").toEqual([]);
+    expect(existsSync(join(hearth!.root, "projections", "bags", "daemon")), "the daemon document gained a mirror").toBe(false);
+    expect(privateTitlesProjected(hearth!.root), "a control, secret or daemon-document title stands in a mirror").toEqual([]);
   });
 });
