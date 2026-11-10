@@ -10,6 +10,11 @@
  * across a restart, re-verified when it reads the journal back. A name it holds nothing under, a refused deposit and
  * every other path meet the same silence as a closed door.
  *
+ * THE CARRIAGE LOG. A drop the herm keeps is a carriage it took: with the place's carriage log handed in, each kept
+ * successor lands one signed receipt keyed by its event cid (a replayed deposit appends nothing), and `GET /carried/<id>`
+ * answers that receipt from the log, the same silence answering a carriage it never took
+ * (lar:///ha.ka.ba/lararium/mesh/lamplighters#/the-carriage-log).
+ *
  * The port carries no envelope and stands no socket: a WebSocket upgrade is destroyed before any 101. A herm's
  * standing at a Nexus is the counted `carry` that travels by hand (lar:///ha.ka.ba/lararium/node/carry-bundle), and
  * its floor gate answers on the vessel's own gate server (lar:///ha.ka.ba/lararium/node/herm-carriage).
@@ -24,8 +29,8 @@ import { dirname } from "node:path";
 import type { Duplex } from "node:stream";
 import * as ed from "@noble/ed25519";
 import {
-  PERSONA_KEL_DROP_ROUTE, makePersonaKelDropStore, PERSONA_KEL_DROP_BODY_CAP, hex,
-  type MembershipEnvelope, type PersonaKelDropJournal, type PersonaKelDropStore,
+  PERSONA_KEL_DROP_ROUTE, makePersonaKelDropStore, PERSONA_KEL_DROP_BODY_CAP, hex, admitPersonaKelDropDeposit,
+  type CarriageLog, type MembershipEnvelope, type PersonaKelDropJournal, type PersonaKelDropStore,
 } from "@lararium/mesh";
 
 /** A running herm relay port: the HTTP server, its bound port and the gate key a dialer pins for it. */
@@ -62,6 +67,8 @@ export async function startHermRelayPort(
     readonly dropJournalPath?: string;
     /** The drops' byte budget in all. */
     readonly dropBytes?: number;
+    /** The place's carriage log: each kept drop lands its receipt there, and `/carried/<id>` answers from it. */
+    readonly carriageLog?: CarriageLog;
   } = {},
 ): Promise<HermRelayPort> {
   const gatePubKey = hex(await ed.getPublicKeyAsync(gateSeed));
@@ -71,7 +78,7 @@ export async function startHermRelayPort(
     ...(opts.dropJournalPath ? { journal: fileDropJournal(opts.dropJournalPath) } : {}),
   });
   const spent = new WeakMap<object, { deposits: number; bytes: number }>();
-  const httpServer = createServer((req, res) => { serveDrop(drops, spent, req, res); });
+  const httpServer = createServer((req, res) => { serveDrop(drops, spent, req, res, opts.carriageLog ?? null); });
   httpServer.on("upgrade", (_req: IncomingMessage, socket: Duplex) => { socket.destroy(); });
   await new Promise<void>((resolve) => httpServer.listen(port, resolve));
   const addr = httpServer.address();
@@ -87,6 +94,9 @@ export async function startHermRelayPort(
 /** What one connection may spend on drop deposits before it meets silence: a count and a byte total. */
 export const DROP_CONNECTION_BUDGET = { deposits: 64, bytes: 1024 * 1024 } as const;
 const DROP_PATH_RE = new RegExp(`^${PERSONA_KEL_DROP_ROUTE}([0-9a-f]{64})$`);
+/** The carriage log's read: "did you carry X", answered from the log. */
+export const CARRIED_ROUTE = "/carried/";
+const CARRIED_PATH_RE = new RegExp(`^${CARRIED_ROUTE}([^/]{1,512})$`);
 
 /**
  * A drop journal on disk: one JSON line per kept deposit, appended as it lands; a whole rewrite (to a sibling file,
@@ -128,9 +138,20 @@ export function fileDropJournal(path: string): PersonaKelDropJournal {
  * reads it from any page; the POST takes `text/plain`, which no preflight precedes. A deposit whose declared or read
  * length passes the body cap, or that passes its connection's budget, meets silence before the store reads it.
  */
-function serveDrop(drops: PersonaKelDropStore, spent: WeakMap<object, { deposits: number; bytes: number }>, req: IncomingMessage, res: ServerResponse): void {
+function serveDrop(drops: PersonaKelDropStore, spent: WeakMap<object, { deposits: number; bytes: number }>, req: IncomingMessage, res: ServerResponse, log: CarriageLog | null): void {
   const silence = (): void => { res.socket?.destroy(); };
-  const match = DROP_PATH_RE.exec(new URL(req.url ?? "/", "http://localhost").pathname);
+  const pathname = new URL(req.url ?? "/", "http://localhost").pathname;
+  const asked = CARRIED_PATH_RE.exec(pathname);
+  if (asked && req.method === "GET") {
+    let id: string;
+    try { id = decodeURIComponent(asked[1]!); } catch { silence(); return; }
+    const receipt = log?.carried(id) ?? null;
+    if (!receipt) { silence(); return; }
+    res.writeHead(200, { "content-type": "application/json", "access-control-allow-origin": "*" });
+    res.end(JSON.stringify(receipt));
+    return;
+  }
+  const match = DROP_PATH_RE.exec(pathname);
   if (!match) { silence(); return; }
   const name = match[1]!;
   if (req.method === "GET") {
@@ -161,8 +182,15 @@ function serveDrop(drops: PersonaKelDropStore, spent: WeakMap<object, { deposits
     let raw: unknown;
     try { raw = JSON.parse(Buffer.concat(chunks).toString("utf8")); } catch { silence(); return; }
     if (!drops.deposit(name, raw)) { silence(); return; }
-    res.writeHead(204, { "access-control-allow-origin": "*" });
-    res.end();
+    const answer = (): void => { res.writeHead(204, { "access-control-allow-origin": "*" }); res.end(); };
+    // THE RECEIPT LANDS BEFORE THE ANSWER: a herm that said it kept the drop already logged carrying it. A log that
+    // refuses names the fault; the drop it kept still stands.
+    const carried = log ? admitPersonaKelDropDeposit(raw, name, drops.gatePubKey)?.event.eventCid : undefined;
+    if (!log || !carried) { answer(); return; }
+    log.carry(carried, "persona-kel-drop").then(answer, (e: unknown) => {
+      console.warn(`[carriage-log] the receipt for ${carried} did not land (${e instanceof Error ? e.message : String(e)}); the drop stands kept`);
+      answer();
+    });
   });
   req.on("error", silence);
 }

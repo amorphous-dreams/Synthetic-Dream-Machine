@@ -400,6 +400,21 @@ Physical access defeats confidentiality and forward integrity of a box outright 
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/the-carriage-log`>>
+
+!! The carriage log ~ every place keeps its positive receipts (operator ruling, 2026-11-09)
+
+''A place answers //did you carry X// from its own append-only carriage log, and from nothing else.'' Each carriage a place takes lands ONE receipt there, which names the carriage by its own content or causal id (a sealed block's cid, a persona-KEL successor's event cid), the lane it rode, and the place key that signed it. The receipt rides as a floor duty of the place signer (`CARRIAGE_RECEIPT_DOMAIN`), framed as every floor duty frames, so it never verifies as a carrier seal, a floor pin or any other duty: a herm signs its local-carry statements under its own single key (#/under-every-lararium).
+
+* ''Keyed by the carriage, never by a clock.'' No counter and no timestamp rides a receipt. The same carriage taken twice, replayed, or taken again after a restart finds its receipt standing and appends nothing.
+* ''Durable before it answers.'' A receipt joins the log only once its journal line landed and synced; a journal that refuses the line keeps nothing, and the carriage still runs. The log claims what the place carried, never an absence (#/immune: never prove the negative).
+* ''Floor canon, never a control document.'' The log rests UNSEALED on the place's floor (`carriage-log.jsonl` beside the drop journal) and names carriage ids and the place key alone: no peer, no payload, no operator-private byte. Reading it back verifies every line under a key the place's KEL seated; a torn, forged or stranger-signed line files nothing.
+* ''One floor, every place.'' Herm and hearth alike keep one (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/waking-floor#/the-breaks`>>). The herm's relay port logs each successor drop it keeps and answers `GET /carried/<id>` from the log, the same silence answering a carriage it never took; the cas-wire serve side logs each sealed block it hands a member.
+
+''OWED'': the peer's cosignature (#/immune's Sigsum shape) and the sparse-Merkle non-inclusion read stand unbuilt; today's receipt carries the place's own signature alone.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/open`>>
 
 !! ★ The voice-capture question ~ both halves ruled ★
@@ -449,6 +464,6 @@ An operator contracts their OWN herm with one signature, scoped to one place and
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;dGpbsmSgVsRtHUdHeoSAWYrBpZFllASQ7XEy0NAHosE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MWoJabfy_S5jLzequmjvs3BGk1htdMWGAgEmKsKe1iE`>>
 
 <<^ code=`&#x0004;` to=`?`>>
