@@ -86,6 +86,8 @@ export async function standControlHome(repo: Repo, daemonHandle: DocHandle<LarDo
   if (named) {
     if (rest === null) return repo.find<LarDoc>(named as AutomergeUrl);
     const documentId = parseAutomergeUrl(named as AutomergeUrl).documentId;
+    // A holder whose custody stands open stands the vessel's key first (a direct holder's act opens the home's row).
+    if (!rest.holdsKey()) await rest.standKey?.().catch(() => false);
     if (rest.enrollBeside(documentId, CONTROL_HOME_ID)) return repo.find<LarDoc>(named as AutomergeUrl);
     const held = repo.handles[documentId] as DocHandle<LarDoc> | undefined;
     if (held) return held;

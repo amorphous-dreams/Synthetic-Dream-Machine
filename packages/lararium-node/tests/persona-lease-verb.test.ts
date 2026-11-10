@@ -13,7 +13,7 @@ import { afterEach, describe, expect } from "vitest";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import {
-  DAEMON_BAG_ID, standControlHome, ed25519SignerFromSeed, leaseEpochSlotUri, seedDaemonDoc, signLeaseAdvance, signedLeaseEpoch, raiseFaceFrontier, tiddlerText, type LarDoc,
+  DAEMON_BAG_ID, standControlHome, nameControlHome, ed25519SignerFromSeed, leaseEpochSlotUri, seedDaemonDoc, signLeaseAdvance, signedLeaseEpoch, raiseFaceFrontier, tiddlerText, type LarDoc,
   ed25519VerifyingKeyFromSeed, emptyLarDoc, signFoundingLog, signPersonaAct, actCid, faceRootCommitment, edgeBodyDigest, personaBagIdFor,
   verifyDeviceDelegation, writePersonaAct,
 } from "@lararium/mesh";
@@ -23,6 +23,7 @@ import { loadIdentityAnchors } from "../src/identity-anchors.js";
 import { loadFaceAnchorOfGroup, keepFaceAnchorOfGroup } from "../src/face-anchor-store.js";
 import { larBootstrapPath, larDataDir, larSealHome } from "../src/vessel-paths.js";
 import { ownedStore } from "../src/owned-store.js";
+import { standVesselSecretHome } from "../src/secret-home-store.js";
 import { storeDoorDirect } from "../src/store-door-verbs.js";
 import { seedFaceAtom } from "./atom-fixture.js";
 import { seedFleet } from "./fleet-seed-fixture.js";
@@ -44,6 +45,9 @@ async function setup(withFleet: boolean, plane: "bare" | "none" = "bare") {
   await ownedStore(larDataDir(), async (repo) => {
     const handle = seedDaemonDoc(repo);
     daemonUrl = handle.url;
+    // As the founding does: the secret home and the control document beside it, the daemon document naming the control.
+    const secret = await standVesselSecretHome(repo);
+    nameControlHome(handle, secret.controlUrl!);
     await repo.flush();
     mkdirSync(dirname(larBootstrapPath()), { recursive: true });
     const packed: Record<string, { title: string; text: string; kind?: string }> = { [DAEMON_BAG_ID]: { title: DAEMON_BAG_ID, text: handle.url, kind: "oracle" } };

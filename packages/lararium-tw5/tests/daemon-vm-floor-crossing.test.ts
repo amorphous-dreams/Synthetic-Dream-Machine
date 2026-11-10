@@ -148,7 +148,7 @@ test("the persona plane stays outside the daemon composite", async () => {
     newSyncChannel: () => { const { port1, port2 } = new MessageChannel(); ports.push(port1, port2); return { mainPort: port1 as IslandMsg_Manifest["syncPort"], syncPort: port2 as IslandMsg_Manifest["syncPort"] }; },
   };
   const bagId = "lar:///ha.ka.ba/bags/private-group";
-  const core = openDaemonVmCore(host, { repo, daemonHandle, personaHandle, personaBagId: bagId, recipe: { wikiSlug: "daemon" }, grants: { islandUrl: daemonHandle.url }, coreHash: null, workerScriptUrl: new URL("file:///unused"), eaSilenceMs: 2 ** 30 });
+  const core = openDaemonVmCore(host, { repo, daemonHandle, controlHandle: repo.create<LarDoc>(emptyLarDoc()), personaHandle, personaBagId: bagId, recipe: { wikiSlug: "daemon" }, grants: { islandUrl: daemonHandle.url }, coreHash: null, workerScriptUrl: new URL("file:///unused"), eaSilenceMs: 2 ** 30 });
   core.workerEa.catch(() => {});
   try {
     expect(core.composite.storeForBag(bagId)).toBeNull();

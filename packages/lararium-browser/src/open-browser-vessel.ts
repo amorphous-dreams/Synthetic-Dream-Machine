@@ -735,6 +735,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   bindSecretHomeRest(repo, secretHomes.rest((documentId) => sealedRest.restsSealed(documentId), () => {
     sealedRest.store.mapMoved();
     void sealedRest.store.reseal().catch(() => { /* each keeps waiting, never clear */ });
+  }, async () => {
+    // The key stands where this browser's keystore stands open; a locked keystore answers false and control writes wait held.
+    try { await openBrowserSecretHome(idbName, repo); return true; } catch { return false; }
   }));
   // THE DEVICE DAEMON DOCUMENTS the control document names (the daemon wiki's device slots, the face's daemon canon): on a
   // browser leaf, whose sealed map holds no daemon wiki bag, each seals beside the control document under the vessel's key.

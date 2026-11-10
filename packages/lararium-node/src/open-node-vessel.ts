@@ -1425,6 +1425,9 @@ async function prepareNodeBootOn(
   bindSecretHomeRest(repo, secretHomes.rest((documentId) => sealedRest.restsSealed(documentId), () => {
     sealedRest.store.mapMoved();
     void sealedRest.store.reseal().catch(() => { /* each keeps waiting, never clear */ });
+  }, async () => {
+    // The key stands where this vessel's custody stands open; a locked vessel answers false and its control writes wait held.
+    try { await openVesselSecretHome(repo); return true; } catch { return false; }
   }));
   // R2's booking, by the change's own writer (T4): a save of a sealed bag's document reads its change's actor off its
   // bytes; a change this replica made books the session whose call stands, and a peer's change books its peer writer

@@ -42,6 +42,9 @@ export interface SecretHomeRest {
   holdsKey(): boolean;
   /** Run `cb` once the vessel's held key stands (at once where it already does). Returns the unsubscribe. */
   whenKeyed(cb: () => void): () => void;
+  /** Stand the vessel's key where the holder can (its custody opens the secret home's row): answers whether it stands. A
+   *  holder whose custody stays shut answers false, and the document waits held. */
+  standKey?(): Promise<boolean>;
 }
 
 /**
@@ -57,7 +60,7 @@ export interface VesselHeldHomes {
    *  vessel-only deny set takes. */
   ids(): readonly string[];
   /** The rest this table answers through: `restsSealed` reads the holder's store; `moved` tells it the map moved. */
-  rest(restsSealed: (documentId: string) => Promise<boolean>, moved?: () => void): SecretHomeRest;
+  rest(restsSealed: (documentId: string) => Promise<boolean>, moved?: () => void, standKey?: () => Promise<boolean>): SecretHomeRest;
   /** Overwrite every held key (the holder stands down). */
   wipe(): void;
 }
@@ -74,8 +77,9 @@ export function vesselHeldHomes(): VesselHeldHomes {
     },
     has: (documentId) => homes.has(documentId),
     ids: () => [...homes.keys()],
-    rest(restsSealed, moved) {
+    rest(restsSealed, moved, standKey) {
       return {
+        ...(standKey ? { standKey: async () => vesselKey !== null || await standKey() } : {}),
         enroll(documentId, key) {
           const first = vesselKey === null;
           vesselKey ??= key;

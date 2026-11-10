@@ -14,7 +14,7 @@ import { Repo, type AutomergeUrl, type Chunk, type StorageAdapterInterface, type
 import { afterAll, describe, expect, test } from "vitest";
 import { foundTheFace, foundThePlace, runDeviceAdmitEdge } from "@lararium/keyhive";
 import {
-  DAEMON_BAG_ID, SECRET_HOME_ID, SealedDocumentStore, bindSecretHomeRest, faceAtomKeyFromSeed, groupSecretSealTitle,
+  DAEMON_BAG_ID, SECRET_HOME_ID, SealedDocumentStore, bindSecretHomeRest, vesselHeldHomes, faceAtomKeyFromSeed, groupSecretSealTitle,
   makeIslandRepo, materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, plainRecord,
   type HeldRestKey, type LarDoc,
 } from "@lararium/mesh";
@@ -124,14 +124,17 @@ function recordingHolder(storageDir: string) {
     },
   };
   const refuse = async () => ({ refusal: "signer-unavailable" }) as never;
+  const homes = vesselHeldHomes();
   const store = new SealedDocumentStore({
-    inner, bagOf: (id) => { const key = held.get(id); return key ? { bagId: SECRET_HOME_ID, face: null, held: key } : null; },
+    inner, bagOf: (id) => homes.bagOf(id),
     sessionFace: () => null, sessionOf: () => null, seal: refuse, open: refuse, refuseClearOverSealed: true,
   });
   const repo = new Repo({ storage: store, network: [] });
+  const rest = homes.rest((documentId) => store.holdsSealed(documentId));
   bindSecretHomeRest(repo, {
-    enroll: (documentId, key) => { events.push(`enroll:${documentId}`); held.set(documentId, key); },
-    restsSealed: async (documentId) => held.has(documentId) && await store.holdsSealed(documentId),
+    ...rest,
+    enroll: (documentId, key) => { events.push(`enroll:${documentId}`); held.set(documentId, key); rest.enroll(documentId, key); },
+    enrollBeside: (documentId, bagId) => { events.push(`enroll-beside:${documentId}`); const keyed = rest.enrollBeside(documentId, bagId); if (keyed) held.set(documentId, held.values().next().value!); return keyed; },
   });
   return { repo, events };
 }

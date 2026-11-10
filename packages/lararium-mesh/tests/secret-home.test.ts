@@ -184,9 +184,9 @@ describe("the vessel's secret home rests sealed from its first byte", () => {
     const repo = new Repo({ storage: store, network: [] });
     bindSecretHomeRest(repo, homes.rest((id) => store.holdsSealed(id)));
     const control = mintSecretHomeAddress().documentId;
-    // No home's key stands yet: nothing maps, and the caller keeps its own class.
+    // No home's key stands yet: it maps sealed with no key (saves wait in memory, loads wait), never clear.
     expect(enrollBesideSecretHome(repo, control, CONTROL_HOME_ID)).toBe(false);
-    expect(homes.bagOf(control)).toBeNull();
+    expect(homes.bagOf(control)).toEqual({ bagId: CONTROL_HOME_ID, face: null });
     const home = await enrollSecretHome(repo, mintSecretHomeAddress());
     expect(enrollBesideSecretHome(repo, control, CONTROL_HOME_ID)).toBe(true);
     expect(homes.bagOf(control)?.bagId).toBe(CONTROL_HOME_ID);

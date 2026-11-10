@@ -408,7 +408,10 @@ export async function ownedStore<T>(storageDir: string, act: (repo: Repo) => Pro
     // reads it and writes nothing of its own accord.
     if (!(await storage.load([STORE_ID_KEY]))) await storage.save([STORE_ID_KEY], new TextEncoder().encode(randomUUID()));
     const repo = new Repo({ storage });
-    bindSecretHomeRest(repo, held.rest((documentId) => storage.holdsSealed(documentId)));
+    // The vessel's key stands on demand: an act that reaches the control document opens the secret home's custody row first.
+    bindSecretHomeRest(repo, held.rest((documentId) => storage.holdsSealed(documentId), undefined, async () => {
+      try { await (await import("./secret-home-store.js")).openVesselSecretHome(repo); return true; } catch { return false; }
+    }));
     let done = false;
     try {
       const out = await act(repo);
