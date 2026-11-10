@@ -1,13 +1,13 @@
 /**
  * control-home — the vessel's CONTROL document: one document, minted at founding beside the vessel's secret home and sealed
  * under the vessel's own key (operator ruling A6, 2026-11-09), named by the daemon document, held as its own store and
- * never as a recipe layer. A write while the key stays shut waits held in memory, never clear.
+ * never as a recipe layer. While the key stays shut every read and write refuses `vessel-locked`; nothing waits in memory.
  */
 import { describe, expect, test } from "vitest";
 import { Repo, type Chunk, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
 import {
   CONTROL_HOME_ID, DAEMON_BAG_ID, MAILBOX_URI_PREFIX, OUTCOME_URI_PREFIX, RECEIPT_FACT_URI_PREFIX, SUMMONS_URI_PREFIX, WARD_AUDIT_URI_PREFIX, EFFECT_URI_PREFIX,
-  controlHomeUrlOf, controlStoreOf, emptyLarDoc, expandRecipe, leaseEpochPrefix, standControlHome, wornFaceWikiBags, vesselOnlyDocIds, makeVesselOnlyDocs, storedLarRecord, type LarDoc,
+  controlHomeUrlOf, controlHomeRefusal, controlStoreOf, emptyLarDoc, VESSEL_LOCKED, CONTROL_HOME_UNNAMED, expandRecipe, leaseEpochPrefix, standControlHome, wornFaceWikiBags, vesselOnlyDocIds, makeVesselOnlyDocs, storedLarRecord, type LarDoc,
   SealedDocumentStore, bindSecretHomeRest, enrollSecretHome, mintSecretHomeAddress, mintVesselDocumentId, nameControlHome, openSecretHome, vesselHeldHomes,
 } from "../src/index.js";
 
@@ -65,11 +65,16 @@ describe("the vessel's control document", () => {
     }
   });
 
-  test("a Repo that rests bytes and names no control document mints none at its stand: the founding mints it beside the home", async () => {
+  test("a Repo that rests bytes and names no control document mints none at its stand: its stand-in refuses `control-home-unnamed`", async () => {
     const inner = memoryAdapter();
     const { repo } = heldRepo(inner);
     const daemon = repo.create<LarDoc>(emptyLarDoc());
-    await expect(standControlHome(repo, daemon)).rejects.toThrow(/control-home-unavailable/);
+    const control = await standControlHome(repo, daemon);
+    expect(controlHomeRefusal(control)?.refusal).toBe(CONTROL_HOME_UNNAMED);
+    await expect(controlStoreOf(control).get(`${OUTCOME_URI_PREFIX}r1`)).rejects.toMatchObject({ refusal: CONTROL_HOME_UNNAMED });
+    expect(controlHomeUrlOf(daemon.doc())).toBeNull();
+    await repo.flush();
+    expect(restsAny(inner, control.documentId)).toBe(false);
     await repo.shutdown();
   });
 });
@@ -92,13 +97,26 @@ describe("the control document seals under the vessel's key from its first byte 
     expect(restsClear(inner, address.controlId)).toBe(false);
   });
 
-  test("RED: a write while the vessel's key stays shut waits held in memory, never clear; once the key opens, the rest merges in and the write lands sealed", async () => {
+  test("RED (second boot): a store whose map names no bag for the control document refuses its sealed chunks `bag-unmapped`, never hands them to the engine raw", async () => {
+    const inner = memoryAdapter();
+    const first = heldRepo(inner);
+    const address = { ...mintSecretHomeAddress(), controlId: mintVesselDocumentId() };
+    const founded = await enrollSecretHome(first.repo, address);
+    founded.control!.change((d) => { d.tiddlers["lar:///ha.ka.ba/bags/control/founded"] = storedLarRecord("lar:///ha.ka.ba/bags/control/founded", { text: WORD }, "test"); });
+    await first.repo.flush();
+    await first.repo.shutdown();
+    expect(restsAny(inner, address.controlId)).toBe(true);
+    const second = heldRepo(inner);
+    await expect(second.store.loadRange([address.controlId])).rejects.toMatchObject({ refusal: "bag-unmapped" });
+    await second.repo.shutdown();
+  });
+
+  test("RED (Gaia Tuesday): while the vessel's key stays shut the control store refuses every read and write `vessel-locked` and nothing rests; once unlocked, a fresh stand reads the control document whole", async () => {
     const inner = memoryAdapter();
     // FOUNDING: home and control enrolled, one record written, the address kept.
     const first = heldRepo(inner);
     const address = { ...mintSecretHomeAddress(), controlId: mintVesselDocumentId() };
     const founded = await enrollSecretHome(first.repo, address);
-    controlStoreOf(founded.control!);
     founded.control!.change((d) => { d.tiddlers["lar:///ha.ka.ba/bags/control/founded"] = storedLarRecord("lar:///ha.ka.ba/bags/control/founded", { text: "founded" }, "test"); });
     const daemonDoc = first.repo.create<LarDoc>(emptyLarDoc());
     nameControlHome(daemonDoc, `automerge:${address.controlId}`);
@@ -112,30 +130,25 @@ describe("the control document seals under the vessel's key from its first byte 
     const daemon = locked.repo.import<LarDoc>(daemonBytes);
     const control = await standControlHome(locked.repo, daemon);
     expect(control.documentId).toBe(address.controlId);
-    control.change((d) => { d.tiddlers["lar:///ha.ka.ba/bags/control/floor-write"] = storedLarRecord("lar:///ha.ka.ba/bags/control/floor-write", { text: WORD }, "test"); });
-    await locked.repo.flush();
-    // Nothing new rested for the control document: the floor's write waits in memory.
-    for (const [key, data] of inner.bytes) if (key.startsWith(address.controlId)) expect(restedBefore.get(key)).toEqual(data);
-    expect(restsClear(inner, address.controlId)).toBe(false);
-
-    // THE KEY OPENS: the home opens on the same rest; the founding's record merges in and the floor's write rests sealed.
-    await openSecretHome(locked.repo, address);
-    for (let i = 0; i < 100 && !control.doc().tiddlers["lar:///ha.ka.ba/bags/control/founded"]; i++) await new Promise((r) => setTimeout(r, 10));
-    expect(control.doc().tiddlers["lar:///ha.ka.ba/bags/control/founded"]).toBeDefined();
-    expect(control.doc().tiddlers["lar:///ha.ka.ba/bags/control/floor-write"]).toBeDefined();
-    for (let i = 0; i < 100 && locked.store.waiting(address.controlId) > 0; i++) await new Promise((r) => setTimeout(r, 10));
+    expect(controlHomeRefusal(control)?.refusal).toBe(VESSEL_LOCKED);
+    const store = controlStoreOf(control);
+    await expect(store.put({ tiddler: { title: "lar:///ha.ka.ba/bags/control/floor-write", text: WORD } }, { kind: "test" })).rejects.toMatchObject({ refusal: VESSEL_LOCKED });
+    await expect(store.get("lar:///ha.ka.ba/bags/control/founded")).rejects.toMatchObject({ refusal: VESSEL_LOCKED });
+    await expect(store.listVisible()).rejects.toThrow(/vessel-locked/);
+    // The stand-in never joins the vessel's Repo: nothing of it syncs, rests or waits there.
+    expect(locked.repo.handles[address.controlId as never]).toBeUndefined();
     await locked.repo.flush();
     expect(locked.store.waiting(address.controlId)).toBe(0);
+    for (const [key, data] of inner.bytes) if (key.startsWith(address.controlId)) expect(restedBefore.get(key)).toEqual(data);
+
+    // THE KEY OPENS (an unlock recomposes): the home opens on the same rest and a fresh stand reads the founding's record.
+    await openSecretHome(locked.repo, address);
+    const opened = await standControlHome(locked.repo, daemon);
+    expect(controlHomeRefusal(opened)).toBeNull();
+    expect(opened.doc().tiddlers["lar:///ha.ka.ba/bags/control/founded"]).toBeDefined();
+    expect(JSON.stringify(opened.doc())).not.toContain(WORD);
     await locked.repo.shutdown();
     expect(restsClear(inner, address.controlId)).toBe(false);
-
-    // A FRESH UNLOCKED HOLDER reads both records back.
-    const again = heldRepo(inner);
-    await openSecretHome(again.repo, address);
-    const reread = await again.repo.find<LarDoc>(`automerge:${address.controlId}` as never);
-    expect(JSON.stringify(reread.doc())).toContain(WORD);
-    expect(reread.doc().tiddlers["lar:///ha.ka.ba/bags/control/founded"]).toBeDefined();
-    await again.repo.shutdown();
   });
 });
 

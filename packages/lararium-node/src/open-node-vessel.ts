@@ -149,6 +149,8 @@ import { makeSealedPlaneRegistry } from "./plane-seal.js";
 import { cadSealDir, registerSealedCarrier } from "./seal-carrier-federation.js";
 import { makeBagTracker } from "./bag-tracker.js";
 import { startCarriageRelay, type CarriageRelay } from "./carriage-relay.js";
+import { makeCarriageLog, placeSignerKeyAt, type PlaceKelEvent } from "@lararium/mesh";
+import { CARRIAGE_LOG_FILE, fileCarriageJournal } from "./carriage-log-file.js";
 import { openRelayGateSeed } from "./relay-gate-seed.js";
 import { maybeStartNexusClientDial, type NexusClientDial } from "./nexus-client-dial.js";
 import { nodeDialSocket } from "./node-dial-socket.js";
@@ -1967,10 +1969,20 @@ async function prepareNodeBootOn(
   const relayPort = relayPortRaw !== undefined && relayPortRaw !== "" ? Number(relayPortRaw) : null;
   // The herm's sight of a sibling channel stays transient: the vessel hands the relay no frame observer, so carried
   // frames are routed and forgotten. A witness of that sight stands its own relay and passes its own observer.
+  // THE PLACE'S CARRIAGE LOG — every place keeps one, herm and hearth alike (lamplighters#/the-carriage-log): an append-only,
+  // unsealed journal on the place's floor, one receipt per carriage signed by the place signer and keyed by the carriage's
+  // own id. A receipt under any signer the place's KEL seated reads back; a rotated place keeps its earlier receipts.
+  const placeSignerKeys = new Set<string>([placeSigner.key]);
+  for (const event of await loadPlaceKelChain().catch(() => [] as readonly PlaceKelEvent[])) {
+    try { placeSignerKeys.add(placeSignerKeyAt(event)); } catch { /* a row that does not read seats nobody */ }
+  }
+  const carriageLog = makeCarriageLog({
+    signer: placeSigner, journal: fileCarriageJournal(join(storageDir, CARRIAGE_LOG_FILE)), signedByPlace: (key) => placeSignerKeys.has(key),
+  });
   const carriageRelay: CarriageRelay | null = await (async () => {
     if (relayPort === null || Number.isNaN(relayPort)) return null;
     const gateSeed = openRelayGateSeed();
-    try { return await startCarriageRelay({ gateSeed, port: relayPort, dropJournalPath: join(storageDir, "persona-kel-drops.jsonl") }); }
+    try { return await startCarriageRelay({ gateSeed, port: relayPort, dropJournalPath: join(storageDir, "persona-kel-drops.jsonl"), carriageLog }); }
     finally { gateSeed.fill(0); }
   })();
   if (carriageRelay) {
@@ -2333,7 +2345,7 @@ async function prepareNodeBootOn(
       onWikiCooled: (id) => console.log(`[residency] cooled wiki ${id} (island unmounted)`),
       onBagCooled:  (id) => console.log(`[residency] cooled bag ${id} (compact-then-drop reserved for repo#358)`),
       alertArgs:    (kind) => ({ kind: kind ?? "" }),
-      onUndeliverableAlert: (wikiId, verbOpts) => { void mailbox.park(wikiId, verbOpts); },
+      onUndeliverableAlert: (wikiId, verbOpts) => { void mailbox.park(wikiId, verbOpts).catch((e: unknown) => { console.log(`[mailbox] ${wikiId} parks nothing: ${e instanceof Error ? e.message : String(e)}`); }); },
     },
   );
   const residency = residencyWiring.residency;
@@ -4214,7 +4226,9 @@ async function prepareNodeBootOn(
         if (msg.type !== "event") return;   // a camera's frame or answer from an island outside any session has no ring to ride on this vessel
         eventBus.enqueueToRing("vm-ring", "worker.event", { wikiId, listenable: msg.listenable, payload: msg.payload });
       },
-      onEa: (wikiId) => { void mailbox.drain(wikiId); },   // breath → parked verbs deliver
+      // breath → parked verbs deliver. A locked (or faceless) floor's mailbox refuses by name: its parked verbs wait for the
+      // unlocked composition, and the refusal says so once rather than rejecting unheard.
+      onEa: (wikiId) => { void mailbox.drain(wikiId).catch((e: unknown) => { console.log(`[mailbox] ${wikiId} drains nothing: ${e instanceof Error ? e.message : String(e)}`); }); },
     });
 
     // Wire the pool through the SHARED residency factory: resolveWikiSpec (the UNKNOWN-grain

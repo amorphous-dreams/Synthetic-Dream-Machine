@@ -66,7 +66,7 @@
 import {
   bindSlot, unbindSlot, openTreeKey, nobleKdf, encodeSlotTree, decodeSlotTree, confirmHeldPaper, mintTreeKey, treeKeyEquals,
   writeSealedCarrier, openSealedCarrier, removeSealedCarrier, commitSlotTree, settleRotation, SEALING_SUFFIX, ROTATING_SUFFIX,
-  constantTimeBytesEqual, isWalkRecord, type CustodyIo, type SealedCarrier, type Credential, type PinSpec, type SlotTree, type TreeKey,
+  constantTimeBytesEqual, isWalkRecord, VESSEL_LOCKED, type CustodyIo, type SealedCarrier, type Credential, type PinSpec, type SlotTree, type TreeKey,
 } from "@lararium/mesh";
 import { openVesselIdb } from "./browser-vessel-identity.js";
 import { clearCustodyQuestion } from "@lararium/mesh/lar-uris";
@@ -170,6 +170,9 @@ export class BrowserCustodyRefused extends Error {
   constructor(readonly reading: BrowserCustodyRefusalReading, readonly idbName: string, readonly row?: string, detail?: string) {
     super(`[browser-custody] ${reading} — "${idbName}"${row ? ` row ${row}` : ""}: ${SAYS[reading]}${detail ? ` (${detail})` : ""}`);
   }
+  /** THE NAME A CALLER READS, one across platforms: a sealed keystore this page holds no unlock for refuses `vessel-locked`,
+   *  the name a node vessel's control acts and the CLI's direct holder answer; every other reading names itself. */
+  get refusal(): string { return this.reading === "sealed-locked" ? VESSEL_LOCKED : this.reading; }
 }
 
 // ── the page's unlocks ──────────────────────────────────────────────────────────────────────────────

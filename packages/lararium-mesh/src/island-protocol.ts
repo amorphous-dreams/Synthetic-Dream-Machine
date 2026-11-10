@@ -174,6 +174,9 @@ export interface IslandGrants {
   /** The vessel's CONTROL document (`control-home`), granted to the daemon island alone: an access grant, never a recipe
    *  slot. The island's control store stands over it; absent on every wiki island. */
   controlUrl?:  string | null;
+  /** The control document's refusal while the vessel cannot read it (`vessel-locked`: the key stays shut; `control-home-unnamed`:
+   *  the place holds no face). The island resolves nothing then: its control store refuses every read and write by this name. */
+  controlRefusal?: "vessel-locked" | "control-home-unnamed" | "control-home-unavailable";
   /** The worn face's daemon canon (`daemonFaceCanonBag`), the document its catalog row names: the daemon recipe's
    *  `canonBag` slot mounts from this grant alone. Absent at the floor, where the daemon wiki reads no canon. */
   canonUrl?:    string | null;

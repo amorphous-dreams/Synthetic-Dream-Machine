@@ -1,7 +1,7 @@
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { describe, expect, it } from "vitest";
 import {
-  CARRIAGE_CARRIER_DOMAIN, DEVICE_DELEGATION_DOMAIN, GATE_PLACE_FINISH_DOMAIN, FLOW_POINTER_DOMAIN,
+  CARRIAGE_CARRIER_DOMAIN, CARRIAGE_RECEIPT_DOMAIN, DEVICE_DELEGATION_DOMAIN, carriageReceiptImage, GATE_PLACE_FINISH_DOMAIN, FLOW_POINTER_DOMAIN,
   PLACE_FLOOR_PIN_DOMAIN, PLACE_SIGNER_DOMAINS, RAISE_CHALLENGE_DOMAIN, buildFlowPointer, carrierContractBytes,
   floorDutyOf, flowPointerSigningImage, frameFloorDuty, hex, mintPlaceInception, mintPlaceRotation, placeFloorPinImage,
   placeSignerFromSeed, raiseChallengeBytes, utf8Bytes, verifyPlaceDuty, verifyPlaceDutyAtHead,
@@ -16,11 +16,12 @@ const images: Record<string, Uint8Array> = {
   [CARRIAGE_CARRIER_DOMAIN]: carrierContractBytes({ nym: key(1), sealEpochCid: "epoch" }),
   [PLACE_FLOOR_PIN_DOMAIN]: placeFloorPinImage(key(1), pin),
   [RAISE_CHALLENGE_DOMAIN]: raiseChallengeBytes({ vesselId: "v", nexus: "n", epoch: 7, nonce: "x" }),
+  [CARRIAGE_RECEIPT_DOMAIN]: carriageReceiptImage({ carriage: "bafkr4iacarried", lane: "cas-block", place: key(1) }),
   [GATE_PLACE_FINISH_DOMAIN]: gatePlaceFinishImage({ handshakeHash: new Uint8Array(32), bundleDigest: "00".repeat(32), presentationDigest: "11".repeat(32), audience: "aud", placeKey: key(1) }),
 };
 
 describe("framed floor duties", () => {
-  it("signs and verifies all five maker images", async () => {
+  it("signs and verifies all six maker images", async () => {
     const pointer = await buildFlowPointer({ snapshot: { cid: "aa".repeat(32), heads: [], bytes: new Uint8Array() }, parents: [], signer: placeSignerFromSeed(seed(1)) });
     const made = { ...images, [FLOW_POINTER_DOMAIN]: flowPointerSigningImage(pointer) };
     const head = mintPlaceInception({ signerSeed: seed(1), coldVerifyingKey: key(2) }).event;
@@ -34,7 +35,7 @@ describe("framed floor duties", () => {
       expect(verifyPlaceDutyAtHead({ kel: head, domain, image, sig: faceSig })).toBe(false);
     }
   });
-  it("refuses a sixth duty, old unframed image, nested frame and cross-duty replay", async () => {
+  it("refuses an unlisted duty, old unframed image, nested frame and cross-duty replay", async () => {
     const image = images[CARRIAGE_CARRIER_DOMAIN]!;
     const sig = await signer.signFloor(CARRIAGE_CARRIER_DOMAIN, image);
     await expect(signer.signFloor(DEVICE_DELEGATION_DOMAIN, image)).rejects.toThrow(/names no floor duty/);

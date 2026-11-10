@@ -414,6 +414,8 @@ export type { HermRelayPort } from "./herm-relay-port.js";
 // The CARRIAGE relay capability: the herm's relay port and the DHT-free bag-tracker, one service.
 export { startCarriageRelay } from "./carriage-relay.js";
 export type { CarriageRelay } from "./carriage-relay.js";
+export { fileCarriageJournal, CARRIAGE_LOG_FILE } from "./carriage-log-file.js";
+export { CARRIED_ROUTE } from "./herm-relay-port.js";
 // The immune keel's RE-KEY (the Nexus or realm charter quorum advances its signed lease) + RE-SHARE
 // (list held sealed bodies to re-announce) teeth at the Herm's own tier — the `nexus-rekey` / `nexus-reshare` daemon verbs' cores.
 export { rollQuorumLeaseOnBoard, rollSignedLeaseEpochOnBoard } from "./lease-rekey.js";

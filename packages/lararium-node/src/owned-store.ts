@@ -409,8 +409,14 @@ export async function ownedStore<T>(storageDir: string, act: (repo: Repo) => Pro
     if (!(await storage.load([STORE_ID_KEY]))) await storage.save([STORE_ID_KEY], new TextEncoder().encode(randomUUID()));
     const repo = new Repo({ storage });
     // The vessel's key stands on demand: an act that reaches the control document opens the secret home's custody row first.
-    bindSecretHomeRest(repo, held.rest((documentId) => storage.holdsSealed(documentId), undefined, async () => {
-      try { await (await import("./secret-home-store.js")).openVesselSecretHome(repo); return true; } catch { return false; }
+    // A REFUSED OPEN NAMES ITS REASON (a locked custody, a place that names no home): the act refuses by it, and no
+    // stand-in stands in its place. The map moving (a home opened) wakes every load waiting on it and reseals what waits.
+    bindSecretHomeRest(repo, held.rest((documentId) => storage.holdsSealed(documentId), () => {
+      storage.mapMoved();
+      void storage.reseal().catch(() => { /* each keeps waiting, never clear */ });
+    }, async () => {
+      await (await import("./secret-home-store.js")).openVesselSecretHome(repo);
+      return true;
     }));
     let done = false;
     try {

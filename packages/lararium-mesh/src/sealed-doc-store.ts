@@ -474,10 +474,11 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     return opened.plaintext;
   }
 
-  /** A document the map names no bag for reads its inner rest as the engine wrote it; a sealed value there never
-   *  reaches the engine as if it were clear (`bag-unmapped`). */
+  /** A document the map names no bag for reads its inner rest as the engine wrote it; a sealed value there (a face's
+   *  pointer, or a value sealed under the vessel's held key or a published lookup) never reaches the engine as if it
+   *  were clear (`bag-unmapped`): the read waits for the map to name its bag. */
   #unmapped<T extends Uint8Array | undefined>(bytes: T): T {
-    if (bytes !== undefined && readPointer(bytes) !== null) throw new SealedDocumentRefusal("bag-unmapped");
+    if (bytes !== undefined && (namesPointer(bytes) || readsSealed(bytes))) throw new SealedDocumentRefusal("bag-unmapped");
     return bytes;
   }
 

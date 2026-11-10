@@ -134,7 +134,7 @@ export * from "./text-stream-adapter.js";
 export * from "./sensorium-pc.js";
 export * from "./aperture-selector.js";
 export * from "./epoch-lease.js";
-export { controlHomeUrlOf, standControlHome, readControlHome, controlHomeMergePending, nameControlHome, ControlHomeUnavailable, controlStoreOf, vesselOnlyDocIds, makeVesselOnlyDocs } from "./control-home.js";
+export { controlHomeUrlOf, standControlHome, readControlHome, nameControlHome, ControlHomeUnavailable, controlStoreOf, vesselOnlyDocIds, makeVesselOnlyDocs, VESSEL_LOCKED, CONTROL_HOME_UNNAMED, controlHomeRefusal, assertControlHomeOpen, refusingControlStore, vesselLockedRefusal, type ControlHomeRefusal } from "./control-home.js";
 export * from "./lar-did.js";
 export * from "./device-delegation.js";
 export { holderSessionProofBytes, signHolderSessionProof, verifyHolderSessionProof } from "./holder-session-proof.js";
@@ -250,6 +250,7 @@ export * from "./kapae-antigen.js";
 export { antigenEntriesFromBoard, writeAntigenEntry, antigenEntryKey, ANTIGEN_ENTRY_PREFIX } from "./antigen-board.js";
 // The operator MEMBERS-registry — the Kapae-antigen's ALLOW-twin (members{} ⊥ blocked{}); contracts, never identities.
 export * from "./carriage-registry.js";
+export * from "./carriage-log.js";
 // The root of one Nexus as a vessel holds it, and the one door a presented admit reads through: the socket
 // seat, the raise and the admit bundle hand the verifier a held root, never a roster of their own making.
 export {

@@ -417,14 +417,10 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
   // The FACE lands later, by an operator act: `lares persona new 0 --name '<label>'` runs `runFoundTheFace`
   // below. A hearth whose operator stands right here types two commands instead of one, and a crossroads
   // never types the second at all.
-  // THE SECRET HOME ENROLLS AFTER CUSTODY AND BEFORE ANY SECRET WRITE (placement over patterns, the founding order): the
-  // custody seated above seals its address row, and its document maps onto the holder's rest under its held key before
-  // its first byte. The place itself writes nothing secret; the face's seals, dyads and cap events land there later.
-  const secret = await standVesselSecretHome(repo);
+  // THE PLACE MINTS NO SECRET HOME AND NO CONTROL DOCUMENT (operator ruling 2026-11-09): both mint with the FACE, where its
+  // founding or its admission lands (`runFoundTheFace`, the fleet-join land above). The place writes nothing secret and
+  // holds no control family; a herm that never lights a face holds neither, and its custody row names none.
   const place = await foundThePlace({ repo, hearthTrueName });
-  // THE CONTROL DOCUMENT MINTED BESIDE THE HOME (operator ruling A6): the daemon document names it, so a floor's stand
-  // finds it before the custody row opens.
-  if (secret.controlUrl) nameControlHome(place.daemonHandle, secret.controlUrl);
 
   // THE FLUSH COMES FIRST, and the catalog pointer already carries the reason: a pointer written
   // after its referent is durable can be stale; one written BEFORE can be a LIE. Automerge saves ride
@@ -646,10 +642,14 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   // The ask's first row founds the face's own custody (never the vessel's route), keyed by this ask until its group exists;
   // an interrupted founding re-enters the face it already holds.
   const askDigest = foundingAskDigest(foundingAsk);
-  // THE SECRET HOME STANDS BEFORE THE FACE'S FIRST SEAL, DYAD OR CAP EVENT: the one the place enrolled opens on this
-  // holder's rest (the direct holder's, or the standing vessel's), mapped sealed before the Repo reads a byte of it. Its
-  // founding checkpoint rests there (A5), so an interrupted founding recovers its seed from the home.
+  // THE SECRET HOME STANDS BEFORE THE FACE'S FIRST SEAL, DYAD OR CAP EVENT, minted here with the face (or opened where an
+  // interrupted founding already minted it) on this holder's rest (the direct holder's, or the standing vessel's), mapped
+  // sealed before the Repo reads a byte of it. Its founding checkpoint rests there (A5), so an interrupted founding
+  // recovers its seed from the home.
   const secret = await standVesselSecretHome(repo);
+  // THE CONTROL DOCUMENT MINTS WITH THE FACE, beside the secret home (operator ruling 2026-11-09): the daemon document names
+  // it, so a locked floor's stand finds it before the custody row opens. The first name the daemon document took holds.
+  if (secret.controlUrl) nameControlHome(daemonHandle, secret.controlUrl);
   const atomSeed = (await loadPendingFoundingSeed(foundingAsk))
     ?? await recoverFoundingSeedFromGroup(foundingAsk, secret.handle.doc()?.tiddlers ?? {})
     ?? await standPendingFoundingSeed(foundingAsk);

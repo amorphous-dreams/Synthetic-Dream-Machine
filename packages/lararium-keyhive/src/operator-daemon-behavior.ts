@@ -27,9 +27,9 @@ import {
   makeCircleStateReactor,
   makeCircleReactors,
   makeCabalRealmReactors,
-  makeIntentViewReactor, runLocalVerb, INTENT_VIEW_CAP, controlOf,
+  makeIntentViewReactor, runLocalVerb, INTENT_VIEW_CAP, controlOf, MemoryTiddlerStore,
 } from "@lararium/tw5";
-import { DAEMON_WIKI_SLUG, ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, wikiCanonOf, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, type ChangeOrigin } from "@lararium/mesh";
+import { DAEMON_WIKI_SLUG, ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, wikiCanonOf, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, ControlHomeUnavailable, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor, VerbTable } from "@lararium/tw5";
 import type { IslandMsg_Manifest, JoinedFaceAuth } from "@lararium/mesh";
 import { boardDyadReader, intentDoorStandings } from "./board-dyad-reader.js";
@@ -453,7 +453,24 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       }
       const daemonUrl = ctx.handles.get(wikiBagUri(slug))?.url;
       if (!daemonUrl) throw new Error(`daemon bag ${wikiBagUri(slug)} is unavailable`);
-      const resolved = await slotDocsOf(ctx).slotDoc(slug, "working");
+      let resolved: Awaited<ReturnType<SlotDocResolver["slotDoc"]>>;
+      try { resolved = await slotDocsOf(ctx).slotDoc(slug, "working"); }
+      catch (cause) {
+        // A LOCKED (OR FACELESS) FLOOR FAILS CLOSED: the daemon wiki's working slot is a device document the control
+        // document names, and a control document the vessel cannot read names none and mints none. The floor's daemon wiki
+        // writes its engine state into a layer held in this island's memory alone: no document, no rest, no sync, gone at
+        // the next composition. Every control act still refuses by name; nothing here waits for a key.
+        if (!(cause instanceof ControlHomeUnavailable)) throw cause;
+        const scratch = new MemoryTiddlerStore(working);
+        ctx.composite.addLayer({ bagId: working, store: scratch, writable: true, defaultWritable: true }, ctx.composite.layerIndexOf(wikiCanonOf(ctx.recipe)) + 1);
+        floorBags.add(working);
+        const temp = wikiSlotUri(slug, "temp");
+        if (ctx.composite.hasWritableBag(temp)) {
+          await ctx.composite.put(mutableLarRecord("lar:///ha.ka.ba/lararium/config/current-wiki-bag", { text: working }, "daemon-working-attach"), { kind: "canon-hydrate", receipt: "daemon-working-attach" }, { bag: temp });
+        }
+        console.log(`[daemon] working layer held in memory at the floor (${cause.refusal}): nothing it holds rests`);
+        return;
+      }
       if (!resolved) throw new Error("working slot did not resolve");
       const workingUrl = resolved.url;
       const handle = await findOrThrow(ctx.repo, workingUrl, `${working} (the daemon's working layer)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS });

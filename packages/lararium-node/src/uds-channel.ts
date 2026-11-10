@@ -45,7 +45,7 @@ import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import {
   CompositeStore,
   NoWorkingLayerRefusal, newRequestId, OUTCOME_URI_PREFIX, type LarDoc,
-  CONTROL_HOME_ID,
+  CONTROL_HOME_ID, ControlHomeUnavailable, controlHomeRefusal, assertControlHomeOpen,
   RECEIPT_FACT_URI_PREFIX, RECEIPT_RING_DEFAULT, RECEIPT_RING_BYTES_DEFAULT, buildReceiptFact, parseReceiptFact, outcomeBytesOf,
   verbInputDigest, SessionTable, sessionBinding, type SessionBinding,
   faceScopedId, type SessionReceipt, type DurabilityReceipt,
@@ -769,7 +769,10 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   // abandonment not surviving one).
   const ledger = new FactLedger(composite, opts.repo, opts.ring ?? RECEIPT_RING_DEFAULT, claim.bootEpoch, opts.ringBytes ?? RECEIPT_RING_BYTES_DEFAULT, log);
   const ownerEpoch = randomUUID();
+  // NO RECEIPT CLAIMS DURABILITY OVER MEMORY: a stand-in control handle (the vessel's key shut) refuses by name, never
+  // answers heads a save still holds.
   const settleDurably = async (): Promise<DurabilityReceipt> => {
+    assertControlHomeOpen(controlHandle);
     const heads = controlHandle.heads();
     await opts.repo.flush([controlHandle.documentId]);
     return { docUrl: controlHandle.url, heads, ownerEpoch };
@@ -1271,7 +1274,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       ? (parsed as Record<string, unknown>)["requestId"] as string : undefined;
     sessionTurns.set(sock, next.catch((error) => {
       log(`session frame failed: ${error instanceof Error ? error.message : String(error)}`);
-      sessionRefuse(sock, "session-fault", requestId);
+      sessionRefuse(sock, error instanceof ControlHomeUnavailable ? error.refusal : "session-fault", requestId);
     }));
   };
   let arbitrating = 0;
@@ -1285,7 +1288,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       void (async () => {
         const payload = sessionRequestId === undefined ? answer : {
           kind: "session:result", ...answer, requestId: sessionRequestId,
-          ...((answer["status"] === "done" || answer["status"] === "error") ? { durable: await settleDurably() } : {}),
+          ...((answer["status"] === "done" || answer["status"] === "error") && controlHomeRefusal(controlHandle) === null ? { durable: await settleDurably() } : {}),
         };
         try {
           const line = JSON.stringify(payload) + "\n";
@@ -1312,6 +1315,10 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         queueSession(parsed, sock);
         return;
       }
+      // A LOCKED VESSEL FAILS CLOSED: with its control document unread (the key shut, or no face named one), every
+      // invocation, receipt and cancel refuses by that name before it reads or writes a fact; nothing runs, nothing rests.
+      const controlRefused = controlHomeRefusal(controlHandle);
+      if (controlRefused) return fail(controlRefused.message, controlRefused.refusal);
       // READ-ONLY QUERIES NEVER REACH `placeVerb` (H1 fix item 3).
       // BOTH DOORS BELOW COUNT AS WORK THE SEAT WAITS OUT: a caller that hangs up while its cancel still writes, or
       // while its read still holds the ledger, never lets the seat read as drained under them.
@@ -1393,8 +1400,9 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           // THE LEDGER FAILED BEFORE ANY DISPATCH (a flush that rejects mid-arbitration): nothing ran, and the caller
           // hears a fixed code under its own requestId; the detail stays in this vessel's log.
           log(`receipt-fact ledger failed for ${requestId}: ${error instanceof Error ? error.message : String(error)}`);
-          if (sessionRequestId !== undefined) { sessionRefuse(sock, "session-fault", sessionRequestId); onSessionReply?.(); }
-          else fail("this vessel could not record the request durably; nothing ran", "ledger-unwritten");
+          const named = error instanceof ControlHomeUnavailable ? error.refusal : null;
+          if (sessionRequestId !== undefined) { sessionRefuse(sock, named ?? "session-fault", sessionRequestId); onSessionReply?.(); }
+          else fail(named ? (error as Error).message : "this vessel could not record the request durably; nothing ran", named ?? "ledger-unwritten");
           return;
         }
         if (verdict.verdict === "refuse" && verdict.reason === "already-committed") {
