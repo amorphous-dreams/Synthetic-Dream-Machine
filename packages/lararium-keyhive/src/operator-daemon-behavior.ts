@@ -447,6 +447,43 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     return slotDocs;
   };
 
+  /**
+   * THE DAEMON WIKI'S EDIT SLOTS: its draft and personal layers, device documents the control document names beside its
+   * working slot (`deviceSlot`). A projected daemon surface edits: TW5 writes each `Draft of …` to the draft slot and its
+   * story list to the personal slot through the recipe's own routing (`current-wiki-draft`, `current-wiki-personal`). With
+   * neither mounted, every such write refused `unrouted-save`, and a control event that wrote one never settled, so the
+   * frame's save click after it fell as `control-event-pending` (e2e stage-walk S6). A floor that reads no control
+   * document holds each in this island's memory alone, as it holds its working layer.
+   */
+  const attachDaemonEditSlots = async (ctx: IslandContext): Promise<void> => {
+    const slug = ctx.recipe.wikiSlug;
+    for (const kind of ["personal", "draft"] as const) {
+      const bag = wikiSlotUri(slug, kind);
+      if (ctx.composite.hasBag(bag)) continue;
+      // Each lays just above the layer beneath it in the recipe's order (temp · draft · personal · working).
+      const below = ctx.composite.layerIndexOf(kind === "draft" && ctx.composite.hasBag(wikiSlotUri(slug, "personal")) ? wikiSlotUri(slug, "personal") : wikiSlotUri(slug, "working"));
+      if (below < 0) return;
+      let resolved: Awaited<ReturnType<SlotDocResolver["slotDoc"]>>;
+      try { resolved = await slotDocsOf(ctx).slotDoc(slug, kind); }
+      catch (cause) {
+        if (!(cause instanceof ControlHomeUnavailable)) { console.warn(`[daemon] the ${kind} slot stands not: ${cause instanceof Error ? cause.message : String(cause)}`); continue; }
+        ctx.composite.addLayer({ bagId: bag, store: new MemoryTiddlerStore(bag), writable: true, defaultWritable: false }, below + 1);
+        floorBags.add(bag);
+        continue;
+      }
+      if (!resolved) continue;
+      const handle = await findOrThrow(ctx.repo, resolved.url, `${bag} (the daemon's ${kind} layer)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS });
+      const store = new AutomergeDocStore(handle, bag);
+      ctx.composite.addLayer({ bagId: bag, store, writable: true, defaultWritable: false }, below + 1);
+      ctx.handles.set(bag, handle);
+      store.emitInitialReplay();
+      store.markSyncComplete();
+      if (faceDoor() && await kh!.knowsAgent(daemonAuth.personaGroupId!)) await faceDoor()!.mint(bag, "admin");
+      else if (kh) await registerBagsDurably({ provider: kh, bags: [bag], ledger: daemonBagDocLedger(ctx.composite, daemonAuth.personaGroupId) });
+      else floorBags.add(bag);
+    }
+  };
+
   // Every write made by the daemon wiki, including its receipts and audit records, lands in its working
   // layer. The daemon bag beneath holds only records the daemon wiki names explicitly.
   const attachDaemonWorking = async (ctx: IslandContext): Promise<void> => {
@@ -727,6 +764,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         exportVeilArchive: () => keyhive.exportArchiveAfterTheCard(),
       });
       await attachDaemonWorking(ctx);
+      // The edit slots stand beside the working layer; one that stands not names itself and holds no boot.
+      await attachDaemonEditSlots(ctx).catch((cause: unknown) => console.warn(`[daemon] the daemon wiki's edit slots stand not: ${cause instanceof Error ? cause.message : String(cause)}`));
       return { keyhive, floor };
   })();
 
