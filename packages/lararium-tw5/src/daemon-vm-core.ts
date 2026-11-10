@@ -36,6 +36,7 @@ import {
   wikiSlotUri,
   attachMessageChannelSync,
   controlStoreOf,
+  controlHomeRefusal,
   awaitIslandMsg,
   mkManifest,
   mkDaemonPlaceVerb,
@@ -407,7 +408,9 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   let _verbEventHandler: ((e: { verb: string; args: Record<string, unknown>; origin: "channel" | "surface" | "content"; fromUri?: string; listenable?: string }) => void) | null = null;
 
   // The island reaches the control document by grant alone; the host reads it through its own control store.
-  const grants: IslandGrants = { ...opts.grants, controlUrl: controlHandle.url };
+  // A STAND-IN (the vessel's key shut, or no face named one) grants its refusal, never a document to resolve.
+  const controlRefused = controlHomeRefusal(controlHandle);
+  const grants: IslandGrants = { ...opts.grants, controlUrl: controlHandle.url, ...(controlRefused ? { controlRefusal: controlRefused.refusal } : {}) };
   const control = controlStoreOf(controlHandle);
 
   // ── Vessel composite (cap-event writes) ─────────────────────────────────────
@@ -779,6 +782,10 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       if (composite.defaultWritableBagId() !== slot) throw new NoWorkingLayerRefusal("Mounting the host working layer", "The daemon working layer stands without being the default writable; restart the vessel so it mounts as the default.");
       return;
     }
+    // A LOCKED (OR FACELESS) FLOOR FAILS CLOSED: the daemon working slot is a device document the control document names,
+    // and a stand-in names none, so the host mounts no working layer and every host write refuses by name until the
+    // unlocked composition stands the control document itself.
+    if (controlRefused) { console.log(`[daemon] host working layer waits: ${controlRefused.message}`); return; }
     await workerEa;
     const recipeTrace = { wikiDocId: daemonHandle.url, libraryBagDocIds: [] as readonly string[] };
     const fingerprint = await computeRecipeFingerprint(recipeTrace);

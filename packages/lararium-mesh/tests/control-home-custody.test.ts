@@ -13,7 +13,7 @@ import { Repo, type Chunk, type StorageAdapterInterface, type StorageKey } from 
 import {
   CONTROL_HOME_ID, SECRET_HOME_ID, emptyLarDoc, storedLarRecord, type LarDoc,
   SealedDocumentStore, bindSecretHomeRest, enrollSecretHome, mintSecretHomeAddress, mintVesselDocumentId, nameControlHome, openSecretHome,
-  standControlHome, readControlHome, controlHomeMergePending, vesselHeldHomes, decodeSecretHomeAddress, encodeSecretHomeAddress, secretHomeRestOf,
+  standControlHome, readControlHome, controlStoreOf, controlHomeRefusal, VESSEL_LOCKED, CONTROL_HOME_UNNAMED, RECEIPT_FACT_URI_PREFIX, vesselHeldHomes, decodeSecretHomeAddress, encodeSecretHomeAddress, secretHomeRestOf,
 } from "../src/index.js";
 
 describe("the custody row outranks the daemon document's control pointer", () => {
@@ -83,48 +83,18 @@ describe("the custody row outranks the daemon document's control pointer", () =>
   });
 });
 
-describe("a held control handle merges its stored copy, and a failed merge stays pending", () => {
-  test("a merge that fails at the keyed event reports, stays pending, and the next stand merges it", async () => {
-    const inner = memoryAdapter();
-    const first = heldRepo(inner);
-    const address = { ...mintSecretHomeAddress(), controlId: mintVesselDocumentId() };
-    const founded = await enrollSecretHome(first.repo, address);
-    founded.control!.change((d) => { d.tiddlers[`${CONTROL_HOME_ID}/founded`] = storedLarRecord(`${CONTROL_HOME_ID}/founded`, { text: "founded" }, "test"); });
-    const daemonBytes = A.save((() => { const d = first.repo.create<LarDoc>(emptyLarDoc()); nameControlHome(d, `automerge:${address.controlId}`); return d.doc(); })());
-    await first.repo.flush();
-    await first.repo.shutdown();
-
-    const locked = heldRepo(inner);
-    const daemon = locked.repo.import<LarDoc>(daemonBytes);
-    const control = await standControlHome(locked.repo, daemon);
-    const storage = (locked.repo as unknown as { storageSubsystem: { loadDoc: (id: string) => Promise<unknown> } }).storageSubsystem;
-    const loadDoc = storage.loadDoc.bind(storage);
-    let fail = true;
-    storage.loadDoc = async (id: string) => { if (fail && id === address.controlId) throw new Error("a rest fault"); return loadDoc(id); };
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    await openSecretHome(locked.repo, address);
-    for (let i = 0; i < 50 && !warn.mock.calls.length; i++) await new Promise((r) => setTimeout(r, 10));
-    expect(warn.mock.calls.some(([m]) => String(m).includes("did not merge"))).toBe(true);
-    warn.mockRestore();
-    expect(controlHomeMergePending(locked.repo, address.controlId)).toBe(true);
-    expect(control.doc().tiddlers[`${CONTROL_HOME_ID}/founded`]).toBeUndefined();
-    // A fence read refuses while the stored copy waits.
-    await expect(readControlHome(locked.repo, daemon)).rejects.toThrow(/control-home-unavailable/);
-
-    fail = false;
-    const restood = await standControlHome(locked.repo, daemon);
-    expect(restood.documentId).toBe(address.controlId);
-    expect(controlHomeMergePending(locked.repo, address.controlId)).toBe(false);
-    expect(control.doc().tiddlers[`${CONTROL_HOME_ID}/founded`]).toBeDefined();
-    await locked.repo.shutdown();
-  });
-});
-
 describe("a fence read fails closed", () => {
   test("a daemon document and custody that name no control document refuse the read by name", async () => {
     const repo = new Repo({});
     const daemon = repo.create<LarDoc>(emptyLarDoc());
     await expect(readControlHome(repo, daemon)).rejects.toThrow(/control-home-unavailable/);
+  });
+
+  test("a place whose custody and daemon document name no control document refuses the read `control-home-unnamed`", async () => {
+    const { repo } = heldRepo(memoryAdapter());
+    const daemon = repo.create<LarDoc>(emptyLarDoc());
+    await expect(readControlHome(repo, daemon)).rejects.toMatchObject({ refusal: CONTROL_HOME_UNNAMED });
+    await repo.shutdown();
   });
 
   test("a vessel whose key stays shut refuses the read: the handle holds the seed alone", async () => {
@@ -136,7 +106,7 @@ describe("a fence read fails closed", () => {
     await first.repo.flush();
     await first.repo.shutdown();
     const locked = heldRepo(inner);
-    await expect(readControlHome(locked.repo, locked.repo.import<LarDoc>(daemonBytes))).rejects.toThrow(/key stays shut/);
+    await expect(readControlHome(locked.repo, locked.repo.import<LarDoc>(daemonBytes))).rejects.toMatchObject({ refusal: VESSEL_LOCKED });
     await locked.repo.shutdown();
   });
 
@@ -173,9 +143,62 @@ function heldRepo(inner: StorageAdapterInterface) {
   return { repo, store, homes };
 }
 
-// THE LOCKED-STATE SEMANTICS AWAIT AN OPERATOR RULING: each harm stands named here, uncured.
-describe("the control home stood while the vessel's key stays shut (operator ruling pending)", () => {
-  test.todo("HARM 1: a device slot minted while locked names itself in the founding's seed (`heldHomeSeed`), not in the control document's rest, so a concurrent mint on the rest's history can name a second slot for the same kind and group");
-  test.todo("HARM 2: the receipt ledger reads the held seed while locked, so a receipt the rest already holds reads as absent until the key opens and the rest merges");
-  test.todo("HARM 3: the direct holder (`ownedStore`) binds its rest with no `moved` callback, so a control write held while locked never reseals when the key opens within the act");
+// THE LOCKED HEARTH FAILS CLOSED (operator ruling 2026-11-09): every harm the held-seed stand-in carried, cured by name.
+describe("the control home stood while the vessel's key stays shut refuses by name", () => {
+  async function lockedVessel() {
+    const inner = memoryAdapter();
+    const first = heldRepo(inner);
+    const address = { ...mintSecretHomeAddress(), controlId: mintVesselDocumentId() };
+    const founded = await enrollSecretHome(first.repo, address);
+    const fact = `${RECEIPT_FACT_URI_PREFIX}landed`;
+    const slot = `${CONTROL_HOME_ID}/daemon-slot/working/floor`;
+    founded.control!.change((d) => {
+      d.tiddlers[fact] = storedLarRecord(fact, { text: "committed" }, "test");
+      d.tiddlers[slot] = storedLarRecord(slot, { text: "automerge:rested-slot" }, "test");
+    });
+    const daemonBytes = A.save((() => { const d = first.repo.create<LarDoc>(emptyLarDoc()); nameControlHome(d, `automerge:${address.controlId}`); return d.doc(); })());
+    await first.repo.flush();
+    await first.repo.shutdown();
+    const locked = heldRepo(inner);
+    return { inner, address, fact, slot, locked, daemon: locked.repo.import<LarDoc>(daemonBytes) };
+  }
+
+  test("RED (locked floor mints no device slot): a device-slot title neither reads nor lands while locked, so no second slot can name itself beside the rest's", async () => {
+    const { slot, locked, daemon } = await lockedVessel();
+    const store = controlStoreOf(await standControlHome(locked.repo, daemon));
+    await expect(store.get(slot)).rejects.toMatchObject({ refusal: VESSEL_LOCKED });
+    await expect(store.put({ tiddler: { title: slot, text: "automerge:second-slot" } }, { kind: "test" })).rejects.toMatchObject({ refusal: VESSEL_LOCKED });
+    await locked.repo.shutdown();
+  });
+
+  test("RED (midnight petitioner): the receipt ledger's read of a fact the rest holds refuses `vessel-locked`, never reads it absent", async () => {
+    const { fact, locked, daemon } = await lockedVessel();
+    const store = controlStoreOf(await standControlHome(locked.repo, daemon));
+    await expect(store.storeForBag(CONTROL_HOME_ID)!.get(fact)).rejects.toMatchObject({ refusal: VESSEL_LOCKED });
+    await locked.repo.shutdown();
+  });
+
+  test("RED (CLI refused unlock): a direct holder whose key will not open refuses the stand by name, carrying the custody's reason, and stands no stand-in", async () => {
+    const inner = memoryAdapter();
+    const homes = vesselHeldHomes();
+    const refuse = async () => ({ refusal: "signer-unavailable" }) as never;
+    const store = new SealedDocumentStore({ inner, bagOf: (id) => homes.bagOf(id), sessionFace: () => null, sessionOf: () => null, seal: refuse, open: refuse, waitOverSealed: true, hydrates: false });
+    const repo = new Repo({ storage: store, network: [] });
+    bindSecretHomeRest(repo, homes.rest((id) => store.holdsSealed(id), undefined, async () => { throw new Error("custody-locked: the vessel key stays shut"); }));
+    const daemon = repo.create<LarDoc>(emptyLarDoc());
+    nameControlHome(daemon, `automerge:${mintVesselDocumentId()}`);
+    const refused = await standControlHome(repo, daemon).catch((e: unknown) => e);
+    expect(refused).toMatchObject({ name: "ControlHomeUnavailable", refusal: VESSEL_LOCKED });
+    expect(String((refused as Error).message)).toMatch(/custody-locked/);
+    await repo.shutdown();
+  });
+
+  test("CONTROL: the stand-in stays out of the vessel's Repo and answers its refusal by name", async () => {
+    const { address, locked, daemon } = await lockedVessel();
+    const control = await standControlHome(locked.repo, daemon);
+    expect(controlHomeRefusal(control)?.refusal).toBe(VESSEL_LOCKED);
+    expect(locked.repo.handles[address.controlId as never]).toBeUndefined();
+    expect(await standControlHome(locked.repo, daemon)).toBe(control);
+    await locked.repo.shutdown();
+  });
 });

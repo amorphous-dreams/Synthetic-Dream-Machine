@@ -15,7 +15,7 @@ import { afterAll, describe, expect, test } from "vitest";
 import { foundTheFace, foundThePlace, runDeviceAdmitEdge } from "@lararium/keyhive";
 import {
   DAEMON_BAG_ID, SECRET_HOME_ID, SealedDocumentStore, bindSecretHomeRest, vesselHeldHomes, faceAtomKeyFromSeed, groupSecretSealTitle,
-  makeIslandRepo, materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, plainRecord,
+  makeIslandRepo, materializeSharedLarDoc, controlHomeUrlOf, controlHomeRefusal, standControlHome, CONTROL_HOME_UNNAMED, personaKelBoardDocUrl, personaKelChainForPrefix, plainRecord,
   type HeldRestKey, type LarDoc,
 } from "@lararium/mesh";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
@@ -143,9 +143,9 @@ describe("the vessel's secret home, by placement", () => {
   test("RED ORDER: the home maps on the rest before its first byte, every byte rests sealed, and its address lands in custody only after", async () => {
     const { root, genesisDir } = scratchRoot();
     await inScratchRoot(root, async () => {
-      // The place founding stood custody and enrolled a home; this suite stands a second vessel's home on a recording rest.
+      // The place founding stood custody and minted no home (the face mints it); this suite stands one on a recording rest.
       await foundDirect({ storageDir: larDataDir(), genesisDir });
-      rmSync(join(larIdentityDir(), SECRET_HOME_FILE));
+      expect(existsSync(join(larIdentityDir(), SECRET_HOME_FILE))).toBe(false);
       const { repo, events } = recordingHolder(join(root, "recorded-store"));
       const home = await standVesselSecretHome(repo);
       await repo.shutdown();
@@ -156,6 +156,42 @@ describe("the vessel's secret home, by placement", () => {
       // Every save of the home came after its enrollment, rested sealed, and landed before the address row did.
       for (const save of saves) expect(save).toBe(`save:${id}:row=false:clear=false`);
       expect((await readSecretHomeAddress())?.documentId).toBe(id);
+    });
+  }, 180_000);
+
+  test("RED (Gaia Thursday): a place founding (a herm, no face) mints no secret home and no control document; its custody row names none, and a control act refuses `control-home-unnamed`", async () => {
+    const { root, genesisDir } = scratchRoot();
+    await inScratchRoot(root, async () => {
+      await foundDirect({ storageDir: larDataDir(), genesisDir });
+      expect(await readSecretHomeAddress()).toBeNull();
+      expect(existsSync(join(larIdentityDir(), SECRET_HOME_FILE))).toBe(false);
+      const daemonUrl = packedBootstrap()[DAEMON_BAG_ID]!.text;
+      const refused = await ownedStore(larDataDir(), async (repo) => {
+        const daemon = await repo.find<LarDoc>(daemonUrl as AutomergeUrl);
+        expect(controlHomeUrlOf(daemon.doc())).toBeNull();
+        return standControlHome(repo, daemon).catch((e: unknown) => e);
+      });
+      expect(refused).toMatchObject({ name: "ControlHomeUnavailable", refusal: CONTROL_HOME_UNNAMED });
+    });
+  }, 180_000);
+
+  test("CONTROL (hearth founding): the face's founding mints the secret home and the control document together; the custody row and the daemon document name the same control document", async () => {
+    const { root, genesisDir } = scratchRoot();
+    await inScratchRoot(root, async () => {
+      await foundDirect({ storageDir: larDataDir(), genesisDir });
+      await seatSeedCharter();
+      await foundFace({ storageDir: larDataDir(), genesisDir });
+      const address = await readSecretHomeAddress();
+      expect(address?.controlId).toBeDefined();
+      const daemonUrl = packedBootstrap()[DAEMON_BAG_ID]!.text;
+      const named = await ownedStore(larDataDir(), async (repo) => {
+        const daemon = await repo.find<LarDoc>(daemonUrl as AutomergeUrl);
+        const control = await standControlHome(repo, daemon);
+        return { pointer: controlHomeUrlOf(daemon.doc()), control: control.documentId, refused: controlHomeRefusal(control) };
+      });
+      expect(named.pointer).toBe(`automerge:${address!.controlId}`);
+      expect(named.control).toBe(address!.controlId);
+      expect(named.refused).toBeNull();
     });
   }, 180_000);
 

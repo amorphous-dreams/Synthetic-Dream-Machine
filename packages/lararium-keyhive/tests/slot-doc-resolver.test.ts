@@ -23,6 +23,7 @@ import { makeIslandRepo, type Repo } from "@lararium/mesh";
 import {
   CompositeStore, CONTROL_HOME_ID, DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, computeRecipeFingerprint, didFromVerifyingKey, emptyLarDoc,
   mutableLarRecord, wikiBagUri, wikiDraftDocKey, wikiSlotUri, wikiWorkingFloorKey, faceWorkingDocUrl, materializeFaceWorkingDoc,
+  refusingControlStore, vesselLockedRefusal, VESSEL_LOCKED,
   type LarDoc, type LarTiddlerRecord, type WorkingFloorAnchor,
 } from "@lararium/mesh";
 import { MemoryTiddlerStore, makeCatalogAccessor, makeInitWikiReactor, makePruneStaleReactor, makeMemePutReactor, type MemeVerbOptions } from "@lararium/tw5";
@@ -111,6 +112,24 @@ describe("★ the ONE slot-doc resolver, floor-falling ★", () => {
     const id = slot!.url.replace(/^automerge:/, "");
     expect(events).toEqual([`announce:working:${id}`, `pointer:${id}`, `import:${id}:pointer=true`, "flush"]);
     expect(events).not.toContain("create");
+    await repo.shutdown();
+  });
+
+  test("RED (locked floor mints no device slot): over a locked vessel's control store the device slot refuses `vessel-locked`; no id announces, no document mints", async () => {
+    const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
+    const control = refusingControlStore(vesselLockedRefusal());
+    const events: string[] = [];
+    const minter = {
+      create: (v: never) => { events.push("create"); return repo.create(v); },
+      import: (bytes: Uint8Array, args: { docId: never }) => { events.push("import"); return repo.import(bytes, args as never); },
+      flush: (ids?: string[]) => { events.push("flush"); return repo.flush(ids as never); },
+    };
+    const resolver = makeSlotDocResolver({ repo: minter as never, daemonStore: control, control, catalog: null, vesselDid: () => DID, mintedByHex: () => VERIFYING_KEY,
+      faceSeated: async () => false, deviceScoped: (slug) => slug === "daemon", announceDevice: (kind) => { events.push(`announce:${kind}`); } });
+    for (const kind of ["working", "draft", "personal"] as const) {
+      await expect(resolver.slotDoc("daemon", kind)).rejects.toMatchObject({ refusal: VESSEL_LOCKED });
+    }
+    expect(events).toEqual([]);
     await repo.shutdown();
   });
 

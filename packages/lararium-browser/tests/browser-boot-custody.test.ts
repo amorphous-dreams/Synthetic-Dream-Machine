@@ -5,6 +5,7 @@ import { generateOrLoadBrowserVesselIdentity } from "../src/browser-vessel-ident
 import { holdVesselLock, type LockHost } from "../src/vessel-lock.js";
 import { clearCustodyVerb, standBrowserCustody, standFounderFace } from "../src/browser-boot-custody.js";
 import { CLEAR_CUSTODY_CLEARS, CLEAR_CUSTODY_QUESTION } from "../src/browser-custody.js";
+import { VESSEL_LOCKED, vesselLockedRefusal } from "@lararium/mesh";
 
 let serial = 0;
 const vessel = () => `lares:test-boot-custody:${Date.now()}:${serial++}`;
@@ -66,7 +67,7 @@ describe("browser boot custody asks before secret rows rest", () => {
     expect((await readBrowserCustody(idbName)).reading).toBe("clear");
   });
 
-  test("RED: a boot over a locked seal refuses sealed-locked and gives the store lock back; the stand then opens and the same page reads", async () => {
+  test("RED (browser parity): a boot over a locked seal refuses sealed-locked, named `vessel-locked` as node names it, and gives the store lock back; the stand then opens and the same page reads", async () => {
     const idbName = vessel();
     await generateOrLoadBrowserVesselIdentity(idbName);
     await sealBrowserKeystore(idbName, { kind: "passphrase", passphrase: "right route" });
@@ -75,6 +76,9 @@ describe("browser boot custody asks before secret rows rest", () => {
     const refused = await openBrowserVessel({ wikiId: "w", idbName, locks: host, teardownBudgetMs: 5_000 } as never).catch((e: unknown) => e);
     expect(refused, String(refused)).toBeInstanceOf(BrowserCustodyRefused);
     expect((refused as BrowserCustodyRefused).reading).toBe("sealed-locked");
+    // BROWSER PARITY: the locked boot answers the one name a node vessel's control acts and the CLI's direct holder answer.
+    expect((refused as BrowserCustodyRefused).refusal).toBe(VESSEL_LOCKED);
+    expect((refused as BrowserCustodyRefused).refusal).toBe(vesselLockedRefusal().refusal);
     expect(held.size, "the refused boot gave the store lock back").toBe(0);
     const retry = await holdVesselLock(idbName, host);
     expect(retry.held).toBe(true);
