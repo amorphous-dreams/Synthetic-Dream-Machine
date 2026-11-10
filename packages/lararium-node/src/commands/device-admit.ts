@@ -32,7 +32,7 @@ import {
   tiddlerText, FLEET_HAND, AutomergeDocStore, type LarDoc, ownEntry, findOrThrow, DOCUMENT_HANG_BOUND_MS} from "@lararium/mesh";
 import { makeCatalogAccessor } from "@lararium/tw5";
 import { larBootstrapPath, larSealHome } from "../vessel-paths.js";
-import { openVesselSecretHome } from "../secret-home-store.js";
+import { openVesselSecretHomeIfNamed } from "../secret-home-store.js";
 import { runDeviceAdmitEdge, type DeviceAdmitPayload } from "@lararium/keyhive";
 import { loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { readVesselEdgeBoard } from "../edge-board.js";
@@ -392,7 +392,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   const personaHandle = await repo.find<LarDoc>(personaUrl as AutomergeUrl);
   const records = await readFacePersonaRecords(repo, { personaUrl, group: personaGroupId,
     // This face's carried admit acts rest in the vessel's secret home until its plane syncs (never the daemon document).
-    extraDocs: [(await openVesselSecretHome(repo)).handle.doc() as LarDoc | undefined] });
+    extraDocs: [(await openVesselSecretHomeIfNamed(repo))?.handle.doc() as LarDoc | undefined] });
   const projection = reading.project(records, personaGroupId);
   if (!projection.founded || projection.fork || !projection.head) {
     throw new Error("[lares fleet join answer] Face proof: founding log absent or forked; re-found the face");

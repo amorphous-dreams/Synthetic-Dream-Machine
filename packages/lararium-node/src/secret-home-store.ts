@@ -61,6 +61,11 @@ export async function openVesselSecretHome(repo: Repo): Promise<SecretHome> {
   return openSecretHome(repo, address);
 }
 
+/** Open the home this vessel's custody names, or answer null where it names none (a reader with nothing to read there). */
+export async function openVesselSecretHomeIfNamed(repo: Repo): Promise<SecretHome | null> {
+  return (await readSecretHomeAddress()) === null ? null : openVesselSecretHome(repo);
+}
+
 /**
  * STAND the vessel's secret home on `repo`: open the one its custody names, or enroll a fresh one where none stands. The
  * enrollment maps the document on the Repo's bound rest before its first byte, flushes it sealed, and only then keeps the
