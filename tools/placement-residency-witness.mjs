@@ -41,7 +41,8 @@ if (/flushCapEvents\([^,]+,\s*daemonHandle/.test(ceremony)) throw new Error("cer
 for (const [path, needle] of [
   ["packages/lararium-node/src/owned-store.ts", "bindSecretHomeRest("],
   ["packages/lararium-node/src/open-node-vessel.ts", "bindSecretHomeRest("],
-  ["packages/lararium-node/src/open-node-vessel.ts", "vesselOnlyShareVerdict({ has: (id) => vesselOnly.has(id) || secretHomes.has(id) }"],
+  // The node's vessel-only class reads the held homes by name and every device-private document by bag (`vesselOnlyClass`).
+  ["packages/lararium-node/src/open-node-vessel.ts", "vesselOnlyShareVerdict(vesselOnlyClass({ named: vesselOnly, held: secretHomes, device: deviceDocs"],
   ["packages/lararium-browser/src/open-browser-vessel.ts", "{ has: (id) => vesselOnly.has(id) || secretHomes.has(id) }"],
   // A6: the control document seals beside the secret home under the vessel's key; the per-face bridge is retired.
   ["packages/lararium-mesh/src/control-home.ts", "rest.enrollBeside(documentId, CONTROL_HOME_ID)"],

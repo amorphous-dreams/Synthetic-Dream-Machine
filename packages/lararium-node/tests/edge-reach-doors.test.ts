@@ -41,6 +41,7 @@ import { seedFaceAtom } from "./atom-fixture.js";
 import { actingAtomKey } from "./atom-fixture.js";
 import { makeEdgeShadowRing } from "../src/edge-shadow-ring.js";
 import { scratchRoot as root, it } from "./support/scratch-fixture.js";
+import { seedFoundedDaemonDoc } from "./daemon-control-fixture.js";
 
 const REALM = "a".repeat(64);
 
@@ -68,7 +69,7 @@ beforeEach(async () => {
   await generateOrLoadPersonaGroupRoot(0);
   await seedFaceAtom(0);
   await ownedStore(larDataDir(), async (repo) => {
-    const handle = seedDaemonDoc(repo);
+    const handle = await seedFoundedDaemonDoc(repo);
     await repo.flush();
     mkdirSync(dirname(larBootstrapPath()), { recursive: true });
     const packed = { [DAEMON_BAG_ID]: { title: DAEMON_BAG_ID, text: handle.url, kind: "oracle" } };

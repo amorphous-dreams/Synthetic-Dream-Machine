@@ -45,6 +45,13 @@ export interface SecretHomeRest {
   /** Stand the vessel's key where the holder can (its custody opens the secret home's row): answers whether it stands. A
    *  holder whose custody stays shut answers false, and the document waits held. */
   standKey?(): Promise<boolean>;
+  /** THE CUSTODY ROW NAMES THE CONTROL DOCUMENT: an open or an enrollment of the home files the row's control id beside it
+   *  (as `enrollBeside` under `CONTROL_HOME_ID`) and this rest keeps it as the control document's one authority. */
+  nameControl?(documentId: string): boolean;
+  /** The control document the custody row named on this rest, or null while no readable row named one here. */
+  controlId?(): string | null;
+  /** The held bag `documentId` stands filed under on this rest, or null where none holds it. */
+  homeOf?(documentId: string): string | null;
 }
 
 /**
@@ -69,6 +76,14 @@ export function vesselHeldHomes(): VesselHeldHomes {
   const homes = new Map<string, string>();
   const keyed = new Set<() => void>();
   let vesselKey: HeldRestKey | null = null;
+  let custodyControl: string | null = null;
+  // A HOME KEEPS ITS FILING: the secret home and the control document never re-file under another bag (a re-file would seal
+  // the one under the other's content key, or hand the secret home to a control writer). The secret home's own enroll and
+  // the custody row's control name file them; nothing else moves them.
+  const fixed = (documentId: string, bagId: string): boolean => {
+    const filed = homes.get(documentId);
+    return filed !== undefined && filed !== bagId && (filed === SECRET_HOME_ID || filed === CONTROL_HOME_ID);
+  };
   return {
     bagOf(documentId) {
       const bagId = homes.get(documentId);
@@ -88,16 +103,25 @@ export function vesselHeldHomes(): VesselHeldHomes {
           if (first) for (const cb of [...keyed]) { try { cb(); } catch { /* one listener's fault never holds the rest */ } }
         },
         enrollBeside(documentId, bagId) {
-          if (bagId === SECRET_HOME_ID) return false;
-          homes.set(documentId, bagId); moved?.();
+          if (bagId === SECRET_HOME_ID || fixed(documentId, bagId)) return false;
+          if (bagId === CONTROL_HOME_ID && custodyControl !== null && documentId !== custodyControl) return false;
+          if (homes.get(documentId) !== bagId) { homes.set(documentId, bagId); moved?.(); }
           return vesselKey !== null;
         },
+        nameControl(documentId) {
+          if (fixed(documentId, CONTROL_HOME_ID)) return false;
+          custodyControl = documentId;
+          if (homes.get(documentId) !== CONTROL_HOME_ID) { homes.set(documentId, CONTROL_HOME_ID); moved?.(); }
+          return vesselKey !== null;
+        },
+        controlId: () => custodyControl,
+        homeOf: (documentId) => homes.get(documentId) ?? null,
         holdsKey: () => vesselKey !== null,
         whenKeyed(cb) { if (vesselKey !== null) { cb(); return () => {}; } keyed.add(cb); return () => { keyed.delete(cb); }; },
         restsSealed: async (documentId) => homes.has(documentId) && await restsSealed(documentId),
       };
     },
-    wipe() { vesselKey?.fill(0); homes.clear(); vesselKey = null; keyed.clear(); },
+    wipe() { vesselKey?.fill(0); homes.clear(); vesselKey = null; custodyControl = null; keyed.clear(); },
   };
 }
 
@@ -172,7 +196,7 @@ export function decodeSecretHomeAddress(bytes: Uint8Array): SecretHomeAddress | 
     const key = readHeldRestKey(hexToBytes(v["key"] as string));
     if (key === null) return null;
     parseAutomergeUrl(`automerge:${v["documentId"]}` as AutomergeUrl);
-    if (v["controlId"] !== undefined && typeof v["controlId"] !== "string") return null;
+    if (v["controlId"] !== undefined && (typeof v["controlId"] !== "string" || v["controlId"] === v["documentId"])) return null;
     if (typeof v["controlId"] === "string") parseAutomergeUrl(`automerge:${v["controlId"]}` as AutomergeUrl);
     return { documentId: v["documentId"] as string, key, ...(typeof v["controlId"] === "string" ? { controlId: v["controlId"] } : {}) };
   } catch { return null; }
@@ -182,6 +206,12 @@ export function decodeSecretHomeAddress(bytes: Uint8Array): SecretHomeAddress | 
 export function heldHomeSeed(documentId: string): Uint8Array {
   const actor = hex(sha256(utf8Bytes(`lares-secret-home-seed\u0000${documentId}`))).slice(0, 32);
   return A.save(A.change(A.init<LarDoc>({ actor }), { time: 0, message: "secret-home" }, (d) => { Object.assign(d, emptyLarDoc()); }));
+}
+
+/** The custody row's control document files beside the home as the control home's one authority (a rest that keeps no
+ *  authority files it as `enrollBeside` does). */
+function nameCustodyControl(rest: SecretHomeRest, controlId: string): boolean {
+  return rest.nameControl ? rest.nameControl(controlId) : rest.enrollBeside(controlId, CONTROL_HOME_ID);
 }
 
 function restAnswer(rest: SecretHomeRest, documentId: string): SecretRestAnswer {
@@ -206,7 +236,7 @@ export async function enrollSecretHome(repo: Repo, address: SecretHomeAddress): 
   // THE CONTROL DOCUMENT MINTS BESIDE THE HOME (A6): mapped under the vessel's key, bound to its own bag, before its first byte.
   let control: DocHandle<LarDoc> | undefined;
   if (address.controlId) {
-    if (!rest.enrollBeside(address.controlId, CONTROL_HOME_ID)) throw new SecretHomeUnavailable("the vessel's key did not stand for the control document");
+    if (!nameCustodyControl(rest, address.controlId)) throw new SecretHomeUnavailable("the vessel's key did not stand for the control document");
     control = repo.import<LarDoc>(heldHomeSeed(address.controlId), { docId: address.controlId as DocumentId });
   }
   return { url: handle.url, handle, rest: restAnswer(rest, address.documentId), ...(control ? { control } : {}) };
@@ -222,7 +252,7 @@ export async function openSecretHome(repo: Repo, address: SecretHomeAddress): Pr
   try { handle = await repo.find<LarDoc>(`automerge:${address.documentId}` as AutomergeUrl); }
   catch (e) { throw new SecretHomeUnavailable(`the secret home did not open: ${e instanceof Error ? e.message : String(e)}`); }
   // The control document maps beside it before any reader asks for it; the control home's stand finds it.
-  if (address.controlId) rest.enrollBeside(address.controlId, CONTROL_HOME_ID);
+  if (address.controlId) nameCustodyControl(rest, address.controlId);
   return { url: handle.url, handle, rest: restAnswer(rest, address.documentId) };
 }
 

@@ -108,10 +108,11 @@ vi.mock("@lararium/mesh", async (real) => {
 vi.mock("../src/persona-act-store.js", () => ({ readFacePersonaRecords: async () => seam.records, appendPersonaActs: (_handle: unknown, acts: unknown[]) => { seam.appended.push(...acts); } }));
 
 import { DeviceAdmitTagRefused, runDeviceAdmit } from "../src/commands/device-admit.js";
-import { actCid } from "@lararium/mesh";
+import { actCid, CONTROL_HOME_ID } from "@lararium/mesh";
 import { testVesselTag } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
-const daemonDoc = { tiddlers: { [T.group]: { text: "group-zero" }, [T.kel]: { text: "kel-zero" } } };
+// The daemon doc names the vessel's control document, where the lease slots rest (a fence read refuses where it names none).
+const daemonDoc = { tiddlers: { [T.group]: { text: "group-zero" }, [T.kel]: { text: "kel-zero" }, [CONTROL_HOME_ID]: { text: "automerge:control", tiddler: { text: "automerge:control" } } } };
 const repo = {
   find: async (url: string) => ({ url, doc: () => (url === "automerge:daemon" ? daemonDoc : {}) }),
   flush: async () => {},
@@ -152,6 +153,15 @@ describe("runDeviceAdmit names the face whose root signs", () => {
     await expect(admitAt(3)).rejects.toThrow(/no face at index 3/);
     expect(seam.seeds).toEqual([]);
     expect(seam.edge).toBeNull();
+  });
+
+  test("RED (M16): a daemon doc that names no control document refuses the admission before the root signs, never binds at genesis", async () => {
+    const named = daemonDoc.tiddlers[CONTROL_HOME_ID];
+    delete (daemonDoc.tiddlers as Record<string, unknown>)[CONTROL_HOME_ID];
+    try {
+      await expect(admitAt()).rejects.toThrow(/lease fence reads unread: control-home-unavailable/);
+      expect(seam.edge).toBeNull();
+    } finally { (daemonDoc.tiddlers as Record<string, unknown>)[CONTROL_HOME_ID] = named; }
   });
 
   test("RED: a stale daemon doc never signs the joinee below the issuer's sealed lease frontier, and the log projects from the anchor's accepted seq; CONTROL: an honest fresher advance still binds", async () => {

@@ -57,6 +57,7 @@ import { chairKey, seatChairs } from "./seat-fixture.js";
 import { atomKeyOf, atomSeedOf, seedFaceAtom, actingAtomKey } from "./atom-fixture.js";
 import { seedFleet } from "./fleet-seed-fixture.js";
 import { scratchRoot as root, it } from "./support/scratch-fixture.js";
+import { seedFoundedDaemonDoc } from "./daemon-control-fixture.js";
 
 const REALM = "b1".repeat(32), OTHER_REALM = "b2".repeat(32), MEMBER = "c3".repeat(32), JOINER = "d4".repeat(32);
 
@@ -82,7 +83,7 @@ beforeEach(async () => {
   carried = { aid: otherAid, doc: otherDoc };
   // The daemon doc the lease fence reads.
   await ownedStore(larDataDir(), async (repo) => {
-    const daemon = await seedDaemonDoc(repo);
+    const daemon = await seedFoundedDaemonDoc(repo);
     const { mkdirSync, writeFileSync } = await import("node:fs");
     const { dirname } = await import("node:path");
     mkdirSync(dirname(larBootstrapPath()), { recursive: true });
