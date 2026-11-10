@@ -1024,6 +1024,14 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               sink: announceSeatRoll,
               signReceipt: faceAtom().sign,
             });
+            // A ROLL THE ANSWER LEFT OWED SETTLES UNDER THE SESSION THAT BOOKED THIS ASK, inside the act: a seat roll names no
+            // signer, and under placement the verb's own outcome rests in the control document, so no face-sealed save follows
+            // to settle it. An ask no session booked settles nothing here, and the roll stays owed for the next session act.
+            if (contentKeys) {
+              let signer: RecordSigner | null = null;
+              try { signer = await sessionOf("seat-duties", context); } catch { signer = null; }
+              if (signer) await contentKeys.settle(signer).catch(() => undefined);
+            }
             return { verb: "seat-duties", ran: true, ...answered };
           });
           faceJoinEffect = async (args, at) => {

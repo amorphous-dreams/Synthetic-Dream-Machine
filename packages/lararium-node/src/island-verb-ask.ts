@@ -115,8 +115,15 @@ export function askSeatDuties(opts: {
   /** The vessel's own key and its signer: the proof the island reads, and the requester it names. */
   readonly vesselKey:    string;
   readonly sign:         (bytes: Uint8Array) => Promise<string>;
+  /**
+   * Book this ask under the session seated now (`SessionSignBook.hold`), released once the ask settles. A roll the verb
+   * leaves owed settles under that session's signer inside the same act, as a session's own seal would settle it; with
+   * no session seated it books nothing and the roll stays owed for the next session act.
+   */
+  readonly hold?:        (requestId: string, verb: string) => () => void;
 }): IslandAsk {
   const requestId = newRequestId();
+  const release = opts.hold?.(requestId, "seat-duties") ?? (() => {});
   const facts = { fleetRoot: opts.facts.fleetRoot, acts: opts.facts.acts, rolled: opts.facts.rolled };
   let inner: IslandAsk | null = null;
   let abandoned = false;
@@ -128,7 +135,8 @@ export function askSeatDuties(opts: {
     });
     return inner.answer;
   });
-  return { answer, abandon: () => { abandoned = true; inner?.abandon(); } };
+  void answer.then(release, release);
+  return { answer, abandon: () => { abandoned = true; inner?.abandon(); release(); } };
 }
 
 /** The island verb each memory act names. */
