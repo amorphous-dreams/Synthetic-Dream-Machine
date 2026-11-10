@@ -201,7 +201,7 @@ function unlockLine(a: CustodyDoorAnswer): string {
     case "tree-absent":      return "no slot tree stands at the identity home — nothing to unlock (a founding seals custody from birth).";
     case "tree-unreadable":  return `the slot tree reads unreadable: ${String(a["why"])} — a torn tree is not a credential error; nothing was changed.`;
     case "root-unopenable":  return `the vessel key opened and the custody root did not (${String(a["why"])}) — nothing stays held; recover the custody root from a backup.`;
-    default:                 return typeof a["errorMessage"] === "string" ? a["errorMessage"] : `the vessel answered ${JSON.stringify(a)}`;
+    default:                 return typeof a["errorMessage"] === "string" ? `${a["errorMessage"]} — check \`lares vault status\`, then try again` : "unlock did not complete — check `lares vault status`, then try again";
   }
 }
 
@@ -224,9 +224,10 @@ async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number>
       return 1;
     }
     const ok = (a["reading"] === "opens" && a["held"] !== false) || a["reading"] === "already-unlocked";
+    const knownReading = ["opens", "already-unlocked", "face-refused", "face-not-named", "no-slot-opens", "attempts-spent", "tree-absent", "tree-unreadable", "root-unopenable"].includes(String(a["reading"]));
     emit(args, ok
       ? { ok: true, data: a, human: () => console.log(unlockLine(a)) }
-      : { ok: false, error: { code: String(a["reading"] ?? (a["refusal"] as { reason?: string } | undefined)?.reason ?? "refused"), message: unlockLine(a) }, data: a, human: () => console.error(`lares vault unlock: ${unlockLine(a)}`) });
+      : { ok: false, error: { code: knownReading ? String(a["reading"]) : "unlock-incomplete", message: unlockLine(a) }, ...(knownReading ? { data: a } : {}), human: () => console.error(`lares vault unlock: ${unlockLine(a)}`) });
     return ok ? 0 : 1;
   }
   const u = await openOrRefuse(args, "unlock", homes, io, creds);

@@ -344,6 +344,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares vessel stand                      # idempotent boot, attach-or-start, and REPORT",
       "lares vessel read --palaces             # health, plus the palace-organ table",
       "lares vessel seed --apply --yes         # plant every holding (idempotent)",
+      "lares vessel seed --apply --verbose     # keep full CREATE detail",
       "lares vessel rite refresh               # the post-code-change cure: build · stop · stand",
     ],
     flags: [
