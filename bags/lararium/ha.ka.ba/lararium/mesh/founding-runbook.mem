@@ -7,7 +7,7 @@
 cacheable  = true
 l-space    = "lararium"
 namespace  = "&#x2695;"
-revised-on = "2026-11-09"
+revised-on = "2026-11-10"
 role       = "a household walk for founding a fresh Dockerized node, establishing custody, and naming the built and owed browser, membership, and aftercare steps"
 status-why = "a fresh household founding walk with explicit built steps and owed reach and browser work"
 tags       = ["mesh/carry-contract", "api/pono/persona-policy", "mesh/siege-resilience", "mesh/kahu", "kind/rite"]
@@ -64,6 +64,8 @@ tools/lares-container.sh build
 Run these from the root of the household checkout; the house path shown stands as an example, and any local directory outside the checkout serves. `build` rebuilds the vessel image, every package the vessel runs, from the committed checkout: it runs `docker compose build lares` through the env file (a bare `docker compose build` reads no `lares-surface.env` and refuses on `LARES_HOUSE`) and bakes the checkout's HEAD into the image's revision label; a checkout holding uncommitted tracked changes refuses, so commit first. The shim makes the house's five bound classes before a container stands. Under PowerShell, assign `$env:LARES_HOUSE` and `$env:LARES_WORKSPACE` before calling the `.ps1` shim.
 
 Use `tools/lares-container.sh` on Unix-like hosts or `tools/lares-container.ps1` on Windows. The shims read the same environment or `lares-surface.env` and route CLI work through the image.
+
+''The host `lares` answers through the container house.'' With `LAR_ROOT` unset and `~/.lares/lares-surface.env` standing, the host's own `lares <verb>` hands every vessel verb to the checkout's `tools/lares-container.sh` with the same argv, so `lares up`, `lares vessel read` and `lares meme get … --json | jq` work from the WSL shell as the shim lines below do; the exit code and stdout pass through untouched, and no socket crosses the container wall. Host verbs stay on the host: `home`, `repo`, `help` and every `--help`, `wing-of`, `mempalace`, and `meme normalize|check|project <file> --to md`; `lares --help` marks each verb `host`, `vessel` or `mixed`. A credential verb (`vault unlock|bind|unbind`, `found`) refuses by name without a terminal. With neither `LAR_ROOT` nor the env file, a vessel verb refuses in two lines naming both cures. A path argument (`export <dest>`, `import <bundle>`, `vault backup --out <file>`, `ingest --source <dir>`, …) reads from the host, relative paths and `~` included, and crosses in the vessel's spelling: `$LARES_HOUSE/<class>` reads at `/lar/<class>` and `$LARES_WORKSPACE` at `/workspace`; a path already spelled `/lar/…` or `/workspace/…` passes as written, and a host path outside those mounts refuses by name before docker runs, so `lares export "$LARES_HOUSE/config/carry/bundle-one"` and the shim's `/lar/config/carry/bundle-one` name one place. A Ctrl+C or a lone SIGTERM stops the act inside the vessel too: the shim stops the tagged process it exec'd, or the run container it named. A shell that names `LAR_ROOT` (a scratch house, a suite, the container itself) never forwards. Windows runs `lares` inside WSL.
 
 ''See'': Docker reports a successful image build; the house root exists and the workspace checkout holds tracked `bags/`.
 
@@ -345,15 +347,14 @@ tools/lares-container.sh export /lar/config/carry/bundle-one    # the host reads
 tools/lares-container.sh down                                    # a locked hearth's census says: vault unlock, then down
 tools/lares-container.sh reset                                   # type re-found; projections stay
 tools/lares-container.sh found --hearth --name 'operator-one' --chair 'first-chair'
-tools/lares-container.sh up                                      # up unlocks on the attached terminal
-tools/lares-container.sh vault unlock                            # where up named it (no terminal attached)
+tools/lares-container.sh up                                      # up unlocks on the attached terminal: no separate unlock step
 tools/lares-container.sh import /lar/config/carry/bundle-one    # a preview: writes nothing
 tools/lares-container.sh import /lar/config/carry/bundle-one --apply
 ```
 
 ''The bundle rests unencrypted.'' Export copies a face's private memory as plain files and says so on its closing line. It refuses a destination inside the workspace or inside the house root, save the house's config home: a reset keeps `config/`, and the container binds `/lar/config` to `$LARES_HOUSE/config`, so the bundle rests where the host reads it (the vault backup's own precedent). Keep it on a disk only the operator holds, and remove it once the import reads back.
 
-''Up and unlock come before import.'' The import lands each face's memory in that face's own folders, named by the face relation the standing, unlocked vessel reads; on a vessel that stands down or locked it refuses `carry-face-unworn` and names `up` and `vault unlock`.
+''Up and unlock come before import.'' `up` on a terminal runs the unlock itself; only an `up` with no terminal attached names `vault unlock` for a terminal afterwards. The import lands each face's memory in that face's own folders, named by the face relation the standing, unlocked vessel reads; on a vessel that stands down or locked it refuses `carry-face-unworn` and names `up` and `vault unlock`.
 
 ''The old face's folders stay.'' The reset keeps `projections/` (survive-refound ruling), and with it the former face's cleartext folders (`projections/wikis/daemon-<old relation>`, `projections/bags/daemon-<old relation>`, `projections/bags/kahua-<old relation>`), which no face of the new founding claims. The next export refuses `carry-unclaimed-face-folder`, lists each folder, and names the step: once the import has read back, move each listed folder out of the house root (a rename, never a delete), then export again; or pass `--accept-omissions` to leave them where they stand, out of the bundle.
 
@@ -415,6 +416,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;GeO5MzbiGQ4GDpZXao40qu8IoNE8j4X8k5bHUHDjY6U`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;X9cjqN-he3PQ916QlEbpSipOYjjJYEThGNAPHdd-jdQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

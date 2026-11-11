@@ -64,6 +64,91 @@ function Compose([string[]]$more) {
   if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
+# A STOP NEVER STRANDS AN ACT INSIDE THE VESSEL. Docker forwards no signal to an exec'd process, and a killed
+# `compose run` client leaves its container running. An exec carries LARES_EXEC_TAG (by name, a random value of this
+# run) and a run names its container; when Ctrl+C stops the act before it ends, the finally block signals each vessel
+# process holding the tag, or stops and removes the named run container.
+$env:LARES_EXEC_TAG = -join ((1..8) | ForEach-Object { '{0:x2}' -f (Get-Random -Maximum 256) })
+$RunName = "lares-offline-$($env:LARES_EXEC_TAG)"
+# The in-vessel stop: signal each process whose environment holds this run's tag.
+$StopScript = 'for p in /proc/[0-9]*; do pid=${p#/proc/}; [ "$pid" = "$$" ] && continue; if tr "\0" "\n" < "$p/environ" 2>/dev/null | grep -qx "LARES_EXEC_TAG=$2"; then kill -s "$1" "$pid" 2>/dev/null; fi; done'
+
+# A LONE SIGNAL STOPS THE ACT TOO (Linux, macOS). A TERM, HUP or QUIT sent to this pwsh alone never reaches the finally
+# below, so a POSIX signal registration runs the same stop: it ends the compose client (this process's child), stops
+# what the act started inside the vessel, and exits by the signal's code (128 + its number). The handler runs on a
+# runtime thread that holds no PowerShell runspace, so it lives in a small compiled class rather than a script block.
+# Windows, and a pwsh without the registration type, keep the finally alone.
+$script:SignalStop = $null
+function ArmSignalStop([string]$kind) {
+  if (-not ($IsLinux -or $IsMacOS)) { return $null }
+  if (-not ('System.Runtime.InteropServices.PosixSignalRegistration' -as [type])) { return $null }
+  if (-not ('LaresSignalStop' -as [type])) {
+    Add-Type -TypeDefinition @'
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+public sealed class LaresSignalStop : IDisposable {
+  static volatile bool stopping;
+  public static bool Stopping { get { return stopping; } }
+  readonly List<PosixSignalRegistration> regs = new List<PosixSignalRegistration>();
+  readonly string[] composeBase; readonly string kind; readonly string tag; readonly string runName; readonly string stop;
+  public LaresSignalStop(string[] composeBase, string kind, string tag, string runName, string stop) {
+    this.composeBase = composeBase; this.kind = kind; this.tag = tag; this.runName = runName; this.stop = stop;
+    regs.Add(PosixSignalRegistration.Create(PosixSignal.SIGTERM, ctx => Handle(ctx, "TERM", 143)));
+    regs.Add(PosixSignalRegistration.Create(PosixSignal.SIGHUP, ctx => Handle(ctx, "HUP", 129)));
+    regs.Add(PosixSignalRegistration.Create(PosixSignal.SIGQUIT, ctx => Handle(ctx, "QUIT", 131)));
+  }
+  static void Run(string file, IEnumerable<string> args) {
+    try {
+      var psi = new ProcessStartInfo(file) { UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true };
+      foreach (var a in args) psi.ArgumentList.Add(a);
+      using (var p = Process.Start(psi)) { p.WaitForExit(30000); }
+    } catch (Exception) { }
+  }
+  void Handle(PosixSignalContext ctx, string sig, int code) {
+    ctx.Cancel = true;
+    stopping = true;
+    Run("pkill", new[] { "-TERM", "-P", Environment.ProcessId.ToString() });
+    if (kind == "run") {
+      Run("docker", new[] { "stop", "-t", "10", runName });
+      Run("docker", new[] { "rm", "-f", runName });
+    } else {
+      var args = new List<string> { "compose" }; args.AddRange(composeBase);
+      args.AddRange(new[] { "exec", "-T", "lares", "sh", "-c", stop, "stop", sig, tag });
+      Run("docker", args);
+    }
+    Environment.Exit(code);
+  }
+  public void Dispose() { foreach (var r in regs) r.Dispose(); }
+}
+'@
+  }
+  return [LaresSignalStop]::new([string[]]$Base, $kind, $env:LARES_EXEC_TAG, $RunName, $StopScript)
+}
+
+function Act([string]$kind, [string[]]$more) {
+  $ended = $false
+  $armed = ArmSignalStop $kind
+  try {
+    & docker compose @Base @more
+    # The signal stop ended the client: its handler owns the exit (by the signal's code), so this thread waits for it.
+    while ($null -ne $armed -and [LaresSignalStop]::Stopping) { Start-Sleep -Milliseconds 200 }
+    $ended = $true
+  } finally {
+    if ($null -ne $armed) { $armed.Dispose() }
+    if (-not $ended) {
+      if ($kind -eq 'run') {
+        & docker stop -t 10 $RunName *> $null
+        & docker rm -f $RunName *> $null
+      } else {
+        & docker compose @Base exec -T lares sh -c $StopScript stop INT $env:LARES_EXEC_TAG *> $null
+      }
+    }
+  }
+  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+}
+
 # Whether a vessel stands. A `ps` that fails reads as UNKNOWN, never as "none stands": the offline door opens only
 # on a reading, so a broken engine never routes an act beside a live holder.
 function HasRunningVessel {
@@ -138,7 +223,7 @@ function UnlockOrName {
   if (KeyHeld) { return }
   if ($script:Tty) {
     [Console]::Error.WriteLine('lares-container: the vessel stands holding no vessel key; unlocking it on this terminal')
-    & docker compose @Base exec lares node $Cli vault unlock
+    & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv lares node $Cli vault unlock
     if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the vessel still stands at the floor; open it with `lares-container.ps1 vault unlock`') }
   } else {
     [Console]::Error.WriteLine('lares-container: the vessel stands holding no vessel key; open it on a terminal: lares-container.ps1 vault unlock')
@@ -160,7 +245,7 @@ function LiftVessel([string[]]$output) {
 # vessel gets followed by one standing check, and the shim lifts the vessel when the verdict asks for it.
 function RouteCli([string[]]$argv, [bool]$followUp) {
   if (HasRunningVessel) {
-    Compose (@('exec') + $NoTty + @('lares', 'node', $Cli) + $argv)
+    Act 'exec' (@('exec', '-e', 'LARES_EXEC_TAG') + $PassEnv + $NoTty + @('lares', 'node', $Cli) + $argv)
     if ($followUp) {
       # The verb landed. A standing check that fails leaves a possible lift unperformed, so it never passes silently.
       $answer = ObserveStanding
@@ -173,7 +258,7 @@ function RouteCli([string[]]$argv, [bool]$followUp) {
   } else {
     [Console]::Error.WriteLine('lares-container: no vessel stands; this act runs offline on the store')
     EnsureHouse
-    Compose (@('--profile', 'offline', 'run', '--rm') + $NoTty + @('offline') + $argv)
+    Act 'run' (@('--profile', 'offline', 'run', '--rm', '--name', $RunName) + $PassEnv + $NoTty + @('offline') + $argv)
   }
 }
 
@@ -230,6 +315,12 @@ function CensusBeforeStop {
 $script:Tty = (-not [Console]::IsInputRedirected) -and (-not [Console]::IsOutputRedirected)
 $Tty = $script:Tty
 $NoTty = if ($Tty) { @() } else { @('-T') }
+# DISPLAY AND DEBUG RIDE BY NAME: each one the caller's environment sets crosses into the vessel as `-e NAME` (compose
+# reads the value from this environment), so no value rides argv; no other name crosses, and no credential.
+$PassEnv = @()
+foreach ($name in @('NO_COLOR', 'TERM', 'COLORTERM', 'LARES_DEBUG')) {
+  if (Test-Path "env:$name") { $PassEnv += @('-e', $name) }
+}
 
 if ($args.Count -eq 0) { Die 'usage: lares-container.ps1 up|down|found|logs|build|vessel stand|<lares verb…> (build rebuilds the vessel image, every package, from the committed checkout)' }
 $verb = [string]$args[0]
@@ -294,7 +385,7 @@ switch ($verb) {
   }
   'found' {
     EnsureHouse
-    Compose (@('--profile', 'offline', 'run', '--rm') + $NoTty + @('offline', 'vessel', 'found', '--skip-build', '--root', '/lar', '--genesis', '/app/genesis') + $rest)
+    Act 'run' (@('--profile', 'offline', 'run', '--rm', '--name', $RunName) + $PassEnv + $NoTty + @('offline', 'vessel', 'found', '--skip-build', '--root', '/lar', '--genesis', '/app/genesis') + $rest)
   }
   'vessel' {
     $observing = $rest -contains '--observe'

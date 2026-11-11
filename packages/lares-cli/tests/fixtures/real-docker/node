@@ -1,0 +1,19 @@
+#!/bin/sh
+# The stand-in CLI: `node <cli> <verb…>`. It answers the shim's own two readings, then reports what it received:
+# each argument, the display and debug names the shim may forward (and one it must not), and whether stdin reads a
+# TTY. An argument `sleep` sleeps (the signal walks); `exit:<n>` exits with <n>.
+shift
+case " $* " in *" --observe --json "*) echo '{"data":{"standing":{"act":"attach","reason":"steady"}}}'; exit 0;; esac
+case " $* " in *" vault status --json "*) echo '{"unlocked":true}'; exit 0;; esac
+for a in "$@"; do printf 'ARG[%s]\n' "$a"; done
+for n in NO_COLOR TERM COLORTERM LARES_DEBUG SOME_TOKEN; do
+  eval "isset=\${$n+x}"
+  if [ -n "$isset" ]; then eval "printf 'ENV[%s=%s]\n' $n \"\$$n\""; fi
+done
+if [ -t 0 ]; then echo 'TTY[yes]'; else echo 'TTY[no]'; fi
+for a in "$@"; do
+  case "$a" in
+    sleep) exec sleep 300 ;;
+    exit:*) exit "${a#exit:}" ;;
+  esac
+done

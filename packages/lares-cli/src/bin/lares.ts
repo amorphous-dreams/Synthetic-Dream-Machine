@@ -27,6 +27,7 @@ import { realpathSync }  from "node:fs";
 import { stdout }         from "node:process";
 import { parseArgs, ArgsError, type ParsedArgs } from "../parse-args.js";
 import { CustodyLocked, CustodyRowUnavailable } from "@lararium/node";
+import { bridge, commandScope, HOUSE_ABSENT_EXIT } from "../host-bridge.js";
 import { seatOfflineCustody, OfflineCustodyRefused } from "../offline-custody.js";
 import { seatNewFaceRoute } from "../face-route-prompt.js";
 import { cmdHerm }                    from "../commands/herm.js";
@@ -262,8 +263,12 @@ function printHelp(surface: string = VERB_SURFACE.cli, executableOnly = false): 
   }
   console.log("Commands:");
   for (const c of shown) {
-    console.log(`  ${c.signs ? "✍ " : "  "}${c.name.padEnd(14)} ${c.summary}`);
+    console.log(`  ${c.signs ? "✍ " : "  "}${c.name.padEnd(14)} ${commandScope(c.name).padEnd(6)} ${c.summary}`);
   }
+  console.log("\n  host = runs on this machine. vessel = answers from the house: LAR_ROOT's, or, with LAR_ROOT unset and");
+  console.log("  ~/.lares/lares-surface.env standing, the container house through tools/lares-container.sh. mixed = some of each.");
+  console.log("  Forwarded, a path argument reads from this machine and crosses in the vessel's spelling ($LARES_HOUSE/<class> ->");
+  console.log("  /lar/<class>, $LARES_WORKSPACE -> /workspace); a path outside those mounts refuses by name.");
   if (shown.some((c) => c.signs)) {
     console.log("\n  ✍ = holds a key. An agent surface may compose these and MUST NOT execute them.");
   }
@@ -401,14 +406,30 @@ async function drainStdout(): Promise<void> {
 }
 
 export function runCli(): void {
-  dispatch(process.argv.slice(2)).then(
+  const argv = process.argv.slice(2);
+  bridge(argv, COMMAND_NAMES).then((forwarded) => forwarded ?? dispatch(argv)).then(
     async (code) => {
       try { await drainStdout(); }
       catch (err) { console.error(err); process.exitCode = 1; return; }
       process.exitCode = code;
     },
-    (err)  => { console.error(err); process.exitCode = 1; },
+    (err)  => { console.error(crashReading(err)); process.exitCode = houseRootUnnamed(err) ? HOUSE_ABSENT_EXIT : 1; },
   );
+}
+
+/** By name: the node and the mempalace packages each raise their own HouseRootUnnamed class. */
+function houseRootUnnamed(err: unknown): boolean {
+  return err instanceof Error && err.name === "HouseRootUnnamed";
+}
+
+/**
+ * What an uncaught failure prints. An unnamed house root names its cure in two lines, never a stack trace;
+ * `LARES_DEBUG=1` prints the whole error, stack and all, for every failure.
+ */
+export function crashReading(err: unknown, env: Record<string, string | undefined> = process.env): unknown {
+  if (env["LARES_DEBUG"] === "1" || !houseRootUnnamed(err)) return err;
+  return "lares: no house root: LAR_ROOT names none here\n" +
+    "lares: set LAR_ROOT to a house root, or stand the container house (~/.lares/lares-surface.env) and run tools/lares-container.sh up";
 }
 
 if (invokedAsScript) {

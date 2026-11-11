@@ -23,6 +23,11 @@
 #                                                door when no vessel stands (vault status|bind|unbind read their
 #                                                credential on that TTY)
 #
+# THE HOST `lares` COMES THROUGH HERE. With LAR_ROOT unset and the env file below standing, the host CLI hands every
+# vessel verb to this shim with the same argv (packages/lares-cli/src/host-bridge.ts), so `lares <verb>` from the host
+# shell answers from the vessel; host verbs (home, repo, help) stay on the host. The attach (`-t`) asks a terminal on
+# stdin AND stdout, and NO_COLOR, TERM, COLORTERM and LARES_DEBUG cross into the vessel by name (`-e NAME`).
+#
 # A VESSEL STANDS HOLDING NO KEY. Every start returns it to the floor: it carries and serves its public shelf and
 # every sovereign act waits. So after `up`, after `vessel stand`, and after each restart this shim performs, it runs
 # `vault unlock` attached when this shell holds a TTY, and otherwise names that one command. No flag, env var or
@@ -140,7 +145,8 @@ unlock_or_name() {
   if key_held; then return 0; fi
   if [ -n "$HAVE_TTY" ]; then
     printf '%s\n' 'lares-container: the vessel stands holding no vessel key; unlocking it on this terminal' >&2
-    if ! compose exec lares node "$CLI" vault unlock; then
+    # shellcheck disable=SC2046
+    if ! waited_exec $(pass_env) lares node "$CLI" vault unlock; then
       printf '%s\n' 'lares-container: the vessel still stands at the floor; open it with `lares-container.sh vault unlock`' >&2
     fi
   else
@@ -190,7 +196,7 @@ follow_up=yes
 route_cli() {
   if running_vessel; then
     # shellcheck disable=SC2046
-    if compose exec $(tty_flag) lares node "$CLI" "$@"; then rc=0; else rc=$?; fi
+    if waited_exec $(pass_env) $(tty_flag) lares node "$CLI" "$@"; then rc=0; else rc=$?; fi
     if [ "$rc" -ne 0 ]; then return "$rc"; fi
     if [ -z "$follow_up" ]; then return 0; fi
     # The verb landed. A standing check that fails leaves a possible lift unperformed, so it never passes silently.
@@ -203,7 +209,7 @@ route_cli() {
     printf '%s\n' 'lares-container: no vessel stands; this act runs offline on the store' >&2
     ensure_house
     # shellcheck disable=SC2046
-    compose --profile offline run --rm $(tty_flag) offline "$@"
+    waited_run $(pass_env) $(tty_flag) offline "$@"
   fi
 }
 
@@ -285,6 +291,64 @@ census_before_stop() {
 HAVE_TTY=""
 if [ -t 0 ] && [ -t 1 ]; then HAVE_TTY=yes; fi
 tty_flag() { if [ -z "$HAVE_TTY" ]; then printf -- '-T'; fi; }
+# THE ATTACH READS BOTH ENDS. Piped stdin never attaches; and a piped stdout never attaches either, since a pseudo-
+# terminal would fold stderr into stdout and turn every newline into CRLF, so `lares … --json | jq` would read noise.
+
+# DISPLAY AND DEBUG RIDE BY NAME. Each of these the caller's environment sets crosses into the vessel as `-e NAME`
+# (compose reads the value from this environment), so no value rides argv; no other name crosses, and no credential.
+pass_env() {
+  for name in NO_COLOR TERM COLORTERM LARES_DEBUG; do
+    eval "isset=\${$name+x}"
+    if [ -n "$isset" ]; then printf -- '-e %s ' "$name"; fi
+  done
+}
+
+# A SIGNAL NEVER STRANDS AN ACT INSIDE THE VESSEL. Docker forwards no signal to an exec'd process, and a killed
+# `compose run` client leaves its container running (measured: tests/host-bridge-real-docker.test.ts). So every act
+# runs as a WAITED child (its stdin handed on from fd 3, since an async child would read /dev/null), and TERM, HUP and
+# INT trap: the shim ends the compose client, stops what it started inside the vessel, then ends by the same signal.
+# An exec carries LARES_EXEC_TAG (by name, a random value of this run), and the stop signals each vessel process whose
+# environment holds that tag; a run names its container (lares-offline-<tag>), and the stop stops and removes it.
+# Nothing detaches: the child stays in this terminal's foreground group, so a credential prompt keeps its TTY.
+LARES_EXEC_TAG=$(od -An -N8 -tx1 /dev/urandom | tr -d ' \n')
+export LARES_EXEC_TAG
+RUN_NAME="lares-offline-$LARES_EXEC_TAG"
+if { true <&0; } 2>/dev/null; then exec 3<&0; else exec 3</dev/null; fi
+act_kind=""; act_pid=""; caught=""
+
+stop_act() { # $1 = the signal caught
+  caught=$1
+  kill -TERM "$act_pid" 2>/dev/null
+  if [ "$act_kind" = run ]; then
+    docker stop -t 10 "$RUN_NAME" >/dev/null 2>&1
+    docker rm -f "$RUN_NAME" >/dev/null 2>&1
+  else
+    # shellcheck disable=SC2016
+    compose exec -T lares sh -c 'for p in /proc/[0-9]*; do pid=${p#/proc/}; [ "$pid" = "$$" ] && continue; if tr "\0" "\n" < "$p/environ" 2>/dev/null | grep -qx "LARES_EXEC_TAG=$2"; then kill -s "$1" "$pid" 2>/dev/null; fi; done' stop "$caught" "$LARES_EXEC_TAG" </dev/null >/dev/null 2>&1
+  fi
+}
+
+run_waited() { # $1 = exec|run; the rest = the compose argv
+  act_kind=$1; shift
+  # The subshell EXECS docker, so the pid waited on and signalled names the compose client itself.
+  (
+    if [ -n "$ENV_ARGS" ]; then exec docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE_PATH" "$@"
+    else exec docker compose --env-file /dev/null -f "$COMPOSE_FILE_PATH" "$@"; fi
+  ) <&3 3<&- &
+  act_pid=$!
+  trap 'stop_act TERM' TERM
+  trap 'stop_act HUP' HUP
+  trap 'stop_act INT' INT
+  while :; do
+    if wait "$act_pid"; then act_rc=0; else act_rc=$?; fi
+    kill -0 "$act_pid" 2>/dev/null || break
+  done
+  trap - TERM HUP INT
+  if [ -n "$caught" ]; then kill -s "$caught" "$$"; exit "$act_rc"; fi
+  return "$act_rc"
+}
+waited_exec() { run_waited exec exec -e LARES_EXEC_TAG "$@"; }
+waited_run() { run_waited run --profile offline run --rm --name "$RUN_NAME" "$@"; }
 
 [ "$#" -gt 0 ] || die "usage: lares-container.sh up|down|reset|found|logs|build|vessel stand|<lares verb…> (build rebuilds the vessel image, every package, from the committed checkout)"
 verb=$1; shift
@@ -393,7 +457,7 @@ case "$verb" in
   found)
     ensure_house
     # shellcheck disable=SC2046
-    compose --profile offline run --rm $(tty_flag) offline vessel found --skip-build --root /lar --genesis /app/genesis "$@" ;;
+    waited_run $(pass_env) $(tty_flag) offline vessel found --skip-build --root /lar --genesis /app/genesis "$@" ;;
   vessel)
     observing=""
     for arg in "$@"; do if [ "$arg" = --observe ]; then observing=yes; fi; done

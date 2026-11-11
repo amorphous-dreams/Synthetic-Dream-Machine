@@ -8,7 +8,7 @@
  */
 import assert from "node:assert/strict";
 import { mkdir, mkdtemp, readFile, readdir, writeFile, chmod, rm } from "node:fs/promises";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { test } from "node:test";
@@ -157,7 +157,7 @@ test("sh: found under a TTY runs attached, with no -T", { skip: !haveScript }, a
       encoding: "utf8",
     });
     const calls = await readFile(log, "utf8");
-    assert.match(calls, /--profile offline run --rm offline vessel found --skip-build --root \/lar --genesis \/app\/genesis\s*$/m);
+    assert.match(calls, /--profile offline run --rm (?:--name lares-offline-[0-9a-f]+ )?offline vessel found --skip-build --root \/lar --genesis \/app\/genesis\s*$/m);
     assert.doesNotMatch(calls, /(^|\s)-T(\s|$)/);
   } finally { await rm(dir, { recursive: true, force: true }); }
 });
@@ -203,19 +203,44 @@ for (const [name, shim] of shims) {
   test(`${name}: any other argv with a running vessel runs the CLI by exec`, async () => {
     const r = await run(shim, ["vessel", "read", "--json"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /compose .*exec -T lares node packages\/lares-cli\/bin\/lares\.mjs vessel read --json/);
+    assert.match(r.calls, /compose .*exec (?:-e LARES_EXEC_TAG )?-T lares node packages\/lares-cli\/bin\/lares\.mjs vessel read --json/);
+  });
+
+  test(`${name}: display and debug names cross into the vessel by name alone; no value and no other name`, async () => {
+    const shown = { NO_COLOR: "1", TERM: "xterm-256color", COLORTERM: "truecolor", LARES_DEBUG: "1", SOME_TOKEN: "s3cret" };
+    const r = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", ...shown } });
+    assert.equal(r.status, 0, r.stderr);
+    const exec = r.calls.split("\n").find((l) => / exec /.test(l) && / vessel read$/.test(l));
+    assert.ok(exec, r.calls);
+    for (const n of ["NO_COLOR", "TERM", "COLORTERM", "LARES_DEBUG"]) assert.match(exec, new RegExp(`(^| )-e ${n}( |$)`));
+    assert.doesNotMatch(r.calls, /xterm-256color|truecolor|s3cret|SOME_TOKEN/);
+    const offline = await run(shim, ["persona", "list"], { env: { ...MOUNTS, TERM: "dumb" } });
+    assert.match(offline.calls, /--profile offline run --rm --name lares-offline-[0-9a-f]+ -e TERM -T offline persona list/);
+  });
+
+  test(`${name}: an act carries its stop handle: an exec its LARES_EXEC_TAG by name, a run its lares-offline-<tag> name`, async () => {
+    const standing = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
+    assert.match(standing.calls, /exec -e LARES_EXEC_TAG -T lares node \S+ vessel read$/m);
+    assert.doesNotMatch(standing.calls, /LARES_EXEC_TAG=/);
+    const offline = await run(shim, ["persona", "list"], { env: MOUNTS });
+    assert.match(offline.calls, /run --rm --name lares-offline-[0-9a-f]{16} -T offline persona list$/m);
+  });
+
+  test(`${name}: CONTROL with none of the names set, no -e rides`, async () => {
+    const r = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
+    assert.doesNotMatch(r.calls, /(^| )-e (?!LARES_EXEC_TAG )/m);
   });
 
   test(`${name}: a verb with no running vessel uses the offline door`, async () => {
     const r = await run(shim, ["persona", "new", "0", "--name", "ci-face"], { env: MOUNTS });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /--profile offline run --rm -T offline persona new 0 --name ci-face/);
+    assert.match(r.calls, /--profile offline run --rm (?:--name lares-offline-[0-9a-f]+ )?-T offline persona new 0 --name ci-face/);
     assert.doesNotMatch(r.calls, /compose .*exec/);
   });
 
   test(`${name}: found uses the offline CLI door`, async () => {
     const r = await run(shim, ["found", "--json"], { env: MOUNTS });
-    assert.match(r.calls, /--profile offline run --rm -T offline vessel found --skip-build --root \/lar --genesis \/app\/genesis --json\s*$/m);
+    assert.match(r.calls, /--profile offline run --rm (?:--name lares-offline-[0-9a-f]+ )?-T offline vessel found --skip-build --root \/lar --genesis \/app\/genesis --json\s*$/m);
   });
 
   test(`${name}: a successful exec with a restand verdict restarts and waits healthy`, async () => {
@@ -233,7 +258,7 @@ for (const [name, shim] of shims) {
   test(`${name}: up names vault unlock when the vessel holds no key`, async () => {
     const r = await run(shim, ["up"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: '{"ok":true,"data":{"door":{"op":"custody","unlocked":false}}}' } });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /up -d --wait lares[\s\S]*exec -T lares node \S+ vault status --json/);
+    assert.match(r.calls, /up -d --wait lares[\s\S]*exec (?:-e LARES_EXEC_TAG )?-T lares node \S+ vault status --json/);
     assert.match(r.stderr, NAMES_UNLOCK);
     assert.doesNotMatch(r.calls, /vault unlock/, "no TTY: the shim sends no unlock, it only names it");
   });
@@ -292,7 +317,7 @@ for (const [name, shim] of shims) {
   test(`${name}: vault lock routes to the CLI inside the standing vessel`, async () => {
     const r = await run(shim, ["vault", "lock"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /exec -T lares node \S+ vault lock/);
+    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node \S+ vault lock/);
   });
 
   test(`${name}: CONTROL attach verdict does not restart`, async () => {
@@ -310,7 +335,7 @@ for (const [name, shim] of shims) {
     // The one exec a fresh stand makes: the custody door's read, after which the shim names the unlock.
     const execs = r.calls.split("\n").filter((line) => /compose .*exec /.test(line) || /^compose exec |(^| )exec /.test(line));
     assert.equal(execs.length, 1, r.calls);
-    assert.match(execs[0], /exec -T lares node \S+ vault status --json/);
+    assert.match(execs[0], /exec (?:-e LARES_EXEC_TAG )?-T lares node \S+ vault status --json/);
     assert.match(r.stderr, NAMES_UNLOCK);
   });
 
@@ -319,7 +344,7 @@ for (const [name, shim] of shims) {
       env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"restand","reason":"face lit"}}}' },
     });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /exec -T lares node \S+ vessel stand --observe --json[\s\S]*restart lares[\s\S]*up -d --wait lares/);
+    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node \S+ vessel stand --observe --json[\s\S]*restart lares[\s\S]*up -d --wait lares/);
     // The acting stand never runs inside the container: the one exec carries --observe.
     assert.doesNotMatch(r.calls, /vessel stand\s*$/m);
   });
@@ -338,7 +363,7 @@ for (const [name, shim] of shims) {
       env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"restand","reason":"face lit"}}}' },
     });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /exec -T lares node \S+ vessel stand --json --observe/);
+    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node \S+ vessel stand --json --observe/);
     assert.doesNotMatch(r.calls, /restart lares/);
   });
 
@@ -347,7 +372,7 @@ for (const [name, shim] of shims) {
       env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"attach","reason":"steady"}}}' },
     });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /exec -T lares node packages\/lares-cli\/bin\/lares\.mjs vessel stand --observe --json/);
+    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node packages\/lares-cli\/bin\/lares\.mjs vessel stand --observe --json/);
     assert.equal((r.calls.match(/--observe --json/g) ?? []).length, 1);
     assert.doesNotMatch(r.calls, /restart lares/);
   });
@@ -383,7 +408,7 @@ for (const [name, shim] of shims) {
   test(`${name}: option-bearing host stand routes to the CLI`, async () => {
     const r = await run(shim, ["vessel", "stand", "--init"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /exec -T lares node packages\/lares-cli\/bin\/lares\.mjs vessel stand --init/);
+    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node packages\/lares-cli\/bin\/lares\.mjs vessel stand --init/);
   });
 
   test(`${name}: vessel stop stops the container from the host, never from inside it`, async () => {
@@ -397,7 +422,7 @@ for (const [name, shim] of shims) {
     for (const argv of [["vessel", "clear", "--force"], ["vessel", "rite", "rebirth"]]) {
       const r = await run(shim, argv, { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_EXEC_RC: "2" } });
       assert.equal(r.status, 2, argv.join(" "));
-      assert.match(r.calls, /exec -T lares node packages\/lares-cli\/bin\/lares\.mjs/);
+      assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node packages\/lares-cli\/bin\/lares\.mjs/);
       assert.doesNotMatch(r.stderr, /no pave or wipe command/);
     }
   });
@@ -406,14 +431,14 @@ for (const [name, shim] of shims) {
     const argv = ["vessel", "stand", "--restart"];
     const r = await run(shim, argv, { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_EXEC_RC: "2" } });
     assert.equal(r.status, 2, argv.join(" "));
-    assert.match(r.calls, /exec -T lares node packages\/lares-cli\/bin\/lares\.mjs vessel stand --restart\s*$/m);
+    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node packages\/lares-cli\/bin\/lares\.mjs vessel stand --restart\s*$/m);
     assert.doesNotMatch(r.stderr, /takes no option through this shim/);
   });
 
   test(`${name}: CONTROL another vessel rite still routes to the CLI`, async () => {
     const r = await run(shim, ["vessel", "rite", "quorum"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /exec -T lares node \S+ vessel rite quorum/);
+    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node \S+ vessel rite quorum/);
   });
 
   test(`${name}: a capture path holding a quote and a dollar sign rides the override as a literal`, async () => {
@@ -441,7 +466,7 @@ for (const [name, shim] of shims) {
   test(`${name}: down over a standing vessel asks the census first, and a clean answer stops it`, async () => {
     const r = await run(shim, ["down", "--timeout", "5"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN } });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /exec -T lares node packages\/lares-cli\/bin\/lares\.mjs vessel census --no-json/);
+    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node packages\/lares-cli\/bin\/lares\.mjs vessel census --no-json/);
     assert.ok(r.calls.indexOf("vessel census") < r.calls.indexOf("down --remove-orphans"), r.calls);
     // down's own flags still pass through.
     assert.match(r.calls, /down --remove-orphans --timeout 5/);
@@ -597,3 +622,61 @@ for (const [name, shim] of shims) {
     }
   });
 }
+
+// A LONE SIGNAL TO THE SHIM: docker forwards none to an exec'd process and a killed `compose run` client leaves its
+// container running (tests/host-bridge-real-docker.test.ts measured it), so the shim's own stop must run on a TERM,
+// HUP or QUIT sent to its pid alone. The fake docker sleeps on the act and logs every call, the stop among them.
+async function loneSignal(shim, sig, { standing }) {
+  const dir = await mkdtemp(join(tmpdir(), "lares-container-sig-"));
+  try {
+    const log = join(dir, "calls.log");
+    await writeFile(join(dir, "docker"), `#!/bin/sh\nprintf '%s\\n' "$*" >> "$CALL_LOG"\n` +
+      `case " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}"; exit 0;; esac\n` +
+      `case " $* " in *" sh -c "*|*" stop "*|*" rm -f "*) exit 0;; esac\n` +
+      `case " $* " in *" exec "*|*" run "*) echo $$ > "$CALL_LOG.pid"; exec sleep 30;; esac\nexit 0\n`);
+    await chmod(join(dir, "docker"), 0o755);
+    const compose = join(dir, "docker-compose.surface.yml");
+    await writeFile(compose, "services: {}\n");
+    const home = join(dir, "home");
+    await mkdir(join(home, ".lares"), { recursive: true });
+    const env = { PATH: `${dir}:${process.env.PATH}`, CALL_LOG: log, HOME: home, LARES_COMPOSE_FILE: compose,
+      LARES_HOUSE: join(dir, "house"), LARES_WORKSPACE: "/w", ...(standing ? { FAKE_RUNNING_ID: "cid" } : {}) };
+    const cmd = shim === SH ? ["sh", [shim, "persona", "list"]] : ["pwsh", ["-NoProfile", "-File", shim, "persona", "list"]];
+    const child = spawn(cmd[0], cmd[1], { env, stdio: "ignore" });
+    const ended = new Promise((r) => child.on("exit", (code, signal) => r({ code, signal })));
+    let pid = 0;
+    for (let i = 0; i < 200 && !pid; i++) {
+      try { pid = Number((await readFile(`${log}.pid`, "utf8")).trim()); } catch { await new Promise((r) => setTimeout(r, 50)); }
+    }
+    assert.ok(pid > 0, "the fake act never started");
+    await new Promise((r) => setTimeout(r, 300));
+    process.kill(child.pid, sig);
+    const exit = await Promise.race([ended, new Promise((r) => setTimeout(() => r({ code: "hung", signal: null }), 20_000))]);
+    await new Promise((r) => setTimeout(r, 300));
+    let alive = true;
+    try { process.kill(pid, 0); } catch { alive = false; }
+    if (alive) process.kill(pid, "SIGKILL");
+    if (exit.code === "hung") child.kill("SIGKILL");
+    return { exit, alive, calls: await readFile(log, "utf8") };
+  } finally { await rm(dir, { recursive: true, force: true }); }
+}
+
+const CODE = { SIGTERM: 143, SIGHUP: 129, SIGQUIT: 131 };
+for (const [name, shim] of shims) {
+  for (const sig of ["SIGTERM", "SIGHUP"]) {
+    test(`${name}: a lone ${sig} to the shim stops the tagged vessel process and leaves no compose client`, async () => {
+      const { exit, alive, calls } = await lone(shim, sig, true);
+      assert.ok(exit.signal === sig || exit.code === CODE[sig], JSON.stringify(exit));
+      assert.equal(alive, false, "the fake compose client outlived the shim");
+      assert.match(calls, new RegExp(`exec -T lares sh -c .* stop ${sig.slice(3)} [0-9a-f]{16}`));
+    });
+  }
+  test(`${name}: a lone SIGTERM over the offline door stops and removes the named run container`, async () => {
+    const { exit, alive, calls } = await lone(shim, "SIGTERM", false);
+    assert.ok(exit.signal === "SIGTERM" || exit.code === 143, JSON.stringify(exit));
+    assert.equal(alive, false);
+    assert.match(calls, /stop -t 10 lares-offline-[0-9a-f]{16}/);
+    assert.match(calls, /rm -f lares-offline-[0-9a-f]{16}/);
+  });
+}
+async function lone(shim, sig, standing) { return loneSignal(shim, sig, { standing }); }

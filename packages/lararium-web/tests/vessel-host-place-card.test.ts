@@ -54,9 +54,15 @@ test("PC1 RED — the card reaches the ceremony alone, says what it serves, and 
   expect((ask.card ?? []).filter((line) => CODE_ROW.test(line)).join("-")).toBe(CODE);
   expect(ask.words).toMatch(/place/);
   expect(ask.words).toMatch(/paper/);
-  // THE PAGE HEARS PUBLIC WORDS ALONE: no code row, no card field.
-  const said = JSON.stringify(c.toPage);
-  for (const group of CODE.split("-").slice(0, 6)) expect(said).not.toContain(group);
+  // THE PAGE HEARS PUBLIC WORDS ALONE: no code row, no card field. The ask's random id is stripped before the scan,
+  // and the scan reads the card as it prints (a whole row) and every two neighbouring groups under any spacing, so a
+  // lone four-hex group that chance spells in other bytes never reads as a leak, and a leaked fragment still does.
+  const said = JSON.stringify(c.toPage, (key, value: unknown) => key === "askId" ? "<askId>" : value);
+  const groups = CODE.split("-");
+  for (const row of [0, 6, 12]) expect(said).not.toContain(groups.slice(row, row + 6).join("-"));
+  for (let i = 0; i + 1 < groups.length; i++) {
+    for (const sep of ["-", " ", ""]) expect(said).not.toContain(`${groups[i]}${sep}${groups[i + 1]}`);
+  }
   expect(c.toPage.every((m) => !("card" in m))).toBe(true);
 });
 
