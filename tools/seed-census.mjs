@@ -54,6 +54,8 @@ export const PUBLIC_PLACE_KEY = [
   { file: 'packages/lararium-node/src/realm-steward.ts', match: 'loadVesselVerifyingKey()', count: 1, sort: 'place', reason: 'Realm steward reads local place identity.' },
   { file: 'packages/lararium-node/src/store-door-verbs.ts', match: 'loadVesselVerifyingKey()', count: 1, sort: 'place', reason: 'Carried bundle names its owning place.' },
   { file: 'packages/lararium-node/src/commands/nexus-release.ts', match: 'loadVesselVerifyingKey()', count: 1, sort: 'place', reason: 'Nexus release names the carrying place.' },
+  { file: 'packages/lararium-node/src/commands/floor.ts', match: 'loadVesselVerifyingKey()', count: 1, sort: 'place', reason: 'The floor pin reads the release chain off the publication board of the Nexus this place carries (`nodeNexusIsland`), as nexus release does.' },
+  { file: 'packages/lararium-node/src/commands/floor-cut.ts', match: 'loadVesselVerifyingKey()', count: 1, sort: 'place', reason: 'The floor cut lands its release on the publication board of the Nexus this place carries (`nodeNexusIsland`), as nexus release does.' },
   { file: 'packages/lararium-node/src/commands/nexus-kapae.ts', match: 'loadVesselVerifyingKey()', count: 1, sort: 'place', reason: 'Nexus standing uses the place key.' },
   { file: 'packages/lararium-node/src/commands/device-admit.ts', match: 'loadVesselVerifyingKey()', count: 1, sort: 'place', reason: 'Device admit excludes the public place key from face identities.' },
   { file: 'packages/lararium-node/src/local-persona-kel.ts', match: 'loadVesselVerifyingKey()', count: 1, sort: 'place', reason: 'The public place key names the local board.' },

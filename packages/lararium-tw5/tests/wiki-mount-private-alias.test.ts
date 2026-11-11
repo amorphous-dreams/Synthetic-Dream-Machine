@@ -65,14 +65,15 @@ describe("a catalog pointer never resolves a wiki onto a vessel-private document
   });
 });
 
-test("a wiki designates its draft for a held recovery grant alongside its working and canon bags", async () => {
+test("a wiki designates its draft for a held recovery grant alongside its working, personal and canon bags", async () => {
   const { spec } = await buildWikiMountSpec(
     { resolveBinding: async () => ({ personalUrl: "personal", draftUrl: "draft", workingUrl: "working" }) },
     { activeWikiId: "wiki", wikiSlug: "notes", coreHash: null, islandUrl: "island", wikiUrl: "wiki", catalogUrl: "catalog" },
   );
   expect(spec.recipe.mirrorBags).toContain(wikiSlotUri("notes", "working"));
   expect(spec.recipe.mirrorBags).toContain(wikiBagUri("notes"));
-  expect(spec.recipe.mirrorBags).not.toContain(wikiSlotUri("notes", "personal"));
+  // The personal slot carries the face's private margin over the workbench and projects per face (cabal-realm#/the-workbench).
+  expect(spec.recipe.mirrorBags).toContain(wikiSlotUri("notes", "personal"));
   expect(spec.recipe.mirrorBags).toContain(wikiSlotUri("notes", "draft"));
 });
 
