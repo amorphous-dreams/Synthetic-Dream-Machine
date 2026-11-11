@@ -31,7 +31,7 @@ import {
   type LarDoc,
   type LarTiddlerRecord,
   type LarTiddlerStore, ownEntry, plainField} from "@lararium/mesh";
-import { catalogRowHalf, isSystemCanonBag, litFaceCatalogOf, makeCatalogView, plainRecordOrNull, realmStandingDocUrl } from "@lararium/mesh";
+import { catalogRowHalf, isHouseCanonBag, litFaceCatalogOf, makeCatalogView, plainRecordOrNull, realmStandingDocUrl } from "@lararium/mesh";
 
 export interface CatalogAccessor {
   /** The `catalog` registry doc itself, resolved + cached (the floor with the face's rows laid over it, U1). */
@@ -155,13 +155,13 @@ function accessorOver(handle: () => Promise<DocHandle<LarDoc>>, catalogUrl: stri
 }
 
 /**
- * The document a recipe's LIBRARY bag mounts from: the registry's entry, else — for a system canon bag (`lares`,
- * `lararium`), which no registry row names — the Kahu realm's standing registration read off this catalog. It names a
+ * The document a recipe's LIBRARY bag mounts from: the registry's entry, else — for a house canon bag (`isHouseCanonBag`),
+ * which no registry row names — the Kahu realm's standing registration read off this catalog. It names a
  * url and grants no reach: every write into the document clears the Kahu predicate at its own door.
  */
 export async function libraryDocUrl(catalog: CatalogAccessor, bagUri: string): Promise<string | null> {
   if (plainField(await catalog.recordOf(bagUri), "kind") === "private-synced") return null;
   const row = await catalog.urlOf(bagUri);
-  if (row !== null || !isSystemCanonBag(bagUri)) return row;
+  if (row !== null || !isHouseCanonBag(bagUri)) return row;
   return realmStandingDocUrl((await (catalog.floor ?? catalog.handle)()).doc(), bagUri);
 }

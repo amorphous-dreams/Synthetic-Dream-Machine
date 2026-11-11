@@ -340,7 +340,7 @@ One passphrase may open every face (`lares vault unlock --all --face N`); separa
 Faces do not know each other: no face's hive or catalog half names another face. The operator alone shares a bag, by TW5-native rows `$:/config/lares/share/<slug>` (`share-config.ts`) whose `read` and `write` fields name faces by ''pet-name'' as a title list (`a b [[c d]]`), `*` for every face, or empty, with a `note` that says why. A filter operator refuses `share-filter-unsupported`: the rows name faces, and no filter computes them.
 
 * ''One authority, one file.'' The rows rest in the vessel's control document (the vessel's key; no face reads it) and write through to `$LAR_ROOT/config/share.tid`, which survives a re-founding and a person edits by hand. Each boot reconciles the file into the control document, and the file wins (`reconcileShareRows`).
-* ''One resolver'' (`resolveShare`) answers who reads and writes a bag, as MultiWikiServer keeps one ACL place: a vessel-tier bag reads for every face with no row; a custom bag stays its owner's until a row shares it; a row reads and writes for the faces it names, the owner always among them, a writer reading too; a name no face carries waits, named.
+* ''One resolver'' (`resolveShare`) answers who reads and writes a bag, as MultiWikiServer keeps one ACL place: a house canon bag reads the floor for every face and takes no write by any row (the Kahu steward's reach decides); a custom bag stays its owner's until a row shares it; a row reads and writes for the faces it names, the owner always among them, a writer reading too; a name no face carries waits, named.
 * ''By reference and delegation, never a copy'' (`share-apply`, `applyShares`). Where the owner face and the grantee face both stand lit, the bag's catalog row (the owner's ONE document's url) lifts into the grantee's catalog half and the owner's hive delegates the bag to the grantee's (`read`, or the house's writer hand for a writer). A grant whose face stands shut waits behind an opaque flag in the control document (`$:/config/lares/share-pending/<digest>`: no face, no bag, no access), and the next light lands it and clears the flag. The unlock door lands the shares as each face lights.
 * ''Doors.'' `lares bag share <bag> --read <names> --write <names> [--note <why>] [--face N]`, `lares wiki share <wiki> …`, `lares bag share --list` (each row and the resolver's answer). `hN` and `--face N` resolve to that face's pet-name, so a row always names pet-names. No agent surface reaches `share-set` or `share-apply`.
 
@@ -427,6 +427,6 @@ Faces do not know each other: no face's hive or catalog half names another face.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;5HPsRgIAr18pRAdZ5ZTrWHWxu4HLaDDGYAoU_KYdMo4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BWEmn0TM05cFL3ot1pKaTLp3dCrkFBeD_bZ2DasPMgY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

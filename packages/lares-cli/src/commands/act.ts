@@ -108,7 +108,7 @@ function printUsage(): void {
   console.error("                     carries the delete down into a bag that holds the title; with no --to the");
   console.error("                     holders print as candidates; --shadow hides the title from a bag that holds none");
   console.error("  CLEAR / DROP       --bag <bag> [--change-id <id>]");
-  console.error("  CREATE             --bag <bag> [--plane <catalog|oracle>] [--tier vessel] [--change-id <id>]");
+  console.error("  CREATE             --bag <bag> [--plane <catalog|oracle>] [--change-id <id>]");
   console.error("  LOAD               --source-uri <u> --to <bag> [--change-id <id>]");
   console.error("  REPACK             --source <bundle-file> --from <bag> [--out <file>]");
   console.error("");
@@ -332,18 +332,10 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
       return 2;
     }
     const plane = planeOpt === "oracle" ? "oracle" : "catalog";
-    // `--tier vessel` (the seed's own CREATE over a disk-sourced holding): the row rests on the floor half, so every face
-    // finds the one document. No other tier rides a CREATE.
-    const tierOpt = args.options["tier"];
-    if (tierOpt !== undefined && (tierOpt !== "vessel" || plane !== "catalog")) {
-      console.error(`lares act CREATE: --tier takes "vessel" alone, on the catalog plane (got "${tierOpt}")`);
-      return 2;
-    }
     changeId = args.options["change-id"] ?? newChangeId();
     nonce = changeId;
     actionArgs["bag"]   = bag;
     actionArgs["plane"] = plane;
-    if (tierOpt === "vessel") actionArgs["tier"] = "vessel";
   } else {
     // verb === "LOAD"
     const sourceUri = args.options["source-uri"];

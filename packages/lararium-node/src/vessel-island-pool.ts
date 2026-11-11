@@ -13,7 +13,7 @@
 
 import { join } from "path";
 import {
-  VesselIslandPoolCore,
+  VesselIslandPoolCore, houseCanonSlugsSeated,
   type Repo,
   type IslandMsg_Event,
   type LarIslandToVesselMsg,
@@ -93,7 +93,7 @@ export class VesselIslandPool extends VesselIslandPoolCore {
   constructor(options: VesselIslandPoolOptions) {
     const workerUrl   = options.workerScriptUrl ?? DEFAULT_WORKER_URL;
     const storageRoot = options.storageRoot ?? null;
-    const casData: IslandCasData = { cidDir: options.cidDir ?? null, corpusCasDir: options.corpusCasDir ?? null };
+    const casData: IslandCasData = { cidDir: options.cidDir ?? null, corpusCasDir: options.corpusCasDir ?? null, houseCanon: houseCanonSlugsSeated() };
     super({
       host: {
         spawnWorker: (spawn) => (spawn?.session ? nodeSpawnSessionWorker(workerUrl, options.caps) : nodeSpawnWikiWorker(workerUrl, options.caps, casData)),

@@ -17,7 +17,7 @@ describe("graceForTier — per tier, over the realm's baseline", () => {
     expect(g.veil).toBeGreaterThan(g.personagroup);
     expect(g.personagroup).toBeGreaterThan(g.contract);
     expect(g.contract).toBeGreaterThan(g.public);
-    expect(tiersByGraceDescending()).toEqual(["veil", "vessel", "personagroup", "contract", "public"]);
+    expect(tiersByGraceDescending()).toEqual(["veil", "personagroup", "contract", "public"]);
   });
   test("the grace SCALES with the baseline — a slow realm sweeps slower (ratios, never a constant)", () => {
     expect(graceForTier("contract", 2_000)).toBe(2 * graceForTier("contract", 1_000));

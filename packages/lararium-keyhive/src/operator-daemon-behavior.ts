@@ -151,7 +151,7 @@ export function requireDyadReader(reader: DyadReader | undefined, gate: "the Bin
 import { bootDaemonKeyhive } from "./boot-daemon-keyhive.js";
 import { daemonBagDocLedger, planeBagDocLedger, registerBagsDurably, type BagDocLedger } from "./bag-doc-ledger.js";
 import { persistArchiveFloor } from "./archive-floor-write.js";
-import { replicaHeads, hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, holdsKahuReach, isSystemCanonBag, realmStandingDocUrl, materializeFaceWorkingDoc } from "@lararium/mesh";
+import { replicaHeads, hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, holdsKahuReach, isHouseCanonBag, realmStandingDocUrl, materializeFaceWorkingDoc } from "@lararium/mesh";
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
 import { readLeaseUnderFace, controlLayerOf, type LeaseFrontier } from "./lease-frontier.js";
 import { readFace, answerDocStoreAsks, announceSlotDoc, documentIdOfUrl, type WikiSlotKind } from "@lararium/mesh";
@@ -1471,7 +1471,6 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const ORIGIN = { kind: "lares-verb", requestId: "share-apply" } as const;
         const applied = await applyShares({
           rows: () => readShareRows(control), faces,
-          floor: async () => (ctx.catalogUrl ? (await makeCatalogAccessor(ctx.repo, ctx.catalogUrl, null).handle()).doc() : undefined),
           salt: daemonAuth.placeVerifyingKey,
           flag: {
             set: async (title) => { if (!(await control.get(title))) await control.put(mutableLarRecord(title, { text: "owed" }, "share-apply"), ORIGIN); },
@@ -1799,7 +1798,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             ? Promise.reject(new VerbRefusal("kahu-reach", "kahu-reach: system canon takes the mounted face's hand; a sibling face holds none here"))
             : mountedKahuVerifier.kahuReach!(bagUrl, act),
         verify: (args) => {
-          if (args.access === "admin" && isSystemCanonBag(args.bagUrl) && bareKey(args.presenter) !== bareKey(daemonAuth.atom!.key)) {
+          if (args.access === "admin" && isHouseCanonBag(args.bagUrl) && bareKey(args.presenter) !== bareKey(daemonAuth.atom!.key)) {
             return Promise.resolve({ ok: false, reason: "kahu-reach: system canon takes the mounted face's hand; a sibling face holds none here" });
           }
           return mountedKahuVerifier.verify(args);

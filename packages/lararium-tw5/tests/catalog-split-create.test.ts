@@ -14,9 +14,10 @@ import { describe, expect, test } from "vitest";
 import { Repo } from "./wiki-shore-rig.js";
 import {
   CompositeStore, emptyLarDoc, faceCatalogDocUrl, openFaceCatalog, standLitFaceCatalog, tiddlerText, ownEntry,
-  storedLarRecord, AutomergeDocStore, type LarDoc, type Verb,
+  storedLarRecord, AutomergeDocStore, seatHouseCanon, type LarDoc, type Verb,
 } from "@lararium/mesh";
-import { makeActionReactorFor } from "../src/action-handler.js";
+import { makeActionReactorFor, HOUSE_CANON_READS_FLOOR } from "../src/action-handler.js";
+import { kahuHand, strangerHand } from "../../lararium-mesh/tests/kahu-reach-fixture.js";
 import { makeCatalogAccessor, libraryDocUrl } from "../src/catalog-accessor.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 
@@ -88,92 +89,94 @@ describe("a register act lands its row on its half", () => {
 });
 
 /**
- * THE VESSEL TIER (cap-tier.mem, vessel): a disk-sourced holding is plaintext canon from git, so the seed's CREATE stamps its
- * row `cap-tier = vessel` and the row rests on the floor half. A seed run as h1 and then as h2 converges on ONE document:
- * each face's own catalog stays sealed to the others, and the floor names the canon for all of them.
+ * HOUSE CANON TAKES NO CATALOG ROW (cap-tier.mem, house canon): every disk-sourced holding but the public board rests in the
+ * Kahu realm at contract. A seed run as h0 (the Kahu steward), then h1, then h2 mints nothing: the steward's CREATE names the
+ * realm's ONE document, any other face's CREATE answers that it reads the floor, and no half of the catalog names canon, so
+ * no face can fork it.
  *
- *   V1 — CREATE tier vessel as h1, then as h2: one document id; h2's answer reads alreadyStood; both faces (and h0) read it
- *   V2 — a row resting on a face's half (a face-sealed document) never takes the stamp: it stays on that face, named
- *   V3 — a re-seed over a floor row lacking the stamp restamps it in place; a second re-seed changes nothing
- *   V4 — the action parse refuses any other tier on CREATE
+ *   V1 — seed as h0, h1, h2: zero catalog rows; one document per house canon bag (the realm's); h1 and h2 read the floor
+ *   V2 — a non-steward CREATE answers resolvedElsewhere with readsFloor, never a kahu-reach red; a stranger's own write refuses
+ *   V3 — a steward whose realm registers no document refuses by name (house-canon-unlanded) and mints no row
+ *   V4 — CREATE carries no tier: a `tier` arg stamps nothing, and the board (crossroads) stays an ordinary catalog bag
  */
-describe("the vessel tier: one canon document across faces", () => {
+describe("house canon: one realm document, no catalog row", () => {
   const secretOf = (n: number) => new Uint8Array(32).fill(0x10 + n);
-  async function threeFaces() {
+  const HOUSE = ["sdm", "elyncia", "elyncia-referee"];
+  async function threeFaces(realm: Record<string, string> = {}) {
     const repo = new Repo({ network: [] });
     const floor = repo.create<LarDoc>(emptyLarDoc());
     const faces = await Promise.all([0, 1, 2].map((n) => openFaceCatalog(repo, faceCatalogDocUrl(secretOf(n)), secretOf(n))));
+    const steward = await kahuHand(), stranger = await strangerHand("joined-without-admission");
     const createAs = (n: number) => makeActionReactorFor("CREATE", {
       composite: new CompositeStore(),
-      reach: { repo, catalogUrl: floor.url, faceCatalogUrl: faces[n]!.url, oracleUrl: null },
+      kahuReach: n === 0 ? steward : stranger,
+      reach: { repo, catalogUrl: floor.url, faceCatalogUrl: faces[n]!.url, oracleUrl: null, systemCanonUrl: async (bag: string) => realm[bag] ?? null },
     });
-    return { repo, floor, faces, createAs };
+    const rowsNaming = (bag: string) => [floor, ...faces].filter((h) => ownEntry(h.doc()?.tiddlers, bag) !== undefined).length;
+    return { repo, floor, faces, createAs, rowsNaming };
   }
+  const seated = <T>(run: () => Promise<T>): Promise<T> => { seatHouseCanon(["crossroads", ...HOUSE]); return run().finally(() => seatHouseCanon([])); };
 
-  test("V1 — seed as h1 then as h2 yields ONE document for sdm, elyncia and elyncia-referee; every face reads it", async () => {
-    const { repo, floor, faces, createAs } = await threeFaces();
-    for (const slug of ["sdm", "elyncia", "elyncia-referee"]) {
+  test("V1 — seed as h0, h1, h2: zero catalog rows, one document per house canon bag", () => seated(async () => {
+    const realm: Record<string, string> = {};
+    const { repo, createAs, rowsNaming } = await threeFaces(realm);
+    // The realm's ONE document per bag (the founding's mint, `landKahuRealm`), named to the steward by the realm's row.
+    for (const slug of HOUSE) realm[`lar:///ha.ka.ba/bags/${slug}`] = String(repo.create<LarDoc>(emptyLarDoc()).url);
+    for (const slug of HOUSE) {
       const bag = `lar:///ha.ka.ba/bags/${slug}`;
-      const first = await createAs(1)({ bag, tier: "vessel" }, ctx());
-      expect(typeof first.docUrl).toBe("string");
-      expect(first.tier).toBe("vessel");
-      const second = await createAs(2)({ bag, tier: "vessel" }, ctx());
-      expect(second.alreadyStood).toBe(true);
-      expect(second.docUrl).toBe(first.docUrl);
-      // The row rests on the floor, stamped; no face's own catalog names it.
-      const row = ownEntry(floor.doc()?.tiddlers, bag);
-      expect(tiddlerText(row)).toBe(first.docUrl);
-      for (const f of faces) expect(ownEntry(f.doc()?.tiddlers, bag)).toBeUndefined();
-      for (const f of faces) expect(await makeCatalogAccessor(repo, floor.url, f.url).urlOf(bag)).toBe(first.docUrl);
-      expect(await makeCatalogAccessor(repo, floor.url, null).urlOf(bag)).toBe(first.docUrl);
+      for (let run = 0; run < 2; run++) {
+        expect(await createAs(0)({ bag }, ctx())).toMatchObject({ alreadyStood: true, resolvedElsewhere: true, docUrl: realm[bag], count: 0 });
+      }
+      for (const n of [1, 2]) {
+        expect(await createAs(n)({ bag }, ctx())).toMatchObject({ alreadyStood: true, resolvedElsewhere: true, readsFloor: true });
+      }
+      expect(rowsNaming(bag)).toBe(0);
     }
     await repo.shutdown();
-  });
+  }));
 
-  test("CONTROL — with no tier, h1 and h2 each mint under their own sealed half (the fork the vessel tier cures)", async () => {
+  test("V2 — a non-steward CREATE reads the floor, never a kahu-reach red; its write into canon refuses", () => seated(async () => {
+    const { repo, floor, createAs, rowsNaming } = await threeFaces();
+    const bag = "lar:///ha.ka.ba/bags/sdm";
+    const out = await createAs(1)({ bag }, ctx());
+    expect(out).toMatchObject({ resolvedElsewhere: true, readsFloor: true, houseCanon: HOUSE_CANON_READS_FLOOR });
+    expect(out.docUrl).toBeUndefined();
+    expect(rowsNaming(bag)).toBe(0);
+    const clear = makeActionReactorFor("CLEAR", { composite: new CompositeStore(), kahuReach: await strangerHand("removed"), reach: { repo, catalogUrl: floor.url, oracleUrl: null } });
+    await expect(clear({ bag }, ctx())).rejects.toMatchObject({ reason: "kahu-reach" });
+    await repo.shutdown();
+  }));
+
+  test("V3 — a steward whose realm registers nothing refuses by name and mints no row", () => seated(async () => {
+    const { repo, createAs, rowsNaming } = await threeFaces();
+    const bag = "lar:///ha.ka.ba/bags/elyncia";
+    await expect(createAs(0)({ bag }, ctx())).rejects.toMatchObject({ reason: "house-canon-unlanded" });
+    expect(rowsNaming(bag)).toBe(0);
+    await repo.shutdown();
+  }));
+
+  test("V4 — CREATE carries no tier; the board stays an ordinary catalog bag", () => seated(async () => {
+    const { repo, floor, faces, createAs } = await threeFaces();
+    const bag = "lar:///ha.ka.ba/bags/private-ledger";
+    const out = await createAs(1)({ bag, tier: "vessel" }, ctx());
+    const row = ownEntry(faces[1]!.doc()?.tiddlers, bag);
+    expect(tiddlerText(row)).toBe(out.docUrl);
+    expect(JSON.stringify(row)).not.toContain("cap-tier");
+    expect(ownEntry(floor.doc()?.tiddlers, bag)).toBeUndefined();
+    const board = "lar:///ha.ka.ba/bags/crossroads";
+    const minted = await createAs(1)({ bag: board }, ctx());
+    expect(typeof minted.docUrl).toBe("string");
+    expect(minted.readsFloor).toBeUndefined();
+    await repo.shutdown();
+  }));
+
+  test("CONTROL — an ordinary bag still forks per face (each face's half stays sealed to the others)", async () => {
     const { repo, createAs } = await threeFaces();
     const bag = "lar:///ha.ka.ba/bags/private-ledger";
     const a = await createAs(1)({ bag }, ctx());
     const b = await createAs(2)({ bag }, ctx());
     expect(b.alreadyStood).toBeUndefined();
     expect(b.docUrl).not.toBe(a.docUrl);
-    await repo.shutdown();
-  });
-
-  test("V2 — a face-sealed row never takes the vessel stamp: it stays on its face, and the answer names why", async () => {
-    const { repo, floor, faces, createAs } = await threeFaces();
-    const bag = "lar:///ha.ka.ba/bags/h0-private";
-    const minted = await createAs(0)({ bag }, ctx());
-    expect(tiddlerText(ownEntry(faces[0]!.doc()?.tiddlers, bag))).toBe(minted.docUrl);
-    const again = await createAs(0)({ bag, tier: "vessel" }, ctx());
-    expect(again.alreadyStood).toBe(true);
-    expect(String(again.vesselRefused)).toMatch(/^vessel-face-sealed:/);
-    expect(again.tier).toBeUndefined();
-    expect(ownEntry(floor.doc()?.tiddlers, bag)).toBeUndefined();
-    expect(tiddlerText(ownEntry(faces[0]!.doc()?.tiddlers, bag))).toBe(minted.docUrl);
-    await repo.shutdown();
-  });
-
-  test("V3 — a re-seed restamps a floor row lacking the stamp, once", async () => {
-    const { repo, floor, createAs } = await threeFaces();
-    const bag = "lar:///ha.ka.ba/bags/crossroads-like";
-    const plane = repo.create<LarDoc>(emptyLarDoc());
-    floor.change((d) => { d.tiddlers[bag] = storedLarRecord(bag, { text: plane.url, kind: "oracle", "cap-tier": "public" }, "test"); });
-    const out = await createAs(1)({ bag, tier: "vessel" }, ctx());
-    expect(out.restamped).toBe(true);
-    const row = ownEntry(floor.doc()?.tiddlers, bag) as { tiddler?: Record<string, unknown> } | undefined;
-    expect(tiddlerText(row as never)).toBe(plane.url);
-    expect(JSON.stringify(row)).toContain("vessel");
-    const twice = await createAs(2)({ bag, tier: "vessel" }, ctx());
-    expect(twice.restamped).toBeUndefined();
-    expect(twice.tier).toBe("vessel");
-    await repo.shutdown();
-  });
-
-  test("V4 — CREATE takes the vessel tier alone, on the catalog plane", async () => {
-    const { repo, createAs } = await threeFaces();
-    await expect(createAs(1)({ bag: "lar:///ha.ka.ba/bags/x", tier: "public" }, ctx())).rejects.toThrow();
-    await expect(createAs(1)({ bag: "lar:///ha.ka.ba/bags/y", tier: "vessel", plane: "oracle" }, ctx())).rejects.toThrow();
     await repo.shutdown();
   });
 });

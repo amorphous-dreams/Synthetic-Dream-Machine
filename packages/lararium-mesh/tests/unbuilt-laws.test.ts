@@ -95,7 +95,7 @@ describe("④ promotion into canon", () => {
   });
 
   test("A NON-KAHU MOVE INTO A CANON BAG REFUSES — BUILT (W26 slice 6): every door into `bags/lares` and `bags/lararium` calls the ONE predicate, `requireKahuReach` over `kahuCabalCanonAccess`, before it writes. This floor pins the predicate against each stranger the cabal names; `packages/lararium-tw5/tests/kahu-reach-doors.test.ts` walks every door by name", async () => {
-    for (const bag of mesh.SYSTEM_CANON_BAGS) {
+    for (const bag of mesh.houseCanonBags()) {
       for (const kind of ["joined-without-admission", "admitted-not-joined", "removed", "no-cabal"] as const) {
         await expect(mesh.requireKahuReach(bag, await strangerHand(kind), "MOVE")).rejects.toMatchObject({ reason: "kahu-reach" });
       }

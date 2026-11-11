@@ -9,7 +9,8 @@
  * the control document, and the file wins.
  *
  * ONE RESOLVER answers "who may read or write this bag" (`resolveShare`), as MultiWikiServer keeps one ACL place: no second
- * policy surface. A vessel-tier bag (checkout canon) needs no row: every face reads it. A custom bag stays private to the face
+ * policy surface. A house canon bag takes no row: it rests in the Kahu realm, every face reads its floor snapshot, and the Kahu
+ * steward alone writes it live (`requireKahuReach`), so no share row ever lifts a write into it. A custom bag stays private to the face
  * that owns it until a row shares it; a name matching no face waits by name. Sharing rides by REFERENCE and DELEGATION, never
  * a copy: a face that lights reads each row naming it, lifts the bag's catalog row into its own catalog half, and the owner's
  * hive delegates the bag to it while both stand lit (`owedGrants`); a grant whose owner stands shut waits behind an opaque
@@ -95,14 +96,14 @@ export interface ShareAnswer {
   readonly write: readonly number[];
   /** Pet-names a row names that no face here carries: each waits, named, until a face carries it. */
   readonly waiting: readonly string[];
-  /** Why the answer reads as it does: `vessel-tier` (every face reads, no row needed), `row` (the row decides), `private`
-   *  (no row: the owner alone). */
-  readonly source: "vessel-tier" | "row" | "private";
+  /** Why the answer reads as it does: `house-canon` (every face reads the floor, no face writes by a row: the Kahu steward's
+   *  reach decides), `row` (the row decides), `private` (no row: the owner alone). */
+  readonly source: "house-canon" | "row" | "private";
 }
 
 /**
- * THE ONE RESOLVER. A vessel-tier bag reads for every face and writes per its row (absent: per each face's own registration,
- * which every lit face holds). A bag with a row reads and writes for the faces its filters name, the owner always among them;
+ * THE ONE RESOLVER. A house canon bag reads for every face (its floor snapshot) and writes for none by a row, whatever a row
+ * names: the Kahu steward's reach alone writes it. A bag with a row reads and writes for the faces its filters name, the owner always among them;
  * a bag with no row stays the owner's alone. A face that writes also reads.
  */
 export function resolveShare(input: {
@@ -110,7 +111,7 @@ export function resolveShare(input: {
   readonly rows: readonly ShareRow[];
   readonly faces: readonly ShareFace[];
   readonly owner?: number | null;
-  readonly vesselTier?: boolean;
+  readonly houseCanon?: boolean;
 }): ShareAnswer {
   const row = input.rows.find((r) => shareRowBag(r) === input.bag) ?? null;
   const every = input.faces.map((f) => f.handleIndex);
@@ -126,14 +127,14 @@ export function resolveShare(input: {
     return out;
   };
   const sorted = (xs: Iterable<number>): number[] => [...new Set(xs)].sort((a, b) => a - b);
+  if (input.houseCanon === true) return { bag: input.bag, read: every, write: [], waiting: [], source: "house-canon" };
   if (row === null) {
-    if (input.vesselTier === true) return { bag: input.bag, read: every, write: every, waiting: [], source: "vessel-tier" };
     const own = owner !== null ? [owner] : [];
     return { bag: input.bag, read: own, write: own, waiting: [], source: "private" };
   }
   const waiting = new Set<string>();
   const write = sorted([...pick(row.write, waiting), ...(owner !== null ? [owner] : [])]);
-  const read = input.vesselTier === true ? every : sorted([...pick(row.read, waiting), ...write]);
+  const read = sorted([...pick(row.read, waiting), ...write]);
   return { bag: input.bag, read, write, waiting: [...waiting].sort(), source: "row" };
 }
 
@@ -142,13 +143,13 @@ export interface OwedGrant { readonly bag: string; readonly owner: number; reado
 
 /**
  * THE GRANTS A ROW OWES: for each custom bag a row shares, every face its answer names other than the owner takes a
- * delegation from the owner's hive (`edit` for a writer, else `read`). A vessel-tier bag owes none: every face registers it.
+ * delegation from the owner's hive (`edit` for a writer, else `read`). A house canon bag owes none: it rests in the Kahu realm.
  */
-export function owedGrants(input: { readonly rows: readonly ShareRow[]; readonly faces: readonly ShareFace[]; readonly ownerOf: (bag: string) => number | null; readonly vesselTier: (bag: string) => boolean }): OwedGrant[] {
+export function owedGrants(input: { readonly rows: readonly ShareRow[]; readonly faces: readonly ShareFace[]; readonly ownerOf: (bag: string) => number | null; readonly houseCanon: (bag: string) => boolean }): OwedGrant[] {
   const out: OwedGrant[] = [];
   for (const row of input.rows) {
     const bag = shareRowBag(row);
-    if (input.vesselTier(bag)) continue;
+    if (input.houseCanon(bag)) continue;
     const owner = input.ownerOf(bag);
     if (owner === null) continue;
     const answer = resolveShare({ bag, rows: input.rows, faces: input.faces, owner });

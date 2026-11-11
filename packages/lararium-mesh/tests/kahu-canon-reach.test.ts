@@ -12,7 +12,7 @@
 import { describe, test, expect } from "vitest";
 import { BAG_IDS, bagUri } from "../src/lar-uris.js";
 import { isVerbRefusal } from "../src/verb-refusal.js";
-import { isSystemCanonBag, kahuReachAccess, kahuRealmGroup, requireKahuReach } from "../src/kahu-canon-reach.js";
+import { houseCanonBags, houseCanonSlugs, isHouseCanonBag, kahuReachAccess, kahuRealmGroup, requireKahuReach, seatHouseCanon } from "../src/kahu-canon-reach.js";
 import { kahuHand, strangerHand, REACH_GROUP } from "./kahu-reach-fixture.js";
 
 const refusalOf = async (run: () => Promise<void>) => { try { await run(); return null; } catch (e) { return e; } };
@@ -40,8 +40,32 @@ describe("the Kahu predicate at a write door", () => {
 
   test("CONTROL: a bag outside system canon asks no source", async () => {
     await expect(requireKahuReach(bagUri("garden"), undefined, "ADD")).resolves.toBeUndefined();
-    expect(isSystemCanonBag(bagUri("lararium-notes"))).toBe(false);
-    expect(isSystemCanonBag("lares")).toBe(true);
+    expect(isHouseCanonBag(bagUri("lararium-notes"))).toBe(false);
+    expect(isHouseCanonBag("lares")).toBe(true);
+  });
+});
+
+describe("the house canon: ONE set, derived off the disk-sourced holdings", () => {
+  test("HC1 — the derivation: system canon always, every sourced slug but the public board", () => {
+    expect(houseCanonSlugs()).toEqual(["lararium", "lares"]);
+    expect(houseCanonSlugs(["crossroads", "elyncia", "elyncia-referee", "lararium", "lares", "sdm"])).toEqual(["elyncia", "elyncia-referee", "lararium", "lares", "sdm"]);
+    expect(houseCanonBags(["sdm", "crossroads"])).toEqual([bagUri("lararium"), bagUri("lares"), bagUri("sdm")]);
+  });
+
+  test("HC2 — a non-steward write to sdm refuses kahu-reach once the checkout seats it; CONTROL: unseated, sdm stands outside canon", async () => {
+    expect(isHouseCanonBag(bagUri("sdm"))).toBe(false);
+    await expect(requireKahuReach(bagUri("sdm"), undefined, "INGEST")).resolves.toBeUndefined();
+    seatHouseCanon(["crossroads", "elyncia", "sdm"]);
+    try {
+      for (const kind of ["joined-without-admission", "admitted-not-joined", "removed", "no-cabal"] as const) {
+        const hand = await strangerHand(kind);
+        const err = await refusalOf(() => requireKahuReach(bagUri("sdm"), hand, "INGEST"));
+        expect(isVerbRefusal(err) && err.reason).toBe("kahu-reach");
+      }
+      expect(isHouseCanonBag(bagUri("crossroads"))).toBe(false);
+      await expect(requireKahuReach(bagUri("crossroads"), undefined, "INGEST")).resolves.toBeUndefined();
+    } finally { seatHouseCanon([]); }
+    expect(isHouseCanonBag(bagUri("sdm"))).toBe(false);
   });
 });
 

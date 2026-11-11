@@ -81,7 +81,6 @@ export function prefetchAllows(cap: PrefetchCap | undefined, peer: string, curre
  */
 export const GRACE_RATIO_BY_TIER: Readonly<Record<CapTier, number>> = {
   veil:         8,
-  vessel:       6,
   personagroup: 4,
   contract:     2,
   public:       1,

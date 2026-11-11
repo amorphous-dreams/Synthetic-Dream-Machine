@@ -2,9 +2,9 @@
  * share-config — who may read and write a bag, in ONE place: TW5-native rows over face pet-names, one resolver, the file wins.
  *
  *   SC1 — a filter reads as a title list: bare names, [[bracketed]] names, `*`; any filter operator refuses by name
- *   SC2 — the one resolver: vessel-tier reads for every face with no row; a custom bag with no row stays its owner's; a row
+ *   SC2 — the one resolver: house canon reads the floor for every face and takes no write by a row; a custom bag with no row stays its owner's; a row
  *         reads and writes for the faces it names (the owner always, a writer reads), and a name matching no face waits named
- *   SC3 — the grants a row owes: owner -> each other face it names, `edit` for a writer; a vessel-tier bag owes none
+ *   SC3 — the grants a row owes: owner -> each other face it names, `edit` for a writer; a house canon bag owes none
  *   SC4 — the opaque flag names no face, no bag and no access
  *   SC5 — share.tid round-trips, a person's hand edit reads, a torn record refuses by its place
  *   SC6 — the boot's reconcile: the file wins (puts what differs, removes what it no longer names); no file, nothing moves
@@ -34,7 +34,9 @@ describe("the share config", () => {
 
   test("SC2 — the one resolver", () => {
     const garden = bagUri("garden"), notes = bagUri("notes"), sdm = bagUri("sdm");
-    expect(resolveShare({ bag: sdm, rows: [], faces: FACES, vesselTier: true })).toMatchObject({ read: [0, 1, 2], write: [0, 1, 2], source: "vessel-tier" });
+    // House canon reads the floor for every face and takes no write by a row, whatever a row names: the Kahu steward writes it.
+    expect(resolveShare({ bag: sdm, rows: [], faces: FACES, houseCanon: true })).toMatchObject({ read: [0, 1, 2], write: [], source: "house-canon" });
+    expect(resolveShare({ bag: sdm, rows: [{ slug: "sdm", kind: "bag", read: "*", write: "*" }], faces: FACES, owner: 1, houseCanon: true })).toMatchObject({ write: [], source: "house-canon" });
     expect(resolveShare({ bag: garden, rows: [], faces: FACES, owner: 1 })).toMatchObject({ read: [1], write: [1], source: "private" });
     const rows: ShareRow[] = [{ slug: "notes", kind: "bag", read: "[[joshua fontany referee]] nobody-here", write: "joshua-fontany" }];
     const answer = resolveShare({ bag: notes, rows, faces: FACES, owner: 1 });
@@ -42,12 +44,12 @@ describe("the share config", () => {
     expect(shareRowBag(rows[0]!)).toBe(notes);
   });
 
-  test("SC3 — the grants a row owes; vessel tier owes none", () => {
+  test("SC3 — the grants a row owes; house canon owes none", () => {
     const rows: ShareRow[] = [
       { slug: "notes", kind: "bag", read: "[[joshua fontany referee]]", write: "joshua-fontany" },
       { slug: "sdm", kind: "bag", read: "*", write: "" },
     ];
-    const grants = owedGrants({ rows, faces: FACES, ownerOf: (b) => (b === bagUri("notes") ? 1 : 0), vesselTier: (b) => b === bagUri("sdm") });
+    const grants = owedGrants({ rows, faces: FACES, ownerOf: (b) => (b === bagUri("notes") ? 1 : 0), houseCanon: (b) => b === bagUri("sdm") });
     expect(grants).toEqual([
       { bag: bagUri("notes"), owner: 1, grantee: 0, access: "edit" },
       { bag: bagUri("notes"), owner: 1, grantee: 2, access: "read" },

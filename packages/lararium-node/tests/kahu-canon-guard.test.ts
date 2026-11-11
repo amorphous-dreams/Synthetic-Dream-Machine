@@ -19,6 +19,8 @@
  *   B1  RED: after a counted removal and a fresh read off disk (the reboot), the protected set still names both canon ids.
  *   B2  RED: an ordinary admitted peer, whom the Nexus lane opens, asks a retained canon id and draws denial.
  *   B3  CONTROL: an ordinary book still crosses to that peer; a live Kahu hand still reads the canon.
+ *   B4  HOUSE CANON: the live sdm document (a disk-sourced holding the steward's boot lands in the realm) classes as Kahu
+ *       canon, and a non-Kahu peer the Nexus lane opens draws denial; a live Kahu hand reads it.
  * On the parent the guard and the protected set do not exist, so every case reads red at the missing name.
  */
 import { afterAll, describe, expect, test, vi } from "vitest";
@@ -27,7 +29,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { interpretAsDocumentId, type DocumentId } from "@automerge/automerge-repo";
 import * as mesh from "@lararium/mesh";
-import { deterministicDocUrl, storedLarRecord, PERSONA_GROUP_ID_TIDDLER, type FederationGate, type LarDoc } from "@lararium/mesh";
+import { deterministicDocUrl, storedLarRecord, seatHouseCanon, PERSONA_GROUP_ID_TIDDLER, type FederationGate, type LarDoc } from "@lararium/mesh";
 import * as kahuRealm from "../src/kahu-realm.js";
 import { standKahuCanon } from "../src/kahu-realm.js";
 import { bridgeBooks } from "../src/face-fleet-view.js";
@@ -110,5 +112,34 @@ describe("the Kahu canon is classed by identity and decided live, by one guard",
       held = true;
       expect(await verdict({ guard, fed: open, peerClass: "contracted", documentId: idOf(canon.lares!) }), "B3: a live Kahu hand reads").toBe(true);
     });
+  });
+});
+
+describe("house canon past lares and lararium stands under the same guard", () => {
+  const r = mkdtempSync(join(tmpdir(), "lar-kahu-guard-house-"));
+  cpSync(join(import.meta.dirname, "..", "..", "..", "genesis"), join(r, "genesis"), { recursive: true, filter: (s) => !s.endsWith("social-bootstrap.json") });
+  afterAll(() => { rmSync(r, { recursive: true, force: true }); });
+  const groupPin = (): string => (JSON.parse((JSON.parse(readFileSync(larBootstrapPath(), "utf8")) as { text: string }).text) as { tiddlers: Record<string, { text: string }> }).tiddlers[PERSONA_GROUP_ID_TIDDLER]!.text;
+
+  test("B4 — the live sdm document is withheld from a non-Kahu peer; a live Kahu hand reads it", async () => {
+    await withLarRoot(r, () => foundHearthDirect({ storageDir: join(r, "hearth", "vessel"), genesisDir: join(r, "genesis") }));
+    seatHouseCanon(["crossroads", "sdm"]);
+    try {
+      await withLarRoot(r, async () => {
+        const sealHome = larSealHome();
+        const vesselKey = await loadVesselVerifyingKey();
+        const sdm = "lar:///ha.ka.ba/bags/sdm";
+        const canon = await ownedStore(larDataDir(), (repo) => standKahuCanon({ repo, sealHome, vesselKey, personaGroupId: groupPin() }));
+        const live = canon.bags?.[sdm];
+        expect(live, "the steward's boot lands sdm in the realm").toBeTruthy();
+        const ids = await protectedIds!({ sealHome });
+        expect(ids.has(idOf(live!)), "the live sdm classes as Kahu canon").toBe(true);
+        let held = false;
+        const guard = guardOf!({ ids: () => new Map([...ids].map((id) => [id, "kahu-canon" as const])), decide: { "kahu-canon": () => held } });
+        expect(await verdict({ guard, fed: open, peerClass: "contracted", documentId: idOf(live!) }), "a non-Kahu peer draws denial").toBe(false);
+        held = true;
+        expect(await verdict({ guard, fed: open, peerClass: "contracted", documentId: idOf(live!) }), "CONTROL: a live Kahu hand reads").toBe(true);
+      });
+    } finally { seatHouseCanon([]); }
   });
 });

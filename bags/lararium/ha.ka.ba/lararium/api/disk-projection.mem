@@ -48,7 +48,7 @@ Disk projection serves ''content'' bags (definitions + instances). State and vie
 
 | Bag | Role | Disk surface |
 |---|---|---|
-| `lares` / `lararium` / `sdm` | seed / canon (definitions; `lararium` = the engine's ''memetic corpus'' — see #oracle-split) | `bags/` |
+| `lares` / `lararium` / `sdm` | seed / canon (definitions; `lararium` = the engine's ''memetic corpus'' — see #oracle-split); house canon rests in the Kahu realm at contract and projects back to `bags/` on the steward's vessel, every other face reading its floor snapshot (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/cap-tier#/house-canon`>>) | `bags/` |
 | `@<wikiSlug>` | wiki content (instance) | `wikis/{slug}/` |
 | `@oracle` | ''runtime system island'' — genesis-loaded engine BLOBs + bag→doc oracle + genesis-cid | ''none'' — genesis-loaded + federated read-only; regenerable (see #oracle-split) |
 | `@personal` | operator view-state, wiki-instance-bound | ''none'' — mesh-synced (see #personal) |
@@ -130,8 +130,6 @@ A hand MAY add a future debug-only disk projection behind an explicit flag; it M
 ''The secret home rests sealed from its first byte.'' Group-secret seals, dyads and Keyhive cap events rest in one vessel-held document. The store's one holder maps it on its rest under a held key before its first write, so every value rests sealed with no session standing. The key and the document id rest together in one sealed custody row (`secret-home.json`), written after the document rests. No recipe, mirror or peer names the home; the daemon island reaches it by sync from its own vessel.
 
 `$:/config/lares/ProjectionFilter` holds an operator preference, the one title rule a mirror reads: its shipped text withholds the `$:/temp/` and `$:/state/` prefixes from every mirror, and its temp class withholds the house config (`PROJECTION_FILTER_TEXT`, `packages/lararium-mesh/src/projection-filter.ts`). It narrows a granted mirror and never selects a home; it carries no control, secret, residency, manifest or effect-title list. A residency effect stays with the affected bag, and the projector withholds it by its record kind, never by its title. No mirror grant names the control document or the daemon document, and no render of either reaches disk.
-
-''Checkout canon rests at the vessel tier.'' A disk-sourced holding's canon bag (its dir under the canon source the daemon resolves) carries plaintext canon from git: the seed's CREATE stamps its catalog row `cap-tier = vessel`, the row rests on the floor half, and its document seals under no face, so every face this vessel wears reads and mirrors the one document (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/cap-tier#/the-chain`>>). Its mirror stays the checkout's own `bags/<slug>/`; a face's private bags, working slots and daemon canon keep sealing under that face alone, and no secret enters the tier.
 
 ''Bag manifests belong to declaration.'' The catalog owns each bag-root `meta.mem`; a directory LOAD omits only that root declaration, by ownership.
 
@@ -245,6 +243,6 @@ between casual chat-use and the defined parser core.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;rMdYsiWzZLCYbZEknHdh1q1dtkSu_r9ohgS-LBpCSGQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yY0wK4R6t1HCjOmT1T3TGqa1gUxFjEDw89S9XvzaC_g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

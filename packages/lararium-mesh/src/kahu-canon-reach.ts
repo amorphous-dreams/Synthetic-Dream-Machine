@@ -1,5 +1,5 @@
 /**
- * kahu-canon-reach — the ONE predicate that decides whether a hand may write system canon, and the helpers every
+ * kahu-canon-reach — the ONE house-canon set and the ONE predicate that decides whether a hand may write it, and the helpers every
  * write door calls before it writes.
  *
  * The ruling (`lar:///ha.ka.ba/lares/docs/stable-founding-road` #/rulings, one owner per registry): only each
@@ -20,7 +20,7 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/kahu#/cabal-admission
  */
-import { BAG_IDS } from "./lar-uris.js";
+import { bagUri } from "./lar-uris.js";
 import { VerbRefusal } from "./verb-refusal.js";
 import { kahuCabalCanonAccess, type KahuCabalAccess } from "./kahu-cabal-admission.js";
 import type { KahuQuorumSeats } from "./kapae-antigen.js";
@@ -28,14 +28,54 @@ import type { KahuQuorumSeats } from "./kapae-antigen.js";
 /** The refusal reason a door raises for a hand outside the Kahu cabal. */
 export const KAHU_REACH_REASON = "kahu-reach" as const;
 
-/** The bags the Kahu cabal alone writes: the live `lares` and `lararium` documents. */
-export const SYSTEM_CANON_BAGS: readonly string[] = [BAG_IDS.lares, BAG_IDS.lararium];
+/**
+ * THE HOUSE CANON — ONE SET, DERIVED. Every holding whose canon source stands on disk (the checkout's `bags/<slug>`, read
+ * by the vessel at boot) rests in the Kahu realm at CONTRACT and publishes to every DreamNet user as a floor snapshot by
+ * CID; the Kahu steward alone writes it live. Two names stand apart from the derivation: the system canon (`lares`,
+ * `lararium`) belongs to the set on every vessel, a checkout or none, and the Nexus's public board (`crossroads`, a floor
+ * row every face reads) never joins it.
+ */
+export const SYSTEM_CANON_SLUGS: readonly string[] = ["lares", "lararium"];
+/** The holdings a checkout carries that stay the Nexus's public board, never house canon. */
+export const PUBLIC_BOARD_SLUGS: readonly string[] = ["crossroads"];
 
-const SYSTEM_SLUGS = new Set(["lares", "lararium"]);
+/** The house canon's slugs over a vessel's disk-sourced holdings: the system canon, plus every sourced slug but the board. */
+export function houseCanonSlugs(sourcedSlugs: Iterable<string> = []): string[] {
+  const out = new Set(SYSTEM_CANON_SLUGS);
+  for (const slug of sourcedSlugs) if (/^[a-z0-9][a-z0-9-]*$/.test(slug) && !PUBLIC_BOARD_SLUGS.includes(slug)) out.add(slug);
+  return [...out].sort();
+}
 
-/** Whether `bag` names a system canon bag, by its URI or its bare slug. */
-export function isSystemCanonBag(bag: string): boolean {
-  return SYSTEM_CANON_BAGS.includes(bag) || SYSTEM_SLUGS.has(bag);
+/** The house canon's bag URIs over a vessel's disk-sourced holdings. */
+export function houseCanonBags(sourcedSlugs: Iterable<string> = []): string[] {
+  return houseCanonSlugs(sourcedSlugs).map((slug) => bagUri(slug));
+}
+
+const BAG_PREFIX = bagUri("");
+
+/**
+ * THE SEATED SET. A vessel seats its house canon ONCE at boot, off its own disk-sourced holdings (`seatHouseCanon`); every
+ * door that asks `isHouseCanonBag` reads the seat. A process that seats nothing (a browser vessel, which reads no checkout;
+ * a unit test) holds the system canon alone, so the seat only ever WIDENS the set past `lares` and `lararium`.
+ */
+let SEATED: ReadonlySet<string> = new Set(houseCanonSlugs());
+
+/** Seat this process's house canon off its disk-sourced holdings. Idempotent; returns the seated bag URIs. */
+export function seatHouseCanon(sourcedSlugs: Iterable<string>): string[] {
+  SEATED = new Set(houseCanonSlugs(sourcedSlugs));
+  return houseCanonBagsSeated();
+}
+
+/** The seated house canon's slugs (sorted). */
+export function houseCanonSlugsSeated(): string[] { return [...SEATED].sort(); }
+
+/** The seated house canon's bag URIs (sorted by slug). */
+export function houseCanonBagsSeated(): string[] { return houseCanonSlugsSeated().map((slug) => bagUri(slug)); }
+
+/** Whether `bag` names a house canon bag, by its URI or its bare slug, against the seated set. */
+export function isHouseCanonBag(bag: string): boolean {
+  const slug = bag.startsWith(BAG_PREFIX) ? bag.slice(BAG_PREFIX.length) : bag;
+  return SEATED.has(slug);
 }
 
 /**
@@ -91,10 +131,10 @@ export async function holdsKahuReach(source: KahuReachSource | undefined): Promi
  * `VerbRefusal` (reason `kahu-reach`) unless the hand holds the cabal's reach. `act` names the door in the refusal.
  */
 export async function requireKahuReach(bag: string, source: KahuReachSource | undefined, act: string): Promise<void> {
-  if (!isSystemCanonBag(bag)) return;
+  if (!isHouseCanonBag(bag)) return;
   const access = await kahuReachAccess(source);
   if (access.held) return;
   throw new VerbRefusal(KAHU_REACH_REASON,
-    `${KAHU_REACH_REASON}: ${act} into ${bag} refused — system canon takes a hand in the Kahu cabal (${access.reason}); ` +
+    `${KAHU_REACH_REASON}: ${act} into ${bag} refused — house canon takes a hand in the Kahu cabal (${access.reason}); ` +
     "a copy OUT of canon stays open, and an edit copies up into the wiki's own working layer.");
 }

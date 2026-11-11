@@ -12,7 +12,8 @@ import { cpSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { PERSONA_GROUP_ID_TIDDLER, foldRealmBags, kahuRealmGroup, materializeSharedLarDoc, realmDocUrl, LARES_DOC_URI, LARARIUM_DOC_URI } from "@lararium/mesh";
-import { standKahuCanon } from "../src/kahu-realm.js";
+import { kahuRealmBags, standKahuCanon } from "../src/kahu-realm.js";
+import { seatHouseCanon } from "@lararium/mesh";
 import { runCabalAct } from "../src/commands/nexus-cabal.js";
 import { loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { ownedStore } from "../src/owned-store.js";
@@ -44,7 +45,7 @@ describe("a vessel stands its system canon from the Kahu realm", () => {
         const canon = await standKahuCanon({ repo, sealHome: larSealHome(), vesselKey, personaGroupId: groupPin() });
         const aid = (await import("../src/nexus-doc.js")).readNexusDoc(larSealHome())!.sealLineage![0]!.epochCid;
         const folded = await foldRealmBags((await materializeSharedLarDoc(repo, realmDocUrl(aid), "realm")).doc(), aid);
-        return { canon, registered: { lares: folded.get(LARES_DOC_URI)?.docUrl, lararium: folded.get(LARARIUM_DOC_URI)?.docUrl } };
+        return { canon, registered: { lares: folded.get(LARES_DOC_URI)?.docUrl, lararium: folded.get(LARARIUM_DOC_URI)?.docUrl, bags: Object.fromEntries([...folded].map(([bag, rec]) => [bag, rec.docUrl])) } };
       });
       expect(stood.canon.lares).toBeDefined();
       expect(stood.canon.lararium).toBeDefined();
@@ -74,5 +75,35 @@ describe("a vessel stands its system canon from the Kahu realm", () => {
         expect(await standKahuCanon({ repo, sealHome: larSealHome(), vesselKey: "ab".repeat(32), personaGroupId: `0x${"cd".repeat(32)}` })).toEqual({});
       });
     });
+  });
+});
+
+describe("the house canon: every disk-sourced holding but the board rests in the realm at contract", () => {
+  const r = freshRoot("house");
+
+  test("HC-R1 — a bag the set gains lands at the steward's boot, at contract; the board never registers; a group never admitted stands none", async () => {
+    await withLarRoot(r, () => foundHearthDirect({ storageDir: join(r, "hearth", "vessel"), genesisDir: join(r, "genesis") }));
+    seatHouseCanon(["crossroads", "elyncia", "elyncia-referee", "sdm"]);
+    try {
+      await withLarRoot(r, async () => {
+        const vesselKey = await loadVesselVerifyingKey();
+        await ownedStore(larDataDir(), async (repo) => {
+          const canon = await standKahuCanon({ repo, sealHome: larSealHome(), vesselKey, personaGroupId: groupPin() });
+          const aid = (await import("../src/nexus-doc.js")).readNexusDoc(larSealHome())!.sealLineage![0]!.epochCid;
+          const folded = await foldRealmBags((await materializeSharedLarDoc(repo, realmDocUrl(aid), "realm")).doc(), aid);
+          expect([...kahuRealmBags()].sort()).toEqual(["elyncia", "elyncia-referee", "lararium", "lares", "sdm"].map((s) => `lar:///ha.ka.ba/bags/${s}`).sort());
+          for (const bag of kahuRealmBags()) {
+            expect(folded.get(bag)?.readTier).toBe("contract");
+            expect(canon.bags?.[bag]).toBe(folded.get(bag)?.docUrl);
+          }
+          expect(folded.has("lar:///ha.ka.ba/bags/crossroads")).toBe(false);
+          expect(new Set(Object.values(canon.bags ?? {})).size).toBe(kahuRealmBags().length);
+          // A second boot lands nothing new: the same documents stand.
+          expect(await standKahuCanon({ repo, sealHome: larSealHome(), vesselKey, personaGroupId: groupPin() })).toEqual(canon);
+          // CONTROL (h1's seat): a group the cabal never admitted stands no canon at all.
+          expect(await standKahuCanon({ repo, sealHome: larSealHome(), vesselKey, personaGroupId: `0x${"cd".repeat(32)}` })).toEqual({});
+        });
+      });
+    } finally { seatHouseCanon([]); }
   });
 });

@@ -25,6 +25,7 @@ import { FACE_CATALOG_ADDRESS_DOMAIN } from "./domains.js";
 import { materializeSharedLarDoc } from "./deterministic-doc.js";
 import { CATALOG_CORPUS_PREFIX, CATALOG_DOC_URI, CROSSROADS_DOC_URI, DAEMON_BAG_ID, LARARIUM_DOC_URI, LARES_DOC_URI, ORACLE_DOC_URI, bagUri, isBagId, recipeUri, wikiUri } from "./lar-uris.js";
 import { storedRecord } from "./stored-record.js";
+import { isHouseCanonBag } from "./kahu-canon-reach.js";
 import { ownEntry, plainField, plainRecordOrNull, type StoredLarRecord } from "./stored-value.js";
 
 /** The half of the split catalog a row rests on: `floor` (F, public) or `face` (D, the lit face's own). */
@@ -52,64 +53,19 @@ export function isPublicBagRow(title: string, row: StoredLarRecord | null | unde
   return isBagId(title) && !!row && plainField(row, CATALOG_ROW_TIER_FIELD) === "public";
 }
 
-/** The tier a disk-sourced holding's row carries (cap-tier.ts `vessel`): checkout canon every face of this vessel reads. */
-export const VESSEL_CAP_TIER = "vessel";
-
-/**
- * A VESSEL-TIER book's row: a bag id whose row carries the exact tier `vessel`. The seed's CREATE stamps it on a disk-sourced
- * holding's row (plaintext canon from git), so the row rests on the floor half and every face this vessel wears finds the
- * ONE document it names, never a second mint under a face that could not see another face's sealed half. No secret ever
- * enters this tier: a row resting on a face's half names a document sealed under that face, and it never takes the stamp
- * (`mayStampVessel`).
- */
-export function isVesselBagRow(title: string, row: StoredLarRecord | null | undefined): boolean {
-  return isBagId(title) && !!row && plainField(row, CATALOG_ROW_TIER_FIELD) === VESSEL_CAP_TIER;
-}
-
-/**
- * THE VESSEL-TIER BOOKS a catalog names (its floor half, where every vessel-tier row rests): checkout canon every face reads,
- * and every lit face's hive registers, so the face that wears or stands beside another writes it under its own registration
- * as the face that minted it does (cap-tier.mem, vessel). System canon (`lares`, `lararium`) rests in the realm and takes no
- * catalog row, so the Kahu steward alone keeps its writes.
- */
-export function vesselTierBags(doc: { readonly tiddlers?: Readonly<Record<string, unknown>> } | null | undefined): string[] {
-  const tiddlers = (doc?.tiddlers ?? {}) as Record<string, StoredLarRecord>;
-  return Object.keys(tiddlers).filter((title) => isVesselBagRow(title, ownEntry(tiddlers, title) as StoredLarRecord | undefined));
-}
-
-/**
- * MAY THIS ROW TAKE THE VESSEL STAMP: a bag id with no row yet (the fresh mint the stamp rides), or a row that already rests
- * on the floor half (public, signed infrastructure, already clear). A row resting on a face's half names a document that
- * face sealed, and a stamp would move it to the floor every face reads: a sealed document never declassifies here.
- */
-export function mayStampVessel(title: string, standing: StoredLarRecord | null | undefined): boolean {
-  if (!isBagId(title)) return false;
-  if (standing === undefined || standing === null) return true;
-  return catalogRowHalf(title, standing) === "floor";
-}
-
-/**
- * THE TIER A RE-REGISTRATION KEEPS: a registration that rewrites a standing row (the boot's register, a declare's re-stamp)
- * keeps a vessel stamp the seed laid, since a dropped stamp would move the row back onto a face's half and the next face's
- * seed would mint a second document. Any other standing tier yields to the declared one.
- */
-export function keptRowTier(standing: StoredLarRecord | null | undefined, declared: string | null): string | null {
-  return standing !== undefined && standing !== null && plainField(standing, CATALOG_ROW_TIER_FIELD) === VESSEL_CAP_TIER ? VESSEL_CAP_TIER : declared;
-}
-
 /**
  * Which half a catalog row rests on. F names public, signed infrastructure: the registry's own pointers (catalog,
  * oracle, crossroads), the joined corpora, the live system canon, the realm plane's pointers and standing, the daemon
  * wiki's floor half, and the floor's own vessel-only slot documents (a draft floor, a working floor), which the anon
  * lift reads and burns. Every other row (a user bag, a wiki and its recipe, a face plane, the kahua stage, a slot
  * binding, a title nothing classes) rests on the face: a row that names no class never lands on the floor. A bag row that
- * carries `cap-tier = public` (the row `bag declare --tier public` stamps) names a public book and rests on F too, and so does
- * a row carrying `cap-tier = vessel` (the seed's CREATE over a disk-sourced holding: checkout canon every face reads); given
- * no row, the title alone decides.
+ * carries `cap-tier = public` (the row `bag declare --tier public` stamps) names a public book and rests on F too; given no
+ * row, the title alone decides. A house canon bag (`isHouseCanonBag`) takes no catalog row at all (it rests in the Kahu
+ * realm), and a title naming one classes to F, so no face's half ever holds a pointer to canon.
  */
 export function catalogRowHalf(title: string, row?: StoredLarRecord | null): CatalogHalf {
-  if (row !== undefined && row !== null && (isPublicBagRow(title, row) || isVesselBagRow(title, row))) return "floor";
-  if (FLOOR_ROWS.has(title)) return "floor";
+  if (row !== undefined && row !== null && isPublicBagRow(title, row)) return "floor";
+  if (FLOOR_ROWS.has(title) || isHouseCanonBag(title)) return "floor";
   if (title.startsWith(CATALOG_CORPUS_PREFIX) || title.startsWith(`${REALM_ROOT}/`)) return "floor";
   if (title.startsWith(WIKIS_ROOT) && (/\/working-floor\/[^/]+\/[^/]+$/.test(title) || /\/drafts\/[^/]+$/.test(title))) return "floor";
   return "face";

@@ -5,10 +5,10 @@
  *         hive delegates (edit for a writer), and no flag stands
  *   SA2 — the grantee stands shut: nothing lifts, an opaque flag stands (it names no face, no bag), and the next light lands it
  *         and clears the flag
- *   SA3 — a vessel-tier bag owes no grant; a pet-name no face carries waits, named
+ *   SA3 — a house canon bag owes no grant (it rests in the Kahu realm); a pet-name no face carries waits, named
  */
 import { describe, expect, test } from "vitest";
-import { bagUri, emptyLarDoc, storedLarRecord, SHARE_PENDING_PREFIX, type LarDoc, type ShareRow } from "@lararium/mesh";
+import { bagUri, emptyLarDoc, seatHouseCanon, storedLarRecord, SHARE_PENDING_PREFIX, type LarDoc, type ShareRow } from "@lararium/mesh";
 import { applyShares, type ShareLitFace } from "../src/share-apply.js";
 
 const NOTES = bagUri("notes"), SDM = bagUri("sdm");
@@ -21,8 +21,6 @@ const half = (rows: Record<string, string> = {}) => {
 function rig(opts: { granteeLit: boolean }) {
   const ownerHalf = half({ [NOTES]: "automerge:notesDoc" });
   const granteeHalf = half();
-  const floor = half({ [SDM]: "automerge:sdmDoc" });
-  floor.doc().tiddlers[SDM] = storedLarRecord(SDM, { text: "automerge:sdmDoc", kind: "oracle", "cap-tier": "vessel" }, "test") as never;
   const flags = new Set<string>();
   const grants: Array<Record<string, unknown>> = [];
   const faces = (granteeLit: boolean): ShareLitFace[] => [
@@ -34,7 +32,7 @@ function rig(opts: { granteeLit: boolean }) {
     { slug: "sdm", kind: "bag", read: "*", write: "" },
   ];
   const run = (granteeLit: boolean) => applyShares({
-    rows: async () => rows, faces: faces(granteeLit), floor: async () => floor.doc(), salt: "salt",
+    rows: async () => rows, faces: faces(granteeLit), salt: "salt",
     grant: async (g) => { grants.push({ ...g }); },
     flag: { set: async (t) => { flags.add(t); }, clear: async (t) => { flags.delete(t); } },
   });
@@ -62,9 +60,11 @@ describe("the share config lands", () => {
     expect(r.flags.size).toBe(0);
   });
 
-  test("SA3 — vessel tier owes nothing; a pet-name no face carries waits named", async () => {
+  test("SA3 — house canon owes nothing; a pet-name no face carries waits named", async () => {
+    // The checkout carries sdm and the crossroads board: sdm seats as house canon, the board never does.
+    seatHouseCanon(["crossroads", "sdm"]);
     const r = rig({ granteeLit: true });
-    const out = await r.run(true);
+    const out = await r.run(true).finally(() => seatHouseCanon([]));
     expect(r.grants.some((g) => g["bag"] === SDM)).toBe(false);
     expect(out.waiting).toEqual(["nobody"]);
   });

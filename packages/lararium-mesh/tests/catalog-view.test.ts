@@ -30,9 +30,8 @@ import { wikiSlotUri, wikiWorkingFloorKey } from "../src/wiki-recipe.js";
 import { catalogNamedBags } from "../src/register-bags.js";
 import {
   catalogRowHalf, faceCatalogDocUrl, openFaceCatalog, FaceCatalogRefusal, FloorWikiRefusal, facelessWikiWaits, makeCatalogView, liftFaceCatalogRows, faceViewBook,
-  isVesselBagRow, mayStampVessel, keptRowTier, vesselTierBags,
 } from "../src/catalog-view.js";
-import { deriveRegisterBags } from "../src/register-bags.js";
+import { seatHouseCanon } from "../src/kahu-canon-reach.js";
 import { sealedBagMap } from "../src/sealed-rest.js";
 
 const secretA = new Uint8Array(32).fill(0xa1);
@@ -266,63 +265,39 @@ describe("a vessel that wears no face boots no user wiki", () => {
   });
 });
 
-describe("the vessel tier rests on the floor (cap-tier.mem, vessel)", () => {
-  const tiered = (title: string, text: string, tier?: string) => storedLarRecord(title, { text, kind: "oracle", ...(tier ? { "cap-tier": tier } : {}) }, "test");
+describe("house canon takes no row in any face's catalog (cap-tier.mem, house canon)", () => {
+  const row = (title: string, text: string) => storedLarRecord(title, { text, kind: "oracle" }, "test");
+  const seated = <T>(run: () => T): T => { seatHouseCanon(["crossroads", "elyncia", "elyncia-referee", "sdm"]); try { return run(); } finally { seatHouseCanon([]); } };
 
-  test("VT1 — a vessel-stamped bag row rests on F; face A's and face B's views both read it, and neither face's catalog holds it", async () => {
+  test("HC-D1 — a house canon title classes to F, never D: a write through face A's view never lands in A's catalog", async () => {
     const { floor, faceA, faceB } = stand();
-    const viewA = makeCatalogView(floor, await faceA);
-    const viewB = makeCatalogView(floor, await faceB);
-    const canon = bagUri("sdm");
-    viewA.change((doc) => { doc.tiddlers[canon] = tiered(canon, "automerge:sdm", "vessel"); });
-    expect(catalogRowHalf(canon, ownEntry(floor.doc()?.tiddlers, canon) as never)).toBe("floor");
-    expect(isVesselBagRow(canon, ownEntry(floor.doc()?.tiddlers, canon) as never)).toBe(true);
-    expect(titlesOf((await faceA).doc())).not.toContain(canon);
-    expect(catalogNamedBags(viewB.doc())).toContain(canon);
+    const a = await faceA, b = await faceB;
+    seated(() => {
+      const viewA = makeCatalogView(floor, a);
+      for (const slug of ["sdm", "elyncia", "elyncia-referee", "lares", "lararium"]) {
+        const canon = bagUri(slug);
+        expect(catalogRowHalf(canon)).toBe("floor");
+        viewA.change((doc) => { doc.tiddlers[canon] = row(canon, `automerge:${slug}`); });
+        expect(titlesOf(a.doc())).not.toContain(canon);
+        expect(titlesOf(b.doc())).not.toContain(canon);
+      }
+      // CONTROL: the public board stays an ordinary title, and a user bag rests on the face.
+      expect(catalogRowHalf(bagUri("ledger"))).toBe("face");
+    });
   });
 
-  test("VT2 — no face-sealed row takes the stamp; a fresh title or a floor row may", () => {
-    const user = bagUri("ledger");
-    expect(mayStampVessel(user, null)).toBe(true);
-    expect(mayStampVessel(user, tiered(user, "automerge:x") as never)).toBe(false);
-    expect(mayStampVessel(user, tiered(user, "automerge:x", "personagroup") as never)).toBe(false);
-    expect(mayStampVessel(user, tiered(user, "automerge:x", "public") as never)).toBe(true);
-    expect(mayStampVessel("not-a-bag", null)).toBe(false);
-    // A vessel stamp on a non-bag title names no book, so the row's title decides its half.
-    expect(isVesselBagRow("lar:///ha.ka.ba/wikis/x/working", tiered("lar:///ha.ka.ba/wikis/x/working", "automerge:x", "vessel") as never)).toBe(false);
+  test("HC-D2 — the sealed map seals no house canon bag under a lit face, and still seals its sibling user bag", () => {
+    seated(() => {
+      const canon = bagUri("elyncia"), user = bagUri("ledger");
+      const catalog = { tiddlers: { [user]: row(user, "automerge:userDoc") } } as unknown as LarDoc;
+      const map = sealedBagMap({ face: () => "face:h1", bags: () => [canon, user], catalog: () => catalog, docsOf: (b) => [b === canon ? "canonDoc" : "userDoc"] });
+      expect(map.bagOf("canonDoc")).toBeNull();
+      expect(map.bagOf("userDoc")).toEqual({ bagId: user, face: "face:h1" });
+    });
   });
 
-  test("VT3 — a re-registration keeps the vessel stamp; any other standing tier yields to the declared one", () => {
-    const b = bagUri("elyncia");
-    expect(keptRowTier(tiered(b, "automerge:e", "vessel") as never, null)).toBe("vessel");
-    expect(keptRowTier(tiered(b, "automerge:e", "vessel") as never, "public")).toBe("vessel");
-    expect(keptRowTier(tiered(b, "automerge:e", "public") as never, null)).toBeNull();
-    expect(keptRowTier(null, "public")).toBe("public");
-  });
-
-  test("VT4 — the sealed map seals no vessel-tier bag under a lit face, and still seals its sibling user bag", () => {
-    const canon = bagUri("elyncia"), user = bagUri("ledger");
-    const catalog = { tiddlers: { [canon]: tiered(canon, "automerge:canonDoc", "vessel"), [user]: tiered(user, "automerge:userDoc") } } as unknown as LarDoc;
-    const map = sealedBagMap({ face: () => "face:h1", bags: () => [canon, user], catalog: () => catalog, docsOf: (b) => [b === canon ? "canonDoc" : "userDoc"] });
-    expect(map.bagOf("canonDoc")).toBeNull();
-    expect(map.bagOf("userDoc")).toEqual({ bagId: user, face: "face:h1" });
-    const floorMap = sealedBagMap({ face: () => null, bags: () => [], catalog: () => catalog, docsOf: (b) => [b === canon ? "canonDoc" : "userDoc"] });
-    expect(floorMap.bagOf("canonDoc")).toBeNull();
-    expect(floorMap.bagOf("userDoc")).toEqual({ bagId: user, face: null });
-  });
-
-  test("VT5 — a vessel-tier bag minted while face A stood worn registers on face B's hive when B wears or stands lit: B writes it under its own registration", async () => {
-    const { floor, faceA, faceB } = stand();
-    const viewA = makeCatalogView(floor, await faceA);
-    const viewB = makeCatalogView(floor, await faceB);
-    const canon = bagUri("elyncia-referee"), mine = bagUri("a-private");
-    viewA.change((doc) => { doc.tiddlers[canon] = tiered(canon, "automerge:referee", "vessel"); doc.tiddlers[mine] = tiered(mine, "automerge:aPrivate"); });
-    // Worn: B's boot registers what its merged catalog names, the vessel tier among it, never A's private bag.
-    const wornB = deriveRegisterBags({ fleets: [{ personaGroupId: "group-b", catalogNamed: catalogNamedBags(viewB.doc()) }] });
-    expect(wornB).toContain(canon);
-    expect(wornB).not.toContain(mine);
-    // Lit beside the worn face: the floor's vessel-tier books ride its joined entry's register set.
-    expect(vesselTierBags(floor.doc())).toEqual([canon]);
-    expect(vesselTierBags((await faceA).doc())).toEqual([]);
+  test("CONTROL — unseated, sdm is an ordinary bag title and rests on the face", () => {
+    expect(catalogRowHalf(bagUri("sdm"))).toBe("face");
+    expect(catalogRowHalf(bagUri("lares"))).toBe("floor");
   });
 });

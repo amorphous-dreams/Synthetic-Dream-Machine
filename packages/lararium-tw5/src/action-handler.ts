@@ -43,7 +43,7 @@ import type {
   ResidencyAction, AddAction, CopyAction, MoveAction, ClearAction, DropAction, LoadAction, IngestAction, CreateAction,
   WikiSlotKind,
 } from "@lararium/mesh";
-import { isSystemCanonBag, plainRecordOrNull, requireKahuReach, ownEntry, mayStampVessel, isVesselBagRow, plainField, CATALOG_ROW_TIER_FIELD, VESSEL_CAP_TIER } from "@lararium/mesh";
+import { isHouseCanonBag, holdsKahuReach, plainRecordOrNull, requireKahuReach, ownEntry } from "@lararium/mesh";
 import type { KahuReachSource } from "@lararium/mesh";
 import {
   ACTION_VERBS, type ActionVerb, AutomergeDocStore,
@@ -379,8 +379,8 @@ function makeBagAccess(opts: ActionHandlerOptions): BagAccess {
         }
         if (!store && held.length > 0) causes.set(bag, held);
       }
-      // A system canon bag (`lares`, `lararium`): its live document rests in the Kahu realm, named by the realm's bag row.
-      if (!store && reach.systemCanonUrl && isSystemCanonBag(bag)) {
+      // A house canon bag: its live document rests in the Kahu realm, named by the realm's bag row.
+      if (!store && reach.systemCanonUrl && isHouseCanonBag(bag)) {
         const url = await reach.systemCanonUrl(bag).catch(() => null);
         const handle = url ? await findOrThrow(reach.repo, url, bag).catch((err: unknown) => {
           causes.set(bag, [...(causes.get(bag) ?? []), `realm: ${err instanceof Error ? err.message : String(err)}`]);
@@ -527,7 +527,13 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
       throw new VerbRefusal("private-home-load", "private-home-load: LOAD cannot target the control or secret home; land through a working layer");
     }
 
-    // THE ONE PREDICATE, before any other check: a hand outside the Kahu cabal lands nothing in system canon.
+    // HOUSE CANON NEVER MINTS. A CREATE over a house canon bag writes nothing: the Kahu realm holds its one live document
+    // (`landKahuRealm`), and a face outside the cabal reads its floor snapshot. So the seed leads every disk-sourced holding
+    // with CREATE on every face and reads clean: the steward's answer names the realm's document, any other face's names
+    // the floor, and no face ever mints a catalog row for canon.
+    if (action.verb === "CREATE" && isHouseCanonBag(action.bag)) return createHouseCanon(action, opts);
+
+    // THE ONE PREDICATE, before any other check: a hand outside the Kahu cabal lands nothing in house canon.
     if (opts.kahuReachClearedAtGate !== true) {
       await requireKahuReach(destinationBag(action), opts.kahuReach, action.verb);
       if (action.verb === "MOVE") await requireKahuReach(action.fromBag, opts.kahuReach, "MOVE out of canon");
@@ -840,16 +846,11 @@ async function executeCREATE(action: CreateAction, access: BagAccess, opts: Acti
   // never a second `creation` record. A RETIRED doc falls through to the mint
   // below, which re-points this same registry row.
   const existing = await registry.urlOf(action.bag).catch(() => null);
-  const vessel = action.tier === VESSEL_CAP_TIER;
   if (existing && !(await bagRetiredDisposition(reach.repo, action.bag, existing))) {
     // `count` reads the standing bag's CONTENT titles (the ledger is audit, not content).
     const standing = await registry.storeOf(action.bag).catch(() => null);
     const count = standing ? (await standing.listVisible()).filter((t) => !isEffectRecordUri(t)).length : 0;
-    // THE VESSEL STAMP ON A RE-SEED: a row already on the floor half takes it (it reads clear already); a row resting on a
-    // face's half names a document that face sealed, and it never moves to the floor every face reads (`mayStampVessel`):
-    // the answer names it, the bag stands as it stood, and only a re-founding mints its canon at the vessel tier.
-    const tierOut = vessel && !dryRun ? await stampVesselRow(registry, action.bag, existing) : {};
-    return { bag: action.bag, plane: action.plane, docUrl: existing, alreadyStood: true, count, ...tierOut };
+    return { bag: action.bag, plane: action.plane, docUrl: existing, alreadyStood: true, count };
   }
   // A BAG THAT RESOLVES ELSEWHERE STANDS ALREADY. The bag's own resolution answers, never a name list: a system canon
   // bag rests in the Kahu realm (named by the realm's bag row), and another plane may hold a bag this plane's registry
@@ -885,32 +886,33 @@ async function executeCREATE(action: CreateAction, access: BagAccess, opts: Acti
     // different object.
     await opts.registerBag?.(action.bag);
     const regHandle = await registry.handle();
-    // A VESSEL-TIER ROW rests on the floor half (catalog-view `isVesselBagRow`): every face this vessel wears finds this one
-    // document, and the next face's seed converges on it rather than minting a second under its own catalog.
     regHandle.change((doc) => {
-      doc.tiddlers[action.bag] = storedLarRecord(action.bag, { text: docUrl, kind: "oracle", ...(vessel ? { [CATALOG_ROW_TIER_FIELD]: VESSEL_CAP_TIER } : {}) }, "lares-verb:CREATE");
+      doc.tiddlers[action.bag] = storedLarRecord(action.bag, { text: docUrl, kind: "oracle" }, "lares-verb:CREATE");
     });
-    return { bag: action.bag, plane: action.plane, docUrl, count: 0, ...(vessel ? { tier: VESSEL_CAP_TIER } : {}) };
+    return { bag: action.bag, plane: action.plane, docUrl, count: 0 };
   });
 }
 
+/** The named state a face outside the Kahu cabal reads for a house canon bag: no write, the floor snapshot. */
+export const HOUSE_CANON_READS_FLOOR = "house canon, written by the Kahu steward (h0); this face reads the floor" as const;
+
 /**
- * Stamp a standing row `cap-tier = vessel` where it may take it (`mayStampVessel`: a row on the floor half), or name why it
- * stays: a row on a face's half names a face-sealed document, and no secret enters the vessel tier.
+ * CREATE over a HOUSE CANON bag (`isHouseCanonBag`): it mints nothing and registers nothing, for any hand. The steward's
+ * answer names the realm's one live document; a face outside the Kahu cabal answers `resolvedElsewhere` with `readsFloor`
+ * (its wikis read the bag's floor snapshot by CID), never a kahu-reach red, so the seed reads clean on every face. A steward
+ * whose realm registers no document for the bag refuses by name: the steward's boot lands it (`standKahuCanon`), never a
+ * catalog row.
  */
-async function stampVesselRow(registry: ReturnType<typeof makeCatalogAccessor>, bag: string, docUrl: string): Promise<Record<string, unknown>> {
-  const handle = await registry.handle();
-  const standing = ownEntry(handle.doc()?.tiddlers, bag);
-  if (isVesselBagRow(bag, standing)) return { tier: VESSEL_CAP_TIER };
-  if (!mayStampVessel(bag, standing)) {
-    return { vesselRefused: `vessel-face-sealed: ${bag} rests on a face's half of the catalog, so its document stands sealed under that face; it keeps its row, and no other face reads it (a re-founding mints its canon at the vessel tier)` };
+async function createHouseCanon(action: CreateAction, opts: ActionHandlerOptions): Promise<Record<string, unknown>> {
+  const base = { bag: action.bag, plane: action.plane, alreadyStood: true, resolvedElsewhere: true };
+  if (!(await holdsKahuReach(opts.kahuReach))) return { ...base, readsFloor: true, houseCanon: HOUSE_CANON_READS_FLOOR, count: 0 };
+  const url = opts.reach?.systemCanonUrl ? await opts.reach.systemCanonUrl(action.bag).catch(() => null) : null;
+  if (!url || !opts.reach) {
+    throw new VerbRefusal("house-canon-unlanded", `house-canon-unlanded: ${action.bag} rests in the Kahu realm, and the realm registers no document for it yet; the steward's next boot lands it (standKahuCanon), and no catalog row ever mints canon`);
   }
-  const standingKind = plainField(standing, "kind");
-  const kind = typeof standingKind === "string" && standingKind.length > 0 ? standingKind : "oracle";
-  handle.change((doc) => {
-    doc.tiddlers[bag] = storedLarRecord(bag, { text: docUrl, kind, [CATALOG_ROW_TIER_FIELD]: VESSEL_CAP_TIER }, "lares-verb:CREATE");
-  });
-  return { tier: VESSEL_CAP_TIER, restamped: true };
+  const handle = await findOrThrow(opts.reach.repo, url, action.bag).catch(() => null);
+  const count = handle ? (await new AutomergeDocStore(handle, action.bag).listVisible()).filter((t) => !isEffectRecordUri(t)).length : 0;
+  return { ...base, docUrl: url, count };
 }
 
 /**

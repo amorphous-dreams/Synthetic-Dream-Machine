@@ -235,14 +235,6 @@ describe("parseResidencyAction — valid cases", () => {
   test("CREATE missing bag returns null", () => {
     expect(parseResidencyAction(makeInvocation("CREATE", {}))).toBeNull();
   });
-
-  test("CREATE takes the vessel tier alone, on the catalog plane, and it rides the encoded args", () => {
-    const action = parseResidencyAction(makeInvocation("CREATE", { bag: "lar:///ha.ka.ba/bags/sdm", tier: "vessel" }));
-    expect((action as { tier?: string }).tier).toBe("vessel");
-    expect(encodeResidencyArgs(action!)).toEqual({ bag: "lar:///ha.ka.ba/bags/sdm", plane: "catalog", tier: "vessel" });
-    expect(parseResidencyAction(makeInvocation("CREATE", { bag: "lar:///ha.ka.ba/bags/sdm", tier: "public" }))).toBeNull();
-    expect(parseResidencyAction(makeInvocation("CREATE", { bag: "lar:///ha.ka.ba/bags/sdm", tier: "vessel", plane: "oracle" }))).toBeNull();
-  });
 });
 
 // ---------------------------------------------------------------------------

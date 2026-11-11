@@ -37,7 +37,7 @@ export function petnamesOf(filter: string, faces: readonly ShareFace[]): string 
 
 /** The lines `--list` prints: each row and the one resolver's answer. */
 export function shareListLines(rows: readonly ShareRow[], faces: readonly ShareFace[]): string[] {
-  if (rows.length === 0) return ["share: no row stands; vessel-tier canon reads for every face, and every other bag stays its owner's"];
+  if (rows.length === 0) return ["share: no row stands; house canon reads the floor for every face, and every other bag stays its owner's"];
   const label = (i: number): string => { const f = faces.find((x) => x.handleIndex === i); return f?.petname ? `${f.petname} (h${i})` : `h${i}`; };
   const out: string[] = [];
   for (const row of rows) {

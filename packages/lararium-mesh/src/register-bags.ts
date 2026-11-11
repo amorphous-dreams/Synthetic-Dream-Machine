@@ -44,6 +44,7 @@ import { type LarDoc, tiddlerText } from "./base-doc.js";
 import { BAG_IDS, CATALOG_DOC_URI, DAEMON_BAG_ID, isBagId } from "./lar-uris.js";
 import { isFaceScopedBag, personaScopedBagIds } from "./persona-scope.js";
 import { ownEntry } from "./stored-value.js";
+import { houseCanonBagsSeated, isHouseCanonBag } from "./kahu-canon-reach.js";
 import { daemonFaceCanonBag, wikiSlotUri } from "./wiki-recipe.js";
 
 /**
@@ -90,7 +91,7 @@ export interface RegisterBagsInput {
   /** The wiki slot's bag ids, when a wiki stands in the stack. A Herm carries none — blind by structure. */
   readonly wikiBags?: readonly string[];
   /** True where the Kahu cabal admitted this vessel's group and the keel mounted the live system documents: the
-   *  vessel then registers `lares` and `lararium`. Absent = it holds neither document. */
+   *  vessel then registers every house canon bag (`houseCanonBagsSeated`). Absent = it holds no canon document. */
   readonly systemCanon?: boolean;
 }
 
@@ -108,14 +109,12 @@ const OWN_GROUND = [
 ] as const;
 
 /**
- * The LIVE system bags: ground for the Kahu cabal's vessel alone. They rest in the Kahu realm (`kahu-realm`), so a
- * vessel outside the cabal holds neither document and registers neither bag. They remain vessel-ground in KIND: the
- * daemon's own key holds their caps, as it holds the substrate's.
+ * The LIVE house canon (`houseCanonBagsSeated`): ground for the Kahu cabal's vessel alone. It rests in the Kahu realm
+ * (`kahu-realm`), so a vessel outside the cabal holds no document of it and registers none of its bags. It remains
+ * vessel-ground in KIND: the daemon's own key holds its caps, as it holds the substrate's.
  */
-const KAHU_CANON_GROUND = [BAG_IDS.lares, BAG_IDS.lararium] as const;
-
 export function isVesselGround(bag: string): boolean {
-  return (OWN_GROUND as readonly string[]).includes(bag) || (KAHU_CANON_GROUND as readonly string[]).includes(bag);
+  return (OWN_GROUND as readonly string[]).includes(bag) || isHouseCanonBag(bag);
 }
 
 /**
@@ -127,7 +126,7 @@ export function isVesselGround(bag: string): boolean {
  * produce one comparable set, and two groups naming a bag in common register it once.
  */
 export function deriveRegisterBags(input: RegisterBagsInput): string[] {
-  const out: string[] = [...OWN_GROUND, ...(input.systemCanon === true ? KAHU_CANON_GROUND : []), ...(input.wikiBags ?? [])];
+  const out: string[] = [...OWN_GROUND, ...(input.systemCanon === true ? houseCanonBagsSeated() : []), ...(input.wikiBags ?? [])];
   for (const fleet of input.fleets) {
     const face = personaScopedBagIds(fleet.personaGroupId);
     // The catalog names every face's planes; a group registers ITS four (above) and never another face's, which the derived shape

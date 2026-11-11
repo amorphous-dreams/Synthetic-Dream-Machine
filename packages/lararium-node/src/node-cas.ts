@@ -39,7 +39,13 @@ export function corpusCasDirFromEnv(): string | null {
 }
 
 /** What an island worker is handed at construction (`workerData`): the vessel's CAS dirs, so the worker reads no env. */
-export interface IslandCasData { readonly cidDir: string | null; readonly corpusCasDir: string | null }
+export interface IslandCasData {
+  readonly cidDir: string | null;
+  readonly corpusCasDir: string | null;
+  /** The house canon slugs the vessel seated off its checkout (`seatHouseCanon`): the island seats the same set, since a
+   *  worker thread holds its own module state and reads no disk for it. Absent: the island holds the system canon alone. */
+  readonly houseCanon?: readonly string[];
+}
 
 /**
  * The CAS dir an island WORKER derives from its own manifest storage dir. Every

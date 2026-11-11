@@ -59,7 +59,7 @@
  */
 
 import {
-  AutomergeDocStore, NoWorkingLayerRefusal, VerbRefusal, requireKahuReach, isSystemCanonBag, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf,
+  AutomergeDocStore, NoWorkingLayerRefusal, VerbRefusal, requireKahuReach, isHouseCanonBag, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf,
   REALM_ID_TIDDLER, realmDocPointer, realmDocUrl, realmStewardPointer, realmStandingPointer, readRealmStanding, mayWriteRealmBag, tiddlerText,
   type ChangeOrigin, type CompositeStore, type KahuReachSource, type LarTiddlerRecord, type LarTiddlerStore, type WikiSlotKind,
 } from "@lararium/mesh";
@@ -132,7 +132,7 @@ export function memeVerbOptions(
         const handle = await accessor.find(key).catch(() => null);
         if (handle) return new AutomergeDocStore(handle, bag);
       }
-      if (systemCanonUrl && isSystemCanonBag(bag)) {
+      if (systemCanonUrl && isHouseCanonBag(bag)) {
         const url = await systemCanonUrl(bag).catch(() => null);
         const handle = url ? await findOrThrow(ctx.repo, url, bag).catch(() => null) : null;
         if (handle) return new AutomergeDocStore(handle, bag);

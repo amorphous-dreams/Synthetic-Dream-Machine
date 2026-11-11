@@ -53,7 +53,7 @@ import { armGenesis, retireSeats, signLicensedInception } from "../seal-ceremony
 import { larSealHome, larProjectionsHome } from "../vessel-paths.js";
 import { writeFaceLabel } from "../face-labels.js";
 import { landFoundingAdmission } from "./nexus-cabal.js";
-import { landKahuRealm } from "../kahu-realm.js";
+import { landKahuRealm, seatHouseCanonFromCheckout } from "../kahu-realm.js";
 import { runFoundTheFace, runInit, type InitOptions, type FoundFaceResult } from "./init.js";
 
 /** One chair's cold next key, held in this process until its card reads back. */
@@ -221,6 +221,8 @@ export async function runFoundHearth(opts: FoundHearthOptions): Promise<FoundHea
       try { writeFaceLabel({ relation: face.faceRelation, petname: label, handleIndex: 0 }, larProjectionsHome()); } catch { /* an aid, never a gate */ }
     }
     await landFoundingAdmission({ repo: opts.repo, sealHome: larSealHome(), personaGroupId: face.personaGroupId });
+    // THE HOUSE CANON the founding lands: every disk-sourced holding of this checkout but the public board, at contract.
+    seatHouseCanonFromCheckout();
     await landKahuRealm({ repo: opts.repo, sealHome: larSealHome() });
     return face;
   };

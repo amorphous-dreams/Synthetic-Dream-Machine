@@ -15,7 +15,7 @@
  */
 
 import { tiddlerText, mkDaemonResidencyOp, mkDaemonWikiAlert, bagStackFromRec, recipeUri, SYSTEM_BAGS, wikiBagUri, wikiSlotUri, WARD_AUDIT_URI_PREFIX, type CompositeStore, type DaemonMsg_ResidencyOp, type DaemonMsg_WikiAlert, type LarDoc, type LarTiddlerRecord, type Repo, type WikiSlotKind, ownEntry } from "@lararium/mesh";
-import { plainEntries, plainField, storedDeleted, SYSTEM_CANON_BAGS } from "@lararium/mesh";
+import { plainEntries, plainField, storedDeleted, houseCanonBagsSeated } from "@lararium/mesh";
 import { ACTIVE_WIKI_URI } from "./active-wiki.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import { findOrThrow, makeCatalogAccessor, type CatalogAccessor } from "./catalog-accessor.js";
@@ -125,10 +125,10 @@ export function makeWhereReactor(composite: CompositeStore, reach?: RegistryReac
         }
       }
     }
-    // The system canon bags rest in the Kahu realm: no registry plane lists them, so each is reached by its realm row.
+    // The house canon bags rest in the Kahu realm: no registry plane lists them, so each is reached by its realm row.
     // Its live wiki slots answer first (the layer a write lands in), then the canon document itself.
     if (reach?.repo && reach.systemCanonUrl) {
-      for (const bagUri of SYSTEM_CANON_BAGS) {
+      for (const bagUri of houseCanonBagsSeated()) {
         const slug = wikiSlugOfBagUri(bagUri);
         if (slug && reach.slotDocUrl) {
           for (const kind of ["draft", "working", "personal"] as const) {

@@ -81,7 +81,7 @@ import type { HeldSaves, MountManifest } from "@lararium/mesh";
 import { nodePromoteStores, nodePromoteCas } from "./promoted-store.js";
 import { casDirForStorage, casFetchReading, corpusCasDirFromEnv, makeNodeCasResolver, type IslandCasData, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
 import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard } from "@lararium/mesh";
-import { workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, wikiIslandPeersOf, peerArrivals, admitGatePinDigest, ownEntry, plainField, CATALOG_ROW_TIER_FIELD, keptRowTier, vesselTierBags, SHARE_CONFIG_FILE, parseShareFile, shareRowOf, shareRowFields, reconcileShareRows, shareRowTitle, type ShareRow } from "@lararium/mesh";
+import { workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, wikiIslandPeersOf, peerArrivals, admitGatePinDigest, ownEntry, plainField, CATALOG_ROW_TIER_FIELD, SHARE_CONFIG_FILE, parseShareFile, shareRowOf, shareRowFields, reconcileShareRows, shareRowTitle, type ShareRow } from "@lararium/mesh";
 import { makeBagTierReader } from "./vessel-bag-tier.js";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
 import type { CapabilityRecord, CustodyWriter, DyadReader, LarVessel, ReceiptIssuer } from "@lararium/mesh";
@@ -106,7 +106,7 @@ import {
   readGenesisCasManifest, genesisProtectSet, genesisCasDir,
 } from "./genesis-artifact.js";
 import { bootFacePlanes, bootDaemonUrl }               from "./boot-face-planes.js";
-import { standKahuCanon, kahuHandAtWire, kahuProtectedHolder, kahuStandingBook, protectedDocsOver, watchKahuStanding, type KahuCanonDocs } from "./kahu-realm.js";
+import { seatHouseCanonFromCheckout, standKahuCanon, kahuHandAtWire, kahuProtectedHolder, kahuStandingBook, protectedDocsOver, watchKahuStanding, type KahuCanonDocs } from "./kahu-realm.js";
 import { dialRelationOf, seatDialPeer, unseatDialPeer, type DialRelation, type DialSeatMaps } from "./dial-relation.js";
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
 import { daemonGenesisDir, daemonBagsDir, loadLaresConfig, tempConsentedSlugs } from "./lares-config.js";
@@ -1992,7 +1992,9 @@ async function prepareNodeBootOn(
   // as its second tier). The pool and the daemon island are handed them; no content read touches the environment afterward.
   const cidDir = casDirForStorage(storageDir);
   const corpusCasDir = corpusCasDirFromEnv();
-  const casData: IslandCasData = { cidDir, corpusCasDir };
+  // THE HOUSE CANON SEATS HERE, off the checkout's disk-sourced holdings (`seatHouseCanonFromCheckout`), before any island
+  // spawns: every island is handed the same slugs.
+  const casData: IslandCasData = { cidDir, corpusCasDir, houseCanon: seatHouseCanonFromCheckout() };
   const hermShore = hermCasTransitFromEnv();
   const resolveCid = makeNodeCasResolver({ cidDir, corpusCasDir, shore: hermShore });
   // The floor stack carries `resolveCid` as the record's `cas` (below): a boot that refuses before it composes leaves no `cas` behind.
@@ -3216,9 +3218,8 @@ async function prepareNodeBootOn(
       if (!url) return;
       // THE DECLARED TIER RIDES THE ROW: a bag whose own declaration reads `public` stamps `cap-tier = public`, which routes
       // its row onto the floor catalog (a public book a herm lists); any other tier stamps nothing and the row stays the face's.
-      // A row the seed stamped `vessel` keeps it (`keptRowTier`): checkout canon every face reads stays on the floor half.
+      const tier = !privateSynced && bagTierOfRow(bagId) === "public" ? "public" : null;
       const standing = ownEntry(into.doc()?.tiddlers, bagId);
-      const tier = privateSynced ? null : keptRowTier(standing, bagTierOfRow(bagId) === "public" ? "public" : null);
       if (tiddlerText(standing) === url && (plainField(standing, CATALOG_ROW_TIER_FIELD) ?? null) === tier && (plainField(standing, "kind") === "private-synced") === privateSynced) return;
       into.change((doc) => {
         doc.tiddlers[bagId] = storedLarRecord(bagId, { text: url, kind: privateSynced ? "private-synced" : "oracle", ...(tier ? { [CATALOG_ROW_TIER_FIELD]: tier } : {}) }, "vessel-boot");
@@ -3336,7 +3337,7 @@ async function prepareNodeBootOn(
     const faceStandsLit = faceLit && !!personaGroupId && wornFaceProved;
     const canonBagId = standingDaemonCanonBag({ lit: faceStandsLit, faceRelation: wornRelation });
     const faceWikiBags = wornFaceWikiBags({ slot, lit: faceStandsLit, ...(canonBagId ? { daemonCanon: canonBagId } : {}) });
-    // A vessel-tier canon bag in this set never seals under the face: the map skips it (`sealedBagMap`, cap-tier.mem vessel).
+    // A house canon bag in this set never seals under the face: the map skips it (`sealedBagMap`, cap-tier.mem house canon).
     sealedCells.bags = () => faceWikiBags.sealed;
     // THE LIT FACE'S DEVICE DAEMON DOCUMENTS (the control document names them): they seal under that face from here on.
     wornDeviceGroup = faceLit && wornFaceProved && personaGroupId ? personaGroupId : null;
@@ -3383,9 +3384,6 @@ async function prepareNodeBootOn(
       atomSeed: loadFaceAtomOfGroup, atomKey: (seed, group) => faceAtomKeyFromSeed(seed, group).key,
       addressSecret: readFaceAddressSecret, veilArchive: sovereign.veilArchive,
       relation: (group: string) => siblingRelationOf(group),
-      // THE VESSEL TIER: every lit face's hive registers the checkout canon the floor names, as the worn face's does through
-      // its merged catalog (`catalogNamedBags`), so a sibling writes it under its own registration.
-      vesselBags: () => vesselTierBags((catalogViewOf(assembly.catalogHandle)?.floorHandle ?? assembly.catalogHandle).doc() as never),
       log: (line: string) => console.log(`[lararium] ${line}`),
     } : null;
     // EVERY OPEN READS THE SIBLINGS' CURRENT CUSTODY STANDING (Sol train #1): a sibling that locked or dropped since boot never rides a

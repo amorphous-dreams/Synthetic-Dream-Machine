@@ -60,6 +60,6 @@ describe("the node holds the lit set (sealed-store#/the-lit-set)", () => {
     const island = stripped(["lararium-keyhive", "src", "operator-daemon-behavior.ts"]);
     expect(island).toMatch(/faceTarget: litFaceTargetOf\(ctx\)/);
     expect(island).toMatch(/litSiblings\.set\(key, face\)/);
-    expect(stripped(["lararium-node", "src", "joined-face-auth.ts"])).toMatch(/wikiBags: \[\.\.\.litFaceOwnBags\(relation\), \.\.\.\(ports\.vesselBags/);
+    expect(stripped(["lararium-node", "src", "joined-face-auth.ts"])).toMatch(/registerBags: deriveRegisterBags\(\{ fleets: \[\], wikiBags: litFaceOwnBags\(relation\) \}\)/);
   });
 });

@@ -8,7 +8,7 @@ cacheable  = true
 hydrate    = true
 l-space    = "lararium"
 namespace  = "&#x2695;"
-role       = "the bag's sealing-posture as SELF-DESCRIBING TIGHTEN-ONLY data: WHO holds the read-cap, named as a chain by set-inclusion VEIL{vessel}⊂VESSEL{every face of the vessel}⊂PERSONAGROUP{fleet}⊂CONTRACT{fleet∪cabal}⊂PUBLIC{world}. The SAFETY KEYSTONE — the datum only DECLARES, the gate ENFORCES declared∧structural-floor (the taint-meet toward more-restrictive), so a self-describing quine can only ever self-TIGHTEN, mechanically never self-loosen. PERSONAGROUP & CONTRACT ride ONE mechanism (a bag's content key, delivered to a recipient set by lockbox); a delivery stands as AUTHENTICATED as the ceremony it rides. Declassification = an operator-root robust-declassification one-way ratchet. Isomorphic to FederationPosture by composition. Operator-ruled; the tier order and the keystone built (cap-tier.ts); the floor helper built, the tier gate unwired to the live share path, the declared-source a defined-but-unlit shore."
+role       = "the bag's sealing-posture as SELF-DESCRIBING TIGHTEN-ONLY data: WHO holds the read-cap, named as a chain by set-inclusion VEIL{vessel}⊂PERSONAGROUP{fleet}⊂CONTRACT{fleet∪cabal}⊂PUBLIC{world}. The SAFETY KEYSTONE — the datum only DECLARES, the gate ENFORCES declared∧structural-floor (the taint-meet toward more-restrictive), so a self-describing quine can only ever self-TIGHTEN, mechanically never self-loosen. PERSONAGROUP & CONTRACT ride ONE mechanism (a bag's content key, delivered to a recipient set by lockbox); a delivery stands as AUTHENTICATED as the ceremony it rides. Declassification = an operator-root robust-declassification one-way ratchet. Isomorphic to FederationPosture by composition. Operator-ruled; the tier order and the keystone built (cap-tier.ts); the floor helper built, the tier gate unwired to the live share path, the declared-source a defined-but-unlit shore."
 status-why = "the CORE built and revert-verified; the declared-source shore unlit"
 tags       = ["mesh/carry-contract", "mesh/content-resolution", "mesh/membership-doctrine", "mesh/secure-context", "api/pono/lararium-identity", "api/pono/orichalcum-capabilities", "api/pono/causal-islands", "lifecycle/standing"]
 title      = "lar:///ha.ka.ba/lararium/mesh/cap-tier"
@@ -27,7 +27,7 @@ written    = "2026-07-23"
 > helper stands built, unwired to the live share path; the declared-source rides a defined-but-unlit shore.
 > The //model// awaits a hoike.
 
-A bag answers ''one question'' about its sealing — WHO holds the read-cap — and the answer rides as a ''chain by set-inclusion'': VEIL{this-vessel} ⊂ VESSEL{every face of this-vessel} ⊂ PERSONAGROUP{your-fleet} ⊂ CONTRACT{your-fleet ∪ a-cabal} ⊂ PUBLIC{world}. The bag ''declares'' its tier as self-describing data; the gate ''enforces'' the meet of that declaration against the crypto floor — so a declaration ''only ever tightens'', mechanically never loosens. The whole model turns on that one asymmetry.
+A bag answers ''one question'' about its sealing — WHO holds the read-cap — and the answer rides as a ''chain by set-inclusion'': VEIL{this-vessel} ⊂ PERSONAGROUP{your-fleet} ⊂ CONTRACT{your-fleet ∪ a-cabal} ⊂ PUBLIC{world}. The bag ''declares'' its tier as self-describing data; the gate ''enforces'' the meet of that declaration against the crypto floor — so a declaration ''only ever tightens'', mechanically never loosens. The whole model turns on that one asymmetry.
 
 <<~/ahu>>
 
@@ -41,21 +41,29 @@ A bag answers ''one question'' about its sealing — WHO holds the read-cap — 
 
 <<~ ahu slot=`#/the-chain`>>
 
-!! The chain ~ five read-cap holder-sets, one total order
+!! The chain ~ four read-cap holder-sets, one total order
 
 The tier names the read-cap holder-set, ascending in openness — a lower rank names a ''smaller'' set (fewer readers → more restrictive):
 
-<<~ scale name=`captier` ranks=`veil@0 ~ {this-vessel} · cleartext-local, nothing crosses in the clear -> vessel@1 ~ {every face of this-vessel} · checkout canon every face reads, sealed under none, crossing no vessel boundary in the clear -> personagroup@2 ~ {your-fleet} · the bag's content key reaches the operator's own persona fleet -> contract@3 ~ {your-fleet ∪ a-cabal} · the bag's content key reaches the fleet PLUS a contracted cabal -> public@4 ~ {world} · the deterministically-federatable public shelf`>>
+<<~ scale name=`captier` ranks=`veil@0 ~ {this-vessel} · cleartext-local, nothing crosses in the clear -> personagroup@1 ~ {your-fleet} · the bag's content key reaches the operator's own persona fleet -> contract@2 ~ {your-fleet ∪ a-cabal} · the bag's content key reaches the fleet PLUS a contracted cabal -> public@3 ~ {world} · the deterministically-federatable public shelf`>>
 
 ''TWO RATCHETS, OPPOSITE DIRECTIONS, ORTHOGONAL PLANES.'' This chain ratchets ''tighter'' — a declaration only ever narrows the read-cap holder-set, mechanically never widens it. The dwelling plane ratchets the other way: `nohopapa` ''deposits'' depth by staying, and erodes when tending stops (`identity-enacts-relation`). Disclosure narrows; dwelling deepens. `papa` carries //layer · rank · structured sequence// and BOTH planes read as strata — exactly why they must stay named apart. ''A deep dweller holds no wider read-cap, and a public bag confers no depth.'' Fusing them would let standing buy disclosure, the shape this stack refuses.
-
-''VESSEL ~ checkout canon every face reads.'' A disk-sourced holding (a dir under the canon source the daemon resolves: `sdm`, `elyncia`, `elyncia-referee`, `crossroads`) carries plaintext canon from git, and no face owns it. The seed's CREATE stamps its catalog row `cap-tier = vessel` (`lares act CREATE --tier vessel`, `residency-actions.ts` `CreateAction.tier`), and the row rests on the ''floor half'' of the split catalog (`catalog-view.ts` `catalogRowHalf`, `isVesselBagRow`; <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed`>>). So a seed run while h1 stands worn and again while h2 stands worn converges on ''one'' document: each face's own catalog half stays sealed to the others, and the floor names the canon for every face. The sealed map seals no vessel-tier bag under any face (`sealed-rest.ts` `sealedBagMap`), so every face reads it. ''Writes ride each face's own registration'': the worn face's hive registers every bag its merged catalog names (the floor's vessel-tier rows among them, `catalogNamedBags`), and a sibling lit beside it registers the floor's vessel-tier books on its own hive (`vesselTierBags`, `JoinedFaceAuth.registerBags`), so a vessel-tier bag h1 minted is writable by h2 under h2's own registration. The Kahu steward keeps `lares` and `lararium`, which rest in the realm and take no catalog row. A re-registration keeps the stamp (`keptRowTier`), and a declaration never names it (`lares bag declare --tier vessel` refuses). Relay-wise VESSEL answers as VEIL: no relay peer holds it, since a peer reads checkout canon off its own checkout.
-
-''No secret ever enters the vessel tier.'' The stamp lands only on a fresh mint or on a row already resting on the floor half (`mayStampVessel`); a row resting on a face's half names a document that face sealed, and the CREATE answers `vesselRefused: vessel-face-sealed` and moves nothing. A hearth whose canon rows predate the tier keeps them sealed under the face that minted them until a re-founding mints its canon at the vessel tier.
 
 ''PERSONAGROUP and CONTRACT ride the SAME mechanism'' — a bag's content key delivered to a recipient set (#/key-delivery) — differing ONLY in which set (`fleet ⊂ fleet∪cabal`, a strict chain). A Cabal STARTS a cross-operator contract (#carry-contract names the bilateral tier the cabal negotiates); PERSONAGROUP reads as a SELF-contract to your own fleet-joined vessels. The four names carry the human face; the specific recipient set rides beneath.
 
 ''THE ONE PLANE THAT TRUNCATES THE CHAIN — UNBUILT.'' A ''reach credential'' — a foreign app credential a vessel would hold so a human could post outward from their wiki (`reach-plane.mem`) — would ride this same chain and this same delivery, stopping one rung short: ''the TYPE refuses PUBLIC'', because a world-readable credential loses the confidentiality that makes it one. So the reach ceiling reads CONTRACT where the content chain carries none, and the difference names a definition rather than a policy. The built floor helper maps a registered secrets plane to CONTRACT ahead of the public reading; no reach-credential vault or registration path stands. A credential declared PERSONAGROUP would deliver to the whole fleet — every device of yours may post — and the design forbids credential federation in every tier. On that plane ''the tier SETS the blast radius'', so the tighten-only keystone below reads as a security control rather than hygiene.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/house-canon`>>
+
+!! House canon ~ contract for the live document, public for its CIDs
+
+The chain names WHO holds a read-cap, and the house canon shows two documents riding two rungs. Every holding whose canon source stands on disk (the checkout's `bags/<slug>`) ''except the Nexus's public board'' (`crossroads`, a floor row every face reads) forms ONE derived set (`houseCanonSlugs`, `packages/lararium-mesh/src/kahu-canon-reach.ts`): `lares` and `lararium` on every vessel, and `sdm`, `elyncia`, `elyncia-referee` where the checkout carries them. The vessel seats the set once at boot and hands it to every island (`seatHouseCanonFromCheckout`).
+
+* ''The live document rests at CONTRACT'' in the Kahu realm: the founding mints one per bag and registers it at `readTier = contract` under the steward's seal (`landKahuRealm`), and the steward's boot lands a bag the set gained since. The Kahu cabal's contract holds its read-cap; the protected-doc guard withholds it from every peer outside the live Kahu hand; `requireKahuReach` gates every write; it takes ''no catalog row'' on any face's half and never enters a face's sealed map, so no face can fork it.
+* ''Its CIDs rest at PUBLIC.'' The floor manifest keys one history-free snapshot per house canon bag (`lararium-floor/v2`), and every DreamNet user reads them by CID at the porch; a face outside the cabal mounts each as the read-only oracle floor, and an edit copies up into that wiki's working layer, never into the floor.
+* ''A face outside the cabal reads the floor.'' Its seed's CREATE answers `resolvedElsewhere` with `readsFloor`, never a kahu-reach red, and names the holding `house canon, written by the Kahu steward (h0); this face reads the floor`. Admitting a face to write canon stays the operator's deliberate act (`lares nexus cabal admit <group>`).
 
 <<~/ahu>>
 
@@ -113,7 +121,7 @@ The model reads as a real pattern integrity because independent fields under the
 
 | Rhyme | Grounds | Field |
 |---|---|---|
-| ''Denning lattice model'' of secure information flow; Bell-LaPadula "no read up" | the five tiers form a ''chain lattice''; `meetCapTier` COMPUTES the lattice meet toward the more-restrictive (a total order → a bounded meet-semilattice) | information-flow security |
+| ''Denning lattice model'' of secure information flow; Bell-LaPadula "no read up" | the four tiers form a ''chain lattice''; `meetCapTier` COMPUTES the lattice meet toward the more-restrictive (a total order → a bounded meet-semilattice) | information-flow security |
 | ''High-water-mark'' floating-label taint | `refineBagTierWithTiddlers` = the confidentiality high-water: a container tightens to the most-restrictive of its contents | dynamic taint / IFC |
 | ''Robust declassification'' (Myers · Sabelfeld · Sands) | `mayDeclassify` = loosening as a privileged operator-root act an attacker cannot influence — the operator NAMED this pattern | language-based security |
 | ''Anonymous sealed-box'' (`crypto_box_seal`) = sender-unauthenticated by construction; ''Signal X3DH signed prekey'' catches a substituted prekey by signature | the delivery lesson exactly — seal-to-public gives confidential-not-authenticated → MITM; the fix binds the digest into the SIGNED transcript | applied cryptography |
@@ -128,7 +136,7 @@ The model reads as a real pattern integrity because independent fields under the
 
 !! Provenance ~ PROPOSED, the core built
 
-This meme stands ''PROPOSED'' (crucible-before-binding). The CORE stands built (`packages/lararium-mesh/src/cap-tier.ts`): the 5-tier total order (VESSEL added 2026-11-10, beside the floor-half catalog row it routes), the keystone, the high-water-mark cascade, and `mayDeclareTier` / `mayDeclassify`. ''Honest bounds, kept lit'':
+This meme stands ''PROPOSED'' (crucible-before-binding). The CORE stands built (`packages/lararium-mesh/src/cap-tier.ts`): the 4-tier total order, the keystone, the high-water-mark cascade, and `mayDeclareTier` / `mayDeclassify`. ''Honest bounds, kept lit'':
 
 * The ''structural FLOOR'' helper stands built and UNWIRED to the live share path — `structuralFloorFor` reads the SAME federatable-set + sealed-plane oracles the carry-split consults (a federatable plane floors at PUBLIC, a provably-sealed plane at CONTRACT, else VEIL), while `capTierShareDecision` holds no production caller and the live share path calls `carrierShareDecision`.
 * The ''declared SOURCE'' rides a defined-but-UNLIT shore — no daemon-plane recipe carries a `capTier` datum in the tree yet, so a live `declaredTierForDoc` returns null for every doc → the floor governs → zero behavior change. Lighting it needs the recipe-write path + a doc→bag resolver.
@@ -158,6 +166,6 @@ Deferred with clean shores (not built): the TW5 `$:/tags/CapTierFilter` ordered-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Mj0Mi_u_4eAFprpuDUchBq3-kv7a8YvkQZCcEk9l0WY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Jw49WeF6ep_3wgXhy_ZJgiQ6aB7uaTZ1U9PHpLpNJ2A`>>
 
 <<^ code=`&#x0004;` to=`?`>>

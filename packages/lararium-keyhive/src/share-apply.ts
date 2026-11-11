@@ -10,7 +10,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-share-config
  */
 import {
-  isVesselBagRow, owedGrants, ownEntry, plainRecordOrNull, resolveShare, sharePendingTitle, shareRowBag, storedRecord,
+  isHouseCanonBag, owedGrants, ownEntry, plainRecordOrNull, resolveShare, sharePendingTitle, shareRowBag, storedRecord,
   type LarDoc, type OwedGrant, type ShareFace, type ShareRow, type StoredLarRecord,
 } from "@lararium/mesh";
 
@@ -24,8 +24,6 @@ export interface ShareLitFace extends ShareFace {
 export interface ShareApplyDeps {
   readonly rows: () => Promise<readonly ShareRow[]>;
   readonly faces: readonly ShareLitFace[];
-  /** The floor half of the catalog (vessel-tier rows rest there). */
-  readonly floor: () => Promise<LarDoc | undefined>;
   /** Delegate `bag` from the owner face's hive to the grantee's (both lit). */
   readonly grant: (g: OwedGrant & { readonly ownerGroup: string; readonly granteeGroup: string }) => Promise<void>;
   readonly flag: { set(title: string): Promise<void>; clear(title: string): Promise<void> };
@@ -43,7 +41,6 @@ export interface ShareApplied {
 
 export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
   const rows = await deps.rows();
-  const floor = await deps.floor();
   const halves = new Map<number, Awaited<ReturnType<ShareLitFace["catalog"]>>>();
   for (const face of deps.faces) halves.set(face.handleIndex, await face.catalog().catch(() => null));
   const rowIn = (doc: LarDoc | undefined, bag: string): StoredLarRecord | undefined => ownEntry(doc?.tiddlers, bag) as StoredLarRecord | undefined;
@@ -51,8 +48,7 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
     for (const face of deps.faces) if (rowIn(halves.get(face.handleIndex)?.doc(), bag) !== undefined) return face.handleIndex;
     return null;
   };
-  const vesselTier = (bag: string): boolean => isVesselBagRow(bag, rowIn(floor, bag));
-  const grants = owedGrants({ rows, faces: deps.faces, ownerOf, vesselTier });
+  const grants = owedGrants({ rows, faces: deps.faces, ownerOf, houseCanon: isHouseCanonBag });
   let granted = 0, pending = 0;
   for (const g of grants) {
     const flag = sharePendingTitle(g, deps.salt);
