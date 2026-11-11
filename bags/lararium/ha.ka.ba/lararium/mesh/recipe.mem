@@ -43,16 +43,17 @@ Recipes split by bag tier, each plane its own home:
 
 * ''System wiki-recipes'' (`lares` wiki, `lararium` wiki) live in the
   ''`@oracle`'' runtime-system-island plane — protocol substrate, seeded at
-  genesis beside the system bag→doc oracle. `lares`/`lararium` are DreamNet
-  ''system bags''; their recipes are substrate, not user composition.
+  genesis. `lares`/`lararium` stand in the house canon; their recipes are
+  substrate, not user composition, and a vessel's own composition shadows them.
 * ''User wiki-recipes'' live in the user's ''`@catalog`'' (registry), minted
   per-wiki by init-wiki and read+written via the catalog accessor (access≠load).
 
-The bag-oracle reach runs ''two-source'': system bags resolve from the
-`@oracle` doc, user bags from `@catalog` (`wiki-layer-ontology#oracle-planes`).
-A recipe record for a system bag landing in `@catalog` — or a user recipe in
-`@oracle` — reads as a plane-leak. `lararium`-the-corpus stays pure tracked
-source; its //runtime// recipe pointer lives in `@oracle`, never the seed tree.
+Every bag pointer resolves from the vessel's `@catalog`; a house-canon bag carries
+no catalog row and resolves through the Kahu realm's standing registration
+(`libraryDocUrl`, `wiki-layer-ontology#oracle-planes`). A catalog row for a
+house-canon bag — or a user recipe in `@oracle` — reads as a plane-leak.
+`lararium`-the-corpus stays pure tracked source; its live document rests in the
+Kahu realm, never in the seed tree.
 
 A recipe change syncs as ordinary data; running islands reconcile it LIVE
 via recipe-watch (composition class), with the reboot-pending alert as the
@@ -75,6 +76,6 @@ class, where the alert stays the permanent mechanism.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;snmFezcLIWYt1O968K-YO-5cFRN3jLa9RJyrfm-PLVo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oQ_tJpeCOW0sGUt-xjgZ0VQtLWQg2BIUcoHglEmxaVY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

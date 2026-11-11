@@ -532,17 +532,21 @@ the hand at the door, before any write: the residency reactor with every verb it
 since it tombstones the source), `meme put` and `meme delete`, draft placement, and a realm steward's write, whose
 realm grant stands in for no check. The shore hands the island the charter's roster and the board's acts
 (`readKahuCabalBoard`); the island adds the sentinel read and the group at ACCESS, never at boot
-(`kahu-reach-source.ts`). A vessel that composes no source reads as a stranger and refuses a system bag. A READ and a
+(`kahu-reach-source.ts`). A vessel that composes no source reads as a stranger and refuses a house-canon bag. A READ and a
 copy OUT of canon ask nothing.
 
-''THE LIVE SYSTEM DOCUMENTS REST IN THE REALM.'' The founding mints one document per system bag and registers each as a
-realm bag of the hearth's realm, sealed by persona zero's per-Nexus key as the steward (`kahu-realm.ts`,
+''THE LIVE HOUSE-CANON DOCUMENTS REST IN THE REALM.'' The house canon holds `lares` and `lararium` on every vessel and
+every other disk-sourced holding but the public board `crossroads` (`houseCanonSlugs`). The founding mints one document
+per house-canon bag and registers each as a realm bag of the hearth's realm, sealed by persona zero's per-Nexus key as the steward (`kahu-realm.ts`,
 `landKahuRealm`; tier `contract`, kept by that one name). A document's id derives from the steward's own seed, a MAC under persona zero's per-Nexus seed over the Nexus and the bag (`kahuBagDocUrl`), so no peer can pre-seed the canon a founding adopts and a founding retried under that leaf registers the same document. A reader never recomputes it: the Kahu canon counts only registrations sealed by exactly that steward, the hearth keeps each registration it sealed and the kept copy stands first where it verifies, and the steward's seals over two documents for one bag stand none. What stays owed (roadmap row `P26`): a member's synced change counts only under Kahu reach, the steward's succession across a leaf reissue and a paper restore, and a whole-record conflict resolution verb. A vessel NAMES them at boot only where the board carries a
 counted admission for the Kahu realm's group (`standKahuCanon`): the registrations come off the realm doc folded and
-seal-verified, the keel mounts exactly what it names (`keel.systemCanon`), and the registered bag set, the `bags/lares`
-and `bags/lararium` disk mirrors and the system wikis' document urls follow the same naming. A vessel outside the cabal
-holds no pointer and no layer for either bag, projects nothing under `bags/`, and reads the floor through `@oracle`. No
-catalog row names a system bag. A browser composes no board reader, so it reads as a stranger and keeps the floor; a
+seal-verified, the keel mounts exactly what it names (`keel.systemCanon`), and the registered bag set, the house-canon disk
+mirrors under `bags/` and the canon wikis' document urls follow the same naming; a bag the set gains after the founding
+lands at the steward's next boot. The live documents rest at CONTRACT and their published snapshots read public
+(operator, 2026-11-11: //"veil ⊂ persona-group ⊂ contract ⊂ public -> Those note the 'access posture' for CRDTs, and the
+CRDTs for the canon rest under Kahu cabal contract. The CIDs are public."//). A vessel outside the cabal holds no
+pointer and no layer for any house-canon bag, projects nothing under `bags/`, and reads the floor through `@oracle`. No
+catalog row names a house-canon bag, and no face's sealed map carries one. A browser composes no board reader, so it reads as a stranger and keeps the floor; a
 browser Kahu hand rides Wave C's face context.
 
 <<~/ahu>>
@@ -659,7 +663,7 @@ The Keyhive gates prove vessel identity and cabal affiliation; neither encodes k
   delegation signed by its persona KEL's head key names this vessel's key (the Binding Gate).
 * Gate C — the PersonaGroup's membership in a MeshCabal — stands off the boot path. A PersonaGroup
   belongs to many cabals or none, so membership reads as a held capability, checked at ACCESS to a
-  cabal's shared canon (`boot-daemon-keyhive.ts`). For the Kahu cabal `kahuCabalCanonAccess` decides it (#/cabal-admission), and every write door into system canon calls it.
+  cabal's shared canon (`boot-daemon-keyhive.ts`). For the Kahu cabal `kahuCabalCanonAccess` decides it (#/cabal-admission), and every write door into house canon calls it.
 
 Gate C checks cabal MEMBERSHIP, never the quorum's seats. Who holds kahu over the corpus bags
 rides a separate claim, encoded in the Keyhive docs for `lararium` and `lares`. The genesis
@@ -685,6 +689,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;UrhGvfwj6awC27dBAs-wgeBANxMLdBSOdBit2X6UDvg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;DuGmrFKuFQVtuXt9wZNIkaOzJlFFcU6oQxsfTpaYqjI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

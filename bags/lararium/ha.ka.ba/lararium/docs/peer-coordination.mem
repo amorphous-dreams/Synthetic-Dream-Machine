@@ -71,9 +71,9 @@ boot or a synced peer holds it. Otherwise the vessel imports a blank doc under t
 so two vessels racing to stand first import byte-identical bytes, share one history, and merge.
 
 ''The rest mint at random.'' A vessel's private docs come from `repo.create()`, so no peer derives their
-ids. The shared lares and lararium corpus docs mint the same way in the node's genesis office, which records
-each URL on the oracle doc; two node homes federating one oracle may race that mint, LWW settles it, and
-each re-reads and adopts the winner (`packages/lararium-node/src/genesis-artifact.ts`).
+ids. The live house-canon documents mint apart: the founding derives each id from the steward's seed and
+registers it in the Kahu realm (`kahuBagDocUrl`, `packages/lararium-node/src/kahu-realm.ts`), so no genesis
+office mints one and no race between node homes arises.
 
 ''UNBUILT: the committed island file.'' No `lararium-island.ts`, no `ISLAND.catalogDocUrl` and no
 `ISLAND.wikis` table stand in source. Derivation carries the author-time rendezvous instead.
@@ -221,6 +221,6 @@ doc bundle to new nodes.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;RI3lLFbBQxhxj8KiSPDdPaSsHvHRggOP6QqUiM9esm8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tkIq5unAzw-s2Jzla0ZNKnpwW6bAeDfAzXLLQOc1uc4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

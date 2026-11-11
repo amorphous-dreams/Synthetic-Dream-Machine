@@ -20,13 +20,12 @@ uri-path    = "ha.ka.ba/lararium/tw5/recipe-watch"
 `startRecipeWatch(ctx)` subscribes the island to its registry plane
 (access≠load — watched, never rendered as a layer), reads the island's own
 recipe record (field `bag-stack`), and applies the diff to the island's own
-composite. The recipe + bag-oracle reach run ''two-source'' (operator ruling,
-2026-06-16, `wiki-layer-ontology#oracle-planes`): a ''system'' wiki
-(`lares`/`lararium`) reads its recipe from the ''`@oracle`'' doc
-(`recipeUri("@oracle", slug)`) and resolves system bags from `@oracle`; a
-''user'' wiki reads `recipeUri("@catalog", slug)` and resolves user bags from
-`@catalog`. //(Code reads single-source `@catalog` today; the plane split is//
-//ruled, enactment tracked at the live handoff torch.)//
+composite. The recipe reads from two planes (`wiki-layer-ontology#oracle-planes`):
+a ''system'' wiki (`lares`/`lararium`) takes its default recipe from the
+''`@oracle`'' doc and the vessel's own composition in `@catalog` shadows it
+(`effectiveRecipe`, own first). Every bag pointer resolves from `@catalog`; a
+house-canon bag carries no catalog row and resolves through the Kahu realm's
+standing registration (`libraryDocUrl`).
 
 * ''bag added'' → resolve via the owning plane's oracle, insert the layer above
   `lares` (library position, below the wiki bag), replay its content into
@@ -83,6 +82,6 @@ CRDT slot the oracles point at.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;rmPpASyY24SdIxpP-BGXlS7i6sE9SSw1rM4FVosDWrM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ir_AVM55q7sNNjjBgIt5-DIkKylShIYx1CEbasUeKNk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -45,12 +45,12 @@ turns a bag-URI into a live doc handle:
 
 `resolveCatalogRow` takes the ''registry handle'' as an argument and stays plane-blind: it writes wherever the handed
 handle points. Today every caller (`open-vessel-core`) hands the vessel's own `@catalog`, so each vessel's bag→doc rows
-rest in its own registry and no shared `@oracle` registry carries a pointer. The system bags `lares` and `lararium` carry
-no catalog row at all: their live documents rest in the Kahu realm (`kahu-realm.ts`, `realm-bag.ts`), and the genesis
+rest in its own registry and no shared `@oracle` registry carries a pointer. The house-canon bags (`lares` and `lararium` among
+them) carry no catalog row at all: their live documents rest in the Kahu realm (`kahu-realm.ts`, `realm-bag.ts`), and the genesis
 island document is the floor's read-face (`wiki-layer-ontology#oracle-planes`).
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;g_lib6Og37kBwT4YzeC9enUCmjDl3xovJx6DV4KFYeQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iNuG4mpHQQJqiUgfYOPsgzQerT8inbgVRx9DazURDAQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>
