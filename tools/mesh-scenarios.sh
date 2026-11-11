@@ -189,8 +189,16 @@ logs_have() {
 # THE PROBE MUST CROSS THE SOCKET. A first draft used `vessel read` — "the pure inspection that starts
 # nothing", which reads local files and answers true while the verb channel is still deaf. The probe
 # rides a DAEMON-ROUTED verb, so a pass means a verb actually completed.
+#
+# A HERM STANDS AS A PLACE WITH NO FACE, and a place with no face answers only its floor
+# (packages/lararium-node/src/floor-verbs.ts: the control document mints with the face): `residency`
+# (`bag stats`) refuses `control-home-unnamed` there on every poll, so the herm's probe rides
+# `unbound-docs` (`vessel unbound`) instead, a read-only floor query that still crosses the socket.
 answers() {
-  $COMPOSE exec -T "$1" node packages/lares-cli/dist/src/bin/lares.js bag stats --json >/dev/null 2>&1
+  case "$1" in
+    herm-*) $COMPOSE exec -T "$1" node packages/lares-cli/dist/src/bin/lares.js vessel unbound >/dev/null 2>&1 ;;
+    *)      $COMPOSE exec -T "$1" node packages/lares-cli/dist/src/bin/lares.js bag stats --json >/dev/null 2>&1 ;;
+  esac
 }
 
 # WHY A HEARTH NEVER ANSWERED, in the words the boot used.
