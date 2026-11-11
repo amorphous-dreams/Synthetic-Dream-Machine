@@ -37,7 +37,22 @@ function printUsage(): void {
   console.log("             write-layer ingest-back — a wikis/ source derives its URIs off that layer).");
 }
 
-export async function cmdIngest(args: ParsedArgs): Promise<number> {
+/** The working copies that shadow a canon text this INGEST moved past the base each forked from (`override-bases.ts`). */
+export interface FresherCanonReading {
+  readonly working: string;
+  readonly titles: readonly string[];
+  readonly count: number;
+}
+
+/** Read the outcome's fresher-canon warning; absent where the wave moved no canon text under a working copy. */
+export function readFresherCanon(summary: Readonly<Record<string, unknown>>): FresherCanonReading | undefined {
+  const o = summary["fresherCanon"] as Record<string, unknown> | undefined;
+  if (o === undefined || o === null || typeof o !== "object") return undefined;
+  const titles = Array.isArray(o["titles"]) ? (o["titles"] as unknown[]).map(String) : [];
+  return { working: String(o["working"] ?? ""), titles, count: typeof o["count"] === "number" ? (o["count"] as number) : titles.length };
+}
+
+export async function cmdIngest(args: ParsedArgs, sink?: { fresher?: FresherCanonReading }): Promise<number> {
   const source = args.options["source"];
   const toBag  = args.options["to"];
   if (!source || !toBag) { printUsage(); return 2; }
@@ -181,6 +196,8 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
     return exitFor(code);
   }
   const summary = summaryOutput(result) ?? {};
+  const fresher = readFresherCanon(summary);
+  if (sink && fresher) sink.fresher = fresher;
 
   // The gesture pinned what it landed (`settleIngest`); the projector pins what it projects; both write
   // the same key and the same base where they agree. An unchanged carrier then reads `unchanged` on the
@@ -192,11 +209,12 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
   // THE SETTLE WORD. Each carrier whose records this gesture moved causes a projection; the gesture asks the
   // vessel to say when that projection has run, so the run ends where a scan that follows reads what the
   // projection left (`askSettle`). A wait that ends with no word says so and changes no exit: the records
-  // landed either way.
+  // landed either way. The word keeps waiting while pages keep settling; one that stalls leaves the carriers
+  // still waiting as the bag's record, and `lares shore settle --bag <bag> --pending` resumes it.
   let settle: SettleReading | { readonly settled: false; readonly refusal: string; readonly why: string } | undefined;
   if (settled.rendered.length > 0) {
     try {
-      settle = await askSettle((a) => askShore(a, did), toBag, settled.rendered);
+      settle = await askSettle((a) => askShore(a, did), toBag, settled.rendered, { record: true });
     } catch (err) {
       const f = verbFailure(err);
       settle = { settled: false, refusal: f.code, why: f.message };
@@ -270,10 +288,15 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
         } else if (settle.settled && "mirrored" in settle && !settle.mirrored) {
           console.log(`  no mirror holds ${toBag}: no projection follows these records`);
         } else if (settle.settled) {
-          console.log(`  projection settled for ${settle.settledCount} carrier(s)${settle.elsewhereCount > 0 ? `; ${settle.elsewhereCount} project from a higher bag` : ""}`);
+          console.log(`  projection settled for ${settle.settledCount} carrier(s)${settle.elsewhereCount > 0 ? `; ${settle.elsewhereCount} project from a higher bag` : ""} · ${settle.pendingCount} pending · ${settle.stalledCount} stalled`);
           if ("supersededCount" in settle && settle.supersededCount > 0) console.error(`  ⚠ a later settle word took ${settle.supersededCount} carrier(s) over; this run claims no projection for them, and a scan now may read a file the projection still moves`);
+        } else if ("stalled" in settle && settle.stalled) {
+          console.log(`  projection settled for ${settle.settledCount} carrier(s) · ${settle.pendingCount} pending · ${settle.stalledCount} stalled`);
+          console.error(`  ⚠ no page settled within the stall window; ${settle.pendingCount} carrier(s) still wait: \`lares shore settle --bag ${toBag} --pending\` resumes the word`);
         } else console.error(`  ⚠ the vessel did not say the projection settled (${settle.refusal}: ${settle.why}); a scan now may read a file the projection still moves`);
       }
+      // The copy keeps shadowing canon (the recipe stack decides what shows); the word names it, nothing writes.
+      if (fresher !== undefined) console.error(`  ⚠ canon is fresher than the working copy above it for ${fresher.count} title(s) in ${fresher.working}: ${fresher.titles.slice(0, 8).join(", ")}${fresher.count > 8 ? ", …" : ""} (remove a copy with the ordinary verbs to take the fresher canon)`);
       if (conflicts.length > 0) console.error(`  ⚠ settle a conflict under its key (\`lares shore\` names it): \`lares shore take-disk <uri> --key <key>\` lands the file's words · \`lares shore take-records <uri> --key <key>\` writes the records' render`);
       console.log(`\n  audit: ${auditUri}`);
     },

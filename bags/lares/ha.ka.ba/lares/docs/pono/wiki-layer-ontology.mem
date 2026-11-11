@@ -233,7 +233,7 @@ The moment layers mount layers, cycles become expressible. Recipe-watch MUST ref
 
 Every boundary a lararium holds reads as a ''causal-island shore'' (`causal-islands`): two sides, each its own partially-ordered log, no shared "now." Three shores wear one law:
 
-* ''working ↔ canon'' — the `@working` live layer crosses to its `@{slug}` canon by a cap-gated promotion `MOVE`. A `MOVE` naming the two bags and no title promotes the whole layer: every live title lands in the canon first, then each leaves the layer only while it still holds the fields that landed, so a record another hand wrote or deleted since stays for the next promotion and the answer counts it kept. A seed walks this road too (`LOAD` onto the wiki's working layer, then one layer `MOVE`), and no door passes a `LOAD` into canon.
+* ''working ↔ canon'' — the `@working` live layer crosses to its `@{slug}` canon by a cap-gated promotion `MOVE`. A `MOVE` naming the two bags and no title promotes the whole layer: every live title lands in the canon first, then each leaves the layer only while it still holds the fields that landed, so a record another hand wrote or deleted since stays for the next promotion and the answer counts it kept. No door passes a `LOAD` into canon. A seed walks no promotion: it feeds a disk-sourced holding's canon through `INGEST` alone, and a working copy keeps shadowing the canon under it, since the recipe stack alone decides what shows. Each working copy names the canon text hash it forked from on its `meta` envelope (`overrideBase`, which never projects), an instrument and never a gate: where canon moved past it, the seed warns that canon stands fresher than the copy, and nothing writes.
 * ''plane ↔ plane'' — a bag's pointer crosses `@catalog` (user) ⇄ `@oracle` (system) by an admin `MOVE` that sets a new meshwise surface. ''Plane membership stays mutable, never hardcoded'' — composability across planes holds first-class; the split scopes by //role//, never by a frozen plane.
 * ''host ↔ lararium'' //(deferred horizon)// — a lararium may embed as a ''guest'' causal island inside a host that owns its own integration layer (UE5.6/6+ Verse / SceneGraph; MUDlet's Lua object-model). The guest never assumes it sits at the top, never claims a global now across the shore.
 
@@ -340,6 +340,6 @@ Both #42 operator forks resolved by intervening work: `SHA256(uri+path)` retired
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;B4NXpTV3GKCbpk0AmxyUIo5VDsi73Pg6Pov_fxf4jS4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9UR3vk_a60SyVvn8EMq57GT30ubGJoxRd51EdYJS9ho`>>
 
 <<^ code=`&#x0004;` to=`?`>>

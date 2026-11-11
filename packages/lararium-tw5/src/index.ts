@@ -116,7 +116,8 @@ export { placeVerb, patchVerb, removeVerb, writeOutcome, dispatchVerb } from "./
 export type { VerbPlacement } from "./verb-vm.js";
 export { MemoryTiddlerStore } from "./memory-store.js";
 export { getOriginBag } from "./residency-surface.js";
-export { registerActionReactors, makeActionReactorFor, makeTw5Deserializer } from "./action-handler.js";
+export { registerActionReactors, makeActionReactorFor, makeTw5Deserializer, makeFresherCanonReactor } from "./action-handler.js";
+export { fresherThanBase, fresherAfterChange, listFresherCanon, type FresherCanon } from "./override-bases.js";
 export type { Tw5Deserializer } from "./action-handler.js";
 export { canonicalizeNativeCarrierText } from "./native-canonical.js";
 export type { NativeCanonicalCarrier } from "./native-canonical.js";

@@ -123,6 +123,17 @@ beforeEach(() => {
 afterEach(() => { rmSync(root, { recursive: true, force: true }); rmSync(dirname(out), { recursive: true, force: true }); });
 
 describe("the carry verbs", () => {
+  test("★ an import over unseeded disk canon refuses by name and names the seed; a preview reads on ★", async () => {
+    await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    const after = refound();
+    const guarded = { ...after.doors(), unseeded: () => ["sdm", "crossroads"] };
+    await expect(carryImport(out, { apply: true, doors: guarded })).rejects.toThrow(/carry-canon-unseeded|stands unseeded.*lares vessel seed --apply/);
+    expect(after.waves).toEqual([]);
+    await expect(carryImport(out, { apply: false, doors: guarded })).resolves.toMatchObject({ applied: false });
+    // CONTROL: seeded canon (nothing unseeded) imports.
+    await expect(carryImport(out, { apply: true, doors: { ...after.doors(), unseeded: () => [] } })).resolves.toMatchObject({ applied: true });
+  });
+
   test("apply restores wave files to their mirror before ingest, including shadows", async () => {
     put("projections/wikis/pond/ha.ka.ba/notes/gone.kapae", kapaeShadowBody("lar:///ha.ka.ba/notes/gone"));
     await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });

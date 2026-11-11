@@ -1,29 +1,28 @@
 /**
- * seed-road — `lares vessel seed` takes the island's named road for every LOAD-route holding.
+ * seed-road — `lares vessel seed` feeds every disk-sourced holding through ONE road: CREATE (converging on the bag
+ * that stands) then the diff-gated INGEST into its canon bag. The road reads where canon stands (the canon source the
+ * daemon resolves), never a name list, and the seed never walks LOAD + MOVE (the human promotion door): it sends no
+ * act that writes a wiki's working layer.
  *
- * W27's ruling: a write lands on a wiki's working layer, and canon takes it by promotion. The LOAD door into a
- * canon bag (`bags/<slug>`) refuses `load-into-canon` and names that road. The standalone seed, the road the
- * founding runbook's §5 walks (`vessel seed --apply --yes` ending `6/6 holding(s) converged`), used to pass a
- * founding door the public act parser never spells, so on a stood hearth it read 2/6: the two ingest holdings
- * converged and every LOAD-route holding refused. Lares ruled (a), wikis-first, 2026-10-29: the seed takes the
- * island's named road, and no founding-door exception stands.
- *
- * The road per LOAD-route holding, in order, through the one act gesture:
- *   CREATE --bag bags/<slug>                          (registers the catalog-corpus entry; idempotent)
- *   LOAD   --source-uri <dir> --to wikis/<slug>/working (lands on the working layer; the act mounts the wiki)
- *   MOVE   --from wikis/<slug>/working --to bags/<slug>            (no title: the whole layer promotes in one act)
- * The seed names no title: the island's answer rides bounded past the outcome cap, and a memetic record takes its
- * name from its head, so no CLI-side list can say what landed (measured on the fresh-root walk, 2026-10-29).
- *
- * CONTROLS: a system holding (`lares`) still rides the diff-gated `ingest` gesture; a preview (no `--apply`)
- * sends one dry-run LOAD and no CREATE and no MOVE.
+ * Stories:
+ *   S1  (story 4) a disk-sourced non-system bag (sdm, crossroads) takes CREATE then INGEST, no LOAD and no MOVE
+ *   S2  (stories 1-3) no gesture the seed sends names a working layer: a working edit, a working-only title and a
+ *       disk-deleted title's working copy stay where the hand left them (the island side: canon-change-weighs-overrides)
+ *   S3  a system holding (lares) rides the same road: CREATE converges on the realm's bag, then INGEST
+ *   S4  a holding whose canon source stands off disk (a private plane, or a dir outside the canon source) takes no road
+ *   S5  a preview sends the INGEST preview alone, no CREATE
+ *   S6  (story 6) the seed warns where canon stands fresher than a working copy above it, names capped; nothing writes
  */
 
-import { describe, expect, test, vi, beforeEach } from "vitest";
+import { describe, expect, test, vi, beforeEach, afterEach } from "vitest";
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import type { ParsedArgs } from "../src/parse-args.js";
 
 type Call = { readonly command: string; readonly positional: string[]; readonly options: Record<string, string>; readonly flags: Record<string, unknown> };
 const calls: Call[] = [];
+let fresherFor: Record<string, unknown> = {};
 vi.mock("../src/commands/act.js", () => ({
   cmdAct: vi.fn(async (args: ParsedArgs) => {
     calls.push({ command: args.command, positional: [...args.positional], options: { ...args.options }, flags: { ...args.flags } });
@@ -31,63 +30,108 @@ vi.mock("../src/commands/act.js", () => ({
   }),
 }));
 vi.mock("../src/commands/ingest.js", () => ({
-  cmdIngest: vi.fn(async (args: ParsedArgs) => {
+  cmdIngest: vi.fn(async (args: ParsedArgs, sink?: { fresher?: unknown }) => {
     calls.push({ command: args.command, positional: [...args.positional], options: { ...args.options }, flags: { ...args.flags } });
+    const o = fresherFor[String(args.options["to"])];
+    if (sink && o) sink.fresher = o;
     return 0;
   }),
 }));
 
-import { seedHolding } from "../src/commands/seed.js";
+import { seedHolding, canonIsDisk, cmdSeed } from "../src/commands/seed.js";
 
-const SLUG = "sdm";
-const CANON = `lar:///ha.ka.ba/bags/${SLUG}`;
-const WORKING = `lar:///ha.ka.ba/wikis/${SLUG}/working`;
-const holding = { holding: SLUG, source: `/scratch/bags/${SLUG}`, toBag: CANON };
+let root: string;
+const prior = { root: process.env["LAR_ROOT"], bags: process.env["LAR_BAGS"] };
+beforeEach(() => {
+  calls.length = 0; fresherFor = {};
+  root = mkdtempSync(join(tmpdir(), "lares-seed-road-"));
+  for (const b of ["crossroads", "lares", "sdm", "kahua-0f1e2d3c-4b5a-4968-8776-655443322110"]) { mkdirSync(join(root, "bags", b), { recursive: true }); writeFileSync(join(root, "bags", b, "one.mem"), "x"); }
+  process.env["LAR_ROOT"] = root;
+  process.env["LAR_BAGS"] = join(root, "bags");
+});
+afterEach(() => {
+  rmSync(root, { recursive: true, force: true });
+  if (prior.root === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior.root;
+  if (prior.bags === undefined) delete process.env["LAR_BAGS"]; else process.env["LAR_BAGS"] = prior.bags;
+});
+
 const applied: ParsedArgs = { command: "vessel", positional: ["seed"], options: {}, flags: { apply: true, yes: true } };
 const preview: ParsedArgs = { command: "vessel", positional: ["seed"], options: {}, flags: {} };
+const holdingOf = (slug: string) => ({ holding: slug, source: join(root, "bags", slug), toBag: `lar:///ha.ka.ba/bags/${slug}` });
 
-beforeEach(() => { calls.length = 0; });
-
-describe("the seed takes the island's named road for a LOAD-route holding", () => {
-  test("★ CREATE the bag, LOAD onto the wiki's working layer, then ONE title-less MOVE promotes the layer into canon ★", async () => {
-    const row = await seedHolding(applied, holding);
-    expect(row).toMatchObject({ holding: SLUG, gesture: "load", exitCode: 0 });
-    const acts = calls.filter((c) => c.command === "act");
-    expect(acts.map((c) => c.positional[0])).toEqual(["CREATE", "LOAD", "MOVE"]);
-    expect(acts[0]!.options).toMatchObject({ bag: CANON });
-    // The LOAD lands on the working layer, never on canon, and carries no founding door.
-    expect(acts[1]!.options).toMatchObject({ "source-uri": holding.source, to: WORKING });
-    expect(acts[1]!.flags).toMatchObject({ yes: true });
-    expect(acts[1]!.flags["dry-run"]).toBeUndefined();
-    // The promotion names the two bags and NO title: the island moves every live title the layer holds.
-    expect(acts[2]!.options).toEqual({ from: WORKING, to: CANON });
-    expect(acts[2]!.flags).toMatchObject({ yes: true });
+describe("the seed feeds every disk-sourced holding through CREATE then INGEST", () => {
+  test("S1 — a disk-sourced non-system bag takes CREATE then INGEST, never LOAD or MOVE", async () => {
+    for (const slug of ["sdm", "crossroads"]) {
+      calls.length = 0;
+      const h = holdingOf(slug);
+      expect(canonIsDisk(h)).toBe(true);
+      const row = await seedHolding(applied, h);
+      expect(row).toMatchObject({ holding: slug, gesture: "ingest", exitCode: 0 });
+      expect(calls.map((c) => `${c.command}:${c.positional[0] ?? ""}`)).toEqual(["act:CREATE", "ingest:"]);
+      expect(calls[0]!.options).toMatchObject({ bag: h.toBag });
+      expect(calls[1]!.options).toMatchObject({ source: h.source, to: h.toBag });
+    }
   });
 
-  test("a MOVE that refuses names the holding's exit", async () => {
-    const { cmdAct } = await import("../src/commands/act.js");
-    (cmdAct as unknown as ReturnType<typeof vi.fn>).mockImplementation(async (args: ParsedArgs) => {
-      calls.push({ command: args.command, positional: [...args.positional], options: { ...args.options }, flags: { ...args.flags } });
-      return args.positional[0] === "MOVE" ? 5 : 0;
-    });
-    const row = await seedHolding(applied, holding);
-    expect(row.exitCode).toBe(5);
+  test("S2 — no gesture the seed sends names a working layer", async () => {
+    await cmdSeed(applied);
+    expect(calls.length).toBeGreaterThan(0);
+    for (const c of calls) {
+      expect(["CREATE", undefined]).toContain(c.positional[0]);
+      expect(JSON.stringify(c.options)).not.toMatch(/\/wikis\/[^/]+\/working/);
+    }
   });
 
-  test("CONTROL: a system holding still rides the diff-gated ingest gesture, no act at all", async () => {
-    const sys = { holding: "lares", source: "/scratch/bags/lares", toBag: "lar:///ha.ka.ba/bags/lares" };
-    const row = await seedHolding(applied, sys);
+  test("S3 — a system holding rides the same road", async () => {
+    const row = await seedHolding(applied, holdingOf("lares"));
     expect(row.gesture).toBe("ingest");
-    expect(calls.map((c) => c.command)).toEqual(["ingest"]);
-    expect(calls[0]!.options).toMatchObject({ source: sys.source, to: sys.toBag });
+    expect(calls.map((c) => `${c.command}:${c.positional[0] ?? ""}`)).toEqual(["act:CREATE", "ingest:"]);
   });
 
-  test("CONTROL: a preview sends one dry-run LOAD onto the working layer and no CREATE and no MOVE", async () => {
-    const row = await seedHolding(preview, holding);
-    expect(row).toMatchObject({ gesture: "load", exitCode: 0 });
-    const acts = calls.filter((c) => c.command === "act");
-    expect(acts.map((c) => c.positional[0])).toEqual(["LOAD"]);
-    expect(acts[0]!.options).toMatchObject({ to: WORKING });
-    expect(acts[0]!.flags).toMatchObject({ "dry-run": true });
+  test("S4 — a private plane and a dir outside the canon source take no road", async () => {
+    const plane = holdingOf("kahua-0f1e2d3c-4b5a-4968-8776-655443322110");
+    expect(canonIsDisk(plane)).toBe(false);
+    expect(await seedHolding(applied, plane)).toMatchObject({ gesture: "skip", exitCode: 0 });
+    const outside = { holding: "sdm", source: join(root, "elsewhere", "sdm"), toBag: "lar:///ha.ka.ba/bags/sdm" };
+    expect(canonIsDisk(outside)).toBe(false);
+    expect(calls).toEqual([]);
+  });
+
+  test("S5 — a preview sends the INGEST preview alone", async () => {
+    const row = await seedHolding(preview, holdingOf("sdm"));
+    expect(row).toMatchObject({ gesture: "ingest", exitCode: 0 });
+    expect(calls.map((c) => c.command)).toEqual(["ingest"]);
+    expect(calls[0]!.flags["apply"]).toBeUndefined();
+  });
+
+  test("S6 — the seed warns where canon stands fresher than a working copy, names capped", async () => {
+    fresherFor["lar:///ha.ka.ba/bags/sdm"] = { working: "lar:///ha.ka.ba/wikis/sdm/working", count: 10, titles: Array.from({ length: 10 }, (_, i) => `t${i}`) };
+    const lines: string[] = [], errors: string[] = [];
+    const log = console.log, error = console.error;
+    console.log = (...a: unknown[]) => { lines.push(a.join(" ")); };
+    console.error = (...a: unknown[]) => { errors.push(a.join(" ")); };
+    try { expect(await cmdSeed(applied)).toBe(0); } finally { console.log = log; console.error = error; }
+    const warn = errors.find((e) => e.includes("canon is fresher than the working copy above it"));
+    expect(warn).toContain("for 10 title(s)");
+    expect(warn).toContain("sdm:t0");
+    expect(warn).toContain("… 2 more");
+    expect(warn).not.toContain("sdm:t9");
+    expect(lines.some((l) => l.startsWith("- kahua-0f1e2d3c-4b5a-4968-8776-655443322110: no road"))).toBe(true);
+    expect(lines.at(-1)).toMatch(/^seed: 3\/3 holdings · 1 off disk · \d+s$/);
+  });
+});
+
+import { pendingRemovalLines } from "../src/commands/seed.js";
+describe("the seed answers a shore flood once", () => {
+  test("S7 — the summary counts pending removals per fed bag and prints one batch answer each", () => {
+    const rows = [
+      ...Array.from({ length: 3 }, (_, i) => ({ bagId: "lar:///ha.ka.ba/bags/sdm", uri: `u${i}` })),
+      { bagId: "lar:///ha.ka.ba/bags/crossroads", uri: "c" },
+      { bagId: "lar:///ha.ka.ba/wikis/daemon-x/working", uri: "d" },
+    ];
+    expect(pendingRemovalLines(rows, ["lar:///ha.ka.ba/bags/sdm", "lar:///ha.ka.ba/bags/crossroads"])).toEqual([
+      "seed: 1 pending removal(s) in lar:///ha.ka.ba/bags/crossroads: the files left disk and nothing tombstoned; answer once with `lares shore remove --all --count 1 --bag lar:///ha.ka.ba/bags/crossroads` (or `restore --all --count 1 --bag lar:///ha.ka.ba/bags/crossroads`)",
+      "seed: 3 pending removal(s) in lar:///ha.ka.ba/bags/sdm: the files left disk and nothing tombstoned; answer once with `lares shore remove --all --count 3 --bag lar:///ha.ka.ba/bags/sdm` (or `restore --all --count 3 --bag lar:///ha.ka.ba/bags/sdm`)",
+    ]);
   });
 });

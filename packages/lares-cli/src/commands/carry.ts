@@ -51,9 +51,10 @@ import {
 import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor } from "../render.js";
 import { readCensus, censusLine, type CensusReading } from "./census.js";
-import { scanFiles, candidatesOf, settleIngest, type ScanRow } from "../ingest-core.js";
+import { scanFiles, candidatesOf, settleIngest, openSyncedTree, type ScanRow } from "../ingest-core.js";
+import { discoverHoldings, canonIsDisk } from "../holdings.js";
 import { summaryOutput } from "../verb-result.js";
-import { vesselDid } from "../env.js";
+import { vesselDid, larBagsDir } from "../env.js";
 import { runVerb } from "../verb-call.js";
 import { newChangeId, newRequestId, taskContentId } from "@lararium/mesh";
 import { storeVerb, storeFailure } from "../store-door.js";
@@ -105,6 +106,11 @@ export interface CarryDoors {
   readonly heldSlugs: () => Promise<ReadonlySet<string>>;
   /** Mint a bag (and the wiki it opens as) through the existing CREATE road. */
   readonly mintBag: (bagUri: string) => Promise<void>;
+  /**
+   * The disk-sourced holdings whose canon this vessel never seeded (no synced base stands for any carrier of the bag).
+   * An import lands its rows over seeded canon alone, so it refuses while one stands unseeded. Absent: no guard.
+   */
+  readonly unseeded?: () => readonly string[];
   readonly kahuaLift: (handleIndex: number, lift: { readonly title: string; readonly text: string; readonly fields: Readonly<Record<string, string>>; readonly taint: readonly string[]; readonly sources: CarryKahuaHead["sources"]; readonly parent: string | null }) => Promise<{ readonly cid: string }>;
 }
 
@@ -171,6 +177,12 @@ export const LIVE_CARRY_DOORS: CarryDoors = {
     const effectKey = await taskContentId({ subject: bagUri, command: "CREATE", args: actionArgs, nonce: newChangeId() });
     const r = await runVerb("CREATE", actionArgs, await vesselDid(), { requestId: newRequestId(), effectKey });
     if (r.status === "error") throw new Error(r.errorMessage ?? `CREATE ${bagUri} refused`);
+  },
+  unseeded: () => {
+    const tree = openSyncedTree();
+    const seededBags = new Set(tree.rows().map((r) => r.bagId));
+    return discoverHoldings(larBagsDir()).filter((h) => { try { return canonIsDisk(h); } catch { return false; } })
+      .filter((h) => !seededBags.has(h.toBag)).map((h) => h.holding);
   },
   kahuaLift: async (face, lift) => {
     const { output } = await storeVerb("kahua-lift", { face, title: lift.title, text: lift.text, fields: lift.fields, taint: lift.taint, sources: lift.sources, parent: lift.parent });
@@ -495,6 +507,13 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   const { doors, apply } = opts;
   const bundle: VerifiedBundle = verifyBundle(resolve(src));
   const { manifest, redeclare } = bundle;
+  // THE ORDER GUARD: the walk runs found -> up -> seed -> import. An import lands its rows over the canon the seed
+  // laid, so its bag rows meet the checkout's canon at INGEST's three-way gate and stand off where they diverge; over
+  // an unseeded canon the import's rows would land as the canon itself, and the seed after would stand off against
+  // them. It refuses by name rather than seeding itself: a seed asks the operator to grade new canon, and an import
+  // never takes that answer for them.
+  const unseeded = apply && doors.unseeded ? doors.unseeded() : [];
+  if (unseeded.length > 0) throw new CarryRefused("carry-canon-unseeded", `the canon of ${unseeded.join(", ")} stands unseeded on this vessel, and an import lands over seeded canon alone: run \`lares vessel seed --apply\` first, then import again`);
   const journal = openJournal(manifest.bundleId, apply);
   const projections = larProjectionsHome();
   let faces = await doors.faces();

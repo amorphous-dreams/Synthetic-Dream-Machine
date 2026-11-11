@@ -54,7 +54,7 @@ import {
   skinnyHandleTiddler, isOversizedBody, ridesAsPointer,
   crossingDirection, type CapTier,
   isEffectRecordUri, effectRecordUri, RETIRED_EVENT_ID, isRetirementMarker, storeIsRetired,
-  writesBag, VerbRefusal,
+  writesBag, VerbRefusal, workingLayerOfCanon,
   CONTROL_HOME_ID, SECRET_HOME_ID,
   yieldToHost,
 } from "@lararium/mesh";
@@ -70,6 +70,7 @@ import { SESSION_FORM_TITLE_CODE, assertStorableTitle, storableTitleFault } from
 import { makeTw5FileInfo } from "./tw5-file-info.js";
 import { conflictWhy, decideIngest } from "./ingest-gate.js";
 import { placeMeme } from "./place-meme.js";
+import { snapshotUnderOverrides, fresherAfterChange, listFresherCanon, type FresherCanon } from "./override-bases.js";
 import type { MemeSink } from "./place-meme.js";
 import type { IngestOps } from "./ingest-gate.js";
 import { pairRenames } from "./delete-gate.js";
@@ -780,6 +781,18 @@ async function executeCREATE(action: CreateAction, access: BagAccess, opts: Acti
     const count = standing ? (await standing.listVisible()).filter((t) => !isEffectRecordUri(t)).length : 0;
     return { bag: action.bag, plane: action.plane, docUrl: existing, alreadyStood: true, count };
   }
+  // A BAG THAT RESOLVES ELSEWHERE STANDS ALREADY. The bag's own resolution answers, never a name list: a system canon
+  // bag rests in the Kahu realm (named by the realm's bag row), and another plane may hold a bag this plane's registry
+  // never names. A CREATE over such a bag mints nothing, so a seed may lead every disk-sourced holding with CREATE and
+  // never mint a second doc that shadows the one that stands.
+  if (!existing) {
+    // A probe of its own: the action's access caches what it resolved, and the mint below must reach the fresh doc.
+    const resolved = await makeBagAccess(opts).read(action.bag).catch(() => null);
+    if (resolved && !(await storeIsRetired(resolved, action.bag))) {
+      const count = (await resolved.listVisible()).filter((t) => !isEffectRecordUri(t)).length;
+      return { bag: action.bag, plane: action.plane, alreadyStood: true, resolvedElsewhere: true, count };
+    }
+  }
   // Mint + register inside withEffectRecord so the `creation` ledger record lands
   // after the new bag is reachable (the effect-record rides the new bag's own doc).
   return withEffectRecord(action, (bag) => access.write(bag), async () => {
@@ -1089,6 +1102,12 @@ async function landedHeads(access: BagAccess, bag: string): Promise<{ heads?: st
 async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5Deserializer, resolveByCid?: CarrierResolver): Promise<Record<string, unknown>> {
   const o = origin(action);
   const deletions = action.deletions ?? [];
+
+  // ── the working copies above this canon bag (override-bases.ts) ──
+  // INGEST writes canon alone. Before the wave lands, read what canon holds under each title the wiki's working layer
+  // shadows; after it lands, the instrument names each copy whose canon moved past its base. Nothing writes: the
+  // recipe stack decides what shows, and a top layer always shadows the one under it.
+  const overrides = await overrideWatch(access, action.toBag);
 
   // ── the vanished addresses a wave names (whole-carrier files gone from disk) ──
   // A WAVE TOMBSTONES NO CARRIER. A vanished file stands pending at the vessel's shore until a person
@@ -1541,9 +1560,11 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
     results.push({ uri: toUri, decision: "rename", from: fromUri, relinked });
   }
 
+  const fresher = overrides ? await overrides.read() : [];
   return {
     sourceUri: action.sourceUri, toBag: action.toBag, changeId: action.changeId,
     carriers: results,
+    ...(fresher.length > 0 ? { fresherCanon: fresherSummary(fresher) } : {}),
     ...(deletionSummary ? { deletions: deletionSummary } : {}),
     ...(kapaeSummary ? { kapae: kapaeSummary } : {}),
     // THE WAVE'S HEADS: the target bag's document after every carrier of this wave landed. Rows that stay behind
@@ -1554,6 +1575,54 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
 
 function origin(action: ResidencyAction): ChangeOrigin {
   return { kind: "lares-verb", requestId: action.requestId };
+}
+
+/**
+ * The watch over one canon bag: canon under each working copy, read now, and the read after the wave. Null where the
+ * bag names no canon bag, or its wiki holds no working layer this island reaches (a layer never minted shadows nothing).
+ */
+async function overrideWatch(access: BagAccess, canonBag: string): Promise<{ read(): Promise<FresherCanon[]> } | null> {
+  const workingBag = workingLayerOfCanon(canonBag);
+  if (workingBag === null) return null;
+  const working = await access.read(workingBag).catch(() => null);
+  const canon = await access.read(canonBag);
+  if (!working || !canon) return null;
+  const prior = await snapshotUnderOverrides(working, canon);
+  if (prior.size === 0) return null;
+  return { read: () => fresherAfterChange(canonBag, workingBag, working, canon, prior) };
+}
+
+/** The instrument's reading as an outcome names it: the count beside the titles (the outcome caps rows past 32). */
+function fresherSummary(fresher: readonly FresherCanon[]): Record<string, unknown> {
+  return { working: fresher[0]!.working, titles: fresher.map((f) => f.title), count: fresher.length };
+}
+
+/** The page a fresher-canon listing answers: the outcome carries at most 32 rows of an array. */
+export const FRESHER_CANON_PAGE = 32;
+
+/**
+ * THE FRESHER-CANON READ — every working copy of one wiki that shadows a canon text fresher than the one it forked from
+ * (`override-bases.ts`), a page at a time (`after` the title the page before ended on, `next` the cursor behind). It
+ * names a canon bag (`bag`, `lar:///ha.ka.ba/bags/<slug>`) and reaches the wiki's working layer by access. It reads
+ * alone: a person who wants the fresher canon removes the copy with the ordinary verbs.
+ */
+export function makeFresherCanonReactor(opts: ActionHandlerOptions): VerbReactor {
+  return async (args, ctx) => {
+    const bag = typeof args["bag"] === "string" ? args["bag"] : "";
+    const workingBag = workingLayerOfCanon(bag);
+    if (workingBag === null) return { ok: false, refusal: "fresher-canon-incomplete", why: "fresher-canon names a canon bag (`bag`: lar:///ha.ka.ba/bags/<slug>)" };
+    const proof = await ctx.cap("read", workingBag);
+    if (!proof.ok) throw new VerbRefusal("cap-denied", `cap-denied: read on ${workingBag} required (${proof.reason ?? "no reason"})`);
+    const access = makeBagAccess(opts);
+    const working = await access.read(workingBag).catch(() => null);
+    const canon = await access.read(bag);
+    const rows = working && canon ? await listFresherCanon(bag, workingBag, working, canon) : [];
+    const after = typeof args["after"] === "string" ? args["after"] : null;
+    const behind = after === null ? rows : rows.filter((r) => r.title > after);
+    const taken = behind.slice(0, FRESHER_CANON_PAGE);
+    const next = behind.length > taken.length ? taken[taken.length - 1]!.title : null;
+    return { ok: true, bag, working: workingBag, fresher: taken.map((r) => ({ ...r })), count: rows.length, next };
+  };
 }
 
 /** Read a bag's OWN Manifestation of title (or null if absent / bag unreachable). */
