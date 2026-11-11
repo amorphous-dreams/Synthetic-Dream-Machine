@@ -556,9 +556,10 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     // do, and each `lar:control-result` to the answer door. Both read fail-closed; the active-surface gate keys
     // on the transport id downstream, never a payload claim.
     const frame = readLarFrame(raw);
-    if (frame) { _frameHandler?.(frame); return; }
+    if (frame) { if (!_frameHandler) console.warn("[race-diag] daemon-vm frame dropped: no frame handler"); _frameHandler?.(frame); return; }
     const result = readLarControlResult(raw);
-    if (result) { _controlResultHandler?.(result); return; }
+    if (result) { console.log(`[race-diag] daemon-vm result ${result.eventId} ${result.status}${_controlResultHandler ? "" : " DROPPED: no result handler"}`); _controlResultHandler?.(result); return; }
+    { const t = (raw as { type?: unknown } | null)?.type; if (t === "lar:frame" || t === "lar:control-result") console.warn(`[race-diag] daemon-vm ${String(t)} DROPPED: fails its reader`); }
     if (!isIslandToVesselMsg(raw)) return;
 
     if (raw.type === "daemon:face-settled") {

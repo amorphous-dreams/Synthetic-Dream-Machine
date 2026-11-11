@@ -625,7 +625,9 @@ function dispatchLarControlEventInner(ev: LarMsg_ControlEvent, door?: (result: L
     // `applied` holds an edit the vessel's store keeps. A refused or closed receipt answers by name, never `applied`.
     const resting = scope && !sense && status === "applied" ? scope.receipt?.held() ?? null : null;
     if (scope && resting) {
+      console.log(`[race-diag] result ${ev.eventId} ${status} parks behind the receipt`);
       void resting.then((rested) => {
+        console.log(`[race-diag] result ${ev.eventId} receipt answered ${String(rested)}`);
         if (rested) { scope.post(result); return; }
         const unkept = mkLarControlResult({
           eventId: ev.eventId, cameraId: ev.cameraId, mountEpoch: ev.mountEpoch,
@@ -637,7 +639,7 @@ function dispatchLarControlEventInner(ev: LarMsg_ControlEvent, door?: (result: L
         scope.post(unkept);
       });
     }
-    else if (scope) scope.post(result);
+    else if (scope) { console.log(`[race-diag] result ${ev.eventId} ${status} posts`); scope.post(result); }
     // No camera stands to carry it: the island's own door answers, so the page never waits on silence.
     else if (door) door(result);
     else console.warn(`[wiki-worker] no camera stands to answer ${ev.eventId} (${ev.cameraId})`);
@@ -645,7 +647,7 @@ function dispatchLarControlEventInner(ev: LarMsg_ControlEvent, door?: (result: L
   };
   const sense = ev.kind === "lar:sense";
   const stale = (): LarMsg_ControlResult | null => {
-    console.warn(`[wiki-worker] stale-target: ${target}`);
+    console.warn(`[wiki-worker] stale-target: ${target} [race-diag ev=${ev.eventId} epoch=${String(ev.mountEpoch)} scope=${scope ? String(scope.mountEpoch) : "none"}]`);
     return sense ? null : answer("stale-target");
   };
   // A host door's answer closes its request whatever epoch the page shows: the ledger keys by request, not mount.

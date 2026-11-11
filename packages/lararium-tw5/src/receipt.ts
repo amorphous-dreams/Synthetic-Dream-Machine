@@ -119,6 +119,7 @@ export function makeReceiptCapability(deps: ReceiptCapabilityDeps): ReceiptCapab
     return await new Promise<boolean>((resolve) => {
       parked.set(requestId, resolve);
       const ask: IslandMsg_ReceiptRequest = { type: "receipt:request", requestId, documentIds, heads };
+      console.log(`[race-diag] island receipt ask ${requestId.slice(0, 8)} for ${String(documentIds.length)} doc(s)`);
       try { deps.post(ask); }
       catch { parked.delete(requestId); resolve(false); }
       left();
@@ -159,7 +160,11 @@ export function makeReceiptCapability(deps: ReceiptCapabilityDeps): ReceiptCapab
         },
       };
     },
-    held: () => (waiting.size === 0 ? null : Promise.all([...waiting]).then((verdicts) => verdicts.every(Boolean))),
+    held: () => {
+      if (waiting.size === 0) return null;
+      console.log(`[race-diag] held() over ${String(waiting.size)} act(s), ${String(parked.size)} parked ask(s), ${String(asking)} asking`);
+      return Promise.all([...waiting]).then((verdicts) => verdicts.every(Boolean));
+    },
     unrested: () => [...unrested],
     async idle() {
       while (waiting.size > 0) await Promise.all([...waiting]);
@@ -172,6 +177,7 @@ export function makeReceiptCapability(deps: ReceiptCapabilityDeps): ReceiptCapab
       const { type, requestId, issued, why, stalled: stall } = raw as Record<string, unknown>;
       if (type !== "receipt:issued" || typeof requestId !== "string") return false;
       const resolve = parked.get(requestId);
+      console.log(`[race-diag] island receipt answer ${requestId.slice(0, 8)} issued=${String(issued)} stalled=${String(stall)}${resolve ? "" : " (unparked)"}`);
       if (!resolve) return true;
       parked.delete(requestId);
       if (stall === true) stalled++;

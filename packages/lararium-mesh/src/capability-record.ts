@@ -67,7 +67,8 @@ export async function answerReceipt(caps: CapabilityRecord, ask: Pick<IslandMsg_
   const base = { type: "receipt:issued" as const, requestId: ask.requestId };
   const receipt = caps.receipt;
   if (!receipt) return { ...base, issued: false, why: "ReceiptCapabilityUnavailable: no receipt capability stands on this vessel" };
-  try { await receipt(ask.documentIds, ask.heads); return { ...base, issued: true, proof: { documentIds: [...ask.documentIds] } }; }
+  console.log(`[race-diag] record receipt ask ${ask.requestId.slice(0, 8)}`);
+  try { await receipt(ask.documentIds, ask.heads); console.log(`[race-diag] record receipt ${ask.requestId.slice(0, 8)} issued`); return { ...base, issued: true, proof: { documentIds: [...ask.documentIds] } }; }
   catch (e) { return { ...base, issued: false, why: e instanceof Error ? e.message : String(e) }; }
 }
 

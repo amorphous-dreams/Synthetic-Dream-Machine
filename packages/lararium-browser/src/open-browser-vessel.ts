@@ -1203,6 +1203,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // sink right now. Defaults to the pinned wiki at boot; setActiveSurface flips it live (a pure gate flip, no
   // reboot). Pin ⊥ active — the frame gate admits only this surface's frames, keyed on the transport id.
   let activeSurfaceId = "";
+  let raceDiagDrops = 0;
 
   // ── Residency MECHANISM (parity with node — a tab has finite memory too) ────
   let vmManager!: BrowserVesselIslandPool;   // set in makePool
@@ -2034,6 +2035,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         if (!slug) throw new Error("wiki-switch: `slug` required");
         const active = await wikiActivation.ensureActive(slug);
         if (active) {
+          console.log(`[race-diag] active surface ${activeSurfaceId} -> ${slug} (wiki-switch)`);
           activeSurfaceId = slug;   // flip the projection gate to the now-live wiki
           void daemon.placeVerb({ origin: "channel", verb: "open-wiki", args: { slug }, requestedBy: "wiki-switch" });
           pushSwitcherState();      // reflect the new surface into the daemon widget
@@ -2271,9 +2273,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           // surface or epoch it stops showing. A host-door ask waits on the root-services slice.
           if (msg.type === "lar:frame") {
             if (_id === activeSurfaceId) onFrame?.({ ...msg, surface: _id });
+            else if (raceDiagDrops++ < 12) console.log(`[race-diag] pool frame of ${_id} dropped at the gate (active ${activeSurfaceId})`);
             return;
           }
-          if (msg.type === "lar:control-result") { onControlResult?.(_id, msg); return; }
+          if (msg.type === "lar:control-result") { console.log(`[race-diag] pool result ${msg.eventId} ${msg.status} of ${_id}`); onControlResult?.(_id, msg); return; }
           if (msg.type !== "event") return;
           // Coherence-nalu frame → the DOM coherence indicator. `obstructing` rode the wire as JSON
           // (the event payload admits only scalars); parse it back for the sink.
@@ -2325,12 +2328,14 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // #projection sink the pool wikis use — gated on the active-surface pointer, so a summoned daemon paints
       // and otherwise its frames drop. One sink, the daemon a peer surface among the wikis (KA·BA braid).
       daemon.onFrame((raw) => {
-        if (activeSurfaceId !== DAEMON_SURFACE_ID) return;
+        if (activeSurfaceId !== DAEMON_SURFACE_ID) { if (raceDiagDrops++ < 12) console.log(`[race-diag] daemon frame dropped at the gate (active ${activeSurfaceId})`); return; }
         const frame = readLarFrame(raw);
         if (frame) onFrame?.({ ...frame, surface: DAEMON_SURFACE_ID });
+        else console.warn("[race-diag] daemon frame fails its reader at the vessel");
       });
       daemon.onControlResult((raw) => {
         const result = readLarControlResult(raw);
+        console.log(`[race-diag] daemon result ${result ? `${result.eventId} ${result.status}` : "fails its reader"}`);
         if (result) onControlResult?.(DAEMON_SURFACE_ID, result);
       });
       // The daemon's OWN verb OUT-path (a projected switcher click → wiki-switch /
@@ -2446,6 +2451,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     // cold boot). No reboot — an active-surface change is a projection-gate flip, not a manifest rebuild.
     setActiveSurface: (surfaceId: string) => {
       const moved = surfaceId !== activeSurfaceId;
+      console.log(`[race-diag] active surface ${activeSurfaceId} -> ${surfaceId} (set-surface)`);
       activeSurfaceId = surfaceId;
       // Its frames dropped at the gate until now: ask it to paint whole under a fresh epoch.
       if (moved) returnLeg.resend(surfaceId);

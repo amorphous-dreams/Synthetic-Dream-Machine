@@ -32,6 +32,7 @@ export async function answerReceiptWithHeads(repo: Repo | null, ask: IslandMsg_R
     if (named.length > 0) {
       const holds = (): boolean => { try { return hasHeads(handle.doc() as Parameters<typeof hasHeads>[0], named); } catch { return false; } };
       if (!holds()) {
+        console.log(`[race-diag] receipt ${ask.requestId.slice(0, 8)} waits on ${id.slice(0, 10)} (peer ${islandPeer === undefined ? "unnamed" : repo.peers.includes(islandPeer as never) ? "present" : "absent"})`);
         let rounds = 0;
         let channelClosed = false;
         const arrived = await new Promise<boolean>((resolve) => {
@@ -48,6 +49,7 @@ export async function answerReceiptWithHeads(repo: Repo | null, ask: IslandMsg_R
             if (!repo.peers.includes(islandPeer as never)) { channelClosed = true; finish(holds()); }
           }
         });
+        console.log(`[race-diag] receipt ${ask.requestId.slice(0, 8)} wait ends arrived=${String(arrived)} rounds=${String(rounds)} closed=${String(channelClosed)}`);
         if (!arrived) return { issued: false, stalled: true, why: channelClosed ? `stalled: the island's channel closed before the vessel's copy of ${id} held its heads` : `stalled: the vessel's copy of ${id} changed ${RECEIPT_STALL_ROUNDS} times without holding the island's heads` };
       }
     }

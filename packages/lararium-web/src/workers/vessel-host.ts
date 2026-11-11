@@ -117,9 +117,12 @@ export function standVesselHost(env: VesselHostEnv = {}) {
   // A session never sees a surface its face does not wear.
   const wearsLitFace = (conn: Conn): boolean =>
     litVessel !== null && conn.session?.admission === "admitted" && conn.session.face === litVessel.face;
+  let raceDiagFanoutDrops = 0;
   const surfaceFanout = (msg: VesselToPage): void => {
-    if (!litVessel) { lighting?.post(msg); return; }
-    for (const conn of conns.values()) if (wearsLitFace(conn)) conn.post(msg);
+    if (!litVessel) { if (!lighting && raceDiagFanoutDrops++ < 12) console.log(`[race-diag] fanout ${msg.t} dropped: no light and no lighting tab`); lighting?.post(msg); return; }
+    let reached = 0;
+    for (const conn of conns.values()) if (wearsLitFace(conn)) { conn.post(msg); reached++; }
+    if (reached === 0 && raceDiagFanoutDrops++ < 12) console.log(`[race-diag] fanout ${msg.t} reached no session: lit face ${String(litVessel.face).slice(0, 10)}, sessions ${[...conns.values()].map((c) => `${String(c.session?.face ?? null).slice(0, 10)}/${String(c.session?.admission ?? "none")}`).join(",")}`);
   };
   const statusTo = (conn: Conn | undefined, s: VesselStatus): void => conn?.post({ t: "status", status: s });
 
@@ -189,7 +192,7 @@ export function standVesselHost(env: VesselHostEnv = {}) {
     retire();
     const mine = {};
     lightNow = mine;
-    const ofThisLight = <A extends unknown[]>(f: (...args: A) => void) => (...args: A): void => { if (lightNow === mine) f(...args); };
+    const ofThisLight = <A extends unknown[]>(f: (...args: A) => void) => (...args: A): void => { if (lightNow === mine) f(...args); else console.log(`[race-diag] a callback of a retired light dropped (${typeof args[0] === "object" && args[0] !== null && "type" in args[0] ? String((args[0] as { type: unknown }).type) : typeof args[0]})`); };
     lighting = conn;
     litBy = first.sessionId;
     if (b.sharedHolderUrl) standHolderSpawn((msg) => conn.post(msg));
@@ -215,6 +218,7 @@ export function standVesselHost(env: VesselHostEnv = {}) {
       onControlResult: ofThisLight((surfaceId, result) => {
         const sender = controlSenders.get(result.eventId);
         controlSenders.delete(result.eventId);
+        console.log(`[race-diag] vessel-host result ${result.eventId} ${result.status} -> ${sender ? `sender ${sender.session?.sessionId.slice(0, 8) ?? "unseated"}` : "fanout"}`);
         const msg = { t: "control-result", surface: surfaceId, result } as const;
         if (sender) sender.post(msg);
         else surfaceFanout(msg);
@@ -449,6 +453,7 @@ export function standVesselHost(env: VesselHostEnv = {}) {
                 // AN EVENTID NAMES ONE PENDING ACT: a second event under it would take the first one's result.
                 if (controlSenders.has(msg.ev.eventId)) throw new Error(`control-event-pending: the event ${msg.ev.eventId} already waits on its result`);
                 controlSenders.set(msg.ev.eventId, conn);
+                console.log(`[race-diag] vessel-host event ${msg.ev.eventId} -> ${msg.surface} (session ${sessionId.slice(0, 8)})`);
                 try { v.sendControlEvent(msg.surface, msg.ev); }
                 catch (err) { if (controlSenders.get(msg.ev.eventId) === conn) controlSenders.delete(msg.ev.eventId); throw err; }
               }).catch(refusedQuietly("a control event"));

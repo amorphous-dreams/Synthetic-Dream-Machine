@@ -493,8 +493,8 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
   const stopped = new Promise<{ readonly why: string; readonly stage: "custody" | "open" }>((resolve) => { ended = resolve; });
   const vessel = standVessel({
     onPhase: (p) => { paint(p); projectionSink.setBreath("lares", { phase: p }); },
-    onFrame: (frame) => { if (projectionSink.apply(frame) === "painted" && frame.keys.some((key) => key.key === "lar:surface")) { reportFirstPaint(); mirrorTrigger?.(); } mirrorShownSync?.(); },
-    onControlResult: (_surface, result) => { projectionSink.applyResult(result); },
+    onFrame: (frame) => { const verdict = projectionSink.apply(frame); if (verdict !== "painted") console.log(`[race-diag] page frame of ${frame.surface} epoch ${String(frame.mountEpoch)} ${verdict}`); if (verdict === "painted" && frame.keys.some((key) => key.key === "lar:surface")) { reportFirstPaint(); mirrorTrigger?.(); } mirrorShownSync?.(); },
+    onControlResult: (_surface, result) => { const verdict = projectionSink.applyResult(result); console.log(`[race-diag] page result ${result.eventId} ${result.status} ${verdict}`); },
     onPortMessage: (binding, islandKey, msg) => pagePortDelivery.onPortMessage(binding, islandKey, msg),
     onStatus: (status) => {
       if (status.rest) paintRest(document, status.rest);

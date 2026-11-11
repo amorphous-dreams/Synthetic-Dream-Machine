@@ -64,7 +64,10 @@ function filesUnder(dir: string): string[] {
 const projection = (): Map<string, number> =>
   new Map([...filesUnder(join(hearth!.root, "projections", "bags")), ...filesUnder(join(hearth!.root, "projections", "wikis"))].map((f) => [f, statSync(f).mtimeMs]));
 
-const tail = (): string => lines.filter((l) => !l.startsWith("Warning: Global assignment")).slice(-80).join("\n");
+const tail = (): string => [
+  // DIAGNOSTIC: the race-diag trail (frames, results and receipts across the seat landing), then the last lines.
+  "── race-diag ──", ...lines.filter((l) => l.includes("[race-diag]") || l.includes("seat")).slice(-220), "── tail ──",
+  ...lines.filter((l) => !l.startsWith("Warning: Global assignment") && !l.includes("[race-diag]")).slice(-80)].join("\n");
 
 /** The worn face's stage folder (`kahua-<F>`), its relation read off the hearth's founding record. */
 const faceFolder = (): string => kahuaFaceFolder(stagedHearthRelation(hearth!.root));
@@ -310,7 +313,7 @@ describe("the stage walk: the node half, the join, and the page's save route", (
     // The joined boot re-renders the pane after the crossing stands: `authorInPage` waits for the toolbar's own button to paint.
     await authorInPage(page!, title, body);
     expect(await waitPane(page!, body), `the saved body never painted\n${tail()}`).toBe(true);
-    expect(await pane(page!)).toContain(`data-tiddler-title="${title}"`);
+    expect(await pane(page!), tail()).toContain(`data-tiddler-title="${title}"`);
     // A bound for the sync and the projector to act, were the save to reach the hearth at all (S1 proved the instrument).
     await new Promise((r) => setTimeout(r, 8_000));
     const after = projection();
