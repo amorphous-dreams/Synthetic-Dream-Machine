@@ -111,7 +111,6 @@
   "askSites": [
     "packages/lararium-browser/src/browser-dyad-refusal.ts: \"dyad:ask\"",
     "packages/lararium-browser/src/browser-dyad-refusal.ts: \"dyad:read\"",
-    "packages/lararium-browser/src/browser-island-caps.ts: \"receipt:request\"",
     "packages/lararium-browser/src/holder-routes.ts: \"cas:want\"",
     "packages/lararium-browser/src/holder-routes.ts: \"dyad:ask\"",
     "packages/lararium-browser/src/holder-routes.ts: \"receipt:request\"",
