@@ -70,7 +70,7 @@ import { SESSION_FORM_TITLE_CODE, assertStorableTitle, storableTitleFault } from
 import { makeTw5FileInfo } from "./tw5-file-info.js";
 import { conflictWhy, decideIngest } from "./ingest-gate.js";
 import { placeMeme } from "./place-meme.js";
-import { snapshotUnderOverrides, sweepOverrides, listOverrideStandoffs, answerOverride, type OverrideSweep } from "./override-bases.js";
+import { snapshotUnderOverrides, fresherAfterChange, listFresherCanon, type FresherCanon } from "./override-bases.js";
 import type { MemeSink } from "./place-meme.js";
 import type { IngestOps } from "./ingest-gate.js";
 import { pairRenames } from "./delete-gate.js";
@@ -1103,10 +1103,10 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
   const o = origin(action);
   const deletions = action.deletions ?? [];
 
-  // ── the working overrides above this canon bag (override-bases.ts) ──
+  // ── the working copies above this canon bag (override-bases.ts) ──
   // INGEST writes canon alone. Before the wave lands, read what canon holds under each title the wiki's working layer
-  // overrides; after it lands, the sweep weighs each override whose canon text moved: a stale or converged copy
-  // retracts, a diverged one stands off under a key. A working-only title never takes part.
+  // shadows; after it lands, the instrument names each copy whose canon moved past its base. Nothing writes: the
+  // recipe stack decides what shows, and a top layer always shadows the one under it.
   const overrides = await overrideWatch(access, action.toBag);
 
   // ── the vanished addresses a wave names (whole-carrier files gone from disk) ──
@@ -1560,11 +1560,11 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
     results.push({ uri: toUri, decision: "rename", from: fromUri, relinked });
   }
 
-  const swept = overrides ? await overrides.sweep(o) : null;
+  const fresher = overrides ? await overrides.read() : [];
   return {
     sourceUri: action.sourceUri, toBag: action.toBag, changeId: action.changeId,
     carriers: results,
-    ...(swept && (swept.retracted.length > 0 || swept.standing.length > 0) ? { overrides: overrideSummary(swept) } : {}),
+    ...(fresher.length > 0 ? { fresherCanon: fresherSummary(fresher) } : {}),
     ...(deletionSummary ? { deletions: deletionSummary } : {}),
     ...(kapaeSummary ? { kapae: kapaeSummary } : {}),
     // THE WAVE'S HEADS: the target bag's document after every carrier of this wave landed. Rows that stay behind
@@ -1578,76 +1578,50 @@ function origin(action: ResidencyAction): ChangeOrigin {
 }
 
 /**
- * The override watch over one canon bag: the snapshot of canon under each working override, taken now, and the sweep
- * that weighs them after the wave. Null where the bag names no canon bag, or its wiki holds no working layer this
- * island reaches (a layer never minted holds no override).
+ * The watch over one canon bag: canon under each working copy, read now, and the read after the wave. Null where the
+ * bag names no canon bag, or its wiki holds no working layer this island reaches (a layer never minted shadows nothing).
  */
-async function overrideWatch(access: BagAccess, canonBag: string): Promise<{ sweep(o: ChangeOrigin): Promise<OverrideSweep> } | null> {
+async function overrideWatch(access: BagAccess, canonBag: string): Promise<{ read(): Promise<FresherCanon[]> } | null> {
   const workingBag = workingLayerOfCanon(canonBag);
   if (workingBag === null) return null;
-  const working = await access.write(workingBag).catch(() => null);
+  const working = await access.read(workingBag).catch(() => null);
   const canon = await access.read(canonBag);
   if (!working || !canon) return null;
   const prior = await snapshotUnderOverrides(working, canon);
   if (prior.size === 0) return null;
-  return { sweep: (o) => sweepOverrides(canonBag, workingBag, working, canon, prior, o) };
+  return { read: () => fresherAfterChange(canonBag, workingBag, working, canon, prior) };
 }
 
-/** The sweep as an outcome names it: counts beside rows (the outcome caps rows past 32). */
-function overrideSummary(swept: OverrideSweep): Record<string, unknown> {
-  return {
-    working: swept.working,
-    retracted: [...swept.retracted], retractedCount: swept.retracted.length,
-    standing: swept.standing.map((s) => ({ title: s.title, key: s.key })), standingCount: swept.standing.length,
-  };
+/** The instrument's reading as an outcome names it: the count beside the titles (the outcome caps rows past 32). */
+function fresherSummary(fresher: readonly FresherCanon[]): Record<string, unknown> {
+  return { working: fresher[0]!.working, titles: fresher.map((f) => f.title), count: fresher.length };
 }
 
-/** The ops the `override` verb carries. */
-export const OVERRIDE_OPS = ["list", "take-working", "take-canon"] as const;
-
-/** The page an override listing answers: the outcome carries at most 32 rows of an array. */
-export const OVERRIDE_LIST_PAGE = 32;
+/** The page a fresher-canon listing answers: the outcome carries at most 32 rows of an array. */
+export const FRESHER_CANON_PAGE = 32;
 
 /**
- * THE OVERRIDE VERB — a person's answers to the working overrides that stand off over a moved canon text
- * (`override-bases.ts`). It names a canon bag (`bag`, `lar:///ha.ka.ba/bags/<slug>`) and reaches the wiki's working
- * layer by access, the way every action verb reaches a deep bag:
- *
- *   list           every override standing off, a page at a time (`after` the title the page before ended on, `next`
- *                  the cursor of the page behind), each with its key and its three states
- *   take-working   keep the override and re-base it on the canon text that stands (`title`, `key`)
- *   take-canon     retract the override so canon shows through (`title`, `key`)
- *
- * An answer names the key the person read; where the states moved since, nothing writes and the refusal names the key
- * that stands. A wiki whose working layer this island cannot reach answers an empty listing.
+ * THE FRESHER-CANON READ — every working copy of one wiki that shadows a canon text fresher than the one it forked from
+ * (`override-bases.ts`), a page at a time (`after` the title the page before ended on, `next` the cursor behind). It
+ * names a canon bag (`bag`, `lar:///ha.ka.ba/bags/<slug>`) and reaches the wiki's working layer by access. It reads
+ * alone: a person who wants the fresher canon removes the copy with the ordinary verbs.
  */
-export function makeOverrideReactor(opts: ActionHandlerOptions): VerbReactor {
+export function makeFresherCanonReactor(opts: ActionHandlerOptions): VerbReactor {
   return async (args, ctx) => {
-    const op = typeof args["op"] === "string" ? args["op"] : "list";
     const bag = typeof args["bag"] === "string" ? args["bag"] : "";
     const workingBag = workingLayerOfCanon(bag);
-    if (!(OVERRIDE_OPS as readonly string[]).includes(op)) return { ok: false, op, refusal: "override-op-unknown", why: `the override verb carries ${OVERRIDE_OPS.join(", ")}; it names no "${op}"` };
-    if (workingBag === null) return { ok: false, op, refusal: "override-answer-incomplete", why: "override names a canon bag (`bag`: lar:///ha.ka.ba/bags/<slug>)" };
-    const grade: "read" | "admin" = op === "list" ? "read" : "admin";
-    const proof = await ctx.cap(grade, workingBag);
-    if (!proof.ok) throw new VerbRefusal("cap-denied", `cap-denied: ${grade} on ${workingBag} required (${proof.reason ?? "no reason"})`);
+    if (workingBag === null) return { ok: false, refusal: "fresher-canon-incomplete", why: "fresher-canon names a canon bag (`bag`: lar:///ha.ka.ba/bags/<slug>)" };
+    const proof = await ctx.cap("read", workingBag);
+    if (!proof.ok) throw new VerbRefusal("cap-denied", `cap-denied: read on ${workingBag} required (${proof.reason ?? "no reason"})`);
     const access = makeBagAccess(opts);
-    const working = await access.write(workingBag).catch(() => null);
+    const working = await access.read(workingBag).catch(() => null);
     const canon = await access.read(bag);
-    if (op === "list") {
-      const rows = working && canon ? await listOverrideStandoffs(bag, workingBag, working, canon) : [];
-      const after = typeof args["after"] === "string" ? args["after"] : null;
-      const behind = after === null ? rows : rows.filter((r) => r.title > after);
-      const taken = behind.slice(0, OVERRIDE_LIST_PAGE);
-      const next = behind.length > taken.length ? taken[taken.length - 1]!.title : null;
-      return { ok: true, op, bag, working: workingBag, standoffs: taken.map((r) => ({ ...r })), standoffCount: rows.length, next };
-    }
-    const title = typeof args["title"] === "string" ? args["title"] : "";
-    const key = typeof args["key"] === "string" ? args["key"] : "";
-    if (title === "" || key === "") return { ok: false, op, refusal: "override-answer-incomplete", why: `${op} names the overridden title (\`title\`) and the standoff's key (\`key\`)` };
-    if (!working || !canon) return { ok: false, op, refusal: "no-standoff-stands", why: `no working layer of ${bag} stands where this island reaches it` };
-    const answer = await answerOverride(op as "take-working" | "take-canon", bag, workingBag, working, canon, title, key, { kind: "lares-verb", requestId: ctx.invocation.requestId });
-    return answer.ok ? { ok: true, op, bag, working: workingBag, title, key, took: answer.took } : { op, bag, title, ...answer };
+    const rows = working && canon ? await listFresherCanon(bag, workingBag, working, canon) : [];
+    const after = typeof args["after"] === "string" ? args["after"] : null;
+    const behind = after === null ? rows : rows.filter((r) => r.title > after);
+    const taken = behind.slice(0, FRESHER_CANON_PAGE);
+    const next = behind.length > taken.length ? taken[taken.length - 1]!.title : null;
+    return { ok: true, bag, working: workingBag, fresher: taken.map((r) => ({ ...r })), count: rows.length, next };
   };
 }
 

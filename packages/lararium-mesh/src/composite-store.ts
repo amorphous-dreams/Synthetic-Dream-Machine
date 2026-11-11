@@ -259,7 +259,7 @@ export class CompositeStore implements LarTiddlerStore {
    * THE FORK REMEMBERS ITS BASE (`override-base.ts`). A write into a wiki's WORKING layer of a title a lower layer holds
    * live forks an override; the record lands naming the hash of the lower record's text (`meta.overrideBase`). A later
    * write of a title the working layer already holds carries the base it named forward (a store that replaces records
-   * whole keeps it so); a record that names its own base keeps it (a re-base names the new one). A working-only title,
+   * whole keeps it so); a record that names its own base keeps it. A working-only title,
    * a tombstone, and a write into any other layer pass untouched.
    */
   /** Whether a write into `store` lands on a wiki's working layer, where a write of a title canon holds forks an override. */

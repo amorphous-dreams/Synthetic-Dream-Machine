@@ -1,73 +1,46 @@
 /**
- * override-bases — what a canon change does to the working overrides above it.
+ * override-bases — the instrument that tells a person canon moved under a working copy that shadows it.
  *
- * A wiki composes its working layer (`wikis/<slug>/working`) over its canon bag (`bags/<slug>`). A working record of a
- * title canon holds overrides canon's record, and names the hash of the canon text it forked from (`overrideBase`,
- * `@lararium/mesh` `override-base.ts`). When canon moves underneath it, three cases part:
+ * A wiki composes its working layer (`wikis/<slug>/working`) over its canon bag (`bags/<slug>`), and the recipe stack
+ * alone decides what shows: a top layer always shadows the layers under it. A working record of a title canon holds
+ * shadows canon's record, and names the hash of the canon text it forked from (`overrideBase`, `@lararium/mesh`
+ * `override-base.ts`).
  *
- *   STALE      the override's text still says its base: a copy no hand changed. It RETRACTS (hard-remove, never a
- *              tombstone), so the new canon shows through.
- *   CONVERGED  the override's text says what canon now says: it carries nothing canon lacks, and it retracts too.
- *   DIVERGED   a hand changed the override, and canon moved off the base too. It STANDS OFF under a key and stays as it
- *              stood; a person answers by the key: take-working (keep the override, re-base it on the canon text that
- *              stands), take-canon (retract the override), or leaves it standing.
- *
- * A working-only title (canon holds none) never takes part: nothing here promotes, and nothing here writes canon.
+ * When canon moves past that base, nothing writes: the working copy keeps shadowing canon, its bytes untouched. The
+ * instrument reads the move and WARNS per title, "canon is fresher than the working copy above it", so a person who
+ * wants the fresher canon removes the copy with the ordinary verbs. A working-only title never takes part, and nothing
+ * here promotes, retracts or writes any layer.
  *
  * ONE OWNER PER GATE. INGEST's three-way gate (disk, synced base, canon render) decides what canon takes; this module
- * never weighs a disk byte. It reads the canon text before and after the gate ran, and decides only what the working
- * layer above it does. The standoff derives from the records alone (base, working text, canon text), so a listing reads
- * the same rows on any island that reaches the two layers, and no second ledger keeps them.
+ * never weighs a disk byte. It reads canon under each working copy before and after the gate ran.
  */
 
-import { sha256HexBytesSync, OVERRIDE_BASE_META, isEffectRecordUri, overrideBaseOf, overrideTextHash, type ChangeOrigin, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh";
+import { isEffectRecordUri, overrideBaseOf, overrideTextHash, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh";
 
-/** One diverged override standing off: the bags, the title, the key a person answers by, and the states it folds. */
-export interface OverrideStandoff {
+/** One working copy that shadows a canon text fresher than the one it forked from. */
+export interface FresherCanon {
   readonly bag: string;
   readonly working: string;
   readonly title: string;
-  readonly key: string;
-  /** The canon text hash the override forked from. */
-  readonly base: string;
-  /** The override's own text hash. */
-  readonly workingHash: string;
+  /** The canon text hash the working copy forked from, or null where it names none (forked before bases were kept). */
+  readonly base: string | null;
   /** The canon text hash that stands now, or null where canon holds no live record of the title. */
   readonly canonHash: string | null;
-}
-
-/** What one sweep did to the working layer above a canon change. */
-export interface OverrideSweep {
-  readonly working: string;
-  /** Overrides that retracted (stale or converged); canon shows through. */
-  readonly retracted: readonly string[];
-  /** Overrides that stand off under a key; each stays as it stood. */
-  readonly standing: readonly OverrideStandoff[];
 }
 
 const live = (r: LarTiddlerRecord | null | undefined): r is LarTiddlerRecord => r !== null && r !== undefined && r.meta?.deleted !== true;
 const textHashOf = (r: LarTiddlerRecord | null | undefined): string | null => (live(r) ? overrideTextHash(r.tiddler) : null);
 
-/** The key one override standoff stands under: it folds the bags, the title and the three states it weighed. */
-export function overrideStandoffKey(working: string, title: string, base: string, workingHash: string, canonHash: string | null): string {
-  return sha256HexBytesSync(new TextEncoder().encode(JSON.stringify(["override", working, title, base, workingHash, canonHash]))).slice(0, 24);
-}
-
-/**
- * WHERE ONE OVERRIDE STANDS, read from its records alone: null where nothing stands off (no base, canon still says the
- * base, or the override says what canon says), else the standoff with its key.
- */
-export function overrideStanding(bag: string, working: string, title: string, override: LarTiddlerRecord, canon: LarTiddlerRecord | null): OverrideStandoff | null {
-  const base = overrideBaseOf(override);
+/** Whether canon stands fresher than one working copy's base: null where the copy names no base or canon still says it. */
+export function fresherThanBase(bag: string, working: string, title: string, copy: LarTiddlerRecord, canon: LarTiddlerRecord | null): FresherCanon | null {
+  const base = overrideBaseOf(copy);
   if (base === null) return null;
-  const workingHash = overrideTextHash(override.tiddler);
   const canonHash = textHashOf(canon);
-  if (canonHash === base || workingHash === base || workingHash === canonHash) return null;
-  return { bag, working, title, key: overrideStandoffKey(working, title, base, workingHash, canonHash), base, workingHash, canonHash };
+  return canonHash === base ? null : { bag, working, title, base, canonHash };
 }
 
 /** The live non-ledger titles a working layer holds, with their records. */
-async function overridesIn(working: LarTiddlerStore): Promise<Map<string, LarTiddlerRecord>> {
+async function copiesIn(working: LarTiddlerStore): Promise<Map<string, LarTiddlerRecord>> {
   const out = new Map<string, LarTiddlerRecord>();
   for (const title of await working.listVisible()) {
     if (isEffectRecordUri(title)) continue;
@@ -77,86 +50,40 @@ async function overridesIn(working: LarTiddlerStore): Promise<Map<string, LarTid
   return out;
 }
 
-/**
- * Read what canon holds under each title the working layer overrides, BEFORE a canon change: the sweep after the
- * change weighs each override against it. A working layer that holds nothing reads an empty snapshot.
- */
+/** Read what canon holds under each title the working layer shadows, BEFORE a canon change. */
 export async function snapshotUnderOverrides(working: LarTiddlerStore, canon: LarTiddlerStore): Promise<Map<string, LarTiddlerRecord | null>> {
   const prior = new Map<string, LarTiddlerRecord | null>();
-  for (const title of (await overridesIn(working)).keys()) prior.set(title, await canon.get(title));
+  for (const title of (await copiesIn(working)).keys()) prior.set(title, await canon.get(title));
   return prior;
 }
 
 /**
- * THE SWEEP AFTER A CANON CHANGE. Each override whose canon text moved since the snapshot weighs as above: stale and
- * converged retract (each only while it still holds the record weighed, so a hand's write since stands), diverged
- * stands off. An override that names no base (one forked before bases were kept) takes the canon text of the snapshot
- * as its base: the sweep writes that base onto it, its text untouched, so the standoff it stands in reads again later.
+ * AFTER A CANON CHANGE: each working copy whose canon text this change moved, read against its base (or, where it names
+ * none, against the canon text the snapshot read). Reads alone; every copy stands as it stood.
  */
-export async function sweepOverrides(
-  bag: string, workingBag: string, working: LarTiddlerStore, canon: LarTiddlerStore,
-  prior: ReadonlyMap<string, LarTiddlerRecord | null>, origin: ChangeOrigin,
-): Promise<OverrideSweep> {
-  const retracted: string[] = [];
-  const standing: OverrideStandoff[] = [];
+export async function fresherAfterChange(
+  bag: string, workingBag: string, working: LarTiddlerStore, canon: LarTiddlerStore, prior: ReadonlyMap<string, LarTiddlerRecord | null>,
+): Promise<FresherCanon[]> {
+  const out: FresherCanon[] = [];
   for (const [title, before] of prior) {
     const now = await canon.get(title);
-    const beforeHash = textHashOf(before);
     const nowHash = textHashOf(now);
-    if (beforeHash === nowHash) continue;                    // canon did not move under this title
-    const override = await working.get(title);
-    if (!live(override)) continue;
-    const workingHash = overrideTextHash(override.tiddler);
-    const base = overrideBaseOf(override) ?? beforeHash;
-    if ((base !== null && workingHash === base) || workingHash === nowHash) {
-      await working.remove(title, origin, { only: override });
-      if (!live(await working.get(title))) retracted.push(title);
-      continue;
-    }
-    // A base adopted here rides the record's meta alone; the override's text stands as the hand left it.
-    const based = overrideBaseOf(override) === null && base !== null
-      ? { tiddler: override.tiddler, meta: { ...(override.meta ?? {}), [OVERRIDE_BASE_META]: base } }
-      : override;
-    if (based !== override) await working.put(based, origin);
-    const stands = overrideStanding(bag, workingBag, title, based, now);
-    if (stands !== null) standing.push(stands);
+    if (textHashOf(before) === nowHash) continue;               // canon did not move under this title
+    const copy = await working.get(title);
+    if (!live(copy)) continue;
+    const base = overrideBaseOf(copy);
+    if (base === nowHash) continue;                              // canon moved back to the copy's own base
+    out.push({ bag, working: workingBag, title, base, canonHash: nowHash });
   }
-  return { working: workingBag, retracted, standing };
+  return out;
 }
 
-/** Every override standing off in one working layer, ordered by title. */
-export async function listOverrideStandoffs(bag: string, workingBag: string, working: LarTiddlerStore, canon: LarTiddlerStore): Promise<OverrideStandoff[]> {
-  const out: OverrideStandoff[] = [];
-  for (const [title, override] of await overridesIn(working)) {
-    const stands = overrideStanding(bag, workingBag, title, override, await canon.get(title));
-    if (stands !== null) out.push(stands);
+/** Every working copy in one layer that shadows a canon text fresher than its base, ordered by title. */
+export async function listFresherCanon(bag: string, workingBag: string, working: LarTiddlerStore, canon: LarTiddlerStore): Promise<FresherCanon[]> {
+  const out: FresherCanon[] = [];
+  for (const [title, copy] of await copiesIn(working)) {
+    const fresher = fresherThanBase(bag, workingBag, title, copy, await canon.get(title));
+    if (fresher !== null) out.push(fresher);
   }
   return out.sort((a, b) => (a.title < b.title ? -1 : a.title > b.title ? 1 : 0));
-}
-
-/** A person's answer to one override standoff. */
-export type OverrideTake = "take-working" | "take-canon";
-
-/**
- * ANSWER ONE STANDOFF BY ITS KEY. Where the override still stands under the key the person read: take-working re-bases
- * it on the canon text that stands (its text untouched; with canon gone, it keeps no base and reads as working-only),
- * take-canon retracts it. Where the states moved since, nothing writes and the answer names the key that stands.
- */
-export async function answerOverride(
-  take: OverrideTake, bag: string, workingBag: string, working: LarTiddlerStore, canon: LarTiddlerStore,
-  title: string, key: string, origin: ChangeOrigin,
-): Promise<{ readonly ok: true; readonly took: "working" | "canon" } | { readonly ok: false; readonly refusal: string; readonly why: string }> {
-  const override = await working.get(title);
-  const canonNow = await canon.get(title);
-  const stands = live(override) ? overrideStanding(bag, workingBag, title, override, canonNow) : null;
-  if (stands === null) return { ok: false, refusal: "no-standoff-stands", why: `no override of ${title} stands off in ${workingBag}` };
-  if (stands.key !== key) return { ok: false, refusal: "standoff-key-moved", why: `the override of ${title} stands under key ${stands.key}; the answer names ${key}` };
-  if (take === "take-canon") {
-    await working.remove(title, origin, { only: override! });
-    return live(await working.get(title))
-      ? { ok: false, refusal: "standoff-key-moved", why: `a hand wrote ${title} while the answer travelled; the override stands` }
-      : { ok: true, took: "canon" };
-  }
-  await working.put({ tiddler: override!.tiddler, meta: { ...(override!.meta ?? {}), [OVERRIDE_BASE_META]: stands.canonHash ?? "" } }, origin);
-  return { ok: true, took: "working" };
 }

@@ -8,7 +8,6 @@
  *   F1  a fork names the canon text hash; the base rides the meta envelope, never a tiddler field
  *   F2  a later edit of the override keeps the base the fork named (the writer names none)
  *   F3  a working-only title, and a write into the canon layer itself, name no base
- *   F4  a record that names a new base re-bases it, though its text stands unchanged (the doc store writes it)
  *   F5  a family write forks each member the same way
  */
 import { describe, expect, test } from "vitest";
@@ -62,16 +61,6 @@ describe("a working override remembers its base", () => {
     expect(overrideBaseOf(await r.working.get("W"))).toBeNull();
     await r.composite.put({ tiddler: { title: "T", text: "canon again" } }, hand, { bag: CANON });
     expect(overrideBaseOf(await r.canon.get("T"))).toBeNull();
-  });
-
-  test("F4 — a record naming a new base re-bases the override with its text unchanged", async () => {
-    const r = await rig();
-    await r.composite.put({ tiddler: { title: "T", text: "kept words" } }, hand);
-    const next = overrideTextHash({ text: "canon moved" });
-    await r.working.put({ tiddler: { title: "T", text: "kept words" }, meta: { [OVERRIDE_BASE_META]: next } }, hand);
-    const held = await r.working.get("T");
-    expect(overrideBaseOf(held)).toBe(next);
-    expect(held!.tiddler["text"]).toBe("kept words");
   });
 
   test("F5 — a family write forks each member", async () => {

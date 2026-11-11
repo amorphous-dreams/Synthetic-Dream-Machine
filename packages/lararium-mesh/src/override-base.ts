@@ -2,11 +2,11 @@
  * override-base — the canon text a working override forked from, carried on the override itself.
  *
  * A wiki composes its working layer (`wikis/<slug>/working`) over its canon bag (`bags/<slug>`). A hand that saves a
- * title canon holds writes a WORKING OVERRIDE: the working record shadows the canon record of the same title. When
- * canon later moves underneath it (a seed's INGEST, a promotion), the override alone cannot say whether a hand ever
- * changed it, or whether it holds the stale copy of a canon text that moved on.
+ * title canon holds writes a WORKING OVERRIDE: the working record shadows the canon record of the same title, and the
+ * recipe stack alone decides what shows. When canon later moves underneath it (a seed's INGEST, a promotion), the copy
+ * keeps shadowing, and a person deserves the word that canon now says something fresher than what the copy forked from.
  *
- * So the override REMEMBERS ITS BASE: the hash of the canon record's text at the moment the override forked
+ * So the override REMEMBERS ITS BASE, an instrument and never a gate: the hash of the canon record's text at the moment the override forked
  * (`overrideBase`, a key on the record's `meta` envelope). The placement law picks the envelope:
  *   - it travels with the record in the record's own bag doc (one owner, one title, no sidecar map to keep in step);
  *   - it never projects: the disk projector renders a record's `tiddler` fields alone, so the base adds no byte to any
@@ -14,8 +14,8 @@
  *   - the doc store's merge keeps a meta key a later writer omits, and the composite carries it forward onto every
  *     later write of the title, so each edit after the fork keeps the base without each write path naming it.
  *
- * The hash reads the record's `text` alone: the question a canon change asks of an override reads "does its text still
- * say what the canon text said when it forked?", and a title's other fields (modified, revision) move on every save.
+ * The hash reads the record's `text` alone: the question reads "does canon's text still say what it said when the copy
+ * forked?", and a title's other fields (modified, revision) move on every save.
  */
 
 import { sha256HexBytesSync } from "./crypto.js";

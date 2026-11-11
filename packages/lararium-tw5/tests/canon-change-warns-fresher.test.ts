@@ -1,26 +1,26 @@
 /**
- * canon-change-weighs-overrides — WHAT A SEED'S INGEST DOES TO THE WORKING OVERRIDES ABOVE THE CANON IT CHANGES.
+ * canon-change-warns-fresher — WHAT A SEED'S INGEST DOES TO THE WORKING COPIES ABOVE THE CANON IT CHANGES: NOTHING
+ * BUT SAY SO.
  *
  * The seed feeds every disk-sourced holding through INGEST into canon (`bags/<slug>`), never through the wiki's working
- * layer. A working override of a title canon holds remembers the canon text it forked from (`meta.overrideBase`); when
- * INGEST moves canon under it, the override weighs (`override-bases.ts`):
+ * layer. The recipe stack alone decides what shows: a top layer always shadows the one under it. A working copy of a
+ * title canon holds remembers the canon text it forked from (`meta.overrideBase`); when INGEST moves canon past it, the
+ * outcome warns per title that canon stands fresher than the copy above it (`override-bases.ts`), and nothing writes.
  *
- *   W1  a re-seed over a working edit to a disk title leaves the working bytes unchanged; the override stands off
- *       under a key, and the outcome names it
+ *   W1  a re-seed over a working edit to a disk title: the copy still shadows canon, its bytes unchanged, and the warning
+ *       names it
  *   W2  a working-only title is in canon neither before nor after the seed (nothing promotes)
  *   W3  a disk-deleted title with a working copy: the wave tombstones nothing in canon (the removal stands pending at
  *       the shore), and the working copy stays as it stood
- *   W4  an override whose text still equals its base (a stale untouched copy) retracts after a canon change, so the new
- *       canon shows through; the outcome counts it
- *   W5  the override verb lists a diverged override with its key; take-working re-bases it (its text untouched, the
- *       standoff gone); take-canon retracts it; a stale key takes nothing
- *   W6  CONTROL: an INGEST that changes nothing under an override leaves it standing quiet
+ *   W4  an untouched copy (its text still equals its base) shadows too: it stands, and the warning names it
+ *   W5  the fresher-canon read lists each copy whose canon moved past its base; it writes nothing
+ *   W6  CONTROL: an INGEST that moves nothing under a copy raises no warning
  */
 import { describe, test, expect } from "vitest";
 import { AutomergeDocStore, CompositeStore, emptyLarDoc, overrideBaseOf, overrideTextHash, type CapabilityAccess, type CapabilityVerifyResult, type Verb, type VerbContext } from "@lararium/mesh";
 import { carrierHash } from "@lararium/mesh/crypto";
 import { Repo } from "./wiki-shore-rig.js";
-import { registerActionReactors, makeOverrideReactor } from "../src/action-handler.js";
+import { registerActionReactors, makeFresherCanonReactor } from "../src/action-handler.js";
 import { VerbTable } from "../src/verb-dispatcher.js";
 
 const CANON = "lar:///ha.ka.ba/bags/probe";
@@ -58,25 +58,35 @@ async function rig() {
     if (row["decision"] === "ingest" || row["decision"] === "noop") { synced = carrierHash(text); records = row["canonicalHash"] as string | undefined; }
     return out;
   };
-  const override = makeOverrideReactor({ composite });
-  const ask = async (args: Record<string, unknown>) => override({ bag: CANON, ...args }, ctxOf(composite, "override", args)) as Promise<Record<string, unknown>>;
+  const fresher = makeFresherCanonReactor({ composite });
+  const ask = async (args: Record<string, unknown> = {}) => fresher({ bag: CANON, ...args }, ctxOf(composite, "fresher-canon", args)) as Promise<Record<string, unknown>>;
   const canonTitles = async () => (await canon.listVisible()).filter((t) => t.startsWith(URI));
   return { canon, working, composite, seed, ask, canonTitles };
 }
 
-describe("a seed's INGEST weighs the working overrides above the canon it changes", () => {
-  test("W1 — a re-seed over a working edit leaves the working bytes unchanged and stands off under a key", async () => {
+describe("a seed's INGEST warns of fresher canon under a working copy, and writes nothing", () => {
+  /** Write a working copy of every canon title of the carrier, through the composite (the fork names its base). */
+  const copyAll = async (r: Awaited<ReturnType<typeof rig>>, text: (t: string) => string | undefined) => {
+    const titles = await r.canonTitles();
+    for (const t of titles) { const c = (await r.canon.get(t))!.tiddler; await r.composite.put({ tiddler: { ...c, text: text(t) ?? c["text"] } }, hand); }
+    return titles;
+  };
+  const snapshot = async (r: Awaited<ReturnType<typeof rig>>, titles: readonly string[]) =>
+    new Map(await Promise.all(titles.map(async (t) => [t, JSON.stringify(await r.working.get(t))] as const)));
+
+  test("W1 — a re-seed over a working edit: the copy still shadows canon, bytes unchanged, and the warning names it", async () => {
     const r = await rig();
     await r.seed(carrier("the first words"));
-    const titles = await r.canonTitles();
-    for (const t of titles) await r.composite.put({ tiddler: { ...(await r.canon.get(t))!.tiddler, text: `a hand's words for ${t}` } }, hand);
-    const before = new Map(await Promise.all(titles.map(async (t) => [t, (await r.working.get(t))!.tiddler["text"]] as const)));
+    const titles = await copyAll(r, (t) => `a hand's words for ${t}`);
+    const before = await snapshot(r, titles);
     const out = await r.seed(carrier("the disk moved on"));
-    for (const [t, text] of before) expect((await r.working.get(t))?.tiddler["text"], t).toBe(text);
-    const summary = out["overrides"] as { standing: Array<{ title: string; key: string }>; standingCount: number; retractedCount: number };
-    expect(summary.standingCount).toBeGreaterThan(0);
-    expect(summary.retractedCount).toBe(0);
-    for (const s of summary.standing) expect(s.key).toMatch(/^[0-9a-f]{24}$/);
+    expect(await snapshot(r, titles)).toEqual(before);
+    for (const t of titles) expect((await r.composite.get(t))?.tiddler["text"], t).toBe(`a hand's words for ${t}`);
+    const warned = out["fresherCanon"] as { working: string; titles: string[]; count: number };
+    expect(warned.working).toBe(WORKING);
+    expect(warned.count).toBe(warned.titles.length);
+    expect(warned.count).toBeGreaterThan(0);
+    for (const t of warned.titles) expect(titles).toContain(t);
   });
 
   test("W2 — a working-only title is never promoted into canon", async () => {
@@ -103,54 +113,42 @@ describe("a seed's INGEST weighs the working overrides above the canon it change
     expect((await r.working.get(URI))?.tiddler["text"]).toBe("a hand's copy");
   });
 
-  test("W4 — a stale untouched copy retracts after the canon change, and the new canon shows through", async () => {
+  test("W4 — an untouched copy shadows too: it stands after the canon change, and the warning names it", async () => {
     const r = await rig();
     await r.seed(carrier("the first words"));
-    const titles = await r.canonTitles();
-    for (const t of titles) await r.composite.put({ tiddler: { ...(await r.canon.get(t))!.tiddler } }, hand);
+    const titles = await copyAll(r, () => undefined);
     for (const t of titles) expect(overrideBaseOf(await r.working.get(t)), t).toBe(overrideTextHash((await r.canon.get(t))!.tiddler));
+    const before = await snapshot(r, titles);
     const out = await r.seed(carrier("the disk moved on"));
+    expect(await snapshot(r, titles)).toEqual(before);
     const moved = [] as string[];
-    for (const t of titles) if ((await r.working.get(t)) === null) moved.push(t);
+    for (const t of titles) if ((await r.canon.get(t))?.tiddler["text"] !== (await r.working.get(t))?.tiddler["text"]) moved.push(t);
     expect(moved.length).toBeGreaterThan(0);
-    expect((out["overrides"] as { retractedCount: number }).retractedCount).toBe(moved.length);
-    for (const t of moved) expect((await r.composite.get(t))?.tiddler["text"]).toBe((await r.canon.get(t))?.tiddler["text"]);
-    expect((out["overrides"] as { standingCount: number }).standingCount).toBe(0);
+    expect([...(out["fresherCanon"] as { titles: string[] }).titles].sort()).toEqual([...moved].sort());
   });
 
-  test("W5 — the override verb lists a diverged override; take-working re-bases, take-canon retracts, a stale key takes nothing", async () => {
+  test("W5 — the fresher-canon read lists each copy whose canon moved past its base, and writes nothing", async () => {
     const r = await rig();
     await r.seed(carrier("the first words"));
-    const titles = await r.canonTitles();
-    for (const t of titles) await r.composite.put({ tiddler: { ...(await r.canon.get(t))!.tiddler, text: `edit ${t}` } }, hand);
-    await r.seed(carrier("the disk moved on"));
-    const listed = await r.ask({ op: "list" });
-    const rows = listed["standoffs"] as Array<{ title: string; key: string }>;
-    expect(listed["standoffCount"]).toBe(rows.length);
-    expect(rows.length).toBeGreaterThan(0);
-    const [first, second] = rows;
-
-    expect(await r.ask({ op: "take-working", title: first!.title, key: "000000000000000000000000" })).toMatchObject({ ok: false, refusal: "standoff-key-moved" });
-    expect(await r.ask({ op: "take-working", title: first!.title, key: first!.key })).toMatchObject({ ok: true, took: "working" });
-    expect((await r.working.get(first!.title))?.tiddler["text"]).toBe(`edit ${first!.title}`);
-    expect(overrideBaseOf(await r.working.get(first!.title))).toBe(overrideTextHash((await r.canon.get(first!.title))!.tiddler));
-    const after = (await r.ask({ op: "list" }))["standoffs"] as Array<{ title: string }>;
-    expect(after.map((s) => s.title)).not.toContain(first!.title);
-
-    if (second) {
-      expect(await r.ask({ op: "take-canon", title: second.title, key: second.key })).toMatchObject({ ok: true, took: "canon" });
-      expect(await r.working.get(second.title)).toBeNull();
-      expect((await r.composite.get(second.title))?.tiddler["text"]).toBe((await r.canon.get(second.title))?.tiddler["text"]);
-    }
+    const titles = await copyAll(r, (t) => `edit ${t}`);
+    expect((await r.ask())["count"]).toBe(0);
+    const out = await r.seed(carrier("the disk moved on"));
+    const before = await snapshot(r, titles);
+    const read = await r.ask();
+    const rows = read["fresher"] as Array<{ title: string; base: string; canonHash: string }>;
+    expect(read["count"]).toBe(rows.length);
+    expect(rows.map((x) => x.title).sort()).toEqual([...(out["fresherCanon"] as { titles: string[] }).titles].sort());
+    for (const row of rows) expect(row.canonHash).toBe(overrideTextHash((await r.canon.get(row.title))!.tiddler));
+    expect(await snapshot(r, titles)).toEqual(before);
   });
 
-  test("W6 — CONTROL: an INGEST that moves nothing under an override leaves it quiet", async () => {
+  test("W6 — CONTROL: an INGEST that moves nothing under a copy raises no warning", async () => {
     const r = await rig();
     await r.seed(carrier("the first words"));
     await r.composite.put({ tiddler: { title: URI, text: "a hand's words" } }, hand);
     const out = await r.seed(carrier("the first words"));
-    expect(out["overrides"]).toBeUndefined();
+    expect(out["fresherCanon"]).toBeUndefined();
     expect((await r.working.get(URI))?.tiddler["text"]).toBe("a hand's words");
-    expect((await r.ask({ op: "list" }))["standoffCount"]).toBe(0);
+    expect((await r.ask())["count"]).toBe(0);
   });
 });

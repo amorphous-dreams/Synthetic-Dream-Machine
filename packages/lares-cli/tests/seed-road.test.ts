@@ -11,7 +11,7 @@
  *   S3  a system holding (lares) rides the same road: CREATE converges on the realm's bag, then INGEST
  *   S4  a holding whose canon source stands off disk (a private plane, or a dir outside the canon source) takes no road
  *   S5  a preview sends the INGEST preview alone, no CREATE
- *   S6  (story 6) the seed reports the working overrides that shadow a canon record it changed, names capped
+ *   S6  (story 6) the seed warns where canon stands fresher than a working copy above it, names capped; nothing writes
  */
 
 import { describe, expect, test, vi, beforeEach, afterEach } from "vitest";
@@ -22,7 +22,7 @@ import type { ParsedArgs } from "../src/parse-args.js";
 
 type Call = { readonly command: string; readonly positional: string[]; readonly options: Record<string, string>; readonly flags: Record<string, unknown> };
 const calls: Call[] = [];
-let overridesFor: Record<string, unknown> = {};
+let fresherFor: Record<string, unknown> = {};
 vi.mock("../src/commands/act.js", () => ({
   cmdAct: vi.fn(async (args: ParsedArgs) => {
     calls.push({ command: args.command, positional: [...args.positional], options: { ...args.options }, flags: { ...args.flags } });
@@ -30,10 +30,10 @@ vi.mock("../src/commands/act.js", () => ({
   }),
 }));
 vi.mock("../src/commands/ingest.js", () => ({
-  cmdIngest: vi.fn(async (args: ParsedArgs, sink?: { overrides?: unknown }) => {
+  cmdIngest: vi.fn(async (args: ParsedArgs, sink?: { fresher?: unknown }) => {
     calls.push({ command: args.command, positional: [...args.positional], options: { ...args.options }, flags: { ...args.flags } });
-    const o = overridesFor[String(args.options["to"])];
-    if (sink && o) sink.overrides = o;
+    const o = fresherFor[String(args.options["to"])];
+    if (sink && o) sink.fresher = o;
     return 0;
   }),
 }));
@@ -43,7 +43,7 @@ import { seedHolding, canonIsDisk, cmdSeed } from "../src/commands/seed.js";
 let root: string;
 const prior = { root: process.env["LAR_ROOT"], bags: process.env["LAR_BAGS"] };
 beforeEach(() => {
-  calls.length = 0; overridesFor = {};
+  calls.length = 0; fresherFor = {};
   root = mkdtempSync(join(tmpdir(), "lares-seed-road-"));
   for (const b of ["crossroads", "lares", "sdm", "kahua-0f1e2d3c-4b5a-4968-8776-655443322110"]) { mkdirSync(join(root, "bags", b), { recursive: true }); writeFileSync(join(root, "bags", b, "one.mem"), "x"); }
   process.env["LAR_ROOT"] = root;
@@ -104,17 +104,15 @@ describe("the seed feeds every disk-sourced holding through CREATE then INGEST",
     expect(calls[0]!.flags["apply"]).toBeUndefined();
   });
 
-  test("S6 — the seed reports the overrides that shadow a canon record it changed, names capped", async () => {
-    overridesFor["lar:///ha.ka.ba/bags/sdm"] = { working: "lar:///ha.ka.ba/wikis/sdm/working", retractedCount: 2, standingCount: 10,
-      standing: Array.from({ length: 10 }, (_, i) => ({ title: `t${i}`, key: `k${i}` })) };
+  test("S6 — the seed warns where canon stands fresher than a working copy, names capped", async () => {
+    fresherFor["lar:///ha.ka.ba/bags/sdm"] = { working: "lar:///ha.ka.ba/wikis/sdm/working", count: 10, titles: Array.from({ length: 10 }, (_, i) => `t${i}`) };
     const lines: string[] = [], errors: string[] = [];
     const log = console.log, error = console.error;
     console.log = (...a: unknown[]) => { lines.push(a.join(" ")); };
     console.error = (...a: unknown[]) => { errors.push(a.join(" ")); };
     try { expect(await cmdSeed(applied)).toBe(0); } finally { console.log = log; console.error = error; }
-    expect(lines).toContain("seed: 2 stale working override(s) retracted; the new canon shows through");
-    const warn = errors.find((e) => e.includes("shadow a canon record this seed changed"));
-    expect(warn).toContain("10 working override(s)");
+    const warn = errors.find((e) => e.includes("canon is fresher than the working copy above it"));
+    expect(warn).toContain("for 10 title(s)");
     expect(warn).toContain("sdm:t0");
     expect(warn).toContain("… 2 more");
     expect(warn).not.toContain("sdm:t9");

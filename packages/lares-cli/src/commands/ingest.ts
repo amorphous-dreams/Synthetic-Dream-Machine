@@ -37,29 +37,22 @@ function printUsage(): void {
   console.log("             write-layer ingest-back — a wikis/ source derives its URIs off that layer).");
 }
 
-/** What one INGEST's canon change did to the working overrides above it (`override-bases.ts` island-side). */
-export interface IngestOverrides {
+/** The working copies that shadow a canon text this INGEST moved past the base each forked from (`override-bases.ts`). */
+export interface FresherCanonReading {
   readonly working: string;
-  readonly retractedCount: number;
-  readonly standing: ReadonlyArray<{ readonly title: string; readonly key: string }>;
-  readonly standingCount: number;
+  readonly titles: readonly string[];
+  readonly count: number;
 }
 
-/** Read the outcome's override summary; absent where the wave moved no canon text under an override. */
-export function readIngestOverrides(summary: Readonly<Record<string, unknown>>): IngestOverrides | undefined {
-  const o = summary["overrides"] as Record<string, unknown> | undefined;
+/** Read the outcome's fresher-canon warning; absent where the wave moved no canon text under a working copy. */
+export function readFresherCanon(summary: Readonly<Record<string, unknown>>): FresherCanonReading | undefined {
+  const o = summary["fresherCanon"] as Record<string, unknown> | undefined;
   if (o === undefined || o === null || typeof o !== "object") return undefined;
-  const standing = Array.isArray(o["standing"]) ? (o["standing"] as Array<Record<string, unknown>>).map((r) => ({ title: String(r["title"]), key: String(r["key"]) })) : [];
-  const retracted = Array.isArray(o["retracted"]) ? (o["retracted"] as unknown[]).length : 0;
-  return {
-    working: String(o["working"] ?? ""),
-    retractedCount: typeof o["retractedCount"] === "number" ? (o["retractedCount"] as number) : retracted,
-    standing,
-    standingCount: typeof o["standingCount"] === "number" ? (o["standingCount"] as number) : standing.length,
-  };
+  const titles = Array.isArray(o["titles"]) ? (o["titles"] as unknown[]).map(String) : [];
+  return { working: String(o["working"] ?? ""), titles, count: typeof o["count"] === "number" ? (o["count"] as number) : titles.length };
 }
 
-export async function cmdIngest(args: ParsedArgs, sink?: { overrides?: IngestOverrides }): Promise<number> {
+export async function cmdIngest(args: ParsedArgs, sink?: { fresher?: FresherCanonReading }): Promise<number> {
   const source = args.options["source"];
   const toBag  = args.options["to"];
   if (!source || !toBag) { printUsage(); return 2; }
@@ -203,8 +196,8 @@ export async function cmdIngest(args: ParsedArgs, sink?: { overrides?: IngestOve
     return exitFor(code);
   }
   const summary = summaryOutput(result) ?? {};
-  const overrides = readIngestOverrides(summary);
-  if (sink && overrides) sink.overrides = overrides;
+  const fresher = readFresherCanon(summary);
+  if (sink && fresher) sink.fresher = fresher;
 
   // The gesture pinned what it landed (`settleIngest`); the projector pins what it projects; both write
   // the same key and the same base where they agree. An unchanged carrier then reads `unchanged` on the
@@ -302,11 +295,8 @@ export async function cmdIngest(args: ParsedArgs, sink?: { overrides?: IngestOve
           console.error(`  ⚠ no page settled within the stall window; ${settle.pendingCount} carrier(s) still wait: \`lares shore settle --bag ${toBag} --pending\` resumes the word`);
         } else console.error(`  ⚠ the vessel did not say the projection settled (${settle.refusal}: ${settle.why}); a scan now may read a file the projection still moves`);
       }
-      if (overrides !== undefined && overrides.retractedCount > 0) console.log(`  ${overrides.retractedCount} stale working override(s) retracted from ${overrides.working}; the new canon shows through`);
-      if (overrides !== undefined && overrides.standingCount > 0) {
-        console.error(`  ⚠ ${overrides.standingCount} working override(s) in ${overrides.working} shadow a canon text this wave moved, and stand off: ${overrides.standing.slice(0, 8).map((s) => s.title).join(", ")}${overrides.standingCount > 8 ? ", …" : ""}`);
-        console.error(`    \`lares shore\` names each key: \`lares shore take-working <title> --bag ${toBag} --key <key>\` keeps the override · \`take-canon\` retracts it`);
-      }
+      // The copy keeps shadowing canon (the recipe stack decides what shows); the word names it, nothing writes.
+      if (fresher !== undefined) console.error(`  ⚠ canon is fresher than the working copy above it for ${fresher.count} title(s) in ${fresher.working}: ${fresher.titles.slice(0, 8).join(", ")}${fresher.count > 8 ? ", …" : ""} (remove a copy with the ordinary verbs to take the fresher canon)`);
       if (conflicts.length > 0) console.error(`  ⚠ settle a conflict under its key (\`lares shore\` names it): \`lares shore take-disk <uri> --key <key>\` lands the file's words · \`lares shore take-records <uri> --key <key>\` writes the records' render`);
       console.log(`\n  audit: ${auditUri}`);
     },

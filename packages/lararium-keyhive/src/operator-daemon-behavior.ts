@@ -15,7 +15,7 @@
 
 import {
   makeDaemonBehavior, makeWhereReactor, makeResolveReactor, makeListWikisReactor,
-  makePinReactor, makeUnpinReactor, makeRegisterColdReactor, registerActionReactors, makeOverrideReactor, makeTw5Deserializer,
+  makePinReactor, makeUnpinReactor, makeRegisterColdReactor, registerActionReactors, makeFresherCanonReactor, makeTw5Deserializer,
   makeWikiPinReactor, makeWikiUnpinReactor,
   makeCatalogAccessor, findOrThrow,
   makeInitWikiReactor, makeOpenWikiReactor, makeDraftReactor, makePruneStaleReactor,
@@ -834,9 +834,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           slotDocUrl: async (slug, kind, opts) => (await slotDocsOf(ctx).slotDoc(slug, kind, opts))?.url ?? null,
           systemCanonUrl: realmCanonUrlOf(ctx),
         };
-        // THE OVERRIDE VERB: a person's answers to the working overrides a canon change left standing off
-        // (`override-bases.ts`), reached by the same access the action verbs reach a deep bag by.
-        registry.register("override", makeOverrideReactor({ composite: ctx.composite, reach, ...(kahuReach ? { kahuReach } : {}) }), { summary: "List the working overrides standing off over a moved canon text, or answer one by its key: take-working re-bases it, take-canon retracts it.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+        // THE FRESHER-CANON READ: the working copies that shadow a canon text fresher than the one they forked from
+        // (`override-bases.ts`), reached by the same access the action verbs reach a deep bag by. It reads alone.
+        registry.register("fresher-canon", makeFresherCanonReactor({ composite: ctx.composite, reach }), { summary: "Read the working copies of one wiki that shadow a canon text fresher than the one each forked from; nothing writes.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
         registerActionReactors(registry, {
           composite: ctx.composite,
           reach,

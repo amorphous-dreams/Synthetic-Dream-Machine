@@ -12,10 +12,10 @@
  * `LAR_BAGS=/workspace/bags`, so every holding the checkout carries rides it. A holding whose canon source stands
  * elsewhere takes no road, and the seed names it.
  *
- * A SEED NEVER WRITES A WIKI'S WORKING LAYER ITSELF. INGEST lands canon alone, through its three-way gate (disk, synced
- * base, canon render). The working overrides above the canon it changed weigh in the same act (`override-bases.ts`):
- * a stale copy retracts so the new canon shows through, a diverged one stands off at the shore under a key
- * (`lares shore` lists it). A working-only title never promotes, and a title gone from disk stands pending at the shore.
+ * A SEED NEVER WRITES A WIKI'S WORKING LAYER. INGEST lands canon alone, through its three-way gate (disk, synced base,
+ * canon render), and the recipe stack decides what shows: a working copy keeps shadowing the canon under it. Where the
+ * seed moved canon past the text a copy forked from, it warns per title that canon stands fresher (`override-bases.ts`)
+ * and writes nothing. A working-only title never promotes, and a title gone from disk stands pending at the shore.
  * LOAD + MOVE stays the human promotion door; the seed never walks it.
  *
  * IDEMPOTENT (causal-island law): each run converges from whatever state it finds — a virgin Synced tree reads
@@ -30,7 +30,7 @@ import type { ParsedArgs } from "../parse-args.js";
 import { emit } from "../render.js";
 import { larBagsDir, vesselDid } from "../env.js";
 import { askShore, readShoreList } from "../shore-core.js";
-import { cmdIngest, type IngestOverrides } from "./ingest.js";
+import { cmdIngest, type FresherCanonReading } from "./ingest.js";
 import { cmdAct } from "./act.js";
 
 export interface SeedHolding {
@@ -40,7 +40,7 @@ export interface SeedHolding {
   readonly gesture: "ingest" | "skip";    // the road taken
   readonly exitCode: number;              // the gesture's verdict for this holding
   readonly reason?: string;               // why a holding took no road
-  readonly overrides?: IngestOverrides;   // what the canon change did to the working overrides above it
+  readonly fresher?: FresherCanonReading; // working copies that shadow a canon text this seed moved past their base
 }
 
 export { discoverHoldings, canonIsDisk } from "../holdings.js";
@@ -69,14 +69,14 @@ export async function seedHolding(
   }
   // New content SURFACES for the operator to grade: without `--yes` the ingest gate asks; `--yes` (the operator's
   // relayed approval) passes through.
-  const sink: { overrides?: IngestOverrides } = {};
+  const sink: { fresher?: FresherCanonReading } = {};
   const exitCode = await withIngestTicks(h.holding, () => cmdIngest({
     command: "ingest",
     positional: [],
     options: { ...args.options, source: h.source, to: h.toBag },
     flags: args.flags,
   }, sink));
-  return { ...h, gesture: "ingest", exitCode, ...(sink.overrides ? { overrides: sink.overrides } : {}) };
+  return { ...h, gesture: "ingest", exitCode, ...(sink.fresher ? { fresher: sink.fresher } : {}) };
 }
 
 /**
@@ -94,8 +94,8 @@ export function pendingRemovalLines(pending: ReadonlyArray<Record<string, unknow
     `seed: ${n} pending removal(s) in ${bag}: the files left disk and nothing tombstoned; answer once with \`lares shore remove --all --count ${n} --bag ${bag}\` (or \`restore --all --count ${n} --bag ${bag}\`)`);
 }
 
-/** How many override titles a report names before it counts the rest. */
-export const SEED_OVERRIDE_NAMES = 8;
+/** How many fresher-canon titles a report names before it counts the rest. */
+export const SEED_FRESHER_NAMES = 8;
 
 /** The CLI already uses performance.now() for process-local liveness budgets; seed durations share that monotonic clock. */
 function elapsedText(ms: number): string {
@@ -162,14 +162,12 @@ export async function cmdSeed(args: ParsedArgs): Promise<number> {
   }
   const failed = ledger.filter((h) => h.exitCode !== 0);
   for (const h of failed) console.error(`  ${h.holding}: ${h.gesture} failed (exit ${h.exitCode})`);
-  // THE OVERRIDES THE SEED'S CANON CHANGE MET: stale copies retracted, diverged ones stand off at the shore.
-  const retracted = ledger.reduce((n, h) => n + (h.overrides?.retractedCount ?? 0), 0);
-  const standing = ledger.flatMap((h) => (h.overrides?.standing ?? []).map((s) => `${h.holding}:${s.title}`));
-  const standingCount = ledger.reduce((n, h) => n + (h.overrides?.standingCount ?? 0), 0);
-  if (retracted > 0) console.log(`seed: ${retracted} stale working override(s) retracted; the new canon shows through`);
-  if (standingCount > 0) {
-    console.error(`  ⚠ ${standingCount} working override(s) shadow a canon record this seed changed: ${standing.slice(0, SEED_OVERRIDE_NAMES).join(", ")}${standingCount > SEED_OVERRIDE_NAMES ? `, … ${standingCount - SEED_OVERRIDE_NAMES} more` : ""}`);
-    console.error("    `lares shore` lists each with its key: `lares shore take-working <title> --bag <bag> --key <key>` keeps it · `take-canon` retracts it · or leave it standing");
+  // THE FRESHER CANON: working copies keep shadowing the canon this seed moved; the word names them, nothing writes.
+  const fresher = ledger.flatMap((h) => (h.fresher?.titles ?? []).map((t) => `${h.holding}:${t}`));
+  const fresherCount = ledger.reduce((n, h) => n + (h.fresher?.count ?? 0), 0);
+  if (fresherCount > 0) {
+    console.error(`  ⚠ canon is fresher than the working copy above it for ${fresherCount} title(s): ${fresher.slice(0, SEED_FRESHER_NAMES).join(", ")}${fresherCount > SEED_FRESHER_NAMES ? `, … ${fresherCount - SEED_FRESHER_NAMES} more` : ""}`);
+    console.error("    each copy still shadows canon; the daemon's fresher-canon read lists them all, and a person removes a copy with the ordinary verbs to take the fresher canon");
   }
   const fed = ledger.filter((h) => h.gesture !== "skip");
   if (args.flags["apply"] && fed.length > 0) {
