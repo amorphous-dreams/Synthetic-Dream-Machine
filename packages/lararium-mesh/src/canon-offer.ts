@@ -16,7 +16,7 @@
  * row grants nothing, so a face outside the Kahu cabal offers WITHOUT any write to canon: canon moves only under the steward's
  * promotion, which clears `requireKahuReach` BEFORE it reads a single row.
  *
- * FRESHNESS WARNS, NEVER REFUSES A READ. A record whose base no longer names canon's current carrier reads "canon is fresher"
+ * FRESHNESS WARNS, NEVER REFUSES A READ. A record whose base names a carrier other than canon's current one reads "canon is fresher"
  * in every listing; a promotion over it takes the steward's explicit choice (`overFresher`), never an auto-merge. Once canon carries
  * the bytes, a RETIRE sealed by a seat of the Nexus's charter (its lineage riding the record, as a release's does) retires the
  * offer, keyed to the offer's CID (`$:/lar/canon-offer-retired/<offer cid>/<retire cid>`), never by deletion: the offer row stays,
