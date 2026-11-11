@@ -54,7 +54,7 @@ import {
   skinnyHandleTiddler, isOversizedBody, ridesAsPointer,
   crossingDirection, type CapTier,
   isEffectRecordUri, effectRecordUri, RETIRED_EVENT_ID, isRetirementMarker, storeIsRetired,
-  writesBag, VerbRefusal, workingLayerOfCanon,
+  writesBag, VerbRefusal, workingLayerOfCanon, isWorkingLayerBag, overrideBaseOf, OVERRIDE_BASE_META,
   CONTROL_HOME_ID, SECRET_HOME_ID,
   yieldToHost,
 } from "@lararium/mesh";
@@ -1101,6 +1101,9 @@ async function landedHeads(access: BagAccess, bag: string): Promise<{ heads?: st
 
 async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5Deserializer, resolveByCid?: CarrierResolver): Promise<Record<string, unknown>> {
   const o = origin(action);
+  // A carry's working rows name the override base each copy forked from: every record this wave lands under such a title
+  // carries it, so the composite keeps it rather than forking a fresh one off the canon standing now.
+  access = stampingOverrideBases(access, action);
   const deletions = action.deletions ?? [];
 
   // ── the working copies above this canon bag (override-bases.ts) ──
@@ -1590,6 +1593,72 @@ async function overrideWatch(access: BagAccess, canonBag: string): Promise<{ rea
   const prior = await snapshotUnderOverrides(working, canon);
   if (prior.size === 0) return null;
   return { read: () => fresherAfterChange(canonBag, workingBag, working, canon, prior) };
+}
+
+/**
+ * THE OVERRIDE BASE A CARRY RESTORES. A wave into a wiki's working layer whose carriers name an `overrideBase` lands each
+ * record of that title naming it on the meta envelope (a record that names its own base keeps it at the composite). Every
+ * other wave, and every title no carrier names a base for, writes as it always has.
+ */
+function stampingOverrideBases(access: BagAccess, action: IngestAction): BagAccess {
+  if (!isWorkingLayerBag(action.toBag)) return access;
+  const bases = new Map<string, string>();
+  for (const c of action.carriers) if (typeof c.overrideBase === "string") bases.set(c.uri, c.overrideBase);
+  if (bases.size === 0) return access;
+  const stamp = (r: LarTiddlerRecord): LarTiddlerRecord => {
+    const base = bases.get(String(r.tiddler.title));
+    return base === undefined || r.meta?.deleted === true ? r : { ...r, meta: { ...(r.meta ?? {}), [OVERRIDE_BASE_META]: base } };
+  };
+  return {
+    read: (bag) => access.read(bag),
+    causesOf: (bag) => access.causesOf(bag),
+    write: async (bag) => {
+      const store = await access.write(bag);
+      if (!store || bag !== action.toBag) return store;
+      return new Proxy(store, {
+        get(target, prop, receiver) {
+          if (prop === "put") return (record: LarTiddlerRecord, ...rest: [ChangeOrigin, ...unknown[]]) => (target.put as (...a: unknown[]) => Promise<void>)(stamp(record), ...rest);
+          if (prop === "writeFamily" && typeof target.writeFamily === "function") {
+            return (puts: readonly LarTiddlerRecord[], ...rest: unknown[]) => (target.writeFamily as (...a: unknown[]) => Promise<void>)(puts.map(stamp), ...rest);
+          }
+          const v = Reflect.get(target, prop, receiver) as unknown;
+          return typeof v === "function" ? (v as (...a: unknown[]) => unknown).bind(target) : v;
+        },
+      });
+    },
+  };
+}
+
+/** The page an override-bases listing answers: the outcome carries at most 32 rows of an array. */
+export const OVERRIDE_BASES_PAGE = 32;
+
+/**
+ * THE OVERRIDE-BASES READ — every working copy of one layer (`bag`, `lar:///ha.ka.ba/wikis/<slug>/working`) that names the
+ * canon text it forked from, by title, a page at a time (`after` the title the page before ended on). An export reads it
+ * to carry each base beside the file, since a base rides the meta envelope and never projects. It reads alone.
+ */
+export function makeOverrideBasesReactor(opts: ActionHandlerOptions): VerbReactor {
+  return async (args, ctx) => {
+    const bag = typeof args["bag"] === "string" ? args["bag"] : "";
+    if (!isWorkingLayerBag(bag)) return { ok: false, refusal: "override-bases-incomplete", why: "override-bases names a working layer (`bag`: lar:///ha.ka.ba/wikis/<slug>/working)" };
+    const proof = await ctx.cap("read", bag);
+    if (!proof.ok) throw new VerbRefusal("cap-denied", `cap-denied: read on ${bag} required (${proof.reason ?? "no reason"})`);
+    const working = await makeBagAccess(opts).read(bag).catch(() => null);
+    const rows: Array<{ title: string; base: string }> = [];
+    if (working) {
+      for (const title of await working.listVisible()) {
+        if (isEffectRecordUri(title)) continue;
+        const base = overrideBaseOf(await working.get(title));
+        if (base !== null) rows.push({ title, base });
+      }
+    }
+    rows.sort((a, b) => (a.title < b.title ? -1 : a.title > b.title ? 1 : 0));
+    const after = typeof args["after"] === "string" ? args["after"] : null;
+    const behind = after === null ? rows : rows.filter((r) => r.title > after);
+    const taken = behind.slice(0, OVERRIDE_BASES_PAGE);
+    const next = behind.length > taken.length ? taken[taken.length - 1]!.title : null;
+    return { ok: true, bag, bases: taken, count: rows.length, next };
+  };
 }
 
 /** The instrument's reading as an outcome names it: the count beside the titles (the outcome caps rows past 32). */

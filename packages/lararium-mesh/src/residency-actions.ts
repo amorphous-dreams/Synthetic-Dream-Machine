@@ -264,6 +264,11 @@ export interface IngestCarrier {
    *  integrity, no body) rather than materialize the body as a CRDT text field
    *  (content-resolution.mem Scenario B). */
   readonly skinny?:    boolean;
+  /** THE OVERRIDE BASE A CARRY RESTORES (`override-base.ts`): the canon text hash (`sha256:…`) a working copy forked
+   *  from, as an export read it off the record's meta envelope. A wave into a wiki's working layer stamps it on the
+   *  record it lands under this title, so a bundle's override keeps its base across a re-founding. Absent for every
+   *  disk scan (a base never projects): the composite forks a fresh base where a copy lands over canon. */
+  readonly overrideBase?: string;
 }
 
 /** One vanished carrier riding an INGEST wave — a path gone from disk where a base stands. A gesture
@@ -456,7 +461,7 @@ export function parseResidencyAction(inv: Verb): ResidencyAction | null {
       for (const c of rawCarriers) {
         if (!c || typeof c !== "object") return null;
         const o = c as Record<string, unknown>;
-        const uri = o["uri"]; const file = o["file"]; const text = o["text"]; const textCid = o["textCid"]; const diskHash = o["diskHash"]; const syncedHash = o["syncedHash"]; const syncedRecordsHash = o["syncedRecordsHash"]; const ext = o["ext"]; const meta = o["meta"]; const size = o["size"]; const skinny = o["skinny"];
+        const uri = o["uri"]; const file = o["file"]; const text = o["text"]; const textCid = o["textCid"]; const diskHash = o["diskHash"]; const syncedHash = o["syncedHash"]; const syncedRecordsHash = o["syncedRecordsHash"]; const ext = o["ext"]; const meta = o["meta"]; const size = o["size"]; const skinny = o["skinny"]; const overrideBase = o["overrideBase"];
         if (typeof uri !== "string" || !uri) return null;
         if (file !== undefined && typeof file !== "string") return null;
         // A verb NEVER inlines a body: a carrier rides EITHER an inline `text` OR a
@@ -472,7 +477,8 @@ export function parseResidencyAction(inv: Verb): ResidencyAction | null {
         if (meta !== undefined && typeof meta !== "string") return null;
         if (size !== undefined && typeof size !== "number") return null;
         if (skinny !== undefined && typeof skinny !== "boolean") return null;
-        carriers.push({ uri, ...(typeof file === "string" && file ? { file } : {}), ...(hasText ? { text: text as string } : {}), ...(hasCid ? { textCid: textCid as string } : {}), diskHash, syncedHash: syncedHash as string | null, ...(typeof syncedRecordsHash === "string" ? { syncedRecordsHash } : {}), ...(typeof ext === "string" ? { ext } : {}), ...(typeof meta === "string" ? { meta } : {}), ...(typeof size === "number" ? { size } : {}), ...(skinny === true ? { skinny: true } : {}) });
+        if (overrideBase !== undefined && (typeof overrideBase !== "string" || !/^sha256:[0-9a-f]{64}$/.test(overrideBase))) return null;
+        carriers.push({ uri, ...(typeof file === "string" && file ? { file } : {}), ...(hasText ? { text: text as string } : {}), ...(hasCid ? { textCid: textCid as string } : {}), diskHash, syncedHash: syncedHash as string | null, ...(typeof syncedRecordsHash === "string" ? { syncedRecordsHash } : {}), ...(typeof ext === "string" ? { ext } : {}), ...(typeof meta === "string" ? { meta } : {}), ...(typeof size === "number" ? { size } : {}), ...(skinny === true ? { skinny: true } : {}), ...(typeof overrideBase === "string" ? { overrideBase } : {}) });
       }
     }
     const deletions: IngestDeletion[] = [];

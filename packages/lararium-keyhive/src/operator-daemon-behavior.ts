@@ -15,7 +15,7 @@
 
 import {
   makeDaemonBehavior, makeWhereReactor, makeResolveReactor, makeListWikisReactor,
-  makePinReactor, makeUnpinReactor, makeRegisterColdReactor, registerActionReactors, makeFresherCanonReactor, makeTw5Deserializer,
+  makePinReactor, makeUnpinReactor, makeRegisterColdReactor, registerActionReactors, makeFresherCanonReactor, makeOverrideBasesReactor, makeTw5Deserializer,
   makeWikiPinReactor, makeWikiUnpinReactor,
   makeCatalogAccessor, findOrThrow,
   makeInitWikiReactor, makeOpenWikiReactor, makeDraftReactor, makePruneStaleReactor,
@@ -837,6 +837,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         // THE FRESHER-CANON READ: the working copies that shadow a canon text fresher than the one they forked from
         // (`override-bases.ts`), reached by the same access the action verbs reach a deep bag by. It reads alone.
         registry.register("fresher-canon", makeFresherCanonReactor({ composite: ctx.composite, reach }), { summary: "Read the working copies of one wiki that shadow a canon text fresher than the one each forked from; nothing writes.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+        registry.register("override-bases", makeOverrideBasesReactor({ composite: ctx.composite, reach }), { summary: "Read the override base each working copy of one layer names, by title, so an export carries it; nothing writes.", surfaces: [VERB_SURFACE.cli] });
         registerActionReactors(registry, {
           composite: ctx.composite,
           reach,
