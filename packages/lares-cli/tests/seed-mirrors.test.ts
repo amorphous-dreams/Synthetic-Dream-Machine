@@ -11,7 +11,8 @@
  *       with the same bytes, the copy keeps its base and still shadows, kahua stands pending until confirmed and then
  *       lifts signed by the new face, the old folders rest under ashes; a second seed and a second import land nothing
  *   M2  the same with NO export: reset -> found -> seed recovers the daemon memory by pet-name, from disk alone
- *   M3  an ambiguous pet-name refuses and lands nothing; so do an unmatched one and a folder no label names
+ *   M3  an ambiguous pet-name refuses that folder and lands nothing of it, and the seed goes on; so do an unmatched one and a
+ *       folder no label names
  *   M4  a kahua mirror file: the preview lists it; no confirm -> pending; a wrong count refuses; --yes alone lifts nothing;
  *       a file that differs from the standing head reads `differs` and supersedes it on the confirmed count
  *   M5  ashes never read back into a layer, never travel in a bundle, never copy into a live mirror
@@ -27,6 +28,9 @@
  *   M13 THE LIT-FACE GATE: three faces, h1 worn: h0's and h2's working memory never reaches h1's layer, the seed names each
  *       ("wear it and seed again"), their former folders stay out of ashes; wearing h2 and seeding lands h2's alone
  *   M14 the import's lit-face gate: a bundle of three faces onto h1 worn lands h1's rows alone and names the other two
+ *   M15 one refused folder never halts the rest: an unmatched folder records its line while a labelled one adopts and lands
+ *   M16 a face whose pet-name would not read blocks only the folders no other face claims; a SHUT face waits for its own
+ *   M17 a kahua refusal holds ashes for the former folder that held it alone, and names its face
  */
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -35,7 +39,7 @@ import { dirname, join } from "node:path";
 import { createHash } from "node:crypto";
 import { kapaeShadowBody, readKapaeShadow, mirrorDirFileToUri } from "@lararium/node";
 import { daemonFaceCanonBag, carrierHash } from "@lararium/mesh";
-import { seedMirrors, mirrorFiles, mirrorLines, mirrorsLeftWork, readKahuaPending, MirrorRefused, type MirrorDoors, type MirrorLaid, type MirrorWave } from "../src/seed-mirrors.js";
+import { seedMirrors, mirrorFiles, mirrorLines, mirrorsLeftWork, readKahuaPending, type MirrorDoors, type MirrorLaid, type MirrorWave } from "../src/seed-mirrors.js";
 import { carryExport, carryImport, type CarryDoors, type CarryVesselFace } from "../src/commands/carry.js";
 import { writeFaceLabels, faceLabelPath, writeFaceBases, readFaceLabel } from "../src/face-labels.js";
 import { runMirrorLeg } from "../src/commands/seed.js";
@@ -282,24 +286,35 @@ describe("the seed lays every mirror back into its one layer", () => {
     expect(result.ashes.map((a) => a.relation)).toEqual([F1]);
   });
 
-  test("M3 — an ambiguous pet-name refuses and lands nothing; so do an unmatched pet-name and a folder no label names", async () => {
+  test("M3 — an ambiguous pet-name, an unmatched one and a folder no label names each refuse THAT folder by name and land nothing of it", async () => {
     await oldVessel();
+    const nothingOfF1 = (h: FakeHouse) => {
+      expect(h.live(WORKING, POND)).toBeUndefined();
+      expect(h.lifts).toEqual([]);
+      expect(h.laid.some((s) => s.includes(F1))).toBe(false);
+      expect(existsSync(P(`wikis/daemon-${F2}`)) || existsSync(P(`wikis/daemon-${F3}`))).toBe(false);
+      expect(existsSync(P(`wikis/daemon-${F1}/ha.ka.ba/notes/pond.tid`))).toBe(true);
+    };
     const twins = refound([{ handleIndex: 0, petname: "hearth-one", relation: F2 }, { handleIndex: 1, petname: "hearth-one", relation: F3 }]);
-    await expect(seedMirrors({ apply: true, doors: twins.mirrorDoors() })).rejects.toThrow(/seed-face-duplicate-petname[\s\S]*hearth-one/);
-    const nothing = (h: FakeHouse) => { expect(h.layers.size + h.lifts.length + h.laid.length + h.mints.length).toBe(0); expect(existsSync(P(`wikis/daemon-${F2}`))).toBe(false); };
-    nothing(twins);
-    expect(existsSync(P(`wikis/daemon-${F1}/ha.ka.ba/notes/pond.tid`))).toBe(true);
+    const t = await seedMirrors({ apply: true, doors: twins.mirrorDoors() });
+    expect(t.refusals.map((x) => [x.relation, x.code])).toEqual([[F1, "seed-face-duplicate-petname"]]);
+    expect(t.refusals[0]!.message).toMatch(/hearth-one/);
+    expect(mirrorsLeftWork(t)).toBe(true);
+    expect(t.adoptions).toEqual([]);
+    nothingOfF1(twins);
+    // The rest of the seed went on: the house bag still laid.
+    expect(twins.live(GARDEN, ROSE)?.text).toBe(tid(ROSE, "a rose"));
 
     const stranger = refound([{ handleIndex: 0, petname: "someone-else", relation: F2 }]);
-    const e = await seedMirrors({ apply: true, doors: stranger.mirrorDoors() }).then(() => null, (x: Error) => x);
-    expect(e).toBeInstanceOf(MirrorRefused);
-    expect((e as MirrorRefused).code).toBe("seed-face-unmatched");
-    nothing(stranger);
+    const s2 = await seedMirrors({ apply: true, doors: stranger.mirrorDoors() });
+    expect(s2.refusals.map((x) => x.code)).toEqual(["seed-face-unmatched"]);
+    nothingOfF1(stranger);
 
     rmSync(faceLabelPath(F1, join(root, "projections")));
     const unlabelled = refound();
-    await expect(seedMirrors({ apply: true, doors: unlabelled.mirrorDoors() })).rejects.toThrow(/seed-face-unlabelled/);
-    nothing(unlabelled);
+    const u = await seedMirrors({ apply: true, doors: unlabelled.mirrorDoors() });
+    expect(u.refusals.map((x) => x.code)).toEqual(["seed-face-unlabelled"]);
+    nothingOfF1(unlabelled);
   });
 
   test("M4 — kahua: the preview lists it; no confirm stands it pending; a wrong count refuses; --yes alone lifts nothing; a differing file supersedes on the count", async () => {
@@ -436,11 +451,13 @@ describe("the seed lays every mirror back into its one layer", () => {
     await carryExport(out, { acceptOmissions: false, doors: old.carryDoors() });
     rmSync(faceLabelPath(F1, join(root, "projections")));
     const after = refound();
-    const refused = await seedMirrors({ apply: true, doors: after.mirrorDoors() }).then(() => null, (e: Error) => e);
-    expect((refused as MirrorRefused).code).toBe("seed-face-unlabelled");
+    const seeded = await seedMirrors({ apply: true, doors: after.mirrorDoors() });
+    const refused = seeded.refusals[0];
+    expect(refused?.code).toBe("seed-face-unlabelled");
     expect(refused?.message).toMatch(/this folder carries no face label[\s\S]*move it aside or remove it/);
     expect(refused?.message).not.toMatch(/import/);
-    expect(after.layers.size + after.laid.length).toBe(0);
+    expect(after.live(WORKING, POND)).toBeUndefined();
+    expect(after.laid.some((s) => s.includes(F1))).toBe(false);
     const imported = await carryImport(out, { apply: true, doors: after.carryDoors() });
     expect(imported.ashes).toEqual([]);
     expect(readFaceLabel(F1, join(root, "projections"))).toBeNull();
@@ -508,6 +525,59 @@ describe("the seed lays every mirror back into its one layer", () => {
     expect(after.live(WORKING, "lar:///ha.ka.ba/notes/three")).toBeUndefined();
     expect(after.live(WORKING, POND)).toBeUndefined();                       // face one's working copy waits for face one
     expect(existsSync(P(`wikis/daemon-${R0}`)) || existsSync(P(`wikis/daemon-${R2}`))).toBe(false);
+  });
+
+  test("M15 — one refused folder never halts the rest: an unmatched folder records its line, a labelled one adopts and lands", async () => {
+    await oldVessel();
+    const STRAY = "44444444-4444-4444-8444-444444444444";
+    put(`projections/wikis/daemon-${STRAY}/ha.ka.ba/notes/stray.tid`, tid("lar:///ha.ka.ba/notes/stray", "a stranger's memory"));
+    writeFaceLabels([{ relation: STRAY, petname: "nobody-here", handleIndex: 3 }], join(root, "projections"));
+    const after = refound();
+    const r = await seedMirrors({ apply: true, doors: after.mirrorDoors(), liftKahua: 1 });
+    expect(r.refusals.map((x) => [x.relation, x.code])).toEqual([[STRAY, "seed-face-unmatched"]]);
+    expect(r.adoptions.map((a) => a.relation)).toEqual([F1]);
+    expect(after.live(WORKING, POND)?.text).toBe(POND_WORKING);
+    expect(after.live(WORKING, "lar:///ha.ka.ba/notes/stray")).toBeUndefined();
+    expect(existsSync(P(`wikis/daemon-${STRAY}/ha.ka.ba/notes/stray.tid`))).toBe(true);
+    expect(r.ashes.map((a) => a.relation)).toEqual([F1]);
+  });
+
+  test("M16 — a face whose pet-name would not read blocks only the folders no other face claims; a SHUT face waits for its own", async () => {
+    await oldVessel();
+    const STRAY = "44444444-4444-4444-8444-444444444444";
+    put(`projections/wikis/daemon-${STRAY}/ha.ka.ba/notes/stray.tid`, tid("lar:///ha.ka.ba/notes/stray", "whose?"));
+    writeFaceLabels([{ relation: STRAY, petname: "unknown-one", handleIndex: 1 }], join(root, "projections"));
+    const after = refound([{ handleIndex: 0, petname: "hearth-one", relation: F2 }, { handleIndex: 1, petname: null, relation: null, kahua: null, kahuaRefusal: "vessel-locked" }]);
+    const r = await seedMirrors({ apply: true, doors: after.mirrorDoors(), liftKahua: 1 });
+    expect(r.refusals.map((x) => [x.relation, x.code])).toEqual([[STRAY, "seed-faces-unread"]]);
+    expect(r.adoptions.map((a) => a.relation)).toEqual([F1]);                   // hearth-one's folders still land
+    expect(after.live(WORKING, POND)?.text).toBe(POND_WORKING);
+
+    // A face that stands SHUT under a pet-name it still answers: the folders its label names wait, named, never refused.
+    rmSync(P(`wikis/daemon-${STRAY}`), { recursive: true });
+    const SHUT = "55555555-5555-4555-8555-555555555555";
+    put(`projections/wikis/daemon-${SHUT}/ha.ka.ba/notes/shut.tid`, tid("lar:///ha.ka.ba/notes/shut", "the referee's"));
+    writeFaceLabels([{ relation: SHUT, petname: "referee", handleIndex: 2 }], join(root, "projections"));
+    const shut = refound([{ handleIndex: 0, petname: "hearth-one", relation: F2 }, { handleIndex: 2, petname: "referee", relation: null, kahua: null, kahuaRefusal: "face-locked" }]);
+    const s2 = await seedMirrors({ apply: true, doors: shut.mirrorDoors() });
+    expect(s2.refusals).toEqual([]);
+    expect(s2.waiting.map((w) => [w.handleIndex, w.petname, w.relations])).toEqual([[2, "referee", [SHUT]]]);
+    expect(mirrorLines(s2).out.join("\n")).toContain("referee: wear it (`lares vault unlock --face 2`) and seed again");
+    expect(existsSync(P(`wikis/daemon-${SHUT}/ha.ka.ba/notes/shut.tid`))).toBe(true);
+  });
+
+  test("M17 — a kahua refusal holds ashes for the former folder that held it alone, and names its face", async () => {
+    await oldVessel();
+    // A second former folder under the same pet-name, its kahua file naming no item.
+    const OLDER = "66666666-6666-4666-8666-666666666666";
+    put(`projections/bags/kahua-${OLDER}/ha.ka.ba/kahua/memory/broken.tid`, "no carrier here\n");
+    writeFaceLabels([{ relation: OLDER, petname: "hearth-one", handleIndex: 0 }], join(root, "projections"));
+    const after = refound();
+    const r = await seedMirrors({ apply: true, doors: after.mirrorDoors(), liftKahua: 1 });
+    expect(r.kahua.refused.length).toBe(1);
+    expect(r.kahua.refused[0]).toMatch(/^h0 \("hearth-one"\): /);
+    expect(r.ashes.map((a) => a.relation)).toEqual([F1]);
+    expect(r.ashesLeft.map((a) => [a.relation, a.why])).toEqual([[OLDER, "1 kahua item(s) of h0 refused"]]);
   });
 
   test("M11 — a fresh face that reads no relation and no stage never halts the seed", async () => {
