@@ -859,15 +859,21 @@ export function memeForDoor(door: string): string | undefined {
   return uri ? uri : undefined;
 }
 
+/** The long account each top-level verb carries in the command table, seated by the table at load so a door's help
+ *  and its usage refusal (both drawn from `helpLines`) print it alike. The top-level list prints the brief. */
+const ABOUT = new Map<string, string>();
+export function seatAbout(door: string, about: string): void { ABOUT.set(door, about); }
+
 /**
  * One door's help as LINES — the single home both the `--help` render and a module's usage REFUSAL draw
  * from. A module that keeps its own copy of these words splits the two; the weld test refuses that.
  */
 export function helpLines(door: string, summary?: string): string[] {
   const help = COMMAND_HELP[door];
+  const about = ABOUT.get(door);
   if (!help) {
-    const out = [`lares ${door}`];
-    if (summary) out.push("", `  ${summary}`);
+    const out = [`lares ${door}`, "", "Examples:", `  lares ${door}                 # usage`, `  lares ${door} --help          # this account`];
+    if (summary) out.push("", "About:", `  ${summary}`);
     out.push("", `  (no detailed help yet — run \`lares ${door}\` for usage.)`);
     return out;
   }
@@ -887,6 +893,7 @@ export function helpLines(door: string, summary?: string): string[] {
     out.push("", "Next:");
     for (const n of help.next) out.push(`  ${n}`);
   }
+  if (about) out.push("", "About:", `  ${about}`);
   if (help.meme) {
     out.push("", "Meme:", `  ${help.meme}`, `  read it: lares ${door} --help --meme`);
   }
