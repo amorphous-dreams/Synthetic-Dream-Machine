@@ -399,7 +399,7 @@ async function personaNew(args: ParsedArgs): Promise<number> {
   // ONE STORE DOOR: the face founds on the store's one holder — inside the standing vessel when one stands (the
   // floor lifts on its next stand), here otherwise.
   if (index !== 0 && !faceStands()) {
-    throw new UsageError("no face stands on this place yet — light it with `lares persona new 0 --name '<label>'` first.");
+    throw new UsageError("no face stands on this place yet — found the hearth and its first face with `lares found --hearth --name '<label>'` first.");
   }
   // A face that founds INSIDE a standing vessel takes its route over the custody door first (the route rides that frame alone).
   const faceRouteRef = !(index === 0 && faceStands()) && standing.reading === "vessel" ? await handFaceRouteToVessel(`h${index}`, "persona-new", { handleIndex: index }) : undefined;

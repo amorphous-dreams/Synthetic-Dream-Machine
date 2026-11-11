@@ -601,7 +601,7 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
     }
     // A compartment rides BESIDE the mounted face — the founding face must stand first.
     if (!packed[PERSONA_GROUP_ID_TIDDLER]?.text) {
-      throw new Error("[lares persona new] no founding face stands yet — light it with `lares persona new 0 --name '<label>'` first.");
+      throw new Error("[lares persona new] no founding face stands yet — found the hearth and its first face with `lares found --hearth --name '<label>'` first.");
     }
   }
 
