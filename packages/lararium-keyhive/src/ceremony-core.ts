@@ -72,6 +72,7 @@ import { InMemoryEventStore } from "./event-store.js";
 import { capEventTitle, absorbCapEvents } from "./daemon-event-store.js";
 import type { SecretRestCapability } from "./daemon-event-store.js";
 import type { DeviceAdmitPayload } from "./index.js";
+import { DEVICE_ADMIT_KIND } from "./device-admit-kind.js";
 import { readFaceOperation, writeFaceOperation } from "./face-operation-record.js";
 
 async function checkpointKey(seed: Uint8Array, domain: string): Promise<CryptoKey> {
@@ -873,7 +874,7 @@ export async function runDeviceAdmitEdge(
     boundEpoch:         input.boundEpoch ?? 0,
   });
   const issued: DeviceAdmitPayload = {
-    kind:                   "device-admit",
+    kind:                   DEVICE_ADMIT_KIND,
     signerDid:              deviceEdge.personaRootDid,
     personaKelPrefix:       input.personaKelPrefix,
     personaKelChain:        input.personaKelChain,

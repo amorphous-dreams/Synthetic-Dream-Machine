@@ -62,7 +62,7 @@ import type { PlaceFoundingCard } from "@lararium/mesh";
 import { GENESIS_ENGINE_CID } from "../genesis-artifact.js";
 import {
   foundThePlace, foundTheFace, runApplyAdmitPayload, archiveIsOf,
-  retireFaceCheckpoint, retireApplyCheckpoint,
+  retireFaceCheckpoint, retireApplyCheckpoint, DEVICE_ADMIT_KIND,
 } from "@lararium/keyhive";
 import { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "../open-node-vessel.js";
 import { openVesselSecretHome, standVesselSecretHome } from "../secret-home-store.js";
@@ -282,8 +282,8 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
     // binding into its OWN daemon doc and boots through its Binding Gate — no Beelay, no cap events.
     const payload = opts.admitPayload;
     // The admit supplies the binding; the joinee's selected face atom supplies its own Keyhive card.
-    if (payload.kind !== "device-admit") {
-      throw new Error(`[lares fleet join land] the payload names the kind ${JSON.stringify(payload.kind)}: it lacks the device admit shape ("device-admit")`);
+    if (payload.kind !== DEVICE_ADMIT_KIND) {
+      throw new Error(`[lares fleet join land] the payload names the kind ${JSON.stringify(payload.kind)}: it lacks the device admit shape (${JSON.stringify(DEVICE_ADMIT_KIND)})`);
     }
     // The ceremony mints the selected face's card from its atom; the public place key remains an equality guard.
     const mountedGroup = existsSync(bootstrap) ? readPackedTiddlers(bootstrap)[PERSONA_GROUP_ID_TIDDLER]?.text : undefined;

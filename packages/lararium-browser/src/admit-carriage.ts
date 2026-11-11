@@ -9,10 +9,10 @@
  * platform: no `location`, no `history`, no clock, no network. Same bytes in, same payload out, so the
  * crossing tests without standing a relay up.
  */
-import type { CarriedAdmitPayload } from "@lararium/keyhive";
+import { DEVICE_ADMIT_KIND, type CarriedAdmitPayload } from "@lararium/keyhive";
 
-/** The kind this carriage admits. A payload announcing anything else gets refused, never guessed at. */
-export const ADMIT_KIND = "device-admit" as const;
+/** The kind this carriage admits (keyhive's one `DEVICE_ADMIT_KIND`, the node land's too). Anything else gets refused, never guessed at. */
+export const ADMIT_KIND = DEVICE_ADMIT_KIND;
 
 /** Base64url → the bytes it encodes. Throws on a malformed input; the caller decides what that means. */
 function fromBase64Url(b64url: string): string {
