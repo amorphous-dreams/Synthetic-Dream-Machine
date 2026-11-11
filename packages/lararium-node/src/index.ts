@@ -257,6 +257,7 @@ export { runEdgePartial, runEdgeCosign, EdgeCosignError, type EdgePartialResult,
 export { runPromoteOpen, runPromoteSign, runPromoteCheck, runPromoteCheckBytes, promotionStatementDigest, PromoteError, type PromoteOpenResult, type PromoteSignResult } from "./commands/nexus-promote.js";
 export { runCabalAct, runCabalCosign, runCabalStanding, readKahuCabalBoard, landFoundingAdmission, NexusCabalError, type NexusCabalActResult } from "./commands/nexus-cabal.js";
 export { runFloorRelease, runFloorReleaseStanding, type NexusReleaseResult } from "./commands/nexus-release.js";
+export { runFloorStatus, runFloorAccept, nodeFloorPorts, FloorRefused, type NodeFloorOptions } from "./commands/floor.js";
 export type { CabalVouchOptions, CabalVouchResult } from "./commands/cabal-vouch.js";
 export type { CabalJoinOptions, CabalJoinResult } from "./commands/cabal-join.js";
 export { runRaiseSign, readRaiseChallenge, RaiseSignError } from "./commands/raise-sign.js";

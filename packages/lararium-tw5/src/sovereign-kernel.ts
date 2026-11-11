@@ -511,7 +511,9 @@ export function runSovereignKernel(
       return;
     }
 
-    const floorCidField = plainRecordOrNull(ownEntry(laraiumHandle.doc()?.tiddlers, GENESIS_FLOOR_TIDDLER))?.tiddler.cid;
+    // THE FLOOR THE VESSEL ACCEPTED (`floor-pin`): the manifest names it where the vessel's pin moved past genesis; absent,
+    // the genesis seed's own floor witness.
+    const floorCidField = msg.floorCid ?? plainRecordOrNull(ownEntry(laraiumHandle.doc()?.tiddlers, GENESIS_FLOOR_TIDDLER))?.tiddler.cid;
     let floorRows: readonly Readonly<Record<string, LarTiddlerRecord>>[] = [];
     if (typeof floorCidField === "string" && floorCidField.length > 0) {
       const floor = await resolveFloor(floorCidField, resolveByCid);

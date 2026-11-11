@@ -43,7 +43,7 @@ export async function cmdNexusRelease(args: ParsedArgs): Promise<number> {
         console.log(`  prior:    ${r.release.body.prior ?? "(the Nexus's first release)"}`);
         console.log(`  manifest: ${r.release.body.manifest}`);
         console.log(`  approval: ${r.counted} of ${r.threshold} seats over the manifest's exact bytes`);
-        console.log("  the release rests on this Nexus's publication board; a face accepts it by its own act");
+        console.log("  the release rests on this Nexus's publication board; each vessel accepts it by its own act (lares vessel floor accept)");
       },
     });
     return 0;

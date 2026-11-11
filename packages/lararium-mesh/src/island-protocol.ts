@@ -220,6 +220,12 @@ export interface IslandMsg_Manifest {
    * always is).
    */
   pluginCids?: readonly string[];
+  /**
+   * The floor manifest CID the island mounts as its `@oracle` read-face: the vessel's ACCEPTED floor pin
+   * (`floor-pin` `floorCidToMount`). Absent, the island mounts the floor its genesis seed names
+   * (`GENESIS_FLOOR_TIDDLER`). The island resolves it from the local CAS exactly as it resolves the genesis floor.
+   */
+  floorCid?: string;
   /** Slot structure for this wiki — wikiSlug + optional libraryBags. */
   recipe: import("./wiki-recipe.js").WikiRecipe;
   /** Typed structural capabilities (see IslandGrants). Libraries resolve via the catalog registry. */
@@ -1243,6 +1249,7 @@ export function mkManifest(
     diskMirrors?:    readonly { bagId: string; mirrorRoot: string; scope: string; mirrorClass?: "recovery"; titlePaths?: boolean; tempLayer?: boolean }[];
     daemonAuth?:      IslandMsg_Manifest["daemonAuth"];
     pluginCids?:     readonly string[];
+    floorCid?:       string | null;
     view?:           IslandViewStanding;
     resolved?:       Readonly<Record<string, string>>;
   },
@@ -1260,6 +1267,7 @@ export function mkManifest(
   if (opts?.diskMirrors?.length) msg.diskMirrors = opts.diskMirrors;
   if (opts?.daemonAuth)           msg.daemonAuth   = opts.daemonAuth;
   if (opts?.pluginCids?.length)  msg.pluginCids  = opts.pluginCids;
+  if (opts?.floorCid)            msg.floorCid    = opts.floorCid;
   if (opts?.view)                msg.view        = opts.view;
   if (opts?.resolved)            msg.resolved    = opts.resolved;
   return msg;

@@ -288,6 +288,12 @@ export interface VesselIslandPoolCoreOptions {
    * byte-missing offering never reads as an empty or successful mount — it fails the activation
    * outright, exactly like any other mount failure (counted in the same OTP intensity ledger).
    */
+  /**
+   * The floor manifest each mount's `@oracle` read-face stands on: the vessel's accepted pin (`floor-pin`
+   * `floorCidToMount`), read afresh at every activation, so the mount after an accept stands on the accepted floor.
+   * Absent, or answering null, the island mounts its genesis floor. Both hosts bind the same pick.
+   */
+  floorCid?: () => string | null | Promise<string | null>;
   resolvePluginCids: (recipe: WikiRecipe) => Promise<
     | { readonly ok: true; readonly pluginCids: readonly string[] }
     | { readonly ok: false; readonly error: string }
@@ -350,6 +356,7 @@ export class VesselIslandPoolCore {
   private readonly _onWorkerEvent:  ((wikiId: string, msg: IslandMsg_Event | LarIslandToVesselMsg) => void) | null;
   private readonly _onSurfaceEvent: ((surface: IslandKeyParts, msg: IslandMsg_Event | LarIslandToVesselMsg) => void) | null;
   private readonly _resolvePluginCids: VesselIslandPoolCoreOptions["resolvePluginCids"];
+  private readonly _floorCid: VesselIslandPoolCoreOptions["floorCid"];
   private readonly _onEa:           ((wikiId: string) => void) | null;
   private readonly _readContent:    VesselIslandPoolCoreOptions["readContent"] | null;
   private readonly _portDoor: ReturnType<typeof makePortDoor>;
@@ -392,6 +399,7 @@ export class VesselIslandPoolCore {
     this._onRest          = opts.onRest ?? null;
     this._onSurfaceEvent  = opts.onSurfaceEvent ?? null;
     this._resolvePluginCids = opts.resolvePluginCids;
+    this._floorCid = opts.floorCid;
     this._onEa            = opts.onEa ?? null;
     this._readContent     = opts.readContent ?? null;
     this._portDoor = makePortDoor({ ...(opts.portPolicy ? { policy: opts.portPolicy } : {}),
@@ -676,6 +684,9 @@ export class VesselIslandPoolCore {
       throw new Error(`[vessel-pool] ${wikiId} plugin resolution refused: ${resolved.error}`);
     }
     const pluginCids = resolved.pluginCids;
+    // THE FLOOR THIS MOUNT STANDS ON: a session's recipe names the floor its view admits (its first floor CID, the manifest's
+    // own); every other island reads the vessel's accepted pin afresh, so the mount after an accept stands on that floor.
+    const floorCid = plan.surface ? (plan.surface.mount.recipe.floorCids[0] ?? null) : ((await this._floorCid?.()) ?? null);
     // The mirror of a wiki island reads the plugin list the island booted with, never a second resolution that an offering change could move.
     if (!plan.surface && plan.coreHash) this._bootInputs.set(wikiId, { coreCid: plan.coreHash, pluginCids });
 
@@ -734,6 +745,7 @@ export class VesselIslandPoolCore {
         ...(storage            ? { storage }     : {}),
         ...(diskMirrors.length ? { diskMirrors } : {}),
         ...(pluginCids.length ? { pluginCids } : {}),
+        ...(floorCid ? { floorCid } : {}),
         ...(plan.surface && view ? { view: { peerId: view.peerId }, resolved: resolvedSlotsOf(plan.surface.mount.recipe) } : {}),
       },
     );

@@ -25,8 +25,11 @@
  * What the body says stays a HINT: the standing a floor names grants nothing, and a reader decides nothing on it
  * beyond whom to try first.
  *
- * Pure: no I/O, no clock, no randomness. No caller yet; it stands for the floor's announcement route
- * (`FLOOR_ANNOUNCE_ROUTE`), and the package barrel names it.
+ *   · FOLD. `foldFloorAnnouncements` orders many announcements by their `prior` links alone: one line reads its
+ *     head and its order, two heads read `forked`, both named, never settled by arrival or recency.
+ *
+ * Pure: no I/O, no clock, no randomness. It stands for the floor's announcement route (`FLOOR_ANNOUNCE_ROUTE`),
+ * and the package barrel names it.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/waking-floor#/the-announcement
  */
@@ -35,7 +38,8 @@ import { WAKING_FLOOR_ANNOUNCE_DOMAIN } from "./domains.js";
 import { gateBundleDigest, gateFields, readGateBundlePin, readGateSignature, type GateBundle, type GateBundlePin } from "./gate-bundle.js";
 
 /** The body's shape name: the kind a reader tells an announcement by, never a counter. */
-export const FLOOR_ANNOUNCEMENT_KIND = "floor-announcement";
+import { FLOOR_ANNOUNCEMENT_KIND } from "./wire-names.js";
+export { FLOOR_ANNOUNCEMENT_KIND };
 
 /** The floor route an announcement's bundle answers on: its signing key derives over this route. */
 export const FLOOR_ANNOUNCE_ROUTE = "/announce";
@@ -180,4 +184,63 @@ export function readFloorAnnouncement(
     }
     return { announcement: body };
   } catch { return { refusal: "announcement-malformed" }; }
+}
+
+// ── the fold: many announcements, ordered by their links alone ──────────────────────────────────────
+
+/** One announcement the fold set aside, and why: a reader names it rather than reading it as an absence. */
+export interface FloorAnnouncementSetAside {
+  readonly index:   number;
+  readonly refusal: FloorAnnouncementRefusal | "prior-unseen";
+}
+
+/**
+ * Where a floor's announcements stand for one held pin: none read, one line (its order oldest first and its head), or a
+ * FORK (two or more heads, each named). The order rides `prior` alone; a fork never resolves by arrival or recency.
+ */
+export type FloorAnnouncementStanding =
+  | { readonly standing: "absent"; readonly setAside: readonly FloorAnnouncementSetAside[] }
+  | { readonly standing: "linear"; readonly head: string; readonly body: FloorAnnouncementBody; readonly order: readonly string[]; readonly setAside: readonly FloorAnnouncementSetAside[] }
+  | { readonly standing: "forked"; readonly heads: readonly string[]; readonly setAside: readonly FloorAnnouncementSetAside[] };
+
+/**
+ * Fold announcements against the floor pin the caller holds. Each reads alone (`readFloorAnnouncement`, its signature under
+ * the held pin); one COUNTS where its `prior` reaches the line's opening (null) or the announcement the caller already holds
+ * (`held`) through counted links. The head stands as the counted announcement no other names; two heads read `forked`,
+ * both named. A duplicate (one digest twice) counts once. Pure: no clock, no arrival order.
+ */
+export function foldFloorAnnouncements(
+  values: readonly unknown[],
+  expect: { readonly pin: GateBundlePin; readonly held?: string },
+): FloorAnnouncementStanding {
+  const setAside: FloorAnnouncementSetAside[] = [];
+  const read = new Map<string, FloorAnnouncementBody>();
+  const digestAt = new Map<number, string>();
+  values.forEach((value, index) => {
+    const r = readFloorAnnouncement(value, { pin: expect.pin });
+    if ("refusal" in r) { setAside.push({ index, refusal: r.refusal }); return; }
+    const digest = floorAnnouncementDigest(r.announcement);
+    digestAt.set(index, digest);
+    read.set(digest, r.announcement);
+  });
+  const base = expect.held ?? null;
+  if (base !== null) read.delete(base);
+  const counted = new Map<string, FloorAnnouncementBody>();
+  let grew = true;
+  while (grew) {
+    grew = false;
+    for (const [digest, body] of read) {
+      if (counted.has(digest)) continue;
+      if (body.prior === base || (body.prior !== null && counted.has(body.prior))) { counted.set(digest, body); grew = true; }
+    }
+  }
+  for (const [index, digest] of digestAt) if (digest !== base && !counted.has(digest)) setAside.push({ index, refusal: "prior-unseen" });
+  if (counted.size === 0) return { standing: "absent", setAside };
+  const cited = new Set([...counted.values()].map((b) => b.prior).filter((p): p is string => p !== null));
+  const heads = [...counted.keys()].filter((d) => !cited.has(d)).sort();
+  if (heads.length > 1) return { standing: "forked", heads, setAside };
+  const head = heads[0]!;
+  const order: string[] = [];
+  for (let at: string | null = head; at !== null && counted.has(at); at = counted.get(at)!.prior) order.push(at);
+  return { standing: "linear", head, body: counted.get(head)!, order: order.reverse(), setAside };
 }

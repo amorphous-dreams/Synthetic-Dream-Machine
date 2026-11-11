@@ -16,6 +16,10 @@
       "import": "./dist/bures-metric.js",
       "types": "./dist/bures-metric.d.ts"
     },
+    "./wire-names": {
+      "import": "./dist/wire-names.js",
+      "types": "./dist/wire-names.d.ts"
+    },
     "./record-port": {
       "import": "./dist/record-port.js",
       "types": "./dist/record-port.d.ts"

@@ -15,7 +15,8 @@ import { docPrototypeKeyFault } from "./prototype-key-shore.js";
 import { SYSTEM_CANON_SLUGS } from "./kahu-canon-reach.js";
 
 /** The floor manifest's shape name. It carries no counter: a shape reads by its fields, and its bytes name it (the CID). */
-export const FLOOR_MANIFEST_FORMAT = "lararium-floor";
+import { FLOOR_MANIFEST_FORMAT } from "./wire-names.js";
+export { FLOOR_MANIFEST_FORMAT };
 /** The seed witness row naming the genesis floor's manifest CID (sha256 hex) in its `cid` field, shaped as the region witnesses stand. */
 export const GENESIS_FLOOR_TIDDLER = "lar:///ha.ka.ba/bags/oracle/genesis-cid-floor";
 /** The snapshots every floor carries: the system canon, house canon on every vessel. */

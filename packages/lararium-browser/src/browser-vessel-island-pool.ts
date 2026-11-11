@@ -67,6 +67,8 @@ export interface BrowserVesselIslandPoolOptions {
     | { readonly ok: true; readonly pluginCids: readonly string[] }
     | { readonly ok: false; readonly error: string }
   >;
+  /** The floor each mount stands on: the vessel's accepted pin (`@lararium/mesh` `vesselFloorCid`); null mounts genesis. */
+  floorCid?: () => string | null | Promise<string | null>;
 }
 
 /** Browser island pool: VesselIslandPoolCore configured with a Web Worker host. */
@@ -75,6 +77,7 @@ export class BrowserVesselIslandPool extends VesselIslandPoolCore {
     const workerUrl = opts.workerScriptUrl ?? null;
     super({
       resolvePluginCids: opts.resolvePluginCids,
+      ...(opts.floorCid ? { floorCid: opts.floorCid } : {}),
       host: {
         spawnWorker: () => {
           if (!workerUrl) {

@@ -15,6 +15,8 @@
  * the absent check never reads as a passed one.
  */
 
+import { ARRIVAL_FORMAT, GENESIS_SEED_FORMAT } from "@lararium/mesh/wire-names";
+
 /** A fetch narrowed to the one call this module makes. */
 export type SeedFetch = (input: string) => Promise<Response>;
 
@@ -35,8 +37,6 @@ export type CrossingVerdict =
   | { readonly kind: "refuse"; readonly text: string };
 
 const CID = /^[0-9a-f]{64}$/;
-/** The seed's shape name; the vessel's materializer (`GENESIS_SEED_FORMAT`) refuses any other name. */
-const SEED_FORMAT_NAME = "lararium-genesis-seed";
 
 async function sha256Hex(bytes: Uint8Array): Promise<string> {
   const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes as BufferSource));
@@ -52,7 +52,7 @@ export async function readServedSeed(base: string, fetchFn: SeedFetch): Promise<
   let seed: unknown;
   try { seed = JSON.parse(new TextDecoder().decode(bytes)); }
   catch { seed = null; }
-  if (!seed || typeof seed !== "object" || (seed as { format?: unknown }).format !== SEED_FORMAT_NAME) {
+  if (!seed || typeof seed !== "object" || (seed as { format?: unknown }).format !== GENESIS_SEED_FORMAT) {
     throw new Error(`genesis-unserved: ${url} reads as no genesis seed`);
   }
   return { seed, cid: await sha256Hex(bytes) };
@@ -77,7 +77,7 @@ export async function arrivalSeedAnchor(relayUrl: string, fetchFn: SeedFetch): P
     return { kind: "missing", at, why: error instanceof SyntaxError ? "answered no JSON" : "unreachable" };
   }
   const descriptor = body as { format?: unknown; routes?: unknown } | null;
-  if (descriptor?.format !== "lar-arrival" || !Array.isArray(descriptor.routes)) return { kind: "missing", at, why: "answered no arrival descriptor" };
+  if (descriptor?.format !== ARRIVAL_FORMAT || !Array.isArray(descriptor.routes)) return { kind: "missing", at, why: "answered no arrival descriptor" };
   const route = descriptor.routes.find((r: unknown) => (r as { kind?: unknown } | null)?.kind === "genesis-seed") as { seedCid?: unknown } | undefined;
   return typeof route?.seedCid === "string" && CID.test(route.seedCid)
     ? { kind: "descriptor", seedCid: route.seedCid, at }

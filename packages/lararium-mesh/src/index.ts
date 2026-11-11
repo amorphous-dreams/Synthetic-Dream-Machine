@@ -431,9 +431,9 @@ export type {
 } from "./admit-gate-pin.js";
 export {
   FLOOR_ANNOUNCEMENT_KIND, FLOOR_ANNOUNCE_ROUTE, FLOOR_STANDINGS, FLOOR_ANNOUNCEMENT_REFUSALS, FloorAnnouncementRefused,
-  gateAnnouncementImage, floorAnnouncementDigest, signFloorAnnouncement, readFloorAnnouncement,
+  gateAnnouncementImage, floorAnnouncementDigest, signFloorAnnouncement, readFloorAnnouncement, foldFloorAnnouncements,
 } from "./floor-announcement.js";
-export type { FloorStanding, FloorAnnouncementBody, FloorAnnouncement, FloorAnnouncementRefusal } from "./floor-announcement.js";
+export type { FloorStanding, FloorAnnouncementBody, FloorAnnouncement, FloorAnnouncementRefusal, FloorAnnouncementStanding, FloorAnnouncementSetAside } from "./floor-announcement.js";
 // THE GATE AND ITS DIAL, named here by their callers: the node's gate server stands `makeFaceGate` per (Nexus, route)
 // behind the upgrade's knock and its first flight, the composer derives each bundle, and the dialers speak
 // `dialFaceGate` over their own sockets.
@@ -473,6 +473,7 @@ export * from "./kahu-cabal-admission.js";
 export * from "./kahu-canon-reach.js";
 export * from "./floor-release.js";
 export * from "./floor-answer.js";
+export * from "./floor-pin.js";
 export * from "./lineage-rank.js";
 export * from "./admission-price.js";
 export * from "./vouch-dag.js";

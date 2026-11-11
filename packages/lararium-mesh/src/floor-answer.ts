@@ -13,7 +13,7 @@
  *   4. the chain: a release counts through an unbroken chain to the Nexus's first, and two heads read `unsettled`;
  *   5. the floor: the head's manifest and its two snapshots, each fetched by CID and re-hashed.
  *
- * It signs nothing and keeps no pin: the reader records no acceptance (a face accepts a release by a person's own act).
+ * It signs nothing and keeps no pin: the reader records no acceptance (the VESSEL accepts a release by its own act, `floor-pin`).
  * It is isomorphic: the caller supplies `fetchCas`, and both a browser and a node read the floor through it.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-slices
@@ -22,7 +22,8 @@ import { foldFloorReleases, type FloorRelease, type FloorReleaseRefused } from "
 import { resolveFloor, type FloorManifest } from "./floor-manifest.js";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
 
-export const FLOOR_ANSWER_FORMAT = "lararium-floor-answer" as const;
+import { FLOOR_ANSWER_FORMAT } from "./wire-names.js";
+export { FLOOR_ANSWER_FORMAT };
 
 /** The porch's answer: the Nexus and the release rows its board carries (each row's record carries its own lineage). */
 export interface FloorAnswer {
@@ -59,6 +60,26 @@ export type FloorRead =
 
 const HEX64 = /^[0-9a-f]{64}$/;
 
+/** The release rows a porch answer carries for `nexus`, or the refusal by name. Verifies nothing beyond the shape: the
+ *  fold verifies each row (`foldFloorReleases`), and the vessel's pin doors read the same rows (`floor-pin`). */
+export function floorAnswerRows(answer: unknown, nexus: string):
+  | { readonly rows: ReadonlyArray<{ readonly keyCid: string; readonly record: unknown }> }
+  | { readonly refusal: "answer-malformed" | "foreign-nexus" } {
+  const a = answer as Partial<FloorAnswer> | null;
+  if (a === null || typeof a !== "object" || a.format !== FLOOR_ANSWER_FORMAT || typeof a.nexus !== "string" || !Array.isArray(a.releases)) {
+    return { refusal: "answer-malformed" };
+  }
+  if (a.nexus !== nexus) return { refusal: "foreign-nexus" };
+  const rows: Array<{ keyCid: string; record: unknown }> = [];
+  for (const row of a.releases) {
+    if (row === null || typeof row !== "object") return { refusal: "answer-malformed" };
+    const r = row as { keyCid?: unknown; record?: unknown };
+    if (typeof r.keyCid !== "string" || !HEX64.test(r.keyCid)) return { refusal: "answer-malformed" };
+    rows.push({ keyCid: r.keyCid, record: r.record });
+  }
+  return { rows };
+}
+
 /** Read the Nexus's floor off a porch answer, verifying every step; `fetchCas` fetches bytes by CID (the reader re-hashes). */
 export async function readFloorAnswer(args: {
   readonly nexus:    string;
@@ -66,18 +87,9 @@ export async function readFloorAnswer(args: {
   readonly fetchCas: (cid: string) => Promise<Uint8Array | null>;
 }): Promise<FloorRead> {
   const none: readonly FloorReleaseRefused[] = [];
-  const a = args.answer as Partial<FloorAnswer> | null;
-  if (a === null || typeof a !== "object" || a.format !== FLOOR_ANSWER_FORMAT || typeof a.nexus !== "string" || !Array.isArray(a.releases)) {
-    return { ok: false, reason: "answer-malformed", refused: none };
-  }
-  if (a.nexus !== args.nexus) return { ok: false, reason: "foreign-nexus", refused: none };
-  const rows: Array<{ keyCid: string; record: unknown }> = [];
-  for (const row of a.releases) {
-    if (row === null || typeof row !== "object") return { ok: false, reason: "answer-malformed", refused: none };
-    const r = row as { keyCid?: unknown; record?: unknown };
-    if (typeof r.keyCid !== "string" || !HEX64.test(r.keyCid)) return { ok: false, reason: "answer-malformed", refused: none };
-    rows.push({ keyCid: r.keyCid, record: r.record });
-  }
+  const opened = floorAnswerRows(args.answer, args.nexus);
+  if ("refusal" in opened) return { ok: false, reason: opened.refusal, refused: none };
+  const rows = opened.rows;
   const fetched = new Map<string, Uint8Array | null>();
   const manifestBytesOf = async (cid: string): Promise<Uint8Array | null> => {
     if (!fetched.has(cid)) fetched.set(cid, await args.fetchCas(cid).catch(() => null));
