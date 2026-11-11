@@ -3,8 +3,8 @@
  * adopts a former face's mirrors by pet-name from disk alone.
  *
  * A face's private mirrors key by its relation F (`wikis/daemon-<F>`, `bags/daemon-<F>`, `bags/kahua-<F>`). A
- * re-founding clears the hearth, mints new keys and a new relation, and keeps the projections root, so the old folders
- * still rest there under the old F, and nothing on disk named their face: the pet-name lived in the sealed rows the
+ * re-founding clears the hearth, mints new keys and a new relation, and keeps the projections root, so the former folders
+ * rest there under the former F, and nothing on disk named their face: the pet-name lived in the sealed rows the
  * hearth held. The CARD names it: `<projections>/face-cards/<F>.json` holds `{ relation, petname, handleIndex }`, written
  * each time a door reads the faces this vessel wears (`liveFaces`: seed, export, import), so every vessel the founding walk
  * seeded holds a card for each named face it wore.

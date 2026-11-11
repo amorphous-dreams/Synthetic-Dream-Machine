@@ -1,13 +1,13 @@
 /**
  * ashes — where a former face's mirror folders rest once their memory landed whole on a face this vessel wears.
  *
- * After a re-founding the old face's folders (`wikis/daemon-<old>`, `bags/daemon-<old>`, `bags/kahua-<old>`) still rest
- * under the projections root, keyed by the old relation. Once a seed's adoption or an import landed that face's memory on
+ * After a re-founding the former face's folders (`wikis/daemon-<former>`, `bags/daemon-<former>`, `bags/kahua-<former>`) rest
+ * under the projections root, keyed by the former relation. Once a seed's adoption or an import landed that face's memory on
  * the face that carries its pet-name, with NOTHING pending (no stand-off, no refusal, no kahua item waiting for a hand),
  * the folders move to `<projections>/ashes/<old-relation>/` beside their face card: plaintext still, and out of the live
  * mirror set. Nothing walks ashes: the disk projector writes only its grants, the census and the export walk `wikis/` and
  * `bags/`, and the seed classifies those two dirs alone. So nothing reads ashes back into a layer and nothing projects
- * into them, and the next export no longer names those folders unclaimed. A person deletes them by hand when they please.
+ * into them, and the next export names none of those folders unclaimed. A person deletes them by hand when they please.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */

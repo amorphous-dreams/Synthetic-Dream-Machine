@@ -17,8 +17,8 @@
  * working; only a working layer's OWN mirror flows back into it, and the top layer always shadows: nothing retracts,
  * nothing stands off against a lower layer, and the seed's canon leg only warns where canon stands fresher.
  *
- * ADOPTION BY PET-NAME. A re-founding keeps the projections root, so the old face's folders still rest there under the
- * old relation. The seed adopts them for the face here that carries the old face's pet-name (its face card,
+ * ADOPTION BY PET-NAME. A re-founding keeps the projections root, so the former face's folders rest there under the
+ * old relation. The seed adopts them for the face here that carries the former face's pet-name (its face card,
  * `face-cards.ts`), exactly as an import maps a bundle face: one face here carries it, else the seed refuses by name and
  * lands nothing (none, two, or no card: an old face's private memory never lands on another person's face). Adopted files
  * copy into the new face's folder where none stands (a different file there stands off, as the import's mirror check
@@ -31,7 +31,7 @@
  * before anything writes. Unconfirmed items stand pending (`kahua-pending.json` under the config home), listed by
  * `lares shore` and liftable later with the same count rule (`lares shore lift-kahua --count <N>`).
  *
- * ASHES. After an adoption lands for a face with NOTHING pending, the old folders move to `projections/ashes/<old>/`
+ * ASHES. After an adoption lands for a face with NOTHING pending, the former folders move to `projections/ashes/<former>/`
  * (`ashes.ts`); a partial landing leaves them and says why.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
@@ -108,7 +108,7 @@ export class MirrorRefused extends Error {
 export interface KahuaPreviewItem {
   readonly handleIndex: number;
   readonly petname: string | null;
-  /** The relation whose kahua folder holds the file (the old face's, for an adoption). */
+  /** The relation whose kahua folder holds the file (the former face's, for an adoption). */
   readonly relation: string;
   readonly title: string;
   /** sha-256 of the item's body. */
@@ -368,7 +368,7 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
             files.stoodOff.push(`${uri} (${kind}: a different file stands in ${dest}; left as it stands)`);
             markPartial(r, `${uri} stands off in ${dest}`);
           }
-          // A preview reads the old folder as the source: its files have not copied yet.
+          // A preview reads the former face's folder as the source: its files have not copied yet.
           if (!apply) await runWave({ source: from, uriDir: dir, toBag, skipTop }, `${kind} ${daemonFaceFolder(r)} -> h${target.get(r)!.handleIndex}`, [r]);
         }
         // The face's own folder (holding, once applied, what the adoptions copied in) lays through the one gate.
