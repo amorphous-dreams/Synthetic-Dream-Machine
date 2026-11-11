@@ -51,7 +51,7 @@ function fixture(withCeremony = true) {
       { path: "/ceremony-broker.js", file: "ceremony-broker.js", contentType: "application/javascript", cache: "no-store", sha256: sha("ceremony-broker.js") },
     ] : []),
   ];
-  return { web, genesis, record: { schema: "lararium-pronaos-artifact/v1" as const, routes } };
+  return { web, genesis, record: { schema: "lararium-pronaos-artifact" as const, routes } };
 }
 
 function get(handler: ReturnType<typeof pronaosRequestHandler>, url: string) {

@@ -42,7 +42,7 @@ function fixture(): { web: string; genesis: string; cid: string } {
 
 function envFor(f: ReturnType<typeof fixture>): Record<string, unknown> {
   const record = {
-    schema: "lararium-pronaos-artifact/v1",
+    schema: "lararium-pronaos-artifact",
     routes: [
       ["/", "index.html", "text/html; charset=utf-8", "no-store"],
       ["/manifest.webmanifest", "manifest.webmanifest", "application/manifest+json", "no-store"],

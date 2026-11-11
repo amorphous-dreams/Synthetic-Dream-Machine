@@ -51,7 +51,7 @@ function deskCheckout(opts: { web: boolean; record: boolean }): { repo: string; 
     mkdirSync(join(repo, ".pronaos-build"), { recursive: true });
     const sha = (body: string): string => createHash("sha256").update(body).digest("hex");
     writeFileSync(join(repo, ".pronaos-build", "pronaos-artifact.json"), JSON.stringify({
-      schema: "lararium-pronaos-artifact/v1",
+      schema: "lararium-pronaos-artifact",
       routes: [
         { path: "/", file: "index.html", contentType: "text/html; charset=utf-8", cache: "no-store", sha256: sha(INDEX) },
         { path: "/manifest.webmanifest", file: "manifest.webmanifest", contentType: "application/manifest+json", cache: "no-store", sha256: sha(MANIFEST) },

@@ -80,7 +80,7 @@ function emitPronaosArtifactRecord(): Plugin {
       }
       routes.sort((a, b) => a.path.localeCompare(b.path));
       mkdirSync(resolve(import.meta.dirname, "../../.pronaos-build"), { recursive: true });
-      writeFileSync(PRONAOS_RECORD, `${JSON.stringify({ schema: "lararium-pronaos-artifact/v1", routes }, null, 2)}\n`);
+      writeFileSync(PRONAOS_RECORD, `${JSON.stringify({ schema: "lararium-pronaos-artifact", routes }, null, 2)}\n`);
     },
   };
 }

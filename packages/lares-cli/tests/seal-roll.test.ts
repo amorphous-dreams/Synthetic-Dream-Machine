@@ -26,7 +26,7 @@ vi.setConfig({ testTimeout: 120_000, hookTimeout: 120_000 });
 const cidOf = (text: string): string => cidV1Sha256(new TextEncoder().encode(text));
 const seedHex = "5e".repeat(32);
 const RELEASE = {
-  format: "lararium-release-manifest/v1",
+  format: "lararium-release-manifest",
   image: { digest: `sha256:${"ab".repeat(32)}`, platforms: ["linux/amd64"] },
   genesis: { seedCid: seedHex }, engine: { cid: cidOf("engine") }, grammar: { cid: cidOf("grammar") },
 };

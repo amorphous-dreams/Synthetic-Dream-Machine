@@ -3,12 +3,12 @@ import assert from "node:assert/strict";
 import { validatePronaosDeploymentReceipt } from "./pronaos-deployment-receipt.mjs";
 
 const artifactRecord = {
-  schema: "lararium-pronaos-artifact/v1",
+  schema: "lararium-pronaos-artifact",
   routes: [{ path: "/", file: "index.html", sha256: "artifact-route-digest" }],
 };
 
 const receipt = {
-  schema: "lararium-pronaos-deployment/v1",
+  schema: "lararium-pronaos-deployment",
   // Only the record's location and digest cross this boundary. Route bytes
   // remain in the artifact record, even though this fixture holds both values.
   artifact: {
@@ -40,7 +40,7 @@ const receipt = {
 test("keeps finite artifact inventory separate from owner/source/image/run attribution", () => {
   const result = validatePronaosDeploymentReceipt(receipt);
   assert.deepEqual(result, {
-    schema: "lararium-pronaos-deployment/v1",
+    schema: "lararium-pronaos-deployment",
     artifactRecord: ".pronaos-build/pronaos-artifact.json",
     owner: "operator-house",
     source: "source-worktree",

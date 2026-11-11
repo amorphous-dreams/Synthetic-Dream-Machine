@@ -186,7 +186,7 @@ function arrival(): { env: Record<string, unknown>; genesis: string; cid: string
   writeFileSync(join(genesis, "cas", cid), cas);
   const record = join(root, "artifact-record.json");
   writeFileSync(record, JSON.stringify({
-    schema: "lararium-pronaos-artifact/v1",
+    schema: "lararium-pronaos-artifact",
     routes: ([
       ["/", "index.html", "text/html; charset=utf-8", "no-store"],
       ["/manifest.webmanifest", "manifest.webmanifest", "application/manifest+json", "no-store"],
