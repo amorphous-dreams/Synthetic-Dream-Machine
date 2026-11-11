@@ -50,6 +50,10 @@ import {
 } from "@lararium/mesh";
 import type { LaresServiceArgs, LaresServiceDoor } from "./types/lares-globals.js";
 
+/** DIAGNOSTIC (race lane, to be removed): browser threads alone, so no node stdout carries it. */
+const raceDiag = (line: string): void => { const g = globalThis as { WorkerGlobalScope?: unknown; window?: unknown }; if (g.WorkerGlobalScope !== undefined || g.window !== undefined) console.log(line); };
+
+
 /** Coalesce window (ms): a burst of wiki "change" events collapses to one posted frame. Small
  *  (one display frame-ish) — interactive display, not the capture-nalu's 2 s recall budget.
  *
@@ -625,9 +629,9 @@ function dispatchLarControlEventInner(ev: LarMsg_ControlEvent, door?: (result: L
     // `applied` holds an edit the vessel's store keeps. A refused or closed receipt answers by name, never `applied`.
     const resting = scope && !sense && status === "applied" ? scope.receipt?.held() ?? null : null;
     if (scope && resting) {
-      console.log(`[race-diag] result ${ev.eventId} ${status} parks behind the receipt`);
+      raceDiag(`[race-diag] result ${ev.eventId} ${status} parks behind the receipt`);
       void resting.then((rested) => {
-        console.log(`[race-diag] result ${ev.eventId} receipt answered ${String(rested)}`);
+        raceDiag(`[race-diag] result ${ev.eventId} receipt answered ${String(rested)}`);
         if (rested) { scope.post(result); return; }
         const unkept = mkLarControlResult({
           eventId: ev.eventId, cameraId: ev.cameraId, mountEpoch: ev.mountEpoch,
@@ -639,7 +643,7 @@ function dispatchLarControlEventInner(ev: LarMsg_ControlEvent, door?: (result: L
         scope.post(unkept);
       });
     }
-    else if (scope) { console.log(`[race-diag] result ${ev.eventId} ${status} posts`); scope.post(result); }
+    else if (scope) { raceDiag(`[race-diag] result ${ev.eventId} ${status} posts`); scope.post(result); }
     // No camera stands to carry it: the island's own door answers, so the page never waits on silence.
     else if (door) door(result);
     else console.warn(`[wiki-worker] no camera stands to answer ${ev.eventId} (${ev.cameraId})`);

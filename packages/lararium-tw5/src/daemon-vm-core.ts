@@ -94,6 +94,10 @@ import {
 } from "@lararium/mesh";
 import { runLocalVerb } from "./verb-local-dispatch.js";
 import type { SessionWorn, VerbTable } from "./verb-dispatcher.js";
+
+/** DIAGNOSTIC (race lane, to be removed): browser threads alone, so no node stdout carries it. */
+const raceDiag = (line: string): void => { const g = globalThis as { WorkerGlobalScope?: unknown; window?: unknown }; if (g.WorkerGlobalScope !== undefined || g.window !== undefined) console.log(line); };
+
 /** Well 1 input the host round-trips to the worker — two handles + the edge-DAG to project from. */
 export interface DaemonWorldlineCompareInput {
   a: string;
@@ -556,10 +560,10 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     // do, and each `lar:control-result` to the answer door. Both read fail-closed; the active-surface gate keys
     // on the transport id downstream, never a payload claim.
     const frame = readLarFrame(raw);
-    if (frame) { if (!_frameHandler) console.warn("[race-diag] daemon-vm frame dropped: no frame handler"); _frameHandler?.(frame); return; }
+    if (frame) { if (!_frameHandler) raceDiag("[race-diag] daemon-vm frame dropped: no frame handler"); _frameHandler?.(frame); return; }
     const result = readLarControlResult(raw);
-    if (result) { console.log(`[race-diag] daemon-vm result ${result.eventId} ${result.status}${_controlResultHandler ? "" : " DROPPED: no result handler"}`); _controlResultHandler?.(result); return; }
-    { const t = (raw as { type?: unknown } | null)?.type; if (t === "lar:frame" || t === "lar:control-result") console.warn(`[race-diag] daemon-vm ${String(t)} DROPPED: fails its reader`); }
+    if (result) { raceDiag(`[race-diag] daemon-vm result ${result.eventId} ${result.status}${_controlResultHandler ? "" : " DROPPED: no result handler"}`); _controlResultHandler?.(result); return; }
+    { const t = (raw as { type?: unknown } | null)?.type; if (t === "lar:frame" || t === "lar:control-result") raceDiag(`[race-diag] daemon-vm ${String(t)} DROPPED: fails its reader`); }
     if (!isIslandToVesselMsg(raw)) return;
 
     if (raw.type === "daemon:face-settled") {

@@ -39,6 +39,10 @@ import { openPublished, sealPublished, type PublishedLookup } from "./published-
 import { openHeld, sealHeld, type HeldRestKey } from "./held-rest-key.js";
 import type { DocumentValue, FreshBase, HolderRefusal, OpenedValue, SealedValues } from "./content-key-holder.js";
 
+/** DIAGNOSTIC (race lane, to be removed): browser threads alone, so no node stdout carries it. */
+const raceDiag = (line: string): void => { const g = globalThis as { WorkerGlobalScope?: unknown; window?: unknown }; if (g.WorkerGlobalScope !== undefined || g.window !== undefined) console.log(line); };
+
+
 export const SEALED_DOCUMENT_REFUSALS = [
   "session-absent",          // no session stands behind the read
   "session-face-foreign",    // the session wears another face than the bag belongs to
@@ -424,7 +428,10 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     const value: DocumentValue = { role, ref: logicalRefOf(key), parents, plaintext: data, ...(role === "checkpoint" ? { frontier: frontierOf(data) } : {}) };
     const writer = this.#ports.writerOf?.(key[0]!) ?? null;
     const peer = writer !== null && writer.startsWith("peer:") ? writer.slice("peer:".length) : undefined;
+    const diag = `${key[0]!.slice(0, 8)}/${String(key[1])} in ${bag.bagId.slice(0, 24)}`;
+    raceDiag(`[race-diag] seal asks ${diag}`);
     const sealed = await this.#ports.seal({ bagId: bag.bagId, values: [value], session, ...(peer !== undefined ? { peer } : {}) });
+    raceDiag(`[race-diag] seal answers ${diag}${"refusal" in sealed ? ` refused ${sealed.refusal}` : ""}`);
     if ("refusal" in sealed) throw new SealedDocumentRefusal(sealed.refusal, sealed.cause);
     const address = sealed.values[0]!.address;
     await this.#ports.inner.save(key, utf8Bytes(POINTER + address));

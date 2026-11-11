@@ -12,6 +12,10 @@ import { hasHeads } from "@automerge/automerge";
 import type { DocHandle, DocumentId, Repo } from "@automerge/automerge-repo";
 import type { IslandMsg_ReceiptRequest } from "./island-protocol.js";
 
+/** DIAGNOSTIC (race lane, to be removed): browser threads alone, so no node stdout carries it. */
+const raceDiag = (line: string): void => { const g = globalThis as { WorkerGlobalScope?: unknown; window?: unknown }; if (g.WorkerGlobalScope !== undefined || g.window !== undefined) console.log(line); };
+
+
 /** Backstop only: the primary stall is a closed channel the vessel reads. How many changes the vessel's copy may take without holding the island's heads before the ask answers stalled (rounds, never a timer). */
 export const RECEIPT_STALL_ROUNDS = 512;
 const MAX_HEADS = 1024;
@@ -32,7 +36,7 @@ export async function answerReceiptWithHeads(repo: Repo | null, ask: IslandMsg_R
     if (named.length > 0) {
       const holds = (): boolean => { try { return hasHeads(handle.doc() as Parameters<typeof hasHeads>[0], named); } catch { return false; } };
       if (!holds()) {
-        console.log(`[race-diag] receipt ${ask.requestId.slice(0, 8)} waits on ${id.slice(0, 10)} (peer ${islandPeer === undefined ? "unnamed" : repo.peers.includes(islandPeer as never) ? "present" : "absent"})`);
+        raceDiag(`[race-diag] receipt ${ask.requestId.slice(0, 8)} waits on ${id.slice(0, 10)} (peer ${islandPeer === undefined ? "unnamed" : repo.peers.includes(islandPeer as never) ? "present" : "absent"})`);
         let rounds = 0;
         let channelClosed = false;
         const arrived = await new Promise<boolean>((resolve) => {
@@ -49,12 +53,14 @@ export async function answerReceiptWithHeads(repo: Repo | null, ask: IslandMsg_R
             if (!repo.peers.includes(islandPeer as never)) { channelClosed = true; finish(holds()); }
           }
         });
-        console.log(`[race-diag] receipt ${ask.requestId.slice(0, 8)} wait ends arrived=${String(arrived)} rounds=${String(rounds)} closed=${String(channelClosed)}`);
+        raceDiag(`[race-diag] receipt ${ask.requestId.slice(0, 8)} wait ends arrived=${String(arrived)} rounds=${String(rounds)} closed=${String(channelClosed)}`);
         if (!arrived) return { issued: false, stalled: true, why: channelClosed ? `stalled: the island's channel closed before the vessel's copy of ${id} held its heads` : `stalled: the vessel's copy of ${id} changed ${RECEIPT_STALL_ROUNDS} times without holding the island's heads` };
       }
     }
     written.push(handle.documentId);
   }
-  try { if (written.length > 0) await repo.flush(written); } catch (error) { return { issued: false, why: error instanceof Error ? error.message : String(error) }; }
+  raceDiag(`[race-diag] receipt ${ask.requestId.slice(0, 8)} flushes ${String(written.length)} doc(s)`);
+  try { if (written.length > 0) await repo.flush(written); } catch (error) { raceDiag(`[race-diag] receipt ${ask.requestId.slice(0, 8)} flush threw`); return { issued: false, why: error instanceof Error ? error.message : String(error) }; }
+  raceDiag(`[race-diag] receipt ${ask.requestId.slice(0, 8)} flushed`);
   return { issued: true };
 }

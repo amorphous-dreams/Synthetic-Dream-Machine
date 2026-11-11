@@ -14,6 +14,10 @@
  */
 import { replicaHeads, type IslandMsg_ReceiptRequest, type IslandToVesselMsg } from "@lararium/mesh";
 
+/** DIAGNOSTIC (race lane, to be removed): browser threads alone, so no node stdout carries it. */
+const raceDiag = (line: string): void => { const g = globalThis as { WorkerGlobalScope?: unknown; window?: unknown }; if (g.WorkerGlobalScope !== undefined || g.window !== undefined) console.log(line); };
+
+
 export interface ReceiptCapabilityDeps {
   readonly post: (msg: IslandToVesselMsg) => void;
   /** The island's document handles by slot, read live. */
@@ -119,7 +123,7 @@ export function makeReceiptCapability(deps: ReceiptCapabilityDeps): ReceiptCapab
     return await new Promise<boolean>((resolve) => {
       parked.set(requestId, resolve);
       const ask: IslandMsg_ReceiptRequest = { type: "receipt:request", requestId, documentIds, heads };
-      console.log(`[race-diag] island receipt ask ${requestId.slice(0, 8)} for ${String(documentIds.length)} doc(s)`);
+      raceDiag(`[race-diag] island receipt ask ${requestId.slice(0, 8)} for ${String(documentIds.length)} doc(s)`);
       try { deps.post(ask); }
       catch { parked.delete(requestId); resolve(false); }
       left();
@@ -162,7 +166,7 @@ export function makeReceiptCapability(deps: ReceiptCapabilityDeps): ReceiptCapab
     },
     held: () => {
       if (waiting.size === 0) return null;
-      console.log(`[race-diag] held() over ${String(waiting.size)} act(s), ${String(parked.size)} parked ask(s), ${String(asking)} asking`);
+      raceDiag(`[race-diag] held() over ${String(waiting.size)} act(s), ${String(parked.size)} parked ask(s), ${String(asking)} asking`);
       return Promise.all([...waiting]).then((verdicts) => verdicts.every(Boolean));
     },
     unrested: () => [...unrested],
@@ -177,7 +181,7 @@ export function makeReceiptCapability(deps: ReceiptCapabilityDeps): ReceiptCapab
       const { type, requestId, issued, why, stalled: stall } = raw as Record<string, unknown>;
       if (type !== "receipt:issued" || typeof requestId !== "string") return false;
       const resolve = parked.get(requestId);
-      console.log(`[race-diag] island receipt answer ${requestId.slice(0, 8)} issued=${String(issued)} stalled=${String(stall)}${resolve ? "" : " (unparked)"}`);
+      raceDiag(`[race-diag] island receipt answer ${requestId.slice(0, 8)} issued=${String(issued)} stalled=${String(stall)}${resolve ? "" : " (unparked)"}`);
       if (!resolve) return true;
       parked.delete(requestId);
       if (stall === true) stalled++;

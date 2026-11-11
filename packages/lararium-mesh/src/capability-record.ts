@@ -26,6 +26,10 @@ import type {
   IslandMsg_ReceiptIssued, IslandMsg_ReceiptRequest, IslandMsg_RestAnswer, IslandMsg_RestAsk, IslandMsg_SessionSign, IslandMsg_SessionSigned, SessionOwnChain,
 } from "./island-protocol.js";
 
+/** DIAGNOSTIC (race lane, to be removed): browser threads alone, so no node stdout carries it. */
+const raceDiag = (line: string): void => { const g = globalThis as { WorkerGlobalScope?: unknown; window?: unknown }; if (g.WorkerGlobalScope !== undefined || g.window !== undefined) console.log(line); };
+
+
 /** The vessel's answer to an island's receipt ask — resolves once every named document rests in the vessel's store. */
 export type ReceiptIssuer = (documentIds: readonly string[], heads?: Readonly<Record<string, readonly string[]>>) => Promise<void>;
 /** The vessel's answer to an island's `cas:want` — verified bytes, or null. */
@@ -67,8 +71,8 @@ export async function answerReceipt(caps: CapabilityRecord, ask: Pick<IslandMsg_
   const base = { type: "receipt:issued" as const, requestId: ask.requestId };
   const receipt = caps.receipt;
   if (!receipt) return { ...base, issued: false, why: "ReceiptCapabilityUnavailable: no receipt capability stands on this vessel" };
-  console.log(`[race-diag] record receipt ask ${ask.requestId.slice(0, 8)}`);
-  try { await receipt(ask.documentIds, ask.heads); console.log(`[race-diag] record receipt ${ask.requestId.slice(0, 8)} issued`); return { ...base, issued: true, proof: { documentIds: [...ask.documentIds] } }; }
+  raceDiag(`[race-diag] record receipt ask ${ask.requestId.slice(0, 8)}`);
+  try { await receipt(ask.documentIds, ask.heads); raceDiag(`[race-diag] record receipt ${ask.requestId.slice(0, 8)} issued`); return { ...base, issued: true, proof: { documentIds: [...ask.documentIds] } }; }
   catch (e) { return { ...base, issued: false, why: e instanceof Error ? e.message : String(e) }; }
 }
 

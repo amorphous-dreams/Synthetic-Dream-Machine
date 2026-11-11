@@ -66,7 +66,7 @@ const projection = (): Map<string, number> =>
 
 const tail = (): string => [
   // DIAGNOSTIC: the race-diag trail (frames, results and receipts across the seat landing), then the last lines.
-  "── race-diag ──", ...lines.filter((l) => l.includes("[race-diag]") || l.includes("seat")).slice(-220), "── tail ──",
+  "── race-diag ──", ...lines.filter((l) => l.includes("[race-diag]") || l.includes("seat")).slice(-400), "── tail ──",
   ...lines.filter((l) => !l.startsWith("Warning: Global assignment") && !l.includes("[race-diag]")).slice(-80)].join("\n");
 
 /** The worn face's stage folder (`kahua-<F>`), its relation read off the hearth's founding record. */
