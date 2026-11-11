@@ -1,7 +1,8 @@
 #!/bin/sh
 # lares-container — the HOST shim for the surface vessel (docker-compose.surface.yml).
 #
-#   lares-container.sh up [--capture <dir>]...   stand the vessel (detached) and wait until it answers healthy
+#   lares-container.sh up [--capture <dir>]... [--workspace <name>=<dir>]...
+#                                                stand the vessel (detached) and wait until it answers healthy
 #   lares-container.sh down [compose-down args]  stop it and remove its container (the house stays in LARES_HOUSE),
 #                                                after a census of what a stop would drop (below)
 #   lares-container.sh reset                     clear a stopped vessel's hearth (LARES_HOUSE/hearth alone) after
@@ -378,6 +379,37 @@ waited_run() { run_waited run --profile offline run --rm --name "$RUN_NAME" "$@"
 [ "$#" -gt 0 ] || die "usage: lares-container.sh up|down|reset|found|logs|build|vessel stand|<lares verb…> (build rebuilds the vessel image, every package, from the committed checkout)"
 verb=$1; shift
 
+# A WORKSPACE (cabal-realm#/the-workbench): an operator-configured directory a private wiki's workbench mirror rests in,
+# bound read-write at `/lar/workspaces/<name>` (a wiki's share row names it: `lares wiki share <wiki> --workspace <name>`).
+# They come from `--workspace <name>=<dir>` on `up` and from LARES_WORKSPACES (the environment or the env file: `;`-separated
+# `<name>=<dir>` pairs, so they stand on every up). A workspace inside the checkout (this shim's repo or LARES_WORKSPACE) or
+# inside LARES_HOUSE/hearth refuses by name: projection follows placement, and a private wiki never rests in the tracked tree or
+# in what a re-founding clears. A name binds once.
+workspace_names=" "
+workspace_bind() { # $1 = name=dir; appends one bind to $files
+  pair=$1
+  case "$pair" in *=*) ;; *) die "--workspace wants <name>=<dir>, and \"$pair\" names no '='" ;; esac
+  name=${pair%%=*}; wdir=${pair#*=}
+  printf '%s' "$name" | grep -Eq '^[a-z0-9][a-z0-9._-]{0,63}$' || die "--workspace: \"$name\" names no workspace (lower-case letters, digits, '.', '_' and '-')"
+  case "$workspace_names" in *" $name "*) die "--workspace: \"$name\" binds once" ;; esac
+  real=$(realpath -e -- "$wdir" 2>/dev/null) || die "--workspace $name: $wdir is no directory"
+  [ -d "$real" ] || die "--workspace $name: $wdir is no directory"
+  checkout_real=$(realpath -m -- "$ROOT")
+  ws_real=$(realpath -m -- "$(value_of LARES_WORKSPACE)")
+  hearth_real=$(realpath -m -- "$HOUSE/hearth")
+  case "$real/" in "$checkout_real/"*) die "--workspace $name refuses $real — it rests inside the checkout ($checkout_real)" ;; esac
+  case "$real/" in "$ws_real/"*) die "--workspace $name refuses $real — it rests inside LARES_WORKSPACE ($ws_real)" ;; esac
+  case "$real/" in "$hearth_real/"*) die "--workspace $name refuses $real — it rests inside the hearth ($hearth_real)" ;; esac
+  case "$real" in *"
+"*) die "--workspace refuses a path that holds a newline" ;; esac
+  yaml_dir=$(printf '%s' "$real" | sed -e "s/'/''/g" -e 's/\$/$$/g')
+  workspace_names="$workspace_names$name "
+  files="$files
+      - type: bind
+        source: '$yaml_dir'
+        target: /lar/workspaces/$name"
+}
+
 case "$verb" in
   up)
     ensure_house
@@ -404,9 +436,19 @@ case "$verb" in
         target: /capture/$n
         read_only: true"
           shift 2 ;;
+        --workspace)
+          [ "$#" -ge 2 ] || die "--workspace wants <name>=<dir>"
+          workspace_bind "$2"
+          shift 2 ;;
         *) die "unknown option $1 for up" ;;
       esac
     done
+    configured=$(value_of LARES_WORKSPACES)
+    if [ -n "$configured" ]; then
+      old_ifs=$IFS; IFS=';'
+      for pair in $configured; do IFS=$old_ifs; [ -z "$pair" ] || workspace_bind "$pair"; IFS=';'; done
+      IFS=$old_ifs
+    fi
     if [ -n "$files" ]; then
       override=$(mktemp)
       printf 'services:\n  lares:\n    volumes:%s\n' "$files" > "$override"

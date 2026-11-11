@@ -65,7 +65,9 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
         if (checkout === "dirty") await writeFile(script, (await readFile(script, "utf8")) + "\n# edited\n");
       }
     }
-    const cmd = shim === SH ? ["sh", [script, ...argv]] : ["pwsh", ["-NoProfile", "-File", script, ...argv]];
+    // `@HOUSE@` in an argument names the run's scratch house too.
+    const args = argv.map(fill);
+    const cmd = shim === SH ? ["sh", [script, ...args]] : ["pwsh", ["-NoProfile", "-File", script, ...args]];
     // A standing vessel answers a steady verdict unless a test scripts another answer.
     const steady = '{"data":{"standing":{"act":"attach","reason":"steady"}}}';
     const base = { PATH: `${dir}:${process.env.PATH}`, CALL_LOG: log, HOME: home, LARES_COMPOSE_FILE: compose, FAKE_OBSERVE_OUTPUT: steady, ...gitEnv };
@@ -580,6 +582,36 @@ for (const [name, shim] of shims) {
       assert.match(bad.stderr, /home directory/);
       assert.equal(bad.calls, "");
     } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test(`${name}: --workspace binds read-write under /lar/workspaces/<name>; LARES_WORKSPACES stands on every up`, async () => {
+    const dir = await mkdtemp(join(tmpdir(), "ws-"));
+    const other = await mkdtemp(join(tmpdir(), "ws2-"));
+    try {
+      const r = await run(shim, ["up", "--workspace", `field-notes=${dir}`], { env: { ...MOUNTS, LARES_WORKSPACES: `drafts=${other}` } });
+      assert.equal(r.status, 0, r.stderr);
+      assert.match(r.calls, /target: \/lar\/workspaces\/field-notes/);
+      assert.match(r.calls, /target: \/lar\/workspaces\/drafts/);
+      assert.doesNotMatch(r.calls, /workspaces\/field-notes\n\s+read_only/);
+      const twice = await run(shim, ["up", "--workspace", `a=${dir}`, "--workspace", `a=${other}`], { env: MOUNTS });
+      assert.equal(twice.status, 2);
+      assert.match(twice.stderr, /binds once/);
+      assert.equal(twice.calls, "");
+    } finally { await rm(dir, { recursive: true, force: true }); await rm(other, { recursive: true, force: true }); }
+  });
+
+  test(`${name}: a workspace inside the checkout or the hearth refuses by name, before docker runs`, async () => {
+    const inCheckout = await run(shim, ["up", "--workspace", `tree=${join(ROOT, "tools")}`], { env: MOUNTS });
+    assert.equal(inCheckout.status, 2);
+    assert.match(inCheckout.stderr, /inside the checkout/);
+    assert.equal(inCheckout.calls, "");
+    const inHearth = await run(shim, ["up", "--workspace", "deep=@HOUSE@/hearth"], { env: MOUNTS });
+    assert.equal(inHearth.status, 2);
+    assert.match(inHearth.stderr, /inside the hearth/);
+    assert.equal(inHearth.calls, "");
+    const badName = await run(shim, ["up", "--workspace", `../x=${tmpdir()}`], { env: MOUNTS });
+    assert.equal(badName.status, 2);
+    assert.match(badName.stderr, /names no workspace/);
   });
 
   test(`${name}: a relative LARES_HOUSE refuses by name, before docker runs`, async () => {
