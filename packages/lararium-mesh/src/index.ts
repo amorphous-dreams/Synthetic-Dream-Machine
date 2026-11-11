@@ -86,6 +86,7 @@ export * from "./ward-cosign-gate.js";
 export * from "./ward-answer.js";
 export * from "./vessel-face-tag.js";
 export * from "./kahua-stage.js";
+export * from "./kahua-staged.js";
 export * from "./promote.js";
 export * from "./promote-kapae.js";
 export * from "./promote-board.js";
@@ -676,3 +677,4 @@ export * from "./promote-panel-api.js";
 
 export * from "./promote-main-verbs.js";
 export * from "./share-config.js";
+export * from "./face-label.js";

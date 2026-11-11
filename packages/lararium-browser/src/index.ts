@@ -107,3 +107,5 @@ export { SharedHolderRefusal } from "./shared-holder.js";
 export type { HolderRefused } from "./shared-holder-core.js";
 export { BROWSER_IDENTITY_CONTINUITY_DB, readBrowserIdentityContinuity } from "./browser-vessel-identity.js";
 export type { BrowserIdentityContinuity } from "./browser-vessel-identity.js";
+// THE FACE LABEL in this browser's origin-private file system (`face-labels/<F>.json`), the node's record by the shared seam.
+export { writeBrowserFaceLabel, readBrowserFaceLabel, opfsFaceLabelShelf, browserOpfsRoot, BROWSER_LABEL_NO_OPFS, type OpfsDirectoryLike } from "./browser-face-labels.js";

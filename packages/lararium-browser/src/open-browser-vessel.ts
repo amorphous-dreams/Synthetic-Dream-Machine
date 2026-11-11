@@ -25,6 +25,7 @@ import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import { Repo }                              from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter }           from "@automerge/automerge-repo-storage-indexeddb";
 import { browserDeviceFiling } from "./browser-device-filing.js";
+import { writeBrowserFaceLabel } from "./browser-face-labels.js";
 import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, sealedBagMap, vesselDocStoreDoor, bindSecretHomeRest, nameControlHome, daemonFaceCanonBag, SecretHomeUnavailable, DAEMON_SLOT_PREFIX, DAEMON_WIKI_SLOT_BAGS, type LitDeviceFaces, type SecretHome, type SealedBag } from "@lararium/mesh";
 import { openBrowserSecretHome, standBrowserSecretHome } from "./browser-secret-home.js";
 import * as A from "@automerge/automerge";
@@ -1035,7 +1036,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     wearFaceOfVessel(idbName, f.personaGroupId);
     // THE FACE'S ATOM RESTS BEFORE ITS BOOTSTRAP: the founding minted a random seed, and the face's own custody row keeps it.
     try { await keepBrowserFaceAtomSeed(idbName, f.personaGroupId, f.atomSeed); } finally { f.atomSeed.fill(0); }
-    // THE FACE'S ADDRESS SECRET MINTS BESIDE ITS ATOM, so its working documents derive their addresses from the first boot.
+    // THE FACE'S ADDRESS SECRET MINTS BESIDE ITS ATOM, so the face's catalog document derives its address from the first boot.
     await mintBrowserFaceAddressSecret(idbName, f.personaGroupId);
     // THE FACE ARCHIVE RESTS BEFORE ITS BOOTSTRAP. The ceremony's provider left with the act; the key
     // agreement state of what it created lives in these bytes. A founding that stops before its
@@ -1574,6 +1575,16 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         });
         if (!proof.ok) throw new Error(`[lararium-browser] Face proof: ${proof.refusal.why}${"plane" in proof.refusal ? ` ${proof.refusal.plane}` : ""}; re-found or re-admit the face`);
         wornRelation = faceRelationOf(proof.projection);
+        // THE FACE LABEL, as the node vessel writes it whenever a face stands (`face-labels`): the shared seam decides the
+        // record (`@lararium/mesh` `face-label.ts`), and this browser rests it in its OPFS under `face-labels/<F>.json`, so a
+        // face founded here names itself as one founded on a node does. An aid, never a gate: a browser with no OPFS says so.
+        if (wornRelation) {
+          const relation = wornRelation, handleIndex = wornMount?.handleIndex ?? 0;
+          void (async () => {
+            const label = await writeBrowserFaceLabel({ relation, petname: await (await makeBrowserPersonaPetnameStore(idbName)).get(handleIndex), handleIndex });
+            if ("refused" in label) console.warn(`[face-label] the label for ${relation} rests nowhere: ${label.refused} (this browser holds no origin-private file system)`);
+          })().catch((e: unknown) => console.warn(`[face-label] the label for ${relation} did not write: ${e instanceof Error ? e.message : String(e)}`));
+        }
         if (wornRelation) daemonCanon = await standFaceDaemonCanon({ repo, control: await watchControl(await repo.find<LarDoc>(social.daemonUrl as AutomergeUrl)), faceRelation: wornRelation,
           beforeFirstByte: (bagId, documentId) => { if (deviceDocs.canonMinted(bagId, documentId, wornRelation!)) reverdict(); sealedRest.store.mapMoved(); } });
         const kahua = adoptKahuaPlane(proof.projection, wornGroup, kahuaCatalogRow(assembly.catalogHandle.doc()));
