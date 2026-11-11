@@ -38,6 +38,7 @@ import { headsEqual } from "./wiki-recipe.js";
 import { plainField, plainRecord, plainValue, storedDeleted, type StoredLarRecord, ownEntry, hasOwnEntry, isPrototypeKey } from "./stored-value.js";
 import { storedRecord, storedValue, PROTOTYPE_KEY_CODE } from "./stored-record.js";
 import { VerbRefusal } from "./verb-refusal.js";
+import { OVERRIDE_BASE_META } from "./override-base.js";
 
 type MutableLarTiddlerRecord = {
   tiddler: Record<string, unknown> & { title: string };
@@ -68,6 +69,18 @@ function _contentValue(record: StoredLarRecord): unknown {
 
 function _contentEquals(cur: StoredLarRecord, rec: LarTiddlerRecord): boolean {
   return _canonicalJson(_contentValue(cur)) === _canonicalJson(_contentValue(rec));
+}
+
+/**
+ * A RE-BASE MOVES THE RECORD. Ceremony metadata never makes a write on its own, with one exception: a record that names
+ * an override base (`override-base.ts`) other than the one stored writes, so a person who keeps a working override over
+ * a moved canon text (`take-working`) re-bases it without touching its text.
+ */
+function _overrideBaseMoves(cur: StoredLarRecord, rec: LarTiddlerRecord): boolean {
+  const next = rec.meta?.[OVERRIDE_BASE_META];
+  if (typeof next !== "string") return false;
+  const meta = ownEntry(cur as unknown as Record<string, Record<string, unknown>>, "meta");
+  return plainValue(ownEntry(meta, OVERRIDE_BASE_META)) !== next;
 }
 
 /** Same value in the doc's medium: the stored side unwraps first, a list or map compares by its JSON form. */
@@ -404,7 +417,7 @@ export class AutomergeDocStore implements LarTiddlerStore {
     const current = atBase?.tiddlers;
     const moved = puts.filter((r) => {
       const existing = ownEntry(current, r.tiddler.title);
-      return !(existing && _contentEquals(existing, r));
+      return !(existing && _contentEquals(existing, r) && !_overrideBaseMoves(existing, r));
     });
     const movedTombstones = tombstones.filter((title) => !storedDeleted(ownEntry(current, title)));
     if (moved.length === 0 && movedTombstones.length === 0) return;

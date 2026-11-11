@@ -27,6 +27,7 @@ import {
 } from "./lar-uris.js";
 import { headsEqual } from "./wiki-recipe.js";
 import { assertStorableTitle } from "./title-law.js";
+import { OVERRIDE_BASE_META, isWorkingLayerBag, overrideBaseOf, overrideTextHash } from "./override-base.js";
 import { buildEffectRecordTiddler, effectLedgerPrefix, effectRecordUri, isEffectRecordUri, isRetirementMarker, parseEffectRecord, RETIRED_EVENT_ID, storeIsRetired } from "./effect-record.js";
 
 /** Two flat field bags hold the same keys and the same values (each value read as its string). */
@@ -246,7 +247,39 @@ export class CompositeStore implements LarTiddlerStore {
     const store = this._writeTargetFor(options?.bag, "put");
     const retired = this._refuseRetired(store, [record], "put");
     if (retired) await retired;
-    return store.put(record, origin, this._writeOptionsFor(options, store, "put"));
+    const writeOptions = this._writeOptionsFor(options, store, "put");
+    const [based] = await this._withOverrideBases(store, [record]);
+    return store.put(based!, origin, writeOptions);
+  }
+
+  /**
+   * THE FORK REMEMBERS ITS BASE (`override-base.ts`). A write into a wiki's WORKING layer of a title a lower layer holds
+   * live forks an override; the record lands naming the hash of the lower record's text (`meta.overrideBase`). A later
+   * write of a title the working layer already holds carries the base it named forward (a store that replaces records
+   * whole keeps it so); a record that names its own base keeps it (a re-base names the new one). A working-only title,
+   * a tombstone, and a write into any other layer pass untouched.
+   */
+  private async _withOverrideBases(store: LarTiddlerStore, puts: readonly LarTiddlerRecord[]): Promise<readonly LarTiddlerRecord[]> {
+    const at = this.layers.findIndex((l) => l.store === store);
+    if (at < 0 || !isWorkingLayerBag(this.layers[at]!.bagId)) return puts;
+    const out: LarTiddlerRecord[] = [];
+    for (const record of puts) {
+      if (record.meta?.deleted === true || overrideBaseOf(record) !== null) { out.push(record); continue; }
+      const title = record.tiddler.title;
+      const held = await store.get(title);
+      let base: string | null = null;
+      if (held && !held.meta?.deleted) base = overrideBaseOf(held);
+      else {
+        for (let i = at - 1; i >= 0; i--) {
+          const lower = await this.layers[i]!.store.get(title);
+          if (lower === null) continue;
+          if (!lower.meta?.deleted) base = overrideTextHash(lower.tiddler);
+          break;
+        }
+      }
+      out.push(base === null ? record : { ...record, meta: { ...(record.meta ?? {}), [OVERRIDE_BASE_META]: base } });
+    }
+    return out;
   }
 
   /**
@@ -265,8 +298,9 @@ export class CompositeStore implements LarTiddlerStore {
     const { store, retired } = this._familyChecks(puts, tombstones, options);
     if (retired) await retired;
     const writeOptions = this._writeOptionsFor(options, store, "writeFamily");
-    if (typeof store.writeFamily === "function") return store.writeFamily(puts, tombstones, origin, writeOptions);
-    for (const record of puts) await store.put(record, origin, writeOptions);
+    const based = await this._withOverrideBases(store, puts);
+    if (typeof store.writeFamily === "function") return store.writeFamily(based, tombstones, origin, writeOptions);
+    for (const record of based) await store.put(record, origin, writeOptions);
     for (const title of tombstones) await store.tombstone(title, origin, writeOptions);
   }
 

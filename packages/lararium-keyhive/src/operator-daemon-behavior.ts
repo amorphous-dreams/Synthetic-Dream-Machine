@@ -15,7 +15,7 @@
 
 import {
   makeDaemonBehavior, makeWhereReactor, makeResolveReactor, makeListWikisReactor,
-  makePinReactor, makeUnpinReactor, makeRegisterColdReactor, registerActionReactors, makeTw5Deserializer,
+  makePinReactor, makeUnpinReactor, makeRegisterColdReactor, registerActionReactors, makeOverrideReactor, makeTw5Deserializer,
   makeWikiPinReactor, makeWikiUnpinReactor,
   makeCatalogAccessor, findOrThrow,
   makeInitWikiReactor, makeOpenWikiReactor, makeDraftReactor, makePruneStaleReactor,
@@ -829,13 +829,17 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // registers beside them; a floor holds no face, so each refuses by naming the lift
       // BEFORE the cap check, the mint or any registry write. The set derives from the mesh table, never a list.
       if (daemonAuth.personaGroupId) {
+        const reach: NonNullable<Parameters<typeof registerActionReactors>[1]["reach"]> = {
+          repo: ctx.repo, catalogUrl: ctx.catalogUrl, faceCatalogUrl: ctx.faceCatalogUrl ?? null, oracleUrl: ctx.oracleUrl,
+          slotDocUrl: async (slug, kind, opts) => (await slotDocsOf(ctx).slotDoc(slug, kind, opts))?.url ?? null,
+          systemCanonUrl: realmCanonUrlOf(ctx),
+        };
+        // THE OVERRIDE VERB: a person's answers to the working overrides a canon change left standing off
+        // (`override-bases.ts`), reached by the same access the action verbs reach a deep bag by.
+        registry.register("override", makeOverrideReactor({ composite: ctx.composite, reach, ...(kahuReach ? { kahuReach } : {}) }), { summary: "List the working overrides standing off over a moved canon text, or answer one by its key: take-working re-bases it, take-canon retracts it.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
         registerActionReactors(registry, {
           composite: ctx.composite,
-          reach: {
-            repo: ctx.repo, catalogUrl: ctx.catalogUrl, faceCatalogUrl: ctx.faceCatalogUrl ?? null, oracleUrl: ctx.oracleUrl,
-            slotDocUrl: async (slug, kind, opts) => (await slotDocsOf(ctx).slotDoc(slug, kind, opts))?.url ?? null,
-            systemCanonUrl: realmCanonUrlOf(ctx),
-          },
+          reach,
           registerBag: registerBagCap,
           // LOAD lands every legal TW5 filetype via TW5's own deserializer registry,
           // resolved lazily through the daemon island's live $tw at action time.
