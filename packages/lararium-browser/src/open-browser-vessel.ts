@@ -25,7 +25,7 @@ import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import { Repo }                              from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter }           from "@automerge/automerge-repo-storage-indexeddb";
 import { browserDeviceFiling } from "./browser-device-filing.js";
-import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, sealedBagMap, vesselDocStoreDoor, bindSecretHomeRest, nameControlHome, daemonFaceCanonBag, SecretHomeUnavailable, DAEMON_SLOT_PREFIX, DAEMON_WIKI_SLOT_BAGS, type LitDeviceFace, type SecretHome, type SealedBag } from "@lararium/mesh";
+import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, sealedBagMap, vesselDocStoreDoor, bindSecretHomeRest, nameControlHome, daemonFaceCanonBag, SecretHomeUnavailable, DAEMON_SLOT_PREFIX, DAEMON_WIKI_SLOT_BAGS, type LitDeviceFaces, type SecretHome, type SealedBag } from "@lararium/mesh";
 import { openBrowserSecretHome, standBrowserSecretHome } from "./browser-secret-home.js";
 import * as A from "@automerge/automerge";
 import type { DocHandle, AutomergeUrl, PeerId } from "@automerge/automerge-repo";
@@ -675,21 +675,22 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // THE PER-DEVICE DAEMON DOCUMENTS the control document names (the daemon wiki's device slots, each face's daemon canon),
   // filed by the face that OWNS each through the one table the node files by (`deviceDaemonDocs`, isomorphic by intent): a
   // group's slot or a face's canon seals under that face's key while its lift stands and waits held otherwise; the floor's
-  // slot seals beside the control document under the vessel's key. `litDevice` names the face whose lift stands.
+  // slot seals beside the control document under the vessel's key. `litDevices` names the lit set: the browser's one face whose
+  // lift stands (a set of one, the node's table read at its smallest), or none.
   let litDeviceGroup: string | null = null;
   let litDeviceRelation: string | null = null;
-  const litDevice = (): LitDeviceFace => ({ group: litDeviceGroup, relation: litDeviceRelation, face: sealedCells.face() });
+  const litDevices = (): LitDeviceFaces => (litDeviceGroup === null && litDeviceRelation === null ? [] : [{ group: litDeviceGroup, relation: litDeviceRelation, face: sealedCells.face() }]);
   // THE SECRET HOME (placement over patterns): this vessel's own secret document maps sealed under its held key, with no
   // face and no session, from the moment an enrollment or an open names it (`browser-secret-home`). The device table and the
   // held homes file through one composition (`browserDeviceFiling`), the path a suite stands.
-  const filing = browserDeviceFiling({ repo: () => repo, litDevice });
+  const filing = browserDeviceFiling({ repo: () => repo, litDevices });
   const deviceDocs = filing.deviceDocs;
   const secretHomes = filing.secretHomes;
   const sealedMap = sealedBagMap({
     face: () => sealedCells.face(),
     bags: () => sealedCells.bags(),
     catalog: () => sealedCells.catalog(),
-    docsOf: (bagId) => [...deviceDocs.docsOf(bagId, litDevice()), sealedCells.mounted(bagId), ...(slotDocsNamed.get(bagId) ?? []), documentIdOfUrl(tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId)))],
+    docsOf: (bagId) => [...deviceDocs.docsOf(bagId, litDevices()), sealedCells.mounted(bagId), ...(slotDocsNamed.get(bagId) ?? []), documentIdOfUrl(tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId)))],
   });
   // A device document files by its owner first, then the held homes (`vesselHeldBagOf`, the node's one order), then the map.
   const sealedBagOf = (documentId: string): SealedBag | null => filing.bagOf(documentId) ?? sealedMap.bagOf(documentId);

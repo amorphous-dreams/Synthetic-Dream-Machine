@@ -383,9 +383,11 @@ export interface SealedRest<S extends SaveSession = SaveSession> {
   /** A session wrote a change to `documentId`: book it. */
   wrote(documentId: string, session: S): void;
   /** Book every save of a sealed bag's document in `repo` by its change's own writer (T4), read off the save's bytes: a
-   *  change this replica made books the session standing (`standing`); a peer's change books its peer writer, its save
-   *  resting under the standing session as the rest's custodian. Returns the unsubscribe. */
-  watch(repo: Repo, standing: () => S | null): () => void;
+   *  change this replica made books the session standing FOR THAT DOCUMENT (`standing(documentId)`: the session whose subject
+   *  wears the document's bag's face, THE LIT SET); a peer's change books its peer writer, its save resting under that session
+   *  as the rest's custodian. A session that wears another face never books it: with none for its face, the save waits
+   *  (`save-unbooked`), never sealed under another face's key. Returns the unsubscribe. */
+  watch(repo: Repo, standing: (documentId: string) => S | null): () => void;
   /** A session stands (an unlock, a session's open): book every waiting save of its face and seal them. */
   rebook(session: S): Promise<number>;
   /** The lock ritual's first move: flush the Repo and the store, so every pending save lands sealed, then drop the
@@ -412,6 +414,8 @@ export function composeSealedRest<S extends SaveSession>(input: {
   readonly inner: StorageAdapterInterface;
   readonly bagOf: (documentId: string) => SealedBag | null;
   readonly sessionFace: () => string | null;
+  /** THE LIT SET (`SealedDocumentPorts.openFaces`): every face open on this vessel now; absent, the worn face alone. */
+  readonly openFaces?: () => readonly string[];
   /** The worn face's subject at another anchor of the vessel's own chain (`SealedDocumentPorts.wornAt`): true only for
    *  a bag of the face the vessel wears. */
   readonly wornAt?: (face: string, subject: string) => boolean;
@@ -423,14 +427,25 @@ export function composeSealedRest<S extends SaveSession>(input: {
   readonly hydrates?: boolean;
 }): SealedRest<S> {
   const book = new SaveBook<S>();
-  let watched: { readonly standing: () => S | null; readonly actorOf: (documentId: string) => string | null } | null = null;
+  let watched: { readonly standing: (documentId: string) => S | null; readonly actorOf: (documentId: string) => string | null } | null = null;
+  // A session wears a bag's face by its own subject, or by the worn face's subject at another anchor.
+  const wears = (face: string | null | undefined, subject: string): boolean =>
+    typeof face === "string" && (subject === face || (input.wornAt?.(face, subject) ?? false));
+  // THE LIT SET: the session standing for one document is the one that wears ITS bag's face; a session of another face never
+  // stands for it, so its save waits rather than seal under the wrong key.
+  const standingFor = (documentId: string): S | null => {
+    const session = watched?.standing(documentId) ?? null;
+    if (session === null) return null;
+    const bag = input.bagOf(documentId);
+    return bag === null || bag.held !== undefined || bag.face === null || wears(bag.face, session.subject) ? session : null;
+  };
   // T4: the save reads its change's own writer off its bytes. A change this replica made books the session standing; a
   // peer's change books its peer writer, and its save rests as received under the session that holds the rest.
   const sessionOf = (documentId: string, data?: Uint8Array): S | null => {
     if (watched !== null && data !== undefined) {
       const actors = chunkActors(data);
       const own = watched.actorOf(documentId);
-      const session = watched.standing();
+      const session = standingFor(documentId);
       // A handle not ready yet holds no change of this replica's own: what it saves arrived from a peer.
       if (actors !== null && (own === null || !actors.includes(own))) book.receive(documentId, actors.join(","), session ?? book.of(documentId));
       else if (actors !== null && session !== null) book.book(documentId, session);
@@ -440,6 +455,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
   };
   const store = new SealedDocumentStore({
     inner: input.inner, bagOf: input.bagOf, sessionFace: input.sessionFace,
+    ...(input.openFaces ? { openFaces: input.openFaces } : {}),
     ...(input.wornAt ? { wornAt: input.wornAt } : {}),
     sessionOf,
     writerOf: (documentId) => book.writerOf(documentId),
@@ -449,9 +465,6 @@ export function composeSealedRest<S extends SaveSession>(input: {
     ...(input.onHeld ? { onHeld: input.onHeld } : {}),
     ...(input.hydrates === true ? { hydrates: true } : {}),
   });
-  // A session names the bag's face by its own subject, or by the worn face's subject at another anchor.
-  const wears = (face: string | null | undefined, subject: string): boolean =>
-    typeof face === "string" && (subject === face || (input.wornAt?.(face, subject) ?? false));
   return {
     store, book,
     wrote(documentId, session) { if (input.bagOf(documentId) !== null) book.book(documentId, session); },

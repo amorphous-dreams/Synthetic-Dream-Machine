@@ -31,7 +31,7 @@ const slot = (group: string) => `${CONTROL_HOME_ID}/daemon-slot/working/${encode
 function browserVessel(inner: StorageAdapterInterface) {
   let repo!: Repo;
   let lit: LitDeviceFace = UNLIT;
-  const filing = browserDeviceFiling({ repo: () => repo, litDevice: () => lit });
+  const filing = browserDeviceFiling({ repo: () => repo, litDevices: () => [lit] });
   const refuse = async () => ({ refusal: "signer-unavailable" }) as never;
   const store = new SealedDocumentStore({ inner, bagOf: (id) => filing.bagOf(id), sessionFace: () => null, sessionOf: () => null, seal: refuse, open: refuse, waitOverSealed: true, hydrates: false });
   repo = new Repo({ storage: store, network: [] });
@@ -108,3 +108,16 @@ function memoryAdapter(): StorageAdapterInterface & { readonly bytes: Map<string
     async removeRange(prefix) { for (const k of [...bytes.keys()]) if (starts(k, prefix)) bytes.delete(k); },
   };
 }
+
+/**
+ * THE LIT SET AT ITS SMALLEST (parity, operator ruling 2026-11-09): the browser vessel files through the node's one table
+ * with a set of one. Its lit face's slot seals under that face; a sibling face's slot, which no browser lights, waits held.
+ */
+describe("the browser's lit set holds one face", () => {
+  test("LS-B1 — a set of one files its own face's slot under that face and a sibling's slot held, as the node's table does", () => {
+    const vessel = browserVessel(memoryAdapter());
+    vessel.device.readControl(control({ [slot(G1)]: "g1-doc", [slot("group-two")]: "g2-doc" }));
+    expect(vessel.bagOf("g1-doc", LIT)).toEqual({ bagId: WORKING, face: FACE1 });
+    expect(vessel.bagOf("g2-doc", LIT)).toEqual({ bagId: WORKING, face: null });
+  });
+});

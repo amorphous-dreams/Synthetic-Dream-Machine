@@ -64,6 +64,13 @@ describe("the vessel census", () => {
     expect(c.err.join("\n")).toMatch(/h2 stands locked; unlock it/);
   });
 
+  test("G5 — the lit set reads by name: h0 and h1 open, h2 shut; the open faces never read as unanswered", async () => {
+    capture();
+    const reading = await readCensus(lines({ custody: async () => ({ op: "census", held: [], standing: "hearth", locked: false, facesLit: [0, 1], facesLocked: [2] }) }));
+    expect(reading.facesLit).toEqual([0, 1]);
+    expect(reading.unanswered).toEqual([{ part: "the face h2", why: "h2 stands locked; unlock it (`lares vault unlock --face 2`), then down" }]);
+  });
+
   test("V3 — a line that cannot answer exits 2 by name and never reads clean", async () => {
     capture();
     const noSocket = await readCensus(lines({ socketPresent: () => false }));

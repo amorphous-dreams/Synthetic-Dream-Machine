@@ -29,12 +29,20 @@ type Owner =
   | { readonly kind: "canon"; readonly relation: string }
   | { readonly kind: "unnamed" };
 
-/** The face lit now, as the device table reads it: its group, its relation, and the face subject its saves seal under. */
+/** One face lit now, as the device table reads it: its group, its relation, and the face subject its saves seal under. */
 export interface LitDeviceFace {
   readonly group: string | null;
   readonly relation: string | null;
   readonly face: string | null;
 }
+
+/**
+ * THE LIT SET as the device table reads it: every face open on this vessel now (the worn one among them). A node vessel
+ * carries each face `vault unlock --all` opened; a browser vessel carries its one lit face (a set of one), so the two read
+ * one table. Each document files under its OWNER alone: a member of the set seals it under that member's own face, and a
+ * document whose owner stands outside the set waits held, never under another member's key.
+ */
+export type LitDeviceFaces = readonly LitDeviceFace[];
 
 export interface DeviceDaemonDocs {
   /** Read every device slot and canon the control document names; answers whether any filing moved. */
@@ -43,11 +51,11 @@ export interface DeviceDaemonDocs {
   announced(bagId: string, documentId: string): boolean;
   /** A face's daemon canon minted (its document named before its first byte), owned by `relation`. */
   canonMinted(bagId: string, documentId: string, relation: string): boolean;
-  /** The sealed bag of a device document under `lit`; undefined where the document files as none (or as the floor's, which
-   *  the vessel's held homes answer). */
-  bagOf(documentId: string, lit: LitDeviceFace): SealedBag | undefined;
-  /** The documents of `bagId` the lit face owns, in filing order. */
-  docsOf(bagId: string, lit: LitDeviceFace): string[];
+  /** The sealed bag of a device document under the lit set: the OWNER's face where the owner stands in `lit`, else a null face
+   *  (held); undefined where the document files as none (or as the floor's, which the vessel's held homes answer). */
+  bagOf(documentId: string, lit: LitDeviceFaces): SealedBag | undefined;
+  /** The documents of `bagId` some face of the lit set owns, in filing order. */
+  docsOf(bagId: string, lit: LitDeviceFaces): string[];
   /** Is `documentId` a device document of any owner (the vessel-only share verdict reads this)? */
   has(documentId: string): boolean;
   /** Every device document filed here, floor slots included. */
@@ -64,9 +72,11 @@ export function deviceDaemonDocs(io: { readonly enrollFloor: (documentId: string
     if (owner.kind === "floor") io.enrollFloor(documentId, filed?.bagId ?? bagId);
     return true;
   };
-  const lits = (owner: Owner, lit: LitDeviceFace): boolean =>
+  const ownedBy = (owner: Owner, lit: LitDeviceFace): boolean =>
     (owner.kind === "group" && lit.group !== null && owner.group === lit.group)
     || (owner.kind === "canon" && lit.relation !== null && owner.relation === lit.relation);
+  // The member of the lit set that owns a document, or null: never a member that does not own it.
+  const ownerIn = (owner: Owner, lit: LitDeviceFaces): LitDeviceFace | null => lit.find((l) => ownedBy(owner, l)) ?? null;
   return {
     readControl(controlDoc) {
       let moved = false;
@@ -94,9 +104,9 @@ export function deviceDaemonDocs(io: { readonly enrollFloor: (documentId: string
     bagOf(documentId, lit) {
       const filed = owners.get(documentId);
       if (filed === undefined || filed.owner.kind === "floor") return undefined;
-      return { bagId: filed.bagId, face: lits(filed.owner, lit) ? lit.face : null };
+      return { bagId: filed.bagId, face: ownerIn(filed.owner, lit)?.face ?? null };
     },
-    docsOf: (bagId, lit) => [...owners].filter(([, f]) => f.bagId === bagId && lits(f.owner, lit)).map(([id]) => id),
+    docsOf: (bagId, lit) => [...owners].filter(([, f]) => f.bagId === bagId && ownerIn(f.owner, lit) !== null).map(([id]) => id),
     has: (documentId) => owners.has(documentId),
     ids: () => [...owners.keys()],
   };
@@ -108,7 +118,7 @@ export function deviceDaemonDocs(io: { readonly enrollFloor: (documentId: string
  * document, the floor's slots, all under the vessel's key). Undefined: neither files it, and the vessel's sealed map decides.
  */
 export function vesselHeldBagOf(
-  device: Pick<DeviceDaemonDocs, "bagOf">, held: { bagOf(documentId: string): SealedBag | null }, lit: LitDeviceFace, documentId: string,
+  device: Pick<DeviceDaemonDocs, "bagOf">, held: { bagOf(documentId: string): SealedBag | null }, lit: LitDeviceFaces, documentId: string,
 ): SealedBag | undefined {
   return device.bagOf(documentId, lit) ?? held.bagOf(documentId) ?? undefined;
 }

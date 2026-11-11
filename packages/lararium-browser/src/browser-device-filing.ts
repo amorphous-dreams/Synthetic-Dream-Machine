@@ -8,7 +8,7 @@
  * `openBrowserVessel` composes its sealed rest over this filing, so a suite that stands it stands the vessel's own path.
  */
 import type { Repo } from "@automerge/automerge-repo";
-import { deviceDaemonDocs, enrollBesideSecretHome, vesselHeldBagOf, vesselHeldHomes, type LitDeviceFace, type SealedBag } from "@lararium/mesh";
+import { deviceDaemonDocs, enrollBesideSecretHome, vesselHeldBagOf, vesselHeldHomes, type LitDeviceFaces, type SealedBag } from "@lararium/mesh";
 
 export interface BrowserDeviceFiling {
   readonly deviceDocs: ReturnType<typeof deviceDaemonDocs>;
@@ -17,12 +17,13 @@ export interface BrowserDeviceFiling {
   bagOf(documentId: string): SealedBag | null;
 }
 
-export function browserDeviceFiling(opts: { readonly repo: () => Repo; readonly litDevice: () => LitDeviceFace }): BrowserDeviceFiling {
+/** `litDevices` reads the vessel's lit set: a browser vessel carries one lit face at most, so its set holds one member or none. */
+export function browserDeviceFiling(opts: { readonly repo: () => Repo; readonly litDevices: () => LitDeviceFaces }): BrowserDeviceFiling {
   const secretHomes = vesselHeldHomes();
   const deviceDocs = deviceDaemonDocs({ enrollFloor: (documentId, bagId) => { if (!secretHomes.has(documentId)) enrollBesideSecretHome(opts.repo(), documentId, bagId); } });
   return {
     deviceDocs,
     secretHomes,
-    bagOf: (documentId) => vesselHeldBagOf(deviceDocs, secretHomes, opts.litDevice(), documentId) ?? null,
+    bagOf: (documentId) => vesselHeldBagOf(deviceDocs, secretHomes, opts.litDevices(), documentId) ?? null,
   };
 }

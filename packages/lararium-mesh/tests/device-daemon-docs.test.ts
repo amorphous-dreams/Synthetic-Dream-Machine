@@ -7,13 +7,15 @@
  * document names it waits held until the control document names its owner. A later entry never re-files a document.
  */
 import { describe, expect, test } from "vitest";
-import { CONTROL_HOME_ID, daemonFaceCanonBag, deviceDaemonDocs, emptyLarDoc, storedLarRecord, wikiSlotUri, type LarDoc, type LitDeviceFace } from "../src/index.js";
+import { CONTROL_HOME_ID, daemonFaceCanonBag, deviceDaemonDocs, emptyLarDoc, storedLarRecord, wikiSlotUri, type LarDoc, type LitDeviceFace, type LitDeviceFaces } from "../src/index.js";
 
 const WORKING = wikiSlotUri("daemon", "working");
 const G1 = "group-one", G2 = "group-two";
 const F1 = "11111111-1111-4111-8111-111111111111";
 const FACE1 = "face-subject-one", FACE2 = "face-subject-two";
-const lit = (group: string | null, relation: string | null, face: string | null): LitDeviceFace => ({ group, relation, face });
+// A set of one (a browser vessel, or one face unlocked): the table reads the lit set whatever its size.
+const one = (group: string | null, relation: string | null, face: string | null): LitDeviceFace => ({ group, relation, face });
+const lit = (group: string | null, relation: string | null, face: string | null): LitDeviceFaces => [one(group, relation, face)];
 const UNLIT = lit(null, null, null);
 
 function control(entries: Record<string, string>): LarDoc {
@@ -78,5 +80,42 @@ describe("a device daemon document seals by its owner's group, whatever the lit 
     expect(docs.canonMinted(daemonFaceCanonBag(F1), "canon-1", F1)).toBe(true);
     expect(docs.has("canon-1")).toBe(true);
     expect(docs.bagOf("canon-1", lit(G1, F1, FACE1))?.face).toBe(FACE1);
+  });
+});
+
+/**
+ * THE LIT SET: `vault unlock --all` opens every face the passphrase answers, and each face's device documents seal under
+ * that face's OWN key. The table files a document by its owner within the set, never by another member.
+ */
+describe("the lit set: each open face's device documents file under their own face", () => {
+  const F2 = "22222222-2222-4222-8222-222222222222";
+  test("LS1 — lit {h0,h1}: h1's slot and canon file under h1's face, h0's under h0's; neither under the other", () => {
+    const { docs } = table();
+    docs.readControl(control({ [slot(G1)]: "g1-doc", [slot(G2)]: "g2-doc", [`${CONTROL_HOME_ID}/daemon-canon/${F1}`]: "canon-1", [`${CONTROL_HOME_ID}/daemon-canon/${F2}`]: "canon-2" }));
+    const set: LitDeviceFaces = [one(G1, F1, FACE1), one(G2, F2, FACE2)];
+    expect(docs.bagOf("g1-doc", set)).toEqual({ bagId: WORKING, face: FACE1 });
+    expect(docs.bagOf("g2-doc", set)).toEqual({ bagId: WORKING, face: FACE2 });
+    expect(docs.bagOf("canon-1", set)?.face).toBe(FACE1);
+    expect(docs.bagOf("canon-2", set)?.face).toBe(FACE2);
+    expect(docs.docsOf(WORKING, set).sort()).toEqual(["g1-doc", "g2-doc"]);
+  });
+
+  test("LS2 — lit {h0}: h1's documents wait held (null face), never under h0's key; they file under h1 once it lights", () => {
+    const { docs } = table();
+    docs.readControl(control({ [slot(G1)]: "g1-doc", [slot(G2)]: "g2-doc" }));
+    const h0Only: LitDeviceFaces = [one(G1, F1, FACE1)];
+    expect(docs.bagOf("g2-doc", h0Only)).toEqual({ bagId: WORKING, face: null });
+    expect(docs.docsOf(WORKING, h0Only)).toEqual(["g1-doc"]);
+    const both: LitDeviceFaces = [...h0Only, one(G2, F2, FACE2)];
+    expect(docs.bagOf("g2-doc", both)).toEqual({ bagId: WORKING, face: FACE2 });
+  });
+
+  test("LS3 — lock --face 1 drops h1 from the set: its documents wait held again, h0's keep their face", () => {
+    const { docs } = table();
+    docs.readControl(control({ [slot(G1)]: "g1-doc", [slot(G2)]: "g2-doc" }));
+    const afterLock: LitDeviceFaces = [one(G1, F1, FACE1)];
+    expect(docs.bagOf("g1-doc", afterLock)?.face).toBe(FACE1);
+    expect(docs.bagOf("g2-doc", afterLock)?.face).toBeNull();
+    expect(docs.bagOf("g2-doc", [])?.face).toBeNull();
   });
 });

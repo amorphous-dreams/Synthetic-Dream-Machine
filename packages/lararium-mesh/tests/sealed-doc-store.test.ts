@@ -281,7 +281,7 @@ describe("the browser vessel names its face by one subject", () => {
     // The vessel files through `browserDeviceFiling`, whose one reading is `vesselHeldBagOf`.
     expect(src).toMatch(/const sealedBagOf = \(documentId: string\): SealedBag \| null => filing\.bagOf\(documentId\) \?\? sealedMap\.bagOf\(documentId\);/);
     const filing = readFileSync(new URL("../../lararium-browser/src/browser-device-filing.ts", import.meta.url), "utf8");
-    expect(filing).toMatch(/bagOf: \(documentId\) => vesselHeldBagOf\(deviceDocs, secretHomes, opts\.litDevice\(\), documentId\) \?\? null/);
+    expect(filing).toMatch(/bagOf: \(documentId\) => vesselHeldBagOf\(deviceDocs, secretHomes, opts\.litDevices\(\), documentId\) \?\? null/);
     expect(src).toMatch(/composeSealedRest<BrowserSaveSession>\(\{[\s\S]*?bagOf: sealedBagOf,[\s\S]*?sessionFace: \(\) => sealedCells\.face\(\),/);
     expect(src).not.toMatch(/\bwornAt\b/);
     // The face reads by its subject at the session's anchor: a Nexus session's face-proof subject, a place session's place subject.

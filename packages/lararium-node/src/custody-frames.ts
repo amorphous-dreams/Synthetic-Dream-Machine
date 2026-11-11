@@ -90,7 +90,7 @@ export type CustodyAnswer =
   | { readonly op: "act"; readonly act: string; readonly result: Record<string, unknown> }
   /** Each document with saves held in memory (`SealedDocumentStore.held`), by id and never by body; `standing` names
    *  the composition that answered ("recomposing" while none sits, when `held` reads null). */
-  | { readonly op: "census"; readonly held: readonly HeldSaves[] | null; readonly standing: string; readonly locked: boolean; readonly facesLocked?: readonly number[] }
+  | { readonly op: "census"; readonly held: readonly HeldSaves[] | null; readonly standing: string; readonly locked: boolean; readonly facesLocked?: readonly number[]; readonly facesLit?: readonly number[] }
   | { readonly op: "face-route"; readonly ref: string }
   | { readonly op: "ward"; readonly ref: string }
   | { readonly op: "backup"; readonly sealedBody: string; readonly holds: FaceBundleCut["holds"]; readonly face: FaceBundleCut["face"]; readonly carries: FaceBundleCut["carries"] }
@@ -482,11 +482,18 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       // `locked` names a shut key, so a stop's census can say "unlock, then down" instead of "could not answer".
       // `facesLocked` names each standing face whose key stays shut under a held node key: its memory reads nowhere, so a
       // stop's census names it unanswered ("h2 stands locked; unlock it") rather than counting it clean.
+      // `facesLit` names each standing face whose key stands open: THE LIT SET, each face sealing its own memory under its own key.
       let facesLocked: number[] = [];
+      let facesLit: number[] = [];
       if (holder.isUnlocked()) {
-        try { const open = new Set(holder.unlockedFaces()); facesLocked = listFaceCustodyIds().filter((f) => !open.has(f.fcid)).map((f) => f.ordinal); } catch { facesLocked = []; }
+        try {
+          const open = new Set(holder.unlockedFaces());
+          const faces = listFaceCustodyIds();
+          facesLocked = faces.filter((f) => !open.has(f.fcid)).map((f) => f.ordinal);
+          facesLit = faces.filter((f) => open.has(f.fcid)).map((f) => f.ordinal);
+        } catch { facesLocked = []; facesLit = []; }
       }
-      answer(sock, { op: "census", held, standing: deps.standing(), locked: !holder.isUnlocked(), ...(facesLocked.length > 0 ? { facesLocked } : {}) });
+      answer(sock, { op: "census", held, standing: deps.standing(), locked: !holder.isUnlocked(), ...(facesLocked.length > 0 ? { facesLocked } : {}), ...(facesLit.length > 0 ? { facesLit } : {}) });
       return true;
     } else {
       // THE STATE QUERY IS READ-ONLY: it answers at once, beside the chain, so a caller asking while an unlock

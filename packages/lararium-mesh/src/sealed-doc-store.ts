@@ -17,7 +17,8 @@
  * flight, so a lock flushes the Repo and this store before it drops any signer or overwrites a key.
  *
  * HYDRATION ANSWERS TO THE SESSION'S FACE. A key alone grants no read: before any byte or name moves, the session
- * must wear the face the bag belongs to (`session-face-foreign`, `session-absent`), and an opened value whose
+ * must wear the face the bag belongs to (`session-face-foreign`, `session-absent`; a face of the vessel's lit set answers
+ * for its own bags alone, `openFaces`), and an opened value whose
  * manifest another face's session signed refuses (`writer-face-foreign`). A value that does not open reads as its
  * named refusal, never as an absent value.
  *
@@ -104,6 +105,13 @@ export interface SealedDocumentPorts {
   bagOf(documentId: string): SealedBagRow | null;
   /** The face the session wears (`faceProofSubjectRef`); null where no session stands. */
   sessionFace(): string | null;
+  /**
+   * THE LIT SET: every face that stands open on this vessel now (each a `faceProofSubjectRef`), the worn one among them. A
+   * bag of any face in the set opens and saves under THAT face (its own key, through its own session), never under another
+   * member's; a bag of a face outside the set still refuses `session-face-foreign`. Absent: the set holds the worn face
+   * alone (a browser vessel, a set of one).
+   */
+  openFaces?(): readonly string[];
   /** ONE FACE, TWO ANCHORS (session-contract#/the-hands): does `subject` name `face` (the bag's face) at another anchor
    *  the vessel's own chain names (its place, while a dial names the face by its Nexus subject; the dial's Nexus, while
    *  it stands at its place)? The port answers true only for the face the vessel wears (`wornAtOf`): a bag of any other
@@ -326,10 +334,12 @@ export class SealedDocumentStore implements StorageAdapterInterface {
   }
   /** The face gate, before any byte or name moves. A sealed bag no lit face wears yet opens for no one. */
   #face(bag: { readonly face: string | null }): string {
-    const face = this.#ports.sessionFace();
-    if (face === null || bag.face === null) throw new SealedDocumentRefusal("session-absent");
-    if (face !== bag.face) throw new SealedDocumentRefusal("session-face-foreign");
-    return face;
+    const worn = this.#ports.sessionFace();
+    const open = this.#ports.openFaces?.() ?? [];
+    if ((worn === null && open.length === 0) || bag.face === null) throw new SealedDocumentRefusal("session-absent");
+    // THE LIT SET: the bag's own face answers when it stands open, worn or beside the worn one; never another face's.
+    if (bag.face !== worn && !open.includes(bag.face)) throw new SealedDocumentRefusal("session-face-foreign");
+    return bag.face;
   }
 
   async save(key: StorageKey, data: Uint8Array): Promise<void> {

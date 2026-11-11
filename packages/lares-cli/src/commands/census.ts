@@ -35,6 +35,8 @@ export interface CensusReading {
   readonly clean: boolean;
   readonly items: readonly CensusItem[];
   readonly unanswered: ReadonlyArray<{ readonly part: string; readonly why: string }>;
+  /** THE LIT SET: each face whose key stands open, each sealing its own memory under its own key (absent where none reads). */
+  readonly facesLit?: readonly number[];
 }
 
 /** The two lines the census reads, injectable so a test drives them without a vessel. */
@@ -104,7 +106,8 @@ export async function readCensus(lines: CensusLines = LIVE_LINES): Promise<Censu
   if (lockedHearth && items.length === 0) {
     return { clean: false, items, unanswered: [{ part: "the vessel", why: VESSEL_LOCKED_CENSUS }] };
   }
-  return { clean: items.length === 0 && unanswered.length === 0, items, unanswered };
+  const facesLit = Array.isArray(custody?.["facesLit"]) ? (custody!["facesLit"] as unknown[]).filter((n): n is number => Number.isSafeInteger(n)) : [];
+  return { clean: items.length === 0 && unanswered.length === 0, items, unanswered, ...(facesLit.length > 0 ? { facesLit } : {}) };
 }
 
 /** One item as one printed line: kind, state, name, and where it belongs. Never a body. */

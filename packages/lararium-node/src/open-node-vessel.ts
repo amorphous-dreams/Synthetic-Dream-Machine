@@ -125,7 +125,7 @@ import type { SessionSignDoor } from "@lararium/mesh";
 import type { SparseFormVector, AntigenRing, FederationGate, FederationPosture, NexusMembership, PeerClass, PersonaGroupIdentityRing } from "@lararium/mesh";
 import { selfSlotShareDecision } from "./self-slot-share.js";
 import { vesselOnlyShareVerdict, vesselOnlyClass } from "./vessel-only-share.js";
-import { deviceDaemonDocs, vesselHeldBagOf, DAEMON_SLOT_PREFIX, type LitDeviceFace } from "@lararium/mesh";
+import { deviceDaemonDocs, vesselHeldBagOf, DAEMON_SLOT_PREFIX, type LitDeviceFaces } from "@lararium/mesh";
 import { vesselOnlyBook } from "@lararium/mesh";
 import { classDeviceLedgers, readBootTiddlers, vesselPrivateBook, vesselPrivateRelationOpens } from "./vessel-private.js";
 import { makeAntigenRingHolder } from "./antigen-ring.js";
@@ -938,9 +938,19 @@ async function prepareNodeBootOn(
   // it (`device-daemon-docs`): a group's slot or a face's canon seals under that face's key while it stands lit and waits
   // held otherwise; a floor's own slot seals beside the control document under the vessel's key, held until the key opens.
   const deviceDocs = deviceDaemonDocs({ enrollFloor: (documentId, bagId) => { if (!secretHomes.has(documentId)) enrollBesideSecretHome(repo, documentId, bagId); } });
+  // THE LIT SET (stable-founding-road #/rulings: each face hive isolated; a shut face waits by name): every face open on this
+  // vessel now, by PersonaGroup. The worn face's entry answers its subject live (the dial's Nexus subject or its place
+  // subject, `sealedCells.face`); a sibling face lit beside it (`lightFace`, the boot's joined faces) answers its own place
+  // subject. Each device document files under its OWNER within the set, never under another member's key; `vault lock
+  // --face N` removes N, and its waiting saves stay in memory, never written to disk.
   let wornDeviceGroup: string | null = null;
   let wornDeviceRelation: string | null = null;
-  const litDevice = (): LitDeviceFace => ({ group: wornDeviceGroup, relation: wornDeviceRelation, face: sealedCells.face() });
+  const siblingFaces = new Map<string, { readonly relation: string | null; readonly face: string | null }>();
+  const litDevices = (): LitDeviceFaces => [
+    ...(wornDeviceGroup !== null ? [{ group: wornDeviceGroup, relation: wornDeviceRelation, face: sealedCells.face() }] : []),
+    ...[...siblingFaces].filter(([group]) => group !== wornDeviceGroup).map(([group, f]) => ({ group, relation: f.relation, face: f.face })),
+  ];
+  const openFaceSubjects = (): string[] => litDevices().map((f) => f.face).filter((f): f is string => typeof f === "string");
   // V3: a bag's document by every name it carries: the layer the mount resolved (a working slot's derived address, a
   // draft binding: no catalog row names either), then the catalog's row.
   const sealedMap = sealedBagMap({
@@ -949,13 +959,26 @@ async function prepareNodeBootOn(
     catalog: () => sealedCells.catalog(),
     docsOf: (bagId) => bagId === FACE_CATALOG_BAG_ID
       ? [faceCatalogDocId]
-      : [...deviceDocs.docsOf(bagId, litDevice()), sealedCells.mounted(bagId), ...(slotDocsNamed.get(bagId) ?? []), documentIdOfUrl(tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId)))],
+      : [...deviceDocs.docsOf(bagId, litDevices()), sealedCells.mounted(bagId), ...(slotDocsNamed.get(bagId) ?? []), documentIdOfUrl(tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId)))],
   });
   // The session that stands for the worn face now: a call's, else a seated one (the dial's own, V6).
   const standingSaveSession = (): NodeSaveSession | null => {
     const face = sealedCells.face();
     const standing = sealedCells.book?.standing()[0] ?? sealedCells.book?.seated().find((s) => s.subject === face);
     return standing ? saveSessionOf(standing) : null;
+  };
+  // THE SESSION OF A FACE (the lit set): the worn face's standing session for its own bags; a sibling's seated session for a
+  // bag that sibling owns. A face no seated session wears answers none, and its save waits: never another face's session.
+  const sessionOfFace = (subject: string | null): NodeSaveSession | null => {
+    if (subject === null) return null;
+    if (subject === sealedCells.face() || sealedCells.wornAt(subject, sealedCells.face() ?? "")) return standingSaveSession();
+    const seated = sealedCells.book?.seated().find((s) => s.subject === subject) ?? sealedCells.book?.standing().find((s) => s.subject === subject);
+    return seated ? saveSessionOf(seated) : null;
+  };
+  // The session standing FOR ONE DOCUMENT: the one that wears its bag's face (the sealed rest re-checks the match).
+  const standingSaveSessionFor = (documentId: string): NodeSaveSession | null => {
+    const bag = sealedBagOf(documentId);
+    return bag === null || bag.held !== undefined ? standingSaveSession() : sessionOfFace(bag.face);
   };
   // A document the map names sealed only now may hold clear chunks from before: they seal under the standing session.
   const sealNowMapped = (documentId: string): void => {
@@ -1007,7 +1030,7 @@ async function prepareNodeBootOn(
   const secretHomes = vesselHeldHomes();
   const sealedBagOf = (documentId: string): SealedBag | null => {
     // A device document files by its owner first, then the held homes (`vesselHeldBagOf`, the browser's one order).
-    const held = vesselHeldBagOf(deviceDocs, secretHomes, litDevice(), documentId);
+    const held = vesselHeldBagOf(deviceDocs, secretHomes, litDevices(), documentId);
     if (held !== undefined) return held;
     const face = sealedCells.face();
     const named = face === null ? "none" : `${face.slice(0, 16)}… ${sealedCells.bags().map((b) => `${b}=${sealedMap.docOf(b)?.slice(0, 8) ?? "?"}`).join(" ")}`;
@@ -1042,6 +1065,7 @@ async function prepareNodeBootOn(
     inner: new DurableNodeFSStorageAdapter(storageDir),
     bagOf: sealedBagOf,
     sessionFace: () => sealedCells.face(),
+    openFaces: openFaceSubjects,
     wornAt: (face, subject) => sealedCells.wornAt(face, subject),
     door: vesselDocStoreDoor<NodeSaveSession>(() => docStorePort.port(), {
       book: (ask, verb, session) => sealedCells.book?.hold(ask, verb, session) ?? (() => {}),
@@ -1450,7 +1474,7 @@ async function prepareNodeBootOn(
   // bytes; a change this replica made books the session whose call stands, and a peer's change books its peer writer
   // and rests as received under that session.
   // P2-4: with no call in flight, a change books a session of the worn face that stands seated (open, its signer standing).
-  sealedRest.watch(repo, standingSaveSession);
+  sealedRest.watch(repo, standingSaveSessionFor);
   emit("repo-open");
 
   // ── 2. Catalog — local-first rendezvous anchor (catalog-url file) ───────────
@@ -2241,6 +2265,9 @@ async function prepareNodeBootOn(
     const pins = await loadIdentityAnchors(ordinal);
     if (!pins?.deviceEdge?.deviceVerifyingKey) throw new Error(`face h${ordinal} has no device edge`);
     await daemonVm.dropFace(pins.deviceEdge.deviceVerifyingKey);
+    // THE LIT SET LOSES THE FACE: its documents file held from here on (their saves wait in memory, never on disk, never
+    // under another face's key), and the faces still open keep sealing.
+    if (pins.personaGroupId && siblingFaces.delete(pins.personaGroupId)) sealedRest.store.mapMoved();
     // The lock closes the face's relay route at once; the next gate sweep would leave it standing.
     await intentRelay?.refresh();
   };
@@ -3300,7 +3327,7 @@ async function prepareNodeBootOn(
       const handleIndex = wornMount?.handleIndex ?? 0;
       try { writeFaceLabel({ relation, petname: await (await makeNodePersonaPetnameStore()).get(handleIndex), handleIndex }, projections); }
       catch (e) { console.warn(`[face-label] the label for ${relation} did not write: ${e instanceof Error ? e.message : String(e)}`); }
-      faceBasesKeeper = keepFaceBases({ relation, projections, docs: () => deviceDocs.docsOf(DAEMON_WORKING_SLOT, { group, relation, face: null })
+      faceBasesKeeper = keepFaceBases({ relation, projections, docs: () => deviceDocs.docsOf(DAEMON_WORKING_SLOT, [{ group, relation, face: null }])
         .map((id) => repo.handles[id as keyof typeof repo.handles]).filter((h): h is NonNullable<typeof h> => h !== undefined && h.isReady()) as never });
     }
     readDeviceDaemonDocs((await readControlDoc()).doc());
@@ -3331,9 +3358,19 @@ async function prepareNodeBootOn(
     } : null;
     // EVERY OPEN READS THE SIBLINGS' CURRENT CUSTODY STANDING (Sol train #1): a sibling that locked or dropped since boot never rides a
     // re-open. Each joined face's edge ledger stays on this device too (road `T33`): the island opens it under that face's atom.
+    // THE LIT SET TAKES EACH PROVED SIBLING: its device documents file under its own place subject (no relation rides a
+    // joined face's inputs, so its daemon canon waits held until it stands worn); a sibling that locked since leaves.
+    const litSibling = (entry: JoinedFaceAuth): void => {
+      if (placeAid === null || entry.personaGroupId === wornDeviceGroup) return;
+      siblingFaces.set(entry.personaGroupId, { relation: null, face: placeProofSubjectRef({ atomKey: entry.atom.key, place: placeAid } as never) });
+    };
     const readJoinedFaces = async (): Promise<JoinedFaceAuth[]> => {
       const faces = siblingPorts ? await joinedFaceAuth(siblingPorts) : [];
       classDeviceLedgers(vesselPrivate, faces.map((face) => face.atom.key));
+      const open = new Set(faces.map((f) => f.personaGroupId));
+      for (const group of [...siblingFaces.keys()]) if (!open.has(group)) siblingFaces.delete(group);
+      for (const face of faces) litSibling(face);
+      sealedRest.store.mapMoved();
       return faces;
     };
     lightFace = async (ordinal) => {
@@ -3342,6 +3379,8 @@ async function prepareNodeBootOn(
       if (entry) {
         classDeviceLedgers(vesselPrivate, [entry.atom.key]);   // classed before the island opens it
         await daemonVm.lightFace(entry);
+        litSibling(entry);
+        sealedRest.store.mapMoved();
         const group = (await loadIdentityAnchors(ordinal))?.personaGroupId;
         if (group) await registerFacePlanesForRelay({ group, relayEnabled: async (g) => (await enabledIntentRelayFaces()).includes(g), prove: proveRelayFace, register: registerInCatalogOf(group) });
       }
