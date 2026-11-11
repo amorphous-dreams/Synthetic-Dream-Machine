@@ -43,7 +43,7 @@ import { appendFileSync, copyFileSync, existsSync, lstatSync, mkdirSync, readFil
 import { randomBytes } from "node:crypto";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
-import { wikiBagUri, wikiSlotUri, daemonFaceCanonBag, KAHUA_BAG, defaultChairLabel, declarePersonaHandle, renameOwnPersona, standForKahuSeat, carrierFormOf } from "@lararium/mesh";
+import { wikiBagUri, wikiSlotUri, daemonFaceCanonBag, KAHUA_BAG, defaultChairLabel, declarePersonaHandle, renameOwnPersona, ownPersonaPetname, standForKahuSeat, carrierFormOf } from "@lararium/mesh";
 import {
   larHouseRoot, larProjectionsHome, larConfigHome, mirrorDirFileToUri, SyncedTree, TEMP_LAYER_DIR,
   KAPAE_EXT, readKapaeShadow, daemonFaceFolder, isDaemonFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug, loadLaresConfig, tempConsentedSlugs,
@@ -186,9 +186,10 @@ export const LIVE_CARRY_DOORS: CarryDoors = {
   faces: liveFaces,
   tempConsented: () => tempConsentedSlugs(loadLaresConfig()),
   rename: async (i, petname) => {
+    const formerPetname = await ownPersonaPetname(fleetStores().petnames, i).catch(() => undefined) ?? null;
     await renameOwnPersona(fleetStores().petnames, i, petname);
     // A carried rename names the face too: its label follows the pet-name it now wears.
-    await labelFaceAtNaming({ handleIndex: i, petname }, faceRelationOnStage);
+    await labelFaceAtNaming({ handleIndex: i, petname, formerPetname }, faceRelationOnStage);
   },
   declareHandle: async (i, handle) => declarePersonaHandle(fleetStores().declarations, i, handle),
   standSeat: async (i, chair) => standForKahuSeat(fleetStores().declarations, i, true, chair ?? undefined),
@@ -715,7 +716,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   for (const row of manifest.rows) if (row.overrideBase !== undefined) baseByFile.set(join(bundle.root, ...row.path.split("/")), row.overrideBase);
 
   // An import restores each file into its mirror, then ingest reads it there so the placement ward sees the bag's own mirror.
-  const wave = async (sourceDir: string, uriDir: string, mirrorDir: string, toBag: string, files: readonly string[], keyPrefix: string, workTally: CarryTally, kapaeTally: CarryTally | null, wiki: string | null = null): Promise<void> => {
+  const wave = async (sourceDir: string, uriDir: string, mirrorDir: string, toBag: string, files: readonly string[], keyPrefix: string, workTally: CarryTally, kapaeTally: CarryTally | null, wiki: string | null = null, freshLayer = false): Promise<void> => {
     if (files.length === 0) return;
     const scan = scanFiles(bundle.root, files.map((f) => join(bundle.root, ...f.split("/"))), toBag, new SyncedTree(null), (_r, file) => mirrorDirFileToUri(uriDir, file));
     for (const s of scan.skipped) if (!s.endsWith(".meta")) skipped.push(s);
@@ -747,8 +748,11 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     }
     const readMeta = (path: string): Buffer | null => (existsSync(`${path}.meta`) ? readFileSync(`${path}.meta`) : null);
     // The mirror holding every file of a row byte for byte holds its record: already landed (the seed laid it), never planned.
-    const already = new Set<string>([...held].filter(([uri, all]) => all && !differing.has(uri)).map(([uri]) => uri));
+    // A LAYER THIS IMPORT MINTS (a slug the vessel did not hold) holds nothing yet, so its mirror vouches for no record: every
+    // row rides to INGEST, and the mirror's own file still stands unwritten over.
+    const already = new Set<string>(freshLayer ? [] : [...held].filter(([uri, all]) => all && !differing.has(uri)).map(([uri]) => uri));
     for (const [uri, { from, to }] of differing) {
+      if (freshLayer) break;
       if (!existsSync(to)) continue;
       if (from.endsWith(KAPAE_EXT)) {
         const a = readKapaeShadow(readFileSync(from, "utf8")), b = readKapaeShadow(readFileSync(to, "utf8"));
@@ -857,10 +861,13 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   // EVERY OTHER WIKI AND HOUSE-MINTED BAG, by slug: a slug this vessel does not hold mints first, through CREATE.
   const slugsOf = (re: RegExp): string[] => [...new Set(manifest.files.map((f) => re.exec(f.path)?.[1]).filter((s): s is string => s !== undefined))].sort();
   const bagSlugs = slugsOf(/^bags\/([^/]+)\//), wikiSlugs = slugsOf(/^wikis\/([^/]+)\/working\//);
+  /** The slugs this vessel did not hold before the import: their layers mint fresh, so no mirror file reads already landed there. */
+  const freshSlugs = new Set<string>();
   if (bagSlugs.length + wikiSlugs.length > 0) {
     const held = await doors.heldSlugs();
     for (const slug of [...new Set([...bagSlugs, ...wikiSlugs])].sort()) {
       if (held.has(slug)) continue;
+      freshSlugs.add(slug);
       minted.push(wikiBagUri(slug));
       if (!apply || journal.done.has(`mint:${slug}`)) continue;
       try { await doors.mintBag(wikiBagUri(slug)); journal.mark(`mint:${slug}`, "minted"); }
@@ -869,11 +876,11 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   }
   for (const slug of bagSlugs) {
     const files = manifest.files.map((f) => f.path).filter((p) => p.startsWith(`bags/${slug}/`));
-    await wave(join(bundle.root, "bags", slug), join(bundle.root, "bags"), join(projections, "bags", slug), wikiBagUri(slug), files, `bag:${slug}`, tallies.bag, null);
+    await wave(join(bundle.root, "bags", slug), join(bundle.root, "bags"), join(projections, "bags", slug), wikiBagUri(slug), files, `bag:${slug}`, tallies.bag, null, null, freshSlugs.has(slug));
   }
   for (const slug of wikiSlugs) {
     const files = manifest.files.map((f) => f.path).filter((p) => p.startsWith(`wikis/${slug}/working/`));
-    await wave(join(bundle.root, "wikis", slug, "working"), join(bundle.root, "wikis", slug), join(projections, "wikis", slug), wikiSlotUri(slug, "working"), files, `wiki-working:${slug}`, tallies.wikiWorking, tallies.kapae, slug);
+    await wave(join(bundle.root, "wikis", slug, "working"), join(bundle.root, "wikis", slug), join(projections, "wikis", slug), wikiSlotUri(slug, "working"), files, `wiki-working:${slug}`, tallies.wikiWorking, tallies.kapae, slug, freshSlugs.has(slug));
   }
 
   // THE FORMER FACES' FOLDERS: every face folder under the projections root that no face here wears.

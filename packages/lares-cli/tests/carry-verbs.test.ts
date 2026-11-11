@@ -248,7 +248,10 @@ describe("the carry verbs", () => {
     expect(after.records.has(MEMORY)).toBe(true);
     expect(after.records.has(NOTE)).toBe(true);
     expect([...after.kapae]).toEqual(["lar:///ha.ka.ba/notes/gone"]);
-    expect(after.bagRecords.get("lar:///ha.ka.ba/bags/garden")?.get("lar:///ha.ka.ba/garden/rose")).toBe(tid("lar:///ha.ka.ba/garden/rose", "a rose"));
+    // The garden mirror survived the re-founding holding the rose byte for byte, and this vessel holds the garden: an equal
+    // record reads already landed (the seed laid it), so no wave carries it (G2/G3). A bag this import mints rides (C11).
+    expect(result.tallies.bag).toMatchObject({ already: 1, landed: 0 });
+    expect(after.waves.flatMap((w) => w.candidates).some((c) => c.uri === "lar:///ha.ka.ba/garden/rose")).toBe(false);
     expect(after.lifts).toEqual([{ face: 0, title: MEMORY, text: "remember the heron", signer: "new-grant", parent: null }]);
     expect(readFileSync(join(root, `projections/wikis/daemon-${F2}/recovery/draft-one.tid`), "utf8")).toBe(tid("draft one", "half a thought"));
     expect(readFileSync(join(root, `projections/wikis/daemon-${F2}/temp/scratch.tid`), "utf8")).toBe(tid("scratch", "a passing note"));

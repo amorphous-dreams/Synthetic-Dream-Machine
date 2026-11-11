@@ -45,6 +45,7 @@ import { CustodyRowUnavailable, type CustodyHolder, type HolderProof, type Holde
 import { BackupRefused, type FaceBundleCut } from "../src/face-bundle-cut.js";
 import { runSealedAct } from "../src/sealed-acts.js";
 import { mountedFaceOrdinal, setMountedFace } from "../src/node-vessel-identity.js";
+import { listFaceCustodyIds } from "../src/identity-anchors.js";
 import { faceRouteBindDigest, FaceRouteAbsent, FaceRouteRefused, gatherFaceRoute, seatFaceRoute, withFaceRoute } from "../src/face-route.js";
 
 const RIGHT = "frames-test-passphrase-right";
@@ -521,8 +522,13 @@ describe("the custody state query answers beside the chain (L7)", () => {
  *   N2  while no composition sits it answers `held: null`, never an empty list.     control: no census wired reads null too
  */
 describe("the census frame", () => {
-  const door = (heldSaves?: () => readonly import("@lararium/mesh").HeldSaves[] | null, unlocked = false) => custodyFrameHandler({
-    holder: { isUnlocked: () => unlocked, openedSlot: () => null, attemptsLeft: () => 3, unlockedFaces: () => [] } as unknown as CustodyHolder,
+  // A held key opens every standing face unless the row names otherwise (`allFacesOpen: false`): the census reads the
+  // standing faces off this house's identity store, so the fake's open set follows that store.
+  const door = (heldSaves?: () => readonly import("@lararium/mesh").HeldSaves[] | null, unlocked = false, allFacesOpen = true) => custodyFrameHandler({
+    holder: {
+      isUnlocked: () => unlocked, openedSlot: () => null, attemptsLeft: () => 3,
+      unlockedFaces: () => (unlocked && allFacesOpen ? listFaceCustodyIds().map((f) => f.fcid) : []),
+    } as unknown as CustodyHolder,
     testScratch: false, standing: () => "hearth", recompose: async () => ({ standing: "hearth" }), onLog: () => {},
     ...(heldSaves ? { heldSaves } : {}),
   });
@@ -541,5 +547,14 @@ describe("the census frame", () => {
   test("N3 — the census names whether the key stands shut, so a stop can say unlock first", async () => {
     expect(await ask(door(() => [], true))).toEqual({ op: "census", held: [], standing: "hearth", locked: false });
     expect(await ask(door(() => [], false))).toMatchObject({ locked: true });
+  });
+
+  test("N4 — under a held key, each standing face whose key stays shut answers in facesLocked; none shut leaves the field absent", async () => {
+    const shut = listFaceCustodyIds().map((f) => f.ordinal);
+    const answer = await ask(door(() => [], true, false));
+    if (shut.length > 0) expect(answer).toMatchObject({ locked: false, facesLocked: shut });
+    else expect(answer).not.toHaveProperty("facesLocked");
+    expect(await ask(door(() => [], true))).not.toHaveProperty("facesLocked");
+    expect(await ask(door(() => [], false)), "a shut node key names no face: the whole key stands locked").not.toHaveProperty("facesLocked");
   });
 });

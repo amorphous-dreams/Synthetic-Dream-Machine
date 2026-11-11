@@ -43,22 +43,32 @@ export function writeFaceLabels(faces: ReadonlyArray<{ readonly relation: string
 
 /**
  * THE FACE NAMES ITSELF. Write one face's label at the act that names it (`persona new`, a carried rename): the relation the
- * act already holds, else the one the face's own stage answers (`kahua-read`, as `liveFaces` reads it). Never throws, and
- * answers the relation it labelled (null where none answered): a label serves as an aid, so the naming act never fails over it.
+ * act already holds, else the one the face's own stage answers (`kahua-read`, as `liveFaces` reads it), else the one label
+ * that already names this face (its ordinal under the pet-name it wore before this naming, `formerPetname`: the label it
+ * wrote at its creation). Two such labels (a re-founding under the same pet-name) name no face: nothing guesses between them.
+ * Never throws, and answers the relation it labelled (null where none answered): a label serves as an aid, so the naming act
+ * never fails over it.
  */
 export async function labelFaceAtNaming(
-  face: { readonly handleIndex: number; readonly petname: string; readonly relation?: string | null },
+  face: { readonly handleIndex: number; readonly petname: string; readonly relation?: string | null; readonly formerPetname?: string | null },
   readRelation: (handleIndex: number) => Promise<string | null>,
   projections?: string,
 ): Promise<string | null> {
   if (face.petname.trim() === "") return null;
-  let relation = face.relation ?? null;
-  if (relation === null) { try { relation = await readRelation(face.handleIndex); } catch { relation = null; } }
-  if (relation === null) return null;
   let root: string;
   try { root = projections ?? larProjectionsHome(); } catch { return null; }
+  let relation = face.relation ?? null;
+  if (relation === null) { try { relation = await readRelation(face.handleIndex); } catch { relation = null; } }
+  if (relation === null && face.formerPetname) relation = relationLabelledAs(face.handleIndex, face.formerPetname, root);
+  if (relation === null) return null;
   writeFaceLabel({ relation, petname: face.petname, handleIndex: face.handleIndex }, root);
   return relation;
+}
+
+/** The one relation whose label names this ordinal under this pet-name, or null where none or several do. */
+export function relationLabelledAs(handleIndex: number, petname: string, projections: string = larProjectionsHome()): string | null {
+  const named = nodeLabelled(projections).filter((r) => { const l = nodeReadLabel(r, projections); return l !== null && l.handleIndex === handleIndex && l.petname === petname; });
+  return named.length === 1 ? named[0]! : null;
 }
 
 /** The relation a face's own stage answers (`kahua-read`), or null where it answers none. */
