@@ -477,7 +477,7 @@ export function oracleGenesisDocUrl(): AutomergeUrl {
  * blob DESCRIPTOR for a human to read, where a wrong label misleads nobody's identity.
  */
 export function computeEngineCid(coreSha256: string): string {
-  return cidV1Sha256(utf8Bytes(`engine/v1\ncore-sha256:${coreSha256}`));
+  return cidV1Sha256(utf8Bytes(`lararium-engine\ncore-sha256:${coreSha256}`));
 }
 
 /**
@@ -507,7 +507,7 @@ const isBaseSeed = (p: RegionEntry): boolean => p.kind === "base";
  * A plugin added here moves THIS operator's plugin epoch and nothing further.
  */
 export function computePluginsCid(plugins: readonly RegionEntry[]): string {
-  return foldRegion("plugins/v1", plugins.filter((p) => !isGrammar(p) && !isBaseSeed(p) && p.kind !== "floor"));
+  return foldRegion("lararium-plugins", plugins.filter((p) => !isGrammar(p) && !isBaseSeed(p) && p.kind !== "floor"));
 }
 
 /**
@@ -527,7 +527,7 @@ export function computePluginsCid(plugins: readonly RegionEntry[]): string {
  * call sites is a rule that drifts, and a drifted region reads as a corrupt genesis.
  */
 export function computeGrammarCid(plugins: readonly RegionEntry[]): string {
-  return foldRegion("grammar/v1", plugins.filter(isGrammar));
+  return foldRegion("lararium-grammar", plugins.filter(isGrammar));
 }
 
 // ---------------------------------------------------------------------------
