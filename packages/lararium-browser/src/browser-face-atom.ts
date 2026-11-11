@@ -78,7 +78,7 @@ export async function keepBrowserFaceAtomSeed(idbName: string, personaGroup: str
   await keepFaceAtomSeed(browserFaceAtomRows(idbName), personaGroup, seed);
 }
 
-/** The custody row that keeps one face's address secret: its working documents derive their addresses from it. */
+/** The custody row that keeps one face's address secret: the face's catalog document derives its address from it. */
 export const faceAddressSecretRow = (personaGroup: string): string => {
   if (personaGroup.length === 0) throw new Error("[browser-face-atom] an address secret names its PersonaGroup");
   return `face-address-secret/${personaGroup}`;

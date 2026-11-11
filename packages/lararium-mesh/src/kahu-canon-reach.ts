@@ -3,14 +3,15 @@
  * write door calls before it writes.
  *
  * The ruling (`lar:///ha.ka.ba/lares/docs/stable-founding-road` #/rulings, one owner per registry): only each
- * Nexus's Kahu cabal writes the `lares` and `lararium` bags live. A hand reaches system canon when
+ * Nexus's Kahu cabal writes the `lares` and `lararium` bags live, and the house canon widens that to every disk-sourced
+ * holding (`houseCanonSlugs`). A hand reaches house canon when
  * `kahuCabalCanonAccess` holds for the group that holds the Kahu realm: a counted seat-quorum admission AND a
  * sentinel membership, read apart. This module is that predicate's production caller. Every door that can land
- * a byte in a system bag (the shared residency reactor with every verb it carries, `meme put` and `meme delete`,
+ * a byte in a house canon bag (the shared residency reactor with every verb it carries, `meme put` and `meme delete`,
  * draft placement, a realm steward's write) calls `requireKahuReach` with the bag it resolved and the source its
  * vessel handed it. A READ and a copy OUT of canon call nothing: canon stays cheap to read and to shadow.
  *
- * FAIL CLOSED. A door handed no source refuses a system bag, and a source that finds no cabal refuses it: a
+ * FAIL CLOSED. A door handed no source refuses a house canon bag, and a source that finds no cabal refuses it: a
  * missing source reads as a stranger, never as a pass.
  *
  * THE GROUP SEAM. `kahuRealmGroup` is the one accessor that names the PersonaGroup holding a Nexus's Kahu realm.
@@ -113,7 +114,7 @@ export type KahuCabalBoardReader = () => Promise<KahuCabalBoard | null> | KahuCa
 
 const STRANGER: KahuCabalAccess = { held: false, standing: "absent", reason: "absent" };
 
-/** The hand's access to system canon: `kahuCabalCanonAccess` over the source's facts, or a stranger's refusal. */
+/** The hand's access to house canon: `kahuCabalCanonAccess` over the source's facts, or a stranger's refusal. */
 export async function kahuReachAccess(source: KahuReachSource | undefined): Promise<KahuCabalAccess> {
   if (source === undefined) return STRANGER;
   const facts = await source();
@@ -121,13 +122,13 @@ export async function kahuReachAccess(source: KahuReachSource | undefined): Prom
   return kahuCabalCanonAccess(facts);
 }
 
-/** Whether the hand holds the Kahu cabal's reach into system canon. */
+/** Whether the hand holds the Kahu cabal's reach into house canon. */
 export async function holdsKahuReach(source: KahuReachSource | undefined): Promise<boolean> {
   return (await kahuReachAccess(source)).held;
 }
 
 /**
- * Every write door's one call. Returns at once for a bag outside system canon; for a system bag it throws a
+ * Every write door's one call. Returns at once for a bag outside house canon; for a house canon bag it throws a
  * `VerbRefusal` (reason `kahu-reach`) unless the hand holds the cabal's reach. `act` names the door in the refusal.
  */
 export async function requireKahuReach(bag: string, source: KahuReachSource | undefined, act: string): Promise<void> {

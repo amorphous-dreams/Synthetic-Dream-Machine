@@ -314,7 +314,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
     try { granted = port.open.edits === true && opts.mayEdit?.(msg.portId, port.boundActor) === true; }
     catch { /* A failed lookup grants nothing. */ }
     if (!granted) { answer("refused", [], [], "edits-not-granted"); return; }
-    // An explicit bag is no edit of the wiki: the composer must lend the bag, and a system canon bag also meets
+    // An explicit bag is no edit of the wiki: the composer must lend the bag, and a house canon bag also meets
     // the Kahu predicate the verbs meet.
     for (const bag of new Set(msg.records.flatMap(record => record.bag ? [record.bag] : []))) {
       let lent = false;

@@ -22,7 +22,7 @@ export interface JoinedFaceAuthPorts {
 
 /** A torn sibling cannot take the mounted face's boot down. A sibling receives the vessel ground and the bags it OWNS while lit
  *  (`litFaceOwnBags`: the daemon wiki's device slots, its daemon canon by its relation, its catalog half), so its own memory seals
- *  under its own hive; its planes need their own face proof, and the mounted slot's user wiki bags and the system canon belong to
+ *  under its own hive; its planes need their own face proof, and the mounted slot's user wiki bags and the house canon belong to
  *  the mounted face. Each entry names its handle index and relation, so a face-named wave finds it. */
 export async function joinedFaceAuth(ports: JoinedFaceAuthPorts): Promise<JoinedFaceAuth[]> {
   const result: JoinedFaceAuth[] = [];

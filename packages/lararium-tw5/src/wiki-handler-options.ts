@@ -27,8 +27,8 @@ export interface WikiMintHandlerOptions {
   readonly catalog:     CatalogAccessor;
   /** The system plane: a system wiki's canon doc and default recipe stand here. A system slug mints nothing. */
   readonly oracle?:     CatalogAccessor;
-  /** The live doc url of a system canon bag THIS vessel holds, from the Kahu realm's standing registration; null where it
-   *  holds none (a vessel outside the Kahu cabal). A system wiki's canon doc rests in the Kahu realm, never in the catalog. */
+  /** The live doc url of a house canon bag THIS vessel holds, from the Kahu realm's standing registration; null where it
+   *  holds none (a vessel outside the Kahu cabal). A house canon wiki's canon doc rests in the Kahu realm, never in the catalog. */
   readonly systemCanonUrl?: (bagUri: string) => Promise<string | null>;
   /** The VESSEL's DID (`0x`+verifying key) — the PLACE that asks. Distinct from the persona
    *  root (the human), which signs delegation edges and never rides a verb request. */
@@ -71,6 +71,6 @@ export interface WikiComposeOptions {
 
 export interface DraftHandlerOptions {
   readonly composite: CompositeStore;
-  /** The vessel's source of the Kahu predicate's facts; a draft into a system canon bag asks it first. Absent → a stranger. */
+  /** The vessel's source of the Kahu predicate's facts; a draft into a house canon bag asks it first. Absent → a stranger. */
   readonly kahuReach?: KahuReachSource;
 }

@@ -123,7 +123,7 @@ export function routedWikiSlug(invocation: Verb): string | null {
 /**
  * THE ROUTED VERB'S GATE, the one place the keyholder island clears a verb before main (and a wiki island behind it)
  * trusts it: the cap `deriveRoutedCap` names, then — for a verifier that carries the Kahu predicate — the predicate for
- * every system canon bag the envelope names inside its args. A refusal throws and the verb is never routed. The wiki
+ * every house canon bag the envelope names inside its args. A refusal throws and the verb is never routed. The wiki
  * island's own clearance (`kahuReachClearedAtGate`) is a composition option set in code at the island's behavior, never a
  * field the envelope can carry, so nothing a caller sends lifts it.
  */
@@ -160,7 +160,7 @@ export async function gateRoutedVerb(invocation: Verb, verifier: CapabilityVerif
     if (!inner.ok) throw new RoutedCapDenied(`[verb-dispatcher] capability denied for routed verb "${invocation.action}" (bag=${bag}, access=${need}): ${inner.reason ?? "no grant"}`, inner.kind, inner.bagUrl);
   }
   if (verifier.kahuReach) {
-    // System canon takes the Kahu hand wherever the act writes or deletes; a COPY's read-only source asks none.
+    // House canon takes the Kahu hand wherever the act writes or deletes; a COPY's read-only source asks none.
     for (const bag of routedInnerBags(invocation)) if (isHouseCanonBag(bag) && !readOnly.has(bag)) await verifier.kahuReach(bag, invocation.action, presenter);
   }
 }

@@ -218,7 +218,7 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
       doc.tiddlers[ORACLE_DOC_URI] = storedLarRecord(ORACLE_DOC_URI, { text: islandHandle.url }, "vessel-boot");
     });
   }
-  // The live system canon rests in the Kahu realm, never in the catalog registry. The catalog registry serves USER bag
+  // The live house canon rests in the Kahu realm, never in the catalog registry. The catalog registry serves USER bag
   // oracles (ocap grants); the realm's registrations serve the cabal's live documents; the crossroads plane serves
   // public/infrastructure answers. Each registry has its one owner.
   emit("island-ready");

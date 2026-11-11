@@ -353,10 +353,10 @@ export async function restoreFaceBody(args: {
   readonly founding?: () => Promise<void>;
 }): Promise<FaceBundleRestored> {
   const { body } = args;
-  // THE ADDRESS SECRET RIDES THE BUNDLE: a restore lands the face's own, so its working documents follow it here, and
+  // THE ADDRESS SECRET RIDES THE BUNDLE: a restore lands the face's own, so its catalog document follows it here, and
   // never mints a fresh one. A body that names none refuses by name; paper names null, and lands none.
   if (body.addressSecret === undefined || (body.addressSecret === null && args.fromPaper !== true)) {
-    refuse("no-address-secret", "the bundle carries no address secret for the face, so the restored face could find none of its working documents: cut the bundle again on a vessel that wears the face; only the paper door may carry none. Nothing moved.");
+    refuse("no-address-secret", "the bundle carries no address secret for the face, so the restored face could find no catalog document of its own: cut the bundle again on a vessel that wears the face; only the paper door may carry none. Nothing moved.");
   }
   const { signerDid, recoveryCommit } = await consistent(body);
 

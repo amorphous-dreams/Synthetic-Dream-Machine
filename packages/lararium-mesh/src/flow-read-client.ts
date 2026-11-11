@@ -5,7 +5,7 @@
  * PEERS PROVE FIRST. The read-face answers no stranger: the pointer and its snapshot cross only a channel whose dialer
  * passed the floor gate's exchange (`dialFaceGate` at the floor tier: a Noise IK flight to the pinned floor key, the
  * face's sealed presentation, a signed finish, and the gate's signed verdict). A dialer that cannot present reads
- * nothing, and an HTTP request for it meets the vessel's closed door. (The floor of system canon rides no pointer: the Nexus's release
+ * nothing, and an HTTP request for it meets the vessel's closed door. (The floor of house canon rides no pointer: the Nexus's release
  * names it by CID, and a reader verifies it off the porch, `floor-answer`.)
  *
  * EVERY DIALER PINS TWICE. The gate's pin comes from the pair index the caller injects (hearth, Nexus, "/flow",

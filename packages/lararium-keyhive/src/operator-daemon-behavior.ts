@@ -103,7 +103,7 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
   countedRaises?: (fleetRootDid: string) => ReadonlySet<string> | Promise<ReadonlySet<string>>;
   /** `kahuCabal` — the shore's reader of the Kahu cabal board: the charter's Nexus and seated roster, and the
    *  admission acts its carriage board carries. This island adds the sentinel read and the group, and hands every
-   *  write door the composed source. Absent → every door reads a stranger and refuses a system canon bag (fail closed). */
+   *  write door the composed source. Absent → every door reads a stranger and refuses a house canon bag (fail closed). */
   kahuCabal?: (ctx: IslandContext) => import("@lararium/mesh").KahuCabalBoardReader;
 };
 
@@ -374,7 +374,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     sentinelProvider: () => kh,
   });
 
-  // A system canon bag's live document, named by the Kahu realm's bag row in this vessel's catalog. Naming it asks
+  // A house canon bag's live document, named by the Kahu realm's bag row in this vessel's catalog. Naming it asks
   // nothing (a copy OUT of canon reads it); every write clears the Kahu predicate before access resolves.
   const realmCanonUrlOf = (ctx: IslandContext) => async (bagUri: string): Promise<string | null> =>
     ctx.catalogUrl ? realmStandingDocUrl((await makeCatalogAccessor(ctx.repo, ctx.catalogUrl, null).handle()).doc(), bagUri) : null;

@@ -41,7 +41,7 @@ export function kahuReachSourceOf(input: {
 /**
  * THE VERIFY-THEN-DELEGATE GATE. A verb routed into a wiki island (`lares act --in-wiki`) clears the cap at THIS
  * island before main delegates it, and the wiki island answers every later ask by worker trust. So the Kahu
- * predicate stands in the verifier too: an `admin` ask on a system canon bag holds only for a hand the cabal's
+ * predicate stands in the verifier too: an `admin` ask on a house canon bag holds only for a hand the cabal's
  * reach admits, and a read asks nothing. Every other bag falls through to the inner verifier untouched.
  */
 export function withKahuReach(inner: CapabilityVerifier, source: KahuReachSource | undefined): CapabilityVerifier {

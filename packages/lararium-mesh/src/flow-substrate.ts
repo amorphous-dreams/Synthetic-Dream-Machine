@@ -2,7 +2,7 @@
  * flow-substrate — the read-only PUBLIC substrate of the FLOW map: a content-addressed snapshot
  * + a signed causal pointer (the ratchet face).
  *
- * The floor of system canon answers by a different road: the Nexus's release names a floor manifest by CID
+ * The floor of house canon answers by a different road: the Nexus's release names a floor manifest by CID
  * (`floor-release`), and no pointer signs a floor. This substrate carries what a herm relays (the public flow map) and
  * nothing more. Canon: lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane (the Two-Faced Substrate).
  * The read face serves the flow doc as an IMMUTABLE blob — `Automerge.save(doc)` bytes named by their content hash — so

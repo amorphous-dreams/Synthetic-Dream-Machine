@@ -250,7 +250,7 @@ export interface ActionHandlerOptions {
      *  resolver — the door a promotion MOVE out of `wikis/<slug>/working` rides. Absent = the
      *  registry planes alone. */
     slotDocUrl?: (slug: string, kind: WikiSlotKind, opts: { mint: boolean }) => Promise<string | null>;
-    /** A system canon bag's LIVE document, which rests in the Kahu realm (no registry plane names it). Reading it asks
+    /** A house canon bag's LIVE document, which rests in the Kahu realm (no registry plane names it). Reading it asks
      *  nothing; every write already cleared `requireKahuReach` before access resolves. */
     systemCanonUrl?: (bag: string) => Promise<string | null>;
   };
@@ -283,7 +283,7 @@ export interface ActionHandlerOptions {
   readonly resolveByCid?: (cid: string) => Promise<Uint8Array | null>;
   /**
    * The vessel's source of the facts the Kahu predicate reads (`kahuCabalCanonAccess`). Every verb that lands a
-   * byte in a system canon bag asks it BEFORE any other check, a MOVE out of canon included (it tombstones the
+   * byte in a house canon bag asks it BEFORE any other check, a MOVE out of canon included (it tombstones the
    * source). Absent → a stranger: a system bag refuses (fail closed). A copy OUT of canon asks nothing.
    */
   readonly kahuReach?: KahuReachSource;
@@ -852,7 +852,7 @@ async function executeCREATE(action: CreateAction, access: BagAccess, opts: Acti
     const count = standing ? (await standing.listVisible()).filter((t) => !isEffectRecordUri(t)).length : 0;
     return { bag: action.bag, plane: action.plane, docUrl: existing, alreadyStood: true, count };
   }
-  // A BAG THAT RESOLVES ELSEWHERE STANDS ALREADY. The bag's own resolution answers, never a name list: a system canon
+  // A BAG THAT RESOLVES ELSEWHERE STANDS ALREADY. The bag's own resolution answers, never a name list: a house canon
   // bag rests in the Kahu realm (named by the realm's bag row), and another plane may hold a bag this plane's registry
   // never names. A CREATE over such a bag mints nothing, so a seed may lead every disk-sourced holding with CREATE and
   // never mint a second doc that shadows the one that stands.

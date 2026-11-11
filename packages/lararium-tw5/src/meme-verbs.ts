@@ -93,7 +93,7 @@ export interface MemeVerbOptions {
    *  resolver names — the doc the wiki island mounts. `mint` false reads what stands (a get), true
    *  mints on absent (a put). Absent = instance slots resolve by their bare key only. */
   readonly slotStore?: (slug: string, kind: WikiSlotKind, bag: string, opts: { mint: boolean }) => Promise<LarTiddlerStore | null>;
-  /** The vessel's source of the Kahu predicate's facts. A put or a delete that lands in a system canon bag asks it
+  /** The vessel's source of the Kahu predicate's facts. A put or a delete that lands in a house canon bag asks it
    *  BEFORE the cap gate, so a realm steward's grant stands in for no check. Absent → a stranger (fail closed). */
   readonly kahuReach?: KahuReachSource;
 }
@@ -103,7 +103,7 @@ export function memeVerbOptions(
   ctx: Pick<IslandContext, "composite" | "tw5" | "repo" | "catalogUrl" | "faceCatalogUrl" | "oracleUrl">,
   /** The instance-slot doc url by THE ONE resolver; null when nothing stands and `mint` is false. */
   slotDocUrl: (slug: string, kind: WikiSlotKind, opts: { mint: boolean }) => Promise<string | null>,
-  /** A system canon bag's live document, which rests in the Kahu realm (no registry plane names it). Naming it asks nothing. */
+  /** A house canon bag's live document, which rests in the Kahu realm (no registry plane names it). Naming it asks nothing. */
   systemCanonUrl?: (bag: string) => Promise<string | null>,
 ): MemeVerbOptions {
   const catalog = ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl, ctx.faceCatalogUrl) : null;

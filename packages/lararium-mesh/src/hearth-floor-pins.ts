@@ -16,7 +16,7 @@
  * One reader serves both: each pin reads whole, stands at floor tier and at the expected Nexus, and names a route no other
  * pin in the set names. A set that fails any of these reads as none: nothing of it files.
  *
- * THE FLOOR READ RIDES THE PORCH, NOT A PIN. The floor of system canon answers by the Nexus's release (`floor-release`, served at
+ * THE FLOOR READ RIDES THE PORCH, NOT A PIN. The floor of house canon answers by the Nexus's release (`floor-release`, served at
  * `GET /floor/<Nexus AID>`): a reader holding the Nexus AID verifies the charter's epoch lineage (the genesis epoch re-derives the
  * AID, each step verifies under the prior roster's threshold), the head release and the floor bytes itself (`floor-answer`), so a
  * card's AID anchors a full verification and no signed pointer carries a floor.

@@ -55,7 +55,7 @@ export function isPublicBagRow(title: string, row: StoredLarRecord | null | unde
 
 /**
  * Which half a catalog row rests on. F names public, signed infrastructure: the registry's own pointers (catalog,
- * oracle, crossroads), the joined corpora, the live system canon, the realm plane's pointers and standing, the daemon
+ * oracle, crossroads), the joined corpora, the live house canon, the realm plane's pointers and standing, the daemon
  * wiki's floor half, and the floor's own vessel-only slot documents (a draft floor, a working floor), which the anon
  * lift reads and burns. Every other row (a user bag, a wiki and its recipe, a face plane, the kahua stage, a slot
  * binding, a title nothing classes) rests on the face: a row that names no class never lands on the floor. A bag row that

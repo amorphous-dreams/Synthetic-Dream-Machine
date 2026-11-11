@@ -699,8 +699,8 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
     await keepAndRetireFoundingSeed(face.personaGroupId, foundingAsk, atomSeed);
     await settleFoundingVesselFaceTag(askDigest, face.personaGroupId);
   });
-  // THE FACE'S ADDRESS SECRET MINTS AT ITS FOUNDING, beside its atom and behind its custody: its working documents derive
-  // their addresses from it from the first boot, and no later read mints one. A founding that runs again finds it standing.
+  // THE FACE'S ADDRESS SECRET MINTS AT ITS FOUNDING, beside its atom and behind its custody: the face's catalog document
+  // derives its address from it from the first boot, and no later read mints one. A founding that runs again finds it standing.
   // A restore lands the secret its bundle carried in place of the mint.
   await settleAddressSecret(face.personaGroupId, opts.addressSecret);
   await keepFaceAnchorOfGroup(mintFaceAnchor({

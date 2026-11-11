@@ -43,7 +43,7 @@ export interface RegistryReach {
   /** A registered wiki's INSTANCE slot doc (draft · working · personal) by THE ONE slot-doc
    *  resolver — null when none stands. Absent = `where` reaches the registry planes alone. */
   slotDocUrl?: (slug: string, kind: WikiSlotKind, opts: { mint: boolean }) => Promise<string | null>;
-  /** A system canon bag's live document, which rests in the Kahu realm (no registry plane names it). */
+  /** A house canon bag's live document, which rests in the Kahu realm (no registry plane names it). */
   systemCanonUrl?: (bag: string) => Promise<string | null>;
 }
 

@@ -13,7 +13,7 @@
  *
  * The face is NOT an HTTP face. It claims no request path, so every HTTP request for it draws the
  * vessel's closed door, exactly as a path nobody claims (pronaos#/the-rung-ladder: the flow rung answers proven
- * peers alone). It serves the herm's flow map. The FLOOR of system canon rides no pointer: the Nexus's release names
+ * peers alone). It serves the herm's flow map. The FLOOR of house canon rides no pointer: the Nexus's release names
  * it by CID (`floor-release`), served at the porch (`floor-answer-face`).
  *
  * THE PUBLISHER'S KEY IS NOT THE GATE'S. The floor bundle derives from the floor key; the pointer is signed by the

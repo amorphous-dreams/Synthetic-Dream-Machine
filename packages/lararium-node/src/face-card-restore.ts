@@ -19,7 +19,7 @@
  * It then BUILDS the body `restoreFaceBody` lands: the root and its verifying key, a roster line at the target
  * index, the anchors the root derives (the signer's name, and the prefix of the inception the root derives), the
  * inception alone as the carried key history, no names, no proof keys, no handle-book records, no recovery contact set, no
- * address secret (null: paper carries none, and the restore mints none, so the face's working slot refuses
+ * address secret (null: paper carries none, and the restore mints none, so the face's catalog document refuses
  * `no-address-secret` until a fleet join lands the secret from a device that wears the face). The
  * board supplies any later key event, and the restore's head check folds both: a rotation away from the root
  * refuses `root-superseded`.

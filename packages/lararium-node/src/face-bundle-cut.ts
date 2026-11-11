@@ -18,7 +18,7 @@
  * of its own. The cut then refuses, by name: a face this vessel holds no root for (`face-not-held`); a face the
  * standing vessel does not wear, since its island counts keys for the mounted face alone (`face-not-worn`); a board
  * that holds no whole key history for the face (`key-history-unread`); a face whose address secret stands nowhere
- * here (`no-address-secret`), since its restore could derive none of its working addresses; and an island with no
+ * here (`no-address-secret`), since its restore could derive no face catalog document; and an island with no
  * content-key holder (`memory-unavailable`). A cut that refuses seals nothing and answers nothing but the name.
  *
  * Node-main only: a worker never imports this module.
@@ -128,12 +128,12 @@ const EXTRACTORS: Readonly<Record<string, Extractor>> = {
     const mine = (await loadNodeHandleBook(line.handleIndex)).snapshot();
     parts.handleBook = { records: JSON.parse(JSON.stringify(mine.records)) as Record<string, unknown>[] };
   },
-  // whole: the face's address secret, so the face restored elsewhere derives the working addresses it derives here.
+  // whole: the face's address secret, so the face restored elsewhere derives the catalog document it derives here.
   "face-address-secret": async (line, parts) => {
     const group = (await loadIdentityAnchors(line.handleIndex))?.personaGroupId;
     const secret = group ? await readFaceAddressSecret(group) : null;
     if (!secret) {
-      throw new BackupRefused("no-address-secret", `the face at h${line.handleIndex} holds no address secret on this vessel, so a restore could derive none of its working addresses; nothing was cut`);
+      throw new BackupRefused("no-address-secret", `the face at h${line.handleIndex} holds no address secret on this vessel, so a restore could derive no face catalog document; nothing was cut`);
     }
     try { parts.addressSecret = hexOf(secret); } finally { secret.fill(0); }
   },

@@ -11,7 +11,7 @@
  * ONE ROAD, DECIDED BY WHERE CANON STANDS. A holding whose canon source stands on disk (its dir under the canon source
  * the daemon resolves, `daemonBagsDir`, and no private plane: `projectionRoots(...).sourcedSlugs()`) takes the
  * diff-gated `ingest` gesture into its canon bag, after a CREATE that converges on the bag that stands (a bag that
- * resolves anywhere, the realm's system canon included, mints nothing). No name list picks the road: in the vessel
+ * resolves anywhere, the realm's house canon included, mints nothing). No name list picks the road: in the vessel
  * `LAR_BAGS=/workspace/bags`, so every holding the checkout carries rides it. A holding whose canon source stands
  * elsewhere takes no road, and the seed names it.
  *
