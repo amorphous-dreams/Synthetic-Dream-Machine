@@ -25,7 +25,7 @@
  *
  * WHAT IT NEVER DECIDES. It holds no key, reads no clock and keeps no store; signers arrive injected, the board
  * arrives as a doc, the manifest's bytes arrive from the caller's CAS. Which release a face ACCEPTS stays a person's
- * act (road `W26`): this module answers only which releases COUNT and where the chain stands.
+ * act of the VESSEL (`floor-pin`, one pin per vessel and Nexus): this module answers only which releases COUNT and where the chain stands.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-slices
  */
@@ -242,19 +242,21 @@ export function floorReleaseRowsFromBoard(doc: LarDoc | undefined | null): Array
   return out;
 }
 
+/** Every variant names the releases that COUNT (`counted`, each verified and chained to the Nexus's first): a vessel's
+ *  accept walks `prior` through them from its pin to the release it takes (`floor-pin`). */
 export type FloorReleaseStanding =
-  | { readonly standing: "absent"; readonly head: null; readonly refused: readonly FloorReleaseRefused[] }
-  | { readonly standing: "released"; readonly head: FloorRelease; readonly refused: readonly FloorReleaseRefused[] }
-  | { readonly standing: "unsettled"; readonly head: null; readonly heads: readonly string[]; readonly refused: readonly FloorReleaseRefused[] };
+  | { readonly standing: "absent"; readonly head: null; readonly counted: readonly FloorRelease[]; readonly refused: readonly FloorReleaseRefused[] }
+  | { readonly standing: "released"; readonly head: FloorRelease; readonly counted: readonly FloorRelease[]; readonly refused: readonly FloorReleaseRefused[] }
+  | { readonly standing: "unsettled"; readonly head: null; readonly heads: readonly string[]; readonly counted: readonly FloorRelease[]; readonly refused: readonly FloorReleaseRefused[] };
 
 /** A row the fold set aside, and why: a reader names the refusal rather than reading a refusal as an absence. */
 export interface FloorReleaseRefused { readonly keyCid: string; readonly reason: FloorReleaseRefusal | "manifest-unavailable" | "prior-unknown"; readonly detail?: string }
 
 /**
-
+ * Fold a board's rows into where the chain stands. A release COUNTS where it verifies whole (its manifest's exact
  * bytes resolved by `manifestBytesOf`, its lineage proving the roster of its epoch) AND it opens the chain (`prior` null)
  * or links to a release that counts. The head stands as the counted release no other counted release names; two heads
- * read `unsettled`, and a face accepts neither until the cabal settles the fork (the KERI watcher shape). Each row
+ * read `unsettled`, and a vessel accepts neither until the cabal settles the fork (the KERI watcher shape). Each row
  * the fold sets aside rides `refused` with its reason.
  */
 export async function foldFloorReleases(args: {
@@ -284,9 +286,10 @@ export async function foldFloorReleases(args: {
     }
   }
   for (const [cid, r] of verified) if (!counted.has(cid)) refused.push({ keyCid: cid, reason: "prior-unknown", detail: `its prior ${r.body.prior} stands in no counted release` });
-  if (counted.size === 0) return { standing: "absent", head: null, refused };
-  const cited = new Set([...counted.values()].map((r) => r.body.prior).filter((p): p is string => p !== null));
+  const chain = [...counted.values()];
+  if (counted.size === 0) return { standing: "absent", head: null, counted: chain, refused };
+  const cited = new Set(chain.map((r) => r.body.prior).filter((p): p is string => p !== null));
   const heads = [...counted.keys()].filter((cid) => !cited.has(cid)).sort();
-  if (heads.length === 1) return { standing: "released", head: counted.get(heads[0]!)!, refused };
-  return { standing: "unsettled", head: null, heads, refused };
+  if (heads.length === 1) return { standing: "released", head: counted.get(heads[0]!)!, counted: chain, refused };
+  return { standing: "unsettled", head: null, heads, counted: chain, refused };
 }

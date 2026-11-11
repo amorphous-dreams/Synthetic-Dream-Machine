@@ -15,7 +15,7 @@ import { hex, hexToBytes, utf8Bytes } from "../src/crypto.js";
 import { DOMAIN_ROOT, GATE_VERDICT_DOMAIN, WAKING_FLOOR_ANNOUNCE_DOMAIN } from "../src/domains.js";
 import {
   FLOOR_ANNOUNCEMENT_KIND, FLOOR_ANNOUNCEMENT_REFUSALS, FLOOR_ANNOUNCE_ROUTE, FLOOR_STANDINGS,
-  floorAnnouncementDigest, gateAnnouncementImage, readFloorAnnouncement, signFloorAnnouncement, type FloorAnnouncementBody,
+  floorAnnouncementDigest, foldFloorAnnouncements, gateAnnouncementImage, readFloorAnnouncement, signFloorAnnouncement, type FloorAnnouncementBody,
 } from "../src/floor-announcement.js";
 import {
   GATE_SIGNING_PURPOSES, GateBundleRefused, custodyRootDoor, deriveGateBundle, floorGateRoot, floorKeyDoor, floorRoute,
@@ -166,5 +166,47 @@ describe("the floor announcement", () => {
     const b = floorBundle();
     b.drop();
     await expect(signFloorAnnouncement(b, { standing: "resting", prior: null })).rejects.toBeInstanceOf(GateBundleRefused);
+  });
+});
+
+describe("the fold: announcements ordered by their links alone", () => {
+  test("a line reads its head and its order, oldest first, whatever order the values arrive in", async () => {
+    const b = floorBundle();
+    const a1 = await signFloorAnnouncement(b, { standing: "resting", prior: null });
+    const a2 = await signFloorAnnouncement(b, { standing: "raised", prior: floorAnnouncementDigest(a1.body) });
+    const a3 = await signFloorAnnouncement(b, { standing: "resting", prior: floorAnnouncementDigest(a2.body) });
+    const folded = foldFloorAnnouncements([a3, a1, a2, a2], { pin: b.pin });
+    expect(folded).toMatchObject({ standing: "linear", head: floorAnnouncementDigest(a3.body) });
+    expect(folded.standing === "linear" && folded.order).toEqual([a1, a2, a3].map((a) => floorAnnouncementDigest(a.body)));
+    expect(folded.setAside).toEqual([]);
+  });
+
+  test("RED: two announcements on one prior read FORKED, both heads named; recency never settles it", async () => {
+    const b = floorBundle();
+    const a1 = await signFloorAnnouncement(b, { standing: "resting", prior: null });
+    const left = await signFloorAnnouncement(b, { standing: "raised", prior: floorAnnouncementDigest(a1.body) });
+    const right = await signFloorAnnouncement(b, { standing: "resting", prior: floorAnnouncementDigest(a1.body) });
+    const heads = [left, right].map((a) => floorAnnouncementDigest(a.body)).sort();
+    expect(foldFloorAnnouncements([a1, left, right], { pin: b.pin })).toMatchObject({ standing: "forked", heads });
+    expect(foldFloorAnnouncements([right, a1, left], { pin: b.pin })).toMatchObject({ standing: "forked", heads });
+  });
+
+  test("an announcement whose prior reaches neither the opening nor the held one sets aside as prior-unseen; a foreign floor's sets aside by its refusal", async () => {
+    const b = floorBundle();
+    const a1 = await signFloorAnnouncement(b, { standing: "resting", prior: null });
+    const orphan = await signFloorAnnouncement(b, { standing: "raised", prior: "ef".repeat(32) });
+    const foreign = await signFloorAnnouncement(floorBundle("nexus-a.synthetic", 23), { standing: "resting", prior: null });
+    const folded = foldFloorAnnouncements([a1, orphan, foreign], { pin: b.pin });
+    expect(folded).toMatchObject({ standing: "linear", head: floorAnnouncementDigest(a1.body) });
+    expect(folded.setAside).toEqual(expect.arrayContaining([{ index: 1, refusal: "prior-unseen" }, { index: 2, refusal: "pin-other" }]));
+  });
+
+  test("from a held announcement, only its successors count; with none read the fold reads absent", async () => {
+    const b = floorBundle();
+    const a1 = await signFloorAnnouncement(b, { standing: "resting", prior: null });
+    const a2 = await signFloorAnnouncement(b, { standing: "raised", prior: floorAnnouncementDigest(a1.body) });
+    const held = floorAnnouncementDigest(a1.body);
+    expect(foldFloorAnnouncements([a1, a2], { pin: b.pin, held })).toMatchObject({ standing: "linear", head: floorAnnouncementDigest(a2.body), order: [floorAnnouncementDigest(a2.body)] });
+    expect(foldFloorAnnouncements([a1], { pin: b.pin, held })).toMatchObject({ standing: "absent" });
   });
 });

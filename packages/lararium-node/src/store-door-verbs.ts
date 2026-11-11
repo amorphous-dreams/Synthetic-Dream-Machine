@@ -62,7 +62,7 @@
  */
 
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
-import { WardRefused } from "@lararium/mesh";
+import { WardRefused, type FloorRemount } from "@lararium/mesh";
 
 /** The route a row's own ticket resolved to, carried beside its arguments under a key no wire spells (seat-harness#/the-ward). */
 const WARD_ARG: unique symbol = Symbol("ward");
@@ -93,6 +93,7 @@ import type { HandleClaim } from "@lararium/mesh";
 import { federationPostureFromDoc, isVerbRefusal, readNexusActPartial, type FederationPosture, type CarriageAction, type KahuQuorumSeats, type SealEpoch } from "@lararium/mesh";
 import { runCabalAct, runCabalCosign, runCabalStanding, NexusCabalError } from "./commands/nexus-cabal.js";
 import { runFloorRelease } from "./commands/nexus-release.js";
+import { runFloorAccept, runFloorStatus, FloorRefused } from "./commands/floor.js";
 import { casDirForStorage } from "./node-cas.js";
 import { runNexusKapae, runNexusKapaeList, runNexusKapaeOpen, runNexusKapaePartial, NexusKapaeError } from "./commands/nexus-kapae.js";
 import { runNexusContract, runNexusContractOpen, runNexusContractPartial, runNexusRollAnchor, runNexusRollAnchorOpen, runNexusRollAnchorPartial, runEdgeRollAnchorOpen, runEdgeRollAnchorPartial, runEdgeRollAnchorStanding, runNexusRollPriorAnchorCheck, runNexusMembersList, NexusContractError } from "./commands/nexus-contract.js";
@@ -167,6 +168,11 @@ export interface StoreDoorDeps {
    * daemon working document the composition holds. Absent on a direct act, whose answers carry no `worn`.
    */
   readonly wornFace?: () => number | null;
+  /**
+   * Raise the reboot-pending alert in every live wiki after a floor accept (`@lararium/mesh` `raiseFloorAlert`); answers the
+   * wikis it reached. Absent on a direct act, which holds no live wiki: the accepted floor mounts at the next boot.
+   */
+  readonly floorAlert?: (remount: Extract<FloorRemount, { act: "alert" }>) => Promise<readonly string[]>;
 }
 
 /**
@@ -183,7 +189,7 @@ export async function awaitOnRolled(call: boolean | void | Promise<boolean | voi
 /** The door's rows, by name — each command's routed call names exactly one of these. */
 export const STORE_DOOR_VERBS = [
   "nexus-kapae", "nexus-kapae-list", "nexus-kapae-open", "nexus-kapae-partial", "nexus-contract", "nexus-contract-open", "nexus-contract-partial", "nexus-roll-anchor", "nexus-roll-anchor-open", "nexus-roll-anchor-partial", "nexus-roll-prior-anchor", "nexus-members-list",
-  "nexus-cabal-act", "nexus-cabal-cosign", "nexus-cabal-standing", "nexus-release",
+  "nexus-cabal-act", "nexus-cabal-cosign", "nexus-cabal-standing", "nexus-release", "floor-status", "floor-accept",
   "nexus-posture", "nexus-admit-take", "nexus-carry-take", "seal-home-refold",
   "edge-kapae", "edge-seat-facts", "edge-seat-duties", "edge-seat-marks", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face", "cabal-feed",
   "fleet-join-offer", "fleet-join-answer", "nexus-roll-anchor-edge", "nexus-roll-anchor-edge-open", "nexus-roll-anchor-edge-partial", "nexus-roll-anchor-edge-standing",
@@ -232,8 +238,11 @@ export const PROMOTE_HAND_CODES: ReadonlyMap<string, string> = new Map([
 /** The swarm rows only a hand runs (the house cap, a lane share, a go); `swarm-show` stays open to a seat. Advisory like the promote codes: the ward binds them. */
 export const SWARM_HAND_CODES: ReadonlyMap<string, string> = new Map(Object.entries(SWARM_VERB_HAND_CODES));
 
-/** The socket's one hand-only table: every code a seat session refuses, promote and swarm together. */
-export const STORE_DOOR_HAND_CODES: ReadonlyMap<string, string> = new Map([...PROMOTE_HAND_CODES, ...SWARM_HAND_CODES]);
+/** The floor's accept moves the vessel's floor: a person's act alone (w26-floor-lane#/the-vessel-pin); a seat reads the status. */
+export const FLOOR_HAND_CODES: ReadonlyMap<string, string> = new Map([["floor-accept", "floor-needs-hand"]]);
+
+/** The socket's one hand-only table: every code a seat session refuses, promote, swarm and floor together. */
+export const STORE_DOOR_HAND_CODES: ReadonlyMap<string, string> = new Map([...PROMOTE_HAND_CODES, ...SWARM_HAND_CODES, ...FLOOR_HAND_CODES]);
 /** The acts a seat session refuses at the socket: the kahua operator rows (`beyond-profile`) and every row of the code table. */
 export const STORE_DOOR_HAND_ONLY_ACTS: ReadonlySet<string> = new Set([...KAHUA_OPERATOR_ROWS, ...STORE_DOOR_HAND_CODES.keys()]);
 
@@ -262,7 +271,7 @@ const REFUSALS = [
   CarryBundleError,
   IntentRefused,
   KahuaRefused, PromoteRefused, KapaeRefused, SwarmRefused,
-  FaceRowRefused,
+  FaceRowRefused, FloorRefused,
 ] as const;
 
 const str = (v: unknown): string | undefined => (typeof v === "string" && v.length > 0 ? v : undefined);
@@ -524,6 +533,18 @@ function storeDoorRowsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     "nexus-release": (args) => answer("nexus-release", async () => ({
       ...(await runFloorRelease({
         repo, sealHome, manifestFile: need("nexus-release", args, "manifestFile"), approval: args["approval"], casDir: casDirForStorage(storageDir), ...opt("aid", str(args["aid"])),
+      })),
+    })),
+
+    // THE VESSEL'S FLOOR PIN (w26-floor-lane#/the-vessel-pin): one pin per (vessel, Nexus) in the control home, moved only by
+    // the accept, which walks `prior` from the pin. Both rows answer the mesh's own decision; a refusal rides as data.
+    "floor-status": (args) => answer("floor-status", async () => ({
+      ...(await runFloorStatus({ repo, sealHome, casDir: deps.casDir ?? casDirForStorage(storageDir), ...opt("aid", str(args["aid"])), ...opt("porch", str(args["porch"])) })),
+    })),
+    "floor-accept": (args) => answer("floor-accept", async () => ({
+      ...(await runFloorAccept({
+        repo, sealHome, casDir: deps.casDir ?? casDirForStorage(storageDir), ...opt("aid", str(args["aid"])), ...opt("porch", str(args["porch"])),
+        ...opt("target", str(args["release"])), ...opt("floorAlert", deps.floorAlert),
       })),
     })),
 

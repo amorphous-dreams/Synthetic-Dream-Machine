@@ -84,6 +84,8 @@ export interface SurfaceRecipeInput {
   mayRead(bag: SlotUri): boolean;
   readonly plugins:  SurfacePluginInputs;
   readonly profile:  CapabilityProfile;
+  /** The floor manifest the vessel's accepted pin names (`floor-pin` `floorCidToMount`); absent or null, the genesis floor. */
+  readonly floorCid?: string | null;
 }
 
 /** One slot of the cascade with the document it resolved to. `temp` and an unregistered library carry null. */
@@ -259,7 +261,7 @@ export async function resolveSurfaceRecipe(input: SurfaceRecipeInput): Promise<S
   if (!plugins.ok) return refused("plugins-refused", plugins.error);
 
   // The seed's floor witness admits the manifest and each house-canon snapshot it keys to the session's content view.
-  const floorCid = plainRecordOrNull(planes.read("oracle", GENESIS_FLOOR_TIDDLER))?.tiddler.cid;
+  const floorCid = input.floorCid ?? plainRecordOrNull(planes.read("oracle", GENESIS_FLOOR_TIDDLER))?.tiddler.cid;
   const floorCids: string[] = [];
   if (typeof floorCid === "string" && floorCid.length > 0) {
     let bytes: Uint8Array | null;

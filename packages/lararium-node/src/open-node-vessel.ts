@@ -116,7 +116,7 @@ import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
 import { DeterministicFederationGate, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
 import {
   standSiblingChannel, siblingRefusalLine, groupSecretSealTitle, verifyGroupSecretSeal,
-  leaseEpochPrefix, standControlHome, readFace, proveFaceFromLog, adoptKahuaStage, joinFaceDocumentsOnArrival, raiseFaceFrontier, heldDocOf, personaKelChainForPrefix, personaKelBoardDocUrl,
+  leaseEpochPrefix, standControlHome, vesselFloorCid, raiseFloorAlert, readFace, proveFaceFromLog, adoptKahuaStage, joinFaceDocumentsOnArrival, raiseFaceFrontier, heldDocOf, personaKelChainForPrefix, personaKelBoardDocUrl,
   type SiblingNetworkAdapter, type SiblingChannelStatus,
 } from "@lararium/mesh";
 import { nodeHandleBookReading, runRealmBag, runRealmBags, stewardGuard } from "./realm-steward.js";
@@ -4043,6 +4043,8 @@ async function prepareNodeBootOn(
       storageDir, sealHome, repo, catalogUrl: assembly.catalogHandle.url,
       casDir: cidDir, restartWiki: reloadWikiAfterVerb,
       onRolled: afterRoll,
+      // A floor accept raises the reboot-pending alert in every live wiki: no node island swaps its floor read-face live.
+      floorAlert: (remount) => raiseFloorAlert(vmManager, remount),
       // The swarm's controls rest in the daemon wiki, device-local by the daemon document's anchor.
       swarmWiki: controlSwarmWiki(readControlDoc),
       // The key side of a removal answers a SOVEREIGN vessel alone: the facts read the sealed roster, and a
@@ -4369,6 +4371,8 @@ async function prepareNodeBootOn(
       // slow keyhive reconverge spends it. (silence 120s / stall 360s, matching daemon-vm-core.)
       mountSilenceMs: 120_000,
       mountStallMs:   360_000,
+      // THE FLOOR THE VESSEL ACCEPTED (`floor-pin`): each mount reads the pin afresh; no pin mounts genesis.
+      floorCid: () => vesselFloorCid({ control: readControlDoc, islandDoc: () => assembly.islandHandle.doc() }),
       resolvePluginCids: (recipe) => resolveNodeIslandPluginCids({
         islandBlobs: assembly.islandHandle.doc()?.blobs,
         recipe,

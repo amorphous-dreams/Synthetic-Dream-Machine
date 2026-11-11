@@ -4,16 +4,19 @@
  * SELF-CONSISTENCY (pronaos: "the first arrival trusts the lararium's own origin"), never a verification.
  */
 import { describe, expect, test } from "vitest";
+import { ARRIVAL_FORMAT, GENESIS_SEED_FORMAT } from "@lararium/mesh/wire-names";
 import { arrivalSeedAnchor, genesisCrossingVerdict, genesisSeedBase, readServedSeed } from "../src/genesis-anchor.js";
 // @ts-expect-error the raw import reads the page source as text (vite `?raw`)
 import MAIN_SOURCE from "../src/main.ts?raw";
+// @ts-expect-error the raw import reads the committed genesis seed as the tree carries it (vite `?raw`)
+import COMMITTED_SEED from "../../../genesis/seed.json?raw";
 
-const seedText = JSON.stringify({ format: "lararium-genesis-seed", actorSeed: "a".repeat(64), blobs: {}, tiddlers: {} });
-const otherText = JSON.stringify({ format: "lararium-genesis-seed", actorSeed: "b".repeat(64), blobs: {}, tiddlers: {} });
+const seedText = JSON.stringify({ format: GENESIS_SEED_FORMAT, actorSeed: "a".repeat(64), blobs: {}, tiddlers: {} });
+const otherText = JSON.stringify({ format: GENESIS_SEED_FORMAT, actorSeed: "b".repeat(64), blobs: {}, tiddlers: {} });
 const hex = async (text: string): Promise<string> =>
   [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text)))].map((b) => b.toString(16).padStart(2, "0")).join("");
 const descriptorOf = (seedCid: string): string => JSON.stringify({
-  format: "lar-arrival", arrival: "/", mirrors: [],
+  format: ARRIVAL_FORMAT, arrival: "/", mirrors: [],
   routes: [{ kind: "genesis-seed", path: "/genesis/seed.json", seedCid, integrity: "ni:///sha-256;x", cache: "no-store", refusal: "integrity" }],
 });
 
@@ -30,6 +33,12 @@ describe("the served seed", () => {
     let asked = "";
     await readServedSeed("/genesis/", async (input) => { asked = input; return new Response(seedText); });
     expect(asked).toBe("/genesis/seed.json");
+  });
+
+  test("THE COMMITTED SEED READS: genesis/seed.json as the tree carries it parses through readServedSeed, so a producer rename reds here", async () => {
+    const served = await readServedSeed("/genesis", async () => new Response(COMMITTED_SEED as string));
+    expect((served.seed as { format: string }).format).toBe(GENESIS_SEED_FORMAT);
+    expect(served.cid).toMatch(/^[0-9a-f]{64}$/);
   });
 
   test("CONTROL: a 404, an HTML page and a non-seed refuse by name", async () => {
@@ -52,7 +61,7 @@ describe("the hearth's own anchor", () => {
 
   test("CONTROL: a relay origin that answers no descriptor reads missing, never a CID", async () => {
     for (const reply of [async () => new Response("<!doctype html>"), async () => new Response("x", { status: 404 }), async () => { throw new TypeError("cors"); },
-      async () => new Response(JSON.stringify({ format: "lar-arrival", arrival: "/", routes: [], mirrors: [] }))]) {
+      async () => new Response(JSON.stringify({ format: ARRIVAL_FORMAT, arrival: "/", routes: [], mirrors: [] }))]) {
       const anchor = await arrivalSeedAnchor("ws://127.0.0.1:4321/ws", reply);
       expect(anchor.kind).toBe("missing");
     }

@@ -1,5 +1,6 @@
 import type { BrowserConnectionSnapshot, BrowserConnectionState } from "@lararium/browser/page";
 import type { FloorAnchor, HearthFloorCard } from "@lararium/mesh";
+import { ARRIVAL_FORMAT } from "@lararium/mesh/wire-names";
 
 export interface ServedLocation {
   readonly origin: string;
@@ -41,7 +42,7 @@ export async function arrivalRelayUrl(
       const response = await fetchFn(`${location.origin}${ARRIVAL_DESCRIPTOR_PATH}`, { signal: abort.signal });
       if (!response.ok) return undefined;
       const body: unknown = JSON.parse(await response.text());
-      return (body as { format?: unknown } | null)?.format === "lar-arrival" ? sameOriginRelayUrl(location) : undefined;
+      return (body as { format?: unknown } | null)?.format === ARRIVAL_FORMAT ? sameOriginRelayUrl(location) : undefined;
     } catch {
       return undefined;
     }

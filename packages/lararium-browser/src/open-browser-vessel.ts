@@ -60,6 +60,7 @@ import {
 }                                            from "@lararium/mesh";
 import { browserGatePins, type BrowserFacePresentation, dialDeadlines, fileFloorCard, fileOwnHearthPins, hearthNameOf, flowNexusFor } from "./browser-gate-pins.js";
 import { readHearthFloor, type HearthFloorRead } from "./browser-floor-read.js";
+import { browserFloorAccept, browserFloorStatus, type BrowserFloorBinding } from "./browser-floor-pin.js";
 import { composeBrowserFacePresentation } from "./browser-face-presentation.js";
 import { browserIslandReceipt, browserSessionLift, type BrowserUnlockedSession } from "./browser-island-caps.js";
 import { browserLiftsAtPlace, mintBrowserPlaceSession } from "./browser-place-session.js";
@@ -89,7 +90,7 @@ import { composeBrowser }                    from "./browser-caps.js";
 import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
 import { runFoundingCeremony, runApplyAdmitPayload, foundThePlace, assemblePersonaGroupRing, archiveIsOf } from "@lararium/keyhive";
 import {
-  standControlHome, promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteBoardRecords, writePromoteAct, promoteWiring, promoteWikiItems, faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, readFace, faceRecordsOf, adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard, KAHUA_BAG, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog,
+  standControlHome, vesselFloorCid, raiseFloorAlert, genesisFloorCidOf, promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteBoardRecords, writePromoteAct, promoteWiring, promoteWikiItems, faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, readFace, faceRecordsOf, adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard, KAHUA_BAG, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog,
   readFleetFrontier, fleetFrontierLinks, fleetRaiseCids, readFrontierPins, writeFrontierPin, FLEET_HAND, faceRelationOf,
   standFaceDaemonCanon, type FaceDaemonCanon, type WideningRead,
 } from "@lararium/mesh";
@@ -425,9 +426,15 @@ export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPoo
   fetchFromHearth: (cid: string, withinMs: number) => Promise<Uint8Array | null>;
   /** Read the Nexus's floor off the hearth's porch at `baseUrl` and verify every step here: the genesis epoch re-derives the
    *  Nexus AID, each epoch step verifies, the head release seals as a seat of its epoch under the cabal's approval of the
-   *  manifest's exact bytes, and each fetched blob hashes to its CID. It records no acceptance (a face accepts a release by
-   *  a person's own act, W26, its fifth slice); the running floor stays the genesis floor this vessel booted on. */
+   *  manifest's exact bytes, and each fetched blob hashes to its CID. It records no acceptance: the vessel accepts a release by
+   *  a person's own act (`acceptFloor`), and the vessel mounts the floor its pin names. */
   readFloor: (baseUrl: string) => Promise<HearthFloorRead>;
+  /** The vessel's pin on that hearth's Nexus floor (w26-floor-lane#/the-vessel-pin): the same control-home row and the same
+   *  mesh read the node runs (`floor-pin`); a door this vessel cannot run refuses by name, saying why. */
+  floorStatus: (baseUrl: string) => ReturnType<typeof browserFloorStatus>;
+  /** Accept a release (or the sole newest) for that Nexus: the same mesh decision the node runs. The floor stages into the OPFS
+   *  CAS before the pin moves; no browser island swaps its floor live, so live wikis raise the reboot-pending alert. */
+  acceptFloor: (baseUrl: string, release?: string) => ReturnType<typeof browserFloorAccept>;
   /** Relay a `lar:control-event` to the surface that PAINTED its target, whatever surface stands active. */
   sendControlEvent: (surface: string, ev: LarMsg_ControlEvent) => ReturnLegVerdict;
   ports: { place(surface: string, binding: string, msg: unknown): PortPlacement; close(binding: string): void };
@@ -2261,6 +2268,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         portPolicy: opts.portPolicy ?? ((binding, islandKey) => pagePortGrant({ binding, islandKey, faceId: portFaceId, daemonKey: DAEMON_SURFACE_ID })),
         ...(opts.onPortMessage ? { onPortMessage: opts.onPortMessage } : {}),
         ...(opts.onRest ? { onRest: opts.onRest } : {}),
+        // THE FLOOR THE VESSEL ACCEPTED (`floor-pin`): the same pick the node binds; no pin mounts genesis.
+        floorCid: () => vesselFloorCid({ control: async () => watchedControl, islandDoc: () => assembly.islandHandle.doc() }),
         resolvePluginCids: async (recipe) => {
           publicationHandle ??= await materializeSharedLarDoc(repo, publicationDocUrl(nexusPubkey), "board:publication");
           return resolveBrowserIslandPluginCids({
@@ -2395,6 +2404,16 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   connectionState.setWikiDocUrl(result.wikiHandle.url);
 
   const bootedFace = social.personaGroupId;
+  // THE VESSEL'S FLOOR PIN on the browser (w26-floor-lane#/the-vessel-pin): the same Nexus the porch read names, the control
+  // document the boot stood, the genesis floor its island document witnesses, and the live wikis the alert reaches.
+  const floorBinding = (baseUrl: string): BrowserFloorBinding => ({
+    baseUrl,
+    nexusPin: flowNexusFor(baseUrl, { relayUrl, nexus: sovereignNexus ?? carriedCard?.pin.nexus ?? null }),
+    home: () => watchedControl,
+    genesisManifest: genesisFloorCidOf(result.assembly.islandHandle?.doc()),
+    alert: (remount) => raiseFloorAlert(vmManager, remount),
+  });
+
   return {
     identity: vesselIdentity,
     face: bootedFace,
@@ -2438,6 +2457,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       const held = relayUrl && nexusPin ? gatePins.standingOf({ hearth: hearthNameOf(relayUrl), nexus: nexusPin, route: "/flow", tier: "floor" }) : null;
       return readHearthFloor({ baseUrl, nexusPin, ...(held ? { held } : {}) });
     },
+    floorStatus: (baseUrl: string) => browserFloorStatus(floorBinding(baseUrl)),
+    acceptFloor: (baseUrl: string, release?: string) => browserFloorAccept(floorBinding(baseUrl), release),
     // The return leg routes each event to the surface that painted its target; the active pointer plays no
     // part, so a switch between the person's act and its arrival never moves the event to another island.
     sendControlEvent: returnLeg.sendControlEvent,

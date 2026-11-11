@@ -245,7 +245,8 @@ export interface GenesisArtifact {
 // The plain-data genesis seed (genesis is data, not a baked CRDT)
 // ---------------------------------------------------------------------------
 
-export const GENESIS_SEED_FORMAT = "lararium-genesis-seed" as const;
+import { GENESIS_SEED_FORMAT } from "./wire-names.js";
+export { GENESIS_SEED_FORMAT };
 
 /** What a seed naming another format lacks: the genesis seed's own shape name. */
 export function genesisSeedFormatLack(format: unknown): string {

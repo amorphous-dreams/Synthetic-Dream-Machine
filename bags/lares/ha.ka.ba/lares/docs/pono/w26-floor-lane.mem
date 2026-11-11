@@ -36,12 +36,12 @@ Roadmap row `W26` carries the build of two operator rulings: //the system wikis 
   RELEASE ANSWER        one per Nexus, on its crossroads board: the Nexus AID, the charter epoch,
                         the release before it, the floor manifest CID. The steward seals it; the
                         cabal approves its exact bytes; a herm carries it and signs nothing.
-  oracle-floor               the floor's read-face, mounted under every wiki by the pin its face
+  oracle-floor               the floor's read-face, mounted under every wiki by the pin its vessel
                         accepted. Never a document any vessel writes.
 
   REGISTRIES, each written by its own scope's owner alone
     vessel bootstrap    this vessel: its daemon url, its own document pointers, its face planes,
-                        its accepted floor pin per (face, Nexus) as sealed hot rows
+                        its control home: the accepted floor pin, one per Nexus
     catalog-plane            the operator's documents, at the operator's scope
     Kahu realm          the cabal: the LIVE lares and lararium documents and their drafts
     crossroads board    the Nexus: its one public answer, the release
@@ -53,7 +53,7 @@ Roadmap row `W26` carries the build of two operator rulings: //the system wikis 
                         in the realm, and reaches everyone else only as a release.
 ```
 
-''What the shape answers.'' The `lares` and `lararium` documents live in one place, the Kahu realm of the Nexus whose cabal writes them; on a lone hearth that realm belongs to its operator, who stands as its own Kahu. Every other vessel holds their snapshots by CID. A vessel's own pointers rest in its own bootstrap, so no shared document hosts another vessel's url and nothing merges across siblings. A wiki's floor moves only on a person's accept of a signed release, face by face, so one vessel may hold two Nexuses' floors and ties no face to another.
+''What the shape answers.'' The `lares` and `lararium` documents live in one place, the Kahu realm of the Nexus whose cabal writes them; on a lone hearth that realm belongs to its operator, who stands as its own Kahu. Every other vessel holds their snapshots by CID. A vessel's own pointers rest in its own bootstrap, so no shared document hosts another vessel's url and nothing merges across siblings. A wiki's floor moves only on a person's accept of a signed release, vessel by vessel and Nexus by Nexus (#/the-vessel-pin), so one vessel may hold two Nexuses' floors, and a face switch moves no floor.
 
 <<~/ahu>>
 
@@ -76,7 +76,7 @@ Roadmap row `W26` carries the build of two operator rulings: //the system wikis 
 # ''Pointers go home.'' Each vessel's own document pointers leave the shared document for its bootstrap; the shared `@oracle` document as a writable registry retires. `shared-oracle-doc.probe` (`packages/lararium-node/tests/shared-oracle-doc.probe.test.ts`) turns into this slice's red: two synced vessels each keep their own pointer. `W21` re-cuts here: a joinee mounts its hearth's floor by CID.
 # ''The live system documents rest in the Kahu realm'', under persona zero's group until `K15`'s face context stands and the Kahu face's own group takes the seat (#/the-seam-owed-to-wave-c). A one-seat founding lands a counted 1-of-1 Kahu-cabal admission for persona zero's group; `kahuCabalCanonAccess` carries the production reads (`kahu-cabal-admission.ts`); `bags/` projects on the Kahu's vessel alone. A one-seat founding reads system canon through it over a founded island, a lone hearth's `working-loop` promotion lands, and a second vessel holds no live system document. Each document's id derives from the steward's seed and the Kahu canon counts only the steward's own sealed registrations (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu`>>).
 # ''The release answer.'' One porch body per Nexus, sealed by the steward under its own signing domain, `floor-release` (operator-approved, 2026-10-18), the promotion approval over the manifest's exact bytes attached; the Nexus's publication board carries it (`publicationDocUrl`, apart from the mirrored crossroads document); `P8` folds in. `ORACLE_POINTER_DOMAIN` retires once releases stand.
-# ''The accept act.'' A person's act moves a sealed hot row per (face, Nexus) to a newer release that verifies against that Nexus's charter at its epoch and links to the pinned release; no clock and no automatic accept. With no Nexus speaking, a face stands on its last accepted floor, or genesis.
+# ''The accept act.'' A person's act moves the VESSEL's pin per Nexus to a newer release that verifies against that Nexus's charter at its epoch and descends from the pinned release along `prior`; no clock and no automatic accept. With no Nexus speaking, a vessel stands on its last accepted floor, or genesis. It stands built (#/the-vessel-pin).
 # ''Reach into system canon.'' Every residency verb into `bags/lares` or `bags/lararium` refuses a hand outside the Kahu cabal, through the one predicate slice 3 seats; the skipped red in `unbuilt-laws.test.ts` ("a non-Kahu MOVE into a canon bag refuses") greens here.
 
 ''Beside the slices.'' `herm-reshares-public-blob` re-aims onto a public user bag: it tests a herm's re-share of a public blob, and a peer's write into system canon belongs to the Kahu alone. The re-aim travels to the mesh-goldens lane as a patch, beside the layer instrument that measured step ③.
@@ -121,6 +121,31 @@ action reactors, `meme` and `where` by `systemCanonUrl`, and a recipe's library 
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/the-vessel-pin`>>
+
+!! The vessel pin ~ slice 5, built (operator ruling 2026-11-11)
+
+//"The pull/push tension can go the way the memegraph/code leans"//: a release gets CUT and published; each vessel ACCEPTS it, and the accept moves its floor. ''The VESSEL pins the floor'': one pin per (vessel, Nexus). Faces pin nothing; the engine keeps its own adoption at reboot, per device.
+
+* ''Where the pin rests.'' The vessel's control home (`control-home`), under `<control>/floor-pin/<Nexus AID>`, as `{ kind: "floor-pin", nexus, release, manifest }`. No recipe mounts that document and no mirror names it; no face store carries a pin, so a face switch reaches none.
+* ''Where it starts.'' A vessel holding no pin row stands on its genesis floor (`GENESIS_FLOOR_TIDDLER`, `release: null`): the pin derives, nothing writes at boot, and a reboot lands nothing.
+* ''What orders it.'' The `prior` link alone. A release descends from the pin where its chain, walked through the releases that COUNT (`foldFloorReleases`: the steward's seal, the cabal's approval over the manifest's exact bytes, the epoch lineage, a chain reaching the Nexus's first), meets the pinned release, or meets the chain's opening where the pin stands at genesis. No clock, integer or arrival order decides.
+* ''The status'' (`lares vessel floor status`, the browser's `floorStatus`) names the pinned release, the newest the board shows, whether it descends (a fast-forward, with the path it walks), and any fork, its heads named.
+* ''The accept'' (`lares vessel floor accept [<release>]`, the browser's `acceptFloor`) walks `prior` from the pin to the named release or the sole newest. It refuses a release that does not descend (`floor-not-descendant`, a rollback among them), refuses while two heads stand (`floor-fork-unsettled`, naming both: recency never settles a fork), stages the floor's manifest and snapshots whole in the vessel's own CAS before the pin moves, and lands nothing on a replay. A seat session reads the status and never accepts (`floor-needs-hand`).
+* ''The remount, by capability.'' An island that swaps `@oracle` live swaps; one that mounts its floor once at boot raises the reboot-pending alert in each live wiki, naming why (`floorRemountDecision`, `raiseFloorAlert`). Each mount after an accept reads the pin afresh (`VesselIslandPoolCoreOptions.floorCid`, the manifest's `floorCid`), so the next boot stands on the accepted floor.
+* ''One seam, two hosts.'' `@lararium/mesh` `floor-pin` holds every decision (`floorStatusOf`, `decideFloorAccept`, `floorRemountDecision`, `floorCidToMount`) and composes them over capability-named ports (`home`, `rows`, `fetchCas`, `stage`, `mount`). The node binds its control home, its board replica and its CAS (`lararium-node` `commands/floor`); the browser binds its control home, the porch's answer and its OPFS CAS (`browser-floor-pin`). Neither host declares a live swap today.
+* ''The announcements'' order by their links too: `foldFloorAnnouncements` reads one line (its head and order) or a fork (its heads named), never settled by recency.
+
+''Moʻolelo, each overrulable.''
+* ''The CLI rides the vessel door.'' The ruling named `lares floor`; the help's one-screen law holds the top level full and the vessel door already names "a new cap-stack arrives as a rite, never another top-level verb", and the pin belongs to the vessel, so the verb reads `lares vessel floor status|accept`.
+* ''A genesis pin meets every chain.'' The genesis floor stands below any release, so from genesis every counted chain fast-forwards; the first release need not name the genesis manifest.
+* ''A fork refuses even a named descendant.'' Two heads stand unsettled for the Nexus; the accept waits for the cabal whatever release the person names.
+* ''A replay answers, it never refuses.'' An accept of the pinned release answers `moved: false` and lands nothing, so an act re-run after a restart reads clean.
+* ''The accept needs the hand.'' The pin moves the floor every wiki on the vessel stands on, so it rides the operator's hand like a kahua lift.
+* ''The mount reads the sole pin.'' Neither host names a Nexus at mount; two pins naming different floors mount genesis and say so, rather than choosing between Nexuses.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/owed`>>
 
 !! Owed beside the slices
@@ -131,7 +156,10 @@ action reactors, `meme` and `where` by `systemCanonUrl`, and a recipe's library 
 * ''A sibling device of a seat-holding face'' (the row beside the browser Kahu hand). A joined device is a sibling of the Kahu's own face, so by law its reach follows the face's counted admission once the charter's board reads on it. Today it composes no board source, reads as a stranger and draws `kahu-reach` on a system bag: a missing source, not the law. `e2e/meme-two-vessel-bag` step eight keeps the law's expectation (B promotes into its own lares book) as a `test.fails` named for this row, so it turns red the day the row lands and the lander flips it; `device-admit.ts` states the law.
 * ''The carriage's canon names'' (`device-admit.ts` `admitCanonDocs`, the browser's `hearth-canon`) read catalog rows nothing writes now; they retire with `W21`'s rest.
 * ''The floor card's freshness.'' The browser verifies the lineage, the head release and the floor bytes from the Nexus AID alone (`browser-floor-read`). The AID reads off a verified floor pin claim (the card's claim, anchored apart from the card and folded to its place-KEL head) or an admit; the floor pin claim lane (`w14-floor-pin-lane`) orders the pin by KEL descent and carries it atomically with a counted carry.
-* ''The accept act'' (slice 5) records no acceptance until a face's D row stands (Wave C's FCK fence); the browser's read records none.
+* ''A live floor swap.'' No island swaps its `@oracle` read-face without a restart today (`floorReadFace` takes its rows once, at `buildIslandRecipe`), so every accept raises the reboot-pending alert. An island that learns to swap declares `floorSwap` and the mount port's `swap`; the decision already routes to it (`floorRemountDecision`).
+* ''The mount's Nexus.'' The pool mounts the vessel's sole pin (`vesselFloorCid`); two pins naming different floors mount genesis and say so. A wiki that names its Nexus picks its own pin once a recipe carries that name.
+* ''The page's floor pane.'' The browser vessel answers `floorStatus` and `acceptFloor`; no page surface calls them yet. When one does, it reads the shape names through `@lararium/mesh/wire-names`.
+* ''The announcement's carrier.'' `foldFloorAnnouncements` orders announcements by `prior` and names a fork; no relay carries announcements to it yet.
 
 <<~/ahu>>
 
@@ -163,6 +191,6 @@ action reactors, `meme` and `where` by `systemCanonUrl`, and a recipe's library 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;KugiBF8LJdlq9sMWY_H-8a7FFrXbZMtD4LKAW0-VhyE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;AnbruNwPoj_x2q-SniRLtZAetA6jNhxoUcWNIY9mB9Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>

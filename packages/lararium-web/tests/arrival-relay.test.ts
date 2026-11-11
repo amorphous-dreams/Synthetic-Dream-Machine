@@ -6,11 +6,12 @@
  * status alone proves nothing; a file page has no origin to ask.
  */
 import { describe, expect, test } from "vitest";
+import { ARRIVAL_FORMAT } from "@lararium/mesh/wire-names";
 import { arrivalRelayUrl } from "../src/live-status.js";
 
 const http = { protocol: "http:", host: "127.0.0.1:4321", origin: "http://127.0.0.1:4321" };
 const answer = (body: string, init: ResponseInit = { status: 200 }) => async () => new Response(body, init);
-const descriptor = JSON.stringify({ format: "lar-arrival", arrival: "/", routes: [], mirrors: [] });
+const descriptor = JSON.stringify({ format: ARRIVAL_FORMAT, arrival: "/", routes: [], mirrors: [] });
 
 describe("the default relay of a node-served page", () => {
   test("an origin that answers the arrival descriptor is dialled at its own /ws", async () => {
