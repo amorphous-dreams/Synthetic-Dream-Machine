@@ -44,7 +44,7 @@ import { takeDisk } from "../shore-take-disk.js";
 import { openSyncedTree } from "../ingest-core.js";
 import { larRoot, larBagsDir } from "../env.js";
 import { listOverrides, answerOverrideAt, canonBagOf } from "../override-shore.js";
-import { discoverHoldings, canonIsDisk } from "./seed.js";
+import { discoverHoldings, canonIsDisk } from "../holdings.js";
 
 /** The acts this door carries. */
 export const SHORE_ACTS = ["list", "take-records", "take-disk", "restore", "remove", "settle", "take-working", "take-canon"] as const;

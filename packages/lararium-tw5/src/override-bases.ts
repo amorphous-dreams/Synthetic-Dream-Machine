@@ -32,7 +32,7 @@ export interface OverrideStandoff {
   readonly base: string;
   /** The override's own text hash. */
   readonly workingHash: string;
-  /** The canon text hash that stands now, or null where canon holds the title no longer. */
+  /** The canon text hash that stands now, or null where canon holds no live record of the title. */
   readonly canonHash: string | null;
 }
 

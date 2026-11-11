@@ -52,7 +52,7 @@ import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor } from "../render.js";
 import { readCensus, censusLine, type CensusReading } from "./census.js";
 import { scanFiles, candidatesOf, settleIngest, openSyncedTree, type ScanRow } from "../ingest-core.js";
-import { discoverHoldings, canonIsDisk } from "./seed.js";
+import { discoverHoldings, canonIsDisk } from "../holdings.js";
 import { summaryOutput } from "../verb-result.js";
 import { vesselDid, larBagsDir } from "../env.js";
 import { runVerb } from "../verb-call.js";

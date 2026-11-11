@@ -250,7 +250,8 @@ export class CompositeStore implements LarTiddlerStore {
     const writeOptions = this._writeOptionsFor(options, store, "put");
     // A write into any layer but a working one begins inside the call, as it always has.
     if (!this._forksOverrides(store)) return store.put(record, origin, writeOptions);
-    const [based] = await this._withOverrideBases(store, [record]);
+    const now = this._withOverrideBasesNow(store, [record]);
+    const [based] = now ?? await this._withOverrideBases(store, [record]);
     return store.put(based!, origin, writeOptions);
   }
 
@@ -265,6 +266,31 @@ export class CompositeStore implements LarTiddlerStore {
   private _forksOverrides(store: LarTiddlerStore): boolean {
     const layer = this.layers.find((l) => l.store === store);
     return layer !== undefined && isWorkingLayerBag(layer.bagId);
+  }
+
+  /** The fork stamp read synchronously, or null where a layer it reads offers no `readNow`. */
+  private _withOverrideBasesNow(store: LarTiddlerStore, puts: readonly LarTiddlerRecord[]): readonly LarTiddlerRecord[] | null {
+    type Now = { readNow?: (title: string) => { record: LarTiddlerRecord | null } };
+    const at = this.layers.findIndex((l) => l.store === store);
+    const stores = this.layers.slice(0, at + 1).map((l) => l.store as unknown as Now);
+    if (at < 0 || stores.some((st) => typeof st.readNow !== "function")) return null;
+    const read = (i: number, title: string): LarTiddlerRecord | null => stores[i]!.readNow!(title).record;
+    return puts.map((record) => {
+      if (record.meta?.deleted === true || overrideBaseOf(record) !== null) return record;
+      const title = record.tiddler.title;
+      const held = read(at, title);
+      let base: string | null = null;
+      if (held && !held.meta?.deleted) base = overrideBaseOf(held);
+      else {
+        for (let i = at - 1; i >= 0; i--) {
+          const lower = read(i, title);
+          if (lower === null) continue;
+          if (!lower.meta?.deleted) base = overrideTextHash(lower.tiddler);
+          break;
+        }
+      }
+      return base === null ? record : { ...record, meta: { ...(record.meta ?? {}), [OVERRIDE_BASE_META]: base } };
+    });
   }
 
   private async _withOverrideBases(store: LarTiddlerStore, puts: readonly LarTiddlerRecord[]): Promise<readonly LarTiddlerRecord[]> {
@@ -306,7 +332,9 @@ export class CompositeStore implements LarTiddlerStore {
     const { store, retired } = this._familyChecks(puts, tombstones, options);
     if (retired) await retired;
     const writeOptions = this._writeOptionsFor(options, store, "writeFamily");
-    const based = this._forksOverrides(store) ? await this._withOverrideBases(store, puts) : puts;
+    // Stores that read in one synchronous stretch (`readNow`) fork the base with no await, so the layer's write still
+    // begins inside the call; a store with no such read pays one await.
+    const based = !this._forksOverrides(store) ? puts : (this._withOverrideBasesNow(store, puts) ?? await this._withOverrideBases(store, puts));
     if (typeof store.writeFamily === "function") return store.writeFamily(based, tombstones, origin, writeOptions);
     for (const record of based) await store.put(record, origin, writeOptions);
     for (const title of tombstones) await store.tombstone(title, origin, writeOptions);
