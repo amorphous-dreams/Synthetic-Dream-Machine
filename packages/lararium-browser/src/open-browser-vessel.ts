@@ -1575,16 +1575,6 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         });
         if (!proof.ok) throw new Error(`[lararium-browser] Face proof: ${proof.refusal.why}${"plane" in proof.refusal ? ` ${proof.refusal.plane}` : ""}; re-found or re-admit the face`);
         wornRelation = faceRelationOf(proof.projection);
-        // THE FACE LABEL, as the node vessel writes it whenever a face stands (`face-labels`): the shared seam decides the
-        // record (`@lararium/mesh` `face-label.ts`), and this browser rests it in its OPFS under `face-labels/<F>.json`, so a
-        // face founded here names itself as one founded on a node does. An aid, never a gate: a browser with no OPFS says so.
-        if (wornRelation) {
-          const relation = wornRelation, handleIndex = wornMount?.handleIndex ?? 0;
-          void (async () => {
-            const label = await writeBrowserFaceLabel({ relation, petname: await (await makeBrowserPersonaPetnameStore(idbName)).get(handleIndex), handleIndex });
-            if ("refused" in label) console.warn(`[face-label] the label for ${relation} rests nowhere: ${label.refused} (this browser holds no origin-private file system)`);
-          })().catch((e: unknown) => console.warn(`[face-label] the label for ${relation} did not write: ${e instanceof Error ? e.message : String(e)}`));
-        }
         if (wornRelation) daemonCanon = await standFaceDaemonCanon({ repo, control: await watchControl(await repo.find<LarDoc>(social.daemonUrl as AutomergeUrl)), faceRelation: wornRelation,
           beforeFirstByte: (bagId, documentId) => { if (deviceDocs.canonMinted(bagId, documentId, wornRelation!)) reverdict(); sealedRest.store.mapMoved(); } });
         const kahua = adoptKahuaPlane(proof.projection, wornGroup, kahuaCatalogRow(assembly.catalogHandle.doc()));
@@ -1601,6 +1591,16 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         const observedLease = readFace(personaKelChain)?.observedLease(wornGroup, leaseSlots) ?? 0;
         const pinned = raiseFaceFrontier(faceAnchor, { leaseEpoch: observedLease, ...(head ? { actSeq: head.seq, actCid: head.cid } : {}) });
         if (pinned !== faceAnchor) await keepBrowserFaceAnchor(idbName, pinned);
+        // THE FACE LABEL, once the verified head pins, as the node vessel writes it whenever a face stands (`face-labels`): the shared seam decides the
+        // record (`@lararium/mesh` `face-label.ts`), and this browser rests it in its OPFS under `face-labels/<F>.json`, so a
+        // face founded here names itself as one founded on a node does. An aid, never a gate: a browser with no OPFS says so.
+        if (wornRelation) {
+          const relation = wornRelation, handleIndex = wornMount?.handleIndex ?? 0;
+          void (async () => {
+            const label = await writeBrowserFaceLabel({ relation, petname: await (await makeBrowserPersonaPetnameStore(idbName)).get(handleIndex), handleIndex });
+            if ("refused" in label) console.warn(`[face-label] the label for ${relation} rests nowhere: ${label.refused} (this browser holds no origin-private file system)`);
+          })().catch((e: unknown) => console.warn(`[face-label] the label for ${relation} did not write: ${e instanceof Error ? e.message : String(e)}`));
+        }
         // EVERY PLANE FAMILY REGISTERS THROUGH A FACE PROOF, and only after it: the worn face's planes ride the proof above, and a
         // face this boot does not wear registers its persona plane only where its own sealed anchor, the verified KEL and its
         // signed log vouch for that url. A bootstrap entry no proof backs registers nothing.
@@ -2422,7 +2422,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     nexusPin: flowNexusFor(baseUrl, { relayUrl, nexus: sovereignNexus ?? carriedCard?.pin.nexus ?? null }),
     home: () => watchedControl,
     genesisManifest: genesisFloorCidOf(result.assembly.islandHandle?.doc()),
-    alert: (remount) => raiseFloorAlert(vmManager, remount),
+    raiseAlert: (remount) => raiseFloorAlert(vmManager, remount),
   });
 
   return {

@@ -35,7 +35,7 @@ export interface BrowserFloorBinding {
   readonly nexusPin:        string | null | undefined;
   readonly baseUrl:         string;
   readonly genesisManifest: string | null;
-  readonly alert:           (remount: Extract<FloorRemount, { act: "alert" }>) => Promise<readonly string[]> | readonly string[];
+  readonly raiseAlert:      (remount: Extract<FloorRemount, { act: "alert" }>) => Promise<readonly string[]> | readonly string[];
   readonly fetchFn?:        typeof fetch;
   /** The local CAS: OPFS by default. */
   readonly readLocal?:      (cid: string) => Promise<Uint8Array | null>;
@@ -60,7 +60,7 @@ export function browserFloorPorts(b: BrowserFloorBinding): (FloorPinPorts & { re
   const origin = porchOriginOf(b.baseUrl);
   if (nexus === null || origin === null) return { ok: false, refusal: "floor-no-nexus", detail: "no Nexus AID is known for this hearth: the URL carries no floor card, and no face joined here names one" };
   const home = b.home();
-  if (home === null) return { ok: false, refusal: "floor-control-unread", detail: "this vessel stood no control document (locked, or no face stands), so it holds no pin to read or move" };
+  if (home === null) return { ok: false, refusal: "floor-control-unread", detail: "this vessel stood no control document: it stands locked, or wears no face, so it holds no pin to read or move" };
   if (b.genesisManifest === null) return { ok: false, refusal: "floor-no-genesis", detail: "this vessel's genesis seed names no floor" };
   const doFetch = b.fetchFn ?? globalThis.fetch.bind(globalThis);
   const readLocal = b.readLocal ?? readCasBlobFromOpfs;
@@ -82,7 +82,7 @@ export function browserFloorPorts(b: BrowserFloorBinding): (FloorPinPorts & { re
       return res?.ok ? new Uint8Array(await res.arrayBuffer()) : null;
     },
     stage: async (blobs) => { await (b.writeLocal ?? writeBlobsOpfs)(blobs); },
-    mount: { floorSwap: false, alert: async (remount) => { alerted.push(...await b.alert(remount)); } },
+    mount: { floorSwap: false, alert: async (remount) => { alerted.push(...await b.raiseAlert(remount)); } },
   };
 }
 

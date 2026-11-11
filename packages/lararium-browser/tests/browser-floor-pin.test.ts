@@ -59,7 +59,7 @@ function browserBinding(c: OneSeat, releases: readonly FloorRelease[], cas: Map<
     fetchFn: porch(c.aid, releases, cas),
     readLocal: async (cid) => local.get(cid) ?? null,
     writeLocal: async (blobs) => { for (const b of blobs) local.set(b.cid, b.bytes); },
-    alert: (r) => { alerts.push(r); return ["wiki-a"]; },
+    raiseAlert: (r) => { alerts.push(r); return ["wiki-a"]; },
   };
   return { binding, local, alerts };
 }
