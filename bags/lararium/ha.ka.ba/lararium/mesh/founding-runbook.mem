@@ -350,7 +350,8 @@ tools/lares-container.sh down                                    # a locked hear
 tools/lares-container.sh reset                                   # type re-found; projections stay
 tools/lares-container.sh found --hearth --name 'operator-one' --chair 'first-chair'
 tools/lares-container.sh up                                      # up unlocks on the attached terminal: no separate unlock step
-tools/lares-container.sh vessel seed --apply --yes               # the checkout's canon first: an import lands over seeded canon alone
+tools/lares-container.sh vessel seed --apply --yes               # canon first, then every mirror; the old face's folders adopt by pet-name
+tools/lares-container.sh vessel seed --apply --lift-kahua <N>    # the kahua items the seed previewed, on their count alone
 tools/lares-container.sh import /lar/config/carry/bundle-one    # a preview: writes nothing
 tools/lares-container.sh import /lar/config/carry/bundle-one --apply
 ```
@@ -359,9 +360,17 @@ tools/lares-container.sh import /lar/config/carry/bundle-one --apply
 
 ''Seed comes before import.'' The walk runs found -> up -> seed -> import. The seed lays the checkout's canon; the import's bag rows then meet it at the same `INGEST` three-way gate and stand off where they diverge, never a silent overwrite either way. An applied import over a disk-sourced holding the vessel never seeded refuses `carry-canon-unseeded` and names `vessel seed --apply`.
 
+''The seed lays every mirror back into its one layer.'' After canon, the seed reads the projections root: each face's working folder (`wikis/daemon-<F>`) into that face's daemon working layer (a kāpae shadow raises as a kāpae), its canon folder (`bags/daemon-<F>`) into its daemon canon, each house bag into its canon, each other wiki's folder into its working layer, through the one `INGEST` three-way gate: a file equal to its base lands nothing, a moved one lands, and one whose records moved too stands off at the shore within that one layer. A second seed lands nothing. Canon never writes working; the top layer always shadows, and where canon moved past a copy's base the seed warns and writes nothing. `projections/ashes/` stays out of every walk.
+
+''The seed adopts the old face by pet-name.'' Each face's pet-name rests on a face card (`projections/face-cards/<relation>.json`, written whenever a door reads the faces: seed, export, import). After reset -> found, the old face's folders adopt onto the ONE face here that carries the card's pet-name, as an import maps a bundle face: none, two, or no card refuses by name and lands nothing. So a tear-out with no export recovers from disk alone.
+
+''Kahua lifts by the operator's hand, with eyes.'' The seed previews each kahua item it would lift (face, title, body digest; `differs` where a standing head says otherwise), and lifts them under the new face's grant only on a typed count at the terminal or `--lift-kahua <N>` naming that count; a bare `--yes` lifts none, and a wrong count refuses before anything writes. Items left unconfirmed stand pending: `lares shore` lists them and `lares shore lift-kahua --count <N>` lifts them later.
+
 ''Up and unlock come before import.'' `up` on a terminal runs the unlock itself; only an `up` with no terminal attached names `vault unlock` for a terminal afterwards. The import lands each face's memory in that face's own folders, named by the face relation the standing, unlocked vessel reads; on a vessel that stands down or locked it refuses `carry-face-unworn` and names `up` and `vault unlock`.
 
-''The old face's folders stay.'' The reset keeps `projections/` (survive-refound ruling), and with it the former face's cleartext folders (`projections/wikis/daemon-<old relation>`, `projections/bags/daemon-<old relation>`, `projections/bags/kahua-<old relation>`), which no face of the new founding claims. The next export refuses `carry-unclaimed-face-folder`, lists each folder, and names the step: once the import has read back, move each listed folder out of the house root (a rename, never a delete), then export again; or pass `--accept-omissions` to leave them where they stand, out of the bundle.
+''The old face's folders go to ashes once nothing waits.'' The reset keeps `projections/` (survive-refound ruling), and with it the former face's cleartext folders (`projections/wikis/daemon-<old relation>`, `projections/bags/daemon-<old relation>`, `projections/bags/kahua-<old relation>`). Once a seed's adoption or an import landed that face's memory with NOTHING pending (no stand-off, no refusal, no kahua item waiting), the act moves them, with the face card, to `projections/ashes/<old relation>/` and prints each move: plaintext still, out of the live mirror set, never read back and never projected into. A partial landing leaves them and says why. A folder still standing outside ashes makes the next export refuse `carry-unclaimed-face-folder` and name it; settle what waits and seed again, move the folder out of the house root, or pass `--accept-omissions`.
+
+''The override base travels.'' A working copy's base (the canon text it forked from) rides the bundle's working row, and an import that lands the copy stamps it back, so canon's fresher-than-the-copy warning still reads after the round trip.
 
 ''See'': `import --apply` prints each wave's tallies; the AI's memories read back through MCP (`meme_get`) on the new face.
 
@@ -421,6 +430,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;omazN_zDgz-zNIBsqFGAW0ZE5quOERAxrV6Y7u5gCso`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xsPaCtoG-W0REdNaNLZIWwH6zC8xixiQEOupTOrb6Mo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

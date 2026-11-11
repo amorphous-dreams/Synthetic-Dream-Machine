@@ -71,6 +71,8 @@ The Two Organs law binds the quine and the Memory Sensorium as cortex and hippoc
 
 ''The face rides the wiki's name'' (operator, 2026-11-01, after two scouts collided the multi-face device). One tree, no per-face root: each face's daemon wiki and stage stand in their own folders, `<projections>/wikis/daemon-<F>` and `<projections>/bags/kahua-<F>`, where `<F>` names the face's opaque relation UUID, pinned as a root-signed `plane` act (`FACE_PLANE="face"`) in the founding log; a generated `<projections>/kahua-index.toml` maps each `F` to its tag and label: stable across the face's devices, the index generated and never stored as canon, never the Handle, never a device-local custody id, never an ordinal. Two faces on one device project two folders side by side, each session leasing its own wiki; nothing swaps. A rotation or a recovery under the face's fixed identifier keeps its group, so its tag and folders hold still; a new identity yields a new tag by design, and its stage carries forward only by a deliberate carry or re-lift. The bag ids stay; the folders alone carry the tag. ''Private layers project under the projections root alone'' (`<root>/projections`, outside the hearth a re-founding clears); workspace canon writes back to `/workspace/bags/<bag>` and `/workspace/wikis/<slug>`, and no private layer writes there.
 
+''A new identity's seed adopts the old folders by pet-name, and lifts kahua by hand'' (operator, 2026-11-10). After a re-founding the old face's folders still rest under the old `<F>`. The seed adopts them onto the ONE face that carries the pet-name the old face's card names (`<projections>/face-cards/<F>.json`), as an import maps a bundle face, and refuses by name where none or two do. It lays the working and canon folders back through `INGEST`'s three-way gate; it never pours a stage file into the stage. It previews each kahua item (face, title, body digest; `differs` where a standing head says otherwise) and lifts them under the new face's grant, keyed by title and body digest and signed by the new face, only on a typed count at a terminal or `--lift-kahua <N>` naming that count. A bare `--yes` lifts none, and an unconfirmed item stands pending (`lares shore`, `lares shore lift-kahua --count <N>`). Once nothing waits, the old folders move to `<projections>/ashes/<F>/` (`packages/lares-cli/src/seed-mirrors.ts`).
+
 One wiki then reads the device's drafts, the fleet's lifted items and the canon in one cascade, and a session opens by reading one index rather than three.
 
 ''The shadow shows its diff.'' A daemon draft that carries the same title as a kahua item shadows it on this device alone. That "local draft over shared" state MUST render visibly, with a diff against the kahua item it covers, so no device reads its own draft as the fleet's record. A re-lift of the draft supersedes the kahua item (#/the-lift) and the shadow clears; discarding the draft clears it too.
@@ -337,6 +339,6 @@ Two research spirits read in parallel: Naʻau-Scout through neuroscience, Manaʻ
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;3Y8HWEd2z-WIStAkpkPIcgSTXueXxx3O8iNN3ja3kJM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jehJ2NUqB89FzQ690oE8G6T3BK4_-I1ZIs6Ent7A-k0`>>
 
 <<^ code=`&#x0004;` to=`?`>>
