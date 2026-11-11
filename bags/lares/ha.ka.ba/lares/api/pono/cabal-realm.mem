@@ -168,6 +168,26 @@ The Ostrom principles above still hold ''unchanged'' under the cut; they govern 
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/the-workbench`>>
+
+!! The workbench ~ every wiki's working layer rests in a realm
+
+> ''Operator rulings'' (2026-11-11): //"the multitude of faces reads as a private cabal for 1 human. Pattern integrities!"// · //"We want contracted members to have synced access to the 'working layer' too, even cross operator."// · //"Personal can absorb the new caps."// · //"Unpono, rip out old code, enact the full new design, early-alpha law holds."//
+
+''One path.'' Every wiki but the daemon's rests its working layer (`wikis/<slug>/working`) in a ''realm workbench'': one CRDT at `realmWorkbenchDocUrl(realm, slug)`, a sibling of the realm's vouch board, derived from the realm id and the slug (NFC). No member change moves that address; knowing it grants nothing.
+
+* ''A wiki's first stand founds a private cabal of one.'' Under a worn face, the first stand mints a cabal realm under the seed charter with no glamour and no announce: no charter crosses a read-face, no row lands on any realm-announce board, no realm-bag registration stands. Its Keyhive Document seats the owning face alone and also keys the working layer's content, so the realm's roster and the layer's readers stay ONE list. The vessel's own ledger notes the slug under that realm (`workbench` rows, never `noteRealm`: a private cabal stands no realm plane).
+* ''A share seats faces; it never moves the layer.'' A `kind: "wiki"` share row seats each named face in the realm's Document (`admin` for a writer, `read` for a reader); a face the row stops naming loses its seat by Keyhive's convergent revoke, and its later writes refuse `workbench-not-a-member`. No lease, no epoch, no counter. A hard cut forks the realm: a new realm id, so a new address.
+* ''A face's private margin rests in `personal`.'' The recipe reads canon -> working (the workbench) -> personal -> draft -> temp. `personal` carries one face's view-state and the content it keeps for itself over the shared layer; it crosses that face's own devices alone and projects per face (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/personal`>>).
+* ''A face stands it; a floor stands none.'' A vessel that wears no face stands no wiki working layer and refuses `no-face`. The daemon wiki stays the named exception: it holds one face's memory, keeps its face-private device slot, and refuses every share (`share-face-private`).
+* ''One wiki, one realm.'' A ledger that names a slug under two realms (two replicas that each founded before they met) mounts no workbench and refuses `workbench-two-realms` until a person removes one row; a tie never grants.
+* ''Projection follows placement.'' The workbench projects to `wikis/<slug>` or to the operator workspace its share row names (`/lar/workspaces/<name>`, bound by the host shim); the shim refuses a workspace inside the checkout or the hearth, and a checkout-sourced slug refuses a shared private mirror.
+* ''The wire.'' The protected-document guard classes each ledger-named workbench `realm-workbench`: it crosses only to a device of a face the vessel seated there.
+
+''OWED ~ the second operator (2b).'' A face of another operator joins once the realm's member consult answers for a peer across operators (#/many-realms OWED: the root map nothing fills). The seat already takes any Keyhive agent the owner's hive knows, so the seam opens at the consult and nowhere else.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/the-steward-signer`>>
 
 !! The steward signer ~ the acting face or a quorum Handle, never the root
@@ -299,6 +319,6 @@ The honest wall, kept lit: ''"valid trace to lineage L" reads as a hard crypto f
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/multi-fractal`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/carry-contract`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;84DCsLIQ7yAV_JBOxonIvkW62Ndbg1YEDJMEvX17Ctk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9hVpjq7qR74d67MOVHdYuRw43_UUnIx-xbD3z3PVVjk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

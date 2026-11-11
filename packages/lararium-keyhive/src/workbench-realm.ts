@@ -145,7 +145,7 @@ export interface LandedWorkbench {
 
 /**
  * LAND one wiki row: stand the wiki's realm (`standWorkbench`), seat each member face and note its seat, and revoke each face
- * the vessel seated earlier that the row no longer names (Keyhive's convergent revoke), dropping its note. A replay lands
+ * the vessel seated earlier and the row now leaves unnamed (Keyhive's convergent revoke), dropping its note. A replay lands
  * nothing new: a seat that stands takes no second delegation, and a note that reads the same writes nothing.
  */
 export async function landWorkbench(
