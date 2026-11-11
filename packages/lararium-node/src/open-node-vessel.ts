@@ -209,6 +209,7 @@ import { makeSeatSettler, type SeatDutiesAnswer } from "./seat-settle.js";
 import { islandAsk } from "./daemon-island-ask.js";
 import { promoteActGate, type PromoteActGate } from "./promote-act-gate.js";
 import { askIslandMemory, askIslandVerb, askSeatDuties, type IslandAsk } from "./island-verb-ask.js";
+import { faceCanonThroughControl } from "./commands/kahua.js";
 import type { BackupDoor }                from "./face-bundle-cut.js";
 import { readLocalPersonaKelChain }       from "./local-persona-kel.js";
 import { runEdgeSeatFacts, runEdgeSeatMarks, fleetRaisesOf, EdgeSeatError, type WornFleet } from "./commands/edge-seats.js";
@@ -4054,6 +4055,8 @@ async function prepareNodeBootOn(
       wornFleet: () => wornFleetOf().worn,
       // The face this composition wears (lit and proved): a stage read answers `worn` off it.
       wornFace: () => litFace,
+      // A face's local canon `bags/daemon-<F>`, named by the control document: a kahua lift reads its staged row there.
+      faceCanon: faceCanonThroughControl(repo, readControlDoc),
       // A feed asks the island's `realm-feed` as the face, from this thread, over the host channel.
       askIsland: (verb, args, requestedBy, requestId) => {
         if (!daemonVm) throw new Error("the daemon island does not stand yet");

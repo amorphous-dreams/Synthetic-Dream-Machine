@@ -11,7 +11,7 @@ import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { KAHUA_BAG, kahuaStageDocUrl, personaBagIdFor, personaSiblingBagIds, PERSONA_GROUP_ID_TIDDLER, tiddlerText, type LarDoc } from "@lararium/mesh";
+import { KAHUA_BAG, emptyLarDoc, kahuaRowDigest, kahuaStageDocUrl, personaBagIdFor, personaSiblingBagIds, PERSONA_GROUP_ID_TIDDLER, stageKahuaRow, tiddlerText, type LarDoc } from "@lararium/mesh";
 import { runFoundTheFace } from "../src/index.js";
 import { ownedStore } from "../src/owned-store.js";
 import { storeDoorDirect, storeDoorReactors } from "../src/store-door-verbs.js";
@@ -65,18 +65,23 @@ beforeAll(async () => {
 }, 240_000);
 
 
-/** A standing vessel's face row: its island answers the cap; the session wears face h0. */
-const standing = (verb: Parameters<typeof storeDoorDirect>[0], args: Record<string, unknown>, held: boolean) =>
+/** A standing vessel's face row: its island answers the cap; the session wears face h0; its local canon holds `staged`. */
+const standing = (verb: Parameters<typeof storeDoorDirect>[0], args: Record<string, unknown>, held: boolean, staged: ReadonlyArray<{ title: string; text: string }> = STAGED) =>
   withLarRoot(ROOT, async () => {
     await openTestCustody();
     return ownedStore(storage, async (repo) => {
       const catalogUrl = readFileSync(join(storage, "catalog-url"), "utf8").trim();
-      const reactors = storeDoorReactors({ storageDir: storage, sealHome: larSealHome(), repo, catalogUrl,
+      // THE FACE'S LOCAL CANON bags/daemon-<F> as the standing vessel opens it: the rows a lift names stand staged there.
+      const canon = repo.create<LarDoc>(emptyLarDoc());
+      canon.change((d) => { for (const r of staged) stageKahuaRow(d, r, "test"); });
+      const reactors = storeDoorReactors({ storageDir: storage, sealHome: larSealHome(), repo, catalogUrl, faceCanon: async () => canon,
         askIsland: async (asked) => (asked === "kahua-cap" ? { verb: asked, held, ...(held ? {} : { reason: "not a member" }) } : {}) });
       return reactors[verb](args, { worn: { ordinal: 0 } } as never) as Promise<Record<string, unknown>>;
     });
   });
 const src = [{ title: "daemon/note", revision: "r1" }];
+const STAGED = [{ title: "note", text: "x" }, { title: "seat", text: "x" }];
+const X = kahuaRowDigest({ text: "x", fields: {} });
 
 describe("lares kahua over a founded face", () => {
   test("RED: the founding pinned the stage, so a mint no-ops; CONTROL: the mint answers the face's derived stage and registers bags/kahua", async () => {
@@ -90,11 +95,12 @@ describe("lares kahua over a founded face", () => {
     expect(registered).toBe(first.url);
   }, 240_000);
 
-  test("RED: a direct lift reads no cap and refuses; a standing vessel whose face holds no cap refuses; CONTROL: held, the root lifts, lists and withdraws", async () => {
-    expect(JSON.stringify(await row("kahua-lift", { title: "note", text: "x", taint: [], sources: src }))).toMatch(/lokahi-cap-unread/);
-    expect(JSON.stringify(await standing("kahua-lift", { title: "note", text: "x", taint: [], sources: src }, false))).toMatch(/lokahi-cap-absent/);
-    expect(JSON.stringify(await standing("kahua-lift", { title: "note", text: "x", sources: src }, true))).toMatch(/taint/);
-    const lifted = await standing("kahua-lift", { title: "note", text: "x", taint: [], sources: src }, true) as { cid: string };
+  test("RED: a direct lift opens no local canon and refuses unstaged; a standing vessel's lift of an unstaged row refuses; a face holding no cap refuses; CONTROL: held, the root lifts a staged row, lists and withdraws", async () => {
+    expect(JSON.stringify(await row("kahua-lift", { title: "note", digest: X, taint: [], sources: src }))).toMatch(/kahua-lift-unstaged/);
+    expect(JSON.stringify(await standing("kahua-lift", { title: "note", digest: X, taint: [], sources: src }, true, []))).toMatch(/kahua-lift-unstaged/);
+    expect(JSON.stringify(await standing("kahua-lift", { title: "note", digest: X, taint: [], sources: src }, false))).toMatch(/lokahi-cap-absent/);
+    expect(JSON.stringify(await standing("kahua-lift", { title: "note", digest: X, sources: src }, true))).toMatch(/taint/);
+    const lifted = await standing("kahua-lift", { title: "note", digest: X, taint: [], sources: src }, true) as { cid: string };
     expect(lifted.cid).toMatch(/^[0-9a-f]{64}$/);
     const listed = await row("kahua-read", {}) as { items: Array<{ title: string }>; relation: unknown };
     expect(listed.items.map((i) => i.title)).toEqual(["note"]);
@@ -111,13 +117,13 @@ describe("lares kahua over a founded face", () => {
   test("RED: the CLI re-reads sealed custody on every lift, and a hand holding only the atom (an AI seat) refuses operator-grant-absent; CONTROL: the root's custody lifts", async () => {
     try {
       hand.mode = "atom-only"; hand.reads = 0;
-      expect(JSON.stringify(await standing("kahua-lift", { title: "seat", text: "x", taint: [], sources: src }, true))).toMatch(/operator-grant-absent/);
+      expect(JSON.stringify(await standing("kahua-lift", { title: "seat", digest: X, taint: [], sources: src }, true))).toMatch(/operator-grant-absent/);
       hand.mode = "atom-hand";
-      expect(JSON.stringify(await standing("kahua-lift", { title: "seat", text: "x", taint: [], sources: src }, true))).toMatch(/operator-grant-absent/);
+      expect(JSON.stringify(await standing("kahua-lift", { title: "seat", digest: X, taint: [], sources: src }, true))).toMatch(/operator-grant-absent/);
       expect(hand.reads).toBe(2);
       expect(((await row("kahua-read", { action: "get", title: "seat" })) as { item: unknown }).item).toBeNull();
       hand.mode = "custody";
-      expect(await standing("kahua-lift", { title: "seat", text: "x", taint: [], sources: src }, true)).toMatchObject({ cid: expect.stringMatching(/^[0-9a-f]{64}$/) });
+      expect(await standing("kahua-lift", { title: "seat", digest: X, taint: [], sources: src }, true)).toMatchObject({ cid: expect.stringMatching(/^[0-9a-f]{64}$/) });
       expect(hand.reads).toBe(3);
     } finally { hand.mode = "custody"; }
   }, 240_000);

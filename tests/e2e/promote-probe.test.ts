@@ -43,6 +43,12 @@ const SOURCES = JSON.stringify([{ title: "daemon/probe", revision: "r1" }]);
 let hearth: LarInstance | null = null;
 const said = (r: CliResult): string => `rc ${r.code}; stdout: ${r.stdout.slice(-700)}; stderr: ${r.stderr.slice(-700)}`;
 const answer = (r: CliResult): Record<string, any> => JSON.parse(r.stdout.trim().split("\n").pop() ?? "{}") as Record<string, any>;
+/** A lift names a STAGED row: stage the body into the face's local canon first, then lift it by the digest the stage answers. */
+const stageThenLift = async (title: string, body: string, fields: string, extra: readonly string[] = []): Promise<CliResult> => {
+  const staged = await hearth!.cli(["kahua", "stage", title, "--text", body, "--fields", fields]);
+  if (staged.code !== 0) return staged;
+  return hearth!.cli(["kahua", "lift", title, "--digest", String(answer(staged)["digest"]), "--taint", "none", "--sources", SOURCES, ...extra]);
+};
 // The staged hearth routes no plain title to a bag (its wiki bag holds nothing), so a tiddler the module writes never persists; the island
 // adaptor names each write it could not land (`unrouted-save: "<title>"`) in the daemon's log. That line IS the observable: the module ran
 // (one `probe/ran/<ms>` title per boot) and the StartupAction ran (its own marker `probe/action-ran`).
@@ -77,13 +83,13 @@ describe.skipIf(!stagedTarget || !built)("promote, live", () => {
   afterAll(async () => { await hearth?.stop(); });
 
   test("P1 — code lifts as inert data: two restarts and neither the module nor the StartupAction runs", async () => {
-    const obs = await hearth!.cli(["kahua", "lift", "rites/probe-observer", "--text", OBSERVER, "--taint", "none", "--sources", SOURCES, "--fields", JSON.stringify({ "module-type": "startup", type: "application/javascript" })]);
+    const obs = await stageThenLift("rites/probe-observer", OBSERVER, JSON.stringify({ "module-type": "startup", type: "application/javascript" }));
     expect(obs.code, said(obs)).toBe(0);
     const committed = await hearth!.cli(["promote", "commit", digestOf(await list(), "rites/probe-observer")]);
     expect(committed.code, said(committed)).toBe(0);
-    const mod = await hearth!.cli(["kahua", "lift", "rites/probe-module", "--text", MODULE, "--taint", "none", "--sources", SOURCES, "--fields", JSON.stringify({ "module-type": "startup", type: "application/javascript" })]);
+    const mod = await stageThenLift("rites/probe-module", MODULE, JSON.stringify({ "module-type": "startup", type: "application/javascript" }));
     expect(mod.code, said(mod)).toBe(0);
-    const act = await hearth!.cli(["kahua", "lift", "rites/probe-action", "--text", ACTION, "--taint", "none", "--sources", SOURCES, "--fields", JSON.stringify({ tags: "$:/tags/StartupAction" })]);
+    const act = await stageThenLift("rites/probe-action", ACTION, JSON.stringify({ tags: "$:/tags/StartupAction" }));
     expect(act.code, said(act)).toBe(0);
     for (const n of [1, 2]) {
       await restart();
@@ -171,7 +177,7 @@ describe.skipIf(!stagedTarget || !built)("promote, live", () => {
   test("CONTROL — a re-lift with changed bytes changes nothing that boots; the row reads `update-waits`", async () => {
     const digest = digestOf(await list(), "rites/probe-module");
     const head = answer(await hearth!.cli(["kahua", "get", "rites/probe-module"]))["item"]?.heads?.[0]?.cid as string;
-    const relift = await hearth!.cli(["kahua", "lift", "rites/probe-module", "--text", `${MODULE}/*v2*/`, "--taint", "none", "--sources", SOURCES, "--parent", head, "--fields", JSON.stringify({ "module-type": "startup", type: "application/javascript" })]);
+    const relift = await stageThenLift("rites/probe-module", `${MODULE}/*v2*/`, JSON.stringify({ "module-type": "startup", type: "application/javascript" }), ["--parent", head]);
     expect(relift.code, said(relift)).toBe(0);
     const listing = await list();
     expect((listing["rows"] as Array<{ digest: string; state: string }>).find((r) => r.digest === digest)?.state).toBe("update-waits");

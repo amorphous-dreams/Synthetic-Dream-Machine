@@ -9,6 +9,7 @@ import * as Automerge from "@automerge/automerge";
 import { Repo, generateAutomergeUrl, interpretAsDocumentId, type AutomergeUrl, type DocHandle } from "@automerge/automerge-repo";
 import {
   DAEMON_BAG_ID, KAHUA_BAG, KAHUA_PLANE, isFaceScopedBag, personaMembershipEntries, PERSONA_GROUP_ID_TIDDLER, SessionDocumentView, emptyLarDoc, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
+  FACE_PLANE, kahuaRowDigest, readKahuaStagedRow, stageKahuaRow,
   faceIntentVerbs, intentEntryRecordsOfGroup, materializeSharedLarDoc, kahuaBodyDigest, kahuaPlaneUrl, kahuaStageDocUrl, makeHandLineage, personaActRecordsOfGroup, personaBagIdFor,
   personaSiblingBagIds, projectPersonaLog, signFoundingLog, signPersonaAct, signsAtEpoch, buildKahuaProposal, intentId, writeIntentEntry, storedLarRecord, tiddlerText, writePersonaAct, type LarDoc,
 } from "@lararium/mesh";
@@ -21,6 +22,7 @@ const who = async (n: number) => {
   return { key: await ed25519VerifyingKeyFromSeed(seed), sign: ed25519SignerFromSeed(seed) };
 };
 const GROUP = "kahua-scratch-face";
+const RELATION = "6f1c2b9e-4d3a-4e5f-8a7b-0c1d2e3f4a5b";
 
 /**
  * A face as its founding leaves it: the founding log (`signFoundingLog`) names its planes, and `pinned` (the default) adds the
@@ -34,28 +36,36 @@ async function face(opts: { readonly pinned?: boolean } = {}) {
   const persona = repo.create<LarDoc>(emptyLarDoc()), intents = repo.create<LarDoc>(emptyLarDoc());
   const pinned = opts.pinned !== false;
   const acts = await signFoundingLog({ group: GROUP, personaKelPrefix: "E".repeat(44), rootCommitment: "c", epoch: 0,
-    planes: { persona: persona.url, intents: intents.url, ...(pinned ? { [KAHUA_PLANE]: kahuaStageDocUrl(GROUP) } : {}) }, deviceKey: atomA.key, edgeDigest: "d", vesselTag: await testVesselTag(1, GROUP, atomA.key) }, root);
+    planes: { persona: persona.url, intents: intents.url, [FACE_PLANE]: RELATION, ...(pinned ? { [KAHUA_PLANE]: kahuaStageDocUrl(GROUP) } : {}) }, deviceKey: atomA.key, edgeDigest: "d", vesselTag: await testVesselTag(1, GROUP, atomA.key) }, root);
   if (pinned) await materializeSharedLarDoc(repo, kahuaStageDocUrl(GROUP), "kahua:stage");
   persona.change((d) => { for (const a of acts) writePersonaAct(d, a); });
   const catalog: Record<string, string> = {};
   const roots = { n: 0 };
+  // THE FACE'S LOCAL CANON bags/daemon-<F>: every lift reads its staged row here (the first crossing, unsigned).
+  const canon = repo.create<LarDoc>(emptyLarDoc());
+  /** Stage a row into the local canon (`stageKahuaRow`) and answer the lift's name for it: title and content digest. */
+  const st = (title: string, text: string, fields: Record<string, string> = {}): { title: string; digest: string } => {
+    canon.change((d) => { stageKahuaRow(d, { title, text, fields }, "test"); });
+    return { title, digest: kahuaRowDigest({ text, fields }) };
+  };
   const ports = (over: Partial<KahuaDoorPorts> = {}): KahuaDoorPorts => ({
     repo, group: GROUP, verbs: faceIntentVerbs(),
     projection: () => projectPersonaLog(personaActRecordsOfGroup(persona.doc(), GROUP), { group: GROUP, lineage, authorize: () => true }),
     epoch: () => 0, currentSigner: (key) => key === root.key, atom: atomA, intents,
     rootSigner: async () => { roots.n++; return root; }, cap: async () => ({ held: true }),
     register: (bagId, url) => { catalog[bagId] = url; }, session: () => "cli-session-1",
+    faceCanon: async (relation) => (relation === RELATION ? canon : null),
     ...over,
   });
-  return { repo, root, atomA, atomB, persona, intents, catalog, ports, lineage, roots };
+  return { repo, root, atomA, atomB, persona, intents, catalog, ports, lineage, roots, canon, st };
 }
 const planeActs = (persona: DocHandle<LarDoc>, url?: string) =>
   personaActRecordsOfGroup(persona.doc(), GROUP).filter((r) => (r as { body: Record<string, unknown> }).body["plane"] === KAHUA_PLANE && (url === undefined || (r as { body: Record<string, unknown> }).body["url"] === url));
 /** Device B's replica of the face's log and intents, offline from A until a test merges them. */
 function replicaB(f: Awaited<ReturnType<typeof face>>, over: Partial<KahuaDoorPorts> = {}) {
   const repoB = new Repo({ network: [] });
-  const personaB = repoB.import<LarDoc>(Automerge.save(f.persona.doc()), { docId: f.persona.documentId });
-  const intentsB = repoB.import<LarDoc>(Automerge.save(f.intents.doc()), { docId: f.intents.documentId });
+  const personaB = repoB.import<LarDoc>(Automerge.save(f.persona.doc()!), { docId: f.persona.documentId });
+  const intentsB = repoB.import<LarDoc>(Automerge.save(f.intents.doc()!), { docId: f.intents.documentId });
   const catalogB: Record<string, string> = {};
   const door = kahuaDoor(f.ports({ repo: repoB, intents: intentsB, atom: f.atomB,
     projection: () => projectPersonaLog(personaActRecordsOfGroup(personaB.doc(), GROUP), { group: GROUP, lineage: f.lineage, authorize: () => true }),
@@ -86,7 +96,7 @@ describe("the stage pin rides the face's founding act", () => {
     expect(planeActs(f.persona)).toHaveLength(0);
     expect(f.ports().projection().head).toEqual(head);
     expect(f.catalog[KAHUA_BAG]).toBeUndefined();
-    await expect(kahuaDoor(f.ports()).lift({ title: "t", text: "x", taint: [], sources: [{ title: "d", revision: "r" }] })).rejects.toThrow(/kahua-unpinned/);
+    await expect(kahuaDoor(f.ports()).lift({ ...f.st("t", "x"), taint: [], sources: [{ title: "d", revision: "r" }] })).rejects.toThrow(/kahua-unpinned/);
   });
 
   test("CONTROL: a joining device adopts the founding's pin from its replica and never mints: no plane act, no root opened, and its catalog registers the same derived stage", async () => {
@@ -131,9 +141,9 @@ describe("the lift and withdraw doors", () => {
   test("RED: a lift without the operator's grant refuses by name, and the atom's hand (the AI seat) never stands in for it; CONTROL: the root lifts", async () => {
     const f = await face();
     await kahuaDoor(f.ports()).mint();
-    await expect(kahuaDoor(f.ports({ rootSigner: async () => { throw new Error("custody locked"); } })).lift({ title: "t", text: "x", taint: [], sources: src })).rejects.toThrow(/operator-grant-absent/);
-    await expect(kahuaDoor(f.ports({ rootSigner: async () => f.atomA })).lift({ title: "t", text: "x", taint: [], sources: src })).rejects.toThrow(/operator-grant-absent/);
-    const lifted = await kahuaDoor(f.ports()).lift({ title: "t", text: "x", taint: [], sources: src });
+    await expect(kahuaDoor(f.ports({ rootSigner: async () => { throw new Error("custody locked"); } })).lift({ ...f.st("t", "x"), taint: [], sources: src })).rejects.toThrow(/operator-grant-absent/);
+    await expect(kahuaDoor(f.ports({ rootSigner: async () => f.atomA })).lift({ ...f.st("t", "x"), taint: [], sources: src })).rejects.toThrow(/operator-grant-absent/);
+    const lifted = await kahuaDoor(f.ports()).lift({ ...f.st("t", "x"), taint: [], sources: src });
     expect((await kahuaDoor(f.ports()).get("t"))?.heads[0]?.cid).toBe(lifted.cid);
   });
 
@@ -141,7 +151,7 @@ describe("the lift and withdraw doors", () => {
     const f = await face();
     await kahuaDoor(f.ports()).mint();
     for (const title of ["lar:///ha.ka.ba/bags/daemon/outcomes/req-1", "lar:///ha.ka.ba/bags/daemon/summons/r1"]) {
-      await kahuaDoor(f.ports()).lift({ title, text: "x", taint: [], sources: src });
+      await kahuaDoor(f.ports()).lift({ ...f.st(title, "x"), taint: [], sources: src });
     }
     expect((await kahuaDoor(f.ports()).list()).map((i) => i.title)).toEqual([
       "lar:///ha.ka.ba/bags/daemon/outcomes/req-1", "lar:///ha.ka.ba/bags/daemon/summons/r1",
@@ -151,42 +161,42 @@ describe("the lift and withdraw doors", () => {
   test("RED: the lōkahi cap gates apart from the grant: no island reads it, or the face does not hold it, and the lift refuses; CONTROL: held, it lifts", async () => {
     const f = await face();
     await kahuaDoor(f.ports()).mint();
-    await expect(kahuaDoor(f.ports({ cap: null })).lift({ title: "t", text: "x", taint: [], sources: src })).rejects.toThrow(/lokahi-cap-unread/);
-    await expect(kahuaDoor(f.ports({ cap: async () => ({ held: false, reason: "not a member" }) })).lift({ title: "t", text: "x", taint: [], sources: src })).rejects.toThrow(/lokahi-cap-absent/);
+    await expect(kahuaDoor(f.ports({ cap: null })).lift({ ...f.st("t", "x"), taint: [], sources: src })).rejects.toThrow(/lokahi-cap-unread/);
+    await expect(kahuaDoor(f.ports({ cap: async () => ({ held: false, reason: "not a member" }) })).lift({ ...f.st("t", "x"), taint: [], sources: src })).rejects.toThrow(/lokahi-cap-absent/);
     await expect(kahuaDoor(f.ports({ cap: async () => ({ held: false }) })).withdraw("a".repeat(64))).rejects.toThrow(/lokahi-cap-absent/);
     expect((await kahuaDoor(f.ports()).list())).toEqual([]);
-    await kahuaDoor(f.ports()).lift({ title: "t", text: "x", taint: [], sources: src });
+    await kahuaDoor(f.ports()).lift({ ...f.st("t", "x"), taint: [], sources: src });
     expect((await kahuaDoor(f.ports()).list()).map((i) => i.title)).toEqual(["t"]);
   });
 
-  test("RED: a lift carrying no taint list or no source refuses; CONTROL: an explicit empty taint list lifts", async () => {
+  test("RED: a lift carrying no taint list refuses; CONTROL: an explicit empty taint list lifts, and the staged row rides as a source even where the hand names none", async () => {
     const f = await face();
     await kahuaDoor(f.ports()).mint();
-    await expect(kahuaDoor(f.ports()).lift({ title: "t", text: "x", sources: src } as never)).rejects.toThrow(/taint/);
-    await expect(kahuaDoor(f.ports()).lift({ title: "t", text: "x", taint: [], sources: [] })).rejects.toThrow(/sources/);
-    await expect(kahuaDoor(f.ports()).lift({ title: "t", text: "x", taint: [], sources: src })).resolves.toMatchObject({ cid: expect.any(String) });
+    await expect(kahuaDoor(f.ports()).lift({ ...f.st("t", "x"), sources: src } as never)).rejects.toThrow(/taint/);
+    const lifted = await kahuaDoor(f.ports()).lift({ ...f.st("t", "x"), taint: [], sources: [] });
+    expect((await kahuaDoor(f.ports()).get("t"))?.heads[0]).toMatchObject({ cid: lifted.cid, sources: [{ title: "t", revision: `staged:${kahuaRowDigest({ text: "x", fields: {} })}` }] });
   });
 
   test("RED: a lift whose parent is not the head surfaces a sibling; CONTROL: a lift naming no parent supersedes the standing head", async () => {
     const f = await face();
     const door = kahuaDoor(f.ports());
     await door.mint();
-    const v1 = await door.lift({ title: "t", text: "v1", taint: [], sources: src });
-    const v2 = await door.lift({ title: "t", text: "v2", taint: [], sources: src });
+    const v1 = await door.lift({ ...f.st("t", "v1"), taint: [], sources: src });
+    const v2 = await door.lift({ ...f.st("t", "v2"), taint: [], sources: src });
     expect(v2.parent).toBe(v1.cid);
     expect(await door.get("t")).toMatchObject({ status: "standing", heads: [{ cid: v2.cid }] });
-    const stale = await door.lift({ title: "t", text: "v2-elsewhere", taint: [], sources: src, parent: v1.cid });
+    const stale = await door.lift({ ...f.st("t", "v2-elsewhere"), taint: [], sources: src, parent: v1.cid });
     const read = await door.get("t");
     expect(read?.status).toBe("siblings");
     expect(read?.heads.map((h) => h.cid).sort()).toEqual([v2.cid, stale.cid].sort());
-    await expect(door.lift({ title: "t", text: "v3", taint: [], sources: src })).rejects.toThrow(/siblings/);
+    await expect(door.lift({ ...f.st("t", "v3"), taint: [], sources: src })).rejects.toThrow(/siblings/);
   });
 
   test("RED: a withdraw drops the item from list and get while history keeps it; CONTROL: a withdraw naming no held revision refuses", async () => {
     const f = await face();
     const door = kahuaDoor(f.ports());
     await door.mint();
-    const lifted = await door.lift({ title: "t", text: "x", taint: [], sources: src });
+    const lifted = await door.lift({ ...f.st("t", "x"), taint: [], sources: src });
     await expect(door.withdraw("b".repeat(64))).rejects.toThrow(/withdraw-unknown/);
     await door.withdraw(lifted.cid);
     expect(await door.list()).toEqual([]);
@@ -197,6 +207,69 @@ describe("the lift and withdraw doors", () => {
   });
 });
 
+describe("the lift names a staged row (two crossings: working -> daemon-<F> unsigned, daemon-<F> -> kahua-<F> signed)", () => {
+  const src = [{ title: "daemon/t", revision: "r1" }];
+  test("RED: a lift naming a row bags/daemon-<F> never held refuses kahua-lift-unstaged, signs nothing and opens no root", async () => {
+    const f = await face();
+    const door = kahuaDoor(f.ports());
+    await door.mint();
+    await expect(door.lift({ title: "never-staged", digest: kahuaRowDigest({ text: "typed by a hand", fields: {} }), taint: [], sources: src })).rejects.toThrow(/^kahua-lift-unstaged: /);
+    expect(f.roots.n).toBe(0);
+    expect(await door.list()).toEqual([]);
+    // No local canon open at all (a direct act) refuses by the same name, never a body from the hand.
+    const { faceCanon: _none, ...direct } = f.ports();
+    await expect(kahuaDoor(direct).lift({ ...f.st("t", "x"), taint: [], sources: src })).rejects.toThrow(/^kahua-lift-unstaged: /);
+    await expect(kahuaDoor(f.ports({ faceCanon: async () => null })).lift({ ...f.st("t", "x"), taint: [], sources: src })).rejects.toThrow(/^kahua-lift-unstaged: /);
+    // A body the hand slips beside the name rides nowhere: the door lifts the staged row's own body.
+    const named = f.st("t", "staged body");
+    await door.lift({ ...named, text: "a body the hand typed", taint: [], sources: src } as never);
+    expect((await door.get("t"))?.heads[0]?.text).toBe("staged body");
+  });
+
+  test("RED: a row that moved since the preview refuses kahua-lift-digest-moved (its body or a field), and lands nothing", async () => {
+    const f = await face();
+    const door = kahuaDoor(f.ports());
+    await door.mint();
+    const read = f.st("t", "as read");
+    f.st("t", "moved after the preview");
+    await expect(door.lift({ ...read, taint: [], sources: src })).rejects.toThrow(/^kahua-lift-digest-moved: /);
+    const fielded = f.st("u", "body", { tags: "a" });
+    f.st("u", "body", { tags: "b" });
+    await expect(door.lift({ ...fielded, taint: [], sources: src })).rejects.toThrow(/^kahua-lift-digest-moved: /);
+    expect(await door.list()).toEqual([]);
+    expect(f.roots.n).toBe(0);
+  });
+
+  test("CONTROL: a staged row lifts its own body and fields under the grant, the digest in the signed sources; a replay lands nothing and opens no root", async () => {
+    const f = await face();
+    const door = kahuaDoor(f.ports());
+    await door.mint();
+    const named = f.st("t", "the row", { tags: "memory", caption: "C" });
+    expect(readKahuaStagedRow(f.canon.doc(), "t")?.digest).toBe(named.digest);
+    const first = await door.lift({ ...named, taint: [], sources: src });
+    expect(first.landed).toBe(true);
+    const head = (await door.get("t"))!.heads[0]!;
+    expect(head).toMatchObject({ cid: first.cid, text: "the row", fields: { tags: "memory", caption: "C" } });
+    expect(head.sources).toEqual([{ title: "t", revision: `staged:${named.digest}` }, ...src]);
+    const roots = f.roots.n;
+    const again = await door.lift({ ...named, taint: [], sources: src });
+    expect(again).toEqual({ cid: first.cid, parent: null, landed: false });
+    expect(f.roots.n).toBe(roots);
+    expect(await door.history("t")).toHaveLength(1);
+  });
+
+  test("the stage door writes the local canon unsigned and lands nothing on a replay; the preview reads the row back", async () => {
+    const f = await face();
+    const door = kahuaDoor(f.ports());
+    const staged = await door.stage({ title: "s", text: "body", fields: { tags: "x", "kahua-cid": "dropped" } });
+    expect(staged).toEqual({ title: "s", digest: kahuaRowDigest({ text: "body", fields: { tags: "x" } }), relation: RELATION, staged: true });
+    expect(await door.stage({ title: "s", text: "body", fields: { tags: "x" } })).toMatchObject({ staged: false });
+    expect(await door.staged("s")).toMatchObject({ title: "s", text: "body", fields: { tags: "x" }, digest: staged.digest, relation: RELATION });
+    expect(f.roots.n).toBe(0);
+    await expect(door.staged("absent")).rejects.toThrow(/^kahua-lift-unstaged: /);
+  });
+});
+
 describe("the proposal", () => {
   test("RED: a lift naming a proposal whose digest differs refuses; CONTROL: the matching body lifts with the proposer's origin and taint, and an outcome answers the proposal", async () => {
     const f = await face();
@@ -204,8 +277,8 @@ describe("the proposal", () => {
     await door.mint();
     const proposed = await door.propose({ proposals: [{ title: "t", revision: "r9", text: "proposed body", taint: ["web:example"] }] });
     expect(intentEntryRecordsOfGroup(f.intents.doc(), GROUP)).toHaveLength(1);
-    await expect(door.lift({ title: "t", text: "swapped body", taint: [], sources: [{ title: "t", revision: "r9" }], proposal: proposed.id })).rejects.toThrow(/proposal-digest/);
-    const lifted = await door.lift({ title: "t", text: "proposed body", taint: [], sources: [{ title: "t", revision: "r9" }], proposal: proposed.id });
+    await expect(door.lift({ ...f.st("t", "swapped body"), taint: [], sources: [{ title: "t", revision: "r9" }], proposal: proposed.id })).rejects.toThrow(/proposal-digest/);
+    const lifted = await door.lift({ ...f.st("t", "proposed body"), taint: [], sources: [{ title: "t", revision: "r9" }], proposal: proposed.id });
     const head = (await door.get("t"))!.heads[0]!;
     expect(head).toMatchObject({ cid: lifted.cid, origin: { seat: f.atomA.key, device: f.atomA.key }, taint: ["web:example"], proposal: proposed.id });
     expect(kahuaBodyDigest("proposed body")).toMatch(/^[0-9a-f]{64}$/);
@@ -218,10 +291,10 @@ describe("the proposal", () => {
     const door = kahuaDoor(f.ports());
     await door.mint();
     const first = await door.propose({ proposals: [{ title: "t", revision: "r1", text: "body-1", taint: [] }] });
-    await expect(door.lift({ title: "t", text: "body-1", taint: [], sources: [{ title: "t", revision: "r1" }], proposal: first.id })).resolves.toMatchObject({ cid: expect.any(String) });
-    await expect(door.lift({ title: "t", text: "body-1", taint: [], sources: [{ title: "t", revision: "r1" }], proposal: first.id })).rejects.toThrow(/proposal-spent/);
+    await expect(door.lift({ ...f.st("t", "body-1"), taint: [], sources: [{ title: "t", revision: "r1" }], proposal: first.id })).resolves.toMatchObject({ cid: expect.any(String) });
+    await expect(door.lift({ ...f.st("t", "body-1"), taint: [], sources: [{ title: "t", revision: "r1" }], proposal: first.id })).rejects.toThrow(/proposal-spent/);
     const second = await door.propose({ proposals: [{ title: "t", revision: "r2", text: "body-2", taint: [] }] });
-    await expect(door.lift({ title: "t", text: "body-2", taint: [], sources: [{ title: "t", revision: "r2" }], proposal: second.id })).resolves.toMatchObject({ cid: expect.any(String) });
+    await expect(door.lift({ ...f.st("t", "body-2"), taint: [], sources: [{ title: "t", revision: "r2" }], proposal: second.id })).resolves.toMatchObject({ cid: expect.any(String) });
   });
 });
 
@@ -235,10 +308,10 @@ describe("the proposal replay guard", () => {
       proposals: [{ title: "t", revision: "r1", digest: kahuaBodyDigest("body"), taint: [] }] });
     f.intents.change((d) => writeIntentEntry(d, entry));
     const foreign = intentId(entry.body as never);
-    await expect(door.lift({ title: "t", text: "body", taint: [], sources: [{ title: "t", revision: "r1" }], proposal: foreign })).rejects.toThrow(/proposal-unknown/);
+    await expect(door.lift({ ...f.st("t", "body"), taint: [], sources: [{ title: "t", revision: "r1" }], proposal: foreign })).rejects.toThrow(/proposal-unknown/);
     expect(await door.list()).toEqual([]);
     const own = await door.propose({ proposals: [{ title: "t", revision: "r1", text: "body", taint: [] }] });
-    await expect(door.lift({ title: "t", text: "body", taint: [], sources: [{ title: "t", revision: "r1" }], proposal: own.id })).resolves.toMatchObject({ cid: expect.any(String) });
+    await expect(door.lift({ ...f.st("t", "body"), taint: [], sources: [{ title: "t", revision: "r1" }], proposal: own.id })).resolves.toMatchObject({ cid: expect.any(String) });
   });
 });
 
@@ -250,7 +323,7 @@ describe("the facet", () => {
     const daemonUrl = generateAutomergeUrl();
     const boot: Record<string, { text?: string }> = { [DAEMON_BAG_ID]: { text: daemonUrl }, [PERSONA_GROUP_ID_TIDDLER]: { text: groupA } };
     for (const group of [groupA, groupB]) {
-      for (const e of personaMembershipEntries({ personaGroupId: group, url: generateAutomergeUrl() })) boot[e.title] = { text: e.text ?? undefined };
+      for (const e of personaMembershipEntries({ personaGroupId: group, url: generateAutomergeUrl() })) boot[e.title] = e.text != null ? { text: e.text } : {};
       boot[personaSiblingBagIds(personaBagIdFor(group))!.intents] = { text: generateAutomergeUrl() };
     }
     const kahuaOf = (group: string) => (group === groupA ? stage.url : null);
@@ -285,7 +358,7 @@ describe("the facet", () => {
     const stage = await kahuaDoor(f.ports()).mint();
     const groupA = "0x" + "33".repeat(16), groupB = "0x" + "44".repeat(16);
     const boot: Record<string, { text?: string }> = { [DAEMON_BAG_ID]: { text: generateAutomergeUrl() }, [PERSONA_GROUP_ID_TIDDLER]: { text: groupA } };
-    for (const group of [groupA, groupB]) for (const e of personaMembershipEntries({ personaGroupId: group, url: generateAutomergeUrl() })) boot[e.title] = { text: e.text ?? undefined };
+    for (const group of [groupA, groupB]) for (const e of personaMembershipEntries({ personaGroupId: group, url: generateAutomergeUrl() })) boot[e.title] = e.text != null ? { text: e.text } : {};
     let worn = groupA;
     // The face switches on the vessel: the stage pinned by face A stays A's; B's session, worn or not, never fetches it,
     // even with A's catalog row still standing among the vessel's books (the bridge the worn face reads).
@@ -322,8 +395,8 @@ describe("the carry door", () => {
     const f = await rotated();
     const door = kahuaDoor(f.ports({ signedAt: (epoch, key) => epoch === 0 && key === f.root.key }));
     await door.mint();
-    const a = await door.lift({ title: "a", text: "alpha", taint: [], sources: src });
-    const b = await door.lift({ title: "b", text: "beta", taint: [], sources: src });
+    const a = await door.lift({ ...f.st("a", "alpha"), taint: [], sources: src });
+    const b = await door.lift({ ...f.st("b", "beta"), taint: [], sources: src });
     expect((await door.list()).map((i) => i.title)).toEqual(["a", "b"]);
     const now = kahuaDoor(f.after());
     expect(await now.list()).toEqual([]);
@@ -341,7 +414,7 @@ describe("the carry door", () => {
     const f = await rotated();
     const door = kahuaDoor(f.ports());
     await door.mint();
-    const a = await door.lift({ title: "a", text: "alpha", taint: [], sources: src });
+    const a = await door.lift({ ...f.st("a", "alpha"), taint: [], sources: src });
     await expect(kahuaDoor(f.after({ rootSigner: async () => { throw new Error("custody locked"); } })).carry({ cids: [a.cid] })).rejects.toThrow(/operator-grant-absent/);
     await expect(kahuaDoor(f.after({ rootSigner: async () => f.root })).carry({ cids: [a.cid] })).rejects.toThrow(/operator-grant-absent/);
     await expect(kahuaDoor(f.after({ rootSigner: async () => f.atomA })).carry({ cids: [a.cid] })).rejects.toThrow(/operator-grant-absent/);

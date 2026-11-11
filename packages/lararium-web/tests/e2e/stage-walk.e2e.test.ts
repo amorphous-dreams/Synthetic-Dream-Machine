@@ -18,7 +18,7 @@
  *        island's verb tiddler (`lar:///lararium.local.vm/verb/kahua-propose`, `verb`, `lares-dispatch`, `arg-titles`), and
  *        its proposal id comes from the face's intents plane through the CLI. Digests only cross: before any lift,
  *        `<root>/bags/kahua` holds no file, `kahua get` answers null, `meme get` misses.
- *   S5 — the OPERATOR'S HAND lifts: `lares kahua lift <title> --proposal <id>` binds the body by digest; the item
+ *   S5 — the OPERATOR'S HAND lifts: `lares kahua stage` then `lares kahua lift <title> --proposal <id> --digest <d>` binds the staged body by digest; the item
  *        projects at `<root>/bags/kahua/<title path>.tid`; `lares kahua get`, `lares meme get --recipe default` and the
  *        seat's read (the door the MCP seat's `kahua_get` rides: a `seat`-hand session's `kahua-read`) read the same body.
  *   S6 — the stage reaches the page: the joined page re-edits the draft and the `kahua-shadow` mark casts (a mark needs
@@ -351,7 +351,11 @@ describe("the stage walk: the node half, the join, and the page's save route", (
 
   test("S5 — the operator's hand lifts the proposal; the item projects under <root>/bags/kahua and the CLI, the recipe and the MCP seat read it", async () => {
     expect(proposal, "S4 handed over no proposal id").toMatch(/^[0-9a-f]{64}$/);
-    const lifted = await hearth!.cli(["kahua", "lift", DRAFT.title, "--proposal", proposal, "--text", DRAFT.body, "--taint", "none"]);
+    // A lift names a STAGED row: the body lands in the face's local canon first, and the lift names its digest.
+    const staged = await hearth!.cli(["kahua", "stage", DRAFT.title, "--text", DRAFT.body]);
+    expect(staged.code, `${staged.stdout}\n${staged.stderr}`).toBe(0);
+    const digest = (JSON.parse(staged.stdout.trim().split("\n").pop() ?? "{}") as { digest: string }).digest;
+    const lifted = await hearth!.cli(["kahua", "lift", DRAFT.title, "--proposal", proposal, "--digest", digest, "--taint", "none"]);
     expect(lifted.code, `${lifted.stdout}\n${lifted.stderr}`).toBe(0);
     const cid = (JSON.parse(lifted.stdout) as { cid: string }).cid;
     expect(cid).toMatch(/^[0-9a-f]{64}$/);
@@ -384,7 +388,11 @@ describe("the stage walk: the node half, the join, and the page's save route", (
     expect(ids.length, `the second propose wrote no intent\n${tail()}`).toBe(2);
     const second = ids.find((id) => id !== proposal)!;
     expect(second).toMatch(/^[0-9a-f]{64}$/);
-    const lifted = await hearth!.cli(["kahua", "lift", DRAFT.title, "--proposal", second, "--text", DRAFT.body2, "--taint", "none"]);
+    // A lift names a STAGED row: the body lands in the face's local canon first, and the lift names its digest.
+    const staged = await hearth!.cli(["kahua", "stage", DRAFT.title, "--text", DRAFT.body2]);
+    expect(staged.code, `${staged.stdout}\n${staged.stderr}`).toBe(0);
+    const digest = (JSON.parse(staged.stdout.trim().split("\n").pop() ?? "{}") as { digest: string }).digest;
+    const lifted = await hearth!.cli(["kahua", "lift", DRAFT.title, "--proposal", second, "--digest", digest, "--taint", "none"]);
     expect(lifted.code, `${lifted.stdout}\n${lifted.stderr}`).toBe(0);
     expect(await settle(() => readFileSync(stagePath(DRAFT.title), "utf8"), (v) => v.includes(DRAFT.body2))).toContain(DRAFT.body2);
     expect(await waitSel(page, "span.walk-shadow", false), `the shadow mark stayed after the second lift\n${tail()}`).toBe(true);

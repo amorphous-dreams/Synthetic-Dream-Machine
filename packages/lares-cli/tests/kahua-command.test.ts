@@ -1,49 +1,85 @@
 /**
- * `lares kahua` — the operator's door onto a face's kahua stage: mint the pin, propose, lift and withdraw by hand, read.
+ * `lares kahua` — the operator's door onto a face's kahua stage: mint the pin, propose, stage, lift and withdraw by hand,
+ * read.
  *
- * Each act reaches the store door's matching row (`kahua-mint`, `kahua-propose`, `kahua-lift`, `kahua-withdraw`,
- * `kahua-read`) with the arguments the row reads, and prints the row's answer as JSON. A malformed ask refuses before
- * the door. Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
+ * Each act reaches the store door's matching row (`kahua-mint`, `kahua-propose`, `kahua-stage`, `kahua-lift`,
+ * `kahua-withdraw`, `kahua-read`) with the arguments the row reads, and prints the row's answer as JSON. A malformed ask
+ * refuses before the door. A LIFT HAS EYES: it reads the staged row's preview first and lifts only on its digest, typed
+ * back at a terminal or named by `--digest`; a bare `--yes` lifts nothing. Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-const seam = vi.hoisted(() => ({ calls: [] as Array<[string, Record<string, unknown>]>, output: {} as Record<string, unknown> }));
+const seam = vi.hoisted(() => ({ calls: [] as Array<[string, Record<string, unknown>]>, output: {} as Record<string, unknown>, preview: {} as Record<string, unknown> }));
 vi.mock("../src/store-door.js", () => ({
   storeVerb: async (verb: string, args: Record<string, unknown>) => {
     seam.calls.push([verb, args]);
-    return { output: seam.output };
+    return { output: verb === "kahua-read" && args["action"] === "staged" ? seam.preview : seam.output };
   },
   StoreDoorRefusal: class extends Error {},
 }));
 
+import { mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { cmdKahua } from "../src/commands/kahua.js";
 import { parseArgs } from "../src/parse-args.js";
 
-const run = (...argv: string[]) => cmdKahua(parseArgs(["kahua", ...argv]));
+const run = (...argv: string[]) => cmdKahua(parseArgs(["kahua", ...argv]), null);
 const CID = "c".repeat(64);
+const DIGEST = "abcd1234" + "e".repeat(56);
 const SOURCES = JSON.stringify([{ title: "daemon/T", revision: "r1" }]);
+const STAGED_READ = ["kahua-read", { action: "staged", title: "T" }] as const;
 
 describe("lares kahua", () => {
   let lines: string[];
   beforeEach(() => {
     seam.calls = []; seam.output = { cid: CID, parent: null }; lines = [];
+    seam.preview = { title: "T", digest: DIGEST, relation: "6f1c2b9e-4d3a-4e5f-8a7b-0c1d2e3f4a5b", text: "body", fields: {}, heads: [] };
     vi.spyOn(console, "log").mockImplementation((line: unknown) => { lines.push(String(line)); });
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
-  test("RED: a lift reaches the lift row with its title, body, taint list and sources, and prints the row's answer as JSON", async () => {
-    expect(await run("lift", "T", "--face", "1", "--text", "body", "--taint", "web:example,tool:search", "--sources", SOURCES)).toBe(0);
-    expect(seam.calls).toEqual([["kahua-lift", { face: 1, title: "T", text: "body", taint: ["web:example", "tool:search"], sources: [{ title: "daemon/T", revision: "r1" }] }]]);
+  test("RED: a lift reads the staged row's preview, then reaches the lift row with the digest it names, its taint list and sources, and prints the row's answer as JSON", async () => {
+    expect(await run("lift", "T", "--face", "1", "--digest", DIGEST, "--taint", "web:example,tool:search", "--sources", SOURCES)).toBe(0);
+    expect(seam.calls).toEqual([["kahua-read", { face: 1, action: "staged", title: "T" }], ["kahua-lift", { face: 1, title: "T", digest: DIGEST, taint: ["web:example", "tool:search"], sources: [{ title: "daemon/T", revision: "r1" }] }]]);
     expect(JSON.parse(lines.join("\n"))).toEqual({ cid: CID, parent: null });
   });
 
-  test("RED: `--taint none` names an empty taint list, `--parent none` a first lift, and a proposal rides by id; CONTROL: a lift naming no taint refuses before the door", async () => {
-    expect(await run("lift", "T", "--text", "body")).toBe(1);
+  test("RED: lift with eyes: no digest named and no terminal lifts nothing, a bare --yes lifts nothing, and a digest other than the preview's refuses moved; CONTROL: the preview's digest lifts", async () => {
+    expect(await run("lift", "T", "--taint", "none")).toBe(1);
+    expect(await run("lift", "T", "--taint", "none", "--yes")).toBe(1);
+    expect(await run("lift", "T", "--taint", "none", "--digest", "f".repeat(64))).toBe(1);
+    expect(seam.calls).toEqual([STAGED_READ, STAGED_READ, STAGED_READ]);
+    expect(await run("lift", "T", "--taint", "none", "--digest", DIGEST)).toBe(0);
+    expect(seam.calls.at(-1)).toEqual(["kahua-lift", { title: "T", digest: DIGEST, taint: [] }]);
+  });
+
+  test("RED: at a terminal the person types the digest back: a wrong prefix lifts nothing; CONTROL: the first eight hex lift", async () => {
+    expect(await cmdKahua(parseArgs(["kahua", "lift", "T", "--taint", "none"]), async () => "00000000")).toBe(1);
+    expect(seam.calls).toEqual([STAGED_READ]);
+    expect(await cmdKahua(parseArgs(["kahua", "lift", "T", "--taint", "none"]), async () => "abcd1234")).toBe(0);
+    expect(seam.calls.at(-1)).toEqual(["kahua-lift", { title: "T", digest: DIGEST, taint: [] }]);
+  });
+
+  test("RED: a lift carries no body or fields from the hand (stage them first); `--taint none` names an empty taint list, `--parent none` a first lift, and a proposal rides by id; CONTROL: a lift naming no taint refuses before the door", async () => {
+    expect(await run("lift", "T", "--digest", DIGEST)).toBe(1);
+    expect(await run("lift", "T", "--text", "body", "--taint", "none", "--digest", DIGEST)).toBe(1);
+    expect(await run("lift", "T", "--taint", "none", "--digest", DIGEST, "--fields", "{\"tags\":\"a b\"}")).toBe(1);
     expect(seam.calls).toEqual([]);
-    expect(await run("lift", "T", "--text", "body", "--taint", "none", "--parent", "none", "--proposal", "p".repeat(8))).toBe(0);
-    expect(seam.calls[0]).toEqual(["kahua-lift", { title: "T", text: "body", taint: [], parent: null, proposal: "p".repeat(8) }]);
-    expect(await run("lift", "T", "--text", "body", "--taint", "none", "--parent", CID, "--fields", "{\"tags\":\"a b\"}")).toBe(0);
-    expect(seam.calls[1]).toEqual(["kahua-lift", { title: "T", text: "body", taint: [], parent: CID, fields: { tags: "a b" } }]);
+    expect(await run("lift", "T", "--digest", DIGEST, "--taint", "none", "--parent", "none", "--proposal", "p".repeat(8))).toBe(0);
+    expect(seam.calls[1]).toEqual(["kahua-lift", { title: "T", digest: DIGEST, taint: [], parent: null, proposal: "p".repeat(8) }]);
+  });
+
+  test("RED: stage reaches the stage row with the row's body (--text or --file) and fields; CONTROL: neither or both refuse before the door", async () => {
+    expect(await run("stage", "T", "--face", "1", "--text", "body", "--fields", "{\"tags\":\"a b\"}")).toBe(0);
+    const file = join(mkdtempSync(join(tmpdir(), "lar-kahua-stage-")), "body.tid");
+    writeFileSync(file, "from a file", "utf8");
+    expect(await run("stage", "T", "--file", file)).toBe(0);
+    expect(seam.calls).toEqual([["kahua-stage", { face: 1, title: "T", text: "body", fields: { tags: "a b" } }], ["kahua-stage", { title: "T", text: "from a file" }]]);
+    seam.calls = [];
+    expect(await run("stage", "T")).toBe(1);
+    expect(await run("stage", "T", "--text", "a", "--file", file)).toBe(1);
+    expect(seam.calls).toEqual([]);
   });
 
   test("RED: mint, propose, withdraw, list and get reach their rows; CONTROL: malformed JSON and a bare act refuse before the door", async () => {

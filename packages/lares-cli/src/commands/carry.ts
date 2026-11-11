@@ -241,8 +241,12 @@ export const LIVE_CARRY_DOORS: CarryDoors = {
       after = page.next;
     }
   },
+  // A RE-LIFT STAGES FIRST: the head lands in the new face's local canon (bags/daemon-<F>, unsigned), and the lift names
+  // that staged row by its digest, as every lift does; the person's eyes rode the preview and its typed count upstream.
   kahuaLift: async (face, lift) => {
-    const { output } = await storeVerb("kahua-lift", { face, title: lift.title, text: lift.text, fields: lift.fields, taint: lift.taint, sources: lift.sources, parent: lift.parent });
+    const staged = (await storeVerb("kahua-stage", { face, title: lift.title, text: lift.text, fields: lift.fields })).output;
+    if (typeof staged["digest"] !== "string") throw new Error(`kahua-stage answered no digest for ${lift.title}`);
+    const { output } = await storeVerb("kahua-lift", { face, title: lift.title, digest: staged["digest"], taint: lift.taint, sources: lift.sources, parent: lift.parent });
     if (typeof output["cid"] !== "string") throw new Error(`kahua-lift answered no cid for ${lift.title}`);
     return { cid: output["cid"] };
   },

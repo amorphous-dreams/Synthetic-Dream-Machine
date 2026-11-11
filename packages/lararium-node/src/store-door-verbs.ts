@@ -38,9 +38,10 @@
  *   nexus-offering-inspect                       one carried offering, read off the publication board
  *                                                (`commands/nexus-offering-inspect`)
  *   raise-sign                                   a raise grant off the carriage board (`commands/raise-sign`)
- *   kahua-mint · kahua-propose · kahua-lift · kahua-withdraw · kahua-carry · kahua-read
- *                                                a face's kahua stage: its pin, a proposal, the operator's lift and
- *                                                withdraw (cap read off the island, grant out of custody), reads (`commands/kahua`)
+ *   kahua-mint · kahua-propose · kahua-stage · kahua-lift · kahua-withdraw · kahua-carry · kahua-read
+ *                                                a face's kahua stage: its pin, a proposal, a row staged into the face's
+ *                                                local canon (unsigned), the operator's lift of a staged row and withdraw
+ *                                                (cap read off the island, grant out of custody), reads (`commands/kahua`)
  *
  * A REFUSAL is an answer, never a fault: it comes back as `{ refused, refusal }` (the door's words, and the name
  * the row refuses under), so the CLI names it exactly as the direct path does. A row hands back what its command prints; the command's own process prints it, so a row that ran
@@ -84,7 +85,8 @@ import { runPromoteVerb } from "./commands/promote.js";
 import { runSwarmVerb } from "./commands/swarm.js";
 import { PromoteRefused, KapaeRefused, SwarmRefused, SWARM_VERB_HAND_CODES, type PromoteCommandRequest, type SwarmWikiPort } from "@lararium/mesh";
 import { faceRouteBindDigest, FaceRouteRefused, withFaceRoute } from "./face-route.js";
-import type { Repo } from "@automerge/automerge-repo";
+import type { DocHandle, Repo } from "@automerge/automerge-repo";
+import type { LarDoc } from "@lararium/mesh";
 import { readFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 import { join } from "node:path";
@@ -173,6 +175,12 @@ export interface StoreDoorDeps {
    * wikis it reached. Absent on a direct act, which holds no live wiki: the accepted floor mounts at the next boot.
    */
   readonly floorAlert?: (remount: Extract<FloorRemount, { act: "alert" }>) => Promise<readonly string[]>;
+  /**
+   * A face's local canon `bags/daemon-<F>` by relation, as the standing vessel opens it (`faceCanonThroughControl`): a kahua
+   * lift reads its staged row there and `kahua-stage` writes one. Absent on a direct act, whose lift refuses
+   * `kahua-lift-unstaged`.
+   */
+  readonly faceCanon?: (relation: string) => Promise<DocHandle<LarDoc> | null>;
 }
 
 /**
@@ -197,7 +205,7 @@ export const STORE_DOOR_VERBS = [
   "nexus-publish", "nexus-offering-inspect", "raise-sign",
   "intent-issue", "intent-show", "intent-ask", "intent-answer", "intent-steer", "intent-root",
   "intent-relay-enable", "intent-relay-disable", "intent-relay-status", "intent-relay-rotate",
-  "kahua-mint", "kahua-propose", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
+  "kahua-mint", "kahua-propose", "kahua-stage", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
   "promote-prepare", "promote-commit", "promote-drop", "promote-orphan", "promote-list", "kapae-raise", "kapae-lower", "kapae-flag",
   "swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-go-issue",
 ] as const;
@@ -218,7 +226,7 @@ export const STORE_DOOR_FACE_ROWS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoo
   "handle-publish", "handle-burn", "handle-rotate", "handle-attest", "persona-lease", "nexus-publish", "raise-sign",
   "intent-issue", "intent-show", "intent-ask", "intent-answer", "intent-steer", "intent-root",
   "intent-relay-enable", "intent-relay-disable", "intent-relay-status",
-  "kahua-mint", "kahua-propose", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
+  "kahua-mint", "kahua-propose", "kahua-stage", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
   "promote-prepare", "promote-commit", "promote-drop", "promote-orphan", "promote-list", "kapae-raise", "kapae-lower", "kapae-flag",
   "swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-go-issue",
 ]);
@@ -351,7 +359,7 @@ function storeDoorRowsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     const parent = args["parent"] === null || args["parent"] === "none" ? null : str(args["parent"]);
     return runKahuaCommand({ repo, ...opt("catalogUrl", deps.catalogUrl), action, ...opt("ward", wardOf(args)),
       ...opt("face", int(args["face"])), ...opt("title", str(args["title"])),
-      ...opt("text", typeof args["text"] === "string" ? args["text"] : undefined),
+      ...opt("text", typeof args["text"] === "string" ? args["text"] : undefined), ...opt("digest", str(args["digest"])),
       ...opt("fields", args["fields"] && typeof args["fields"] === "object" && !Array.isArray(args["fields"]) ? args["fields"] as Record<string, string> : undefined),
       ...opt("taint", list(args["taint"])),
       ...opt("sources", Array.isArray(args["sources"]) ? args["sources"] as { title: string; revision: string }[] : undefined),
@@ -360,7 +368,7 @@ function storeDoorRowsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       ...opt("proposals", args["proposals"]), ...opt("session", str(args["session"])),
       ...opt("history", args["history"] === true ? true : undefined),
       ...opt("cids", list(args["cids"])), ...opt("all", args["all"] === true ? true : undefined),
-      ...opt("cap", kahuaCap),
+      ...opt("cap", kahuaCap), ...opt("faceCanon", deps.faceCanon),
     });
   };
   const promoteRow = (action: PromoteCommandRequest["action"], args: Readonly<Record<string, unknown>>) =>
@@ -386,11 +394,12 @@ function storeDoorRowsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     "intent-relay-rotate": () => answer("intent-relay-rotate", async () => { const result = await runIntentRelayCommand({ action: "rotate" }); if (deps.onRolled) await awaitOnRolled(deps.onRolled()); return result; }),
     "kahua-mint": (args) => answer("kahua-mint", () => kahua("mint", args)),
     "kahua-propose": (args) => answer("kahua-propose", () => kahua("propose", args)),
+    "kahua-stage": (args) => answer("kahua-stage", () => kahua("stage", args)),
     "kahua-lift": (args) => answer("kahua-lift", () => kahua("lift", args)),
     "kahua-withdraw": (args) => answer("kahua-withdraw", () => kahua("withdraw", args)),
     "kahua-carry": (args) => answer("kahua-carry", () => kahua("carry", args)),
     "kahua-read": (args) => answer("kahua-read", async () => {
-      const read = await kahua(args["action"] === "get" ? "get" : "list", args);
+      const read = await kahua(args["action"] === "get" ? "get" : args["action"] === "staged" ? "staged" : "list", args);
       // WHICH FACE THE COMPOSITION WEARS: the daemon's working layer holds that face's document alone.
       const face = int(args["face"]);
       return deps.wornFace && face !== undefined ? { ...read, worn: deps.wornFace() === face } : read;

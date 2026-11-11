@@ -93,7 +93,11 @@ describe.skipIf(!stagedTarget || !built)("the founding pins the face's kahua sta
       const data = event.data as Record<string, unknown>;
       return data["bagId"] === "lar:///ha.ka.ba/wikis/daemon/working" && data["path"] === daemonWikiDir(hearth!.root);
     } }, { budgetMs: 60_000 });
-    const lift = await hearth!.cli(["kahua", "lift", "rites/founding-stage-row", "--text", "the stage stands", "--taint", "none", "--sources", JSON.stringify([{ title: uri, revision: "r1" }])]);
+    // A lift names a STAGED row: the body lands in the face's local canon (bags/daemon-<F>) first, and the lift names its digest.
+    const staged = await hearth!.cli(["kahua", "stage", "rites/founding-stage-row", "--text", "the stage stands"]);
+    expect(staged.code, said(staged)).toBe(0);
+    const digest = (JSON.parse(staged.stdout.trim().split("\n").pop() ?? "{}") as { digest: string }).digest;
+    const lift = await hearth!.cli(["kahua", "lift", "rites/founding-stage-row", "--digest", digest, "--taint", "none", "--sources", JSON.stringify([{ title: uri, revision: "r1" }])]);
     expect(lift.code, said(lift)).toBe(0);
     await expectEntry(hearth!, { kind: "bag-projected", match: (event) => {
       const data = event.data as Record<string, unknown>;
