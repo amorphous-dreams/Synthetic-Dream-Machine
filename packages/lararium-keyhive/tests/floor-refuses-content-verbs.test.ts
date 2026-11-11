@@ -22,6 +22,19 @@ const fakeCtx = () => ({
   post:      () => {},
 }) as never;
 
+/**
+ * The floor's verifier context: the daemon wiki's working layer already stands as the default writable (the floor stands its
+ * daemon slot on its own device document, `daemon-slot/working/floor`), so the factory's attach finds it and the verifier reads alone.
+ */
+const floorCtx = () => {
+  const working = "lar:///ha.ka.ba/wikis/daemon/working";
+  return {
+    ...(fakeCtx() as object),
+    recipe: { wikiSlug: "daemon" },
+    composite: { hasBag: (bag: string) => bag === working, defaultWritableBagId: () => working },
+  } as never;
+};
+
 const manifest = (face: boolean) => ({
   daemonAuth: {
     placeVerifyingKey: "a".repeat(64),
@@ -47,13 +60,13 @@ const verbCtx = () => ({
 describe("the faceless floor refuses content verbs by name", () => {
   test("RED: a faceless daemon composes no Keyhive verifier; CONTROL: its public read stays registered", async () => {
     const opts = operatorDaemonOptions(manifest(false));
-    const verifier = await opts.verifierFactory!(fakeCtx());
+    const verifier = await opts.verifierFactory!(floorCtx());
     expect(await verifier.verify({ presenter: "public", bagUrl: "lar:///daemon", access: "read" })).toMatchObject({ ok: false, reason: expect.stringContaining("waking-floor") });
     expect(wire(false).get("where")).toBeTypeOf("function");
   });
   test("the floor's own presence clears the place's ground; a peer's ask and a face's bag still refuse", async () => {
     const opts = operatorDaemonOptions(manifest(false));
-    const verifier = await opts.verifierFactory!(fakeCtx());
+    const verifier = await opts.verifierFactory!(floorCtx());
     const ground = "lar:///ha.ka.ba/bags/daemon";
     expect(await verifier.verify({ presenter: "0xplace", bagUrl: ground, access: "admin", channel: "local" })).toEqual({ ok: true });
     // CONTROL: the same ask without the local channel refuses (a peer wrote its presenter), and so does a face's bag.

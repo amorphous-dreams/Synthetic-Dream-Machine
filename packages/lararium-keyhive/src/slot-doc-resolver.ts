@@ -88,8 +88,11 @@ export interface SlotDoc {
 }
 
 export interface SlotDocResolver {
-  /** Every instance slot's doc for a wiki, by fingerprint — the mount's call. */
-  bindings(fingerprint: string, recipeTrace: RecipeTrace, slug: string): Promise<{ personalUrl: string; draftUrl: string; workingUrl: string }>;
+  /**
+   * Every instance slot's doc for a wiki, by fingerprint — the mount's call. `workingUrl` reads null where the vessel wears no
+   * face: a faceless floor stands no wiki working layer (`no-face`), so the mount lays none and the wiki's writes refuse by name.
+   */
+  bindings(fingerprint: string, recipeTrace: RecipeTrace, slug: string): Promise<{ personalUrl: string; draftUrl: string; workingUrl: string | null }>;
   /** One slot's doc by slug. `mint:false` reads what stands and returns null when nothing does. */
   slotDoc(slug: string, kind: WikiSlotKind, opts?: { mint?: boolean }): Promise<SlotDoc | null>;
   /** The ONE draft resolver: `slotDoc(slug, "draft")`, minting on absent — never null. */
@@ -277,6 +280,9 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
       }
       const personal = await binding("personal", fingerprint, recipeTrace);
       const draft    = await draftDoc(slug, fingerprint, recipeTrace);
+      // THE FACELESS FLOOR MOUNTS NO WORKING LAYER: a realm seats a face, so the floor's own wiki (a floor row) boots on its
+      // canon, draft and personal alone, with no default writable, and its public reads stand. Only a face stands a workbench.
+      if (!args.personaGroupId || !args.workbenchRealm) return { personalUrl: personal.url, draftUrl: draft.url, workingUrl: null };
       const working  = (await workingDoc(slug, true))!;
       return { personalUrl: personal.url, draftUrl: draft.url, workingUrl: working.url };
     },

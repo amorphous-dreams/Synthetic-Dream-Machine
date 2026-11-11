@@ -164,7 +164,7 @@ export function wikiCap<TPool extends PrimaryMountPool>(o: VesselOrchestration<T
       const resolveSlots = (wikiUrl: string) => slotDocs ??= resolveSlotDocs(daemon.resolveBinding, { wikiSlug: slot.wikiSlug, wikiUrl });
       const resolveDraft = async (wikiUrl: string): Promise<string> =>
         (await resolveSlots(wikiUrl)).draftUrl;
-      const resolveWorking = async (wikiUrl: string): Promise<string> =>
+      const resolveWorking = async (wikiUrl: string): Promise<string | null> =>
         (await resolveSlots(wikiUrl)).workingUrl;
       const { wikiHandle, draftHandle } = await mountWikiSlot(o.keel, assembly.composite, slot, resolveDraft, resolveWorking, presetWiki);
       emit("wiki-ready");

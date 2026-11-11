@@ -64,7 +64,7 @@ describe("daemon VM host composite working binding", () => {
     // The worker's side of the ask is its real resolver, over the ctx whose boot just ran.
     const answer = await opts.resolveBinding!(st.ctx, ask.fingerprint!, ask.recipeTrace!, ask.wikiSlug!);
     listeners.forEach((listener) => listener(mkDaemonResolveBindingResult({
-      requestId: ask.requestId!, personalUrl: answer.personalUrl, draftUrl: answer.draftUrl, workingUrl: answer.workingUrl,
+      requestId: ask.requestId!, personalUrl: answer.personalUrl, draftUrl: answer.draftUrl, ...(answer.workingUrl ? { workingUrl: answer.workingUrl } : {}),
     })));
     await mount;
 

@@ -295,7 +295,7 @@ export interface DaemonVmCore {
     fingerprint: string,
     recipeTrace: { wikiDocId: string; libraryBagDocIds: readonly string[] },
     wikiSlug: string,
-  ) => Promise<{ personalUrl: string; draftUrl: string; workingUrl: string }>;
+  ) => Promise<{ personalUrl: string; draftUrl: string; workingUrl: string | null }>;
   /**
    * GRACEFUL shutdown — post a teardown to the daemon island and AWAIT its
    * teardown:ack (the island flushes its in-flight Automerge docs + capture state
@@ -615,7 +615,8 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     if (raw.type === "daemon:resolve-binding-result") {
       const msg = raw as DaemonMsg_ResolveBindingResult;
       if (msg.error) settleAsk(msg.requestId, undefined, msg.error);
-      else if (msg.personalUrl && msg.draftUrl && msg.workingUrl) settleAsk(msg.requestId, { personalUrl: msg.personalUrl, draftUrl: msg.draftUrl, workingUrl: msg.workingUrl });
+      // An absent working url reads as the faceless floor's answer: it stands no wiki working layer (`no-face`).
+      else if (msg.personalUrl && msg.draftUrl) settleAsk(msg.requestId, { personalUrl: msg.personalUrl, draftUrl: msg.draftUrl, workingUrl: msg.workingUrl ?? null });
       else settleAsk(msg.requestId, undefined, "resolve-binding-result missing urls");
       return;
     }
@@ -801,14 +802,15 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     await workerEa;
     const recipeTrace = { wikiDocId: daemonHandle.url, libraryBagDocIds: [] as readonly string[] };
     const fingerprint = await computeRecipeFingerprint(recipeTrace);
-    let binding: { workingUrl: string };
+    let binding: { workingUrl: string | null };
     try {
-      binding = await askIsland<{ workingUrl: string }>("binding", (requestId) => mkDaemonResolveBindingRequest({
+      binding = await askIsland<{ workingUrl: string | null }>("binding", (requestId) => mkDaemonResolveBindingRequest({
         requestId, fingerprint, recipeTrace, wikiSlug: "daemon",
       }), opts.askLivenessMs ?? ISLAND_ASK_LIVENESS_MS);
     } catch (cause) {
       throw new HostWorkingBindingRefusal(slot, cause);
     }
+    if (!binding.workingUrl) throw new HostWorkingBindingRefusal(slot, new Error("the island named no working document for the daemon wiki"));
     const handle = await findOrThrow(repo, binding.workingUrl, `${slot} (the host's daemon working layer)`, { refusal: WorkingDocumentUnavailableRefusal, timeoutMs: DOCUMENT_HANG_BOUND_MS });
     const store = new AutomergeDocStore(handle, slot);
     composite.addLayer({ bagId: slot, store, writable: true, defaultWritable: true });

@@ -14,6 +14,8 @@
  *        founds a private cabal of one and the ledger notes it; the slot answers the realm's fixed address; a second
  *        resolver over the same ledger finds the same document; a replay founds nothing new
  *   S6 — a vessel that wears no face stands no working layer: the slot refuses `no-face`, and a read answers none
+ *   S6b — the faceless floor's mount still binds its wiki: `bindings` answers its draft and personal with no working url, so the
+ *        floor's own wiki boots on its canon with no default writable (the herm's floor never breaks over the workbench law)
  */
 import { describe, test, expect } from "vitest";
 import { makeIslandRepo, type Repo } from "@lararium/mesh";
@@ -203,6 +205,17 @@ describe("★ the ONE slot-doc resolver, floor-falling ★", () => {
     const r = await rig({ seated: false, faceless: true });
     await expect(r.resolver.slotDoc("garden", "working")).rejects.toMatchObject({ name: "WorkingSlotRefusal", reason: "no-face" });
     expect(await r.resolver.slotDoc("garden", "working", { mint: false })).toBeNull();
+    expect(ledgerWorkbenches(r.ledger.doc()), "nothing founds").toEqual([]);
+    await r.kh.dispose(); await r.repo.shutdown();
+  });
+
+  test("RED S6b — the faceless floor's mount binds its wiki with no working url, and founds nothing", async () => {
+    const r = await rig({ seated: false, faceless: true });
+    const trace = { wikiDocId: r.wikiUrl, libraryBagDocIds: [] as readonly string[] };
+    const out = await r.resolver.bindings(await computeRecipeFingerprint(trace), trace, "garden");
+    expect(out.workingUrl, "a floor stands no wiki working layer").toBeNull();
+    expect(out.draftUrl).toMatch(/^automerge:/);
+    expect(out.personalUrl).toMatch(/^automerge:/);
     expect(ledgerWorkbenches(r.ledger.doc()), "nothing founds").toEqual([]);
     await r.kh.dispose(); await r.repo.shutdown();
   });

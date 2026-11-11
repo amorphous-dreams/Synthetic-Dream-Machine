@@ -317,8 +317,9 @@ export async function mountWikiSlot(
   slot: { wikiSlug: string; wikiKey: string; wikiBagId: string; draftBagId: string },
   /** The draft doc url for this wiki, given its canon doc url — the daemon's resolver. */
   resolveDraft: (wikiUrl: string) => Promise<string>,
-  /** The working doc url for this wiki, given its canon doc url. */
-  resolveWorking: (wikiUrl: string) => Promise<string>,
+  /** The working doc url for this wiki, given its canon doc url; null where the vessel wears no face (`no-face`): the faceless
+   *  floor lays no working layer, so the wiki stands with no default writable and its writes refuse by name. */
+  resolveWorking: (wikiUrl: string) => Promise<string | null>,
   /** Pre-resolved wiki doc — the lares-as-wiki quine seats the operator-minted
    *  invariant doc as the write layer (its oracle lives on the lararium doc,
    *  never in the catalog registry — no cross-plane resolution, no second mint). */
@@ -337,11 +338,11 @@ export async function mountWikiSlot(
   // (the quine), the read-only substrate layer yields to the writable one.
   if (composite.hasBag(slot.wikiBagId)) composite.removeLayer(slot.wikiBagId);
   const workingUrl = await resolveWorking(wikiHandle.url);
-  const workingHandle = await findOrThrow(repo, workingUrl, `${wikiSlotUri(slot.wikiSlug, "working")} (working layer)`, { refusal: WorkingDocumentUnavailableRefusal, timeoutMs: DOCUMENT_HANG_BOUND_MS });
+  const workingSlot = wikiSlotUri(slot.wikiSlug, "working");
+  const workingHandle = workingUrl === null ? null : await findOrThrow(repo, workingUrl, `${workingSlot} (working layer)`, { refusal: WorkingDocumentUnavailableRefusal, timeoutMs: DOCUMENT_HANG_BOUND_MS });
   const flags = (bagId: string) => slotLayerFlags(bagId, slot.wikiSlug);
   composite.addLayer({ bagId: slot.wikiBagId, store: new AutomergeDocStore(wikiHandle, slot.wikiBagId), ...flags(slot.wikiBagId) });
-  const workingSlot = wikiSlotUri(slot.wikiSlug, "working");
-  composite.addLayer({ bagId: workingSlot, store: new AutomergeDocStore(workingHandle, workingSlot), ...flags(workingSlot) });
+  if (workingHandle) composite.addLayer({ bagId: workingSlot, store: new AutomergeDocStore(workingHandle, workingSlot), ...flags(workingSlot) });
 
   const draftHandle = await waitHandle<LarDoc>(await resolveDraft(wikiHandle.url) as AutomergeUrl, () => blankDoc(repo));
   composite.addLayer({ bagId: slot.draftBagId, store: new AutomergeDocStore(draftHandle, slot.draftBagId), ...flags(slot.draftBagId) });

@@ -91,7 +91,7 @@ export interface BindingResolver {
     fingerprint: string,
     recipeTrace: { wikiDocId: string; libraryBagDocIds: readonly string[] },
     wikiSlug: string,
-  ): Promise<{ personalUrl: string; draftUrl: string; workingUrl: string }>;
+  ): Promise<{ personalUrl: string; draftUrl: string; workingUrl: string | null }>;
 }
 
 export interface PrimaryMountInputs {
@@ -153,7 +153,7 @@ const PRIMARY_MIRROR_BAGS: readonly string[] = [LARES_DOC_URI, LARARIUM_DOC_URI]
 export async function resolveSlotDocs(
   binding: BindingResolver,
   wiki: { wikiSlug: string; wikiUrl: string },
-): Promise<{ personalUrl: string; draftUrl: string; workingUrl: string }> {
+): Promise<{ personalUrl: string; draftUrl: string; workingUrl: string | null }> {
   const recipeTrace = { wikiDocId: wiki.wikiUrl, libraryBagDocIds: [] as readonly string[] };
   const fingerprint = await computeRecipeFingerprint(recipeTrace);
   return binding.resolveBinding(fingerprint, recipeTrace, wiki.wikiSlug);
@@ -162,7 +162,7 @@ export async function resolveSlotDocs(
 export async function buildWikiMountSpec(
   binding: BindingResolver,
   inputs:  PrimaryMountInputs,
-): Promise<{ spec: WikiMountSpec; personalUrl: string; draftUrl: string; workingUrl: string }> {
+): Promise<{ spec: WikiMountSpec; personalUrl: string; draftUrl: string; workingUrl: string | null }> {
   const { personalUrl, draftUrl, workingUrl } = await resolveSlotDocs(binding, inputs);
 
   // Typed structural grants — no slot dictionary. Library bags never ride the
@@ -211,7 +211,7 @@ export async function mountPrimaryWiki(
   pool:    PrimaryMountPool,
   binding: BindingResolver,
   inputs:  PrimaryMountInputs,
-): Promise<{ personalUrl: string; draftUrl: string; workingUrl: string }> {
+): Promise<{ personalUrl: string; draftUrl: string; workingUrl: string | null }> {
   console.info(`[mount] binding ${inputs.activeWikiId}`);
   const { spec, personalUrl, draftUrl, workingUrl } = await buildWikiMountSpec(binding, inputs);
   console.info(`[mount] binding ready ${inputs.activeWikiId}; awaiting ea`);
