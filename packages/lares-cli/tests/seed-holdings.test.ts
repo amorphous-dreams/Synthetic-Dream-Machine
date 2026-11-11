@@ -13,9 +13,8 @@ import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { discoverHoldings, SYSTEM_HOLDINGS, cmdSeed } from "../src/commands/seed.js";
+import { discoverHoldings, cmdSeed } from "../src/commands/seed.js";
 import type { ParsedArgs } from "../src/parse-args.js";
-import { LARES_DOC_URI, LARARIUM_DOC_URI, identitySlug } from "@lararium/mesh";
 
 vi.mock("../src/commands/act.js", () => ({ cmdAct: vi.fn(async () => { console.log("CREATE block line one"); console.log("CREATE block line two"); return 0; }) }));
 vi.mock("../src/commands/ingest.js", () => ({ cmdIngest: vi.fn(async () => 0) }));
@@ -80,19 +79,6 @@ describe("discoverHoldings — the discovered holdings map", () => {
     expect(holdings.map((h) => h.holding)).toEqual(["lares", "scratch"]);
   });
 
-  test("★ SYSTEM_HOLDINGS spells what discoverHoldings returns ★", () => {
-    // THE GUARD THE DEAD BRANCH NEEDED. `seed.ts` gates the infrastructure bags on set membership, and
-    // membership compares against directory names read off `bags/`. When the two spellings drifted the
-    // test answered false for every holding and NOTHING said so — the diff-gate simply stopped running.
-    // Comparing the two vocabularies directly is the only reading that catches a silent miss.
-    mkdirSync(join(root, "bags", "lares"),    { recursive: true });
-    mkdirSync(join(root, "bags", "lararium"), { recursive: true });
-    const found = new Set(discoverHoldings(join(root, "bags")).map((h) => h.holding));
-    for (const sys of SYSTEM_HOLDINGS) {
-      expect(found.has(sys), `SYSTEM_HOLDINGS names "${sys}", which no bags/ directory spells`).toBe(true);
-    }
-  });
-
   test("a missing bags/ answers the empty map (no throw)", () => {
     expect(discoverHoldings(join(root, "nope"))).toEqual([]);
   });
@@ -125,16 +111,4 @@ describe("discoverHoldings — the discovered holdings map", () => {
     }
   });
 
-  test("★ SYSTEM_HOLDINGS derives from the LARES/LARARIUM bag constants, not hand-typed strings ★", () => {
-    // The single owner of "what names lares/lararium" is the bag URI constants
-    // (`LARES_DOC_URI`/`LARARIUM_DOC_URI` in @lararium/mesh/lar-uris). SYSTEM_HOLDINGS must read
-    // back exactly the slugs those constants name — never a re-typed literal that can drift out
-    // from under them.
-    const derived = new Set(
-      [identitySlug(LARES_DOC_URI), identitySlug(LARARIUM_DOC_URI)].filter(
-        (s): s is string => s !== null,
-      ),
-    );
-    expect(SYSTEM_HOLDINGS).toEqual(derived);
-  });
 });

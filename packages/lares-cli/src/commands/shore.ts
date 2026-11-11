@@ -42,10 +42,12 @@ import { vesselDid } from "../env.js";
 import { askShore, askSettle, readShoreList, readSettlePending, type ShoreAnswer } from "../shore-core.js";
 import { takeDisk } from "../shore-take-disk.js";
 import { openSyncedTree } from "../ingest-core.js";
-import { larRoot } from "../env.js";
+import { larRoot, larBagsDir } from "../env.js";
+import { listOverrides, answerOverrideAt, canonBagOf } from "../override-shore.js";
+import { discoverHoldings, canonIsDisk } from "./seed.js";
 
 /** The acts this door carries. */
-export const SHORE_ACTS = ["list", "take-records", "take-disk", "restore", "remove", "settle"] as const;
+export const SHORE_ACTS = ["list", "take-records", "take-disk", "restore", "remove", "settle", "take-working", "take-canon"] as const;
 export type ShoreAct = (typeof SHORE_ACTS)[number];
 
 function printUsage(): void {
@@ -60,6 +62,8 @@ function printUsage(): void {
   console.log("  take-disk     land the file's words in the records for one standoff, named by its key;");
   console.log("  restore       write a vanished file back from the records;");
   console.log("  remove        delete the vanished carrier in the wiki (its tombstone lands in the working layer);");
+  console.log("  take-working  keep a working override that stands off over a moved canon text, re-based on it (--bag --key);");
+  console.log("  take-canon    retract a working override that stands off, so canon shows through (--bag --key);");
   console.log("  settle        resume a settle word that stalled, over the carriers its record names (--pending);");
   console.log("  an answer over more than one carrier names the count that stands pending (--count).");
 }
@@ -72,6 +76,12 @@ export function shoreArgs(act: ShoreAct, args: ParsedArgs): { readonly args: Rec
   if (act === "settle") {
     if (!bag || !args.flags["pending"]) return { usage: "settle resumes a stalled settle word from its record: lares shore settle --bag <bagUri|slug> --pending" };
     return { args: { op: "settle", bag, pending: true } };
+  }
+  if (act === "take-working" || act === "take-canon") {
+    const title = args.positional[1];
+    const key = args.options["key"];
+    if (!title || !key || !bag) return { usage: `${act} names the overridden title, its canon bag and the standoff's key: lares shore ${act} <title> --bag <bagUri|slug> --key <key>` };
+    return { args: { op: act, title, key, bag: canonBagOf(bag) } };
   }
   if (act === "take-records" || act === "take-disk") {
     const uri = args.positional[1];
@@ -92,6 +102,8 @@ export function shoreArgs(act: ShoreAct, args: ParsedArgs): { readonly args: Rec
 
 /** What a person confirms before an act that writes. */
 function confirmLine(act: ShoreAct, shaped: Record<string, unknown>): string {
+  if (act === "take-working") return `take-working ${String(shaped["title"])}: the working override stays and re-bases on the canon text that stands. Proceed? [y/N] `;
+  if (act === "take-canon") return `take-canon ${String(shaped["title"])}: the working override retracts and canon shows through. Proceed? [y/N] `;
   if (act === "take-records") return `take-records ${String(shaped["uri"])}: the file's present bytes give way to the records' render. Proceed? [y/N] `;
   if (act === "take-disk") return `take-disk ${String(shaped["uri"])}: the records give way to the file's present words. Proceed? [y/N] `;
   const what = shaped["all"] === true ? `all ${String(shaped["count"])} pending carrier(s)` : (shaped["uris"] as string[]).join(", ");
@@ -129,6 +141,26 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
     const msg = err instanceof Error ? err.message : String(err);
     emit(args, { ok: false, error: { code: "not-found", message: msg }, human: () => console.error(`lares shore: ${msg}`) });
     return exitFor("not-found");
+  }
+
+  // AN OVERRIDE ANSWER rides the daemon's override verb, under the key the person read (`override-shore.ts`).
+  if (act === "take-working" || act === "take-canon") {
+    let o: Record<string, unknown>;
+    try {
+      o = await answerOverrideAt(act, String(shaped.args["bag"]), String(shaped.args["title"]), String(shaped.args["key"]), did);
+    } catch (err) {
+      const f = verbFailure(err);
+      emit(args, { ok: false, error: { code: f.code, message: f.message }, human: () => console.error(`lares shore: ${f.message}`) });
+      return exitFor(f.code);
+    }
+    if (o["ok"] !== true) {
+      emit(args, { ok: false, error: { code: String(o["refusal"] ?? "verb-error"), message: String(o["why"] ?? "the daemon refused") }, data: o, human: () => console.error(`lares shore ${act}: ${String(o["refusal"])}: ${String(o["why"])}`) });
+      return exitFor(o["refusal"] === "standoff-key-moved" ? "conflict" : "verb-error");
+    }
+    emit(args, { ok: true, data: o, human: () => console.log(act === "take-working"
+      ? `kept the working override: ${String(o["title"])} (${String(o["working"])}), re-based on the canon text that stands`
+      : `took canon's side: ${String(o["title"])} retracted from ${String(o["working"])}; canon shows through`) });
+    return 0;
   }
 
   // TAKE-DISK rides the ingest leg, under the key (`shore-take-disk.ts`): the island names the standoff's
@@ -191,11 +223,22 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
       return exitFor("verb-error");
     }
     const { standoffs, pending } = listed;
+    // THE OVERRIDES that stand off over a moved canon text, per canon bag: the named one, else every disk-sourced holding.
+    const bags = typeof shaped.args["bag"] === "string" ? [canonBagOf(String(shaped.args["bag"]))]
+      : discoverHoldings(larBagsDir()).filter((h) => { try { return canonIsDisk(h); } catch { return false; } }).map((h) => h.toBag);
+    let overrides: Awaited<ReturnType<typeof listOverrides>> = { standoffs: [], refused: [] };
+    try { overrides = await listOverrides(bags, did); } catch (err) { overrides = { standoffs: [], refused: [{ bag: bags.join(", "), why: verbFailure(err).message }] }; }
     emit(args, {
       ok: true, ...(listed.requestId !== undefined ? { requestId: listed.requestId } : {}),
-      data: { op: "list", standoffs, standoffCount: standoffs.length, pending, pendingCount: pending.length },
+      data: { op: "list", standoffs, standoffCount: standoffs.length, pending, pendingCount: pending.length, overrides: overrides.standoffs, overrideCount: overrides.standoffs.length, ...(overrides.refused.length > 0 ? { overridesUnread: overrides.refused } : {}) },
       human: () => {
-        if (standoffs.length === 0 && pending.length === 0) { console.log("the disk shore holds nothing for a hand"); return; }
+        for (const r of overrides.refused) console.error(`  ⚠ overrides over ${r.bag} unread: ${r.why}`);
+        if (overrides.standoffs.length > 0) {
+          console.log(`${overrides.standoffs.length} working override(s) stand off: a hand changed each, and canon moved under it`);
+          for (const o of overrides.standoffs) console.log(`  ${String(o["title"])}  bag ${String(o["bag"])}  key ${String(o["key"])}`);
+          console.log("  answer one under its key: `lares shore take-working <title> --bag <bag> --key <key>` keeps it · `lares shore take-canon <title> --bag <bag> --key <key>` retracts it · or leave it standing");
+        }
+        if (standoffs.length === 0 && pending.length === 0) { if (overrides.standoffs.length === 0) console.log("the disk shore holds nothing for a hand"); return; }
         if (standoffs.length > 0) {
           console.log(`${standoffs.length} standoff(s): the disk and the records say different things, and nothing writes`);
           for (const s of standoffs) console.log(`  ${String(s["uri"])}  bag ${String(s["bagId"])}${s["island"] === "daemon" ? " (daemon island)" : ""}  key ${String(s["standoff"])}${s["reason"] ? `\n      ${String(s["reason"])}` : ""}`);

@@ -781,6 +781,18 @@ async function executeCREATE(action: CreateAction, access: BagAccess, opts: Acti
     const count = standing ? (await standing.listVisible()).filter((t) => !isEffectRecordUri(t)).length : 0;
     return { bag: action.bag, plane: action.plane, docUrl: existing, alreadyStood: true, count };
   }
+  // A BAG THAT RESOLVES ELSEWHERE STANDS ALREADY. The bag's own resolution answers, never a name list: a system canon
+  // bag rests in the Kahu realm (named by the realm's bag row), and another plane may hold a bag this plane's registry
+  // never names. A CREATE over such a bag mints nothing, so a seed may lead every disk-sourced holding with CREATE and
+  // never mint a second doc that shadows the one that stands.
+  if (!existing) {
+    // A probe of its own: the action's access caches what it resolved, and the mint below must reach the fresh doc.
+    const resolved = await makeBagAccess(opts).read(action.bag).catch(() => null);
+    if (resolved && !(await storeIsRetired(resolved, action.bag))) {
+      const count = (await resolved.listVisible()).filter((t) => !isEffectRecordUri(t)).length;
+      return { bag: action.bag, plane: action.plane, alreadyStood: true, resolvedElsewhere: true, count };
+    }
+  }
   // Mint + register inside withEffectRecord so the `creation` ledger record lands
   // after the new bag is reachable (the effect-record rides the new bag's own doc).
   return withEffectRecord(action, (bag) => access.write(bag), async () => {

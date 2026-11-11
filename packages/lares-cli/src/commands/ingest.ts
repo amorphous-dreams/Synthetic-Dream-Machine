@@ -37,7 +37,29 @@ function printUsage(): void {
   console.log("             write-layer ingest-back — a wikis/ source derives its URIs off that layer).");
 }
 
-export async function cmdIngest(args: ParsedArgs): Promise<number> {
+/** What one INGEST's canon change did to the working overrides above it (`override-bases.ts` island-side). */
+export interface IngestOverrides {
+  readonly working: string;
+  readonly retractedCount: number;
+  readonly standing: ReadonlyArray<{ readonly title: string; readonly key: string }>;
+  readonly standingCount: number;
+}
+
+/** Read the outcome's override summary; absent where the wave moved no canon text under an override. */
+export function readIngestOverrides(summary: Readonly<Record<string, unknown>>): IngestOverrides | undefined {
+  const o = summary["overrides"] as Record<string, unknown> | undefined;
+  if (o === undefined || o === null || typeof o !== "object") return undefined;
+  const standing = Array.isArray(o["standing"]) ? (o["standing"] as Array<Record<string, unknown>>).map((r) => ({ title: String(r["title"]), key: String(r["key"]) })) : [];
+  const retracted = Array.isArray(o["retracted"]) ? (o["retracted"] as unknown[]).length : 0;
+  return {
+    working: String(o["working"] ?? ""),
+    retractedCount: typeof o["retractedCount"] === "number" ? (o["retractedCount"] as number) : retracted,
+    standing,
+    standingCount: typeof o["standingCount"] === "number" ? (o["standingCount"] as number) : standing.length,
+  };
+}
+
+export async function cmdIngest(args: ParsedArgs, sink?: { overrides?: IngestOverrides }): Promise<number> {
   const source = args.options["source"];
   const toBag  = args.options["to"];
   if (!source || !toBag) { printUsage(); return 2; }
@@ -181,6 +203,8 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
     return exitFor(code);
   }
   const summary = summaryOutput(result) ?? {};
+  const overrides = readIngestOverrides(summary);
+  if (sink && overrides) sink.overrides = overrides;
 
   // The gesture pinned what it landed (`settleIngest`); the projector pins what it projects; both write
   // the same key and the same base where they agree. An unchanged carrier then reads `unchanged` on the
@@ -277,6 +301,11 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
           console.log(`  projection settled for ${settle.settledCount} carrier(s) · ${settle.pendingCount} pending · ${settle.stalledCount} stalled`);
           console.error(`  ⚠ no page settled within the stall window; ${settle.pendingCount} carrier(s) still wait: \`lares shore settle --bag ${toBag} --pending\` resumes the word`);
         } else console.error(`  ⚠ the vessel did not say the projection settled (${settle.refusal}: ${settle.why}); a scan now may read a file the projection still moves`);
+      }
+      if (overrides !== undefined && overrides.retractedCount > 0) console.log(`  ${overrides.retractedCount} stale working override(s) retracted from ${overrides.working}; the new canon shows through`);
+      if (overrides !== undefined && overrides.standingCount > 0) {
+        console.error(`  ⚠ ${overrides.standingCount} working override(s) in ${overrides.working} shadow a canon text this wave moved, and stand off: ${overrides.standing.slice(0, 8).map((s) => s.title).join(", ")}${overrides.standingCount > 8 ? ", …" : ""}`);
+        console.error(`    \`lares shore\` names each key: \`lares shore take-working <title> --bag ${toBag} --key <key>\` keeps the override · \`take-canon\` retracts it`);
       }
       if (conflicts.length > 0) console.error(`  ⚠ settle a conflict under its key (\`lares shore\` names it): \`lares shore take-disk <uri> --key <key>\` lands the file's words · \`lares shore take-records <uri> --key <key>\` writes the records' render`);
       console.log(`\n  audit: ${auditUri}`);

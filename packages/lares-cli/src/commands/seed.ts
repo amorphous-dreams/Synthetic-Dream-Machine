@@ -1,52 +1,43 @@
 /**
- * `lares vessel seed` — plant the disk holdings into the vessel docs.
+ * `lares vessel seed` — plant the disk holdings into the vessel's canon.
  *
- * A nameless entity composed of #has caps: disk-grant (the bags dir) · synced-tree · the two
- * existing feed gestures, kind-routed per holding:
- *   - SYSTEM bags (lares, lararium — their docs mint at boot) → the diff-gated
- *     `ingest` gesture (disk-hash vs synced-hash vs island render-hash).
- *   - Every OTHER holding (sdm, elyncia, …) → the island's named road through the `act`
- *     gesture: CREATE the bag, LOAD onto the wiki's working layer, MOVE the whole layer into canon
- *     (W27: a write lands on a working layer, and canon takes it by promotion).
+ * ONE ROAD, DECIDED BY WHERE CANON STANDS. A holding whose canon source stands on disk (its dir under the canon source
+ * the daemon resolves, `daemonBagsDir`, and no private plane: `projectionRoots(...).sourcedSlugs()`) takes the
+ * diff-gated `ingest` gesture into its canon bag, after a CREATE that converges on the bag that stands (a bag that
+ * resolves anywhere, the realm's system canon included, mints nothing). No name list picks the road: in the vessel
+ * `LAR_BAGS=/workspace/bags`, so every holding the checkout carries rides it. A holding whose canon source stands
+ * elsewhere takes no road, and the seed names it.
  *
- * IDEMPOTENT (causal-island law): each run converges from whatever state it finds —
- * a virgin Synced tree reads everything NEW; a converged tree no-ops per holding.
- * No toggles: whether a zero-new wave counts as failure belongs to the CALLER's flow
- * (founding feeds the initial corpus; a daily seed accepts convergence).
+ * A SEED NEVER WRITES A WIKI'S WORKING LAYER ITSELF. INGEST lands canon alone, through its three-way gate (disk, synced
+ * base, canon render). The working overrides above the canon it changed weigh in the same act (`override-bases.ts`):
+ * a stale copy retracts so the new canon shows through, a diverged one stands off at the shore under a key
+ * (`lares shore` lists it). A working-only title never promotes, and a title gone from disk stands pending at the shore.
+ * LOAD + MOVE stays the human promotion door; the seed never walks it.
+ *
+ * IDEMPOTENT (causal-island law): each run converges from whatever state it finds — a virgin Synced tree reads
+ * everything NEW; a converged tree no-ops per holding.
  *
  *   lares vessel seed [--apply] [--yes]   — preview per holding by default (the ingest posture)
  */
 
 import { readdirSync, statSync } from "node:fs";
-import { join } from "node:path";
-import { bagUri, LARES_DOC_URI, LARARIUM_DOC_URI, identitySlug } from "@lararium/mesh";
+import { join, resolve } from "node:path";
+import { bagUri } from "@lararium/mesh";
+import { daemonBagsDir, projectionRoots } from "@lararium/node";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit } from "../render.js";
-import { larBagsDir } from "../env.js";
-import { cmdIngest } from "./ingest.js";
+import { larBagsDir, larProjectionsDirOrNone } from "../env.js";
+import { cmdIngest, type IngestOverrides } from "./ingest.js";
 import { cmdAct } from "./act.js";
-
-/**
- * The holdings whose docs the vessel mints at boot — fed by the diff-gated ingest gesture.
- *
- * DERIVED from the bag URI constants (`LARES_DOC_URI`/`LARARIUM_DOC_URI`, the single owner of
- * "what these two holdings are named"), never hand-typed — a re-typed literal can drift out from
- * under the constants it means to mirror, and a set that can never match `discoverHoldings`'s
- * directory names is worse than an absent one: the branch below still reads as reachable while
- * the infrastructure bags silently take the LOAD route.
- */
-export const SYSTEM_HOLDINGS = new Set(
-  [identitySlug(LARES_DOC_URI), identitySlug(LARARIUM_DOC_URI)].filter(
-    (s): s is string => s !== null,
-  ),
-);
 
 export interface SeedHolding {
   readonly holding: string;               // "lares"
   readonly source: string;                // "<bags dir>/lares"
   readonly toBag: string;                 // "lar:///ha.ka.ba/bags/lares"
-  readonly gesture: "ingest" | "load";    // the kind-route taken
+  readonly gesture: "ingest" | "skip";    // the road taken
   readonly exitCode: number;              // the gesture's verdict for this holding
+  readonly reason?: string;               // why a holding took no road
+  readonly overrides?: IngestOverrides;   // what the canon change did to the working overrides above it
 }
 
 /**
@@ -75,41 +66,26 @@ export function discoverHoldings(bagsDir: string): Array<{ holding: string; sour
 }
 
 /**
- * Feed ONE holding back into its doc — the kind-route (ingest for system bags, the island's named road
- * for the rest), lifted out so the whole-store seed shares ONE kind-routed spelling for feeding a holding.
- * Returns this holding's verdict row.
- *
- * THE NAMED ROAD (W27: a write lands on a working layer, and canon takes it by promotion). A LOAD into a canon
- * bag refuses `load-into-canon` and names this road, and the seed walks it as any hand would, through the one
- * public act gesture: CREATE the bag (idempotent), LOAD onto the wiki's working layer (the keyholder gate asks the vessel to mount that wiki before it clears the working cap, `mountAimedWiki`),
- * then ONE title-less MOVE from the working layer into canon, which promotes every live title the layer holds. No founding door stands: the rite's seed and the daily seed walk one road.
+ * WHETHER A HOLDING'S CANON STANDS ON DISK, read from the bag's resolution: its source dir stands under the canon
+ * source the daemon resolves, and the projection split by origin counts it sourced (a private plane never does).
+ */
+export function canonIsDisk(h: { holding: string; source: string }, canonBags: string = daemonBagsDir()): boolean {
+  const roots = projectionRoots({ projectionRoot: larProjectionsDirOrNone() ?? canonBags, canonBags });
+  return roots.sourcedSlugs().includes(h.holding) && resolve(h.source) === resolve(roots.bagRoot(h.holding));
+}
+
+/**
+ * Feed ONE holding into its canon. A disk-sourced holding: CREATE (applied runs only; it converges on the bag that
+ * stands), then the diff-gated INGEST. A preview sends the INGEST preview alone and mutates nothing.
  */
 export async function seedHolding(
   args: ParsedArgs,
   h: { holding: string; source: string; toBag: string },
+  diskSourced: boolean = canonIsDisk(h),
 ): Promise<SeedHolding> {
-  if (SYSTEM_HOLDINGS.has(h.holding)) {
-    // Infrastructure bags (lares/lararium) flow as NAMELESS ENTITIES — no special auto-confirm.
-    // A converged bag submits zero (silent no-op); a bag with genuinely NEW content trips the
-    // ingest gate's "confirmation required" WITHOUT `--yes` — and that is the FEATURE: new infra
-    // content SURFACES for the operator to grade on a gradient (approve → re-run with --yes, or
-    // abort), never silently auto-applied. `--yes` (the operator's relayed approval) passes through.
-    const exitCode = await withIngestTicks(h.holding, () => cmdIngest({
-      command: "ingest",
-      positional: [],
-      options: { ...args.options, source: h.source, to: h.toBag },
-      flags: args.flags,
-    }));
-    return { ...h, gesture: "ingest", exitCode };
+  if (!diskSourced) {
+    return { ...h, gesture: "skip", exitCode: 0, reason: "its canon source stands off disk (not under the canon source the daemon reads, or a private plane): the seed feeds disk canon alone" };
   }
-  const working = workingLayerOf(h.toBag);
-  // LOAD refuses an unregistered bag (cap-denied) — CREATE registers the
-  // catalog-corpus entry first. CREATE converges idempotently (same content
-  // id → same outcome), so every seed run may lead
-  // with it. Applied runs only — a preview mutates nothing.
-  const flags = args.flags["apply"]
-    ? { ...args.flags, yes: true }
-    : { ...args.flags, "dry-run": true };
   if (args.flags["apply"]) {
     const createCode = await foldCreateOutput(args, () => cmdAct({
       command: "act",
@@ -117,25 +93,22 @@ export async function seedHolding(
       options: { ...args.options, bag: h.toBag },
       flags: { ...args.flags, yes: true },
     }));
-    if (createCode !== 0) return { ...h, gesture: "load", exitCode: createCode };
+    if (createCode !== 0) return { ...h, gesture: "ingest", exitCode: createCode };
   }
-  const loadCode = await cmdAct({
-    command: "act",
-    positional: ["LOAD"],
-    options: { ...args.options, "source-uri": h.source, to: working },
-    flags,
-  });
-  if (loadCode !== 0 || !args.flags["apply"]) return { ...h, gesture: "load", exitCode: loadCode };
-  // THE PROMOTION: one title-less MOVE carries the whole working layer into canon. The seed names no title: the
-  // island's answer rides bounded past the outcome cap, and a memetic record takes its name from its head.
-  const moveCode = await cmdAct({
-    command: "act",
-    positional: ["MOVE"],
-    options: { ...args.options, from: working, to: h.toBag },
-    flags: { ...args.flags, yes: true },
-  });
-  return { ...h, gesture: "load", exitCode: moveCode };
+  // New content SURFACES for the operator to grade: without `--yes` the ingest gate asks; `--yes` (the operator's
+  // relayed approval) passes through.
+  const sink: { overrides?: IngestOverrides } = {};
+  const exitCode = await withIngestTicks(h.holding, () => cmdIngest({
+    command: "ingest",
+    positional: [],
+    options: { ...args.options, source: h.source, to: h.toBag },
+    flags: args.flags,
+  }, sink));
+  return { ...h, gesture: "ingest", exitCode, ...(sink.overrides ? { overrides: sink.overrides } : {}) };
 }
+
+/** How many override titles a report names before it counts the rest. */
+export const SEED_OVERRIDE_NAMES = 8;
 
 /** The CLI already uses performance.now() for process-local liveness budgets; seed durations share that monotonic clock. */
 function elapsedText(ms: number): string {
@@ -177,12 +150,6 @@ async function foldCreateOutput(args: ParsedArgs, run: () => Promise<number>): P
   } finally { console.log = log; }
 }
 
-/** The working layer of the wiki a canon bag opens as (W27: every bag opens as its own wiki). */
-function workingLayerOf(canonBag: string): string {
-  const slug = canonBag.slice(canonBag.lastIndexOf("/") + 1);
-  return `lar:///ha.ka.ba/wikis/${slug}/working`;
-}
-
 export async function cmdSeed(args: ParsedArgs): Promise<number> {
   const bagsDir = larBagsDir();
   const holdings = discoverHoldings(bagsDir);
@@ -202,13 +169,22 @@ export async function cmdSeed(args: ParsedArgs): Promise<number> {
     const holdingStarted = performance.now();
     const row = await seedHolding(args, h);
     ledger.push(row);
-    const retry = row.exitCode === 0 ? "retry safe" : row.gesture === "ingest"
-      ? "retry safe (diff-gated)"
-      : "retry safety unknown; use the act request/change-id hint before retrying";
+    if (row.gesture === "skip") { console.log(`- ${h.holding}: no road · ${row.reason}`); continue; }
+    const retry = row.exitCode === 0 ? "retry safe" : "retry safe (diff-gated)";
     console.log(`${row.exitCode === 0 ? "✓" : "✗"} ${h.holding}: ${carriers} files · ${elapsedText(performance.now() - holdingStarted)} · ${retry}`);
   }
   const failed = ledger.filter((h) => h.exitCode !== 0);
   for (const h of failed) console.error(`  ${h.holding}: ${h.gesture} failed (exit ${h.exitCode})`);
-  console.log(`seed: ${ledger.length - failed.length}/${ledger.length} holdings · ${elapsedText(performance.now() - started)}`);
+  // THE OVERRIDES THE SEED'S CANON CHANGE MET: stale copies retracted, diverged ones stand off at the shore.
+  const retracted = ledger.reduce((n, h) => n + (h.overrides?.retractedCount ?? 0), 0);
+  const standing = ledger.flatMap((h) => (h.overrides?.standing ?? []).map((s) => `${h.holding}:${s.title}`));
+  const standingCount = ledger.reduce((n, h) => n + (h.overrides?.standingCount ?? 0), 0);
+  if (retracted > 0) console.log(`seed: ${retracted} stale working override(s) retracted; the new canon shows through`);
+  if (standingCount > 0) {
+    console.error(`  ⚠ ${standingCount} working override(s) shadow a canon record this seed changed: ${standing.slice(0, SEED_OVERRIDE_NAMES).join(", ")}${standingCount > SEED_OVERRIDE_NAMES ? `, … ${standingCount - SEED_OVERRIDE_NAMES} more` : ""}`);
+    console.error("    `lares shore` lists each with its key: `lares shore take-working <title> --bag <bag> --key <key>` keeps it · `take-canon` retracts it · or leave it standing");
+  }
+  const fed = ledger.filter((h) => h.gesture !== "skip");
+  console.log(`seed: ${fed.length - failed.length}/${fed.length} holdings${ledger.length > fed.length ? ` · ${ledger.length - fed.length} off disk` : ""} · ${elapsedText(performance.now() - started)}`);
   return failed.length === 0 ? 0 : 1;
 }

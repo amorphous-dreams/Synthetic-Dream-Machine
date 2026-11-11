@@ -310,3 +310,23 @@ describe("M13 — a retired bag refuses writes by name and CREATE strands nothin
     expect(full.count).toBe(1);
   });
 });
+
+describe("CREATE — a bag that resolves elsewhere stands already", () => {
+  test("★ a system canon bag the realm resolves answers alreadyStood and mints nothing ★", async () => {
+    const { repo, mintedUrls } = makeFakeRepo();
+    const realmDoc = repo.create({ tiddlers: { "lar:///ha.ka.ba/lares/x": { tiddler: { title: "lar:///ha.ka.ba/lares/x", text: "x" } } } } as unknown as LarDoc);
+    mintedUrls.length = 0;
+    const registered: string[] = [];
+    const reactor = makeActionReactorFor("CREATE", {
+      composite: new CompositeStore(),
+      reach: { repo, catalogUrl: CATALOG_URL, oracleUrl: null, systemCanonUrl: async () => String(realmDoc.url) },
+      // The Kahu cabal's hand: the reach gate cleared upstream, as the daemon's own dispatch clears it.
+      kahuReachClearedAtGate: true,
+      registerBag: async (bagUrl) => { registered.push(bagUrl); },
+    });
+    const result = await reactor({ bag: "lar:///ha.ka.ba/bags/lares" }, makeContext()) as Record<string, unknown>;
+    expect(result).toMatchObject({ alreadyStood: true, resolvedElsewhere: true, count: 1 });
+    expect(mintedUrls).toEqual([]);
+    expect(registered).toEqual([]);
+  });
+});
