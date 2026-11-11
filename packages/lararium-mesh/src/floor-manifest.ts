@@ -15,8 +15,6 @@ import { docPrototypeKeyFault } from "./prototype-key-shore.js";
 import { SYSTEM_CANON_SLUGS } from "./kahu-canon-reach.js";
 
 export const FLOOR_MANIFEST_FORMAT = "lararium-floor/v2";
-/** The retired format: its bytes refuse by name, with no back-compat (the floor keyed only `lares` and `lararium`). */
-export const FLOOR_MANIFEST_FORMAT_V1 = "lararium-floor/v1";
 /** The seed witness row naming the genesis floor's manifest CID (sha256 hex) in its `cid` field, shaped as the region witnesses stand. */
 export const GENESIS_FLOOR_TIDDLER = "lar:///ha.ka.ba/bags/oracle/genesis-cid-floor";
 /** The snapshots every floor carries: the system canon, house canon on every vessel. */
@@ -104,11 +102,10 @@ export function readFloorManifest(bytes: Uint8Array):
     const value: unknown = JSON.parse(decoder.decode(bytes));
     if (value === null || typeof value !== "object" || Array.isArray(value)) throw new Error("Manifest must hold one object");
     const raw = value as Record<string, unknown>;
-    if (raw.format === FLOOR_MANIFEST_FORMAT_V1) {
-      return { refusal: "floor-manifest-format", reason: `Floor manifest format ${FLOOR_MANIFEST_FORMAT_V1} stands retired: a floor keys one snapshot per house-canon bag (${FLOOR_MANIFEST_FORMAT})` };
-    }
+    // EVERY OTHER FORMAT REFUSES BY ITS OWN NAME: a floor keys one snapshot per house-canon bag, and no reader folds a
+    // manifest keyed any other way.
     if (raw.format !== FLOOR_MANIFEST_FORMAT && typeof raw.format === "string") {
-      return { refusal: "floor-manifest-format", reason: `Unknown floor manifest format: ${raw.format}` };
+      return { refusal: "floor-manifest-format", reason: `Floor manifest format ${raw.format} refuses: a floor keys one snapshot per house-canon bag (${FLOOR_MANIFEST_FORMAT})` };
     }
     if (Object.keys(raw).length !== MANIFEST_KEYS.length || MANIFEST_KEYS.some((key) => !Object.hasOwn(raw, key))) {
       throw new Error("Manifest fields differ from the fixed format");

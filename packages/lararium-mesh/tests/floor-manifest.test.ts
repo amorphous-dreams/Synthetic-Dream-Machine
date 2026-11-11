@@ -53,7 +53,7 @@ describe("floor manifest and snapshots", () => {
     const v1 = JSON.stringify({ format: "lararium-floor/v1", engine: "engine", grammar: "grammar", plugins: "plugins", lares: "a".repeat(64), lararium: "b".repeat(64) });
     const read = readFloorManifest(new TextEncoder().encode(v1));
     expect(read).toMatchObject({ refusal: "floor-manifest-format" });
-    expect("reason" in read && read.reason).toMatch(/lararium-floor\/v1 stands retired/);
+    expect("reason" in read && read.reason).toMatch(/Floor manifest format lararium-floor\/v1 refuses/);
     expect(() => floorManifestBytes({ ...manifest, format: "lararium-floor/v1" } as unknown as FloorManifest)).toThrow(/lararium-floor\/v2 alone/);
   });
   test("resolves manifest and snapshots by CID, naming absent and corrupt content", async () => {

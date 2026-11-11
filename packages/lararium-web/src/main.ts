@@ -190,8 +190,7 @@ async function readFloor(read: FloorReader): Promise<void> {
       row(floorEl, "epoch", r.head.body.epoch.slice(0, 22) + "…");
       row(floorEl, "prior", r.head.body.prior ? r.head.body.prior.slice(0, 16) + "…" : "(the Nexus's first release)");
       row(floorEl, "manifest", r.head.body.manifest);
-      row(floorEl, "lares rows", String(Object.keys(r.lares).length));
-      row(floorEl, "lararium rows", String(Object.keys(r.lararium).length));
+      for (const [slug, rows] of Object.entries(r.snapshots).sort(([a], [b]) => (a < b ? -1 : 1))) row(floorEl, `${slug} rows`, String(Object.keys(rows).length));
       for (const refused of r.refused) row(floorEl, "set aside", `${refused.keyCid.slice(0, 16)}… ${refused.reason}${refused.detail ? ` (${refused.detail})` : ""}`, "warn");
     } else {
       say(`✗ ${r.reason}${r.detail ? ` — ${r.detail}` : ""}`, "warn");

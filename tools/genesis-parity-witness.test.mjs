@@ -70,9 +70,12 @@ function seedFixture(floor = null) {
 
 const FLOOR_SDM = "floor sdm snapshot";
 
-function floorPlant({ lares = sha(FLOOR_LARES), witnessCid, omitRow, format = "lararium-floor/v2" } = {}) {
-  // v2 keys one snapshot per house-canon slug, sorted; a v1 plant spells the retired shape.
-  const manifest = format === "lararium-floor/v1"
+const FLOOR_FORMAT = "lararium-floor/v2";
+/** The format before this one: a manifest keyed by `lares` and `lararium` alone, which the witness refuses by name. */
+const PRIOR_FLOOR_FORMAT = FLOOR_FORMAT.replace(/\d+$/, (n) => String(Number(n) - 1));
+function floorPlant({ lares = sha(FLOOR_LARES), witnessCid, omitRow, format = FLOOR_FORMAT } = {}) {
+  // The floor keys one snapshot per house-canon slug, sorted; a prior-format plant keys lares and lararium alone.
+  const manifest = format === PRIOR_FLOOR_FORMAT
     ? JSON.stringify({ format, ...REGION_CIDS, lares, lararium: sha(FLOOR_LARARIUM) })
     : JSON.stringify({ format, ...REGION_CIDS, snapshots: { lararium: sha(FLOOR_LARARIUM), lares, sdm: sha(FLOOR_SDM) } });
   const manifestCid = sha(manifest);
@@ -80,7 +83,7 @@ function floorPlant({ lares = sha(FLOOR_LARES), witnessCid, omitRow, format = "l
     "floor-manifest": manifestCid,
     "floor-lares": sha(FLOOR_LARES),
     "floor-lararium": sha(FLOOR_LARARIUM),
-    ...(format === "lararium-floor/v1" ? {} : { "floor-sdm": sha(FLOOR_SDM) }),
+    ...(format === PRIOR_FLOOR_FORMAT ? {} : { "floor-sdm": sha(FLOOR_SDM) }),
   };
   if (omitRow) delete rows[omitRow];
   return {
@@ -171,8 +174,8 @@ await test("FLOOR RED: the seed's release witness names another manifest", async
   });
 });
 
-await test("FLOOR RED: a v1 manifest (lares and lararium alone) refuses by name; v2 keys every house-canon slug", async () => {
-  await withTree(floorPlant({ format: "lararium-floor/v1" }), (run, out) => {
+await test("FLOOR RED: a prior-format manifest (lares and lararium alone) refuses by name; the floor keys every house-canon slug", async () => {
+  await withTree(floorPlant({ format: PRIOR_FLOOR_FORMAT }), (run, out) => {
     assert.notEqual(run.status, 0, out);
     assert.match(out, /FLOOR\s+floor-manifest does not read as canonical lararium-floor\/v2/);
   });
