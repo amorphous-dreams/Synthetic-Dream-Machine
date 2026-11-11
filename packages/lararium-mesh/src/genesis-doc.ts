@@ -536,6 +536,11 @@ export function computeGrammarCid(plugins: readonly RegionEntry[]): string {
  * from the tag their PersonaGroup mints, so no name for them exists when this seed is built, and a genesis
  * every vessel shares can describe no plane belonging to one person. They describe themselves at founding,
  * where the knowledge lives.
+ *
+ * `readPolicy` LABELS WHAT GENESIS CARRIES, and no reader gates on it. For `lares` and `lararium` it names the floor every
+ * vessel holds (the snapshot the floor manifest keys by CID, public to every DreamNet user), never the live document: that
+ * rests in the Kahu realm at contract (`landKahuRealm`, cap-tier.mem #/house-canon), and its read-cap rides the realm
+ * registration's `readTier`, never this descriptor.
  */
 const ROOT_BAGS = [
   { bagId: ORACLE_DOC_URI,     label: "ha — runtime system island (Oracle)",       readPolicy: "public",  writePolicy: "private" },
