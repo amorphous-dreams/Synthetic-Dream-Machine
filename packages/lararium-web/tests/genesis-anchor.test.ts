@@ -8,8 +8,8 @@ import { arrivalSeedAnchor, genesisCrossingVerdict, genesisSeedBase, readServedS
 // @ts-expect-error the raw import reads the page source as text (vite `?raw`)
 import MAIN_SOURCE from "../src/main.ts?raw";
 
-const seedText = JSON.stringify({ format: "lararium-genesis-seed/v1", actorSeed: "a".repeat(64), blobs: {}, tiddlers: {} });
-const otherText = JSON.stringify({ format: "lararium-genesis-seed/v1", actorSeed: "b".repeat(64), blobs: {}, tiddlers: {} });
+const seedText = JSON.stringify({ format: "lararium-genesis-seed", actorSeed: "a".repeat(64), blobs: {}, tiddlers: {} });
+const otherText = JSON.stringify({ format: "lararium-genesis-seed", actorSeed: "b".repeat(64), blobs: {}, tiddlers: {} });
 const hex = async (text: string): Promise<string> =>
   [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text)))].map((b) => b.toString(16).padStart(2, "0")).join("");
 const descriptorOf = (seedCid: string): string => JSON.stringify({

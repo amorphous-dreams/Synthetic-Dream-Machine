@@ -32,7 +32,7 @@ function deskCheckout(opts: { web: boolean; record: boolean }): { repo: string; 
   const cas = Buffer.from("desk-cas");
   const cid = createHash("sha256").update(cas).digest("hex");
   writeFileSync(join(genesis, "seed.json"), JSON.stringify({
-    format: "lararium-genesis-seed/v1", actorSeed: "desk-actor",
+    format: "lararium-genesis-seed", actorSeed: "desk-actor",
     blobs: { fixture: { id: "fixture", version: "1", sha256: cid, mimeType: "application/octet-stream" } },
     tiddlers: {
       "lar:///ha.ka.ba/bags/oracle/genesis-cid-engine": { tiddler: { cid: "engine-region" } },

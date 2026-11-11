@@ -26,7 +26,7 @@ function floor(tag: string) {
   const lares = cutFloorSnapshot({ [`lar:///t/${tag}/lares`]: row(`lar:///t/${tag}/lares`, `lares ${tag}`) });
   const lararium = cutFloorSnapshot({ [`lar:///t/${tag}/lararium`]: row(`lar:///t/${tag}/lararium`, `lararium ${tag}`) });
   cas.set(lares.cid, lares.bytes); cas.set(lararium.cid, lararium.bytes);
-  const manifest: FloorManifest = { format: "lararium-floor/v2", engine: "e".repeat(64), grammar: "a".repeat(64), plugins: "b".repeat(64), snapshots: { lares: lares.cid, lararium: lararium.cid } };
+  const manifest: FloorManifest = { format: "lararium-floor", engine: "e".repeat(64), grammar: "a".repeat(64), plugins: "b".repeat(64), snapshots: { lares: lares.cid, lararium: lararium.cid } };
   const manifestBytes = floorManifestBytes(manifest);
   return { cas, manifestBytes, manifestCid: put(manifestBytes), lares, lararium };
 }

@@ -23,7 +23,7 @@ import { floorGates, presenter, pullFloor as pullFromFloor } from "./flow-floor-
 const SEED   = new Uint8Array(32).fill(7);
 
 const GENESIS = {
-  format: "lararium-genesis-seed/v1", actorSeed: "ab".repeat(16),
+  format: "lararium-genesis-seed", actorSeed: "ab".repeat(16),
   blobs: { "lar:///core": { id: "core", version: "1", sha256: "c".repeat(64), mimeType: "application/javascript" } },
   tiddlers: {
     "lar:///seeded": { tiddler: { title: "lar:///seeded", text: "seed value" } },

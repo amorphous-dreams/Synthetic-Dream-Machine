@@ -56,7 +56,7 @@ import { GENESIS_FLOOR_TIDDLER, floorManifestBytes, floorManifestCid, floorSlugs
  * builder and the plugin build pipeline speak the same type without coupling
  * @lararium/node to @lararium/tw5 at the type level.
  *
- * Format string: "lararium-tw5-plugin-build/v1"
+ * Format string: "lararium-tw5-plugin-build"
  */
 export interface PluginBuildAttestation {
   readonly format:                  string;
@@ -245,7 +245,12 @@ export interface GenesisArtifact {
 // The plain-data genesis seed (genesis is data, not a baked CRDT)
 // ---------------------------------------------------------------------------
 
-export const GENESIS_SEED_FORMAT = "lararium-genesis-seed/v1" as const;
+export const GENESIS_SEED_FORMAT = "lararium-genesis-seed" as const;
+
+/** What a seed naming another format lacks: the genesis seed's own shape name. */
+export function genesisSeedFormatLack(format: unknown): string {
+  return `the seed names the format ${JSON.stringify(format)}: it lacks the genesis seed shape (${JSON.stringify(GENESIS_SEED_FORMAT)})`;
+}
 
 /**
  * A SEED CARRIES NO VERSION. Its format names its shape, and its bytes name themselves (the seed CID); a version
@@ -283,7 +288,7 @@ const GENESIS_BLOB_CID = /^[0-9a-f]{64}$/;
  */
 export function genesisCasManifestFromSeed(seed: GenesisSeed): GenesisCasManifest {
   if (!seed || seed.format !== GENESIS_SEED_FORMAT) {
-    throw new Error(`[genesis-derive] unsupported seed format: ${String(seed?.format)}`);
+    throw new Error(`[genesis-derive] ${genesisSeedFormatLack(seed?.format)}`);
   }
   if (genesisSeedCarriesAVersion(seed)) throw new Error("[genesis-derive] the seed carries a version; a seed carries none");
   if (!seed.blobs || typeof seed.blobs !== "object" || Array.isArray(seed.blobs)) {
@@ -354,11 +359,11 @@ export function validateGenesisBundleCoherence(
   manifest: GenesisCasManifest,
 ): void {
   if (seed.format !== GENESIS_SEED_FORMAT) {
-    throw new Error(`[genesis-coherence] unsupported seed format: ${String(seed.format)}`);
+    throw new Error(`[genesis-coherence] ${genesisSeedFormatLack(seed.format)}`);
   }
   if (genesisSeedCarriesAVersion(seed)) throw new Error("[genesis-coherence] the seed carries a version; a seed carries none");
   if (manifest.format !== GENESIS_CAS_MANIFEST_FORMAT) {
-    throw new Error(`[genesis-coherence] unsupported manifest format: ${String(manifest.format)}`);
+    throw new Error(`[genesis-coherence] the CAS manifest names the format ${JSON.stringify(manifest.format)}: it lacks the genesis CAS shape (${JSON.stringify(GENESIS_CAS_MANIFEST_FORMAT)})`);
   }
 
   const seedRows = Object.entries(seed.blobs)

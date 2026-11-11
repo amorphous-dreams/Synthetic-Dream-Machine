@@ -32,7 +32,8 @@ export interface CasBlobLike {
 // mirrors exactly them into the runtime CAS the workers read via resolveByCid. The
 // `cid` field IS the sha256 hex = the CAS filename = the key the worker requests.
 
-export const GENESIS_CAS_MANIFEST_FORMAT = "lararium-genesis-cas/v1" as const;
+/** The genesis CAS manifest's shape name: no counter rides it; the shape reads by its fields. */
+export const GENESIS_CAS_MANIFEST_FORMAT = "lararium-genesis-cas" as const;
 
 /** One CAS-resident genesis blob — metadata mirror of a LarBlobEntry, no bytes. */
 export interface GenesisCasManifestEntry {

@@ -2,7 +2,7 @@ import { sha256HexSync } from "@lararium/mesh";
 import { mkdirSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 
-export const MODULE_MANIFEST_FORMAT = "lararium-tw5-module-manifest/v1";
+export const MODULE_MANIFEST_FORMAT = "lararium-tw5-module-manifest";
 
 export interface ModuleManifestEntry {
   title: string;
@@ -36,7 +36,7 @@ export function readModuleManifest(pathname: string): { manifest: ModuleManifest
 
 export function verifyModuleManifest(manifest: ModuleManifest, label = "module manifest"): void {
   if (manifest.format !== MODULE_MANIFEST_FORMAT) {
-    throw new Error(`[plugin-build] ${label} has unsupported format: ${String(manifest.format)}`);
+    throw new Error(`[plugin-build] ${label} names the format ${JSON.stringify(manifest.format)}: it lacks the module manifest shape (${JSON.stringify(MODULE_MANIFEST_FORMAT)})`);
   }
   if (!Array.isArray(manifest.modules)) {
     throw new Error(`[plugin-build] ${label} missing modules[]`);

@@ -44,7 +44,7 @@ const YOUNG = 0;
 const age = (_cid: string): void => { /* vestigial — age is supplied, not read from the fs */ };
 
 const genesis: GenesisCasManifest = {
-  format: "lararium-genesis-cas/v1", engineCid: "", pluginsCid: "",
+  format: "lararium-genesis-cas", engineCid: "", pluginsCid: "",
   blobs: [{ cid: blob("the engine core").cid, id: "tiddlywikicore", mimeType: "application/javascript", version: "1" }],
 };
 
@@ -546,7 +546,7 @@ describe("the genesis protect set, when the seed will not read", () => {
 
   test("CONTROL — a WELL-FORMED seed answers its blob cids, so the guard still guards", () => {
     const cid = "a".repeat(64);
-    const seed = { format: "lararium-genesis-seed/v1", actorSeed: "actor",
+    const seed = { format: "lararium-genesis-seed", actorSeed: "actor",
       blobs: { x: { id: "x", sha256: cid, mimeType: "application/json", version: "1" } },
       tiddlers: {
         "lar:///ha.ka.ba/bags/oracle/genesis-cid-engine": { tiddler: { cid: "e" } },

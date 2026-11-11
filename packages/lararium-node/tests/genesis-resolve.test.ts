@@ -23,7 +23,7 @@ function dirWithSeed(tag: string | null, torn = false): string {
   const dir = mkdtempSync("/tmp/lararium-genesis-resolve-"); roots.push(dir);
   if (tag !== null) {
     mkdirSync(join(dir, "genesis"), { recursive: true });
-    writeFileSync(join(dir, "genesis", "seed.json"), torn ? "{ torn" : JSON.stringify({ format: "lararium-genesis-seed/v1", actorSeed: tag, blobs: {}, tiddlers: {} }));
+    writeFileSync(join(dir, "genesis", "seed.json"), torn ? "{ torn" : JSON.stringify({ format: "lararium-genesis-seed", actorSeed: tag, blobs: {}, tiddlers: {} }));
   } else mkdirSync(join(dir, "genesis"), { recursive: true });
   return dir;
 }
