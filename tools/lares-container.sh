@@ -139,18 +139,43 @@ key_held() {
   compose exec -T lares node "$CLI" vault status --json 2>/dev/null | grep -q '"unlocked"[[:space:]]*:[[:space:]]*true'
 }
 
-# The vessel just stood (or restarted), so it holds no key. With a TTY, run the unlock attached; without one, name
-# it. A refused or abandoned unlock leaves the vessel standing at the floor and never fails the act that stood it.
+# THE FACE TO WEAR AGAIN. The mount is the composition's own state and never survives a restart, so the shim keeps the
+# face the operator last wore through it (`vault unlock --face N`) in the house's config (`config/last-worn-face`, a reset
+# keeps it): after a stand or a restart it opens every face the credential opens and wears that one again, else face 0.
+WORN_FACE_FILE="$HOUSE/config/last-worn-face"
+last_worn_face() {
+  worn=$(cat -- "$WORN_FACE_FILE" 2>/dev/null) || worn=""
+  case "$worn" in ''|*[!0-9]*) worn=0 ;; esac
+  printf '%s' "$worn"
+}
+remember_worn_face() { # the argv of a `vault unlock` that landed
+  face=""
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --face) face=${2:-}; shift ;;
+      --face=*) face=${1#--face=} ;;
+    esac
+    shift
+  done
+  case "$face" in ''|*[!0-9]*) return 0 ;; esac
+  mkdir -p -- "$HOUSE/config" && printf '%s\n' "$face" > "$WORN_FACE_FILE" || printf '%s\n' 'lares-container: the worn face could not be remembered; the next stand wears face 0' >&2
+}
+
+# The vessel just stood (or restarted), so it holds no key. With a TTY, run the unlock attached: it opens every face the
+# credential opens (`--all`) and wears the last worn face again (or face 0); without one, name that command. A refused or
+# abandoned unlock leaves the vessel standing at the floor and never fails the act that stood it. A hint never names the
+# bare command that fails on a vessel of several faces.
 unlock_or_name() {
   if key_held; then return 0; fi
+  wear=$(last_worn_face)
   if [ -n "$HAVE_TTY" ]; then
-    printf '%s\n' 'lares-container: the vessel stands holding no vessel key; unlocking it on this terminal' >&2
+    printf 'lares-container: the vessel stands holding no vessel key; unlocking it on this terminal (every face the credential opens, wearing h%s)\n' "$wear" >&2
     # shellcheck disable=SC2046
-    if ! waited_exec $(pass_env) lares node "$CLI" vault unlock; then
-      printf '%s\n' 'lares-container: the vessel still stands at the floor; open it with `lares-container.sh vault unlock`' >&2
+    if ! waited_exec $(pass_env) lares node "$CLI" vault unlock --all --face "$wear"; then
+      printf 'lares-container: the vessel still stands at the floor; open every face the credential opens with `lares-container.sh vault unlock --all --face %s`, or one face with `lares-container.sh vault unlock --face N`\n' "$wear" >&2
     fi
   else
-    printf '%s\n' 'lares-container: the vessel stands holding no vessel key; open it on a terminal: lares-container.sh vault unlock' >&2
+    printf 'lares-container: the vessel stands holding no vessel key; open it on a terminal: lares-container.sh vault unlock --all --face %s (every face the credential opens, wearing h%s; one face: --face N)\n' "$wear" "$wear" >&2
   fi
 }
 
@@ -478,5 +503,10 @@ case "$verb" in
       rite) route_cli "$verb" "$@" ;;
       *) route_cli "$verb" "$@" ;;
     esac ;;
+  vault)
+    # A `vault unlock --face N` that landed names the face the operator wears: the shim keeps it for the next stand.
+    if route_cli "$verb" "$@"; then rc=0; else rc=$?; fi
+    if [ "$rc" -eq 0 ] && [ "${1:-}" = unlock ]; then remember_worn_face "$@"; fi
+    exit "$rc" ;;
   *) route_cli "$verb" "$@" ;;
 esac

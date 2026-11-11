@@ -197,6 +197,7 @@ export function unlockFaceLines(a: CustodyDoorAnswer): string {
     const shut = readings.filter((r) => r.reading !== "opened").map((r) => `h${String(r.face)}`);
     parts.push(opened.length > 0 ? `opened ${opened.join(", ")}` : "opened no face");
     if (shut.length > 0) parts.push(`${shut.join(", ")} did not open under this route — run \`lares vault unlock --face N\` for each`);
+    if (typeof a["wears"] === "number") parts.push(`the vessel wears h${String(a["wears"])}`);
   }
   if (typeof a["switchRefused"] === "string") {
     parts.push(`the vessel wearing h${String(a["face"])} did not stand (${a["switchRefused"]}); h${String(a["wornAgain"])} stands worn again, and the vessel key stays held`);

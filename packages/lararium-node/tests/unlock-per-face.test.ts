@@ -149,6 +149,19 @@ describe("the unlock answers honestly, and a failed switch wears the face it lef
     expect(v.composed.length).toBe(composedBefore + 2);                        // the refused switch, then h0 again
   });
 
+  test("RED: `--all --face N` (the shim's re-wear) wears N where the route opened it, else face 0 — never a face that stayed shut", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, "the-second-face-route", FIXTURE_PASSPHRASE]);
+    const a = await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE), all: true, face: 2 });
+    expect(a).toMatchObject({ reading: "opens", held: true, wears: 2 });
+    expect(mountedFaceOrdinal()).toBe(2);
+    await v.send({ op: "lock" });
+    setMountedFace(undefined);
+    const b = await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE), all: true, face: 1 });
+    expect(b).toMatchObject({ reading: "opens", held: true, wears: 0 });
+    expect(mountedFaceOrdinal()).toBe(0);
+    expect(sovereignStands()).toBe(true);
+  });
+
   test("CONTROL: a fresh unlock whose composition refuses still drops the node key (a key never rests over a floor)", async () => {
     const v = await vessel([FIXTURE_PASSPHRASE], 0);
     const a = await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE), face: 0 });

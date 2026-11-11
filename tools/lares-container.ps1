@@ -217,16 +217,40 @@ function WarnImageRevision {
   }
 }
 
-# The vessel just stood (or restarted), so it holds no key. With a TTY, run the unlock attached; without one, name
-# it. A refused or abandoned unlock leaves the vessel standing at the floor and never fails the act that stood it.
+# THE FACE TO WEAR AGAIN. The mount never survives a restart, so the shim keeps the face the operator last wore through it
+# (`vault unlock --face N`) in the house's config (`config/last-worn-face`, a reset keeps it): after a stand or a restart it
+# opens every face the credential opens and wears that one again, else face 0.
+$WornFaceFile = Join-Path (Join-Path $House 'config') 'last-worn-face'
+function LastWornFace {
+  try { $w = (Get-Content -Raw -Path $WornFaceFile -ErrorAction Stop).Trim() } catch { $w = '' }
+  if ($w -match '^[0-9]+$') { return $w } else { return '0' }
+}
+function RememberWornFace([string[]]$argv) {
+  $face = ''
+  for ($i = 0; $i -lt $argv.Count; $i++) {
+    if ($argv[$i] -eq '--face' -and $i + 1 -lt $argv.Count) { $face = $argv[$i + 1]; $i++ }
+    elseif ($argv[$i] -like '--face=*') { $face = $argv[$i].Substring(7) }
+  }
+  if ($face -notmatch '^[0-9]+$') { return }
+  try {
+    New-Item -ItemType Directory -Force -Path (Join-Path $House 'config') | Out-Null
+    Set-Content -Path $WornFaceFile -Value $face -Encoding ascii
+  } catch { [Console]::Error.WriteLine('lares-container: the worn face could not be remembered; the next stand wears face 0') }
+}
+
+# The vessel just stood (or restarted), so it holds no key. With a TTY, run the unlock attached: it opens every face the
+# credential opens (`--all`) and wears the last worn face again (or face 0); without one, name that command. A refused or
+# abandoned unlock leaves the vessel standing at the floor and never fails the act that stood it. A hint never names the
+# bare command that fails on a vessel of several faces.
 function UnlockOrName {
   if (KeyHeld) { return }
+  $wear = LastWornFace
   if ($script:Tty) {
-    [Console]::Error.WriteLine('lares-container: the vessel stands holding no vessel key; unlocking it on this terminal')
-    & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv lares node $Cli vault unlock
-    if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the vessel still stands at the floor; open it with `lares-container.ps1 vault unlock`') }
+    [Console]::Error.WriteLine("lares-container: the vessel stands holding no vessel key; unlocking it on this terminal (every face the credential opens, wearing h$wear)")
+    & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv lares node $Cli vault unlock --all --face $wear
+    if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine("lares-container: the vessel still stands at the floor; open every face the credential opens with ``lares-container.ps1 vault unlock --all --face $wear``, or one face with ``lares-container.ps1 vault unlock --face N``") }
   } else {
-    [Console]::Error.WriteLine('lares-container: the vessel stands holding no vessel key; open it on a terminal: lares-container.ps1 vault unlock')
+    [Console]::Error.WriteLine("lares-container: the vessel stands holding no vessel key; open it on a terminal: lares-container.ps1 vault unlock --all --face $wear (every face the credential opens, wearing h$wear; one face: --face N)")
   }
 }
 
@@ -402,6 +426,11 @@ switch ($verb) {
     # Stopping the daemon stops the container's main process: a host act.
     elseif ($sub -eq 'stop') { if ($rest.Count -ne 1) { Die 'vessel stop takes no option through this shim' }; Compose @('stop', 'lares') }
     else { RouteCli (@($verb) + $rest) (-not $observing) }
+  }
+  'vault' {
+    # A `vault unlock --face N` that landed names the face the operator wears: the shim keeps it for the next stand.
+    RouteCli (@($verb) + $rest) $true
+    if ($rest.Count -gt 0 -and $rest[0] -eq 'unlock') { RememberWornFace $rest }
   }
   default { RouteCli (@($verb) + $rest) $true }
 }

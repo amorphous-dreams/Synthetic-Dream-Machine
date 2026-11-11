@@ -78,6 +78,8 @@ export type CustodyAnswer =
       readonly op: "unlock"; readonly held?: boolean;
       /** `--all`: each standing face's reading under the presented route, `opened` or `stayed-shut:<reading>`. */
       readonly faceReadings?: ReadonlyArray<{ readonly face: number; readonly reading: string }>;
+      /** `--all`: the face the composition wears after it. */
+      readonly wears?: number;
       /** A switch whose composition refused: the face it named, why, and the face worn again with the node key held. */
       readonly switchRefused?: string; readonly face?: number; readonly wornAgain?: number;
     } & HolderUnlock & Partial<CustodyStanding>)
@@ -254,6 +256,12 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       }
       if (standing.length > 0 && opened.length === 0) return refuseFaces("face-refused", { faces: readings.map((r) => r.reading), faceReadings });
       if (mounted === undefined && mountedBefore === undefined && opened.length === 1) mounted = opened[0];
+      // `--all --face N` (the shim's re-wear after a stand): N wears where this route opened it; where it stayed shut, face 0
+      // wears where it opened, else the first face that did, so the vessel stands on a face the operator holds open.
+      if (sel.face !== undefined && !opened.includes(sel.face) && opened.length > 0) {
+        mounted = opened.includes(0) ? 0 : opened[0];
+        deps.onLog(`unlock: face h${sel.face} stayed shut under this route; h${String(mounted)} worn instead`);
+      }
     } else if (sel.face !== undefined) {
       const r = await holder.unlockFace({ ordinal: sel.face }, credentials);
       if (r.reading !== "opens" && r.reading !== "already-unlocked") return refuseFaces("face-refused", { face: sel.face, faceReading: r.reading });
@@ -266,7 +274,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     } else if (standing.length > 1) {
       return refuseFaces("face-not-named", { faces: standing });
     }
-    const perFace = faceReadings !== undefined ? { faceReadings } : {};
+    const perFace = faceReadings !== undefined ? { faceReadings, ...(mounted !== undefined ? { wears: mounted } : {}) } : {};
     deps.onLog(`unlocked: slot ${u.reading === "opens" ? u.slot : "(held)"} opened the node key${mounted !== undefined ? `; face h${mounted} open` : ""}`);
     // The unlock NAMES the face the composition MOUNTS for the life of the unlock: the composition's own state, never a pointer at
     // rest, and never a face a command defaults to (a command names `--face N`, or resolves the one face standing open).

@@ -24,7 +24,7 @@ const havePwsh = spawnSync("pwsh", ["-NoProfile", "-Command", "1"]).status === 0
  * and a scratch house root, so no test reads a real `~/.lares`. `envAt: "clone"` plants the file beside the compose
  * file instead, where the shim must not look. `@HOUSE@` in an env value or an env file names the run's scratch house.
  */
-async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, checkout } = {}) {
+async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, checkout, wornFace } = {}) {
   const dir = await mkdtemp(join(tmpdir(), "lares-container-"));
   try {
     const log = join(dir, "calls.log");
@@ -43,6 +43,8 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     const compose = join(dir, "docker-compose.surface.yml");
     await writeFile(compose, "services: {}\n");
     const house = join(dir, "house");
+    // `wornFace` plants the face the shim last saw worn (`config/last-worn-face`), as a prior `vault unlock --face N` left it.
+    if (wornFace !== undefined) { await mkdir(join(house, "config"), { recursive: true }); await writeFile(join(house, "config", "last-worn-face"), `${wornFace}\n`); }
     const fill = (v) => typeof v === "string" ? v.replaceAll("@HOUSE@", house) : v;
     const home = env.HOME ? fill(env.HOME) : join(dir, "home");
     await mkdir(join(home, ".lares"), { recursive: true });
@@ -73,9 +75,10 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       ? spawnSync(cmd[0], cmd[1], { env: { ...base, ...filled }, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] })
       : spawnSync("script", ["-qec", [cmd[0], ...cmd[1]].map((a) => `'${a}'`).join(" "), "/dev/null"], { env: { ...base, ...filled }, encoding: "utf8", input: tty });
     let calls = ""; try { calls = await readFile(log, "utf8"); } catch {}
+    let worn = null; try { worn = (await readFile(join(house, "config", "last-worn-face"), "utf8")).trim(); } catch {}
     const made = {};
     for (const c of ["hearth", "sensoriums", "projections", "library", "config"]) { try { await readdir(join(house, c)); made[c] = true; } catch { made[c] = false; } }
-    return { ...r, calls, dir, made };
+    return { ...r, calls, dir, made, worn };
   } finally { await rm(dir, { recursive: true, force: true }); }
 }
 
@@ -254,13 +257,33 @@ for (const [name, shim] of shims) {
 
   // A VESSEL STANDS HOLDING NO KEY. With no TTY the shim names the one command that opens it, after every act
   // that stands or restarts the vessel; a vessel that already holds its key draws no line.
-  const NAMES_UNLOCK = new RegExp(`the vessel stands holding no vessel key; open it on a terminal: lares-container\\.${name} vault unlock`);
+  // A vessel of several faces refuses a bare unlock, so the hint names every face the credential opens and the face to wear.
+  const NAMES_UNLOCK = new RegExp(`the vessel stands holding no vessel key; open it on a terminal: lares-container\\.${name} vault unlock --all --face 0 `);
   test(`${name}: up names vault unlock when the vessel holds no key`, async () => {
     const r = await run(shim, ["up"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: '{"ok":true,"data":{"door":{"op":"custody","unlocked":false}}}' } });
     assert.equal(r.status, 0, r.stderr);
     assert.match(r.calls, /up -d --wait lares[\s\S]*exec (?:-e LARES_EXEC_TAG )?-T lares node \S+ vault status --json/);
     assert.match(r.stderr, NAMES_UNLOCK);
     assert.doesNotMatch(r.calls, /vault unlock/, "no TTY: the shim sends no unlock, it only names it");
+  });
+
+  test(`${name}: the unlock hint wears the face last worn through the shim, never the bare command`, async () => {
+    const r = await run(shim, ["up"], { wornFace: 2, env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: '{"data":{"door":{"unlocked":false}}}' } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.stderr, new RegExp(`open it on a terminal: lares-container\\.${name} vault unlock --all --face 2 \\(every face the credential opens, wearing h2; one face: --face N\\)`));
+    assert.doesNotMatch(r.stderr, new RegExp(`vault unlock(?! --all)(?! --face)\\s*$`, "m"));
+  });
+
+  test(`${name}: a vault unlock --face N that lands remembers the face to wear; a refused one, and a bare one, remember nothing`, async () => {
+    const worn = await run(shim, ["vault", "unlock", "--face", "1"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
+    assert.equal(worn.status, 0, worn.stderr);
+    assert.match(worn.calls, /exec (?:-e LARES_EXEC_TAG )?(?:-T )?lares node \S+ vault unlock --face 1/);
+    assert.equal(worn.worn, "1");
+    const refused = await run(shim, ["vault", "unlock", "--face", "2"], { wornFace: 1, env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_EXEC_RC: "1" } });
+    assert.notEqual(refused.status, 0);
+    assert.equal(refused.worn, "1");
+    const bare = await run(shim, ["vault", "unlock", "--all"], { wornFace: 1, env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
+    assert.equal(bare.worn, "1");
   });
 
   test(`${name}: CONTROL a vessel that holds its key draws no unlock line`, async () => {
