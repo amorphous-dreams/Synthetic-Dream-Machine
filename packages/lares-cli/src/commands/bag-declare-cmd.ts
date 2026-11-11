@@ -155,6 +155,11 @@ export async function cmdBagDeclare(args: ParsedArgs): Promise<number> {
   if (homeRaw !== undefined && !isBagHome(homeRaw.trim().toLowerCase())) {
     throw new BagUsageError(`--home expects one of ${BAG_HOMES.join(" | ")}, got "${homeRaw}"`);
   }
+  // THE VESSEL TIER IS THE SEED'S ALONE: a disk-sourced holding's CREATE stamps it on the catalog row; a declaration never
+  // names it, since a hearth bag's declaration would move a face-sealed document's row onto the floor every face reads.
+  if (tierRaw !== undefined && tierRaw.trim().toLowerCase() === "vessel") {
+    throw new BagUsageError("--tier vessel is no declaration: the seed stamps it on a disk-sourced holding's catalog row alone (`lares vessel seed --apply`), and no face-sealed bag ever takes it");
+  }
   const home = (homeRaw !== undefined ? homeRaw.trim().toLowerCase() : found.manifest.home) as BagHome;
   const next: BagManifest = {
     bag,

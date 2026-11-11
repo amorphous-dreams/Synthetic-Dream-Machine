@@ -30,7 +30,9 @@ import { wikiSlotUri, wikiWorkingFloorKey } from "../src/wiki-recipe.js";
 import { catalogNamedBags } from "../src/register-bags.js";
 import {
   catalogRowHalf, faceCatalogDocUrl, openFaceCatalog, FaceCatalogRefusal, FloorWikiRefusal, facelessWikiWaits, makeCatalogView, liftFaceCatalogRows, faceViewBook,
+  isVesselBagRow, mayStampVessel, keptRowTier,
 } from "../src/catalog-view.js";
+import { sealedBagMap } from "../src/sealed-rest.js";
 
 const secretA = new Uint8Array(32).fill(0xa1);
 const secretB = new Uint8Array(32).fill(0xb2);
@@ -260,5 +262,51 @@ describe("a vessel that wears no face boots no user wiki", () => {
     expect(facelessWikiWaits({ wikiId: "floor-user", source: "boot-arg", wikiBagId: user, faceWorn: true, catalog })).toBeNull();
     expect(facelessWikiWaits({ wikiId: "lares", source: "boot-arg", wikiBagId: bagUri("lares"), faceWorn: false, catalog })).toBeNull();
     expect(facelessWikiWaits({ wikiId: "shelf", source: "boot-arg", wikiBagId: pub, faceWorn: false, catalog })).toBeNull();
+  });
+});
+
+describe("the vessel tier rests on the floor (cap-tier.mem, vessel)", () => {
+  const tiered = (title: string, text: string, tier?: string) => storedLarRecord(title, { text, kind: "oracle", ...(tier ? { "cap-tier": tier } : {}) }, "test");
+
+  test("VT1 — a vessel-stamped bag row rests on F; face A's and face B's views both read it, and neither face's catalog holds it", async () => {
+    const { floor, faceA, faceB } = stand();
+    const viewA = makeCatalogView(floor, await faceA);
+    const viewB = makeCatalogView(floor, await faceB);
+    const canon = bagUri("sdm");
+    viewA.change((doc) => { doc.tiddlers[canon] = tiered(canon, "automerge:sdm", "vessel"); });
+    expect(catalogRowHalf(canon, ownEntry(floor.doc()?.tiddlers, canon) as never)).toBe("floor");
+    expect(isVesselBagRow(canon, ownEntry(floor.doc()?.tiddlers, canon) as never)).toBe(true);
+    expect(titlesOf((await faceA).doc())).not.toContain(canon);
+    expect(catalogNamedBags(viewB.doc())).toContain(canon);
+  });
+
+  test("VT2 — no face-sealed row takes the stamp; a fresh title or a floor row may", () => {
+    const user = bagUri("ledger");
+    expect(mayStampVessel(user, null)).toBe(true);
+    expect(mayStampVessel(user, tiered(user, "automerge:x") as never)).toBe(false);
+    expect(mayStampVessel(user, tiered(user, "automerge:x", "personagroup") as never)).toBe(false);
+    expect(mayStampVessel(user, tiered(user, "automerge:x", "public") as never)).toBe(true);
+    expect(mayStampVessel("not-a-bag", null)).toBe(false);
+    // A vessel stamp on a non-bag title names no book, so the row's title decides its half.
+    expect(isVesselBagRow("lar:///ha.ka.ba/wikis/x/working", tiered("lar:///ha.ka.ba/wikis/x/working", "automerge:x", "vessel") as never)).toBe(false);
+  });
+
+  test("VT3 — a re-registration keeps the vessel stamp; any other standing tier yields to the declared one", () => {
+    const b = bagUri("elyncia");
+    expect(keptRowTier(tiered(b, "automerge:e", "vessel") as never, null)).toBe("vessel");
+    expect(keptRowTier(tiered(b, "automerge:e", "vessel") as never, "public")).toBe("vessel");
+    expect(keptRowTier(tiered(b, "automerge:e", "public") as never, null)).toBeNull();
+    expect(keptRowTier(null, "public")).toBe("public");
+  });
+
+  test("VT4 — the sealed map seals no vessel-tier bag under a lit face, and still seals its sibling user bag", () => {
+    const canon = bagUri("elyncia"), user = bagUri("ledger");
+    const catalog = { tiddlers: { [canon]: tiered(canon, "automerge:canonDoc", "vessel"), [user]: tiered(user, "automerge:userDoc") } } as unknown as LarDoc;
+    const map = sealedBagMap({ face: () => "face:h1", bags: () => [canon, user], catalog: () => catalog, docsOf: (b) => [b === canon ? "canonDoc" : "userDoc"] });
+    expect(map.bagOf("canonDoc")).toBeNull();
+    expect(map.bagOf("userDoc")).toEqual({ bagId: user, face: "face:h1" });
+    const floorMap = sealedBagMap({ face: () => null, bags: () => [], catalog: () => catalog, docsOf: (b) => [b === canon ? "canonDoc" : "userDoc"] });
+    expect(floorMap.bagOf("canonDoc")).toBeNull();
+    expect(floorMap.bagOf("userDoc")).toEqual({ bagId: user, face: null });
   });
 });

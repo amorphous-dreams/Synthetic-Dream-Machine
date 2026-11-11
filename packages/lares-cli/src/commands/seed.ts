@@ -68,7 +68,9 @@ export async function seedHolding(
     const createCode = await foldCreateOutput(args, () => cmdAct({
       command: "act",
       positional: ["CREATE"],
-      options: { ...args.options, bag: h.toBag },
+      // THE VESSEL TIER: a disk-sourced holding is plaintext canon from git, so its row rests on the floor half and every
+      // face this vessel wears converges on its one document (cap-tier.mem, vessel).
+      options: { ...args.options, bag: h.toBag, tier: "vessel" },
       flags: { ...args.flags, yes: true },
     }));
     if (createCode !== 0) return { ...h, gesture: "ingest", exitCode: createCode };

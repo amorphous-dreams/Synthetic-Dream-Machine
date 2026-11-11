@@ -2,7 +2,7 @@
  * cap-tier.test.ts — the bag's sharing-posture as SELF-DESCRIBING DATA, with the SAFETY KEYSTONE at centre.
  *
  * Proven (pure):
- *   · the 4-tier TOTAL ORDER VEIL < PERSONAGROUP < CONTRACT < PUBLIC (rank + fail-closed default),
+ *   · the 5-tier TOTAL ORDER VEIL < VESSEL < PERSONAGROUP < CONTRACT < PUBLIC (rank + fail-closed default),
  *   · `parseCapTier` fail-closes any torn value to VEIL (isomorphic to `federationPostureFromDoc`),
  *   · `meetCapTier` = the more-restrictive (taint-meet): associative, VEIL absorbing, PUBLIC identity,
  *   · THE SAFETY KEYSTONE — `resolveTier(declared, floor)` = declared ∧ floor, TIGHTEN-ONLY: a bag that
@@ -25,10 +25,11 @@ import {
 
 const ALL: readonly CapTier[] = CAP_TIER_ORDER;
 
-describe("the total order — VEIL < PERSONAGROUP < CONTRACT < PUBLIC", () => {
+describe("the total order — VEIL < VESSEL < PERSONAGROUP < CONTRACT < PUBLIC", () => {
   test("rank ascends in openness; VEIL is the floor default", () => {
-    expect(CAP_TIER_ORDER).toEqual(["veil", "personagroup", "contract", "public"]);
-    expect(capTierRank("veil")).toBeLessThan(capTierRank("personagroup"));
+    expect(CAP_TIER_ORDER).toEqual(["veil", "vessel", "personagroup", "contract", "public"]);
+    expect(capTierRank("veil")).toBeLessThan(capTierRank("vessel"));
+    expect(capTierRank("vessel")).toBeLessThan(capTierRank("personagroup"));
     expect(capTierRank("personagroup")).toBeLessThan(capTierRank("contract"));
     expect(capTierRank("contract")).toBeLessThan(capTierRank("public"));
     expect(DEFAULT_CAP_TIER).toBe("veil");
@@ -189,6 +190,11 @@ describe("tierPermitsRelayPeer — the holder-set chain at the wire", () => {
     expect(tierPermitsRelayPeer("personagroup", true)).toBe(true);
     expect(tierPermitsRelayPeer("personagroup", false)).toBe(false);
     expect(tierPermitsRelayPeer("veil", true)).toBe(false);
+  });
+  test("VESSEL → no relay peer, member or not: checkout canon reaches every face of this vessel and crosses no boundary in the clear", () => {
+    expect(tierPermitsRelayPeer("vessel", true)).toBe(false);
+    expect(tierPermitsRelayPeer("vessel", false)).toBe(false);
+    expect(parseCapTier("vessel")).toBe("vessel");
   });
 });
 

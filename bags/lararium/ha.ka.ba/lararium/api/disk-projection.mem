@@ -131,6 +131,8 @@ A hand MAY add a future debug-only disk projection behind an explicit flag; it M
 
 `$:/config/lares/ProjectionFilter` holds an operator preference, the one title rule a mirror reads: its shipped text withholds the `$:/temp/` and `$:/state/` prefixes from every mirror, and its temp class withholds the house config (`PROJECTION_FILTER_TEXT`, `packages/lararium-mesh/src/projection-filter.ts`). It narrows a granted mirror and never selects a home; it carries no control, secret, residency, manifest or effect-title list. A residency effect stays with the affected bag, and the projector withholds it by its record kind, never by its title. No mirror grant names the control document or the daemon document, and no render of either reaches disk.
 
+''Checkout canon rests at the vessel tier.'' A disk-sourced holding's canon bag (its dir under the canon source the daemon resolves) carries plaintext canon from git: the seed's CREATE stamps its catalog row `cap-tier = vessel`, the row rests on the floor half, and its document seals under no face, so every face this vessel wears reads and mirrors the one document (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/cap-tier#/the-chain`>>). Its mirror stays the checkout's own `bags/<slug>/`; a face's private bags, working slots and daemon canon keep sealing under that face alone, and no secret enters the tier.
+
 ''Bag manifests belong to declaration.'' The catalog owns each bag-root `meta.mem`; a directory LOAD omits only that root declaration, by ownership.
 
 ''Meme:'' `lar:///ha.ka.ba/lararium/api/disk-projection`
@@ -243,6 +245,6 @@ between casual chat-use and the defined parser core.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;K0rC-k_tErMDN4YAPXmOXdUcxZ6rNOJzltv_o4X0tBo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rMdYsiWzZLCYbZEknHdh1q1dtkSu_r9ohgS-LBpCSGQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

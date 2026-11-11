@@ -164,6 +164,9 @@ export interface CreateAction extends ResidencyActionBase {
   readonly verb:        "CREATE";
   readonly bag:         string;
   readonly plane:       "catalog" | "oracle";
+  /** `vessel`: the seed's CREATE over a disk-sourced holding stamps its catalog row `cap-tier = vessel`, so the row rests on
+   *  the floor half and every face finds the one document (catalog-view `isVesselBagRow`). Absent: the row's class decides. */
+  readonly tier?:       "vessel";
 }
 
 /** One carrier of external content riding a LOAD verb. The operator-side
@@ -377,7 +380,7 @@ export function encodeResidencyArgs(action: ResidencyAction): ResidencyArgs {
     case "DROP":
       return { bag: action.bag };
     case "CREATE":
-      return { bag: action.bag, plane: action.plane };
+      return { bag: action.bag, plane: action.plane, ...(action.tier ? { tier: action.tier } : {}) };
     case "LOAD":
       return {
         "source-uri": action.sourceUri,
@@ -524,7 +527,11 @@ export function parseResidencyAction(inv: Verb): ResidencyAction | null {
     // designates the system/temple plane. TODO(name): plane-signal name co-designed
     // with the operator (the `--plane` flag below is a provisional placeholder).
     const plane = str("plane") === "oracle" ? "oracle" : "catalog";
-    return { ...base, verb: "CREATE", bag, plane };
+    // The one tier a CREATE may stamp: `vessel`, on the catalog plane. Any other spelling refuses rather than mint a row
+    // whose tier nobody asked for.
+    const tier = args["tier"];
+    if (tier !== undefined && (tier !== "vessel" || plane !== "catalog")) return null;
+    return { ...base, verb: "CREATE", bag, plane, ...(tier === "vessel" ? { tier: "vessel" as const } : {}) };
   }
 
   // verb === "LOAD" — only ActionVerb left after the guards above.

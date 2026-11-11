@@ -3,7 +3,7 @@
  *
  * A bag's cap-tier answers ONE question — WHO holds the read-cap — as a CHAIN by set-inclusion:
  *
- *     VEIL{this-vessel} ⊂ PERSONAGROUP{your-fleet} ⊂ CONTRACT{your-fleet ∪ a-cabal} ⊂ PUBLIC{world}
+ *     VEIL{this-vessel} ⊂ VESSEL{every face of this-vessel} ⊂ PERSONAGROUP{your-fleet} ⊂ CONTRACT{your-fleet ∪ a-cabal} ⊂ PUBLIC{world}
  *
  * Sealing-on-the-wire stays UNIVERSAL (everything leaving a vessel travels ciphertext); cleartext
  * lives ONLY inside a vessel (VEIL) or is world-readable (PUBLIC). PERSONAGROUP and CONTRACT ride
@@ -28,22 +28,26 @@
  */
 
 /**
- * CapTier — the four read-cap holder-sets, named as a TOTAL ORDER from most-restrictive to most-open.
- * The order IS the set-inclusion chain (VEIL ⊂ PERSONAGROUP ⊂ CONTRACT ⊂ PUBLIC): a lower rank names a
+ * CapTier — the five read-cap holder-sets, named as a TOTAL ORDER from most-restrictive to most-open.
+ * The order IS the set-inclusion chain (VEIL ⊂ VESSEL ⊂ PERSONAGROUP ⊂ CONTRACT ⊂ PUBLIC): a lower rank names a
  * SMALLER holder-set (fewer readers → more restrictive).
  *
  *   · "veil"         — {this-vessel}. Cleartext-local; NOTHING crosses a vessel boundary in the clear.
+ *   · "vessel"       — {every face of this-vessel}. Plaintext canon a checkout carries (git), read by every face this
+ *                      vessel wears and sealed under none; its catalog row rests on the floor half (catalog-view). It
+ *                      carries no secret, ever: only a disk-sourced holding's row takes it (the seed's CREATE), and a
+ *                      row resting on a face's half (a face-sealed document) never does. Relay-wise it answers as VEIL.
  *   · "personagroup" — {your-fleet}. Delivered by lockbox to the operator's own persona fleet.
  *   · "contract"     — {your-fleet ∪ a-cabal}. Delivered by lockbox to the fleet PLUS a contracted cabal.
  *   · "public"       — {world}. World-readable (the deterministically-federatable public shelf).
  */
-export type CapTier = "veil" | "personagroup" | "contract" | "public";
+export type CapTier = "veil" | "vessel" | "personagroup" | "contract" | "public";
 
 /**
- * The total order, ascending in OPENNESS (index = rank). VEIL(0) < PERSONAGROUP(1) < CONTRACT(2) < PUBLIC(3).
+ * The total order, ascending in OPENNESS (index = rank). VEIL(0) < VESSEL(1) < PERSONAGROUP(2) < CONTRACT(3) < PUBLIC(4).
  * The array IS the order; `capTierRank` reads an index off it — no scattered magic numbers.
  */
-export const CAP_TIER_ORDER: readonly CapTier[] = ["veil", "personagroup", "contract", "public"] as const;
+export const CAP_TIER_ORDER: readonly CapTier[] = ["veil", "vessel", "personagroup", "contract", "public"] as const;
 
 /**
  * The fail-closed DEFAULT — a bag that declares nothing (or declares a torn value) reads VEIL: the most
@@ -57,7 +61,7 @@ export function capTierRank(tier: CapTier): number {
 }
 
 /**
- * parseCapTier — read a self-describing tier datum, FAIL-CLOSED to VEIL. Any value but the four exact
+ * parseCapTier — read a self-describing tier datum, FAIL-CLOSED to VEIL. Any value but the five exact
  * literals (absent, torn, mis-cased-beyond-lowercasing, an unknown string) reads VEIL — a torn datum must
  * NEVER silently open a bag. Isomorphic to `federationPostureFromDoc` (only the exact `"open"` opens).
  */
@@ -258,7 +262,8 @@ export function resolveTierForDoc(ring: CapTierRing, documentId: string): CapTie
  *   · PUBLIC                 → any relay peer (the world holds the read-cap).
  *   · CONTRACT / PERSONAGROUP → a MEMBER peer only (the fleet∪cabal / fleet holder-set; the wire shore
  *                               cannot split fleet from cabal, so both member-tiers read "member peer").
- *   · VEIL                    → NO relay peer (nothing crosses a vessel boundary in the clear).
+ *   · VESSEL / VEIL           → NO relay peer (a vessel tier reaches every face of THIS vessel, and nothing crosses
+ *                               a vessel boundary in the clear; a peer reads checkout canon off its own checkout).
  *
  * This is a pure TIGHTENING predicate: the gate ANDs it with the structural verdict, and because the
  * resolved tier is ≤ the structural floor, it can only ever ADD a deny, never an allow.
@@ -268,6 +273,7 @@ export function tierPermitsRelayPeer(resolved: CapTier, holdsCarriagePeer: boole
     case "public":       return true;
     case "contract":     return holdsCarriagePeer;
     case "personagroup": return holdsCarriagePeer;
+    case "vessel":       return false;
     case "veil":         return false;
   }
 }

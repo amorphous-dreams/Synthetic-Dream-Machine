@@ -31,8 +31,9 @@ import type { HeldRestKey } from "./held-rest-key.js";
 import type { CompositeStore } from "./composite-store.js";
 import type { LarTiddlerStore } from "./tiddler-store.js";
 import type { LarDoc } from "./base-doc.js";
-import { catalogRowHalf } from "./catalog-view.js";
+import { catalogRowHalf, isVesselBagRow } from "./catalog-view.js";
 import { isBagId } from "./lar-uris.js";
+import type { StoredLarRecord } from "./stored-value.js";
 
 // ── The book ────────────────────────────────────────────────────────────────────────────────────
 /** What a booking reads: the session whose seal a document's next save signs under, and who wrote its latest change. */
@@ -512,7 +513,8 @@ export function composeSealedRest<S extends SaveSession>(input: {
  * sealed and the floor catalog names public bags alone, so with no face lit every bag row of `catalog` that rests on a
  * face's half (`catalogRowHalf`: a user bag, a wiki, a slot binding) names a sealed bag whose face has not lit
  * (`face: null`): its document neither loads nor rests clear. A public row (`cap-tier = public`) and the floor's own rows
- * map no bag, and read as the engine wrote them.
+ * map no bag, and read as the engine wrote them. A VESSEL-TIER row (`cap-tier = vessel`, the seed's stamp over checkout canon)
+ * maps no bag at the floor nor under a lit face: every face reads its one clear document.
  */
 export function sealedBagMap(input: {
   readonly face: () => string | null;
@@ -526,7 +528,13 @@ export function sealedBagMap(input: {
     bagOf(documentId) {
       const face = input.face();
       if (face !== null) {
-        for (const bagId of input.bags()) if (ids(bagId).includes(documentId)) return { bagId, face };
+        const catalog = input.catalog?.()?.tiddlers;
+        for (const bagId of input.bags()) {
+          // A VESSEL-TIER BAG seals under no face (cap-tier.mem, vessel): a worn wiki whose canon bag carries the stamp keeps
+          // that canon clear for every face, read at each ask, so the seed's stamp takes effect with no re-boot.
+          if (isVesselBagRow(bagId, (catalog?.[bagId] ?? null) as StoredLarRecord | null)) continue;
+          if (ids(bagId).includes(documentId)) return { bagId, face };
+        }
         return null;
       }
       for (const [title, row] of Object.entries(input.catalog?.()?.tiddlers ?? {})) {

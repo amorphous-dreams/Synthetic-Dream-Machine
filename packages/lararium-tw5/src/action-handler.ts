@@ -43,7 +43,7 @@ import type {
   ResidencyAction, AddAction, CopyAction, MoveAction, ClearAction, DropAction, LoadAction, IngestAction, CreateAction,
   WikiSlotKind,
 } from "@lararium/mesh";
-import { isSystemCanonBag, plainRecordOrNull, requireKahuReach, ownEntry } from "@lararium/mesh";
+import { isSystemCanonBag, plainRecordOrNull, requireKahuReach, ownEntry, mayStampVessel, isVesselBagRow, plainField, CATALOG_ROW_TIER_FIELD, VESSEL_CAP_TIER } from "@lararium/mesh";
 import type { KahuReachSource } from "@lararium/mesh";
 import {
   ACTION_VERBS, type ActionVerb, AutomergeDocStore,
@@ -775,11 +775,16 @@ async function executeCREATE(action: CreateAction, access: BagAccess, opts: Acti
   // never a second `creation` record. A RETIRED doc falls through to the mint
   // below, which re-points this same registry row.
   const existing = await registry.urlOf(action.bag).catch(() => null);
+  const vessel = action.tier === VESSEL_CAP_TIER;
   if (existing && !(await bagRetiredDisposition(reach.repo, action.bag, existing))) {
     // `count` reads the standing bag's CONTENT titles (the ledger is audit, not content).
     const standing = await registry.storeOf(action.bag).catch(() => null);
     const count = standing ? (await standing.listVisible()).filter((t) => !isEffectRecordUri(t)).length : 0;
-    return { bag: action.bag, plane: action.plane, docUrl: existing, alreadyStood: true, count };
+    // THE VESSEL STAMP ON A RE-SEED: a row already on the floor half takes it (it reads clear already); a row resting on a
+    // face's half names a document that face sealed, and it never moves to the floor every face reads (`mayStampVessel`):
+    // the answer names it, the bag stands as it stood, and only a re-founding mints its canon at the vessel tier.
+    const tierOut = vessel && !dryRun ? await stampVesselRow(registry, action.bag, existing) : {};
+    return { bag: action.bag, plane: action.plane, docUrl: existing, alreadyStood: true, count, ...tierOut };
   }
   // A BAG THAT RESOLVES ELSEWHERE STANDS ALREADY. The bag's own resolution answers, never a name list: a system canon
   // bag rests in the Kahu realm (named by the realm's bag row), and another plane may hold a bag this plane's registry
@@ -815,11 +820,32 @@ async function executeCREATE(action: CreateAction, access: BagAccess, opts: Acti
     // different object.
     await opts.registerBag?.(action.bag);
     const regHandle = await registry.handle();
+    // A VESSEL-TIER ROW rests on the floor half (catalog-view `isVesselBagRow`): every face this vessel wears finds this one
+    // document, and the next face's seed converges on it rather than minting a second under its own catalog.
     regHandle.change((doc) => {
-      doc.tiddlers[action.bag] = storedLarRecord(action.bag, { text: docUrl, kind: "oracle" }, "lares-verb:CREATE");
+      doc.tiddlers[action.bag] = storedLarRecord(action.bag, { text: docUrl, kind: "oracle", ...(vessel ? { [CATALOG_ROW_TIER_FIELD]: VESSEL_CAP_TIER } : {}) }, "lares-verb:CREATE");
     });
-    return { bag: action.bag, plane: action.plane, docUrl, count: 0 };
+    return { bag: action.bag, plane: action.plane, docUrl, count: 0, ...(vessel ? { tier: VESSEL_CAP_TIER } : {}) };
   });
+}
+
+/**
+ * Stamp a standing row `cap-tier = vessel` where it may take it (`mayStampVessel`: a row on the floor half), or name why it
+ * stays: a row on a face's half names a face-sealed document, and no secret enters the vessel tier.
+ */
+async function stampVesselRow(registry: ReturnType<typeof makeCatalogAccessor>, bag: string, docUrl: string): Promise<Record<string, unknown>> {
+  const handle = await registry.handle();
+  const standing = ownEntry(handle.doc()?.tiddlers, bag);
+  if (isVesselBagRow(bag, standing)) return { tier: VESSEL_CAP_TIER };
+  if (!mayStampVessel(bag, standing)) {
+    return { vesselRefused: `vessel-face-sealed: ${bag} rests on a face's half of the catalog, so its document stands sealed under that face; it keeps its row, and no other face reads it (a re-founding mints its canon at the vessel tier)` };
+  }
+  const standingKind = plainField(standing, "kind");
+  const kind = typeof standingKind === "string" && standingKind.length > 0 ? standingKind : "oracle";
+  handle.change((doc) => {
+    doc.tiddlers[bag] = storedLarRecord(bag, { text: docUrl, kind, [CATALOG_ROW_TIER_FIELD]: VESSEL_CAP_TIER }, "lares-verb:CREATE");
+  });
+  return { tier: VESSEL_CAP_TIER, restamped: true };
 }
 
 /**

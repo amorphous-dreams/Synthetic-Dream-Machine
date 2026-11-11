@@ -15,7 +15,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/catalog-view
  */
 
-import { CATALOG_ROW_TIER_FIELD, ownEntry, plainField, storedLarRecord, tiddlerText, type CapTier } from "@lararium/mesh";
+import { CATALOG_ROW_TIER_FIELD, isVesselBagRow, ownEntry, plainField, storedLarRecord, tiddlerText, type CapTier } from "@lararium/mesh";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import type { CatalogAccessor } from "./catalog-accessor.js";
 import { stringArg } from "./handler-args.js";
@@ -34,6 +34,9 @@ export function makeRestampBagTierReactor(opts: RestampBagTierOptions): VerbReac
     const standing = ownEntry(handle.doc()?.tiddlers, bagUrl);
     const url = tiddlerText(standing);
     if (!standing || !url) return { bagUrl, status: "no-row" };
+    // A VESSEL-TIER ROW keeps its stamp: the seed laid it over checkout canon every face reads, and a declaration never moves
+    // it (catalog-view `keptRowTier`).
+    if (isVesselBagRow(bagUrl, standing)) return { bagUrl, status: "unchanged", tier: "vessel" };
     const tier = opts.bagTier(bagUrl) === "public" ? "public" : null;
     if ((plainField(standing, CATALOG_ROW_TIER_FIELD) ?? null) === tier) return { bagUrl, status: "unchanged", tier };
     handle.change((doc) => {

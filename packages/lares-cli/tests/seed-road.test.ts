@@ -68,7 +68,8 @@ describe("the seed feeds every disk-sourced holding through CREATE then INGEST",
       const row = await seedHolding(applied, h);
       expect(row).toMatchObject({ holding: slug, gesture: "ingest", exitCode: 0 });
       expect(calls.map((c) => `${c.command}:${c.positional[0] ?? ""}`)).toEqual(["act:CREATE", "ingest:"]);
-      expect(calls[0]!.options).toMatchObject({ bag: h.toBag });
+      // The vessel tier rides the seed's CREATE: checkout canon rests on the floor half every face reads (cap-tier.mem, vessel).
+      expect(calls[0]!.options).toMatchObject({ bag: h.toBag, tier: "vessel" });
       expect(calls[1]!.options).toMatchObject({ source: h.source, to: h.toBag });
     }
   });
