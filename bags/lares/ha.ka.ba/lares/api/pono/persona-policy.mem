@@ -31,7 +31,7 @@ The multi-persona identity core (persona-circle: a human as a private Circle of 
 
 !! Ruling 1 ~ one face per act (PRIVATE-all, PUBLIC-one)
 
-''Every act carries exactly ONE face.'' A SESSION wears it, and the vessel wears none (#/the-session). A session's public/carry shore serves ''only the persona that session WEARS''; the human's own private pool sees ''all N''. So the disclosure asymmetry reads: ''PRIVATE-all, PUBLIC-one'' — the multitude stays whole inside, one persona reaches outward.
+''Every act carries exactly ONE face.'' A SESSION wears it, and the vessel wears none (#/the-session). A session's public/carry shore serves ''only the persona that session WEARS''; the human's own private pool sees ''all N''. So the disclosure asymmetry reads: ''PRIVATE-all, PUBLIC-one'' — the multitude stays whole inside, one persona reaches outward. The multitude reads as a private cabal of one human (operator ruling 2026-11-11: //"the multitude of faces reads as a private cabal for 1 human. Pattern integrities!"//): one face shares with another through the cabal grammar, a seat in a realm, never a parallel list (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench`>>).
 
 ''A face names WHO ANSWERS for an act'' — one blame-bearer per act; correlation stays secondary. The ruling calls for recording outgoing and incoming faces locally with causal position and rebind/re-dial results, closing the switching session's Nexus links, then re-dialing as the incoming face (#/the-session: the switch belongs to ONE session and touches no other). The recorded switch act stands ruled, unbuilt: the code as it stands keeps ONE vessel-wide selector and resolves one worn face at vessel boot, so a switch takes a restart until that act lands. A session wears ONE face at a time, either a private face alone or paired with its public Handle; a personal Handle never rides without its owning face.
 
@@ -69,13 +69,13 @@ The wall stays custody-by-TYPE: acting as a face ''REQUIRES that this vessel HOL
 
 !!! The switch ~ one session's act
 
-''A switch belongs to ONE session.'' It closes that session's Nexus links, resolves the incoming face, and re-dials as that face; every other session the vessel holds stays untouched. A command names its face (`--face N`) or resolves the one face standing open; no verb wears a face between commands. A face resolves once per session's island boot, never once per vessel boot. The vessel keeps the record (#/one-face) as a vessel-local causal act; the record never crosses the wire. The act's five steps stand at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/session-contract#/the-switch`>>.
+''A switch belongs to ONE session.'' It closes that session's Nexus links, resolves the incoming face, and re-dials as that face; every other session the vessel holds stays untouched. A command names its face (`--face N`, which must stand open, else `face-not-open`) or resolves the one face standing open; with several open and none named it refuses and asks for `--face N` (`face-selector.ts` `resolveFace`). No verb wears a face between commands. A face resolves once per session's island boot, never once per vessel boot. The vessel keeps the record (#/one-face) as a vessel-local causal act; the record never crosses the wire. The act's five steps stand at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/session-contract#/the-switch`>>.
 
 !!! OWED ~ the build
 
 The code as it stands cracks against the ruling in three places (read 2026-10-11, nothing run):
 
-# ''One vessel-wide selector, at the browser alone.'' The node keeps no selector and no `persona wear`: a node command names its face or resolves the one face standing open, and the unlock's face is the face the composition mounts. The browser's `wearPersona` (`packages/lararium-mesh/src/persona-vault.ts`) still moves one active pointer, and its boot resolves ONE worn face.
+# ''One vessel-wide worn face.'' The node keeps no `persona wear`. Its lit set keeps several faces OPEN, each sealing under its own key, and one face WORN: the face `lares vault unlock --all --face N` names, the face the composition mounts, and the face the AI seat acts as (`wornOrdinal`, `seat-hand.ts`; <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set`>>). The container shim keeps the last worn face (`config/last-worn-face`) and wears it again after a stand. The worn face reads vessel-wide, so the per-session wear stays owed. The browser's `wearPersona` (`packages/lararium-mesh/src/persona-vault.ts`) still moves one active pointer, and its boot resolves ONE worn face.
 # ''The gate proof names the VESSEL.'' The leaf identity presents a selected face's atom and card at a face gate; the place carries only its public floor card and pin while faceless. Each face holds its own Keyhive identity by atom.
 # ''The holder broadcasts.'' The shared holder forwards every island message to every tab (`packages/lararium-browser/src/shared-holder-core.ts`), and the PersonaGroup ring's own-hand path skips the grant check (`packages/lararium-mesh/src/persona-group-ring.ts`), so plane names separate bags without authorizing sessions.
 
@@ -259,6 +259,6 @@ So the mesh ''declines to build the SIN even to defend itself''. It could bind p
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;w-aaBUJoVdv9IOrXTIfMJQ9AqvLwkbFrLGv3wIgfU38`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;FJCQDoOukCYxGOPZMtAXwUce_mGOT6AOVupedk_yL6g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

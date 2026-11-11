@@ -390,10 +390,10 @@ The design names that unavailability and does not cure it. A recovery authority 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity#/vessel-key`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/no-global-now`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/session-contract#/the-working-layer`>> ~ receives the face secret at join for scoped wiki writes
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/session-contract#/the-working-layer`>> ~ the join that seats a vessel for the face's wiki writes
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;MA7R9dWCMlLlDh0y1FWpESrQF26H28VA681cAVERX4U`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;LrrOUrGKR45PgCt112I0NzS2g8-rrzevDPBYvFLa8RA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

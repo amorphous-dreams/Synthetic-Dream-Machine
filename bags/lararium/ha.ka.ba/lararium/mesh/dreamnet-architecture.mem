@@ -237,7 +237,7 @@ Rulings from the operator, 2026-11-04 and 2026-11-05. The ward lands as row 7 of
 
 !!! A cloud of faces, never a registry
 
-A human holds plural faces (PersonaGroups), and each face is a relation with its own fleet. ''Fleets overlap'': one vessel may stand enrolled in several faces, with ''one active face per device or session''. A face holds its own signed device set, folded from its admissions. The human appears in no record. The human stays the hand that knows each face's passphrase, so the overlap forms a cloud, never a list of who owns which device.
+A human holds plural faces (PersonaGroups), and each face is a relation with its own fleet. ''Fleets overlap'': one vessel may stand enrolled in several faces, and several of them may stand ''open'' on it at once, each sealing under its own key, while ''one face stands worn'': the face the unlock names and the composition mounts, the one the AI seat acts as (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set`>>). The multitude of faces reads as a private cabal of one human: a face shares with another face by the cabal grammar, never by a parallel list (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench`>>). A face holds its own signed device set, folded from its admissions. The human appears in no record. The human stays the hand that knows each face's passphrase, so the overlap forms a cloud, never a list of who owns which device.
 
 !!! The ward binds the hearth's own fire
 
@@ -679,6 +679,6 @@ The carriage-client fetch row stays OWED (measured 2026-10-22). The vessel-side 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;lvfDcbDBNCEIjatkSDjh2QixwAkDmh8DGeKCraoEoQg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Bo47qLqsxwNRaOBvMiJxTDrLXn3C8Nt9MbmFNBaH60s`>>
 
 <<^ code=`&#x0004;` to=`?`>>

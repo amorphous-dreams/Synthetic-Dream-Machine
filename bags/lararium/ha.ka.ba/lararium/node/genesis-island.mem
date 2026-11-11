@@ -40,7 +40,7 @@ verification witness.
 artifact's shape to one host, and every host must agree on the artifact exactly.
 
 ''What does NOT belong here.'' Corpus memes load at runtime through the bag store's recipe stack, and
-the runtime document urls each vessel keeps (its crossroads pointer in its own catalog; the live system documents in
+the runtime document urls each vessel keeps (its crossroads pointer in its own catalog; the live house-canon documents in
 the Kahu realm's registrations) never enter the island. Neither counts as genesis material: the vessel carries the first as
 content and discovers the second as state.
 
@@ -121,6 +121,6 @@ than none, because every vessel downstream would carry the lie by hash.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/keyhive/capability-provider`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;9fqxlho0ZrTaqnB5f5_d_QXa5NVRqNSGKzX4yLx4CFA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Zed-iRf-tCgDvTEEGsXIdi9X87v32yM_Tzmrszf8VQY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

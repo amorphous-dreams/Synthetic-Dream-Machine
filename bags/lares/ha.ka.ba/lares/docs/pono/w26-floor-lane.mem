@@ -31,7 +31,7 @@ Roadmap row `W26` carries the build of two operator rulings: //the system wikis 
   CONTENT PLANE (CAS)   immutable bytes by CID: engine, grammar, plugins, corpus snapshots.
                         Anyone reads; nobody writes in place; a herm carries and never reads private bytes.
 
-  FLOOR                 a manifest CID naming the lares and lararium snapshots and the engine.
+  FLOOR                 a manifest CID naming one snapshot per house-canon bag and the engine.
                         Read-only and history-free. Genesis carries the first floor.
   RELEASE ANSWER        one per Nexus, on its crossroads board: the Nexus AID, the charter epoch,
                         the release before it, the floor manifest CID. The steward seals it; the
@@ -43,17 +43,18 @@ Roadmap row `W26` carries the build of two operator rulings: //the system wikis 
     vessel bootstrap    this vessel: its daemon url, its own document pointers, its face planes,
                         its control home: the accepted floor pin, one per Nexus
     catalog-plane            the operator's documents, at the operator's scope
-    Kahu realm          the cabal: the LIVE lares and lararium documents and their drafts
+    Kahu realm          the cabal: the LIVE house-canon documents and their drafts, at contract
     crossroads board    the Nexus: its one public answer, the release
 
   A WIKI                a recipe over bags: oracle-floor floor (pinned CID, read-only) < libraries
-                        (read-only) < its own canon (promotion only) < working-slot (every save
-                        lands here) < draft-slot, personal-slot, temp-slot. An edit copies up; a promotion
-                        moves down by receipt; system canon moves only as a Kahu-cabal promotion
-                        in the realm, and reaches everyone else only as a release.
+                        (read-only) < its own canon (promotion only) < working-slot (the realm
+                        workbench; every save lands here) < personal-slot < draft-slot < temp-slot.
+                        An edit copies up; a promotion moves down by receipt; house canon moves
+                        only as a Kahu-cabal promotion in the realm, and reaches everyone else
+                        only as a release.
 ```
 
-''What the shape answers.'' The `lares` and `lararium` documents live in one place, the Kahu realm of the Nexus whose cabal writes them; on a lone hearth that realm belongs to its operator, who stands as its own Kahu. Every other vessel holds their snapshots by CID. A vessel's own pointers rest in its own bootstrap, so no shared document hosts another vessel's url and nothing merges across siblings. A wiki's floor moves only on a person's accept of a signed release, vessel by vessel and Nexus by Nexus (#/the-vessel-pin), so one vessel may hold two Nexuses' floors, and a face switch moves no floor.
+''What the shape answers.'' The house-canon documents (`lares` and `lararium` on every vessel, and every other disk-sourced holding but the public board `crossroads`) live in one place, the Kahu realm of the Nexus whose cabal writes them, at contract; on a lone hearth that realm belongs to its operator, who stands as its own Kahu. Every other vessel holds their snapshots by CID, and those snapshots read public. A vessel's own pointers rest in its own bootstrap, so no shared document hosts another vessel's url and nothing merges across siblings. A wiki's floor moves only on a person's accept of a signed release, vessel by vessel and Nexus by Nexus (#/the-vessel-pin), so one vessel may hold two Nexuses' floors, and a face switch moves no floor.
 
 <<~/ahu>>
 
@@ -72,14 +73,14 @@ Roadmap row `W26` carries the build of two operator rulings: //the system wikis 
 
 !! The slices ~ each red-first, in the order what inherits shape from what
 
-# ''The floor.'' A manifest CID names history-free snapshots of the `lares` and `lararium` rows beside the engine CIDs; `@oracle` mounts as its read-face, read-only, under every recipe; genesis bakes the first floor, its corpus CID in the seed, in one labelled `GENESIS RE-BAKE`. Red: a minted wiki reads a system carrier through `@oracle` and its write refuses.
+# ''The floor.'' A manifest CID names one history-free snapshot per house-canon bag beside the engine CIDs (`lararium-floor`, `snapshots` keyed by slug); `@oracle` mounts as its read-face, read-only, under every recipe; genesis bakes the first floor, its corpus CID in the seed, in one labelled `GENESIS RE-BAKE`. Red: a minted wiki reads a system carrier through `@oracle` and its write refuses.
 # ''Pointers go home.'' Each vessel's own document pointers leave the shared document for its bootstrap; the shared `@oracle` document as a writable registry retires. `shared-oracle-doc.probe` (`packages/lararium-node/tests/shared-oracle-doc.probe.test.ts`) turns into this slice's red: two synced vessels each keep their own pointer. `W21` re-cuts here: a joinee mounts its hearth's floor by CID.
-# ''The live system documents rest in the Kahu realm'', under persona zero's group until `K15`'s face context stands and the Kahu face's own group takes the seat (#/the-seam-owed-to-wave-c). A one-seat founding lands a counted 1-of-1 Kahu-cabal admission for persona zero's group; `kahuCabalCanonAccess` carries the production reads (`kahu-cabal-admission.ts`); `bags/` projects on the Kahu's vessel alone. A one-seat founding reads system canon through it over a founded island, a lone hearth's `working-loop` promotion lands, and a second vessel holds no live system document. Each document's id derives from the steward's seed and the Kahu canon counts only the steward's own sealed registrations (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu`>>).
+# ''The live house-canon documents rest in the Kahu realm'' at contract, under persona zero's group until `K15`'s face context stands and the Kahu face's own group takes the seat (#/the-seam-owed-to-wave-c). A one-seat founding lands a counted 1-of-1 Kahu-cabal admission for persona zero's group; `kahuCabalCanonAccess` carries the production reads (`kahu-cabal-admission.ts`); `bags/` projects on the Kahu's vessel alone. A one-seat founding reads house canon through it over a founded island, a lone hearth's `working-loop` promotion lands, and a second vessel holds no live house-canon document; the vessel tier stands nowhere, so the Kahu steward alone writes and every other face reads the floor. Each document's id derives from the steward's seed and the Kahu canon counts only the steward's own sealed registrations (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu`>>).
 # ''The release answer.'' One porch body per Nexus, sealed by the steward under its own signing domain, `floor-release` (operator-approved, 2026-10-18), the promotion approval over the manifest's exact bytes attached; the Nexus's publication board carries it (`publicationDocUrl`, apart from the mirrored crossroads document); `P8` folds in. `ORACLE_POINTER_DOMAIN` retires once releases stand.
 # ''The accept act.'' A person's act moves the VESSEL's pin per Nexus to a newer release that verifies against that Nexus's charter at its epoch and descends from the pinned release along `prior`; no clock and no automatic accept. With no Nexus speaking, a vessel stands on its last accepted floor, or genesis. It stands built (#/the-vessel-pin).
-# ''Reach into system canon.'' Every residency verb into `bags/lares` or `bags/lararium` refuses a hand outside the Kahu cabal, through the one predicate slice 3 seats; the skipped red in `unbuilt-laws.test.ts` ("a non-Kahu MOVE into a canon bag refuses") greens here.
+# ''Reach into house canon.'' Every residency verb into a house-canon bag (`isHouseCanonBag`) refuses a hand outside the Kahu cabal, through the one predicate slice 3 seats; the skipped red in `unbuilt-laws.test.ts` ("a non-Kahu MOVE into a canon bag refuses") greens here.
 
-''Beside the slices.'' `herm-reshares-public-blob` re-aims onto a public user bag: it tests a herm's re-share of a public blob, and a peer's write into system canon belongs to the Kahu alone. The re-aim travels to the mesh-goldens lane as a patch, beside the layer instrument that measured step ③.
+''Beside the slices.'' `herm-reshares-public-blob` re-aims onto a public user bag: it tests a herm's re-share of a public blob, and a peer's write into house canon belongs to the Kahu alone. The re-aim travels to the mesh-goldens lane as a patch, beside the layer instrument that measured step ③.
 
 <<~/ahu>>
 
@@ -98,7 +99,7 @@ island's source (`kahuReachSourceOf`) and the doors' one predicate (`requireKahu
 
 ''THE WIKI ISLAND TRUSTS THE GATE.'' A verb routed into a wiki island (`lares act --in-wiki`, `wiki-act`) carries its real
 destination and source inside `args.args`, where the gate's cap derivation never looked. The keyholder island's
-verify-then-delegate gate now asks the Kahu predicate for each system bag the envelope names (`routedInnerBags`,
+verify-then-delegate gate asks the Kahu predicate for each house-canon bag the envelope names (`routedInnerBags`,
 `CapabilityVerifier.kahuReach`), before it routes. The wiki island holds no board and no sentinel, so its action reactors
 run with `kahuReachClearedAtGate` and ask nothing again. The flag is a composition option set in code at the island's behavior, never a field of the envelope, so nothing a caller sends lifts it; every other composition leaves it unset and asks itself (`gateRoutedVerb`, `kahu-reach-gate-envelope.test`).
 The live canon documents reach every reader through the realm's standing registration (`realmStandingDocUrl`): the
@@ -150,10 +151,10 @@ action reactors, `meme` and `where` by `systemCanonUrl`, and a recipe's library 
 
 !! Owed beside the slices
 
-* ''The `bags/oracle` → floor rename'' (the o-takiage left it by ruling). The genesis island document still carries the name `oracle` (`BAG_IDS.oracle`, `ORACLE_BAG`, `oracleUrl`, `lar:///ha.ka.ba/bags/oracle`, the `oracle` plane and recipe-uri segment, the `kind: "oracle"` row tag) because it is the floor's read-face layer under every wiki recipe. It renames together with the layer change that mounts the floor by the accepted pin (slice 5) and the genesis re-bake; `lararium-mesh/tests/o-takiage-names.test.ts` allowlists each such name with this row as its reason, so the list burns down with that lane.
+* ''The `bags/oracle` → floor rename'' (the o-takiage left it by ruling). The genesis island document still carries the name `oracle` (`BAG_IDS.oracle`, `ORACLE_BAG`, `oracleUrl`, `lar:///ha.ka.ba/bags/oracle`, the `oracle` plane and recipe-uri segment, the `kind: "oracle"` row tag) because it names the floor's read-face layer under every wiki recipe. The accepted pin mounts the floor through that layer (slice 5, built) and the name holds; the rename rides a genesis re-bake of its own; `lararium-mesh/tests/o-takiage-names.test.ts` allowlists each such name with this row as its reason, so the list burns down with that lane.
 * ''The carriers that still say oracle.'' `lararium/mesh/oracle-governance` (a governance design whose live lines now name the floor release and the flow pointer) and the carrier URIs cited widely keep their names; renaming a carrier moves every citation, so it rides its own lane. `api/pono/oracle` names the oracle sigil (divination), a different sense that stays.
-* ''A browser Kahu hand.'' The browser composes no board reader and reads as a stranger, so it fails closed on every system bag. A browser vessel holding the Kahu face rides Wave C's face context (`K15` step 6), which carries the charter and the board to it.
-* ''A sibling device of a seat-holding face'' (the row beside the browser Kahu hand). A joined device is a sibling of the Kahu's own face, so by law its reach follows the face's counted admission once the charter's board reads on it. Today it composes no board source, reads as a stranger and draws `kahu-reach` on a system bag: a missing source, not the law. `e2e/meme-two-vessel-bag` step eight keeps the law's expectation (B promotes into its own lares book) as a `test.fails` named for this row, so it turns red the day the row lands and the lander flips it; `device-admit.ts` states the law.
+* ''A browser Kahu hand.'' The browser composes no board reader and reads as a stranger, so it fails closed on every house-canon bag. A browser vessel holding the Kahu face rides Wave C's face context (`K15` step 6), which carries the charter and the board to it.
+* ''A sibling device of a seat-holding face'' (the row beside the browser Kahu hand). A joined device is a sibling of the Kahu's own face, so by law its reach follows the face's counted admission once the charter's board reads on it. Today it composes no board source, reads as a stranger and draws `kahu-reach` on a house-canon bag: a missing source, not the law. `e2e/meme-two-vessel-bag` step eight keeps the law's expectation (B promotes into its own lares book) as a `test.fails` named for this row, so it turns red the day the row lands and the lander flips it; `device-admit.ts` states the law.
 * ''The carriage's canon names'' (`device-admit.ts` `admitCanonDocs`, the browser's `hearth-canon`) read catalog rows nothing writes now; they retire with `W21`'s rest.
 * ''The floor card's freshness.'' The browser verifies the lineage, the head release and the floor bytes from the Nexus AID alone (`browser-floor-read`). The AID reads off a verified floor pin claim (the card's claim, anchored apart from the card and folded to its place-KEL head) or an admit; the floor pin claim lane (`w14-floor-pin-lane`) orders the pin by KEL descent and carries it atomically with a counted carry.
 * ''A live floor swap.'' No island swaps its `@oracle` read-face without a restart today (`floorReadFace` takes its rows once, at `buildIslandRecipe`), so every accept raises the reboot-pending alert. An island that learns to swap declares `floorSwap` and the mount port's `swap`; the decision already routes to it (`floorRemountDecision`).
@@ -191,6 +192,6 @@ action reactors, `meme` and `where` by `systemCanonUrl`, and a recipe's library 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;AnbruNwPoj_x2q-SniRLtZAetA6jNhxoUcWNIY9mB9Q`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xYqSTqXyJUuu0vBIMGP_Kj7amNphLxAjwNds4K_i6O8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

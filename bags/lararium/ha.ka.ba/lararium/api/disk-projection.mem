@@ -76,13 +76,13 @@ The projector enforces this structurally: ''a bag absent from the mirror list ne
 | Kind | Name | What it holds | Source | Disk | Scope |
 |---|---|---|---|---|---|
 | ''memetic corpus'' | ''`lararium`'' | authored engine self-doc memes | `bags/` seed | tracked | corpus |
-| ''oracle floor'' | ''`@oracle`'' | the system rows and blob descriptors named by the genesis seed | seed-named projection of the live oracle doc; the shared frozen bake and its no-writer rule stay owed | none | every vessel |
+| ''oracle floor'' | ''`@oracle`'' | one snapshot per house-canon bag and the blob descriptors the floor manifest names | seed-named projection of the live oracle doc; the shared frozen bake and its no-writer rule stay owed | none | every vessel |
 
 The public read-face projects only seed-named rows and blob descriptors, without Automerge history. Each snapshot carries the seed CID beside its own CID. The Kahu Plane road owes a frozen floor address derived from the seed CID and a no-writer rule.
 
-The floor does not carry per-vessel registry pointers. A registry names documents at one scope, and that scope's owner writes it. `lares` and `lararium` remain system bag names and recipe members; their per-vessel document pointers still ride `@oracle`; bootstrap/catalog relocation remains owed. The read-face carries no oracle document itself.
+The floor carries no per-vessel registry pointer. A registry names documents at one scope, and that scope's owner writes it. Each vessel's daemon and face addresses resolve from its own bootstrap; the live house-canon documents rest in the Kahu realm, and no `@oracle` or catalog row names them. The read-face carries no oracle document itself.
 
-The bulb carries the exact seed bytes by seed CID at `/bulb/<cid>.bin`; the floor of system canon answers by the Nexus's release: one porch body per Nexus (`GET /floor/<Nexus AID>`) names the Nexus AID, the charter epoch, the release before it and the floor manifest CID. A seated Kahu key seals it as the steward, the cabal's approval of the manifest's exact bytes and the charter's epoch lineage ride attached, and a herm carries and presents it without signing it (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu`>> #/floor-release). A reader holding the AID verifies the lineage, the seal, the approval and each blob's CID itself, and no tender name reaches a stranger.
+The bulb carries the exact seed bytes by seed CID at `/bulb/<cid>.bin`; the floor of house canon answers by the Nexus's release: one porch body per Nexus (`GET /floor/<Nexus AID>`) names the Nexus AID, the charter epoch, the release before it and the floor manifest CID. A seated Kahu key seals it as the steward, the cabal's approval of the manifest's exact bytes and the charter's epoch lineage ride attached, and a herm carries and presents it without signing it (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu`>> #/floor-release). A reader holding the AID verifies the lineage, the seal, the approval and each blob's CID itself, and no tender name reaches a stranger.
 
 ''Why `@oracle` carries no disk mirror.'' The public snapshot selects its row names from the genesis seed and reads their values from the live oracle doc; the frozen seed-derived floor and its no-writer rule stay owed. Compiled engine blobs derive from the build and ride the content-addressed store. The CAS carries bytes by CID, while the read-face carries only the seed-named rows and descriptors.
 
@@ -242,6 +242,6 @@ between casual chat-use and the defined parser core.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;sxS1WYig9dg10ZpbNED_l89hbZeWEQtuh7OPB7thY88`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;S0k_bi9vFo1rGRynpTTrrn4J-KQsBmeKdENYPvxPMW0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

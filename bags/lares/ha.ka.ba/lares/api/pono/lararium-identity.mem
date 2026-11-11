@@ -379,7 +379,7 @@ BBS per-verifier + Semaphore · Merton + Francis for the warning.
 
 The public oracle floor exposes only the system rows named by its genesis seed. Its read-face projects those rows and blob descriptors as a content-addressed snapshot without Automerge history; the snapshot carries the seed CID beside its own CID. A wiki mounts the floor read-only, and an edit aimed there copies up into the wiki's default writable layer.
 
-A registry names documents at one scope, and that scope's owner writes it. The vessel bootstrap names its daemon URL and face planes. The build owes moving the per-vessel `lares` and `lararium` document pointers to the bootstrap and the vessel's catalog.
+A registry names documents at one scope, and that scope's owner writes it. The vessel bootstrap names its daemon URL and face planes; the live house-canon documents rest in the Kahu realm, and no bootstrap, catalog or `@oracle` row names them.
 
 LAW THE BUILD OWES: one porch answer per Nexus names the floor CID and derived WHO board address; that Nexus's Kahu steward signs it, and a herm carries and presents it without signing it. No tender name reaches a stranger; the steward seal carries the authority. The Kahu Plane owns the steward-signing shape; R-WIRE owes answer carriage. The Kahu Plane road owes the floor's frozen seed-derived address and no-writer rule.
 
@@ -392,9 +392,9 @@ The leaf's own gate opens exactly the canon documents its admit names. It never 
 !! Publish a Face ~ recognition without a registry
 
 ''A handle PUBLISHES so others RECOGNISE it.'' A `handle-card` (`handle-card.ts`) stands as the public face of ONE
-handle: its verifying key (`nym`), a display glamour, a
-monotone `version`, a `prev` lineage link, a freshness lease, and an optional pointer to its reputation
-thread — ''signed by the handle's own key'', riding the oracle-floor plane's signed-content-addressed-pointer
+handle: its handle-KEL prefix (`nym`) with the key-event log that carries its head key (`chain`), a display glamour,
+its publication act id (`actCid`) and the sorted causal `parents` it follows, never a counter, and an optional pointer to
+its reputation thread — ''signed by the handle's own key'', riding the oracle-floor plane's signed-content-addressed-pointer
 discipline (#/the-oracle-plane). Publishing a face reveals ''nothing'' of the vault or the human's other faces
 (persona-circle#the-vault): no shared key, no collector pointer, the seed never on the wire.
 
@@ -548,6 +548,6 @@ folded in; the FS-limit stated as posture). Standing dissent kept, with re-entry
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ir6r64Kj5bfHUwsH8YrVahWlgG2RZsHR-eqQ64AHUyY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5eWXdLZ2gxhiDqSMpQBvZTOHR2RfXeT8Lf346hxfXtQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

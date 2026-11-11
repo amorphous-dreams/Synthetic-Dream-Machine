@@ -391,7 +391,7 @@ realm lives THERE, where the graph already stands mutual + consented, not on the
 ''The reservation runs as TWO DOMAINS, never one dial.'' `hosting-token` carries the hearth's POPRF
 evaluation for one Nexus and epoch, names no voucher, writes no edge, and burns at its host — the general
 invite. `cabal-invite`
-(`lar-cabal-invite/v1`) names its `voucherDid` in the clear and feeds the vouch-DAG the lineage price
+(signed under the `cabal-invite` domain, `CABAL_INVITE_DOMAIN`) names its `voucherDid` in the clear and feeds the vouch-DAG the lineage price
 walks. ''They never collapse'': merging them destroys the tracelessness on purpose-built ground. The
 general invite forgoes precisely what the Cabal tier requires — an attributable voucher to
 carry the cost (`admission-on-a-lineage#the-standing`).
@@ -546,6 +546,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;HrkiL6XTPGhzt3bmARCE34rz4yEt2XVxJrHQo1ndowI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;j4aug8inA3Fg2DBd-A6lGa6iNc0ba92kplmU1OOKx04`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -43,7 +43,7 @@ The shipped genesis ''never'' takes the form of an Automerge binary carrying byt
 
 !! The `@oracle` — the shared floor named by its seed
 
-The genesis seed names the shared system floor: a manifest CID that names history-free snapshots of the `lares` and `lararium` rows beside the engine CIDs (`genesis-cid-floor`). `@oracle` mounts that floor read-only under every recipe, and no pointer signs it. Engine or grammar changes take a new seed and a new floor as one bake.
+The genesis seed names the shared floor: a manifest CID that names one history-free snapshot per house-canon bag (`lares` and `lararium` always, every other disk-sourced holding but the public board `crossroads`) beside the engine CIDs (`genesis-cid-floor`). `@oracle` mounts that floor read-only under every recipe, and no pointer signs it. Engine or grammar changes take a new seed and a new floor as one bake.
 
 Each later floor reaches a Nexus's vessels by that Nexus's release: one porch answer per Nexus names the Nexus AID, the charter epoch, the release before it and the floor manifest CID, a seated Kahu key seals it as the steward, the cabal's approval of the manifest's exact bytes and the charter's epoch lineage ride attached, and a herm carries and presents it without signing it (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu`>> #/floor-release). No tender name reaches a stranger; the seal and the approval carry the authority.
 
@@ -57,7 +57,7 @@ The seed names its exact rows and CAS inventory, and the floor manifest names th
 
 The WHO board address derives from the Nexus key, and the porch answer (`/floor/<Nexus AID>`) rides the Nexus's publication board (`publicationDocUrl`), which no recipe mounts and no mirror names.
 
-Per-vessel daemon and face addresses resolve from that vessel's bootstrap. The live `lares` and `lararium` documents rest in the Kahu realm as realm bags, held only by a vessel the Kahu cabal admitted, and no `@oracle` or catalog row names either.
+Per-vessel daemon and face addresses resolve from that vessel's bootstrap. The live house-canon documents rest in the Kahu realm as realm bags at contract, held only by a vessel the Kahu cabal admitted, and no `@oracle` or catalog row names any of them.
 
 <<~/ahu>>
 
@@ -196,6 +196,6 @@ Worse for a shelter brief: an implementation hash ''mandates a monoculture'', an
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;mYpr8XMh_qVMxh2-5xBZPbbR9fEBi8yMLunyAzQjtgA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UnMwK_uMXC6nGMmIOKY71wT5Ej6zr6Bk_L_J_rXonbs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

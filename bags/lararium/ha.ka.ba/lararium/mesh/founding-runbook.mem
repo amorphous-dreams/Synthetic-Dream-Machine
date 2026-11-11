@@ -370,6 +370,8 @@ tools/lares-container.sh import /lar/config/carry/bundle-one --apply
 
 ''House canon: the steward writes it, every other face reads the floor.'' Every disk-sourced holding but the public board (`lares`, `lararium`, `sdm`, `elyncia`, `elyncia-referee`; `crossroads` stays the Nexus's board) rests in the Kahu realm at contract and takes no catalog row, so no face can fork it (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/cap-tier#/house-canon`>>). The Kahu steward (h0) writes it live: the founding lands each bag in the realm, and the steward's boot lands a bag the checkout gained since. Every other face reads it as the floor snapshot every DreamNet user receives by CID; its seed reads clean and names each such holding `house canon, written by the Kahu steward (h0); this face reads the floor`, and an edit there copies up into that wiki's working layer. Admitting another face to write canon stays the operator's deliberate act: `lares nexus cabal admit <group>` at the seat quorum.
 
+''The vessel moves its floor by the hand.'' The VESSEL pins the floor, one pin per Nexus, in its control home; a face pins nothing, so wearing another face moves no floor. `lares vessel floor status` names the pinned release, the newest the board shows, whether it fast-forwards along `prior`, and any fork; `lares vessel floor accept [<release>]` moves the pin to a descendant, refuses a fork or a release that does not descend, and either swaps the floor live or raises the reboot-pending alert in each live wiki (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-vessel-pin`>>).
+
 ''Kahua lifts by the operator's hand, with eyes.'' The seed previews each kahua item it would lift (face, title, body digest; `differs` where a standing head says otherwise), and lifts them under the new face's grant only on a typed count at the terminal or `--lift-kahua <N>` naming that count; a bare `--yes` lifts none, and a wrong count refuses before anything writes. Items left unconfirmed stand pending: `lares shore` lists them and `lares shore lift-kahua --count <N>` lifts them later.
 
 ''Up and unlock come before import.'' `up` on a terminal runs the unlock itself; only an `up` with no terminal attached names `vault unlock` for a terminal afterwards. The import lands each face's memory in that face's own folders, named by the face relation the standing, unlocked vessel reads; on a vessel that stands down or locked it refuses `carry-face-unworn` and names `up` and `vault unlock`.
@@ -436,6 +438,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;_Rs5Q8s73Pkyalf05L6OfIwNyWR-HpGgaQ2kDn4r5XU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HcRJ0RcIpWXRe0OP8_OkbwnUIi2GBbJjHQ5XGIYWgCQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

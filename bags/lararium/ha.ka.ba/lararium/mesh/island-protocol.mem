@@ -44,9 +44,9 @@ The manifest HANDS the island typed structural capabilities — each field arriv
 | `wikiUrl?` | the island's OWN write-layer bag | `@{wikiSlug}`; `@daemon` under the one-recipe model |
 | `personalUrl?` / `draftUrl?` | keyhive-bound sovereign instance mounts | minted by admin `resolveBinding` |
 
-`lares` and `lararium` are ''DreamNet system bags''. The shared `@oracle` document holds genesis seed rows alone; each vessel's `@catalog` carries its own lares, lararium, crossroads and realm pointers. Recipe-watch resolves system bags through that vessel's catalog, while system recipe seeds remain on `@oracle`. `@catalog` also carries user-bag pointers under OCAP grants; public and infrastructure pointers belong to the crossroads surface as it stands. See `wiki-layer-ontology#oracle-planes`.
+`lares` and `lararium` stand in the house canon on every vessel, beside every other disk-sourced holding but the public board `crossroads`. The shared `@oracle` document holds genesis seed rows alone; each vessel's `@catalog` carries its own crossroads and realm pointers, and no catalog row names a house-canon bag: recipe-watch resolves one through the Kahu realm's standing registration (`libraryDocUrl`), while system recipe seeds remain on `@oracle`. `@catalog` also carries user-bag pointers under OCAP grants; public and infrastructure pointers belong to the crossroads surface as it stands. See `wiki-layer-ontology#oracle-planes`.
 
-''Library layers never ride the manifest.'' The island resolves them itself from its registry plane (recipe-watch reconcile — system bags from `@oracle`, user bags from `@catalog`) — boot runs the same path as live composition (boot = first reconcile). See `wiki-layer-ontology` Law 2.
+''Library layers never ride the manifest.'' The island resolves them itself from its registry plane (recipe-watch reconcile — every bag pointer from `@catalog`, a house-canon bag through the Kahu realm's standing registration) — boot runs the same path as live composition (boot = first reconcile). See `wiki-layer-ontology` Law 2.
 
 !!! Guarantee grades
 
@@ -120,6 +120,6 @@ The manifest HANDS the island typed structural capabilities — each field arriv
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;LvJUyLheM-mmF0jvbEsyQ3R6b0eE9F10mFbWWWm7_gM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rDc-R86cXu1M7j1HTuoKBhAcxIATF18GI3mA8Xd1fNs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

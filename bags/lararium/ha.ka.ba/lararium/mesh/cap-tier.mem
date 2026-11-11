@@ -59,6 +59,8 @@ The tier names the read-cap holder-set, ascending in openness — a lower rank n
 
 !! House canon ~ contract for the live document, public for its CIDs
 
+> ''Operator ruling'' (2026-11-11): //"veil ⊂ persona-group ⊂ contract ⊂ public -> Those note the 'access posture' for CRDTs, and the CRDTs for the canon rest under Kahu cabal contract. The CIDs are public."//
+
 The chain names WHO holds a read-cap, and the house canon shows two documents riding two rungs. Every holding whose canon source stands on disk (the checkout's `bags/<slug>`) ''except the Nexus's public board'' (`crossroads`, a floor row every face reads) forms ONE derived set (`houseCanonSlugs`, `packages/lararium-mesh/src/kahu-canon-reach.ts`): `lares` and `lararium` on every vessel, and `sdm`, `elyncia`, `elyncia-referee` where the checkout carries them. The vessel seats the set once at boot and hands it to every island (`seatHouseCanonFromCheckout`).
 
 * ''The live document rests at CONTRACT'' in the Kahu realm: the founding mints one per bag and registers it at `readTier = contract` under the steward's seal (`landKahuRealm`), and the steward's boot lands a bag the set gained since. The Kahu cabal's contract holds its read-cap; the protected-doc guard withholds it from every peer outside the live Kahu hand; `requireKahuReach` gates every write; it takes ''no catalog row'' on any face's half and never enters a face's sealed map, so no face can fork it.
@@ -166,6 +168,6 @@ Deferred with clean shores (not built): the TW5 `$:/tags/CapTierFilter` ordered-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;NUXwmN_owNY28IyYd16X78ySwsOsgo70WDjC26_tzDk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;R6MQaVxgAxzPo19Vg6s09DurQ4NsPu0OkG-Kt6uA-as`>>
 
 <<^ code=`&#x0004;` to=`?`>>
