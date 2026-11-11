@@ -89,6 +89,9 @@ export async function readCensus(lines: CensusLines = LIVE_LINES): Promise<Censu
       items.push({ kind: "held-save", refusal, documentId, saves: typeof row["saves"] === "number" ? row["saves"] : 1, bagId: typeof row["bagId"] === "string" ? row["bagId"] : null });
     }
   }
+  // A FACE STANDING LOCKED under a held key holds memory no census can read: each reads unanswered, by name, with its cure.
+  const facesLocked = Array.isArray(custody?.["facesLocked"]) ? (custody!["facesLocked"] as unknown[]).filter((n): n is number => Number.isSafeInteger(n)) : [];
+  for (const n of facesLocked) unanswered.push({ part: `the face h${n}`, why: `h${n} stands locked; unlock it (\`lares vault unlock --face ${n}\`), then down` });
   let shore: ShoreCensus;
   try { shore = await lines.shore(); }
   catch (e) { shore = { carriers: [], unanswered: [{ part: "the disk projector", why: e instanceof Error ? e.message : String(e) }] }; }

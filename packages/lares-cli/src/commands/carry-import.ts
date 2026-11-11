@@ -18,10 +18,11 @@ export async function cmdImport(args: ParsedArgs, doors: CarryDoors = LIVE_CARRY
   const code = refused > 0 ? exitFor("verb-error") : stood > 0 ? exitFor("conflict") : 0;
   emit(args, {
     ok: code === 0,
-    data: { bundleId: result.bundleId, applied: result.applied, faceMap: result.faceMap, redeclare: result.redeclare, minted: result.minted, tallies: result.tallies, skipped: result.skipped, ashes: result.ashes, ashesLeft: result.ashesLeft, waiting: result.waiting },
+    data: { bundleId: result.bundleId, applied: result.applied, faceMap: result.faceMap, redeclare: result.redeclare, minted: result.minted, tallies: result.tallies, skipped: result.skipped, ashes: result.ashes, ashesLeft: result.ashesLeft, waiting: result.waiting, warnings: result.warnings },
     ...(refused > 0 ? { error: { code: "verb-error", message: `${refused} row(s) refused` } } : stood > 0 ? { error: { code: "conflict", message: `${stood} row(s) stand off; nothing overwrote them` } } : {}),
     human: () => {
       console.log(`import: bundle ${result.bundleId.slice(0, 16)} verified whole${result.applied ? "" : " · preview only (pass --apply)"}`);
+      for (const w of result.warnings) console.error(`  warning: ${w}`);
       for (const [pet, i] of Object.entries(result.faceMap)) console.log(`  face "${pet}" -> h${i}`);
       for (const a of result.redeclare) console.log(`  re-declare ${a}`);
       for (const w of result.waiting) console.log(`  ${wearItLine(w, "import")}; nothing of its memory laid into any layer`);

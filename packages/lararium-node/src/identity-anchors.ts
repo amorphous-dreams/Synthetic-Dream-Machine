@@ -96,6 +96,13 @@ export function listFaceOrdinals(): number[] {
   return out;
 }
 
+/** Each standing face's ordinal beside its custody id, off the floor index. */
+export function listFaceCustodyIds(): Array<{ readonly ordinal: number; readonly fcid: string }> {
+  const out: Array<{ ordinal: number; fcid: string }> = [];
+  readFaceIndexSync(larIdentityDir()).faces.forEach((f, ordinal) => { if ("fcid" in f) out.push({ ordinal, fcid: f.fcid }); });
+  return out;
+}
+
 /** The veil archive family's filename law: one row per PersonaGroup. */
 export const VEIL_ARCHIVE_FILE = /^veil-archive-g([0-9a-f]{64})\.bin$/;
 

@@ -167,15 +167,61 @@ describe("the carry verbs", () => {
     expect(readFileSync(join(root, `projections/wikis/daemon-${F2}/ha.ka.ba/memory/gone.kapae`), "utf8")).toBe(kapaeShadowBody(gone));
   });
 
-  test("a different mirror file stands off and never enters the wave", async () => {
+  test("a mirror file holding a different record is left as it stands, and the row rides on to INGEST's three-way gate — no byte-drift stand-off", async () => {
     await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     const after = refound();
     const path = join(root, "projections/bags/garden/ha.ka.ba/garden/rose.tid");
-    writeFileSync(path, "different");
+    writeFileSync(path, tid("lar:///ha.ka.ba/garden/rose", "another rose"));
+    after.bagRecords.set("lar:///ha.ka.ba/bags/garden", new Map([["lar:///ha.ka.ba/garden/rose", tid("lar:///ha.ka.ba/garden/rose", "another rose")]]));
     const result = await carryImport(out, { apply: true, doors: after.doors() });
-    expect(readFileSync(path, "utf8")).toBe("different");
-    expect(result.tallies.bag.stoodOff).toContain("lar:///ha.ka.ba/garden/rose (a different file stands in the mirror; left as it stands)");
+    expect(readFileSync(path, "utf8")).toBe(tid("lar:///ha.ka.ba/garden/rose", "another rose"));           // nothing wrote over it
+    expect(after.waves.flatMap((w) => w.candidates).some((c) => c.uri === "lar:///ha.ka.ba/garden/rose")).toBe(true);
+    // INGEST decided: the records here say something else, so the gate stands it off (never the bytes alone).
+    expect(result.tallies.bag.stoodOff).toEqual(["lar:///ha.ka.ba/garden/rose (no-base)"]);
+  });
+
+  test("G2 — a mirror file holding the SAME record in another framing reads already landed: no stand-off, no wave", async () => {
+    await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    const after = refound();
+    const path = join(root, "projections/bags/garden/ha.ka.ba/garden/rose.tid");
+    // The same fields in another order and without the projector's trailing newline: one record, other bytes.
+    writeFileSync(path, "type: text/vnd.tiddlywiki\ntitle: lar:///ha.ka.ba/garden/rose\n\na rose");
+    const preview = await carryImport(out, { apply: false, doors: after.doors() });
+    expect(preview.tallies.bag).toMatchObject({ already: 1, planned: 0, stoodOff: [] });
+    const result = await carryImport(out, { apply: true, doors: after.doors() });
+    expect(result.tallies.bag).toMatchObject({ already: 1, landed: 0, stoodOff: [], refused: [] });
     expect(after.waves.flatMap((w) => w.candidates).some((c) => c.uri === "lar:///ha.ka.ba/garden/rose")).toBe(false);
+  });
+
+  test("G3 — the preview counts `already` for rows the mirror holds byte for byte, and names an unseeded canon as a warning", async () => {
+    await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    const after = refound();
+    // The garden mirror still holds the rose the bundle carries, byte for byte.
+    const preview = await carryImport(out, { apply: false, doors: { ...after.doors(), unseeded: () => ["sdm"] } });
+    expect(preview.tallies.bag).toMatchObject({ already: 1, planned: 0 });
+    expect(preview.warnings).toEqual([expect.stringMatching(/^carry-canon-unseeded: the canon of sdm stands unseeded[\s\S]*lares vessel seed --apply/)]);
+    expect(after.waves).toEqual([]);
+    // CONTROL: the apply still refuses by name.
+    await expect(carryImport(out, { apply: true, doors: { ...after.doors(), unseeded: () => ["sdm"] } })).rejects.toThrow(/carry-canon-unseeded/);
+  });
+
+  test("G1 — the journal keys by the bundle AND the target faces: the same bundle walked onto fresh faces after a re-founding imports afresh", async () => {
+    await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    const first = refound();
+    await carryImport(out, { apply: true, doors: first.doors() });
+    expect(first.records.has(NOTE)).toBe(true);
+    const manifest = JSON.parse(readFileSync(join(out, MANIFEST_FILE), "utf8")) as { bundleId: string };
+    expect(existsSync(carryJournalPath(manifest.bundleId, [F2]))).toBe(true);
+    // reset -> found again: config (and its journal) stays; the face stands on a fresh relation with an empty mirror.
+    const F3 = "33333333-3333-4333-8333-333333333333";
+    rmSync(join(root, `projections/wikis/daemon-${F2}`), { recursive: true, force: true });
+    rmSync(join(root, "projections/bags/garden"), { recursive: true, force: true });
+    const second = refound({ relation: F3 });
+    const again = await carryImport(out, { apply: true, doors: second.doors() });
+    expect(second.records.has(NOTE)).toBe(true);
+    expect(second.records.has(MEMORY)).toBe(true);
+    expect(again.tallies.working.landed).toBeGreaterThan(0);
+    expect(carryJournalPath(manifest.bundleId, [F3])).not.toBe(carryJournalPath(manifest.bundleId, [F2]));
   });
 
   test("the journal prevents repeated mirror writes and candidates", async () => {
@@ -223,7 +269,7 @@ describe("the carry verbs", () => {
     expect(after.acts).toEqual(["handle h0 Heron", "seat h0 east"]);
 
     const manifest = JSON.parse(readFileSync(join(out, MANIFEST_FILE), "utf8")) as { bundleId: string };
-    rmSync(carryJournalPath(manifest.bundleId));
+    rmSync(carryJournalPath(manifest.bundleId, [F2]));
     await carryImport(out, { apply: true, doors: after.doors() });
     expect(after.records).toEqual(records);
     expect(after.lifts.length).toBe(lifts);

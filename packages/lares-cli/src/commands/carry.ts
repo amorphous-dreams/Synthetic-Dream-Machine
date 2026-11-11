@@ -33,8 +33,9 @@
  *   6. lands draft and temp files back where none stands (a different file there stands off); re-pours the daemon canon
  *      into `bags/daemon-<F>`, each house-minted bag into its bag and each other wiki's working rows into its working layer
  *      through the same gesture, minting first (CREATE) any slug this vessel does not hold, named in the preview.
- *   A journal under `<root>/config/carry-journal/<bundle-id>.ndjson` records each landed act: an interrupted import
- *   re-enters to the same end, and a second import of the same bundle lands nothing.
+ *   A journal under `<root>/config/carry-journal/<bundle-id>.<faces>.ndjson` (the bundle and the target faces' relations) records
+ *   each landed act: an interrupted import re-enters to the same end, a second import of the same bundle onto the same faces
+ *   lands nothing, and the same bundle walked onto fresh faces after a re-founding imports afresh.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
@@ -42,11 +43,11 @@ import { appendFileSync, copyFileSync, existsSync, lstatSync, mkdirSync, readFil
 import { randomBytes } from "node:crypto";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
-import { wikiBagUri, wikiSlotUri, daemonFaceCanonBag, KAHUA_BAG, defaultChairLabel, declarePersonaHandle, renameOwnPersona, standForKahuSeat } from "@lararium/mesh";
+import { wikiBagUri, wikiSlotUri, daemonFaceCanonBag, KAHUA_BAG, defaultChairLabel, declarePersonaHandle, renameOwnPersona, standForKahuSeat, carrierFormOf } from "@lararium/mesh";
 import {
   larHouseRoot, larProjectionsHome, larConfigHome, mirrorDirFileToUri, SyncedTree, TEMP_LAYER_DIR,
   KAPAE_EXT, readKapaeShadow, daemonFaceFolder, isDaemonFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug, loadLaresConfig, tempConsentedSlugs,
-  listCollections, libraryCollectionDir, atomicWriteFileSync,
+  listCollections, libraryCollectionDir, atomicWriteFileSync, parseTidCarrier,
 } from "@lararium/node";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor } from "../render.js";
@@ -525,18 +526,58 @@ function libraryListing(): Array<{ readonly collection: string; readonly indexSh
 }
 
 
+/**
+ * The record a carrier file holds, as the fields its carrier form reads, or null where the bytes name no record this reader
+ * parses: a `.tid` (its block, then the text), a `.json` (a one-element array of field strings), or a content file beside its
+ * `.meta` sidecar (the sidecar's block, the file as the text). One trailing newline the projector writes never counts.
+ */
+export function carrierRecordOf(file: string, bytes: Buffer, meta: Buffer | null): Record<string, string> | null {
+  const text = bytes.toString("utf8");
+  const trim = (t: string): string => t.replace(/\n$/, "");
+  if (file.endsWith(".tid")) {
+    const fields = parseTidCarrier(text);
+    return fields === null ? null : { ...fields, text: trim(fields["text"] ?? "") };
+  }
+  if (file.endsWith(".json")) {
+    try {
+      const v = JSON.parse(text) as unknown;
+      const one = Array.isArray(v) && v.length === 1 ? v[0] : null;
+      if (one === null || typeof one !== "object") return null;
+      return Object.fromEntries(Object.entries(one as Record<string, unknown>).map(([k, x]) => [k, String(x)]));
+    } catch { return null; }
+  }
+  if (meta === null) return null;
+  const fields = parseTidCarrier(`${meta.toString("utf8").replace(/\n+$/, "")}\n\n`);
+  return fields === null ? null : { ...fields, text: trim(text) };
+}
+
+/** Whether two carrier files hold one record: their carrier forms (`carrierFormOf`) agree. Bytes that parse to no record read false. */
+export function sameCarrierRecord(a: Record<string, string> | null, b: Record<string, string> | null): boolean {
+  if (a === null || b === null) return false;
+  const fa = carrierFormOf(a), fb = carrierFormOf(b);
+  return fa.body === fb.body && (fa.meta ?? null) === (fb.meta ?? null);
+}
+
 // ── import ─────────────────────────────────────────────────────────────────────────────────────────────────────
 
-/** `<root>/config/carry-journal/<bundle-id>.ndjson`. The config class survives a restart (the run class stands in tmpfs
- *  inside the container, and an interrupted import must find its journal again) and never sits in the hearth. */
-export function carryJournalPath(bundleId: string): string {
-  return join(larConfigHome(), "carry-journal", `${bundleId}.ndjson`);
+/**
+ * `<root>/config/carry-journal/<bundle-id>.<faces>.ndjson`. The config class survives a restart (the run class stands in tmpfs
+ * inside the container, and an interrupted import must find its journal again) and never sits in the hearth.
+ *
+ * THE JOURNAL KEYS BY THE BUNDLE AND THE FACES IT LANDS ON: `<faces>` digests the sorted relations of the target faces. A reset
+ * keeps config, so a journal keyed by the bundle alone would read every act landed when the same bundle walks onto FRESH faces
+ * after a re-founding, and the import would land nothing; keyed by the target relations too, a re-walk imports afresh, while
+ * a second import onto the same faces still lands nothing.
+ */
+export function carryJournalPath(bundleId: string, targetRelations: readonly string[]): string {
+  const faces = sha256Hex([...targetRelations].sort().join("\n")).slice(0, 16);
+  return join(larConfigHome(), "carry-journal", `${bundleId}.${faces}.ndjson`);
 }
 
 interface Journal { readonly done: Map<string, string>; mark(key: string, value: string): void }
 
-function openJournal(bundleId: string, write: boolean): Journal {
-  const path = carryJournalPath(bundleId);
+function openJournal(bundleId: string, targetRelations: readonly string[], write: boolean): Journal {
+  const path = carryJournalPath(bundleId, targetRelations);
   const done = new Map<string, string>();
   try {
     for (const line of readFileSync(path, "utf8").split("\n")) {
@@ -575,6 +616,8 @@ export interface CarryImportResult {
   readonly ashesLeft: ReadonlyArray<{ readonly relation: string; readonly why: string }>;
   /** The bundle faces whose face here stands unworn: nothing of theirs laid into any layer; wear each and import again. */
   readonly waiting: ReadonlyArray<{ readonly petname: string; readonly handleIndex: number }>;
+  /** What a preview names that the apply would refuse (an unseeded canon), each with its cure. */
+  readonly warnings: readonly string[];
 }
 
 /**
@@ -593,9 +636,11 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   // an unseeded canon the import's rows would land as the canon itself, and the seed after would stand off against
   // them. It refuses by name rather than seeding itself: a seed asks the operator to grade new canon, and an import
   // never takes that answer for them.
-  const unseeded = apply && doors.unseeded ? doors.unseeded() : [];
-  if (unseeded.length > 0) throw new CarryRefused("carry-canon-unseeded", `the canon of ${unseeded.join(", ")} stands unseeded on this vessel, and an import lands over seeded canon alone: run \`lares vessel seed --apply\` first, then import again`);
-  const journal = openJournal(manifest.bundleId, apply);
+  // A PREVIEW READS THE SAME GUARD AS A WARNING: it names what the apply would refuse, and plans on.
+  const unseeded = doors.unseeded ? doors.unseeded() : [];
+  const unseededWhy = `the canon of ${unseeded.join(", ")} stands unseeded on this vessel, and an import lands over seeded canon alone: run \`lares vessel seed --apply\` first, then import again`;
+  if (apply && unseeded.length > 0) throw new CarryRefused("carry-canon-unseeded", unseededWhy);
+  const warnings: string[] = unseeded.length > 0 ? [`carry-canon-unseeded: ${unseededWhy}`] : [];
   const projections = larProjectionsHome();
   let faces = await doors.faces();
 
@@ -625,11 +670,9 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   }
   if (apply) {
     for (const p of planned) {
-      const key = `redeclare:${p.row.face}`;
       if (p.rename) await doors.rename(p.handleIndex, p.row.petname);
       if (p.handle) await doors.declareHandle(p.handleIndex, p.row.handle!);
       if (p.seat) await doors.standSeat(p.handleIndex, p.row.chair);
-      journal.mark(key, `h${p.handleIndex}`);
     }
     if (planned.some((p) => p.rename || p.handle || p.seat)) faces = await doors.faces();
   }
@@ -651,6 +694,9 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     faceMap[bf.petname] = face.handleIndex;
     target.set(bf.key, face);
   }
+  // The journal opens once the faces it lands on stand named: the bundle and the target relations key it.
+  const journal = openJournal(manifest.bundleId, [...target.values()].map((f) => f.relation).filter((r): r is string => r !== null), apply);
+  if (apply) for (const p of planned) journal.mark(`redeclare:${p.row.face}`, `h${p.handleIndex}`);
 
   // THE LIT-FACE GATE, as the seed reads it: a bundle face's working and face-canon rows (and its drafts and temp) land only while
   // its face here stands worn, since the daemon's working layer holds the worn face's document alone. Every other bundle face
@@ -680,12 +726,14 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     for (const r of scan.rows) if (r.status === "non-nfc") workTally.refused.push(`${r.uri} (non-NFC bytes)`);
     const shadowTally = kapaeTally ?? workTally;
     let kapae = (scan.shadows ?? []).filter((t) => { if (journal.done.has(`${keyPrefix}:kapae:${t}`)) { shadowTally.already++; return false; } return true; });
-    workTally.planned += candidates.length;
-    shadowTally.planned += kapae.length;
-    if (!apply || (candidates.length === 0 && kapae.length === 0)) return;
     const wanted = new Set([...candidates.map((r) => r.uri), ...kapae]);
-    const blocked = new Set<string>();
+    // A MIRROR FILE THAT DIFFERS IN BYTES reads by the RECORD it holds, never by its bytes: one record in another framing
+    // (a field order, a trailing newline) reads already landed, and a different record rides on to INGEST's three-way gate
+    // with the mirror's file left as it stands. No stand-off ever rests on byte drift alone. A preview reads the same.
+    const differing = new Map<string, { from: string; to: string }>();
     const pending: Array<{ uri: string; to: string; bytes: Buffer }> = [];
+    /** Each wanted uri, and whether the mirror holds every one of its files. */
+    const held = new Map<string, boolean>();
     for (const f of files) {
       const from = join(bundle.root, ...f.split("/"));
       const uri = mirrorDirFileToUri(uriDir, from.endsWith(".meta") ? from.slice(0, -5) : from);
@@ -693,18 +741,34 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
       const to = join(mirrorDir, relative(sourceDir, from));
       const bytes = readFileSync(from);
       if (existsSync(to)) {
-        if (!readFileSync(to).equals(bytes)) blocked.add(uri);
-      } else pending.push({ uri, to, bytes });
+        held.set(uri, held.get(uri) ?? true);
+        if (!readFileSync(to).equals(bytes)) differing.set(uri, from.endsWith(".meta") ? { from: from.slice(0, -5), to: to.slice(0, -5) } : { from, to });
+      } else { held.set(uri, false); pending.push({ uri, to, bytes }); }
     }
-    for (const uri of blocked) workTally.stoodOff.push(`${uri} (a different file stands in the mirror; left as it stands)`);
+    const readMeta = (path: string): Buffer | null => (existsSync(`${path}.meta`) ? readFileSync(`${path}.meta`) : null);
+    // The mirror holding every file of a row byte for byte holds its record: already landed (the seed laid it), never planned.
+    const already = new Set<string>([...held].filter(([uri, all]) => all && !differing.has(uri)).map(([uri]) => uri));
+    for (const [uri, { from, to }] of differing) {
+      if (!existsSync(to)) continue;
+      if (from.endsWith(KAPAE_EXT)) {
+        const a = readKapaeShadow(readFileSync(from, "utf8")), b = readKapaeShadow(readFileSync(to, "utf8"));
+        if ("title" in a && "title" in b && a.title === b.title) already.add(uri);
+        continue;
+      }
+      if (sameCarrierRecord(carrierRecordOf(from, readFileSync(from), readMeta(from)), carrierRecordOf(to, readFileSync(to), readMeta(to)))) already.add(uri);
+    }
+    for (const r of candidates) if (already.has(r.uri)) { workTally.already++; if (apply) journal.mark(keyed(r), "landed"); }
+    for (const t of kapae) if (already.has(t)) { shadowTally.already++; if (apply) journal.mark(`${keyPrefix}:kapae:${t}`, "raised"); }
+    candidates = candidates.filter((r) => !already.has(r.uri));
+    kapae = kapae.filter((uri) => !already.has(uri));
+    workTally.planned += candidates.length;
+    shadowTally.planned += kapae.length;
+    if (!apply || (candidates.length === 0 && kapae.length === 0)) return;
     for (const { uri, to, bytes } of pending) {
-      if (blocked.has(uri)) continue;
+      if (differing.has(uri)) continue;                 // the mirror holds this record in its own file; nothing writes over it
       mkdirSync(dirname(to), { recursive: true });
       atomicWriteFileSync(to, bytes, undefined, { mode: 0o600 });
     }
-    candidates = candidates.filter((r) => !blocked.has(r.uri));
-    kapae = kapae.filter((uri) => !blocked.has(uri));
-    if (candidates.length === 0 && kapae.length === 0) return;
     const answer = await doors.ingest({ source: mirrorDir, toBag, candidates, kapae, ...(wiki !== null ? { inWiki: true, wiki } : {}) });
     const landed = new Set(answer.landed);
     for (const r of candidates) if (landed.has(r.uri)) { workTally.landed++; journal.mark(keyed(r), "landed"); }
@@ -859,7 +923,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     }
   }
 
-  return { bundleId: manifest.bundleId, applied: apply, faceMap, redeclare: acts, tallies, skipped, minted, ashes, ashesLeft, waiting };
+  return { bundleId: manifest.bundleId, applied: apply, faceMap, redeclare: acts, tallies, skipped, minted, ashes, ashesLeft, waiting, warnings };
 }
 
 // ── the commands' shared refusal ─────────────────────────────────────────────────────────────────────────────

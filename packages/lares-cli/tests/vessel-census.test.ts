@@ -55,6 +55,15 @@ describe("the vessel census", () => {
     expect(JSON.parse(c.out.join(""))).toEqual({ ok: true, data: { census: { clean: true, items: [], unanswered: [] } } });
   });
 
+  test("G4 — a face standing locked under a held key reads unanswered by name: \"h2 stands locked; unlock it\", and the census exits 2", async () => {
+    const c = capture();
+    const reading = await readCensus(lines({ custody: async () => ({ op: "census", held: [], standing: "hearth", locked: false, facesLocked: [2] }) }));
+    expect(reading.clean).toBe(false);
+    expect(reading.unanswered).toEqual([{ part: "the face h2", why: "h2 stands locked; unlock it (`lares vault unlock --face 2`), then down" }]);
+    expect(await cmdCensus(args(false), lines({ custody: async () => ({ op: "census", held: [], standing: "hearth", locked: false, facesLocked: [2] }) }))).toBe(2);
+    expect(c.err.join("\n")).toMatch(/h2 stands locked; unlock it/);
+  });
+
   test("V3 — a line that cannot answer exits 2 by name and never reads clean", async () => {
     capture();
     const noSocket = await readCensus(lines({ socketPresent: () => false }));

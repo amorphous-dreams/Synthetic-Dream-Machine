@@ -47,7 +47,7 @@ import type { Socket } from "node:net";
 import type { Credential, HeldSaves, SlotSpec } from "@lararium/mesh";
 import { parkFaceRoute } from "./face-route.js";
 import { mountedFaceOrdinal, setMountedFace, sovereignStands } from "./node-vessel-identity.js";
-import { listFaceOrdinals } from "./identity-anchors.js";
+import { listFaceOrdinals, listFaceCustodyIds } from "./identity-anchors.js";
 import { CustodyLocked, CustodyRowUnavailable, type CustodyHolder, type HolderUnlock } from "./custody-holder.js";
 import { BackupRefused, type FaceBundleCut } from "./face-bundle-cut.js";
 import { SESSION_ACTS, SealedActRefused, isSealedActName } from "./sealed-acts.js";
@@ -90,7 +90,7 @@ export type CustodyAnswer =
   | { readonly op: "act"; readonly act: string; readonly result: Record<string, unknown> }
   /** Each document with saves held in memory (`SealedDocumentStore.held`), by id and never by body; `standing` names
    *  the composition that answered ("recomposing" while none sits, when `held` reads null). */
-  | { readonly op: "census"; readonly held: readonly HeldSaves[] | null; readonly standing: string; readonly locked: boolean }
+  | { readonly op: "census"; readonly held: readonly HeldSaves[] | null; readonly standing: string; readonly locked: boolean; readonly facesLocked?: readonly number[] }
   | { readonly op: "face-route"; readonly ref: string }
   | { readonly op: "ward"; readonly ref: string }
   | { readonly op: "backup"; readonly sealedBody: string; readonly holds: FaceBundleCut["holds"]; readonly face: FaceBundleCut["face"]; readonly carries: FaceBundleCut["carries"] }
@@ -480,7 +480,13 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       let held: readonly HeldSaves[] | null = null;
       try { held = deps.heldSaves?.() ?? null; } catch { held = null; }
       // `locked` names a shut key, so a stop's census can say "unlock, then down" instead of "could not answer".
-      answer(sock, { op: "census", held, standing: deps.standing(), locked: !holder.isUnlocked() });
+      // `facesLocked` names each standing face whose key stays shut under a held node key: its memory reads nowhere, so a
+      // stop's census names it unanswered ("h2 stands locked; unlock it") rather than counting it clean.
+      let facesLocked: number[] = [];
+      if (holder.isUnlocked()) {
+        try { const open = new Set(holder.unlockedFaces()); facesLocked = listFaceCustodyIds().filter((f) => !open.has(f.fcid)).map((f) => f.ordinal); } catch { facesLocked = []; }
+      }
+      answer(sock, { op: "census", held, standing: deps.standing(), locked: !holder.isUnlocked(), ...(facesLocked.length > 0 ? { facesLocked } : {}) });
       return true;
     } else {
       // THE STATE QUERY IS READ-ONLY: it answers at once, beside the chain, so a caller asking while an unlock
