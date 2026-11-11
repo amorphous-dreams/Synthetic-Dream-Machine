@@ -49,7 +49,7 @@ import { takeDisk } from "../shore-take-disk.js";
 import { openSyncedTree } from "../ingest-core.js";
 import { larRoot } from "../env.js";
 import { readKahuaPending, LIVE_MIRROR_DOORS } from "../seed-mirrors.js";
-import { runMirrorLeg } from "./seed.js";
+import { runMirrors } from "../seed-mirror-leg.js";
 
 /** The acts this door carries. */
 export const SHORE_ACTS = ["list", "take-records", "take-disk", "restore", "remove", "settle", "lift-kahua"] as const;
@@ -125,7 +125,7 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
 
   // LIFT-KAHUA: the count IS the confirmation, so it asks nothing more; the mirror leg refuses a count that moved.
   if (act === "lift-kahua") {
-    return runMirrorLeg({ ...args, flags: { ...args.flags, apply: true }, options: { ...args.options, "lift-kahua": String(shaped.args["count"]) } }, LIVE_MIRROR_DOORS);
+    return runMirrors({ apply: true, liftKahua: String(shaped.args["count"]), json: wantsJson(args) }, LIVE_MIRROR_DOORS);
   }
 
   // An act that writes asks first (a person at a TTY), or carries `--yes` (an agent).

@@ -249,8 +249,16 @@ elif [ -z "$A_VESSEL" ] || [ -z "$B_VESSEL" ]; then bad "a vessel key went unrea
 elif [ "$A_VESSEL" = "$B_VESSEL" ]; then bad "the two vessels share one floor key"
 elif [ -d "$A_ROOT" ] && ! grep -rqs "$B_PROBE" "$A_ROOT" 2>/dev/null; then ok
 else bad "B's material reachable from A's root"; fi
-step "CONTROL: B's sealed pet-name rests in no cleartext file of B's own root"
-if grep -rqs "$B_PROBE" "$B_ROOT" 2>/dev/null; then bad "B's pet-name reads in the clear at rest"; else ok; fi
+# THE FACE LABEL: projections/face-labels/<relation>.json carries the face's pet-name in the clear by ruling, so the
+# seed adopts a former face's folders by label (operator ruling 2026-11-10, verbatim: `"pet-names in plain text"
+# reads fine for now.`); every other cleartext occurrence reads red: hearth/, config/, every other projection.
+# RE-ENTRY: "for now" holds the door open; a ruling that seals the label retires this exclusion, and the control
+# then reads the whole root again.
+cleartext_outside_label() { grep -rls "$1" "$2" 2>/dev/null | grep -vE "^$2/projections/face-labels/[0-9a-f-]+\.json\$"; }
+step "CONTROL: B's sealed pet-name rests in no cleartext file of B's own root, the face label aside"
+if [ -n "$(cleartext_outside_label "$B_PROBE" "$B_ROOT")" ]; then
+  bad "B's pet-name reads in the clear at rest: $(cleartext_outside_label "$B_PROBE" "$B_ROOT" | sed "s|^$B_ROOT/||" | head -3 | tr '\n' ' ')"
+else ok; fi
 
 # ── ③ THE PREREQUISITE — carry A's public charter to B ───────────────────────────────────────────
 say "③ the prerequisite the one-vessel run hid"
@@ -693,9 +701,9 @@ run_b "B stops, so its Repo's writes reach rest"       vessel stop
 step "CONTROL: the search reads B's own root"
 if [ -n "$B_VESSEL" ] && grep -rqs "$B_VESSEL" "$B_ROOT" 2>/dev/null; then ok
 else bad "B's own vessel key reads nowhere under B's root"; fi
-step "★ B's re-lit label rests in no cleartext file of B's own root ★"
-if grep -rqs "$B_RELIT" "$B_ROOT" 2>/dev/null; then
-  bad "the re-lit label reads in the clear at rest: $(grep -rls "$B_RELIT" "$B_ROOT" 2>/dev/null | sed "s|^$B_ROOT/||" | head -3 | tr '\n' ' ')"
+step "★ B's re-lit label rests in no cleartext file of B's own root, the face label aside ★"
+if [ -n "$(cleartext_outside_label "$B_RELIT" "$B_ROOT")" ]; then
+  bad "the re-lit label reads in the clear at rest: $(cleartext_outside_label "$B_RELIT" "$B_ROOT" | sed "s|^$B_ROOT/||" | head -3 | tr '\n' ' ')"
 else ok; fi
 
 say "═══ RESULT ═══"

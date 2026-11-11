@@ -21,6 +21,7 @@
  */
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync } from "node:fs";
 import { join } from "node:path";
+import { plainMeta, storedDeleted, isPrototypeKey, type StoredTiddlers } from "@lararium/mesh";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 
 export const FACE_LABELS_DIR = "face-labels";
@@ -119,13 +120,15 @@ export function writeFaceBases(relation: string, bases: Readonly<Record<string, 
   } catch { return false; }
 }
 
-/** The override bases one document's records name: title -> base, live records alone. */
-export function basesOfDoc(doc: { readonly tiddlers?: Readonly<Record<string, { readonly meta?: Readonly<Record<string, unknown>> } | undefined>> } | undefined): Record<string, string> {
+/** A working document as a keeper reads it: its `tiddlers` map as the document rests it, read through the read door. */
+export interface KeptDocState { readonly tiddlers?: StoredTiddlers }
+
+/** The override bases one document's records name: title -> base, live records alone, each read through the read door. */
+export function basesOfDoc(doc: KeptDocState | undefined): Record<string, string> {
   const out: Record<string, string> = {};
   for (const [title, record] of Object.entries(doc?.tiddlers ?? {})) {
-    const meta = record?.meta;
-    if (!meta || meta["deleted"] === true) continue;
-    const base = meta["overrideBase"];
+    if (isPrototypeKey(title) || !record || storedDeleted(record)) continue;
+    const base = plainMeta(record, "overrideBase");
     if (typeof base === "string" && BASE.test(base)) out[title] = base;
   }
   return out;
@@ -133,7 +136,7 @@ export function basesOfDoc(doc: { readonly tiddlers?: Readonly<Record<string, { 
 
 /** A document a keeper reads: its current state and its change events (an automerge-repo handle's shape). */
 export interface KeptDoc {
-  doc(): { readonly tiddlers?: Readonly<Record<string, { readonly meta?: Readonly<Record<string, unknown>> } | undefined>> } | undefined;
+  doc(): KeptDocState | undefined;
   on(event: "change", listener: () => void): unknown;
   off(event: "change", listener: () => void): unknown;
 }

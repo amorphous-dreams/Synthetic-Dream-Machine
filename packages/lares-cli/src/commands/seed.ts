@@ -36,8 +36,8 @@ import { larBagsDir, vesselDid } from "../env.js";
 import { askShore, readShoreList } from "../shore-core.js";
 import { cmdIngest, type FresherCanonReading } from "./ingest.js";
 import { cmdAct } from "./act.js";
-import { createInterface } from "node:readline/promises";
-import { seedMirrors, mirrorLines, mirrorsLeftWork, kahuaConfirmPrompt, MirrorRefused, LIVE_MIRROR_DOORS, type MirrorDoors, type KahuaPreviewItem } from "../seed-mirrors.js";
+import { LIVE_MIRROR_DOORS, type MirrorDoors } from "../seed-mirrors.js";
+import { runMirrors } from "../seed-mirror-leg.js";
 
 export interface SeedHolding {
   readonly holding: string;               // "lares"
@@ -143,38 +143,9 @@ async function foldCreateOutput(args: ParsedArgs, run: () => Promise<number>): P
   } finally { console.log = log; }
 }
 
-/** `--lift-kahua <N>` read as a whole count, or null where absent; a malformed count refuses by name. */
-export function liftKahuaCount(args: ParsedArgs): number | null {
-  const raw = args.options["lift-kahua"];
-  if (raw === undefined) return null;
-  if (!/^(?:0|[1-9][0-9]*)$/.test(raw)) throw new MirrorRefused("seed-kahua-count", `--lift-kahua names the whole count the preview shows; "${raw}" names none`);
-  return Number(raw);
-}
-
-/** A person at a TTY reads the preview and types the count; anywhere else no hand confirms. */
-export function ttyKahuaConfirm(args: ParsedArgs): ((count: number, preview: readonly KahuaPreviewItem[]) => Promise<boolean>) | undefined {
-  if (args.flags["json"] === true || !process.stdin.isTTY || !process.stdout.isTTY) return undefined;
-  return async (count) => {
-    const rl = createInterface({ input: process.stdin, output: process.stdout });
-    try { return (await rl.question(kahuaConfirmPrompt(count))).trim() === String(count); } finally { rl.close(); }
-  };
-}
-
-/** Run the mirror leg and print it; its exit code (0 clean, 1 a refusal or something standing for a hand). */
-export async function runMirrorLeg(args: ParsedArgs, doors: MirrorDoors, opts: { kahuaOnly?: boolean } = {}): Promise<number> {
-  try {
-    const result = await seedMirrors({
-      apply: args.flags["apply"] === true, doors, liftKahua: liftKahuaCount(args),
-      ...(ttyKahuaConfirm(args) ? { confirmKahua: ttyKahuaConfirm(args)! } : {}), ...(opts.kahuaOnly ? { kahuaOnly: true } : {}),
-    });
-    const { out, err } = mirrorLines(result);
-    for (const l of out) console.log(l);
-    for (const l of err) console.error(l);
-    return mirrorsLeftWork(result) ? 1 : 0;
-  } catch (e) {
-    if (e instanceof MirrorRefused) { console.error(`lares vessel seed: ${e.message}`); return 1; }
-    throw e;
-  }
+/** Run the mirror leg off the seed's own flags: `--apply`, `--lift-kahua <N>`, `--json`. */
+export function runMirrorLeg(args: ParsedArgs, doors: MirrorDoors, opts: { kahuaOnly?: boolean } = {}): Promise<number> {
+  return runMirrors({ apply: args.flags["apply"] === true, liftKahua: args.options["lift-kahua"], json: args.flags["json"] === true, ...(opts.kahuaOnly ? { kahuaOnly: true } : {}) }, doors);
 }
 
 export async function cmdSeed(args: ParsedArgs, mirrorDoors: MirrorDoors = LIVE_MIRROR_DOORS): Promise<number> {

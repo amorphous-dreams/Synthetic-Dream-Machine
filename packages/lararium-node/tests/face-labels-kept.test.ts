@@ -13,7 +13,7 @@ import { mkdtempSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { deviceDaemonDocs, CONTROL_HOME_ID, emptyLarDoc, storedLarRecord, type LarDoc } from "@lararium/mesh";
-import { writeFaceLabel, readFaceLabel, keepFaceBases, readFaceBases, faceBasesPath, type KeptDoc } from "../src/face-labels.js";
+import { writeFaceLabel, readFaceLabel, keepFaceBases, readFaceBases, faceBasesPath, type KeptDoc, type KeptDocState } from "../src/face-labels.js";
 import { listStage, KahuaRefused } from "../src/commands/kahua.js";
 
 const F1 = "11111111-1111-4111-8111-111111111111";
@@ -24,7 +24,7 @@ const B1 = `sha256:${"1".repeat(64)}`, B2 = `sha256:${"2".repeat(64)}`, B3 = `sh
 class Doc implements KeptDoc {
   listeners = new Set<() => void>();
   constructor(public state: { tiddlers: Record<string, { meta?: Record<string, unknown> }> } | undefined) {}
-  doc() { return this.state; }
+  doc() { return this.state as unknown as KeptDocState | undefined; }
   on(_e: "change", l: () => void) { this.listeners.add(l); }
   off(_e: "change", l: () => void) { this.listeners.delete(l); }
   set(title: string, meta: Record<string, unknown>) { this.state = { tiddlers: { ...(this.state?.tiddlers ?? {}), [title]: { meta } } }; for (const l of this.listeners) l(); }

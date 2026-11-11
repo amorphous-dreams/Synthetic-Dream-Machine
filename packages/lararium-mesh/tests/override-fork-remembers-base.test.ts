@@ -90,7 +90,7 @@ describe("a working override remembers its base", () => {
   test("F6 — over a lower layer with no synchronous read, the write never waits on it and names no base", async () => {
     const { working } = await rig();
     // A stage that folds at read, as the joined page's kahua layer does: no `readNow`, and its `get` waits on a lit face.
-    const waits = { get: () => new Promise<never>(() => {}), listVisible: async () => [] };
+    const waits = { get: () => new Promise<never>(() => {}), listVisible: async () => [], subscribe: () => () => {} };
     const stacked = new CompositeStore();
     stacked.addLayer({ bagId: "lar:///ha.ka.ba/bags/stage", store: waits as never, writable: false, defaultWritable: false });
     stacked.addLayer({ bagId: WORKING, store: working, writable: true, defaultWritable: true });

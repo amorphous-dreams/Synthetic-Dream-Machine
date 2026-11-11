@@ -201,7 +201,7 @@ export type { FoundHearthOptions, FoundHearthResult, HearthCard } from "./comman
 export { buildCardBody, CardRestoreRefused, CARD_REFUSALS } from "./face-card-restore.js";
 // THE FACE LABELS: each face's pet-name and its copies' override bases, in plaintext outside every mirror (`face-labels`).
 export { FACE_LABELS_DIR, FACE_LABEL_SCHEMA, FACE_BASES_SCHEMA, faceLabelsDir, faceLabelPath, faceBasesPath, readFaceLabel, writeFaceLabel, labelledRelations,
-  moveFaceLabelFile, readFaceBases, writeFaceBases, basesOfDoc, keepFaceBases, type FaceLabel, type KeptDoc } from "./face-labels.js";
+  moveFaceLabelFile, readFaceBases, writeFaceBases, basesOfDoc, keepFaceBases, type FaceLabel, type KeptDoc, type KeptDocState } from "./face-labels.js";
 export type { CardRefusal, FaceNamed, PresentedCard } from "./face-card-restore.js";
 // The live read path onto `mesh/dyad` — a vessel enumerates the relationships it already holds.
 export { makeBagTierReader, bagNameFromBagUrl } from "./vessel-bag-tier.js";
