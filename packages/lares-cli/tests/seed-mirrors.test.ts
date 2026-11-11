@@ -166,17 +166,26 @@ class FakeHouse {
       faces: async () => this.facesNow(), tempConsented: () => ["daemon"],
       rename: async () => {}, declareHandle: async () => {}, standSeat: async () => {},
       heldSlugs: async () => new Set(this.held), mintBag: async (bag) => { this.mints.push(bag); this.held.add(bag.slice(bag.lastIndexOf("/") + 1)); },
-      ingest: async ({ toBag, candidates, kapae }) => {
-        const landed: string[] = [], conflicts: Array<{ uri: string; why: string }> = [];
-        for (const c of candidates) {
-          const held = this.live(toBag, c.uri);
-          if (held === undefined) { this.land(toBag, c.uri, c.text, c.overrideBase); landed.push(c.uri); }
-          else if (held.text === c.text) landed.push(c.uri);              // noop: the records already say it; nothing writes
-          else conflicts.push({ uri: c.uri, why: "no-base" });
+      // A FACE-NAMED WAVE lands in THAT face's own document, as the island's face-named INGEST does (never the worn one's).
+      ingest: async ({ toBag, candidates, kapae, face }) => {
+        const named = face === undefined ? undefined : this.faces.find((f) => f.handleIndex === face);
+        if (face !== undefined && (named === undefined || named.relation === null)) {
+          return { landed: [], conflicts: [], refused: candidates.map((c) => ({ uri: c.uri, why: "face-unresolved" })), unanswered: [], kapaeRaised: [], kapaeRefused: [] };
         }
-        const raised: string[] = [];
-        for (const t of kapae) { if (!this.layer(toBag).get(t)?.deleted) this.layer(toBag).set(t, { text: "", deleted: true }); raised.push(t); }
-        return { landed, conflicts, refused: [], unanswered: [], kapaeRaised: raised, kapaeRefused: [] };
+        const prior = this.worn;
+        if (named?.relation) this.worn = named.relation;
+        try {
+          const landed: string[] = [], conflicts: Array<{ uri: string; why: string }> = [];
+          for (const c of candidates) {
+            const held = this.live(toBag, c.uri);
+            if (held === undefined) { this.land(toBag, c.uri, c.text, c.overrideBase); landed.push(c.uri); }
+            else if (held.text === c.text) landed.push(c.uri);              // noop: the records already say it; nothing writes
+            else conflicts.push({ uri: c.uri, why: "no-base" });
+          }
+          const raised: string[] = [];
+          for (const t of kapae) { if (!this.layer(toBag).get(t)?.deleted) this.layer(toBag).set(t, { text: "", deleted: true }); raised.push(t); }
+          return { landed, conflicts, refused: [], unanswered: [], kapaeRaised: raised, kapaeRefused: [] };
+        } finally { this.worn = prior; }
       },
       overrideBases: async (bag) => Object.fromEntries([...this.layer(bag)].filter(([, r]) => r.base !== undefined && !r.deleted).map(([t, r]) => [t, r.base!])),
       kahuaLift: this.kahuaLift,

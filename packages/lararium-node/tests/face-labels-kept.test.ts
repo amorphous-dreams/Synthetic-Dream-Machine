@@ -76,7 +76,7 @@ describe("the vessel keeps each face's label and bases", () => {
       "3TzPkAHbW2dVcYgnJ1ofoaJv7mNS": new Doc({ tiddlers: { pond: { meta: { overrideBase: B3 } } } }),
     };
     const WORKING = "lar:///ha.ka.ba/wikis/daemon/working";
-    const keep = (group: string, relation: string) => keepFaceBases({ relation, projections: root, docs: () => table.docsOf(WORKING, { group, relation, face: null }).map((id) => docs[id]!).filter(Boolean) });
+    const keep = (group: string, relation: string) => keepFaceBases({ relation, projections: root, docs: () => table.docsOf(WORKING, [{ group, relation, face: null }]).map((id) => docs[id]!).filter(Boolean) });
     const one = keep(G1, F1), three = keep(G3, F3);
     expect(readFaceBases(F1, root)).toEqual({ pond: B1 });
     expect(readFaceBases(F3, root)).toEqual({ pond: B3 });

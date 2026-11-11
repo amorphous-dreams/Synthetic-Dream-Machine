@@ -545,8 +545,11 @@ describe("the census frame", () => {
   });
 
   test("N3 — the census names whether the key stands shut, so a stop can say unlock first", async () => {
-    expect(await ask(door(() => [], true))).toEqual({ op: "census", held: [], standing: "hearth", locked: false });
+    // Under a held key every standing face reads lit (the fake opens them all), so `facesLit` names each; none standing leaves it absent.
+    const lit = listFaceCustodyIds().map((f) => f.ordinal);
+    expect(await ask(door(() => [], true))).toEqual({ op: "census", held: [], standing: "hearth", locked: false, ...(lit.length > 0 ? { facesLit: lit } : {}) });
     expect(await ask(door(() => [], false))).toMatchObject({ locked: true });
+    expect(await ask(door(() => [], false)), "a shut node key lights no face").not.toHaveProperty("facesLit");
   });
 
   test("N4 — under a held key, each standing face whose key stays shut answers in facesLocked; none shut leaves the field absent", async () => {

@@ -70,14 +70,14 @@ describe("the face-named wave lands in its own face alone", () => {
 
   test("N2 — a forged wave naming face 1 over a document h0 owns refuses, and nothing lands", async () => {
     const v = litPair({ owners: { 0: 0, 1: 0 } });
-    await expect(v.wave(1)).rejects.toMatchObject({ code: "ingest-face-foreign" });
+    await expect(v.wave(1)).rejects.toMatchObject({ reason: "ingest-face-foreign" });
     expect(await v.own[1]!.get(URI)).toBeNull();
     expect(await v.own[0]!.get(URI)).toBeNull();
   });
 
   test("N3 — a wave naming no face whose target h1 owns refuses", async () => {
     const v = litPair({ owners: { 0: 1, 1: 1 } });
-    await expect(v.wave()).rejects.toMatchObject({ code: "ingest-face-foreign" });
+    await expect(v.wave()).rejects.toMatchObject({ reason: "ingest-face-foreign" });
     expect(await v.own[0]!.get(URI)).toBeNull();
   });
 
@@ -95,8 +95,8 @@ describe("the face-named wave lands in its own face alone", () => {
       "source-uri": SOURCE, "to-bag": WORKING, "change-id": "chg-face-shut", face: 2,
       carriers: [{ uri: URI, text: meme("for a shut face"), diskHash: "sha256:0e", syncedHash: null, file: `${SOURCE}/one.mem` }],
     }, ctxOf(composite));
-    await expect(call()).rejects.toMatchObject({ code: "face-unresolved" });
-    await expect(call(async () => null)).rejects.toMatchObject({ code: "face-unresolved" });
+    await expect(call()).rejects.toMatchObject({ reason: "face-unresolved" });
+    await expect(call(async () => null)).rejects.toMatchObject({ reason: "face-unresolved" });
     expect(await worn.get(URI)).toBeNull();
   });
 
@@ -109,7 +109,7 @@ describe("the face-named wave lands in its own face alone", () => {
     await expect(makeActionReactorFor("INGEST", { composite, faceTarget: async () => null, diskMirrors: [{ bagId: "lar:///ha.ka.ba/bags/sdm", mirrorRoot: "/lar/bags/sdm", scope: "sdm" }] })({
       "source-uri": "/lar/bags/sdm", "to-bag": "lar:///ha.ka.ba/bags/sdm", "change-id": "chg-face-canon", face: 1,
       carriers: [{ uri: URI, text: meme("canon"), diskHash: "sha256:0d", syncedHash: null, file: "/lar/bags/sdm/one.mem" }],
-    }, ctxOf(composite))).rejects.toMatchObject({ code: "face-layer-unowned" });
+    }, ctxOf(composite))).rejects.toMatchObject({ reason: "face-layer-unowned" });
   });
 
   test("N6 — the parse refuses a face that reads as no whole handle index", () => {
@@ -124,7 +124,7 @@ describe("the face-named wave lands in its own face alone", () => {
   test("N7 — an AI seat wearing h0 naming h1 refuses face-hand-refused; its own face lands; the operator's hand names h1", async () => {
     const seat = { ordinal: 0, presenter: "did:key:z6MkSeatOfH0" };
     const v = litPair();
-    await expect(v.wave(1, seat)).rejects.toMatchObject({ code: "face-hand-refused" });
+    await expect(v.wave(1, seat)).rejects.toMatchObject({ reason: "face-hand-refused" });
     expect(await v.own[1]!.get(URI)).toBeNull();
     await v.wave(0, seat);
     expect(await v.own[0]!.get(URI)).not.toBeNull();

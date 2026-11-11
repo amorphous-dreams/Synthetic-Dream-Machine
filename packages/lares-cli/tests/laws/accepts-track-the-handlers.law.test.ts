@@ -144,7 +144,7 @@ function computedSites(files: readonly string[]): Map<string, number> {
  * line carries them. Named per command, each with its reason, so an exemption never covers a user flag.
  */
 const BUILT_INSIDE: Readonly<Record<string, readonly string[]>> = {
-  vessel: ["from", "out", "title", "plane", "source", "to", "source-uri"],   // seed builds its act/ingest lines
+  vessel: ["from", "out", "title", "plane", "source", "to", "source-uri", "tier"],   // seed builds its act/ingest lines
   sense:  ["help-mempalace"],                  // the guest comparator's help rides `lares mempalace`
   // `commands/scripted` holds the stand and bake handlers beside this one, and the walk reads a file whole.
   // `cmdTestQuine` takes the line and reads none of it, so the row stays empty and `lares test-quine --x` refuses.
