@@ -99,6 +99,7 @@ import { faceSigningSeat, listFaceOrdinals, runPromoteCheckBytes } from "@larari
 import { vesselDid, larSealHome } from "../env.js";
 import { containerArgs } from "../container-target.js";
 import { runVerb, verbFailure } from "../verb-call.js";
+import { storeVerb } from "../store-door.js";
 import { LocalWaitExpired } from "../local-connector.js";
 import { readVerbOutcome, summaryOutput } from "../verb-result.js";
 import { emit, exitFor } from "../render.js";
@@ -1199,7 +1200,7 @@ export function offerPlan(args: ParsedArgs): { readonly verb: "offer-make" | "of
   return { verb: "offer-make", args: { bag, titles } };
 }
 
-type OfferRow = { cid: string; bag: string; face: string; retired: { steward: string } | null; fresher: boolean; records: Array<{ title: string; freshness: string }> };
+type OfferRow = { cid: string; bag: string; face: string; retired: { steward: string } | null; refusedRetires?: Array<{ retire: string; reason: string; steward?: string }>; fresher: boolean; records: Array<{ title: string; freshness: string }> };
 
 async function memeOffer(args: ParsedArgs): Promise<number> {
   const plan = offerPlan(args);
@@ -1213,8 +1214,23 @@ async function memeOffer(args: ParsedArgs): Promise<number> {
     return exitFor(code);
   }
   const short = (cid: unknown): string => `${String(cid).slice(0, 16)}…`;
+  // THE RETIRE (offering#/the-canon-offer): once canon carries the bytes, a seat of the charter held in this vault retires the
+  // offer on the store door; a retire no seat sealed counts nothing to any reader. A vessel holding no seat says so, and the offer
+  // reads open until a seat's vessel retires it.
+  let retire: Record<string, unknown> | null = null;
+  if (plan.verb === "offer-promote" && out["moved"] === true) {
+    try {
+      const { output } = await storeVerb("offer-retire", { cid: plan.args["cid"], over: out["over"] ?? [] });
+      retire = output;
+    } catch (err) { retire = { refused: err instanceof Error ? err.message : String(err) }; }
+  }
+  if (retire !== null && typeof retire["refused"] === "string") {
+    const message = `the canon write landed; the retire did not: ${retire["refused"]}`;
+    emit(args, { ok: false, requestId: result.requestId, data: { ...out, retire }, error: { code: "verb-error", message }, human: () => console.error(`lares meme offer promote: ${message}`) });
+    return exitFor("verb-error");
+  }
   emit(args, {
-    ok: true, requestId: result.requestId, data: out,
+    ok: true, requestId: result.requestId, data: retire !== null ? { ...out, retire } : out,
     human: () => {
       if (plan.verb === "offer-make") {
         console.log(`offer → ${out["landed"] ? "OFFERED" : "HELD (the same offer already stands)"} ${out["cid"]}`);
@@ -1226,13 +1242,14 @@ async function memeOffer(args: ParsedArgs): Promise<number> {
         const offers = (out["offers"] as OfferRow[]) ?? [];
         if (offers.length === 0) console.log("offer list: no open offer on this Nexus's table");
         for (const o of offers) {
-          console.log(`${o.cid}  ${o.bag}  face ${short(o.face)}${o.retired ? "  (retired)" : ""}${o.fresher ? "  ⚠ canon is fresher" : ""}`);
+          console.log(`${o.cid}  ${o.bag}  face ${short(o.face)}${o.retired ? "  (retired)" : ""}${o.fresher ? "  ⚠ canon is fresher" : ""}${o.refusedRetires?.length ? `  (${o.refusedRetires.length} retire-unauthorised ignored)` : ""}`);
           for (const r of o.records) console.log(`  ${r.freshness === "canon-is-fresher" ? "⚠ canon is fresher" : r.freshness}  ${r.title}`);
         }
         return;
       }
       if (plan.verb === "offer-show") {
         console.log(`offer ${out["cid"]} → ${out["bag"]}${out["retired"] ? " (retired)" : ""}`);
+        for (const r of (out["refusedRetires"] as OfferRow["refusedRetires"]) ?? []) console.log(`  ${r.reason}: retire ${short(r.retire)}${r.steward ? ` sealed by ${short(r.steward)}` : ""} — no charter seat sealed it; it retires nothing`);
         for (const d of (out["diffs"] as Array<{ title: string; fields: Array<{ field: string; canon: string | null; offered: string | null }> }>) ?? []) {
           const rec = ((out["records"] as OfferRow["records"]) ?? []).find((r) => r.title === d.title);
           console.log(`  ${d.title}  ${rec?.freshness === "canon-is-fresher" ? "⚠ canon is fresher" : rec?.freshness ?? ""}`);
@@ -1245,7 +1262,7 @@ async function memeOffer(args: ParsedArgs): Promise<number> {
       console.log(`  wrote:  ${((out["wrote"] as string[]) ?? []).join(", ") || "(canon already carried every record)"}`);
       const over = (out["over"] as Array<{ title: string }>) ?? [];
       if (over.length > 0) console.log(`  over fresher canon (your explicit choice): ${over.map((o) => o.title).join(", ")}`);
-      console.log(`  retired by ${short(out["retire"])}; cut a release to carry it to every face: lares nexus release --cut <manifest-file>`);
+      console.log(`  retired by the charter seat's record ${short(retire?.["retire"])}; cut a release to carry it to every face: lares nexus release <manifest-file> --cut`);
     },
   });
   return 0;

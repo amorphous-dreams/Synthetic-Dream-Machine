@@ -426,7 +426,9 @@ One board per Nexus (`canonOfferDocUrl`). Appending a self-certifying row grants
 
 * `promoteCanonOffer` clears `requireKahuReach` on the offer's bag ''before'' any canon read decides anything; a non-steward face refuses `kahu-reach` and moves no byte.
 * Freshness ''warns'', never refuses a read: a record whose base no longer names canon's carrier reads "canon is fresher" in every listing. A promotion over it takes the steward's explicit choice (`--over-fresher`); the retire records the fresher canon digests it overrode. No auto-merge.
-* The promotion writes the offered bytes, then retires the offer by a steward-signed record keyed to the offer's CID — never by deletion. The offer row stays; a replayed promotion meets the retire and lands nothing.
+* The promotion writes the offered bytes; until a retire lands, the offer reads open and a replayed promotion writes nothing (every record reads `landed`).
+* ''The retire seals under a seat of the Nexus's charter'' (`retireCanonOffer`), and only once canon carries every offered digest (`offer-not-landed` otherwise). It carries the charter's epoch lineage, as a floor release does, so every reader proves the seat off the record alone: the genesis epoch's address IS the Nexus AID, each step verifies under the prior threshold, and the signer stands a seat of the named epoch. A retire any other key sealed reads `retire-unauthorised`, retires nothing, and `offer show` names it. The row keys to the offer's CID and then its own (`<offer cid>/<retire cid>`), so a forgery written first takes no key the steward needs. The offer row stays; never a deletion.
+* The seat keys rest in the steward's vault beside the store door, never in the daemon island that writes canon: the canon write rides the daemon verb `offer-promote` (under the Kahu reach), and the retire rides the store-door row `offer-retire`. `lares meme offer promote` runs both.
 
 !!! The release wiring
 
@@ -443,7 +445,7 @@ One board per Nexus (`canonOfferDocUrl`). Appending a self-certifying row grants
 # ''Where an offer rests.'' Three homes stood: realm drafts (Fable's earlier lean), the offerer's own outbox, an offer table beside the realm. //Gaia 2026//: a kernel contributor mails a patch to the subsystem list — anyone posts, the maintainer applies, and the list itself holds no tree; a pull request from a personal fork, by contrast, makes the maintainer go find each fork. //Elyncia 5492//: a pilgrim at the crossroads shrine sets a votive on the offering table at the temple's door; only the temple's priest carries it inside, and no pilgrim walks into the sanctum to place it. Realm drafts would seat the offerer inside the Kahu realm — the very admission the ruling withholds from h1 and h2 — or fork that ruling. An outbox keeps the offerer's writes on its own doc but leaves the steward no derivable place to look across vessels. ''Ruled: the offer table, one per Nexus, beside the realm.'' Reopens if realm drafts gain an append-only, non-member write class.
 # ''The fork base.'' The base reads the working copy's own `overrideBase`, and none where it names none — never canon's current carrier at offer time, which would hide a move canon made after the fork. A working copy that never forked from canon therefore reads "canon is fresher" wherever canon holds the title.
 # ''A stale promotion refuses without the choice.'' The listing warns; the promotion refuses `offer-base-moved` until the steward says `--over-fresher`. The steward's choice, never an automatic merge, decides what canon says.
-# ''The retire's authority.'' A retire verifies by its signature and keys to the offer's CID; canon moves only under the Kahu reach, so a forged retire can hide an offer from the open listing (`--all` still shows it) and can never move canon.
+# ''The retire's authority (re-ruled by the controller, 2026-11-11).'' The first cut honoured any signed retire, so a forgery could hide an offer. ''Ruled'': a reader honours a retire only where a seat of the Nexus's charter sealed it, proven by the lineage the record carries (the way a floor release proves its steward); any other retire reads `retire-unauthorised` and the offer stays open. The charter seat stands for "the steward's hand" here because an atom key names no group a reader can verify without a persona KEL; a seat names itself in the lineage. Known edge: a retire names its own epoch, so a seat a later roll removed could still retire under the epoch it held; a reader holding the charter head could close that.
 # ''The verb's home.'' `lares meme promote` already names the residency crossing with a receipt, so the offering door rides `lares meme offer …`, keeping one word for one act.
 # ''The browser's Nexus.'' A browser island reads no charter, so the call may name the Nexus; a named Nexus other than the charter's refuses `offer-foreign-nexus`. The browser holds no Kahu board, so a promotion there fails closed — the steward promotes from the vessel that holds the charter.
 
@@ -510,6 +512,6 @@ One board per Nexus (`canonOfferDocUrl`). Appending a self-certifying row grants
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;dzSRF4OHBun_wNNYxp3_kNUAHYAgxEJ4aUN_AAMHi2w`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9BYv7M4ggJ6Qd1h-LfYTb2Gg9qYo9DYf79a4HUDqaBU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

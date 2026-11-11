@@ -5,7 +5,7 @@
  * REDS:
  *   · `offer-make` from an unadmitted face lands a signed offer and moves no canon byte;
  *   · `offer-promote` from a hand outside the Kahu cabal refuses `kahu-reach` and moves no byte;
- *   · `offer-promote` from the steward writes the offered bytes into canon and retires the offer; a replay lands nothing;
+ *   · `offer-promote` from the steward writes the offered bytes into canon; a replay writes nothing (the retire rides the store door);
  *   · a `cap/**` title refuses as data (`offer-withheld-title`); a faceless floor refuses `waking-floor`.
  */
 import { describe, expect, test } from "vitest";
@@ -81,7 +81,7 @@ describe("the offer verbs", () => {
       expect(promoted).toMatchObject({ ok: true, moved: true, wrote: [T] });
       expect((await r.canon.get(T))?.tiddler.text).toBe("the engineer says");
       const after = r.canon.headsNow();
-      expect(await makeOfferPromoteReactor(r.opts(await kahuHand(), h0))({ cid }, ctxOf(r.composite))).toMatchObject({ ok: true, moved: false, why: "retired" });
+      expect(await makeOfferPromoteReactor(r.opts(await kahuHand(), h0))({ cid }, ctxOf(r.composite))).toMatchObject({ ok: true, moved: true, wrote: [], already: [T] });
       expect(r.canon.headsNow()).toEqual(after);
     } finally { await r.repo.shutdown(); }
   });
@@ -103,7 +103,7 @@ describe("the offer verbs", () => {
         const named = host === "browser" ? { nexus: NEXUS } : {};
         const made = await makeOfferMakeReactor(r.opts(undefined, await atom(41), shore))({ bag: "lares", titles: [T], ...named }, ctxOf(r.composite));
         const promoted = await makeOfferPromoteReactor(r.opts(await kahuHand(), await atom(40), shore))({ cid: made["cid"], ...named }, ctxOf(r.composite));
-        return { made, promoted: { ...promoted, retire: typeof promoted["retire"] }, text: (await r.canon.get(T))?.tiddler.text };
+        return { made, promoted, text: (await r.canon.get(T))?.tiddler.text };
       } finally { await r.repo.shutdown(); }
     };
     expect(await decide("browser")).toEqual(await decide("node"));

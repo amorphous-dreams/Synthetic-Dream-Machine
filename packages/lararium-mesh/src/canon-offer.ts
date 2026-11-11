@@ -17,9 +17,10 @@
  * promotion, which clears `requireKahuReach` BEFORE it reads a single row.
  *
  * FRESHNESS WARNS, NEVER REFUSES A READ. A record whose base no longer names canon's current carrier reads "canon is fresher"
- * in every listing; a promotion over it takes the steward's explicit choice (`overFresher`), never an auto-merge. A PROMOTION
- * retires its offer by a steward-signed record keyed to the offer's CID (`$:/lar/canon-offer-retired/<cid>`), never by deletion:
- * the offer row stays, and a replayed promotion meets the retire and lands nothing.
+ * in every listing; a promotion over it takes the steward's explicit choice (`overFresher`), never an auto-merge. Once canon carries
+ * the bytes, a RETIRE sealed by a seat of the Nexus's charter (its lineage riding the record, as a release's does) retires the
+ * offer, keyed to the offer's CID (`$:/lar/canon-offer-retired/<offer cid>/<retire cid>`), never by deletion: the offer row stays,
+ * and a replayed promotion meets the retire and lands nothing. A retire no seat sealed reads `retire-unauthorised` and retires nothing.
  *
  * ONE DECISION, BOTH HOSTS. `openCanonOffer`, `verifyCanonOffer`, `foldCanonOffers`, `offerFreshness`, `offerDiff` and
  * `decideCanonPromote` hold the whole logic; `offerCanonRecords`, `readCanonOffers`, `showCanonOffer` and `promoteCanonOffer`
@@ -41,6 +42,8 @@ import { projectionWithheld, resolvedTitlePath } from "./projection-filter.js";
 import { bagUri, CONTROL_HOME_ID, SECRET_HOME_ID } from "./lar-uris.js";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
 import { cutCanonFloor, floorSlugs, readFloorManifest } from "./floor-manifest.js";
+import { rosterOfLineage } from "./floor-release.js";
+import type { SealEpoch } from "./wax-stamp.js";
 
 export { CANON_OFFER_DOMAIN, CANON_OFFER_RETIRE_DOMAIN };
 
@@ -66,7 +69,9 @@ export type CanonOfferRefusal =
   | "offer-no-nexus"           // no Nexus stands to offer toward
   | "offer-foreign-nexus"      // the caller named a Nexus other than the one this vessel's charter stands in
   | "offer-unknown"            // no offer under that CID counts on the board
-  | "offer-base-moved";        // canon moved under a record and the steward made no explicit choice
+  | "offer-base-moved"         // canon moved under a record and the steward made no explicit choice
+  | "offer-retire-unseated"    // the retiring key stands no seat of the Nexus's charter
+  | "offer-not-landed";        // a retire asked before canon carries every offered digest
 
 export class CanonOfferRefused extends Error {
   override readonly name = "CanonOfferRefused";
@@ -98,17 +103,25 @@ export interface CanonOfferBody {
 
 export interface CanonOffer { readonly body: CanonOfferBody; readonly cid: string; readonly sig: string }
 
-/** The steward's retire: which offer, the canon digests the promotion landed, and the fresher canon digests it chose to override. */
+/**
+ * The steward's retire: which offer, the canon digests the promotion landed, the fresher canon digests it chose to override,
+ * and the charter seat that seals it at `epoch`. A retire carries the charter's public epoch lineage (genesis through `epoch`),
+ * the way a floor release does, so every reader proves the seat itself: the genesis epoch's address IS the Nexus AID.
+ */
 export interface CanonOfferRetireBody {
   readonly kind:    typeof CANON_OFFER_RETIRE_DOMAIN;
   readonly nexus:   string;
   readonly offer:   string;
   readonly steward: string;
+  readonly epoch:   string;
   readonly landed:  ReadonlyArray<{ readonly title: string; readonly digest: string }>;
   readonly over:    ReadonlyArray<{ readonly title: string; readonly canon: string | null }>;
 }
 
-export interface CanonOfferRetire { readonly body: CanonOfferRetireBody; readonly cid: string; readonly sig: string }
+export interface CanonOfferRetire { readonly body: CanonOfferRetireBody; readonly cid: string; readonly sig: string; readonly lineage: readonly SealEpoch[] }
+
+/** The steward's hand a retire seals under: a seat of the Nexus's charter, its epoch, and the lineage that proves it. */
+export interface OfferSteward extends OfferSigner { readonly epoch: string; readonly lineage: readonly SealEpoch[] }
 
 /** A signer the door hands in: an ed25519 verifying key (hex) and its signature over bytes (hex). */
 export interface OfferSigner { readonly key: string; readonly sign: (bytes: Uint8Array) => Promise<string> }
@@ -270,31 +283,45 @@ export function verifyCanonOffer(args: { readonly record: unknown; readonly keye
 // ── RETIRE ────────────────────────────────────────────────────────────────────────────────────────────
 
 export function canonOfferRetireBodyBytes(body: CanonOfferRetireBody): Uint8Array {
-  return canonicalJsonBytes({ kind: body.kind, nexus: body.nexus, offer: body.offer, steward: body.steward, landed: body.landed, over: body.over });
+  return canonicalJsonBytes({ kind: body.kind, nexus: body.nexus, offer: body.offer, steward: body.steward, epoch: body.epoch, landed: body.landed, over: body.over });
 }
 
-export async function signCanonOfferRetire(body: CanonOfferRetireBody, signer: OfferSigner): Promise<CanonOfferRetire> {
-  if (signer.key !== body.steward) throw new Error("canon-offer: the signer's key differs from the retire's steward");
+export async function signCanonOfferRetire(body: CanonOfferRetireBody, steward: OfferSteward): Promise<CanonOfferRetire> {
+  if (steward.key !== body.steward || steward.epoch !== body.epoch) throw new Error("canon-offer: the steward's seat differs from the retire's");
   const bytes = canonOfferRetireBodyBytes(body);
-  return { body, cid: sha256HexBytesSync(bytes), sig: await signer.sign(bytes) };
+  return { body, cid: sha256HexBytesSync(bytes), sig: await steward.sign(bytes), lineage: [...steward.lineage] };
 }
 
-/** Verify a retire row: its shape, CID, the offer it keys, and the steward's signature. Null where it fails any. */
-export function verifyCanonOfferRetire(value: unknown, keyedBy?: string): CanonOfferRetire | null {
+/** Why a retire row counts nothing. `retire-unauthorised`: no seat of the Nexus's charter sealed it. */
+export type CanonOfferRetireRefusal = "retire-malformed" | "retire-foreign" | "retire-unauthorised";
+
+/**
+ * Verify a retire row. Never throws. The shape, the CID, the offer it keys, the Nexus; then THE STEWARD'S HAND: the lineage it
+ * carries must prove the roster of its epoch under this Nexus (`rosterOfLineage`: genesis = the AID, every step under the prior
+ * threshold), the signer must stand a seat of that roster, and its signature must verify. A retire any other key sealed reads
+ * `retire-unauthorised` and retires nothing.
+ */
+export function verifyCanonOfferRetire(value: unknown, args: { readonly nexus: string; readonly offer?: string; readonly keyedBy?: string }):
+  | { readonly ok: true; readonly retire: CanonOfferRetire }
+  | { readonly ok: false; readonly reason: CanonOfferRetireRefusal; readonly steward?: string } {
   try {
-    if (!isRecord(value) || !isRecord(value["body"]) || typeof value["cid"] !== "string" || typeof value["sig"] !== "string") return null;
+    if (!isRecord(value) || !isRecord(value["body"]) || typeof value["cid"] !== "string" || typeof value["sig"] !== "string" || !Array.isArray(value["lineage"])) return { ok: false, reason: "retire-malformed" };
     const b = value["body"];
-    if (b["kind"] !== CANON_OFFER_RETIRE_DOMAIN) return null;
-    for (const k of ["nexus", "offer", "steward"] as const) if (typeof b[k] !== "string") return null;
-    if (!Array.isArray(b["landed"]) || !Array.isArray(b["over"])) return null;
+    if (b["kind"] !== CANON_OFFER_RETIRE_DOMAIN) return { ok: false, reason: "retire-malformed" };
+    for (const k of ["nexus", "offer", "steward", "epoch"] as const) if (typeof b[k] !== "string") return { ok: false, reason: "retire-malformed" };
+    if (!Array.isArray(b["landed"]) || !Array.isArray(b["over"])) return { ok: false, reason: "retire-malformed" };
     const body = b as unknown as CanonOfferRetireBody;
     const bytes = canonOfferRetireBodyBytes(body);
-    if (sha256HexBytesSync(bytes) !== value["cid"]) return null;
-    if (keyedBy !== undefined && keyedBy !== body.offer) return null;
-    if (!verifyEd25519(value["sig"], bytes, body.steward)) return null;
-    return { body, cid: value["cid"], sig: value["sig"] };
+    if (sha256HexBytesSync(bytes) !== value["cid"]) return { ok: false, reason: "retire-malformed" };
+    if ((args.keyedBy !== undefined && args.keyedBy !== `${body.offer}/${value["cid"]}`) || (args.offer !== undefined && args.offer !== body.offer)) return { ok: false, reason: "retire-malformed" };
+    if (body.nexus !== args.nexus) return { ok: false, reason: "retire-foreign" };
+    const proven = rosterOfLineage(args.nexus, value["lineage"], body.epoch);
+    if (!proven.ok || !proven.roster.keys.includes(body.steward) || !verifyEd25519(value["sig"], bytes, body.steward)) {
+      return { ok: false, reason: "retire-unauthorised", steward: body.steward };
+    }
+    return { ok: true, retire: { body, cid: value["cid"], sig: value["sig"], lineage: value["lineage"] as SealEpoch[] } };
   } catch {
-    return null;
+    return { ok: false, reason: "retire-malformed" };
   }
 }
 
@@ -311,16 +338,23 @@ export function writeCanonOffer(draft: LarDoc, offer: CanonOffer): boolean {
   return true;
 }
 
-/** Land a retire row keyed to its offer. Call INSIDE `change()`. Answers false where one already stands. */
+/**
+ * Land a retire row, keyed to its offer and then to its own CID (`<prefix><offer cid>/<retire cid>`), so no forged row written
+ * first can take the key a steward's retire needs. Call INSIDE `change()`. Answers false where that very retire already stands.
+ */
 export function writeCanonOfferRetire(draft: LarDoc, retire: CanonOfferRetire): boolean {
-  const key = `${CANON_OFFER_RETIRED_PREFIX}${retire.body.offer}`;
+  const key = `${CANON_OFFER_RETIRED_PREFIX}${retire.body.offer}/${retire.cid}`;
   if (Object.hasOwn(draft.tiddlers, key)) return false;
   draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(retire) }, "canon-offer");
   return true;
 }
 
-/** One offer the board counts, beside its retire where one stands. */
-export interface CanonOfferStanding { readonly offer: CanonOffer; readonly retired: CanonOfferRetire | null }
+/** One offer the board counts, beside the steward's retire where one stands, and every retire it refused (each by its signer). */
+export interface CanonOfferStanding {
+  readonly offer:   CanonOffer;
+  readonly retired: CanonOfferRetire | null;
+  readonly refusedRetires: ReadonlyArray<{ readonly retire: string; readonly reason: CanonOfferRetireRefusal; readonly steward?: string }>;
+}
 
 /** A row the fold set aside, and why. */
 export interface CanonOfferSetAside { readonly key: string; readonly reason: string }
@@ -340,17 +374,25 @@ function rowsUnder(doc: LarDoc | undefined, prefix: string): Array<{ key: string
 export function foldCanonOffers(doc: LarDoc | undefined, nexus: string): { readonly offers: readonly CanonOfferStanding[]; readonly setAside: readonly CanonOfferSetAside[] } {
   const setAside: CanonOfferSetAside[] = [];
   const retires = new Map<string, CanonOfferRetire>();
+  const refusedRetires = new Map<string, Array<{ retire: string; reason: CanonOfferRetireRefusal; steward?: string }>>();
   for (const { key, value } of rowsUnder(doc, CANON_OFFER_RETIRED_PREFIX)) {
-    const r = verifyCanonOfferRetire(value, key);
-    if (r === null || r.body.nexus !== nexus) { setAside.push({ key, reason: "retire-fails" }); continue; }
-    retires.set(key, r);
+    const [offerCid, retireCid] = key.split("/");
+    const v = verifyCanonOfferRetire(value, { nexus, keyedBy: key });
+    if (!v.ok) {
+      setAside.push({ key, reason: v.reason });
+      if (offerCid && HEX64.test(offerCid)) refusedRetires.set(offerCid, [...(refusedRetires.get(offerCid) ?? []), { retire: retireCid ?? "", reason: v.reason, ...(v.steward ? { steward: v.steward } : {}) }]);
+      continue;
+    }
+    // Two seats may each retire one offer: either one retires it; the lower CID names it, so every reader names the same one.
+    const held = retires.get(v.retire.body.offer);
+    if (!held || v.retire.cid < held.cid) retires.set(v.retire.body.offer, v.retire);
   }
   const offers: CanonOfferStanding[] = [];
   for (const { key, value } of rowsUnder(doc, CANON_OFFER_PREFIX)) {
     if (!HEX64.test(key)) { setAside.push({ key, reason: "malformed-offer" }); continue; }
     const v = verifyCanonOffer({ record: value, keyedBy: key, nexus });
     if (!v.ok) { setAside.push({ key, reason: v.reason }); continue; }
-    offers.push({ offer: v.offer, retired: retires.get(key) ?? null });
+    offers.push({ offer: v.offer, retired: retires.get(key) ?? null, refusedRetires: refusedRetires.get(key) ?? [] });
   }
   offers.sort((a, b) => (a.offer.cid < b.offer.cid ? -1 : 1));
   return { offers, setAside };
@@ -473,6 +515,8 @@ export interface CanonOfferListing {
   readonly face:     string;
   readonly offerer:  string;
   readonly retired:  { readonly steward: string; readonly retire: string } | null;
+  /** Retires the table carries for this offer that count nothing (`retire-unauthorised`: no charter seat sealed them). */
+  readonly refusedRetires: CanonOfferStanding["refusedRetires"];
   readonly records:  ReadonlyArray<{ readonly title: string; readonly digest: string; readonly base: string | null; readonly freshness: OfferFreshness }>;
   /** True where any record reads `canon-is-fresher`: a warning, never a refusal. */
   readonly fresher:  boolean;
@@ -501,6 +545,7 @@ export async function readCanonOffers(ports: CanonOfferPorts, args: { readonly b
     offers.push({
       cid: s.offer.cid, bag: s.offer.body.bag, face: s.offer.body.face, offerer: s.offer.body.offerer,
       retired: s.retired ? { steward: s.retired.body.steward, retire: s.retired.cid } : null,
+      refusedRetires: s.refusedRetires,
       records: rows.map(({ r, freshness }) => ({ title: r.title, digest: r.digest, base: r.base, freshness })),
       fresher: rows.some((x) => x.freshness === "canon-is-fresher"),
     });
@@ -523,6 +568,7 @@ export async function showCanonOffer(ports: CanonOfferPorts, cid: string): Promi
   return {
     cid: s.offer.cid, bag: s.offer.body.bag, face: s.offer.body.face, offerer: s.offer.body.offerer,
     retired: s.retired ? { steward: s.retired.body.steward, retire: s.retired.cid } : null,
+    refusedRetires: s.refusedRetires,
     records: rows.map(({ r, freshness }) => ({ title: r.title, digest: r.digest, base: r.base, freshness })),
     fresher: rows.some((x) => x.freshness === "canon-is-fresher"),
     diffs: rows.map(({ r, record }) => ({ title: r.title, fields: offerDiff(r, record) })),
@@ -531,18 +577,18 @@ export async function showCanonOffer(ports: CanonOfferPorts, cid: string): Promi
 
 export type CanonPromoteOutcome =
   | { readonly moved: false; readonly cid: string; readonly retire: string; readonly why: "retired" }
-  | { readonly moved: true; readonly cid: string; readonly bag: string; readonly retire: string; readonly wrote: readonly string[]; readonly already: readonly string[]; readonly over: ReadonlyArray<{ readonly title: string; readonly canon: string | null }> };
+  | { readonly moved: true; readonly cid: string; readonly bag: string; readonly wrote: readonly string[]; readonly already: readonly string[]; readonly over: ReadonlyArray<{ readonly title: string; readonly canon: string | null }> };
 
 /**
- * PROMOTE (the steward's hand): clear the Kahu reach on the offer's bag FIRST (a non-steward face refuses `kahu-reach` before a
- * single canon or board read decides anything), decide, write the offered bytes into canon, then retire the offer by a
- * steward-signed record keyed to its CID. A replay meets the retire and lands nothing.
+ * PROMOTE (the steward's Kahu hand): clear the Kahu reach on the offer's bag FIRST (a non-steward face refuses `kahu-reach` before
+ * a single canon read decides anything), decide, and write the offered bytes into canon. It writes no retire: the RETIRE seals
+ * under a seat of the Nexus's charter (`retireCanonOffer`), which the steward's vessel holds where the canon write's island does
+ * not. Until the retire lands the offer reads open, and a replayed promotion writes nothing (every record reads `landed`).
  */
 export async function promoteCanonOffer(ports: CanonOfferPorts & {
   /** The Kahu reach for one bag (`requireKahuReach` over the vessel's source): throws for a hand outside the cabal. */
   readonly requireReach: (bag: string) => Promise<void>;
   readonly canonWrite:   (bag: string) => Promise<OfferRecordWriter | null>;
-  readonly steward:      OfferSigner;
 }, args: { readonly cid: string; readonly overFresher?: boolean }): Promise<CanonPromoteOutcome> {
   // The bag the reach clears comes off the board's row; a row that fails verification names no bag, and so reaches no canon.
   const s = standingOf(ports, args.cid);
@@ -560,15 +606,37 @@ export async function promoteCanonOffer(ports: CanonOfferPorts & {
     if (!writer) throw new Error(`canon-offer: ${s.offer.body.bag} reaches no writable canon store here`);
     for (const r of decision.writes) await writer.put(canonRecordOf(r));
   }
+  return { moved: true, cid: s.offer.cid, bag: s.offer.body.bag, wrote: decision.writes.map((r) => r.title), already: decision.landed.map((r) => r.title), over: decision.over };
+}
+
+export type CanonRetireOutcome =
+  | { readonly retired: false; readonly cid: string; readonly retire: string; readonly why: "retired" }
+  | { readonly retired: true; readonly cid: string; readonly retire: string };
+
+/**
+ * RETIRE (the steward's seat): only once canon carries every offered digest (`offer-not-landed` otherwise: a retire never runs
+ * ahead of the canon write it records), seal a retire under a seat of the Nexus's charter, proven by the lineage it carries, and
+ * land it keyed to the offer's CID and its own. A seat the lineage does not prove refuses `offer-retire-unseated` before it signs.
+ * A replay meets the standing retire and lands nothing.
+ */
+export async function retireCanonOffer(ports: CanonOfferPorts & { readonly steward: OfferSteward },
+  args: { readonly cid: string; readonly over?: ReadonlyArray<{ readonly title: string; readonly canon: string | null }> }): Promise<CanonRetireOutcome> {
+  const s = standingOf(ports, args.cid);
+  if (s.retired !== null) return { retired: false, cid: s.offer.cid, retire: s.retired.cid, why: "retired" };
+  const proven = rosterOfLineage(ports.nexus, ports.steward.lineage, ports.steward.epoch);
+  if (!proven.ok || !proven.roster.keys.includes(ports.steward.key)) {
+    throw new CanonOfferRefused("offer-retire-unseated", `the key ${ports.steward.key.slice(0, 16)}… stands no seat of this Nexus's charter at that epoch, so it retires nothing`);
+  }
+  const canon = await ports.canon(s.offer.body.bag);
+  const unlanded: string[] = [];
+  for (const r of s.offer.body.records) if (!sameDigest(canonDigestOf(canon ? await canon.get(r.title) : null), r.digest)) unlanded.push(r.title);
+  if (unlanded.length > 0) throw new CanonOfferRefused("offer-not-landed", `canon does not yet carry ${unlanded.join(", ")}; promote first, then retire`);
   const retire = await signCanonOfferRetire({
-    kind: CANON_OFFER_RETIRE_DOMAIN, nexus: ports.nexus, offer: s.offer.cid, steward: ports.steward.key,
-    landed: s.offer.body.records.map((r) => ({ title: r.title, digest: r.digest })), over: decision.over,
+    kind: CANON_OFFER_RETIRE_DOMAIN, nexus: ports.nexus, offer: s.offer.cid, steward: ports.steward.key, epoch: ports.steward.epoch,
+    landed: s.offer.body.records.map((r) => ({ title: r.title, digest: r.digest })), over: [...(args.over ?? [])],
   }, ports.steward);
   ports.board.change((draft) => { writeCanonOfferRetire(draft, retire); });
-  return {
-    moved: true, cid: s.offer.cid, bag: s.offer.body.bag, retire: retire.cid,
-    wrote: decision.writes.map((r) => r.title), already: decision.landed.map((r) => r.title), over: decision.over,
-  };
+  return { retired: true, cid: s.offer.cid, retire: retire.cid };
 }
 
 // ── THE RELEASE WIRING ────────────────────────────────────────────────────────────────────────────────

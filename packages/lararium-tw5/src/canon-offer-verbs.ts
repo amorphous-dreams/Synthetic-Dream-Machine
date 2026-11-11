@@ -101,17 +101,19 @@ export function makeOfferShowReactor(opts: CanonOfferVerbOptions): VerbReactor {
   });
 }
 
-/** `offer-promote { cid, overFresher? }` — the steward's hand: the Kahu reach first, then the canon write and the retire. */
+/**
+ * `offer-promote { cid, overFresher? }` — the steward's Kahu hand: the reach first, then the canon write. The retire seals under a
+ * seat of the Nexus's charter, which the steward's vessel holds outside this island, so it rides the store door (`offer-retire`,
+ * `lares meme offer promote` runs both); until it lands the offer reads open and a replay writes nothing.
+ */
 export function makeOfferPromoteReactor(opts: CanonOfferVerbOptions): VerbReactor {
   return async (args, ctx) => answered(async () => {
     const cid = typeof args["cid"] === "string" ? args["cid"] : "";
-    const face = opts.signer();
-    if (face === null) throw new VerbRefusal("waking-floor", "waking-floor: light the steward's face before it promotes");
     const ports = await portsOf(opts, args);
     const access = makeBagAccess(opts);
     const requestId = String((ctx.invocation as { requestId?: unknown }).requestId ?? "offer-promote");
     const out = await promoteCanonOffer({
-      ...ports, steward: face.atom,
+      ...ports,
       requireReach: (bag) => requireKahuReach(bag, opts.kahuReach, "offer promote"),
       canonWrite: async (bag) => {
         const store = await access.write(bag);
@@ -131,5 +133,5 @@ export function registerCanonOfferVerbs(
   registry.register("offer-make", makeOfferMakeReactor(opts), { summary: "Offer records from the lit face's working layer toward a house-canon bag: a signed offer on the Nexus's offer table; canon stays unmoved.", surfaces: [surfaces.cli, surfaces.agent] });
   registry.register("offer-list", makeOfferListReactor(opts), { summary: "List the offers on the Nexus's offer table, each record's freshness against canon now (\"canon is fresher\" warns); nothing writes.", surfaces: [surfaces.cli, surfaces.agent] });
   registry.register("offer-show", makeOfferShowReactor(opts), { summary: "Show one offer: each record's freshness and its field diff against canon now; nothing writes.", surfaces: [surfaces.cli, surfaces.agent] });
-  registry.register("offer-promote", makeOfferPromoteReactor(opts), { summary: "Promote one offer into house canon under the steward's Kahu hand, retiring it by a record keyed to its CID; a moved base takes overFresher.", surfaces: [surfaces.cli] });
+  registry.register("offer-promote", makeOfferPromoteReactor(opts), { summary: "Promote one offer into house canon under the steward's Kahu hand; a moved base takes overFresher. The charter seat's retire follows on the store door (offer-retire).", surfaces: [surfaces.cli] });
 }

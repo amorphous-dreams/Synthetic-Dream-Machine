@@ -19,6 +19,7 @@
  *   nexus-release                                the steward's seal of a floor release, with the cabal's approval of the
  *                                                manifest's exact bytes, landed on the publication board (`commands/nexus-release`)
  *   floor-cut                                    the floor the next release names, cut from live house canon (`commands/floor-cut`)
+ *   offer-retire                                 a charter seat's retire of a promoted canon offer (`commands/offer-retire`)
  *   nexus-posture                                the per-Nexus federation posture joint (`nexus-doc`)
  *   nexus-admit-take                             a carried admit bundle's offline take + live re-present
  *                                                (`admit-bundle`)
@@ -63,7 +64,7 @@
  */
 
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
-import { WardRefused, type FloorRemount } from "@lararium/mesh";
+import { WardRefused, CanonOfferRefused, type FloorRemount } from "@lararium/mesh";
 
 /** The route a row's own ticket resolved to, carried beside its arguments under a key no wire spells (seat-harness#/the-ward). */
 const WARD_ARG: unique symbol = Symbol("ward");
@@ -95,6 +96,7 @@ import { federationPostureFromDoc, isVerbRefusal, readNexusActPartial, type Fede
 import { runCabalAct, runCabalCosign, runCabalStanding, NexusCabalError } from "./commands/nexus-cabal.js";
 import { runFloorRelease } from "./commands/nexus-release.js";
 import { runFloorCut } from "./commands/floor-cut.js";
+import { runOfferRetire } from "./commands/offer-retire.js";
 import { runFloorAccept, runFloorStatus, FloorRefused } from "./commands/floor.js";
 import { casDirForStorage } from "./node-cas.js";
 import { runNexusKapae, runNexusKapaeList, runNexusKapaeOpen, runNexusKapaePartial, NexusKapaeError } from "./commands/nexus-kapae.js";
@@ -191,7 +193,7 @@ export async function awaitOnRolled(call: boolean | void | Promise<boolean | voi
 /** The door's rows, by name — each command's routed call names exactly one of these. */
 export const STORE_DOOR_VERBS = [
   "nexus-kapae", "nexus-kapae-list", "nexus-kapae-open", "nexus-kapae-partial", "nexus-contract", "nexus-contract-open", "nexus-contract-partial", "nexus-roll-anchor", "nexus-roll-anchor-open", "nexus-roll-anchor-partial", "nexus-roll-prior-anchor", "nexus-members-list",
-  "nexus-cabal-act", "nexus-cabal-cosign", "nexus-cabal-standing", "nexus-release", "floor-cut", "floor-status", "floor-accept",
+  "nexus-cabal-act", "nexus-cabal-cosign", "nexus-cabal-standing", "nexus-release", "floor-cut", "offer-retire", "floor-status", "floor-accept",
   "nexus-posture", "nexus-admit-take", "nexus-carry-take", "seal-home-refold",
   "edge-kapae", "edge-seat-facts", "edge-seat-duties", "edge-seat-marks", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face", "cabal-feed",
   "fleet-join-offer", "fleet-join-answer", "nexus-roll-anchor-edge", "nexus-roll-anchor-edge-open", "nexus-roll-anchor-edge-partial", "nexus-roll-anchor-edge-standing",
@@ -273,7 +275,7 @@ const REFUSALS = [
   CarryBundleError,
   IntentRefused,
   KahuaRefused, PromoteRefused, KapaeRefused, SwarmRefused,
-  FaceRowRefused, FloorRefused,
+  FaceRowRefused, FloorRefused, CanonOfferRefused,
 ] as const;
 
 const str = (v: unknown): string | undefined => (typeof v === "string" && v.length > 0 ? v : undefined);
@@ -540,6 +542,15 @@ function storeDoorRowsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
 
     // THE RELEASE WIRING (offering#/the-canon-offer): cut the floor the next release names from LIVE house canon, so a release after
     // a promotion carries the promoted rows. It stages the floor in this hearth's CAS and writes the manifest file; it lands nothing.
+    // THE OFFER'S RETIRE (offering#/the-canon-offer): a seat of the charter held here retires an offer canon now carries. A retire
+    // only counts where a charter seat sealed it, and the seat keys rest beside this door, never in the island that wrote canon.
+    "offer-retire": (args) => answer("offer-retire", async () => ({
+      ...(await runOfferRetire({
+        repo, sealHome, cid: need("offer-retire", args, "cid"), ...opt("aid", str(args["aid"])),
+        ...(Array.isArray(args["over"]) ? { over: (args["over"] as unknown[]).filter((o): o is { title: string; canon: string | null } =>
+          typeof o === "object" && o !== null && typeof (o as { title?: unknown }).title === "string") } : {}),
+      })),
+    })),
     "floor-cut": (args) => answer("floor-cut", async () => ({
       ...(await runFloorCut({ repo, sealHome, casDir: deps.casDir ?? casDirForStorage(storageDir), out: need("floor-cut", args, "out"), ...opt("aid", str(args["aid"])) })),
     })),
