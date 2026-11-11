@@ -95,22 +95,32 @@ test("K2 RED — the page's thread holds no route byte while a vessel founds, un
   // THE SPY, on the surface page alone (the ceremony document is where the secret belongs).
   await context.addInitScript(({ needle, hexNeedle }) => {
     if (location.pathname !== "/") return;
-    const spy = { count: 0, hits: [] as string[], kinds: {} as Record<string, number>, passwordFields: 0, notices: 0 };
+    const spy = { count: 0, hits: [] as string[], detail: [] as string[], kinds: {} as Record<string, number>, passwordFields: 0, notices: 0 };
     (window as unknown as { __larSpy: typeof spy }).__larSpy = spy;
+    const ring: string[] = [];
     const hexOf = (b: Uint8Array): string => { let s = ""; for (const x of b) s += x.toString(16).padStart(2, "0"); return s; };
     const scan = (where: string, data: unknown): void => {
       spy.count++;
       const t = (data as { t?: unknown } | null)?.t;
       if (typeof t === "string") spy.kinds[`${where}:${t}`] = (spy.kinds[`${where}:${t}`] ?? 0) + 1;
+      ring.push(`${where}:${typeof t === "string" ? t : typeof data}`); if (ring.length > 16) ring.shift();
       const seen = new Set<unknown>();
-      const walk = (v: unknown, depth: number): void => {
+      // DIAGNOSTIC (redacted): a hit records the message's kind, the key path and the string around the route with the
+      // route itself replaced, so a CI log names the carrying line and never the route.
+      const redact = (s: string): string => s.split(needle).join("«ROUTE»").split(hexNeedle).join("«ROUTE-HEX»");
+      const describe = (path: string, s: string): string => {
+        const at = Math.max(s.indexOf(needle), s.indexOf(hexNeedle));
+        return JSON.stringify({ before: ring.slice(0, -1), where, t: typeof t === "string" ? t : null, path, keys: data && typeof data === "object" ? Object.keys(data as object) : typeof data, len: s.length,
+          around: redact(s.slice(Math.max(0, at - 400), at + needle.length + hexNeedle.length + 400)) });
+      };
+      const walk = (v: unknown, depth: number, path = "$"): void => {
         if (depth > 14 || v === null || v === undefined) return;
-        if (typeof v === "string") { if (v.includes(needle) || v.includes(hexNeedle)) spy.hits.push(`${where}: a string`); return; }
+        if (typeof v === "string") { if (v.includes(needle) || v.includes(hexNeedle)) { spy.hits.push(`${where}: a string`); spy.detail.push(describe(path, v)); } return; }
         if (typeof v !== "object" || seen.has(v)) return;
         seen.add(v);
         if (v instanceof ArrayBuffer) { if (v.byteLength < 1 << 20 && hexOf(new Uint8Array(v)).includes(hexNeedle)) spy.hits.push(`${where}: a buffer`); return; }
         if (ArrayBuffer.isView(v)) { if (v.byteLength < 1 << 20 && hexOf(new Uint8Array(v.buffer, v.byteOffset, v.byteLength)).includes(hexNeedle)) spy.hits.push(`${where}: a view`); return; }
-        for (const k of Object.keys(v)) walk((v as Record<string, unknown>)[k], depth + 1);
+        for (const k of Object.keys(v)) walk((v as Record<string, unknown>)[k], depth + 1, `${path}.${k}`);
       };
       walk(data, 0);
     };
@@ -138,14 +148,15 @@ test("K2 RED — the page's thread holds no route byte while a vessel founds, un
   const logs: string[] = [];
   context.on("console", (m) => { if (!/Global assignment detected/.test(m.text())) logs.push(`[${m.type()}] ${m.text().slice(0, 300)}`); });
   page.on("worker", (w) => w.on("console", (m) => { if (!/Global assignment detected/.test(m.text())) logs.push(`[worker ${w.url().split("/").pop()}] ${m.text().slice(0, 300)}`); }));
-  type Spy = { count: number; hits: string[]; kinds: Record<string, number>; passwordFields: number; notices: number };
+  type Spy = { count: number; hits: string[]; detail: string[]; kinds: Record<string, number>; passwordFields: number; notices: number };
   const readSpy = () => page.evaluate(() => (window as unknown as { __larSpy: Spy }).__larSpy);
   const reads: Spy[] = [];
   /** The spy's verdict on one load, read as the load lands. */
   const judge = (i: number, spy: Spy): void => {
     // CONTROL: a live instrument — the spy read the vessel's asks and the page's own hand of each ceremony's port.
     assert.ok(spy.count > 0 && (spy.kinds["worker-in:ask"] ?? 0) >= 1, `load ${i}: the spy read the vessel's ask (${JSON.stringify(spy.kinds)})`);
-    assert.deepEqual(spy.hits, [], `load ${i}: no route byte crossed the page's thread`);
+    if (spy.hits.length) console.log(`[K2-diag] load ${i} hits (redacted): ${spy.detail.join("\n")}\n[K2-diag] kinds ${JSON.stringify(spy.kinds)}`);
+    assert.deepEqual(spy.hits, [], `load ${i}: no route byte crossed the page's thread — ${spy.detail.join(" | ")}`);
     assert.equal(spy.passwordFields, 0, `load ${i}: the page stood no password field`);
     assert.equal(spy.kinds["worker-out:answer"], undefined, `load ${i}: the page posted no answer to the vessel`);
     assert.ok((spy.kinds["worker-out:ceremony:port"] ?? 0) >= 1 && (spy.kinds["broker-out:ceremony:offer"] ?? 0) >= 1, `load ${i}: the spy read the page's port hand-offs (${JSON.stringify(spy.kinds)})`);
