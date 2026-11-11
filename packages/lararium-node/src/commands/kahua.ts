@@ -21,6 +21,20 @@ import { loadIntentFace, IntentRefused } from "./intent.js";
 import { kahuaDoor, KahuaRefused, type KahuaDoorPorts } from "../kahua-door.js";
 
 export { KahuaRefused };
+
+/**
+ * A face's stage list beside its relation. A fresh face holds no stage yet (its log pins none): it answers an empty stage
+ * named `none`, never a refusal, so a reader that maps faces to folders (the founding rite's seed) reads on. Every other
+ * refusal stands.
+ */
+export async function listStage(door: { list(): Promise<unknown[]> }, relation: string | null): Promise<{ items: unknown[]; relation: string | null; stage?: "none" }> {
+  try { return { items: await door.list(), relation }; }
+  catch (e) {
+    if (e instanceof KahuaRefused && /^kahua-unpinned\b/.test(e.message)) return { items: [], relation, stage: "none" };
+    throw e;
+  }
+}
+
 export type KahuaAction = "mint" | "propose" | "lift" | "withdraw" | "carry" | "list" | "get";
 export type KahuaCapPort = (presenter: string) => Promise<{ readonly held: boolean; readonly reason?: string }>;
 
@@ -94,7 +108,9 @@ export async function runKahuaCommand(opts: KahuaCommandOptions): Promise<Record
     }
     // The list names the face's relation F beside its items: the folder name its private projections carry
     // (`daemon-<F>`, `kahua-<F>`), so a reader that maps folders to faces (`lares export`) reads it off the verified log.
-    case "list": return { items: await door.list(), relation: faceRelationOf(ports.projection()) };
+    // A FRESH FACE HOLDS NO STAGE YET: a face whose log pins no stage (no relation yet, or no stage pin) answers an empty
+    // stage named `none`, never a refusal, so a reader that maps faces (the founding rite's seed) reads on.
+    case "list": return { ...(await listStage(door, faceRelationOf(ports.projection()))) };
     case "get": {
       const title = need(opts.title, "a title");
       return { item: await door.get(title), ...(opts.history ? { history: await door.history(title) } : {}) };

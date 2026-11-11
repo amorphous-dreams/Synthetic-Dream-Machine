@@ -199,6 +199,9 @@ export { runFoundHearth, foundSeedCharter, HearthFoundingRefused } from "./comma
 export type { FoundHearthOptions, FoundHearthResult, HearthCard } from "./commands/found-hearth.js";
 // THE ROOT-CARD READER: the split-root cards build a face's body in the person's own process — see `face-card-restore`.
 export { buildCardBody, CardRestoreRefused, CARD_REFUSALS } from "./face-card-restore.js";
+// THE FACE CARDS: each face's pet-name and its copies' override bases, in plaintext outside every mirror (`face-cards`).
+export { FACE_CARDS_DIR, FACE_CARD_SCHEMA, FACE_BASES_SCHEMA, faceCardsDir, faceCardPath, faceBasesPath, readFaceCard, writeFaceCard, cardedRelations,
+  moveFaceCardFile, readFaceBases, writeFaceBases, basesOfDoc, keepFaceBases, type FaceCard, type KeptDoc } from "./face-cards.js";
 export type { CardRefusal, FaceNamed, PresentedCard } from "./face-card-restore.js";
 // The live read path onto `mesh/dyad` — a vessel enumerates the relationships it already holds.
 export { makeBagTierReader, bagNameFromBagUrl } from "./vessel-bag-tier.js";

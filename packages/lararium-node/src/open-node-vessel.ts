@@ -239,7 +239,8 @@ import { gateMemoryRows }                        from "./gate-memory-rows.js";
 import { custodyGateDoor }                       from "./custody-seat.js";
 import { intentRelayService, type IntentRelayService } from "./intent-relay.js";
 import { resolveIntentRelayFace } from "./intent-relay-face.js";
-import { vesselFloorKeyDoor, loadPlaceKelChain, loadPlaceAid, placeReadingWatch } from "./node-vessel-identity.js";
+import { vesselFloorKeyDoor, loadPlaceKelChain, loadPlaceAid, placeReadingWatch, makeNodePersonaPetnameStore } from "./node-vessel-identity.js";
+import { writeFaceCard, keepFaceBases } from "./face-cards.js";
 import { placeSessionCell, type PlaceWorn } from "./place-session-cell.js";
 import { hearthFloorPins }                       from "./hearth-sovereign-pin.js";
 import { hearthFloorProof }                      from "./hearth-floor-claims.js";
@@ -2416,7 +2417,13 @@ async function prepareNodeBootOn(
       { tideline: "hearth-private", label: PLANE_LABELS.daemon, settled: () => repo.flush() });
 
   // The per-device daemon documents the control document names, each filed by its owner (answers whether any moved).
-  const readDeviceDaemonDocs = (controlDoc: LarDoc | undefined): boolean => deviceDocs.readControl(controlDoc);
+  const readDeviceDaemonDocs = (controlDoc: LarDoc | undefined): boolean => {
+    const moved = deviceDocs.readControl(controlDoc);
+    if (moved) faceBasesKeeper?.refresh();
+    return moved;
+  };
+  // THE LIT FACE'S BASES SIDECAR (`face-cards`): kept true off the face's own working slots while it stands.
+  let faceBasesKeeper: { stop(): void; refresh(): void } | null = null;
 
   // The vessel's control document, named by the daemon document (`control-home`): minted at founding beside the secret home.
   const readControlDoc = async (): Promise<DocHandle<LarDoc>> => {
@@ -3280,6 +3287,20 @@ async function prepareNodeBootOn(
     // THE LIT FACE'S DEVICE DAEMON DOCUMENTS (the control document names them): they seal under that face from here on.
     wornDeviceGroup = faceLit && wornFaceProved && personaGroupId ? personaGroupId : null;
     wornDeviceRelation = wornDeviceGroup !== null ? wornRelation : null;
+    // THE FACE CARD AND ITS BASES, written by the vessel whenever a face stands (`face-cards`): the card names the pet-name
+    // the face's relation wears, and the sidecar keeps each working copy's override base, read off the working slots the
+    // owner table files under this face's group (never whichever face stands lit later), so a seed after a re-founding
+    // adopts the folders by pet-name and keeps each fork's base with no CLI door having run.
+    faceBasesKeeper?.stop();
+    faceBasesKeeper = null;
+    if (wornDeviceGroup !== null && wornDeviceRelation !== null) {
+      const relation = wornDeviceRelation, group = wornDeviceGroup, projections = larProjectionsHome();
+      const handleIndex = wornMount?.handleIndex ?? 0;
+      try { writeFaceCard({ relation, petname: await (await makeNodePersonaPetnameStore()).get(handleIndex), handleIndex }, projections); }
+      catch (e) { console.warn(`[face-card] the card for ${relation} did not write: ${e instanceof Error ? e.message : String(e)}`); }
+      faceBasesKeeper = keepFaceBases({ relation, projections, docs: () => deviceDocs.docsOf(DAEMON_WORKING_SLOT, { group, relation, face: null })
+        .map((id) => repo.handles[id as keyof typeof repo.handles]).filter((h): h is NonNullable<typeof h> => h !== undefined && h.isReady()) as never });
+    }
     readDeviceDaemonDocs((await readControlDoc()).doc());
     sealedRest.store.mapMoved();
     const daemonCanon = canonBagId && wornRelation ? await standFaceDaemonCanon({ repo, control: await readControlDoc(), faceRelation: wornRelation,
