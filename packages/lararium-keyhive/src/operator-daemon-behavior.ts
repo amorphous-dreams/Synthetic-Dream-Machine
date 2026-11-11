@@ -28,11 +28,11 @@ import {
   makeCircleReactors,
   makeCabalRealmReactors,
   makeIntentViewReactor, runLocalVerb, INTENT_VIEW_CAP, controlOf, MemoryTiddlerStore,
-  makeShareSetReactor, makeShareListReactor, readShareRows, isPersonalTitle,
+  makeShareSetReactor, makeShareListReactor, readShareRows,
 } from "@lararium/tw5";
 import { applyShares } from "./share-apply.js";
-import { adoptWorkbench, landWorkbench, workbenchFaceHolds, type LiftDoc } from "./workbench-realm.js";
-import { ledgerWorkbenchRealm, wikiWorkbenchUri, bagUri as meshBagUri } from "@lararium/mesh";
+import { adoptWorkbench, landWorkbench, standWorkbench, workbenchFaceHolds, type LedgerDoc } from "./workbench-realm.js";
+import { ledgerWorkbenchRealm, bagUri as meshBagUri } from "@lararium/mesh";
 import { DAEMON_WIKI_SLUG, ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, recipeLayerIndex, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, ControlHomeUnavailable, faceCatalogDocUrl, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor, VerbTable } from "@lararium/tw5";
 import type { IslandMsg_Manifest, JoinedFaceAuth } from "@lararium/mesh";
@@ -153,7 +153,7 @@ export function requireDyadReader(reader: DyadReader | undefined, gate: "the Bin
 import { bootDaemonKeyhive } from "./boot-daemon-keyhive.js";
 import { daemonBagDocLedger, planeBagDocLedger, registerBagsDurably, type BagDocLedger } from "./bag-doc-ledger.js";
 import { persistArchiveFloor } from "./archive-floor-write.js";
-import { replicaHeads, hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, holdsKahuReach, isHouseCanonBag, realmStandingDocUrl, materializeFaceWorkingDoc } from "@lararium/mesh";
+import { replicaHeads, hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, holdsKahuReach, isHouseCanonBag, realmStandingDocUrl } from "@lararium/mesh";
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
 import { readLeaseUnderFace, controlLayerOf, type LeaseFrontier } from "./lease-frontier.js";
 import { readFace, answerDocStoreAsks, announceSlotDoc, documentIdOfUrl, type WikiSlotKind } from "@lararium/mesh";
@@ -425,7 +425,6 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       ...(docStoreDoor ? { announceDevice: (kind: Exclude<WikiSlotKind, "temp">, documentId: string) => announceSlotDoc(docStoreDoor, wikiSlotUri(DAEMON_WIKI_SLUG, kind), documentId) } : {}),
       daemonStore: ctx.composite, catalog: null,
       vesselDid: () => didFromVerifyingKey(daemonAuth.placeVerifyingKey), mintedByHex: () => daemonAuth.placeVerifyingKey,
-      faceWorkingDoc: (url, label) => materializeFaceWorkingDoc(ctx.repo, url as AutomergeUrl, label),
     });
     return siblingSlots;
   };
@@ -444,8 +443,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         if (!entry || !provider) return null;
         const resolver = siblingSlotsOf(ctx).of({
           group: entry.personaGroupId,
-          secret: async () => entry.faceAddressSecret ? meshHexToBytes(entry.faceAddressSecret) : null,
           keyhive: provider as never,
+          workbenchRealm: faceWorkbench(ctx, () => provider, entry.personaGroupId),
           faceDoor: makeFaceBagDoor({ face: provider as never, groupId: entry.personaGroupId }),
         });
         const out = await announcing(resolver).slotDoc(DAEMON_WIKI_SLUG, kind);
@@ -454,25 +453,26 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       storeOf: async (url, bag) => new AutomergeDocStore(await findOrThrow(ctx.repo, url, `${bag} (a lit face's own layer)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS }) as never, bag),
     });
   };
-  // THE PRIVATE CABAL'S LEDGER (cabal-realm#/the-workbench): the vessel's own ledger under its place key, where the share door
-  // notes each shared wiki's realm. Every face of the vessel reads the one ledger; the realm's Document decides who mounts.
+  // THE WORKBENCH LEDGER (cabal-realm#/the-workbench): the vessel's own ledger under its place key, where each wiki's realm is
+  // noted on its first stand. Every face of the vessel reads the one ledger; the realm's Document decides who mounts.
   let workbenchLedger: Promise<DocHandle<LarDoc>> | null = null;
   const workbenchLedgerOf = (ctx: IslandContext): Promise<DocHandle<LarDoc>> =>
     (workbenchLedger ??= materializeSharedLarDoc(ctx.repo, edgeLedgerDocUrl(daemonAuth.placeVerifyingKey), "ledger:workbench"));
-  const asLiftDoc = (h: DocHandle<LarDoc>): LiftDoc => ({ doc: () => h.doc(), change: (fn) => h.change(fn) });
+  const asLedgerDoc = (h: DocHandle<LarDoc>): LedgerDoc => ({ doc: () => h.doc(), change: (fn) => h.change(fn) });
   /**
-   * THE REALM BRANCH UNDER ONE FACE: the ledger's realm for the slug, answered only where that face's own hive holds a seat in
-   * the realm's Document. One vessel holds every face's documents, so the roster gates the mount here as the guard gates the
-   * wire. A ledger naming two realms for one slug mounts no workbench and says so (`workbench-two-realms`).
+   * THE WORKBENCH PORT UNDER ONE FACE: the ledger's realm for the slug, answered only where that face's own hive holds a seat
+   * in the realm's Document (one vessel holds every face's documents, so the roster gates the mount here as the guard gates
+   * the wire). With `mint`, a wiki that holds no realm founds its private cabal of one under the face's hive (`standWorkbench`).
+   * A ledger naming two realms for one slug refuses `workbench-two-realms` by name.
    */
-  const faceRealmOf = (ctx: IslandContext, provider: () => KeyhiveProvider | null | undefined) => async (slug: string): Promise<string | null> => {
-    let realm: string | null;
-    try { realm = ledgerWorkbenchRealm((await workbenchLedgerOf(ctx)).doc(), slug); }
-    catch (err) { console.warn(`[workbench] ${slug}: ${err instanceof Error ? err.message : String(err)}; the wiki mounts its private layers alone`); return null; }
+  const faceWorkbench = (ctx: IslandContext, provider: () => KeyhiveProvider | null | undefined, face?: string) => async (slug: string, mint: boolean): Promise<string | null> => {
     const hive = provider();
-    if (!realm || !hive) return null;
-    if (hive.docIdOfBag(wikiWorkbenchUri(slug)) === null) adoptWorkbench(hive, slug, realm);
-    return (await workbenchFaceHolds(hive, slug, await hive.whoami(), "read").catch(() => false)) ? realm : null;
+    if (!hive) return null;
+    const ledger = await workbenchLedgerOf(ctx);
+    const held = ledgerWorkbenchRealm(ledger.doc(), slug);
+    if (held === null) return mint ? (await standWorkbench(hive, asLedgerDoc(ledger), slug, face)).realmId : null;
+    if (hive.docIdOfBag(wikiSlotUri(slug, "working")) === null) adoptWorkbench(hive, slug, held);
+    return (await workbenchFaceHolds(hive, slug, await hive.whoami(), "read").catch(() => false)) ? held : null;
   };
   const slotDocsOf = (ctx: IslandContext): SlotDocResolver => {
     if (slotDocs) return slotDocs;
@@ -490,27 +490,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       ...(faceDoor() ? { faceDoor: faceDoor()! } : {}),
       faceSeated: async () => faceSeat ? faceSeat.seated() : !!(kh && daemonAuth.personaGroupId && await kh.knowsAgent(daemonAuth.personaGroupId)),
       seatSettled: async () => { await faceSeat?.settled(); },
-      // THE WORKING SLOT'S PORTS: the mounted face's address secret the manifest carried from main-thread custody (a
-      // fresh copy per read, which the resolver zero-fills), the floor's own anchor, and the derived document's door.
-      faceAddressSecret: async () => daemonAuth.faceAddressSecret ? meshHexToBytes(daemonAuth.faceAddressSecret) : null,
-      floorAnchor: () => daemonAuth.workingFloorAnchor ?? null,
-      faceWorkingDoc: (url, label) => materializeFaceWorkingDoc(ctx.repo, url as AutomergeUrl, label),
-      ...(daemonAuth.personaGroupId ? { realmOf: faceRealmOf(ctx, () => kh) } : {}),
-      rebindWorking: (slug, oldUrl, _newUrl, into) => {
-        if (slug !== ctx.recipe.wikiSlug) return;
-        const bag = wikiSlotUri(slug, "working");
-        if (ctx.handles.get(bag)?.url !== oldUrl) return;
-        const at = ctx.composite.layerIndexOf(bag);
-        if (at < 0) throw new Error(`mounted working layer ${bag} is missing`);
-        const handle = into as DocHandle<LarDoc>;
-        const store = new AutomergeDocStore(handle, bag);
-        ctx.composite.removeLayer(bag);
-        ctx.composite.addLayer({ bagId: bag, store, writable: true, defaultWritable: true }, at);
-        ctx.handles.set(bag, handle);
-        store.emitInitialReplay();
-        store.markSyncComplete();
-        announced(slug, "working", (into as { url?: string }).url);
-      },
+      // THE WORKING SLOT'S PORTS: the wiki's realm workbench under the worn face, and its document at the fixed address.
+      ...(daemonAuth.personaGroupId ? { workbenchRealm: faceWorkbench(ctx, () => kh, daemonAuth.personaGroupId) } : {}),
+      workbenchDoc: (url) => materializeSharedLarDoc(ctx.repo, url as AutomergeUrl, "board:workbench"),
     }));
     return slotDocs;
   };
@@ -1499,8 +1481,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             set: async (title) => { if (!(await control.get(title))) await control.put(mutableLarRecord(title, { text: "owed" }, "share-apply"), ORIGIN); },
             clear: async (title) => { if (await control.get(title)) await control.remove(title, ORIGIN); },
           },
-          // A WIKI ROW'S WORKBENCH: the owner face founds (once) the private cabal, seats each lit member face on the realm's
-          // Document, hands each member's hive the seat's events, and lifts its own working layer in once.
+          // A WIKI ROW'S WORKBENCH: the owner face stands the wiki's realm, seats each lit member face on the realm's Document,
+          // revokes each face the row stopped naming, and hands each member's hive the seat's events.
           workbench: async (row, owner, members) => {
             const ownerHive = holderOf(owner.group);
             if (!ownerHive) throw new VerbRefusal("share-face-shut", "share-face-shut: the wiki's owner face stands shut here");
@@ -1511,29 +1493,15 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               const { id } = await ownerHive.receiveContactCard(await hive.contactCard());
               seats.push({ face: m.group, agentHex: id, access: m.access, hive });
             }
-            const ledger = await workbenchLedgerOf(ctx);
-            const ownerSlots = owner.group === daemonAuth.personaGroupId ? slotDocsOf(ctx) : (() => {
-              const entry = [...litSiblings.values()].find((e) => e.personaGroupId === owner.group);
-              return entry ? siblingSlotsOf(ctx).of({ group: entry.personaGroupId, secret: async () => entry.faceAddressSecret ? meshHexToBytes(entry.faceAddressSecret) : null, keyhive: ownerHive as never }) : null;
-            })();
             const landed = await landWorkbench(row, seats.map(({ face, agentHex, access }) => ({ face, agentHex, access })), {
-              provider: ownerHive, ledger: asLiftDoc(ledger), ownerFace: owner.group, isPersonal: isPersonalTitle,
+              provider: ownerHive, ledger: asLedgerDoc(await workbenchLedgerOf(ctx)), ownerFace: owner.group,
               checkoutSourced: isHouseCanonBag(meshBagUri(row.slug)),
-              workbench: async (url) => {
-                const id = documentIdOfUrl(url);
-                if (docStoreDoor && id) announceSlotDoc(docStoreDoor, wikiWorkbenchUri(row.slug), id);
-                return asLiftDoc(await materializeSharedLarDoc(ctx.repo, url, "board:workbench"));
-              },
-              ownerWorking: async () => {
-                const slot = await ownerSlots?.slotDoc(row.slug, "working", { mint: false }).catch(() => null);
-                return slot ? asLiftDoc(await findOrThrow(ctx.repo, slot.url, `${row.slug} (the owner's working layer)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS }) as DocHandle<LarDoc>) : null;
-              },
             });
             for (const seat of seats) {
               await seat.hive.ingestPeerEvents(await ownerHive.eventsForPeer(seat.agentHex));
               adoptWorkbench(seat.hive, row.slug, landed.realmId);
             }
-            return { slug: landed.slug, realmId: landed.realmId, founded: landed.founded, lifted: landed.lifted, members: landed.members, removed: landed.removed };
+            return { slug: landed.slug, realmId: landed.realmId, founded: landed.founded, members: landed.members, removed: landed.removed };
           },
           grant: async (g) => {
             const owner = holderOf(g.ownerGroup), grantee = holderOf(g.granteeGroup);
@@ -1601,9 +1569,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     },
     onWritable: async (ctx: IslandContext) => {
       if (!daemonAuth.atom && !daemonAuth.personaGroupId && !daemonAuth.deviceEdge) {
-        // AT THE FLOOR THE SLOT STANDS ON THE FLOOR'S OWN DOCUMENT (sealed-store#/U1), keyed by the floor's anchor: a faceless
-        // floor holding one attaches it, so its verb outcomes land; a vessel holding no anchor names the absent route.
-        if (!daemonAuth.workingFloorAnchor) return { state: "no-route", reason: "no face and no floor anchor" };
+        // AT THE FLOOR THE DAEMON'S SLOT STANDS ON THE FLOOR'S OWN DEVICE DOCUMENT (sealed-store#/U1), named in the control
+        // document under the floor's own key (`daemon-slot/working/floor`), so its verb outcomes land. No user wiki stands a
+        // working layer here: each rests in a realm workbench, which a face stands (cabal-realm#/the-workbench).
         await attachDaemonWorking(ctx);
         return { state: "standing" };
       }
@@ -1612,7 +1580,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     },
     verifierFactory: async (ctx: IslandContext) => {
       if (!daemonAuth.atom && !daemonAuth.personaGroupId && !daemonAuth.deviceEdge) {
-        if (daemonAuth.workingFloorAnchor) await attachDaemonWorking(ctx);
+        await attachDaemonWorking(ctx);
         return floorVerifier;
       }
       const { keyhive, floor } = await standWorking(ctx);
@@ -1873,7 +1841,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     resolveBinding: async (ctx: IslandContext, fingerprint: string, recipeTrace: { wikiDocId: string; libraryBagDocIds: readonly string[] }, wikiSlug: string) => {
       const bindings = await slotDocsOf(ctx).bindings(fingerprint, recipeTrace, wikiSlug);
       // The first mount mints each slot's bag cap in the same act as its document binding, on the face when seated.
-      for (const kind of ["working", "draft"] as const) {
+      // A wiki's working bag rides its realm's Document (the workbench adopted it); the daemon wiki's working slot keeps its own.
+      for (const kind of (wikiSlug === DAEMON_WIKI_SLUG ? ["working", "draft"] : ["draft"]) as readonly ("working" | "draft")[]) {
         const bag = wikiSlotUri(wikiSlug, kind);
         if (faceDoor() && await kh!.knowsAgent(daemonAuth.personaGroupId!)) await faceDoor()!.mint(bag, "admin");
         else if (kh) await kh.registerBag(bag);

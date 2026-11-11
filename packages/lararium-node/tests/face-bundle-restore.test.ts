@@ -46,7 +46,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import * as ed from "@noble/ed25519";
 import {
   HandleBook, attestAndRotate, faceLogViewLine, signFaceLogView, canonicalJsonBytes, coldKeySeedFromCode, sealKeySetHash, deriveSelfRecoveryKey, faceAtomKeyFromSeed, foldPersonaContests, recoveryContactRegistrationCard, hex, mintBundleKey, mintHandleInception, mintPersonaInception, mintVeto,
-  faceWorkingDocUrl, personaBagIdFor, openFaceBundleBody, readFaceBundleBody, sealFaceBundleBody, sealMemorySection, signHandleCard,
+  faceCatalogDocUrl, personaBagIdFor, openFaceBundleBody, readFaceBundleBody, sealFaceBundleBody, sealMemorySection, signHandleCard,
   type FaceBundleBody, type HandleCard, type HandleKelEvent, type PersonaKelEvent,
 } from "@lararium/mesh";
 import * as init from "../src/commands/init.js";
@@ -206,11 +206,12 @@ async function cutOnDestroyedVessel(label: string, faceLabel = "the gardener", p
   expect(existsSync(root)).toBe(false);
   return out;
 }
-/** The working address a face derives for the wiki "garden" from the address secret this vessel holds for its group. */
+/** The catalog address a face derives from the address secret this vessel holds for its group (a wiki's working layer rests in
+ *  its realm workbench and derives from no face secret, cabal-realm#/the-workbench). */
 async function workingUrlOf(group: string): Promise<string> {
   const secret = await readFaceAddressSecret(group);
   if (!secret) throw new Error(`no address secret stands for ${group.slice(0, 12)}`);
-  try { return faceWorkingDocUrl(secret, "garden", "working"); } finally { secret.fill(0); }
+  try { return faceCatalogDocUrl(secret); } finally { secret.fill(0); }
 }
 /** Seal `body` under a fresh key, as a bundle a cut would carry. */
 function sealed(body: FaceBundleBody): { sealedBody: Uint8Array; bundleKey: Uint8Array } {
@@ -307,7 +308,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     await restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo });
     const anchors = (await loadIdentityAnchors(1))!;
     expect(anchors.personaKelPrefix, "CONTROL: the identifier stays").toBe(a.prefix);
-    expect(await workingUrlOf(anchors.personaGroupId), "CONTROL: the working address stays").toBe(a.workingUrl);
+    expect(await workingUrlOf(anchors.personaGroupId), "CONTROL: the secret-derived address stays").toBe(a.workingUrl);
     expect({ plane: personaBagIdFor(anchors.personaGroupId) },
       "the restore re-minted the PersonaGroup: the face's tag, plane and kahua folders moved")
       .toEqual({ plane: personaBagIdFor(a.group) });
@@ -316,7 +317,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
   test("R16 — the bundle carries the face's address secret, so the face restored on B derives the working address it derived on A; CONTROL: a second face derives another; a bundle without the secret refuses no-address-secret before any write", async () => {
     const a = await cutOnDestroyedVessel("a");
     const other = await cutOnDestroyedVessel("other", "the potter", 5);
-    expect(other.workingUrl, "CONTROL: a second face derives another working address").not.toBe(a.workingUrl);
+    expect(other.workingUrl, "CONTROL: a second face derives another secret-derived address").not.toBe(a.workingUrl);
     await foundVessel("b");
     // A bundle cut without the secret refuses by name, and moves nothing.
     const before = homeTree();
@@ -328,7 +329,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     await restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo });
     const group = (await loadIdentityAnchors(1))!.personaGroupId;
     expect(group, "a new seat on B").not.toBe(a.group);
-    expect(await workingUrlOf(group), "one face, one working address on every device that wears it").toBe(a.workingUrl);
+    expect(await workingUrlOf(group), "one face, one secret-derived address on every device that wears it").toBe(a.workingUrl);
     expect(await workingUrlOf((await loadIdentityAnchors(0))!.personaGroupId), "CONTROL: B's own persona zero derives its own").not.toBe(a.workingUrl);
   });
 

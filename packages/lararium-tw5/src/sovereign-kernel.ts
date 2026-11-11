@@ -45,7 +45,6 @@ import {
   ORACLE_BAG,
   wikiBagUri,
   wikiSlotUri,
-  wikiWorkbenchUri,
   expandRecipe,
   recipeLayerIndex,
   mkBreath,
@@ -410,8 +409,6 @@ export function runSovereignKernel(
       if (slot === wikiSlotUri(slug, "draft"))    return msg.grants.draftUrl    ?? null;
       if (slot === wikiSlotUri(slug, "working"))  return msg.grants.workingUrl  ?? null;
       if (slot === wikiSlotUri(slug, "personal")) return msg.grants.personalUrl ?? null;
-      // A shared wiki's workbench mounts from its own grant alone (cabal-realm#/the-workbench), never from a catalog row.
-      if (slot === wikiWorkbenchUri(slug))        return msg.grants.workbenchUrl ?? null;
       // A canon that follows the face (`canonBag`) mounts from its own grant; the wiki's own bag then rides as vessel state.
       if (msg.recipe.canonBag !== undefined && slot === msg.recipe.canonBag) return msg.grants.canonUrl ?? null;
       if (slot === wikiBagUri(slug))              return msg.ownedDocument?.documentUrl ?? msg.grants.wikiUrl ?? null;
@@ -665,7 +662,7 @@ export function runSovereignKernel(
     }
     if (composite.hasBag(slot)) return;
     const store = new AutomergeDocStore(out.handle, slot);
-    composite.addLayer({ bagId: slot, store, ...slotLayerFlags(slot, msg.recipe.wikiSlug, msg.recipe.workbench === true) }, recipeLayerIndex(composite, msg.recipe, slot));
+    composite.addLayer({ bagId: slot, store, ...slotLayerFlags(slot, msg.recipe.wikiSlug) }, recipeLayerIndex(composite, msg.recipe, slot));
     _handles.set(slot, out.handle);
     store.emitInitialReplay();
     store.markSyncComplete();

@@ -420,7 +420,6 @@ export const FACE_WITHDRAWAL_GENESIS_DOMAIN = mint("face-withdrawal-genesis");
 export const FACE_WITHDRAWN_KEY_DOMAIN = mint("face-withdrawn-key");
 /** The reference a local session carries for its face's proof subject: a digest name. */
 export const FACE_PROOF_SUBJECT_DOMAIN = mint("face-proof-subject");
-export const FACE_WORKING_ADDRESS_DOMAIN = mint("face-working-address");
 /** A face's catalog document: the address its secret derives for the face's own half of the split catalog (U1). */
 export const FACE_CATALOG_ADDRESS_DOMAIN = mint("face-catalog-address");
 /** A SESSION's certificate: the vessel's face-scoped key signs one session key and its hand's profile. */

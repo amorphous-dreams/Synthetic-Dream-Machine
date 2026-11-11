@@ -118,7 +118,7 @@ export interface DaemonBehaviorOptions {
     fingerprint: string,
     recipeTrace: { wikiDocId: string; libraryBagDocIds: readonly string[] },
     wikiSlug: string,
-  ) => Promise<{ personalUrl: string; draftUrl: string; workingUrl: string; workbenchUrl?: string }>;
+  ) => Promise<{ personalUrl: string; draftUrl: string; workingUrl: string }>;
   /**
    * Sovereign-worker data-plane: register the residency / wiki / where / resolve
    * reactors into the worker's VerbDispatcher, in-worker, over the IslandContext.
@@ -343,7 +343,6 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
           opts.resolveBinding(ctx, msg.fingerprint, msg.recipeTrace, msg.wikiSlug)
             .then((r) => post(mkDaemonResolveBindingResult({
               requestId: msg.requestId, personalUrl: r.personalUrl, draftUrl: r.draftUrl, workingUrl: r.workingUrl,
-              ...(r.workbenchUrl ? { workbenchUrl: r.workbenchUrl } : {}),
             })))
             .catch((err: unknown) => post(mkDaemonResolveBindingResult({
               requestId: msg.requestId, error: err instanceof Error ? err.message : String(err),

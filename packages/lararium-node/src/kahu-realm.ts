@@ -583,18 +583,24 @@ export interface KahuProtectedReadings {
 export function protectedDocsOver(
   holder: () => KahuProtectedReadings | null,
   vesselPrivate: { ids(): ReadonlySet<string>; torn(): boolean },
+  /** Every wiki's realm workbench the vessel ledger names (cabal-realm#/the-workbench), by document id → realm id. The map
+   *  answers a new object only when the ledger moved, so the memo holds across asks. */
+  workbenches?: () => ReadonlyMap<string, string>,
 ): { ids(): ReadonlyMap<string, ProtectedDocClass>; settled(): Promise<void>; pending(): boolean; incomplete(): boolean } {
   const none: ReadonlyMap<string, "kahu-canon"> = new Map();
-  let memo: { kahu: ReadonlyMap<string, ProtectedDocClass>; priv: ReadonlySet<string>; size: number; map: ReadonlyMap<string, ProtectedDocClass> } | null = null;
+  const noBench: ReadonlyMap<string, string> = new Map();
+  let memo: { kahu: ReadonlyMap<string, ProtectedDocClass>; priv: ReadonlySet<string>; size: number; bench: ReadonlyMap<string, string>; map: ReadonlyMap<string, ProtectedDocClass> } | null = null;
   return {
     ids: () => {
       const kahu = holder()?.ids() ?? none;
       const priv = vesselPrivate.ids();
-      if (memo && memo.kahu === kahu && memo.priv === priv && memo.size === priv.size) return memo.map;
+      const bench = workbenches?.() ?? noBench;
+      if (memo && memo.kahu === kahu && memo.priv === priv && memo.size === priv.size && memo.bench === bench) return memo.map;
       const map = new Map<string, ProtectedDocClass>();
+      for (const id of bench.keys()) map.set(id, "realm-workbench");
       for (const id of priv) map.set(id, "vessel-private");
       for (const [id, cls] of kahu) map.set(id, cls);
-      memo = { kahu, priv, size: priv.size, map };
+      memo = { kahu, priv, size: priv.size, bench, map };
       return map;
     },
     settled: () => holder()?.settled() ?? Promise.resolve(),

@@ -7,20 +7,20 @@
  * K2 (red 3) a removed member's later writes refuse `workbench-not-a-member`; a reader never writes.
  * K3 (red 1, the roster half) a face outside the realm holds no seat: no read, no write.
  * K4 (red 5) a daemon slug refuses before any Document mints.
- * K5 (red 7) no announce row for a private cabal: the landing writes the ledger's workbench rows and nothing else.
- * K6 (red 10) the face's working document lifts into the workbench exactly once; view state stays private (red 8).
+ * K5 (red 7) no announce row for a private cabal: standing and landing write the ledger's workbench rows and nothing else.
+ * K6 the first stand founds a private cabal of one, the founder's seat noted; a replay founds nothing new.
  * K7 (red 9) a ledger that names the slug under two realms refuses the landing.
  * K8 (red 3) a row that stops naming a face revokes the seat the vessel noted for it; the address stands.
  */
 import { describe, test, expect } from "vitest";
 import { KeyhiveProvider, InMemoryEventStore } from "../src/index.js";
 import {
-  admitWorkbenchFace, foundWorkbench, landWorkbench, removeWorkbenchFace, requireWorkbenchWriter, workbenchFaceHolds,
-  type LiftDoc,
+  admitWorkbenchFace, foundWorkbench, landWorkbench, removeWorkbenchFace, requireWorkbenchWriter, standWorkbench, workbenchFaceHolds,
+  type LedgerDoc,
 } from "../src/workbench-realm.js";
 import {
-  noteWorkbench, realmWorkbenchDocUrl, storedLarRecord, tiddlerText, WorkbenchRefusal, EDGE_LEDGER_PREFIX,
-  REALM_BAG_ANNOUNCE_PREFIX, type LarDoc,
+  noteWorkbench, realmWorkbenchDocUrl, tiddlerText, WorkbenchRefusal, EDGE_LEDGER_PREFIX, ledgerWorkbenches, workbenchSeats,
+  wikiSlotUri, REALM_BAG_ANNOUNCE_PREFIX, type LarDoc,
 } from "@lararium/mesh";
 
 async function face(fill: number): Promise<KeyhiveProvider> {
@@ -31,13 +31,11 @@ async function face(fill: number): Promise<KeyhiveProvider> {
 async function introduce(owner: KeyhiveProvider, other: KeyhiveProvider): Promise<string> {
   return (await owner.receiveContactCard(await other.contactCard())).id;
 }
-/** A plain in-memory document the lift and the ledger write through. */
-function memDoc(seed: Record<string, string> = {}): LiftDoc & { readonly d: LarDoc } {
+/** A plain in-memory ledger the stand and the landing write through. */
+function memDoc(): LedgerDoc & { readonly d: LarDoc } {
   const d = { tiddlers: {} } as LarDoc;
-  for (const [title, text] of Object.entries(seed)) d.tiddlers[title] = storedLarRecord(title, { text }, "test") as never;
   return { d, doc: () => d, change: (fn) => fn(d) };
 }
-const isPersonal = (t: string): boolean => t === "$:/StoryList" || t.startsWith("$:/state/folded/");
 
 describe("K1/K2/K3 — membership rides the realm's Document, and the address never moves", () => {
   test("add, remove: the address stands; the removed face's write refuses; a stranger holds nothing", async () => {
@@ -71,49 +69,44 @@ describe("K4 — the daemon wiki never shares", () => {
   test("the founding refuses `workbench-face-private` before any Document mints", async () => {
     const owner = await face(0x31);
     await expect(foundWorkbench(owner, { slug: "daemon" })).rejects.toThrow(/workbench-face-private/);
-    expect(owner.docIdOfBag("lar:///ha.ka.ba/wikis/daemon/workbench")).toBeNull();
+    expect(owner.docIdOfBag(wikiSlotUri("daemon", "working"))).toBeNull();
   });
 });
 
-describe("K5/K6 — the landing: no announce, and one lift", () => {
-  test("the ledger takes workbench rows alone; the owner's working content lifts once and view state stays private", async () => {
+describe("K5/K6/K8 — stand, land, revoke: no announce, one founding", () => {
+  test("the first stand founds a cabal of one; the landing seats and revokes; the ledger takes workbench rows alone", async () => {
     const owner = await face(0x41), engineer = await face(0x42);
     const eng = await introduce(owner, engineer);
     const ledger = memDoc();
-    const working = memDoc({ "Field note": "shared from the start", "$:/StoryList": "Field note", "$:/state/folded/Field note": "hide" });
-    const benches = new Map<string, ReturnType<typeof memDoc>>();
-    const ports = {
-      provider: owner, ledger, ownerFace: "joshua-fontany", isPersonal,
-      workbench: async (url: string) => { if (!benches.has(url)) benches.set(url, memDoc()); return benches.get(url)!; },
-      ownerWorking: async () => working,
-    };
-    const first = await landWorkbench({ slug: "notes" }, [{ face: "joshua-fontany-engineer", agentHex: eng, access: "write" }], ports);
+    // K6: the wiki's first stand founds its private cabal of one, the founder's seat noted; a replay founds nothing new.
+    const first = await standWorkbench(owner, ledger, "notes", "joshua-fontany");
     expect(first.founded).toBe(true);
-    expect(first.lifted).toBe(true);
-    const bench = benches.get(first.docUrl)!;
-    expect(Object.keys(bench.d.tiddlers)).toEqual(["Field note"]);
-    expect(Object.keys(working.d.tiddlers).sort()).toEqual(["$:/StoryList", "$:/state/folded/Field note"]);
+    expect((await standWorkbench(owner, ledger, "notes", "joshua-fontany")).founded).toBe(false);
+    expect(ledgerWorkbenches(ledger.d)).toHaveLength(1);
+    expect([...workbenchSeats(ledger.d, first.realmId, "notes").keys()]).toEqual(["joshua-fontany"]);
+    expect(owner.docIdOfBag(wikiSlotUri("notes", "working")), "the working bag rides the realm's Document").toBe(`0x${first.realmId}`);
 
-    // K6: a second landing finds the realm and the mark, founds nothing and lifts nothing, though the face wrote again.
-    working.d.tiddlers["Later private"] = storedLarRecord("Later private", { text: "mine" }, "test") as never;
-    const second = await landWorkbench({ slug: "notes" }, [{ face: "joshua-fontany-engineer", agentHex: eng, access: "write" }], ports);
-    expect(second.founded).toBe(false);
-    expect(second.lifted).toBe(false);
-    expect(second.realmId).toBe(first.realmId);
-    expect(Object.keys(bench.d.tiddlers)).toEqual(["Field note"]);
-    expect(Object.keys(working.d.tiddlers)).toContain("Later private");
+    const ports = { provider: owner, ledger, ownerFace: "joshua-fontany" };
+    const landed = await landWorkbench({ slug: "notes" }, [{ face: "joshua-fontany-engineer", agentHex: eng, access: "write" }], ports);
+    expect(landed.founded, "the share seats faces in the realm the first stand founded").toBe(false);
+    expect(landed.realmId).toBe(first.realmId);
+    expect(await workbenchFaceHolds(owner, "notes", eng, "write")).toBe(true);
+    // A replay lands nothing new.
+    const before = JSON.stringify(ledger.d);
+    await landWorkbench({ slug: "notes" }, [{ face: "joshua-fontany-engineer", agentHex: eng, access: "write" }], ports);
+    expect(JSON.stringify(ledger.d)).toBe(before);
 
-    // K5: every ledger row sits under the realm's workbench rows; no announce row, no realm-bag registration stands anywhere.
+    // K5: every ledger row sits under the realm's workbench rows; no announce row, no realm-bag registration stands.
     const keys = Object.keys(ledger.d.tiddlers);
     expect(keys.every((k) => k.startsWith(`${EDGE_LEDGER_PREFIX}${first.realmId}/workbench`))).toBe(true);
-    expect([...keys, ...Object.keys(bench.d.tiddlers)].some((k) => k.startsWith(REALM_BAG_ANNOUNCE_PREFIX))).toBe(false);
+    expect(keys.some((k) => k.startsWith(REALM_BAG_ANNOUNCE_PREFIX))).toBe(false);
     expect(tiddlerText(ledger.d.tiddlers[`${EDGE_LEDGER_PREFIX}${first.realmId}/workbench/notes`] as never)).toBe("notes");
-    // K8 (red 3, the share door's half): a landing whose row stops naming the engineer revokes the seat it noted.
-    expect(await workbenchFaceHolds(owner, "notes", eng, "write")).toBe(true);
+
+    // K8: a landing whose row stops naming the engineer revokes the seat it noted; the address stands.
     const third = await landWorkbench({ slug: "notes" }, [], ports);
     expect(third.removed).toEqual(["joshua-fontany-engineer"]);
     expect(await workbenchFaceHolds(owner, "notes", eng, "read")).toBe(false);
-    expect(third.docUrl).toBe(first.docUrl);
+    expect(third.docUrl).toBe(landed.docUrl);
   });
 });
 
@@ -126,7 +119,7 @@ describe("K7 — one wiki under two realms refuses", () => {
     noteWorkbench(other, "d".repeat(64), "notes");
     Object.assign(ledger.d.tiddlers, other.tiddlers);   // two replicas met
     await expect(landWorkbench({ slug: "notes" }, [], {
-      provider: owner, ledger, ownerFace: "x", isPersonal, workbench: async () => memDoc(), ownerWorking: async () => null,
+      provider: owner, ledger, ownerFace: "x",
     })).rejects.toThrow(/workbench-two-realms/);
   });
 });

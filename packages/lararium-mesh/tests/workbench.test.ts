@@ -2,16 +2,18 @@
  * workbench — a shared wiki's working layer, kept by a private cabal of one human's faces (cabal-realm#/the-workbench).
  *
  * The floor half, no Keyhive: the address, the ledger rows, the refusals, the admit filter, the recipe's order, and the wire
- * guard's decider over two real automerge-repo replicas. The Keyhive half (found, admit, remove, lift once) stands in
+ * guard's decider over two real automerge-repo replicas. The Keyhive half (found, stand, admit, remove) stands in
  * `packages/lararium-keyhive/tests/workbench-realm.test.ts`.
  *
  * W1 (red 4) the workbench address stays unmoved: the realm id and the slug alone derive it (NFC), no member reads in.
  * W2 (red 5) a daemon slug refuses a share: the shareable gate, the share row's title, and a hand-edited share file.
  * W3 (red 9) one wiki registered under two realms refuses: the note refuses, and a merged ledger holding two reads none.
- * W4 (red 8) personal never enters the workbench: view state, session state and drafts fail the admit filter.
- * W5 the recipe reads canon -> workbench -> working -> personal -> draft -> temp, and the workbench takes the default write.
+ * W5 every wiki's recipe reads canon -> working (the realm workbench) -> personal -> draft -> temp; the working slot writes.
  * W6 (red 1) an outsider syncs zero bytes of the workbench; a member face's device syncs it.
  * W7 (red 2) offline edits from two member faces converge: two replicas materialize the one address, each writes apart, merge.
+ * W8 (red 8) personal content never syncs to another member face: a face's personal document crosses to its own devices alone,
+ *    while the workbench crosses to every member face.
+ * W9 seat notes: the vessel's own hand notes each seat, drops it at a revoke, and a replay writes nothing new.
  * Red 6 (tree-clean) rides `tools/tree-clean-witness.sh`: nothing here names a path, so no write reaches the tracked tree.
  */
 import { describe, test, expect } from "vitest";
@@ -19,12 +21,12 @@ import * as A from "@automerge/automerge";
 import { Repo, interpretAsDocumentId, type AutomergeUrl, type PeerId } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
 import {
-  isFacePrivateSlug, ledgerWorkbenchRealm, ledgerWorkbenches, markWorkbenchLifted, noteWorkbench, realmWorkbenchDocUrl,
-  requireWorkbenchShareable, workbenchAdmits, workbenchDecider, workbenchDocIds, workbenchLifted, WorkbenchRefusal,
+  isFacePrivateSlug, ledgerWorkbenchRealm, ledgerWorkbenches, noteWorkbench, realmWorkbenchDocUrl, noteWorkbenchSeat, dropWorkbenchSeat,
+  workbenchSeats, workbenchSeatHolds, requireWorkbenchShareable, workbenchDecider, workbenchDocIds, WorkbenchRefusal,
 } from "../src/workbench.js";
-import { realmVouchBoardDocUrl, materializeSharedLarDoc } from "../src/deterministic-doc.js";
+import { realmVouchBoardDocUrl, materializeSharedLarDoc, deterministicDocUrl } from "../src/deterministic-doc.js";
 import { parseShareFile, shareRowOf, shareRowTitle, ShareConfigRefusal, serializeShareFile } from "../src/share-config.js";
-import { defaultWritableSlot, expandRecipe, recipeFromRecord, slotLayerFlags, wikiSlotUri, wikiWorkbenchUri, wikiBagUri, ORACLE_BAG } from "../src/wiki-recipe.js";
+import { defaultWritableSlot, expandRecipe, wikiSlotUri, wikiBagUri, ORACLE_BAG } from "../src/wiki-recipe.js";
 import { protectedDocGuard } from "../src/protected-doc-guard.js";
 import { shareConfigOf } from "../src/federation-gate.js";
 import { storedLarRecord } from "../src/stored-record.js";
@@ -92,47 +94,35 @@ describe("W3 — one wiki, one realm", () => {
     const merged = { tiddlers: { ...a.tiddlers, ...b.tiddlers } } as LarDoc;
     expect(() => ledgerWorkbenchRealm(merged, "notes")).toThrow(/workbench-two-realms/);
   });
-  test("a malformed realm id refuses; the lift mark writes once", () => {
+  test("a malformed realm id refuses by name", () => {
     expect(() => noteWorkbench(blank(), "not-a-realm", "notes")).toThrow(/workbench-realm-malformed/);
-    const ledger = blank();
-    expect(workbenchLifted(ledger, REALM, "notes")).toBe(false);
-    markWorkbenchLifted(ledger, REALM, "notes", "face-a");
-    markWorkbenchLifted(ledger, REALM, "notes", "face-b");
-    expect(workbenchLifted(ledger, REALM, "notes")).toBe(true);
-    expect(Object.values(ledger.tiddlers).map((r) => tiddlerText(r as never))).toContain("face-a");
-    expect(Object.values(ledger.tiddlers).map((r) => tiddlerText(r as never))).not.toContain("face-b");
   });
+
 });
 
-describe("W4 — personal never enters the shared workbench", () => {
-  test("view state, session state and drafts fail the admit; content passes", () => {
-    for (const title of ["$:/StoryList", "$:/palette", "$:/state/folded/Notes", "$:/state/tab-1", "$:/temp/search", "$:/status/UserName", "$:/HistoryList"]) {
-      expect(workbenchAdmits(title, {}, isPersonal), title).toBe(false);
-    }
-    expect(workbenchAdmits("Draft of 'Notes'", { "draft.of": "Notes" }, isPersonal)).toBe(false);
-    expect(workbenchAdmits("Notes", {}, isPersonal)).toBe(true);
-    expect(workbenchAdmits("$:/config/lares/note-style", {}, isPersonal)).toBe(true);
-  });
-});
-
-describe("W5 — the recipe's order and its one default writable", () => {
-  test("a shared wiki reads canon -> workbench -> working -> personal -> draft -> temp", () => {
-    const order = expandRecipe({ wikiSlug: "notes", workbench: true });
-    expect(order).toEqual([
+describe("W5 — one recipe for every wiki: the working slot holds the realm workbench", () => {
+  test("canon -> working -> personal -> draft -> temp, the working slot the one default writable", () => {
+    expect(expandRecipe({ wikiSlug: "notes" })).toEqual([
       wikiSlotUri("notes", "temp"), wikiSlotUri("notes", "draft"), wikiSlotUri("notes", "personal"),
-      wikiSlotUri("notes", "working"), wikiWorkbenchUri("notes"), wikiBagUri("notes"), ORACLE_BAG,
+      wikiSlotUri("notes", "working"), wikiBagUri("notes"), ORACLE_BAG,
     ]);
-    expect(expandRecipe({ wikiSlug: "notes" })).not.toContain(wikiWorkbenchUri("notes"));
-  });
-  test("the workbench takes the default write where it mounts; the working slot keeps it elsewhere", () => {
-    expect(defaultWritableSlot("notes", true)).toBe(wikiWorkbenchUri("notes"));
-    expect(slotLayerFlags(wikiWorkbenchUri("notes"), "notes", true)).toEqual({ writable: true, defaultWritable: true });
-    expect(slotLayerFlags(wikiSlotUri("notes", "working"), "notes", true)).toEqual({ writable: true, defaultWritable: false });
     expect(defaultWritableSlot("notes")).toBe(wikiSlotUri("notes", "working"));
   });
-  test("a recipe record never lists the workbench as a library", () => {
-    const rec = { tiddler: { title: "x", "bag-stack": `${ORACLE_BAG} ${wikiBagUri("notes")} ${wikiWorkbenchUri("notes")}` } };
-    expect(recipeFromRecord(rec as never, "notes").libraryBags ?? []).not.toContain(wikiWorkbenchUri("notes"));
+});
+
+describe("W9 — the vessel's seat notes", () => {
+  test("a seat notes once, a replay writes nothing, a revoke drops it", () => {
+    const ledger = blank();
+    noteWorkbench(ledger, REALM, "notes");
+    noteWorkbenchSeat(ledger, REALM, "notes", "face-a", "0xagent-a");
+    const before = JSON.stringify(ledger);
+    noteWorkbenchSeat(ledger, REALM, "notes", "face-a", "0xagent-a");
+    expect(JSON.stringify(ledger), "a replay lands nothing new").toBe(before);
+    expect([...workbenchSeats(ledger, REALM, "notes")]).toEqual([["face-a", "0xagent-a"]]);
+    expect(workbenchSeatHolds(ledger, REALM, "face-a")).toBe(true);
+    dropWorkbenchSeat(ledger, REALM, "notes", "face-a");
+    expect(workbenchSeatHolds(ledger, REALM, "face-a")).toBe(false);
+    expect(ledgerWorkbenches(ledger), "the seat rows never read as workbench rows").toHaveLength(1);
   });
 });
 
@@ -214,5 +204,29 @@ describe("W7 — offline edits from two member faces converge", () => {
     } finally {
       await Promise.allSettled([a.shutdown(), b.shutdown()]);
     }
+  });
+});
+
+describe("W8 — personal content never syncs to another member face", () => {
+  test("the one guard: the workbench crosses to every member face's device, a face's personal document to its own alone", async () => {
+    const ledger = blank();
+    noteWorkbench(ledger, REALM, "notes");
+    const bench = String(interpretAsDocumentId(realmWorkbenchDocUrl(REALM, "notes")));
+    // Face A's personal document for the wiki: a vessel-private document its owning face alone reaches (lane `ralias`).
+    const personalOfA = String(interpretAsDocumentId(deterministicDocUrl("personal-of-face-a")));
+    const ownerOf = new Map([[personalOfA, "face-a"]]);
+    const faceOfPeer = new Map([["device-of-a", "face-a"], ["device-of-b", "face-b"]]);
+    const guard = protectedDocGuard({
+      ids: () => new Map([[bench, "realm-workbench" as const], [personalOfA, "vessel-private" as const]]),
+      decide: {
+        "realm-workbench": workbenchDecider({ realmOfDoc: (id) => workbenchDocIds(ledger).get(id), faceOfPeer: (p) => faceOfPeer.get(p), holds: (_r, f) => f === "face-a" || f === "face-b" }),
+        "vessel-private": (peerId, documentId) => ownerOf.get(documentId) === faceOfPeer.get(peerId),
+      },
+    });
+    expect(await guard.withholds("device-of-b", bench), "the workbench reaches a member face").toBe(false);
+    expect(await guard.withholds("device-of-b", personalOfA), "A's personal margin never reaches face B").toBe(true);
+    expect(await guard.withholds("device-of-a", personalOfA), "A's own device carries A's personal").toBe(false);
+    // The workbench's id map names the workbench alone: no personal document rides the realm's class.
+    expect([...workbenchDocIds(ledger).keys()]).toEqual([bench]);
   });
 });

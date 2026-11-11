@@ -7,9 +7,10 @@
  * grantee stands shut waits behind an opaque flag in the control document (`sharePendingTitle`: no face, no bag, no access),
  * and the next light that runs this lands it and clears the flag. A name no face carries waits, named, in the answer.
  *
- * A WIKI'S ROW ALSO LANDS ITS WORKBENCH (cabal-realm#/the-workbench): beside the canon's grants, the owner face founds (once)
- * the private cabal whose Document seats every lit face the row names, and its working layer lifts into the workbench once
- * (`workbench`, the composer's port over `landWorkbench`). A named face that stands shut waits behind the same opaque flag.
+ * A WIKI'S ROW ALSO SEATS ITS WORKBENCH (cabal-realm#/the-workbench): beside the canon's grants, the owner face stands the
+ * wiki's realm (founded at the wiki's first stand, else now) and seats every lit face the row names in its Document, revoking
+ * each face the row stopped naming (`workbench`, the composer's port over `landWorkbench`). A named face that stands shut seats
+ * at its next light.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-share-config
  */
@@ -42,7 +43,7 @@ export interface ShareApplyDeps {
 
 /** One wiki row's workbench as the landing reports it. */
 export interface ShareWorkbenchLanded {
-  readonly slug: string; readonly realmId: string; readonly founded: boolean; readonly lifted: boolean; readonly members: number;
+  readonly slug: string; readonly realmId: string; readonly founded: boolean; readonly members: number;
   readonly removed: readonly string[];
 }
 

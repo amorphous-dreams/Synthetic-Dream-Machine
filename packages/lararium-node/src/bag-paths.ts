@@ -7,7 +7,7 @@
  */
 
 import { resolve as resolvePath, join as joinPath, dirname, basename, isAbsolute, sep } from "path";
-import { readdirSync } from "fs";
+import { readdirSync, realpathSync } from "fs";
 import { stripMemeExt, wikiSlotUri, projectionWithheld, daemonFaceCanonBag, KAHUA_BAG, CROSSROADS_DOC_URI } from "@lararium/mesh";
 
 export interface BagMirrorConfig {
@@ -215,6 +215,20 @@ export function daemonCanonMirror(projectionRoot: string, faceRelation: string):
   return { bagId: daemonFaceCanonBag(faceRelation), mirrorRoot: joinPath(privateProjectionRoot(projectionRoot), "bags", daemonFaceFolder(faceRelation)) };
 }
 
+/**
+ * THE PERSONAL PROJECTION DIR (operator ruling 2026-11-11, "Personal can absorb the new caps."): a face's `personal` layer of a
+ * wiki carries its private margin over the wiki's realm workbench beside its view state, so it projects, per face, to
+ * `<projections>/personal/<F>/<slug>/` (F the relation the face's verified founding record pins). It never projects beside a
+ * canon source or into a workbench's folder, and the seed lays it back into that face's own personal layer.
+ */
+export const PERSONAL_PROJECTION_DIR = "personal";
+
+/** The root a face's personal mirrors rest under: `<projections>/personal/<F>`. */
+export function personalFaceRoot(projectionRoot: string, faceRelation: string): string {
+  if (!KAHUA_FACE_RELATION.test(faceRelation)) throw new Error(`personal face root: invalid relation ${JSON.stringify(faceRelation)}`);
+  return joinPath(privateProjectionRoot(projectionRoot), PERSONAL_PROJECTION_DIR, faceRelation);
+}
+
 /** A daemon VM disk mirror: the grant plus the scope its island names it by. */
 export type DaemonDiskMirror = BagMirrorConfig & { readonly scope: string };
 
@@ -368,4 +382,48 @@ export function bagsFileToUri(instanceRoot: string, filePath: string): string | 
  */
 export function wikisFileToUri(instanceRoot: string, filePath: string): string | null {
   return mirrorDirFileToUri(joinPath(instanceRoot, "wikis"), filePath);
+}
+
+// ── Workspaces (cabal-realm#/the-workbench) ─────────────────────────────────
+
+/** Whether `child` resolves at or beneath `parent` (both already absolute and real). */
+function within(child: string, parent: string): boolean {
+  const p = parent.endsWith(sep) ? parent : parent + sep;
+  return child === parent || child.startsWith(p);
+}
+
+/** One wiki row's workspace as the vessel reads it: the slug, and the workspace name the row names. */
+export interface WorkspaceRow { readonly slug: string; readonly kind: "bag" | "wiki"; readonly workspace?: string }
+
+/**
+ * THE WORKSPACE ROOTS a shared wiki's workbench mirror may rest in: each `kind: "wiki"` share row naming a workspace maps its
+ * slug to `<root>/workspaces/<name>` (the host shim binds `/lar/workspaces/<name>`), where that directory stands. A workspace
+ * that resolves inside the checkout (`checkoutRoot`) or inside the hearth refuses by name, and so does a slug whose source
+ * stands in the checkout: projection follows placement, and a private shared wiki never writes into the tracked tree. A
+ * workspace with no directory standing (no bind) waits by name, and its workbench projects under the projections root.
+ */
+export function workspaceRootsOf(opts: {
+  readonly rows: readonly WorkspaceRow[];
+  readonly workspacesHome: string;
+  readonly checkoutRoot: string | null;
+  readonly hearth: string;
+  readonly sourcedSlugs: readonly string[];
+}): { readonly roots: Readonly<Record<string, string>>; readonly refused: readonly string[]; readonly unbound: readonly string[] } {
+  const roots: Record<string, string> = {};
+  const refused: string[] = [], unbound: string[] = [];
+  const real = (p: string): string | null => { try { return realpathSync(p); } catch { return null; } };
+  const checkout = opts.checkoutRoot ? real(opts.checkoutRoot) ?? resolvePath(opts.checkoutRoot) : null;
+  const hearth = real(opts.hearth) ?? resolvePath(opts.hearth);
+  for (const row of opts.rows) {
+    const name = row.workspace?.trim();
+    if (row.kind !== "wiki" || !name) continue;
+    if (!/^[a-z0-9][a-z0-9._-]{0,63}$/.test(name) || name === "." || name === "..") { refused.push(`${row.slug}: workspace "${name}" names no workspace`); continue; }
+    if (opts.sourcedSlugs.includes(row.slug)) { refused.push(`${row.slug}: workbench-checkout-sourced (its source stands in the checkout)`); continue; }
+    const dir = real(joinPath(opts.workspacesHome, name));
+    if (dir === null) { unbound.push(`${row.slug}: workspace "${name}" stands unbound (no ${joinPath(opts.workspacesHome, name)})`); continue; }
+    if (checkout !== null && within(dir, checkout)) { refused.push(`${row.slug}: workspace "${name}" resolves inside the checkout (${dir})`); continue; }
+    if (within(dir, hearth)) { refused.push(`${row.slug}: workspace "${name}" resolves inside the hearth (${dir})`); continue; }
+    roots[row.slug] = dir;
+  }
+  return { roots, refused, unbound };
 }

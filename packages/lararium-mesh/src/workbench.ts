@@ -1,18 +1,20 @@
 /**
- * workbench — A SHARED WIKI'S WORKING LAYER, kept by a private cabal of one human's faces (cabal-realm#/the-workbench).
+ * workbench — EVERY WIKI'S WORKING LAYER RESTS IN A REALM WORKBENCH (cabal-realm#/the-workbench). The daemon wiki alone keeps
+ * its face-private working document (the AI-memory ruling).
  *
- * THE RULING (operator, 2026-11-11): "the multitude of faces reads as a private cabal for 1 human. Pattern integrities!" A face
- * shares a wiki with its sibling faces through the cabal and realm machinery, never through a parallel ACL. The share config
- * (`share-config.ts`) stays the TW5 surface a person edits; a `kind: "wiki"` row whose wiki holds no realm founds one: a
- * glamour-less, announce-less cabal realm under the seed charter, its Keyhive Document the one roster of member faces.
+ * THE RULINGS (operator, 2026-11-11): "the multitude of faces reads as a private cabal for 1 human. Pattern integrities!";
+ * "Personal can absorb the new caps."; "Unpono, rip out old code, enact the full new design, early-alpha law holds." One path
+ * stands: a wiki's first stand under a face founds a private cabal of one (a glamour-less, announce-less cabal realm under the
+ * seed charter whose Keyhive Document seats the owning face's PersonaGroup alone), and the wiki's working slot
+ * (`wikis/<slug>/working`) resolves to that realm's workbench. A share row seats more faces in the same Document; it never
+ * moves the address or the layer. A face's private margin over the shared layer rests in `personal`.
  *
  * WHAT THIS MODULE HOLDS (platform-blind, no key, no Keyhive):
  *   · the workbench's ADDRESS (`realmWorkbenchDocUrl`, deterministic-doc): a sibling of the realm's vouch board, derived
  *     from the realm id and the slug, so no member change moves it;
- *   · the vessel LEDGER rows that bind a slug to its realm, and the one-shot mark of the founding face's lift;
- *   · the REFUSALS a share meets before any realm founds: the daemon wiki stays face-private, a checkout-sourced slug never
- *     rests a private shared mirror, and one wiki never registers under two realms;
- *   · the ADMIT filter the lift reads: view state, session state and drafts never enter the workbench;
+ *   · the vessel LEDGER rows that bind a slug to its realm, and the seats this vessel's own hand made there;
+ *   · the REFUSALS: the daemon wiki stays face-private, a checkout-sourced slug never rests a shared private mirror, and one
+ *     wiki never registers under two realms;
  *   · the wire DECIDER the protected-document guard asks for a workbench document (`realm-workbench`).
  *
  * WHY THE LEDGER, AND WHY NOT `noteRealm`. The vessel's own ledger (`edgeLedgerDocUrl`) keeps the relations this vessel
@@ -90,7 +92,6 @@ const realmScope = (realmId: string): string => {
 };
 const slugKey = (slug: string): string => encodeURIComponent(slug.normalize("NFC"));
 const workbenchKey = (realm: string, slug: string): string => `${EDGE_LEDGER_PREFIX}${realm}/workbench/${slugKey(slug)}`;
-const liftedKey = (realm: string, slug: string): string => `${EDGE_LEDGER_PREFIX}${realm}/workbench-lifted/${slugKey(slug)}`;
 const WORKBENCH_ROW = /^([0-9a-f]{64})\/workbench\/([^/]+)$/;
 
 /** One slug the ledger binds to one realm's workbench. */
@@ -137,17 +138,6 @@ export function noteWorkbench(draft: LarDoc, realmId: string, slug: string): voi
   if (held.some((r) => r !== realm)) throw new WorkbenchRefusal("workbench-two-realms", `"${slug}" already registers under realm ${held[0]!.slice(0, 12)}…; one wiki registers under one realm`);
   const key = workbenchKey(realm, slug);
   if (ownEntry(draft.tiddlers, key) === undefined) draft.tiddlers[key] = storedLarRecord(key, { text: slug.normalize("NFC") }, "workbench");
-}
-
-/** Whether the founding face's lift into this workbench already ran (the ledger's one-shot mark). */
-export function workbenchLifted(ledger: LarDoc | undefined | null, realmId: string, slug: string): boolean {
-  return ownEntry(ledger?.tiddlers, liftedKey(realmScope(realmId), slug)) !== undefined;
-}
-
-/** Mark the lift done, naming the face whose working document lifted. Call INSIDE `handle.change()`. Writes once. */
-export function markWorkbenchLifted(draft: LarDoc, realmId: string, slug: string, byFace: string): void {
-  const key = liftedKey(realmScope(realmId), slug);
-  if (ownEntry(draft.tiddlers, key) === undefined) draft.tiddlers[key] = storedLarRecord(key, { text: byFace }, "workbench");
 }
 
 // ── THE SEATS THIS VESSEL'S HAND MADE ───────────────────────────────────────────────────────────
@@ -198,21 +188,6 @@ export function workbenchDocIds(ledger: LarDoc | undefined | null): ReadonlyMap<
     if (id) out.set(id, b.realmId);
   }
   return out;
-}
-
-// ── WHAT THE WORKBENCH ADMITS ───────────────────────────────────────────────────────────────────
-
-/**
- * Whether a record may enter a shared workbench. A person's view state (`personal`: the story list, folds, tabs, palette), the
- * session's own state (`$:/temp/`, `$:/state/`, `$:/status/`, `$:/HistoryList`) and a draft (the `draft.of` field) never do:
- * the workbench carries content, and `personal` carries view state alone (disk-projection#/personal). `isPersonal` reads the
- * house's ONE spelling of the personal set (`@lararium/tw5` `isPersonalTitle`), handed in so this floor imports no TW5.
- */
-export function workbenchAdmits(title: string, fields: Readonly<Record<string, unknown>>, isPersonal: (title: string) => boolean): boolean {
-  if (isPersonal(title)) return false;
-  if (title.startsWith("$:/temp/") || title.startsWith("$:/state/") || title.startsWith("$:/status/") || title.startsWith("$:/HistoryList")) return false;
-  if (typeof fields["draft.of"] === "string") return false;
-  return true;
 }
 
 // ── THE WIRE DECIDER ────────────────────────────────────────────────────────────────────────────
