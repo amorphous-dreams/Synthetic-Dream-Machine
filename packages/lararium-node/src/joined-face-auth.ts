@@ -17,6 +17,8 @@ export interface JoinedFaceAuthPorts {
   readonly veilArchive: (group: string) => Promise<Uint8Array | null>;
   /** THE LIT SET: the face's relation, read off its own proved log (`faceRelationOf`); null where no proof names one. */
   readonly relation?: (group: string) => Promise<string | null>;
+  /** THE VESSEL TIER: the checkout canon books the floor catalog names (`vesselTierBags`); every lit face's hive registers them. */
+  readonly vesselBags?: () => readonly string[];
   readonly log: (line: string) => void;
 }
 
@@ -49,7 +51,7 @@ export async function joinedFaceAuth(ports: JoinedFaceAuthPorts): Promise<Joined
         personaKel: { prefix: pins.personaKelPrefix, chain }, deviceEdge: pins.deviceEdge, signerDid: pins.signerDid,
         ...(pins.meshCabalDocIdHex ? { meshCabalDocIdHex: pins.meshCabalDocIdHex } : {}),
         ...(secret ? { faceAddressSecret: Buffer.from(secret).toString("hex") } : {}),
-        ...(archive ? { veilArchiveBytes: archive } : {}), registerBags: deriveRegisterBags({ fleets: [], wikiBags: litFaceOwnBags(relation) }) });
+        ...(archive ? { veilArchiveBytes: archive } : {}), registerBags: deriveRegisterBags({ fleets: [], wikiBags: [...litFaceOwnBags(relation), ...(ports.vesselBags?.() ?? [])] }) });
     } catch (e) {
       ports.log(`joined face h${ordinal} skipped: ${e instanceof Error ? e.message : String(e)}`);
     } finally { seed?.fill(0); secret?.fill(0); }

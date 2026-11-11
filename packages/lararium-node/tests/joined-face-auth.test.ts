@@ -41,6 +41,12 @@ describe("joined face authentication", () => {
     expect(one!.registerBags).toEqual(expect.arrayContaining([wikiSlotUri("daemon", "working"), wikiSlotUri("daemon", "draft"), wikiSlotUri("daemon", "personal"), daemonFaceCanonBag(relation)]));
     expect(one!.registerBags.some((b) => /\/wikis\/(?!daemon\/)/.test(b))).toBe(false);
   });
+  test("THE VESSEL TIER: a lit sibling's hive registers the checkout canon the floor names, so it writes it under its own registration", async () => {
+    const { ports } = fixture();
+    const [one] = await joinedFaceAuth({ ...ports, vesselBags: () => ["lar:///ha.ka.ba/bags/sdm", "lar:///ha.ka.ba/bags/elyncia"] });
+    expect(one!.registerBags).toEqual(expect.arrayContaining(["lar:///ha.ka.ba/bags/sdm", "lar:///ha.ka.ba/bags/elyncia"]));
+    expect(one!.registerBags).not.toContain("lar:///ha.ka.ba/bags/lares");
+  });
   test("an atom differing from its edge contributes nothing and names the sibling", async () => {
     const { ports, logs } = fixture();
     const entries = await joinedFaceAuth({ ...ports, atomKey: () => "different" });

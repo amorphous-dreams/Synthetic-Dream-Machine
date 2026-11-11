@@ -81,7 +81,7 @@ import type { HeldSaves, MountManifest } from "@lararium/mesh";
 import { nodePromoteStores, nodePromoteCas } from "./promoted-store.js";
 import { casDirForStorage, casFetchReading, corpusCasDirFromEnv, makeNodeCasResolver, type IslandCasData, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
 import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard } from "@lararium/mesh";
-import { answerReceiptWithHeads, workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, wikiIslandPeersOf, peerArrivals, admitGatePinDigest, ownEntry, plainField, CATALOG_ROW_TIER_FIELD, keptRowTier } from "@lararium/mesh";
+import { answerReceiptWithHeads, workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, wikiIslandPeersOf, peerArrivals, admitGatePinDigest, ownEntry, plainField, CATALOG_ROW_TIER_FIELD, keptRowTier, vesselTierBags } from "@lararium/mesh";
 import { makeBagTierReader } from "./vessel-bag-tier.js";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
 import type { CapabilityRecord, CustodyWriter, DyadReader, LarVessel, ReceiptIssuer } from "@lararium/mesh";
@@ -3409,6 +3409,9 @@ async function prepareNodeBootOn(
       atomSeed: loadFaceAtomOfGroup, atomKey: (seed, group) => faceAtomKeyFromSeed(seed, group).key,
       addressSecret: readFaceAddressSecret, veilArchive: sovereign.veilArchive,
       relation: (group: string) => siblingRelationOf(group),
+      // THE VESSEL TIER: every lit face's hive registers the checkout canon the floor names, as the worn face's does through
+      // its merged catalog (`catalogNamedBags`), so a sibling writes it under its own registration.
+      vesselBags: () => vesselTierBags((catalogViewOf(assembly.catalogHandle)?.floorHandle ?? assembly.catalogHandle).doc() as never),
       log: (line: string) => console.log(`[lararium] ${line}`),
     } : null;
     // EVERY OPEN READS THE SIBLINGS' CURRENT CUSTODY STANDING (Sol train #1): a sibling that locked or dropped since boot never rides a

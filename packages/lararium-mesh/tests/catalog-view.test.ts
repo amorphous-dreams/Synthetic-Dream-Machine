@@ -30,8 +30,9 @@ import { wikiSlotUri, wikiWorkingFloorKey } from "../src/wiki-recipe.js";
 import { catalogNamedBags } from "../src/register-bags.js";
 import {
   catalogRowHalf, faceCatalogDocUrl, openFaceCatalog, FaceCatalogRefusal, FloorWikiRefusal, facelessWikiWaits, makeCatalogView, liftFaceCatalogRows, faceViewBook,
-  isVesselBagRow, mayStampVessel, keptRowTier,
+  isVesselBagRow, mayStampVessel, keptRowTier, vesselTierBags,
 } from "../src/catalog-view.js";
+import { deriveRegisterBags } from "../src/register-bags.js";
 import { sealedBagMap } from "../src/sealed-rest.js";
 
 const secretA = new Uint8Array(32).fill(0xa1);
@@ -308,5 +309,20 @@ describe("the vessel tier rests on the floor (cap-tier.mem, vessel)", () => {
     const floorMap = sealedBagMap({ face: () => null, bags: () => [], catalog: () => catalog, docsOf: (b) => [b === canon ? "canonDoc" : "userDoc"] });
     expect(floorMap.bagOf("canonDoc")).toBeNull();
     expect(floorMap.bagOf("userDoc")).toEqual({ bagId: user, face: null });
+  });
+
+  test("VT5 — a vessel-tier bag minted while face A stood worn registers on face B's hive when B wears or stands lit: B writes it under its own registration", async () => {
+    const { floor, faceA, faceB } = stand();
+    const viewA = makeCatalogView(floor, await faceA);
+    const viewB = makeCatalogView(floor, await faceB);
+    const canon = bagUri("elyncia-referee"), mine = bagUri("a-private");
+    viewA.change((doc) => { doc.tiddlers[canon] = tiered(canon, "automerge:referee", "vessel"); doc.tiddlers[mine] = tiered(mine, "automerge:aPrivate"); });
+    // Worn: B's boot registers what its merged catalog names, the vessel tier among it, never A's private bag.
+    const wornB = deriveRegisterBags({ fleets: [{ personaGroupId: "group-b", catalogNamed: catalogNamedBags(viewB.doc()) }] });
+    expect(wornB).toContain(canon);
+    expect(wornB).not.toContain(mine);
+    // Lit beside the worn face: the floor's vessel-tier books ride its joined entry's register set.
+    expect(vesselTierBags(floor.doc())).toEqual([canon]);
+    expect(vesselTierBags((await faceA).doc())).toEqual([]);
   });
 });

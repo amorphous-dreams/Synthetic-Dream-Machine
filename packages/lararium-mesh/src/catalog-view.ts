@@ -67,6 +67,17 @@ export function isVesselBagRow(title: string, row: StoredLarRecord | null | unde
 }
 
 /**
+ * THE VESSEL-TIER BOOKS a catalog names (its floor half, where every vessel-tier row rests): checkout canon every face reads,
+ * and every lit face's hive registers, so the face that wears or stands beside another writes it under its own registration
+ * as the face that minted it does (cap-tier.mem, vessel). System canon (`lares`, `lararium`) rests in the realm and takes no
+ * catalog row, so the Kahu steward alone keeps its writes.
+ */
+export function vesselTierBags(doc: { readonly tiddlers?: Readonly<Record<string, unknown>> } | null | undefined): string[] {
+  const tiddlers = (doc?.tiddlers ?? {}) as Record<string, StoredLarRecord>;
+  return Object.keys(tiddlers).filter((title) => isVesselBagRow(title, ownEntry(tiddlers, title) as StoredLarRecord | undefined));
+}
+
+/**
  * MAY THIS ROW TAKE THE VESSEL STAMP: a bag id with no row yet (the fresh mint the stamp rides), or a row that already rests
  * on the floor half (public, signed infrastructure, already clear). A row resting on a face's half names a document that
  * face sealed, and a stamp would move it to the floor every face reads: a sealed document never declassifies here.
