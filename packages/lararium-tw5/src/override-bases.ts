@@ -15,7 +15,7 @@
  * never weighs a disk byte. It reads canon under each working copy before and after the gate ran.
  */
 
-import { basesEqual, isEffectRecordUri, overrideBaseOf, overrideCarrierHash, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh";
+import { basesEqual, isEffectRecordUri, overrideBaseOf, carrierHashOf, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh";
 
 /** One working copy that shadows a canon record fresher than the one it forked from. */
 export interface FresherCanon {
@@ -29,7 +29,7 @@ export interface FresherCanon {
 }
 
 const live = (r: LarTiddlerRecord | null | undefined): r is LarTiddlerRecord => r !== null && r !== undefined && r.meta?.deleted !== true;
-const carrierOf = (r: LarTiddlerRecord | null | undefined): string | null => (live(r) ? overrideCarrierHash(r.tiddler) : null);
+const carrierOf = (r: LarTiddlerRecord | null | undefined): string | null => (live(r) ? carrierHashOf(r.tiddler) : null);
 
 /** Whether canon stands fresher than one working copy's base: null where the copy names no base or canon still says it. */
 export function fresherThanBase(bag: string, working: string, title: string, copy: LarTiddlerRecord, canon: LarTiddlerRecord | null): FresherCanon | null {

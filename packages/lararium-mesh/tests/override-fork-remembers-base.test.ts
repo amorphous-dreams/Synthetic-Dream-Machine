@@ -19,12 +19,13 @@ import { Repo } from "@automerge/automerge-repo";
 import { AutomergeDocStore } from "../src/automerge-doc-store.js";
 import { CompositeStore } from "../src/composite-store.js";
 import { emptyLarDoc, type LarDoc } from "../src/base-doc.js";
-import { OVERRIDE_BASE_META, overrideBaseOf, overrideCarrierHash, canonicalCarrierForm, basesEqual, workingLayerOfCanon, canonOfWorkingLayer } from "../src/override-base.js";
+import { OVERRIDE_BASE_META, overrideBaseOf, basesEqual, workingLayerOfCanon, canonOfWorkingLayer } from "../src/override-base.js";
+import { carrierHashOf, carrierFormOf } from "../src/carrier-form.js";
 import { carrierHash } from "../src/crypto.js";
 import type { LarTiddlerStore } from "../src/tiddler-store.js";
 
 /** The carrier identity of one record as a store holds it now. */
-const identityOf = async (store: LarTiddlerStore, title: string): Promise<string> => overrideCarrierHash((await store.get(title))!.tiddler);
+const identityOf = async (store: LarTiddlerStore, title: string): Promise<string> => carrierHashOf((await store.get(title))!.tiddler);
 
 const CANON = "lar:///ha.ka.ba/bags/probe";
 const WORKING = "lar:///ha.ka.ba/wikis/probe/working";
@@ -51,9 +52,9 @@ describe("a working override remembers its base", () => {
   test("F1 — a fork names the canon record's carrier identity on its meta envelope", async () => {
     const r = await rig();
     const canonIdentity = await identityOf(r.canon, "T");
-    expect(canonIdentity).toBe(carrierHash(canonicalCarrierForm((await r.canon.get("T"))!.tiddler)));
+    expect(canonIdentity).toBe(carrierHash(carrierFormOf((await r.canon.get("T"))!.tiddler).body));
     expect(canonIdentity).toMatch(/^sha256:[0-9a-f]{64}$/);
-    expect(canonicalCarrierForm({ title: "T", text: "canon words", tags: ["a b", "c"] })).toBe("tags: [[a b]] c\ntitle: T\n\ncanon words");
+    expect(carrierFormOf({ title: "T", text: "canon words", tags: ["a b", "c"] }).body).toBe("tags: [[a b]] c\ntitle: T\n\ncanon words");
     await r.composite.put({ tiddler: { title: "T", text: "a hand's words" } }, hand);
     const held = await r.working.get("T");
     expect(overrideBaseOf(held)).toBe(canonIdentity);

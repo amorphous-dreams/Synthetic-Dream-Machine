@@ -27,7 +27,8 @@ import {
 } from "./lar-uris.js";
 import { headsEqual } from "./wiki-recipe.js";
 import { assertStorableTitle } from "./title-law.js";
-import { OVERRIDE_BASE_META, isWorkingLayerBag, overrideBaseOf, overrideCarrierHash } from "./override-base.js";
+import { OVERRIDE_BASE_META, isWorkingLayerBag, overrideBaseOf } from "./override-base.js";
+import { carrierHashOf } from "./carrier-form.js";
 import { buildEffectRecordTiddler, effectLedgerPrefix, effectRecordUri, isEffectRecordUri, isRetirementMarker, parseEffectRecord, RETIRED_EVENT_ID, storeIsRetired } from "./effect-record.js";
 
 /** Two flat field bags hold the same keys and the same values (each value read as its string). */
@@ -297,7 +298,7 @@ export class CompositeStore implements LarTiddlerStore {
           const lower = read(i, title);
           if (lower === undefined) { base = null; break; }
           if (lower === null) continue;
-          if (!lower.meta?.deleted) base = overrideCarrierHash(lower.tiddler);
+          if (!lower.meta?.deleted) base = carrierHashOf(lower.tiddler);
           break;
         }
       }

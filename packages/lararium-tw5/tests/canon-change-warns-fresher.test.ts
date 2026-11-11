@@ -17,7 +17,7 @@
  *   W6  CONTROL: an INGEST that moves nothing under a copy raises no warning
  */
 import { describe, test, expect } from "vitest";
-import { AutomergeDocStore, CompositeStore, emptyLarDoc, overrideBaseOf, overrideCarrierHash, type CapabilityAccess, type CapabilityVerifyResult, type Verb, type VerbContext } from "@lararium/mesh";
+import { AutomergeDocStore, CompositeStore, emptyLarDoc, overrideBaseOf, carrierHashOf, type CapabilityAccess, type CapabilityVerifyResult, type Verb, type VerbContext } from "@lararium/mesh";
 import { carrierHash } from "@lararium/mesh/crypto";
 import { Repo } from "./wiki-shore-rig.js";
 import { registerActionReactors, makeFresherCanonReactor } from "../src/action-handler.js";
@@ -117,7 +117,7 @@ describe("a seed's INGEST warns of fresher canon under a working copy, and write
     const r = await rig();
     await r.seed(carrier("the first words"));
     const titles = await copyAll(r, () => undefined);
-    for (const t of titles) expect(overrideBaseOf(await r.working.get(t)), t).toBe(overrideCarrierHash((await r.canon.get(t))!.tiddler));
+    for (const t of titles) expect(overrideBaseOf(await r.working.get(t)), t).toBe(carrierHashOf((await r.canon.get(t))!.tiddler));
     const before = await snapshot(r, titles);
     const out = await r.seed(carrier("the disk moved on"));
     expect(await snapshot(r, titles)).toEqual(before);
@@ -138,7 +138,7 @@ describe("a seed's INGEST warns of fresher canon under a working copy, and write
     const rows = read["fresher"] as Array<{ title: string; base: string; canonHash: string }>;
     expect(read["count"]).toBe(rows.length);
     expect(rows.map((x) => x.title).sort()).toEqual([...(out["fresherCanon"] as { titles: string[] }).titles].sort());
-    for (const row of rows) expect(row.canonHash).toBe(overrideCarrierHash((await r.canon.get(row.title))!.tiddler));
+    for (const row of rows) expect(row.canonHash).toBe(carrierHashOf((await r.canon.get(row.title))!.tiddler));
     expect(await snapshot(r, titles)).toEqual(before);
   });
 
