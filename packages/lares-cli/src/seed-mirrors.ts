@@ -18,10 +18,10 @@
  * nothing stands off against a lower layer, and the seed's canon leg only warns where canon stands fresher.
  *
  * ADOPTION BY PET-NAME. A re-founding keeps the projections root, so the former face's folders rest there under the
- * old relation. The seed adopts them for the face here that carries the former face's pet-name (its face card,
- * `face-cards.ts`), exactly as an import maps a bundle face: one face here carries it, else the seed refuses by name and
- * lands nothing (none, two, or no card: an old face's private memory never lands on another person's face). Adopted files
- * copy into the new face's folder where none stands (a different file there stands off, as the import's mirror check
+ * former relation. The seed adopts them for the face here that carries the former face's pet-name (its face label,
+ * `face-labels.ts`), exactly as an import maps a bundle face: one face here carries it, else the seed refuses by name and
+ * lands nothing (none or two such faces: a former face's private memory never lands on another person's face). A folder
+ * no label names reads as no face's mirror: the seed names it and adopts nothing from it. Adopted files copy into the new face's folder where none stands (a different file there stands off, as the import's mirror check
  * does), then lay through the same gate. So a tear-out with no export recovers from disk alone.
  *
  * KAHUA LIFTS BY THE OPERATOR'S HAND, WITH EYES. The seed previews every kahua item it would lift per face (title, body
@@ -50,7 +50,7 @@ import { summaryOutput } from "./verb-result.js";
 import { vesselDid } from "./env.js";
 import { canonIsDisk } from "./holdings.js";
 import { sha256Hex, type CarryKahuaHead } from "./carry-manifest.js";
-import { readFaceCard, readFaceBases } from "./face-cards.js";
+import { readFaceLabel, readFaceBases } from "./face-labels.js";
 import { moveFaceToAshes } from "./ashes.js";
 
 // ── the doors ──────────────────────────────────────────────────────────────────────────────────────────────────
@@ -292,16 +292,16 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
     // A face that read no relation may wear this one: a folder never lands anywhere while that stays unknown.
     const unread = faces.find((f) => f.relation === null && f.kahuaRefusal !== undefined);
     if (unread !== undefined) throw new MirrorRefused("seed-faces-unread", `the face h${unread.handleIndex} reads no face relation (${unread.kahuaRefusal}), so the seed cannot tell whether the folders of ${r} belong to it: unlock the vessel (\`lares vault unlock\`) and seed again`);
-    const card = readFaceCard(r, projections);
+    const label = readFaceLabel(r, projections);
     const held = [wikiFolders.includes(daemonFaceFolder(r)) ? join(wikisDir, daemonFaceFolder(r)) : null, bagFolders.includes(daemonFaceFolder(r)) ? join(bagsDir, daemonFaceFolder(r)) : null, bagFolders.includes(kahuaFaceFolder(r)) ? join(bagsDir, kahuaFaceFolder(r)) : null].filter((p): p is string => p !== null);
-    if (card === null) throw new MirrorRefused("seed-face-uncarded", `the folders of a former face (${held.join(", ")}) name no pet-name on disk (no face card stands for ${r}), so the seed cannot tell whose memory they hold: carry that face's bundle in (\`lares import <bundle> --apply\`: the bundle's manifest maps each face by pet-name, and the import writes the card for the folder it matches), or move the folders out of the projections root, and seed again`);
-    const matches = faces.filter((f) => f.petname === card.petname);
-    if (matches.length > 1) throw new MirrorRefused("seed-face-duplicate-petname", `faces ${matches.map((m) => `h${m.handleIndex}`).join(" and ")} on this vessel both carry the pet-name "${card.petname}", which the former face ${r} wore; its memory lands on one face alone, so rename one and seed again`);
+    if (label === null) throw new MirrorRefused("seed-face-unlabelled", `${held.join(", ")}: this folder carries no face label (no ${r}.json stands under face-labels), so it reads as no face's mirror and the seed adopts nothing from it; move it aside or remove it, and seed again`);
+    const matches = faces.filter((f) => f.petname === label.petname);
+    if (matches.length > 1) throw new MirrorRefused("seed-face-duplicate-petname", `faces ${matches.map((m) => `h${m.handleIndex}`).join(" and ")} on this vessel both carry the pet-name "${label.petname}", which the former face ${r} wore; its memory lands on one face alone, so rename one and seed again`);
     const face = matches[0];
-    if (face === undefined) throw new MirrorRefused("seed-face-unmatched", `no face on this vessel carries the pet-name "${card.petname}", which the former face ${r} wore (${held.join(", ")}); the seed never lands one face's memory on another's: found it (\`lares persona new ${card.handleIndex} --name '${card.petname}'\`) and seed again`);
-    if (face.relation === null) throw new MirrorRefused("seed-face-unworn", `the face h${face.handleIndex} ("${card.petname}") reads no face relation${face.kahuaRefusal ? ` (${face.kahuaRefusal})` : ""}, so the former face's folders have no folder to land in: stand the vessel and unlock its key, and seed again`);
+    if (face === undefined) throw new MirrorRefused("seed-face-unmatched", `no face on this vessel carries the pet-name "${label.petname}", which the former face ${r} wore (${held.join(", ")}); the seed never lands one face's memory on another's: found it (\`lares persona new ${label.handleIndex} --name '${label.petname}'\`) and seed again`);
+    if (face.relation === null) throw new MirrorRefused("seed-face-unworn", `the face h${face.handleIndex} ("${label.petname}") reads no face relation${face.kahuaRefusal ? ` (${face.kahuaRefusal})` : ""}, so the former face's folders have no folder to land in: stand the vessel and unlock its key, and seed again`);
     target.set(r, face);
-    adoptions.push({ relation: r, petname: card.petname, handleIndex: face.handleIndex, toRelation: face.relation });
+    adoptions.push({ relation: r, petname: label.petname, handleIndex: face.handleIndex, toRelation: face.relation });
   }
 
   // ── KAHUA: the preview first, and a wrong count refuses before anything writes. ──

@@ -1,7 +1,7 @@
 /**
- * face-cards-kept — the vessel keeps each face's card and its bases sidecar true with no CLI door running.
+ * face-labels-kept — the vessel keeps each face's label and its bases sidecar true with no CLI door running.
  *
- *   K1  a card writes once, rewrites where the pet-name moved, and refuses no face (never throws)
+ *   K1  a label writes once, rewrites where the pet-name moved, and refuses no face (never throws)
  *   K2  the bases keeper writes a face's sidecar off its working documents, rewrites on each change, keeps the sidecar
  *       while a document stands unhydrated, and lets go on stop
  *   K3  two faces: the owner table files each face's working slot under its own group, so each face's keeper writes its
@@ -13,7 +13,7 @@ import { mkdtempSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { deviceDaemonDocs, CONTROL_HOME_ID, emptyLarDoc, storedLarRecord, type LarDoc } from "@lararium/mesh";
-import { writeFaceCard, readFaceCard, keepFaceBases, readFaceBases, faceBasesPath, type KeptDoc } from "../src/face-cards.js";
+import { writeFaceLabel, readFaceLabel, keepFaceBases, readFaceBases, faceBasesPath, type KeptDoc } from "../src/face-labels.js";
 import { listStage, KahuaRefused } from "../src/commands/kahua.js";
 
 const F1 = "11111111-1111-4111-8111-111111111111";
@@ -32,19 +32,19 @@ class Doc implements KeptDoc {
 const turn = () => new Promise((r) => setTimeout(r, 0));
 
 let root: string;
-beforeEach(() => { root = mkdtempSync(join(tmpdir(), "lar-face-cards-")); });
+beforeEach(() => { root = mkdtempSync(join(tmpdir(), "lar-face-labels-")); });
 afterEach(() => rmSync(root, { recursive: true, force: true }));
 
-describe("the vessel keeps each face's card and bases", () => {
-  test("K1 — a card writes once, follows a renamed pet-name, and never throws", () => {
-    expect(writeFaceCard({ relation: F1, petname: "hearth-one", handleIndex: 0 }, root)).toBe(true);
-    expect(writeFaceCard({ relation: F1, petname: "hearth-one", handleIndex: 0 }, root)).toBe(false);
-    expect(readFaceCard(F1, root)).toMatchObject({ relation: F1, petname: "hearth-one", handleIndex: 0 });
-    expect(writeFaceCard({ relation: F1, petname: "renamed", handleIndex: 0 }, root)).toBe(true);
-    expect(readFaceCard(F1, root)?.petname).toBe("renamed");
-    expect(writeFaceCard({ relation: null, petname: "x", handleIndex: 0 }, root)).toBe(false);
-    expect(writeFaceCard({ relation: "not-a-relation", petname: "x", handleIndex: 0 }, root)).toBe(false);
-    expect(writeFaceCard({ relation: F3, petname: undefined, handleIndex: 1 }, root)).toBe(false);
+describe("the vessel keeps each face's label and bases", () => {
+  test("K1 — a label writes once, follows a renamed pet-name, and never throws", () => {
+    expect(writeFaceLabel({ relation: F1, petname: "hearth-one", handleIndex: 0 }, root)).toBe(true);
+    expect(writeFaceLabel({ relation: F1, petname: "hearth-one", handleIndex: 0 }, root)).toBe(false);
+    expect(readFaceLabel(F1, root)).toMatchObject({ relation: F1, petname: "hearth-one", handleIndex: 0 });
+    expect(writeFaceLabel({ relation: F1, petname: "renamed", handleIndex: 0 }, root)).toBe(true);
+    expect(readFaceLabel(F1, root)?.petname).toBe("renamed");
+    expect(writeFaceLabel({ relation: null, petname: "x", handleIndex: 0 }, root)).toBe(false);
+    expect(writeFaceLabel({ relation: "not-a-relation", petname: "x", handleIndex: 0 }, root)).toBe(false);
+    expect(writeFaceLabel({ relation: F3, petname: undefined, handleIndex: 1 }, root)).toBe(false);
   });
 
   test("K2 — the keeper writes the sidecar, follows each change, keeps it while unhydrated, and lets go on stop", async () => {

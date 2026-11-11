@@ -4,7 +4,7 @@
  * After a re-founding the former face's folders (`wikis/daemon-<former>`, `bags/daemon-<former>`, `bags/kahua-<former>`) rest
  * under the projections root, keyed by the former relation. Once a seed's adoption or an import landed that face's memory on
  * the face that carries its pet-name, with NOTHING pending (no stand-off, no refusal, no kahua item waiting for a hand),
- * the folders move to `<projections>/ashes/<old-relation>/` beside their face card and bases sidecar: plaintext still, and out of the live
+ * the folders move to `<projections>/ashes/<old-relation>/` beside their face label and bases sidecar: plaintext still, and out of the live
  * mirror set. Nothing walks ashes: the disk projector writes only its grants, the census and the export walk `wikis/` and
  * `bags/`, and the seed classifies those two dirs alone. So nothing reads ashes back into a layer and nothing projects
  * into them, and the next export names none of those folders unclaimed. A person deletes them by hand when they please.
@@ -14,7 +14,7 @@
 import { existsSync, mkdirSync, renameSync } from "node:fs";
 import { join } from "node:path";
 import { daemonFaceFolder, kahuaFaceFolder } from "@lararium/node";
-import { faceCardPath, faceBasesPath } from "./face-cards.js";
+import { faceLabelPath, faceBasesPath } from "./face-labels.js";
 
 export const ASHES_DIR = "ashes";
 
@@ -30,7 +30,7 @@ export function faceFolderMoves(projections: string, relation: string): Array<{ 
     { from: join(projections, "wikis", daemonFaceFolder(relation)), to: join(base, "wikis", daemonFaceFolder(relation)) },
     { from: join(projections, "bags", daemonFaceFolder(relation)), to: join(base, "bags", daemonFaceFolder(relation)) },
     { from: join(projections, "bags", kahuaFaceFolder(relation)), to: join(base, "bags", kahuaFaceFolder(relation)) },
-    { from: faceCardPath(relation, projections), to: join(base, "face-card.json") },
+    { from: faceLabelPath(relation, projections), to: join(base, "face-label.json") },
     { from: faceBasesPath(relation, projections), to: join(base, "face-bases.json") },
   ];
 }
@@ -39,7 +39,7 @@ export function faceFolderMoves(projections: string, relation: string): Array<{ 
 export type AshesMove = { readonly relation: string; readonly moved: readonly string[] } | { readonly relation: string; readonly left: string };
 
 /**
- * Move a former face's folders (and its card) under `<projections>/ashes/<relation>/`. All or none: where a place under
+ * Move a former face's folders (and its label) under `<projections>/ashes/<relation>/`. All or none: where a place under
  * ashes already stands, nothing moves and the answer says which. A folder that never stood takes no move.
  */
 export function moveFaceToAshes(projections: string, relation: string): AshesMove {

@@ -11,7 +11,7 @@
  *       with the same bytes, the copy keeps its base and still shadows, kahua stands pending until confirmed and then
  *       lifts signed by the new face, the old folders rest under ashes; a second seed and a second import land nothing
  *   M2  the same with NO export: reset -> found -> seed recovers the daemon memory by pet-name, from disk alone
- *   M3  an ambiguous pet-name refuses and lands nothing; so do an unmatched one and a folder no card names
+ *   M3  an ambiguous pet-name refuses and lands nothing; so do an unmatched one and a folder no label names
  *   M4  a kahua mirror file: the preview lists it; no confirm -> pending; a wrong count refuses; --yes alone lifts nothing;
  *       a file that differs from the standing head reads `differs` and supersedes it on the confirmed count
  *   M5  ashes never read back into a layer, never travel in a bundle, never copy into a live mirror
@@ -20,9 +20,10 @@
  *   M8  a base forked before the reset survives a SEED-ONLY recovery (the face's bases sidecar), and canon still reads
  *       fresher than the copy
  *   M9  two faces: each face's working rows carry that face's own bases, never the face the daemon wears
- *   M10 a former folder with NO card: the seed refuses by name and names the import; the import matches the folder to
- *       the bundle face whose files it holds, writes its card, and the next seed adopts it
+ *   M10 a labelled former face whose folders hold a file the bundle never carried: the import leaves it out of ashes,
+ *       the seed adopts it, and only then do its folders move to ashes
  *   M11 a fresh face that reads no relation and no stage (no refusal) never halts the seed
+ *   M12 a face folder no label names: the seed names it and adopts nothing; the import never adopts, labels or moves it
  */
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -33,7 +34,7 @@ import { kapaeShadowBody, readKapaeShadow, mirrorDirFileToUri } from "@lararium/
 import { daemonFaceCanonBag } from "@lararium/mesh";
 import { seedMirrors, mirrorFiles, readKahuaPending, MirrorRefused, type MirrorDoors, type MirrorLaid, type MirrorWave } from "../src/seed-mirrors.js";
 import { carryExport, carryImport, type CarryDoors, type CarryVesselFace } from "../src/commands/carry.js";
-import { writeFaceCards, faceCardPath, writeFaceBases, readFaceCard } from "../src/face-cards.js";
+import { writeFaceLabels, faceLabelPath, writeFaceBases, readFaceLabel } from "../src/face-labels.js";
 import { runMirrorLeg } from "../src/commands/seed.js";
 import type { CarryKahuaHead } from "../src/carry-manifest.js";
 
@@ -172,7 +173,7 @@ async function oldVessel(): Promise<FakeHouse> {
   v.held.add("garden");
   v.stage.set(0, [{ title: HERON, cid: sha("old-heron"), text: "remember the heron", fields: {}, taint: [], sources: [{ title: POND, revision: "r1" }] }]);
   await seedMirrors({ apply: true, doors: v.mirrorDoors() });
-  writeFaceCards(v.facesNow(), join(root, "projections"));     // what the vessel writes at each stand (and `liveFaces` at each read)
+  writeFaceLabels(v.facesNow(), join(root, "projections"));     // what the vessel writes at each stand (and `liveFaces` at each read)
   keepBases(v, F1);                                            // what the vessel's bases keeper writes off the face's working slots
   return v;
 }
@@ -268,7 +269,7 @@ describe("the seed lays every mirror back into its one layer", () => {
     expect(result.ashes.map((a) => a.relation)).toEqual([F1]);
   });
 
-  test("M3 — an ambiguous pet-name refuses and lands nothing; so do an unmatched pet-name and a folder no card names", async () => {
+  test("M3 — an ambiguous pet-name refuses and lands nothing; so do an unmatched pet-name and a folder no label names", async () => {
     await oldVessel();
     const twins = refound([{ handleIndex: 0, petname: "hearth-one", relation: F2 }, { handleIndex: 1, petname: "hearth-one", relation: F3 }]);
     await expect(seedMirrors({ apply: true, doors: twins.mirrorDoors() })).rejects.toThrow(/seed-face-duplicate-petname[\s\S]*hearth-one/);
@@ -282,10 +283,10 @@ describe("the seed lays every mirror back into its one layer", () => {
     expect((e as MirrorRefused).code).toBe("seed-face-unmatched");
     nothing(stranger);
 
-    rmSync(faceCardPath(F1, join(root, "projections")));
-    const uncarded = refound();
-    await expect(seedMirrors({ apply: true, doors: uncarded.mirrorDoors() })).rejects.toThrow(/seed-face-uncarded/);
-    nothing(uncarded);
+    rmSync(faceLabelPath(F1, join(root, "projections")));
+    const unlabelled = refound();
+    await expect(seedMirrors({ apply: true, doors: unlabelled.mirrorDoors() })).rejects.toThrow(/seed-face-unlabelled/);
+    nothing(unlabelled);
   });
 
   test("M4 — kahua: the preview lists it; no confirm stands it pending; a wrong count refuses; --yes alone lifts nothing; a differing file supersedes on the count", async () => {
@@ -402,28 +403,36 @@ describe("the seed lays every mirror back into its one layer", () => {
     expect(rowOf("two")?.overrideBase).toBe(B3);
   });
 
-  test("M10 — an uncarded former folder: the seed names the import; the import writes its card; the next seed adopts it", async () => {
+  test("M10 — a labelled former face whose folders hold a file the bundle never carried: the import leaves it, the seed adopts it, then ashes", async () => {
     const old = await oldVessel();
     await carryExport(out, { acceptOmissions: false, doors: old.carryDoors() });
-    rmSync(faceCardPath(F1, join(root, "projections")));          // a face that stood before its vessel wrote cards
     // The former face wrote one more memory after the export: the bundle never carried it.
     put(`projections/wikis/daemon-${F1}/ha.ka.ba/notes/after-export.tid`, tid("lar:///ha.ka.ba/notes/after-export", "written after the export"));
     const after = refound();
-    const refused = await seedMirrors({ apply: true, doors: after.mirrorDoors() }).then(() => null, (e: Error) => e);
-    expect((refused as MirrorRefused).code).toBe("seed-face-uncarded");
-    expect(refused?.message).toMatch(/lares import <bundle> --apply/);
-    expect(after.layers.size).toBe(0);
     const imported = await carryImport(out, { apply: true, doors: after.carryDoors() });
-    expect(imported.carded).toEqual([{ relation: F1, petname: "hearth-one" }]);
-    expect(readFaceCard(F1, join(root, "projections"))?.petname).toBe("hearth-one");
-    // The folder holds a file the bundle never carried, so it stays out of ashes and says why.
     expect(imported.ashes).toEqual([]);
     expect(imported.ashesLeft.find((a) => a.relation === F1)?.why).toMatch(/never carried/);
-    // The next seed adopts it by the card the import wrote, the late memory among it, and only then moves it to ashes.
     const seeded = await seedMirrors({ apply: true, doors: after.mirrorDoors() });
     expect(seeded.adoptions.map((a) => a.relation)).toEqual([F1]);
     expect(after.live(WORKING, "lar:///ha.ka.ba/notes/after-export")?.text).toBe(tid("lar:///ha.ka.ba/notes/after-export", "written after the export"));
     expect(seeded.ashes.map((a) => a.relation)).toEqual([F1]);
+  });
+
+  test("M12 — a face folder no label names: the seed names it and adopts nothing; the import never adopts it, labels it or moves it", async () => {
+    const old = await oldVessel();
+    await carryExport(out, { acceptOmissions: false, doors: old.carryDoors() });
+    rmSync(faceLabelPath(F1, join(root, "projections")));
+    const after = refound();
+    const refused = await seedMirrors({ apply: true, doors: after.mirrorDoors() }).then(() => null, (e: Error) => e);
+    expect((refused as MirrorRefused).code).toBe("seed-face-unlabelled");
+    expect(refused?.message).toMatch(/this folder carries no face label[\s\S]*move it aside or remove it/);
+    expect(refused?.message).not.toMatch(/import/);
+    expect(after.layers.size + after.laid.length).toBe(0);
+    const imported = await carryImport(out, { apply: true, doors: after.carryDoors() });
+    expect(imported.ashes).toEqual([]);
+    expect(readFaceLabel(F1, join(root, "projections"))).toBeNull();
+    expect(existsSync(P(`wikis/daemon-${F1}/ha.ka.ba/notes/pond.tid`))).toBe(true);
+    expect(existsSync(P(`ashes/${F1}`))).toBe(false);
   });
 
   test("M11 — a fresh face that reads no relation and no stage never halts the seed", async () => {

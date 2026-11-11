@@ -59,7 +59,7 @@ import { runVerb } from "../verb-call.js";
 import { newChangeId, newRequestId, taskContentId } from "@lararium/mesh";
 import { storeVerb, storeFailure } from "../store-door.js";
 import { readPersonaRoots, sealedPetnameStore, sealedDeclarationStore } from "../sealed-rows.js";
-import { writeFaceCards, writeFaceCard, readFaceCard, readFaceBases } from "../face-cards.js";
+import { writeFaceLabels, readFaceLabel, readFaceBases } from "../face-labels.js";
 import { moveFaceToAshes } from "../ashes.js";
 import { makeFleetPetnameStore, makeFleetDeclarationStore } from "../daemon-persona-store.js";
 import {
@@ -147,9 +147,9 @@ async function liveFaces(): Promise<CarryVesselFace[]> {
       kahua, ...(kahuaRefusal !== undefined ? { kahuaRefusal } : {}), ...(kahuaRefusalCode !== undefined ? { kahuaRefusalCode } : {}),
     });
   }
-  // THE FACE CARDS: each named face's relation and pet-name rest in plaintext outside the hearth, so a seed after a
-  // re-founding adopts a former face's folders by pet-name from disk alone (`face-cards.ts`).
-  writeFaceCards(out);
+  // THE FACE LABELS: each named face's relation and pet-name rest in plaintext outside the hearth, so a seed after a
+  // re-founding adopts a former face's folders by pet-name from disk alone (`face-labels.ts`).
+  writeFaceLabels(out);
   return out;
 }
 
@@ -542,10 +542,6 @@ export interface CarryImportResult {
   readonly ashes: ReadonlyArray<{ readonly relation: string; readonly moved: readonly string[] }>;
   /** The former faces' folders left standing, each with why (a partial landing). */
   readonly ashesLeft: ReadonlyArray<{ readonly relation: string; readonly why: string }>;
-  /** Former faces' uncarded folders this import matched to a bundle face by their bytes, and the card it wrote (or would). */
-  readonly carded: ReadonlyArray<{ readonly relation: string; readonly petname: string }>;
-  /** Former faces' uncarded folders no bundle face matched, each with why. */
-  readonly uncarded: ReadonlyArray<{ readonly relation: string; readonly why: string }>;
 }
 
 /**
@@ -802,27 +798,13 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     return { same, beyond };
   };
 
-  // AN UNCARDED FORMER FOLDER (a face that stood before its vessel wrote cards) adopts by the bundle's face rows: it takes the
-  // pet-name of the ONE bundle face whose carried files it holds byte for byte, and the import writes its card, so the next
-  // seed adopts it onto the face carrying that pet-name. Matching none, or more than one, it stays uncarded and named.
-  const carded: Array<{ relation: string; petname: string }> = [];
-  const uncarded: Array<{ relation: string; why: string }> = [];
-  for (const r of former.filter((x) => readFaceCard(x, projections) === null)) {
-    const matched = manifest.faces.filter((bf) => weigh(r, bf.key).same > 0);
-    if (matched.length !== 1) { uncarded.push({ relation: r, why: matched.length === 0 ? "it holds no file any bundle face carries" : `it holds files ${matched.map((m) => `"${m.petname}"`).join(" and ")} each carry` }); continue; }
-    const bf = matched[0]!;
-    const row = redeclare.faces.find((x) => x.face === bf.key)!;
-    carded.push({ relation: r, petname: bf.petname });
-    if (apply) writeFaceCard({ relation: r, petname: bf.petname, handleIndex: row.handleIndex }, projections);
-  }
-
-  // ASHES: a former face whose card names a bundle face's pet-name moves out of the live mirror set once this import landed
+  // ASHES: a former face whose label names a bundle face's pet-name moves out of the live mirror set once this import landed
   // with NOTHING pending AND its folders hold nothing the bundle never carried (the seed adopts the rest first).
   const ashes: Array<{ relation: string; moved: string[] }> = [];
   const ashesLeft: Array<{ relation: string; why: string }> = [];
   const left = Object.values(tallies).reduce((n, t) => n + t.stoodOff.length + t.refused.length, 0);
   for (const bf of manifest.faces) {
-    for (const r of former.filter((x) => (readFaceCard(x, projections)?.petname ?? carded.find((c) => c.relation === x)?.petname) === bf.petname)) {
+    for (const r of former.filter((x) => readFaceLabel(x, projections)?.petname === bf.petname)) {
       if (left > 0) { ashesLeft.push({ relation: r, why: `the import left ${left} row(s) standing off or refused; settle them and import again` }); continue; }
       const { beyond } = weigh(r, bf.key);
       if (beyond > 0) { ashesLeft.push({ relation: r, why: `its folders hold ${beyond} file(s) the bundle never carried: \`lares vessel seed --apply\` adopts them by pet-name first` }); continue; }
@@ -832,7 +814,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     }
   }
 
-  return { bundleId: manifest.bundleId, applied: apply, faceMap, redeclare: acts, tallies, skipped, minted, ashes, ashesLeft, carded, uncarded };
+  return { bundleId: manifest.bundleId, applied: apply, faceMap, redeclare: acts, tallies, skipped, minted, ashes, ashesLeft };
 }
 
 // ── the commands' shared refusal ─────────────────────────────────────────────────────────────────────────────
