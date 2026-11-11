@@ -168,6 +168,8 @@ The host shim starts the container at `up`. The vessel stands holding no vessel 
 
 ''A place that stands already lifts the same way.'' Stop the vessel (`tools/lares-container.sh vessel stop`), run `found --hearth` over the standing place, then `up`. A face on a place with no seed charter refuses by name and names the act. Bare `found` still founds a place with no face (a herm's rite). `lares fleet join` carries a joiner through offer, request, answer and land.
 
+''The seed feeds canon through one road.'' Seed lays every disk mirror back into the layer it mirrors; import carries a bundle onto this hearth's faces by pet-name. Each holding whose canon source stands on disk (its dir under the canon source the daemon reads; a private plane never) takes `CREATE`, which converges on the bag that stands and mints nothing over it, then the diff-gated `INGEST` into `bags/<slug>`; no name list picks the road, so `crossroads`, `sdm` and `lares` ride it alike. The seed never writes a wiki's working layer and never walks `LOAD` + `MOVE`. The working overrides above a canon text the seed moved weigh in the same act: a stale copy (its text still says the canon text it forked from) retracts so the new canon shows through, a diverged one stands off and stays as the hand left it; the seed names the count and the first eight, and `lares shore` lists each with its key (`take-working` keeps it, re-based; `take-canon` retracts it). A working-only title never promotes, and a file gone from disk stands pending at the shore. The settle word waits while pages keep settling and stops only after two minutes with none; a stall prints one ⚠ and `lares shore settle --bag <bag> --pending` finishes it without a re-seed. A branch switch that drops files floods the shore with pending removals (a wave tombstones no carrier); the seed counts them per bag and prints the one batch answer, `lares shore remove --all --count <n> --bag <bag>`.
+
 ''The seed leaves the checkout as it stood.'' A carrier whose bytes say what its records render stands unchanged, whatever framing a hand gave it, so a first `vessel seed` writes no tracked file and `git status` in the checkout reads clean. The unlock adds no untracked file either: the records the daemon seeds from source never project (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/bag-roles`>>), so `wikis/` receives a file only where a person writes one. A later change to a record writes that one carrier in its canonical render.
 
 ''See'': the act prints `the hearth stands: nexus-<sha>`, the seed charter at one seat and threshold one, PRIVATE, the seat's fingerprint, and persona zero's edge bound to this hearth. `vessel seed` names each holding under `/workspace/bags` and ends `6/6 holding(s) converged` (the count follows the holdings the checkout carries); the two infrastructure holdings ride the diff-gated ingest, and every other holding walks the island's named road: the act creates the bag, loads the carriers onto that wiki's working layer, then moves each landed record into canon, since a write lands on a working layer and canon takes it by promotion (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/bag-roles`>>); a second run submits nothing for a bag that already matches. `vessel read` reports the live node; `persona list` marks index zero active; `nexus seal show` reads SEED with one seated key; the daemon recipe list returns seeded wiki entries.
@@ -348,11 +350,14 @@ tools/lares-container.sh down                                    # a locked hear
 tools/lares-container.sh reset                                   # type re-found; projections stay
 tools/lares-container.sh found --hearth --name 'operator-one' --chair 'first-chair'
 tools/lares-container.sh up                                      # up unlocks on the attached terminal: no separate unlock step
+tools/lares-container.sh vessel seed --apply --yes               # the checkout's canon first: an import lands over seeded canon alone
 tools/lares-container.sh import /lar/config/carry/bundle-one    # a preview: writes nothing
 tools/lares-container.sh import /lar/config/carry/bundle-one --apply
 ```
 
 ''The bundle rests unencrypted.'' Export copies a face's private memory as plain files and says so on its closing line. It refuses a destination inside the workspace or inside the house root, save the house's config home: a reset keeps `config/`, and the container binds `/lar/config` to `$LARES_HOUSE/config`, so the bundle rests where the host reads it (the vault backup's own precedent). Keep it on a disk only the operator holds, and remove it once the import reads back.
+
+''Seed comes before import.'' The walk runs found -> up -> seed -> import. The seed lays the checkout's canon; the import's bag rows then meet it at the same `INGEST` three-way gate and stand off where they diverge, never a silent overwrite either way. An applied import over a disk-sourced holding the vessel never seeded refuses `carry-canon-unseeded` and names `vessel seed --apply`.
 
 ''Up and unlock come before import.'' `up` on a terminal runs the unlock itself; only an `up` with no terminal attached names `vault unlock` for a terminal afterwards. The import lands each face's memory in that face's own folders, named by the face relation the standing, unlocked vessel reads; on a vessel that stands down or locked it refuses `carry-face-unworn` and names `up` and `vault unlock`.
 
@@ -416,6 +421,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;X9cjqN-he3PQ916QlEbpSipOYjjJYEThGNAPHdd-jdQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Usk9bgHS83k29SHVqLjs_8yYkP5vMV5R5fC2nQjDdwU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

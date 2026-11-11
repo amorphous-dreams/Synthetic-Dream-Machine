@@ -1,6 +1,10 @@
 /**
  * `lares vessel seed` — plant the disk holdings into the vessel's canon.
  *
+ * THE WORD: seed lays every disk mirror back into the layer it mirrors; import carries a bundle onto this hearth's
+ * faces by pet-name. Today the seed lays the checkout's canon (`bags/<slug>`) back into each canon bag; the face and
+ * working mirrors under `projections/` cross by import (`carry.ts`) until the seed reads them too.
+ *
  * ONE ROAD, DECIDED BY WHERE CANON STANDS. A holding whose canon source stands on disk (its dir under the canon source
  * the daemon resolves, `daemonBagsDir`, and no private plane: `projectionRoots(...).sourcedSlugs()`) takes the
  * diff-gated `ingest` gesture into its canon bag, after a CREATE that converges on the bag that stands (a bag that
@@ -26,7 +30,8 @@ import { bagUri } from "@lararium/mesh";
 import { daemonBagsDir, projectionRoots } from "@lararium/node";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit } from "../render.js";
-import { larBagsDir, larProjectionsDirOrNone } from "../env.js";
+import { larBagsDir, larProjectionsDirOrNone, vesselDid } from "../env.js";
+import { askShore, readShoreList } from "../shore-core.js";
 import { cmdIngest, type IngestOverrides } from "./ingest.js";
 import { cmdAct } from "./act.js";
 
@@ -107,6 +112,21 @@ export async function seedHolding(
   return { ...h, gesture: "ingest", exitCode, ...(sink.overrides ? { overrides: sink.overrides } : {}) };
 }
 
+/**
+ * THE SHORE FLOOD, ANSWERED ONCE. A wave tombstones no carrier: a title gone from disk (a branch switch drops many)
+ * stands pending at the shore. The seed counts what stands pending per bag it fed and prints the one batch answer per
+ * bag, so a person answers once rather than carrier by carrier.
+ */
+export function pendingRemovalLines(pending: ReadonlyArray<Record<string, unknown>>, bags: readonly string[]): string[] {
+  const counts = new Map<string, number>();
+  for (const p of pending) {
+    const bag = String(p["bagId"]);
+    if (bags.includes(bag)) counts.set(bag, (counts.get(bag) ?? 0) + 1);
+  }
+  return [...counts].sort(([a], [b]) => (a < b ? -1 : 1)).map(([bag, n]) =>
+    `seed: ${n} pending removal(s) in ${bag}: the files left disk and nothing tombstoned; answer once with \`lares shore remove --all --count ${n} --bag ${bag}\` (or \`restore --all --count ${n} --bag ${bag}\`)`);
+}
+
 /** How many override titles a report names before it counts the rest. */
 export const SEED_OVERRIDE_NAMES = 8;
 
@@ -185,6 +205,13 @@ export async function cmdSeed(args: ParsedArgs): Promise<number> {
     console.error("    `lares shore` lists each with its key: `lares shore take-working <title> --bag <bag> --key <key>` keeps it · `take-canon` retracts it · or leave it standing");
   }
   const fed = ledger.filter((h) => h.gesture !== "skip");
+  if (args.flags["apply"] && fed.length > 0) {
+    try {
+      const did = await vesselDid();
+      const listed = await readShoreList((a) => askShore(a, did), { op: "list" });
+      if (listed.ok) for (const line of pendingRemovalLines(listed.pending, fed.map((h) => h.toBag))) console.log(line);
+    } catch { /* the shore unread: the seed's own verdict stands; `lares shore` reads it */ }
+  }
   console.log(`seed: ${fed.length - failed.length}/${fed.length} holdings${ledger.length > fed.length ? ` · ${ledger.length - fed.length} off disk` : ""} · ${elapsedText(performance.now() - started)}`);
   return failed.length === 0 ? 0 : 1;
 }

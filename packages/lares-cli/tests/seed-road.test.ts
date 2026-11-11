@@ -122,3 +122,18 @@ describe("the seed feeds every disk-sourced holding through CREATE then INGEST",
     expect(lines.at(-1)).toMatch(/^seed: 3\/3 holdings · 1 off disk · \d+s$/);
   });
 });
+
+import { pendingRemovalLines } from "../src/commands/seed.js";
+describe("the seed answers a shore flood once", () => {
+  test("S7 — the summary counts pending removals per fed bag and prints one batch answer each", () => {
+    const rows = [
+      ...Array.from({ length: 3 }, (_, i) => ({ bagId: "lar:///ha.ka.ba/bags/sdm", uri: `u${i}` })),
+      { bagId: "lar:///ha.ka.ba/bags/crossroads", uri: "c" },
+      { bagId: "lar:///ha.ka.ba/wikis/daemon-x/working", uri: "d" },
+    ];
+    expect(pendingRemovalLines(rows, ["lar:///ha.ka.ba/bags/sdm", "lar:///ha.ka.ba/bags/crossroads"])).toEqual([
+      "seed: 1 pending removal(s) in lar:///ha.ka.ba/bags/crossroads: the files left disk and nothing tombstoned; answer once with `lares shore remove --all --count 1 --bag lar:///ha.ka.ba/bags/crossroads` (or `restore --all --count 1 --bag lar:///ha.ka.ba/bags/crossroads`)",
+      "seed: 3 pending removal(s) in lar:///ha.ka.ba/bags/sdm: the files left disk and nothing tombstoned; answer once with `lares shore remove --all --count 3 --bag lar:///ha.ka.ba/bags/sdm` (or `restore --all --count 3 --bag lar:///ha.ka.ba/bags/sdm`)",
+    ]);
+  });
+});
