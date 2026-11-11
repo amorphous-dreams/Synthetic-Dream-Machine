@@ -430,8 +430,8 @@ export type {
   AdmitGatePinRefusal, DialPinKey, HearthPinIndex, PlaceClaimStand, PlaceClaimFiling, PlaceClaimFork, PlaceKelForkNote,
 } from "./admit-gate-pin.js";
 export {
-  FLOOR_ANNOUNCEMENT_VERSION, FLOOR_ANNOUNCE_ROUTE, FLOOR_STANDINGS, FLOOR_ANNOUNCEMENT_REFUSALS, FloorAnnouncementRefused,
-  gateAnnouncementImage, signFloorAnnouncement, readFloorAnnouncement,
+  FLOOR_ANNOUNCEMENT_KIND, FLOOR_ANNOUNCE_ROUTE, FLOOR_STANDINGS, FLOOR_ANNOUNCEMENT_REFUSALS, FloorAnnouncementRefused,
+  gateAnnouncementImage, floorAnnouncementDigest, signFloorAnnouncement, readFloorAnnouncement,
 } from "./floor-announcement.js";
 export type { FloorStanding, FloorAnnouncementBody, FloorAnnouncement, FloorAnnouncementRefusal } from "./floor-announcement.js";
 // THE GATE AND ITS DIAL, named here by their callers: the node's gate server stands `makeFaceGate` per (Nexus, route)

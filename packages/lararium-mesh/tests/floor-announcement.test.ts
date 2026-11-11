@@ -2,11 +2,11 @@
  * floor-announcement — the floor's signed hint to its peers, read only against a pin the reader already holds.
  *
  * Proven here, each with its control:
- *   · the floor bundle signs one canonical body (version, Nexus, floor pin digest, standing, position) under
+ *   · the floor bundle signs one canonical body (kind, Nexus, floor pin digest, standing, prior link) under
  *     `waking-floor-announce`, and the reader holding that same pin reads it back;
  *   · an announcement never authenticates its own first pin: a self-consistent announcement from another floor
  *     key refuses against the pin the reader holds, and the reader takes no announcement without a pin;
- *   · another Nexus, another tier, another route, a stale or equal position, a moved byte, a verdict signature
+ *   · another Nexus, another tier, another route, the held announcement again or one linked elsewhere, a moved byte, a verdict signature
  *     and every malformed shape refuse by name;
  *   · the image is frozen against fixed bytes.
  */
@@ -14,8 +14,8 @@ import { describe, expect, test } from "vitest";
 import { hex, hexToBytes, utf8Bytes } from "../src/crypto.js";
 import { DOMAIN_ROOT, GATE_VERDICT_DOMAIN, WAKING_FLOOR_ANNOUNCE_DOMAIN } from "../src/domains.js";
 import {
-  FLOOR_ANNOUNCEMENT_REFUSALS, FLOOR_ANNOUNCEMENT_VERSION, FLOOR_ANNOUNCE_ROUTE, FLOOR_STANDINGS,
-  gateAnnouncementImage, readFloorAnnouncement, signFloorAnnouncement, type FloorAnnouncementBody,
+  FLOOR_ANNOUNCEMENT_KIND, FLOOR_ANNOUNCEMENT_REFUSALS, FLOOR_ANNOUNCE_ROUTE, FLOOR_STANDINGS,
+  floorAnnouncementDigest, gateAnnouncementImage, readFloorAnnouncement, signFloorAnnouncement, type FloorAnnouncementBody,
 } from "../src/floor-announcement.js";
 import {
   GATE_SIGNING_PURPOSES, GateBundleRefused, custodyRootDoor, deriveGateBundle, floorGateRoot, floorKeyDoor, floorRoute,
@@ -32,38 +32,45 @@ describe("the floor announcement", () => {
     expect(WAKING_FLOOR_ANNOUNCE_DOMAIN).toBe(`${DOMAIN_ROOT}/waking-floor-announce`);
     expect(GATE_SIGNING_PURPOSES).toContain(WAKING_FLOOR_ANNOUNCE_DOMAIN);
     expect(FLOOR_ANNOUNCE_ROUTE).toBe("/announce");
-    expect(FLOOR_ANNOUNCEMENT_VERSION).toBe(1);
+    expect(FLOOR_ANNOUNCEMENT_KIND).toBe("floor-announcement");
   });
 
   test("CONTROL: the floor signs, and the reader holding that pin reads the body back whole", async () => {
     const b = floorBundle();
-    const signed = await signFloorAnnouncement(b, { standing: "resting", position: 3 });
-    expect(signed.body).toEqual({ version: 1, nexus: hex(utf8Bytes("nexus-a.synthetic")), floorPin: gateBundleDigest(b.pin), standing: "resting", position: 3 });
+    const signed = await signFloorAnnouncement(b, { standing: "resting", prior: null });
+    expect(signed.body).toEqual({ kind: "floor-announcement", nexus: hex(utf8Bytes("nexus-a.synthetic")), floorPin: gateBundleDigest(b.pin), standing: "resting", prior: null });
     const read = readFloorAnnouncement(JSON.parse(JSON.stringify(signed)), { pin: b.pin });
     expect(refusalOf(read)).toBeNull();
     expect("announcement" in read && read.announcement).toEqual(signed.body);
     expect("announcement" in read && Object.isFrozen(read.announcement)).toBe(true);
-    // and past a held position
-    expect(refusalOf(readFloorAnnouncement(signed, { pin: b.pin, after: 2 }))).toBeNull();
+    // and as the successor of the one held: the next announcement names the held one's digest as its prior
+    const next = await signFloorAnnouncement(b, { standing: "raised", prior: floorAnnouncementDigest(signed.body) });
+    expect(refusalOf(readFloorAnnouncement(next, { pin: b.pin, held: floorAnnouncementDigest(signed.body) }))).toBeNull();
     for (const standing of FLOOR_STANDINGS) {
-      expect(refusalOf(readFloorAnnouncement(await signFloorAnnouncement(b, { standing, position: 0 }), { pin: b.pin }))).toBeNull();
+      expect(refusalOf(readFloorAnnouncement(await signFloorAnnouncement(b, { standing, prior: null }), { pin: b.pin }))).toBeNull();
     }
   });
 
   test("the image is the registered domain over the body's fields, frozen", () => {
-    const body: FloorAnnouncementBody = { version: 1, nexus: "6e", floorPin: "ab".repeat(32), standing: "raised", position: 258 };
+    const body: FloorAnnouncementBody = { kind: "floor-announcement", nexus: "6e", floorPin: "ab".repeat(32), standing: "raised", prior: "cd".repeat(32) };
     const image = gateAnnouncementImage(body);
     expect(hex(image)).toBe(hex(gateFields(
-      WAKING_FLOOR_ANNOUNCE_DOMAIN, Uint8Array.of(1), hexToBytes("6e"), hexToBytes("ab".repeat(32)), utf8Bytes("raised"),
-      Uint8Array.of(0, 0, 0, 0, 0, 0, 1, 2),
+      WAKING_FLOOR_ANNOUNCE_DOMAIN, utf8Bytes("floor-announcement"), hexToBytes("6e"), hexToBytes("ab".repeat(32)), utf8Bytes("raised"),
+      hexToBytes("cd".repeat(32)),
     )));
     expect(hex(image).slice(0, 8)).toBe(hex(Uint8Array.of(0, 0, 0, WAKING_FLOOR_ANNOUNCE_DOMAIN.length)));
+    // The first announcement links nothing: its prior field frames empty, apart from every 32-byte link.
+    expect(hex(gateAnnouncementImage({ ...body, prior: null }))).toBe(hex(gateFields(
+      WAKING_FLOOR_ANNOUNCE_DOMAIN, utf8Bytes("floor-announcement"), hexToBytes("6e"), hexToBytes("ab".repeat(32)), utf8Bytes("raised"),
+      new Uint8Array(0),
+    )));
+    expect(floorAnnouncementDigest(body)).toMatch(/^[0-9a-f]{64}$/);
   });
 
   test("RED: an announcement never authenticates its own first pin — another floor's self-consistent announcement refuses pin-other", async () => {
     const held = floorBundle("nexus-a.synthetic", 19);
     const stranger = floorBundle("nexus-a.synthetic", 23);
-    const signed = await signFloorAnnouncement(stranger, { standing: "resting", position: 1 });
+    const signed = await signFloorAnnouncement(stranger, { standing: "resting", prior: null });
     expect(refusalOf(readFloorAnnouncement(signed, { pin: stranger.pin }))).toBeNull();          // CONTROL: it is sound against its own pin
     expect(refusalOf(readFloorAnnouncement(signed, { pin: held.pin }))).toBe("pin-other");
     // The same body with its pin digest rewritten to the held pin still carries the stranger's signature.
@@ -73,7 +80,7 @@ describe("the floor announcement", () => {
 
   test("RED: the reader takes no announcement without a held floor pin", async () => {
     const b = floorBundle();
-    const signed = await signFloorAnnouncement(b, { standing: "resting", position: 1 });
+    const signed = await signFloorAnnouncement(b, { standing: "resting", prior: null });
     for (const expectation of [undefined, {}, { pin: null }, { pin: { ...b.pin, extra: 1 } }, { pin: "pin" }]) {
       expect(refusalOf(readFloorAnnouncement(signed, expectation as never))).toBe("pin-unread");
     }
@@ -82,33 +89,39 @@ describe("the floor announcement", () => {
   test("RED: cross-Nexus replay refuses nexus-other", async () => {
     const a = floorBundle("nexus-a.synthetic");
     const bOther = floorBundle("nexus-b.synthetic");
-    const signed = await signFloorAnnouncement(a, { standing: "resting", position: 1 });
+    const signed = await signFloorAnnouncement(a, { standing: "resting", prior: null });
     expect(refusalOf(readFloorAnnouncement(signed, { pin: bOther.pin }))).toBe("nexus-other");
   });
 
   test("RED: a sovereign pin, or a floor pin on another route, refuses; a sovereign bundle signs no announcement", async () => {
     const b = floorBundle();
-    const signed = await signFloorAnnouncement(b, { standing: "resting", position: 1 });
+    const signed = await signFloorAnnouncement(b, { standing: "resting", prior: null });
     const sovereign = deriveGateBundle(sovereignGateRoot(custodyRootDoor({ derive: () => new Uint8Array(32).fill(19) })), utf8Bytes("nexus-a.synthetic"), sovereignRoute(FLOOR_ANNOUNCE_ROUTE));
     expect(refusalOf(readFloorAnnouncement(signed, { pin: sovereign.pin }))).toBe("pin-other-tier");
     const shelf = floorBundle("nexus-a.synthetic", 19, "/shelf");
     expect(refusalOf(readFloorAnnouncement(signed, { pin: shelf.pin }))).toBe("pin-other-route");
-    await expect(signFloorAnnouncement(sovereign, { standing: "resting", position: 1 })).rejects.toMatchObject({ refusal: "pin-other-tier" });
-    await expect(signFloorAnnouncement(shelf, { standing: "resting", position: 1 })).rejects.toMatchObject({ refusal: "pin-other-route" });
+    await expect(signFloorAnnouncement(sovereign, { standing: "resting", prior: null })).rejects.toMatchObject({ refusal: "pin-other-tier" });
+    await expect(signFloorAnnouncement(shelf, { standing: "resting", prior: null })).rejects.toMatchObject({ refusal: "pin-other-route" });
   });
 
-  test("RED: a position at or below the one held refuses position-stale; CONTROL: one past it reads", async () => {
+  test("ORDER RIDES THE CAUSAL LINK: the held one again refuses announcement-held, one linked elsewhere prior-unlinked; CONTROL: its successor reads", async () => {
     const b = floorBundle();
-    const signed = await signFloorAnnouncement(b, { standing: "raised", position: 5 });
-    expect(refusalOf(readFloorAnnouncement(signed, { pin: b.pin, after: 4 }))).toBeNull();
-    expect(refusalOf(readFloorAnnouncement(signed, { pin: b.pin, after: 5 }))).toBe("position-stale");
-    expect(refusalOf(readFloorAnnouncement(signed, { pin: b.pin, after: 9 }))).toBe("position-stale");
+    const first = await signFloorAnnouncement(b, { standing: "resting", prior: null });
+    const held = floorAnnouncementDigest(first.body);
+    const second = await signFloorAnnouncement(b, { standing: "raised", prior: held });
+    const third = await signFloorAnnouncement(b, { standing: "resting", prior: floorAnnouncementDigest(second.body) });
+    expect(refusalOf(readFloorAnnouncement(second, { pin: b.pin, held }))).toBeNull();
+    expect(refusalOf(readFloorAnnouncement(first, { pin: b.pin, held }))).toBe("announcement-held");
+    // A replay of the first, or a later one that skips the link, names no link to the held announcement.
+    expect(refusalOf(readFloorAnnouncement(first, { pin: b.pin, held: floorAnnouncementDigest(second.body) }))).toBe("prior-unlinked");
+    expect(refusalOf(readFloorAnnouncement(third, { pin: b.pin, held }))).toBe("prior-unlinked");
+    expect(() => readFloorAnnouncement(second, { pin: b.pin, held: "1" })).toThrow(RangeError);
   });
 
   test("RED: a moved byte, a moved field, or a verdict signature over the same fields refuses signature-refused", async () => {
     const b = floorBundle();
-    const signed = await signFloorAnnouncement(b, { standing: "resting", position: 7 });
-    for (const body of [{ ...signed.body, position: 8 }, { ...signed.body, standing: "raised" }]) {
+    const signed = await signFloorAnnouncement(b, { standing: "resting", prior: "ef".repeat(32) });
+    for (const body of [{ ...signed.body, prior: "ee".repeat(32) }, { ...signed.body, prior: null }, { ...signed.body, standing: "raised" }]) {
       expect(refusalOf(readFloorAnnouncement({ ...signed, body }, { pin: b.pin }))).toBe("signature-refused");
     }
     const flipped = hexToBytes(signed.signature); flipped[0]! ^= 1;
@@ -116,38 +129,42 @@ describe("the floor announcement", () => {
     // The same key over the same fields under the verdict's name: a verdict never reads as an announcement.
     const { body } = signed;
     const verdictSig = await b.sign(gateFields(
-      GATE_VERDICT_DOMAIN, Uint8Array.of(body.version), hexToBytes(body.nexus), hexToBytes(body.floorPin), utf8Bytes(body.standing),
-      Uint8Array.of(0, 0, 0, 0, 0, 0, 0, body.position),
+      GATE_VERDICT_DOMAIN, utf8Bytes(body.kind), hexToBytes(body.nexus), hexToBytes(body.floorPin), utf8Bytes(body.standing),
+      hexToBytes(body.prior!),
     ));
     expect(refusalOf(readFloorAnnouncement({ ...signed, signature: hex(verdictSig) }, { pin: b.pin }))).toBe("signature-refused");
   });
 
   test("NONSENSE: every malformed shape refuses by name", async () => {
     const b = floorBundle();
-    const signed = await signFloorAnnouncement(b, { standing: "resting", position: 1 });
+    const signed = await signFloorAnnouncement(b, { standing: "resting", prior: null });
     const pin = b.pin;
     const at = (v: unknown) => refusalOf(readFloorAnnouncement(v, { pin }));
     for (const v of [null, 7, "x", [], {}, { body: signed.body }, { ...signed, extra: 1 }]) expect(at(v)).toBe("announcement-malformed");
-    for (const body of [null, [], { ...signed.body, extra: 1 }, (({ position: _p, ...rest }) => rest)(signed.body)]) {
+    for (const body of [null, [], { ...signed.body, extra: 1 }, (({ prior: _p, ...rest }) => rest)(signed.body)]) {
       expect(at({ ...signed, body })).toBe("announcement-malformed");
     }
-    expect(at({ ...signed, body: { ...signed.body, version: 2 } })).toBe("version-unknown");
+    expect(at({ ...signed, body: { ...signed.body, kind: "floor-verdict" } })).toBe("kind-other");
+    // A body that counts a version and a position in place of a kind and a link lacks the shape: it reads as no announcement.
+    const counted = (({ kind: _k, prior: _p, ...rest }) => ({ ...rest, version: 1, position: 1 }))(signed.body);
+    expect(at({ ...signed, body: counted })).toBe("announcement-malformed");
     expect(at({ ...signed, body: { ...signed.body, nexus: "XY" } })).toBe("nexus-malformed");
     expect(at({ ...signed, body: { ...signed.body, floorPin: "ab" } })).toBe("pin-malformed");
     expect(at({ ...signed, body: { ...signed.body, standing: "degraded" } })).toBe("standing-malformed");
-    for (const position of [-1, 1.5, Number.MAX_SAFE_INTEGER + 1, "1"]) expect(at({ ...signed, body: { ...signed.body, position } })).toBe("position-malformed");
+    for (const prior of [-1, 7, "ab", "AB".repeat(32), ""]) expect(at({ ...signed, body: { ...signed.body, prior } })).toBe("prior-malformed");
     for (const signature of ["ab", "zz".repeat(64), 7]) expect(at({ ...signed, signature })).toBe("signature-refused");
-    await expect(signFloorAnnouncement(b, { standing: "degraded" as never, position: 1 })).rejects.toMatchObject({ refusal: "standing-malformed" });
-    await expect(signFloorAnnouncement(b, { standing: "resting", position: -1 })).rejects.toMatchObject({ refusal: "position-malformed" });
+    await expect(signFloorAnnouncement(b, { standing: "degraded" as never, prior: null })).rejects.toMatchObject({ refusal: "standing-malformed" });
+    await expect(signFloorAnnouncement(b, { standing: "resting", prior: "ab" })).rejects.toMatchObject({ refusal: "prior-malformed" });
     expect(FLOOR_ANNOUNCEMENT_REFUSALS).toEqual([
-      "pin-unread", "pin-other-tier", "pin-other-route", "announcement-malformed", "version-unknown", "nexus-malformed",
-      "pin-malformed", "standing-malformed", "position-malformed", "nexus-other", "pin-other", "signature-refused", "position-stale",
+      "pin-unread", "pin-other-tier", "pin-other-route", "announcement-malformed", "kind-other", "nexus-malformed",
+      "pin-malformed", "standing-malformed", "prior-malformed", "nexus-other", "pin-other", "signature-refused",
+      "announcement-held", "prior-unlinked",
     ]);
   });
 
   test("a dropped bundle signs no announcement", async () => {
     const b = floorBundle();
     b.drop();
-    await expect(signFloorAnnouncement(b, { standing: "resting", position: 1 })).rejects.toBeInstanceOf(GateBundleRefused);
+    await expect(signFloorAnnouncement(b, { standing: "resting", prior: null })).rejects.toBeInstanceOf(GateBundleRefused);
   });
 });
