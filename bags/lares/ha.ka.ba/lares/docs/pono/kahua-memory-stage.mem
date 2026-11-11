@@ -47,7 +47,7 @@ The Two Organs law binds the quine and the Memory Sensorium as cortex and hippoc
 
 |! organ |! reach |! what it holds |! who writes it |! what it never does |
 | ''sensorium'' | local-only, never networked | raw captures and verbatim drawers, the PLACE record | the capture drain at its own hearth | enters a synced doc; promotes into the kahua or the canon |
-| ''daemon'' | device-local, private | each device's controller and working wiki: drafts, marks, proposals, the AI's own notes | the operator's hand and the AI seat on that device, freely | syncs as a doc; it answers the fleet only through synced actions on the intents plane |
+| ''daemon'' | device-local, private | each device's controller and working wiki in two tiers: the working top (drafts, marks, proposals, the AI's own notes) and the face's local canon `bags/daemon-<F>` | the operator's hand and the AI seat on that device, freely and unsigned | syncs as a doc; it answers the fleet only through synced actions on the intents plane |
 | ''kahua'' | the face's fleet, every device wearing the face | distilled items alone, each with its provenance | a signed lift, and nothing else | holds a drawer; writes into the canon |
 | ''lares canon'' | the mesh, at `≥meme` | authored law, rulings, the standing graph | the authored drain alone (`@working`, then a cap-gated `MOVE`) | takes a write from the kahua |
 
@@ -61,9 +61,10 @@ The Two Organs law binds the quine and the Memory Sensorium as cortex and hippoc
 
 !! The recipe ~ the house lean, CONSUME
 
-''The ruled stack'' (operator, 2026-11-01: //"We enact this design now, no 'A now, b later' for the live Lararium standing."//). The `kahua` wiki and recipe stack two layers over the floor, the topmost shadowing those beneath it:
+''The ruled stack'' (operator, 2026-11-01: //"We enact this design now, no 'A now, b later' for the live Lararium standing."//). The `kahua` wiki and recipe stack three layers over the floor, the topmost shadowing those beneath it:
 
 # ''the working top'' — draft and private, writable on this device alone; it projects as flat files to `<projections>/wikis/daemon-<F>`, as every wiki's working layer projects;
+# ''`bags/daemon-<F>`'' — the face's LOCAL canon on this device: minted at the face's first worn stand, named in the vessel's control home (`daemon-canon/<F>`), sealed under the face (`standFaceDaemonCanon`), projected at `<projections>/bags/daemon-<F>`;
 # ''`bags/kahua`'' — ONE fleet-synced, lift-only bag, projected at `<projections>/bags/kahua-<F>`; a project rides inside it as `$(project)$/**` tiddler paths, never as a bag of its own; no hand edits it in place;
 # ''the lares canon'' — read-only, the floor.
 
@@ -73,7 +74,14 @@ The Two Organs law binds the quine and the Memory Sensorium as cortex and hippoc
 
 ''A new identity's seed adopts the old folders by pet-name, and lifts kahua by hand'' (operator, 2026-11-10). After a re-founding the old face's folders still rest under the old `<F>`. The seed adopts them onto the ONE face that carries the pet-name the old face's label names (`<projections>/face-labels/<F>.json`), as an import maps a bundle face, and refuses by name where none or two do. It lays the working and canon folders back through `INGEST`'s three-way gate; it never pours a stage file into the stage. It previews each kahua item (face, title, body digest; `differs` where a standing head says otherwise) and lifts them under the new face's grant, keyed by title and body digest and signed by the new face, only on a typed count at a terminal or `--lift-kahua <N>` naming that count. A bare `--yes` lifts none, and an unconfirmed item stands pending (`lares shore`, `lares shore lift-kahua --count <N>`). Once nothing waits, the old folders move to `<projections>/ashes/<F>/` (`packages/lares-cli/src/seed-mirrors.ts`).
 
-One wiki then reads the device's drafts, the fleet's lifted items and the canon in one cascade, and a session opens by reading one index rather than three.
+One wiki then reads the device's drafts, its local canon, the fleet's lifted items and the lares canon in one cascade, and a session opens by reading one index rather than four.
+
+''Two tiers of daemon memory, two crossings.'' Memory climbs by two acts that weigh differently, because only one of them leaves the device:
+
+* ''working -> `daemon-<F>`: the AI promotes, unsigned.'' The AI seat settles what it learns into the face's local canon by the residency `MOVE`, beside the operator's hand, with no signed act: the canon stays on this device and under this face, so a promotion there steers only the spirit that wrote it. The store door's hand-only table names no `MOVE` (`STORE_DOOR_HAND_ONLY_ACTS`, `store-door-verbs.ts`), so a seat session carries it.
+* ''`daemon-<F>` -> `kahua-<F>`: the human lifts, signed.'' A lift crosses to every device the face wears, so it rides the human's eyes and the face's signed grant alone: the operator reads each item, and the lift act signs under the operator's grant behind the ward (#/the-lift, #/the-hearth-lane). A seat session refuses every lift row (`beyond-profile`).
+
+''OWED.'' The lift names its daemon sources by title and revision (`sources`, `kahua-door.ts`) and takes its body from the hand (`--file`, `--proposal`), but no check binds that body to a row of `bags/daemon-<F>`: a lift may still carry text the local canon never held. The bind (source rows read from the face's local canon, their digests matched before the act signs) waits for a lane.
 
 ''The shadow shows its diff.'' A daemon draft that carries the same title as a kahua item shadows it on this device alone. That "local draft over shared" state MUST render visibly, with a diff against the kahua item it covers, so no device reads its own draft as the fleet's record. A re-lift of the draft supersedes the kahua item (#/the-lift) and the shadow clears; discarding the draft clears it too.
 
@@ -179,8 +187,8 @@ Each line names what the code does today and where its law lives; the verifier h
 * ''Proposals.'' One `kahua-lift` batch per pass on `@intents-<tag>`, digests and taint alone, pinned to the proposing atom; a page proposes its drafts through the daemon verb `kahua-propose`, and `lares kahua lift --proposal <id> --file <body>` binds the body by digest. A proposal whose issuer the face never admitted refuses.
 * ''The hand.'' `lares kahua` carries mint, lift, withdraw and carry on a person's hand alone, re-reading sealed custody per call; a seat session (the AI, MCP) proposes and reads, and a pin, lift or withdraw from it refuses `beyond-profile`.
 * ''The face fence.'' The stage rides its own face's facet on the read-only `library` layer; `bridgeBooks` never bridges `bags/kahua`, so a face switch on one vessel never hands one face's stage to another's sessions.
-* ''Homes follow placement.'' The daemon recipe still mounts `bags/daemon` as its wiki canon slot; face-bound `bags/daemon-<F>`, the vessel control document and the sealed secret document have no wired recipe or writer set. The daemon document carries no disk mirror, and founding refuses secret writes until sealed-rest custody reaches the vessel paths.
-* ''Disk.'' A layer projects through its own mirror grant. The active daemon grant mirrors the lift-only stage under `<projections>/bags/kahua-<F>` and the public crossroads bag. The daemon working layer stays unmirrored while swarm controls and ward audits rest there; regranting it follows their move into the control home.
+* ''Homes follow placement.'' The daemon recipe mounts the worn face's `bags/daemon-<F>` as its canon slot (`daemonFaceCanonBag`, `open-daemon-vm.ts`, the browser's `open-browser-daemon-vm.ts`); at the floor, or before the face proves, the daemon wiki reads no canon, and the daemon document keeps no canon role. The vessel control document and the sealed secret document stay outside every recipe; the daemon document carries no disk mirror.
+* ''Disk.'' A layer projects through its own mirror grant (`daemonDiskMirrors`): the worn face's working top under `<projections>/wikis/daemon-<F>`, its local canon under `<projections>/bags/daemon-<F>`, its lift-only stage under `<projections>/bags/kahua-<F>`, and the public crossroads bag; a vessel wearing no face projects no private layer. The control document and the daemon document hold no mirror.
 
 ''Pattern integrity: the address derives from a public id.'' Anyone who knows the group computes the stage doc's id, so the facet and the share gate stay its only fence; the fold makes any foreign write read as nothing.
 
@@ -258,7 +266,7 @@ A user's wiki runs actions live with full caps. On the daemon and kahua wikis, `
 
 !!! `L19`, the memory o-takiage ~ its shape
 
-Memory stage rows REST in the face-bound daemon wiki's working layer (`wikis/daemon/working`, on disk at `<projections>/wikis/daemon-<F>`), under `lar:///ha.ka.ba/kahua/memory/<class>/<slug>` (the slug holds the filename stem, hyphenated; fields `name`, `description`, `type`, `source-file`, `source-sha256`). Dangling links report and stay uninvented. The flat files stay the source of truth until each file's receipt stands; a stale memory burns instead of moving; the pointer file shrinks last. Verification runs in the working top (a `meme_get` round trip against `source-sha256`, a receipt tiddler per file, the filter view, a cold-session sample), and `L21` then lifts the verified batches under the ward: lifted canon lands in `bags/kahua` by a signed lift alone (`kahua-door.ts`: the lokahi cap plus the operator's root grant). The store measured 286 files (87 feedback, 192 project, 5 reference, 2 user) at 2.2 MB with 464 `[[...]]` links on 2026-11-04. Narration follows the memory into the wiki (`L18`), and the flat store keeps its seat for the harness's own loader until then.
+Memory stage rows REST in the face-bound daemon wiki's working layer (`wikis/daemon/working`, on disk at `<projections>/wikis/daemon-<F>`), under `lar:///ha.ka.ba/kahua/memory/<class>/<slug>` (the slug holds the filename stem, hyphenated; fields `name`, `description`, `type`, `source-file`, `source-sha256`). Dangling links report and stay uninvented. The flat files stay the source of truth until each file's receipt stands; a stale memory burns instead of moving; the pointer file shrinks last. Verification runs in the working top (a `meme_get` round trip against `source-sha256`, a receipt tiddler per file, the filter view, a cold-session sample), the AI promotes what holds into `bags/daemon-<F>` (#/the-recipe, two tiers), and `L21` then lifts the verified batches under the ward: lifted canon lands in `bags/kahua` by a signed lift alone (`kahua-door.ts`: the lokahi cap plus the operator's root grant). The store measured 286 files (87 feedback, 192 project, 5 reference, 2 user) at 2.2 MB with 464 `[[...]]` links on 2026-11-04. Narration follows the memory into the wiki (`L18`), and the flat store keeps its seat for the harness's own loader until then.
 
 <<~/ahu>>
 
@@ -339,6 +347,6 @@ Two research spirits read in parallel: Naʻau-Scout through neuroscience, Manaʻ
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Y4AjfaA6o0d9KfkqnSGCiWIeYUyhWDUBXcL-_GYR6fQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5-ujhZfzH5_toxHpn_mh2lsKZWxUFf1vj-fTSy5dxQI`>>
 
 <<^ code=`&#x0004;` to=`?`>>
