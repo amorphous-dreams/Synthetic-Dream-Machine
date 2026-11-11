@@ -248,6 +248,8 @@ export class CompositeStore implements LarTiddlerStore {
     const retired = this._refuseRetired(store, [record], "put");
     if (retired) await retired;
     const writeOptions = this._writeOptionsFor(options, store, "put");
+    // A write into any layer but a working one begins inside the call, as it always has.
+    if (!this._forksOverrides(store)) return store.put(record, origin, writeOptions);
     const [based] = await this._withOverrideBases(store, [record]);
     return store.put(based!, origin, writeOptions);
   }
@@ -259,6 +261,12 @@ export class CompositeStore implements LarTiddlerStore {
    * whole keeps it so); a record that names its own base keeps it (a re-base names the new one). A working-only title,
    * a tombstone, and a write into any other layer pass untouched.
    */
+  /** Whether a write into `store` lands on a wiki's working layer, where a write of a title canon holds forks an override. */
+  private _forksOverrides(store: LarTiddlerStore): boolean {
+    const layer = this.layers.find((l) => l.store === store);
+    return layer !== undefined && isWorkingLayerBag(layer.bagId);
+  }
+
   private async _withOverrideBases(store: LarTiddlerStore, puts: readonly LarTiddlerRecord[]): Promise<readonly LarTiddlerRecord[]> {
     const at = this.layers.findIndex((l) => l.store === store);
     if (at < 0 || !isWorkingLayerBag(this.layers[at]!.bagId)) return puts;
@@ -298,7 +306,7 @@ export class CompositeStore implements LarTiddlerStore {
     const { store, retired } = this._familyChecks(puts, tombstones, options);
     if (retired) await retired;
     const writeOptions = this._writeOptionsFor(options, store, "writeFamily");
-    const based = await this._withOverrideBases(store, puts);
+    const based = this._forksOverrides(store) ? await this._withOverrideBases(store, puts) : puts;
     if (typeof store.writeFamily === "function") return store.writeFamily(based, tombstones, origin, writeOptions);
     for (const record of based) await store.put(record, origin, writeOptions);
     for (const title of tombstones) await store.tombstone(title, origin, writeOptions);
