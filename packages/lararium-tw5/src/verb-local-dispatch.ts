@@ -11,7 +11,7 @@
 
 import {
   DAEMON_BAG_ID,
-  isSystemCanonBag,
+  isHouseCanonBag,
   type CapabilityAccess,
   type CapabilityVerifyResult,
   type CapabilityVerifier,
@@ -60,12 +60,15 @@ export function deriveRoutedCap(invocation: Verb): { access: CapabilityAccess; b
   // the stewards' consent on the realm doc decides. The ask therefore answers to the asking vessel's own ground.
   if (invocation.action === "realm-bag" && a["join"] === true) return { access: "admin", bagUrl: DAEMON_BAG_ID };
   const bagUrl = pick("bagUrl") ?? pick("toBag") ?? pick("dest") ?? pick("bag") ?? pick("targetBag") ?? DAEMON_BAG_ID;
+  // A CREATE over house canon writes nothing (the realm holds its one document; another face reads the floor), so it answers
+  // to the asking vessel's own ground, never to the canon bag's cap: the seed reads clean on every face.
+  if (invocation.action === "CREATE" && isHouseCanonBag(bagUrl)) return { access: "admin", bagUrl: DAEMON_BAG_ID };
   return { access: "admin", bagUrl };
 }
 
 /**
  * The bags a routed verb names INSIDE its envelope (`wiki-act` carries its real destination and source in `args.args`):
- * the ones `deriveRoutedCap` never reads. The gate asks the Kahu predicate about each system canon one.
+ * the ones `deriveRoutedCap` never reads. The gate asks the Kahu predicate about each house canon one.
  */
 export function routedInnerBags(invocation: Verb): string[] {
   const outer = invocation.args as Record<string, unknown>;
@@ -158,7 +161,7 @@ export async function gateRoutedVerb(invocation: Verb, verifier: CapabilityVerif
   }
   if (verifier.kahuReach) {
     // System canon takes the Kahu hand wherever the act writes or deletes; a COPY's read-only source asks none.
-    for (const bag of routedInnerBags(invocation)) if (isSystemCanonBag(bag) && !readOnly.has(bag)) await verifier.kahuReach(bag, invocation.action, presenter);
+    for (const bag of routedInnerBags(invocation)) if (isHouseCanonBag(bag) && !readOnly.has(bag)) await verifier.kahuReach(bag, invocation.action, presenter);
   }
 }
 

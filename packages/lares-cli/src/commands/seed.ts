@@ -43,13 +43,16 @@ export interface SeedHolding {
   readonly holding: string;               // "lares"
   readonly source: string;                // "<bags dir>/lares"
   readonly toBag: string;                 // "lar:///ha.ka.ba/bags/lares"
-  readonly gesture: "ingest" | "skip";    // the road taken
+  readonly gesture: "ingest" | "skip" | "floor";    // the road taken (`floor`: house canon this face reads, never writes)
   readonly exitCode: number;              // the gesture's verdict for this holding
   readonly reason?: string;               // why a holding took no road
   readonly fresher?: FresherCanonReading; // working copies that shadow a canon record this seed moved past their base
 }
 
 export { discoverHoldings, canonIsDisk } from "../holdings.js";
+
+/** The seed's word for a house canon holding on a face outside the Kahu cabal (action-handler `HOUSE_CANON_READS_FLOOR`). */
+export const HOUSE_CANON_FLOOR_REASON = "house canon, written by the Kahu steward (h0); this face reads the floor";
 import { canonIsDisk, discoverHoldings } from "../holdings.js";
 
 /**
@@ -65,15 +68,16 @@ export async function seedHolding(
     return { ...h, gesture: "skip", exitCode: 0, reason: "its canon source stands off disk (not under the canon source the daemon reads, or a private plane): the seed feeds disk canon alone" };
   }
   if (args.flags["apply"]) {
-    const createCode = await foldCreateOutput(args, () => cmdAct({
+    const created = await foldCreateOutput(args, () => cmdAct({
       command: "act",
       positional: ["CREATE"],
-      // THE VESSEL TIER: a disk-sourced holding is plaintext canon from git, so its row rests on the floor half and every
-      // face this vessel wears converges on its one document (cap-tier.mem, vessel).
-      options: { ...args.options, bag: h.toBag, tier: "vessel" },
+      options: { ...args.options, bag: h.toBag },
       flags: { ...args.flags, yes: true },
     }));
-    if (createCode !== 0) return { ...h, gesture: "ingest", exitCode: createCode };
+    if (created.code !== 0) return { ...h, gesture: "ingest", exitCode: created.code };
+    // HOUSE CANON ON A FACE OUTSIDE THE KAHU CABAL: the CREATE answered that this face reads the floor, so the INGEST
+    // writes nothing (the steward alone writes canon live) and the seed names the state, clean.
+    if (created.readsFloor) return { ...h, gesture: "floor", exitCode: 0, reason: HOUSE_CANON_FLOOR_REASON };
   }
   // New content SURFACES for the operator to grade: without `--yes` the ingest gate asks; `--yes` (the operator's
   // relayed approval) passes through.
@@ -132,16 +136,26 @@ async function withIngestTicks(holding: string, run: () => Promise<number>): Pro
   try { return await run(); } finally { clearInterval(timer); }
 }
 
-async function foldCreateOutput(args: ParsedArgs, run: () => Promise<number>): Promise<number> {
-  if (args.flags["verbose"]) return run();
+/** The CREATE's verdict, and whether its answer named the floor (a house canon bag on a face outside the Kahu cabal). */
+export interface CreateFold { readonly code: number; readonly readsFloor: boolean }
+
+/** Whether the CREATE's printed answer names the floor (`readsFloor true`, the action handler's house canon answer). */
+export function createReadsFloor(lines: readonly string[]): boolean {
+  return lines.some((line) => /^\s*readsFloor\s+true\s*$/.test(line));
+}
+
+async function foldCreateOutput(args: ParsedArgs, run: () => Promise<number>): Promise<CreateFold> {
   const lines: string[] = [];
   const log = console.log;
   console.log = (...values: unknown[]) => { lines.push(values.map(String).join(" ")); };
   try {
-    const result = await run();
-    const detail = lines.join(" · ").replace(/\s+/g, " ").trim();
-    if (detail) log(`  CREATE ${detail}`);
-    return result;
+    const code = await run();
+    if (args.flags["verbose"]) for (const line of lines) log(line);
+    else {
+      const detail = lines.join(" · ").replace(/\s+/g, " ").trim();
+      if (detail) log(`  CREATE ${detail}`);
+    }
+    return { code, readsFloor: code === 0 && createReadsFloor(lines) };
   } finally { console.log = log; }
 }
 
@@ -170,6 +184,7 @@ export async function cmdSeed(args: ParsedArgs, mirrorDoors: MirrorDoors = LIVE_
     const row = await seedHolding(args, h);
     ledger.push(row);
     if (row.gesture === "skip") { console.log(`- ${h.holding}: no road · ${row.reason}`); continue; }
+    if (row.gesture === "floor") { console.log(`· ${h.holding}: ${row.reason}`); continue; }
     const retry = row.exitCode === 0 ? "retry safe" : "retry safe (diff-gated)";
     console.log(`${row.exitCode === 0 ? "✓" : "✗"} ${h.holding}: ${carriers} files · ${elapsedText(performance.now() - holdingStarted)} · ${retry}`);
   }
@@ -182,7 +197,8 @@ export async function cmdSeed(args: ParsedArgs, mirrorDoors: MirrorDoors = LIVE_
     console.error(`  ⚠ canon is fresher than the working copy above it for ${fresherCount} title(s): ${fresher.slice(0, SEED_FRESHER_NAMES).join(", ")}${fresherCount > SEED_FRESHER_NAMES ? `, … ${fresherCount - SEED_FRESHER_NAMES} more` : ""}`);
     console.error("    each copy still shadows canon; the daemon's fresher-canon read lists them all, and a person removes a copy with the ordinary verbs to take the fresher canon");
   }
-  const fed = ledger.filter((h) => h.gesture !== "skip");
+  const fed = ledger.filter((h) => h.gesture === "ingest");
+  const floorRead = ledger.filter((h) => h.gesture === "floor").length;
   if (args.flags["apply"] && fed.length > 0) {
     try {
       const did = await vesselDid();
@@ -190,7 +206,8 @@ export async function cmdSeed(args: ParsedArgs, mirrorDoors: MirrorDoors = LIVE_
       if (listed.ok) for (const line of pendingRemovalLines(listed.pending, fed.map((h) => h.toBag))) console.log(line);
     } catch { /* the shore unread: the seed's own verdict stands; `lares shore` reads it */ }
   }
-  console.log(`seed: ${fed.length - failed.length}/${fed.length} holdings${ledger.length > fed.length ? ` · ${ledger.length - fed.length} off disk` : ""} · ${elapsedText(performance.now() - started)}`);
+  const offDisk = ledger.filter((h) => h.gesture === "skip").length;
+  console.log(`seed: ${fed.length - failed.length}/${fed.length} holdings${floorRead > 0 ? ` · ${floorRead} read the floor` : ""}${offDisk > 0 ? ` · ${offDisk} off disk` : ""} · ${elapsedText(performance.now() - started)}`);
   // THE MIRRORS LEG, after canon stands: every mirror under the projections root back into its one layer.
   const mirrors = await runMirrorLeg(args, mirrorDoors);
   return failed.length === 0 && mirrors === 0 ? 0 : 1;

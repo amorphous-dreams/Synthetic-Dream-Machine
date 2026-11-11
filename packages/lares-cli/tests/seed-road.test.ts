@@ -12,6 +12,8 @@
  *   S4  a holding whose canon source stands off disk (a private plane, or a dir outside the canon source) takes no road
  *   S5  a preview sends the INGEST preview alone, no CREATE
  *   S6  (story 6) the seed warns where canon stands fresher than a working copy above it, names capped; nothing writes
+ *   S8  house canon on a face outside the Kahu cabal: the CREATE answers `readsFloor`, the seed sends no INGEST, names the
+ *       state ("house canon, written by the Kahu steward (h0); this face reads the floor") and reads clean
  */
 
 import { describe, expect, test, vi, beforeEach, afterEach } from "vitest";
@@ -23,9 +25,12 @@ import type { ParsedArgs } from "../src/parse-args.js";
 type Call = { readonly command: string; readonly positional: string[]; readonly options: Record<string, string>; readonly flags: Record<string, unknown> };
 const calls: Call[] = [];
 let fresherFor: Record<string, unknown> = {};
+let floorFor = new Set<string>();
 vi.mock("../src/commands/act.js", () => ({
   cmdAct: vi.fn(async (args: ParsedArgs) => {
     calls.push({ command: args.command, positional: [...args.positional], options: { ...args.options }, flags: { ...args.flags } });
+    // The action handler's answer for house canon on a face outside the Kahu cabal, as `act` prints it.
+    if (floorFor.has(String(args.options["bag"]))) { console.log("CREATE ✓ applied locally (req 00000000)"); console.log(`  ${"readsFloor".padEnd(12)} true`); }
     return 0;
   }),
 }));
@@ -38,12 +43,12 @@ vi.mock("../src/commands/ingest.js", () => ({
   }),
 }));
 
-import { seedHolding, canonIsDisk, cmdSeed } from "../src/commands/seed.js";
+import { seedHolding, canonIsDisk, cmdSeed, createReadsFloor, HOUSE_CANON_FLOOR_REASON } from "../src/commands/seed.js";
 
 let root: string;
 const prior = { root: process.env["LAR_ROOT"], bags: process.env["LAR_BAGS"] };
 beforeEach(() => {
-  calls.length = 0; fresherFor = {};
+  calls.length = 0; fresherFor = {}; floorFor = new Set();
   root = mkdtempSync(join(tmpdir(), "lares-seed-road-"));
   for (const b of ["crossroads", "lares", "sdm", "kahua-0f1e2d3c-4b5a-4968-8776-655443322110"]) { mkdirSync(join(root, "bags", b), { recursive: true }); writeFileSync(join(root, "bags", b, "one.mem"), "x"); }
   process.env["LAR_ROOT"] = root;
@@ -68,8 +73,7 @@ describe("the seed feeds every disk-sourced holding through CREATE then INGEST",
       const row = await seedHolding(applied, h);
       expect(row).toMatchObject({ holding: slug, gesture: "ingest", exitCode: 0 });
       expect(calls.map((c) => `${c.command}:${c.positional[0] ?? ""}`)).toEqual(["act:CREATE", "ingest:"]);
-      // The vessel tier rides the seed's CREATE: checkout canon rests on the floor half every face reads (cap-tier.mem, vessel).
-      expect(calls[0]!.options).toMatchObject({ bag: h.toBag, tier: "vessel" });
+      expect(calls[0]!.options).toMatchObject({ bag: h.toBag });
       expect(calls[1]!.options).toMatchObject({ source: h.source, to: h.toBag });
     }
   });
@@ -123,6 +127,27 @@ describe("the seed feeds every disk-sourced holding through CREATE then INGEST",
 });
 
 import { pendingRemovalLines } from "../src/commands/seed.js";
+describe("house canon on a face outside the Kahu cabal reads the floor", () => {
+  test("S8 — a CREATE that answers readsFloor sends no INGEST; the seed names the state and reads clean", async () => {
+    floorFor = new Set(["lar:///ha.ka.ba/bags/sdm", "lar:///ha.ka.ba/bags/lares"]);
+    for (const slug of ["sdm", "lares"]) {
+      calls.length = 0;
+      const row = await seedHolding(applied, holdingOf(slug));
+      expect(row).toMatchObject({ holding: slug, gesture: "floor", exitCode: 0, reason: HOUSE_CANON_FLOOR_REASON });
+      expect(calls.map((c) => `${c.command}:${c.positional[0] ?? ""}`)).toEqual(["act:CREATE"]);
+    }
+    expect(HOUSE_CANON_FLOOR_REASON).toBe("house canon, written by the Kahu steward (h0); this face reads the floor");
+    // CONTROL: the board (crossroads) answers no floor and takes CREATE then INGEST.
+    calls.length = 0;
+    expect(await seedHolding(applied, holdingOf("crossroads"))).toMatchObject({ gesture: "ingest", exitCode: 0 });
+    expect(calls.map((c) => c.command)).toEqual(["act", "ingest"]);
+  });
+  test("S8b — the floor reading reads the printed answer alone", () => {
+    expect(createReadsFloor(["CREATE ✓ applied locally (req 1)", "  readsFloor   true"])).toBe(true);
+    expect(createReadsFloor(["CREATE ✓ applied locally (req 1)", "  alreadyStood true"])).toBe(false);
+  });
+});
+
 describe("the seed answers a shore flood once", () => {
   test("S7 — the summary counts pending removals per fed bag and prints one batch answer each", () => {
     const rows = [
