@@ -42,6 +42,7 @@ def test_every_entry_stands_one_level_below_the_root(monkeypatch):
         "larHarvestStagingDir": j("/house", "hearth", "staging", "harvest"),
         "larLibraryRoot": j("/house", "library"),
         "larProjectionsHome": j("/house", "projections"),
+        "larWorkspacesHome": j("/house", "workspaces"),
         "larConfigHome": j("/house", "config"),
         "larCacheHome": j("/house", "cache"),
         "larRuntimeHome": j("/house", "run"),

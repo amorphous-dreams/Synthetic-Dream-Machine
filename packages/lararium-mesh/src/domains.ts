@@ -420,7 +420,6 @@ export const FACE_WITHDRAWAL_GENESIS_DOMAIN = mint("face-withdrawal-genesis");
 export const FACE_WITHDRAWN_KEY_DOMAIN = mint("face-withdrawn-key");
 /** The reference a local session carries for its face's proof subject: a digest name. */
 export const FACE_PROOF_SUBJECT_DOMAIN = mint("face-proof-subject");
-export const FACE_WORKING_ADDRESS_DOMAIN = mint("face-working-address");
 /** A face's catalog document: the address its secret derives for the face's own half of the split catalog (U1). */
 export const FACE_CATALOG_ADDRESS_DOMAIN = mint("face-catalog-address");
 /** A SESSION's certificate: the vessel's face-scoped key signs one session key and its hand's profile. */
@@ -529,6 +528,12 @@ export const OFFERING_KAPAE_DOMAIN = mint("offering-kapae");
 /** The crossroads-plane ANNOUNCE of a realm bag — that it exists and who keeps it, NEVER the doc. A different
  *  domain from the registration: a public announce must never stand in for a steward's signature. */
 export const REALM_BAG_ANNOUNCE_DOMAIN = mint("realm-bag-announce");
+
+/**
+ * A PRIVATE CABAL OF ONE's realm id (cabal-realm#/the-workbench): derived from the owning face and the wiki's NFC slug, so
+ * every device of one face that stands the wiki offline names the same realm and the islands converge on one workbench.
+ */
+export const PRIVATE_CABAL_REALM_DOMAIN = mint("private-cabal-realm");
 /** The persona-root seed WRAPPED at rest under a passkey PRF output (browser, opt-in). A NAME of its own,
  *  apart from every seal above: the PRF output is a cloud-synced-class secret and the wrap must never
  *  derive into an admit seal. */

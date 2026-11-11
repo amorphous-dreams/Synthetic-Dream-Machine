@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 const harness = vi.hoisted(() => ({
-  resolverArgs: undefined as undefined | { rebindWorking?: (slug: string, oldUrl: string, newUrl: string, into: unknown) => void },
+  resolverArgs: undefined as unknown,
   bindings: vi.fn(),
   slotDoc: vi.fn(),
   boot: vi.fn(),
@@ -60,16 +60,11 @@ beforeEach(() => {
 });
 
 describe("daemon working-layer attachment is a boot condition", () => {
-  test("a faceless daemon with no floor anchor names the absent route without waiting", async () => {
-    const behavior = makeOperatorDaemonBehavior({ daemonAuth: { placeVerifyingKey: "a".repeat(64), registerBags: [] } } as never);
-    await expect(behavior.onWritable!(context() as never)).resolves.toMatchObject({ state: "no-route", reason: expect.stringMatching(/no face/i) });
-    expect(harness.slotDoc).not.toHaveBeenCalled();
-  });
-
-  // sealed-store#/U1: at the floor the working slot stands on the floor's own document, keyed by the floor's anchor, so a
-  // faceless floor's verb outcomes land there (a herm's verb answers) and never meet NO_WORKING_LAYER.
-  test("a faceless floor holding its anchor attaches the working floor as the default writable, on the marker and on ea", async () => {
-    const floorAuth = { daemonAuth: { placeVerifyingKey: "a".repeat(64), registerBags: [], workingFloorAnchor: { kind: "place", aid: "E".repeat(44) } } } as never;
+  // sealed-store#/U1: at the floor the daemon's working slot stands on the floor's own device document (the control document
+  // names it under the floor's key), so a faceless floor's verb outcomes land there (a herm's verb answers) and never meet
+  // NO_WORKING_LAYER. No floor anchor gates it: the device slot reads none.
+  test("a faceless floor attaches its daemon working slot as the default writable, on the marker and on ea", async () => {
+    const floorAuth = { daemonAuth: { placeVerifyingKey: "a".repeat(64), registerBags: [] } } as never;
     harness.slotDoc.mockResolvedValue({ url: "automerge:daemon-working-floor", reach: "vessel-only" });
     const log = vi.spyOn(console, "log").mockImplementation(() => {});
     for (const hook of ["onWritable", "verifierFactory"] as const) {
@@ -142,23 +137,4 @@ describe("daemon working-layer attachment is a boot condition", () => {
     log.mockRestore();
   });
 
-  // sealed-store#/U1: "the lift burns it" — a floor attachment answers no write once the seat lifts the working slot onto the face.
-  test("U1 — after the lift rebinds the working slot, the lit face's document serves writes and the floor's attachment answers none", async () => {
-    const floorAuth = { daemonAuth: { placeVerifyingKey: "a".repeat(64), registerBags: [], workingFloorAnchor: { kind: "place", aid: "E".repeat(44) } } } as never;
-    harness.slotDoc.mockResolvedValue({ url: "automerge:daemon-working-floor", reach: "vessel-only" });
-    const log = vi.spyOn(console, "log").mockImplementation(() => {});
-    const ctx = context({ daemonHandle: true }) as unknown as ReturnType<typeof context>;
-    const mk = (url: string) => { const doc = { tiddlers: {} as Record<string, unknown> }; return { url, doc: () => doc, heads: () => [], on: () => () => {}, change: (fn: (d: typeof doc) => void) => fn(doc), state: doc }; };
-    const floorHandle = mk("automerge:daemon-working-floor"), faceHandle = mk("automerge:daemon-working-face");
-    (ctx.repo as unknown as { find: () => Promise<typeof floorHandle> }).find = async () => floorHandle;
-    await makeOperatorDaemonBehavior(floorAuth).onWritable!(ctx as never);
-    await ctx.composite.put({ tiddler: { title: "lar:///ha.ka.ba/before-lift", text: "floor" } }, { kind: "test" });
-    expect(floorHandle.state.tiddlers["lar:///ha.ka.ba/before-lift"]).toBeDefined();
-    harness.resolverArgs!.rebindWorking!("daemon", "automerge:daemon-working-floor", "automerge:daemon-working-face", faceHandle);
-    expect(ctx.composite.defaultWritableBagId()).toBe(working);
-    await ctx.composite.put({ tiddler: { title: "lar:///ha.ka.ba/after-lift", text: "face" } }, { kind: "test" });
-    expect(faceHandle.state.tiddlers["lar:///ha.ka.ba/after-lift"]).toBeDefined();
-    expect(floorHandle.state.tiddlers["lar:///ha.ka.ba/after-lift"], "the floor's attachment answers no write after the lift").toBeUndefined();
-    log.mockRestore();
-  });
 });

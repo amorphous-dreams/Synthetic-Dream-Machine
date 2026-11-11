@@ -26,7 +26,7 @@ import { storedLarRecord } from "../src/stored-record.js";
 import { ownEntry } from "../src/stored-value.js";
 import { bagUri, CATALOG_DOC_URI, CROSSROADS_DOC_URI, ORACLE_DOC_URI, catalogCorpusEntryUri, recipeUri } from "../src/lar-uris.js";
 import { personaScopedBagIds } from "../src/persona-scope.js";
-import { wikiSlotUri, wikiWorkingFloorKey } from "../src/wiki-recipe.js";
+import { wikiSlotUri, wikiDraftDocKey } from "../src/wiki-recipe.js";
 import { catalogNamedBags } from "../src/register-bags.js";
 import {
   catalogRowHalf, faceCatalogDocUrl, openFaceCatalog, FaceCatalogRefusal, FloorWikiRefusal, facelessWikiWaits, makeCatalogView, liftFaceCatalogRows, faceViewBook,
@@ -98,7 +98,9 @@ describe("the catalog splits by face (U1)", () => {
     const plane = personaScopedBagIds("ab".repeat(32)).persona;
     const kahua = bagUri("kahua");
     const slot = wikiSlotUri("notes", "working");
-    const workingFloor = wikiWorkingFloorKey("notes", { kind: "place", aid: "Eplace" } as never);
+    // The draft floor's row, keyed by the vessel's DID: it rests on the floor half (a wiki's working layer rests in its realm
+    // workbench and takes no catalog row).
+    const workingFloor = wikiDraftDocKey("notes", `0x${"cd".repeat(32)}` as never);
     // The floor stood alone first: every row it wrote rests there.
     floor.change((doc) => {
       for (const t of [ORACLE_DOC_URI, CROSSROADS_DOC_URI, CATALOG_DOC_URI, priv, plane, kahua, slot, workingFloor]) doc.tiddlers[t] = row(t, `automerge:${t.length}`);
@@ -131,7 +133,7 @@ describe("the catalog splits by face (U1)", () => {
 
   test("NONSENSE — the classifier: floor rows name public, signed infrastructure alone; everything else routes D", () => {
     for (const t of [CATALOG_DOC_URI, ORACLE_DOC_URI, CROSSROADS_DOC_URI, catalogCorpusEntryUri("x"), bagUri("lares"), bagUri("lararium"),
-      bagUri("daemon"), recipeUri("catalog", "daemon"), `${bagUri("realm")}/realm-id`, wikiWorkingFloorKey("w", { kind: "place", aid: "E" } as never)]) {
+      bagUri("daemon"), recipeUri("catalog", "daemon"), `${bagUri("realm")}/realm-id`, wikiDraftDocKey("w", `0x${"cd".repeat(32)}` as never)]) {
       expect([t, catalogRowHalf(t)]).toEqual([t, "floor"]);
     }
     for (const t of [bagUri("anything"), bagUri("kahua"), recipeUri("catalog", "notes"), wikiSlotUri("daemon", "working"), "lar:///nowhere/at/all", ""]) {

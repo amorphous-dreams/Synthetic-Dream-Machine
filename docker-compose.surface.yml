@@ -15,6 +15,10 @@
 #                                                                  with no source in the workspace); a re-founding keeps it
 #                 ${LARES_HOUSE}/library      -> /lar/library      the acquired library
 #                 ${LARES_HOUSE}/config       -> /lar/config       config.json, meta.json, the repo registry (written)
+#               /lar/workspaces/<name>  each operator-configured WORKSPACE the host shim binds read-write (`up --workspace
+#                                    <name>=<dir>`, or LARES_WORKSPACES): a private wiki's workbench mirror rests in one its
+#                                    share row names (cabal-realm#/the-workbench); the shim refuses one inside the checkout,
+#                                    LARES_WORKSPACE or the hearth
 #               /lar/cache (container filesystem) and /lar/run (tmpfs) stay inside the container: scratch and
 #               levers, never the host's.
 #               Back the house root up separately. It never rides an image layer, a build arg or an env var.

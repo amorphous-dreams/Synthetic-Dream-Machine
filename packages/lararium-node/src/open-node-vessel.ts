@@ -32,9 +32,9 @@ import { provenPlaneUrls, registerFacePlanesForRelay } from "./face-plane-regist
 import { enabledIntentRelayFaces } from "./intent-relay-ring.js";
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
-import { larBootstrapPath, larProjectionsHome, larConfigHome } from "./vessel-paths.js";
+import { larBootstrapPath, larProjectionsHome, larConfigHome, larWorkspacesHome, larHearthHome } from "./vessel-paths.js";
 import { createAfterRoll } from "./after-roll-chain.js";
-import { join }                         from "path";
+import { join, dirname, resolve as resolvePath } from "path";
 import type { Server }                  from "node:http";
 import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
 import type { DocHandle, AutomergeUrl, DocumentId, PeerId } from "@automerge/automerge-repo";
@@ -81,7 +81,7 @@ import type { HeldSaves, MountManifest } from "@lararium/mesh";
 import { nodePromoteStores, nodePromoteCas } from "./promoted-store.js";
 import { casDirForStorage, casFetchReading, corpusCasDirFromEnv, makeNodeCasResolver, type IslandCasData, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
 import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard } from "@lararium/mesh";
-import { workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, wikiIslandPeersOf, peerArrivals, admitGatePinDigest, ownEntry, plainField, CATALOG_ROW_TIER_FIELD, SHARE_CONFIG_FILE, parseShareFile, shareRowOf, shareRowFields, reconcileShareRows, shareRowTitle, type ShareRow } from "@lararium/mesh";
+import { workbenchDocIds, workbenchDecider, workbenchSeatHolds, edgeLedgerDocUrl, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, wikiIslandPeersOf, peerArrivals, admitGatePinDigest, ownEntry, plainField, CATALOG_ROW_TIER_FIELD, SHARE_CONFIG_FILE, parseShareFile, shareRowOf, shareRowFields, reconcileShareRows, shareRowTitle, type ShareRow } from "@lararium/mesh";
 import { makeBagTierReader } from "./vessel-bag-tier.js";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
 import type { CapabilityRecord, CustodyWriter, DyadReader, LarVessel, ReceiptIssuer } from "@lararium/mesh";
@@ -110,7 +110,7 @@ import { seatHouseCanonFromCheckout, standKahuCanon, kahuHandAtWire, kahuProtect
 import { dialRelationOf, seatDialPeer, unseatDialPeer, type DialRelation, type DialSeatMaps } from "./dial-relation.js";
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
 import { daemonGenesisDir, daemonBagsDir, loadLaresConfig, tempConsentedSlugs } from "./lares-config.js";
-import { projectionRoots } from "./bag-paths.js";
+import { projectionRoots, workspaceRootsOf, PERSONAL_PROJECTION_DIR } from "./bag-paths.js";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
 import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
 import { DeterministicFederationGate, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
@@ -1132,7 +1132,12 @@ async function prepareNodeBootOn(
   // stays pending, in that same turn. A torn count withholds every document from every wire peer until a whole recount
   // (controller re-ruling 2026-10-31); so does a bootstrap that tore after a whole read (lane `ralias`), and so does a holder
   // that has not stood yet (T22): until `systemCanon` stands it, the readings read incomplete.
-  const protectedReadings = protectedDocsOver(() => kahuProtected, vesselPrivate);
+  // THE WORKBENCHES (cabal-realm#/the-workbench): every wiki's working layer rests in a realm workbench the vessel ledger names.
+  // The ledger stands once the vessel key reads (below); until then no workbench classes, and none exists to serve.
+  let workbenchLedger: DocHandle<LarDoc> | null = null;
+  let workbenchIds: ReadonlyMap<string, string> = new Map();
+  const readWorkbenchIds = (): void => { workbenchIds = workbenchDocIds(workbenchLedger?.doc()); };
+  const protectedReadings = protectedDocsOver(() => kahuProtected, vesselPrivate, () => workbenchIds);
   let boundWaiter: Promise<void> | null = null;
   const protectedDocs = protectedDocGuard({
     ...protectedReadings,
@@ -1151,6 +1156,13 @@ async function prepareNodeBootOn(
       // A vessel-private document crosses only where a relation the peer PROVED already opens it: the scoped view of the face
       // its same-operator session proved, the sibling gate, a face-join grant on the face's own planes (lane `ralias`).
       // Ownership reads first: the document crosses only to a peer proven as its owning face (the train's Sol read).
+      // A workbench crosses only to a device of a face the vessel seated in that workbench's realm (its ledger's seat notes,
+      // written beside each Keyhive seat the share door made; a face the row stopped naming loses its note at the revoke).
+      "realm-workbench": workbenchDecider({
+        realmOfDoc: (documentId) => workbenchIds.get(documentId),
+        faceOfPeer: (peerId) => faceViews.faceOf(peerId),
+        holds: (realmId, face) => workbenchSeatHolds(workbenchLedger?.doc(), realmId, face),
+      }),
       "vessel-private": (peerId, documentId) => vesselPrivateRelationOpens({
         owner: vesselPrivate.ownerOf(documentId), wornFace: custodyGroup, peerFace: faceViews.faceOf(peerId),
         sibling: Boolean(siblings?.provenKeyOf(peerId as PeerId)), siblingGate,
@@ -1475,6 +1487,11 @@ async function prepareNodeBootOn(
   // ── Operator identity (node-held) ──────────────────────────────────────────
   // Load-only: a boot mints no key. A vessel with no key file refuses here by name and points at the founding.
   const vesselIdentity = await loadVesselIdentity();
+  // The vessel ledger the daemon island notes each wiki's realm in (`edgeLedgerDocUrl` under the place key the island reads as
+  // `placeVerifyingKey`): its workbench ids class at the guard, and every change re-asks the cached share verdicts.
+  workbenchLedger = await materializeSharedLarDoc(repo, edgeLedgerDocUrl(vesselIdentity.verifyingKey), "ledger:workbench");
+  readWorkbenchIds();
+  workbenchLedger.on("change", () => { const before = workbenchIds; readWorkbenchIds(); if (before.size !== workbenchIds.size || [...workbenchIds.keys()].some((k) => !before.has(k))) reverdictLater(); });
   const placeSigner    = await vesselPlaceSignerDoor();
 
   // ── The #59 antigen ring — STOOD now the island this vessel stands in is resolved ─────────────
@@ -3372,7 +3389,6 @@ async function prepareNodeBootOn(
     // The control document stands before the daemon island opens over it, and the map names it from here on.
     readDeviceDaemonDocs((await readControlDoc()).doc());
     sealedRest.store.mapMoved();
-    const workingFloorAnchor = workingFloorAnchorOf({ place: placeAid });
     // A sibling's planes need their own face proof before registration; joinedFaceAuth hands each sibling the vessel ground alone.
     const siblingKel = sovereign ? makePersonaKelRingHolder({ repo, nexusPubkey }) : null;
     if (siblingKel) kelHolders.push(siblingKel);
@@ -3440,7 +3456,6 @@ async function prepareNodeBootOn(
     const daemonAuthNow = (joinedFaces: readonly JoinedFaceAuth[]) => ({
       ...(joinedFaces.length ? { joinedFaces } : {}),
       placeVerifyingKey: vesselIdentity.verifyingKey,
-      ...(workingFloorAnchor ? { workingFloorAnchor } : {}),
       archiveOpens:         opens,
       ...(activeAtom && atomSeed ? { atom: { seed: Buffer.from(atomSeed).toString("hex"), key: activeAtom.key } } : {}),
       ...(veilArchiveBytes ? { veilArchiveBytes } : {}),
@@ -4284,6 +4299,17 @@ async function prepareNodeBootOn(
     // projections root (`<root>/projections`), outside the hearth a re-founding clears.
     const projectionRoot = larProjectionsHome();
     const projection = projectionRoots({ projectionRoot, canonBags: daemonBagsDir() });
+    // THE WORKSPACES the share rows name (`$LAR_ROOT/config/share.tid`): each bound dir under `<root>/workspaces`; one inside the
+    // checkout or the hearth, or for a checkout-sourced slug, refuses by name and its workbench projects under projections.
+    const workspaces = (() => {
+      const path = join(larConfigHome(), SHARE_CONFIG_FILE);
+      let rows: ShareRow[] = [];
+      try { rows = existsSync(path) ? parseShareFile(readFileSync(path, "utf8")) : []; } catch (err) { console.warn(`[workspaces] the share file reads as none: ${String(err)}`); }
+      const read = workspaceRootsOf({ rows, workspacesHome: larWorkspacesHome(), checkoutRoot: dirname(resolvePath(daemonBagsDir())), hearth: larHearthHome(), sourcedSlugs: projection.sourcedSlugs() });
+      for (const line of read.refused) console.warn(`[workspaces] refused: ${line}`);
+      for (const line of read.unbound) console.warn(`[workspaces] ${line}`);
+      return read;
+    })();
     const diskMirrorGrant: DiskMirrorGrant = [
       // `bags/` PROJECTS ON THE KAHU'S VESSEL ALONE: a vessel the cabal did not admit holds neither live document, so it
       // grants neither mirror and writes nothing under `bags/lares` or `bags/lararium`.
@@ -4305,7 +4331,11 @@ async function prepareNodeBootOn(
       // the bag `wikis/{slug}/working` and the leaf fill from the slug at mount —
       // wikiSlot). The authority (the wikis base) stays static here; designation
       // rides the recipe's mirrorBags.
-      { bagId: "working",        mirrorRoot: join(projectionRoot, "wikis"),          scope: "working",  wikiSlot: "working", sourcedRoots: projection.sourcedRoots("wikis") },
+      // A wiki's working slot rests in its realm workbench (cabal-realm#/the-workbench); a share row may root its mirror in an
+      // operator workspace (`/lar/workspaces/<name>`), never inside the checkout or the hearth (`workspaceRootsOf`).
+      { bagId: "working",        mirrorRoot: join(projectionRoot, "wikis"),          scope: "working",  wikiSlot: "working", sourcedRoots: projection.sourcedRoots("wikis"), workspaceRoots: workspaces.roots },
+      // A wiki's personal slot carries the worn face's private margin: it projects per face, `personal/<F>/<slug>`.
+      { bagId: "personal",       mirrorRoot: join(projectionRoot, PERSONAL_PROJECTION_DIR), scope: "personal", wikiSlot: "personal", faceFolder: () => wornDeviceRelation },
       // Recovery remains an explicit, recipe-designated grant with its own directory.
       { bagId: "draft",          mirrorRoot: join(projectionRoot, "wikis"),          scope: "draft", wikiSlot: "draft", mirrorClass: "recovery", sourcedRoots: projection.sourcedRoots("wikis") },
       // The USER temp layer projects to wikis/{slug}/temp, always under the projections root (never beside a canon

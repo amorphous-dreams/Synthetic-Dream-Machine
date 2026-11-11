@@ -49,7 +49,7 @@ async function released(c: SeatedCharter, f: ReturnType<typeof floor>, prior: st
 }
 
 /** A plain control home that counts its changes, standing in for a DocHandle. */
-function memoryHome(doc: LarDoc = emptyLarDoc()): FloorPinHome & { changes: number; doc(): LarDoc } {
+function memoryHome(doc: LarDoc = emptyLarDoc()): { changes: number; doc(): LarDoc; change(fn: (draft: LarDoc) => void): void } {
   return { changes: 0, doc: () => doc, change(fn) { this.changes += 1; fn(doc); } };
 }
 

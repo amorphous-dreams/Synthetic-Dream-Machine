@@ -41,7 +41,7 @@ function porch(aid: string, releases: readonly FloorRelease[], cas: Map<string, 
     if (url.pathname === `/floor/${aid}`) return new Response(JSON.stringify(floorAnswerOf(aid, releases.map((r) => ({ keyCid: r.cid, record: r })))), { status: 200 });
     const m = /^\/cas\/([0-9a-f]{64})$/.exec(url.pathname);
     const bytes = m ? cas.get(m[1]!) : undefined;
-    return bytes ? new Response(bytes, { status: 200 }) : new Response("route unavailable", { status: 404 });
+    return bytes ? new Response(new Uint8Array(bytes), { status: 200 }) : new Response("route unavailable", { status: 404 });
   }) as typeof fetch;
 }
 const homeOf = (): FloorPinHome & { changes: number } => {

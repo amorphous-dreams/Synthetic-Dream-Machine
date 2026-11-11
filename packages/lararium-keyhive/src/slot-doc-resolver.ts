@@ -12,13 +12,11 @@
  *
  *   draft    — face binding when seated; else the FLOOR doc keyed by the vessel DID in the catalog
  *              registry (`wikiDraftDocKey`: `wikis/{slug}/drafts/{did}`, `face-reach: vessel-only`).
- *   working  — seated, the face's DERIVED address (`resolveFaceWorkingSlot` under its address secret, by wiki slug and
- *              kind), materialized as the pinned blank genesis and registered through the face door: two vessels of
- *              one face find one document with no record between them. At the floor, a document keyed by the
- *              floor's own anchor in the catalog (`wikiWorkingFloorKey`, `face-reach: vessel-only`): a node's place
- *              (its W29 place KEL prefix), a browser leaf's private Nexus of one; the anon-veil lift carries it under
- *              the face's address at the join. A vessel that holds neither refuses `no-place`. No read mints a
- *              secret: a seated face whose secret stands nowhere refuses `no-address-secret` (it re-founds).
+ *   working  — EVERY WIKI BUT THE DAEMON'S rests its working layer in the wiki's REALM WORKBENCH (cabal-realm#/the-workbench):
+ *              the face's first stand founds a private cabal of one (`workbenchRealm`, mint) and the vessel ledger notes it;
+ *              the slot then reads the realm's fixed address (`realmWorkbenchDocUrl`). A share seats more faces in the same
+ *              Document and never moves the address. A face stands it, a floor stands none: a vessel with no face refuses
+ *              `no-face`. The daemon wiki keeps its face-private device slot (`deviceScoped`), the AI-memory ruling.
  *   personal — the PersonaGroup × fingerprint binding when seated, the vessel's own when not
  *
  * Lives in @lararium/keyhive because the mint sequence needs keyhive (`registerBag` + `delegate`).
@@ -28,9 +26,9 @@
 
 import {
   CONTROL_HOME_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX,
-  computeRecipeFingerprint, emptyLarDoc, mintVesselDocumentId, storedLarRecord, mutableLarRecord, resolveSlotDoc, resolveFaceWorkingSlot, tiddlerText,
-  wikiBagUri, wikiDraftDocKey, wikiWorkingFloorKey, requireLarDid, didFromVerifyingKey,
-  type CompositeStore, type WorkingFloorAnchor, type LarDoc, type SlotReach, type WikiSlotKind,
+  computeRecipeFingerprint, emptyLarDoc, realmWorkbenchDocUrl, mintVesselDocumentId, storedLarRecord, mutableLarRecord, resolveSlotDoc, tiddlerText,
+  wikiBagUri, wikiDraftDocKey, requireLarDid, didFromVerifyingKey,
+  type CompositeStore, type LarDoc, type SlotReach, type WikiSlotKind,
 } from "@lararium/mesh";
 import * as A from "@automerge/automerge";
 import type { CatalogAccessor } from "@lararium/tw5";
@@ -69,24 +67,16 @@ export interface SlotDocResolverArgs {
   readonly seatSettled?: () => Promise<void>;
   readonly faceDoor?: FaceBagDoor;
   /**
-   * THE SEATED FACE'S ADDRESS SECRET, served from main-thread custody (a fresh copy per call; the resolver zero-fills
-   * what it reads). Null or absent with a face seated refuses the working slot `no-address-secret`: no read mints one.
+   * THE WORKBENCH PORT (cabal-realm#/the-workbench): the realm a wiki's working layer rests in under THIS face, read off the
+   * vessel's own ledger where the face's hive holds a seat in the realm's Document; with `mint`, a wiki that holds no realm yet
+   * founds its private cabal of one under the face's hive. Null where no realm answers (no mint, or no seat for this face).
    */
-  readonly faceAddressSecret?: () => Promise<Uint8Array | null>;
-  /** The floor's own anchor, read from the vessel (`WorkingFloorAnchor`): the floor's working documents rest keyed by it. */
-  readonly floorAnchor?: () => WorkingFloorAnchor | null | Promise<WorkingFloorAnchor | null>;
-  /** Find or materialize the face's working document under its derived address, and rest it. */
-  readonly faceWorkingDoc?: (url: string, label: string) => Promise<FaceWorkingHandle>;
-  readonly rebindWorking?: (slug: string, oldUrl: string, newUrl: string, into: FaceWorkingHandle) => void;
+  readonly workbenchRealm?: (slug: string, mint: boolean) => Promise<string | null>;
+  /** Find or materialize the workbench document at its fixed address, and rest it. */
+  readonly workbenchDoc?: (url: string, slug: string) => Promise<{ readonly documentId: string }>;
 }
 
-/** The face's working document as the resolver and the lift touch it. */
-export interface FaceWorkingHandle {
-  readonly documentId: string;
-  change(fn: (doc: LarDoc) => void): void;
-}
-
-/** A seated face's working slot cannot derive its address. */
+/** A wiki's working slot stands no workbench here: no face (`no-face`), or no realm answers (`no-workbench`). */
 export class WorkingSlotRefusal extends Error {
   override readonly name = "WorkingSlotRefusal";
   constructor(readonly reason: string, detail: string) { super(`working slot: ${reason}: ${detail}`); }
@@ -175,72 +165,30 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
     return handle.url;
   };
 
-  /** The face's derived working address for `slug`; refuses where the seated face's secret stands nowhere. */
-  const faceWorkingUrl = async (slug: string): Promise<string> => {
-    const secret = args.faceAddressSecret;
-    if (!secret) throw new WorkingSlotRefusal("no-address-secret", "this vessel serves no address secret for the seated face");
-    const r = await resolveFaceWorkingSlot({ wikiId: slug, kind: "working", secret });
-    if (!r.ok) {
-      throw new WorkingSlotRefusal(r.refusal.reason, r.refusal.reason === "no-address-secret"
-        ? "the seated face holds no address secret here: a face founded before the secret minted at its founding re-founds"
-        : r.refusal.message);
+  /** The workbench documents this resolver materialized, so one process materializes each once. */
+  const stood = new Set<string>();
+  /**
+   * THE ONE PATH: a wiki's working layer rests in its realm workbench. A face stands it; a vessel with no face stands none. With
+   * `mint`, a wiki that holds no realm founds its private cabal of one, and the workbench document materializes at its fixed
+   * address and rests before the slot answers.
+   */
+  const workingDoc = async (slug: string, mint: boolean): Promise<SlotDoc | null> => {
+    if (!args.personaGroupId || !args.workbenchRealm) {
+      if (!mint) return null;
+      throw new WorkingSlotRefusal("no-face", `"${slug}" rests its working layer in a realm workbench, and a realm seats a face: this vessel wears none`);
     }
-    return r.url;
-  };
-  /** The face's documents this resolver registered, so one process registers each once. */
-  const registered = new Set<string>();
-  // The face's documents resolved before its seat landed: the seat's lift registers each through the face door.
-  const awaitingSeat = new Set<string>();
-  const faceWorking = async (slug: string, mint: boolean, seatStands = true): Promise<SlotDoc> => {
-    const url = await faceWorkingUrl(slug);
-    if (mint) {
-      if (!args.faceWorkingDoc) throw new WorkingSlotRefusal("no-working-door", "this resolver cannot materialize a derived document");
-      const handle = await args.faceWorkingDoc(url, slug);
+    const realmId = await args.workbenchRealm(slug, mint);
+    if (!realmId) {
+      if (!mint) return null;
+      throw new WorkingSlotRefusal("no-workbench", `no realm answers for "${slug}" under this face (its hive holds no seat in the realm's Document)`);
+    }
+    const url = realmWorkbenchDocUrl(realmId, slug);
+    if (mint && args.workbenchDoc && !stood.has(url)) {
+      const handle = await args.workbenchDoc(url, slug);
       await args.repo.flush([handle.documentId]);
-      if (!seatStands) awaitingSeat.add(url);
-      else if (args.faceDoor && !registered.has(url)) { await args.faceDoor.mint(url, "admin"); registered.add(url); awaitingSeat.delete(url); }
+      stood.add(url);
     }
     return { url, reach: "face" };
-  };
-  /** A face stands lit here (its address secret served) though its seat may not have landed. */
-  const faceLit = async (): Promise<boolean> => {
-    if (!args.personaGroupId || !args.faceAddressSecret) return false;
-    const secret = await args.faceAddressSecret();
-    if (!secret) return false;
-    secret.fill(0);
-    return true;
-  };
-  /** The working FLOOR doc: keyed by the floor's own anchor in the catalog registry; minted on absent. */
-  const workingFloor = async (slug: string, mint: boolean): Promise<string | null> => {
-    const catalog = args.catalog;
-    if (!catalog) throw new Error(`slot-doc: the working floor for "${slug}" needs the catalog registry, and this vessel holds no catalog grant`);
-    const anchor = await args.floorAnchor?.();
-    if (!anchor) throw new WorkingSlotRefusal("no-place", `the working floor for "${slug}" rests by the floor's own anchor, and this vessel holds neither a place KEL nor a private Nexus key`);
-    const key = wikiWorkingFloorKey(slug, anchor);
-    const existing = await catalog.urlOf(key);
-    if (existing || !mint) return existing;
-    const handle = args.repo.create<LarDoc>(emptyLarDoc());
-    await handle.whenReady?.();
-    await args.repo.flush([handle.documentId]);
-    const catalogHandle = await catalog.handle();
-    catalogHandle.change((doc) => {
-      doc.tiddlers[key] = storedLarRecord(key, {
-        text: handle.url,
-        kind: "oracle",
-        "face-reach": "vessel-only",
-        "minted-by": args.mintedByHex(),
-      }, "slot-doc:working-floor");
-    });
-    return handle.url;
-  };
-  const workingDoc = async (slug: string, mint: boolean): Promise<SlotDoc | null> => {
-    if (await seated()) return faceWorking(slug, mint);
-    // THE SEAT-TO-LIFT GAP (sealed-store#/owed): a lit face whose seat has not landed writes its working slot straight into
-    // its own derived document, which the vessel's map seals under that face, never into a floor document the lift would
-    // later carry. The face door registers it at the seat (`liftFloor`). Only a faceless floor rests a working floor.
-    if (await faceLit()) return faceWorking(slug, mint, false);
-    const url = await workingFloor(slug, mint);
-    return url ? { url, reach: "vessel-only" } : null;
   };
 
   const draftDoc = async (slug: string, fingerprint: string, recipeTrace: RecipeTrace): Promise<SlotDoc> =>
@@ -336,31 +284,13 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
     draft: async (slug) => (await slotDoc(slug, "draft"))!,
     liftFloor: async () => {
       if (!args.faceDoor || !args.personaGroupId || !(await seated())) return { moved: [], finished: [], skipped: [], skippedDocs: [] };   // no seat, nothing to lift into
-      // The face's working documents a lit face wrote before its seat register now, once each.
-      for (const url of [...awaitingSeat]) {
-        if (!registered.has(url)) { await args.faceDoor.mint(url, "admin"); registered.add(url); }
-        awaitingSeat.delete(url);
-      }
       const repo = args.repo as unknown as Partial<LiftRepo>;
       if (typeof repo.find !== "function" || typeof repo.delete !== "function") throw new Error("slot-doc: the lift needs a repo that finds and deletes documents");
-      // THE SECRET STANDS FIRST: the face's address secret must stand before the lift's first step, or the lift refuses by
-      // name and changes nothing (no draft moves ahead of a working floor that cannot derive its address).
-      const secret = (await args.faceAddressSecret?.()) ?? null;
-      if (!secret) throw new WorkingSlotRefusal("no-address-secret", "the seated face holds no address secret here, so the lift changes nothing");
-      secret.fill(0);
       return liftVesselOnlyIntoFace({
         repo: args.repo as unknown as LiftRepo, daemonStore: args.daemonStore, catalog: args.catalog, faceDoor: args.faceDoor,
         mintedByHex: args.mintedByHex(), vesselDid: String(await args.vesselDid()),
         ...(args.liftReadBoundMs !== undefined ? { readBoundMs: args.liftReadBoundMs } : {}),
         ...(args.floorMinter ? { floor: args.floorMinter() } : {}),
-        // THE WORKING FLOOR LIFTS TO THE FACE'S DERIVED ADDRESS: by the floor's own anchor, into the document the face's
-        // secret names for each wiki.
-        working: {
-          anchor: (await args.floorAnchor?.()) ?? null,
-          urlOf: faceWorkingUrl,
-          ...(args.faceWorkingDoc ? { open: args.faceWorkingDoc } : {}),
-          ...(args.rebindWorking ? { rebind: args.rebindWorking } : {}),
-        },
         traceOf: async (slug) => {
           const url = await args.catalog?.urlOf(wikiBagUri(slug)).catch(() => null);
           if (!url) return null;
@@ -372,15 +302,15 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
   };
 }
 
-/** One LIT face as the lit set's slot resolvers read it: its group, its own address secret, and its own hive and door. */
+/** One LIT face as the lit set's slot resolvers read it: its group, its own hive and door, and its own workbench port. */
 export interface LitFaceSlotSpec {
   readonly group: string;
   /** The face's own atom key: its slots' `minted-by` label and DID, as a lit worn face labels its own (never the place key). */
   readonly atomKey: string;
-  /** The face's own address secret, a fresh copy per read (the resolver zero-fills it). */
-  readonly secret: () => Promise<Uint8Array | null>;
   readonly keyhive?: CapabilityProvider;
   readonly faceDoor?: FaceBagDoor;
+  /** The workbench port under THIS face: a realm answers only where the face's hive holds a seat in the realm's Document. */
+  readonly workbenchRealm?: (slug: string, mint: boolean) => Promise<string | null>;
 }
 
 /** The lit set's slot resolvers: one per lit face, each under that face's own group, secret, hive and door. */
@@ -392,12 +322,12 @@ export interface LitFaceSlotDocs {
 }
 
 /**
- * THE LIT SET'S SLOTS (sealed-store#/the-lit-set): every LIT face resolves its own instance slots under its OWN secret, its own
- * group and its own door, never the worn face's. A sibling's working slot derives from the sibling's address secret (a user
- * wiki), and its daemon wiki's device slots stand under the sibling's group in the control document (`daemon-slot/<kind>/
- * <group>`), so each face's memory lands in its own documents. A lit face is seated by being lit: its hive holds its group.
+ * THE LIT SET'S SLOTS (sealed-store#/the-lit-set): every LIT face resolves its own instance slots under its OWN group, hive and
+ * door, never the worn face's. A sibling's working slot reads the realm workbench its own hive holds a seat in, and its daemon
+ * wiki's device slots stand under the sibling's group in the control document (`daemon-slot/<kind>/<group>`), so each face's
+ * memory lands in its own documents. A lit face is seated by being lit: its hive holds its group.
  */
-export function litFaceSlotDocs(base: Omit<SlotDocResolverArgs, "personaGroupId" | "faceAddressSecret" | "faceDoor" | "keyhive" | "faceSeated" | "seatSettled" | "rebindWorking" | "mintedByHex" | "vesselDid">): LitFaceSlotDocs {
+export function litFaceSlotDocs(base: Omit<SlotDocResolverArgs, "personaGroupId" | "faceDoor" | "keyhive" | "faceSeated" | "seatSettled" | "workbenchRealm" | "mintedByHex" | "vesselDid">): LitFaceSlotDocs {
   const byGroup = new Map<string, SlotDocResolver>();
   return {
     of(spec) {
@@ -408,10 +338,10 @@ export function litFaceSlotDocs(base: Omit<SlotDocResolverArgs, "personaGroupId"
         personaGroupId: spec.group,
         mintedByHex: () => spec.atomKey,
         vesselDid: () => didFromVerifyingKey(spec.atomKey),
-        faceAddressSecret: spec.secret,
         faceSeated: async () => true,
         ...(spec.keyhive ? { keyhive: spec.keyhive } : {}),
         ...(spec.faceDoor ? { faceDoor: spec.faceDoor } : {}),
+        ...(spec.workbenchRealm ? { workbenchRealm: spec.workbenchRealm } : {}),
       });
       byGroup.set(spec.group, resolver);
       return resolver;

@@ -14,6 +14,7 @@ both tables and asserting them equal. Move one and move the other in the same br
     <root>/sensoriums/<name>                 memory · mesh · memetic-wikitext (outside the hearth)
     <root>/library                           the acquired library (outside the hearth)
     <root>/projections                       deliberate plaintext renders
+    <root>/workspaces/<name>                 operator-configured directories a private shared wiki's mirror rests in
     <root>/config · <root>/cache · <root>/run
 
 A re-founding clears `<root>/hearth` alone. Dependency-free (stdlib only), so every script imports it.
@@ -99,6 +100,11 @@ def projections_home() -> str:
     return os.path.join(house_root(), "projections")
 
 
+def workspaces_home() -> str:
+    """`<root>/workspaces` — the operator's workspace binds. Mirrors TS `larWorkspacesHome()`."""
+    return os.path.join(house_root(), "workspaces")
+
+
 def config_home() -> str:
     """`<root>/config` — config.json, meta.json, the repo registry. Mirrors TS `larConfigHome()`."""
     return os.path.join(house_root(), "config")
@@ -130,6 +136,7 @@ def table() -> dict:
         "larHarvestStagingDir": harvest_staging_dir(),
         "larLibraryRoot": library_root(),
         "larProjectionsHome": projections_home(),
+        "larWorkspacesHome": workspaces_home(),
         "larConfigHome": config_home(),
         "larCacheHome": cache_home(),
         "larRuntimeHome": run_home(),

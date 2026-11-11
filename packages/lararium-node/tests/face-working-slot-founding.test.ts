@@ -14,7 +14,7 @@ import { cpSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { resolveFaceWorkingSlot } from "@lararium/mesh";
+import { faceCatalogDocUrl } from "@lararium/mesh";
 import * as init from "../src/commands/init.js";
 import { seatedCustody, unseatCustody } from "../src/custody-seat.js";
 import { landFaceAddressSecret, readFaceAddressSecret } from "../src/fleet-join-custody.js";
@@ -50,20 +50,22 @@ afterEach(async () => {
   for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true });
 });
 
+/** The address the face's secret derives: its own catalog (a wiki's working layer rests in its realm workbench and derives from
+ *  no face secret, cabal-realm#/the-workbench). */
 const slotOf = async (group: string): Promise<string> => {
-  const r = await resolveFaceWorkingSlot({ wikiId: "daemon", kind: "working", secret: () => readFaceAddressSecret(group) });
-  if (!r.ok) throw r.refusal;
-  return r.url;
+  const secret = await readFaceAddressSecret(group);
+  if (!secret) throw new Error(`no address secret stands for ${group.slice(0, 12)}`);
+  try { return faceCatalogDocUrl(secret); } finally { secret.fill(0); }
 };
 
 describe("the face's address secret mints at its founding", () => {
-  test("RED: a fresh founding's face resolves its working slot with no fleet join offer; CONTROL: a joined vessel resolves the same slot", async () => {
+  test("RED: a fresh founding's face derives its secret-named address with no fleet join offer; CONTROL: a joined vessel derives the same", async () => {
     await standAt("founder", true);
     const group = (await loadIdentityAnchors(0))!.personaGroupId;
     const secret = await readFaceAddressSecret(group);
     expect(secret, "the founding minted the face's address secret beside its atom").not.toBeNull();
     const founded = await slotOf(group);
-    expect(await slotOf(group), "a second read derives the same slot and mints nothing").toBe(founded);
+    expect(await slotOf(group), "a second read derives the same address and mints nothing").toBe(founded);
 
     // CONTROL: the vessel a fleet join lands on keeps the bytes its answer carried and derives the founder's slot.
     await standAt("joinee", false);

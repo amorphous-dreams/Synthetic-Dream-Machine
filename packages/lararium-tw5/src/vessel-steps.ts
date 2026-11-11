@@ -190,7 +190,9 @@ export async function buildWikiMountSpec(
     ...(inputs.libraryBags?.length ? { libraryBags: inputs.libraryBags } : {}),
     ...(inputs.pluginOfferings?.length ? { pluginOfferings: inputs.pluginOfferings } : {}),
     ...(inputs.pluginOfferingsFault !== undefined ? { pluginOfferingsFault: inputs.pluginOfferingsFault } : {}),
-    mirrorBags: [...PRIMARY_MIRROR_BAGS, wikiSlotUri(inputs.wikiSlug, "temp"), wikiSlotUri(inputs.wikiSlug, "draft"), wikiSlotUri(inputs.wikiSlug, "working"), wikiBagUri(inputs.wikiSlug)],
+    // The personal slot rides the designation too: it carries the face's private margin over the workbench, and its grant roots
+    // per face (`faceFolder`); plaintext survives for it as for every other layer that holds content.
+    mirrorBags: [...PRIMARY_MIRROR_BAGS, wikiSlotUri(inputs.wikiSlug, "temp"), wikiSlotUri(inputs.wikiSlug, "draft"), wikiSlotUri(inputs.wikiSlug, "working"), wikiSlotUri(inputs.wikiSlug, "personal"), wikiBagUri(inputs.wikiSlug)],
   };
 
   return { spec: { coreHash: inputs.coreHash, recipe, grants }, personalUrl, draftUrl, workingUrl };
