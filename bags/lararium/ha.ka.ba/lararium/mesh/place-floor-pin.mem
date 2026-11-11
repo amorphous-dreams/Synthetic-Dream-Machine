@@ -48,7 +48,7 @@ head and the pin's digest), beside the place's KEL rows (`place-kel-board`). Any
 `readPlaceFloorPin` refuses by name, never throws, and files only when all of these hold:
 
 # the claim reads whole and its pin reads whole (`readGateBundlePin`), at FLOOR tier, at the Nexus the reader asked, on the route asked;
-# the reader's KEL rows fold to the named head (`foldClaimHead`: a walk from the head digest to the inception that is the AID, every digest, sequence, reveal and cold signature verified), on no forked branch (`head-unreadable`, `kel-forked`);
+# the reader's KEL rows fold to the named head (`foldClaimHead`: a walk from the head digest back through each event's `prev` to the inception that is the AID, every digest, reveal and cold signature verified), on no forked branch (`head-unreadable`, `kel-forked`); the claim's `seq` cross-checks the head's place on that chain and a disagreement refuses `kel-seq-mismatch`;
 # the signer the KEL seats AT THAT HEAD signed this exact image (`verifyPlaceDutyAtHead`): an older signer after a rotation, and a forger, refuse `signature-refused`;
 # LAST, the standing: the signer at the head is a counted `carry` of the reader's OWN held root (`place-uncarried`), or the AID is the anchor the reader was handed apart from the card (`place-unanchored`).
 
@@ -61,8 +61,12 @@ crossing carried, whose first claim adopts the AID), and a deliberate person-to-
 
 !! KEL descent orders the pin
 
-The pair index (`admit-gate-pin`) takes a claim with the lineage the reader folded (`fileClaim`) and folds its claims as a SET:
-a descendant claim replaces; a known ancestor refuses `rollback` (and stays as ancestry evidence); two claims at one head, a
+The pair index (`admit-gate-pin`) takes a claim with the lineage the reader folded (`fileClaim`) and folds its claims as a SET.
+''Order rides the hash chain alone:'' one claim descends from another when its lineage (the digests the chain links, each event
+naming its prior event's digest) carries the other's head before its own, never because its `seq` counts higher; `seq` stays a
+cross-check that must agree with the chain, and a stand whose `seq` disagrees refuses `stand-malformed`. The place KEL's fold
+(`foldPlaceKel`) walks the same way, from the inception through `prev`, and its acceptance of a newer head (`acceptPlaceHead`)
+reads descent first, `seq-mismatch` where the counter disagrees. A descendant claim replaces; a known ancestor refuses `rollback` (and stays as ancestry evidence); two claims at one head, a
 sibling rotation and another AID at one key surface as a fork and the index serves the settled ancestor, or nothing where none
 is held; so no arrival order selects. A key rides its claims once a claim has filed: an unclaimed pin matches what is served or files
 nothing. A rotated place serves under its new signer's name only, so the superseded key answers nothing. An offline reader holds its
@@ -109,6 +113,6 @@ counted `uncarry` that descends from it leaves the place with no arm to present.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/node/herm-carriage`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/node/carry-bundle`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;A3a0cn523OOmGU7ZUw9xcLu-PTFcmFQNfue-8wTKr7c`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bqzzNlejTULxBmElinCplLYldvIdW5JOzTIYkijpoio`>>
 
 <<^ code=`&#x0004;` to=`?`>>

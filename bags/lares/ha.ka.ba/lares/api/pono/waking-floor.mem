@@ -134,6 +134,8 @@ learns nothing of its standing (#/the-breaks (c): an unsigned announcement targe
 ''It signs under the domain `waking-floor-announce`'', which mints into the domain registry only when the
 announcement gets built, at the re-found.
 
+''It names its kind and its prior, never a counter.'' The signed body reads `{ kind, nexus, floorPin, standing, prior }`: `kind` names the shape (`floor-announcement`), and `prior` names the digest of the announcement this floor made before for the Nexus (null at the first), so its order rides the causal link alone. A reader holding an announcement takes only the one that names it as `prior` (`announcement-held`, `prior-unlinked`).
+
 ''It signs with the floor bundle's signing key for that Nexus'': a key derived from the floor key, the Nexus and the announcement's own floor route, so a locked vessel signs it (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-proof#/the-gate-exchange`>>). NEVER the vessel key in public: the vessel key also signs carry seals, so one public signature under it would correlate the place with every Nexus it carries. Each Nexus therefore reads an announcement it can verify and no other Nexus can link.
 
 <<~/ahu>>
@@ -404,6 +406,6 @@ keeps ''the place'' — which is precisely the floor. The myth bore this load be
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;KOwQGTk1gyJD4zQNl5VetWNfqvP6Mn4fyccfMqAS27w`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;g-pOiLfA9BpkA-3VpzZI9NhECjfOkY06thLFo07blBg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

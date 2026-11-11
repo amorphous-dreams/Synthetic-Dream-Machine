@@ -83,6 +83,9 @@ async function writeBrowserIdentityContinuity(idbName: string, value: BrowserIde
 
 // The keystore holds device and persona secrets; bootstrap holds the founding floor. The worn face is session state of one tab
 // and rests in no store.
+// PLATFORM BOUNDARY: IndexedDB's `open(name, version)` requires a whole-number schema argument and fires
+// `upgradeneeded` when it rises; that browser rule names this constant. It orders nothing of ours: no record, store or
+// reader compares it, and no house order rides it (a store that does not match re-founds by name).
 const IDB_VERSION       = 11;
 const ANCHORS_STORE        = "anchors";           // per-index veiled-Handle anchors (public doc-ids)
 const ANCHOR_ROSTER_STORE  = "anchor-roster";     // the EXPLICIT anchored-index record

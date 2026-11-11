@@ -69,7 +69,7 @@ vi.mock("@lararium/keyhive", async () => {
       seam.edge = { ...args, ...(args["signerSeed"] instanceof Uint8Array ? { signerSeed: Uint8Array.from(args["signerSeed"]) } : {}) };
       const deviceEdge = await mesh.buildDeviceDelegationRootHalf({ personaRootSeed: args["signerSeed"] as Uint8Array,
         deviceVerifyingKey: args["joineeVerifyingKey"] as string, hearthTrueName: args["hearthTrueName"] as string, boundEpoch: (args["boundEpoch"] as number | undefined) ?? 0 });
-      return { kind: "device-admit/v1", deviceEdge };
+      return { kind: "device-admit", deviceEdge };
     },
   };
 });

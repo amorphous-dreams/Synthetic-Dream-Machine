@@ -1010,8 +1010,8 @@ function readReleaseAddresses(path: string | undefined): ReleaseManifestAddresse
   try { m = JSON.parse(readFileSync(path, "utf8")) as Record<string, any>; }
   catch { throw new UsageError(`cannot read ${path} as a release manifest`); }
   const seed = m?.["genesis"]?.["seedCid"];
-  if (m?.["format"] !== "lararium-release-manifest/v1" || typeof seed !== "string" || !/^[0-9a-f]{64}$/.test(seed)) {
-    throw new UsageError(`${path} reads as no release manifest record (lararium-release-manifest/v1)`);
+  if (m?.["format"] !== "lararium-release-manifest" || typeof seed !== "string" || !/^[0-9a-f]{64}$/.test(seed)) {
+    throw new UsageError(`${path} reads as no release manifest record: it lacks the release manifest shape (format "lararium-release-manifest", a sha256 genesis.seedCid)`);
   }
   return { image: String(m["image"]?.["digest"] ?? ""), genesis: cidV1Sha256FromHex(seed), engine: String(m["engine"]?.["cid"] ?? ""), grammar: String(m["grammar"]?.["cid"] ?? "") };
 }

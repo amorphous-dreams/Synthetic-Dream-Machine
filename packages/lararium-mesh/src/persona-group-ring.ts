@@ -10,7 +10,7 @@
  * allow-all sat as dead code behind an unwired socket. Retiring it costs nothing and removes the shape that
  * would have gone live the day someone wired the socket naively.
  *
- * WHAT DECIDES INSTEAD. A grant record on this face's PersonaGroup plane (`face-join-grant/v1` —
+ * WHAT DECIDES INSTEAD. A grant record on this face's PersonaGroup plane (`face-join-grant` —
  * `@lararium/keyhive`'s `face-grant-record.ts`), naming the asking peer's OWN vessel key and verifying against
  * the published seal. That record is the joinee's own act of taking a seat, written where both vessels already
  * sync it. The ring never re-cuts a seal: the verify rides in as a function, so the ONE implementation the

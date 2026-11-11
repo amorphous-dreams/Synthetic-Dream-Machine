@@ -9,7 +9,7 @@ import { witnessPluginInfo, witnessStaticTiddlers } from "./source-witness.js";
 // populate `staticTiddlers` below is the one a pre-build witness calls directly.
 export { witnessStaticTiddlers };
 
-export const SOURCE_MANIFEST_FORMAT = "lararium-tw5-plugin-source-manifest/v2";
+export const SOURCE_MANIFEST_FORMAT = "lararium-tw5-plugin-source-manifest";
 
 export interface SourceManifestFile {
   path: string;
@@ -64,7 +64,7 @@ export function readPluginSourceManifest(pathname: string): { manifest: PluginSo
 
 export function verifyPluginSourceManifest(manifest: PluginSourceManifest, label = "plugin source manifest"): void {
   if (manifest.format !== SOURCE_MANIFEST_FORMAT) {
-    throw new Error(`[plugin-build] ${label} has unsupported format: ${String(manifest.format)}`);
+    throw new Error(`[plugin-build] ${label} names the format ${JSON.stringify(manifest.format)}: it lacks the source manifest shape (${JSON.stringify(SOURCE_MANIFEST_FORMAT)})`);
   }
   if (!manifest.pluginInfo?.path || !manifest.pluginInfo.title || !manifest.pluginInfo.sha256) {
     throw new Error(`[plugin-build] ${label} missing pluginInfo claim`);

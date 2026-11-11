@@ -115,7 +115,7 @@ export interface PronaosArtifactEntry {
 }
 
 export interface PronaosArtifactRecord {
-  readonly schema: "lararium-pronaos-artifact/v1";
+  readonly schema: "lararium-pronaos-artifact";
   readonly routes: readonly PronaosArtifactEntry[];
 }
 
@@ -150,7 +150,7 @@ export type PublicArtifactForbiddenAbility = (typeof PUBLIC_ARTIFACT_FORBIDDEN_A
  * and is intentionally not represented here.
  */
 export interface PublicArtifactPublication {
-  readonly schema: "lararium-pronaos-public-artifact/v1";
+  readonly schema: "lararium-pronaos-public-artifact";
   readonly operator: {
     readonly id: string;
     readonly authentication: "local-operator";
@@ -293,8 +293,8 @@ function validatePublicArtifactDigest(value: unknown, label: string): asserts va
 
 /** Validate the narrow local-operator publication record before a carrier uses it. */
 export function validatePublicArtifactPublication(publication: PublicArtifactPublication): void {
-  if (!publication || publication.schema !== "lararium-pronaos-public-artifact/v1") {
-    fail("public artifact publication has an unsupported schema");
+  if (!publication || publication.schema !== "lararium-pronaos-public-artifact") {
+    fail(`public artifact publication names the schema ${JSON.stringify(publication?.schema)}: it lacks the public artifact shape ("lararium-pronaos-public-artifact")`);
   }
   if (!publication.operator || typeof publication.operator.id !== "string" ||
       publication.operator.id.length === 0 || publication.operator.id.trim() !== publication.operator.id ||
@@ -371,8 +371,8 @@ export const PRONAOS_FIXED_WEB_ROUTES: Readonly<Record<string, { readonly file: 
 
 /** Validate the operator-held Web build receipt without touching a filesystem. */
 export function validatePronaosArtifactRecord(record: PronaosArtifactRecord): void {
-  if (!record || record.schema !== "lararium-pronaos-artifact/v1" || !Array.isArray(record.routes)) {
-    fail("artifact record has an unknown schema or routes are not finite");
+  if (!record || record.schema !== "lararium-pronaos-artifact" || !Array.isArray(record.routes)) {
+    fail(`artifact record names the schema ${JSON.stringify(record?.schema)}: it lacks the artifact shape ("lararium-pronaos-artifact", a finite routes list)`);
   }
   const paths = new Set<string>();
   let hasRoot = false;

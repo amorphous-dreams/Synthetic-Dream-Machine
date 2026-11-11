@@ -50,12 +50,12 @@ describe("carriageCap â€” the composable Herm carries a peer's FLOW-map (pull â†
     // SOURCE â€” a vessel serving one public dial over a real read-face.
     const srcDial = dialEntryToRecord(
       { bearing: "lar:///ha.ka.ba/bags/oracle", verifyingKeyHex: "a".repeat(64), endpoint: "ws://src/p", scale: "dreamnet" }, "src");
-    const srcHandle = repo.create<MeshPalaceDoc>({ schemaVersion: "0.1", tiddlers: { [srcDial.tiddler.title]: srcDial } });
+    const srcHandle = repo.create<MeshPalaceDoc>({ tiddlers: { [srcDial.tiddler.title]: srcDial } });
     const src = await standSource(srcHandle, "src-");
     const srcServer = src.server, srcPort = src.port, srcFace = src.face;
 
     // HERM cap-stack â€” a meshpalace-providing cap + the carriage cap wired over it by composeVessel.
-    const hermHandle = repo.create<MeshPalaceDoc>({ schemaVersion: "0.1", tiddlers: {} });
+    const hermHandle = repo.create<MeshPalaceDoc>({ tiddlers: {} });
     const vessel = await composeVessel([
       meshpalaceProviding(hermHandle),
       carriageCap({ peers: [{ endpoint: `http://127.0.0.1:${srcPort}`, gatePubKey: await ed25519VerifyingKeyFromSeed(SEED_A) }], pullFlow: src.pullFlow, pullIntervalMs: 1_000_000 }), // no auto-repeat in-test
@@ -81,11 +81,11 @@ describe("carriageCap â€” the composable Herm carries a peer's FLOW-map (pull â†
     // SOURCE â€” a vessel serving one public dial over a real read-face.
     const srcDial = dialEntryToRecord(
       { bearing: "lar:///ha.ka.ba/bags/oracle", verifyingKeyHex: "a".repeat(64), endpoint: "ws://src/p", scale: "dreamnet" }, "src");
-    const srcHandle = repo.create<MeshPalaceDoc>({ schemaVersion: "0.1", tiddlers: { [srcDial.tiddler.title]: srcDial } });
+    const srcHandle = repo.create<MeshPalaceDoc>({ tiddlers: { [srcDial.tiddler.title]: srcDial } });
     const src = await standSource(srcHandle, "src-amp-");
     const srcServer = src.server, srcPort = src.port, srcFace = src.face;
 
-    const hermHandle = repo.create<MeshPalaceDoc>({ schemaVersion: "0.1", tiddlers: {} });
+    const hermHandle = repo.create<MeshPalaceDoc>({ tiddlers: {} });
     const vessel = await composeVessel([
       meshpalaceProviding(hermHandle),
       carriageCap({ peers: [{ endpoint: `http://127.0.0.1:${srcPort}`, gatePubKey: await ed25519VerifyingKeyFromSeed(SEED_A) }], pullFlow: src.pullFlow, pullIntervalMs: 1_000_000 }), // no auto-repeat in-test
@@ -156,7 +156,7 @@ describe("carriageCap â€” the composable Herm carries a peer's FLOW-map (pull â†
           { bearing: `lar:///ha.ka.ba/bags/oracle/herm/d${i}`, verifyingKeyHex: K, endpoint: ep, scale: "dreamnet" }, "test");
         tiddlers[rec.tiddler.title] = rec;
       });
-      return { schemaVersion: "0.1", tiddlers };
+      return { tiddlers };
     };
     const boot = { endpoint: "http://boot:8080", gatePubKey: "b".repeat(64) };
     const endpoints = (ps: ReadonlyArray<{ endpoint: string }>) => ps.map((p) => p.endpoint);
@@ -188,7 +188,7 @@ describe("carriageCap â€” the composable Herm carries a peer's FLOW-map (pull â†
     mk(0, "http://far:8080", 5.0);   // farthest
     mk(1, "http://near:8080", 1.2);  // nearest
     mk(2, "http://mid:8080", 3.0);   // middle
-    const doc: MeshPalaceDoc = { schemaVersion: "0.1", tiddlers };
+    const doc: MeshPalaceDoc = { tiddlers };
     const endpoints = (ps: ReadonlyArray<{ endpoint: string }>) => ps.map((p) => p.endpoint);
     expect(endpoints(discoverPeers(doc, [], undefined, 1, self))).toEqual(["http://near:8080"]);             // nearest only
     expect(endpoints(discoverPeers(doc, [], undefined, 2, self))).toEqual(["http://near:8080", "http://mid:8080"]); // then mid
@@ -212,7 +212,7 @@ describe("carriageCap â€” the composable Herm carries a peer's FLOW-map (pull â†
 
   test("a peer down is no error â€” feed-or-fade (pullOnce returns 0, never throws)", async () => {
     const repo = new Repo({ sharePolicy: async () => true });
-    const hermHandle = repo.create<MeshPalaceDoc>({ schemaVersion: "0.1", tiddlers: {} });
+    const hermHandle = repo.create<MeshPalaceDoc>({ tiddlers: {} });
     const vessel = await composeVessel([
       meshpalaceProviding(hermHandle),
       carriageCap({ peers: [{ endpoint: "http://127.0.0.1:1/unreachable", gatePubKey: "ab".repeat(32) }], pullFlow: async () => { throw new Error("unreachable"); }, pullIntervalMs: 1_000_000 }),
@@ -226,12 +226,12 @@ describe("carriageCap â€” the composable Herm carries a peer's FLOW-map (pull â†
     const repo = new Repo({ sharePolicy: async () => true });
     const srcDial = dialEntryToRecord(
       { bearing: "lar:///ha.ka.ba/bags/oracle", verifyingKeyHex: "a".repeat(64), endpoint: "ws://src/p", scale: "dreamnet" }, "src");
-    const srcHandle = repo.create<MeshPalaceDoc>({ schemaVersion: "0.1", tiddlers: { [srcDial.tiddler.title]: srcDial } });
+    const srcHandle = repo.create<MeshPalaceDoc>({ tiddlers: { [srcDial.tiddler.title]: srcDial } });
     const src = await standSource(srcHandle, "src-anon-");
     const srcServer = src.server, srcPort = src.port, srcFace = src.face;
 
     const said: string[] = [];
-    const anonHandle = repo.create<MeshPalaceDoc>({ schemaVersion: "0.1", tiddlers: {} });
+    const anonHandle = repo.create<MeshPalaceDoc>({ tiddlers: {} });
     const anon = await composeVessel([
       meshpalaceProviding(anonHandle),
       carriageCap({ peers: [{ endpoint: `http://127.0.0.1:${srcPort}`, gatePubKey: await ed25519VerifyingKeyFromSeed(SEED_A) }], pullIntervalMs: 1_000_000, onLog: (l) => said.push(l) }),
@@ -241,7 +241,7 @@ describe("carriageCap â€” the composable Herm carries a peer's FLOW-map (pull â†
     expect(said.some((l) => l.includes("carriage-peering-shut"))).toBe(true);
 
     // CONTROL: the same source, a carriage handed a gate-native pull â€” the record crosses.
-    const provenHandle = repo.create<MeshPalaceDoc>({ schemaVersion: "0.1", tiddlers: {} });
+    const provenHandle = repo.create<MeshPalaceDoc>({ tiddlers: {} });
     const proven = await composeVessel([
       meshpalaceProviding(provenHandle),
       carriageCap({ peers: [{ endpoint: `http://127.0.0.1:${srcPort}`, gatePubKey: await ed25519VerifyingKeyFromSeed(SEED_A) }], pullFlow: src.pullFlow, pullIntervalMs: 1_000_000 }),

@@ -56,7 +56,7 @@ async function stand(initial: readonly string[]) {
   await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
   const dir = mkdtempSync(join(tmpdir(), "flow-resweep-"));
   const repo = new Repo({ sharePolicy: async () => true });
-  const handle = repo.create<MeshPalaceDoc>({ schemaVersion: "0.1", tiddlers: {} });
+  const handle = repo.create<MeshPalaceDoc>({ tiddlers: {} });
   const entry: { server: Server; face: FlowFloorFace | null; dir: string } = { server, face: null, dir };
   opened.push(entry);
   let nexuses = [...initial];

@@ -108,9 +108,11 @@ export interface HearthPinIndex {
 }
 
 /**
- * Where a floor pin claim stands in its place's KEL: the place AID, the sequence and event digest of the head the claim
- * names, and the event digests from the inception to that head (`lineage[i]` is the digest at seq `i`, so the head is
- * `lineage[seq]`). The reader that verified the claim builds it from the chain it folded.
+ * Where a floor pin claim stands in its place's KEL: the place AID, the event digest of the head the claim names, the
+ * event digests from the inception to that head (each event names its prior event's digest, so the lineage IS the hash
+ * chain the reader folded, and the head closes it), and the head's `seq`. ORDER RIDES THE CHAIN ALONE: one claim follows
+ * another when its lineage carries the other's head before its own. `seq` stays a cross-check that must agree with the
+ * chain (`lineage[seq]` is the head); a stand whose `seq` disagrees refuses `stand-malformed`.
  */
 export interface PlaceClaimStand {
   readonly aid:     string;
@@ -178,19 +180,30 @@ const standReads = (stand: unknown): stand is PlaceClaimStand => {
     lineage.every((d) => typeof d === "string" && HEX64.test(d)) && lineage[seq] === head;
 };
 
-/** Does `later` descend from `earlier` in one place's KEL? A claim is not its own descendant. */
-const descends = (later: PlaceClaimStand, earlier: PlaceClaimStand): boolean =>
-  later.aid === earlier.aid && later.seq > earlier.seq && later.lineage[earlier.seq] === earlier.head;
+/**
+ * Does `later` descend from `earlier` in one place's KEL? By the hash chain alone: `later`'s lineage carries `earlier`'s
+ * head strictly before its own, and `earlier`'s whole lineage stands as its prefix. A claim is not its own descendant.
+ */
+const descends = (later: PlaceClaimStand, earlier: PlaceClaimStand): boolean => {
+  if (later.aid !== earlier.aid) return false;
+  const at = later.lineage.indexOf(earlier.head);
+  return at >= 0 && at < later.lineage.length - 1 && earlier.lineage.length === at + 1 && earlier.lineage.every((d, i) => later.lineage[i] === d);
+};
+
+/** The one claim of a set every other descends from or equals (the chain's newest), or null where none does. */
+const newestByDescent = (claims: readonly HeldClaim[]): HeldClaim | null =>
+  claims.find((c) => claims.every((o) => o === c || descends(c.stand, o.stand))) ?? null;
 
 /** What a set of claims serves, read from the SET alone: no arrival order enters. */
 function standingOfSet(set: ClaimSet, kelForks: ReadonlyMap<string, readonly string[]>): { served: HeldClaim | null; fork: PlaceClaimFork | null } {
   const trunk = kelForks.get(set.aid);
-  const cands = [...set.claims.values()].filter((c) => trunk === undefined || trunk[c.stand.seq] === c.stand.head);
+  const cands = [...set.claims.values()].filter((c) => trunk === undefined || trunk.includes(c.stand.head));
   const maximal = cands.filter((c) => !cands.some((o) => descends(o.stand, c.stand)));
   if (maximal.length === 1) return { served: maximal[0]!, fork: null };
   if (maximal.length === 0) return { served: null, fork: null };
   const below = cands.filter((c) => !maximal.includes(c) && maximal.every((m) => descends(m.stand, c.stand)));
-  const settled = below.sort((a, b) => b.stand.seq - a.stand.seq)[0] ?? null;
+  // Every claim below the fork is an ancestor of every head, so they stand on one chain and descent orders them whole.
+  const settled = newestByDescent(below);
   const fork: PlaceClaimFork = Object.freeze({
     key: `${set.aid}\n${set.nexus}\n${set.route}\n${set.tier}`, aids: [set.aid],
     heads: [...new Set(maximal.map((c) => c.stand.head))].sort(), settled: settled?.stand.head ?? null,
@@ -262,7 +275,9 @@ export function hearthPinIndex(): HearthPinIndex {
       const had = set?.claims.get(id);
       // A known ancestor of a claim the evidence holds refuses as a rollback, and the index KEEPS it as ancestry evidence: the
       // set folds the same in any arrival order, so a fork still finds the ancestor both branches share.
-      const newer = set ? [...set.claims.values()].filter((c) => descends(c.stand, stand)).sort((a, b) => b.stand.seq - a.stand.seq)[0] : undefined;
+      const descendants = set ? [...set.claims.values()].filter((c) => descends(c.stand, stand)) : [];
+      const newer = descendants.filter((c) => !descendants.some((o) => descends(o.stand, c.stand)))
+        .sort((a, b) => (a.stand.head < b.stand.head ? -1 : a.stand.head > b.stand.head ? 1 : 0))[0];
       if (!had && set && set.claims.size >= CLAIMS_PER_SET) return { filed: false, refusal: "set-full" };
       if (!set) { set = { aid: stand.aid, nexus: p.nexus, route: p.route, tier: p.tier, claims: new Map() }; sets.set(setKey, set); }
       const claim: HeldClaim = had ?? { pin: p, digest, stand: Object.freeze({ ...stand, lineage: Object.freeze([...stand.lineage]) }), names: new Set() };
@@ -280,8 +295,12 @@ export function hearthPinIndex(): HearthPinIndex {
       if (!HEX64.test(fork?.aid) || !Array.isArray(fork.trunk) || fork.trunk.length === 0 || !fork.trunk.every((d) => typeof d === "string" && HEX64.test(d))) return;
       const had = kelForks.get(fork.aid);
       if (had === undefined && kelForks.size >= KEL_FORK_NOTES) return;
-      // The earliest fork governs: the shorter trunk, and for equal trunks the one that sorts first.
-      if (had === undefined || fork.trunk.length < had.length || (fork.trunk.length === had.length && fork.trunk.join() < had.join())) {
+      // The earliest fork governs: the trunk the other descends from (its prefix), and for two trunks neither of which
+      // descends from the other the one that sorts first.
+      const prefixOf = (a: readonly string[], b: readonly string[]): boolean => a.length <= b.length && a.every((d, i) => b[i] === d);
+      const governs = had === undefined || (prefixOf(fork.trunk, had) && fork.trunk.length !== had.length)
+        || (!prefixOf(had, fork.trunk) && !prefixOf(fork.trunk, had) && fork.trunk.join() < had.join());
+      if (governs) {
         kelForks.set(fork.aid, Object.freeze([...fork.trunk]));
       }
     },

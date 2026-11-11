@@ -3,7 +3,9 @@
  *
  * Invariant: every Automerge doc in the Lararium system satisfies `LarDoc`:
  *
- *   { schemaVersion, tiddlers, blobs? }
+ *   { tiddlers, blobs? }
+ *
+ * No counter rides a document: its shape reads by its fields and its history by its own causal heads.
  *
  * Every out-of-tiddlers field carries a corresponding descriptor tiddler so the
  * TW5 wiki surface can introspect it without TS interop. Binary blobs live in
@@ -78,9 +80,8 @@ export interface LarBlobEntry {
  * `blobs` — optional binary store; any bag may carry image/attachment blobs.
  */
 export interface LarDoc {
-  readonly schemaVersion: string;
-  readonly tiddlers:      Record<string, StoredLarRecord>;
-  readonly blobs?:        Record<string, LarBlobEntry>;
+  readonly tiddlers: Record<string, StoredLarRecord>;
+  readonly blobs?:   Record<string, LarBlobEntry>;
 }
 
 /** Read the `text` field of a record, stored or plain. Returns null when absent. */
@@ -91,7 +92,7 @@ export function tiddlerText(record: StoredLarRecord | { tiddler: { text?: unknow
 
 /** Safe empty state for repo.create<LarDoc>(). */
 export function emptyLarDoc(): LarDoc {
-  return { schemaVersion: "0.1", tiddlers: {} };
+  return { tiddlers: {} };
 }
 
 // ── Blob helpers (any bag may carry blobs) ────────────────────────────────

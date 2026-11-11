@@ -34,7 +34,7 @@ function fixture(withCeremony = true) {
   if (withCeremony) { writeFileSync(join(web, "ceremony.html"), CEREMONY); writeFileSync(join(web, "ceremony-broker.js"), BROKER); }
   const cas = Buffer.from("public-cas"); const cid = createHash("sha256").update(cas).digest("hex");
   writeFileSync(join(genesis, "seed.json"), JSON.stringify({
-    format: "lararium-genesis-seed/v1", actorSeed: "fixture-actor", blobs: { fixture: { id: "fixture", version: "1", sha256: cid, mimeType: "application/octet-stream" } },
+    format: "lararium-genesis-seed", actorSeed: "fixture-actor", blobs: { fixture: { id: "fixture", version: "1", sha256: cid, mimeType: "application/octet-stream" } },
     tiddlers: {
       "lar:///ha.ka.ba/bags/oracle/genesis-cid-engine": { tiddler: { cid: "engine-region" } },
       "lar:///ha.ka.ba/bags/oracle/genesis-cid-grammar": { tiddler: { cid: "grammar-region" } },
@@ -51,7 +51,7 @@ function fixture(withCeremony = true) {
       { path: "/ceremony-broker.js", file: "ceremony-broker.js", contentType: "application/javascript", cache: "no-store", sha256: sha("ceremony-broker.js") },
     ] : []),
   ];
-  return { web, genesis, record: { schema: "lararium-pronaos-artifact/v1" as const, routes } };
+  return { web, genesis, record: { schema: "lararium-pronaos-artifact" as const, routes } };
 }
 
 function get(handler: ReturnType<typeof pronaosRequestHandler>, url: string) {

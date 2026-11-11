@@ -237,7 +237,7 @@ async function main(): Promise<void> {
     "lares-module-count":             String(moduleManifest.manifest.modules.length),
     "lares-module-manifest-sha256":   moduleManifest.sha256,
     "lares-source-manifest-sha256":   sourceManifest.sha256,
-    "lares-build-attestation-format": "lararium-tw5-plugin-build/v1",
+    "lares-build-attestation-format": "lararium-tw5-plugin-build",
   });
   const innerParsed = JSON.parse(pluginTiddlerLar["text"] as string) as { tiddlers?: Record<string, unknown> };
   const tiddlerCount = Object.keys(innerParsed.tiddlers ?? {}).length;
@@ -280,7 +280,7 @@ async function main(): Promise<void> {
   const pluginJsonSha = sha256(pluginLarJson);
   const pluginTw5Sha  = sha256(pluginTw5Json);
   const attestation = {
-    format: "lararium-tw5-plugin-build/v1",
+    format: "lararium-tw5-plugin-build",
     canonicalTitle: PLUGIN_TITLE_LAR,
     compatibilityTitle: PLUGIN_TITLE_TW5,
     moduleManifestPath: MODULE_MANIFEST,

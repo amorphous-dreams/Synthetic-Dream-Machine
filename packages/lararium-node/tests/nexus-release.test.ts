@@ -76,7 +76,7 @@ describe("a release names a floor this hearth holds whole", () => {
     const cas = join(work, "cas");
     const lares = cutFloorSnapshot({ "lar:///t/lares": { tiddler: { title: "lar:///t/lares", text: "l" } } });
     const lararium = cutFloorSnapshot({ "lar:///t/lararium": { tiddler: { title: "lar:///t/lararium", text: "r" } } });
-    const manifestBytes = floorManifestBytes({ format: "lararium-floor/v2", engine: "e".repeat(64), grammar: "a".repeat(64), plugins: "b".repeat(64), snapshots: { lares: lares.cid, lararium: lararium.cid } });
+    const manifestBytes = floorManifestBytes({ format: "lararium-floor", engine: "e".repeat(64), grammar: "a".repeat(64), plugins: "b".repeat(64), snapshots: { lares: lares.cid, lararium: lararium.cid } });
     const file = join(work, "floor-manifest.json"); writeFileSync(file, manifestBytes);
     const approval = await approve(file);
     const go = () => withRoot(0, (repo) => runFloorRelease({ repo, sealHome: larSealHome(), manifestFile: file, approval, casDir: cas }));
@@ -93,8 +93,8 @@ describe("a release names a floor this hearth holds whole", () => {
 describe("a one-seat hearth publishes its floor release", () => {
   it("lands a release a reader folds as the chain's head; a second links to the first by prior", async () => {
     process.env["LAR_ROOT"] = roots[0]!;
-    const one = manifestFile("m1.json", '{"format":"lararium-floor/v1","n":1}');
-    const two = manifestFile("m2.json", '{"format":"lararium-floor/v1","n":2}');
+    const one = manifestFile("m1.json", '{"format":"lararium-floor","n":1}');
+    const two = manifestFile("m2.json", '{"format":"lararium-floor","n":2}');
     const known = new Map([[one.cid, one.bytes], [two.cid, two.bytes]]);
 
     const first = await release(0, one.file, await approve(one.file));

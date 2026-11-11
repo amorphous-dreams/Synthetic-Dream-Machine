@@ -31,11 +31,11 @@ describe("genesis region content-CIDs — bytes name the region, labels never do
     // The true-name is a pinned value, never a recomputation: a preimage that grew a label (a version, a
     // packager's tag) would move these digests, and every hearth named under the old preimage would split
     // off over an editorial act. The label takes no part in the signature at all, so no re-tag can reach it.
-    expect(computeEngineCid("abcd")).toBe("bafkreiahzs2gva32i6kuci2midrmljm33g3zvmctg4azcddsuwkhydpqku");
+    expect(computeEngineCid("abcd")).toBe("bafkreif5tbhh4tdiqcve7lrtcdlmcv6or7tqhvxr7jvpn7t7wzlyxy3fhe");
     expect(computeEngineCid("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"))
-      .toBe("bafkreiczv56ip2lrydcie7bsfz5hz6fgku7b3atfenhpu3ws7t2xubkfyu");
+      .toBe("bafkreif2htmpnuqvkeoarexaeaduwvady5oazo6537c3jjyo2wq7b427z4");
     // CONTROL: the pin is not a constant — other core bytes name another engine.
-    expect(computeEngineCid("abce")).not.toBe("bafkreiahzs2gva32i6kuci2midrmljm33g3zvmctg4azcddsuwkhydpqku");
+    expect(computeEngineCid("abce")).not.toBe("bafkreif5tbhh4tdiqcve7lrtcdlmcv6or7tqhvxr7jvpn7t7wzlyxy3fhe");
   });
 
   it("pluginsCid stays order-independent (sorted by id) and deterministic", () => {

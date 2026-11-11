@@ -12,7 +12,7 @@ const bytes = utf8Bytes("the one exact public artifact");
 const cid = `sha256:${sha256HexBytesSync(bytes)}`;
 
 const publication = (): PublicArtifactPublication => ({
-  schema: "lararium-pronaos-public-artifact/v1",
+  schema: "lararium-pronaos-public-artifact",
   operator: { id: "house-operator", authentication: "local-operator" },
   artifactCid: cid,
   integrity: cid,

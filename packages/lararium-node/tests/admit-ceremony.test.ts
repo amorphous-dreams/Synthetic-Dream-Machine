@@ -234,7 +234,7 @@ describe("the admit ceremony — found · admit · carry · apply · BOUND", () 
       vesselDisplayName:  "Ichi",
       nexusPubkey:          await pubOf(JOINEE_SEED),
       payload: {
-        kind: "device-admit/v1",
+        kind: "device-admit",
         signerDid: "",                       // ← the binding is hollow
         deviceEdge: { title: "e" },
         hearthTrueName: "bafyHearth",

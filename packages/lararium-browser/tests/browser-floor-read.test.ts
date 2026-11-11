@@ -18,7 +18,7 @@ function floor(tag: string) {
   const cas = new Map<string, Uint8Array>();
   const lares = cutFloorSnapshot({ [`lar:///t/${tag}/lares`]: { tiddler: { title: `lar:///t/${tag}/lares`, text: tag } } });
   const lararium = cutFloorSnapshot({ [`lar:///t/${tag}/lararium`]: { tiddler: { title: `lar:///t/${tag}/lararium`, text: tag } } });
-  const manifestBytes = floorManifestBytes({ format: "lararium-floor/v2", engine: "e".repeat(64), grammar: "a".repeat(64), plugins: "b".repeat(64), snapshots: { lares: lares.cid, lararium: lararium.cid } });
+  const manifestBytes = floorManifestBytes({ format: "lararium-floor", engine: "e".repeat(64), grammar: "a".repeat(64), plugins: "b".repeat(64), snapshots: { lares: lares.cid, lararium: lararium.cid } });
   const manifestCid = sha256HexBytesSync(manifestBytes);
   cas.set(lares.cid, lares.bytes); cas.set(lararium.cid, lararium.bytes); cas.set(manifestCid, manifestBytes);
   return { cas, manifestBytes, manifestCid, lares, lararium };
@@ -76,7 +76,7 @@ describe("the browser reads the floor and verifies every step", () => {
     const held = { aid: "ab".repeat(32), seq: 2, head: "cd".repeat(32), lineage: [] as string[] };
     const named = await readHearthFloor({ baseUrl: "http://h", nexusPin: pinOf(c.aid), held, fetchFn: (async () => { throw new Error("offline"); }) as typeof fetch });
     expect(named).toMatchObject({ ok: false, reason: "porch-silent" });
-    expect(named.ok ? "" : named.detail).toContain("as of my last sync: place abababababab… at KEL seq 2");
+    expect(named.ok ? "" : named.detail).toContain("as of my last sync: place abababababab… at KEL head cdcdcdcdcdcd…");
   });
 
   test("RED: a lineage whose genesis bytes differ from the AID the card holds refuses before any blob is fetched", async () => {

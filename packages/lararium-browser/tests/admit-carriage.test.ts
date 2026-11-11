@@ -54,8 +54,13 @@ describe("the carried admission", () => {
   });
 
   test("a payload of the wrong KIND gets refused, never guessed at", () => {
-    const wrong = toAdmitCarriage({ ...PAYLOAD, kind: "nexus-invite/v1" } as unknown as DeviceAdmitPayload);
+    const wrong = toAdmitCarriage({ ...PAYLOAD, kind: "nexus-invite" } as unknown as DeviceAdmitPayload);
     expect(parseAdmitCarriage(wrong)).toBeNull();
+    // A kind that carries a counter names no device admit: the shape reads by its name and fields alone.
+    for (const kind of ["device-admit/v1", "device-admit/v2"]) {
+      expect(parseAdmitCarriage(toAdmitCarriage({ ...PAYLOAD, kind } as unknown as DeviceAdmitPayload))).toBeNull();
+    }
+    expect(parseAdmitCarriage(toAdmitCarriage(PAYLOAD))).not.toBeNull();   // CONTROL
   });
 
   test("the BINDING is refused at the door when incomplete — never half-applied downstream", () => {

@@ -189,7 +189,7 @@ describe("the receipt capability", () => {
           attachMessageChannelSync(vessel, channel.port1 as unknown as MessagePort, (id) => { peerId = id; resolve(); });
         });
         await ready;
-        const bytes = (await import("@automerge/automerge")).save((await import("@automerge/automerge")).from({ schemaVersion: "0.1", tiddlers: {} }));
+        const bytes = (await import("@automerge/automerge")).save((await import("@automerge/automerge")).from({ tiddlers: {} }));
         const derived = (await import("@automerge/automerge-repo")).generateAutomergeUrl();
         const id = derived.slice("automerge:".length);
         if (earlierAsk) {

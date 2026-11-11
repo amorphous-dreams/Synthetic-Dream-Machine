@@ -27,23 +27,23 @@ afterEach(() => { vi.useRealTimers(); });
 
 describe("pinnedDoc — bytes carry no ambient state", () => {
   test("the same content minted hours apart saves byte-identical", () => {
-    const { first, second } = mintAcrossTheClock(() => ({ schemaVersion: "0.1", tiddlers: {} }));
+    const { first, second } = mintAcrossTheClock(() => ({ tiddlers: {} }));
     expect(Buffer.from(first).toString("hex")).toBe(Buffer.from(second).toString("hex"));
   });
 
   test("the seed change pins BOTH ambient fields — actor and time", () => {
-    const [seed] = getAllChanges(pinnedDoc({ schemaVersion: "0.1", tiddlers: {} })).map(decodeChange);
+    const [seed] = getAllChanges(pinnedDoc({ tiddlers: {} })).map(decodeChange);
     expect(seed.actor).toBe(PINNED_ACTOR);
     expect(seed.time).toBe(0);
   });
 
   test("two islands that raced to materialize the same doc still merge", () => {
-    const { first, second } = mintAcrossTheClock(() => ({ schemaVersion: "0.1", tiddlers: {} }));
+    const { first, second } = mintAcrossTheClock(() => ({ tiddlers: {} }));
     expect(() => merge(load(first), load(second))).not.toThrow();
   });
 
   test("each island's OWN later writes survive the merge — convergence, not erasure", () => {
-    const { first, second } = mintAcrossTheClock(() => ({ schemaVersion: "0.1", tiddlers: {} }));
+    const { first, second } = mintAcrossTheClock(() => ({ tiddlers: {} }));
     // `load` mints a fresh actor per side, exactly as an imported repo handle does
     const a = change(load(first),  (d: Record<string, unknown>) => { (d.tiddlers as Record<string, unknown>).fromA = { text: "a" }; });
     const b = change(load(second), (d: Record<string, unknown>) => { (d.tiddlers as Record<string, unknown>).fromB = { text: "b" }; });
@@ -52,8 +52,8 @@ describe("pinnedDoc — bytes carry no ambient state", () => {
   });
 
   test("differing content still yields differing bytes — purity, never a constant", () => {
-    const one = save(pinnedDoc({ schemaVersion: "0.1", tiddlers: { x: { text: "1" } } }));
-    const two = save(pinnedDoc({ schemaVersion: "0.1", tiddlers: { x: { text: "2" } } }));
+    const one = save(pinnedDoc({ tiddlers: { x: { text: "1" } } }));
+    const two = save(pinnedDoc({ tiddlers: { x: { text: "2" } } }));
     expect(Buffer.from(one).toString("hex")).not.toBe(Buffer.from(two).toString("hex"));
   });
 });

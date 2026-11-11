@@ -38,11 +38,9 @@ export async function standFoundedIsland(teardown: Array<() => void>, opts: { co
 
   // The oracle registry names the daemon doc — the address a registry walk resolves.
   const oracle = vesselRepo.create<LarDoc>({
-    schemaVersion: "lar/1",
     tiddlers: { [DAEMON_BAG_ID]: { tiddler: { title: DAEMON_BAG_ID, text: cer.daemonUrl } } },
   } as unknown as LarDoc);
   const catalog = vesselRepo.create<LarDoc>({
-    schemaVersion: "lar/1",
     tiddlers: { [wikiBagUri("daemon")]: { tiddler: { title: wikiBagUri("daemon"), text: cer.daemonUrl } } },
   } as unknown as LarDoc);
 

@@ -41,7 +41,7 @@ const NODE_CWD  = join(REPO_ROOT, "packages/lararium-node");
 
 const cidOf = (text: string): string => cidV1Sha256(new TextEncoder().encode(text));
 const RELEASE = {
-  format: "lararium-release-manifest/v1",
+  format: "lararium-release-manifest",
   image: { digest: `sha256:${"ab".repeat(32)}`, platforms: ["linux/amd64"] },
   genesis: { seedCid: "5e".repeat(32) }, engine: { cid: cidOf("engine") }, grammar: { cid: cidOf("grammar") },
 };

@@ -72,6 +72,7 @@ import { InMemoryEventStore } from "./event-store.js";
 import { capEventTitle, absorbCapEvents } from "./daemon-event-store.js";
 import type { SecretRestCapability } from "./daemon-event-store.js";
 import type { DeviceAdmitPayload } from "./index.js";
+import { DEVICE_ADMIT_KIND } from "./device-admit-kind.js";
 import { readFaceOperation, writeFaceOperation } from "./face-operation-record.js";
 
 async function checkpointKey(seed: Uint8Array, domain: string): Promise<CryptoKey> {
@@ -828,7 +829,7 @@ export interface DeviceAdmitEdgeInput {
 }
 
 /**
- * Produce a device-admit/v1 payload for the UPGRADE event: the founder's PersonaGroup root SIGNS
+ * Produce a device-admit payload for the UPGRADE event: the founder's PersonaGroup root SIGNS
  * a root→joinee delegation root half for the joinee's atom key. The joinee countersigns it before storage.
  */
 export async function runDeviceAdmitEdge(
@@ -873,7 +874,7 @@ export async function runDeviceAdmitEdge(
     boundEpoch:         input.boundEpoch ?? 0,
   });
   const issued: DeviceAdmitPayload = {
-    kind:                   "device-admit/v1",
+    kind:                   DEVICE_ADMIT_KIND,
     signerDid:              deviceEdge.personaRootDid,
     personaKelPrefix:       input.personaKelPrefix,
     personaKelChain:        input.personaKelChain,
@@ -969,7 +970,7 @@ export async function retireApplyCheckpoint(handle: ReturnType<typeof seedDaemon
 }
 
 /**
- * Apply a device-admit/v1 payload to bootstrap a second vessel.
+ * Apply a device-admit payload to bootstrap a second vessel.
  * Seeds social docs identically to the founding path, then writes oracle
  * tiddlers and cap events from the payload so boot Gates B and C pass.
  */

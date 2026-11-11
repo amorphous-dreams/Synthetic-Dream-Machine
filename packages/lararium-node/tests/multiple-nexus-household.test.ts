@@ -31,7 +31,7 @@ import { selfSlotShareDecision, NO_BANS, NOBODY_ASIDE, NOTHING_CLASSED } from ".
 import { fixtureKey } from "./fixture-keys.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 const SHARED_GENESIS_SEED: GenesisSeed = {
-  format: "lararium-genesis-seed/v1",
+  format: "lararium-genesis-seed",
   actorSeed: "11".repeat(32),
   blobs: {},
   tiddlers: {},
@@ -156,7 +156,6 @@ describe("multiple-Nexus household proof", () => {
 
   test("FLOW remains a separate public projection: coarse public routes cross, private territory does not", async () => {
     const flowDoc: LarDoc = {
-      schemaVersion: "0.1",
       tiddlers: {
         "public-dial": { tiddler: { title: "public-dial", kind: "dial", scale: "nexus", endpoint: "ws://relay-a" } },
         "private-dial": { tiddler: { title: "private-dial", kind: "dial", endpoint: "ws://local-b" } },

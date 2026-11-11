@@ -21,7 +21,7 @@ function vessel() {
   const boot: Record<string, { text?: string }> = { [DAEMON_BAG_ID]: { text: daemon }, [PERSONA_GROUP_ID_TIDDLER]: { text: groupA } };
   for (const group of [groupA, groupB]) for (const e of personaMembershipEntries({ personaGroupId: group, url: generateAutomergeUrl() })) boot[e.title] = { text: e.text ?? undefined };
   // The catalog the vessel holds while it wears face A: A's stage row beside an ordinary book.
-  const catalog = { schemaVersion: "lar/1", tiddlers: {
+  const catalog = { tiddlers: {
     [KAHUA_BAG]: storedLarRecord(KAHUA_BAG, { text: stage }, "pin"),
     "lar:///ha.ka.ba/bags/notes": storedLarRecord("lar:///ha.ka.ba/bags/notes", { text: wiki }, "row"),
   } } as unknown as LarDoc;

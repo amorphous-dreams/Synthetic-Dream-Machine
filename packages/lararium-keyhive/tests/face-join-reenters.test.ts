@@ -47,7 +47,7 @@ async function stand() {
   const group = await founder.createGroup();
   const founderEdge = await buildDeviceDelegation({ personaRootSeed: ROOT, atomSeed: seedOf(7), hearthTrueName: HEARTH, boundEpoch: 0 });
   const joineeEdge = await buildDeviceDelegation({ personaRootSeed: ROOT, atomSeed: seedOf(106), hearthTrueName: HEARTH, boundEpoch: 0 });
-  const summons = { kind: "face-join/v1" as const, contactCard: new TextDecoder().decode(await joinee.contactCard()), deviceEdge: joineeEdge };
+  const summons = { kind: "face-join" as const, contactCard: new TextDecoder().decode(await joinee.contactCard()), deviceEdge: joineeEdge };
   const ctx: FaceJoinContext = { personaRootDid: founderEdge.personaRootDid, hearthTrueName: HEARTH, personaGroupId: group.groupId, dyad: () => "clear", leaseEpoch: 0 };
   const founderProof = { personaKel: await founderLineage(), dyad: (_key: string) => "clear" as const };
   const operations = memoryStore();

@@ -21,7 +21,7 @@
 # `genesis/unbaked.json` (tracked, beside the seed it speaks for) names each source a lane knowingly
 # left unbaked: its path, the sha256 of the exact bytes left unbaked, and why.
 #
-#   { "format": "lararium-genesis-unbaked/v1",
+#   { "format": "lararium-genesis-unbaked",
 #     "unbaked": [ { "source": "packages/lararium-tw5/plugins/lares-memetic-wikitext.json",
 #                    "sha256": "<the tracked bundle's sha256>",
 #                    "why":    "<what moved, and which bake carries it>" } ] }
@@ -74,7 +74,7 @@ root = pathlib.Path(sys.argv[1]).resolve()
 TAG = "[genesis-parity]"
 BAKE = "pnpm --filter @lararium/node build:genesis"
 ENGINE_ID = "tiddlywikicore"
-MARKER_FORMAT = "lararium-genesis-unbaked/v1"
+MARKER_FORMAT = "lararium-genesis-unbaked"
 
 genesis = root / "genesis"
 seed_path = genesis / "seed.json"
@@ -196,7 +196,7 @@ for bid in sorted(set(blobs) - set(sources)):
 
 # ── the floor closes under its manifest and release witnesses ───────────────────────────────────
 FLOOR_MANIFEST = "floor-manifest"
-FLOOR_FORMAT = "lararium-floor/v2"
+FLOOR_FORMAT = "lararium-floor"
 FLOOR_REQUIRED = ("lares", "lararium")
 WITNESS_PREFIX = "lar:///ha.ka.ba/bags/oracle/genesis-cid-"
 manifest_row = seed["blobs"].get(FLOOR_MANIFEST)

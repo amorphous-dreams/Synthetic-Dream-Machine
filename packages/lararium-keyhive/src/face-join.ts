@@ -38,7 +38,7 @@ import { bytesToBase64 } from "./bytes-base64.js";
 
 /** The summons a joinee writes: what it holds (the card) and what licenses it (the edge). */
 export interface FaceJoinSummons {
-  readonly kind: "face-join/v1";
+  readonly kind: "face-join";
   /** The joinee's OWN self-certifying ContactCard (`ContactCard.toJson()`) — it carries the prekey the group
    *  path encrypts to, which a raw verifying key cannot supply. */
   readonly contactCard: string;
@@ -51,7 +51,7 @@ export interface FaceJoinSummons {
 
 /** The grant the island returns — everything the joinee needs to reach the group key, nothing secret. */
 export interface FaceJoinGrant {
-  readonly kind: "face-join-grant/v1";
+  readonly kind: "face-join-grant";
   readonly joineeAgentIdHex: string;
   /** The founder's own ContactCard — the joinee receives it so its provider can name this vessel as an
    *  audience. Without it a joinee holds membership yet cannot delegate anything back. */
@@ -271,7 +271,7 @@ export async function runFaceJoin(
   return {
     ok: true,
     grant: {
-      kind: "face-join-grant/v1",
+      kind: "face-join-grant",
       joineeAgentIdHex,
       founderCard,
       capEvents: events.map(bytesToBase64),

@@ -46,7 +46,7 @@ describe("the one receipt helper", () => {
     try {
       const url = generateAutomergeUrl();
       const id = url.slice("automerge:".length);
-      const bytes = A.save(A.from({ schemaVersion: "0.1", tiddlers: { a: { text: "x" } } }));
+      const bytes = A.save(A.from({ tiddlers: { a: { text: "x" } } }));
       const heads = { [id]: A.getHeads(A.load(bytes)) };
       await expect(answerReceiptWithHeads(vessel, { type: "receipt:request", requestId: "bare", documentIds: [id], heads } as never))
         .resolves.toMatchObject({ issued: false, why: "the vessel holds no copy of the document" });
@@ -61,7 +61,7 @@ describe("the one receipt helper", () => {
     const { vessel, island, peerId, close } = await pair();
     try {
       const { id } = await derivedReadUnavailable(vessel);
-      const handle = island.import(A.save(A.from({ schemaVersion: "0.1", tiddlers: {} })), { docId: id as never });
+      const handle = island.import(A.save(A.from({ tiddlers: {} })), { docId: id as never });
       await handle.whenReady();
       const heads = { [id]: replicaHeads(handle) };
       await receiptInStore(vessel, [id as DocumentId], { ready: Promise.resolve(peerId), onClose: () => () => {} }, heads);
