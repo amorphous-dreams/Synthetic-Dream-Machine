@@ -422,7 +422,6 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       repo: ctx.repo, deviceScoped: (slug) => slug === DAEMON_WIKI_SLUG, control: controlOf(ctx),
       ...(docStoreDoor ? { announceDevice: (kind: Exclude<WikiSlotKind, "temp">, documentId: string) => announceSlotDoc(docStoreDoor, wikiSlotUri(DAEMON_WIKI_SLUG, kind), documentId) } : {}),
       daemonStore: ctx.composite, catalog: null,
-      vesselDid: () => didFromVerifyingKey(daemonAuth.placeVerifyingKey), mintedByHex: () => daemonAuth.placeVerifyingKey,
       faceWorkingDoc: (url, label) => materializeFaceWorkingDoc(ctx.repo, url as AutomergeUrl, label),
     });
     return siblingSlots;
@@ -441,7 +440,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const provider = entry ? providers.get(bareKey(entry.atom.key))?.provider : undefined;
         if (!entry || !provider) return null;
         const resolver = siblingSlotsOf(ctx).of({
-          group: entry.personaGroupId,
+          group: entry.personaGroupId, atomKey: entry.atom.key,
           secret: async () => entry.faceAddressSecret ? meshHexToBytes(entry.faceAddressSecret) : null,
           keyhive: provider as never,
           faceDoor: makeFaceBagDoor({ face: provider as never, groupId: entry.personaGroupId }),
@@ -1793,13 +1792,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         ...mountedKahuVerifier,
         // Fail closed, as the content fence does: a call that names no presenter takes no hand.
         kahuReach: (bagUrl, act, presenter) => presenter === undefined
-          ? Promise.reject(new VerbRefusal("kahu-reach", `kahu-reach: ${act} names no presenter, so it takes no face's hand into system canon`))
+          ? Promise.reject(new VerbRefusal("kahu-reach", `kahu-reach: ${act} names no presenter, so it takes no face's hand into house canon`))
           : bareKey(presenter) !== bareKey(daemonAuth.atom!.key)
-            ? Promise.reject(new VerbRefusal("kahu-reach", "kahu-reach: system canon takes the mounted face's hand; a sibling face holds none here"))
+            ? Promise.reject(new VerbRefusal("kahu-reach", "kahu-reach: house canon takes the mounted face's hand; a sibling face holds none here"))
             : mountedKahuVerifier.kahuReach!(bagUrl, act),
         verify: (args) => {
           if (args.access === "admin" && isHouseCanonBag(args.bagUrl) && bareKey(args.presenter) !== bareKey(daemonAuth.atom!.key)) {
-            return Promise.resolve({ ok: false, reason: "kahu-reach: system canon takes the mounted face's hand; a sibling face holds none here" });
+            return Promise.resolve({ ok: false, reason: "kahu-reach: house canon takes the mounted face's hand; a sibling face holds none here" });
           }
           return mountedKahuVerifier.verify(args);
         },

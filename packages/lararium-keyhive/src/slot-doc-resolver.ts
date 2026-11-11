@@ -29,7 +29,7 @@
 import {
   CONTROL_HOME_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX,
   computeRecipeFingerprint, emptyLarDoc, mintVesselDocumentId, storedLarRecord, mutableLarRecord, resolveSlotDoc, resolveFaceWorkingSlot, tiddlerText,
-  wikiBagUri, wikiDraftDocKey, wikiWorkingFloorKey, requireLarDid,
+  wikiBagUri, wikiDraftDocKey, wikiWorkingFloorKey, requireLarDid, didFromVerifyingKey,
   type CompositeStore, type WorkingFloorAnchor, type LarDoc, type SlotReach, type WikiSlotKind,
 } from "@lararium/mesh";
 import * as A from "@automerge/automerge";
@@ -375,6 +375,8 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
 /** One LIT face as the lit set's slot resolvers read it: its group, its own address secret, and its own hive and door. */
 export interface LitFaceSlotSpec {
   readonly group: string;
+  /** The face's own atom key: its slots' `minted-by` label and DID, as a lit worn face labels its own (never the place key). */
+  readonly atomKey: string;
   /** The face's own address secret, a fresh copy per read (the resolver zero-fills it). */
   readonly secret: () => Promise<Uint8Array | null>;
   readonly keyhive?: CapabilityProvider;
@@ -395,7 +397,7 @@ export interface LitFaceSlotDocs {
  * wiki), and its daemon wiki's device slots stand under the sibling's group in the control document (`daemon-slot/<kind>/
  * <group>`), so each face's memory lands in its own documents. A lit face is seated by being lit: its hive holds its group.
  */
-export function litFaceSlotDocs(base: Omit<SlotDocResolverArgs, "personaGroupId" | "faceAddressSecret" | "faceDoor" | "keyhive" | "faceSeated" | "seatSettled" | "rebindWorking">): LitFaceSlotDocs {
+export function litFaceSlotDocs(base: Omit<SlotDocResolverArgs, "personaGroupId" | "faceAddressSecret" | "faceDoor" | "keyhive" | "faceSeated" | "seatSettled" | "rebindWorking" | "mintedByHex" | "vesselDid">): LitFaceSlotDocs {
   const byGroup = new Map<string, SlotDocResolver>();
   return {
     of(spec) {
@@ -404,6 +406,8 @@ export function litFaceSlotDocs(base: Omit<SlotDocResolverArgs, "personaGroupId"
       const resolver = makeSlotDocResolver({
         ...base,
         personaGroupId: spec.group,
+        mintedByHex: () => spec.atomKey,
+        vesselDid: () => didFromVerifyingKey(spec.atomKey),
         faceAddressSecret: spec.secret,
         faceSeated: async () => true,
         ...(spec.keyhive ? { keyhive: spec.keyhive } : {}),

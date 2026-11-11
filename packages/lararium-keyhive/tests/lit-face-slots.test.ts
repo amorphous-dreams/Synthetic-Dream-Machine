@@ -18,7 +18,6 @@ import { MemoryTiddlerStore } from "@lararium/tw5";
 import { litFaceSlotDocs } from "../src/slot-doc-resolver.js";
 import { makeLitFaceTarget, type LitFace } from "../src/lit-face-target.js";
 
-const DID = "did:key:z6MkLitFaceSlots";
 const WORKING = wikiSlotUri("daemon", "working");
 const R0 = "11111111-1111-4111-8111-111111111110", R1 = "11111111-1111-4111-8111-111111111111";
 
@@ -27,7 +26,7 @@ function stand() {
   const control = new CompositeStore();
   control.addLayer({ bagId: CONTROL_HOME_ID, store: new MemoryTiddlerStore(CONTROL_HOME_ID), writable: true, defaultWritable: true });
   const slots = litFaceSlotDocs({
-    repo, daemonStore: control, control, catalog: null, vesselDid: () => DID, mintedByHex: () => "ab".repeat(32),
+    repo, daemonStore: control, control, catalog: null,
     deviceScoped: (slug) => slug === "daemon",
     faceWorkingDoc: (url, label) => materializeFaceWorkingDoc(repo, url as never, label),
   });
@@ -37,8 +36,8 @@ function stand() {
 describe("every lit face resolves its own slots", () => {
   test("L1 — a sibling's working slot resolves from its own secret and differs from the worn face's; device slots stand under each group", async () => {
     const { control, slots } = stand();
-    const worn = slots.of({ group: "group-h0", secret: async () => new Uint8Array(32).fill(9), faceDoor: { mint: async () => {} } as never });
-    const sibling = slots.of({ group: "group-h1", secret: async () => new Uint8Array(32).fill(7), faceDoor: { mint: async () => {} } as never });
+    const worn = slots.of({ group: "group-h0", atomKey: "a0".repeat(32), secret: async () => new Uint8Array(32).fill(9), faceDoor: { mint: async () => {} } as never });
+    const sibling = slots.of({ group: "group-h1", atomKey: "a1".repeat(32), secret: async () => new Uint8Array(32).fill(7), faceDoor: { mint: async () => {} } as never });
     const a = await worn.slotDoc("garden", "working", { mint: false });
     const b = await sibling.slotDoc("garden", "working", { mint: false });
     expect(a?.url).toMatch(/^automerge:/);
@@ -51,9 +50,9 @@ describe("every lit face resolves its own slots", () => {
     expect((await control.get(`${CONTROL_HOME_ID}/daemon-slot/working/group-h0`))?.tiddler.text).toBe(d0?.url);
     expect((await control.get(`${CONTROL_HOME_ID}/daemon-slot/working/group-h1`))?.tiddler.text).toBe(d1?.url);
     // The cache answers one resolver per face; a drop forgets it.
-    expect(slots.of({ group: "group-h1", secret: async () => null })).toBe(sibling);
+    expect(slots.of({ group: "group-h1", atomKey: "a1".repeat(32), secret: async () => null })).toBe(sibling);
     slots.drop("group-h1");
-    expect(slots.of({ group: "group-h1", secret: async () => null })).not.toBe(sibling);
+    expect(slots.of({ group: "group-h1", atomKey: "a1".repeat(32), secret: async () => null })).not.toBe(sibling);
   });
 
   function targetRig() {
@@ -65,7 +64,7 @@ describe("every lit face resolves its own slots", () => {
     const target = makeLitFaceTarget({
       worn: () => worn, siblings: () => [sib], control: () => control,
       wornStore: (bag) => (bag === WORKING ? wornStore : null),
-      siblingSlot: async (face, kind) => (await slots.of({ group: face.group, secret: async () => null, faceDoor: { mint: async () => {} } as never }).slotDoc("daemon", kind))?.url ?? null,
+      siblingSlot: async (face, kind) => (await slots.of({ group: face.group, atomKey: "a2".repeat(32), secret: async () => null, faceDoor: { mint: async () => {} } as never }).slotDoc("daemon", kind))?.url ?? null,
       storeOf: async (url, bag) => new AutomergeDocStore(await repo.find<LarDoc>(url as never), bag),
     });
     return { repo, control, worn, sib, wornHandle, wornStore, target };
