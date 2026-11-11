@@ -59,7 +59,7 @@ import { runVerb } from "../verb-call.js";
 import { newChangeId, newRequestId, taskContentId } from "@lararium/mesh";
 import { storeVerb, storeFailure } from "../store-door.js";
 import { readPersonaRoots, sealedPetnameStore, sealedDeclarationStore } from "../sealed-rows.js";
-import { writeFaceLabels, readFaceLabel, readFaceBases } from "../face-labels.js";
+import { writeFaceLabels, readFaceLabel, readFaceBases, labelFaceAtNaming, faceRelationOnStage } from "../face-labels.js";
 import { moveFaceToAshes } from "../ashes.js";
 import { makeFleetPetnameStore, makeFleetDeclarationStore } from "../daemon-persona-store.js";
 import {
@@ -157,7 +157,11 @@ export const LIVE_CARRY_DOORS: CarryDoors = {
   census: () => readCensus(),
   faces: liveFaces,
   tempConsented: () => tempConsentedSlugs(loadLaresConfig()),
-  rename: async (i, petname) => renameOwnPersona(fleetStores().petnames, i, petname),
+  rename: async (i, petname) => {
+    await renameOwnPersona(fleetStores().petnames, i, petname);
+    // A carried rename names the face too: its label follows the pet-name it now wears.
+    await labelFaceAtNaming({ handleIndex: i, petname }, faceRelationOnStage);
+  },
   declareHandle: async (i, handle) => declarePersonaHandle(fleetStores().declarations, i, handle),
   standSeat: async (i, chair) => standForKahuSeat(fleetStores().declarations, i, true, chair ?? undefined),
   ingest: async (wave) => {

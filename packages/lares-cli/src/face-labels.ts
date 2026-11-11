@@ -12,6 +12,7 @@ import {
   writeFaceLabel, labelledRelations as nodeLabelled, readFaceBases as nodeReadBases, writeFaceBases as nodeWriteBases, FACE_LABEL_SCHEMA, FACE_LABELS_DIR,
   type FaceLabel,
 } from "@lararium/node";
+import { storeVerb } from "./store-door.js";
 
 export { FACE_LABEL_SCHEMA, FACE_LABELS_DIR, writeFaceLabel, type FaceLabel };
 
@@ -38,4 +39,30 @@ export function writeFaceLabels(faces: ReadonlyArray<{ readonly relation: string
   let root: string;
   try { root = projections ?? larProjectionsHome(); } catch { return; }
   for (const f of faces) writeFaceLabel(f, root);
+}
+
+/**
+ * THE FACE NAMES ITSELF. Write one face's label at the act that names it (`persona new`, a carried rename): the relation the
+ * act already holds, else the one the face's own stage answers (`kahua-read`, as `liveFaces` reads it). Never throws, and
+ * answers the relation it labelled (null where none answered): a label serves as an aid, so the naming act never fails over it.
+ */
+export async function labelFaceAtNaming(
+  face: { readonly handleIndex: number; readonly petname: string; readonly relation?: string | null },
+  readRelation: (handleIndex: number) => Promise<string | null>,
+  projections?: string,
+): Promise<string | null> {
+  if (face.petname.trim() === "") return null;
+  let relation = face.relation ?? null;
+  if (relation === null) { try { relation = await readRelation(face.handleIndex); } catch { relation = null; } }
+  if (relation === null) return null;
+  let root: string;
+  try { root = projections ?? larProjectionsHome(); } catch { return null; }
+  writeFaceLabel({ relation, petname: face.petname, handleIndex: face.handleIndex }, root);
+  return relation;
+}
+
+/** The relation a face's own stage answers (`kahua-read`), or null where it answers none. */
+export async function faceRelationOnStage(handleIndex: number): Promise<string | null> {
+  const { output } = await storeVerb("kahua-read", { face: handleIndex, action: "list" });
+  return typeof output["relation"] === "string" ? output["relation"] : null;
 }

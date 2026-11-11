@@ -38,6 +38,7 @@ import {
 import { requireTty } from "../custody-prompt.js";
 import { handFaceRouteToVessel, seatNewFaceRoute } from "../face-route-prompt.js";
 import { promptSecret } from "../prompt-secret.js";
+import { labelFaceAtNaming, faceRelationOnStage } from "../face-labels.js";
 import { storeVerb, storeFailure, standingRefusal } from "../store-door.js";
 import { sealedAct } from "../sealed-act-door.js";
 import { vesselStanding } from "../custody-door.js";
@@ -423,6 +424,10 @@ async function personaNew(args: ParsedArgs): Promise<number> {
   if (!verifyingKey) throw new UsageError(`the face h${index} stands here with no persona root held — re-found it`);
   const root = { verifyingKey, created: !founded.alreadyStood };
   await renameOwnPersona(petnames, index, name);
+  // THE FACE NAMES ITSELF AT ITS CREATION: its label (relation -> pet-name) lands now, beside the sealed pet-name, so a seed
+  // after a re-founding adopts its folders by this name though no face read ran first. A face that already stood answers its
+  // relation off its own stage.
+  await labelFaceAtNaming({ handleIndex: index, petname: name, relation: founded.faceRelation ?? null }, faceRelationOnStage);
 
   // The DECLARATION rides its own store, so the private label never becomes a public commitment by matching
   // a string. Each flag lands its own field; neither implies the other.

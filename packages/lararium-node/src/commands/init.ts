@@ -490,6 +490,12 @@ export interface FoundFaceResult {
   readonly personaGroupId: string;
   readonly personaKelPrefix:     string;
   readonly signerDid:            string;
+  /**
+   * The face's relation (F), the uuid its founding log pins on the `face` plane — what its label, its mirror folders and its
+   * bases sidecar key on. A fresh founding names it, so the face names itself the moment it stands; an already-standing face
+   * reads null here, and its caller reads the relation off the face's own stage (`kahua-read`).
+   */
+  readonly faceRelation:         string | null;
 }
 
 /** What arming recovery at a founding hands back: whether THIS act split the root, and the two carriers
@@ -576,7 +582,7 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
       const hearthTrueName = hearthAid();
       if (hearthTrueName) await retirePendingFoundingSeed({ hearthTrueName, bindingMode: "self-stood", personaKelPrefix: null, mount: mounts, handleIndex });
       await opts.repo.flush();
-      return { alreadyStood: true, personaGroupId: already, personaKelPrefix: "", signerDid: "" };
+      return { alreadyStood: true, personaGroupId: already, personaKelPrefix: "", signerDid: "", faceRelation: null };
     }
   } else {
     // A COMPARTMENT STANDS WHEN ITS PLANE ENTRY STANDS. The bootstrap entry lands last (below), so anchors with no
@@ -591,7 +597,7 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
       const hearthTrueName = hearthAid();
       if (hearthTrueName) await retirePendingFoundingSeed({ hearthTrueName, bindingMode: "self-stood", personaKelPrefix: null, mount: mounts, handleIndex });
       await opts.repo.flush();
-      return { alreadyStood: true, personaGroupId: priorAnchors.personaGroupId, personaKelPrefix: "", signerDid: "" };
+      return { alreadyStood: true, personaGroupId: priorAnchors.personaGroupId, personaKelPrefix: "", signerDid: "", faceRelation: null };
     }
     // A compartment rides BESIDE the mounted face — the founding face must stand first.
     if (!packed[PERSONA_GROUP_ID_TIDDLER]?.text) {
@@ -741,6 +747,7 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
     personaGroupId: face.personaGroupId,
     personaKelPrefix:     face.personaKelPrefix,
     signerDid:            face.signerDid,
+    faceRelation:         face.faceRelation,
   };
   } finally { signerSeed.fill(0); }
 }
