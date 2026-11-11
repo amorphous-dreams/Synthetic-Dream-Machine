@@ -43,3 +43,23 @@ describe("each vessel's Repo stands on the sealed rest", () => {
     expect(stripped(["lararium-keyhive", "src", "operator-daemon-behavior.ts"])).toMatch(/answerDocStoreAsks\(/);
   });
 });
+
+describe("the node holds the lit set (sealed-store#/the-lit-set)", () => {
+  it("each sibling stands its own place session in the book, its own canon and bases keeper; a lock drops its waiting saves and handles", () => {
+    const node = stripped(["lararium-node", "src", "open-node-vessel.ts"]);
+    expect(node).toMatch(/const litSibling = \(entry: JoinedFaceAuth\): void => \{[\s\S]{0,600}standSiblingSession\(\{ group, atomKey: entry\.atom\.key \}\)/);
+    expect(node).toMatch(/for \(const sibling of siblingSessions\.values\(\)\) sibling\.seat\.book\(book\)/);
+    expect(node).toMatch(/standFaceDaemonCanon\(\{ repo, control: await readControlDoc\(\), faceRelation: relation/);
+    expect(node).toMatch(/siblingBasesKeepers\.set\(group, keepFaceBases\(/);
+    expect(node).toMatch(/const dropped = sealedRest\.forget\(owned\);[\s\S]{0,120}repo\.removeFromCache\(/);
+    expect(node).toMatch(/sealedRest\.watch\(repo, standingSaveSessionFor\)/);
+    expect(node).toMatch(/openFaces: openFaceSubjects/);
+  });
+
+  it("the island resolves each lit face's own slots and lands a face-named wave there", () => {
+    const island = stripped(["lararium-keyhive", "src", "operator-daemon-behavior.ts"]);
+    expect(island).toMatch(/faceTarget: litFaceTargetOf\(ctx\)/);
+    expect(island).toMatch(/litSiblings\.set\(key, face\)/);
+    expect(stripped(["lararium-node", "src", "joined-face-auth.ts"])).toMatch(/registerBags: deriveRegisterBags\(\{ fleets: \[\], wikiBags: litFaceOwnBags\(relation\) \}\)/);
+  });
+});

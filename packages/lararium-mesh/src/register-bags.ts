@@ -164,6 +164,15 @@ export function standingDaemonCanonBag(input: { readonly lit: boolean; readonly 
 }
 
 /**
+ * THE LIT SET: the bags a face OWNS while it stands lit, worn or beside the worn face: the daemon wiki's device slots, its daemon
+ * canon (where its relation stands known), and its own catalog half. A sibling face's hive registers these and never a user
+ * wiki's bags, which belong to the worn face's mount.
+ */
+export function litFaceOwnBags(faceRelation: string | null | undefined): string[] {
+  return [...DAEMON_WIKI_SLOT_BAGS, ...(faceRelation ? [daemonFaceCanonBag(faceRelation)] : []), FACE_CATALOG_BAG_ID];
+}
+
+/**
  * The wiki bags a vessel's worn face carries: `registered`, the wiki bags the face's hive registers (`deriveRegisterBags`'s
  * `wikiBags`), and `sealed`, the bags the sealed rest seals under that face. `lit` reads true only while the face stands
  * lit and proved.

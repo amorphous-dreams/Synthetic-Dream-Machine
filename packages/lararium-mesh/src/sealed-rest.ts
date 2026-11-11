@@ -63,6 +63,8 @@ export class SaveBook<S extends SaveSession = SaveSession> {
   of(documentId: string): S | null { return this.#by.get(documentId)?.session ?? null; }
   /** Who wrote a document's latest change, as booked; null: no booking stands. */
   writerOf(documentId: string): string | null { return this.#by.get(documentId)?.writer ?? null; }
+  /** Drop one document's booking (its face left the lit set). */
+  forget(documentId: string): void { this.#by.delete(documentId); }
   /** Drop every booking of one session (by id), or of every session. */
   drop(sessionId?: string): void {
     for (const [doc, b] of [...this.#by]) if (sessionId === undefined || b.session?.id === sessionId) this.#by.delete(doc);
@@ -397,6 +399,9 @@ export interface SealedRest<S extends SaveSession = SaveSession> {
    *  the Repo and the store flush while the island still answers, and the bookings drop. Answers how many saves still
    *  wait unbooked: those rest nowhere new, and their changes come back by sync from the replica that holds them. */
   standDown(standing: readonly S[]): Promise<number>;
+  /** A face left the lit set: its documents' waiting saves drop from memory (never to disk) and their bookings with them.
+   *  Answers how many saves dropped. */
+  forget(documentIds: readonly string[]): number;
   /** V2: does this rest hold `documentId` sealed (mapped now, mapped this process, or a sealed value at rest)? An island
    *  asks before its own store rests a byte of it (`islandRestGuard`). */
   restsSealed(documentId: string): Promise<boolean>;
@@ -504,6 +509,11 @@ export function composeSealedRest<S extends SaveSession>(input: {
       book.drop();
       store.endHydration();
       return store.waiting();
+    },
+    forget(documentIds) {
+      const dropped = store.forget(documentIds);
+      for (const id of documentIds) book.forget(id);
+      return dropped;
     },
     restsSealed: (documentId) => store.holdsSealed(documentId),
     async sealMapped(documentId, session) {

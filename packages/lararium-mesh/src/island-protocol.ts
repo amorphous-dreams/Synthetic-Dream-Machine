@@ -291,6 +291,12 @@ export interface IslandMsg_Manifest {
      *  on its own key. The worker refuses a TORN face (some pins, not all), so absence buys FEWER CAPS and
      *  never a softened gate. */
     personaGroupId?:   string;
+    /** THE LIT SET: this face's handle index on its vessel (`h<N>`), so a face-named INGEST finds its face by the ordinal the
+     *  operator names. Absent: a composition that names none (a browser lift, a herm), and no face-named wave lands there. */
+    handleIndex?:      number;
+    /** This face's relation (its face plane pin, `faceRelationOf`): its daemon canon (`bags/daemon-<relation>`) stands by
+     *  it. Absent: the face's daemon canon waits until a proof names it. */
+    faceRelation?:     string;
     faceAnchor?: FaceAnchor | null;
     meshCabalDocIdHex?:    string;
     /** Writable bag URIs to register so verify/delegate resolve (lar: URIs). */
@@ -324,7 +330,7 @@ export interface IslandMsg_Manifest {
 /** Authentication material carried by one unlocked joined face. */
 export type JoinedFaceAuth = Required<Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>,
   "atom" | "personaGroupId" | "faceAnchor" | "personaKel" | "deviceEdge" | "signerDid" | "registerBags">> &
-  Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>, "meshCabalDocIdHex" | "veilArchiveBytes" | "faceAddressSecret">;
+  Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>, "meshCabalDocIdHex" | "veilArchiveBytes" | "faceAddressSecret" | "handleIndex" | "faceRelation">;
 
 /**
  * Cool the wiki slot from `wela` (hot) to `anu` (cold) — teardown; thread

@@ -2140,7 +2140,7 @@ async function prepareNodeBootOn(
   const placeReading = placeReadingWatch();
   /** Mint the worn face's place session: its atom signs the session's certificate at this vessel's place, read afresh
    *  from custody at the mint and overwritten after. */
-  const placeCell = placeSessionCell(async (worn) => {
+  const mintPlaceSession: Parameters<typeof placeSessionCell>[0] = async (worn) => {
     const place = await placeReading();
     const target = preparePlaceFace({
       personaGroup: worn.group, atomKey: worn.atomKey, place, anchorHead: async () => (await placeReading()).head,
@@ -2163,7 +2163,33 @@ async function prepareNodeBootOn(
       scope: Object.freeze({ atomKey: target.scope.atomKey, place: target.scope.place }),
       close,
     };
-  }, reseatStanding);
+  };
+  const placeCell = placeSessionCell(mintPlaceSession, reseatStanding);
+  // THE LIT SET'S SESSIONS: each sibling face lit beside the worn one stands its OWN place session (its atom signs its
+  // certificate at this vessel's place), seated in the same book, so a save of a document that sibling owns books its own
+  // session and seals under its own key (`sessionOfFace`), never the worn face's. A sibling that leaves the set stands down.
+  const siblingSessions = new Map<string, { readonly cell: ReturnType<typeof placeSessionCell>; readonly seat: ReturnType<typeof standingSessionSeat> }>();
+  const standSiblingSession = (worn: PlaceWorn): void => {
+    if (siblingSessions.has(worn.group)) return;
+    const seat = standingSessionSeat();
+    const cell: ReturnType<typeof placeSessionCell> = placeSessionCell(mintPlaceSession, () => {
+      const session = cell.session();
+      seat.stand(session);
+      sealedRest.store.mapMoved();
+      if (session !== null) rebookWaiting(session, `the sibling ${worn.group.slice(0, 8)}…'s place session stood`);
+    });
+    seat.book(sealedCells.book);
+    siblingSessions.set(worn.group, { cell, seat });
+    void cell.stand(worn);
+  };
+  const dropSiblingSession = (group: string): void => {
+    const held = siblingSessions.get(group);
+    if (!held) return;
+    siblingSessions.delete(group);
+    held.cell.standDown();
+    held.seat.stand(null);
+    held.seat.book(null);
+  };
   const standPlaceSession = (worn: PlaceWorn | null): Promise<void> => placeCell.stand(worn);
   /** The vessel's own chain at every anchor its worn face meets: the dial's Nexus while one stands, its place beside. */
   const ownChain = (): SessionOwnChain | null => {
@@ -2206,6 +2232,7 @@ async function prepareNodeBootOn(
     } });
     sealedCells.book = book;
     dialSeat.book(book);
+    for (const sibling of siblingSessions.values()) sibling.seat.book(book);
     sealedRest.store.mapMoved();
     return {
       book,
@@ -2261,13 +2288,29 @@ async function prepareNodeBootOn(
   };
   let mailbox!: DurableMailbox;            // set in makePool — the durable park/drain lane (node-only capability)
   let lightFace: (ordinal: number) => Promise<void> = async () => {};
+  /** THE LIT SET: a sibling face's relation, read off its own proved log once the boot proves the faces; null before. */
+  let siblingRelationOf: (group: string) => Promise<string | null> = async () => null;
   const dropFace = async (ordinal: number) => {
     const pins = await loadIdentityAnchors(ordinal);
     if (!pins?.deviceEdge?.deviceVerifyingKey) throw new Error(`face h${ordinal} has no device edge`);
     await daemonVm.dropFace(pins.deviceEdge.deviceVerifyingKey);
-    // THE LIT SET LOSES THE FACE: its documents file held from here on (their saves wait in memory, never on disk, never
-    // under another face's key), and the faces still open keep sealing.
-    if (pins.personaGroupId && siblingFaces.delete(pins.personaGroupId)) sealedRest.store.mapMoved();
+    // THE LIT SET LOSES THE FACE: every save waiting in memory for a document it owns drops (never to disk), its documents'
+    // handles release, its own place session and bases keeper stand down, and the faces still open keep sealing.
+    if (pins.personaGroupId) {
+      const group = pins.personaGroupId;
+      const leaving = siblingFaces.get(group);
+      if (leaving) {
+        const owned = deviceDocs.ids().filter((id) => deviceDocs.bagOf(id, [{ group, relation: leaving.relation, face: leaving.face }])?.face === leaving.face && leaving.face !== null);
+        siblingFaces.delete(group);
+        const dropped = sealedRest.forget(owned);
+        for (const id of owned) void repo.removeFromCache(id as never).catch(() => {});
+        if (dropped > 0) console.log(`[sealed-rest] face h${ordinal} locked: ${dropped} waiting save(s) of its own dropped from memory, none written`);
+      }
+      dropSiblingSession(group);
+      siblingBasesKeepers.get(group)?.stop();
+      siblingBasesKeepers.delete(group);
+      sealedRest.store.mapMoved();
+    }
     // The lock closes the face's relay route at once; the next gate sweep would leave it standing.
     await intentRelay?.refresh();
   };
@@ -2446,11 +2489,13 @@ async function prepareNodeBootOn(
   // The per-device daemon documents the control document names, each filed by its owner (answers whether any moved).
   const readDeviceDaemonDocs = (controlDoc: LarDoc | undefined): boolean => {
     const moved = deviceDocs.readControl(controlDoc);
-    if (moved) faceBasesKeeper?.refresh();
+    if (moved) { faceBasesKeeper?.refresh(); for (const k of siblingBasesKeepers.values()) k.refresh(); }
     return moved;
   };
   // THE LIT FACE'S BASES SIDECAR (`face-labels`): kept true off the face's own working slots while it stands.
   let faceBasesKeeper: { stop(): void; refresh(): void } | null = null;
+  // ONE BASES KEEPER PER LIT SIBLING: each keeps its own face's sidecar off its own working slots (the lit set).
+  const siblingBasesKeepers = new Map<string, { stop(): void; refresh(): void }>();
 
   // The vessel's control document, named by the daemon document (`control-home`): minted at founding beside the secret home.
   const readControlDoc = async (): Promise<DocHandle<LarDoc>> => {
@@ -3212,7 +3257,13 @@ async function prepareNodeBootOn(
     // EVERY PLANE FAMILY REGISTERS THROUGH A FACE PROOF: a face this boot does not wear registers its persona plane only where its
     // own sealed anchor, the verified KEL and its signed log vouch for that url (`proveFaceFromLog`, no device seat to prove);
     // a bootstrap entry no proof backs registers nothing.
-    const proveOtherFace = async (plane: (typeof bootstrap.personaPlanes)[number]) => {
+    const proveOtherFace = async (plane: (typeof bootstrap.personaPlanes)[number]) => (await proofOfOtherFace(plane))?.planes ?? null;
+    // THE LIT SET: a sibling's relation reads off its own proved log, so its daemon canon stands by it.
+    siblingRelationOf = async (group: string): Promise<string | null> => {
+      const plane = bootstrap.personaPlanes.find((candidate) => candidate.personaGroupId === group);
+      return plane ? (await proofOfOtherFace(plane))?.relation ?? null : null;
+    };
+    async function proofOfOtherFace(plane: (typeof bootstrap.personaPlanes)[number]) {
       try {
         const other = await loadFaceAnchorOfGroup(plane.personaGroupId);
         if (!other) return null;
@@ -3224,9 +3275,12 @@ async function prepareNodeBootOn(
         if (!otherFace?.intentsUrl) return null;
         const proof = proveFaceFromLog({ records, chain, group: plane.personaGroupId, anchor: other, planes: { persona: plane.url, intents: otherFace.intentsUrl } });
         if (!proof.ok) return null;
-        return provenPlaneUrls(proof.projection, { circles: otherFace.circlesUrl, identities: otherFace.identitiesUrl, sessions: otherFace.sessionsUrl, intents: otherFace.intentsUrl });
+        return {
+          planes: provenPlaneUrls(proof.projection, { circles: otherFace.circlesUrl, identities: otherFace.identitiesUrl, sessions: otherFace.sessionsUrl, intents: otherFace.intentsUrl }),
+          relation: (await import("@lararium/mesh")).faceRelationOf(proof.projection),
+        };
       } catch (e) { if (!(e instanceof CustodyLocked)) throw e; return null; }
-    };
+    }
     const proveRelayFace = async (group: string) => {
       const plane = bootstrap.personaPlanes.find((candidate) => candidate.personaGroupId === group);
       return plane ? proveOtherFace(plane) : null;
@@ -3354,6 +3408,7 @@ async function prepareNodeBootOn(
       chain: async (prefix) => { await siblingKel.ready; return siblingKel.chainForPrefix(prefix); },
       atomSeed: loadFaceAtomOfGroup, atomKey: (seed, group) => faceAtomKeyFromSeed(seed, group).key,
       addressSecret: readFaceAddressSecret, veilArchive: sovereign.veilArchive,
+      relation: (group: string) => siblingRelationOf(group),
       log: (line: string) => console.log(`[lararium] ${line}`),
     } : null;
     // EVERY OPEN READS THE SIBLINGS' CURRENT CUSTODY STANDING (Sol train #1): a sibling that locked or dropped since boot never rides a
@@ -3362,13 +3417,32 @@ async function prepareNodeBootOn(
     // joined face's inputs, so its daemon canon waits held until it stands worn); a sibling that locked since leaves.
     const litSibling = (entry: JoinedFaceAuth): void => {
       if (placeAid === null || entry.personaGroupId === wornDeviceGroup) return;
-      siblingFaces.set(entry.personaGroupId, { relation: null, face: placeProofSubjectRef({ atomKey: entry.atom.key, place: placeAid } as never) });
+      const group = entry.personaGroupId, relation = entry.faceRelation ?? null;
+      siblingFaces.set(group, { relation, face: placeProofSubjectRef({ atomKey: entry.atom.key, place: placeAid } as never) });
+      // ITS OWN SESSION: the sibling's saves book and seal under its own key from here on.
+      standSiblingSession({ group, atomKey: entry.atom.key });
+      if (relation === null) return;
+      // ITS OWN DAEMON CANON stands by its relation (named before its first byte, filed under that relation), and ITS OWN
+      // label and bases keeper keep its sidecar off its own working slots.
+      void (async () => {
+        await standFaceDaemonCanon({ repo, control: await readControlDoc(), faceRelation: relation,
+          beforeFirstByte: (bagId, documentId) => { if (deviceDocs.canonMinted(bagId, documentId, relation)) reverdictLater(); sealedRest.store.mapMoved(); } });
+        const projections = larProjectionsHome();
+        if (typeof entry.handleIndex === "number") {
+          try { writeFaceLabel({ relation, petname: await (await makeNodePersonaPetnameStore()).get(entry.handleIndex), handleIndex: entry.handleIndex }, projections); }
+          catch (e) { console.warn(`[face-label] the label for ${relation} did not write: ${e instanceof Error ? e.message : String(e)}`); }
+        }
+        if (!siblingBasesKeepers.has(group)) {
+          siblingBasesKeepers.set(group, keepFaceBases({ relation, projections, docs: () => deviceDocs.docsOf(DAEMON_WORKING_SLOT, [{ group, relation, face: null }])
+            .map((id) => repo.handles[id as keyof typeof repo.handles]).filter((h): h is NonNullable<typeof h> => h !== undefined && h.isReady()) as never }));
+        }
+      })().catch((e: unknown) => console.warn(`[lit-set] the sibling ${group.slice(0, 8)}…'s canon or sidecar stands not yet: ${e instanceof Error ? e.message : String(e)}`));
     };
     const readJoinedFaces = async (): Promise<JoinedFaceAuth[]> => {
       const faces = siblingPorts ? await joinedFaceAuth(siblingPorts) : [];
       classDeviceLedgers(vesselPrivate, faces.map((face) => face.atom.key));
       const open = new Set(faces.map((f) => f.personaGroupId));
-      for (const group of [...siblingFaces.keys()]) if (!open.has(group)) siblingFaces.delete(group);
+      for (const group of [...siblingFaces.keys()]) if (!open.has(group)) { siblingFaces.delete(group); dropSiblingSession(group); siblingBasesKeepers.get(group)?.stop(); siblingBasesKeepers.delete(group); }
       for (const face of faces) litSibling(face);
       sealedRest.store.mapMoved();
       return faces;
@@ -3400,6 +3474,9 @@ async function prepareNodeBootOn(
       // A face rides lit only through its atom: at the floor the atom's row rests under the vessel key, so the floor
       // carries none of the four pins and boots faceless, never as a face whose edge names a key it cannot hold.
       ...(faceLit && personaGroupId ? { personaGroupId } : {}),
+      // THE LIT SET: the worn face's handle index and relation, so a face-named wave finds it by the ordinal a person names.
+      ...(faceLit && personaGroupId ? { handleIndex: mountedFace } : {}),
+      ...(faceLit && wornRelation ? { faceRelation: wornRelation } : {}),
       ...(faceLit && standingAnchor ? { faceAnchor: standingAnchor } : {}),
       ...(faceLit && faceAddressSecret ? { faceAddressSecret } : {}),
       ...(faceLit && secretHome ? { secretUrl: secretHome.url } : {}),

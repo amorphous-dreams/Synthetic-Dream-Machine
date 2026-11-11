@@ -285,6 +285,17 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     return [...rows.values()].map((row) => ({ ...row, bagId: this.#ports.bagOf(row.documentId)?.bagId ?? null }));
   }
 
+  /**
+   * A FACE LEFT THE LIT SET (`vault lock --face N`): every save waiting in memory for these documents drops from memory and
+   * never reaches disk, sealed or clear. Answers how many saves dropped. The documents' sealed rest stays as it rests.
+   */
+  forget(documentIds: readonly string[]): number {
+    const gone = new Set(documentIds);
+    let dropped = 0;
+    for (const [name, w] of [...this.#waiting]) if (gone.has(w.key[0]!)) { this.#waiting.delete(name); dropped++; }
+    return dropped;
+  }
+
   /** The documents with a save waiting unbooked. */
   waitingDocuments(): string[] { return [...new Set([...this.#waiting.values()].map((w) => w.key[0]!))]; }
 

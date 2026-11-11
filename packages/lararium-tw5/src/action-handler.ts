@@ -59,7 +59,7 @@ import {
   yieldToHost,
 } from "@lararium/mesh";
 import type { HostTaskYield } from "@lararium/mesh";
-import type { VerbReactor, VerbTable } from "./verb-dispatcher.js";
+import type { SessionWorn, VerbReactor, VerbTable } from "./verb-dispatcher.js";
 import type { TW5Instance } from "./types/tiddlywiki.js";
 import { findOrThrow, makeCatalogAccessor } from "./catalog-accessor.js";
 import { memeticWikitextDeserializer, QUOTEBLOCKED_FIELD, TORN_FIELD } from "./deserializer.js";
@@ -522,7 +522,7 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
     // THE FACE-NAMED WAVE (the lit set): it lands only in the named face's own document, and only where the device table
     // names THAT face as its owner; an unnamed wave over a face-owned layer lands only where the worn face owns it.
     let faceStore: LarTiddlerStore | null = null;
-    if (action.verb === "INGEST") faceStore = await faceWaveTarget(action, opts.faceTarget);
+    if (action.verb === "INGEST") faceStore = await faceWaveTarget(action, opts.faceTarget, ctx.worn);
     if (action.verb === "LOAD" && (action.toBag === CONTROL_HOME_ID || action.toBag === SECRET_HOME_ID)) {
       throw new VerbRefusal("private-home-load", "private-home-load: LOAD cannot target the control or secret home; land through a working layer");
     }
@@ -693,8 +693,14 @@ function residencyFromContext(
  * a face-owned layer lands only where the worn face owns the document it resolves to. Answers the named face's store, or
  * null where the wave rides the ordinary access.
  */
-async function faceWaveTarget(action: IngestAction, resolve: FaceTargetResolver | undefined): Promise<LarTiddlerStore | null> {
+async function faceWaveTarget(action: IngestAction, resolve: FaceTargetResolver | undefined, hand?: SessionWorn): Promise<LarTiddlerStore | null> {
   const face = action.face;
+  // THE OPERATOR'S HAND ALONE NAMES ANOTHER FACE (store-door-verbs, the rows that act as a face): a call that rides a session
+  // wears that session's face, so an AI seat (or any session) naming a face other than the one it wears refuses by name. The
+  // operator's own gestures (the CLI seed and import, a ward credential) ride no session and may name any open face.
+  if (face !== undefined && hand !== undefined && hand.ordinal !== face) {
+    throw new VerbRefusal("face-hand-refused", `face-hand-refused: this call wears face h${hand.ordinal}, and only the operator's own hand (\`lares vessel seed\`, \`lares vessel import\`) names another face (h${face}); no seat lands one face's memory in another`);
+  }
   if (face === undefined) {
     if (!resolve || !isFaceOwnedLayer(action.toBag)) return null;
     const worn = await resolve(null, action.toBag);

@@ -11,6 +11,8 @@
  *        and never lands on the worn face's layer
  *   N5 — a face-named wave over a bag no face owns refuses `face-layer-unowned`
  *   N6 — the action parse refuses a face that reads as no whole handle index
+ *   N7 — THE OPERATOR'S HAND: a call riding a session that wears h0 (an AI seat) naming h1 refuses `face-hand-refused`; the
+ *        same session naming its own face lands, and the operator's gesture (no session) names h1 and lands
  *
  * Written beside the cure (written, unrun here; CI runs it).
  */
@@ -28,8 +30,9 @@ const meme = (prose: string, title = URI): string =>
   `\`\`\`toml meta\nuri-path = "${title.slice("lar:///".length)}"\n\`\`\`\n\n` +
   `${prose}\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
-const ctxOf = (composite: CompositeStore): VerbContext => ({
+const ctxOf = (composite: CompositeStore, worn?: { ordinal: number; presenter: string }): VerbContext => ({
   daemon: composite,
+  ...(worn ? { worn } : {}),
   invocation: { requestId: "ingest-face", title: "ingest", action: "INGEST", args: {}, targets: [], batchMode: "best-effort", status: "pending", requestedBy: "test", requestedAt: "2026-11-10" } as unknown as Verb,
   cap: async () => ({ ok: true }),
 }) as unknown as VerbContext;
@@ -48,11 +51,11 @@ function litPair(opts: { owners?: Record<number, number | null>; worn?: number }
     const store = own[f];
     return store ? { store, owner: owners[f] ?? null, worn } : null;
   };
-  const wave = (face?: number) => makeActionReactorFor("INGEST", { composite, faceTarget, diskMirrors: [{ bagId: WORKING, mirrorRoot: SOURCE, scope: "daemon" }] })({
+  const wave = (face?: number, worn?: { ordinal: number; presenter: string }) => makeActionReactorFor("INGEST", { composite, faceTarget, diskMirrors: [{ bagId: WORKING, mirrorRoot: SOURCE, scope: "daemon" }] })({
     "source-uri": SOURCE, "to-bag": WORKING, "change-id": `chg-face-${face ?? "none"}`,
     carriers: [{ uri: URI, text: meme(`landed for ${face ?? "the worn face"}`), diskHash: "sha256:0f", syncedHash: null, file: `${SOURCE}/one.mem` }],
     ...(face !== undefined ? { face } : {}),
-  }, ctxOf(composite));
+  }, ctxOf(composite, worn));
   return { composite, own, wave };
 }
 
@@ -116,5 +119,16 @@ describe("the face-named wave lands in its own face alone", () => {
     expect(parseResidencyAction(inv({ ...base, face: -1 }))).toBeNull();
     expect(parseResidencyAction(inv({ ...base, face: "1" }))).toBeNull();
     expect(parseResidencyAction(inv({ ...base, face: 1.5 }))).toBeNull();
+  });
+
+  test("N7 — an AI seat wearing h0 naming h1 refuses face-hand-refused; its own face lands; the operator's hand names h1", async () => {
+    const seat = { ordinal: 0, presenter: "did:key:z6MkSeatOfH0" };
+    const v = litPair();
+    await expect(v.wave(1, seat)).rejects.toMatchObject({ code: "face-hand-refused" });
+    expect(await v.own[1]!.get(URI)).toBeNull();
+    await v.wave(0, seat);
+    expect(await v.own[0]!.get(URI)).not.toBeNull();
+    await v.wave(1);
+    expect(await v.own[1]!.get(URI)).not.toBeNull();
   });
 });

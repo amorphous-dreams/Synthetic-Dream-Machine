@@ -1,4 +1,4 @@
-import { deriveRegisterBags, type IdentityAnchors, type JoinedFaceAuth } from "@lararium/mesh";
+import { deriveRegisterBags, litFaceOwnBags, type IdentityAnchors, type JoinedFaceAuth } from "@lararium/mesh";
 
 type FaceAnchor = JoinedFaceAuth["faceAnchor"];
 type Chain = JoinedFaceAuth["personaKel"]["chain"];
@@ -15,10 +15,15 @@ export interface JoinedFaceAuthPorts {
   readonly atomKey: (seed: Uint8Array, group: string) => string;
   readonly addressSecret: (group: string) => Promise<Uint8Array | null>;
   readonly veilArchive: (group: string) => Promise<Uint8Array | null>;
+  /** THE LIT SET: the face's relation, read off its own proved log (`faceRelationOf`); null where no proof names one. */
+  readonly relation?: (group: string) => Promise<string | null>;
   readonly log: (line: string) => void;
 }
 
-/** A torn sibling cannot take the mounted face's boot down. A sibling receives the vessel ground alone: its planes need their own face proof, and the mounted slot's wiki bags and the system canon belong to the mounted face. */
+/** A torn sibling cannot take the mounted face's boot down. A sibling receives the vessel ground and the bags it OWNS while lit
+ *  (`litFaceOwnBags`: the daemon wiki's device slots, its daemon canon by its relation, its catalog half), so its own memory seals
+ *  under its own hive; its planes need their own face proof, and the mounted slot's user wiki bags and the system canon belong to
+ *  the mounted face. Each entry names its handle index and relation, so a face-named wave finds it. */
 export async function joinedFaceAuth(ports: JoinedFaceAuthPorts): Promise<JoinedFaceAuth[]> {
   const result: JoinedFaceAuth[] = [];
   for (const ordinal of ports.ordinals()) {
@@ -38,11 +43,13 @@ export async function joinedFaceAuth(ports: JoinedFaceAuthPorts): Promise<Joined
       if (key !== pins.deviceEdge.deviceVerifyingKey) throw new Error("atom differs from device edge");
       secret = await ports.addressSecret(group);
       const archive = await ports.veilArchive(group);
-      result.push({ atom: { seed: Buffer.from(seed).toString("hex"), key }, personaGroupId: group, faceAnchor: anchor,
+      const relation = (await ports.relation?.(group)) ?? null;
+      result.push({ atom: { seed: Buffer.from(seed).toString("hex"), key }, personaGroupId: group, faceAnchor: anchor, handleIndex: ordinal,
+        ...(relation ? { faceRelation: relation } : {}),
         personaKel: { prefix: pins.personaKelPrefix, chain }, deviceEdge: pins.deviceEdge, signerDid: pins.signerDid,
         ...(pins.meshCabalDocIdHex ? { meshCabalDocIdHex: pins.meshCabalDocIdHex } : {}),
         ...(secret ? { faceAddressSecret: Buffer.from(secret).toString("hex") } : {}),
-        ...(archive ? { veilArchiveBytes: archive } : {}), registerBags: deriveRegisterBags({ fleets: [] }) });
+        ...(archive ? { veilArchiveBytes: archive } : {}), registerBags: deriveRegisterBags({ fleets: [], wikiBags: litFaceOwnBags(relation) }) });
     } catch (e) {
       ports.log(`joined face h${ordinal} skipped: ${e instanceof Error ? e.message : String(e)}`);
     } finally { seed?.fill(0); secret?.fill(0); }

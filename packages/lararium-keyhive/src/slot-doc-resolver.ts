@@ -371,3 +371,47 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
     },
   };
 }
+
+/** One LIT face as the lit set's slot resolvers read it: its group, its own address secret, and its own hive and door. */
+export interface LitFaceSlotSpec {
+  readonly group: string;
+  /** The face's own address secret, a fresh copy per read (the resolver zero-fills it). */
+  readonly secret: () => Promise<Uint8Array | null>;
+  readonly keyhive?: CapabilityProvider;
+  readonly faceDoor?: FaceBagDoor;
+}
+
+/** The lit set's slot resolvers: one per lit face, each under that face's own group, secret, hive and door. */
+export interface LitFaceSlotDocs {
+  /** The resolver for one lit face (cached by group; a face that changes its inputs drops first). */
+  of(spec: LitFaceSlotSpec): SlotDocResolver;
+  /** A face left the lit set: its resolver drops, and nothing of it resolves until it lights again. */
+  drop(group: string): void;
+}
+
+/**
+ * THE LIT SET'S SLOTS (sealed-store#/the-lit-set): every LIT face resolves its own instance slots under its OWN secret, its own
+ * group and its own door, never the worn face's. A sibling's working slot derives from the sibling's address secret (a user
+ * wiki), and its daemon wiki's device slots stand under the sibling's group in the control document (`daemon-slot/<kind>/
+ * <group>`), so each face's memory lands in its own documents. A lit face is seated by being lit: its hive holds its group.
+ */
+export function litFaceSlotDocs(base: Omit<SlotDocResolverArgs, "personaGroupId" | "faceAddressSecret" | "faceDoor" | "keyhive" | "faceSeated" | "seatSettled" | "rebindWorking">): LitFaceSlotDocs {
+  const byGroup = new Map<string, SlotDocResolver>();
+  return {
+    of(spec) {
+      const known = byGroup.get(spec.group);
+      if (known) return known;
+      const resolver = makeSlotDocResolver({
+        ...base,
+        personaGroupId: spec.group,
+        faceAddressSecret: spec.secret,
+        faceSeated: async () => true,
+        ...(spec.keyhive ? { keyhive: spec.keyhive } : {}),
+        ...(spec.faceDoor ? { faceDoor: spec.faceDoor } : {}),
+      });
+      byGroup.set(spec.group, resolver);
+      return resolver;
+    },
+    drop(group) { byGroup.delete(group); },
+  };
+}

@@ -14,6 +14,7 @@
  *   LS2 — lit {a}: b's save waits; it seals once b lights and its session rebooks
  *   LS3 — a load of b's document with only a lit throws session-face-foreign
  *   LS4 — lock b: b's later save waits, a's keeps sealing
+ *   LS5 — lock b drops b's waiting saves from memory (`forget`): none reaches disk, and nothing of them seals later
  *
  * Written beside the cure (written, unrun here; CI runs it).
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed · lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings
@@ -170,6 +171,20 @@ describe("the lit set: each open face seals under its own key", () => {
     expect(after.some((s) => s.bagId === BAG_A && s.subject === r.faceA)).toBe(true);
     expect(after.some((s) => s.bagId === BAG_B)).toBe(false);
     expect(A.getHeads(theirs.doc() as A.Doc<unknown>).length).toBeGreaterThan(0);
+    await r.repo.shutdown();
+  });
+
+  it("LS5 — lock b drops its waiting saves from memory: none reaches disk, and b's next light seals nothing of them", async () => {
+    const r = await twoFaces();
+    const theirs = docOfB<{ note?: string }>(r, (d) => { d.note = "waits for b"; });
+    await r.repo.flush();
+    expect(r.rest.store.waiting(theirs.documentId)).toBeGreaterThan(0);
+    expect(r.rest.forget([theirs.documentId])).toBeGreaterThan(0);
+    expect(r.rest.store.waiting(theirs.documentId)).toBe(0);
+    expect(restsAny(r.inner, theirs.documentId)).toBe(false);
+    r.open.add(r.faceB);
+    expect(await r.rest.rebook(r.sessionB)).toBe(0);
+    expect(restsAny(r.inner, theirs.documentId)).toBe(false);
     await r.repo.shutdown();
   });
 });

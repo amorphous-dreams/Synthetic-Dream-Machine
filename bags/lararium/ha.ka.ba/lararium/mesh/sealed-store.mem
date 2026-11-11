@@ -327,7 +327,9 @@ One passphrase may open every face (`lares vault unlock --all --face N`); separa
 
 ''The threat model.'' The lit set answers two threats: ''bytes at rest'' (a disk read with the vessel down reads only sealed values, each under its face's key) and ''cross-face logical leaks'' (no code path lands, books or seals one face's memory under another face's key or in another face's layer). It does not answer a ''live process compromise'': a process that holds several faces open holds several faces' keys at once, and an attacker inside that process reads them all. ''The crypto boundary stands at the daemon island'': the vessel's main thread holds no content key (the document store's door carries bodies and sealed values, never a key), and the island keeps one content-key holder per face (its Keyhive provider per atom key, `lightJoinedFace`). A later per-face process split moves each face's holder into an island of its own behind the same door, with no change to the sealed rest.
 
-''Owed.'' A sibling face's own place session (each open face's session at the vessel's place) and the island's face resolver for a sibling's working slot (its derived address from that face's address secret, registered under that face's door) stand owed, so a sibling's saves wait by name and a face-named INGEST for a sibling refuses `face-unresolved` until they land.
+''Each lit face stands whole.'' A sibling face lit beside the worn one stands its own place session in the vessel's session book (its atom signs at this vessel's place), so a save of a document it owns books that session and seals under its own key; its hive registers the bags it owns while lit (`litFaceOwnBags`: the daemon wiki's device slots, its daemon canon by its relation, its catalog half), never a user wiki; its daemon canon stands by its relation, read off its own proved log; it keeps its own label and bases sidecar. The island resolves each lit face's own slots under that face's group, secret, hive and door (`litFaceSlotDocs`), and a face-named INGEST lands in that face's own document, the owner read off the control document (`lit-face-target`). Only the operator's hand names another face: a call that rides a session wears that session's face, and a seat naming another refuses `face-hand-refused`. A lock of one face drops its waiting saves from memory (`SealedRest.forget`), never to disk, and releases its documents' handles.
+
+''Unproven.'' The session sign door signs each ask under the vessel's own chain (the worn face's anchors); whether the island's holder accepts a sibling place session's seal through that door stands unmeasured until a live walk runs it.
 
 <<~/ahu>>
 
@@ -412,6 +414,6 @@ One passphrase may open every face (`lares vault unlock --all --face N`); separa
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Zfiwb1eadc5Pu5VzOjCJRmXQ5vX9lIJY-415MeWF-DI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;NfltA9uof_2Fua2lgB8Tsutlk7ty6UPv29RkK5UbAKE`>>
 
 <<^ code=`&#x0004;` to=`?`>>
