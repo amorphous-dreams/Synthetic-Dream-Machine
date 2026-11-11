@@ -36,6 +36,7 @@ import { cmdCas } from "./cas.js";
 import { summaryOutput } from "../verb-result.js";
 import { runVerb, verbFailure } from "../verb-call.js";
 import { exitFor } from "../render.js";
+import { cmdShare } from "./share-cmd.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 /** `lares bag compact <bag-url>` — DXOS-style snapshot-restart on one bag.
@@ -96,6 +97,7 @@ const SUBCOMMANDS: Readonly<Record<string, { handler: BagSubcommand; summary: st
   "declare":       { handler: bagLifecycle(cmdBagDeclare), summary: "Write/amend a bag's own declaration (--tier --home --repo --role). Moves no bytes." },
   "home":          { handler: bagLifecycle(cmdBagHome),    summary: "MOVE a bag to a home (--to, --repo). Plans by default; --approve performs it." },
   "repo":          { handler: bagLifecycle(cmdBagRepo),    summary: "The repo registry: `list` | `add <id> --root <path>` | `drop <id>`. Bags name IDs, never paths." },
+  "share":         { handler: cmdShare("bag"), summary: "Who reads and writes a bag, by face pet-name (--read <names> --write <names> --note <why> --face N); --list shows the resolved answer per bag. Sharing rides by reference and delegation, never a copy." },
 };
 
 function printBagHelp(): void {

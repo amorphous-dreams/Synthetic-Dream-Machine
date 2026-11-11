@@ -19,6 +19,7 @@ import { vesselDid } from "../env.js";
 import { emit } from "../render.js";
 import { summaryOutput, type SubmitResult, type SubmitOptions } from "../verb-result.js";
 import { runVerb, verbFailure } from "../verb-call.js";
+import { cmdShare } from "./share-cmd.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 type WikiSubcommand = (args: ParsedArgs) => Promise<number>;
@@ -560,6 +561,7 @@ export async function cmdWikiWhich(args: ParsedArgs): Promise<number> {
 
 const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: string }>> = {
   "init":  { handler: cmdWikiInit,  summary: "Mint a fresh wiki: wiki canonical + per-wiki draft + recipe. Idempotent." },
+  "share": { handler: cmdShare("wiki"), summary: "Who reads and writes a wiki's canon, by face pet-name (--read <names> --write <names> --note <why> --face N); --list shows the resolved answer." },
   "open":  { handler: cmdWikiOpen,  summary: "Set which wiki the next `lares vessel stand --foreground` boot mounts as active. Does not live-remount the current vessel." },
   "switch": { handler: cmdWikiSwitch, summary: "LIVE-activate a wiki (no reboot — the true swap; wakes it cold from its recipe). Browser flips the projection surface." },
   "hold":    { handler: cmdWikiHold,    summary: "Pin a wiki as a rotatable active pin (the daemon bag always + N rotatable; a hold past budget releases the least-recently-held)." },

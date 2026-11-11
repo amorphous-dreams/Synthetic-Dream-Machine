@@ -31,8 +31,8 @@ import { wardRootSigner } from "./ward-signer.js";
 import { provenPlaneUrls, registerFacePlanesForRelay } from "./face-plane-registration.js";
 import { enabledIntentRelayFaces } from "./intent-relay-ring.js";
 
-import { readFileSync, writeFileSync, mkdirSync } from "fs";
-import { larBootstrapPath, larProjectionsHome } from "./vessel-paths.js";
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
+import { larBootstrapPath, larProjectionsHome, larConfigHome } from "./vessel-paths.js";
 import { createAfterRoll } from "./after-roll-chain.js";
 import { join }                         from "path";
 import type { Server }                  from "node:http";
@@ -81,7 +81,7 @@ import type { HeldSaves, MountManifest } from "@lararium/mesh";
 import { nodePromoteStores, nodePromoteCas } from "./promoted-store.js";
 import { casDirForStorage, casFetchReading, corpusCasDirFromEnv, makeNodeCasResolver, type IslandCasData, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
 import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard } from "@lararium/mesh";
-import { answerReceiptWithHeads, workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, wikiIslandPeersOf, peerArrivals, admitGatePinDigest, ownEntry, plainField, CATALOG_ROW_TIER_FIELD, keptRowTier, vesselTierBags } from "@lararium/mesh";
+import { answerReceiptWithHeads, workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, wikiIslandPeersOf, peerArrivals, admitGatePinDigest, ownEntry, plainField, CATALOG_ROW_TIER_FIELD, keptRowTier, vesselTierBags, SHARE_CONFIG_FILE, parseShareFile, shareRowOf, shareRowFields, reconcileShareRows, shareRowTitle, type ShareRow } from "@lararium/mesh";
 import { makeBagTierReader } from "./vessel-bag-tier.js";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
 import type { CapabilityRecord, CustodyWriter, DyadReader, LarVessel, ReceiptIssuer } from "@lararium/mesh";
@@ -2492,6 +2492,19 @@ async function prepareNodeBootOn(
     if (moved) { faceBasesKeeper?.refresh(); for (const k of siblingBasesKeepers.values()) k.refresh(); }
     return moved;
   };
+  /** Reconcile `$LAR_ROOT/config/share.tid` into the control document: the file wins; with no file, the rows stand. */
+  const reconcileShareConfig = async (control: DocHandle<LarDoc>): Promise<void> => {
+    const path = join(larConfigHome(), SHARE_CONFIG_FILE);
+    const file = existsSync(path) ? parseShareFile(readFileSync(path, "utf8")) : null;
+    const held = Object.entries(control.doc()?.tiddlers ?? {}).map(([, r]) => shareRowOf((plainRecordOrNull(r as never)?.tiddler ?? {}) as Record<string, unknown>)).filter((r): r is ShareRow => r !== null);
+    const { put, remove } = reconcileShareRows(file, held);
+    if (put.length + remove.length === 0) return;
+    control.change((doc) => {
+      for (const row of put) { const { title: _t, ...fields } = shareRowFields(row); const title = shareRowTitle(row.slug); doc.tiddlers[title] = storedLarRecord(title, fields, "share-config"); }
+      for (const title of remove) delete doc.tiddlers[title];
+    });
+    console.log(`[share] the share config's file reconciled into the control document: ${put.length} row(s) written, ${remove.length} removed`);
+  };
   // THE LIT FACE'S BASES SIDECAR (`face-labels`): kept true off the face's own working slots while it stands.
   let faceBasesKeeper: { stop(): void; refresh(): void } | null = null;
   // ONE BASES KEEPER PER LIT SIBLING: each keeps its own face's sidecar off its own working slots (the lit set).
@@ -3386,6 +3399,9 @@ async function prepareNodeBootOn(
     }
     readDeviceDaemonDocs((await readControlDoc()).doc());
     sealedRest.store.mapMoved();
+    // THE SHARE CONFIG'S FILE WINS (sealed-store#/the-share-config): `$LAR_ROOT/config/share.tid` survives a re-founding and a
+    // person edits it by hand, so each boot reconciles it into the control document, the rows' one authority while it stands.
+    await reconcileShareConfig(await readControlDoc()).catch((e: unknown) => console.warn(`[share] the share config stays as the control document holds it: ${e instanceof Error ? e.message : String(e)}`));
     const daemonCanon = canonBagId && wornRelation ? await standFaceDaemonCanon({ repo, control: await readControlDoc(), faceRelation: wornRelation,
       beforeFirstByte: (bagId, documentId) => {
         if (deviceDocs.canonMinted(bagId, documentId, wornRelation)) reverdictLater();

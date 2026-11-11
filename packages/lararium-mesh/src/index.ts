@@ -674,3 +674,4 @@ export * from "./promote-panel-api.js";
 
 
 export * from "./promote-main-verbs.js";
+export * from "./share-config.js";

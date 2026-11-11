@@ -28,8 +28,10 @@ import {
   makeCircleReactors,
   makeCabalRealmReactors,
   makeIntentViewReactor, runLocalVerb, INTENT_VIEW_CAP, controlOf, MemoryTiddlerStore,
+  makeShareSetReactor, makeShareListReactor, readShareRows,
 } from "@lararium/tw5";
-import { DAEMON_WIKI_SLUG, ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, recipeLayerIndex, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, ControlHomeUnavailable, type ChangeOrigin } from "@lararium/mesh";
+import { applyShares } from "./share-apply.js";
+import { DAEMON_WIKI_SLUG, ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, recipeLayerIndex, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, ControlHomeUnavailable, faceCatalogDocUrl, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor, VerbTable } from "@lararium/tw5";
 import type { IslandMsg_Manifest, JoinedFaceAuth } from "@lararium/mesh";
 import { boardDyadReader, intentDoorStandings } from "./board-dyad-reader.js";
@@ -1434,6 +1436,59 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         // No tier reader standing reads every bag as undeclared, so a re-stamp fails toward the face, never toward F.
         registry.register("restamp-bag-tier", makeRestampBagTierReactor({ catalog, bagTier: bagTier ?? (() => null) }));
       }
+      // THE SHARE CONFIG (sealed-store#/the-share-config): its rows rest in the vessel's control document, which no face reads;
+      // the operator's CLI door writes them (and the file beside them), and no agent surface reaches them.
+      registry.register("share-set", makeShareSetReactor({ control: () => controlOf(ctx) }), { summary: "Write or remove one share row ($:/config/lares/share/<slug>): who reads and writes a bag, by face pet-name.", surfaces: [VERB_SURFACE.cli] });
+      registry.register("share-list", makeShareListReactor({ control: () => controlOf(ctx) }), { summary: "List the share rows the control document holds.", surfaces: [VERB_SURFACE.cli] });
+      // SHARING BY DELEGATION, NEVER A COPY: the owner face's hive delegates a bag it holds to a grantee face, both lit in this
+      // island; the grantee's hive ingests the delegation's events. An owner or grantee that stands shut refuses by name, and the
+      // vessel keeps the grant owed behind an opaque flag until both stand lit.
+      const holderOf = (group: string | null) => {
+        if (group === null) return null;
+        if (kh && daemonAuth.personaGroupId === group) return kh;
+        for (const face of providers.values()) if (face.group === group) return face.provider;
+        return null;
+      };
+      // The operator's hand names each face's handle index and pet-name (the CLI reads them off custody); the island adds what
+      // it holds lit: each lit face's group and its own catalog half (the worn face's, and each sibling's by its own secret).
+      registry.register("share-apply", async (args) => {
+        const named = Array.isArray(args["faces"]) ? (args["faces"] as Array<Record<string, unknown>>) : [];
+        const litByIndex = new Map<number, { group: string; catalogUrl: string | null }>();
+        if (typeof daemonAuth.handleIndex === "number" && daemonAuth.personaGroupId) litByIndex.set(daemonAuth.handleIndex, { group: daemonAuth.personaGroupId, catalogUrl: ctx.faceCatalogUrl ?? null });
+        for (const entry of litSiblings.values()) {
+          if (typeof entry.handleIndex !== "number") continue;
+          litByIndex.set(entry.handleIndex, { group: entry.personaGroupId, catalogUrl: entry.faceAddressSecret ? faceCatalogDocUrl(meshHexToBytes(entry.faceAddressSecret)) : null });
+        }
+        const faces = named.filter((f) => typeof f["handleIndex"] === "number").map((f) => {
+          const handleIndex = f["handleIndex"] as number;
+          const lit = litByIndex.get(handleIndex) ?? null;
+          return {
+            handleIndex, petname: typeof f["petname"] === "string" ? f["petname"] : null, group: lit?.group ?? null,
+            catalog: async () => lit?.catalogUrl ? await findOrThrow(ctx.repo, lit.catalogUrl, `the catalog half of h${handleIndex}`, { timeoutMs: DOCUMENT_HANG_BOUND_MS }) as never : null,
+          };
+        });
+        const control = controlOf(ctx);
+        const ORIGIN = { kind: "lares-verb", requestId: "share-apply" } as const;
+        const applied = await applyShares({
+          rows: () => readShareRows(control), faces,
+          floor: async () => (ctx.catalogUrl ? (await makeCatalogAccessor(ctx.repo, ctx.catalogUrl, null).handle()).doc() : undefined),
+          salt: daemonAuth.placeVerifyingKey,
+          flag: {
+            set: async (title) => { if (!(await control.get(title))) await control.put(mutableLarRecord(title, { text: "owed" }, "share-apply"), ORIGIN); },
+            clear: async (title) => { if (await control.get(title)) await control.remove(title, ORIGIN); },
+          },
+          grant: async (g) => {
+            const owner = holderOf(g.ownerGroup), grantee = holderOf(g.granteeGroup);
+            if (!owner || !grantee) throw new VerbRefusal("share-face-shut", "share-face-shut: a face of this grant stands shut here");
+            if (!owner.docIdOfBag(g.bag)) await owner.registerBag(g.bag);
+            const { id } = await owner.receiveContactCard(await grantee.contactCard());
+            // A writer takes the hand the house grants a face over a bag it writes (Keyhive's `admin`, `FACE_SEATS_AND_UNSEATS`).
+            await owner.delegate({ audience: id, bagUrl: g.bag, access: g.access === "edit" ? "admin" : "read" });
+            await grantee.ingestPeerEvents(await owner.eventsForPeer(id));
+          },
+        });
+        return { ok: true, ...applied, waiting: [...applied.waiting] };
+      }, { summary: "Land the share config: lift each shared bag's row into each lit grantee's catalog half and delegate it from its owner's hive; a shut face's grant waits behind an opaque flag.", surfaces: [VERB_SURFACE.cli] });
       // THE CONTENT FENCE DENIES BY DEFAULT. A verb runs on the MOUNTED face's resources (its content keys, its provider,
       // mint and ledger, its slot documents and catalog) whichever face's provider cleared the verify, so a presenter that
       // is another face refuses by name before any handler reads. The fence stands before EVERY verb on this table,

@@ -28,6 +28,7 @@ import { udsAlive } from "../local-connector.js";
 import { sendCustodyFrame, type CustodyDoorAnswer } from "../custody-door.js";
 import { emit, exitFor, refuseUsage, wantsJson } from "../render.js";
 import { helpLines } from "../command-help.js";
+import { LIVE_SHARE_DOORS, landShares } from "../share-doors.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 function usage(args: ParsedArgs, typed?: string): number {
@@ -249,6 +250,14 @@ async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number>
     emit(args, ok
       ? { ok: true, data: a, human: () => console.log(unlockLine(a)) }
       : { ok: false, error: { code: knownReading ? String(a["reading"]) : "unlock-incomplete", message: unlockLine(a) }, ...(knownReading ? { data: a } : {}), human: () => console.error(`lares vault unlock: ${unlockLine(a)}`) });
+    // A FACE LIT, THE SHARES LAND (sealed-store#/the-share-config): each row naming a face now open lifts its bag's row into
+    // that face's catalog half and takes its delegation from the owner's hive; one that still waits stays behind its flag.
+    if (ok) {
+      try {
+        const landed = await landShares(LIVE_SHARE_DOORS, await LIVE_SHARE_DOORS.faces());
+        if (landed !== null && Number(landed["granted"] ?? 0) > 0) console.log(`shares: ${Number(landed["granted"])} grant(s) landed for the faces now open`);
+      } catch (e) { console.error(`shares: the share config waits (${e instanceof Error ? e.message : String(e)}); \`lares bag share --list\` reads it`); }
+    }
     return ok ? 0 : 1;
   }
   const u = await openOrRefuse(args, "unlock", homes, io, creds);
