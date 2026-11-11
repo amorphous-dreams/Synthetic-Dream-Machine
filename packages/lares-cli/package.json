@@ -12,7 +12,8 @@
     "build": "tsc -p tsconfig.build.json",
     "dev": "tsx src/bin/lares.ts",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json"
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
+    "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json"
   },
   "dependencies": {
     "@lararium/memetic-frame": "workspace:*",

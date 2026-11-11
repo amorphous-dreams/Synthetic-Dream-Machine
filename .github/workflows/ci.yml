@@ -147,6 +147,12 @@ jobs:
       - name: Typecheck all packages
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: pnpm -r typecheck
+      # `pnpm -r typecheck` reads source alone (every tsconfig.json excludes tests/), and vitest's esbuild checks no
+      # types, so each package's tests typecheck here against its ceiling (tools/typecheck-tests-baseline.json): new
+      # drift reads red, the standing drift burns down, and the witness turns --strict once every ceiling reads zero.
+      - name: Typecheck every package's tests (ratchet)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: tools/typecheck-tests-witness.sh
       - name: noosphere-boot.mem stands where the hooks load it
         if: ${{ !cancelled() }}
         run: |

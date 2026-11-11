@@ -11,6 +11,7 @@
     "test:fresh": "pnpm -r build && pnpm -r test",
     "typecheck": "pnpm -r typecheck",
     "typecheck:witness": "tools/typecheck-witness.sh",
+    "typecheck:tests": "tools/typecheck-tests-witness.sh",
     "lint": "pnpm -r lint",
     "dev": "concurrently -n node,vite -c magenta,cyan \"pnpm --filter @lararium/node dev\" \"pnpm --filter @lararium/web dev\"",
     "test:unit": "pnpm -r test",

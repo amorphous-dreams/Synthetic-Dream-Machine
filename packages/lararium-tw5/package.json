@@ -63,6 +63,7 @@
     "build:heleuma:commit": "tsx scripts/sync-heleuma.ts --commit",
     "build:plugin": "tsx scripts/build-plugin-tiddler.ts",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
+    "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
     "test": "vitest run",
     "test:sigil-alignment": "tsx scripts/check-sigil-alignment.ts",
     "smoke:plugin-boot": "tsx scripts/smoke-plugin-boot.ts",

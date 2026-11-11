@@ -1,0 +1,12 @@
+{
+  "//": "Per-package ceilings of test type errors (tools/typecheck-tests-witness.sh). A ceiling only lowers; the end state reads every ceiling 0 and the witness runs --strict.",
+  "ceilings": {
+    "lararium-browser": 128,
+    "lararium-keyhive": 107,
+    "lararium-mesh": 431,
+    "lararium-node": 754,
+    "lararium-tw5": 219,
+    "lararium-web": 71,
+    "lares-cli": 74
+  }
+}

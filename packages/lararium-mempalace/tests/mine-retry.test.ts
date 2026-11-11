@@ -67,7 +67,7 @@ describe("two contending mines through ONE lock (the graceful-concurrency proof)
   test("the second WAITS for the first; both complete, none throws on busy", async () => {
     let held = false;
     const done: string[] = [];
-    const attempts: Record<string, number> = { a: 0, b: 0 };
+    const attempts: Record<"a" | "b", number> = { a: 0, b: 0 };
 
     const mine = (id: "a" | "b") =>
       mineWithRetryAsync(async () => {
