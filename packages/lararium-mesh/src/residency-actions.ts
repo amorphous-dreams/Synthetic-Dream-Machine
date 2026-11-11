@@ -309,6 +309,13 @@ export interface IngestAction extends ResidencyActionBase {
    *  that holds no base over records that say something else; the gate answers `conflict`, `no-base`,
    *  and a person settles it. Absent → a gesture a person named. */
   readonly unattended?: boolean;
+  /**
+   * THE FACE-NAMED WAVE (the lit set): the handle index of the face whose OWN layer this wave lands in. The handler resolves
+   * that face's document through the island's face resolver and lands only where the vessel's device table names THAT face
+   * as the document's owner; it never falls back to the worn face. Absent → the worn face's layer, and a target whose owner
+   * names another face refuses.
+   */
+  readonly face?: number;
 }
 
 export type ResidencyAction =
@@ -397,6 +404,7 @@ export function encodeResidencyArgs(action: ResidencyAction): ResidencyArgs {
         ...(action.deletions ? { deletions: action.deletions } : {}),
         ...(action.kapae ? { kapae: action.kapae } : {}),
         ...(action.unattended === true ? { unattended: true } : {}),
+        ...(action.face !== undefined ? { face: action.face } : {}),
       };
     default: {
       // Exhaustiveness guard: a new ResidencyAction variant that lands here without a case
@@ -512,11 +520,15 @@ export function parseResidencyAction(inv: Verb): ResidencyAction | null {
     // unattended and read as a person's gesture would adopt where it must stand off.
     const unattended = args["unattended"];
     if (unattended !== undefined && unattended !== true) return null;
+    // A named face reads as a whole handle index; any other spelling refuses rather than land on a face nobody named.
+    const face = args["face"];
+    if (face !== undefined && (typeof face !== "number" || !Number.isSafeInteger(face) || face < 0)) return null;
     return {
       ...base, verb: "INGEST", sourceUri, toBag, changeId, carriers,
       ...(deletions.length > 0 ? { deletions } : {}),
       ...(kapae.length > 0 ? { kapae } : {}),
       ...(unattended === true ? { unattended: true } : {}),
+      ...(typeof face === "number" ? { face } : {}),
     };
   }
 

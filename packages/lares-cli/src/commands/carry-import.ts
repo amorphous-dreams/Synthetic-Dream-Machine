@@ -5,7 +5,7 @@
  */
 import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor } from "../render.js";
-import { carryImport, carryRefusal, wearItLine, LIVE_CARRY_DOORS, type CarryDoors, type CarryImportResult } from "./carry.js";
+import { carryImport, carryRefusal, unlockItLine, LIVE_CARRY_DOORS, type CarryDoors, type CarryImportResult } from "./carry.js";
 
 export async function cmdImport(args: ParsedArgs, doors: CarryDoors = LIVE_CARRY_DOORS): Promise<number> {
   const src = args.positional[0];
@@ -25,7 +25,7 @@ export async function cmdImport(args: ParsedArgs, doors: CarryDoors = LIVE_CARRY
       for (const w of result.warnings) console.error(`  warning: ${w}`);
       for (const [pet, i] of Object.entries(result.faceMap)) console.log(`  face "${pet}" -> h${i}`);
       for (const a of result.redeclare) console.log(`  re-declare ${a}`);
-      for (const w of result.waiting) console.log(`  ${wearItLine(w, "import")}; nothing of its memory laid into any layer`);
+      for (const w of result.waiting) console.log(`  ${unlockItLine(w, "import")}; nothing of its memory laid into any layer`);
       for (const b of result.minted) console.log(`  ${result.applied ? "minted" : "would mint"} ${b} (this vessel held no such wiki)`);
       for (const [cls, t] of Object.entries(result.tallies)) {
         if (t.landed + t.already + t.planned + t.stoodOff.length + t.refused.length === 0) continue;

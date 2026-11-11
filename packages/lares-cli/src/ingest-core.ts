@@ -814,6 +814,9 @@ export interface SubmitIngestOpts {
    * a file that holds no base over records that say something else: it answers `conflict`, `no-base`.
    */
   readonly unattended?: boolean;
+  /** THE FACE-NAMED WAVE (the lit set): the handle index of the open face whose own layer takes this wave. The island lands it
+   *  only where its device table names that face as the target document's owner; it never falls back to the worn face. */
+  readonly face?: number;
 }
 
 /**
@@ -851,6 +854,7 @@ export async function submitIngest(opts: SubmitIngestOpts): Promise<SubmitResult
     ...(deletions.length > 0 ? { deletions: deletions.map((d) => ({ uri: d.uri, syncedHash: d.syncedHash })) } : {}),
     ...(opts.kapae !== undefined && opts.kapae.length > 0 ? { kapae: [...opts.kapae] } : {}),
     ...(opts.unattended === true ? { unattended: true } : {}),
+    ...(opts.face !== undefined ? { face: opts.face } : {}),
   };
   // --in-wiki: wrap the INGEST so it runs IN the active wiki island over its
   // composite (where working lives), mirroring `lares act --in-wiki`. The

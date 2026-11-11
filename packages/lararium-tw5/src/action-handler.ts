@@ -206,8 +206,26 @@ export function makeTw5Deserializer(engine: { readonly $tw: TW5Instance }): Tw5D
  */
 export const LOAD_YIELD_QUANTUM = 25;
 
+/**
+ * THE FACE-NAMED WAVE'S TARGET (the lit set). The island resolves the named face's own document for `bag` (its daemon working
+ * slot by its address secret, its daemon canon by the control document), and reads which face the vessel's device table
+ * names as that document's OWNER within the lit set. `face: null` asks after the worn face's own target. A target that
+ * resolves to no document answers `null`.
+ */
+export type FaceTargetResolver = (face: number | null, bag: string) => Promise<{ readonly store: LarTiddlerStore; readonly owner: number | null; readonly worn: number | null } | null>;
+
+/** Is `bag` a face-owned layer a face-named wave may target: the daemon wiki's device slots or a face's daemon canon? */
+export function isFaceOwnedLayer(bag: string): boolean {
+  return /^lar:\/\/\/ha\.ka\.ba\/wikis\/daemon\/(working|draft|personal)$/.test(bag) || /^lar:\/\/\/ha\.ka\.ba\/bags\/daemon-[^/]+$/.test(bag);
+}
+
 export interface ActionHandlerOptions {
   readonly composite: CompositeStore;
+  /**
+   * THE LIT SET'S FACE RESOLVER (the face-named INGEST). Absent: no face-named wave lands (it refuses `face-unresolved`,
+   * never falling back to the worn face), and an unnamed wave runs as before.
+   */
+  readonly faceTarget?: FaceTargetResolver;
   /** Concrete mirror grants from the vessel manifest. An empty list closes disk INGEST. */
   readonly diskMirrors?: readonly { readonly bagId: string; readonly mirrorRoot: string; readonly scope: string; readonly mirrorClass?: "recovery" }[];
   /** The host-task yield a LOAD takes between landing slices; `yieldToHost` when absent. */
@@ -501,6 +519,10 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
     if (!action) throw new Error(`action-handler/${verb}: malformed args — required fields missing or wrong type`);
 
     if (action.verb === "INGEST") assertDiskWavePlacement(action, opts.diskMirrors);
+    // THE FACE-NAMED WAVE (the lit set): it lands only in the named face's own document, and only where the device table
+    // names THAT face as its owner; an unnamed wave over a face-owned layer lands only where the worn face owns it.
+    let faceStore: LarTiddlerStore | null = null;
+    if (action.verb === "INGEST") faceStore = await faceWaveTarget(action, opts.faceTarget);
     if (action.verb === "LOAD" && (action.toBag === CONTROL_HOME_ID || action.toBag === SECRET_HOME_ID)) {
       throw new VerbRefusal("private-home-load", "private-home-load: LOAD cannot target the control or secret home; land through a working layer");
     }
@@ -594,7 +616,7 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
     // the bag's own doc and writes-then-syncs; the wiki island resolves its own
     // layers. Content writes AND the effect-record ledger both ride these per-bag
     // stores, so each record lands in its affected bag (residency-model#effect-record-surface).
-    const access = makeBagAccess(opts);
+    const access = faceStore !== null ? overDestination(makeBagAccess(opts), destBag, faceStore) : makeBagAccess(opts);
 
     // Defense in depth: the destination MUST resolve to a writable store. If
     // access resolved nothing, fail loud — a residency write never falls through
@@ -663,6 +685,43 @@ function residencyFromContext(
     args,
   };
   return parseResidencyAction(synth);
+}
+
+/**
+ * The face-named wave's gate. A named face resolves through the island's face resolver alone: no resolver, no document, or
+ * a document whose owner names another face refuses by name, and nothing falls back to the worn face. An unnamed wave over
+ * a face-owned layer lands only where the worn face owns the document it resolves to. Answers the named face's store, or
+ * null where the wave rides the ordinary access.
+ */
+async function faceWaveTarget(action: IngestAction, resolve: FaceTargetResolver | undefined): Promise<LarTiddlerStore | null> {
+  const face = action.face;
+  if (face === undefined) {
+    if (!resolve || !isFaceOwnedLayer(action.toBag)) return null;
+    const worn = await resolve(null, action.toBag);
+    if (worn !== null && worn.owner !== null && worn.owner !== worn.worn) {
+      throw new VerbRefusal("ingest-face-foreign", `ingest-face-foreign: ${action.toBag} resolves to a document face h${worn.owner} owns, and this wave names no face; name it (\`face: ${worn.owner}\`) with that face open, or wear it`);
+    }
+    return null;
+  }
+  if (!isFaceOwnedLayer(action.toBag)) {
+    throw new VerbRefusal("face-layer-unowned", `face-layer-unowned: ${action.toBag} belongs to no face, so a wave naming face h${face} lands nothing there`);
+  }
+  if (!resolve) throw new VerbRefusal("face-unresolved", `face-unresolved: this island resolves no face's own layer, so the wave naming face h${face} lands nothing (it never lands on the worn face)`);
+  const target = await resolve(face, action.toBag);
+  if (target === null) throw new VerbRefusal("face-unresolved", `face-unresolved: face h${face} stands shut or holds no document for ${action.toBag}: \`lares vault unlock --face ${face}\`, then seed again`);
+  if (target.owner !== face) {
+    throw new VerbRefusal("ingest-face-foreign", `ingest-face-foreign: the document for ${action.toBag} files under ${target.owner === null ? "no open face" : `face h${target.owner}`}, never h${face}; no wave lands one face's memory in another`);
+  }
+  return target.store;
+}
+
+/** An access whose destination reads `store`, every other bag through `inner`. */
+function overDestination(inner: BagAccess, destBag: string, store: LarTiddlerStore): BagAccess {
+  return {
+    read: (bag) => (bag === destBag ? Promise.resolve(store) : inner.read(bag)),
+    write: (bag) => (bag === destBag ? Promise.resolve(store) : inner.write(bag)),
+    causesOf: (bag) => (bag === destBag ? [] : inner.causesOf(bag)),
+  };
 }
 
 /** Destination bag URI for the cap-verify step + audit. */

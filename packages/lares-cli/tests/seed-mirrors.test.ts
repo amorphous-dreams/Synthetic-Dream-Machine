@@ -25,9 +25,10 @@
  *       the seed adopts it, and only then do its folders move to ashes
  *   M11 a fresh face that reads no relation and no stage (no refusal) never halts the seed
  *   M12 a face folder no label names: the seed names it and adopts nothing; the import never adopts, labels or moves it
- *   M13 THE LIT-FACE GATE: three faces, h1 worn: h0's and h2's working memory never reaches h1's layer, the seed names each
- *       ("wear it and seed again"), their former folders stay out of ashes; wearing h2 and seeding lands h2's alone
- *   M14 the import's lit-face gate: a bundle of three faces onto h1 worn lands h1's rows alone and names the other two
+ *   M13 THE LIT SET: three faces open, h1 worn: one seed lands each face's working memory in its own document alone (the worn
+ *       face's through the ordinary wave, the others through waves naming them); a second seed lands nothing
+ *   M13b h0 and h1 open, h2 shut: one seed lands h0 and h1 and names h2 ("stays shut"); unlocking h2 and seeding lands h2 alone
+ *   M14 the import's lit set: a bundle of three faces onto three open faces lands each face's rows in its own document
  *   M15 one refused folder never halts the rest: an unmatched folder records its line while a labelled one adopts and lands
  *   M16 a face whose pet-name would not read blocks only the folders no other face claims; a SHUT face waits for its own
  *   M17 a kahua refusal holds ashes for the former folder that held it alone, and names its face
@@ -99,7 +100,26 @@ class FakeHouse {
     this.layer(bag).set(title, { text, ...(base !== undefined ? { base } : {}) });
   }
   facesNow(): CarryVesselFace[] { return this.faces.map((f) => ({ ...f, kahua: [...(this.stage.get(f.handleIndex) ?? [])], worn: f.relation !== null && f.relation === this.worn })); }
+  /** Open faces this island resolves no layer for (the live node before the sibling resolver lands). */
+  unresolved = new Set<number>();
+  /** Each wave's face, as the seed named it (undefined: the worn face's own wave). */
+  waveFaces: Array<{ source: string; face: number | undefined }> = [];
+  /**
+   * THE ISLAND'S FACE-NAMED WAVE: a wave naming an open face lands in THAT face's own document (never the worn one's); a wave
+   * naming a shut face resolves no document and refuses `face-unresolved`, landing nothing.
+   */
   async lay(wave: MirrorWave, apply: boolean): Promise<MirrorLaid> {
+    this.waveFaces.push({ source: wave.source, face: wave.face });
+    if (wave.face === undefined) return this.layAsWorn(wave, apply);
+    const named = this.faces.find((f) => f.handleIndex === wave.face);
+    if (named === undefined || named.relation === null || this.unresolved.has(wave.face)) {
+      return { planned: [], kapae: [], landed: [], kapaeRaised: [], conflicts: [], refused: [{ uri: wave.source, why: "face-unresolved" }], unanswered: [] };
+    }
+    const prior = this.worn;
+    this.worn = named.relation;
+    try { return await this.layAsWorn(wave, apply); } finally { this.worn = prior; }
+  }
+  async layAsWorn(wave: MirrorWave, apply: boolean): Promise<MirrorLaid> {
     this.laid.push(wave.source);
     const planned: string[] = [], kapae: string[] = [];
     const cands: Array<{ uri: string; key: string; text: string; base: string | undefined }> = [];
@@ -465,7 +485,7 @@ describe("the seed lays every mirror back into its one layer", () => {
     expect(existsSync(P(`ashes/${F1}`))).toBe(false);
   });
 
-  test("M13 — the lit-face gate: three faces, h1 worn; no face's private memory lands in another face's layer", async () => {
+  test("M13 — the lit set: three faces open, h1 worn; one seed lands every face's memory, each in its own document alone", async () => {
     const [G0, G1, G2] = ["aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa0", "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1", "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa2"];
     const [N0, N1, N2] = ["lar:///ha.ka.ba/notes/zero-only", "lar:///ha.ka.ba/notes/one-only", "lar:///ha.ka.ba/notes/two-only"];
     // The FORMER founding's three faces left their folders, each labelled with its pet-name.
@@ -473,41 +493,84 @@ describe("the seed lays every mirror back into its one layer", () => {
     const pets = ["joshua-fontany", "joshua-fontany-engineer", "joshua-fontany-referee"];
     [[G0, N0], [G1, N1], [G2, N2]].forEach(([g, n], i) => put(`projections/wikis/daemon-${g}/ha.ka.ba/notes/${n!.slice(n!.lastIndexOf("/") + 1)}.tid`, tid(n!, `face h${i}'s own memory`)));
     writeFaceLabels([G0, G1, G2].map((relation, handleIndex) => ({ relation, petname: pets[handleIndex]!, handleIndex })), join(root, "projections"));
-    // Re-founded: the same three pet-names on fresh relations; the engineer (h1) stands worn.
+    // Re-founded: the same three pet-names on fresh relations; `vault unlock --all --face 1` opened all three, h1 worn.
     const [R0, R1, R2] = ["bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb0", "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb1", "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2"];
     const v = new FakeHouse([R0, R1, R2].map((relation, handleIndex) => ({ handleIndex, petname: pets[handleIndex]!, relation })), "grant", R1);
     v.held.add("garden");
 
     const first = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
     expect(first.adoptions.map((a) => [a.relation, a.handleIndex])).toEqual([[G0, 0], [G1, 1], [G2, 2]]);
-    // Only the worn face's memory lands, and only in its own document.
-    expect(v.live(WORKING, N1)?.text).toBe(tid(N1, "face h1's own memory"));
-    expect(v.live(WORKING, N0)).toBeUndefined();
-    expect(v.live(WORKING, N2)).toBeUndefined();
-    expect(v.laid.some((s) => s.includes(G0) || s.includes(G2) || s.includes(R0) || s.includes(R2))).toBe(false);
-    // The two that wait are named, as an expected state; their folders stay (no ashes); the worn face's former folders move.
-    expect(first.waiting.map((w) => [w.handleIndex, w.petname])).toEqual([[0, pets[0]], [2, pets[2]]]);
-    const { out } = mirrorLines(first);
-    expect(out.join("\n")).toContain(`${pets[0]}: wear it (\`lares vault unlock --face 0\`) and seed again`);
-    expect(out.join("\n")).toContain(`${pets[2]}: wear it (\`lares vault unlock --face 2\`) and seed again`);
-    expect(mirrorsLeftWork(first)).toBe(false);
-    expect(first.ashes.map((a) => a.relation)).toEqual([G1]);
-    expect(first.ashesLeft.map((a) => a.relation).sort()).toEqual([G0, G2]);
-    expect(existsSync(P(`wikis/daemon-${G0}`)) && existsSync(P(`wikis/daemon-${G2}`))).toBe(true);
-    expect(existsSync(P(`wikis/daemon-${R0}`)) || existsSync(P(`wikis/daemon-${R2}`))).toBe(false);
-
-    // WEAR THE REFEREE (h2) and seed again: h2's memory lands in h2's own document alone.
-    v.wear(R2);
-    const second = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
+    // Every open face's memory lands, each in its own document alone.
+    expect(v.workingOf(R0).get(N0)?.text).toBe(tid(N0, "face h0's own memory"));
+    expect(v.workingOf(R1).get(N1)?.text).toBe(tid(N1, "face h1's own memory"));
     expect(v.workingOf(R2).get(N2)?.text).toBe(tid(N2, "face h2's own memory"));
-    expect(v.workingOf(R2).has(N0) || v.workingOf(R2).has(N1)).toBe(false);
-    expect(v.workingOf(R1).has(N2) || v.workingOf(R1).has(N0)).toBe(false);
-    // h1's own folder already landed while it stood worn, so it reads quiet; h0 still waits.
-    expect(second.waiting.map((w) => w.handleIndex)).toEqual([0]);
-    expect(second.ashes.map((a) => a.relation)).toEqual([G2]);
+    for (const [r, others] of [[R0, [N1, N2]], [R1, [N0, N2]], [R2, [N0, N1]]] as const) for (const n of others) expect(v.workingOf(r).has(n)).toBe(false);
+    // The worn face rides the ordinary wave; each other open face's waves name it.
+    expect(v.waveFaces.filter((w) => w.source.includes(R1)).every((w) => w.face === undefined)).toBe(true);
+    expect(v.waveFaces.filter((w) => w.source.includes(R0)).every((w) => w.face === 0)).toBe(true);
+    expect(v.waveFaces.filter((w) => w.source.includes(R2)).every((w) => w.face === 2)).toBe(true);
+    expect(first.waiting).toEqual([]);
+    expect(mirrorsLeftWork(first)).toBe(false);
+    expect(first.ashes.map((a) => a.relation).sort()).toEqual([G0, G1, G2].sort());
+    // A second seed lands nothing.
+    const again = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
+    expect(again.layers.reduce((n, t) => n + t.landed, 0)).toBe(0);
   });
 
-  test("M14 — the import's lit-face gate: a three-face bundle onto h1 worn lands h1's rows alone and names the others", async () => {
+  test("M13b — h0 and h1 open, h2 shut: one seed lands h0 and h1 and names h2; unlocking h2 and seeding lands h2 alone", async () => {
+    const [G0, G1, G2] = ["dddddddd-dddd-4ddd-8ddd-ddddddddddd0", "dddddddd-dddd-4ddd-8ddd-ddddddddddd1", "dddddddd-dddd-4ddd-8ddd-ddddddddddd2"];
+    const [N0, N1, N2] = ["lar:///ha.ka.ba/notes/zero-own", "lar:///ha.ka.ba/notes/one-own", "lar:///ha.ka.ba/notes/two-own"];
+    rmSync(P(`wikis/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/kahua-${F1}`), { recursive: true });
+    const pets = ["joshua-fontany", "joshua-fontany-engineer", "joshua-fontany-referee"];
+    [[G0, N0], [G1, N1], [G2, N2]].forEach(([g, n], i) => put(`projections/wikis/daemon-${g}/ha.ka.ba/notes/${n!.slice(n!.lastIndexOf("/") + 1)}.tid`, tid(n!, `face h${i}'s memory`)));
+    writeFaceLabels([G0, G1, G2].map((relation, handleIndex) => ({ relation, petname: pets[handleIndex]!, handleIndex })), join(root, "projections"));
+    const [R0, R1, R2] = ["eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee0", "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee1", "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee2"];
+    const v = new FakeHouse([
+      { handleIndex: 0, petname: pets[0]!, relation: R0 },
+      { handleIndex: 1, petname: pets[1]!, relation: R1 },
+      { handleIndex: 2, petname: pets[2]!, relation: null, kahua: null, kahuaRefusal: "face-locked" },
+    ], "grant", R1);
+    v.held.add("garden");
+    const first = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
+    expect(v.workingOf(R0).get(N0)?.text).toBe(tid(N0, "face h0's memory"));
+    expect(v.workingOf(R1).get(N1)?.text).toBe(tid(N1, "face h1's memory"));
+    expect(v.waveFaces.some((w) => w.face === 2)).toBe(false);
+    expect(first.waiting.map((w) => [w.handleIndex, w.petname, w.relations])).toEqual([[2, pets[2], [G2]]]);
+    expect(mirrorLines(first).out.join("\n")).toContain(`${pets[2]} stays shut: \`lares vault unlock --face 2\`, then seed again`);
+    expect(existsSync(P(`wikis/daemon-${G2}`))).toBe(true);
+    expect(first.ashesLeft.map((a) => a.relation)).not.toContain(G0);
+
+    // `lares vault unlock --face 2`, then seed: h2's memory lands in h2's own document alone; h0 and h1 read quiet.
+    (v.faces as Array<CarryVesselFace>)[2] = { ...v.faces[2]!, relation: R2, kahua: [] };
+    v.waveFaces = [];
+    const second = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
+    expect(v.workingOf(R2).get(N2)?.text).toBe(tid(N2, "face h2's memory"));
+    expect(v.workingOf(R2).has(N0) || v.workingOf(R2).has(N1)).toBe(false);
+    expect(second.waiting).toEqual([]);
+    expect(second.layers.filter((t) => t.landed > 0).every((t) => t.mirror.includes(R2))).toBe(true);
+  });
+
+  test("M13c — an open face the island resolves no layer for waits by name: no refusal flood, its folders stay, the worn face lands", async () => {
+    const [G0, G1] = ["ffffffff-ffff-4fff-8fff-fffffffffff0", "ffffffff-ffff-4fff-8fff-fffffffffff1"];
+    rmSync(P(`wikis/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/kahua-${F1}`), { recursive: true });
+    const pets = ["joshua-fontany", "joshua-fontany-engineer"];
+    put(`projections/wikis/daemon-${G0}/ha.ka.ba/notes/zero.tid`, tid("lar:///ha.ka.ba/notes/zero", "h0's"));
+    put(`projections/wikis/daemon-${G1}/ha.ka.ba/notes/one.tid`, tid("lar:///ha.ka.ba/notes/one", "h1's"));
+    writeFaceLabels([G0, G1].map((relation, handleIndex) => ({ relation, petname: pets[handleIndex]!, handleIndex })), join(root, "projections"));
+    const [R0, R1] = ["abababab-abab-4bab-8bab-ababababab00", "abababab-abab-4bab-8bab-ababababab01"];
+    const v = new FakeHouse([{ handleIndex: 0, petname: pets[0]!, relation: R0 }, { handleIndex: 1, petname: pets[1]!, relation: R1 }], "grant", R1);
+    v.unresolved.add(0);
+    const r = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
+    expect(v.workingOf(R1).get("lar:///ha.ka.ba/notes/one")).toBeDefined();
+    expect(v.workingOf(R0).size).toBe(0);
+    expect(r.waiting.map((w) => [w.handleIndex, w.why])).toEqual([[0, "unresolved"]]);
+    expect(mirrorsLeftWork(r)).toBe(false);
+    expect(mirrorLines(r).out.join("\n")).toMatch(/joshua-fontany stands open, and this island resolves no layer of its own for it yet \(face-unresolved\)/);
+    expect(existsSync(P(`wikis/daemon-${G0}`))).toBe(true);
+    expect(r.ashesLeft.map((a) => a.relation)).toContain(G0);
+  });
+
+  test("M14 — the import's lit set: a three-face bundle onto three open faces, h1 worn, lands each face's rows in its own document", async () => {
     const pets = ["one", "two", "three"];
     const old = new FakeHouse([F1, F2, F3].map((relation, handleIndex) => ({ handleIndex, petname: pets[handleIndex]!, relation })), "old", F1);
     old.held.add("garden");
@@ -520,11 +583,13 @@ describe("the seed lays every mirror back into its one layer", () => {
     const after = new FakeHouse([R0, R1, R2].map((relation, handleIndex) => ({ handleIndex, petname: pets[handleIndex]!, relation })), "new", R1);
     after.held.add("garden");
     const r = await carryImport(out, { apply: true, doors: after.carryDoors() });
-    expect(r.waiting.map((w) => [w.petname, w.handleIndex])).toEqual([["one", 0], ["three", 2]]);
+    // Every face open: each bundle face's rows land in its own face's document, the worn one's and the two named alike.
+    expect(r.waiting).toEqual([]);
     expect(after.live(WORKING, "lar:///ha.ka.ba/notes/two")?.text).toBe(tid("lar:///ha.ka.ba/notes/two", "face two's"));
+    expect(after.workingOf(R2).get("lar:///ha.ka.ba/notes/three")?.text).toBe(tid("lar:///ha.ka.ba/notes/three", "face three's"));
     expect(after.live(WORKING, "lar:///ha.ka.ba/notes/three")).toBeUndefined();
-    expect(after.live(WORKING, POND)).toBeUndefined();                       // face one's working copy waits for face one
-    expect(existsSync(P(`wikis/daemon-${R0}`)) || existsSync(P(`wikis/daemon-${R2}`))).toBe(false);
+    expect(after.workingOf(R0).get(POND)).toBeDefined();                      // face one's working copy lands in face one's own document
+    expect(after.live(WORKING, POND)).toBeUndefined();
   });
 
   test("M15 — one refused folder never halts the rest: an unmatched folder records its line, a labelled one adopts and lands", async () => {
@@ -562,7 +627,7 @@ describe("the seed lays every mirror back into its one layer", () => {
     const s2 = await seedMirrors({ apply: true, doors: shut.mirrorDoors() });
     expect(s2.refusals).toEqual([]);
     expect(s2.waiting.map((w) => [w.handleIndex, w.petname, w.relations])).toEqual([[2, "referee", [SHUT]]]);
-    expect(mirrorLines(s2).out.join("\n")).toContain("referee: wear it (`lares vault unlock --face 2`) and seed again");
+    expect(mirrorLines(s2).out.join("\n")).toContain("referee stays shut: `lares vault unlock --face 2`, then seed again");
     expect(existsSync(P(`wikis/daemon-${SHUT}/ha.ka.ba/notes/shut.tid`))).toBe(true);
   });
 
