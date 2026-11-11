@@ -18,6 +18,7 @@
  *                                                carriage board under its own prefix (`commands/nexus-cabal`)
  *   nexus-release                                the steward's seal of a floor release, with the cabal's approval of the
  *                                                manifest's exact bytes, landed on the publication board (`commands/nexus-release`)
+ *   floor-cut                                    the floor the next release names, cut from live house canon (`commands/floor-cut`)
  *   nexus-posture                                the per-Nexus federation posture joint (`nexus-doc`)
  *   nexus-admit-take                             a carried admit bundle's offline take + live re-present
  *                                                (`admit-bundle`)
@@ -93,6 +94,7 @@ import type { HandleClaim } from "@lararium/mesh";
 import { federationPostureFromDoc, isVerbRefusal, readNexusActPartial, type FederationPosture, type CarriageAction, type KahuQuorumSeats, type SealEpoch } from "@lararium/mesh";
 import { runCabalAct, runCabalCosign, runCabalStanding, NexusCabalError } from "./commands/nexus-cabal.js";
 import { runFloorRelease } from "./commands/nexus-release.js";
+import { runFloorCut } from "./commands/floor-cut.js";
 import { runFloorAccept, runFloorStatus, FloorRefused } from "./commands/floor.js";
 import { casDirForStorage } from "./node-cas.js";
 import { runNexusKapae, runNexusKapaeList, runNexusKapaeOpen, runNexusKapaePartial, NexusKapaeError } from "./commands/nexus-kapae.js";
@@ -189,7 +191,7 @@ export async function awaitOnRolled(call: boolean | void | Promise<boolean | voi
 /** The door's rows, by name — each command's routed call names exactly one of these. */
 export const STORE_DOOR_VERBS = [
   "nexus-kapae", "nexus-kapae-list", "nexus-kapae-open", "nexus-kapae-partial", "nexus-contract", "nexus-contract-open", "nexus-contract-partial", "nexus-roll-anchor", "nexus-roll-anchor-open", "nexus-roll-anchor-partial", "nexus-roll-prior-anchor", "nexus-members-list",
-  "nexus-cabal-act", "nexus-cabal-cosign", "nexus-cabal-standing", "nexus-release", "floor-status", "floor-accept",
+  "nexus-cabal-act", "nexus-cabal-cosign", "nexus-cabal-standing", "nexus-release", "floor-cut", "floor-status", "floor-accept",
   "nexus-posture", "nexus-admit-take", "nexus-carry-take", "seal-home-refold",
   "edge-kapae", "edge-seat-facts", "edge-seat-duties", "edge-seat-marks", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face", "cabal-feed",
   "fleet-join-offer", "fleet-join-answer", "nexus-roll-anchor-edge", "nexus-roll-anchor-edge-open", "nexus-roll-anchor-edge-partial", "nexus-roll-anchor-edge-standing",
@@ -534,6 +536,12 @@ function storeDoorRowsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       ...(await runFloorRelease({
         repo, sealHome, manifestFile: need("nexus-release", args, "manifestFile"), approval: args["approval"], casDir: casDirForStorage(storageDir), ...opt("aid", str(args["aid"])),
       })),
+    })),
+
+    // THE RELEASE WIRING (offering#/the-canon-offer): cut the floor the next release names from LIVE house canon, so a release after
+    // a promotion carries the promoted rows. It stages the floor in this hearth's CAS and writes the manifest file; it lands nothing.
+    "floor-cut": (args) => answer("floor-cut", async () => ({
+      ...(await runFloorCut({ repo, sealHome, casDir: deps.casDir ?? casDirForStorage(storageDir), out: need("floor-cut", args, "out"), ...opt("aid", str(args["aid"])) })),
     })),
 
     // THE VESSEL'S FLOOR PIN (w26-floor-lane#/the-vessel-pin): one pin per (vessel, Nexus) in the control home, moved only by

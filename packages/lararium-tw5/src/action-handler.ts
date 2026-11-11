@@ -342,14 +342,14 @@ function assertDiskWavePlacement(action: IngestAction, mirrors: ActionHandlerOpt
  * OWN recipe-mounted layers: a source bag MAY be a read-only library layer (read),
  * a target MUST be a writable layer (write). Authority rides the cap-gate upstream.
  */
-interface BagAccess {
+export interface BagAccess {
   read(bag: string): Promise<LarTiddlerStore | null>;
   write(bag: string): Promise<LarTiddlerStore | null>;
   /** Why each registry plane answered no store for `bag`, in plane order; empty when no plane threw. */
   causesOf(bag: string): readonly string[];
 }
 
-function makeBagAccess(opts: ActionHandlerOptions): BagAccess {
+export function makeBagAccess(opts: ActionHandlerOptions): BagAccess {
   if (opts.reach) {
     const reach = opts.reach;
     const planes = ([["catalog", reach.catalogUrl], ["oracle", reach.oracleUrl]] as const)
