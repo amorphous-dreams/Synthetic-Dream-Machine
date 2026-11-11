@@ -29,11 +29,12 @@ import {
   makeCabalRealmReactors,
   makeIntentViewReactor, runLocalVerb, INTENT_VIEW_CAP, controlOf, MemoryTiddlerStore,
   makeShareSetReactor, makeShareListReactor, readShareRows,
+  registerCanonOfferVerbs, CANON_OFFER_VERBS,
 } from "@lararium/tw5";
 import { applyShares } from "./share-apply.js";
 import { adoptWorkbench, landWorkbench, projectWorkbenchRoster, standWorkbench, type LedgerDoc } from "./workbench-realm.js";
 import { ledgerWorkbenchRealm, workbenchKeyDocs, bagUri as meshBagUri } from "@lararium/mesh";
-import { DAEMON_WIKI_SLUG, ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, recipeLayerIndex, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, ControlHomeUnavailable, faceCatalogDocUrl, type ChangeOrigin } from "@lararium/mesh";
+import { DAEMON_WIKI_SLUG, ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, recipeLayerIndex, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, ControlHomeUnavailable, faceCatalogDocUrl, canonOfferDocUrl, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor, VerbTable } from "@lararium/tw5";
 import type { IslandMsg_Manifest, JoinedFaceAuth } from "@lararium/mesh";
 import { boardDyadReader, intentDoorStandings } from "./board-dyad-reader.js";
@@ -908,8 +909,21 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           // THE LIT SET: a face-named INGEST lands in THAT face's own document, the owner read off the control document.
           faceTarget: litFaceTargetOf(ctx),
         });
+        // THE OFFERING DOOR (offering#/the-canon-offer): a face offers working records toward house canon on the Nexus's offer
+        // table, and the steward promotes under the Kahu reach. The same four reactors stand on node and browser; the Nexus
+        // reads off the shore's cabal board, the signer is the lit face's atom, and the canon write clears `requireKahuReach`.
+        registerCanonOfferVerbs(registry, {
+          composite: ctx.composite, reach,
+          ...(kahuReach ? { kahuReach } : {}),
+          nexus: async () => { try { return (await kahuCabal?.(ctx)?.())?.nexus ?? null; } catch { return null; } },
+          board: async (nexus) => {
+            const handle = await materializeSharedLarDoc(ctx.repo, canonOfferDocUrl(nexus), "board:canon-offer");
+            return { doc: () => handle.doc(), change: (fn) => { handle.change(fn); } };
+          },
+          signer: () => { try { return { face: daemonAuth.personaGroupId!, atom: faceAtom() }; } catch { return null; } },
+        }, VERB_SURFACE);
       } else {
-        for (const v of [...ACTION_VERBS, "REPACK"]) registry.register(v, lightAFace(v));
+        for (const v of [...ACTION_VERBS, "REPACK", ...CANON_OFFER_VERBS]) registry.register(v, lightAFace(v));
       }
       // Residency mutators (pin/unpin/register-cold) — gated in-worker; they command the
       // main-resident BagStowage via daemon:residency-op (ctx.post). `residency`

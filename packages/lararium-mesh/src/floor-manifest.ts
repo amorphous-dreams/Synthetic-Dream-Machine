@@ -191,6 +191,38 @@ export function openFloorSnapshot(bytes: Uint8Array, cid: string):
   }
 }
 
+/**
+ * CUT A FLOOR FROM LIVE CANON: a fresh snapshot for each slug whose rows the caller read off its canon document (a promotion's
+ * writes among them), every other slug keeping the prior floor's snapshot, and the engine CIDs carried from the prior manifest.
+ * A live row keeps its `tiddler` fields alone (meta, residency stamps and tombstones stay out), so one canon cuts one CID on
+ * every vessel; the floor the release names is the floor a reader resolves. It writes nothing: the caller stages the blobs.
+ */
+export function cutCanonFloor(args: {
+  readonly prior: FloorManifest;
+  readonly canon: Readonly<Record<string, Readonly<Record<string, LarTiddlerRecord>>>>;
+}): { readonly manifest: FloorManifest; readonly manifestCid: string; readonly manifestBytes: Uint8Array; readonly snapshots: Readonly<Record<string, FloorSnapshot>> } {
+  const snapshots: Record<string, FloorSnapshot> = {};
+  const cids: Record<string, string> = { ...args.prior.snapshots };
+  for (const slug of Object.keys(args.canon).sort()) {
+    if (!SLUG.test(slug)) throw new FloorManifestRefusal("floor-manifest-malformed", `Invalid floor manifest snapshot: ${slug}`);
+    const rows: Record<string, LarTiddlerRecord> = {};
+    for (const [title, record] of Object.entries(args.canon[slug]!)) {
+      if (!record || record.meta?.deleted === true) continue;
+      const tiddler: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(record.tiddler as Record<string, unknown>)) {
+        if (k === "bag" || k === "$origin-bag" || v === undefined || v === null) continue;
+        tiddler[k] = Array.isArray(v) ? [...v] : v;
+      }
+      rows[title] = { tiddler: { ...tiddler, title } as LarTiddlerRecord["tiddler"] };
+    }
+    snapshots[slug] = cutFloorSnapshot(rows);
+    cids[slug] = snapshots[slug]!.cid;
+  }
+  const manifest: FloorManifest = { format: args.prior.format, engine: args.prior.engine, grammar: args.prior.grammar, plugins: args.prior.plugins, snapshots: cids };
+  const manifestBytes = floorManifestBytes(manifest);
+  return { manifest, manifestCid: sha256HexBytesSync(manifestBytes), manifestBytes, snapshots };
+}
+
 /** A floor resolved whole: its manifest and each slug's snapshot rows, keyed by the manifest's slugs. */
 export interface ResolvedFloor {
   readonly manifest: FloorManifest;

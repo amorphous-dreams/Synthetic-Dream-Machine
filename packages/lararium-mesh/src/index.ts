@@ -475,6 +475,7 @@ export * from "./kahu-canon-reach.js";
 export * from "./floor-release.js";
 export * from "./floor-answer.js";
 export * from "./floor-pin.js";
+export * from "./canon-offer.js";
 export * from "./lineage-rank.js";
 export * from "./admission-price.js";
 export * from "./vouch-dag.js";

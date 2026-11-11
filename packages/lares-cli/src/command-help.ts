@@ -156,6 +156,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "  release <manifest-file> --approval <file> [--nexus <aid>]   publish the Nexus's FLOOR RELEASE: a held seat seals the porch body naming the",
       "                                            manifest, the seats' approval of its exact bytes (`promote open --surface floor-release`) rides",
       "                                            attached, and it lands on the Nexus's publication board once it counts",
+      "  release <manifest-file> --cut [--nexus <aid>]   cut that manifest from LIVE house canon (a promoted offer rides it),",
+      "                                            stage the floor in this hearth's CAS; it lands nothing (offering#/the-canon-offer)",
     ],
     examples: [
       "lares nexus rite quorum",
@@ -405,7 +407,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   meme: {
-    usage: "usage: lares meme <put | get | list | delete | normalize | check | sitting | project | promote> (store verbs require (--recipe <slug> | --bag <slug>))",
+    usage: "usage: lares meme <put | get | list | delete | normalize | check | sitting | project | promote | offer> (store verbs require (--recipe <slug> | --bag <slug>))",
     synopsis:
       "THE MEME DOOR — one family for every law over meme text, and each verb DECLARES ITS SEAT: " +
       "`normalize` · `check` · `sitting` · `project --to md` (over a file) run LOCAL with no daemon in " +
@@ -428,6 +430,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares meme project --to md --check bags/…/submissions   # every pair on the shelf re-projects clean",
       "lares meme promote bags/…/docs/pono/x.mem --face 0     # the selected face signs the canon crossing",
       "lares meme promote x.mem --dest-bag lar:///ha.ka.ba/bags/crossroads --approval a.json  # publish for the Nexus: the seats approved these bytes",
+      "lares meme offer lar:///ha.ka.ba/... --bag lares     # offer a working record toward canon; canon stays unmoved",
+      "lares meme offer list --bag lares · offer show <cid> · offer promote <cid> [--over-fresher]  # the steward reviews and lands it",
     ],
     flags: [
       "--recipe <slug>    an edit AS that wiki: its designated writable bag, write-then-sync",
@@ -441,6 +445,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--dest-bag <uri>   (promote) the canon bag crossed into; the cap is read against this name",
       `--approval <file>  (promote) the seats' approval over these exact bytes; a crossing into the ${PLANE_LABELS.crossroads} refuses without one`,
       "--nexus <aid>      (promote) the Nexus whose charter reads the approval",
+      "--all              (offer list) retired offers too; open ones alone otherwise",
+      "--over-fresher     (offer promote) the steward's explicit choice to land an offer canon moved under (\"canon is fresher\")",
       "--gradient         (check) name each file's kind and the marks that kind requires and lacks",
       "--edges            (check) name the addresses these carriers point at, and which of them answer",
       "--grammar          (normalize/check) also apply GRAMMAR-authority clauses (authored spelling, " +

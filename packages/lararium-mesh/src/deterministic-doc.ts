@@ -87,6 +87,17 @@ export function publicationDocUrl(nexusPubkey: string): AutomergeUrl {
 }
 
 /**
+ * The Nexus's OFFER TABLE — deterministic over the Nexus AID, so every face of every vessel in the Nexus resolves the one board
+ * that carries signed canon offers (`canon-offer`) and the steward's retirements of them. It stands BESIDE the Kahu realm, never
+ * in it: a row self-certifies (its CID re-derives from its body, its signature verifies under the key it names), no recipe mounts
+ * it and no mirror names it, so an offer reaches no canon document and no disk. Appending an offer grants nothing; only the
+ * steward's promotion, under the Kahu reach, moves canon.
+ */
+export function canonOfferDocUrl(nexusAid: string): AutomergeUrl {
+  return deterministicDocUrl(`${nexusRegistryUri(nexusAid.trim())}#canon-offer`);
+}
+
+/**
  * ONE HEARTH'S HOSTING DOC in one Nexus — deterministic over (the Nexus, the hearth's gate key). It carries that
  * hearth's signed hosting acts and nothing else: no carrier contract, no other hearth's act, no guest. A walker
  * reaches exactly this doc beside the shelf, computed from what its invite already names — the Nexus and the gate

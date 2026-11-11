@@ -406,6 +406,58 @@ an ordered announce claim, or a receiver caller by implication.
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/the-canon-offer`>>
+
+!! The canon offer — a face offers working records toward house canon; the steward promotes
+
+The same law carries a second gift: records, not plugins. A face that holds no seat in the Kahu cabal (by ruling, the operator's `-engineer` and `-referee` faces) authors in its own working layer (its realm workbench) and offers the result back; the Kahu steward reviews it, promotes it into the canon CRDT under the Kahu hand, and a release carries it to every face's floor. ''The loop'': OFFER → PROMOTE → RELEASE → ACCEPT → READ. The release (`floor-release`) and the accept (`floor-pin`, Leap 1) stand unchanged; this section adds the first two and the floor cut between promotion and release.
+
+!!! The offer — a signed, immutable record keyed by its CID
+
+* The offering face's atom signs `{kind, nexus, bag, face, offerer, records}`; each record carries its fields, its carrier digest (`carrierHashOf`, the identity every carrier already carries — "memes already have hashes") and its ''fork base'': the canon carrier its working copy forked from (`overrideBase`), or none for a new title.
+* The CID names the body's canonical bytes. No clock, counter or arrival order rides it, so the same offer twice keys one row: ''a replay lands nothing''.
+* A withheld title (the projection filter's base), a control or secret home row, and every `cap/**` row under a bag home refuse to leave home (`offer-withheld-title`); a row forged past the door carrying one never counts on the board.
+
+!!! The offer table — beside the Kahu realm, never in it
+
+One board per Nexus (`canonOfferDocUrl`). Appending a self-certifying row grants nothing: its CID re-derives from its body and its signature verifies under the key it names, no recipe mounts it and no mirror names it. So an unadmitted face offers ''without any write to canon''.
+
+!!! The promotion — the steward's hand, the Kahu reach first
+
+* `promoteCanonOffer` clears `requireKahuReach` on the offer's bag ''before'' any canon read decides anything; a non-steward face refuses `kahu-reach` and moves no byte.
+* Freshness ''warns'', never refuses a read: a record whose base no longer names canon's carrier reads "canon is fresher" in every listing. A promotion over it takes the steward's explicit choice (`--over-fresher`); the retire records the fresher canon digests it overrode. No auto-merge.
+* The promotion writes the offered bytes; until a retire lands, the offer reads open and a replayed promotion writes nothing (every record reads `landed`).
+* ''The retire seals under a seat of the Nexus's charter'' (`retireCanonOffer`), and only once canon carries every offered digest (`offer-not-landed` otherwise). It carries the charter's epoch lineage, as a floor release does, so every reader proves the seat off the record alone: the genesis epoch's address IS the Nexus AID, each step verifies under the prior threshold, and the signer stands a seat of the named epoch. A retire any other key sealed reads `retire-unauthorised`, retires nothing, and `offer show` names it. The row keys to the offer's CID and then its own (`<offer cid>/<retire cid>`), so a forgery written first takes no key the steward needs. The offer row stays; never a deletion.
+* The seat keys rest in the steward's vault beside the store door, never in the daemon island that writes canon: the canon write rides the daemon verb `offer-promote` (under the Kahu reach), and the retire rides the store-door row `offer-retire`. `lares meme offer promote` runs both.
+
+!!! The release wiring
+
+`cutReleaseFloor` cuts the floor the next release names from live canon: each slug the prior floor names re-cuts off its canon document, a slug with no document here keeps the prior snapshot, and the blobs stage before the manifest answers. `lares nexus release <manifest-file> --cut` writes the manifest the seats then approve; an unmoved canon answers the prior's own CID.
+
+!!! The surfaces — one door, both hosts
+
+* ''Shared seam'': `@lararium/mesh` `canon-offer` holds every decision; the daemon island registers `offer-make` · `offer-list` · `offer-show` · `offer-promote` (`@lararium/tw5` `canon-offer-verbs`) on node and browser alike. Only the Nexus binding forks: the shore's charter (node), else the Nexus the call names (a browser page, whose island reads no charter).
+* ''CLI'': `lares meme offer <uri…> --bag <slug>` · `offer list [--bag] [--all]` · `offer show <cid>` · `offer promote <cid> [--over-fresher]` — under the meme door, the one-screen help holding.
+* ''MCP'': `meme_offer` · `meme_offer_list` · `meme_offer_show`. The promotion holds no MCP tool: the steward's hand alone lands canon (the kahua lift's shape).
+
+!!! Moʻolelo — the forks this door decided (each overrulable)
+
+# ''Where an offer rests.'' Three homes stood: realm drafts (Fable's earlier lean), the offerer's own outbox, an offer table beside the realm. //Gaia 2026//: a kernel contributor mails a patch to the subsystem list — anyone posts, the maintainer applies, and the list itself holds no tree; a pull request from a personal fork, by contrast, makes the maintainer go find each fork. //Elyncia 5492//: a pilgrim at the crossroads shrine sets a votive on the offering table at the temple's door; only the temple's priest carries it inside, and no pilgrim walks into the sanctum to place it. Realm drafts would seat the offerer inside the Kahu realm — the very admission the ruling withholds from h1 and h2 — or fork that ruling. An outbox keeps the offerer's writes on its own doc but leaves the steward no derivable place to look across vessels. ''Ruled: the offer table, one per Nexus, beside the realm.'' Reopens if realm drafts gain an append-only, non-member write class.
+# ''The fork base.'' The base reads the working copy's own `overrideBase`, and none where it names none — never canon's current carrier at offer time, which would hide a move canon made after the fork. A working copy that never forked from canon therefore reads "canon is fresher" wherever canon holds the title.
+# ''A stale promotion refuses without the choice.'' The listing warns; the promotion refuses `offer-base-moved` until the steward says `--over-fresher`. The steward's choice, never an automatic merge, decides what canon says.
+# ''The retire's authority (re-ruled by the controller, 2026-11-11).'' The first cut honoured any signed retire, so a forgery could hide an offer. ''Ruled'': a reader honours a retire only where a seat of the Nexus's charter sealed it, proven by the lineage the record carries (the way a floor release proves its steward); any other retire reads `retire-unauthorised` and the offer stays open. The charter seat stands for "the steward's hand" here because an atom key names no group a reader can verify without a persona KEL; a seat names itself in the lineage. Known edge: a retire names its own epoch, so a seat a later roll removed could still retire under the epoch it held; a reader holding the charter head could close that.
+# ''The verb's home.'' `lares meme promote` already names the residency crossing with a receipt, so the offering door rides `lares meme offer …`, keeping one word for one act.
+# ''The browser's Nexus.'' A browser island reads no charter, so the call may name the Nexus; a named Nexus other than the charter's refuses `offer-foreign-nexus`. The browser holds no Kahu board, so a promotion there fails closed — the steward promotes from the vessel that holds the charter.
+
+!!! What stays owed
+
+* The federation gate carrying the offer table across vessels (one hearth's faces share one Repo today).
+* A browser page surface for the offer verbs, and a browser Kahu board so a steward could promote from the browser.
+* Offering a removal (a tombstone), and a steward's `decline` retire beside `promoted`.
+* Paging the offer listing past one outcome's row bound.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/questions`>>
 
 !! Questions only the operator answers
@@ -436,6 +488,9 @@ an ordered announce claim, or a receiver caller by implication.
 <<~ pranala slot=`#fold` from=`?` to=`packages/lararium-mesh/src/genesis-doc.ts` family=`code` role=`has`>>
 <<~ pranala slot=`#announce` from=`?` to=`packages/lararium-mesh/src/offering-announce.ts` family=`code` role=`has`>>
 <<~ pranala slot=`#shore` from=`?` to=`packages/lararium-node/src/bulb-read-face.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#canon-offer` from=`?` to=`packages/lararium-mesh/src/canon-offer.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#canon-offer-verbs` from=`?` to=`packages/lararium-tw5/src/canon-offer-verbs.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#floor-cut` from=`?` to=`packages/lararium-node/src/commands/floor-cut.ts` family=`code` role=`has`>>
 
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/lamplighters`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu`>>
@@ -457,6 +512,6 @@ an ordered announce claim, or a receiver caller by implication.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;prSCHIkeDxeWBPLQX47mLK1xqxqoXknyZKsJoG-jWXg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9BYv7M4ggJ6Qd1h-LfYTb2Gg9qYo9DYf79a4HUDqaBU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

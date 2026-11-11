@@ -127,6 +127,13 @@ WIKI_VERBS = ("wiki",)
 # single-writer law).
 MEME_VERBS = ("meme_put", "meme_get", "meme_list", "meme_delete", "meme_project")
 
+# The OFFERING door (offering#/the-canon-offer) — an AI seat offers its face's working records toward a house-canon bag
+# and reads the Nexus's offer table. `meme_offer` mirrors `lares meme offer <uri…> --bag <slug>`; `meme_offer_list` mirrors
+# `lares meme offer list`; `meme_offer_show` mirrors `lares meme offer show <cid>`. An offer GRANTS NOTHING: canon moves only
+# under the Kahu steward's promotion, and `lares meme offer promote` stays the steward's hand, holding no MCP tool (the kahua
+# lift's shape).
+OFFER_VERBS = ("meme_offer", "meme_offer_list", "meme_offer_show")
+
 # The KAHUA namespace — an AI seat's reach onto its face's kahua stage, the fleet's working-memory stage. `kahua_propose`
 # posts ONE batch of proposals on the face's intents plane (titles, daemon revisions, body digests, taint; a proposal
 # grants nothing); `kahua_list` and `kahua_get` read the stage's VERIFIED items (the fold, never a raw tiddler). Each
@@ -180,6 +187,11 @@ VERB_SEATS = {
     "meme_list": (True, False),         # list the roots a seat holds + their canonical hashes — a read → HOTL
     "meme_delete": (True, False),       # remove a meme's group — a kāpae tombstone a re-put restores; stale base → conflict → HOTL
     "meme_project": (True, False),      # render a meme to a target — a read, deterministic, trusted → HOTL
+    # The offering door — an offer appends a signed row to the Nexus's offer table and moves no canon byte; the reads fold
+    # the table → HOTL. The promotion never seats here: no MCP tool carries it.
+    "meme_offer": (True, False),        # one signed offer toward a house-canon bag — grants nothing, trusted → HOTL
+    "meme_offer_list": (True, False),   # the offer table, each record's freshness against canon — a read → HOTL
+    "meme_offer_show": (True, False),   # one offer's field diff against canon — a read → HOTL
     # The kahua seat verbs — a proposal grants nothing (the operator's signed lift decides) and the reads fold the
     # verified stage; both stay on the face's own fleet → HOTL. The lift itself never seats here: no MCP tool carries it.
     "kahua_propose": (True, False),     # one proposal batch on the face's intents plane — grants nothing, trusted → HOTL
@@ -1047,6 +1059,60 @@ def build_mcp(coordinator: LaresCoordinator):
             raise ValueError(f"meme_project: `to` must be one of {list(PROJECT_TARGETS)}, got {to!r}")
         args: dict = {**_meme_container("meme_project", recipe, bag), "uri": uri, "to": to}
         return _meme_wire("meme-project", args)
+
+    # ── the OFFERING door — an AI seat offers toward house canon; the steward's hand alone promotes ──
+
+    def _offer_bag(verb: str, bag: "str | None") -> str:
+        if not bag or bag.startswith("@"):
+            raise ValueError(f"{verb}: name the house-canon `bag` the offer goes toward, a bare slug (`lares`, `sdm`), got {bag!r}")
+        return bag
+
+    def _offer_wire(verb: str, args: dict):
+        out = _meme_wire(verb, args) or {}
+        if out.get("ok") is False:
+            raise uds.LaresVerbError(str(out.get("why") or out.get("refusal") or f"{verb} refused"), str(out.get("refusal") or f"{verb}-refused"))
+        return out
+
+    @mcp.tool()
+    def meme_offer(uris: list, bag: str, nexus: "str | None" = None) -> dict:
+        """OFFER records from the worn face's working layer toward a house-canon `bag` — mirrors `lares meme offer <uri…>
+        --bag <slug>`. Each record names its carrier digest and its fork base (the canon carrier its working copy forked
+        from, or none for a new title); the offer seals under the face's atom and lands on the Nexus's offer table. It
+        GRANTS NOTHING and moves no canon byte: the Kahu steward reviews (`meme_offer_list`, `meme_offer_show`) and promotes
+        by hand. A withheld or `cap/**` title refuses `offer-withheld-title`. `nexus` names the Nexus where this vessel's
+        island reads no charter. Returns {cid, landed, bag, nexus, records}; a replay answers `landed: false`."""
+        if not isinstance(uris, list) or not uris or not all(isinstance(u, str) and u.startswith("lar:") for u in uris):
+            raise ValueError("meme_offer: name `uris` as a non-empty list of lar: uris")
+        args: dict = {"bag": _offer_bag("meme_offer", bag), "titles": uris}
+        if nexus:
+            args["nexus"] = nexus
+        return _offer_wire("offer-make", args)
+
+    @mcp.tool()
+    def meme_offer_list(bag: "str | None" = None, all: bool = False, nexus: "str | None" = None) -> dict:  # noqa: A002 — the CLI's `--all`
+        """LIST the offers on the Nexus's offer table — mirrors `lares meme offer list [--bag <slug>] [--all]`. Each offer
+        names its records and each record's freshness against canon now: `new`, `base-holds`, `landed`, or
+        `canon-is-fresher` (canon moved since the fork — a WARNING, never a refusal). Open offers alone unless `all`.
+        Returns {nexus, offers, setAside}. Reads alone."""
+        args: dict = {}
+        if bag:
+            args["bag"] = _offer_bag("meme_offer_list", bag)
+        if all:
+            args["all"] = True
+        if nexus:
+            args["nexus"] = nexus
+        return _offer_wire("offer-list", args)
+
+    @mcp.tool()
+    def meme_offer_show(cid: str, nexus: "str | None" = None) -> dict:
+        """SHOW one offer — mirrors `lares meme offer show <cid>`: each record's freshness and its field diff against canon
+        now ({field, canon, offered}). Returns the listing row plus `diffs`. Reads alone."""
+        if not isinstance(cid, str) or len(cid) != 64 or any(c not in "0123456789abcdef" for c in cid):
+            raise ValueError("meme_offer_show: `cid` names one offer CID (64 lower-case hex)")
+        args: dict = {"cid": cid}
+        if nexus:
+            args["nexus"] = nexus
+        return _offer_wire("offer-show", args)
 
     # ── the KAHUA namespace — an AI seat proposes and reads its face's stage through a `seat` session ──
 
