@@ -155,7 +155,7 @@ async function answerTo(root: Awaited<ReturnType<typeof pair>>, face: Awaited<Re
   const carriage = { gatePin: pin, canon: { "lar:///ha.ka.ba/bags/lares": "automerge:canon-lares" } };
   const body = {
     nonce: request.nonce, atomKey: request.atomKey, personaGroup: GROUP,
-    edge: { kind: "device-admit/v1", personaGroupId: GROUP, deviceEdge: "synthetic", hearthTrueName: NEXUS },
+    edge: { kind: "device-admit", personaGroupId: GROUP, deviceEdge: "synthetic", hearthTrueName: NEXUS },
     carriage,
     reach: { syncUrl: "ws://hearth.synthetic:7777/ws", islandKind: "anchor", islandScope: NEXUS },
     charter: "the hearth's charter",

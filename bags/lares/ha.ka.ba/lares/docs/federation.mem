@@ -27,7 +27,7 @@ A Lararium runs as a ''swarm of one operator's vessels'' (a PersonaGroup) — ea
 * `<LAR_ROOT>/hearth/identity/.vessel-key.json` — this vessel's OWN private signing key, one name in the identity home (`node-vessel-identity.ts`), beside its place KEL `.vessel-kel.json`. The device mints it and it never leaves the device; a re-founding clears it with `hearth/`.
 * `<LAR_ROOT>/hearth/vessel/social-bootstrap.json` — the PersonaGroup pointers (admin/identities/circles/sessions doc-URLs + the PersonaGroup's id and the MeshCabal sentinel's id). Each vessel writes its own, at founding or at join.
 
-''What crosses between two vessels'': `lares fleet join offer` → `request` → `answer` → `land`, with `abandon` for an unlanded exchange. The request names the joinee's key. The face root signs the answer: the `device-admit/v1` edge, the gate pin, canon list, island reach, that face's sealed address secret, vessel face-key certificates and add-a-face grants. The edge format stays internal; `cabal-join` still names people and realm admission. A clone alone grants no fleet standing.
+''What crosses between two vessels'': `lares fleet join offer` → `request` → `answer` → `land`, with `abandon` for an unlanded exchange. The request names the joinee's key. The face root signs the answer: the `device-admit` edge, the gate pin, canon list, island reach, that face's sealed address secret, vessel face-key certificates and add-a-face grants. The edge format stays internal; `cabal-join` still names people and realm admission. A clone alone grants no fleet standing.
 
 <<~/ahu>>
 
@@ -39,7 +39,7 @@ A Lararium runs as a ''swarm of one operator's vessels'' (a PersonaGroup) — ea
 
 ''THE TRUE NAME MODEL — a distinct key per vessel, delegated in at the hearth's True Name.'' Each joinee mints its own key. `fleet join` carries one face's root-signed device edge and grants to that joinee; The face index belongs to the join request; face zero supplies the default until the named `--face <index>` door lands. The Binding Gate checks the signed edge against the fleet board. The founder keeps its own key and hands no seed to the joinee.
 
-''The ground of the model'': each device keeps its own private key. Fleet join carries the signed `device-admit/v1` edge, the face's certificates and grants, and the sealed address secret. Keyhive's public events and ciphertext cross through `persona-crossing.ts`; a recipient opens content through its own membership state and a bag's key delivery. No copied operator key crosses.
+''The ground of the model'': each device keeps its own private key. Fleet join carries the signed `device-admit` edge, the face's certificates and grants, and the sealed address secret. Keyhive's public events and ciphertext cross through `persona-crossing.ts`; a recipient opens content through its own membership state and a bag's key delivery. No copied operator key crosses.
 
 <<~/ahu>>
 
@@ -107,7 +107,7 @@ and it stays the operator's seat (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono
 
 !! The Procedure ~ one face joins its fleet
 
-On the face's root holder, run `lares fleet join offer` and carry the offer to the joining place. The joinee runs `lares fleet join request <offer-file>` and carries its request back. The root holder runs `lares fleet join answer <request-file>` under that face's root. Carry the root-signed answer to the joinee and run `lares fleet join land <answer-file>`. `lares fleet join abandon` clears an unlanded exchange. The node and browser use the same offer, request, answer and land shape. The signed answer carries the internal `device-admit/v1` edge and that face's certificates, grants and address secret.
+On the face's root holder, run `lares fleet join offer` and carry the offer to the joining place. The joinee runs `lares fleet join request <offer-file>` and carries its request back. The root holder runs `lares fleet join answer <request-file>` under that face's root. Carry the root-signed answer to the joinee and run `lares fleet join land <answer-file>`. `lares fleet join abandon` clears an unlanded exchange. The node and browser use the same offer, request, answer and land shape. The signed answer carries the internal `device-admit` edge and that face's certificates, grants and address secret.
 
 <<~/ahu>>
 
@@ -145,6 +145,6 @@ A QA vessel on native Windows 11 (PowerShell, not WSL) stands up through the sam
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;gTnrKgaE2t8vT-elnmbilD5lrFeSwP1ceO_a0N60yfM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;B-1TCHXZTWt54eYwe-qBOyqCceHA_yFRF48MizdAFCE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

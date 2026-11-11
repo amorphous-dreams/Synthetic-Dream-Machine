@@ -113,7 +113,7 @@ async function joinFace(page, vesselUrl) {
   const { answer } = await joinThroughPage(page, { timeoutMs: 60_000 });
   assert.equal(answer.kind, "fleet-join-answer", "the host fixture supplies the node's signed fleet-join answer to the QA runner");
   const admitted = answer.edge;
-  assert.equal(admitted?.kind, "device-admit/v1", "the answer carries the device edge the page founds on");
+  assert.equal(admitted?.kind, "device-admit", "the answer carries the device edge the page founds on");
   // A landed answer stashes the admit it carries and RELOADS the page; the marker below dies with the prior
   // document, so the walk reads the re-entered boot and never the standing one.
   await page.evaluate(() => { globalThis.__walkBeforeLand = true; });

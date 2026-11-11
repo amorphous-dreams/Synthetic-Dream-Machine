@@ -90,7 +90,7 @@ async function forkedKel(): Promise<{ prefix: string; chain: PersonaKelEvent[] }
 async function grantFor(overrides: Partial<FaceGrantRecord> = {}, rootSeed = ROOT_SEED, boundEpoch = 0): Promise<FaceGrantRecord> {
   const edge = await founderEdge(rootSeed, boundEpoch);
   const unsigned = {
-    kind: "face-join-grant/v1" as const,
+    kind: "face-join-grant" as const,
     groupId: GROUP,
     joineeAgentIdHex: `0x${JOINEE_KEY}`,
     founderCard: '{"founder":"card"}',
@@ -113,6 +113,16 @@ describe("the later grant — a signed record the joinee verifies offline", () =
     const edge = await founderEdge();
     const v = await verifyFaceGrantRecord(rec, await proofOf(edge.personaRootDid));
     expect(v.ok).toBe(true);
+  });
+
+  test("RED: a record whose kind carries a counter refuses by the shape it lacks, naming no version", async () => {
+    const rec = await grantFor();
+    const edge = await founderEdge();
+    for (const kind of ["face-join-grant/v1", "face-join-grant/v2"]) {
+      const v = await verifyFaceGrantRecord({ ...rec, kind }, await proofOf(edge.personaRootDid));
+      expect(v.ok).toBe(false);
+      if (!v.ok) { expect(v.reason).toMatch(/lacks the grant shape/); expect(v.reason).not.toMatch(/\/v\d/); }
+    }
   });
 
   test("CONTROL: a tampered record (bad signature) → refused, named", async () => {

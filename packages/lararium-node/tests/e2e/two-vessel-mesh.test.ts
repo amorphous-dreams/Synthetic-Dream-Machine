@@ -272,7 +272,7 @@ describe("Vessel A — founding ceremony", () => {
 
 describe("device-admit payload", () => {
   test("payload carries kind, sentinel IDs, the signed edge on its lineage, and syncUrl", () => {
-    expect(admitPayload["kind"]).toBe("device-admit/v1");
+    expect(admitPayload["kind"]).toBe("device-admit");
     expect(String(admitPayload["personaGroupId"])).toMatch(HEX_RE);
     expect(String(admitPayload["meshCabalDocIdHex"])).toMatch(HEX_RE);
 

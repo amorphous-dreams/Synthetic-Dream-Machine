@@ -57,7 +57,7 @@ async function ctxFor(): Promise<FaceJoinContext> {
 }
 
 const summons = (deviceEdge: Awaited<ReturnType<typeof edgeFor>>, force?: boolean) =>
-  ({ kind: "face-join/v1" as const, contactCard: '{"joinee":"card"}', deviceEdge, ...(force !== undefined ? { force } : {}) });
+  ({ kind: "face-join" as const, contactCard: '{"joinee":"card"}', deviceEdge, ...(force !== undefined ? { force } : {}) });
 
 describe("the gate — a signature, never a list", () => {
   test("a healthy second device joins through the founded fleet board", async () => {
@@ -120,7 +120,7 @@ describe("the gate — a signature, never a list", () => {
 
   test("a summons carrying no edge → refused, never thrown", async () => {
     const ctx = await ctxFor();
-    const out = await runFaceJoin(fakeProvider(), { kind: "face-join/v1", contactCard: "{}", deviceEdge: undefined as never }, ctx);
+    const out = await runFaceJoin(fakeProvider(), { kind: "face-join", contactCard: "{}", deviceEdge: undefined as never }, ctx);
     expect(out.ok).toBe(false);
     if (!out.ok) expect(out.reason).toMatch(/no device-delegation/i);
   });

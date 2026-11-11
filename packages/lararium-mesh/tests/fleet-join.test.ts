@@ -59,7 +59,7 @@ async function world(): Promise<World> {
   const request: FleetJoinRequest = { kind: "fleet-join-request", ...body, signature: await signHex(fleetJoinRequestImage(body), joinee) };
   const carriage = { gatePin: PIN, canon: { lares: "automerge:canon-lares" } };
   const answerBody = {
-    nonce: NONCE, atomKey: joinee.key, personaGroup: GROUP, edge: { kind: "device-admit/v1", deviceEdge: "synthetic", hearthTrueName: HEARTH_NEXUS },
+    nonce: NONCE, atomKey: joinee.key, personaGroup: GROUP, edge: { kind: "device-admit", deviceEdge: "synthetic", hearthTrueName: HEARTH_NEXUS },
     carriage,
     reach: { syncUrl: "ws://hearth.synthetic:7777", islandKind: "charter", islandScope: HEARTH_NEXUS },
     charter: CHARTER_TEXT,
@@ -163,7 +163,7 @@ describe("the fleet-join door's files", () => {
     expect(read(w, { ...w.answer, carriage: { ...w.answer.carriage, gatePin: "cd".repeat(32) } })).toEqual({ refusal: "answer-malformed" });
     expect(read(w, { ...w.answer, carriage: { ...w.answer.carriage, gatePin: sovereignPinAt("nexus-elsewhere.synthetic", 5) } })).toEqual({ refusal: "answer-pin-other-nexus" });
     expect(read(w, { ...w.answer, carriage: { ...w.answer.carriage, canon: { lares: "automerge:other" } } })).toEqual({ refusal: "answer-admit-other-commit" });
-    expect(read(w, { ...w.answer, edge: { kind: "device-admit/v1", deviceEdge: "swapped" } })).toEqual({ refusal: "answer-unsigned" });
+    expect(read(w, { ...w.answer, edge: { kind: "device-admit", deviceEdge: "swapped" } })).toEqual({ refusal: "answer-unsigned" });
     expect(read(w, { ...w.answer, reach: { ...w.answer.reach, syncUrl: "ws://elsewhere.synthetic" } })).toEqual({ refusal: "answer-unsigned" });
     // CONTROL: the right answer under another root refuses; under its own root it reads.
     expect(read(w, w.answer, (await pair("another root")).key)).toEqual({ refusal: "answer-unsigned" });
@@ -287,10 +287,10 @@ describe("the fleet-join door's files", () => {
   test("THE EDGE HANDED ON MATCHES THE EDGE DIGESTED: a frozen canonical copy, and an oversized edge refuses", async () => {
     const w = await world();
     let reads = 0;
-    const shifting = { kind: "device-admit/v1", get deviceEdge() { reads += 1; return reads === 1 ? "synthetic" : "swapped"; }, hearthTrueName: HEARTH_NEXUS };
+    const shifting = { kind: "device-admit", get deviceEdge() { reads += 1; return reads === 1 ? "synthetic" : "swapped"; }, hearthTrueName: HEARTH_NEXUS };
     const verified = read(w, { ...w.answer, edge: shifting });
     if ("refusal" in verified) throw new Error(verified.refusal);
-    expect(verified.answer.edge).toEqual({ kind: "device-admit/v1", deviceEdge: "synthetic", hearthTrueName: HEARTH_NEXUS });
+    expect(verified.answer.edge).toEqual({ kind: "device-admit", deviceEdge: "synthetic", hearthTrueName: HEARTH_NEXUS });
     expect(Object.isFrozen(verified.answer.edge)).toBe(true);
     expect(read(w, await resigned(w, { edge: { blob: "x".repeat(70000) } }))).toEqual({ refusal: "answer-malformed" });
   });
@@ -354,7 +354,7 @@ describe("the answer's pin stands at the Nexus the answer names", () => {
     const a = { ...w.answer, ...change };
     return { ...a, signature: await signHex(fleetJoinAnswerImage(a), w.root) };
   };
-  const edgeAt = (nexus: string) => ({ kind: "device-admit/v1", deviceEdge: "synthetic", hearthTrueName: nexus });
+  const edgeAt = (nexus: string) => ({ kind: "device-admit", deviceEdge: "synthetic", hearthTrueName: nexus });
 
   test("RED: an anchor standing names a gate key; the pin at the edge's true name reads", async () => {
     const w = await world();
@@ -370,7 +370,7 @@ describe("the answer's pin stands at the Nexus the answer names", () => {
 
   test("RED: an answer that names no Nexus at all (no true name, no charter island) refuses answer-nexus-absent", async () => {
     const w = await world();
-    const bare = { kind: "device-admit/v1", deviceEdge: "synthetic" };
+    const bare = { kind: "device-admit", deviceEdge: "synthetic" };
     // Every Nexus-bound check (the pin's Nexus, the floor pins' Nexus, the admit's face) would otherwise read nothing.
     for (const reach of [
       { ...w.answer.reach, islandKind: "anchor" as const, islandScope: "ab".repeat(32) },
@@ -385,7 +385,7 @@ describe("the answer's pin stands at the Nexus the answer names", () => {
 
   test("RED: a charter island's genesis holds the pin when the edge names no true name", async () => {
     const w = await world();
-    const bare = { kind: "device-admit/v1", deviceEdge: "synthetic" };
+    const bare = { kind: "device-admit", deviceEdge: "synthetic" };
     const elsewhere = await resign(w, { edge: bare, reach: { ...w.answer.reach, islandKind: "charter", islandScope: "nexus-elsewhere.synthetic" } });
     expect(read(w, elsewhere)).toEqual({ refusal: "answer-pin-other-nexus" });
     // CONTROL: the genesis the pin stands at reads.

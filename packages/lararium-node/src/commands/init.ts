@@ -76,7 +76,7 @@ export interface InitOptions {
   readonly storageDir?: string;
   readonly genesisDir?: string;
   readonly force?:      boolean;
-  /** A device-admit/v1 payload the fleet-join door's landing read out of a verified answer: it skips the founding
+  /** A device-admit payload the fleet-join door's landing read out of a verified answer: it skips the founding
    *  ceremony and joins this vessel, a place that stands (with `force`), to the face's PersonaGroup. A second
    *  OPERATOR joins by carriage contract-receive. */
   readonly admitPayload?: CarriedAdmitPayload;
@@ -282,8 +282,8 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
     // binding into its OWN daemon doc and boots through its Binding Gate — no Beelay, no cap events.
     const payload = opts.admitPayload;
     // The admit supplies the binding; the joinee's selected face atom supplies its own Keyhive card.
-    if (payload.kind !== "device-admit/v1") {
-      throw new Error(`[lares fleet join land] unexpected payload kind: ${payload.kind}`);
+    if (payload.kind !== "device-admit") {
+      throw new Error(`[lares fleet join land] the payload names the kind ${JSON.stringify(payload.kind)}: it lacks the device admit shape ("device-admit")`);
     }
     // The ceremony mints the selected face's card from its atom; the public place key remains an equality guard.
     const mountedGroup = existsSync(bootstrap) ? readPackedTiddlers(bootstrap)[PERSONA_GROUP_ID_TIDDLER]?.text : undefined;

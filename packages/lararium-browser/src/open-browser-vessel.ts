@@ -288,7 +288,7 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
    */
   siblingHerms?: readonly string[];
   /**
-   * A `device-admit/v1` payload — this vessel JOINS an existing PersonaGroup instead of FOUNDING its
+   * A `device-admit` payload — this vessel JOINS an existing PersonaGroup instead of FOUNDING its
    * own. The founder's root signed it, so it is self-verifying and CARRIAGE-AGNOSTIC: it may arrive by
    * QR, by paste, by a URL fragment (which never reaches a server), by a file on a stick. It is DATA,
    * never a fetch — a vessel that had to ASK a server for its own admission would be a client

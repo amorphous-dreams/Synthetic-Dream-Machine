@@ -114,7 +114,7 @@ export type { ForkCabalRealmOpts } from "./fork-realm-ceremony.js";
  * can import this type without taking a Node dependency.
  */
 export interface DeviceAdmitPayload {
-  readonly kind:                   "device-admit/v1";
+  readonly kind:                   "device-admit";
   /** The PINNED signer DID — PROVENANCE only (the founder's persona-KEL inception op-key). The pin is
    *  `personaKelPrefix`: the Binding Gate walks that identifier's KEL to its current head and verifies
    *  against THAT, so a rotated key still binds and a superseded one rejects. */
