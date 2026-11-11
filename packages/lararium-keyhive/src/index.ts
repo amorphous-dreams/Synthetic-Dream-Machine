@@ -102,6 +102,12 @@ export {
   openDwelling, dwellersHolding, cabalRealmLiveness,
 } from "./cabal-realm-ceremony.js";
 export type { FoundCabalRealmOpts, FoundedCabalRealm } from "./cabal-realm-ceremony.js";
+// EVERY WIKI'S WORKING LAYER RESTS IN A REALM WORKBENCH, kept by a private cabal of one human's faces (cabal-realm#/the-workbench).
+export {
+  foundWorkbench, standWorkbench, adoptWorkbench, admitWorkbenchFace, removeWorkbenchFace, workbenchFaceHolds, requireWorkbenchWriter,
+  landWorkbench, projectWorkbenchRoster,
+} from "./workbench-realm.js";
+export type { FoundedWorkbench, LedgerDoc, WorkbenchMember, LandWorkbenchPorts, LandedWorkbench } from "./workbench-realm.js";
 export { forkCabalRealm } from "./fork-realm-ceremony.js";
 // THE FLEET-JOIN ANSWER'S ADMIT: the one shape the node's `runInit` and the browser's admit boot found a face by.
 export { carriedAdmitOfFleetJoin, FLEET_JOIN_ADMIT_REFUSALS, type FleetJoinAdmitRefusalName } from "./fleet-join-admit.js";

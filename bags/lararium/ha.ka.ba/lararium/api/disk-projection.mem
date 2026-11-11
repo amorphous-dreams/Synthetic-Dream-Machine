@@ -51,8 +51,8 @@ Disk projection serves ''content'' bags (definitions + instances). State and vie
 | `lares` / `lararium` / `sdm` | seed / canon (definitions; `lararium` = the engine's ''memetic corpus'' — see #oracle-split); house canon rests in the Kahu realm at contract and projects back to `bags/` on the steward's vessel, every other face reading its floor snapshot (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/cap-tier#/house-canon`>>) | `bags/` |
 | `@<wikiSlug>` | wiki content (instance) | `wikis/{slug}/` |
 | `@oracle` | ''runtime system island'' — genesis-loaded engine BLOBs + bag→doc oracle + genesis-cid | ''none'' — genesis-loaded + federated read-only; regenerable (see #oracle-split) |
-| `@personal` | operator view-state, wiki-instance-bound | ''none'' — mesh-synced (see #personal) |
-| `@working` | per-wiki ''saved'' working layer (saved tiddlers, pre-promotion) | `wikis/{slug}/` — live, tracked |
+| `@personal` | one face's view-state AND its private margin over the wiki's shared workbench | `personal/<F>/{slug}/` under the projections root, per face (see #personal) |
+| `@working` | per-wiki ''saved'' working layer, resting in the wiki's realm workbench (cabal-realm#/the-workbench) | `wikis/{slug}/` — live, tracked; or the operator workspace the wiki's share row names (`/lar/workspaces/<name>`) |
 | `@draft` | per-wiki ''unsaved'' drafts (TW5 draft state) | `wikis/{slug}/recovery/` only under an explicit recovery grant; never canon or publication |
 | `@temp` | volatile session layer | `wikis/{slug}/temp/` only where the recipe designates it and the operator's consent row names the slug (`projection.temp.<slug>`); its internal volatile state never |
 | `@daemon` | operator's sovereign authority doc | ''none'' — private; syncs to operator devices via the admin-doc surface |
@@ -92,16 +92,15 @@ The bulb carries the exact seed bytes by seed CID at `/bulb/<cid>.bin`; the floo
 
 <<~ ahu slot=`#/personal`>>
 
-!! personal-slot — wiki-instance-bound, off-disk
+!! personal-slot — one face's private margin, mirrored per face
 
-`@personal` holds the operator's view-state for a specific wiki-instance (`$:/StoryList`, `$:/state/folded/*`, `$:/palette`), keyed per ''(PersonaGroup × recipe-fingerprint)'' (see personal-slot). It holds NO canon (no `bags/` seed) and NO wiki content (no `wikis/` instance projection) — it carries a ''per-operator overlay''.
+> ''Operator ruling'' (2026-11-11): //"Personal can absorb the new caps."//
 
-It carries ''no disk mirror.'' Rationale:
+`@personal` binds per ''(PersonaGroup × recipe-fingerprint)'' (see personal-slot) and carries two things for one face: its view-state for a wiki-instance (`$:/StoryList`, `$:/state/folded/*`, `$:/palette`) and its ''private margin'' over the wiki's shared workbench, the content that face keeps for itself. A title that rests in `@personal` stays there on every edit (the island's settle law), so the margin holds exactly what the face set down there by name; every other save lands in the workbench. It holds NO canon (no `bags/` seed).
 
-* ''Disk stays per-device; personal-slot crosses devices.'' It follows the operator across their devices through the admin-doc / Keyhive CRDT mesh, not through a disk artifact. Projecting it to disk would conflate the two and invite divergence.
-* ''It still appears in the projection.'' A `wikis/{slug}/` projection renders from the live, recipe-resolved view — and the recipe composes `@personal`'s view-state into that view. So the operator's ordering and folds //show up// in the projected wiki without `@personal` itself ever touching disk.
-
-A hand MAY add a future debug-only disk projection behind an explicit flag; it MUST NOT become the default.
+* ''It crosses the face's own devices and no other face's.'' Its document delegates to the face's PersonaGroup alone, and the wire guard carries it only to a peer proven as that face; a sibling face that shares the wiki's workbench reads none of it.
+* ''Plaintext survives for it.'' Once `@personal` holds content it takes a disk mirror, scoped per face: `<projections>/personal/<F>/{slug}/` (F the relation the face's verified founding record pins), never beside a canon source, never in the checkout, never in a workbench's folder or workspace. A host that holds no disk grant (a browser leaf) designates the mirror and writes nothing.
+* ''Every mirror seeds back.'' The seed lays each open face's `personal/<F>/{slug}` folder back into that face's own personal layer of the wiki (the worn face through the ordinary wave, every other open face through a wave naming it), and a reset clears the hearth alone, so the folder stands for it.
 
 <<~/ahu>>
 
@@ -243,6 +242,6 @@ between casual chat-use and the defined parser core.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;yY0wK4R6t1HCjOmT1T3TGqa1gUxFjEDw89S9XvzaC_g`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sxS1WYig9dg10ZpbNED_l89hbZeWEQtuh7OPB7thY88`>>
 
 <<^ code=`&#x0004;` to=`?`>>

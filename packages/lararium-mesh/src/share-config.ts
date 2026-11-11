@@ -16,11 +16,19 @@
  * hive delegates the bag to it while both stand lit (`owedGrants`); a grant whose owner stands shut waits behind an opaque
  * flag (`sharePendingTitle`), naming no face.
  *
+ * A WIKI'S ROW RIDES A PRIVATE CABAL (cabal-realm#/the-workbench). A `kind: "wiki"` row shares the wiki's WORKING layer: the
+ * share door founds (once) a glamour-less, announce-less cabal realm whose Keyhive Document holds the faces the row names, and
+ * the wiki's workbench (one CRDT at the realm's address) syncs to every member face. The row stays this TW5 surface; the realm
+ * carries who reads. A row may name a `workspace`: the operator-configured directory (`/lar/workspaces/<name>`) the workbench's
+ * plaintext mirror rests in, else `<projections>/wikis/<slug>`. The daemon wiki holds one face's memory and takes no row at
+ * all (`share-face-private`), whatever its kind.
+ *
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-share-config
  */
 import { sha256 } from "@noble/hashes/sha2.js";
 import { hex, utf8Bytes } from "./crypto.js";
 import { bagUri } from "./lar-uris.js";
+import { isFacePrivateSlug, WORKSPACE_NAME_RE } from "./workbench.js";
 
 /** The prefix every share row titles under. */
 export const SHARE_CONFIG_PREFIX = "$:/config/lares/share/";
@@ -37,6 +45,8 @@ export interface ShareRow {
   readonly read: string;
   readonly write: string;
   readonly note?: string;
+  /** A wiki row's workspace name: its workbench mirror rests at `/lar/workspaces/<name>` (else `<projections>/wikis/<slug>`). */
+  readonly workspace?: string;
 }
 
 /** A face as the resolver reads it: its handle index and its pet-name (null where none reads). */
@@ -45,15 +55,24 @@ export interface ShareFace { readonly handleIndex: number; readonly petname: str
 /** A share row whose filter reads outside the title-list subset refuses by name, never a guess. */
 export class ShareConfigRefusal extends Error {
   override readonly name = "ShareConfigRefusal";
-  constructor(readonly reason: "share-filter-unsupported" | "share-slug-malformed" | "share-file-malformed", detail: string) { super(`${reason}: ${detail}`); }
+  constructor(readonly reason: "share-filter-unsupported" | "share-slug-malformed" | "share-file-malformed" | "share-face-private" | "share-workspace-malformed", detail: string) { super(`${reason}: ${detail}`); }
 }
 
 const SLUG = /^[a-z0-9][a-z0-9._-]*$/;
 
-/** The row title for a slug. */
+/** The row title for a slug. The daemon wiki (and each face's `daemon-<F>`) refuses `share-face-private`: it never shares. */
 export function shareRowTitle(slug: string): string {
   if (!SLUG.test(slug)) throw new ShareConfigRefusal("share-slug-malformed", `"${slug}" names no bag or wiki slug`);
+  if (isFacePrivateSlug(slug)) throw new ShareConfigRefusal("share-face-private", `"${slug}" holds one face's memory (the daemon wiki), a named exception: it takes no share row`);
   return `${SHARE_CONFIG_PREFIX}${slug}`;
+}
+
+/** A row's workspace name, checked: empty or absent reads none; a name outside the grammar refuses `share-workspace-malformed`. */
+export function shareRowWorkspace(row: Pick<ShareRow, "workspace">): string | null {
+  const name = (row.workspace ?? "").trim();
+  if (name === "") return null;
+  if (!WORKSPACE_NAME_RE.test(name)) throw new ShareConfigRefusal("share-workspace-malformed", `"${name}" names no workspace (lower-case letters, digits, '.', '_' and '-')`);
+  return name;
 }
 
 /** The bag a row shares: a wiki's row shares its canon bag. */
@@ -169,7 +188,11 @@ export function sharePendingTitle(grant: OwedGrant, vesselSalt: string): string 
 
 /** A row as its control-document record's fields. */
 export function shareRowFields(row: ShareRow): Record<string, string> {
-  return { title: shareRowTitle(row.slug), kind: row.kind, read: row.read, write: row.write, ...(row.note ? { text: row.note } : {}), type: "text/vnd.tiddlywiki" };
+  return {
+    title: shareRowTitle(row.slug), kind: row.kind, read: row.read, write: row.write,
+    ...(shareRowWorkspace(row) !== null ? { workspace: shareRowWorkspace(row)! } : {}),
+    ...(row.note ? { text: row.note } : {}), type: "text/vnd.tiddlywiki",
+  };
 }
 
 /** Read a row back off its record's fields; null for a title outside the share prefix. */
@@ -178,9 +201,12 @@ export function shareRowOf(fields: Readonly<Record<string, unknown>>): ShareRow 
   if (!title.startsWith(SHARE_CONFIG_PREFIX)) return null;
   const slug = title.slice(SHARE_CONFIG_PREFIX.length);
   if (!SLUG.test(slug)) return null;
+  // A face-private slug reads as no row: whatever a hand wrote under its title shares nothing.
+  if (isFacePrivateSlug(slug)) return null;
   const str = (k: string): string => (typeof fields[k] === "string" ? fields[k] as string : "");
   const note = str("text");
-  return { slug, kind: str("kind") === "wiki" ? "wiki" : "bag", read: str("read"), write: str("write"), ...(note ? { note } : {}) };
+  const workspace = str("workspace").trim();
+  return { slug, kind: str("kind") === "wiki" ? "wiki" : "bag", read: str("read"), write: str("write"), ...(workspace ? { workspace } : {}), ...(note ? { note } : {}) };
 }
 
 /**
@@ -191,7 +217,7 @@ export function serializeShareFile(rows: readonly ShareRow[]): string {
   const sorted = [...rows].sort((a, b) => (a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : 0));
   return sorted.map((r) => {
     const f = shareRowFields(r);
-    const head = ["title", "kind", "read", "write", "type"].map((k) => `${k}: ${f[k] ?? ""}`).join("\n");
+    const head = ["title", "kind", "read", "write", ...(f["workspace"] ? ["workspace"] : []), "type"].map((k) => `${k}: ${f[k] ?? ""}`).join("\n");
     return `${head}\n\n${r.note ?? ""}\n`;
   }).join("---\n");
 }
@@ -210,10 +236,15 @@ export function parseShareFile(text: string): ShareRow[] {
       if (at > 0) fields[line.slice(0, at).trim()] = line.slice(at + 1).trim();
     }
     if (body) fields["text"] = body;
+    const title = fields["title"] ?? "";
+    if (title.startsWith(SHARE_CONFIG_PREFIX) && isFacePrivateSlug(title.slice(SHARE_CONFIG_PREFIX.length))) {
+      throw new ShareConfigRefusal("share-face-private", `record ${n + 1} shares "${title.slice(SHARE_CONFIG_PREFIX.length)}", the daemon wiki: it holds one face's memory and takes no share row`);
+    }
     const row = shareRowOf(fields);
     if (row === null) throw new ShareConfigRefusal("share-file-malformed", `record ${n + 1} names no share row (a title under ${SHARE_CONFIG_PREFIX})`);
     parseShareFilter(row.read);
     parseShareFilter(row.write);
+    shareRowWorkspace(row);
     rows.push(row);
   });
   return rows;
@@ -226,7 +257,7 @@ export function parseShareFile(text: string): ShareRow[] {
 export function reconcileShareRows(file: readonly ShareRow[] | null, control: readonly ShareRow[]): { readonly put: readonly ShareRow[]; readonly remove: readonly string[] } {
   if (file === null) return { put: [], remove: [] };
   const named = new Set(file.map((r) => shareRowTitle(r.slug)));
-  const same = (a: ShareRow, b: ShareRow): boolean => a.kind === b.kind && a.read === b.read && a.write === b.write && (a.note ?? "") === (b.note ?? "");
+  const same = (a: ShareRow, b: ShareRow): boolean => a.kind === b.kind && a.read === b.read && a.write === b.write && (a.note ?? "") === (b.note ?? "") && (a.workspace ?? "") === (b.workspace ?? "");
   const put = file.filter((r) => { const held = control.find((c) => c.slug === r.slug); return held === undefined || !same(held, r); });
   const remove = control.map((c) => shareRowTitle(c.slug)).filter((t) => !named.has(t));
   return { put, remove };

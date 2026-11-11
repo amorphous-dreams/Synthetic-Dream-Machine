@@ -12,7 +12,7 @@ import { join, resolve } from "node:path";
 import {
   HouseRootUnnamed, larHouseRoot, larHearthHome, larDataDir, larIdentityDir, larSealHome, larSensoriumsHome,
   larCheckpointsHome, larStagingHome, larProjectionCheckpointDir, larHarvestCheckpointDir, larHarvestStagingDir,
-  larLibraryRoot, larProjectionsHome, larConfigHome, larCacheHome, larRuntimeHome, larBootstrapPath,
+  larLibraryRoot, larProjectionsHome, larWorkspacesHome, larConfigHome, larCacheHome, larRuntimeHome, larBootstrapPath,
   memorySensoriumDir, sensoriumDir, meshSensoriumDir, memeticWikitextSensoriumDir, scratchSensoriumDir,
 } from "../src/vessel-paths.js";
 import { laresConfigPath } from "../src/lares-config.js";
@@ -54,6 +54,7 @@ function tsTable(): Record<string, string> {
     larHarvestStagingDir: larHarvestStagingDir(),
     larLibraryRoot: larLibraryRoot(),
     larProjectionsHome: larProjectionsHome(),
+    larWorkspacesHome: larWorkspacesHome(),
     larConfigHome: larConfigHome(),
     larCacheHome: larCacheHome(),
     larRuntimeHome: larRuntimeHome(),
@@ -117,6 +118,7 @@ describe("the house table, welded", () => {
       larHarvestStagingDir: join(r, "hearth", "staging", "harvest"),
       larLibraryRoot: join(r, "library"),
       larProjectionsHome: join(r, "projections"),
+      larWorkspacesHome: join(r, "workspaces"),
       larConfigHome: join(r, "config"),
       larCacheHome: join(r, "cache"),
       larRuntimeHome: join(r, "run"),

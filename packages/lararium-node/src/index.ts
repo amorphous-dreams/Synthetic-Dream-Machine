@@ -187,6 +187,7 @@ export type { NodeReadiness, ReadinessState, ReadinessFace } from "./readiness-f
 
 export { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "./open-node-vessel.js";
 export { SyncedTree, contentHash, syncedTreeKey, syncedTreeDir, type SyncedBase } from "./synced-tree.js";
+export { PERSONAL_PROJECTION_DIR, personalFaceRoot, workspaceRootsOf } from "./bag-paths.js";
 export { bagsFileToUri, wikisFileToUri, mirrorDirFileToUri, isTempLayerInternalTitle, TEMP_LAYER_DIR,
   daemonFaceFolder, isDaemonFaceFolder, kahuaFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug, projectionRoots, type ProjectionRoots } from "./bag-paths.js";
 export { parseTidCarrier, readBackTempCarriers, TempLayerHousekeeper, tempAuditPath, TEMP_ORPHAN_SETTLE_MS, HOUSEKEEPING_PERIOD_MS } from "./temp-layer.js";

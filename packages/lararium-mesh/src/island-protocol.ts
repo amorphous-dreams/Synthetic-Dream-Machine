@@ -62,7 +62,6 @@
 
 import type { DeviceDelegationTiddler } from "./device-delegation.js";
 import type { FaceAnchor } from "./face-anchor.js";
-import type { WorkingFloorAnchor } from "./wiki-recipe.js";
 import type { PersonaKelEvent } from "./persona-kel.js";
 import type { WorldlineEdgeTriple, WorldlineEdgeClose } from "./worldline-edge.js";
 import type { SparseFormVector } from "./worldline-trajectory.js";
@@ -273,13 +272,10 @@ export interface IslandMsg_Manifest {
     veilArchiveBytes?: Uint8Array;
     /** Public place key for place checks; the face's atom supplies Keyhive identity. */
     placeVerifyingKey:     string;
-    /** THE FLOOR'S OWN ANCHOR, read by the opener from what the vessel holds (`WorkingFloorAnchor`): a node's place KEL prefix,
-     *  or a browser leaf's private Nexus of one. A faceless floor keys its working documents by it. Absent only where the
-     *  vessel holds neither, and then a floor working layer refuses `no-place`. */
-    workingFloorAnchor?:   WorkingFloorAnchor;
     /** THE MOUNTED FACE'S ADDRESS SECRET, hex, read from main-thread custody at the manifest's build (the node's
-     *  `face-address-secret` row, the browser's keystore row): the face's working documents derive their addresses from
-     *  it (`faceWorkingDocUrl`). It crosses the worker boundary beside the atom seed, and only with a face lit. */
+     *  `face-address-secret` row, the browser's keystore row): the face's own catalog derives its address from it
+     *  (`faceCatalogDocUrl`). A wiki's working layer derives from no face secret: it rests in the wiki's realm workbench
+     *  (cabal-realm#/the-workbench). It crosses the worker boundary beside the atom seed, and only with a face lit. */
     faceAddressSecret?:    string;
     /** THE VESSEL'S SECRET HOME, read from main-thread custody at the manifest's build (`secret-home-store`): the document
      *  group-secret seals, dyads and Keyhive cap events rest in. Only its url crosses; the island reaches it by its own sync

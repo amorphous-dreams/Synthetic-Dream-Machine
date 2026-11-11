@@ -7,6 +7,11 @@
  * grantee stands shut waits behind an opaque flag in the control document (`sharePendingTitle`: no face, no bag, no access),
  * and the next light that runs this lands it and clears the flag. A name no face carries waits, named, in the answer.
  *
+ * A WIKI'S ROW ALSO SEATS ITS WORKBENCH (cabal-realm#/the-workbench): beside the canon's grants, the owner face stands the
+ * wiki's realm (founded at the wiki's first stand, else now) and seats every lit face the row names in its Document, revoking
+ * each face the row stopped naming (`workbench`, the composer's port over `landWorkbench`). A named face that stands shut seats
+ * at its next light.
+ *
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-share-config
  */
 import {
@@ -29,6 +34,17 @@ export interface ShareApplyDeps {
   readonly flag: { set(title: string): Promise<void>; clear(title: string): Promise<void> };
   /** A vessel-own salt, so the opaque flag reads alike on no other vessel. */
   readonly salt: string;
+  /**
+   * Land one wiki row's workbench under its lit owner, seating the lit member faces (`landWorkbench`). Absent: wiki rows land
+   * their canon's grants alone (a composer with no ledger, a test of the grants).
+   */
+  readonly workbench?: (row: ShareRow, owner: { readonly handleIndex: number; readonly group: string }, members: ReadonlyArray<{ readonly handleIndex: number; readonly group: string; readonly access: "read" | "write" }>) => Promise<ShareWorkbenchLanded>;
+}
+
+/** One wiki row's workbench as the landing reports it. */
+export interface ShareWorkbenchLanded {
+  readonly slug: string; readonly realmId: string; readonly founded: boolean; readonly members: number;
+  readonly removed: readonly string[];
 }
 
 export interface ShareApplied {
@@ -37,6 +53,8 @@ export interface ShareApplied {
   readonly pending: number;
   /** Each pet-name a row names that no face here carries. */
   readonly waiting: readonly string[];
+  /** Each wiki row's workbench the landing reached. */
+  readonly workbenches: readonly ShareWorkbenchLanded[];
 }
 
 export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
@@ -64,7 +82,27 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
       granted++;
     } catch { await deps.flag.set(flag); pending++; }
   }
+  const workbenches: ShareWorkbenchLanded[] = [];
+  if (deps.workbench) {
+    for (const row of rows) {
+      if (row.kind !== "wiki") continue;
+      const bag = shareRowBag(row);
+      if (isHouseCanonBag(bag)) continue;
+      const ownerIndex = ownerOf(bag);
+      const owner = ownerIndex === null ? undefined : deps.faces.find((f) => f.handleIndex === ownerIndex);
+      if (!owner?.group) continue;
+      const answer = resolveShare({ bag, rows, faces: deps.faces, owner: owner.handleIndex });
+      const members: Array<{ handleIndex: number; group: string; access: "read" | "write" }> = [];
+      for (const index of answer.read) {
+        if (index === owner.handleIndex) continue;
+        const face = deps.faces.find((f) => f.handleIndex === index);
+        if (!face?.group) continue;   // a shut face seats at its next light: its canon grant already waits behind a flag
+        members.push({ handleIndex: index, group: face.group, access: answer.write.includes(index) ? "write" : "read" });
+      }
+      workbenches.push(await deps.workbench(row, { handleIndex: owner.handleIndex, group: owner.group }, members));
+    }
+  }
   const waiting = new Set<string>();
   for (const row of rows) for (const name of resolveShare({ bag: shareRowBag(row), rows, faces: deps.faces }).waiting) waiting.add(name);
-  return { granted, pending, waiting: [...waiting].sort() };
+  return { granted, pending, waiting: [...waiting].sort(), workbenches };
 }

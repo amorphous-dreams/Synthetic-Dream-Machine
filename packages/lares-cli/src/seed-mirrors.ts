@@ -52,7 +52,7 @@ import { dirname, join } from "node:path";
 import { daemonFaceCanonBag, wikiBagUri, wikiSlotUri } from "@lararium/mesh";
 import {
   larProjectionsHome, larConfigHome, mirrorDirFileToUri, isDaemonFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug,
-  daemonFaceFolder, kahuaFaceFolder, KAPAE_EXT, TEMP_LAYER_DIR, parseTidCarrier, atomicWriteFileSync, daemonBagsDir,
+  daemonFaceFolder, kahuaFaceFolder, KAPAE_EXT, TEMP_LAYER_DIR, parseTidCarrier, atomicWriteFileSync, daemonBagsDir, PERSONAL_PROJECTION_DIR,
 } from "@lararium/node";
 import { LIVE_CARRY_DOORS, litFaceOf, unlockItLine, type CarryDoors, type CarryVesselFace } from "./commands/carry.js";
 import { scanFiles, candidatesOf, settleIngest, openSyncedTree } from "./ingest-core.js";
@@ -473,6 +473,16 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
     }
     for (const slug of houseBags) await runWave({ source: join(bagsDir, slug), uriDir: bagsDir, toBag: wikiBagUri(slug), skipTop: [] }, `bag ${slug}`);
     for (const slug of houseWikis) await runWave({ source: join(wikisDir, slug), uriDir: wikisDir, toBag: wikiSlotUri(slug, "working"), wiki: slug, skipTop: ["recovery", TEMP_LAYER_DIR] }, `wiki ${slug}`);
+    // EACH FACE'S PERSONAL MARGIN (cabal-realm#/the-workbench; operator ruling 2026-11-11 "Personal can absorb the new caps."):
+    // `<projections>/personal/<F>/<slug>` lays back into that face's own personal layer of the wiki, the worn face's through the
+    // ordinary wave and every other open face's through a wave naming it. It never lays into a shared workbench.
+    for (const face of faces) {
+      if (face.relation === null) continue;
+      const personalDir = join(projections, PERSONAL_PROJECTION_DIR, face.relation);
+      for (const slug of folders(personalDir)) {
+        await runWave({ source: join(personalDir, slug), uriDir: personalDir, toBag: wikiSlotUri(slug, "personal"), wiki: slug, skipTop: [], ...(face.relation === litRelation ? {} : { face: face.handleIndex }) }, `personal ${slug} of h${face.handleIndex}`, [face.relation]);
+      }
+    }
   }
 
   // ── KAHUA LIFTS, on the operator's confirmed count alone. ──

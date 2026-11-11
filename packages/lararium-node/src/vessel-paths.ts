@@ -13,6 +13,7 @@
  *                              history, outside the hearth, kept through every re-founding
  *   <root>/library             the acquired library — outside the hearth, kept through every re-founding
  *   <root>/projections         the deliberate plaintext renders
+ *   <root>/workspaces/<name>   operator-configured directories, bound one by one; a private shared wiki's mirror
  *   <root>/config              config.json, meta.json, the repo registry
  *   <root>/cache               sweepable scratch (the ephemeral sensoriums)
  *   <root>/run                 transient spool, sockets and levers
@@ -47,13 +48,13 @@ import { basename, join } from "node:path";
 // Imported across the existing node → mempalace edge.
 import {
   HouseRootUnnamed, larHouseRoot, larHearthHome, larSensoriumsHome, larCheckpointsHome, larStagingHome,
-  larLibraryRoot, larProjectionsHome, larConfigHome, larCacheHome, larRuntimeHome, mempalaceContentParent,
+  larLibraryRoot, larProjectionsHome, larWorkspacesHome, larConfigHome, larCacheHome, larRuntimeHome, mempalaceContentParent,
 } from "@lararium/mempalace/house-root";
 
 // Re-export the root and its classes, so every caller in the node and the CLI names them through here.
 export {
   HouseRootUnnamed, larHouseRoot, larHearthHome, larSensoriumsHome, larCheckpointsHome, larStagingHome,
-  larLibraryRoot, larProjectionsHome, larConfigHome, larCacheHome, larRuntimeHome,
+  larLibraryRoot, larProjectionsHome, larWorkspacesHome, larConfigHome, larCacheHome, larRuntimeHome,
 };
 
 /**

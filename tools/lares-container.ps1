@@ -1,5 +1,5 @@
 # lares-container — the HOST shim for the surface vessel (docker-compose.surface.yml), PowerShell form.
-# Same contract as tools/lares-container.sh: up [--capture <dir>]...  down [compose-down args]  found [vessel-found args]  logs
+# Same contract as tools/lares-container.sh: up [--capture <dir>]... [--workspace <name>=<dir>]...  down [compose-down args]  found [vessel-found args]  logs
 # build [compose-build args]  vessel stand  <lares verb…>. `build` rebuilds the vessel image (every package the
 # vessel runs) from the committed checkout, through the env file, stamping HEAD as its revision label; a dirty checkout,
 # or none, refuses by name. The CLI runs by exec while a vessel stands and through the offline door while none
@@ -260,7 +260,19 @@ function LiftVessel([string[]]$output) {
   [Console]::Error.WriteLine("lares-container: $reason; restarting the vessel")
   & docker compose @Base restart lares
   if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the vessel restart failed'); exit $LASTEXITCODE }
-  & docker compose @Base up -d --wait lares
+  # THE RESTART KEEPS THE WORKSPACES: the restart's `up` carries every LARES_WORKSPACES bind, as the operator's `up` did.
+  $script:WorkspaceNames = @()
+  $wsBinds = @()
+  foreach ($pair in ((ValueOf 'LARES_WORKSPACES') -split ';')) { if ($pair) { $wsBinds += WorkspaceBind $pair } }
+  if ($wsBinds.Count -gt 0) {
+    $wsOverride = [IO.Path]::GetTempFileName()
+    try {
+      Set-Content -Path $wsOverride -Value ("services:`n  lares:`n    volumes:`n" + ($wsBinds -join "`n")) -Encoding utf8
+      & docker compose @Base -f $wsOverride up -d --wait lares
+    } finally { Remove-Item -Force $wsOverride -ErrorAction SilentlyContinue }
+  } else {
+    & docker compose @Base up -d --wait lares
+  }
   if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the vessel did not answer healthy after its restart'); exit $LASTEXITCODE }
   UnlockOrName
 }
@@ -350,12 +362,44 @@ if ($args.Count -eq 0) { Die 'usage: lares-container.ps1 up|down|found|logs|buil
 $verb = [string]$args[0]
 $rest = @(); if ($args.Count -gt 1) { $rest = @($args[1..($args.Count - 1)]) }
 
+# A WORKSPACE (cabal-realm#/the-workbench): bound read-write at /lar/workspaces/<name>, from `--workspace <name>=<dir>` and from
+# LARES_WORKSPACES (`;`-separated `<name>=<dir>` pairs). One inside the checkout, LARES_WORKSPACE or LARES_HOUSE/hearth refuses.
+$script:WorkspaceNames = @()
+function Test-Within([string]$child, [string]$parent) {
+  $c = $child.TrimEnd('/', '\'); $p = $parent.TrimEnd('/', '\')
+  return ($c -eq $p) -or $c.StartsWith($p + [System.IO.Path]::DirectorySeparatorChar) -or $c.StartsWith($p + '/')
+}
+function WorkspaceBind([string]$pair) {
+  $at = $pair.IndexOf('=')
+  if ($at -lt 1) { Die "--workspace wants <name>=<dir>, and `"$pair`" names no '='" }
+  $name = $pair.Substring(0, $at); $wdir = $pair.Substring($at + 1)
+  if ($name -cnotmatch '^[a-z0-9][a-z0-9._-]{0,63}$') { Die "--workspace: `"$name`" names no workspace (lower-case letters, digits, '.', '_' and '-')" }
+  if ($script:WorkspaceNames -contains $name) { Die "--workspace: `"$name`" binds once" }
+  if (-not (Test-Path -PathType Container $wdir)) { Die "--workspace ${name}: $wdir is no directory" }
+  $real = (Get-Item $wdir).ResolveLinkTarget($true)
+  $real = if ($real) { $real.FullName } else { (Resolve-Path $wdir).Path }
+  $real = $real.TrimEnd('/', '\')
+  if (Test-Within $real ([System.IO.Path]::GetFullPath($Root))) { Die "--workspace $name refuses $real — it rests inside the checkout ($Root)" }
+  $ws = ValueOf 'LARES_WORKSPACE'
+  if ($ws -and (Test-Within $real ([System.IO.Path]::GetFullPath($ws)))) { Die "--workspace $name refuses $real — it rests inside LARES_WORKSPACE ($ws)" }
+  if (Test-Within $real ([System.IO.Path]::GetFullPath((Join-Path $House 'hearth')))) { Die "--workspace $name refuses $real — it rests inside the hearth" }
+  if ($real.Contains("`n")) { Die '--workspace refuses a path that holds a newline' }
+  $script:WorkspaceNames += $name
+  $yamlDir = $real.Replace("'", "''").Replace('$', '$$')
+  return "      - type: bind`n        source: '$yamlDir'`n        target: /lar/workspaces/$name"
+}
+
 switch ($verb) {
   'up' {
     EnsureHouse
     ResolveGitRev
     $n = 0; $binds = @(); $i = 0
     while ($i -lt $rest.Count) {
+      if ($rest[$i] -eq '--workspace') {
+        if ($i + 1 -ge $rest.Count) { Die '--workspace wants <name>=<dir>' }
+        $binds += WorkspaceBind ([string]$rest[$i + 1])
+        $i += 2; continue
+      }
       if ($rest[$i] -ne '--capture') { Die "unknown option $($rest[$i]) for up" }
       if ($i + 1 -ge $rest.Count) { Die '--capture wants a directory' }
       $d = $rest[$i + 1]
@@ -371,6 +415,7 @@ switch ($verb) {
       $binds += "      - type: bind`n        source: '$yamlDir'`n        target: /capture/$n`n        read_only: true"
       $i += 2
     }
+    foreach ($pair in ((ValueOf 'LARES_WORKSPACES') -split ';')) { if ($pair) { $binds += WorkspaceBind $pair } }
     if ($binds.Count -gt 0) {
       $override = [IO.Path]::GetTempFileName()
       try {
