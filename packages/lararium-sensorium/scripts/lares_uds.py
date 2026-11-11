@@ -201,8 +201,12 @@ def _lines(sock: socket.socket):
         yield json.loads(line.decode())
 
 
-def resolve_face(*, timeout: float = 30.0) -> int:
-    """The face a sole-face vessel wears: the custody door's `face.resolve` act (one frame, one answer), as the CLI asks it."""
+def resolve_face(face: "int | None" = None, *, timeout: float = 30.0) -> int:
+    """The face a seat acts as: the custody door's `face.resolve` act under the seat's reading (`worn`), one frame, one answer.
+
+    Named none, the vessel answers the one face standing open, else the face the operator WEARS (the mounted face,
+    `lares vault unlock --face N`), never a refusal for several open. Named one, the vessel answers it only while it
+    stands open, else refuses `face-not-open` by name (LaresVerbError)."""
     path = socket_path()
     if not os.path.exists(path):
         raise LaresDaemonUnreachable(f"no lares daemon at {path} — start one with `lares vessel stand --foreground`")
@@ -213,7 +217,8 @@ def resolve_face(*, timeout: float = 30.0) -> int:
             s.connect(path)
         except (ConnectionRefusedError, FileNotFoundError) as e:
             raise LaresDaemonUnreachable(f"lares daemon not answering at {path}: {e}") from e
-        s.sendall((json.dumps({"op": "act", "act": "face.resolve", "args": {}}) + "\n").encode())
+        args: dict = {"worn": True, **({"face": face} if face is not None else {})}
+        s.sendall((json.dumps({"op": "act", "act": "face.resolve", "args": args}) + "\n").encode())
         answer = next(_lines(s), None)
     finally:
         s.close()
@@ -239,8 +244,8 @@ def session_act(act: str, args: "dict | None" = None, *, face: "int | None" = No
     path = socket_path()
     if not os.path.exists(path):
         raise LaresDaemonUnreachable(f"no lares daemon at {path} — start one with `lares vessel stand --foreground`")
-    if face is None:
-        face = resolve_face(timeout=timeout)
+    # THE SEAT ACTS AS THE WORN FACE: named none, the mounted face; named one, only while it stands open.
+    face = resolve_face(face, timeout=timeout)
     s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     s.settimeout(timeout)
     try:

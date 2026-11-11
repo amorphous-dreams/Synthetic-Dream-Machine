@@ -28,6 +28,8 @@ class _FakeVessel:
         self.frames: "list[dict]" = []
         self.answer: dict = {"status": "done", "output": {"items": []}}
         self.refuse: "str | None" = None
+        self.open: "set[int]" = {0, 1, 2}
+        self.worn = 2
         self._srv = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self._srv.bind(path)
         self._srv.listen(4)
@@ -55,7 +57,16 @@ class _FakeVessel:
                 self.frames.append(frame)
                 op, rid = frame.get("op"), frame.get("requestId")
                 if op == "act" and frame.get("act") == "face.resolve":
-                    conn.sendall((json.dumps({"op": "act", "act": "face.resolve", "result": {"face": 2}}) + "\n").encode())
+                    # The seat's reading: named none -> the WORN face (h2 here); named one -> it, only while it stands open.
+                    named = (frame.get("args") or {}).get("face")
+                    if named is None:
+                        reply = {"op": "act", "act": "face.resolve", "result": {"face": self.worn}}
+                    elif named in self.open:
+                        reply = {"op": "act", "act": "face.resolve", "result": {"face": named}}
+                    else:
+                        reply = {"op": "act", "act": "face.resolve", "status": "error",
+                                 "refusal": f"face-not-open: the face h{named} does not stand open on this vessel"}
+                    conn.sendall((json.dumps(reply) + "\n").encode())
                     return
                 if op == "session:open":
                     reply = {"kind": "session:opened", "requestId": rid, "ownerEpoch": "e1", "sessionId": "s1",
@@ -120,8 +131,24 @@ def test_kahua_list_and_get_run_the_read_row_on_a_named_face(vessel):
     assert _tools()["kahua_get"](title="T", history=True, face=1) == {"item": None, "history": []}
     assert vessel.acts() == [{"act": "kahua-read", "args": {"action": "list"}},
                              {"act": "kahua-read", "args": {"action": "get", "title": "T", "history": True}}]
-    assert not any(f.get("op") == "act" for f in vessel.frames)
+    # A named face is honoured only while it stands open: the seat asks the vessel under its reading first.
+    assert [f["args"] for f in vessel.frames if f.get("op") == "act"] == [{"worn": True, "face": 1}] * 2
     assert {f["faceRef"] for f in vessel.frames if f.get("op") == "session:open"} == {"h1"}
+
+
+def test_with_several_faces_open_and_none_named_the_seat_acts_as_the_worn_face(vessel):
+    vessel.answer = {"status": "done", "output": {"verb": "kahua-read", "items": []}}
+    vessel.worn = 1
+    assert _tools()["kahua_list"]() == {"items": []}
+    assert [f["args"] for f in vessel.frames if f.get("op") == "act"] == [{"worn": True}]
+    assert [f["faceRef"] for f in vessel.frames if f.get("op") == "session:open"] == ["h1"]
+
+
+def test_a_named_face_that_stands_shut_refuses_by_name_and_opens_no_session(vessel):
+    vessel.open = {1}
+    with pytest.raises(uds.LaresVerbError, match="face-not-open"):
+        _tools()["kahua_list"](face=2)
+    assert not any(f.get("op") == "session:open" for f in vessel.frames)
 
 
 def test_a_row_refusal_and_a_session_refusal_raise_by_name(vessel):

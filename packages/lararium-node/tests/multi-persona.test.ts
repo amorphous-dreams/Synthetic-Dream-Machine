@@ -24,7 +24,7 @@ import {
   personaRootExists, listPersonaRoots,
   setMountedFace, sovereignStands,
 } from "../src/node-vessel-identity.js";
-import { FaceNotNamed, resolveFace } from "../src/face-selector.js";
+import { FaceNotNamed, FaceNotOpen, resolveFace } from "../src/face-selector.js";
 import { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, type IdentityAnchors } from "../src/identity-anchors.js";
 import { readWornPersonaMount } from "../src/worn-mount.js";
 import type { DeviceDelegationTiddler, LarDid } from "@lararium/mesh";
@@ -136,6 +136,23 @@ describe("multi-persona-per-vessel (#63)", () => {
     expect(await resolveFace(0)).toBe(0);   // and the other — the house beneath unchanged
     setMountedFace(1);                      // the composition's mount is not a command's choice
     await expect(resolveFace()).rejects.toBeInstanceOf(FaceNotNamed);
+  });
+
+  test("THE SEAT ACTS AS THE WORN FACE — several open and none named resolve to the mounted face; a named face answers only while open", async () => {
+    await generateOrLoadPersonaGroupRoot(0);
+    await generateOrLoadPersonaGroupRoot(1);
+    try {
+      setMountedFace(undefined);
+      await expect(resolveFace(undefined, { worn: true })).rejects.toThrow(/wears none of them[\s\S]*lares vault unlock --face N/);
+      setMountedFace(1);
+      expect(await resolveFace(undefined, { worn: true })).toBe(1);   // the face the operator wears
+      expect(await resolveFace(0, { worn: true })).toBe(0);           // a named face that stands open
+      await expect(resolveFace(7, { worn: true })).rejects.toBeInstanceOf(FaceNotOpen);
+      await expect(resolveFace(7, { worn: true })).rejects.toThrow(/face-not-open[\s\S]*h7[\s\S]*lares vault unlock --face 7/);
+      setMountedFace(5);                                              // a mount that stands shut never answers the seat
+      await expect(resolveFace(undefined, { worn: true })).rejects.toBeInstanceOf(FaceNotNamed);
+      await expect(resolveFace()).rejects.toBeInstanceOf(FaceNotNamed); // CONTROL: a command still names its face
+    } finally { setMountedFace(undefined); }
   });
 
   test("custody wall in mask form — a mount naming a face whose root the vessel does not hold stands no composition", async () => {

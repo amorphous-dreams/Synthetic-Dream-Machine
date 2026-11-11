@@ -371,7 +371,7 @@ export const SESSION_ACTS: ReadonlySet<string> = new Set([
  * THE TABLE. Each row: the arguments it takes, and the act. A row answers what its command prints.
  *
  *   persona.roots         the roster: each held handle-index with its root's public key, and the orphans
- *   face.resolve          the face a command acts as: the one named, else the one face standing open
+ *   face.resolve          the face a command acts as: the one named, else the one face standing open (`worn`: else the mounted face)
  *   seat.held             which of the public keys asked this vessel holds a seat key for: a reading of row names
  *   seat.arm-genesis      give each chair that stands a seat key minted behind this door, and answer the roster;
  *                         the command mints each chair's next key as a card in its own process; it writes no charter
@@ -440,9 +440,11 @@ export const SEALED_ACTS = Object.freeze({
   // WHICH FACE A COMMAND ACTS AS: the one it names, else the one face standing open (`face-selector`); several and none
   // named refuse by name. A command's own process asks this; nothing the composition mounts answers it.
   // `orNone`: a vessel with no face open answers `face: null` (an act that may act as no face, as a seal roll), never a refusal.
-  "face.resolve": act({ face: optional(index), orNone: optional(flag) }, async (a) => {
+  // `worn`: the seat's reading (an AI seat acts as the face the operator wears): several open and none named resolve to the
+  // MOUNTED face, and a named face answers only while it stands open (`face-selector`).
+  "face.resolve": act({ face: optional(index), orNone: optional(flag), worn: optional(flag) }, async (a) => {
     if (a.orNone === true && a.face === undefined && (await unlockedFaceOrdinals()).length === 0) return { face: null };
-    return { face: await resolveFace(a.face) };
+    return { face: await resolveFace(a.face, a.worn === true ? { worn: true } : {}) };
   }),
   // THE SEATS' OWN KEYS (`seal-ceremony`, `seat-key-store`). A chair's keys mint behind this door and never cross
   // it: the arming rows answer public halves, the roster to write and a digest, and the charter's own writer stays
