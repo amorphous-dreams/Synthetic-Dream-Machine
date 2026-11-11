@@ -26,7 +26,7 @@ import { Repo, type DocumentId } from "@automerge/automerge-repo";
 import { attachMessageChannelSync, emptyLarDoc, makeIslandRepo, replicaHeads, type LarDoc } from "@lararium/mesh";
 import { DurableNodeFSStorageAdapter } from "../src/durable-storage-adapter.js";
 import { restEvery, restingRepo } from "./resting-repo.js";
-import { receiptInStore } from "../src/open-node-vessel.js";
+import { receiptInStore } from "@lararium/mesh";
 import { beforeEach, describe, expect, test } from "vitest";
 import type { CapabilityRecord } from "@lararium/mesh";
 import { answerReceipt, nodeWorkerHandle } from "../src/worker-handle.js";

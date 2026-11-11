@@ -298,7 +298,7 @@ export { resolveRecipePluginCids, deriveWikiRecipe, wikiSlugOfBag } from "./surf
 export type { WikiRecipeDerivation } from "./surface-recipe.js";
 export { makeIslandRepo, attachMessageChannelSync, replicaHeads, islandPeersOf, markIslandArrival, markWikiIslandPeer, wikiIslandPeersOf } from "./island-repo.js";
 export { peerArrivals, type PeerArrival, type PeerArrivals } from "./peer-arrivals.js";
-export { answerReceiptWithHeads, RECEIPT_STALL_ROUNDS } from "./receipt-with-heads.js";
+export { answerReceiptWithHeads, receiptInStore, RECEIPT_STALL_ROUNDS } from "./receipt-with-heads.js";
 export type { CapabilityRecord, ReceiptIssuer, CasFetcher, DyadReader, CustodyWriter, SessionSignDoor } from "./capability-record.js";
 export { islandCustodyWriter, answerReceipt, answerDyad, answerCustodyWrite, answerSessionSign, answerRestAsk, answerIslandAsks, receiptSettlement, RECORD_ASKS } from "./capability-record.js";
 export { SessionSignBook, standingSessionSeat, type BookedSession, type BookedSessionSigner } from "./session-sign-book.js";

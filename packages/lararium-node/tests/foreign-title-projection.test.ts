@@ -34,7 +34,7 @@ import { afterDispatch, draftBag, openDraft, shoreRig, turns, typeInto } from ".
 import { makeReceiptCapability } from "../../lararium-tw5/src/receipt.js";
 import { attachMessageChannelSync } from "@lararium/mesh";
 import { DurableNodeFSStorageAdapter } from "../src/durable-storage-adapter.js";
-import { receiptInStore } from "../src/open-node-vessel.js";
+import { receiptInStore } from "@lararium/mesh";
 import { answerReceipt } from "../src/worker-handle.js";
 import type { CapabilityRecord } from "@lararium/mesh";
 import { restingRepo, restEvery } from "./resting-repo.js";

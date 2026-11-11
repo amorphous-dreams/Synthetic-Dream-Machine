@@ -1808,8 +1808,17 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // `placeSessionCell` ported). Its dispose IS the lock: both leave the record and the session's signer drops. A vessel
       // at its floor carries neither (a device joined to another's face stays there until admitted, ruling 2026-10-16),
       // and its island's `session:sign` answers `signer-unavailable`.
+      // THE RECEIPT WAITS ON THE ISLAND'S LEG, as the node's does: the daemon island stands below, so a receipt asked before
+      // it stands waits for its sync leg (the island's peer), and the stand-down ends every wait still holding.
+      const receiptClosers = new Set<() => void>();
+      let standDaemonIsland: () => void = () => {};
+      const daemonIslandStood = new Promise<void>((resolve) => { standDaemonIsland = resolve; });
+      held.stood.push({ what: "the receipt waits", down: () => { for (const close of [...receiptClosers]) close(); receiptClosers.clear(); } });
       const islandFloor = await composeVessel(islandFloorStack({
-        receipt: browserIslandReceipt(repo),
+        receipt: browserIslandReceipt(repo, {
+          ready: daemonIslandStood.then(() => daemon.syncLegReady()),
+          onClose: (fn) => { receiptClosers.add(fn); return () => { receiptClosers.delete(fn); }; },
+        }),
         cas: readCasBlobFromOpfs,
         docStore: (port) => docStorePort.attach(port),
         // V2: the daemon island's own store rests no document this rest seals (`islandRestGuard`).
@@ -1930,6 +1939,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // The emergency on a shared-holder tab fails CLOSED through the tab's own door: it detaches from the holder (session:close, its port closed) and stands daemon-down; each tab acts on its own arrival, and the shared island ends with its last tab.
       failClosed: holder?.kind === "attached" ? (vm) => vm.dispose() : undefined });
       daemon = daemonHolder.vm;
+      standDaemonIsland();
       // THE ISLAND TEARS DOWN ON ITS OWN ANSWER (L29 mirror): its settlement round runs before the floor stands down (the floor,
       // pushed earlier, comes down after it). LIVENESS: the shutdown's budget (the daemon core's own wedged-worker cut) sits a
       // second inside the step's teardown budget, so a worker wedged alive is terminated before the step reads as stuck.

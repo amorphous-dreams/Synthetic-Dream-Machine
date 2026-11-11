@@ -15,17 +15,19 @@
  * Canon: lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift#/the-slices (slices 5a, 5b) · lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store
  */
 import {
-  answerReceiptWithHeads, SessionSignBook,
+  receiptInStore, SessionSignBook,
   type BookedSessionSigner, type CustodyWriter, type IslandLift, type ReceiptIssuer, type Repo, type SessionOwnChain,
 } from "@lararium/mesh";
 import { faceProofSubjectRef, placeProofSubjectRef } from "@lararium/mesh/face-proof-subjects";
 
-/** The floor's receipt over the vessel's own Repo: it resolves once every named document rests there. */
-export function browserIslandReceipt(repo: Repo): ReceiptIssuer {
-  return async (documentIds, heads) => {
-    const answer = await answerReceiptWithHeads(repo, { type: "receipt:request", requestId: "browser-receipt", documentIds: [...documentIds], ...(heads ? { heads: heads as Record<string, string[]> } : {}) });
-    if (!answer.issued) throw new Error(answer.why ?? "receipt-unissued: the vessel's Repo holds the named documents at no rest");
-  };
+/**
+ * The floor's receipt over the vessel's own Repo, through the ONE helper the node's vessel calls (`receiptInStore`): it waits
+ * for the daemon island's sync leg (`leg.ready` answers the island's peer), re-finds each named document so a derived id the
+ * vessel cached unavailable still comes to hold the heads the island names, and reads the island's channel closing as a
+ * stall rather than waiting on a handle that never moves. `leg.onClose` ends a wait when the vessel stands down.
+ */
+export function browserIslandReceipt(repo: Repo, leg?: { readonly ready: Promise<unknown>; readonly onClose: (fn: () => void) => () => void }): ReceiptIssuer {
+  return (documentIds, heads) => receiptInStore(repo, documentIds, leg, heads);
 }
 
 /** The unlocked session a lift stands on: its signer, and the vessel's own chain at the session's anchor. A joined face's

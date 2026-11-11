@@ -17,7 +17,7 @@
  * in sovereign islands (daemon + wiki). FPI-5 (trim tab): all Node-specific code lives here.
  */
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
-import { WardRefused, wornAtOf, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, bindSecretHomeRest, vesselHeldHomes, enrollBesideSecretHome, SecretHomeUnavailable, type SecretHome, type SealedBag, type BookedSession, type SessionOwnChain, preparePlaceFace, signAsFaceAtom } from "@lararium/mesh";
+import { receiptInStore, WardRefused, wornAtOf, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, bindSecretHomeRest, vesselHeldHomes, enrollBesideSecretHome, SecretHomeUnavailable, type SecretHome, type SealedBag, type BookedSession, type SessionOwnChain, preparePlaceFace, signAsFaceAtom } from "@lararium/mesh";
 import * as A from "@automerge/automerge";
 
 /** A summoned panel verb's ward: the ref the CLI parked, spent only on the verb and arguments it was bound to. */
@@ -81,7 +81,7 @@ import type { HeldSaves, MountManifest } from "@lararium/mesh";
 import { nodePromoteStores, nodePromoteCas } from "./promoted-store.js";
 import { casDirForStorage, casFetchReading, corpusCasDirFromEnv, makeNodeCasResolver, type IslandCasData, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
 import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard } from "@lararium/mesh";
-import { answerReceiptWithHeads, workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, wikiIslandPeersOf, peerArrivals, admitGatePinDigest, ownEntry, plainField, CATALOG_ROW_TIER_FIELD, keptRowTier, vesselTierBags, SHARE_CONFIG_FILE, parseShareFile, shareRowOf, shareRowFields, reconcileShareRows, shareRowTitle, type ShareRow } from "@lararium/mesh";
+import { workingFloorAnchorOf, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, wikiIslandPeersOf, peerArrivals, admitGatePinDigest, ownEntry, plainField, CATALOG_ROW_TIER_FIELD, keptRowTier, vesselTierBags, SHARE_CONFIG_FILE, parseShareFile, shareRowOf, shareRowFields, reconcileShareRows, shareRowTitle, type ShareRow } from "@lararium/mesh";
 import { makeBagTierReader } from "./vessel-bag-tier.js";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
 import type { CapabilityRecord, CustodyWriter, DyadReader, LarVessel, ReceiptIssuer } from "@lararium/mesh";
@@ -554,51 +554,6 @@ export async function standNodeFloor(storageDir: string): Promise<NodeFloor> {
   console.log(`[lararium] this vessel holds its store at ${storeClaim.socketPath}`);
   let released: Promise<void> | null = null;
   return { storageDir, storeClaim, release: () => (released ??= storeClaim.release()) };
-}
-
-/** The ask `answerReceiptWithHeads` reads, built for a document set whose heads the island named. It rides no port. */
-function receiptAskOf(documentIds: readonly string[], heads: Readonly<Record<string, readonly string[]>>): Parameters<typeof answerReceiptWithHeads>[1] {
-  return { requestId: "receipt-in-store", documentIds: [...documentIds], heads: Object.fromEntries(documentIds.map((id) => [id, [...heads[id]!]])) } as Parameters<typeof answerReceiptWithHeads>[1];
-}
-
-/**
- * The receipt capability's whole act: wait until each named document has reached `repo`, then flush them into its store.
- * It resolves only after the store holds every one durably, so an acknowledgment never runs ahead of the save.
- *
- * A document an island just minted reaches this Repo over the island's sync leg alone, and the ask rides a faster
- * road than that leg's handshake. Until the Repo has met the island's peer, `unavailable` says nothing about the
- * island's copy, so the ask waits for `legReady` (the leg standing, the Repo having met its peer) and then reads;
- * an `unavailable` after that is the peers' own answer and rejects. `onClose` (the teardown subscription) ends the wait when the vessel stands
- * down. No timer runs here; the asking island's own patience bounds the wait from its side.
- */
-export async function receiptInStore(
-  repo: Pick<Repo, "find" | "flush"> & Partial<Pick<Repo, "findWithProgress" | "handles" | "networkSubsystem" | "peers">>,
-  documentIds: readonly string[],
-  leg?: { readonly ready: Promise<unknown>; readonly onClose: (fn: () => void) => () => void },
-  heads?: Readonly<Record<string, readonly string[]>>,
-): Promise<void> {
-  let islandPeer: string | undefined;
-  if (leg) {
-    // The teardown subscription leaves when the wait settles, so a completed ask holds nothing of the capability.
-    const stood = await new Promise<{ peer: unknown } | null>((resolve, reject) => {
-      const off = leg.onClose(() => resolve(null));
-      leg.ready.then((peer) => { off(); resolve({ peer }); }, (error: unknown) => { off(); reject(error); });
-    });
-    if (stood === null) throw new Error(`the vessel stood down before the island's sync leg stood (${documentIds.join(", ")})`);
-    if (typeof stood.peer === "string") islandPeer = stood.peer;
-  }
-  const named = heads && documentIds.length > 0 && documentIds.every((id) => (heads[id]?.length ?? 0) > 0);
-  if (named && repo.findWithProgress && repo.handles) {
-    // The island names the heads it holds. A derived id the vessel asked for earlier may stand cached unavailable, and
-    // that says nothing of the island's copy: the vessel's copy has to come to hold the heads, so the wait rides the
-    // handle's own `heads-changed`, never a find that settled before the bytes could arrive.
-    for (const id of documentIds) repo.findWithProgress(`automerge:${id}` as AutomergeUrl);
-    const answer = await answerReceiptWithHeads(repo as unknown as Repo, receiptAskOf(documentIds, heads!), islandPeer);
-    if (!answer.issued) throw new Error(answer.why ?? "the vessel's copy did not come to hold the island's heads");
-    return;
-  }
-  for (const id of documentIds) await repo.find<LarDoc>(`automerge:${id}` as AutomergeUrl);
-  await repo.flush(documentIds as DocumentId[]);
 }
 
 /** What a composition stood, in the order it stood it; a teardown runs the list backward. */
