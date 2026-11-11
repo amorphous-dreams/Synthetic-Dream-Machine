@@ -42,4 +42,3 @@ export function canonIsDisk(h: { holding: string; source: string }, canonBags: s
   const roots = projectionRoots({ projectionRoot: larProjectionsDirOrNone() ?? canonBags, canonBags });
   return roots.sourcedSlugs().includes(h.holding) && resolve(h.source) === resolve(roots.bagRoot(h.holding));
 }
-
