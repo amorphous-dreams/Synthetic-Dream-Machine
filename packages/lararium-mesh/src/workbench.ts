@@ -36,8 +36,22 @@ import { CABAL_REALM_RE } from "./realm-bag.js";
 import { realmWorkbenchDocUrl } from "./deterministic-doc.js";
 import { documentIdOfUrl } from "./sealed-rest.js";
 import { DAEMON_WIKI_SLUG } from "./wiki-recipe.js";
+import { PRIVATE_CABAL_REALM_DOMAIN } from "./domains.js";
+import { sha256HexBytesSync, utf8Bytes } from "./crypto.js";
 
 export { realmWorkbenchDocUrl };
+
+/**
+ * THE PRIVATE CABAL OF ONE'S NAME: a realm id derived from the owning face (its PersonaGroup, which every device of the face
+ * seats under) and the wiki's NFC slug, under `PRIVATE_CABAL_REALM_DOMAIN`. Two devices of one face that stand one wiki
+ * offline derive one realm, so their ledgers merge on one row and their workbenches on one document: an island converges and
+ * never stalls on a tie. A share seats more faces in that realm and never renames it; a hard cut forks to a fresh name.
+ */
+export function privateCabalRealmId(face: string, slug: string): string {
+  const f = face.trim().toLowerCase().replace(/^0x/, "");
+  if (f.length === 0) throw new WorkbenchRefusal("workbench-realm-malformed", "a private cabal names its owning face, and none was given");
+  return sha256HexBytesSync(utf8Bytes(`${PRIVATE_CABAL_REALM_DOMAIN}\n${f}\n${slug.normalize("NFC")}`));
+}
 
 /** Why a share of a wiki through a workbench refuses, by name. */
 export type WorkbenchRefusalReason =
@@ -140,16 +154,45 @@ export function noteWorkbench(draft: LarDoc, realmId: string, slug: string): voi
   if (ownEntry(draft.tiddlers, key) === undefined) draft.tiddlers[key] = storedLarRecord(key, { text: slug.normalize("NFC") }, "workbench");
 }
 
+// ── THE KEY DOCUMENT ON THIS VESSEL ─────────────────────────────────────────────────────────────
+
+const keyDocKey = (realm: string, slug: string, docIdHex: string): string =>
+  `${EDGE_LEDGER_PREFIX}${realm}/workbench-key/${slugKey(slug)}/${docIdHex.trim().toLowerCase().replace(/^0x/, "")}`;
+
+/**
+ * Note the Keyhive Document that keys a realm's workbench on THIS vessel. Keyhive mints a Document's identity from a fresh key
+ * (no derivation reaches it), so each device of a face mints its own sentinel for the one derived realm; the realm's name and
+ * the workbench's address converge, and each vessel's ledger names the Document its own hive keys the layer with. Call INSIDE
+ * `handle.change()`. Writes once.
+ */
+export function noteWorkbenchKey(draft: LarDoc, realmId: string, slug: string, docIdHex: string): void {
+  const key = keyDocKey(realmScope(realmId), slug, docIdHex);
+  if (ownEntry(draft.tiddlers, key) === undefined) draft.tiddlers[key] = storedLarRecord(key, { text: docIdHex.trim().toLowerCase().replace(/^0x/, "") }, "workbench");
+}
+
+/** The Keyhive Documents this vessel's ledger names for a realm's workbench, sorted (one, on a vessel that founded once). */
+export function workbenchKeyDocs(ledger: LarDoc | undefined | null, realmId: string, slug: string): string[] {
+  const prefix = `${EDGE_LEDGER_PREFIX}${realmScope(realmId)}/workbench-key/${slugKey(slug)}/`;
+  const out: string[] = [];
+  for (const [key, record] of Object.entries(ledger?.tiddlers ?? {})) {
+    if (!key.startsWith(prefix)) continue;
+    const id = key.slice(prefix.length);
+    if (/^[0-9a-f]{64}$/.test(id) && tiddlerText(record as never) === id) out.push(id);
+  }
+  return out.sort();
+}
+
 // ── THE SEATS THIS VESSEL'S HAND MADE ───────────────────────────────────────────────────────────
 
 const seatKey = (realm: string, slug: string, face: string): string =>
   `${EDGE_LEDGER_PREFIX}${realm}/workbench-seat/${slugKey(slug)}/${encodeURIComponent(face)}`;
 
 /**
- * Note a seat this vessel's own hand made in a workbench's realm: the face (its PersonaGroup) and the Keyhive agent the owner's
- * hive seated for it. The realm's Document stays the authority (content keys, the island's mount); the note lets the vessel's
- * wire guard decide on a thread with no hive, and lets a later landing revoke a face a row stopped naming. It never crosses:
- * the ledger reaches no other operator. Call INSIDE `handle.change()`.
+ * THE ROSTER'S PROJECTION, ONE OWNER. A seat row names a face (its PersonaGroup) and the Keyhive agent seated for it, and only
+ * the roster projection (`projectWorkbenchRoster`, keyhive) writes or drops one, from what the realm's Keyhive Document answers
+ * on this vessel's replica: Keyhive owns membership, and the row mirrors it for a thread that holds no hive (the wire guard).
+ * Each act that reads the roster re-projects, so a revoke a replica has ingested drops the row; a row that reads absent
+ * withholds (fail closed). It never crosses: the ledger reaches no other operator. Call INSIDE `handle.change()`.
  */
 export function noteWorkbenchSeat(draft: LarDoc, realmId: string, slug: string, face: string, agentHex: string): void {
   const key = seatKey(realmScope(realmId), slug, face);

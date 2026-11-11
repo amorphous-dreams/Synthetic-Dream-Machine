@@ -6,7 +6,7 @@
 import { describe, expect, it } from "vitest";
 import { NOISE_MAX_MESSAGE_BYTES, noiseInitiate, noiseKeyPair, noiseRespond } from "../src/noise-ik.js";
 import {
-  SEALED_BUFFER_MAX_BYTES, SEALED_CONCURRENT_MAX, SEALED_FRAME_VERSION, SEALED_HEADER_BYTES, SEALED_KINDS,
+  SEALED_BUFFER_MAX_BYTES, SEALED_CONCURRENT_MAX, SEALED_FRAME_TAG, SEALED_HEADER_BYTES, SEALED_KINDS,
   SEALED_MESSAGE_MAX_BYTES, SEALED_PART_BODY_MAX, SEALED_REFUSALS, SEALED_SEAL_OVERHEAD,
   sealedParts, sealedReader, sealedWriter, type SealedKind, type SealedReader, type SealedRefusal,
 } from "../src/sealed-carriage.js";
@@ -30,11 +30,11 @@ function same(out: unknown, kind: SealedKind, messageId: number, bytes: Uint8Arr
 }
 
 /** Write one header by hand, so a test can forge any field. */
-function forge(f: { version?: number; kind?: number; id?: number; index?: number; count?: number; total?: number; body?: Uint8Array }): Uint8Array {
+function forge(f: { tag?: number; kind?: number; id?: number; index?: number; count?: number; total?: number; body?: Uint8Array }): Uint8Array {
   const body = f.body ?? new Uint8Array(0);
   const frame = new Uint8Array(SEALED_HEADER_BYTES + body.length);
   const view = new DataView(frame.buffer);
-  view.setUint8(0, f.version ?? SEALED_FRAME_VERSION);
+  view.setUint8(0, f.tag ?? SEALED_FRAME_TAG);
   view.setUint8(1, f.kind ?? SEALED_KINDS.session);
   view.setUint32(2, f.id ?? 0);
   view.setUint16(6, f.index ?? 0);
@@ -66,8 +66,8 @@ function roundTrip(kind: SealedKind, bytes: Uint8Array): void {
 
 describe("sealed-carriage — layout", () => {
   it("names constants that sit outside the handshake tags and fit the Noise bound", () => {
-    expect(SEALED_FRAME_VERSION).toBe(0x80);
-    expect(SEALED_FRAME_VERSION > 0x13).toBe(true);
+    expect(SEALED_FRAME_TAG).toBe(0x80);
+    expect(SEALED_FRAME_TAG > 0x13).toBe(true);
     expect(SEALED_HEADER_BYTES).toBe(14);
     expect(SEALED_SEAL_OVERHEAD).toBe(16);
     expect(MAX).toBe(65535 - 16 - 14);
@@ -177,12 +177,12 @@ describe("sealed-carriage — round trips", () => {
 
 describe("sealed-carriage — refusals", () => {
   it("refuses a handshake tag after open (control: every gate tag 0x01–0x13)", () => {
-    for (let tag = 0x01; tag <= 0x13; tag++) refuses(sealedReader(), forge({ version: tag }), "handshake-tag");
+    for (let tag = 0x01; tag <= 0x13; tag++) refuses(sealedReader(), forge({ tag }), "handshake-tag");
     refuses(sealedReader(), Uint8Array.of(0x01), "handshake-tag");
   });
 
   it("refuses any foreign first byte", () => {
-    for (const v of [0x00, 0x14, 0x7f, 0x81, 0xff, 0x5a]) refuses(sealedReader(), forge({ version: v }), "version-foreign");
+    for (const v of [0x00, 0x14, 0x7f, 0x81, 0xff, 0x5a]) refuses(sealedReader(), forge({ tag: v }), "tag-foreign");
   });
 
   it("refuses a short header", () => {

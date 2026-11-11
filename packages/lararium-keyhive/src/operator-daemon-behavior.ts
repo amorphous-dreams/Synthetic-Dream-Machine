@@ -31,8 +31,8 @@ import {
   makeShareSetReactor, makeShareListReactor, readShareRows,
 } from "@lararium/tw5";
 import { applyShares } from "./share-apply.js";
-import { adoptWorkbench, landWorkbench, standWorkbench, workbenchFaceHolds, type LedgerDoc } from "./workbench-realm.js";
-import { ledgerWorkbenchRealm, bagUri as meshBagUri } from "@lararium/mesh";
+import { adoptWorkbench, landWorkbench, projectWorkbenchRoster, standWorkbench, type LedgerDoc } from "./workbench-realm.js";
+import { ledgerWorkbenchRealm, workbenchKeyDocs, bagUri as meshBagUri } from "@lararium/mesh";
 import { DAEMON_WIKI_SLUG, ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, recipeLayerIndex, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, ControlHomeUnavailable, faceCatalogDocUrl, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor, VerbTable } from "@lararium/tw5";
 import type { IslandMsg_Manifest, JoinedFaceAuth } from "@lararium/mesh";
@@ -424,7 +424,6 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       repo: ctx.repo, deviceScoped: (slug) => slug === DAEMON_WIKI_SLUG, control: controlOf(ctx),
       ...(docStoreDoor ? { announceDevice: (kind: Exclude<WikiSlotKind, "temp">, documentId: string) => announceSlotDoc(docStoreDoor, wikiSlotUri(DAEMON_WIKI_SLUG, kind), documentId) } : {}),
       daemonStore: ctx.composite, catalog: null,
-      vesselDid: () => didFromVerifyingKey(daemonAuth.placeVerifyingKey), mintedByHex: () => daemonAuth.placeVerifyingKey,
     });
     return siblingSlots;
   };
@@ -442,7 +441,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const provider = entry ? providers.get(bareKey(entry.atom.key))?.provider : undefined;
         if (!entry || !provider) return null;
         const resolver = siblingSlotsOf(ctx).of({
-          group: entry.personaGroupId,
+          group: entry.personaGroupId, atomKey: entry.atom.key,
           keyhive: provider as never,
           workbenchRealm: faceWorkbench(ctx, () => provider, entry.personaGroupId),
           faceDoor: makeFaceBagDoor({ face: provider as never, groupId: entry.personaGroupId }),
@@ -465,14 +464,19 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
    * the wire). With `mint`, a wiki that holds no realm founds its private cabal of one under the face's hive (`standWorkbench`).
    * A ledger naming two realms for one slug refuses `workbench-two-realms` by name.
    */
-  const faceWorkbench = (ctx: IslandContext, provider: () => KeyhiveProvider | null | undefined, face?: string) => async (slug: string, mint: boolean): Promise<string | null> => {
+  const faceWorkbench = (ctx: IslandContext, provider: () => KeyhiveProvider | null | undefined, face: string) => async (slug: string, mint: boolean): Promise<string | null> => {
     const hive = provider();
     if (!hive) return null;
-    const ledger = await workbenchLedgerOf(ctx);
+    const ledger = asLedgerDoc(await workbenchLedgerOf(ctx));
     const held = ledgerWorkbenchRealm(ledger.doc(), slug);
-    if (held === null) return mint ? (await standWorkbench(hive, asLedgerDoc(ledger), slug, face)).realmId : null;
-    if (hive.docIdOfBag(wikiSlotUri(slug, "working")) === null) adoptWorkbench(hive, slug, held);
-    return (await workbenchFaceHolds(hive, slug, await hive.whoami(), "read").catch(() => false)) ? held : null;
+    // The wiki holds no realm here, or holds one with no key Document on this vessel: a mint stands it under this face.
+    if (held === null || workbenchKeyDocs(ledger.doc(), held, slug).length === 0) {
+      return mint ? (await standWorkbench(hive, ledger, slug, face)).realmId : null;
+    }
+    if (hive.docIdOfBag(wikiSlotUri(slug, "working")) === null) adoptWorkbench(hive, slug, workbenchKeyDocs(ledger.doc(), held, slug)[0]!);
+    // The mount reads the roster, so the roster's projection follows it (one owner: Keyhive).
+    const seated = await projectWorkbenchRoster(hive, ledger, held, slug, new Map([[face, await hive.whoami()]])).catch(() => [] as readonly string[]);
+    return seated.includes(face) ? held : null;
   };
   const slotDocsOf = (ctx: IslandContext): SlotDocResolver => {
     if (slotDocs) return slotDocs;
@@ -1497,9 +1501,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               provider: ownerHive, ledger: asLedgerDoc(await workbenchLedgerOf(ctx)), ownerFace: owner.group,
               checkoutSourced: isHouseCanonBag(meshBagUri(row.slug)),
             });
+            const keyDoc = workbenchKeyDocs((await workbenchLedgerOf(ctx)).doc(), landed.realmId, row.slug)[0];
             for (const seat of seats) {
               await seat.hive.ingestPeerEvents(await ownerHive.eventsForPeer(seat.agentHex));
-              adoptWorkbench(seat.hive, row.slug, landed.realmId);
+              if (keyDoc) adoptWorkbench(seat.hive, row.slug, keyDoc);
             }
             return { slug: landed.slug, realmId: landed.realmId, founded: landed.founded, members: landed.members, removed: landed.removed };
           },
@@ -1820,13 +1825,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         ...mountedKahuVerifier,
         // Fail closed, as the content fence does: a call that names no presenter takes no hand.
         kahuReach: (bagUrl, act, presenter) => presenter === undefined
-          ? Promise.reject(new VerbRefusal("kahu-reach", `kahu-reach: ${act} names no presenter, so it takes no face's hand into system canon`))
+          ? Promise.reject(new VerbRefusal("kahu-reach", `kahu-reach: ${act} names no presenter, so it takes no face's hand into house canon`))
           : bareKey(presenter) !== bareKey(daemonAuth.atom!.key)
-            ? Promise.reject(new VerbRefusal("kahu-reach", "kahu-reach: system canon takes the mounted face's hand; a sibling face holds none here"))
+            ? Promise.reject(new VerbRefusal("kahu-reach", "kahu-reach: house canon takes the mounted face's hand; a sibling face holds none here"))
             : mountedKahuVerifier.kahuReach!(bagUrl, act),
         verify: (args) => {
           if (args.access === "admin" && isHouseCanonBag(args.bagUrl) && bareKey(args.presenter) !== bareKey(daemonAuth.atom!.key)) {
-            return Promise.resolve({ ok: false, reason: "kahu-reach: system canon takes the mounted face's hand; a sibling face holds none here" });
+            return Promise.resolve({ ok: false, reason: "kahu-reach: house canon takes the mounted face's hand; a sibling face holds none here" });
           }
           return mountedKahuVerifier.verify(args);
         },

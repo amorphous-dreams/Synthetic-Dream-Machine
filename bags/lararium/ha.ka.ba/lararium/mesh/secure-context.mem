@@ -43,7 +43,7 @@ The browser vessel mints its sovereign key via `crypto.subtle.generateKey({name:
 
 !! Split auth from TLS ~ two concerns the CA question fuses
 
-The move that dissolves the wall: ''split the two concerns.'' AUTHENTICATION (who may sync) stays on ''device keys'': each device mints its own keypair, and the built `device-admit/v1` path accepts one founder PersonaGroup root signature. The Tailnet-Lock shape — physical co-presence human-gating admission, ≥2 household devices co-signing so no single device stands as the trust root, and a household-visible, instantly revocable join event on every admit — stands UNBUILT. TLS (the padlock + the secure-context boot) rides a ''separate real cert''. They compose: device-key TOFU for who-syncs, a publicly-trusted cert for the browser's trust store, and ''the family installs nothing''.
+The move that dissolves the wall: ''split the two concerns.'' AUTHENTICATION (who may sync) stays on ''device keys'': each device mints its own keypair, and the built `device-admit` path accepts one founder PersonaGroup root signature. The Tailnet-Lock shape — physical co-presence human-gating admission, ≥2 household devices co-signing so no single device stands as the trust root, and a household-visible, instantly revocable join event on every admit — stands UNBUILT. TLS (the padlock + the secure-context boot) rides a ''separate real cert''. They compose: device-key TOFU for who-syncs, a publicly-trusted cert for the browser's trust store, and ''the family installs nothing''.
 
 <<~/ahu>>
 
@@ -294,6 +294,6 @@ The `https` compose profile supplies a TLS terminator and a split-horizon resolv
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;tDCNinrdLmFTks3Sghe2l7CFdvgANskmJafl40K8qp0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JneL0iBcjy4uWb06R7k8pCjqUHAX_RFLZuiAEFJlsbs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

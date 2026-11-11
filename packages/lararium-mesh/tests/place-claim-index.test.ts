@@ -105,6 +105,31 @@ describe("a claim files, and KEL descent replaces", () => {
   });
 });
 
+describe("descent rides the hash chain; seq only cross-checks", () => {
+  test("RED: a stand whose seq disagrees with its lineage refuses stand-malformed and files nothing", async () => {
+    const ix = hearthPinIndex();
+    const p0 = foundPlace(1), p1 = rotatePlace(p0);
+    const b = await stood(p1, 11);
+    expect(ix.fileClaim("h", b.pin, { ...b.stand, seq: 0 })).toMatchObject({ filed: false, refusal: "stand-malformed" });
+    expect(ix.fileClaim("h", b.pin, { ...b.stand, seq: 2 })).toMatchObject({ filed: false, refusal: "stand-malformed" });
+    expect(ix.get(keyFor("h"))).toBeNull();
+    // CONTROL: the same stand with its agreeing seq files.
+    expect(ix.fileClaim("h", b.pin, b.stand)).toMatchObject({ filed: true, moved: "first" });
+  });
+
+  test("RED: a higher seq on a chain that does not carry the held head never replaces it: no descent, a fork", async () => {
+    const ix = hearthPinIndex();
+    const p0 = foundPlace(1), left = rotatePlace(p0, 0), right = rotatePlace(p0, 1), rightOn = rotatePlace(right, 2);
+    const l = await stood(left, 11, rowsOf(left));
+    const r2 = await stood(rightOn, 13, rowsOf(rightOn));
+    expect(file(ix, "h", l)).toMatchObject({ filed: true, moved: "first" });
+    // seq 2 sits above seq 1, but the right branch's lineage never carries the left head: descent orders nothing here.
+    expect(r2.stand.seq).toBeGreaterThan(l.stand.seq);
+    expect(file(ix, "h", r2)).toMatchObject({ filed: false, refusal: "fork" });
+    expect(ix.get(keyFor("h"))).toBeNull();
+  });
+});
+
 describe("arrival order selects nothing", () => {
   const permutations = <T>(xs: T[]): T[][] => xs.length <= 1 ? [xs] : xs.flatMap((x, i) => permutations([...xs.slice(0, i), ...xs.slice(i + 1)]).map((rest) => [x, ...rest]));
 

@@ -58,7 +58,7 @@ describe("face-join — the granting half, proven end to end", () => {
     };
 
     const outcome = await runFaceJoin(founder, {
-      kind: "face-join/v1",
+      kind: "face-join",
       contactCard: new TextDecoder().decode(await joinee.contactCard()),
       deviceEdge: edge,
     }, ctx);
@@ -110,7 +110,7 @@ describe("face-join — the granting half, proven end to end", () => {
       boundEpoch:         0,
     });
     const outcome = await runFaceJoin(founder, {
-      kind: "face-join/v1",
+      kind: "face-join",
       contactCard: new TextDecoder().decode(await joinee.contactCard()),
       deviceEdge: edge,
     }, {
@@ -171,7 +171,7 @@ describe("face-join — the granting half, proven end to end", () => {
     };
     const cardOf = async (v: KeyhiveProvider) => new TextDecoder().decode(await v.contactCard());
 
-    const first = await runFaceJoin(founder, { kind: "face-join/v1", contactCard: await cardOf(joinee), deviceEdge: edge }, ctx);
+    const first = await runFaceJoin(founder, { kind: "face-join", contactCard: await cardOf(joinee), deviceEdge: edge }, ctx);
     expect(first.ok).toBe(true);
     if (!first.ok) return;
 
@@ -195,7 +195,7 @@ describe("face-join — the granting half, proven end to end", () => {
     const wipedCard = await cardOf(wiped);
 
     // The default repeat hands the seat back; nothing re-keys, and nothing opens.
-    const plain = await runFaceJoin(founder, { kind: "face-join/v1", contactCard: wipedCard, deviceEdge: edge }, ctx);
+    const plain = await runFaceJoin(founder, { kind: "face-join", contactCard: wipedCard, deviceEdge: edge }, ctx);
     expect(plain.ok).toBe(true);
     if (!plain.ok) return;
     expect(plain.grant.reKeyed).toBe(false);
@@ -205,7 +205,7 @@ describe("face-join — the granting half, proven end to end", () => {
     await expect(wiped.decryptContent(BAG, sealed)).rejects.toThrow();
 
     // FORCE re-keys the group — and STILL nothing opens. A seat is not a key.
-    const forced = await runFaceJoin(founder, { kind: "face-join/v1", contactCard: wipedCard, deviceEdge: edge, force: true }, ctx);
+    const forced = await runFaceJoin(founder, { kind: "face-join", contactCard: wipedCard, deviceEdge: edge, force: true }, ctx);
     expect(forced.ok).toBe(true);
     if (!forced.ok) return;
     expect(forced.grant.reKeyed).toBe(true);
@@ -237,7 +237,7 @@ describe("face-join — the granting half, proven end to end", () => {
       dyad: () => "clear", leaseEpoch: 0, now: NOW,
     };
     const summons = {
-      kind: "face-join/v1" as const,
+      kind: "face-join" as const,
       contactCard: new TextDecoder().decode(await joinee.contactCard()),
       deviceEdge: edge,
     };

@@ -47,7 +47,7 @@ function palace() {
   const repo = new Repo({ sharePolicy: async () => true });
   const pub = dialEntryToRecord({ bearing: "lar:///ha.ka.ba/bags/oracle", verifyingKeyHex: "a".repeat(64), endpoint: "ws://relay/p", scale: "dreamnet" }, "test");
   const loc = dialEntryToRecord({ bearing: "lar:///ha.ka.ba/bags/daemon", verifyingKeyHex: "b".repeat(64), endpoint: "ws://local/q" }, "test");
-  const handle = repo.create<MeshPalaceDoc>({ schemaVersion: "0.1", tiddlers: { [pub.tiddler.title]: pub, [loc.tiddler.title]: loc } });
+  const handle = repo.create<MeshPalaceDoc>({ tiddlers: { [pub.tiddler.title]: pub, [loc.tiddler.title]: loc } });
   return { handle, pub: pub.tiddler.title, loc: loc.tiddler.title };
 }
 

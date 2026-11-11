@@ -78,6 +78,7 @@ export interface PlaceFloorPinStatement {
 export const PLACE_FLOOR_PIN_REFUSALS = [
   "statement-malformed", "pin-unreadable", "pin-not-floor", "pin-other-nexus", "pin-other-route", "head-unreadable", "kel-forked",
   "signature-refused", "place-uncarried", "place-unanchored",
+  "kel-seq-mismatch",  // the claim's `seq` disagrees with the position its head stands at on the hash chain the reader folded
 ] as const;
 export type PlaceFloorPinRefusal = (typeof PLACE_FLOOR_PIN_REFUSALS)[number];
 
@@ -218,7 +219,8 @@ export function readPlaceFloorPin(raw: unknown, at: ClaimReadAt):
     const aid = s["aid"], head = s["head"], seq = s["seq"];
     const folded = foldClaimHead(at.kelRows, aid, head, at.folds);
     if (!folded.ok) return folded.refusal === "kel-forked" ? { refusal: "kel-forked", fork: folded.fork } : { refusal: "head-unreadable" };
-    if (folded.head.seq !== seq) return { refusal: "head-unreadable" };
+    // The head stands where the hash chain puts it; the claim's `seq` only cross-checks that position.
+    if (folded.lineage.length - 1 !== seq || folded.head.seq !== seq) return { refusal: "kel-seq-mismatch" };
     const claim = { aid, seq, head };
     if (!verifyPlaceDutyAtHead({ kel: folded.head, domain: PLACE_FLOOR_PIN_KIND, image: placeFloorPinImage(claim, pin), sig: s["sig"] })) {
       return { refusal: "signature-refused" };

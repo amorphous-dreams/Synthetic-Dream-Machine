@@ -56,7 +56,7 @@ import { GENESIS_FLOOR_TIDDLER, floorManifestBytes, floorManifestCid, floorSlugs
  * builder and the plugin build pipeline speak the same type without coupling
  * @lararium/node to @lararium/tw5 at the type level.
  *
- * Format string: "lararium-tw5-plugin-build/v1"
+ * Format string: "lararium-tw5-plugin-build"
  */
 export interface PluginBuildAttestation {
   readonly format:                  string;
@@ -245,7 +245,12 @@ export interface GenesisArtifact {
 // The plain-data genesis seed (genesis is data, not a baked CRDT)
 // ---------------------------------------------------------------------------
 
-export const GENESIS_SEED_FORMAT = "lararium-genesis-seed/v1" as const;
+export const GENESIS_SEED_FORMAT = "lararium-genesis-seed" as const;
+
+/** What a seed naming another format lacks: the genesis seed's own shape name. */
+export function genesisSeedFormatLack(format: unknown): string {
+  return `the seed names the format ${JSON.stringify(format)}: it lacks the genesis seed shape (${JSON.stringify(GENESIS_SEED_FORMAT)})`;
+}
 
 /**
  * A SEED CARRIES NO VERSION. Its format names its shape, and its bytes name themselves (the seed CID); a version
@@ -283,7 +288,7 @@ const GENESIS_BLOB_CID = /^[0-9a-f]{64}$/;
  */
 export function genesisCasManifestFromSeed(seed: GenesisSeed): GenesisCasManifest {
   if (!seed || seed.format !== GENESIS_SEED_FORMAT) {
-    throw new Error(`[genesis-derive] unsupported seed format: ${String(seed?.format)}`);
+    throw new Error(`[genesis-derive] ${genesisSeedFormatLack(seed?.format)}`);
   }
   if (genesisSeedCarriesAVersion(seed)) throw new Error("[genesis-derive] the seed carries a version; a seed carries none");
   if (!seed.blobs || typeof seed.blobs !== "object" || Array.isArray(seed.blobs)) {
@@ -354,11 +359,11 @@ export function validateGenesisBundleCoherence(
   manifest: GenesisCasManifest,
 ): void {
   if (seed.format !== GENESIS_SEED_FORMAT) {
-    throw new Error(`[genesis-coherence] unsupported seed format: ${String(seed.format)}`);
+    throw new Error(`[genesis-coherence] ${genesisSeedFormatLack(seed.format)}`);
   }
   if (genesisSeedCarriesAVersion(seed)) throw new Error("[genesis-coherence] the seed carries a version; a seed carries none");
   if (manifest.format !== GENESIS_CAS_MANIFEST_FORMAT) {
-    throw new Error(`[genesis-coherence] unsupported manifest format: ${String(manifest.format)}`);
+    throw new Error(`[genesis-coherence] the CAS manifest names the format ${JSON.stringify(manifest.format)}: it lacks the genesis CAS shape (${JSON.stringify(GENESIS_CAS_MANIFEST_FORMAT)})`);
   }
 
   const seedRows = Object.entries(seed.blobs)
@@ -472,7 +477,7 @@ export function oracleGenesisDocUrl(): AutomergeUrl {
  * blob DESCRIPTOR for a human to read, where a wrong label misleads nobody's identity.
  */
 export function computeEngineCid(coreSha256: string): string {
-  return cidV1Sha256(utf8Bytes(`engine/v1\ncore-sha256:${coreSha256}`));
+  return cidV1Sha256(utf8Bytes(`lararium-engine\ncore-sha256:${coreSha256}`));
 }
 
 /**
@@ -502,7 +507,7 @@ const isBaseSeed = (p: RegionEntry): boolean => p.kind === "base";
  * A plugin added here moves THIS operator's plugin epoch and nothing further.
  */
 export function computePluginsCid(plugins: readonly RegionEntry[]): string {
-  return foldRegion("plugins/v1", plugins.filter((p) => !isGrammar(p) && !isBaseSeed(p) && p.kind !== "floor"));
+  return foldRegion("lararium-plugins", plugins.filter((p) => !isGrammar(p) && !isBaseSeed(p) && p.kind !== "floor"));
 }
 
 /**
@@ -522,7 +527,7 @@ export function computePluginsCid(plugins: readonly RegionEntry[]): string {
  * call sites is a rule that drifts, and a drifted region reads as a corrupt genesis.
  */
 export function computeGrammarCid(plugins: readonly RegionEntry[]): string {
-  return foldRegion("grammar/v1", plugins.filter(isGrammar));
+  return foldRegion("lararium-grammar", plugins.filter(isGrammar));
 }
 
 // ---------------------------------------------------------------------------
@@ -727,8 +732,6 @@ export function materializeGenesisDoc(seed: GenesisSeed): Uint8Array {
   let doc = automergeInit<LarDoc>({ actor: seed.actorSeed });
   doc = automergeChange(doc, { time: 0 }, d => {
     const r = d as unknown as Record<string, unknown>;
-    // The oracle document keeps the shape every lar document carries (`base-doc.ts`); the seed itself names none.
-    r["schemaVersion"] = "0.1";
     const blobs: Record<string, unknown> = {};
     // A seed key naming the prototype chain would seat a prototype here: it refuses by name (KEEP: a live hostile form).
     for (const k of Object.keys(seed.blobs).sort()) {

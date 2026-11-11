@@ -128,7 +128,7 @@ The closure model carries directly onto the existing identity architecture
 
 * ''PersonaGroup = a closure over vessels.'' One operator's N device-vessels resolve as
   the reciprocal-edge closure of per-vessel delegation edges — never a roster doc a single
-  vessel owns. Fleet join carries the internal device-admit/v1 edge; it instantiates no central object.
+  vessel owns. Fleet join carries the internal device-admit edge; it instantiates no central object.
 * ''ONE PRIMITIVE, not two kinds — the Circle and the Cabal run the same closure.'' A
   handle-Circle (a human's own vessels) and a cabal-realm (mates mutually holding a charter)
   differ in ''what the edges name'' — a `handle ↔ DID` binding versus a maintenance/charter
@@ -194,6 +194,6 @@ group-object, the closure model carries a real pattern integrity, not a stylisti
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;H2adWkiPsxIFqd9_oChGNIUocSfogcK63A6SONgb7Hk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;i3Kkp5TxAZBp0_CZ7Gdmvbm5RqWQ5GDoWZdhZA9YBAM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

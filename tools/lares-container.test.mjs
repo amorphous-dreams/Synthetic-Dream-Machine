@@ -600,6 +600,18 @@ for (const [name, shim] of shims) {
     } finally { await rm(dir, { recursive: true, force: true }); await rm(other, { recursive: true, force: true }); }
   });
 
+  test(`${name}: a restart keeps every LARES_WORKSPACES bind`, async () => {
+    const dir = await mkdtemp(join(tmpdir(), "ws-restart-"));
+    try {
+      const r = await run(shim, ["persona", "new", "0", "--name", "ci-face"], {
+        env: { ...MOUNTS, LARES_WORKSPACES: `field-notes=${dir}`, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"restand","reason":"face lit"}}}' },
+      });
+      assert.equal(r.status, 0, r.stderr);
+      assert.match(r.calls, /restart lares[\s\S]*up -d --wait lares/);
+      assert.match(r.calls, /target: \/lar\/workspaces\/field-notes/);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
   test(`${name}: a workspace inside the checkout or the hearth refuses by name, before docker runs`, async () => {
     const inCheckout = await run(shim, ["up", "--workspace", `tree=${join(ROOT, "tools")}`], { env: MOUNTS });
     assert.equal(inCheckout.status, 2);

@@ -20,8 +20,8 @@ describe("the share rows in the control document", () => {
     expect((await list({}, ctx(control)))["rows"]).toEqual([{ slug: "notes", kind: "bag", read: "reader [[the referee]]", write: "owner", note: "why" }]);
     await set({ slug: "notes", kind: "wiki", read: "*", write: "" }, ctx(control));
     expect((await list({}, ctx(control)))["rows"]).toEqual([{ slug: "notes", kind: "wiki", read: "*", write: "" }]);
-    await expect(set({ slug: "notes", read: "[tag[x]]" }, ctx(control))).rejects.toMatchObject({ code: "share-filter-unsupported" });
-    await expect(set({ slug: "Not A Slug", read: "*" }, ctx(control))).rejects.toMatchObject({ code: "share-slug-malformed" });
+    await expect(set({ slug: "notes", read: "[tag[x]]" }, ctx(control))).rejects.toMatchObject({ reason: "share-filter-unsupported" });
+    await expect(set({ slug: "Not A Slug", read: "*" }, ctx(control))).rejects.toMatchObject({ reason: "share-slug-malformed" });
     await set({ slug: "notes", remove: true }, ctx(control));
     expect((await list({}, ctx(control)))["rows"]).toEqual([]);
   });

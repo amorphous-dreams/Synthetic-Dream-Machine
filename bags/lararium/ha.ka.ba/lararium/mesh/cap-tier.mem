@@ -62,7 +62,7 @@ The tier names the read-cap holder-set, ascending in openness — a lower rank n
 The chain names WHO holds a read-cap, and the house canon shows two documents riding two rungs. Every holding whose canon source stands on disk (the checkout's `bags/<slug>`) ''except the Nexus's public board'' (`crossroads`, a floor row every face reads) forms ONE derived set (`houseCanonSlugs`, `packages/lararium-mesh/src/kahu-canon-reach.ts`): `lares` and `lararium` on every vessel, and `sdm`, `elyncia`, `elyncia-referee` where the checkout carries them. The vessel seats the set once at boot and hands it to every island (`seatHouseCanonFromCheckout`).
 
 * ''The live document rests at CONTRACT'' in the Kahu realm: the founding mints one per bag and registers it at `readTier = contract` under the steward's seal (`landKahuRealm`), and the steward's boot lands a bag the set gained since. The Kahu cabal's contract holds its read-cap; the protected-doc guard withholds it from every peer outside the live Kahu hand; `requireKahuReach` gates every write; it takes ''no catalog row'' on any face's half and never enters a face's sealed map, so no face can fork it.
-* ''Its CIDs rest at PUBLIC.'' The floor manifest keys one history-free snapshot per house canon bag (`lararium-floor/v2`), and every DreamNet user reads them by CID at the porch; a face outside the cabal mounts each as the read-only oracle floor, and an edit copies up into that wiki's working layer, never into the floor.
+* ''Its CIDs rest at PUBLIC.'' The floor manifest keys one history-free snapshot per house canon bag (`lararium-floor`), and every DreamNet user reads them by CID at the porch; a face outside the cabal mounts each as the read-only oracle floor, and an edit copies up into that wiki's working layer, never into the floor.
 * ''A face outside the cabal reads the floor.'' Its seed's CREATE answers `resolvedElsewhere` with `readsFloor`, never a kahu-reach red, and names the holding `house canon, written by the Kahu steward (h0); this face reads the floor`. Admitting a face to write canon stays the operator's deliberate act (`lares nexus cabal admit <group>`).
 
 <<~/ahu>>
@@ -166,6 +166,6 @@ Deferred with clean shores (not built): the TW5 `$:/tags/CapTierFilter` ordered-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Jw49WeF6ep_3wgXhy_ZJgiQ6aB7uaTZ1U9PHpLpNJ2A`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;NUXwmN_owNY28IyYd16X78ySwsOsgo70WDjC26_tzDk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

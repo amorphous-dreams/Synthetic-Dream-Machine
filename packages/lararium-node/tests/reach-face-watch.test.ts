@@ -175,7 +175,7 @@ function arrival(): { env: Record<string, unknown>; genesis: string; cid: string
   writeFileSync(join(web, "manifest.webmanifest"), '{"name":"Pronaos"}');
   writeFileSync(join(web, "assets/wiki.worker-def.js"), "self.postMessage('worker')");
   writeFileSync(join(genesis, "seed.json"), JSON.stringify({
-    format: "lararium-genesis-seed/v1", actorSeed: "reach-face-actor",
+    format: "lararium-genesis-seed", actorSeed: "reach-face-actor",
     blobs: { fixture: { id: "fixture", version: "1", sha256: cid, mimeType: "application/octet-stream" } },
     tiddlers: {
       "lar:///ha.ka.ba/bags/oracle/genesis-cid-engine": { tiddler: { cid: "engine-region" } },
@@ -186,7 +186,7 @@ function arrival(): { env: Record<string, unknown>; genesis: string; cid: string
   writeFileSync(join(genesis, "cas", cid), cas);
   const record = join(root, "artifact-record.json");
   writeFileSync(record, JSON.stringify({
-    schema: "lararium-pronaos-artifact/v1",
+    schema: "lararium-pronaos-artifact",
     routes: ([
       ["/", "index.html", "text/html; charset=utf-8", "no-store"],
       ["/manifest.webmanifest", "manifest.webmanifest", "application/manifest+json", "no-store"],

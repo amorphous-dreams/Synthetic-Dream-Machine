@@ -89,7 +89,7 @@ The genesis doc seeds the ''`@oracle` runtime system island'' — the protocol s
 | `GenesisInputs` | Caller-assembled bag: `actorSeed` (hex), `coreBlob`, `coreVersion`, optional `coreSha256`, `plugins`. |
 | `GenesisArtifact` | Build witness: deterministic Automerge verification `bytes` (never a shipped boot file), `sha256`, `cid`, the three region CIDs, the plain-data `seed`, the `casManifest`, and `casEntries` written at `genesis/cas/`. |
 | `GenesisCasManifest` | A strict in-memory projection of `seed.blobs`: `engineCid` + `grammarCid` + `pluginsCid` + sorted entries (id → cid). It never serves as a second file, boot input, or authority. |
-| `GenesisPluginEntry` | One plugin descriptor + optional `PluginBuildAttestation` (`lararium-tw5-plugin-build/v1`). |
+| `GenesisPluginEntry` | One plugin descriptor + optional `PluginBuildAttestation` (`lararium-tw5-plugin-build`). |
 
 <<~/ahu>>
 
@@ -196,6 +196,6 @@ Worse for a shelter brief: an implementation hash ''mandates a monoculture'', an
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;LuZaz5gJw4LK7s01AZELpuQBLvu2YgaAvsxLZo3HZ0c`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mYpr8XMh_qVMxh2-5xBZPbbR9fEBi8yMLunyAzQjtgA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

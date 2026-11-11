@@ -65,7 +65,7 @@ describe("genesis floor carrier cut", () => {
     fixture([realA], [realC], { sdm: [sdmCarrier], crossroads: [boardCarrier] });
     const cut = cutGenesisFloor(opts(root));
     expect(Object.keys(cut.manifest.snapshots)).toEqual(["lararium", "lares", "sdm"]);
-    expect(cut.manifest.format).toBe("lararium-floor/v2");
+    expect(cut.manifest.format).toBe("lararium-floor");
     const sdm = openFloorSnapshot(cut.snapshots["sdm"]!.bytes, cut.snapshots["sdm"]!.cid);
     expect("rows" in sdm && Object.keys(sdm.rows)).toContain("lar:///ha.ka.ba/sdm/ref/RFC-3986");
     expect(cut.manifest.snapshots["sdm"]).toBe(cut.snapshots["sdm"]!.cid);

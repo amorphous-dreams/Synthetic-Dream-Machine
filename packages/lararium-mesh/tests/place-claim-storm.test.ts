@@ -19,7 +19,7 @@ import { claimAt, floorPinFor, headOf, prng, rotatePlace, shuffled, stormStages,
 import { seatedCharter, type SeatedCharter } from "./charter-fixture.js";
 import * as ed from "@noble/ed25519";
 
-const emptyBoard = (): LarDoc => ({ schemaVersion: "lar/1", tiddlers: {} } as unknown as LarDoc);
+const emptyBoard = (): LarDoc => ({ tiddlers: {} } as unknown as LarDoc);
 const KEY = (charter: SeatedCharter, hearth: string) => ({ hearth, nexus: hex(utf8Bytes(charter.aid)), route: "/flow", tier: "floor" as const });
 
 /** The quorum's carry over one stage's signer, with the place's own carrier seal made by that signer. */

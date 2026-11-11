@@ -131,7 +131,7 @@ performed. ''The binding PAIRS (vessel × hearthTrueName)'': the engine CID serv
 
 ''The answer reads narrower than the fear, and the narrowness rests on two facts a reader can re-check.''
 
-# ''The engine blob rides as VENDORED TW5.'' `computeEngineCid` hashes `engine/v1\ncore-sha256:<the TW5 core blob's
+# ''The engine blob rides as VENDORED TW5.'' `computeEngineCid` hashes `lararium-engine\ncore-sha256:<the TW5 core blob's
   sha256>` — a pure function of those bytes, with the version label deliberately excluded so a re-tag cannot
   manufacture a schism. TW5 rides as a ''workspace submodule'', so ''no npm bump can move it''.
 # ''The built plugin carries ZERO automerge references.'' Measured on the packed artifact: 23 modules, 115
@@ -240,6 +240,6 @@ count as acts, never upgrades''.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ymYwkSTkCXkuDaREqghyrUuOgzeRKigOvf8qLrbCVzo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7hFvlaGUhJ0Q9BNlHfH3mLhHXL2iAhs7AedP5BlSKpY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -11,8 +11,8 @@
  * forwards no signal to an exec'd process and a killed `compose run` client leaves its container running, so only
  * the shim's own stop leaves nothing running after a lone SIGTERM or a Ctrl+C.
  *
- * The exit and signal walks ride a plain forwarded verb (`meme get`): `persona new` reads its face's ward route at a
- * terminal, so the bridge refuses it with no TTY (exit 2) before any vessel act.
+ * The exit and signal walks ride a plain forwarded verb (`meme get`, naming its bag as every meme caller does): `persona
+ * new` reads its face's ward route at a terminal, so the bridge refuses it with no TTY (exit 2) before any vessel act.
  */
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { spawn, spawnSync, type SpawnSyncReturns } from "node:child_process";
@@ -88,8 +88,8 @@ describe.skipIf(!enabled)("the host bridge against real docker (a throwaway comp
   }, 60_000);
 
   it("the vessel's exit code returns unchanged", () => {
-    expect(lares(["meme", "get", "exit:7"]).status).toBe(7);
-    expect(lares(["meme", "get", "exit:0"]).status).toBe(0);
+    expect(lares(["meme", "get", "exit:7", "--bag", "lares"]).status).toBe(7);
+    expect(lares(["meme", "get", "exit:0", "--bag", "lares"]).status).toBe(0);
   }, 60_000);
 
   it("a piped run reads no TTY inside", () => {
@@ -102,7 +102,7 @@ describe.skipIf(!enabled)("the host bridge against real docker (a throwaway comp
   }, 60_000);
 
   async function signalWalk(how: "pid" | "group", sig: NodeJS.Signals): Promise<void> {
-    const child = spawn(process.execPath, [BIN, "meme", "get", "sleep"], { env, stdio: "ignore", detached: how === "group" });
+    const child = spawn(process.execPath, [BIN, "meme", "get", "sleep", "--bag", "lares"], { env, stdio: "ignore", detached: how === "group" });
     const ended = new Promise<void>((r) => child.on("exit", () => r()));
     expect(await settle(() => sleepersInVessel() === 1), "the stand-in never began sleeping in the vessel").toBe(true);
     if (how === "pid") process.kill(child.pid!, sig);
@@ -122,7 +122,7 @@ describe.skipIf(!enabled)("the host bridge against real docker (a throwaway comp
   it("offline door: a lone SIGTERM leaves no run container behind", async () => {
     dc("stop", "-t", "1", "lares");
     expect(await settle(() => running().length === 0)).toBe(true);
-    const child = spawn(process.execPath, [BIN, "meme", "get", "sleep"], { env, stdio: "ignore" });
+    const child = spawn(process.execPath, [BIN, "meme", "get", "sleep", "--bag", "lares"], { env, stdio: "ignore" });
     const ended = new Promise<void>((r) => child.on("exit", () => r()));
     expect(await settle(() => running().some((n) => n.startsWith("lares-offline-"))), "no run container stood").toBe(true);
     process.kill(child.pid!, "SIGTERM");

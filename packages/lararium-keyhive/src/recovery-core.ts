@@ -39,7 +39,7 @@ export interface ReadmitEdgeInput extends Omit<DeviceAdmitEdgeInput, "signerSeed
 
 /**
  * Sign a fresh device's re-admit edge with the quorum-reconstructed root. Returns the SAME
- * device-admit/v1 payload the founding admit produces (the `#admit=` carriage) — the joinee applies it
+ * device-admit payload the founding admit produces (the `#admit=` carriage) — the joinee applies it
  * via the unchanged runApplyAdmitPayload, and the edge verifies against the pinned root because the
  * reconstructed root equals the original.
  *

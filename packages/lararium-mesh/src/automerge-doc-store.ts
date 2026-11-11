@@ -160,7 +160,7 @@ export class AutomergeDocStore implements LarTiddlerStore {
     const remoteOrigin: ChangeOrigin = { kind: "crdt-remote", edgeIsland: bagId ?? "automerge" };
     handle.on("change", ({ patches }) => {
       // Re-map ["tiddlers", title, ...] → [title, ...] before fan-out.
-      // Patches that touch doc-level fields (schemaVersion, etc.) are dropped here
+      // Patches that touch doc-level fields (blobs, etc.) are dropped here
       // since MemeProvider only tracks tiddler-keyed URIs.
       const remapped = (patches ?? [])
         .filter((p) => Array.isArray(p.path) && p.path[0] === "tiddlers")

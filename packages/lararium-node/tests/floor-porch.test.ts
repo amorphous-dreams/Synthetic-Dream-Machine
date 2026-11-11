@@ -38,7 +38,7 @@ async function rig(opts: { serveCas?: boolean } = {}) {
   const lararium = cutFloorSnapshot({ "lar:///t/lararium": { tiddler: { title: "lar:///t/lararium", text: "lararium" } } });
   // v2: one snapshot per house-canon bag; sdm rides beside the system canon and the porch serves it under the release.
   const sdm = cutFloorSnapshot({ "lar:///t/sdm": { tiddler: { title: "lar:///t/sdm", text: "sdm" } } });
-  const manifestBytes = floorManifestBytes({ format: "lararium-floor/v2", engine: "e".repeat(64), grammar: "a".repeat(64), plugins: "b".repeat(64), snapshots: { lares: lares.cid, lararium: lararium.cid, sdm: sdm.cid } });
+  const manifestBytes = floorManifestBytes({ format: "lararium-floor", engine: "e".repeat(64), grammar: "a".repeat(64), plugins: "b".repeat(64), snapshots: { lares: lares.cid, lararium: lararium.cid, sdm: sdm.cid } });
   const manifestCid = sha256HexBytesSync(manifestBytes);
   const secret = new TextEncoder().encode("a private blob this vessel holds");
   const secretCid = sha256HexBytesSync(secret);

@@ -70,7 +70,7 @@ async function stage(): Promise<{ idbName: string; offer: FleetJoinOffer; root: 
 async function answerTo(s: Awaited<ReturnType<typeof stage>>, request: FleetJoinRequest, secret: Uint8Array = SECRET) {
   const body = {
     nonce: request.nonce, atomKey: request.atomKey, personaGroup: GROUP,
-    edge: { kind: "device-admit/v1", personaGroupId: GROUP, deviceEdge: "synthetic", hearthTrueName: HEARTH_NEXUS },
+    edge: { kind: "device-admit", personaGroupId: GROUP, deviceEdge: "synthetic", hearthTrueName: HEARTH_NEXUS },
     carriage: CARRIAGE,
     reach: { syncUrl: "ws://hearth.synthetic:7777/ws", islandKind: "anchor", islandScope: HEARTH_NEXUS },
     // The dial the answer carries: the hearth's charter, the face's admit committing to this carriage, its floor pins.

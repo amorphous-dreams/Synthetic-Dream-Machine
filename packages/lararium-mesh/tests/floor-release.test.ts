@@ -31,7 +31,7 @@ import {
 } from "../src/floor-release.js";
 import { seatedCharter, uncommittedSuccessor, type SeatedCharter } from "./charter-fixture.js";
 
-const MANIFEST_BYTES = new TextEncoder().encode('{"format":"lararium-floor/v1","engine":"e"}');
+const MANIFEST_BYTES = new TextEncoder().encode('{"format":"lararium-floor","engine":"e"}');
 const MANIFEST = sha256HexBytesSync(MANIFEST_BYTES);
 const OTHER_BYTES = new TextEncoder().encode("a manifest the cabal never approved");
 

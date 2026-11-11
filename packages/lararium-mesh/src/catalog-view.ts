@@ -67,7 +67,7 @@ export function catalogRowHalf(title: string, row?: StoredLarRecord | null): Cat
   if (row !== undefined && row !== null && isPublicBagRow(title, row)) return "floor";
   if (FLOOR_ROWS.has(title) || isHouseCanonBag(title)) return "floor";
   if (title.startsWith(CATALOG_CORPUS_PREFIX) || title.startsWith(`${REALM_ROOT}/`)) return "floor";
-  if (title.startsWith(WIKIS_ROOT) && (/\/working-floor\/[^/]+\/[^/]+$/.test(title) || /\/drafts\/[^/]+$/.test(title))) return "floor";
+  if (title.startsWith(WIKIS_ROOT) && /\/drafts\/[^/]+$/.test(title)) return "floor";
   return "face";
 }
 

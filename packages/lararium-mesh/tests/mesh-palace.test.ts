@@ -57,7 +57,7 @@ describe("MeshSelf — the leaf↔full tier is ONE field (endpoint present-vs-ab
 function docOf(records: LarTiddlerRecord[]): LarDoc {
   const tiddlers: Record<string, LarTiddlerRecord> = {};
   for (const r of records) tiddlers[r.tiddler.title] = r;
-  return { schemaVersion: "0.1", tiddlers };
+  return { tiddlers };
 }
 
 describe("mesh-palace records round-trip", () => {

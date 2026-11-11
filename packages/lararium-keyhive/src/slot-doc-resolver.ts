@@ -27,7 +27,7 @@
 import {
   CONTROL_HOME_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX,
   computeRecipeFingerprint, emptyLarDoc, realmWorkbenchDocUrl, mintVesselDocumentId, storedLarRecord, mutableLarRecord, resolveSlotDoc, tiddlerText,
-  wikiBagUri, wikiDraftDocKey, requireLarDid,
+  wikiBagUri, wikiDraftDocKey, requireLarDid, didFromVerifyingKey,
   type CompositeStore, type LarDoc, type SlotReach, type WikiSlotKind,
 } from "@lararium/mesh";
 import * as A from "@automerge/automerge";
@@ -305,6 +305,8 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
 /** One LIT face as the lit set's slot resolvers read it: its group, its own hive and door, and its own workbench port. */
 export interface LitFaceSlotSpec {
   readonly group: string;
+  /** The face's own atom key: its slots' `minted-by` label and DID, as a lit worn face labels its own (never the place key). */
+  readonly atomKey: string;
   readonly keyhive?: CapabilityProvider;
   readonly faceDoor?: FaceBagDoor;
   /** The workbench port under THIS face: a realm answers only where the face's hive holds a seat in the realm's Document. */
@@ -325,7 +327,7 @@ export interface LitFaceSlotDocs {
  * wiki's device slots stand under the sibling's group in the control document (`daemon-slot/<kind>/<group>`), so each face's
  * memory lands in its own documents. A lit face is seated by being lit: its hive holds its group.
  */
-export function litFaceSlotDocs(base: Omit<SlotDocResolverArgs, "personaGroupId" | "faceDoor" | "keyhive" | "faceSeated" | "seatSettled" | "workbenchRealm">): LitFaceSlotDocs {
+export function litFaceSlotDocs(base: Omit<SlotDocResolverArgs, "personaGroupId" | "faceDoor" | "keyhive" | "faceSeated" | "seatSettled" | "workbenchRealm" | "mintedByHex" | "vesselDid">): LitFaceSlotDocs {
   const byGroup = new Map<string, SlotDocResolver>();
   return {
     of(spec) {
@@ -334,6 +336,8 @@ export function litFaceSlotDocs(base: Omit<SlotDocResolverArgs, "personaGroupId"
       const resolver = makeSlotDocResolver({
         ...base,
         personaGroupId: spec.group,
+        mintedByHex: () => spec.atomKey,
+        vesselDid: () => didFromVerifyingKey(spec.atomKey),
         faceSeated: async () => true,
         ...(spec.keyhive ? { keyhive: spec.keyhive } : {}),
         ...(spec.faceDoor ? { faceDoor: spec.faceDoor } : {}),

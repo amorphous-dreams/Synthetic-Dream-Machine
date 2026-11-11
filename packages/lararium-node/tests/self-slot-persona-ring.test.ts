@@ -46,7 +46,7 @@ async function founderEdge(opKeySeed = ROOT_SEED) {
 async function validGrant(opKeySeed = ROOT_SEED): Promise<FaceGrantRecord> {
   const edge = await founderEdge(opKeySeed);
   return signFaceGrantRecord({
-    kind: "face-join-grant/v1", groupId: GROUP, joineeAgentIdHex: `0x${JOINEE_KEY}`,
+    kind: "face-join-grant", groupId: GROUP, joineeAgentIdHex: `0x${JOINEE_KEY}`,
     founderCard: '{"founder":"card"}', capEvents: ["AQID"], reKeyed: true, serial: 1, reSealed: [],
     founderEdge: edge,
   }, ed25519SignerFromSeed(FOUNDER_SEED));

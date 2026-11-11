@@ -6,7 +6,7 @@
 ```toml meta
 cacheable   = true
 l-space     = "lararium"
-role        = "isomorphic keyhive ceremony provider: founding and the internal device-admit/v1 edge functions; three-gate identity lattice"
+role        = "isomorphic keyhive ceremony provider: founding and the internal device-admit edge functions; three-gate identity lattice"
 source-file = "packages/lararium-keyhive/src/keyhive-provider.ts"
 title       = "lar:///ha.ka.ba/lararium/keyhive/keyhive-provider"
 type        = "text/memetic-wikitext+tiddlywiki"
@@ -127,6 +127,6 @@ would turn admission into cloning, and every admitted vessel would hold the huma
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;xwVS38gZLPRGJgmE6eRL5t0vXmqqdG3J_zTko5HvkP4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;99053E6rsB9eQNm4YnSuGLX_D380gyxPZpo5eOmTi-g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

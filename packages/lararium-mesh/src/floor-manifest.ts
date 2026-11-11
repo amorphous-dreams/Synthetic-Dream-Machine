@@ -1,7 +1,7 @@
 /**
  * floor-manifest — a CID names one history-free snapshot per house-canon bag beside the engine CIDs
- * (`lararium-floor/v2`: `snapshots` keyed by slug; the v1 shape that keyed `lares` and `lararium` alone refuses
- * by name). The floor lends every wiki a read-only oracle-floor face; edits copy into that wiki's
+ * (`lararium-floor`: `snapshots` keyed by slug; a manifest that names any other format refuses by naming the shape it
+ * lacks). The floor lends every wiki a read-only oracle-floor face; edits copy into that wiki's
  * working layer. Kit: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane, first slice.
  */
 
@@ -14,7 +14,8 @@ import type { LarTiddlerChange, LarTiddlerRecord, LarTiddlerStore } from "./tidd
 import { docPrototypeKeyFault } from "./prototype-key-shore.js";
 import { SYSTEM_CANON_SLUGS } from "./kahu-canon-reach.js";
 
-export const FLOOR_MANIFEST_FORMAT = "lararium-floor/v2";
+/** The floor manifest's shape name. It carries no counter: a shape reads by its fields, and its bytes name it (the CID). */
+export const FLOOR_MANIFEST_FORMAT = "lararium-floor";
 /** The seed witness row naming the genesis floor's manifest CID (sha256 hex) in its `cid` field, shaped as the region witnesses stand. */
 export const GENESIS_FLOOR_TIDDLER = "lar:///ha.ka.ba/bags/oracle/genesis-cid-floor";
 /** The snapshots every floor carries: the system canon, house canon on every vessel. */
@@ -39,6 +40,11 @@ const HEX64 = /^[0-9a-f]{64}$/;
 const CONTROL = /[\u0000-\u001f\u007f]/;
 const encoder = new TextEncoder();
 const decoder = new TextDecoder("utf-8", { fatal: true });
+
+/** What a manifest naming another format lacks: the floor's own format name, over one snapshot per house-canon bag. */
+function formatLack(format: unknown): string {
+  return `Floor manifest names the format ${JSON.stringify(format)}, not ${JSON.stringify(FLOOR_MANIFEST_FORMAT)}: it lacks the floor shape, one snapshot per house-canon bag under \`snapshots\``;
+}
 
 export class FloorManifestRefusal extends Error {
   readonly code: string;
@@ -72,7 +78,7 @@ export function floorManifestBytes(m: FloorManifest): Uint8Array {
       throw new FloorManifestRefusal("floor-manifest-malformed", `Invalid floor manifest field: ${key}`);
     }
   }
-  if (m.format !== FLOOR_MANIFEST_FORMAT) throw new FloorManifestRefusal("floor-manifest-format", `A floor manifest encodes ${FLOOR_MANIFEST_FORMAT} alone, never ${m.format}`);
+  if (m.format !== FLOOR_MANIFEST_FORMAT) throw new FloorManifestRefusal("floor-manifest-format", formatLack(m.format));
   const snaps = m.snapshots;
   if (snaps === null || typeof snaps !== "object" || Array.isArray(snaps)) {
     throw new FloorManifestRefusal("floor-manifest-malformed", "Invalid floor manifest field: snapshots");
@@ -102,10 +108,10 @@ export function readFloorManifest(bytes: Uint8Array):
     const value: unknown = JSON.parse(decoder.decode(bytes));
     if (value === null || typeof value !== "object" || Array.isArray(value)) throw new Error("Manifest must hold one object");
     const raw = value as Record<string, unknown>;
-    // EVERY OTHER FORMAT REFUSES BY ITS OWN NAME: a floor keys one snapshot per house-canon bag, and no reader folds a
-    // manifest keyed any other way.
+    // EVERY OTHER FORMAT REFUSES BY THE SHAPE IT LACKS: a floor names its format `lararium-floor` and keys one snapshot per
+    // house-canon bag, and no reader folds a manifest named or keyed any other way.
     if (raw.format !== FLOOR_MANIFEST_FORMAT && typeof raw.format === "string") {
-      return { refusal: "floor-manifest-format", reason: `Floor manifest format ${raw.format} refuses: a floor keys one snapshot per house-canon bag (${FLOOR_MANIFEST_FORMAT})` };
+      return { refusal: "floor-manifest-format", reason: formatLack(raw.format) };
     }
     if (Object.keys(raw).length !== MANIFEST_KEYS.length || MANIFEST_KEYS.some((key) => !Object.hasOwn(raw, key))) {
       throw new Error("Manifest fields differ from the fixed format");

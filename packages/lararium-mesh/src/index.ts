@@ -399,7 +399,7 @@ export type { FloorKeyDoor, CustodyRootDoor, GateRootDoor } from "./gate-bundle.
 // (the carriage registry and the hearth dial pin); the floor's signed announcement, read only against a pin its reader
 // already holds (no caller yet; it stands for the floor's announce route).
 export {
-  SEALED_FRAME_VERSION, SEALED_KINDS, SEALED_HEADER_BYTES, SEALED_SEAL_OVERHEAD, SEALED_PART_BODY_MAX, SEALED_MESSAGE_MAX_BYTES,
+  SEALED_FRAME_TAG, SEALED_KINDS, SEALED_HEADER_BYTES, SEALED_SEAL_OVERHEAD, SEALED_PART_BODY_MAX, SEALED_MESSAGE_MAX_BYTES,
   SEALED_CONCURRENT_MAX, SEALED_BUFFER_MAX_BYTES, SEALED_REFUSALS, SealedIdsSpent, sealedParts, sealedWriter, sealedReader,
 } from "./sealed-carriage.js";
 export type { SealedKind, SealedMessage, SealedRefusal, SealedReader } from "./sealed-carriage.js";
@@ -430,8 +430,8 @@ export type {
   AdmitGatePinRefusal, DialPinKey, HearthPinIndex, PlaceClaimStand, PlaceClaimFiling, PlaceClaimFork, PlaceKelForkNote,
 } from "./admit-gate-pin.js";
 export {
-  FLOOR_ANNOUNCEMENT_VERSION, FLOOR_ANNOUNCE_ROUTE, FLOOR_STANDINGS, FLOOR_ANNOUNCEMENT_REFUSALS, FloorAnnouncementRefused,
-  gateAnnouncementImage, signFloorAnnouncement, readFloorAnnouncement,
+  FLOOR_ANNOUNCEMENT_KIND, FLOOR_ANNOUNCE_ROUTE, FLOOR_STANDINGS, FLOOR_ANNOUNCEMENT_REFUSALS, FloorAnnouncementRefused,
+  gateAnnouncementImage, floorAnnouncementDigest, signFloorAnnouncement, readFloorAnnouncement,
 } from "./floor-announcement.js";
 export type { FloorStanding, FloorAnnouncementBody, FloorAnnouncement, FloorAnnouncementRefusal } from "./floor-announcement.js";
 // THE GATE AND ITS DIAL, named here by their callers: the node's gate server stands `makeFaceGate` per (Nexus, route)

@@ -163,7 +163,6 @@ describe("no platform appears in the answer", () => {
 describe("★ the registry admits only its OWN kind ★", () => {
   const rec = (title: string, text: string) => ({ tiddler: { title, text }, meta: { authority: "t" } });
   const catalog = {
-    schemaVersion: "0.1",
     tiddlers: {
       "lar:///ha.ka.ba/bags/notes":                       rec("lar:///ha.ka.ba/bags/notes", "automerge:aaa"),
       // A wiki slot's per-device draft pointer: same title prefix, same automerge text, NOT a bag.

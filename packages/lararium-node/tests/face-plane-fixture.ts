@@ -26,7 +26,6 @@ export async function standFacePlane(storageDir: string, handleIndex = 0): Promi
   if (!planeUrl) throw new Error("fixture: the founding's bootstrap names no PersonaGroup plane; found the face first");
   return ownedStore(storageDir, async (repo: Repo) => {
     const catalog = repo.create<LarDoc>({
-      schemaVersion: "lar/1",
       tiddlers: { [bagId]: { tiddler: { title: bagId, text: planeUrl } } },
     } as unknown as LarDoc);
     await repo.flush([catalog.documentId]);

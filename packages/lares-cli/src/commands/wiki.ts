@@ -411,7 +411,7 @@ export async function cmdWikiRotateRecipe(args: ParsedArgs): Promise<number> {
   }
   const result = summaryOutput(r) ?? {};
   console.log("");
-  console.log(`wiki ${slug}: rotated to generation ${result["generation"]}`);
+  console.log(`wiki ${slug}: rotated to a fresh canon`);
   console.log(`  new canon doc:   ${result["newCanonDocUrl"]}`);
   console.log(`  previous canon:  ${result["previousCanonUri"]}`);
   console.log(`    ↳ doc:         ${result["previousCanonDocUrl"]}`);

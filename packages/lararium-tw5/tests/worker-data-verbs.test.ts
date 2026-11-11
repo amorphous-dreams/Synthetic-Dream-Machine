@@ -34,19 +34,16 @@ function repoFor(docs: Map<string, DocHandle<LarDoc>>): Repo {
 describe("where — registered wiki slot membership", () => {
   test("reports a populated working slot when the canon bag is already mounted", async () => {
     const catalog = handle({
-      schemaVersion: "0.1",
       tiddlers: {
         [CANON]: record(CANON, CANON_URL),
       },
     });
     const canon = handle({
-      schemaVersion: "0.1",
       tiddlers: {
         [TITLE]: record(TITLE, "canon copy"),
       },
     });
     const working = handle({
-      schemaVersion: "0.1",
       tiddlers: {
         [TITLE]: record(TITLE, "working copy"),
       },

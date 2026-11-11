@@ -38,11 +38,9 @@ export async function standFoundedIsland(teardown: Array<() => void>, opts: { co
 
   // The oracle registry names the daemon doc — the address a registry walk resolves.
   const oracle = vesselRepo.create<LarDoc>({
-    schemaVersion: "lar/1",
     tiddlers: { [DAEMON_BAG_ID]: { tiddler: { title: DAEMON_BAG_ID, text: cer.daemonUrl } } },
   } as unknown as LarDoc);
   const catalog = vesselRepo.create<LarDoc>({
-    schemaVersion: "lar/1",
     tiddlers: { [wikiBagUri("daemon")]: { tiddler: { title: wikiBagUri("daemon"), text: cer.daemonUrl } } },
   } as unknown as LarDoc);
 
@@ -76,7 +74,7 @@ export async function standFoundedIsland(teardown: Array<() => void>, opts: { co
     ...veil,
     placeVerifyingKey: key,
     // The place's KEL prefix and the face's address secret, as the opener reads them from main-thread custody.
-    workingFloorAnchor: { kind: "place", aid: "EplaceFoundedIslandSynthetic" }, faceAddressSecret: hex(seed(73)),
+    faceAddressSecret: hex(seed(73)),
     personaGroupId: cer.personaGroupId,
     meshCabalDocIdHex: cer.meshCabalDocIdHex, registerBags: [DAEMON_BAG_ID], signerDid: cer.signerDid,
     personaKel: { prefix: cer.personaKelPrefix, chain }, deviceEdge: cer.founderEdge, archiveOpens: true,

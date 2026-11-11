@@ -78,7 +78,7 @@ describe("an end-user's fleet — leaves only, no node anywhere", () => {
     expect(edge.hearthTrueName).toBe("");
 
     const out = await runFaceJoin(phone, {
-      kind: "face-join/v1",
+      kind: "face-join",
       contactCard: new TextDecoder().decode(await laptop.contactCard()),
       deviceEdge: edge,
     }, ctxFor(edge.personaRootDid, pg));
@@ -111,7 +111,7 @@ describe("an end-user's fleet — leaves only, no node anywhere", () => {
     for (const v of [laptop, tablet]) {
       const e = await leafEdge(ROOT, v);
       const o = await runFaceJoin(phone, {
-        kind: "face-join/v1", contactCard: new TextDecoder().decode(await v.contactCard()), deviceEdge: e,
+        kind: "face-join", contactCard: new TextDecoder().decode(await v.contactCard()), deviceEdge: e,
       }, ctx(e.personaRootDid));
       expect(o.ok).toBe(true);
       if (!o.ok) return;
@@ -147,7 +147,7 @@ describe("an end-user's fleet — leaves only, no node anywhere", () => {
     expect(theirEdge.hearthTrueName).toBe(myEdge.hearthTrueName);   // "" — the wall an operator's fleet has, gone
 
     const out = await runFaceJoin(mine, {
-      kind: "face-join/v1",
+      kind: "face-join",
       contactCard: new TextDecoder().decode(await stranger.contactCard()),
       deviceEdge: theirEdge,
     }, ctxFor(myEdge.personaRootDid, pg));
@@ -165,7 +165,7 @@ describe("an end-user's fleet — leaves only, no node anywhere", () => {
     const pg   = await faceOf(phone, "lar:///ha.ka.ba/sentinel/pg-leaf-repeat");
     const edge = await leafEdge(ROOT, laptop);
     const summons = {
-      kind: "face-join/v1" as const,
+      kind: "face-join" as const,
       contactCard: new TextDecoder().decode(await laptop.contactCard()),
       deviceEdge: edge,
     };

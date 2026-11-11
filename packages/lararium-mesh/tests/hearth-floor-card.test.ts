@@ -93,9 +93,9 @@ describe("the floor card orders by KEL descent", () => {
     const ix = hearthPinIndex();
     expect(lastSyncNote(ix.standingOf(key))).toMatch(/nothing synced yet/);
     fileHearthFloorCard(ix, key.hearth, await cardOf(p0), { aid: p0.aid, via: "genesis" });
-    expect(lastSyncNote(ix.standingOf(key))).toBe(`as of my last sync: place ${p0.aid.slice(0, 12)}… at KEL seq 0 (${headOf(p0).headDigest.slice(0, 12)}…)`);
+    expect(lastSyncNote(ix.standingOf(key))).toBe(`as of my last sync: place ${p0.aid.slice(0, 12)}… at KEL head ${headOf(p0).headDigest.slice(0, 12)}…`);
     fileHearthFloorCard(ix, key.hearth, await cardOf(p1, 6), { aid: p0.aid, via: "genesis" });
-    expect(lastSyncNote(ix.standingOf(key))).toContain("KEL seq 1");
+    expect(lastSyncNote(ix.standingOf(key))).toContain(`KEL head ${headOf(p1).headDigest.slice(0, 12)}…`);
   });
 
   it("C6 — POSITIVE: a descendant card after rotation replaces live and names the key its pointers sign under now", async () => {

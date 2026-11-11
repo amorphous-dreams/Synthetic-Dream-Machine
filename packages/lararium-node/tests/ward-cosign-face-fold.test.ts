@@ -51,7 +51,7 @@ beforeAll(async () => {
     const entry = (bag: string) => ({ [bag]: { tiddler: { title: bag, text: packed.tiddlers[bag]!.text } } });
     await ownedStore(storage, async (repo) => {
       const make = async (tiddlers: Record<string, unknown>) => {
-        const catalog = repo.create<LarDoc>({ schemaVersion: "lar/1", tiddlers } as unknown as LarDoc);
+        const catalog = repo.create<LarDoc>({ tiddlers } as unknown as LarDoc);
         await repo.flush([catalog.documentId]); return catalog.url as string;
       };
       catalogs["whole"] = await make({ ...entry(bags.persona), ...entry(bags.intents) });

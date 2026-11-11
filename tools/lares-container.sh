@@ -211,7 +211,7 @@ lift_vessel() {
   reason=$(printf '%s\n' "$observe_output" | sed -n 's/.*"standing"[[:space:]]*:[[:space:]]*{[^}]*"reason"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
   printf 'lares-container: %s; restarting the vessel\n' "${reason:-the standing requires a re-stand}" >&2
   if ! compose restart lares; then printf '%s\n' 'lares-container: the vessel restart failed' >&2; return 1; fi
-  if ! compose up -d --wait lares; then printf '%s\n' 'lares-container: the vessel did not answer healthy after its restart' >&2; return 1; fi
+  if ! up_with_workspaces; then printf '%s\n' 'lares-container: the vessel did not answer healthy after its restart' >&2; return 1; fi
   unlock_or_name
 }
 
@@ -408,6 +408,25 @@ workspace_bind() { # $1 = name=dir; appends one bind to $files
       - type: bind
         source: '$yaml_dir'
         target: /lar/workspaces/$name"
+}
+
+# THE RESTART KEEPS THE WORKSPACES: compose recreates a container whose configuration moved, so a restart's `up` carries every
+# LARES_WORKSPACES bind, as the operator's `up` did. A workspace named by `--workspace` alone rides that one `up`.
+up_with_workspaces() {
+  files=""; workspace_names=" "
+  configured=$(value_of LARES_WORKSPACES)
+  if [ -n "$configured" ]; then
+    old_ifs=$IFS; IFS=';'
+    for pair in $configured; do IFS=$old_ifs; [ -z "$pair" ] || workspace_bind "$pair"; IFS=';'; done
+    IFS=$old_ifs
+  fi
+  if [ -z "$files" ]; then compose up -d --wait lares; return $?; fi
+  ws_override=$(mktemp)
+  printf 'services:\n  lares:\n    volumes:%s\n' "$files" > "$ws_override"
+  if [ -n "$ENV_ARGS" ]; then docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE_PATH" -f "$ws_override" up -d --wait lares; ws_rc=$?
+  else docker compose --env-file /dev/null -f "$COMPOSE_FILE_PATH" -f "$ws_override" up -d --wait lares; ws_rc=$?; fi
+  rm -f "$ws_override"
+  return "$ws_rc"
 }
 
 case "$verb" in

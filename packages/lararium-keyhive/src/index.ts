@@ -1,5 +1,7 @@
 // @lararium/keyhive — capability layer wrapping @keyhive/keyhive (Ink & Switch concap, pre-alpha).
 
+import type { DEVICE_ADMIT_KIND } from "./device-admit-kind.js";
+export { DEVICE_ADMIT_KIND } from "./device-admit-kind.js";
 import type { DeviceDelegationRootHalf, PersonaKelEvent, GroupSecretSeal, GateBundlePin } from "@lararium/mesh";
 
 export type {
@@ -103,7 +105,7 @@ export type { FoundCabalRealmOpts, FoundedCabalRealm } from "./cabal-realm-cerem
 // EVERY WIKI'S WORKING LAYER RESTS IN A REALM WORKBENCH, kept by a private cabal of one human's faces (cabal-realm#/the-workbench).
 export {
   foundWorkbench, standWorkbench, adoptWorkbench, admitWorkbenchFace, removeWorkbenchFace, workbenchFaceHolds, requireWorkbenchWriter,
-  landWorkbench, workbenchRealmIdOf,
+  landWorkbench, projectWorkbenchRoster,
 } from "./workbench-realm.js";
 export type { FoundedWorkbench, LedgerDoc, WorkbenchMember, LandWorkbenchPorts, LandedWorkbench } from "./workbench-realm.js";
 export { forkCabalRealm } from "./fork-realm-ceremony.js";
@@ -120,7 +122,7 @@ export type { ForkCabalRealmOpts } from "./fork-realm-ceremony.js";
  * can import this type without taking a Node dependency.
  */
 export interface DeviceAdmitPayload {
-  readonly kind:                   "device-admit/v1";
+  readonly kind:                   typeof DEVICE_ADMIT_KIND;
   /** The PINNED signer DID — PROVENANCE only (the founder's persona-KEL inception op-key). The pin is
    *  `personaKelPrefix`: the Binding Gate walks that identifier's KEL to its current head and verifies
    *  against THAT, so a rotated key still binds and a superseded one rejects. */

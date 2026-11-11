@@ -33,7 +33,7 @@ test("accepts a finite receipt when the named Web root and receipt are present",
     mkdirSync(webRoot);
     writeFileSync(join(webRoot, "index.html"), "<html></html>");
     const sha256 = createHash("sha256").update("<html></html>").digest("hex");
-    writeFileSync(artifactRecord, JSON.stringify({ schema: "lararium-pronaos-artifact/v1", routes: [{ path: "/", file: "index.html", contentType: "text/html; charset=utf-8", cache: "no-store", sha256 }] }));
+    writeFileSync(artifactRecord, JSON.stringify({ schema: "lararium-pronaos-artifact", routes: [{ path: "/", file: "index.html", contentType: "text/html; charset=utf-8", cache: "no-store", sha256 }] }));
     assert.equal(assertPronaosRuntimeInputs({ webRoot, artifactRecord }).routes, 1);
     writeFileSync(join(webRoot, "index.html"), "<html>tampered</html>");
     assert.throws(() => assertPronaosRuntimeInputs({ webRoot, artifactRecord }), /digest disagrees/);
@@ -51,7 +51,7 @@ test("refuses missing/relocated QA inputs and invalid actual-contract fields", (
     const webRoot = join(root, "web"); const artifactRecord = join(root, "pronaos-artifact.json");
     mkdirSync(webRoot);
     assert.throws(() => assertPronaosRuntimeInputs({ webRoot, artifactRecord }), /receipt is absent/);
-    writeFileSync(artifactRecord, JSON.stringify({ schema: "lararium-pronaos-artifact/v1", routes: [{ path: "/", file: "index.html", contentType: "text/html; charset=utf-8", cache: "public", sha256: "a".repeat(64) }] }));
+    writeFileSync(artifactRecord, JSON.stringify({ schema: "lararium-pronaos-artifact", routes: [{ path: "/", file: "index.html", contentType: "text/html; charset=utf-8", cache: "public", sha256: "a".repeat(64) }] }));
     assert.throws(() => assertPronaosRuntimeInputs({ webRoot, artifactRecord }), /fails the mesh contract/);
     assert.throws(() => assertPronaosRuntimeInputs({ webRoot: join(root, "missing"), artifactRecord }), /Web root is absent/);
 });

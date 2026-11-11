@@ -528,6 +528,12 @@ export const OFFERING_KAPAE_DOMAIN = mint("offering-kapae");
 /** The crossroads-plane ANNOUNCE of a realm bag — that it exists and who keeps it, NEVER the doc. A different
  *  domain from the registration: a public announce must never stand in for a steward's signature. */
 export const REALM_BAG_ANNOUNCE_DOMAIN = mint("realm-bag-announce");
+
+/**
+ * A PRIVATE CABAL OF ONE's realm id (cabal-realm#/the-workbench): derived from the owning face and the wiki's NFC slug, so
+ * every device of one face that stands the wiki offline names the same realm and the islands converge on one workbench.
+ */
+export const PRIVATE_CABAL_REALM_DOMAIN = mint("private-cabal-realm");
 /** The persona-root seed WRAPPED at rest under a passkey PRF output (browser, opt-in). A NAME of its own,
  *  apart from every seal above: the PRF output is a cloud-synced-class secret and the wrap must never
  *  derive into an admit seal. */

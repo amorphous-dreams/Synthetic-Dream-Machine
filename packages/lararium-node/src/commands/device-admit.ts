@@ -1,5 +1,5 @@
 /**
- * runDeviceAdmit — Node adapter: produce a device-admit/v1 payload for a new vessel, and this hearth's reading the
+ * runDeviceAdmit — Node adapter: produce a device-admit payload for a new vessel, and this hearth's reading the
  * fleet-join answer signs beside it.
  *
  * Node-specific shores (only these belong here):

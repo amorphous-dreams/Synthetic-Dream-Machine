@@ -71,8 +71,8 @@ function readPluginAttestations(): Map<string, PluginBuildAttestation> {
   const out = new Map<string, PluginBuildAttestation>();
   if (!existsSync(LARES_TW5_PLUGIN_ATTESTATION)) return out;
   const att = JSON.parse(readFileSync(LARES_TW5_PLUGIN_ATTESTATION, "utf8")) as PluginBuildAttestation;
-  if (att.format !== "lararium-tw5-plugin-build/v1") {
-    throw new Error(`[genesis] unsupported plugin attestation format: ${att.format}`);
+  if (att.format !== "lararium-tw5-plugin-build") {
+    throw new Error(`[genesis] the plugin attestation names the format ${JSON.stringify(att.format)}: it lacks the plugin build shape ("lararium-tw5-plugin-build")`);
   }
   out.set(att.canonicalTitle, att);
   return out;

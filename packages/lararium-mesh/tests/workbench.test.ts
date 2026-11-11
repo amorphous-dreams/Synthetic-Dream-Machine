@@ -230,3 +230,17 @@ describe("W8 — personal content never syncs to another member face", () => {
     expect([...workbenchDocIds(ledger).keys()]).toEqual([bench]);
   });
 });
+
+describe("W10 — a private cabal of one names its realm by its face and slug", () => {
+  test("two devices of one face derive one realm; another face or slug derives another; NFC holds", async () => {
+    const { privateCabalRealmId } = await import("../src/workbench.js");
+    const a = privateCabalRealmId("joshua-fontany", "notes");
+    expect(a).toMatch(/^[0-9a-f]{64}$/);
+    expect(privateCabalRealmId("joshua-fontany", "notes")).toBe(a);
+    expect(privateCabalRealmId("JOSHUA-FONTANY", "notes"), "the face reads case-free").toBe(a);
+    expect(privateCabalRealmId("joshua-fontany-engineer", "notes")).not.toBe(a);
+    expect(privateCabalRealmId("joshua-fontany", "notes-2")).not.toBe(a);
+    expect(privateCabalRealmId("f", "café")).toBe(privateCabalRealmId("f", "café"));
+    expect(() => privateCabalRealmId("", "notes")).toThrow(/workbench-realm-malformed/);
+  });
+});

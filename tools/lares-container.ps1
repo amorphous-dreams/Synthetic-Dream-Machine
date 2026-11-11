@@ -260,7 +260,19 @@ function LiftVessel([string[]]$output) {
   [Console]::Error.WriteLine("lares-container: $reason; restarting the vessel")
   & docker compose @Base restart lares
   if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the vessel restart failed'); exit $LASTEXITCODE }
-  & docker compose @Base up -d --wait lares
+  # THE RESTART KEEPS THE WORKSPACES: the restart's `up` carries every LARES_WORKSPACES bind, as the operator's `up` did.
+  $script:WorkspaceNames = @()
+  $wsBinds = @()
+  foreach ($pair in ((ValueOf 'LARES_WORKSPACES') -split ';')) { if ($pair) { $wsBinds += WorkspaceBind $pair } }
+  if ($wsBinds.Count -gt 0) {
+    $wsOverride = [IO.Path]::GetTempFileName()
+    try {
+      Set-Content -Path $wsOverride -Value ("services:`n  lares:`n    volumes:`n" + ($wsBinds -join "`n")) -Encoding utf8
+      & docker compose @Base -f $wsOverride up -d --wait lares
+    } finally { Remove-Item -Force $wsOverride -ErrorAction SilentlyContinue }
+  } else {
+    & docker compose @Base up -d --wait lares
+  }
   if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the vessel did not answer healthy after its restart'); exit $LASTEXITCODE }
   UnlockOrName
 }

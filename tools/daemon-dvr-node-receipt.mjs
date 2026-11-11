@@ -126,7 +126,7 @@ async function run() {
   if (!ordinaryRefused) throw new Error("offline owned Repo accepted ordinary O");
 
   const receipt = {
-    schema: "lararium-dvr-node-owned/v1",
+    schema: "lararium-dvr-node-owned",
     contract: "D-VR-C",
     documents: {
       owned: { role: "P", url: String(witness.payload.pinnedUrl), id: pinnedId },

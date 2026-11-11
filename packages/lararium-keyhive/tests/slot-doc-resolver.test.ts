@@ -19,7 +19,7 @@ import { describe, test, expect } from "vitest";
 import { makeIslandRepo, type Repo } from "@lararium/mesh";
 import {
   CompositeStore, CONTROL_HOME_ID, DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, computeRecipeFingerprint, didFromVerifyingKey, emptyLarDoc,
-  mutableLarRecord, wikiBagUri, wikiDraftDocKey, wikiSlotUri, realmWorkbenchDocUrl, ledgerWorkbenches, materializeSharedLarDoc,
+  mutableLarRecord, wikiBagUri, wikiDraftDocKey, wikiSlotUri, realmWorkbenchDocUrl, ledgerWorkbenches, materializeSharedLarDoc, workbenchKeyDocs,
   refusingControlStore, vesselLockedRefusal, VESSEL_LOCKED,
   type LarDoc, type LarTiddlerRecord,
 } from "@lararium/mesh";
@@ -38,10 +38,11 @@ type Ledger = { d: LarDoc; doc(): LarDoc; change(fn: (d: LarDoc) => void): void 
 const ledgerDoc = (): Ledger => { const d = { tiddlers: {} } as LarDoc; return { d, doc: () => d, change: (fn) => fn(d) }; };
 
 /** The workbench port as the daemon composes it (`faceWorkbench`): the ledger's realm under this face's seat, founded on mint. */
-const workbenchPort = (kh: KeyhiveProvider, ledger: Ledger) => async (slug: string, mint: boolean): Promise<string | null> => {
+const workbenchPort = (kh: KeyhiveProvider, ledger: Ledger, face: string) => async (slug: string, mint: boolean): Promise<string | null> => {
   const held = ledgerWorkbenches(ledger.doc()).find((b) => b.slug === slug)?.realmId ?? null;
-  if (held === null) return mint ? (await standWorkbench(kh, ledger, slug)).realmId : null;
-  if (kh.docIdOfBag(wikiSlotUri(slug, "working")) === null) adoptWorkbench(kh, slug, held);
+  const keys = held === null ? [] : workbenchKeyDocs(ledger.doc(), held, slug);
+  if (held === null || keys.length === 0) return mint ? (await standWorkbench(kh, ledger, slug, face)).realmId : null;
+  if (kh.docIdOfBag(wikiSlotUri(slug, "working")) === null) adoptWorkbench(kh, slug, keys[0]!);
   return (await workbenchFaceHolds(kh, slug, await kh.whoami(), "read")) ? held : null;
 };
 
@@ -66,7 +67,7 @@ async function rig(opts: { seated: boolean | (() => boolean); faceless?: boolean
     ...(opts.faceless ? {} : {
       personaGroupId: group.groupId,
       faceDoor: ((door) => (opts.doorMints ? { ...door, mint: async (url: string, level: never) => { opts.doorMints!.push(url); return door.mint(url, level); } } : door))(makeFaceBagDoor({ face: kh, groupId: group.groupId })) as never,
-      workbenchRealm: workbenchPort(kh, ledger),
+      workbenchRealm: workbenchPort(kh, ledger, group.groupId),
       workbenchDoc: (url: string) => materializeSharedLarDoc(repo, url as never, "board:workbench"),
     }),
   });
@@ -186,8 +187,8 @@ describe("★ the ONE slot-doc resolver, floor-falling ★", () => {
     const rows = ledgerWorkbenches(r.ledger.doc());
     expect(rows).toHaveLength(1);
     expect(doc).toEqual({ url: realmWorkbenchDocUrl(rows[0]!.realmId, "garden"), reach: "face" });
-    // The working bag rides the realm's Document: the face's own hive holds its seat there.
-    expect(r.kh.docIdOfBag(wikiSlotUri("garden", "working"))).toBe(`0x${rows[0]!.realmId}`);
+    // The working bag rides this vessel's key Document for the realm: the face's own hive holds its seat there.
+    expect(r.kh.docIdOfBag(wikiSlotUri("garden", "working"))).toBe(`0x${workbenchKeyDocs(r.ledger.doc(), rows[0]!.realmId, "garden")[0]}`);
     const trace = { wikiDocId: r.wikiUrl, libraryBagDocIds: [] as readonly string[] };
     expect((await r.resolver.bindings(await computeRecipeFingerprint(trace), trace, "garden")).workingUrl).toBe(doc?.url);
     // A replay founds nothing new: the ledger still names one realm, and the slot the same document.

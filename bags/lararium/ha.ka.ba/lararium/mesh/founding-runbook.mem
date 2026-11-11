@@ -252,7 +252,7 @@ Household HTTPS uses a DNS-01 wildcard certificate for a Kahu-held domain and on
 
 !! 8 · Add the first operator's browser, then tablet or phone leaves
 
-The first operator starts with a browser leaf; a tablet or phone forms a separate leaf. Each device mints its own key and receives one face's fleet-join answer for that key. The answer transfers no seed; it carries the internal `device-admit/v1` edge, that face's certificates and grants, and its sealed address secret.
+The first operator starts with a browser leaf; a tablet or phone forms a separate leaf. Each device mints its own key and receives one face's fleet-join answer for that key. The answer transfers no seed; it carries the internal `device-admit` edge, that face's certificates and grants, and its sealed address secret.
 
 ▢ ''OWED — browser and phone leaf ceremony.'' Browser crossing and render rungs run, and a leaf-side edit survives a reload. Fleet join runs on node and browser. The complete household phone walk still needs secure-origin boot, on-device key minting and a verified live leaf. Do not use a desktop seed on a phone or call an HTTP LAN page a secure context. Measure actual device capabilities with `tools/capability-probe/`. Carriers: `stable-founding-road.mem` (browser rungs and HARBOR), `secure-context.mem`, and `persona-circle.mem`.
 
@@ -436,6 +436,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;A6cO6cFrMqSsczMyR_Owm_LNZVQamd1S2FZFq8R94G0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_Rs5Q8s73Pkyalf05L6OfIwNyWR-HpGgaQ2kDn4r5XU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

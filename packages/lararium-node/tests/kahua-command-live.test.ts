@@ -53,7 +53,7 @@ beforeAll(async () => {
     group = packed.tiddlers[PERSONA_GROUP_ID_TIDDLER]!.text!;
     const bags = personaSiblingBagIds(personaBagIdFor(group))!;
     const catalogUrl = await ownedStore(storage, async (repo) => {
-      const catalog = repo.create<LarDoc>({ schemaVersion: "lar/1", tiddlers: {
+      const catalog = repo.create<LarDoc>({ tiddlers: {
         [bags.persona]: { tiddler: { title: bags.persona, text: packed.tiddlers[bags.persona]!.text } },
         [bags.intents]: { tiddler: { title: bags.intents, text: packed.tiddlers[bags.intents]!.text } },
       } } as unknown as LarDoc);

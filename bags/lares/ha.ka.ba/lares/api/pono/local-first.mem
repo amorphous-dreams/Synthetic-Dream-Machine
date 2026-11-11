@@ -59,7 +59,7 @@ A device holds first-class standing; the cloud serves as an optional relay.
 
 ''Lararium:'' SATISFIED between node vessels; a browser device stands built in code
 with no e2e witness. A second device mints its OWN key and joins by a signed
-device-delegation edge (`lares fleet join` carries the internal `device-admit/v1` edge from `runDeviceAdmitEdge`,
+device-delegation edge (`lares fleet join` carries the internal `device-admit` edge from `runDeviceAdmitEdge`,
 `packages/lararium-keyhive/src/ceremony-core.ts`), and its boot proves that edge at the
 Binding Gate (`packages/lararium-keyhive/src/boot-daemon-keyhive.ts`). The e2e set carries
 the witness: two vessels of one operator sync a bag both ways
@@ -310,6 +310,6 @@ transparent to the meme layer — so Beelay would slot in beneath it, where
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;tUnWPy67cJ7zMX3Ro9jIB6LRedvw8hWsrtFbMApltfI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;q54wfuHL4CvMsre9XMz8nyTjYSivGUjFgSuiNr37HR4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

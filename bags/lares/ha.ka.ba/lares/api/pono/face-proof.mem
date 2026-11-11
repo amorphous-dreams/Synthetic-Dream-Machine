@@ -77,7 +77,7 @@ The dialer pins the gate bundle before it dials. Every signature uses its own do
 # ''The gate completes the handshake.'' Its reply carries no verdict.
 # ''The presentation follows in the first encrypted frames.'' A face's presentation carries the face's public key, the vessel's face-scoped key with its certificate, the session key with its certificate, ONE presentation arm (an admit, a hosting grant, or an invite claim) and that arm's causal lineage, and the presenter's withdrawal frontier with any events the gate may lack (#/the-withdrawal-proof). An admit's `nym` MUST equal the face key. No ContactCard, no vessel key, no persona root, no root edge, no identifier shared across faces, and by default no Handle rides it.
 
-''The admit's signed bytes carry the canon-document list and a validated full `GateBundlePin` for the hearth's sovereign sync route at its named Nexus. `readGateBundlePin` reads the object and its digest derives from it; the quorum's salted `carriageCommit` binds the opening inside the act image. A joinee reads the opening only through the admit at its held root (`verifySignedAdmitBundle`). Floor routes receive separate full pins through an authenticated relation or signed pin set; a floor announcement cannot authenticate its own first pin. `device-admit.ts` mints the internal `device-admit/v1` edge, and the fleet answer carries the pin and canon list.
+''The admit's signed bytes carry the canon-document list and a validated full `GateBundlePin` for the hearth's sovereign sync route at its named Nexus. `readGateBundlePin` reads the object and its digest derives from it; the quorum's salted `carriageCommit` binds the opening inside the act image. A joinee reads the opening only through the admit at its held root (`verifySignedAdmitBundle`). Floor routes receive separate full pins through an authenticated relation or signed pin set; a floor announcement cannot authenticate its own first pin. `device-admit.ts` mints the internal `device-admit` edge, and the fleet answer carries the pin and canon list.
 
 # ''The gate checks, still provisionally.'' It checks the pinned route and audience, the chain, the presentation's signatures, the quorum's signatures, the causal parents, the deny events and withdrawals it has learned (#/causal-withdrawal), and the roll anchors. Where the asked planes need it, the ring checks the PersonaGroup grant. Missing required history, a known fork or an incomplete board brings abstention. The gate reveals no differentiated refusal.
 # ''The signed finish.'' The session signer signs the COMPLETED handshake hash, the gate bundle's digest, the face key, the presentation, the audience and the session key. A recorder of the first flight lacks the dial's secrets and cannot produce it.
@@ -394,6 +394,6 @@ The design names that unavailability and does not cure it. A recovery authority 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;iYyAzZzBNHwAEL5WVrECBZh9p33Sn6WIhffOSSfMwvA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MA7R9dWCMlLlDh0y1FWpESrQF26H28VA681cAVERX4U`>>
 
 <<^ code=`&#x0004;` to=`?`>>
