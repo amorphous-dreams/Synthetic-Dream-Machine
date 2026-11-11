@@ -3,7 +3,7 @@
  *
  * A wiki composes its working layer (`wikis/<slug>/working`) over its canon bag (`bags/<slug>`), and the recipe stack
  * alone decides what shows: a top layer always shadows the layers under it. A working record of a title canon holds
- * shadows canon's record, and names the hash of the canon text it forked from (`overrideBase`, `@lararium/mesh`
+ * shadows canon's record, and names the carrier identity of the canon record it forked from (`overrideBase`, `@lararium/mesh`
  * `override-base.ts`).
  *
  * When canon moves past that base, nothing writes: the working copy keeps shadowing canon, its bytes untouched. The
@@ -15,28 +15,28 @@
  * never weighs a disk byte. It reads canon under each working copy before and after the gate ran.
  */
 
-import { isEffectRecordUri, overrideBaseOf, overrideTextHash, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh";
+import { basesEqual, isEffectRecordUri, overrideBaseOf, overrideCarrierHash, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh";
 
-/** One working copy that shadows a canon text fresher than the one it forked from. */
+/** One working copy that shadows a canon record fresher than the one it forked from. */
 export interface FresherCanon {
   readonly bag: string;
   readonly working: string;
   readonly title: string;
-  /** The canon text hash the working copy forked from, or null where it names none (forked before bases were kept). */
+  /** The carrier identity (`sha256:<hex>`) of the canon record the working copy forked from, or null where it names none. */
   readonly base: string | null;
-  /** The canon text hash that stands now, or null where canon holds no live record of the title. */
+  /** The carrier identity of the canon record standing now, or null where canon holds no live record of the title. */
   readonly canonHash: string | null;
 }
 
 const live = (r: LarTiddlerRecord | null | undefined): r is LarTiddlerRecord => r !== null && r !== undefined && r.meta?.deleted !== true;
-const textHashOf = (r: LarTiddlerRecord | null | undefined): string | null => (live(r) ? overrideTextHash(r.tiddler) : null);
+const carrierOf = (r: LarTiddlerRecord | null | undefined): string | null => (live(r) ? overrideCarrierHash(r.tiddler) : null);
 
 /** Whether canon stands fresher than one working copy's base: null where the copy names no base or canon still says it. */
 export function fresherThanBase(bag: string, working: string, title: string, copy: LarTiddlerRecord, canon: LarTiddlerRecord | null): FresherCanon | null {
   const base = overrideBaseOf(copy);
   if (base === null) return null;
-  const canonHash = textHashOf(canon);
-  return canonHash === base ? null : { bag, working, title, base, canonHash };
+  const canonHash = carrierOf(canon);
+  return basesEqual(canonHash, base) ? null : { bag, working, title, base, canonHash };
 }
 
 /** The live non-ledger titles a working layer holds, with their records. */
@@ -58,8 +58,8 @@ export async function snapshotUnderOverrides(working: LarTiddlerStore, canon: La
 }
 
 /**
- * AFTER A CANON CHANGE: each working copy whose canon text this change moved, read against its base (or, where it names
- * none, against the canon text the snapshot read). Reads alone; every copy stands as it stood.
+ * AFTER A CANON CHANGE: each working copy whose canon record this change moved, read against its base (or, where it names
+ * none, against the canon record the snapshot read). Reads alone; every copy stands as it stood.
  */
 export async function fresherAfterChange(
   bag: string, workingBag: string, working: LarTiddlerStore, canon: LarTiddlerStore, prior: ReadonlyMap<string, LarTiddlerRecord | null>,
@@ -67,18 +67,19 @@ export async function fresherAfterChange(
   const out: FresherCanon[] = [];
   for (const [title, before] of prior) {
     const now = await canon.get(title);
-    const nowHash = textHashOf(now);
-    if (textHashOf(before) === nowHash) continue;               // canon did not move under this title
+    const nowHash = carrierOf(now);
+    const beforeHash = carrierOf(before);
+    if (beforeHash === nowHash || basesEqual(beforeHash, nowHash)) continue;   // canon did not move under this title
     const copy = await working.get(title);
     if (!live(copy)) continue;
     const base = overrideBaseOf(copy);
-    if (base === nowHash) continue;                              // canon moved back to the copy's own base
+    if (basesEqual(base, nowHash)) continue;                     // canon moved back to the copy's own base
     out.push({ bag, working: workingBag, title, base, canonHash: nowHash });
   }
   return out;
 }
 
-/** Every working copy in one layer that shadows a canon text fresher than its base, ordered by title. */
+/** Every working copy in one layer that shadows a canon record fresher than its base, ordered by title. */
 export async function listFresherCanon(bag: string, workingBag: string, working: LarTiddlerStore, canon: LarTiddlerStore): Promise<FresherCanon[]> {
   const out: FresherCanon[] = [];
   for (const [title, copy] of await copiesIn(working)) {

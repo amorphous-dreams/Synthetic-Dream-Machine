@@ -6,8 +6,8 @@
  * A face's private mirrors key by its relation F (`wikis/daemon-<F>`, `bags/daemon-<F>`, `bags/kahua-<F>`). A re-founding
  * clears the hearth (the sealed rows that held the pet-name) and keeps the projections root, so the label names the face:
  * `<projections>/face-labels/<F>.json` holds `{ relation, petname, handleIndex }`. A base rides a record's meta envelope and
- * never projects, so the sidecar carries it: `<projections>/face-labels/<F>.bases.json` maps each working title to the canon
- * text hash (`sha256:…`) its copy forked from.
+ * never projects, so the sidecar carries it: `<projections>/face-labels/<F>.bases.json` maps each working title to the carrier
+ * identity (`carrierHash`, `sha256:…`) of the canon record its copy forked from.
  *
  * WHO WRITES. The VESSEL writes both whenever a face stands (`openNodeVessel`): the label off its sealed pet-name, the
  * sidecar kept current off the face's own working documents, filed by the owner table (`device-daemon-docs`: the slots the
@@ -95,7 +95,7 @@ export function moveFaceLabelFile(from: string, dest: string): boolean {
   return true;
 }
 
-/** The bases a face's sidecar names, title -> canon text hash; empty where none stands. */
+/** The bases a face's sidecar names, title -> canon carrier identity; empty where none stands. */
 export function readFaceBases(relation: string, projections: string): Record<string, string> {
   let raw: unknown;
   try { raw = JSON.parse(readFileSync(faceBasesPath(relation, projections), "utf8")); } catch { return {}; }

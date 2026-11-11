@@ -58,7 +58,7 @@ export interface CarryRow {
   readonly rowKey: string | null;
   readonly sha256: string;
   readonly path: string;
-  /** A working row's override base: the canon text hash (`sha256:…`) the copy forked from, read off the record's meta
+  /** A working row's override base: the carrier identity (`carrierHash`, `sha256:…`) of the canon record the copy forked from, read off the record's meta
    *  envelope at export (a base never projects to disk, so the bundle carries it beside the file). The import stamps it
    *  back, so canon's fresher-than-the-copy warning still reads after a round trip. Absent where the copy names none. */
   readonly overrideBase?: string;

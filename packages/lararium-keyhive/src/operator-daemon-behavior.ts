@@ -834,9 +834,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           slotDocUrl: async (slug, kind, opts) => (await slotDocsOf(ctx).slotDoc(slug, kind, opts))?.url ?? null,
           systemCanonUrl: realmCanonUrlOf(ctx),
         };
-        // THE FRESHER-CANON READ: the working copies that shadow a canon text fresher than the one they forked from
+        // THE FRESHER-CANON READ: the working copies that shadow a canon record fresher than the one they forked from
         // (`override-bases.ts`), reached by the same access the action verbs reach a deep bag by. It reads alone.
-        registry.register("fresher-canon", makeFresherCanonReactor({ composite: ctx.composite, reach }), { summary: "Read the working copies of one wiki that shadow a canon text fresher than the one each forked from; nothing writes.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+        registry.register("fresher-canon", makeFresherCanonReactor({ composite: ctx.composite, reach }), { summary: "Read the working copies of one wiki that shadow a canon record fresher than the one each forked from; nothing writes.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
         registry.register("override-bases", makeOverrideBasesReactor({ composite: ctx.composite, reach }), { summary: "Read the override base each working copy of one layer names, by title, so an export carries it; nothing writes.", surfaces: [VERB_SURFACE.cli] });
         registerActionReactors(registry, {
           composite: ctx.composite,

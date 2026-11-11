@@ -46,7 +46,7 @@ export interface SeedHolding {
   readonly gesture: "ingest" | "skip";    // the road taken
   readonly exitCode: number;              // the gesture's verdict for this holding
   readonly reason?: string;               // why a holding took no road
-  readonly fresher?: FresherCanonReading; // working copies that shadow a canon text this seed moved past their base
+  readonly fresher?: FresherCanonReading; // working copies that shadow a canon record this seed moved past their base
 }
 
 export { discoverHoldings, canonIsDisk } from "../holdings.js";

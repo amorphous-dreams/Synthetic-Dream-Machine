@@ -23,7 +23,7 @@ export function faceLabelPath(relation: string, projections: string = larProject
 export function faceBasesPath(relation: string, projections: string = larProjectionsHome()): string { return nodeBasesPath(relation, projections); }
 /** The label a relation holds, or null. */
 export function readFaceLabel(relation: string, projections: string = larProjectionsHome()): FaceLabel | null { return nodeReadLabel(relation, projections); }
-/** The bases a face's sidecar names, title -> canon text hash. */
+/** The bases a face's sidecar names, title -> canon carrier identity. */
 export function readFaceBases(relation: string, projections: string = larProjectionsHome()): Record<string, string> { return nodeReadBases(relation, projections); }
 /** Write a face's bases sidecar where it moved. */
 export function writeFaceBases(relation: string, bases: Readonly<Record<string, string>>, projections: string = larProjectionsHome()): boolean { return nodeWriteBases(relation, bases, projections); }

@@ -67,7 +67,7 @@ export interface MirrorWave {
   readonly wiki?: string;
   /** Top-level dirs under the folder that carry no layer of their own (`recovery`, `temp`). */
   readonly skipTop: readonly string[];
-  /** THE BASES A WORKING WAVE RESTORES (title -> the canon text hash its copy forked from), read off each owning face's
+  /** THE BASES A WORKING WAVE RESTORES (title -> the carrier identity of the canon record its copy forked from), read off each owning face's
    *  bases sidecar: the island stamps each on the copy it lands, so a fork keeps its base across a re-founding. */
   readonly bases?: Readonly<Record<string, string>>;
 }

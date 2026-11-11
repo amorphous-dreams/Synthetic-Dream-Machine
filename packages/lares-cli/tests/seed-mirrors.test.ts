@@ -31,7 +31,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { createHash } from "node:crypto";
 import { kapaeShadowBody, readKapaeShadow, mirrorDirFileToUri } from "@lararium/node";
-import { daemonFaceCanonBag } from "@lararium/mesh";
+import { daemonFaceCanonBag, carrierHash } from "@lararium/mesh";
 import { seedMirrors, mirrorFiles, readKahuaPending, MirrorRefused, type MirrorDoors, type MirrorLaid, type MirrorWave } from "../src/seed-mirrors.js";
 import { carryExport, carryImport, type CarryDoors, type CarryVesselFace } from "../src/commands/carry.js";
 import { writeFaceLabels, faceLabelPath, writeFaceBases, readFaceLabel } from "../src/face-labels.js";
@@ -49,7 +49,8 @@ const DEEP = "lar:///ha.ka.ba/memory/deep";
 const ROSE = "lar:///ha.ka.ba/garden/rose";
 const GARDEN = "lar:///ha.ka.ba/bags/garden";
 const sha = (s: string): string => createHash("sha256").update(s).digest("hex");
-const textHash = (s: string): string => `sha256:${sha(s)}`;
+/** A .tid file's carrier identity: `carrierHash` over its bytes, the canonical carrier form the vessel's records render to. */
+const carrierOf = (s: string): string => carrierHash(s);
 
 interface Rec { text: string; base?: string; deleted?: boolean }
 
@@ -78,7 +79,7 @@ class FakeHouse {
   land(bag: string, title: string, text: string, given?: string): void {
     const canon = this.canonUnder(bag);
     const prior = this.layer(bag).get(title);
-    const base = given ?? prior?.base ?? (canon !== null && this.live(canon, title) ? textHash(this.live(canon, title)!.text) : undefined);
+    const base = given ?? prior?.base ?? (canon !== null && this.live(canon, title) ? carrierOf(this.live(canon, title)!.text) : undefined);
     this.layer(bag).set(title, { text, ...(base !== undefined ? { base } : {}) });
   }
   facesNow(): CarryVesselFace[] { return this.faces.map((f) => ({ ...f, kahua: [...(this.stage.get(f.handleIndex) ?? [])] })); }
@@ -202,7 +203,7 @@ describe("the seed lays every mirror back into its one layer", () => {
   test("M1 — export -> reset -> found -> seed -> import: every record in its layer with its bytes, the base kept, kahua on the confirmed count, ashes; nothing twice", async () => {
     const old = await oldVessel();
     const oldBase = old.layer(WORKING).get(POND)!.base;
-    expect(oldBase).toBe(textHash(POND_CANON));
+    expect(oldBase).toBe(carrierOf(POND_CANON));
     const { manifest } = await carryExport(out, { acceptOmissions: false, doors: old.carryDoors() });
     expect(manifest.rows.find((r) => r.layer === "working" && r.title === POND)?.overrideBase).toBe(oldBase);
 
@@ -386,7 +387,7 @@ describe("the seed lays every mirror back into its one layer", () => {
     expect(after.live(daemonFaceCanonBag(F2), POND)?.text).toBe(NEWER);
     // Without the sidecar the copy would fork off the NEWER canon and read current; it keeps the base it forked from.
     expect(after.layer(WORKING).get(POND)?.base).toBe(forkBase);
-    expect(after.layer(WORKING).get(POND)?.base).not.toBe(textHash(NEWER));   // canon reads fresher than the copy above it
+    expect(after.layer(WORKING).get(POND)?.base).not.toBe(carrierOf(NEWER));   // canon reads fresher than the copy above it
     expect(after.live(WORKING, POND)?.text).toBe(POND_WORKING);
   });
 

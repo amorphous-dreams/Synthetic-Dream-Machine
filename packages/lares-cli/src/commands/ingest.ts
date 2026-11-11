@@ -37,14 +37,14 @@ function printUsage(): void {
   console.log("             write-layer ingest-back — a wikis/ source derives its URIs off that layer).");
 }
 
-/** The working copies that shadow a canon text this INGEST moved past the base each forked from (`override-bases.ts`). */
+/** The working copies that shadow a canon record this INGEST moved past the base each forked from (`override-bases.ts`). */
 export interface FresherCanonReading {
   readonly working: string;
   readonly titles: readonly string[];
   readonly count: number;
 }
 
-/** Read the outcome's fresher-canon warning; absent where the wave moved no canon text under a working copy. */
+/** Read the outcome's fresher-canon warning; absent where the wave moved no canon record under a working copy. */
 export function readFresherCanon(summary: Readonly<Record<string, unknown>>): FresherCanonReading | undefined {
   const o = summary["fresherCanon"] as Record<string, unknown> | undefined;
   if (o === undefined || o === null || typeof o !== "object") return undefined;

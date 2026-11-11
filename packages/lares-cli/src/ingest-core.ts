@@ -72,7 +72,7 @@ export interface ScanRow {
    *  re-links records change-id-preserving, `pairRenames`), the source rides
    *  the wave as a rename-deletion, and the CLI moves the observation post-confirm. */
   readonly renameFrom?: string;
-  /** THE OVERRIDE BASE A CARRY RESTORES: the canon text hash (`sha256:…`) a working copy forked from, as an export
+  /** THE OVERRIDE BASE A CARRY RESTORES: the carrier identity (`carrierHash`, `sha256:…`) of the canon record a working copy forked from, as an export
    *  read it off the record's meta envelope. The island stamps it on the record a working-layer wave lands, so a bundle's
    *  override keeps its base across a re-founding. Absent for every disk scan: a base never projects. */
   readonly overrideBase?: string;

@@ -5,7 +5,8 @@
  * working record lands naming the hash of canon's text at that moment (`meta.overrideBase`, `override-base.ts`), so a
  * later canon change can tell a stale untouched copy (its text still says the base) from a hand's edit.
  *
- *   F1  a fork names the canon text hash; the base rides the meta envelope, never a tiddler field
+ *   F1  a fork names the canon record's carrier identity (`carrierHash` over its canonical carrier form, tagged
+ *       `sha256:<hex>`), compared through `digestsEqual`; the base rides the meta envelope, never a tiddler field
  *   F2  a later edit of the override keeps the base the fork named (the writer names none)
  *   F3  a working-only title, and a write into the canon layer itself, name no base
  *   F5  a family write forks each member the same way
@@ -18,7 +19,12 @@ import { Repo } from "@automerge/automerge-repo";
 import { AutomergeDocStore } from "../src/automerge-doc-store.js";
 import { CompositeStore } from "../src/composite-store.js";
 import { emptyLarDoc, type LarDoc } from "../src/base-doc.js";
-import { OVERRIDE_BASE_META, overrideBaseOf, overrideTextHash, workingLayerOfCanon, canonOfWorkingLayer } from "../src/override-base.js";
+import { OVERRIDE_BASE_META, overrideBaseOf, overrideCarrierHash, canonicalCarrierForm, basesEqual, workingLayerOfCanon, canonOfWorkingLayer } from "../src/override-base.js";
+import { carrierHash } from "../src/crypto.js";
+import type { LarTiddlerStore } from "../src/tiddler-store.js";
+
+/** The carrier identity of one record as a store holds it now. */
+const identityOf = async (store: LarTiddlerStore, title: string): Promise<string> => overrideCarrierHash((await store.get(title))!.tiddler);
 
 const CANON = "lar:///ha.ka.ba/bags/probe";
 const WORKING = "lar:///ha.ka.ba/wikis/probe/working";
@@ -42,20 +48,27 @@ describe("a working override remembers its base", () => {
     expect(workingLayerOfCanon(WORKING)).toBeNull();
   });
 
-  test("F1 — a fork names the canon text hash on its meta envelope", async () => {
+  test("F1 — a fork names the canon record's carrier identity on its meta envelope", async () => {
     const r = await rig();
+    const canonIdentity = await identityOf(r.canon, "T");
+    expect(canonIdentity).toBe(carrierHash(canonicalCarrierForm((await r.canon.get("T"))!.tiddler)));
+    expect(canonIdentity).toMatch(/^sha256:[0-9a-f]{64}$/);
+    expect(canonicalCarrierForm({ title: "T", text: "canon words", tags: ["a b", "c"] })).toBe("tags: [[a b]] c\ntitle: T\n\ncanon words");
     await r.composite.put({ tiddler: { title: "T", text: "a hand's words" } }, hand);
     const held = await r.working.get("T");
-    expect(overrideBaseOf(held)).toBe(overrideTextHash({ text: "canon words" }));
+    expect(overrideBaseOf(held)).toBe(canonIdentity);
+    expect(basesEqual(overrideBaseOf(held), canonIdentity.slice("sha256:".length))).toBe(false);   // a bare hex matches nothing
     expect(held!.tiddler).not.toHaveProperty(OVERRIDE_BASE_META);
   });
 
   test("F2 — a later edit keeps the base the fork named", async () => {
     const r = await rig();
+    const forked = await identityOf(r.canon, "T");
     await r.composite.put({ tiddler: { title: "T", text: "first edit" } }, hand);
     await r.canon.put({ tiddler: { title: "T", text: "canon moved" } }, hand);
     await r.composite.put({ tiddler: { title: "T", text: "second edit" } }, hand);
-    expect(overrideBaseOf(await r.working.get("T"))).toBe(overrideTextHash({ text: "canon words" }));
+    expect(overrideBaseOf(await r.working.get("T"))).toBe(forked);
+    expect(basesEqual(forked, await identityOf(r.canon, "T"))).toBe(false);
   });
 
   test("F3 — a working-only title and a write into canon name no base", async () => {
@@ -70,8 +83,8 @@ describe("a working override remembers its base", () => {
     const r = await rig();
     await r.canon.put({ tiddler: { title: "T#a", text: "canon a" } }, hand);
     await r.composite.writeFamily([{ tiddler: { title: "T", text: "x" } }, { tiddler: { title: "T#a", text: "y" } }], [], hand);
-    expect(overrideBaseOf(await r.working.get("T"))).toBe(overrideTextHash({ text: "canon words" }));
-    expect(overrideBaseOf(await r.working.get("T#a"))).toBe(overrideTextHash({ text: "canon a" }));
+    expect(overrideBaseOf(await r.working.get("T"))).toBe(await identityOf(r.canon, "T"));
+    expect(overrideBaseOf(await r.working.get("T#a"))).toBe(await identityOf(r.canon, "T#a"));
   });
 
   test("F6 — over a lower layer with no synchronous read, the write never waits on it and names no base", async () => {

@@ -264,8 +264,8 @@ export interface IngestCarrier {
    *  integrity, no body) rather than materialize the body as a CRDT text field
    *  (content-resolution.mem Scenario B). */
   readonly skinny?:    boolean;
-  /** THE OVERRIDE BASE A CARRY RESTORES (`override-base.ts`): the canon text hash (`sha256:…`) a working copy forked
-   *  from, as an export read it off the record's meta envelope. A wave into a wiki's working layer stamps it on the
+  /** THE OVERRIDE BASE A CARRY RESTORES (`override-base.ts`): the carrier identity (`carrierHash`, `sha256:…`) of the
+   *  canon record a working copy forked from, as an export read it off the record's meta envelope. A wave into a wiki's working layer stamps it on the
    *  record it lands under this title, so a bundle's override keeps its base across a re-founding. Absent for every
    *  disk scan (a base never projects): the composite forks a fresh base where a copy lands over canon. */
   readonly overrideBase?: string;

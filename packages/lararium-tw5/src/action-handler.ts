@@ -1634,7 +1634,7 @@ export const OVERRIDE_BASES_PAGE = 32;
 
 /**
  * THE OVERRIDE-BASES READ — every working copy of one layer (`bag`, `lar:///ha.ka.ba/wikis/<slug>/working`) that names the
- * canon text it forked from, by title, a page at a time (`after` the title the page before ended on). An export reads it
+ * canon record it forked from (its carrier identity), by title, a page at a time (`after` the title the page before ended on). An export reads it
  * to carry each base beside the file, since a base rides the meta envelope and never projects. It reads alone.
  */
 export function makeOverrideBasesReactor(opts: ActionHandlerOptions): VerbReactor {
@@ -1670,7 +1670,7 @@ function fresherSummary(fresher: readonly FresherCanon[]): Record<string, unknow
 export const FRESHER_CANON_PAGE = 32;
 
 /**
- * THE FRESHER-CANON READ — every working copy of one wiki that shadows a canon text fresher than the one it forked from
+ * THE FRESHER-CANON READ — every working copy of one wiki that shadows a canon record fresher than the one it forked from
  * (`override-bases.ts`), a page at a time (`after` the title the page before ended on, `next` the cursor behind). It
  * names a canon bag (`bag`, `lar:///ha.ka.ba/bags/<slug>`) and reaches the wiki's working layer by access. It reads
  * alone: a person who wants the fresher canon removes the copy with the ordinary verbs.

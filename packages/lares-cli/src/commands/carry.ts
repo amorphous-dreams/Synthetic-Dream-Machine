@@ -622,7 +622,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   const minted: string[] = [];
   const skipped: string[] = [];
 
-  // THE OVERRIDE BASE TRAVELS: a working row names the canon text its copy forked from, and its carrier carries it, so the
+  // THE OVERRIDE BASE TRAVELS: a working row names the carrier identity of the canon record its copy forked from, and its carrier carries it, so the
   // island stamps it on the copy it lands and canon's fresher-than-the-copy warning still reads after the round trip.
   const baseByFile = new Map<string, string>();
   for (const row of manifest.rows) if (row.overrideBase !== undefined) baseByFile.set(join(bundle.root, ...row.path.split("/")), row.overrideBase);
