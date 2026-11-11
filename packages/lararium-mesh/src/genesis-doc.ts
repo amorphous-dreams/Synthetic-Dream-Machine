@@ -732,8 +732,6 @@ export function materializeGenesisDoc(seed: GenesisSeed): Uint8Array {
   let doc = automergeInit<LarDoc>({ actor: seed.actorSeed });
   doc = automergeChange(doc, { time: 0 }, d => {
     const r = d as unknown as Record<string, unknown>;
-    // The oracle document keeps the shape every lar document carries (`base-doc.ts`); the seed itself names none.
-    r["schemaVersion"] = "0.1";
     const blobs: Record<string, unknown> = {};
     // A seed key naming the prototype chain would seat a prototype here: it refuses by name (KEEP: a live hostile form).
     for (const k of Object.keys(seed.blobs).sort()) {

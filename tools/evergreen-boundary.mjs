@@ -44,9 +44,10 @@ import { fileURLToPath } from "node:url";
 
 export const RULES = ["version", "clock", "narration", "old-shape", "retired-test", "upgrade-delete", "canon-history", "canon-dated-history"];
 /** Today's measured open debt, per rule. RATCHET: each number may only ever come DOWN. */
-export const CEILINGS = { version: 9, clock: 53, narration: 162, "old-shape": 0, "retired-test": 6, "upgrade-delete": 0, "canon-history": 98, "canon-dated-history": 1 };
+export const CEILINGS = { version: 0, clock: 53, narration: 162, "old-shape": 0, "retired-test": 6, "upgrade-delete": 0, "canon-history": 98, "canon-dated-history": 1 };
 export const EXCEPTIONS = [
   { rule: "version", file: "packages/lararium-browser/src/browser-vessel-identity.ts", match: "const IDB_VERSION", reason: "IndexedDB's open call takes a numeric version argument; the browser API names it." },
+  { rule: "version", file: "tools/domain-registry-witness.test.mjs", match: "const names = ['lar-planted-versioned/v1'", reason: "The domain witness's self-test plants versioned domain literals in a scratch fixture to prove the witness refuses each by name." },
   { rule: "clock", file: "packages/lararium-tw5/src/wiki-draft-handlers.ts", match: "const cutoffMs =", reason: "The prune-stale report lists idle drafts for a person to read; the clock picks what the report shows, never what leaves, since nothing here prunes (operator ruling 2026-10-18)." },
   { rule: "clock", file: "packages/lararium-tw5/src/wiki-draft-handlers.ts", match: "const daysIdle =", reason: "The prune-stale report shows each draft's idle days to a person; the reading decides nothing (operator ruling 2026-10-18)." },
   { rule: "clock", file: "packages/lararium-node/src/temp-layer.ts", match: "now: () => Date.now()", reason: "The temp layer's one clock seam: age expiry and the orphan settle window measure a file's age against wall time, the clock decides only when a settled file moves to the trash, and every housekeeping run reads it here alone." },

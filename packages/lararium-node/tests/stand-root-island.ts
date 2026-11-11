@@ -73,8 +73,8 @@ export async function standRootIsland(args: { repo: Repo; handleIndex: number; b
   const addressSecret = await readFaceAddressSecret(anchors.personaGroupId);
   if (!addressSecret) throw new Error("fixture: this face holds no address secret");
 
-  const oracle = repo.create<LarDoc>({ schemaVersion: "lar/1", tiddlers: { [DAEMON_BAG_ID]: { tiddler: { title: DAEMON_BAG_ID, text: daemonUrl } } } } as unknown as LarDoc);
-  const catalog = repo.create<LarDoc>({ schemaVersion: "lar/1", tiddlers: { [wikiBagUri("daemon")]: { tiddler: { title: wikiBagUri("daemon"), text: daemonUrl } } } } as unknown as LarDoc);
+  const oracle = repo.create<LarDoc>({ tiddlers: { [DAEMON_BAG_ID]: { tiddler: { title: DAEMON_BAG_ID, text: daemonUrl } } } } as unknown as LarDoc);
+  const catalog = repo.create<LarDoc>({ tiddlers: { [wikiBagUri("daemon")]: { tiddler: { title: wikiBagUri("daemon"), text: daemonUrl } } } } as unknown as LarDoc);
   const { port1, port2 } = new MessageChannel();
   const islandRepo = makeIslandRepo({ syncPort: port1 as never, denyDocument: daemonUrl });
   const detach = attachMessageChannelSync(repo, port2 as never);

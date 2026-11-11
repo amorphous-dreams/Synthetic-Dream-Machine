@@ -527,7 +527,7 @@ export function publicFlowMap(doc: LarDoc): LarDoc {
   for (const [title, rec] of Object.entries(doc.tiddlers)) {
     if (crossesShore(rec)) tiddlers[title] = storedRecord(plainRecord(rec));
   }
-  return { schemaVersion: doc.schemaVersion, tiddlers };
+  return { tiddlers };
 }
 
 // ── The Two-Faced public read-face (rides flow-substrate) ────────────────
@@ -565,7 +565,7 @@ export function snapshotPublicFlowMap(palaceDoc: LarDoc): Promise<FlowSnapshot> 
 export type MeshPalaceDoc = LarDoc;
 
 export function emptyMeshPalaceDoc(): MeshPalaceDoc {
-  return { schemaVersion: "0.1", tiddlers: {} };
+  return { tiddlers: {} };
 }
 
 export class MeshPalace {

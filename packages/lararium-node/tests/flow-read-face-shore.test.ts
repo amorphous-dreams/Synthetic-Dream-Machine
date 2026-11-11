@@ -79,7 +79,7 @@ async function pullFloor(mount: (args: Parameters<typeof mountFlowReadFace>[0]) 
 const projectSeeded = async (doc: LarDoc) => {
   const tiddlers: Record<string, unknown> = {};
   for (const title of Object.keys(GENESIS.tiddlers).sort()) if (doc.tiddlers?.[title] !== undefined) tiddlers[title] = plainRecord(doc.tiddlers[title]!);
-  return exportFlowSnapshot(pinnedDoc({ schemaVersion: doc.schemaVersion, blobs: {}, tiddlers } as unknown as Record<string, unknown>));
+  return exportFlowSnapshot(pinnedDoc({ blobs: {}, tiddlers } as unknown as Record<string, unknown>));
 };
 const mountAsMain: Parameters<typeof pullFloor>[0] = (a) => mountFlowReadFace({ ...a, exportSnapshot: (doc) => projectSeeded(doc as LarDoc) });
 

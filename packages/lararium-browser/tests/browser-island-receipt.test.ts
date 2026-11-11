@@ -33,7 +33,7 @@ describe("the browser's floor receipt", () => {
     let stand!: (peer: string) => void;
     const receipt = browserIslandReceipt(vessel, { ready: new Promise<string>((resolve) => { stand = resolve; }), onClose: () => () => {} });
     const id = generateAutomergeUrl().slice("automerge:".length);
-    const bytes = A.save(A.from({ schemaVersion: "0.1", tiddlers: { a: { text: "x" } } }));
+    const bytes = A.save(A.from({ tiddlers: { a: { text: "x" } } }));
     const asking = receipt([id], { [id]: A.getHeads(A.load(bytes)) });
     expect(await settledYet(asking)).toBe(false);
     stand(peerId);

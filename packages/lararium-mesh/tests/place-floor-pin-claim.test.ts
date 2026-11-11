@@ -139,7 +139,7 @@ describe("a floor pin claim reads at the head it names", () => {
   test("hostile boards are bounded at the board: claim rows and KEL rows cap, an oversized payload is noise, a pass folds each head once", async () => {
     const place = foundPlace(1);
     const claim = await claimAt(place, pinAt(10));
-    const board = { schemaVersion: "lar/1", tiddlers: {} } as unknown as LarDoc;
+    const board = { tiddlers: {} } as unknown as LarDoc;
     writePlaceFloorPin(board, claim);                                          // CONTROL: the honest row reads
     expect(placeFloorPinsFromBoard(board)).toHaveLength(1);
     const text = JSON.stringify(claim);
@@ -148,7 +148,7 @@ describe("a floor pin claim reads at the head it names", () => {
     }
     board.tiddlers[`${placeFloorPinKey(claim)}-fat`] = { tiddler: { title: "x", text: " ".repeat(PLACE_FLOOR_PIN_ROW_CHARS + 1) + text } } as never;
     expect(placeFloorPinsFromBoard(board)).toHaveLength(PLACE_FLOOR_PIN_ROWS);
-    const kelBoard = { schemaVersion: "lar/1", tiddlers: {} } as unknown as LarDoc;
+    const kelBoard = { tiddlers: {} } as unknown as LarDoc;
     const row = JSON.stringify(place.chain[0]);
     for (let i = 0; i < PLACE_KEL_BOARD_ROWS + 10; i++) kelBoard.tiddlers[`${PLACE_KEL_PREFIX}${place.aid}/${String(i).padStart(5, "0")}`] = { tiddler: { title: "x", text: row } } as never;
     kelBoard.tiddlers[`${PLACE_KEL_PREFIX}${place.aid}/fat`] = { tiddler: { title: "x", text: " ".repeat(PLACE_KEL_ROW_CHARS + 1) + row } } as never;

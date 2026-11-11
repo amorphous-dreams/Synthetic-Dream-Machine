@@ -156,7 +156,6 @@ describe("multiple-Nexus household proof", () => {
 
   test("FLOW remains a separate public projection: coarse public routes cross, private territory does not", async () => {
     const flowDoc: LarDoc = {
-      schemaVersion: "0.1",
       tiddlers: {
         "public-dial": { tiddler: { title: "public-dial", kind: "dial", scale: "nexus", endpoint: "ws://relay-a" } },
         "private-dial": { tiddler: { title: "private-dial", kind: "dial", endpoint: "ws://local-b" } },

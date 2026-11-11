@@ -89,14 +89,6 @@ export interface LarTiddlerMeta {
   readonly authority?:     string;
   readonly recipe?:        string;
   /**
-   * Residency Model schema-version tag — Anti-pattern #2 defense (schema drift
-   * across multi-bag residency). Records carry their schema-version so a
-   * consumer can tell which shape generation it is reading. Absent = no
-   * migration needed. Convention: short stable string (e.g. "v1", "lore-2",
-   * "2026-05"). No read-time lens projects these.
-   */
-  readonly schemaVersion?: string;
-  /**
    * Residency Model change-id — Anti-pattern #1 defense (causal-history
    * severance on copy). When an ACTION verb (ADD / COPY / MOVE / LOAD)
    * transfers a tiddler between bags, the handler MUST preserve the
