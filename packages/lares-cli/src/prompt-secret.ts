@@ -78,7 +78,14 @@ function readTty(label: string, echo: boolean, stdin: TtyStream): Promise<string
           return;
         }
         if (c === "\u0003") { done("", () => reject(new Error("aborted"))); return; }   // Ctrl-C
-        if (c === "\u007f" || c === "\b") { buf = buf.slice(0, -1); continue; }          // backspace
+        if (c === "\u007f" || c === "\b") {                                            // backspace
+          // A visible prompt erases the character it echoed: back one column, blank it, back again. A hidden one echoed nothing.
+          const chars = [...buf];
+          if (chars.length === 0) continue;
+          buf = chars.slice(0, -1).join("");
+          if (echo) stdout.write("\b \b");
+          continue;
+        }
         buf += c;
         if (echo) stdout.write(c);
       }
