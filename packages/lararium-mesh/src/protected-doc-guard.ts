@@ -16,12 +16,14 @@
  *     live `lares` and `lararium` documents, decided by Kahu reach at the wire. Lane `ralias` populates `vessel-private`:
  *     the vessel's daemon document, each face's five planes and the catalog, decided by the relation the peer proved
  *     (the same-face view, the sibling gate, a face-join grant), never by a realm, registration, contract or carriage lane.
+ *     The private cabal populates `realm-workbench`: each shared wiki's workbench, decided by whether the face the peer proved
+ *     stands a member of that workbench's realm now (`workbenchDecider`, cabal-realm#/the-workbench).
  *
  * Meme: lar:///ha.ka.ba/lares/docs/stable-founding-road#/P26
  */
 
 /** The classes of protected documents this guard serves. */
-export type ProtectedDocClass = "kahu-canon" | "vessel-private";
+export type ProtectedDocClass = "kahu-canon" | "vessel-private" | "realm-workbench";
 
 /** The guard a share verdict asks first. */
 export interface ProtectedDocGuard {

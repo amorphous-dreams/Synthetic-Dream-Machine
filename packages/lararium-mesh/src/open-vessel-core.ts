@@ -27,7 +27,8 @@ import { emptyLarDoc, tiddlerText, type LarDoc } from "./base-doc.js";
 import { personaSiblingBagIds } from "./persona-scope.js";
 import { BAG_IDS, DAEMON_BAG_ID, ORACLE_DOC_URI } from "./lar-uris.js";
 import type { PersonaPlaneRef } from "./persona-planes.js";
-import { slotLayerFlags, wikiSlotUri } from "./wiki-recipe.js";
+import { slotLayerFlags, wikiSlotUri, wikiWorkbenchUri } from "./wiki-recipe.js";
+import { materializeSharedLarDoc } from "./deterministic-doc.js";
 import { resolveBootDoc, isStillJoining } from "./boot-resolver.js";
 import { isCondemned, isUnresolved, type DocLoadProbe, type ProbeResult } from "./doc-load-probe-contract.js";
 import { storedLarRecord } from "./stored-record.js";
@@ -323,6 +324,9 @@ export async function mountWikiSlot(
    *  invariant doc as the write layer (its oracle lives on the lararium doc,
    *  never in the catalog registry — no cross-plane resolution, no second mint). */
   presetWikiHandle?: DocHandle<LarDoc>,
+  /** A SHARED wiki's workbench url (cabal-realm#/the-workbench), or null: present, the host lays it beneath the working
+   *  overlay as the default writable, as the island does (`slotLayerFlags` with the workbench). */
+  resolveWorkbench?: (wikiUrl: string) => Promise<string | null>,
 ): Promise<{ wikiHandle: DocHandle<LarDoc>; draftHandle: DocHandle<LarDoc> }> {
   const { repo, catalogHandle, waitHandle } = keel;
   // Resolve the CANON doc by its content key (bags/{slug}) — where the mint
@@ -338,8 +342,16 @@ export async function mountWikiSlot(
   if (composite.hasBag(slot.wikiBagId)) composite.removeLayer(slot.wikiBagId);
   const workingUrl = await resolveWorking(wikiHandle.url);
   const workingHandle = await findOrThrow(repo, workingUrl, `${wikiSlotUri(slot.wikiSlug, "working")} (working layer)`, { refusal: WorkingDocumentUnavailableRefusal, timeoutMs: DOCUMENT_HANG_BOUND_MS });
-  const flags = (bagId: string) => slotLayerFlags(bagId, slot.wikiSlug);
+  const workbenchUrl = (await resolveWorkbench?.(wikiHandle.url)) ?? null;
+  const flags = (bagId: string) => slotLayerFlags(bagId, slot.wikiSlug, workbenchUrl !== null);
   composite.addLayer({ bagId: slot.wikiBagId, store: new AutomergeDocStore(wikiHandle, slot.wikiBagId), ...flags(slot.wikiBagId) });
+  if (workbenchUrl !== null) {
+    // The workbench address derives (`realmWorkbenchDocUrl`), so a member's vessel materializes the blank board where it
+    // holds no replica yet, and the members' edits merge into it.
+    const benchSlot = wikiWorkbenchUri(slot.wikiSlug);
+    const benchHandle = await materializeSharedLarDoc(repo, workbenchUrl as AutomergeUrl, "board:workbench");
+    composite.addLayer({ bagId: benchSlot, store: new AutomergeDocStore(benchHandle, benchSlot), ...flags(benchSlot) });
+  }
   const workingSlot = wikiSlotUri(slot.wikiSlug, "working");
   composite.addLayer({ bagId: workingSlot, store: new AutomergeDocStore(workingHandle, workingSlot), ...flags(workingSlot) });
 

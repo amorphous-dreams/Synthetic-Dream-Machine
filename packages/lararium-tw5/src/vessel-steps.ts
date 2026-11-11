@@ -19,7 +19,7 @@ import {
   AutomergeDocStore,
   computeRecipeFingerprint,
   LARES_DOC_URI, LARARIUM_DOC_URI,
-  wikiBagUri, wikiSlotUri,
+  wikiBagUri, wikiSlotUri, wikiWorkbenchUri,
   type DocHandle,
   type AutomergeUrl,
   type LarDoc,
@@ -91,7 +91,7 @@ export interface BindingResolver {
     fingerprint: string,
     recipeTrace: { wikiDocId: string; libraryBagDocIds: readonly string[] },
     wikiSlug: string,
-  ): Promise<{ personalUrl: string; draftUrl: string; workingUrl: string }>;
+  ): Promise<{ personalUrl: string; draftUrl: string; workingUrl: string; workbenchUrl?: string }>;
 }
 
 export interface PrimaryMountInputs {
@@ -153,7 +153,7 @@ const PRIMARY_MIRROR_BAGS: readonly string[] = [LARES_DOC_URI, LARARIUM_DOC_URI]
 export async function resolveSlotDocs(
   binding: BindingResolver,
   wiki: { wikiSlug: string; wikiUrl: string },
-): Promise<{ personalUrl: string; draftUrl: string; workingUrl: string }> {
+): Promise<{ personalUrl: string; draftUrl: string; workingUrl: string; workbenchUrl?: string }> {
   const recipeTrace = { wikiDocId: wiki.wikiUrl, libraryBagDocIds: [] as readonly string[] };
   const fingerprint = await computeRecipeFingerprint(recipeTrace);
   return binding.resolveBinding(fingerprint, recipeTrace, wiki.wikiSlug);
@@ -163,7 +163,7 @@ export async function buildWikiMountSpec(
   binding: BindingResolver,
   inputs:  PrimaryMountInputs,
 ): Promise<{ spec: WikiMountSpec; personalUrl: string; draftUrl: string; workingUrl: string }> {
-  const { personalUrl, draftUrl, workingUrl } = await resolveSlotDocs(binding, inputs);
+  const { personalUrl, draftUrl, workingUrl, workbenchUrl } = await resolveSlotDocs(binding, inputs);
 
   // Typed structural grants — no slot dictionary. Library bags never ride the
   // mount: the island resolves them from the catalog registry itself (boot = first reconcile),
@@ -179,6 +179,8 @@ export async function buildWikiMountSpec(
     ...(personalUrl     ? { personalUrl } : {}),
     ...(draftUrl        ? { draftUrl    } : {}),
     ...(workingUrl      ? { workingUrl  } : {}),
+    // A shared wiki's workbench (cabal-realm#/the-workbench), granted where the realm seats the worn face.
+    ...(workbenchUrl    ? { workbenchUrl } : {}),
   };
   // Designate the wiki's OWN canon (@{slug}) for disk projection alongside the
   // primaries. The pool's self-canon grant authorizes a minted user wiki to
@@ -190,7 +192,12 @@ export async function buildWikiMountSpec(
     ...(inputs.libraryBags?.length ? { libraryBags: inputs.libraryBags } : {}),
     ...(inputs.pluginOfferings?.length ? { pluginOfferings: inputs.pluginOfferings } : {}),
     ...(inputs.pluginOfferingsFault !== undefined ? { pluginOfferingsFault: inputs.pluginOfferingsFault } : {}),
-    mirrorBags: [...PRIMARY_MIRROR_BAGS, wikiSlotUri(inputs.wikiSlug, "temp"), wikiSlotUri(inputs.wikiSlug, "draft"), wikiSlotUri(inputs.wikiSlug, "working"), wikiBagUri(inputs.wikiSlug)],
+    ...(workbenchUrl ? { workbench: true } : {}),
+    mirrorBags: [
+      ...PRIMARY_MIRROR_BAGS, wikiSlotUri(inputs.wikiSlug, "temp"), wikiSlotUri(inputs.wikiSlug, "draft"), wikiSlotUri(inputs.wikiSlug, "working"),
+      ...(workbenchUrl ? [wikiWorkbenchUri(inputs.wikiSlug)] : []),
+      wikiBagUri(inputs.wikiSlug),
+    ],
   };
 
   return { spec: { coreHash: inputs.coreHash, recipe, grants }, personalUrl, draftUrl, workingUrl };

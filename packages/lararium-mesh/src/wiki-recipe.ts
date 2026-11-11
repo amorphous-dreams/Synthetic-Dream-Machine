@@ -65,6 +65,16 @@ export function wikiSlotUri(slug: string, kind: WikiSlotKind): SlotUri {
   return `${wikiUri(slug)}/${kind}`;
 }
 
+/**
+ * A SHARED wiki's WORKBENCH slot (`wikis/{slug}/workbench`): the working layer every member face of the wiki's realm syncs, ONE
+ * CRDT at the realm's workbench address (`realmWorkbenchDocUrl`). It lays between the face's private working layer (above it,
+ * the private overlay) and the wiki's canon (below it), and only in a recipe that names `workbench`. Not an instance slot: no
+ * PersonaGroup × fingerprint binding names it; the realm does.
+ */
+export function wikiWorkbenchUri(slug: string): SlotUri {
+  return `${wikiUri(slug)}/workbench`;
+}
+
 export const LARES_BAG    = LARES_DOC_URI;
 export const LARARIUM_BAG = LARARIUM_DOC_URI;
 /** oracle — the runtime system island; the universal floor of every recipe. */
@@ -233,6 +243,13 @@ export interface WikiRecipe {
    */
   readonly canonBag?: SlotUri;
   /**
+   * THE SHARED WORKBENCH (cabal-realm#/the-workbench): true where the wiki's realm workbench mounts. The recipe then reads
+   * canon -> workbench -> working (the face's private overlay) -> personal -> draft -> temp, and the WORKBENCH takes the
+   * default write: a title that already lives in the private overlay stays there (the island's settle law), so the overlay
+   * holds exactly the notes a face set down there by name. Absent: no workbench lays and the working slot writes.
+   */
+  readonly workbench?: boolean;
+  /**
    * Canon bag URIs this wiki DESIGNATES for local disk projection (write-back).
    * A synced, platform-neutral *wish* (the shape half of disk-mirroring). The
    * island materializes a mirror for a designated bag IFF it also holds the
@@ -359,6 +376,8 @@ export function expandRecipe(r: WikiRecipe): readonly SlotUri[] {
     // the read-only library member, published to only by a promotion MOVE
     // (wiki-layer-ontology#shore-law). Working (live) and canon stay distinct layers.
     wikiSlotUri(slug, "working"),
+    // The shared workbench lays beneath the face's private overlay and above the canon (cabal-realm#/the-workbench).
+    ...(r.workbench === true ? [wikiWorkbenchUri(slug)] : []),
     wikiCanonOf(r),
     ...(r.libraryBags ?? []),
     // A wiki whose canon follows its face keeps its own bag beneath the libraries, below every canon: the daemon
@@ -418,9 +437,10 @@ export function kahuaRecipe(r: WikiRecipe): WikiRecipe {
   return { ...r, libraryBags: [KAHUA_BAG, ...(r.libraryBags ?? [])] };
 }
 
-/** The working slot is the only default writable; an absent handle leaves no default writable. */
-export function defaultWritableSlot(slug: string): SlotUri {
-  return wikiSlotUri(slug, "working");
+/** The ONE default writable: the shared workbench where the recipe mounts one, else the working slot; an absent handle leaves
+ *  no default writable. */
+export function defaultWritableSlot(slug: string, workbench = false): SlotUri {
+  return workbench ? wikiWorkbenchUri(slug) : wikiSlotUri(slug, "working");
 }
 
 /**
@@ -430,8 +450,8 @@ export function defaultWritableSlot(slug: string): SlotUri {
  * `defaultWritable` marks `defaultWritableSlot` alone; every other layer registers `false` so the
  * last-registered temp store never takes the office.
  */
-export function slotLayerFlags(slot: SlotUri, slug: string): { writable: boolean; defaultWritable: boolean } {
-  return { writable: slot !== ORACLE_BAG && slot !== KAHUA_BAG, defaultWritable: slot === defaultWritableSlot(slug) };
+export function slotLayerFlags(slot: SlotUri, slug: string, workbench = false): { writable: boolean; defaultWritable: boolean } {
+  return { writable: slot !== ORACLE_BAG && slot !== KAHUA_BAG, defaultWritable: slot === defaultWritableSlot(slug, workbench) };
 }
 
 /** The four INSTANCE slots — minted per (PersonaGroup × fingerprint) by the resolver, threaded
@@ -445,7 +465,7 @@ export const WIKI_SLOT_KINDS: readonly WikiSlotKind[] = ["temp", "draft", "perso
  * `recipeRecordFields` and recipe-watch all read.
  */
 export function structuralSlots(slug: string): ReadonlySet<SlotUri> {
-  return new Set<SlotUri>([...WIKI_SLOT_KINDS.map((k) => wikiSlotUri(slug, k)), wikiBagUri(slug), ORACLE_BAG]);
+  return new Set<SlotUri>([...WIKI_SLOT_KINDS.map((k) => wikiSlotUri(slug, k)), wikiWorkbenchUri(slug), wikiBagUri(slug), ORACLE_BAG]);
 }
 
 /**

@@ -295,7 +295,7 @@ export interface DaemonVmCore {
     fingerprint: string,
     recipeTrace: { wikiDocId: string; libraryBagDocIds: readonly string[] },
     wikiSlug: string,
-  ) => Promise<{ personalUrl: string; draftUrl: string; workingUrl: string }>;
+  ) => Promise<{ personalUrl: string; draftUrl: string; workingUrl: string; workbenchUrl?: string }>;
   /**
    * GRACEFUL shutdown — post a teardown to the daemon island and AWAIT its
    * teardown:ack (the island flushes its in-flight Automerge docs + capture state
@@ -615,7 +615,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     if (raw.type === "daemon:resolve-binding-result") {
       const msg = raw as DaemonMsg_ResolveBindingResult;
       if (msg.error) settleAsk(msg.requestId, undefined, msg.error);
-      else if (msg.personalUrl && msg.draftUrl && msg.workingUrl) settleAsk(msg.requestId, { personalUrl: msg.personalUrl, draftUrl: msg.draftUrl, workingUrl: msg.workingUrl });
+      else if (msg.personalUrl && msg.draftUrl && msg.workingUrl) settleAsk(msg.requestId, { personalUrl: msg.personalUrl, draftUrl: msg.draftUrl, workingUrl: msg.workingUrl, ...(msg.workbenchUrl ? { workbenchUrl: msg.workbenchUrl } : {}) });
       else settleAsk(msg.requestId, undefined, "resolve-binding-result missing urls");
       return;
     }

@@ -307,3 +307,5 @@ export { placedAskIsLocal } from "./daemon-behavior.js";
 
 export { makePromoteStateReactor, seedPromoteUiTiddlers, PROMOTE_PANEL_TITLE, PROMOTE_STATE_TITLE } from "./promote-ui-tiddlers.js";
 export { makeShareSetReactor, makeShareListReactor, readShareRows } from "./share-verbs.js";
+// The ONE spelling of a person's view-state set: the shared workbench's admit filter reads it (cabal-realm#/the-workbench).
+export { isPersonalTitle } from "./filters/lar-kind.js";

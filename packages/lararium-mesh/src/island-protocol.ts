@@ -168,6 +168,10 @@ export interface IslandGrants {
   /** working — the SAVED live write layer (PersonaGroup×fingerprint-bound, like
    *  personal); normal edits route here, canon publishes on a promotion MOVE. */
   workingUrl?:  string | null;
+  /** A SHARED wiki's workbench (cabal-realm#/the-workbench): the realm's fixed address the share door founded, granted only
+   *  to a face the realm's Document seats. Present: the recipe lays it beneath the working overlay and it takes the default
+   *  write. Absent/null: the wiki shares through no realm. */
+  workbenchUrl?: string | null;
   /** The face's kahua stage, the url its VERIFIED `plane` act pins (`adoptKahuaPlane`); `bags/kahua` mounts from this
    *  grant alone and never from a catalog row. Absent/null: the layer stands absent. */
   kahuaUrl?:    string | null;
@@ -642,6 +646,7 @@ export interface DaemonMsg_ResolveBindingResult {
   personalUrl?: string;
   draftUrl?: string;
   workingUrl?: string;
+  workbenchUrl?: string;
   error?: string;
 }
 
@@ -1481,6 +1486,7 @@ export function mkDaemonResolveBindingResult(opts: {
   personalUrl?: string;
   draftUrl?:    string;
   workingUrl?:  string;
+  workbenchUrl?: string;
   error?:       string;
 }): DaemonMsg_ResolveBindingResult {
   const msg: DaemonMsg_ResolveBindingResult = {
@@ -1490,6 +1496,7 @@ export function mkDaemonResolveBindingResult(opts: {
   if (opts.personalUrl !== undefined) msg.personalUrl = opts.personalUrl;
   if (opts.draftUrl    !== undefined) msg.draftUrl    = opts.draftUrl;
   if (opts.workingUrl  !== undefined) msg.workingUrl  = opts.workingUrl;
+  if (opts.workbenchUrl !== undefined) msg.workbenchUrl = opts.workbenchUrl;
   if (opts.error       !== undefined) msg.error       = opts.error;
   return msg;
 }

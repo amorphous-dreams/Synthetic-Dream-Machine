@@ -20,6 +20,11 @@
  *              the face's address at the join. A vessel that holds neither refuses `no-place`. No read mints a
  *              secret: a seated face whose secret stands nowhere refuses `no-address-secret` (it re-founds).
  *   personal — the PersonaGroup × fingerprint binding when seated, the vessel's own when not
+ *   workbench — THE REALM BRANCH (cabal-realm#/the-workbench): a wiki its share row shares with sibling faces names the realm
+ *              its vessel ledger binds it to (`realmOf`), and the workbench reads the realm's fixed address
+ *              (`realmWorkbenchDocUrl`): one CRDT every member face syncs, beneath the face's private working overlay. No
+ *              binding record and no mint: the address derives, and the share door founds the realm. A wiki no realm holds
+ *              reads none, and a ledger naming two realms for one slug refuses `workbench-two-realms`.
  *
  * Lives in @lararium/keyhive because the mint sequence needs keyhive (`registerBag` + `delegate`).
  *
@@ -28,8 +33,8 @@
 
 import {
   CONTROL_HOME_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX,
-  computeRecipeFingerprint, emptyLarDoc, mintVesselDocumentId, storedLarRecord, mutableLarRecord, resolveSlotDoc, resolveFaceWorkingSlot, tiddlerText,
-  wikiBagUri, wikiDraftDocKey, wikiWorkingFloorKey, requireLarDid,
+  computeRecipeFingerprint, emptyLarDoc, realmWorkbenchDocUrl, mintVesselDocumentId, storedLarRecord, mutableLarRecord, resolveSlotDoc, resolveFaceWorkingSlot, tiddlerText,
+  wikiBagUri, wikiDraftDocKey, isFacePrivateSlug, wikiWorkingFloorKey, requireLarDid,
   type CompositeStore, type WorkingFloorAnchor, type LarDoc, type SlotReach, type WikiSlotKind,
 } from "@lararium/mesh";
 import * as A from "@automerge/automerge";
@@ -78,6 +83,13 @@ export interface SlotDocResolverArgs {
   /** Find or materialize the face's working document under its derived address, and rest it. */
   readonly faceWorkingDoc?: (url: string, label: string) => Promise<FaceWorkingHandle>;
   readonly rebindWorking?: (slug: string, oldUrl: string, newUrl: string, into: FaceWorkingHandle) => void;
+  /**
+   * THE REALM BRANCH: the realm a shared wiki's workbench stands in, read off the vessel's own ledger (`ledgerWorkbenchRealm`),
+   * or null where the wiki shares through no realm OR the resolver's face stands no member of it: one vessel holds every face's
+   * documents, so the roster gates the mount here as the protected-document guard gates the wire. Absent: no wiki reads a
+   * workbench (a faceless floor, the daemon wiki).
+   */
+  readonly realmOf?: (slug: string) => Promise<string | null>;
 }
 
 /** The face's working document as the resolver and the lift touch it. */
@@ -98,8 +110,10 @@ export interface SlotDoc {
 }
 
 export interface SlotDocResolver {
-  /** Every instance slot's doc for a wiki, by fingerprint — the mount's call. */
-  bindings(fingerprint: string, recipeTrace: RecipeTrace, slug: string): Promise<{ personalUrl: string; draftUrl: string; workingUrl: string }>;
+  /** Every instance slot's doc for a wiki, by fingerprint — the mount's call; a shared wiki's workbench rides beside them. */
+  bindings(fingerprint: string, recipeTrace: RecipeTrace, slug: string): Promise<{ personalUrl: string; draftUrl: string; workingUrl: string; workbenchUrl?: string }>;
+  /** The realm branch: a shared wiki's workbench (its realm and fixed address), or null where no realm holds the wiki. */
+  workbench(slug: string): Promise<{ readonly url: string; readonly realmId: string } | null>;
   /** One slot's doc by slug. `mint:false` reads what stands and returns null when nothing does. */
   slotDoc(slug: string, kind: WikiSlotKind, opts?: { mint?: boolean }): Promise<SlotDoc | null>;
   /** The ONE draft resolver: `slotDoc(slug, "draft")`, minting on absent — never null. */
@@ -317,7 +331,15 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
     return url ? { url, reach: rec?.tiddler["face-reach"] === "face" ? "face" : "vessel-only" } : null;
   };
 
+  /** The realm branch. The daemon wiki stays face-private: it never reads a workbench, whatever a ledger row says. */
+  const workbench = async (slug: string): Promise<{ url: string; realmId: string } | null> => {
+    if (!args.realmOf || isFacePrivateSlug(slug) || args.deviceScoped?.(slug)) return null;
+    const realmId = await args.realmOf(slug);
+    return realmId ? { url: realmWorkbenchDocUrl(realmId, slug), realmId } : null;
+  };
+
   return {
+    workbench,
     bindings: async (fingerprint, recipeTrace, slug) => {
       await args.seatSettled?.();
       mounted.set(slug, { fingerprint, recipeTrace });
@@ -330,7 +352,8 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
       const personal = await binding("personal", fingerprint, recipeTrace);
       const draft    = await draftDoc(slug, fingerprint, recipeTrace);
       const working  = (await workingDoc(slug, true))!;
-      return { personalUrl: personal.url, draftUrl: draft.url, workingUrl: working.url };
+      const shared   = await workbench(slug);
+      return { personalUrl: personal.url, draftUrl: draft.url, workingUrl: working.url, ...(shared ? { workbenchUrl: shared.url } : {}) };
     },
     slotDoc,
     draft: async (slug) => (await slotDoc(slug, "draft"))!,
@@ -379,6 +402,8 @@ export interface LitFaceSlotSpec {
   readonly secret: () => Promise<Uint8Array | null>;
   readonly keyhive?: CapabilityProvider;
   readonly faceDoor?: FaceBagDoor;
+  /** The realm branch under THIS face: a realm answers only where the face stands a member of it (the realm's Document). */
+  readonly realmOf?: (slug: string) => Promise<string | null>;
 }
 
 /** The lit set's slot resolvers: one per lit face, each under that face's own group, secret, hive and door. */
@@ -395,7 +420,7 @@ export interface LitFaceSlotDocs {
  * wiki), and its daemon wiki's device slots stand under the sibling's group in the control document (`daemon-slot/<kind>/
  * <group>`), so each face's memory lands in its own documents. A lit face is seated by being lit: its hive holds its group.
  */
-export function litFaceSlotDocs(base: Omit<SlotDocResolverArgs, "personaGroupId" | "faceAddressSecret" | "faceDoor" | "keyhive" | "faceSeated" | "seatSettled" | "rebindWorking">): LitFaceSlotDocs {
+export function litFaceSlotDocs(base: Omit<SlotDocResolverArgs, "personaGroupId" | "faceAddressSecret" | "faceDoor" | "keyhive" | "faceSeated" | "seatSettled" | "rebindWorking" | "realmOf">): LitFaceSlotDocs {
   const byGroup = new Map<string, SlotDocResolver>();
   return {
     of(spec) {
@@ -408,6 +433,7 @@ export function litFaceSlotDocs(base: Omit<SlotDocResolverArgs, "personaGroupId"
         faceSeated: async () => true,
         ...(spec.keyhive ? { keyhive: spec.keyhive } : {}),
         ...(spec.faceDoor ? { faceDoor: spec.faceDoor } : {}),
+        ...(spec.realmOf ? { realmOf: spec.realmOf } : {}),
       });
       byGroup.set(spec.group, resolver);
       return resolver;

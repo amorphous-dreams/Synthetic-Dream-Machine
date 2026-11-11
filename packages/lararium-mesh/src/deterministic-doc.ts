@@ -125,6 +125,16 @@ export function realmEdgeBoardDocUrl(realmId: string): AutomergeUrl {
 }
 
 /**
+ * One REALM's WORKBENCH for one shared wiki — the wiki's SHARED working layer, ONE CRDT every member face syncs, a sibling of
+ * the realm's vouch and edge boards. Deterministic over the realm's own id and the wiki's slug (NFC), so the address never
+ * derives from a rotating key: a member added or removed moves no byte of it, and every member computes it from the realm id
+ * alone. Who may READ it rides the realm's Keyhive Document (its members), never this address; knowing the url grants nothing.
+ */
+export function realmWorkbenchDocUrl(realmId: string, slug: string): AutomergeUrl {
+  return deterministicDocUrl(`${REALM_BOARD_URI}/${realmId.trim().toLowerCase()}#working/${slug.normalize("NFC")}`);
+}
+
+/**
  * One FLEET's EDGE board URL — the acts that set a device's dyad aside, keyed by the fleet root that bound it.
  * It crosses to the face's own devices alone (the sibling channel, same-operator sync): a dyad shown as set
  * aside on a Nexus board would tell that Nexus one device left one person.

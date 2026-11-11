@@ -18,6 +18,7 @@ import {
   AutomergeDocStore,
   defaultWritableSlot,
   expandRecipe,
+  wikiWorkbenchUri,
   slotLayerFlags,
   wikiSlotUri,
   ORACLE_BAG,
@@ -81,6 +82,9 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
   const slots          = expandRecipe(recipe);
   const slug           = recipe.wikiSlug;
   const tempSlot       = wikiSlotUri(slug, "temp");
+  // A SHARED wiki (cabal-realm#/the-workbench): its workbench takes the default write where its handle stands; a title already
+  // resting in the working overlay above stays there (the settle law), so the overlay keeps the face's private notes.
+  const shared         = recipe.workbench === true && handleBySlot.has(wikiWorkbenchUri(slug));
   const stores: Array<{ slot: SlotUri; store: LarTiddlerStore }> = [];
 
   // Bottom-up addLayer order. Slot at index slots.length-1 (oracle, the floor) lands first.
@@ -89,7 +93,7 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
     const slot = slots[i]!;
     if (slot === tempSlot) {
       tempStore = new MemoryTiddlerStore();
-      composite.addLayer({ bagId: slot, store: tempStore, ...slotLayerFlags(slot, slug) });
+      composite.addLayer({ bagId: slot, store: tempStore, ...slotLayerFlags(slot, slug, shared) });
       stores.push({ slot, store: tempStore });
       continue;
     }
@@ -106,7 +110,7 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
     // slot's store directly, carrying the bag on the put option — never a field on the record. The
     // default (an unbagged write or tombstone) is the working slot; without its handle no default
     // writable stands. The ONE law `slotLayerFlags` spells for the host mount and this island alike.
-    composite.addLayer({ bagId: slot, store, ...slotLayerFlags(slot, slug) });
+    composite.addLayer({ bagId: slot, store, ...slotLayerFlags(slot, slug, shared) });
     stores.push({ slot, store });
   }
 
@@ -130,7 +134,7 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
   // pointers into the wiki on the same seed wave as the corpus, ahead of the seed checkpoint;
   // an empty write-layer pointer makes unrouted saves raise the alert-rail refusal.
   if (tempStore) {
-    const writeLayer = handleBySlot.has(wikiSlotUri(slug, "working")) ? defaultWritableSlot(slug) : "";
+    const writeLayer = shared ? defaultWritableSlot(slug, true) : handleBySlot.has(wikiSlotUri(slug, "working")) ? defaultWritableSlot(slug) : "";
     const configSeed: Record<string, string> = {
       "lar:///ha.ka.ba/lararium/config/current-wiki-bag":      writeLayer,
       "lar:///ha.ka.ba/lararium/config/current-wiki-temp":     wikiSlotUri(slug, "temp"),
