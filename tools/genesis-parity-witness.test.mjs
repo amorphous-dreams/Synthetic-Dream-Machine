@@ -68,13 +68,19 @@ function seedFixture(floor = null) {
   return JSON.stringify({ format: "lararium-genesis-seed/v1", blobs, tiddlers });
 }
 
-function floorPlant({ lares = sha(FLOOR_LARES), witnessCid, omitRow } = {}) {
-  const manifest = JSON.stringify({ format: "lararium-floor/v1", ...REGION_CIDS, lares, lararium: sha(FLOOR_LARARIUM) });
+const FLOOR_SDM = "floor sdm snapshot";
+
+function floorPlant({ lares = sha(FLOOR_LARES), witnessCid, omitRow, format = "lararium-floor/v2" } = {}) {
+  // v2 keys one snapshot per house-canon slug, sorted; a v1 plant spells the retired shape.
+  const manifest = format === "lararium-floor/v1"
+    ? JSON.stringify({ format, ...REGION_CIDS, lares, lararium: sha(FLOOR_LARARIUM) })
+    : JSON.stringify({ format, ...REGION_CIDS, snapshots: { lararium: sha(FLOOR_LARARIUM), lares, sdm: sha(FLOOR_SDM) } });
   const manifestCid = sha(manifest);
   const rows = {
     "floor-manifest": manifestCid,
     "floor-lares": sha(FLOOR_LARES),
     "floor-lararium": sha(FLOOR_LARARIUM),
+    ...(format === "lararium-floor/v1" ? {} : { "floor-sdm": sha(FLOOR_SDM) }),
   };
   if (omitRow) delete rows[omitRow];
   return {
@@ -82,6 +88,7 @@ function floorPlant({ lares = sha(FLOOR_LARES), witnessCid, omitRow } = {}) {
     [`genesis/cas/${manifestCid}`]: manifest,
     [`genesis/cas/${sha(FLOOR_LARES)}`]: FLOOR_LARES,
     [`genesis/cas/${sha(FLOOR_LARARIUM)}`]: FLOOR_LARARIUM,
+    [`genesis/cas/${sha(FLOOR_SDM)}`]: FLOOR_SDM,
   };
 }
 
@@ -145,7 +152,7 @@ await test("CONTROL: a genesis that carries the tree's bytes reads green and lis
 await test("FLOOR: a coherent manifest, snapshot rows and release witness read green", async () => {
   await withTree(floorPlant(), (run, out) => {
     assert.equal(run.status, 0, out);
-    assert.match(out, /3 source artifact\(s\) compared against 6 genesis blob\(s\)/);
+    assert.match(out, /3 source artifact\(s\) compared against 7 genesis blob\(s\)/);
     assert.doesNotMatch(out, /NO SOURCE|FLOOR\s+|RED:/);
   });
 });
@@ -161,6 +168,17 @@ await test("FLOOR RED: the seed's release witness names another manifest", async
   await withTree(floorPlant({ witnessCid: sha("another manifest") }), (run, out) => {
     assert.equal(run.status, 1, out);
     assert.match(out, /FLOOR\s+genesis-cid-floor .* differs from floor-manifest row/);
+  });
+});
+
+await test("FLOOR RED: a v1 manifest (lares and lararium alone) refuses by name; v2 keys every house-canon slug", async () => {
+  await withTree(floorPlant({ format: "lararium-floor/v1" }), (run, out) => {
+    assert.notEqual(run.status, 0, out);
+    assert.match(out, /FLOOR\s+floor-manifest does not read as canonical lararium-floor\/v2/);
+  });
+  await withTree(floorPlant({ omitRow: "floor-sdm" }), (run, out) => {
+    assert.notEqual(run.status, 0, out);
+    assert.match(out, /FLOOR\s+floor-manifest names floor-sdm but the seed holds no floor snapshot row/);
   });
 });
 

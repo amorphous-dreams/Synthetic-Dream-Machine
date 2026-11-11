@@ -1,6 +1,7 @@
 /**
- * floor-manifest — a CID names history-free system snapshots beside the engine CIDs.
- * The floor lends every wiki a read-only oracle-floor face; edits copy into that wiki's
+ * floor-manifest — a CID names one history-free snapshot per house-canon bag beside the engine CIDs
+ * (`lararium-floor/v2`: `snapshots` keyed by slug; the v1 shape that keyed `lares` and `lararium` alone refuses
+ * by name). The floor lends every wiki a read-only oracle-floor face; edits copy into that wiki's
  * working layer. Kit: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane, first slice.
  */
 
@@ -11,21 +12,31 @@ import { storedRecord } from "./stored-record.js";
 import { plainRecord, ownEntry, hasOwnEntry, type StoredLarRecord } from "./stored-value.js";
 import type { LarTiddlerChange, LarTiddlerRecord, LarTiddlerStore } from "./tiddler-store.js";
 import { docPrototypeKeyFault } from "./prototype-key-shore.js";
+import { SYSTEM_CANON_SLUGS } from "./kahu-canon-reach.js";
 
-export const FLOOR_MANIFEST_FORMAT = "lararium-floor/v1";
+export const FLOOR_MANIFEST_FORMAT = "lararium-floor/v2";
+/** The retired format: its bytes refuse by name, with no back-compat (the floor keyed only `lares` and `lararium`). */
+export const FLOOR_MANIFEST_FORMAT_V1 = "lararium-floor/v1";
 /** The seed witness row naming the genesis floor's manifest CID (sha256 hex) in its `cid` field, shaped as the region witnesses stand. */
 export const GENESIS_FLOOR_TIDDLER = "lar:///ha.ka.ba/bags/oracle/genesis-cid-floor";
+/** The snapshots every floor carries: the system canon, house canon on every vessel. */
+export const FLOOR_REQUIRED_SLUGS: readonly string[] = SYSTEM_CANON_SLUGS;
 
+/**
+ * A floor manifest keys ONE snapshot per house-canon bag (`houseCanonSlugs`): the engine CIDs beside a map of slug to
+ * snapshot CID, encoded with its slugs sorted. `lares` and `lararium` always stand in it.
+ */
 export interface FloorManifest {
   readonly format: typeof FLOOR_MANIFEST_FORMAT;
   readonly engine: string;
   readonly grammar: string;
   readonly plugins: string;
-  readonly lares: string;
-  readonly lararium: string;
+  readonly snapshots: Readonly<Record<string, string>>;
 }
 
-const MANIFEST_KEYS = ["format", "engine", "grammar", "plugins", "lares", "lararium"] as const;
+const MANIFEST_KEYS = ["format", "engine", "grammar", "plugins", "snapshots"] as const;
+const SCALAR_KEYS = ["format", "engine", "grammar", "plugins"] as const;
+const SLUG = /^[a-z0-9][a-z0-9-]*$/;
 const HEX64 = /^[0-9a-f]{64}$/;
 const CONTROL = /[\u0000-\u001f\u007f]/;
 const encoder = new TextEncoder();
@@ -50,18 +61,36 @@ export class FloorWriteRefusal extends Error {
   }
 }
 
-/** Encode only the fixed fields, in their fixed order. */
+/** The manifest's slugs, sorted: the order its bytes encode and every reader walks. */
+export function floorSlugs(m: FloorManifest): string[] {
+  return Object.keys(m.snapshots).sort();
+}
+
+/** Encode only the fixed fields, in their fixed order, the snapshot slugs sorted. */
 export function floorManifestBytes(m: FloorManifest): Uint8Array {
-  for (const key of MANIFEST_KEYS) {
+  for (const key of SCALAR_KEYS) {
     const value = m?.[key];
     if (typeof value !== "string" || value.length === 0 || CONTROL.test(value)) {
       throw new FloorManifestRefusal("floor-manifest-malformed", `Invalid floor manifest field: ${key}`);
     }
   }
-  return encoder.encode(JSON.stringify({
-    format: m.format, engine: m.engine, grammar: m.grammar,
-    plugins: m.plugins, lares: m.lares, lararium: m.lararium,
-  }));
+  if (m.format !== FLOOR_MANIFEST_FORMAT) throw new FloorManifestRefusal("floor-manifest-format", `A floor manifest encodes ${FLOOR_MANIFEST_FORMAT} alone, never ${m.format}`);
+  const snaps = m.snapshots;
+  if (snaps === null || typeof snaps !== "object" || Array.isArray(snaps)) {
+    throw new FloorManifestRefusal("floor-manifest-malformed", "Invalid floor manifest field: snapshots");
+  }
+  const snapshots: Record<string, string> = {};
+  for (const slug of Object.keys(snaps).sort()) {
+    const cid = (snaps as Record<string, unknown>)[slug];
+    if (!SLUG.test(slug) || typeof cid !== "string" || cid.length === 0 || CONTROL.test(cid)) {
+      throw new FloorManifestRefusal("floor-manifest-malformed", `Invalid floor manifest snapshot: ${slug}`);
+    }
+    snapshots[slug] = cid;
+  }
+  for (const slug of FLOOR_REQUIRED_SLUGS) {
+    if (!Object.hasOwn(snapshots, slug)) throw new FloorManifestRefusal("floor-manifest-malformed", `Floor manifest names no ${slug} snapshot`);
+  }
+  return encoder.encode(JSON.stringify({ format: m.format, engine: m.engine, grammar: m.grammar, plugins: m.plugins, snapshots }));
 }
 
 export function floorManifestCid(m: FloorManifest): string {
@@ -75,6 +104,9 @@ export function readFloorManifest(bytes: Uint8Array):
     const value: unknown = JSON.parse(decoder.decode(bytes));
     if (value === null || typeof value !== "object" || Array.isArray(value)) throw new Error("Manifest must hold one object");
     const raw = value as Record<string, unknown>;
+    if (raw.format === FLOOR_MANIFEST_FORMAT_V1) {
+      return { refusal: "floor-manifest-format", reason: `Floor manifest format ${FLOOR_MANIFEST_FORMAT_V1} stands retired: a floor keys one snapshot per house-canon bag (${FLOOR_MANIFEST_FORMAT})` };
+    }
     if (raw.format !== FLOOR_MANIFEST_FORMAT && typeof raw.format === "string") {
       return { refusal: "floor-manifest-format", reason: `Unknown floor manifest format: ${raw.format}` };
     }
@@ -155,8 +187,14 @@ export function openFloorSnapshot(bytes: Uint8Array, cid: string):
   }
 }
 
+/** A floor resolved whole: its manifest and each slug's snapshot rows, keyed by the manifest's slugs. */
+export interface ResolvedFloor {
+  readonly manifest: FloorManifest;
+  readonly snapshots: Readonly<Record<string, Readonly<Record<string, LarTiddlerRecord>>>>;
+}
+
 export async function resolveFloor(manifestCid: string, resolveByCid: (cid: string) => Promise<Uint8Array | null>): Promise<
-  | { readonly manifest: FloorManifest; readonly lares: Readonly<Record<string, LarTiddlerRecord>>; readonly lararium: Readonly<Record<string, LarTiddlerRecord>> }
+  | ResolvedFloor
   | { readonly refusal: "floor-absent" | "floor-manifest-format" | "floor-manifest-malformed" | "floor-snapshot-cid-mismatch" | "floor-snapshot-malformed"; readonly reason: string }> {
   try {
     const manifestBytes = await resolveByCid(manifestCid);
@@ -167,18 +205,29 @@ export async function resolveFloor(manifestCid: string, resolveByCid: (cid: stri
     const opened = readFloorManifest(manifestBytes);
     if ("refusal" in opened) return opened;
     const { manifest } = opened;
-    const laresBytes = await resolveByCid(manifest.lares);
-    if (!laresBytes) return { refusal: "floor-absent", reason: `Lares snapshot absent: ${manifest.lares}` };
-    const lares = openFloorSnapshot(laresBytes, manifest.lares);
-    if ("refusal" in lares) return lares;
-    const larariumBytes = await resolveByCid(manifest.lararium);
-    if (!larariumBytes) return { refusal: "floor-absent", reason: `Lararium snapshot absent: ${manifest.lararium}` };
-    const lararium = openFloorSnapshot(larariumBytes, manifest.lararium);
-    if ("refusal" in lararium) return lararium;
-    return { manifest, lares: lares.rows, lararium: lararium.rows };
+    const snapshots: Record<string, Readonly<Record<string, LarTiddlerRecord>>> = {};
+    for (const slug of floorSlugs(manifest)) {
+      const cid = manifest.snapshots[slug]!;
+      const bytes = await resolveByCid(cid);
+      if (!bytes) return { refusal: "floor-absent", reason: `Floor snapshot ${slug} absent: ${cid}` };
+      const snap = openFloorSnapshot(bytes, cid);
+      if ("refusal" in snap) return { refusal: snap.refusal, reason: `${slug}: ${snap.reason}` };
+      snapshots[slug] = snap.rows;
+    }
+    return { manifest, snapshots };
   } catch (error) {
     return { refusal: "floor-absent", reason: String(error) };
   }
+}
+
+/** The CIDs a floor's manifest names: the manifest's own and each snapshot's, slugs sorted. */
+export function floorBlobCids(manifestCid: string, m: FloorManifest): string[] {
+  return [manifestCid, ...floorSlugs(m).map((slug) => m.snapshots[slug]!)];
+}
+
+/** Each snapshot's rows in the manifest's slug order: the read-only layers the oracle floor stacks. */
+export function floorRowsInOrder(floor: ResolvedFloor): Readonly<Record<string, LarTiddlerRecord>>[] {
+  return floorSlugs(floor.manifest).map((slug) => floor.snapshots[slug]!);
 }
 
 export function floorReadFace(opts: {

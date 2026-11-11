@@ -21,7 +21,7 @@
 import type { IncomingMessage, Server, ServerResponse } from "node:http";
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  NEXUS_AID_PATTERN, publicationDocUrl, floorAnswerOf, floorReleaseRowsFromBoard, foldFloorReleases, materializeSharedLarDoc, readFloorManifest,
+  NEXUS_AID_PATTERN, publicationDocUrl, floorAnswerOf, floorReleaseRowsFromBoard, foldFloorReleases, materializeSharedLarDoc, readFloorManifest, floorBlobCids,
   type LarDoc,
 } from "@lararium/mesh";
 import { CAS_BLOB_RE, answerClosedDoor } from "./bulb-routes.js";
@@ -45,7 +45,7 @@ export async function releasedFloorCids(opts: {
   const cids = new Set<string>([standing.head.body.manifest]);
   const bytes = readVerifiedCasBlobFromFs(standing.head.body.manifest, opts.casDir);
   const manifest = bytes ? readFloorManifest(bytes) : null;
-  if (manifest && "manifest" in manifest) { cids.add(manifest.manifest.lares); cids.add(manifest.manifest.lararium); }
+  if (manifest && "manifest" in manifest) for (const cid of floorBlobCids(standing.head.body.manifest, manifest.manifest)) cids.add(cid);
   return cids;
 }
 

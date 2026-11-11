@@ -50,8 +50,8 @@ export type FloorRead =
       readonly nexus: string;
       readonly head: FloorRelease;
       readonly manifest: FloorManifest;
-      readonly lares: Readonly<Record<string, LarTiddlerRecord>>;
-      readonly lararium: Readonly<Record<string, LarTiddlerRecord>>;
+      /** Each house-canon bag's snapshot rows, keyed by the manifest's slugs. */
+      readonly snapshots: Readonly<Record<string, Readonly<Record<string, LarTiddlerRecord>>>>;
       /** The rows the fold set aside, each with its reason: a reader names them and never reads one as an absence. */
       readonly refused: readonly FloorReleaseRefused[];
     }
@@ -93,5 +93,5 @@ export async function readFloorAnswer(args: {
   }
   const floor = await resolveFloor(standing.head.body.manifest, manifestBytesOf);
   if ("refusal" in floor) return { ok: false, reason: floor.refusal, detail: floor.reason, refused: standing.refused };
-  return { ok: true, nexus: args.nexus, head: standing.head, manifest: floor.manifest, lares: floor.lares, lararium: floor.lararium, refused: standing.refused };
+  return { ok: true, nexus: args.nexus, head: standing.head, manifest: floor.manifest, snapshots: floor.snapshots, refused: standing.refused };
 }

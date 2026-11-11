@@ -202,7 +202,7 @@ describe("one function resolves a session's effective recipe at surface mount", 
     const lares = "44".repeat(32), lararium = "55".repeat(32);
     const bytes = floorManifestBytes({
       format: FLOOR_MANIFEST_FORMAT, engine: CORE_CID, grammar: GRAMMAR_CID,
-      plugins: "66".repeat(32), lares, lararium,
+      plugins: "66".repeat(32), snapshots: { lares, lararium },
     });
     const cid = sha256HexBytesSync(bytes);
     v.oracle.change((d) => { d.tiddlers[GENESIS_FLOOR_TIDDLER] = storedLarRecord(GENESIS_FLOOR_TIDDLER, { cid }, "test"); });
@@ -213,8 +213,9 @@ describe("one function resolves a session's effective recipe at surface mount", 
     } } };
     const withFloor = await resolved(withBytes);
     expect(reads).toEqual([cid]);
-    expect(withFloor.floorCids).toEqual([cid, lares, lararium]);
-    expect(facetsOfSurfaceRecipe(withFloor).content).toEqual([CORE_CID, GRAMMAR_CID, cid, lares, lararium]);
+    // The manifest's slugs walk sorted: lararium before lares.
+    expect(withFloor.floorCids).toEqual([cid, lararium, lares]);
+    expect(facetsOfSurfaceRecipe(withFloor).content).toEqual([CORE_CID, GRAMMAR_CID, cid, lararium, lares]);
     expect(withFloor.revision).not.toBe(withoutFloor.revision);
 
     const missing = await resolveSurfaceRecipe(base);

@@ -32,7 +32,7 @@ import { plainRecordOrNull, type StoredLarRecord } from "./stored-value.js";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
 import { bootSetIds, bootSetPluginCids, verifyCasBytesAsync, type CasBlobLike } from "./cas.js";
 import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
-import { GENESIS_FLOOR_TIDDLER, readFloorManifest } from "./floor-manifest.js";
+import { GENESIS_FLOOR_TIDDLER, floorBlobCids, readFloorManifest } from "./floor-manifest.js";
 import { wikiUri } from "./lar-uris.js";
 import { selectPluginBlobs, selectedPluginCids, type OfferingLookup } from "./plugin-offering-selector.js";
 import { effectiveRecipe, type RecipePlane } from "./recipe-planes.js";
@@ -258,7 +258,7 @@ export async function resolveSurfaceRecipe(input: SurfaceRecipeInput): Promise<S
   const plugins = await resolveRecipePluginCids(recipe, input.plugins);
   if (!plugins.ok) return refused("plugins-refused", plugins.error);
 
-  // The seed's floor witness admits the manifest and both snapshots to the session's content view.
+  // The seed's floor witness admits the manifest and each house-canon snapshot it keys to the session's content view.
   const floorCid = plainRecordOrNull(planes.read("oracle", GENESIS_FLOOR_TIDDLER))?.tiddler.cid;
   const floorCids: string[] = [];
   if (typeof floorCid === "string" && floorCid.length > 0) {
@@ -271,7 +271,7 @@ export async function resolveSurfaceRecipe(input: SurfaceRecipeInput): Promise<S
     }
     const opened = readFloorManifest(bytes);
     if ("refusal" in opened) return refused("floor-unresolved", `${GENESIS_FLOOR_TIDDLER}: ${opened.refusal}: ${opened.reason}`);
-    floorCids.push(floorCid, opened.manifest.lares, opened.manifest.lararium);
+    floorCids.push(...floorBlobCids(floorCid, opened.manifest));
   }
 
   const coreHash = input.plugins.coreHash;

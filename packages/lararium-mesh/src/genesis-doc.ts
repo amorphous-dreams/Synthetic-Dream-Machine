@@ -43,7 +43,7 @@ import { plainField, ownEntry, isPrototypeKey } from "./stored-value.js";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
 import { storedRecord } from "./stored-record.js";
 import type { FloorManifest, FloorSnapshot } from "./floor-manifest.js";
-import { GENESIS_FLOOR_TIDDLER, floorManifestBytes, floorManifestCid } from "./floor-manifest.js";
+import { GENESIS_FLOOR_TIDDLER, floorManifestBytes, floorManifestCid, floorSlugs } from "./floor-manifest.js";
 
 // ---------------------------------------------------------------------------
 // Shared attestation contract
@@ -186,7 +186,8 @@ export interface GenesisInputs {
   readonly coreSha256?:   string;
   /** Vendored plugin blobs. Must include the Lares memetic-wikitext plugin. */
   readonly plugins:       readonly GenesisPluginEntry[];
-  readonly floor?: { readonly manifest: FloorManifest; readonly lares: FloorSnapshot; readonly lararium: FloorSnapshot };
+  /** The genesis floor: its manifest and one snapshot per slug the manifest keys (`floor-<slug>` blobs). */
+  readonly floor?: { readonly manifest: FloorManifest; readonly snapshots: Readonly<Record<string, FloorSnapshot>> };
 }
 
 // ---------------------------------------------------------------------------
@@ -547,6 +548,17 @@ const ROOT_BAGS = [
 // Core builder
 // ---------------------------------------------------------------------------
 
+/** Each slug the manifest keys paired with its snapshot, slugs sorted; a snapshot the manifest names no CID for, or one whose CID differs, refuses the build. */
+function floorSnapshotsInOrder(manifest: FloorManifest, snapshots: Readonly<Record<string, FloorSnapshot>>): Array<readonly [string, FloorSnapshot]> {
+  const slugs = floorSlugs(manifest);
+  if (Object.keys(snapshots).length !== slugs.length) throw new Error(`[genesis] floor snapshots (${Object.keys(snapshots).sort().join(",")}) differ from the manifest's slugs (${slugs.join(",")})`);
+  return slugs.map((slug) => {
+    const snap = Object.hasOwn(snapshots, slug) ? snapshots[slug] : undefined;
+    if (!snap || snap.cid !== manifest.snapshots[slug]) throw new Error(`[genesis] floor snapshot ${slug} differs from its manifest CID`);
+    return [slug, snap] as const;
+  });
+}
+
 /**
  * buildGenesisSeed() — assemble the oracle doc's initial state as PLAIN DATA.
  *
@@ -585,15 +597,14 @@ export function buildGenesisSeed(inputs: GenesisInputs, coreSha256?: string): Ge
   }
 
   if (inputs.floor) {
-    const { manifest, lares, lararium } = inputs.floor;
+    const { manifest, snapshots } = inputs.floor;
     const expected = { engine: computeEngineCid(coreSha), grammar: computeGrammarCid(inputs.plugins), plugins: computePluginsCid(inputs.plugins) };
     for (const name of ["engine", "grammar", "plugins"] as const) {
       if (manifest[name] !== expected[name]) throw new Error(`[genesis] floor ${name} CID mismatch: floor=${manifest[name]} artifact=${expected[name]}`);
     }
     for (const [id, snapshot, mimeType] of [
       ["floor-manifest", { cid: floorManifestCid(manifest), bytes: floorManifestBytes(manifest) }, "application/vnd.lararium.floor-manifest+json"],
-      ["floor-lares", lares, "application/vnd.lararium.floor-snapshot"],
-      ["floor-lararium", lararium, "application/vnd.lararium.floor-snapshot"],
+      ...floorSnapshotsInOrder(manifest, snapshots).map(([slug, snap]) => [`floor-${slug}`, snap, "application/vnd.lararium.floor-snapshot"] as const),
     ] as const) {
       // METADATA alone, as every genesis blob row: the bytes ride genesis/cas/<cid> (casEntries below).
       blobs[id] = { id, version: "1", sha256: snapshot.cid, mimeType, kind: "floor" };
@@ -756,8 +767,7 @@ export function buildGenesisDoc(inputs: GenesisInputs): GenesisArtifact {
     ...inputs.plugins.map((p) => ({ cid: p.sha256, bytes: p.blob })),
     ...(inputs.floor ? [
       { cid: floorManifestCid(inputs.floor.manifest), bytes: floorManifestBytes(inputs.floor.manifest) },
-      { cid: inputs.floor.lares.cid, bytes: inputs.floor.lares.bytes },
-      { cid: inputs.floor.lararium.cid, bytes: inputs.floor.lararium.bytes },
+      ...floorSnapshotsInOrder(inputs.floor.manifest, inputs.floor.snapshots).map(([, snap]) => ({ cid: snap.cid, bytes: snap.bytes })),
     ] : []),
   ];
   const casManifest = genesisCasManifestFromSeed(seed);

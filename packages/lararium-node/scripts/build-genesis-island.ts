@@ -253,7 +253,7 @@ async function main(): Promise<void> {
   const casDir   = join(genesisDir, "cas");
   const casWrote = writeCasEntriesFs(artifact.casEntries, casDir);
 
-  console.log(`[genesis] ✓ floor  ${floor.manifestCid}  lares=${floor.lares.cid} (${floor.laresRows} rows)  lararium=${floor.lararium.cid} (${floor.larariumRows} rows)`);
+  console.log(`[genesis] ✓ floor  ${floor.manifestCid}  ${Object.keys(floor.snapshots).sort().map((slug) => `${slug}=${floor.snapshots[slug]!.cid} (${floor.rows[slug]} rows)`).join("  ")}`);
   console.log(`[genesis] ✓ genesis/cas  ${artifact.casEntries.length} blob file(s) by CID (${casWrote} newly written)`);
   console.log(`[genesis] ✓ seed.json  PLAIN-DATA oracle seed (the boot artifact)  tiddlers=${Object.keys(artifact.seed.tiddlers).length}  blobs=${Object.keys(artifact.seed.blobs).length}`);
   console.log(`[genesis] ✓ blobs(meta)=${counts.blobCount}  tiddlers=${counts.tiddlerCount}`);

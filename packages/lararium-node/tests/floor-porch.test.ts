@@ -36,12 +36,14 @@ async function rig(opts: { serveCas?: boolean } = {}) {
   const casDir = mkdtempSync(join(tmpdir(), "floor-porch-")); dirs.push(casDir);
   const lares = cutFloorSnapshot({ "lar:///t/lares": { tiddler: { title: "lar:///t/lares", text: "lares" } } });
   const lararium = cutFloorSnapshot({ "lar:///t/lararium": { tiddler: { title: "lar:///t/lararium", text: "lararium" } } });
-  const manifestBytes = floorManifestBytes({ format: "lararium-floor/v1", engine: "e".repeat(64), grammar: "a".repeat(64), plugins: "b".repeat(64), lares: lares.cid, lararium: lararium.cid });
+  // v2: one snapshot per house-canon bag; sdm rides beside the system canon and the porch serves it under the release.
+  const sdm = cutFloorSnapshot({ "lar:///t/sdm": { tiddler: { title: "lar:///t/sdm", text: "sdm" } } });
+  const manifestBytes = floorManifestBytes({ format: "lararium-floor/v2", engine: "e".repeat(64), grammar: "a".repeat(64), plugins: "b".repeat(64), snapshots: { lares: lares.cid, lararium: lararium.cid, sdm: sdm.cid } });
   const manifestCid = sha256HexBytesSync(manifestBytes);
   const secret = new TextEncoder().encode("a private blob this vessel holds");
   const secretCid = sha256HexBytesSync(secret);
   writeCasEntriesFs([
-    { cid: lares.cid, bytes: lares.bytes }, { cid: lararium.cid, bytes: lararium.bytes }, { cid: manifestCid, bytes: manifestBytes }, { cid: secretCid, bytes: secret },
+    { cid: lares.cid, bytes: lares.bytes }, { cid: lararium.cid, bytes: lararium.bytes }, { cid: sdm.cid, bytes: sdm.bytes }, { cid: manifestCid, bytes: manifestBytes }, { cid: secretCid, bytes: secret },
   ], casDir);
   const [steward] = await c.signers([0]);
   const release = await assembleFloorRelease({
@@ -55,7 +57,7 @@ async function rig(opts: { serveCas?: boolean } = {}) {
   const porch = mountFloorPorch({ httpServer: server, dispatcher, repo, nexusPubkey: c.aid, casDir, serveCas: opts.serveCas ?? true });
   await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
   const origin = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
-  return { c, board, crossroads, release, casDir, origin, porch, ids: { lares: lares.cid, lararium: lararium.cid, manifest: manifestCid, secret: secretCid } };
+  return { c, board, crossroads, release, casDir, origin, porch, ids: { lares: lares.cid, lararium: lararium.cid, sdm: sdm.cid, manifest: manifestCid, secret: secretCid } };
 }
 const land = (r: Awaited<ReturnType<typeof rig>>, release: FloorRelease) => r.board.change((d) => writeFloorRelease(d, release));
 const bodyOf = async (res: Response) => ({ status: res.status, text: await res.text(), cache: res.headers.get("cache-control") });
@@ -70,7 +72,11 @@ describe("the porch answers for the Nexus's floor", () => {
       fetchCas: async (cid) => { const res = await fetch(`${r.origin}/cas/${cid}`); return res.status === 200 ? new Uint8Array(await res.arrayBuffer()) : null; },
     });
     expect(read.ok).toBe(true);
-    if (read.ok) { expect(read.head.cid).toBe(r.release.cid); expect(Object.keys(read.lares)).toEqual(["lar:///t/lares"]); }
+    if (read.ok) {
+      expect(read.head.cid).toBe(r.release.cid); expect(Object.keys(read.snapshots["lares"]!)).toEqual(["lar:///t/lares"]);
+      expect(Object.keys(read.snapshots["sdm"]!)).toEqual(["lar:///t/sdm"]);
+    }
+    expect((await fetch(`${r.origin}/cas/${r.ids.sdm}`)).status).toBe(200);
     // the head's blobs serve with the immutable cache header
     expect((await bodyOf(await fetch(`${r.origin}/cas/${r.ids.manifest}`))).cache).toContain("immutable");
   });
@@ -93,9 +99,9 @@ describe("the porch answers for the Nexus's floor", () => {
     r.board.change((d) => { d.tiddlers[`$:/lar/floor-release/${r.release.cid}`] = { tiddler: { title: `$:/lar/floor-release/${r.release.cid}`, text: JSON.stringify(forged) } } as never; });
     expect((await releasedFloorCids({ board: r.board.doc(), nexus: r.c.aid, casDir: r.casDir })).size).toBe(0);
     expect((await bodyOf(await fetch(`${r.origin}/cas/${r.ids.secret}`))).status).toBe(404);
-    // CONTROL: the lawful release names exactly the manifest and its two snapshots
+    // CONTROL: the lawful release names exactly the manifest and each snapshot it keys
     land(r, r.release);
-    expect([...await releasedFloorCids({ board: r.board.doc(), nexus: r.c.aid, casDir: r.casDir })].sort()).toEqual([r.ids.lares, r.ids.lararium, r.ids.manifest].sort());
+    expect([...await releasedFloorCids({ board: r.board.doc(), nexus: r.c.aid, casDir: r.casDir })].sort()).toEqual([r.ids.lares, r.ids.lararium, r.ids.sdm, r.ids.manifest].sort());
   });
 
   test("a release hand-placed in the mirrored crossroads document answers as no release and opens no blob", async () => {

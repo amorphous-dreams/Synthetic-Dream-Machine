@@ -26,7 +26,7 @@ function floor(tag: string) {
   const lares = cutFloorSnapshot({ [`lar:///t/${tag}/lares`]: row(`lar:///t/${tag}/lares`, `lares ${tag}`) });
   const lararium = cutFloorSnapshot({ [`lar:///t/${tag}/lararium`]: row(`lar:///t/${tag}/lararium`, `lararium ${tag}`) });
   cas.set(lares.cid, lares.bytes); cas.set(lararium.cid, lararium.bytes);
-  const manifest: FloorManifest = { format: "lararium-floor/v1", engine: "e".repeat(64), grammar: "a".repeat(64), plugins: "b".repeat(64), lares: lares.cid, lararium: lararium.cid };
+  const manifest: FloorManifest = { format: "lararium-floor/v2", engine: "e".repeat(64), grammar: "a".repeat(64), plugins: "b".repeat(64), snapshots: { lares: lares.cid, lararium: lararium.cid } };
   const manifestBytes = floorManifestBytes(manifest);
   return { cas, manifestBytes, manifestCid: put(manifestBytes), lares, lararium };
 }
@@ -53,9 +53,9 @@ describe("a vessel with no charter reads the floor off the porch's answer", () =
     expect(read.ok).toBe(true);
     if (!read.ok) return;
     expect(read.head.cid).toBe(second.cid);
-    expect(read.manifest.lares).toBe(f2.lares.cid);
-    expect(Object.keys(read.lares)).toEqual(["lar:///t/two/lares"]);
-    expect(Object.keys(read.lararium)).toEqual(["lar:///t/two/lararium"]);
+    expect(read.manifest.snapshots["lares"]).toBe(f2.lares.cid);
+    expect(Object.keys(read.snapshots["lares"]!)).toEqual(["lar:///t/two/lares"]);
+    expect(Object.keys(read.snapshots["lararium"]!)).toEqual(["lar:///t/two/lararium"]);
     expect(read.refused).toEqual([]);
   });
 

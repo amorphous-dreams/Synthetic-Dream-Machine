@@ -58,6 +58,7 @@ import {
   GENESIS_FLOOR_TIDDLER,
   plainRecordOrNull,
   resolveFloor,
+  floorRowsInOrder,
   islandSecretHome,
   type KahuaStageFace,
   type Repo,
@@ -518,7 +519,7 @@ export function runSovereignKernel(
         _post(mkFault(msg.wikiUri, `${PLANE_LABELS.oracle} mount refused (${floor.refusal}): ${floor.reason}`));
         return;
       }
-      floorRows = [floor.lares, floor.lararium];
+      floorRows = floorRowsInOrder(floor);
     } else {
       console.info(`[floor] the genesis seed names no floor; the ${PLANE_LABELS.oracle} reads the seed rows alone`);
     }

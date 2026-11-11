@@ -76,7 +76,7 @@ describe("a release names a floor this hearth holds whole", () => {
     const cas = join(work, "cas");
     const lares = cutFloorSnapshot({ "lar:///t/lares": { tiddler: { title: "lar:///t/lares", text: "l" } } });
     const lararium = cutFloorSnapshot({ "lar:///t/lararium": { tiddler: { title: "lar:///t/lararium", text: "r" } } });
-    const manifestBytes = floorManifestBytes({ format: "lararium-floor/v1", engine: "e".repeat(64), grammar: "a".repeat(64), plugins: "b".repeat(64), lares: lares.cid, lararium: lararium.cid });
+    const manifestBytes = floorManifestBytes({ format: "lararium-floor/v2", engine: "e".repeat(64), grammar: "a".repeat(64), plugins: "b".repeat(64), snapshots: { lares: lares.cid, lararium: lararium.cid } });
     const file = join(work, "floor-manifest.json"); writeFileSync(file, manifestBytes);
     const approval = await approve(file);
     const go = () => withRoot(0, (repo) => runFloorRelease({ repo, sealHome: larSealHome(), manifestFile: file, approval, casDir: cas }));

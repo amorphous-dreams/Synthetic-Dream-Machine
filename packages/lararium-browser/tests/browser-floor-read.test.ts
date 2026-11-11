@@ -18,7 +18,7 @@ function floor(tag: string) {
   const cas = new Map<string, Uint8Array>();
   const lares = cutFloorSnapshot({ [`lar:///t/${tag}/lares`]: { tiddler: { title: `lar:///t/${tag}/lares`, text: tag } } });
   const lararium = cutFloorSnapshot({ [`lar:///t/${tag}/lararium`]: { tiddler: { title: `lar:///t/${tag}/lararium`, text: tag } } });
-  const manifestBytes = floorManifestBytes({ format: "lararium-floor/v1", engine: "e".repeat(64), grammar: "a".repeat(64), plugins: "b".repeat(64), lares: lares.cid, lararium: lararium.cid });
+  const manifestBytes = floorManifestBytes({ format: "lararium-floor/v2", engine: "e".repeat(64), grammar: "a".repeat(64), plugins: "b".repeat(64), snapshots: { lares: lares.cid, lararium: lararium.cid } });
   const manifestCid = sha256HexBytesSync(manifestBytes);
   cas.set(lares.cid, lares.bytes); cas.set(lararium.cid, lararium.bytes); cas.set(manifestCid, manifestBytes);
   return { cas, manifestBytes, manifestCid, lares, lararium };
@@ -64,7 +64,7 @@ describe("the browser reads the floor and verifies every step", () => {
     const second = await released(c1, f2, first.cid);
     const read = await readHearthFloor({ baseUrl: "ws://hearth.example:8787/ws", nexusPin: pinOf(c0.aid), fetchFn: porch(c0.aid, [first, second], cas) });
     expect(read.ok).toBe(true);
-    if (read.ok) { expect(read.head.cid).toBe(second.cid); expect(Object.keys(read.lares)).toEqual(["lar:///t/two/lares"]); }
+    if (read.ok) { expect(read.head.cid).toBe(second.cid); expect(Object.keys(read.snapshots["lares"]!)).toEqual(["lar:///t/two/lares"]); }
   });
 
   test("no Nexus known, and a silent porch, each refuse by name", async () => {

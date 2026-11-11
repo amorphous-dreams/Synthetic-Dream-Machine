@@ -196,10 +196,12 @@ for bid in sorted(set(blobs) - set(sources)):
 
 # ── the floor closes under its manifest and release witnesses ───────────────────────────────────
 FLOOR_MANIFEST = "floor-manifest"
-FLOOR_SNAPSHOTS = {"lares": "floor-lares", "lararium": "floor-lararium"}
+FLOOR_FORMAT = "lararium-floor/v2"
+FLOOR_REQUIRED = ("lares", "lararium")
 WITNESS_PREFIX = "lar:///ha.ka.ba/bags/oracle/genesis-cid-"
 manifest_row = seed["blobs"].get(FLOOR_MANIFEST)
 floor_witness = seed.get("tiddlers", {}).get(WITNESS_PREFIX + "floor")
+named_snapshots = set()
 if floor_ids or floor_witness is not None:
     if not floor_ids:
         reds.append("FLOOR  genesis-cid-floor names a release but the seed holds no floor rows")
@@ -211,21 +213,27 @@ if floor_ids or floor_witness is not None:
             try:
                 raw_bytes = manifest_path.read_bytes()
                 manifest = json.loads(raw_bytes.decode("utf-8"))
-                keys = ("format", "engine", "grammar", "plugins", "lares", "lararium")
-                assert isinstance(manifest, dict) and list(manifest) == list(keys), "fields or order differ from the six fixed keys"
-                assert manifest["format"] == "lararium-floor/v1", "format differs from lararium-floor/v1"
-                assert all(isinstance(manifest[k], str) and manifest[k] and not re.search(r"[\x00-\x1f\x7f]", manifest[k]) for k in keys), "a field carries an empty, ill-typed or control-bearing value"
+                keys = ("format", "engine", "grammar", "plugins", "snapshots")
+                assert isinstance(manifest, dict) and list(manifest) == list(keys), "fields or order differ from the five fixed keys"
+                assert manifest["format"] == FLOOR_FORMAT, f"format differs from {FLOOR_FORMAT}"
+                assert all(isinstance(manifest[k], str) and manifest[k] and not re.search(r"[\x00-\x1f\x7f]", manifest[k]) for k in keys[:4]), "a field carries an empty, ill-typed or control-bearing value"
+                snaps = manifest["snapshots"]
+                assert isinstance(snaps, dict) and list(snaps) == sorted(snaps), "snapshots hold no map, or its slugs stand unsorted"
+                assert all(re.fullmatch(r"[a-z0-9][a-z0-9-]*", k) and isinstance(v, str) and v and not re.search(r"[\x00-\x1f\x7f]", v) for k, v in snaps.items()), "a snapshot slug or cid reads malformed"
+                assert all(k in snaps for k in FLOOR_REQUIRED), "snapshots lack lares or lararium"
                 canonical = json.dumps(manifest, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
                 assert raw_bytes == canonical, "bytes differ from canonical encoding"
             except Exception as e:
-                reds.append(f"FLOOR  floor-manifest does not read as canonical lararium-floor/v1: {e}")
+                reds.append(f"FLOOR  floor-manifest does not read as canonical {FLOOR_FORMAT}: {e}")
             else:
-                for field, bid in FLOOR_SNAPSHOTS.items():
+                for slug, cid in manifest["snapshots"].items():
+                    bid = f"floor-{slug}"
+                    named_snapshots.add(bid)
                     row = seed["blobs"].get(bid)
                     if not row or bid not in floor_ids:
                         reds.append(f"FLOOR  floor-manifest names {bid} but the seed holds no floor snapshot row")
-                    elif manifest[field] != blobs[bid]:
-                        reds.append(f"FLOOR  floor-manifest {field} {manifest[field]} differs from {bid} row {blobs[bid]}")
+                    elif cid != blobs[bid]:
+                        reds.append(f"FLOOR  floor-manifest {slug} {cid} differs from {bid} row {blobs[bid]}")
                 for field in ("engine", "grammar", "plugins"):
                     title = WITNESS_PREFIX + field
                     witness = seed.get("tiddlers", {}).get(title)
@@ -239,7 +247,7 @@ if floor_ids or floor_witness is not None:
         reds.append(f"FLOOR  {WITNESS_PREFIX}floor holds no cid witness")
     elif manifest_row and cid != blobs[FLOOR_MANIFEST]:
         reds.append(f"FLOOR  genesis-cid-floor {cid} differs from floor-manifest row {blobs[FLOOR_MANIFEST]}")
-    for bid in sorted(floor_ids - {FLOOR_MANIFEST, *FLOOR_SNAPSHOTS.values()}):
+    for bid in sorted(floor_ids - {FLOOR_MANIFEST, *named_snapshots}):
         reds.append(f"FLOOR  unknown floor row {bid} has no manifest field")
 
 # ── the CAS closes under the seed ───────────────────────────────────────────────────────────────
