@@ -9,6 +9,9 @@
  *   F2  a later edit of the override keeps the base the fork named (the writer names none)
  *   F3  a working-only title, and a write into the canon layer itself, name no base
  *   F5  a family write forks each member the same way
+ *   F6  a working write NEVER waits on a read: over a lower layer that offers no synchronous read (a folded stage, a store
+ *       behind a worker, a held document whose read waits), the write still begins inside the composite's call, so the
+ *       island reads it at once (the joined page's save route), and the base stays unknown rather than awaited
  */
 import { describe, expect, test } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
@@ -69,5 +72,19 @@ describe("a working override remembers its base", () => {
     await r.composite.writeFamily([{ tiddler: { title: "T", text: "x" } }, { tiddler: { title: "T#a", text: "y" } }], [], hand);
     expect(overrideBaseOf(await r.working.get("T"))).toBe(overrideTextHash({ text: "canon words" }));
     expect(overrideBaseOf(await r.working.get("T#a"))).toBe(overrideTextHash({ text: "canon a" }));
+  });
+
+  test("F6 — over a lower layer with no synchronous read, the write never waits on it and names no base", async () => {
+    const { working } = await rig();
+    // A stage that folds at read, as the joined page's kahua layer does: no `readNow`, and its `get` waits on a lit face.
+    const waits = { get: () => new Promise<never>(() => {}), listVisible: async () => [] };
+    const stacked = new CompositeStore();
+    stacked.addLayer({ bagId: "lar:///ha.ka.ba/bags/stage", store: waits as never, writable: false, defaultWritable: false });
+    stacked.addLayer({ bagId: WORKING, store: working, writable: true, defaultWritable: true });
+    const landing = stacked.put({ tiddler: { title: "page-new", text: "a page's new words" } }, hand);
+    const raced = await Promise.race([landing.then(() => "landed"), new Promise((r) => setTimeout(() => r("waited"), 2_000))]);
+    expect(raced).toBe("landed");
+    expect((await working.get("page-new"))?.tiddler["text"]).toBe("a page's new words");
+    expect(overrideBaseOf(await working.get("page-new"))).toBeNull();
   });
 });
