@@ -130,7 +130,7 @@ describe("decideRoute — every branch", () => {
   });
 
   it("credential verbs refuse by name with no TTY, never falling back to -T", () => {
-    for (const argv of [["vault", "unlock"], ["vault", "bind"], ["vault", "unbind"], ["found"], ["vessel", "found", "--hearth"]]) {
+    for (const argv of [["vault", "unlock"], ["vault", "bind"], ["vault", "unbind"], ["found"], ["vessel", "found", "--hearth"], ["persona", "new", "1", "--name", "joshua-fontany-engineer"]]) {
       const r = decideRoute(input(argv, { tty: false }));
       expect(typeof r === "object" && r.error.code, argv.join(" ")).toBe(CREDENTIAL_TTY_EXIT);
       expect(typeof r === "object" && r.error.lines.join("\n")).toMatch(/terminal/);
@@ -141,6 +141,8 @@ describe("decideRoute — every branch", () => {
     expect(decideRoute(input(["vault", "unlock"]))).toBe("forward");
     expect(decideRoute(input(["vault", "status"], { tty: false }))).toBe("forward");
     expect(decideRoute(input(["up"], { tty: false }))).toBe("forward");
+    expect(decideRoute(input(["persona", "new", "2", "--name", "joshua-fontany-referee"]))).toBe("forward");
+    expect(decideRoute(input(["persona", "list"], { tty: false }))).toBe("forward");
   });
 });
 
@@ -194,7 +196,13 @@ describe("translatePaths — a host path in a forwarded argv reads as the vessel
   it("a container spelling passes unchanged", () => {
     expect(ok(["export", "/lar/config/carry/b1"])).toEqual(["export", "/lar/config/carry/b1"]);
     expect(ok(["nexus", "seal", "import", "--carry", "/workspace/founding-roster.mem"])).toEqual(["nexus", "seal", "import", "--carry", "/workspace/founding-roster.mem"]);
-    expect(ok(["vessel", "found", "--genesis", "/app/genesis"])).toEqual(["vessel", "found", "--genesis", "/app/genesis"]);
+  });
+
+  it("only /lar/** and /workspace/** pass unchanged: the image's own /app reads as a host path, outside every mount", () => {
+    const r = tr(["vessel", "found", "--genesis", "/app/genesis"]);
+    expect("error" in r && r.error.code).toBe(PATH_OUTSIDE_EXIT);
+    expect(ok(["vessel", "found", "--genesis", "/lar/config/genesis"])).toEqual(["vessel", "found", "--genesis", "/lar/config/genesis"]);
+    expect("error" in tr(["export", "/larx/b1"])).toBe(true);           // a prefix that only shares letters with /lar
   });
 
   it("an argument that only looks like a path stays untouched", () => {

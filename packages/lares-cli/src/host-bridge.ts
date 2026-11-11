@@ -114,6 +114,8 @@ function readsCredential(args: ParsedArgs): boolean {
   if (args.command === "found") return true;
   if (args.command === "vault") return sub === "unlock" || sub === "bind" || sub === "unbind" || sub === "rewrap";
   if (args.command === "vessel") return sub === "found" || sub === "rotate";
+  // A face founds under its own ward route, read at the terminal (`persona new N`, the face's custody born under it).
+  if (args.command === "persona") return sub === "new";
   return false;
 }
 
@@ -211,8 +213,11 @@ function pathPositions(args: ParsedArgs): { paths: number[]; atFiles: number[] }
 export interface Mount { readonly host: string; readonly container: string }
 
 const HOUSE_CLASSES = ["hearth", "sensoriums", "projections", "library", "config"] as const;
-/** Spellings already inside the vessel: they pass unchanged. */
-const CONTAINER_ROOTS = ["/lar", "/workspace", "/app"] as const;
+/**
+ * Spellings already inside the vessel: they pass unchanged. Only the two roots the house binds (`/lar/**`, `/workspace/**`);
+ * the image's own tree (`/app`) holds nothing an operator's argument should name, so a host path there reads as a host path.
+ */
+const CONTAINER_ROOTS = ["/lar", "/workspace"] as const;
 
 /** The value one name carries: the environment first, else the env file's last plain KEY=VALUE line (as the shim reads). */
 function envValue(name: string, env: Readonly<Record<string, string | undefined>>, envFileText: string | null): string {
