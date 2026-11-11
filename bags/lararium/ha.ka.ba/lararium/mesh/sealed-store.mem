@@ -313,6 +313,24 @@ A bag keeps ''one logical name'' for its whole life. Its content key rolls at ca
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/the-lit-set`>>
+
+!! The lit set ~ every open face seals under its own key
+
+One passphrase may open every face (`lares vault unlock --all --face N`); separate passphrases open one face at a time; every verb treats an open face alike, and a shut face waits by name and never blocks the rest. The ''lit set'' names the faces open on a vessel now. Each face's private documents (its daemon wiki's device slots, its daemon canon, its own catalog half) seal and save under ''that face's own key'', through a session that wears that face, and never under another member's.
+
+* ''The face gate'' (`SealedDocumentStore`, port `openFaces`): a bag of any face in the set opens under that face; a bag of a face outside it refuses `session-face-foreign`.
+* ''The watch'' (`composeSealedRest.watch(repo, standing(documentId))`): a save books only under the session whose subject wears its bag's face; a session of another face never books it, so the save waits `save-unbooked` in memory, never sealed under another key and never written clear.
+* ''The device table'' (`deviceDaemonDocs`, `LitDeviceFaces`): a device document files under its owner within the set, else held. A browser vessel reads the same table as a set of one.
+* ''A lock of one face'' (`vault lock --face N`) drops N from the set: its saves wait in memory, never on disk, and every other open face keeps sealing.
+* ''Unrelated keys under one passphrase.'' No face key derives from a passphrase: each face's custody key, address secret, atom seed and per-Nexus proof key mint at random; a passphrase only wraps a face's custody key inside that face's own slot tree, under a fresh scrypt salt and a random slot id per pin (`keyslot.bindSlot`). Two faces under one passphrase hold unrelated keys.
+
+''The threat model.'' The lit set answers two threats: ''bytes at rest'' (a disk read with the vessel down reads only sealed values, each under its face's key) and ''cross-face logical leaks'' (no code path lands, books or seals one face's memory under another face's key or in another face's layer). It does not answer a ''live process compromise'': a process that holds several faces open holds several faces' keys at once, and an attacker inside that process reads them all. ''The crypto boundary stands at the daemon island'': the vessel's main thread holds no content key (the document store's door carries bodies and sealed values, never a key), and the island keeps one content-key holder per face (its Keyhive provider per atom key, `lightJoinedFace`). A later per-face process split moves each face's holder into an island of its own behind the same door, with no change to the sealed rest.
+
+''Owed.'' A sibling face's own place session (each open face's session at the vessel's place) and the island's face resolver for a sibling's working slot (its derived address from that face's address secret, registered under that face's door) stand owed, so a sibling's saves wait by name and a face-named INGEST for a sibling refuses `face-unresolved` until they land.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/the-carrier`>>
 
 !! The blind carrier ~ what it holds and what it never joins
@@ -394,6 +412,6 @@ A bag keeps ''one logical name'' for its whole life. Its content key rolls at ca
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Z6S58LnRVXbzKbKceDZBWYufwRomLbO79F7YKyihS3c`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Zfiwb1eadc5Pu5VzOjCJRmXQ5vX9lIJY-415MeWF-DI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

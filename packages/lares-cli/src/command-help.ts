@@ -332,7 +332,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     meme: "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite",
   },
   vessel: {
-    usage: "usage: lares vessel <unbound|found|rotate|stand|stop|seed|read|census|rite> [flags]",
+    usage: "usage: lares vessel <unbound|found|rotate|stand|stop|seed|read|census|fresher|rite> [flags]",
     synopsis:
       "THE VESSEL DOOR — one namespace over the vessel's own causal island. Four primitives and one " +
       "read: `found` mints identity + bootstrap · `stand` brings the daemon up and reports · `stop` " +
@@ -346,6 +346,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares vessel read --palaces             # health, plus the palace-organ table",
       "lares vessel seed --apply --yes         # plant every holding (idempotent)",
       "lares vessel seed --apply --verbose     # keep full CREATE detail",
+      "lares vessel fresher --bag sdm          # each working copy's base hash beside the canon hash standing now",
       "lares vessel seed --apply --lift-kahua 3   # also lift the 3 kahua items the preview named",
       "lares vessel rite refresh               # the post-code-change cure: build · stop · stand",
     ],
