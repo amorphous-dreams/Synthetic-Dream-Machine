@@ -622,6 +622,8 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   daemonIslandState: () => Promise<{ restarts: number; leg: string }>;
   lightFace: (ordinal: number) => Promise<void>;
   dropFace: (ordinal: number) => Promise<void>;
+  /** THE WORN FACE's ordinal (the mounted face, lit), or null at the floor: the AI seat acts as it alone (`seat-hand`). */
+  wornOrdinal: () => number | null;
   ports: { place(surface: string, binding: string, msg: unknown): PortPlacement; close(binding: string): void };
   /** Started event bus — ingress rings registered; tick loop running at 20 Hz (node substrate). */
   eventBus:  LarEventBusImpl;
@@ -800,6 +802,7 @@ interface NodeBootPrep {
   /** Forward-ref reads — set as the closures run (the same `let vmManager!` pattern, surfaced). */
   lightFace: (ordinal: number) => Promise<void>;
   dropFace: (ordinal: number) => Promise<void>;
+  wornOrdinal: () => number | null;
   daemonVm:         () => DaemonVmCore;
   /** The host working layer's mount (slice 5b, red 3): the composition awaits it before it returns, so no caller mounts. */
   hostWorkingMounted: () => Promise<void>;
@@ -4552,7 +4555,7 @@ async function prepareNodeBootOn(
     siblingChannel:   () => siblings?.status() ?? null,
     openDaemon, wireVerbs, afterDaemon,
     realmStanding:    async () => (realmPlane ? await realmPlane.standing() : new Map()),
-    lightFace: (ordinal) => lightFace(ordinal), dropFace,
+    lightFace: (ordinal) => lightFace(ordinal), dropFace, wornOrdinal: () => litFace,
     daemonVm:         () => daemonVm,
     hostWorkingMounted: () => mountHostWorking(),
     restartDaemonIsland: (reason) => daemonHolder.restart(reason),
@@ -4677,7 +4680,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     daemon: p.daemonVm(),
     restartDaemonIsland: p.restartDaemonIsland,
     daemonIslandState: p.daemonIslandState,
-    lightFace: p.lightFace, dropFace: p.dropFace, restartWiki: p.restartWiki, promoteActs: p.promoteActs,
+    lightFace: p.lightFace, dropFace: p.dropFace, wornOrdinal: p.wornOrdinal, restartWiki: p.restartWiki, promoteActs: p.promoteActs,
     wikiDocUrl:       result.wikiHandle.url,
     catalogHandleUrl: p.catalogHandle.url,
     daemonDocUrl:     p.daemonDocUrl(),

@@ -79,6 +79,10 @@ if __name__ == "__main__":
 import content_io as cio
 import worldline_io as wl
 import lares_uds as uds
+# THE MCP SEAT MARKS EVERY CALL AS THE AI SEAT (`"seat": "ai"` on each UDS request line and session opening): the vessel lets
+# it act as the worn face alone, and a call naming another face refuses `face-hand-refused`. A designation, not a proof (F7:
+# authority by designation on one machine, for the dogfood).
+uds.SEAT_KIND = "ai"
 from capture_session import capture_and_observe, worldline_path
 from embed_cap import make_embed_cap
 from plane_query import (crossplane_hit as _crossplane_hit, open_plane_store, plane_record_witness,
@@ -1058,7 +1062,7 @@ def build_mcp(coordinator: LaresCoordinator):
         sha-256 digest) and every input from outside the face (web page, tool output, pasted text); an AI summary
         inherits the taint of what it summarised. ONE batch per call rides the face's intents plane, pinned to this
         device; it carries digests and never a body, and it grants nothing: the operator's hand lifts it with
-        `lares kahua lift <title> --proposal <id>`. `face` names the persona index (absent: the vessel's sole face).
+        `lares kahua lift <title> --proposal <id>`. `face` may name only the worn face (absent: the worn face); the AI seat naming another refuses `face-hand-refused`.
         Returns {id, cid}. Rides a `seat` session over the @daemon wire; no MCP tool lifts."""
         if not isinstance(proposals, list) or not proposals:
             raise ValueError("kahua_propose: name `proposals` as a non-empty list of {title, revision, text|digest, taint}")

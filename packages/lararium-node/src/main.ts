@@ -809,6 +809,8 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     claim:        floor.storeClaim,
     repo:         result.repo,
     sessions:     result.sessionDoor,
+    // THE AI SEAT ACTS AS THE WORN FACE ALONE (`seat-hand`): a call marked `seat: "ai"` naming another face refuses.
+    wornOrdinal:  () => result.wornOrdinal(),
     signers:      result.sessionSigns,
     beforeSignerDrops: (signer) => result.sealedRestLock(signer),
     switchActs:   nodeSwitchActLog,

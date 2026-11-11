@@ -131,6 +131,17 @@ def operator_did() -> str:
     )
 
 
+# THE SEAT KIND this process's calls carry on every request line (`"seat": "ai"`), set by the MCP seat (`lares_mcp.py`) at its
+# start; None for the operator's own tools. The vessel reads the mark, never the absence of a session: a marked call acts as the
+# worn face alone, and one naming another face refuses `face-hand-refused` (lararium-node `seat-hand.ts`). F7's standing
+# ruling holds: on one machine, for the dogfood, authority rides by designation; this mark is a designation, not a proof.
+SEAT_KIND: "str | None" = None
+
+
+def _seat_mark() -> dict:
+    return {"seat": SEAT_KIND} if SEAT_KIND else {}
+
+
 def call(verb: str, args: "dict | None" = None, *, timeout: float = 30.0,
          requested_by: "str | None" = None) -> dict:
     """Run one verb through the @daemon and return its `output`.
@@ -147,6 +158,7 @@ def call(verb: str, args: "dict | None" = None, *, timeout: float = 30.0,
         "verb": verb,
         "args": args or {},
         "requestedBy": requested_by or operator_did(),
+        **_seat_mark(),
     }) + "\n"
 
     s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -244,8 +256,16 @@ def session_act(act: str, args: "dict | None" = None, *, face: "int | None" = No
     path = socket_path()
     if not os.path.exists(path):
         raise LaresDaemonUnreachable(f"no lares daemon at {path} — start one with `lares vessel stand --foreground`")
-    # THE SEAT ACTS AS THE WORN FACE: named none, the mounted face; named one, only while it stands open.
-    face = resolve_face(face, timeout=timeout)
+    # THE SEAT ACTS AS THE WORN FACE ALONE: named none, the mounted face; named one, only where it IS the worn face. The vessel
+    # refuses the same at the socket (`face-hand-refused`); this check spares the session it would refuse.
+    if hand == "seat" or SEAT_KIND:
+        worn = resolve_face(None, timeout=timeout)
+        if face is not None and face != worn:
+            raise LaresVerbError(f"face-hand-refused: the AI seat acts as the worn face (h{worn}) alone, and this call names h{face}; "
+                                 "only the operator's own hand (`lares vessel seed`, `lares vessel import`, `lares bag share`) names another face")
+        face = worn
+    else:
+        face = resolve_face(face, timeout=timeout)
     s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     s.settimeout(timeout)
     try:
@@ -266,7 +286,7 @@ def session_act(act: str, args: "dict | None" = None, *, face: "int | None" = No
                 return reply
             raise LaresDaemonUnreachable("the vessel closed the session without an answer")
 
-        opened = ask({"op": "session:open", "requestId": os.urandom(8).hex(), "faceRef": f"h{face}", "hand": hand})
+        opened = ask({"op": "session:open", "requestId": os.urandom(8).hex(), "faceRef": f"h{face}", "hand": hand, **_seat_mark()})
         if opened.get("kind") != "session:opened":
             raise LaresVerbError("malformed session opening from the vessel")
         envelope = {k: opened[k] for k in ("ownerEpoch", "sessionId", "generation", "faceRef")}

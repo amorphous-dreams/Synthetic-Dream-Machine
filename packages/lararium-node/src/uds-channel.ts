@@ -38,6 +38,7 @@
  * See lar:///ha.ka.ba/lararium/api/lares-lararium-binding.
  */
 
+import { faceRefOrdinal, namedFaceOf, seatFaceRefusal, seatKindOf } from "./seat-hand.js";
 import { type Socket } from "node:net";
 import { randomUUID } from "node:crypto";
 import { PARK_LIMIT } from "./owned-store.js";
@@ -65,6 +66,8 @@ import type { SessionSignBook } from "./session-sign-door.js";
 
 export interface UdsChannelOptions {
   readonly sessions?: UdsSessionDoor;
+  /** THE WORN FACE's ordinal (the mounted face), or null at the floor: the AI seat acts as it alone (`seat-hand`). */
+  readonly wornOrdinal?: () => number | null;
   /** Where a session switch's acts rest: the vessel's sealed row (`nodeSwitchActLog`). No log, no switch. */
   readonly switchActs?: SwitchActLog;
   /**
@@ -1034,6 +1037,9 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         return sessionRefuse(sock, "malformed-message", requestId);
       }
       if (!opts.sessions) return sessionRefuse(sock, "no-session-door", requestId);
+      // THE AI SEAT OPENS ONLY THE WORN FACE: a `seat` hand (or a frame marked `seat: "ai"`) naming another face refuses.
+      const seatRefused = seatFaceRefusal({ seat: frame["hand"] === "seat" ? "ai" : seatKindOf(frame), named: faceRefOrdinal(frame["faceRef"]), worn: opts.wornOrdinal?.() ?? null });
+      if (seatRefused !== null) return sessionRefuse(sock, "face-hand-refused", requestId);
       const supplied = await opts.sessions.open({ faceRef: frame["faceRef"], hand: frame["hand"] as Hand })
         .catch((error: unknown) => {
           log(`session door failed: ${error instanceof Error ? error.message : String(error)}`);
@@ -1369,6 +1375,10 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       delete oneShot.ordinal;
       const inv: Invocation = sessionRequestId === undefined ? oneShot : parsed as Invocation;
       if (!inv.verb || !inv.requestedBy) return fail("verb + requestedBy required");
+      // THE AI SEAT ACTS AS THE WORN FACE ALONE, read off the seat kind its request line carries (`seat-hand`): a marked call
+      // naming another face refuses by name; the operator's hand (no seat kind) names any open face.
+      const seatRefused = seatFaceRefusal({ seat: seatKindOf(parsed), named: namedFaceOf(inv.args), worn: opts.wornOrdinal?.() ?? null });
+      if (seatRefused !== null) return fail(seatRefused, "face-hand-refused");
       // A ROW THAT ACTS AS A FACE RIDES THAT FACE'S SESSION: the maintenance frame carries no face, so it serves none.
       if (sessionRequestId === undefined && opts.sessionVerbs?.has(inv.verb)) {
         return fail(`"${inv.verb}" acts as a face, and rides a session of that face`, "face-row-rides-a-session");

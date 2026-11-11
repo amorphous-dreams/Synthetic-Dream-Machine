@@ -220,7 +220,7 @@ export function parseShareFile(text: string): ShareRow[] {
 
 /**
  * THE BOOT'S RECONCILE: the file wins. Answers the rows the control document must hold and each title to remove (a row the
- * control document holds that the file no longer names). With no file standing, the control document's rows stand.
+ * control document holds that the file does not name). With no file standing, the control document's rows stand.
  */
 export function reconcileShareRows(file: readonly ShareRow[] | null, control: readonly ShareRow[]): { readonly put: readonly ShareRow[]; readonly remove: readonly string[] } {
   if (file === null) return { put: [], remove: [] };

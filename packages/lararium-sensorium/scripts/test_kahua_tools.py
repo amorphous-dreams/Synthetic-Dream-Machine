@@ -124,16 +124,37 @@ def test_kahua_propose_opens_a_seat_session_on_the_resolved_face_and_runs_the_pr
     assert any(f.get("op") == "session:close" for f in vessel.frames)
 
 
-def test_kahua_list_and_get_run_the_read_row_on_a_named_face(vessel):
+def test_kahua_list_and_get_run_the_read_row_on_the_named_worn_face(vessel):
     vessel.answer = {"status": "done", "output": {"verb": "kahua-read", "items": []}}
+    vessel.worn = 1
     assert _tools()["kahua_list"](face=1) == {"items": []}
     vessel.answer = {"status": "done", "output": {"verb": "kahua-read", "item": None, "history": []}}
     assert _tools()["kahua_get"](title="T", history=True, face=1) == {"item": None, "history": []}
     assert vessel.acts() == [{"act": "kahua-read", "args": {"action": "list"}},
                              {"act": "kahua-read", "args": {"action": "get", "title": "T", "history": True}}]
-    # A named face is honoured only while it stands open: the seat asks the vessel under its reading first.
-    assert [f["args"] for f in vessel.frames if f.get("op") == "act"] == [{"worn": True, "face": 1}] * 2
-    assert {f["faceRef"] for f in vessel.frames if f.get("op") == "session:open"} == {"h1"}
+    # The seat reads the worn face first; naming it, the seat opens it, marked as the AI seat.
+    assert [f["args"] for f in vessel.frames if f.get("op") == "act"] == [{"worn": True}] * 2
+    opened = [f for f in vessel.frames if f.get("op") == "session:open"]
+    assert {f["faceRef"] for f in opened} == {"h1"} and all(f.get("seat") == "ai" for f in opened)
+
+
+def test_the_ai_seat_naming_a_face_other_than_the_worn_one_refuses_and_opens_no_session(vessel):
+    vessel.worn = 2
+    for call in (lambda t: t["kahua_list"](face=1), lambda t: t["kahua_get"](title="T", face=0),
+                 lambda t: t["kahua_propose"](proposals=[{"title": "T", "revision": "r", "text": "b", "taint": []}], face=1)):
+        with pytest.raises(uds.LaresVerbError, match="face-hand-refused"):
+            call(_tools())
+    assert not any(f.get("op") == "session:open" for f in vessel.frames)
+
+
+def test_the_mcp_seat_marks_every_request_line_as_the_ai_seat(vessel):
+    assert uds.SEAT_KIND == "ai"
+    try:
+        uds.call("recall", {"query": "x"}, requested_by="0xseat")
+    except Exception:
+        pass
+    lines = [f for f in vessel.frames if f.get("verb") == "recall"]
+    assert lines and lines[0].get("seat") == "ai"
 
 
 def test_with_several_faces_open_and_none_named_the_seat_acts_as_the_worn_face(vessel):
@@ -144,14 +165,16 @@ def test_with_several_faces_open_and_none_named_the_seat_acts_as_the_worn_face(v
     assert [f["faceRef"] for f in vessel.frames if f.get("op") == "session:open"] == ["h1"]
 
 
-def test_a_named_face_that_stands_shut_refuses_by_name_and_opens_no_session(vessel):
+def test_a_named_face_that_stands_shut_and_is_not_worn_refuses_by_name_and_opens_no_session(vessel):
     vessel.open = {1}
-    with pytest.raises(uds.LaresVerbError, match="face-not-open"):
+    vessel.worn = 1
+    with pytest.raises(uds.LaresVerbError, match="face-hand-refused"):
         _tools()["kahua_list"](face=2)
     assert not any(f.get("op") == "session:open" for f in vessel.frames)
 
 
 def test_a_row_refusal_and_a_session_refusal_raise_by_name(vessel):
+    vessel.worn = 0
     vessel.answer = {"status": "done", "output": {"refused": "kahua-unpinned: the face pins no stage", "refusal": "KahuaRefused"}}
     with pytest.raises(uds.LaresVerbError, match="kahua-unpinned"):
         _tools()["kahua_list"](face=0)
