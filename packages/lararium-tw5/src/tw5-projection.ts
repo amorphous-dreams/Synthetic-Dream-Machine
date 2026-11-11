@@ -651,7 +651,8 @@ function dispatchLarControlEventInner(ev: LarMsg_ControlEvent, door?: (result: L
   };
   const sense = ev.kind === "lar:sense";
   const stale = (): LarMsg_ControlResult | null => {
-    console.warn(`[wiki-worker] stale-target: ${target} [race-diag ev=${ev.eventId} epoch=${String(ev.mountEpoch)} scope=${scope ? String(scope.mountEpoch) : "none"}]`);
+    console.warn(`[wiki-worker] stale-target: ${target}`);
+    raceDiag(`[race-diag] stale-target ${target} ev=${ev.eventId} epoch=${String(ev.mountEpoch)} scope=${scope ? String(scope.mountEpoch) : "none"}`);
     return sense ? null : answer("stale-target");
   };
   // A host door's answer closes its request whatever epoch the page shows: the ledger keys by request, not mount.
