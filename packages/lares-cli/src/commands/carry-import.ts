@@ -18,7 +18,7 @@ export async function cmdImport(args: ParsedArgs, doors: CarryDoors = LIVE_CARRY
   const code = refused > 0 ? exitFor("verb-error") : stood > 0 ? exitFor("conflict") : 0;
   emit(args, {
     ok: code === 0,
-    data: { bundleId: result.bundleId, applied: result.applied, faceMap: result.faceMap, redeclare: result.redeclare, minted: result.minted, tallies: result.tallies, skipped: result.skipped },
+    data: { bundleId: result.bundleId, applied: result.applied, faceMap: result.faceMap, redeclare: result.redeclare, minted: result.minted, tallies: result.tallies, skipped: result.skipped, ashes: result.ashes, ashesLeft: result.ashesLeft },
     ...(refused > 0 ? { error: { code: "verb-error", message: `${refused} row(s) refused` } } : stood > 0 ? { error: { code: "conflict", message: `${stood} row(s) stand off; nothing overwrote them` } } : {}),
     human: () => {
       console.log(`import: bundle ${result.bundleId.slice(0, 16)} verified whole${result.applied ? "" : " · preview only (pass --apply)"}`);
@@ -32,6 +32,8 @@ export async function cmdImport(args: ParsedArgs, doors: CarryDoors = LIVE_CARRY
         for (const r of t.refused) console.error(`    refused: ${r}`);
       }
       for (const s of result.skipped) console.error(`  skipped (no address derives): ${s}`);
+      for (const a of result.ashes) { console.log(`  ashes: the former face ${a.relation}'s folders move out of the live mirror set:`); for (const m of a.moved) console.log(`    ${m}`); }
+      for (const a of result.ashesLeft) console.log(`  ashes: the former face ${a.relation}'s folders stay where they stand: ${a.why}`);
     },
   });
   return code;

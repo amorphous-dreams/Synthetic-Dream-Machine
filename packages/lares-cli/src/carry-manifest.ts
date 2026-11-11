@@ -58,6 +58,10 @@ export interface CarryRow {
   readonly rowKey: string | null;
   readonly sha256: string;
   readonly path: string;
+  /** A working row's override base: the canon text hash (`sha256:…`) the copy forked from, read off the record's meta
+   *  envelope at export (a base never projects to disk, so the bundle carries it beside the file). The import stamps it
+   *  back, so canon's fresher-than-the-copy warning still reads after a round trip. Absent where the copy names none. */
+  readonly overrideBase?: string;
 }
 
 /** A bundle face: its path key and the pet-name it carries. */
@@ -246,6 +250,9 @@ export function verifyBundle(root: string): VerifiedBundle {
       throw new CarryBundleRefused("bundle-row-shape: a row names no layer, bag, face, path or hash the manifest holds");
     }
     if (!fileSha.has(row.path)) throw new CarryBundleRefused(`bundle-row-file: a row names ${row.path} and the manifest lists no such file`);
+    if (row.overrideBase !== undefined && (!isStr(row.overrideBase) || !/^sha256:[0-9a-f]{64}$/.test(row.overrideBase) || (row.layer !== "working" && row.layer !== "wiki-working"))) {
+      throw new CarryBundleRefused(`bundle-row-override-base: the row at ${row.path} names an override base no sha256 hash spells, or one off a working row`);
+    }
     if (row.layer === "kahua-head") {
       const key = [...faceKeys].find(([, p]) => p === row.face)?.[0];
       const head = key === undefined ? undefined : heads.get(key)?.find((h) => h.cid === row.rowKey && h.title === row.title);

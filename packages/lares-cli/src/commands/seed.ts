@@ -2,8 +2,11 @@
  * `lares vessel seed` — plant the disk holdings into the vessel's canon.
  *
  * THE WORD: seed lays every disk mirror back into the layer it mirrors; import carries a bundle onto this hearth's
- * faces by pet-name. Today the seed lays the checkout's canon (`bags/<slug>`) back into each canon bag; the face and
- * working mirrors under `projections/` cross by import (`carry.ts`) until the seed reads them too.
+ * faces by pet-name. Two legs: the HOLDINGS leg lays the checkout's canon (`bags/<slug>`) back into each canon bag, and
+ * then the MIRRORS leg (`seed-mirrors.ts`) lays every mirror under the projections root back into its one layer (face
+ * working and canon, house bags, other wikis' working), adopts a former face's folders by pet-name after a
+ * re-founding, previews the kahua items it would lift and lifts them on the operator's confirmed count alone, and moves
+ * an adopted face's folders to ashes once nothing stands pending.
  *
  * ONE ROAD, DECIDED BY WHERE CANON STANDS. A holding whose canon source stands on disk (its dir under the canon source
  * the daemon resolves, `daemonBagsDir`, and no private plane: `projectionRoots(...).sourcedSlugs()`) takes the
@@ -21,7 +24,8 @@
  * IDEMPOTENT (causal-island law): each run converges from whatever state it finds — a virgin Synced tree reads
  * everything NEW; a converged tree no-ops per holding.
  *
- *   lares vessel seed [--apply] [--yes]   — preview per holding by default (the ingest posture)
+ *   lares vessel seed [--apply] [--yes] [--lift-kahua <N>]   — preview per holding by default (the ingest posture);
+ *                                          a bare --yes lifts nothing in kahua: a typed count on a TTY, or --lift-kahua N
  */
 
 import { readdirSync, statSync } from "node:fs";
@@ -32,6 +36,8 @@ import { larBagsDir, vesselDid } from "../env.js";
 import { askShore, readShoreList } from "../shore-core.js";
 import { cmdIngest, type FresherCanonReading } from "./ingest.js";
 import { cmdAct } from "./act.js";
+import { createInterface } from "node:readline/promises";
+import { seedMirrors, mirrorLines, mirrorsLeftWork, kahuaConfirmPrompt, MirrorRefused, LIVE_MIRROR_DOORS, type MirrorDoors, type KahuaPreviewItem } from "../seed-mirrors.js";
 
 export interface SeedHolding {
   readonly holding: string;               // "lares"
@@ -137,7 +143,41 @@ async function foldCreateOutput(args: ParsedArgs, run: () => Promise<number>): P
   } finally { console.log = log; }
 }
 
-export async function cmdSeed(args: ParsedArgs): Promise<number> {
+/** `--lift-kahua <N>` read as a whole count, or null where absent; a malformed count refuses by name. */
+export function liftKahuaCount(args: ParsedArgs): number | null {
+  const raw = args.options["lift-kahua"];
+  if (raw === undefined) return null;
+  if (!/^(?:0|[1-9][0-9]*)$/.test(raw)) throw new MirrorRefused("seed-kahua-count", `--lift-kahua names the whole count the preview shows; "${raw}" names none`);
+  return Number(raw);
+}
+
+/** A person at a TTY reads the preview and types the count; anywhere else no hand confirms. */
+export function ttyKahuaConfirm(args: ParsedArgs): ((count: number, preview: readonly KahuaPreviewItem[]) => Promise<boolean>) | undefined {
+  if (args.flags["json"] === true || !process.stdin.isTTY || !process.stdout.isTTY) return undefined;
+  return async (count) => {
+    const rl = createInterface({ input: process.stdin, output: process.stdout });
+    try { return (await rl.question(kahuaConfirmPrompt(count))).trim() === String(count); } finally { rl.close(); }
+  };
+}
+
+/** Run the mirror leg and print it; its exit code (0 clean, 1 a refusal or something standing for a hand). */
+export async function runMirrorLeg(args: ParsedArgs, doors: MirrorDoors, opts: { kahuaOnly?: boolean } = {}): Promise<number> {
+  try {
+    const result = await seedMirrors({
+      apply: args.flags["apply"] === true, doors, liftKahua: liftKahuaCount(args),
+      ...(ttyKahuaConfirm(args) ? { confirmKahua: ttyKahuaConfirm(args)! } : {}), ...(opts.kahuaOnly ? { kahuaOnly: true } : {}),
+    });
+    const { out, err } = mirrorLines(result);
+    for (const l of out) console.log(l);
+    for (const l of err) console.error(l);
+    return mirrorsLeftWork(result) ? 1 : 0;
+  } catch (e) {
+    if (e instanceof MirrorRefused) { console.error(`lares vessel seed: ${e.message}`); return 1; }
+    throw e;
+  }
+}
+
+export async function cmdSeed(args: ParsedArgs, mirrorDoors: MirrorDoors = LIVE_MIRROR_DOORS): Promise<number> {
   const bagsDir = larBagsDir();
   const holdings = discoverHoldings(bagsDir);
   if (holdings.length === 0) {
@@ -178,5 +218,7 @@ export async function cmdSeed(args: ParsedArgs): Promise<number> {
     } catch { /* the shore unread: the seed's own verdict stands; `lares shore` reads it */ }
   }
   console.log(`seed: ${fed.length - failed.length}/${fed.length} holdings${ledger.length > fed.length ? ` · ${ledger.length - fed.length} off disk` : ""} · ${elapsedText(performance.now() - started)}`);
-  return failed.length === 0 ? 0 : 1;
+  // THE MIRRORS LEG, after canon stands: every mirror under the projections root back into its one layer.
+  const mirrors = await runMirrorLeg(args, mirrorDoors);
+  return failed.length === 0 && mirrors === 0 ? 0 : 1;
 }

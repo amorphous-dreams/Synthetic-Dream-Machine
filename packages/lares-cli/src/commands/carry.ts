@@ -59,6 +59,8 @@ import { runVerb } from "../verb-call.js";
 import { newChangeId, newRequestId, taskContentId } from "@lararium/mesh";
 import { storeVerb, storeFailure } from "../store-door.js";
 import { readPersonaRoots, sealedPetnameStore, sealedDeclarationStore } from "../sealed-rows.js";
+import { writeFaceCards, readFaceCard } from "../face-cards.js";
+import { moveFaceToAshes } from "../ashes.js";
 import { makeFleetPetnameStore, makeFleetDeclarationStore } from "../daemon-persona-store.js";
 import {
   CARRY_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, KAHUA_HEADS_FILE, bundleIdOf, sha256Hex, zeroCounts, verifyBundle, CarryBundleRefused,
@@ -111,6 +113,11 @@ export interface CarryDoors {
    * An import lands its rows over seeded canon alone, so it refuses while one stands unseeded. Absent: no guard.
    */
   readonly unseeded?: () => readonly string[];
+  /**
+   * The override base (`meta.overrideBase`) each working copy of one layer names, by title: the export carries them
+   * beside the files, since a base never projects. Absent: rows carry none.
+   */
+  readonly overrideBases?: (workingBag: string) => Promise<Readonly<Record<string, string>>>;
   readonly kahuaLift: (handleIndex: number, lift: { readonly title: string; readonly text: string; readonly fields: Readonly<Record<string, string>>; readonly taint: readonly string[]; readonly sources: CarryKahuaHead["sources"]; readonly parent: string | null }) => Promise<{ readonly cid: string }>;
 }
 
@@ -140,6 +147,9 @@ async function liveFaces(): Promise<CarryVesselFace[]> {
       kahua, ...(kahuaRefusal !== undefined ? { kahuaRefusal } : {}), ...(kahuaRefusalCode !== undefined ? { kahuaRefusalCode } : {}),
     });
   }
+  // THE FACE CARDS: each named face's relation and pet-name rest in plaintext outside the hearth, so a seed after a
+  // re-founding adopts a former face's folders by pet-name from disk alone (`face-cards.ts`).
+  writeFaceCards(out);
   return out;
 }
 
@@ -183,6 +193,18 @@ export const LIVE_CARRY_DOORS: CarryDoors = {
     const seededBags = new Set(tree.rows().map((r) => r.bagId));
     return discoverHoldings(larBagsDir()).filter((h) => { try { return canonIsDisk(h); } catch { return false; } })
       .filter((h) => !seededBags.has(h.toBag)).map((h) => h.holding);
+  },
+  overrideBases: async (workingBag) => {
+    const out: Record<string, string> = {};
+    let after: string | null = null;
+    for (;;) {
+      const r = await runVerb("override-bases", { bag: workingBag, ...(after !== null ? { after } : {}) }, await vesselDid());
+      if (r.status === "error") throw new Error(r.errorMessage ?? "override-bases refused");
+      const page = (summaryOutput(r) ?? {}) as { bases?: Array<{ title?: unknown; base?: unknown }>; next?: unknown };
+      for (const b of page.bases ?? []) if (typeof b.title === "string" && typeof b.base === "string") out[b.title] = b.base;
+      if (typeof page.next !== "string" || page.next === after) return out;
+      after = page.next;
+    }
   },
   kahuaLift: async (face, lift) => {
     const { output } = await storeVerb("kahua-lift", { face, title: lift.title, text: lift.text, fields: lift.fields, taint: lift.taint, sources: lift.sources, parent: lift.parent });
@@ -311,6 +333,25 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
   const bundleFaces: CarryFace[] = named.map((f, i) => ({ key: `f${i}`, petname: f.petname! }));
   const keyOf = new Map(named.map((f, i) => [f.handleIndex, `f${i}`] as const));
 
+  // THE OVERRIDE BASES: a base rides the record's meta envelope and never projects, so the export reads it by title and
+  // carries it on the working row. The daemon wiki's working layer reads as the face the daemon wears.
+  const basesOf = new Map<string, Readonly<Record<string, string>>>();
+  const baseFor = async (workingBag: string): Promise<Readonly<Record<string, string>>> => {
+    if (!doors.overrideBases) return {};
+    const held = basesOf.get(workingBag);
+    if (held) return held;
+    let read: Readonly<Record<string, string>> = {};
+    try { read = await doors.overrideBases(workingBag); }
+    catch (e) { omissions.push({ kind: "override-bases-unread", detail: `the override bases of ${workingBag} would not read (${e instanceof Error ? e.message : String(e)}); its working rows travel without them, and each copy forks a fresh base where it lands` }); }
+    basesOf.set(workingBag, read);
+    return read;
+  };
+  const withBase = (row: Omit<CarryRow, "sha256" | "path">, bases: Readonly<Record<string, string>>): Omit<CarryRow, "sha256" | "path"> => {
+    const base = row.title !== null ? bases[row.title] : undefined;
+    return base !== undefined ? { ...row, overrideBase: base } : row;
+  };
+  const daemonBases = await baseFor(wikiSlotUri("daemon", "working"));
+
   // THE COPY PLAN: source abs path -> bundle rel path, with the row each file makes.
   const plan: Array<{ from: string; to: string; row: Omit<CarryRow, "sha256" | "path"> | null }> = [];
   const tempBytes: Record<string, number> = {};
@@ -337,7 +378,7 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
           const read = readKapaeShadow(readFileSync(abs, "utf8"));
           return { face: pet, bag: wikiSlotUri("daemon", "working"), layer: "kapae", title: "title" in read ? read.title : null, rowKey: null };
         }
-        return { face: pet, bag: wikiSlotUri("daemon", "working"), layer: "working", title: mirrorDirFileToUri(wikisDir, abs), rowKey: null };
+        return withBase({ face: pet, bag: wikiSlotUri("daemon", "working"), layer: "working", title: mirrorDirFileToUri(wikisDir, abs), rowKey: null }, daemonBases);
       }, [TEMP_LAYER_DIR, "recovery"]);
       addTree(join(src, "recovery"), `faces/${fk}/drafts`, () => ({ face: pet, bag: wikiSlotUri("daemon", "draft"), layer: "draft", title: null, rowKey: null }));
       if (consented.has("daemon")) {
@@ -358,7 +399,8 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
         return { face: null, bag, layer: "temp", title: null, rowKey: null };
       });
     }
-    addTree(src, `wikis/${name}/working`, (_rel, abs) => ({ face: null, bag: wikiSlotUri(name, "working"), layer: "wiki-working", title: mirrorDirFileToUri(wikisDir, abs), rowKey: null }), ["recovery", TEMP_LAYER_DIR]);
+    const wikiBases = await baseFor(wikiSlotUri(name, "working"));
+    addTree(src, `wikis/${name}/working`, (_rel, abs) => withBase({ face: null, bag: wikiSlotUri(name, "working"), layer: "wiki-working", title: mirrorDirFileToUri(wikisDir, abs), rowKey: null }, wikiBases), ["recovery", TEMP_LAYER_DIR]);
   }
   for (const name of folders(bagsDir)) {
     const src = join(bagsDir, name);
@@ -494,6 +536,10 @@ export interface CarryImportResult {
   /** The bags (and the wikis they open as) this import mints, or would mint in a preview, before it re-pours them. */
   readonly minted: readonly string[];
   readonly skipped: readonly string[];
+  /** The former faces' folders this import moved under `projections/ashes/<relation>/`, by relation. */
+  readonly ashes: ReadonlyArray<{ readonly relation: string; readonly moved: readonly string[] }>;
+  /** The former faces' folders left standing, each with why (a partial landing). */
+  readonly ashesLeft: ReadonlyArray<{ readonly relation: string; readonly why: string }>;
 }
 
 /**
@@ -574,6 +620,11 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   const minted: string[] = [];
   const skipped: string[] = [];
 
+  // THE OVERRIDE BASE TRAVELS: a working row names the canon text its copy forked from, and its carrier carries it, so the
+  // island stamps it on the copy it lands and canon's fresher-than-the-copy warning still reads after the round trip.
+  const baseByFile = new Map<string, string>();
+  for (const row of manifest.rows) if (row.overrideBase !== undefined) baseByFile.set(join(bundle.root, ...row.path.split("/")), row.overrideBase);
+
   // An import restores each file into its mirror, then ingest reads it there so the placement ward sees the bag's own mirror.
   const wave = async (sourceDir: string, uriDir: string, mirrorDir: string, toBag: string, files: readonly string[], keyPrefix: string, workTally: CarryTally, kapaeTally: CarryTally | null, wiki: string | null = null): Promise<void> => {
     if (files.length === 0) return;
@@ -581,7 +632,8 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     for (const s of scan.skipped) if (!s.endsWith(".meta")) skipped.push(s);
     for (const r of scan.refusedShadows ?? []) kapaeTally?.refused.push(`${r.file} (${r.refusal})`);
     const keyed = (r: ScanRow): string => `${keyPrefix}:${r.uri}:${r.diskHash}`;
-    let candidates = candidatesOf(scan.rows).filter((r) => { if (journal.done.has(keyed(r))) { workTally.already++; return false; } return true; });
+    let candidates = candidatesOf(scan.rows).filter((r) => { if (journal.done.has(keyed(r))) { workTally.already++; return false; } return true; })
+      .map((r): ScanRow => { const base = baseByFile.get(r.file); return base !== undefined ? { ...r, overrideBase: base } : r; });
     for (const r of scan.rows) if (r.status === "non-nfc") workTally.refused.push(`${r.uri} (non-NFC bytes)`);
     const shadowTally = kapaeTally ?? workTally;
     let kapae = (scan.shadows ?? []).filter((t) => { if (journal.done.has(`${keyPrefix}:kapae:${t}`)) { shadowTally.already++; return false; } return true; });
@@ -714,7 +766,32 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     await wave(join(bundle.root, "wikis", slug, "working"), join(bundle.root, "wikis", slug), join(projections, "wikis", slug), wikiSlotUri(slug, "working"), files, `wiki-working:${slug}`, tallies.wikiWorking, tallies.kapae, slug);
   }
 
-  return { bundleId: manifest.bundleId, applied: apply, faceMap, redeclare: acts, tallies, skipped, minted };
+  // ASHES: a former face whose pet-name a bundle face carries, its folders still under the projections root (a seed that
+  // never adopted them), moves out of the live mirror set once this import landed with NOTHING pending.
+  const ashes: Array<{ relation: string; moved: string[] }> = [];
+  const ashesLeft: Array<{ relation: string; why: string }> = [];
+  const worn = new Set(faces.map((f) => f.relation).filter((r): r is string => r !== null));
+  const formerOf = (petname: string): string[] => {
+    const rels = new Set<string>();
+    for (const [dir, test] of [[join(projections, "wikis"), isDaemonFaceFolder], [join(projections, "bags"), isDaemonFaceFolder], [join(projections, "bags"), isKahuaFaceFolder]] as const) {
+      let names: string[] = [];
+      try { names = readdirSync(dir).filter(test); } catch { /* no such dir */ }
+      for (const n of names) rels.add(n.slice(n.indexOf("-") + 1));
+    }
+    return [...rels].filter((r) => !worn.has(r) && readFaceCard(r, projections)?.petname === petname).sort();
+  };
+  const all = Object.values(tallies);
+  const left = all.reduce((n, t) => n + t.stoodOff.length + t.refused.length, 0);
+  for (const bf of manifest.faces) {
+    for (const r of formerOf(bf.petname)) {
+      if (left > 0) { ashesLeft.push({ relation: r, why: `the import left ${left} row(s) standing off or refused; settle them and import again` }); continue; }
+      if (!apply) continue;
+      const moved = moveFaceToAshes(projections, r);
+      if ("left" in moved) ashesLeft.push({ relation: r, why: moved.left }); else ashes.push({ relation: r, moved: [...moved.moved] });
+    }
+  }
+
+  return { bundleId: manifest.bundleId, applied: apply, faceMap, redeclare: acts, tallies, skipped, minted, ashes, ashesLeft };
 }
 
 // ── the commands' shared refusal ─────────────────────────────────────────────────────────────────────────────
