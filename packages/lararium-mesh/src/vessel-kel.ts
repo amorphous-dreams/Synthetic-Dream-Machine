@@ -147,9 +147,11 @@ function extendOne(state: { aid: string; seq: number; head: PlaceKelEvent; headD
 
 /**
  * Read unordered board rows from the pinned inception, in work bounded by `PLACE_KEL_ROWS_PER_AID`. A row of another AID or a
- * row that does not decode strictly drops before any digest or signature. The signed rows that remain sort by seq and cap at the
- * ceiling, and they index by predecessor, so each step meets only the candidates for the head it stands on; a chain longer
- * than the ceiling reads `too-many-rows`. A fork carries at most `PLACE_KEL_FORK_EVIDENCE` competing successors from its first seq.
+ * row that does not decode strictly drops before any digest or signature. ORDER RIDES THE HASH CHAIN ALONE: the signed rows that
+ * remain index by the predecessor digest each names (`prev`), and the walk descends from the inception one link at a time, so
+ * each step meets only the candidates for the head it stands on and each row is met at most once. `seq` orders nothing: it stays
+ * a cross-check each step holds to the chain (`seq-mismatch`, `gap`). A chain longer than the ceiling reads `too-many-rows`. A
+ * fork carries at most `PLACE_KEL_FORK_EVIDENCE` competing successors of the head it splits at.
  */
 export function foldPlaceKel(events: readonly unknown[], pinned: { aid: string; inceptionDigest?: string }): PlaceKelReading {
   const seen = new Map<string, PlaceKelEvent>();
@@ -162,14 +164,12 @@ export function foldPlaceKel(events: readonly unknown[], pinned: { aid: string; 
   let first: PlaceInception | null = null;
   const byPrev = new Map<string, PlaceRotation[]>();
   const rotations: PlaceRotation[] = [];
-  // SIGNATURES FIRST, in work linear in the input: a row that fails its own signature drops here, before any digest walk, and
-  // the signed rows that remain sort by seq and cap at the ceiling, so the walk below never meets more than the ceiling.
+  // SIGNATURES FIRST, in work linear in the input: a row that fails its own signature drops here, before any digest walk. The
+  // signed rows index by predecessor, and the walk below meets each row at most once, so its work stays linear in the input.
   for (const e of seen.values()) {
     if (e.t === "icp") { if (first === null && digest(e) === pinned.aid && signatureOk(e)) first = e; continue; }
     if (signatureOk(e)) rotations.push(e);
   }
-  rotations.sort((x, y) => x.seq - y.seq || (x.sig < y.sig ? -1 : x.sig > y.sig ? 1 : 0));
-  rotations.length = Math.min(rotations.length, PLACE_KEL_ROWS_PER_AID + 1);
   for (const e of rotations) {
     const list = byPrev.get(e.prev) ?? [];
     list.push(e); byPrev.set(e.prev, list);
@@ -179,7 +179,7 @@ export function foldPlaceKel(events: readonly unknown[], pinned: { aid: string; 
   const chain: PlaceKelEvent[] = [first];
   const state = { aid: pinned.aid, seq: 0, head: first as PlaceKelEvent, headDigest: pinned.aid, commitments: new Set([first.next]), keys: new Set([first.key]) };
   for (;;) {
-    if (state.seq >= PLACE_KEL_ROWS_PER_AID) return { ok: false, refusal: "too-many-rows" };
+    if (chain.length > PLACE_KEL_ROWS_PER_AID) return { ok: false, refusal: "too-many-rows" };
     const candidates = byPrev.get(state.headDigest) ?? [];
     const valid = candidates.filter((e) => extendOne(state, e) === null);
     if (valid.length > 1) {
@@ -193,19 +193,27 @@ export function foldPlaceKel(events: readonly unknown[], pinned: { aid: string; 
   }
   const read: PlaceKelHead = { ok: true, aid: pinned.aid, seq: state.seq, head: state.head, headDigest: state.headDigest,
     signerKey: state.head.key, nextDigest: state.head.next, chain };
-  // A signed row past the verified head with no link to it leaves the verified prefix standing: the refusal names the gap and
-  // hands back what verified, so a reader keeps its head "as of my last sync".
-  const beyond = rotations.some((e) => e.seq > state.seq);
+  // A signed row the chain does not carry, naming the verified head or a predecessor the chain never reached, stands past the
+  // verified prefix by descent: the refusal names the gap and hands back what verified, so a reader keeps its head "as of my
+  // last sync". A row that names an earlier link of the chain and failed to extend it stands beside the chain, never past it.
+  const onChain = new Set(chain.map(digest));
+  const beyond = rotations.some((e) => !onChain.has(digest(e)) && (e.prev === state.headDigest || !onChain.has(e.prev)));
   return beyond ? { ok: false, refusal: "gap", verified: read } : read;
 }
 
+/**
+ * Accept a folded head past the one a reader already accepted: by DESCENT, the folded chain carries the accepted head's digest
+ * (a chain that does not is a rollback or another branch). `seq` cross-checks the descent: the accepted head must stand at the
+ * position its `seq` names, and a disagreement refuses `seq-mismatch`.
+ */
 export function acceptPlaceHead(previouslyAccepted: { aid: string; seq: number; headDigest: string } | null,
   folded: PlaceKelReading): PlaceKelReading {
   if (!folded.ok) return folded;
   if (!previouslyAccepted) return folded;
-  if (folded.aid !== previouslyAccepted.aid || folded.seq < previouslyAccepted.seq ||
-      !folded.chain[previouslyAccepted.seq] || digest(folded.chain[previouslyAccepted.seq]!) !== previouslyAccepted.headDigest)
-    return { ok: false, refusal: "rollback" };
+  if (folded.aid !== previouslyAccepted.aid) return { ok: false, refusal: "rollback" };
+  const at = folded.chain.findIndex((e) => digest(e) === previouslyAccepted.headDigest);
+  if (at < 0) return { ok: false, refusal: "rollback" };
+  if (at !== previouslyAccepted.seq) return { ok: false, refusal: "seq-mismatch" };
   return folded;
 }
 export function placeSignerKeyAt(head: PlaceKelEvent | PlaceKelReading): string {

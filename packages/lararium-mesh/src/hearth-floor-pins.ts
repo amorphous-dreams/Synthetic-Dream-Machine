@@ -211,8 +211,8 @@ export function fileHearthFloorCard(index: HearthPinIndex, hearth: string, card:
 }
 
 /** The words an offline reader says of the head it holds: "as of my last sync". */
-export function lastSyncNote(stand: { readonly aid: string; readonly seq: number; readonly head: string } | null): string {
+export function lastSyncNote(stand: { readonly aid: string; readonly head: string } | null): string {
   return stand === null
     ? "no floor pin claim held: nothing synced yet"
-    : `as of my last sync: place ${stand.aid.slice(0, 12)}… at KEL seq ${String(stand.seq)} (${stand.head.slice(0, 12)}…)`;
+    : `as of my last sync: place ${stand.aid.slice(0, 12)}… at KEL head ${stand.head.slice(0, 12)}…`;
 }

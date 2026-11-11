@@ -76,7 +76,7 @@ describe("the browser reads the floor and verifies every step", () => {
     const held = { aid: "ab".repeat(32), seq: 2, head: "cd".repeat(32), lineage: [] as string[] };
     const named = await readHearthFloor({ baseUrl: "http://h", nexusPin: pinOf(c.aid), held, fetchFn: (async () => { throw new Error("offline"); }) as typeof fetch });
     expect(named).toMatchObject({ ok: false, reason: "porch-silent" });
-    expect(named.ok ? "" : named.detail).toContain("as of my last sync: place abababababab… at KEL seq 2");
+    expect(named.ok ? "" : named.detail).toContain("as of my last sync: place abababababab… at KEL head cdcdcdcdcdcd…");
   });
 
   test("RED: a lineage whose genesis bytes differ from the AID the card holds refuses before any blob is fetched", async () => {

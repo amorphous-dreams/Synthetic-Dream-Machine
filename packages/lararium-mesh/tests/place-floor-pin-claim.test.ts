@@ -91,7 +91,7 @@ describe("a floor pin claim reads at the head it names", () => {
     const standing = { via: "anchor", aid: place.aid } as const;
     expect(refusal(readPlaceFloorPin(claim, at(rowsOf(foundPlace(1)), standing)))).toBe("head-unreadable");
     expect(refusal(readPlaceFloorPin(claim, at([], standing)))).toBe("head-unreadable");
-    expect(refusal(readPlaceFloorPin({ ...claim, seq: 0 }, at(rowsOf(place), standing)))).toBe("head-unreadable");
+    expect(refusal(readPlaceFloorPin({ ...claim, seq: 0 }, at(rowsOf(place), standing)))).toBe("kel-seq-mismatch");
     expect(refusal(readPlaceFloorPin(claim, at(rowsOf(place), standing)))).toBeNull();
   });
 
