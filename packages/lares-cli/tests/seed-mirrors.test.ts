@@ -24,6 +24,9 @@
  *       the seed adopts it, and only then do its folders move to ashes
  *   M11 a fresh face that reads no relation and no stage (no refusal) never halts the seed
  *   M12 a face folder no label names: the seed names it and adopts nothing; the import never adopts, labels or moves it
+ *   M13 THE LIT-FACE GATE: three faces, h1 worn: h0's and h2's working memory never reaches h1's layer, the seed names each
+ *       ("wear it and seed again"), their former folders stay out of ashes; wearing h2 and seeding lands h2's alone
+ *   M14 the import's lit-face gate: a bundle of three faces onto h1 worn lands h1's rows alone and names the other two
  */
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -32,7 +35,7 @@ import { dirname, join } from "node:path";
 import { createHash } from "node:crypto";
 import { kapaeShadowBody, readKapaeShadow, mirrorDirFileToUri } from "@lararium/node";
 import { daemonFaceCanonBag, carrierHash } from "@lararium/mesh";
-import { seedMirrors, mirrorFiles, readKahuaPending, MirrorRefused, type MirrorDoors, type MirrorLaid, type MirrorWave } from "../src/seed-mirrors.js";
+import { seedMirrors, mirrorFiles, mirrorLines, mirrorsLeftWork, readKahuaPending, MirrorRefused, type MirrorDoors, type MirrorLaid, type MirrorWave } from "../src/seed-mirrors.js";
 import { carryExport, carryImport, type CarryDoors, type CarryVesselFace } from "../src/commands/carry.js";
 import { writeFaceLabels, faceLabelPath, writeFaceBases, readFaceLabel } from "../src/face-labels.js";
 import { runMirrorLeg } from "../src/commands/seed.js";
@@ -64,11 +67,20 @@ class FakeHouse {
   laid: string[] = [];
   held = new Set<string>();
   mints: string[] = [];
-  constructor(faces: Array<Partial<CarryVesselFace> & { handleIndex: number }>, readonly grant: string, readonly worn: string) {
+  /** The relation the composition wears: the daemon working layer holds THAT face's document alone (`wear` switches it). */
+  constructor(faces: Array<Partial<CarryVesselFace> & { handleIndex: number }>, readonly grant: string, public worn: string) {
     this.faces = faces.map((f) => ({ petname: null, relation: null, handle: null, seat: false, chair: null, kahua: [], ...f }));
     for (const f of this.faces) this.stage.set(f.handleIndex, [...(f.kahua ?? [])]);
   }
-  layer(bag: string): Map<string, Rec> { return this.layers.get(bag) ?? this.layers.set(bag, new Map()).get(bag)!; }
+  layer(bag: string): Map<string, Rec> {
+    // Each face its own daemon working document: the working layer reads the WORN face's.
+    const key = bag === WORKING ? `${WORKING}@${this.worn}` : bag;
+    return this.layers.get(key) ?? this.layers.set(key, new Map()).get(key)!;
+  }
+  /** One face's own working document, whichever face stands worn. */
+  workingOf(relation: string): Map<string, Rec> { return this.layers.get(`${WORKING}@${relation}`) ?? new Map(); }
+  /** `lares vault unlock --face N`: the composition wears another face. */
+  wear(relation: string): void { this.worn = relation; }
   live(bag: string, title: string): Rec | undefined { const r = this.layer(bag).get(title); return r && !r.deleted ? r : undefined; }
   canonUnder(bag: string): string | null {
     if (bag === WORKING) return daemonFaceCanonBag(this.worn);
@@ -82,7 +94,7 @@ class FakeHouse {
     const base = given ?? prior?.base ?? (canon !== null && this.live(canon, title) ? carrierOf(this.live(canon, title)!.text) : undefined);
     this.layer(bag).set(title, { text, ...(base !== undefined ? { base } : {}) });
   }
-  facesNow(): CarryVesselFace[] { return this.faces.map((f) => ({ ...f, kahua: [...(this.stage.get(f.handleIndex) ?? [])] })); }
+  facesNow(): CarryVesselFace[] { return this.faces.map((f) => ({ ...f, kahua: [...(this.stage.get(f.handleIndex) ?? [])], worn: f.relation !== null && f.relation === this.worn })); }
   async lay(wave: MirrorWave, apply: boolean): Promise<MirrorLaid> {
     this.laid.push(wave.source);
     const planned: string[] = [], kapae: string[] = [];
@@ -434,6 +446,68 @@ describe("the seed lays every mirror back into its one layer", () => {
     expect(readFaceLabel(F1, join(root, "projections"))).toBeNull();
     expect(existsSync(P(`wikis/daemon-${F1}/ha.ka.ba/notes/pond.tid`))).toBe(true);
     expect(existsSync(P(`ashes/${F1}`))).toBe(false);
+  });
+
+  test("M13 — the lit-face gate: three faces, h1 worn; no face's private memory lands in another face's layer", async () => {
+    const [G0, G1, G2] = ["aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa0", "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1", "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa2"];
+    const [N0, N1, N2] = ["lar:///ha.ka.ba/notes/zero-only", "lar:///ha.ka.ba/notes/one-only", "lar:///ha.ka.ba/notes/two-only"];
+    // The FORMER founding's three faces left their folders, each labelled with its pet-name.
+    rmSync(P(`wikis/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/kahua-${F1}`), { recursive: true });
+    const pets = ["joshua-fontany", "joshua-fontany-engineer", "joshua-fontany-referee"];
+    [[G0, N0], [G1, N1], [G2, N2]].forEach(([g, n], i) => put(`projections/wikis/daemon-${g}/ha.ka.ba/notes/${n!.slice(n!.lastIndexOf("/") + 1)}.tid`, tid(n!, `face h${i}'s own memory`)));
+    writeFaceLabels([G0, G1, G2].map((relation, handleIndex) => ({ relation, petname: pets[handleIndex]!, handleIndex })), join(root, "projections"));
+    // Re-founded: the same three pet-names on fresh relations; the engineer (h1) stands worn.
+    const [R0, R1, R2] = ["bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb0", "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb1", "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2"];
+    const v = new FakeHouse([R0, R1, R2].map((relation, handleIndex) => ({ handleIndex, petname: pets[handleIndex]!, relation })), "grant", R1);
+    v.held.add("garden");
+
+    const first = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
+    expect(first.adoptions.map((a) => [a.relation, a.handleIndex])).toEqual([[G0, 0], [G1, 1], [G2, 2]]);
+    // Only the worn face's memory lands, and only in its own document.
+    expect(v.live(WORKING, N1)?.text).toBe(tid(N1, "face h1's own memory"));
+    expect(v.live(WORKING, N0)).toBeUndefined();
+    expect(v.live(WORKING, N2)).toBeUndefined();
+    expect(v.laid.some((s) => s.includes(G0) || s.includes(G2) || s.includes(R0) || s.includes(R2))).toBe(false);
+    // The two that wait are named, as an expected state; their folders stay (no ashes); the worn face's former folders move.
+    expect(first.waiting.map((w) => [w.handleIndex, w.petname])).toEqual([[0, pets[0]], [2, pets[2]]]);
+    const { out } = mirrorLines(first);
+    expect(out.join("\n")).toContain(`${pets[0]}: wear it (\`lares vault unlock --face 0\`) and seed again`);
+    expect(out.join("\n")).toContain(`${pets[2]}: wear it (\`lares vault unlock --face 2\`) and seed again`);
+    expect(mirrorsLeftWork(first)).toBe(false);
+    expect(first.ashes.map((a) => a.relation)).toEqual([G1]);
+    expect(first.ashesLeft.map((a) => a.relation).sort()).toEqual([G0, G2]);
+    expect(existsSync(P(`wikis/daemon-${G0}`)) && existsSync(P(`wikis/daemon-${G2}`))).toBe(true);
+    expect(existsSync(P(`wikis/daemon-${R0}`)) || existsSync(P(`wikis/daemon-${R2}`))).toBe(false);
+
+    // WEAR THE REFEREE (h2) and seed again: h2's memory lands in h2's own document alone.
+    v.wear(R2);
+    const second = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
+    expect(v.workingOf(R2).get(N2)?.text).toBe(tid(N2, "face h2's own memory"));
+    expect(v.workingOf(R2).has(N0) || v.workingOf(R2).has(N1)).toBe(false);
+    expect(v.workingOf(R1).has(N2) || v.workingOf(R1).has(N0)).toBe(false);
+    // h1's own folder already landed while it stood worn, so it reads quiet; h0 still waits.
+    expect(second.waiting.map((w) => w.handleIndex)).toEqual([0]);
+    expect(second.ashes.map((a) => a.relation)).toEqual([G2]);
+  });
+
+  test("M14 — the import's lit-face gate: a three-face bundle onto h1 worn lands h1's rows alone and names the others", async () => {
+    const pets = ["one", "two", "three"];
+    const old = new FakeHouse([F1, F2, F3].map((relation, handleIndex) => ({ handleIndex, petname: pets[handleIndex]!, relation })), "old", F1);
+    old.held.add("garden");
+    rmSync(P(`bags/kahua-${F1}`), { recursive: true });
+    put(`projections/wikis/daemon-${F2}/ha.ka.ba/notes/two.tid`, tid("lar:///ha.ka.ba/notes/two", "face two's"));
+    put(`projections/wikis/daemon-${F3}/ha.ka.ba/notes/three.tid`, tid("lar:///ha.ka.ba/notes/three", "face three's"));
+    await carryExport(out, { acceptOmissions: true, doors: old.carryDoors() });
+    for (const r of [F1, F2, F3]) for (const d of [`wikis/daemon-${r}`, `bags/daemon-${r}`]) rmSync(P(d), { recursive: true, force: true });
+    const [R0, R1, R2] = ["cccccccc-cccc-4ccc-8ccc-ccccccccccc0", "cccccccc-cccc-4ccc-8ccc-ccccccccccc1", "cccccccc-cccc-4ccc-8ccc-ccccccccccc2"];
+    const after = new FakeHouse([R0, R1, R2].map((relation, handleIndex) => ({ handleIndex, petname: pets[handleIndex]!, relation })), "new", R1);
+    after.held.add("garden");
+    const r = await carryImport(out, { apply: true, doors: after.carryDoors() });
+    expect(r.waiting.map((w) => [w.petname, w.handleIndex])).toEqual([["one", 0], ["three", 2]]);
+    expect(after.live(WORKING, "lar:///ha.ka.ba/notes/two")?.text).toBe(tid("lar:///ha.ka.ba/notes/two", "face two's"));
+    expect(after.live(WORKING, "lar:///ha.ka.ba/notes/three")).toBeUndefined();
+    expect(after.live(WORKING, POND)).toBeUndefined();                       // face one's working copy waits for face one
+    expect(existsSync(P(`wikis/daemon-${R0}`)) || existsSync(P(`wikis/daemon-${R2}`))).toBe(false);
   });
 
   test("M11 — a fresh face that reads no relation and no stage never halts the seed", async () => {

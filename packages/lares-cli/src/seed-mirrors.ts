@@ -24,6 +24,12 @@
  * no label names reads as no face's mirror: the seed names it and adopts nothing from it. Adopted files copy into the new face's folder where none stands (a different file there stands off, as the import's mirror check
  * does), then lay through the same gate. So a tear-out with no export recovers from disk alone.
  *
+ * THE LIT-FACE GATE. The daemon's working layer (`wikis/daemon/working`) holds the WORN face's document alone, so a face's working and
+ * face-canon folders (its own, and every former face's it adopts) lay only while that face stands worn. Every other face places
+ * nothing into any layer: the seed names it ("<pet-name>: wear it (`lares vault unlock --face N`) and seed again"), an expected
+ * state rather than a stand-off, and its former folders stay out of ashes until its own seed lands them. No face's private memory
+ * ever lands in another face. Kahua lifts sign per face under that face's own grant, so they ride every face.
+ *
  * KAHUA LIFTS BY THE OPERATOR'S HAND, WITH EYES. The seed previews every kahua item it would lift per face (title, body
  * digest, face; a file that differs from a standing head reads `differs`), then lifts them under the target face's grant,
  * keyed by title and body digest, signed by that face, ONLY on a typed confirmation naming the count (a TTY) or
@@ -44,7 +50,7 @@ import {
   larProjectionsHome, larConfigHome, mirrorDirFileToUri, isDaemonFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug,
   daemonFaceFolder, kahuaFaceFolder, KAPAE_EXT, TEMP_LAYER_DIR, parseTidCarrier, atomicWriteFileSync, daemonBagsDir,
 } from "@lararium/node";
-import { LIVE_CARRY_DOORS, type CarryDoors, type CarryVesselFace } from "./commands/carry.js";
+import { LIVE_CARRY_DOORS, litFaceOf, wearItLine, type CarryDoors, type CarryVesselFace } from "./commands/carry.js";
 import { scanFiles, candidatesOf, settleIngest, openSyncedTree } from "./ingest-core.js";
 import { summaryOutput } from "./verb-result.js";
 import { vesselDid } from "./env.js";
@@ -149,6 +155,11 @@ export interface MirrorSeedResult {
   };
   readonly ashes: ReadonlyArray<{ readonly relation: string; readonly moved: readonly string[] }>;
   readonly ashesLeft: ReadonlyArray<{ readonly relation: string; readonly why: string }>;
+  /**
+   * THE FACES THAT WAIT THEIR TURN: each face whose folders (its own, or a former face's it adopts) stand on disk while another
+   * face stands worn. Nothing of theirs laid into any layer; their folders stay until their own seed lands them.
+   */
+  readonly waiting: ReadonlyArray<{ readonly handleIndex: number; readonly petname: string | null; readonly relations: readonly string[] }>;
   readonly minted: readonly string[];
   /** Whether the projections root held any mirror the leg reads. */
   readonly any: boolean;
@@ -273,7 +284,7 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
   const relations = [...new Set([...wikiFolders, ...bagFolders].map(relOf).filter((r): r is string => r !== null))].sort();
   const houseBags = bagFolders.filter((n) => relOf(n) === null && !isPrivateProjectionSlug(n) && !doors.sourced(n));
   const houseWikis = wikiFolders.filter((n) => relOf(n) === null && !isPrivateProjectionSlug(n) && !doors.sourced(n));
-  const empty: MirrorSeedResult = { applied: apply, adoptions: [], layers: [], files: { placed: 0, planned: 0, stoodOff: [] }, kahua: { preview: [], lifted: [], pending: [], refused: [] }, ashes: [], ashesLeft: [], minted: [], any: false };
+  const empty: MirrorSeedResult = { applied: apply, adoptions: [], layers: [], files: { placed: 0, planned: 0, stoodOff: [] }, kahua: { preview: [], lifted: [], pending: [], refused: [] }, ashes: [], ashesLeft: [], waiting: [], minted: [], any: false };
   if (relations.length === 0 && (opts.kahuaOnly || houseBags.length + houseWikis.length === 0)) return empty;
 
   // ── THE FACE MAP: each relation's folders land on the face that wears it, or on the ONE face carrying its pet-name. ──
@@ -303,6 +314,33 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
     target.set(r, face);
     adoptions.push({ relation: r, petname: label.petname, handleIndex: face.handleIndex, toRelation: face.relation });
   }
+
+  // ── THE LIT-FACE GATE: the daemon's working layer holds the WORN face's document alone, so only the worn face's folders lay. ──
+  // Every other face waits, named: nothing of its memory lands in any layer, and its folders stay until its own seed lands them.
+  const litRelation = litFaceOf(faces)?.relation ?? null;
+  const waitingBy = new Map<number, { handleIndex: number; petname: string | null; relations: string[] }>();
+  for (const r of relations) {
+    const face = target.get(r);
+    if (face === undefined || face.relation === litRelation) continue;
+    const w = waitingBy.get(face.handleIndex) ?? { handleIndex: face.handleIndex, petname: face.petname, relations: [] };
+    w.relations.push(r);
+    waitingBy.set(face.handleIndex, w);
+  }
+  // A face that waits on its OWN folders alone (no former face adopts onto it) waits only where they hold something its document
+  // has not taken: a preview scan (writing nothing) against its synced base, so a face already seeded while worn reads quiet.
+  for (const w of [...waitingBy.values()]) {
+    if (opts.kahuaOnly || w.relations.some((r) => r !== target.get(r)!.relation)) continue;
+    const own = w.relations[0]!;
+    let moved = 0;
+    for (const [dir, toBag, skipTop] of [[bagsDir, daemonFaceCanonBag(own), []], [wikisDir, wikiSlotUri("daemon", "working"), [TEMP_LAYER_DIR, "recovery"]]] as const) {
+      const source = join(dir, daemonFaceFolder(own));
+      if (!existsSync(source)) continue;
+      const read = await doors.lay({ source, uriDir: dir, toBag, skipTop }, false);
+      moved += read.planned.length;                // a kāpae shadow reads on every scan, so carriers alone name a move
+    }
+    if (moved === 0) waitingBy.delete(w.handleIndex);
+  }
+  const waiting = [...waitingBy.values()].sort((a, b) => a.handleIndex - b.handleIndex);
 
   // ── KAHUA: the preview first, and a wrong count refuses before anything writes. ──
   const kahuaPreview: KahuaPreviewItem[] = [];
@@ -357,6 +395,8 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
     const byTarget = new Map<string, string[]>();
     for (const r of relations) { const to = target.get(r)!.relation!; byTarget.set(to, [...(byTarget.get(to) ?? []), r]); }
     for (const [to, owners] of [...byTarget].sort(([a], [b]) => (a < b ? -1 : 1))) {
+      // A face that stands unworn places nothing into any layer, and its former folders stay (no ashes) until it is worn.
+      if (to !== litRelation) { for (const r of owners) markPartial(r, wearItLine(target.get(r)!, "seed")); continue; }
       for (const kind of ["canon", "working"] as const) {
         const dir = kind === "canon" ? bagsDir : wikisDir;
         const skipTop = kind === "working" ? [TEMP_LAYER_DIR, "recovery"] : [];
@@ -441,7 +481,7 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
     else ashes.push({ relation: a.relation, moved: [...moved.moved] });
   }
 
-  return { applied: apply, adoptions, layers, files, kahua: { preview: kahuaPreview, lifted, pending: stillWaiting, refused: kahuaRefused }, ashes, ashesLeft, minted, any: true };
+  return { applied: apply, adoptions, layers, files, kahua: { preview: kahuaPreview, lifted, pending: stillWaiting, refused: kahuaRefused }, ashes, ashesLeft, waiting, minted, any: true };
 }
 
 /** The lines a person reads for a mirror leg's result. */
@@ -449,6 +489,7 @@ export function mirrorLines(r: MirrorSeedResult): { out: string[]; err: string[]
   const out: string[] = [], err: string[] = [];
   if (!r.any) return { out, err };
   for (const a of r.adoptions) out.push(`mirrors: the former face ${a.relation} ("${a.petname}") adopts onto h${a.handleIndex} (${a.toRelation})`);
+  for (const w of r.waiting) out.push(`mirrors: ${wearItLine(w, "seed")}; its folders (${w.relations.join(", ")}) stay as they stand, and nothing of its memory laid into any layer`);
   for (const b of r.minted) out.push(`  ${r.applied ? "minted" : "would mint"} ${b} (this vessel held no such wiki)`);
   for (const t of r.layers) {
     out.push(`  ${t.mirror} -> ${t.toBag}: ${r.applied ? `landed ${t.landed}` : `would land ${t.planned}`}${t.kapae > 0 ? ` · kāpae ${t.kapae}` : ""} · stood off ${t.stoodOff.length} · refused ${t.refused.length}`);

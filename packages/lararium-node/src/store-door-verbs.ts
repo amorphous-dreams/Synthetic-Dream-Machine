@@ -161,6 +161,12 @@ export interface StoreDoorDeps {
   readonly wornFleet?: () => WornFleet | undefined;
   /** The daemon wiki the swarm's controls rest in, where a daemon stands; absent on a direct act, which refuses every swarm row by name. */
   readonly swarmWiki?: SwarmWikiPort;
+  /**
+   * The face the standing composition WEARS (lit and proved), by handle index; null where none stands lit. A face's stage read
+   * (`kahua-read`) answers `worn` off it, so the seed and the import lay a face's private mirrors only into the one face whose
+   * daemon working document the composition holds. Absent on a direct act, whose answers carry no `worn`.
+   */
+  readonly wornFace?: () => number | null;
 }
 
 /**
@@ -374,7 +380,12 @@ function storeDoorRowsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     "kahua-lift": (args) => answer("kahua-lift", () => kahua("lift", args)),
     "kahua-withdraw": (args) => answer("kahua-withdraw", () => kahua("withdraw", args)),
     "kahua-carry": (args) => answer("kahua-carry", () => kahua("carry", args)),
-    "kahua-read": (args) => answer("kahua-read", () => kahua(args["action"] === "get" ? "get" : "list", args)),
+    "kahua-read": (args) => answer("kahua-read", async () => {
+      const read = await kahua(args["action"] === "get" ? "get" : "list", args);
+      // WHICH FACE THE COMPOSITION WEARS: the daemon's working layer holds that face's document alone.
+      const face = int(args["face"]);
+      return deps.wornFace && face !== undefined ? { ...read, worn: deps.wornFace() === face } : read;
+    }),
     "intent-issue": (args) => answer("intent-issue", () => intent("issue", args)),
     "intent-show": (args) => answer("intent-show", () => intent(args["action"] === "delegations" ? "delegations" : "show", args)),
     "intent-ask": (args) => answer("intent-ask", () => intent("ask", args)),

@@ -83,6 +83,31 @@ export interface CarryVesselFace {
   readonly kahuaRefusal?: string;
   /** The store door's name for that refusal (`storeFailure`): `vessel-locked`, `daemon-unreachable`, … */
   readonly kahuaRefusalCode?: string;
+  /**
+   * Whether the standing composition WEARS this face (lit and proved): the daemon's working layer holds this face's document
+   * alone. Absent where the door answered no such reading (a direct holder).
+   */
+  readonly worn?: boolean;
+}
+
+/**
+ * THE LIT-FACE GATE: the one face whose private mirrors may lay now. The daemon's working layer (`wikis/daemon/working`) holds the
+ * WORN face's document, so a face's working and face-canon memory lands only while that face stands worn; every other face waits
+ * until it is worn (`lares vault unlock --face N`), and no face's private memory ever lands in another face. Where the vessel named
+ * which face it wears, that face (or none); where no door answered the reading (a direct holder), the one face carrying a relation,
+ * else none.
+ */
+export function litFaceOf(faces: readonly CarryVesselFace[]): CarryVesselFace | null {
+  const worn = faces.filter((f) => f.worn === true && f.relation !== null);
+  if (worn.length === 1) return worn[0]!;
+  if (faces.some((f) => f.worn !== undefined)) return null;
+  const related = faces.filter((f) => f.relation !== null);
+  return related.length === 1 ? related[0]! : null;
+}
+
+/** The words a face that waits its turn reads: wear it, then seed (or import) again. A named expected state, never a stand-off. */
+export function wearItLine(face: { readonly handleIndex: number; readonly petname: string | null }, verb: "seed" | "import"): string {
+  return `${face.petname ?? `h${face.handleIndex}`}: wear it (\`lares vault unlock --face ${face.handleIndex}\`) and ${verb} again`;
 }
 
 /** What one ingest wave settled, as the carry verbs read it. */
@@ -132,10 +157,11 @@ async function liveFaces(): Promise<CarryVesselFace[]> {
   const out: CarryVesselFace[] = [];
   for (const { handleIndex } of (await readPersonaRoots()).roots) {
     const declaration = await declarations.get(handleIndex);
-    let kahua: CarryKahuaHead[] | null = null, relation: string | null = null, kahuaRefusal: string | undefined, kahuaRefusalCode: string | undefined;
+    let kahua: CarryKahuaHead[] | null = null, relation: string | null = null, kahuaRefusal: string | undefined, kahuaRefusalCode: string | undefined, worn: boolean | undefined;
     try {
       const { output } = await storeVerb("kahua-read", { face: handleIndex, action: "list" });
       relation = typeof output["relation"] === "string" ? output["relation"] : null;
+      if (typeof output["worn"] === "boolean") worn = output["worn"];
       const items = Array.isArray(output["items"]) ? (output["items"] as Array<{ heads?: unknown }>) : [];
       kahua = items.flatMap((item) => (Array.isArray(item.heads) ? item.heads as CarryKahuaHead[] : []))
         .map((h) => ({ title: h.title, cid: h.cid, text: h.text, fields: { ...h.fields }, taint: [...h.taint], sources: h.sources.map((s) => ({ title: s.title, revision: s.revision })) }));
@@ -145,6 +171,7 @@ async function liveFaces(): Promise<CarryVesselFace[]> {
       handle: declaration?.handle ?? null, seat: declaration?.seat === true,
       chair: declaration?.seat === true ? declaration.chair?.trim() || defaultChairLabel(handleIndex) : null,
       kahua, ...(kahuaRefusal !== undefined ? { kahuaRefusal } : {}), ...(kahuaRefusalCode !== undefined ? { kahuaRefusalCode } : {}),
+      ...(worn !== undefined ? { worn } : {}),
     });
   }
   // THE FACE LABELS: each named face's relation and pet-name rest in plaintext outside the hearth, so a seed after a
@@ -546,6 +573,8 @@ export interface CarryImportResult {
   readonly ashes: ReadonlyArray<{ readonly relation: string; readonly moved: readonly string[] }>;
   /** The former faces' folders left standing, each with why (a partial landing). */
   readonly ashesLeft: ReadonlyArray<{ readonly relation: string; readonly why: string }>;
+  /** The bundle faces whose face here stands unworn: nothing of theirs laid into any layer; wear each and import again. */
+  readonly waiting: ReadonlyArray<{ readonly petname: string; readonly handleIndex: number }>;
 }
 
 /**
@@ -611,7 +640,8 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   for (const bf of manifest.faces) {
     const p = planned.find((x) => x.row.face === bf.key)!;
     const face = faces.find((f) => f.handleIndex === p.handleIndex)!;
-    if (face.relation === null) {
+    // A face that reads no relation while ANOTHER face stands worn waits its turn (the lit-face gate below), never refuses.
+    if (face.relation === null && litFaceOf(faces) === null) {
       // A face reads no relation while its vessel stands down or locked: the cure reads "up, then unlock", before anything else.
       const shut = face.kahuaRefusalCode !== undefined && SHUT_VESSEL_CODES.has(face.kahuaRefusalCode);
       throw new CarryRefused("carry-face-unworn", shut
@@ -621,6 +651,13 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     faceMap[bf.petname] = face.handleIndex;
     target.set(bf.key, face);
   }
+
+  // THE LIT-FACE GATE, as the seed reads it: a bundle face's working and face-canon rows (and its drafts and temp) land only while
+  // its face here stands worn, since the daemon's working layer holds the worn face's document alone. Every other bundle face
+  // waits, named; its kahua heads still lift, each signed under its own face's grant.
+  const litRelation = litFaceOf(faces)?.relation ?? null;
+  const unworn = new Set(manifest.faces.filter((bf) => target.get(bf.key)!.relation !== litRelation).map((bf) => bf.key));
+  const waiting = manifest.faces.filter((bf) => unworn.has(bf.key)).map((bf) => ({ petname: bf.petname, handleIndex: target.get(bf.key)!.handleIndex }));
 
   const tallies = { working: tally(), kapae: tally(), faceCanon: tally(), kahua: tally(), draft: tally(), temp: tally(), bag: tally(), wikiWorking: tally() };
   const minted: string[] = [];
@@ -678,6 +715,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     for (const k of answer.kapaeRefused) shadowTally.refused.push(`${k.uri} (${k.why})`);
   };
   for (const bf of manifest.faces) {
+    if (unworn.has(bf.key)) continue;
     const relation = target.get(bf.key)!.relation!;
     for (const kind of ["working", "canon"] as const) {
       const files = manifest.files.map((f) => f.path).filter((p) => p.startsWith(`faces/${bf.key}/${kind}/`));
@@ -693,6 +731,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     const face = target.get(bf.key)!;
     const heads = bundle.heads.get(bf.key) ?? [];
     if (heads.length === 0) continue;
+    if (face.kahua === null && unworn.has(bf.key)) continue;              // a shut face that waits its turn: its heads lift once it is worn
     if (face.kahua === null) { tallies.kahua.refused.push(`the stage of h${face.handleIndex} would not read (${face.kahuaRefusal ?? "unread"}); ${heads.length} head(s) wait`); continue; }
     const byTitle = new Map<string, CarryKahuaHead[]>();
     for (const h of heads) byTitle.set(h.title, [...(byTitle.get(h.title) ?? []), h]);
@@ -742,6 +781,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     if (!m) continue;
     const [, owner, kind, rest] = m as unknown as [string, string, "drafts" | "temp", string];
     const isFace = f.path.startsWith("faces/");
+    if (isFace && unworn.has(owner)) continue;
     const folder = isFace ? daemonFaceFolder(target.get(owner)!.relation!) : owner;
     const slug = isFace ? "daemon" : owner;
     const t = kind === "drafts" ? tallies.draft : tallies.temp;
@@ -809,6 +849,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   const left = Object.values(tallies).reduce((n, t) => n + t.stoodOff.length + t.refused.length, 0);
   for (const bf of manifest.faces) {
     for (const r of former.filter((x) => readFaceLabel(x, projections)?.petname === bf.petname)) {
+      if (unworn.has(bf.key)) { ashesLeft.push({ relation: r, why: wearItLine({ handleIndex: target.get(bf.key)!.handleIndex, petname: bf.petname }, "import") }); continue; }
       if (left > 0) { ashesLeft.push({ relation: r, why: `the import left ${left} row(s) standing off or refused; settle them and import again` }); continue; }
       const { beyond } = weigh(r, bf.key);
       if (beyond > 0) { ashesLeft.push({ relation: r, why: `its folders hold ${beyond} file(s) the bundle never carried: \`lares vessel seed --apply\` adopts them by pet-name first` }); continue; }
@@ -818,7 +859,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     }
   }
 
-  return { bundleId: manifest.bundleId, applied: apply, faceMap, redeclare: acts, tallies, skipped, minted, ashes, ashesLeft };
+  return { bundleId: manifest.bundleId, applied: apply, faceMap, redeclare: acts, tallies, skipped, minted, ashes, ashesLeft, waiting };
 }
 
 // ── the commands' shared refusal ─────────────────────────────────────────────────────────────────────────────

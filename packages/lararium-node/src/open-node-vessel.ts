@@ -3942,6 +3942,8 @@ async function prepareNodeBootOn(
       ...(sovereign ? { seatDuties: (facts) => askSeatDutiesAsVessel(facts).answer } : {}),
       // The operator's road reads the fleet this vessel wears, as the fold's settle does (road `T34`).
       wornFleet: () => wornFleetOf().worn,
+      // The face this composition wears (lit and proved): a stage read answers `worn` off it.
+      wornFace: () => litFace,
       // A feed asks the island's `realm-feed` as the face, from this thread, over the host channel.
       askIsland: (verb, args, requestedBy, requestId) => {
         if (!daemonVm) throw new Error("the daemon island does not stand yet");
