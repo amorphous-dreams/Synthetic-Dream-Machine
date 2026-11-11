@@ -74,9 +74,15 @@ export interface CustodyStanding {
 }
 
 export type CustodyAnswer =
-  | ({ readonly op: "unlock"; readonly held?: boolean } & HolderUnlock & Partial<CustodyStanding>)
+  | ({
+      readonly op: "unlock"; readonly held?: boolean;
+      /** `--all`: each standing face's reading under the presented route, `opened` or `stayed-shut:<reading>`. */
+      readonly faceReadings?: ReadonlyArray<{ readonly face: number; readonly reading: string }>;
+      /** A switch whose composition refused: the face it named, why, and the face worn again with the node key held. */
+      readonly switchRefused?: string; readonly face?: number; readonly wornAgain?: number;
+    } & HolderUnlock & Partial<CustodyStanding>)
   /** The node key opened and a face did not (`face-refused`), or the vessel holds several faces and none was named (`face-not-named`): nothing stays open. */
-  | { readonly op: "unlock"; readonly reading: "face-refused" | "face-not-named"; readonly standing: string; readonly face?: number; readonly faceReading?: string; readonly faces?: readonly unknown[] }
+  | { readonly op: "unlock"; readonly reading: "face-refused" | "face-not-named"; readonly standing: string; readonly face?: number; readonly faceReading?: string; readonly faces?: readonly unknown[]; readonly faceReadings?: ReadonlyArray<{ readonly face: number; readonly reading: string }> }
   | ({ readonly op: "lock"; readonly locked: true; readonly was: "unlocked" | "locked"; readonly face?: number } & Partial<CustodyStanding>)
   | { readonly op: "custody"; readonly unlocked: boolean; readonly slot: string | null; readonly attemptsLeft: number; readonly standing: string; readonly wikiAwaits: string | null; readonly testScratch: boolean; readonly composing: boolean; readonly facesOpen?: number }
   | { readonly op: "act"; readonly act: string; readonly result: Record<string, unknown> }
@@ -233,11 +239,20 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     };
     let mounted: number | undefined = sel.face;
     let openedOrdinals: number[] = [];
+    /** `--all` answers per face: which faces this route opened, and which stayed shut under it (each by its own reading). */
+    let faceReadings: Array<{ readonly face: number; readonly reading: string }> | undefined;
     if (sel.all) {
       const readings = await holder.unlockFaces(credentials);
       const opened = readings.filter((r) => r.reading === "opens" || r.reading === "already-unlocked").map((r) => (r as { ordinal: number }).ordinal);
       openedOrdinals = opened;
-      if (standing.length > 0 && opened.length === 0) return refuseFaces("face-refused", { faces: readings.map((r) => r.reading) });
+      const byFcid = new Map(readings.flatMap((r) => ("fcid" in r ? [[r.fcid, r.reading] as const] : [])));
+      faceReadings = [];
+      for (const ordinal of standing) {
+        const at = await holder.faceStanding({ ordinal });
+        const reading = opened.includes(ordinal) ? "opened" : at !== null && at.unlocked ? "opened" : at !== null ? (byFcid.get(at.fcid) ?? "stayed-shut") : "stayed-shut";
+        faceReadings.push({ face: ordinal, reading: reading === "opened" ? "opened" : `stayed-shut:${reading}` });
+      }
+      if (standing.length > 0 && opened.length === 0) return refuseFaces("face-refused", { faces: readings.map((r) => r.reading), faceReadings });
       if (mounted === undefined && mountedBefore === undefined && opened.length === 1) mounted = opened[0];
     } else if (sel.face !== undefined) {
       const r = await holder.unlockFace({ ordinal: sel.face }, credentials);
@@ -251,32 +266,42 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     } else if (standing.length > 1) {
       return refuseFaces("face-not-named", { faces: standing });
     }
+    const perFace = faceReadings !== undefined ? { faceReadings } : {};
     deps.onLog(`unlocked: slot ${u.reading === "opens" ? u.slot : "(held)"} opened the node key${mounted !== undefined ? `; face h${mounted} open` : ""}`);
     // The unlock NAMES the face the composition MOUNTS for the life of the unlock: the composition's own state, never a pointer at
     // rest, and never a face a command defaults to (a command names `--face N`, or resolves the one face standing open).
     if (mounted !== undefined) setMountedFace(mounted);
     // An unlock over a held key that opens no new face and changes no mounted face stands nothing new.
     if (!freshly && holder.unlockedFaces().every((f) => openBefore.has(f)) && (mounted === undefined || mounted === mountedBefore)) {
-      return { op: "unlock", ...u, standing: deps.standing() };
+      return { op: "unlock", ...u, ...perFace, standing: deps.standing() };
     }
     if (!freshly && mountedWasOpen && mountedBefore !== undefined && (mounted === undefined || mounted === mountedBefore) && deps.lightFace) {
       for (const ordinal of openedOrdinals) {
         const face = await holder.faceStanding({ ordinal });
         if (ordinal !== mountedBefore && face?.unlocked && !openBefore.has(face.fcid)) await deps.lightFace(ordinal);
       }
-      return { op: "unlock", ...u, standing: deps.standing(), held: true };
+      return { op: "unlock", ...u, ...perFace, standing: deps.standing(), held: true };
     }
     // THE UNLOCK IS A HAND ACT: its route rides, AS AN ARGUMENT, into the composition it stands, whose boot dial alone may issue the
     // founder's own certificate at a new scope (a ward act); no module holds it, and the composition drops it once that dial settles.
     const stood = await deps.recompose(true, wardCredential(credentials));
-    // A KEY NEVER RESTS OVER A FLOOR. When the composition that should have stood on the key refused, the vessel
-    // stands at the floor and the holder drops what it opened: held and standing never disagree.
     if (stood.refused !== undefined) {
+      // A SWITCH THAT FAILS WEARS THE FACE IT LEFT. Over a held key with a face worn and standing, an unlock that names another
+      // face to wear and whose composition refused puts the mount back, composes onto it again, and keeps the node key: the
+      // operator's standing vessel never drops to the floor because a sibling would not stand.
+      if (!freshly && mountedWasOpen && mountedBefore !== undefined && mounted !== undefined && mounted !== mountedBefore) {
+        setMountedFace(mountedBefore);
+        deps.onLog(`the composition wearing h${mounted} did not stand; h${mountedBefore} worn again, the node key held`);
+        const back = await deps.recompose(true, wardCredential(credentials));
+        if (back.refused === undefined) return { op: "unlock", ...u, ...perFace, ...back, held: true, switchRefused: stood.refused, face: mounted, wornAgain: mountedBefore };
+      }
+      // A KEY NEVER RESTS OVER A FLOOR. When the composition that should have stood on the key refused, the vessel
+      // stands at the floor and the holder drops what it opened: held and standing never disagree.
       await holder.lock();
       deps.onLog("the sovereign composition did not stand; the node key dropped again");
-      return { op: "unlock", ...u, ...stood, held: false };
+      return { op: "unlock", ...u, ...perFace, ...stood, held: false };
     }
-    return { op: "unlock", ...u, ...stood, held: true };
+    return { op: "unlock", ...u, ...perFace, ...stood, held: true };
   });
 
   /**

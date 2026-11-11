@@ -15,7 +15,7 @@ const cred = (passphrase: string) => [{ kind: "passphrase" as const, passphrase 
 let seat: SeatedScratchCustody | null = null;
 afterEach(async () => { setMountedFace(undefined); await seat?.drop(); seat = null; });
 
-async function vessel(faceRoutes: readonly string[]) {
+async function vessel(faceRoutes: readonly string[], refuseWearing?: number) {
   seat = await seatScratchCustody("unlock-per-face");
   const { holder } = seat;
   const fcids: string[] = [];
@@ -24,7 +24,12 @@ async function vessel(faceRoutes: readonly string[]) {
   const composed: boolean[] = [];
   const handle = custodyFrameHandler({
     holder, testScratch: false, standing: () => "herm", onLog: () => {},
-    recompose: async (sovereign) => { composed.push(sovereign); return { standing: sovereign ? "hearth" : "herm" }; },
+    recompose: async (sovereign) => {
+      composed.push(sovereign);
+      // A composition that refuses to stand while it would wear `refuseWearing` (a face whose memory will not open).
+      if (sovereign && refuseWearing !== undefined && mountedFaceOrdinal() === refuseWearing) return { standing: "herm", refused: `h${refuseWearing} would not stand` };
+      return { standing: sovereign ? "hearth" : "herm" };
+    },
   });
   const send = (frame: unknown): Promise<Record<string, unknown>> => new Promise((resolve) => {
     const sock = Object.assign(new EventEmitter(), { end: (line: string) => resolve(JSON.parse(line) as Record<string, unknown>) }) as unknown as Socket;
@@ -115,5 +120,39 @@ describe("the gate with no face, and with one that stays shut", () => {
     expect(seat.holder.isUnlocked()).toBe(true);                              // the node key stands held
     expect(seat.holder.unlockedFaces()).toEqual([]);
     expect(sovereignStands()).toBe(false);                                    // a face stands and none is open
+  });
+});
+
+describe("the unlock answers honestly, and a failed switch wears the face it left", () => {
+  test("RED: `--all` answers per face — the faces the route opened, and each that stayed shut under it with its reading", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, "the-second-face-route", "the-third-face-route"]);
+    const all = await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE), all: true });
+    expect(all).toMatchObject({ reading: "opens", held: true });
+    expect(all["faceReadings"]).toEqual([
+      { face: 0, reading: "opened" },
+      { face: 1, reading: "stayed-shut:no-slot-opens" },
+      { face: 2, reading: "stayed-shut:no-slot-opens" },
+    ]);
+  });
+
+  test("RED: a `--face N` switch whose composition refuses wears the previous face again, recomposes onto it, and keeps the node key", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, "the-second-face-route"], 1);
+    const both = [...cred(FIXTURE_PASSPHRASE), ...cred("the-second-face-route")];
+    expect(await v.send({ op: "unlock", credentials: both, face: 0 })).toMatchObject({ reading: "opens", held: true });
+    expect(mountedFaceOrdinal()).toBe(0);
+    const composedBefore = v.composed.length;
+    const sw = await v.send({ op: "unlock", credentials: both, face: 1 });
+    expect(sw).toMatchObject({ op: "unlock", held: true, switchRefused: "h1 would not stand", face: 1, wornAgain: 0, standing: "hearth" });
+    expect(mountedFaceOrdinal()).toBe(0);                                     // the mount stands back on h0
+    expect(v.holder.isUnlocked()).toBe(true);                                 // the node key never dropped
+    expect(sovereignStands()).toBe(true);
+    expect(v.composed.length).toBe(composedBefore + 2);                        // the refused switch, then h0 again
+  });
+
+  test("CONTROL: a fresh unlock whose composition refuses still drops the node key (a key never rests over a floor)", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE], 0);
+    const a = await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE), face: 0 });
+    expect(a).toMatchObject({ reading: "opens", held: false });
+    expect(v.holder.isUnlocked()).toBe(false);
   });
 });

@@ -185,16 +185,36 @@ async function openOrRefuse(args: ParsedArgs, verb: string, homes: CustodyHomes,
   return null;
 }
 
+/**
+ * THE UNLOCK ANSWERS HONESTLY, PER FACE. `--all` names which faces the route opened and which stayed shut under it, each shut
+ * face with the act that opens it; a switch whose composition refused names the face it named and the face worn again.
+ */
+export function unlockFaceLines(a: CustodyDoorAnswer): string {
+  const parts: string[] = [];
+  const readings = Array.isArray(a["faceReadings"]) ? (a["faceReadings"] as Array<{ face?: unknown; reading?: unknown }>) : [];
+  if (readings.length > 0) {
+    const opened = readings.filter((r) => r.reading === "opened").map((r) => `h${String(r.face)}`);
+    const shut = readings.filter((r) => r.reading !== "opened").map((r) => `h${String(r.face)}`);
+    parts.push(opened.length > 0 ? `opened ${opened.join(", ")}` : "opened no face");
+    if (shut.length > 0) parts.push(`${shut.join(", ")} did not open under this route — run \`lares vault unlock --face N\` for each`);
+  }
+  if (typeof a["switchRefused"] === "string") {
+    parts.push(`the vessel wearing h${String(a["face"])} did not stand (${a["switchRefused"]}); h${String(a["wornAgain"])} stands worn again, and the vessel key stays held`);
+  }
+  return parts.length > 0 ? ` ${parts.join("; ")}.` : "";
+}
+
 /** What the custody door's answer means to a person, one line per reading. */
 function unlockLine(a: CustodyDoorAnswer): string {
   const standing = typeof a["standing"] === "string" ? a["standing"] : "?";
   const refused = typeof a["refused"] === "string" ? ` The sovereign composition did not stand: ${a["refused"]}.` : "";
+  const faces = unlockFaceLines(a);
   switch (a["reading"]) {
     case "opens":            return a["held"] === false
-      ? `slot ${String(a["slot"])} opened the vessel key, and the vessel dropped it again: it stands as ${standing}.${refused}`
-      : `unlocked: slot ${String(a["slot"])} opened the vessel key; the vessel stands as ${standing}.${refused}`;
-    case "already-unlocked": return `already unlocked: the vessel holds its key and stands as ${standing}.`;
-    case "face-refused":     return `the node key opened and ${a["face"] !== undefined ? `face h${String(a["face"])}` : "no face"} did not (${String(a["faceReading"] ?? "no face tree opens under it")}) — nothing stays open; a face opens under its own route, so present the route that face asked for.`;
+      ? `slot ${String(a["slot"])} opened the vessel key, and the vessel dropped it again: it stands as ${standing}.${refused}${faces}`
+      : `unlocked: slot ${String(a["slot"])} opened the vessel key; the vessel stands as ${standing}.${refused}${faces}`;
+    case "already-unlocked": return `already unlocked: the vessel holds its key and stands as ${standing}.${faces}`;
+    case "face-refused":     return `the node key opened and ${a["face"] !== undefined ? `face h${String(a["face"])}` : "no face"} did not (${String(a["faceReading"] ?? "no face tree opens under it")}) — nothing stays open; a face opens under its own route, so present the route that face asked for.${faces}`;
     case "face-not-named":   return `this vessel holds several faces (${(Array.isArray(a["faces"]) ? a["faces"] : []).map((i) => `h${String(i)}`).join(", ")}) and none was named — nothing stays open: name one (\`lares vault unlock --face N\`) or try the credential on every face (\`--all\`).`;
     case "no-slot-opens":    return `no slot opens under what was presented — nothing was changed; ${String(a["attemptsLeft"])} attempt(s) left before this vessel refuses every unlock until it restarts.`;
     case "attempts-spent":   return "this vessel refuses every unlock until it restarts: its unlock attempts for this boot stand spent. Restart it (`lares vessel stand --restart`), then unlock.";
