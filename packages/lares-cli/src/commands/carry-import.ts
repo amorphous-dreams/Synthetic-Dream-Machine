@@ -18,7 +18,7 @@ export async function cmdImport(args: ParsedArgs, doors: CarryDoors = LIVE_CARRY
   const code = refused > 0 ? exitFor("verb-error") : stood > 0 ? exitFor("conflict") : 0;
   emit(args, {
     ok: code === 0,
-    data: { bundleId: result.bundleId, applied: result.applied, faceMap: result.faceMap, redeclare: result.redeclare, minted: result.minted, tallies: result.tallies, skipped: result.skipped, ashes: result.ashes, ashesLeft: result.ashesLeft },
+    data: { bundleId: result.bundleId, applied: result.applied, faceMap: result.faceMap, redeclare: result.redeclare, minted: result.minted, tallies: result.tallies, skipped: result.skipped, ashes: result.ashes, ashesLeft: result.ashesLeft, carded: result.carded, uncarded: result.uncarded },
     ...(refused > 0 ? { error: { code: "verb-error", message: `${refused} row(s) refused` } } : stood > 0 ? { error: { code: "conflict", message: `${stood} row(s) stand off; nothing overwrote them` } } : {}),
     human: () => {
       console.log(`import: bundle ${result.bundleId.slice(0, 16)} verified whole${result.applied ? "" : " · preview only (pass --apply)"}`);
@@ -34,6 +34,8 @@ export async function cmdImport(args: ParsedArgs, doors: CarryDoors = LIVE_CARRY
       for (const s of result.skipped) console.error(`  skipped (no address derives): ${s}`);
       for (const a of result.ashes) { console.log(`  ashes: the former face ${a.relation}'s folders move out of the live mirror set:`); for (const m of a.moved) console.log(`    ${m}`); }
       for (const a of result.ashesLeft) console.log(`  ashes: the former face ${a.relation}'s folders stay where they stand: ${a.why}`);
+      for (const c of result.carded) console.log(`  card: the former face ${c.relation}'s uncarded folders hold "${c.petname}"'s files; ${result.applied ? "its card names" : "its card would name"} "${c.petname}"`);
+      for (const u of result.uncarded) console.log(`  card: the former face ${u.relation}'s folders stay uncarded: ${u.why}`);
     },
   });
   return code;

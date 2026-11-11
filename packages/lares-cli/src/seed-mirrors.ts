@@ -50,7 +50,7 @@ import { summaryOutput } from "./verb-result.js";
 import { vesselDid } from "./env.js";
 import { canonIsDisk } from "./holdings.js";
 import { sha256Hex, type CarryKahuaHead } from "./carry-manifest.js";
-import { readFaceCard } from "./face-cards.js";
+import { readFaceCard, readFaceBases } from "./face-cards.js";
 import { moveFaceToAshes } from "./ashes.js";
 
 // ── the doors ──────────────────────────────────────────────────────────────────────────────────────────────────
@@ -67,6 +67,9 @@ export interface MirrorWave {
   readonly wiki?: string;
   /** Top-level dirs under the folder that carry no layer of their own (`recovery`, `temp`). */
   readonly skipTop: readonly string[];
+  /** THE BASES A WORKING WAVE RESTORES (title -> the canon text hash its copy forked from), read off each owning face's
+   *  bases sidecar: the island stamps each on the copy it lands, so a fork keeps its base across a re-founding. */
+  readonly bases?: Readonly<Record<string, string>>;
 }
 
 /** What a wave planned and landed. A preview plans alone. */
@@ -291,7 +294,7 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
     if (unread !== undefined) throw new MirrorRefused("seed-faces-unread", `the face h${unread.handleIndex} reads no face relation (${unread.kahuaRefusal}), so the seed cannot tell whether the folders of ${r} belong to it: unlock the vessel (\`lares vault unlock\`) and seed again`);
     const card = readFaceCard(r, projections);
     const held = [wikiFolders.includes(daemonFaceFolder(r)) ? join(wikisDir, daemonFaceFolder(r)) : null, bagFolders.includes(daemonFaceFolder(r)) ? join(bagsDir, daemonFaceFolder(r)) : null, bagFolders.includes(kahuaFaceFolder(r)) ? join(bagsDir, kahuaFaceFolder(r)) : null].filter((p): p is string => p !== null);
-    if (card === null) throw new MirrorRefused("seed-face-uncarded", `the folders of a former face (${held.join(", ")}) name no pet-name on disk (no face card stands for ${r}), so the seed cannot tell whose memory they hold: carry that face's bundle in (\`lares import <bundle> --apply\`), or move the folders out of the projections root, and seed again`);
+    if (card === null) throw new MirrorRefused("seed-face-uncarded", `the folders of a former face (${held.join(", ")}) name no pet-name on disk (no face card stands for ${r}), so the seed cannot tell whose memory they hold: carry that face's bundle in (\`lares import <bundle> --apply\`: the bundle's manifest maps each face by pet-name, and the import writes the card for the folder it matches), or move the folders out of the projections root, and seed again`);
     const matches = faces.filter((f) => f.petname === card.petname);
     if (matches.length > 1) throw new MirrorRefused("seed-face-duplicate-petname", `faces ${matches.map((m) => `h${m.handleIndex}`).join(" and ")} on this vessel both carry the pet-name "${card.petname}", which the former face ${r} wore; its memory lands on one face alone, so rename one and seed again`);
     const face = matches[0];
@@ -358,6 +361,10 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
         const dir = kind === "canon" ? bagsDir : wikisDir;
         const skipTop = kind === "working" ? [TEMP_LAYER_DIR, "recovery"] : [];
         const toBag = kind === "canon" ? daemonFaceCanonBag(to) : wikiSlotUri("daemon", "working");
+        // A working wave restores each copy's fork base off the owning faces' sidecars (the face's own wins a title both name).
+        const bases: Record<string, string> = {};
+        if (kind === "working") for (const r of [...owners.filter((r) => r !== to), to]) Object.assign(bases, readFaceBases(r, projections));
+        const withBases = Object.keys(bases).length > 0 ? { bases } : {};
         const dest = join(dir, daemonFaceFolder(to));
         const sources = owners.filter((r) => existsSync(join(dir, daemonFaceFolder(r))));
         for (const r of sources.filter((r) => r !== to)) {
@@ -369,11 +376,11 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
             markPartial(r, `${uri} stands off in ${dest}`);
           }
           // A preview reads the former face's folder as the source: its files have not copied yet.
-          if (!apply) await runWave({ source: from, uriDir: dir, toBag, skipTop }, `${kind} ${daemonFaceFolder(r)} -> h${target.get(r)!.handleIndex}`, [r]);
+          if (!apply) await runWave({ source: from, uriDir: dir, toBag, skipTop, ...withBases }, `${kind} ${daemonFaceFolder(r)} -> h${target.get(r)!.handleIndex}`, [r]);
         }
         // The face's own folder (holding, once applied, what the adoptions copied in) lays through the one gate.
         if (existsSync(dest)) {
-          await runWave({ source: dest, uriDir: dir, toBag, skipTop }, `${kind} ${daemonFaceFolder(to)}`, owners);
+          await runWave({ source: dest, uriDir: dir, toBag, skipTop, ...withBases }, `${kind} ${daemonFaceFolder(to)}`, owners);
         }
       }
       // Drafts and consented temp: files beside the new face's working folder, where none stands.
@@ -481,7 +488,8 @@ export async function liveLay(wave: MirrorWave, apply: boolean): Promise<MirrorL
   const tree = openSyncedTree();
   const abs = mirrorFiles(wave.source, wave.skipTop).filter((r) => !r.endsWith(".meta")).map((r) => join(wave.source, ...r.split("/")));
   const scan = scanFiles(wave.source, abs, wave.toBag, tree, (_r, f) => mirrorDirFileToUri(wave.uriDir, f));
-  const candidates = candidatesOf(scan.rows);
+  const bases = wave.bases ?? {};
+  const candidates = candidatesOf(scan.rows).map((r) => (bases[r.uri] !== undefined ? { ...r, overrideBase: bases[r.uri]! } : r));
   const kapae = scan.shadows ?? [];
   const refused = [
     ...scan.rows.filter((r) => r.status === "non-nfc").map((r) => ({ uri: r.uri, why: "non-NFC bytes" })),

@@ -59,7 +59,7 @@ import { runVerb } from "../verb-call.js";
 import { newChangeId, newRequestId, taskContentId } from "@lararium/mesh";
 import { storeVerb, storeFailure } from "../store-door.js";
 import { readPersonaRoots, sealedPetnameStore, sealedDeclarationStore } from "../sealed-rows.js";
-import { writeFaceCards, readFaceCard } from "../face-cards.js";
+import { writeFaceCards, writeFaceCard, readFaceCard, readFaceBases } from "../face-cards.js";
 import { moveFaceToAshes } from "../ashes.js";
 import { makeFleetPetnameStore, makeFleetDeclarationStore } from "../daemon-persona-store.js";
 import {
@@ -334,7 +334,9 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
   const keyOf = new Map(named.map((f, i) => [f.handleIndex, `f${i}`] as const));
 
   // THE OVERRIDE BASES: a base rides the record's meta envelope and never projects, so the export reads it by title and
-  // carries it on the working row. The daemon wiki's working layer reads as the face the daemon wears.
+  // carries it on the working row. Each face's daemon working rows read that FACE's bases sidecar (the vessel keeps it off the
+  // working slots the owner table files under the face's group), never the face the daemon wears now; another wiki's working
+  // rows read the daemon's override-bases read.
   const basesOf = new Map<string, Readonly<Record<string, string>>>();
   const baseFor = async (workingBag: string): Promise<Readonly<Record<string, string>>> => {
     if (!doors.overrideBases) return {};
@@ -342,7 +344,7 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
     if (held) return held;
     let read: Readonly<Record<string, string>> = {};
     try { read = await doors.overrideBases(workingBag); }
-    catch (e) { omissions.push({ kind: "override-bases-unread", detail: `the override bases of ${workingBag} would not read (${e instanceof Error ? e.message : String(e)}); its working rows travel without them, and each copy forks a fresh base where it lands` }); }
+    catch (e) { omissions.push({ kind: "override-bases-unread", detail: `the daemon's override-bases read did not answer for ${workingBag} (${e instanceof Error ? e.message : String(e)}): the daemon may not reach that layer, or may run a build without the read. Its working rows travel WITHOUT their override bases, and each copy forks a fresh base off the canon standing where it lands, so canon's fresher-than-the-copy warning may stay silent for them after the import` }); }
     basesOf.set(workingBag, read);
     return read;
   };
@@ -350,7 +352,6 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
     const base = row.title !== null ? bases[row.title] : undefined;
     return base !== undefined ? { ...row, overrideBase: base } : row;
   };
-  const daemonBases = await baseFor(wikiSlotUri("daemon", "working"));
 
   // THE COPY PLAN: source abs path -> bundle rel path, with the row each file makes.
   const plan: Array<{ from: string; to: string; row: Omit<CarryRow, "sha256" | "path"> | null }> = [];
@@ -373,12 +374,13 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
     if (isDaemonFaceFolder(name)) {
       if (face === null) continue;
       const fk = keyOf.get(face.handleIndex)!, pet = face.petname!;
+      const faceBases = readFaceBases(face.relation!, projections);
       addTree(src, `faces/${fk}/working`, (rel, abs) => {
         if (rel.endsWith(KAPAE_EXT)) {
           const read = readKapaeShadow(readFileSync(abs, "utf8"));
           return { face: pet, bag: wikiSlotUri("daemon", "working"), layer: "kapae", title: "title" in read ? read.title : null, rowKey: null };
         }
-        return withBase({ face: pet, bag: wikiSlotUri("daemon", "working"), layer: "working", title: mirrorDirFileToUri(wikisDir, abs), rowKey: null }, daemonBases);
+        return withBase({ face: pet, bag: wikiSlotUri("daemon", "working"), layer: "working", title: mirrorDirFileToUri(wikisDir, abs), rowKey: null }, faceBases);
       }, [TEMP_LAYER_DIR, "recovery"]);
       addTree(join(src, "recovery"), `faces/${fk}/drafts`, () => ({ face: pet, bag: wikiSlotUri("daemon", "draft"), layer: "draft", title: null, rowKey: null }));
       if (consented.has("daemon")) {
@@ -540,6 +542,10 @@ export interface CarryImportResult {
   readonly ashes: ReadonlyArray<{ readonly relation: string; readonly moved: readonly string[] }>;
   /** The former faces' folders left standing, each with why (a partial landing). */
   readonly ashesLeft: ReadonlyArray<{ readonly relation: string; readonly why: string }>;
+  /** Former faces' uncarded folders this import matched to a bundle face by their bytes, and the card it wrote (or would). */
+  readonly carded: ReadonlyArray<{ readonly relation: string; readonly petname: string }>;
+  /** Former faces' uncarded folders no bundle face matched, each with why. */
+  readonly uncarded: ReadonlyArray<{ readonly relation: string; readonly why: string }>;
 }
 
 /**
@@ -766,32 +772,67 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     await wave(join(bundle.root, "wikis", slug, "working"), join(bundle.root, "wikis", slug), join(projections, "wikis", slug), wikiSlotUri(slug, "working"), files, `wiki-working:${slug}`, tallies.wikiWorking, tallies.kapae, slug);
   }
 
-  // ASHES: a former face whose pet-name a bundle face carries, its folders still under the projections root (a seed that
-  // never adopted them), moves out of the live mirror set once this import landed with NOTHING pending.
-  const ashes: Array<{ relation: string; moved: string[] }> = [];
-  const ashesLeft: Array<{ relation: string; why: string }> = [];
+  // THE FORMER FACES' FOLDERS: every face folder under the projections root that no face here wears.
   const worn = new Set(faces.map((f) => f.relation).filter((r): r is string => r !== null));
-  const formerOf = (petname: string): string[] => {
+  const faceDirs = (r: string): Array<{ dir: string; kind: "working" | "canon" | "kahua" }> => [
+    { dir: join(projections, "wikis", daemonFaceFolder(r)), kind: "working" as const },
+    { dir: join(projections, "bags", daemonFaceFolder(r)), kind: "canon" as const },
+    { dir: join(projections, "bags", `kahua-${r}`), kind: "kahua" as const },
+  ].filter((d) => existsSync(d.dir));
+  const former = (() => {
     const rels = new Set<string>();
     for (const [dir, test] of [[join(projections, "wikis"), isDaemonFaceFolder], [join(projections, "bags"), isDaemonFaceFolder], [join(projections, "bags"), isKahuaFaceFolder]] as const) {
       let names: string[] = [];
       try { names = readdirSync(dir).filter(test); } catch { /* no such dir */ }
       for (const n of names) rels.add(n.slice(n.indexOf("-") + 1));
     }
-    return [...rels].filter((r) => !worn.has(r) && readFaceCard(r, projections)?.petname === petname).sort();
+    return [...rels].filter((r) => !worn.has(r)).sort();
+  })();
+  /** A former folder's files against one bundle face's: how many stand byte-identical, and how many the bundle never carried. */
+  const weigh = (r: string, fk: string): { same: number; beyond: number } => {
+    let same = 0, beyond = 0;
+    for (const { dir, kind } of faceDirs(r)) {
+      for (const rel of plainFiles(dir).files.filter((x) => !isStray(x))) {
+        if (kind === "working" && (rel.startsWith("recovery/") || rel.startsWith(`${TEMP_LAYER_DIR}/`))) continue;
+        const sha = sha256Hex(readFileSync(join(dir, ...rel.split("/"))));
+        const carried = manifest.files.find((f) => f.path === `faces/${fk}/${kind}/${rel}`);
+        if (carried !== undefined && carried.sha256 === sha) same++; else beyond++;
+      }
+    }
+    return { same, beyond };
   };
-  const all = Object.values(tallies);
-  const left = all.reduce((n, t) => n + t.stoodOff.length + t.refused.length, 0);
+
+  // AN UNCARDED FORMER FOLDER (a face that stood before its vessel wrote cards) adopts by the bundle's face rows: it takes the
+  // pet-name of the ONE bundle face whose carried files it holds byte for byte, and the import writes its card, so the next
+  // seed adopts it onto the face carrying that pet-name. Matching none, or more than one, it stays uncarded and named.
+  const carded: Array<{ relation: string; petname: string }> = [];
+  const uncarded: Array<{ relation: string; why: string }> = [];
+  for (const r of former.filter((x) => readFaceCard(x, projections) === null)) {
+    const matched = manifest.faces.filter((bf) => weigh(r, bf.key).same > 0);
+    if (matched.length !== 1) { uncarded.push({ relation: r, why: matched.length === 0 ? "it holds no file any bundle face carries" : `it holds files ${matched.map((m) => `"${m.petname}"`).join(" and ")} each carry` }); continue; }
+    const bf = matched[0]!;
+    const row = redeclare.faces.find((x) => x.face === bf.key)!;
+    carded.push({ relation: r, petname: bf.petname });
+    if (apply) writeFaceCard({ relation: r, petname: bf.petname, handleIndex: row.handleIndex }, projections);
+  }
+
+  // ASHES: a former face whose card names a bundle face's pet-name moves out of the live mirror set once this import landed
+  // with NOTHING pending AND its folders hold nothing the bundle never carried (the seed adopts the rest first).
+  const ashes: Array<{ relation: string; moved: string[] }> = [];
+  const ashesLeft: Array<{ relation: string; why: string }> = [];
+  const left = Object.values(tallies).reduce((n, t) => n + t.stoodOff.length + t.refused.length, 0);
   for (const bf of manifest.faces) {
-    for (const r of formerOf(bf.petname)) {
+    for (const r of former.filter((x) => (readFaceCard(x, projections)?.petname ?? carded.find((c) => c.relation === x)?.petname) === bf.petname)) {
       if (left > 0) { ashesLeft.push({ relation: r, why: `the import left ${left} row(s) standing off or refused; settle them and import again` }); continue; }
+      const { beyond } = weigh(r, bf.key);
+      if (beyond > 0) { ashesLeft.push({ relation: r, why: `its folders hold ${beyond} file(s) the bundle never carried: \`lares vessel seed --apply\` adopts them by pet-name first` }); continue; }
       if (!apply) continue;
       const moved = moveFaceToAshes(projections, r);
       if ("left" in moved) ashesLeft.push({ relation: r, why: moved.left }); else ashes.push({ relation: r, moved: [...moved.moved] });
     }
   }
 
-  return { bundleId: manifest.bundleId, applied: apply, faceMap, redeclare: acts, tallies, skipped, minted, ashes, ashesLeft };
+  return { bundleId: manifest.bundleId, applied: apply, faceMap, redeclare: acts, tallies, skipped, minted, ashes, ashesLeft, carded, uncarded };
 }
 
 // ── the commands' shared refusal ─────────────────────────────────────────────────────────────────────────────

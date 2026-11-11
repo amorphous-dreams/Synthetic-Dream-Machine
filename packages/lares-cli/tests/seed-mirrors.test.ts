@@ -17,6 +17,12 @@
  *   M5  ashes never read back into a layer, never travel in a bundle, never copy into a live mirror
  *   M6  an import's bag row and the seeded canon for one title meet at the gate: divergence stands off, never overwrites
  *   M7  the override base travels: the export's working row carries it, and an import that lands the copy restores it
+ *   M8  a base forked before the reset survives a SEED-ONLY recovery (the face's bases sidecar), and canon still reads
+ *       fresher than the copy
+ *   M9  two faces: each face's working rows carry that face's own bases, never the face the daemon wears
+ *   M10 a former folder with NO card: the seed refuses by name and names the import; the import matches the folder to
+ *       the bundle face whose files it holds, writes its card, and the next seed adopts it
+ *   M11 a fresh face that reads no relation and no stage (no refusal) never halts the seed
  */
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -27,7 +33,7 @@ import { kapaeShadowBody, readKapaeShadow, mirrorDirFileToUri } from "@lararium/
 import { daemonFaceCanonBag } from "@lararium/mesh";
 import { seedMirrors, mirrorFiles, readKahuaPending, MirrorRefused, type MirrorDoors, type MirrorLaid, type MirrorWave } from "../src/seed-mirrors.js";
 import { carryExport, carryImport, type CarryDoors, type CarryVesselFace } from "../src/commands/carry.js";
-import { writeFaceCards, faceCardPath } from "../src/face-cards.js";
+import { writeFaceCards, faceCardPath, writeFaceBases, readFaceCard } from "../src/face-cards.js";
 import { runMirrorLeg } from "../src/commands/seed.js";
 import type { CarryKahuaHead } from "../src/carry-manifest.js";
 
@@ -95,7 +101,7 @@ class FakeHouse {
       const held = this.live(wave.toBag, c.uri);
       const lands = c.base === undefined ? (held === undefined || held.text === c.text) : (held === undefined || sha(held.text) === c.base);
       if (!lands) { out.conflicts.push({ uri: c.uri, why: c.base === undefined ? "no-base" : "both-moved" }); continue; }
-      if (held?.text !== c.text) this.land(wave.toBag, c.uri, c.text);
+      if (held?.text !== c.text) this.land(wave.toBag, c.uri, c.text, wave.bases?.[c.uri]);
       this.synced.set(c.key, sha(c.text));
       out.landed.push(c.uri);
     }
@@ -166,8 +172,14 @@ async function oldVessel(): Promise<FakeHouse> {
   v.held.add("garden");
   v.stage.set(0, [{ title: HERON, cid: sha("old-heron"), text: "remember the heron", fields: {}, taint: [], sources: [{ title: POND, revision: "r1" }] }]);
   await seedMirrors({ apply: true, doors: v.mirrorDoors() });
-  writeFaceCards(v.facesNow(), join(root, "projections"));     // what `liveFaces` writes each time a door reads the faces
+  writeFaceCards(v.facesNow(), join(root, "projections"));     // what the vessel writes at each stand (and `liveFaces` at each read)
+  keepBases(v, F1);                                            // what the vessel's bases keeper writes off the face's working slots
   return v;
+}
+
+/** The vessel's bases keeper, as a test runs it: the face's working copies' bases into its sidecar. */
+function keepBases(v: FakeHouse, relation: string): void {
+  writeFaceBases(relation, Object.fromEntries([...v.layer(WORKING)].filter(([, r]) => r.base !== undefined && !r.deleted).map(([t, r]) => [t, r.base!])), join(root, "projections"));
 }
 
 /** reset -> found: the hearth cleared, persona zero founded fresh under the same pet-name with a new relation and grant. */
@@ -360,5 +372,65 @@ describe("the seed lays every mirror back into its one layer", () => {
     // The working wave lands before the face canon does, so no canon stands to fork from: the carried base alone names it.
     expect(after.layer(WORKING).get(POND)?.base).toBe(oldBase);
     expect(after.live(WORKING, POND)?.text).toBe(POND_WORKING);
+  });
+
+  test("M8 — a base forked before the reset survives a seed-only recovery, and canon still reads fresher", async () => {
+    const old = await oldVessel();
+    const forkBase = old.layer(WORKING).get(POND)!.base!;
+    // Canon moved past the fork before the reset: the face canon's disk file says something newer.
+    const NEWER = tid(POND, "the pond as canon says it now");
+    put(`projections/bags/daemon-${F1}/ha.ka.ba/notes/pond.tid`, NEWER);
+    const after = refound();
+    await seedMirrors({ apply: true, doors: after.mirrorDoors(), liftKahua: 1 });
+    expect(after.live(daemonFaceCanonBag(F2), POND)?.text).toBe(NEWER);
+    // Without the sidecar the copy would fork off the NEWER canon and read current; it keeps the base it forked from.
+    expect(after.layer(WORKING).get(POND)?.base).toBe(forkBase);
+    expect(after.layer(WORKING).get(POND)?.base).not.toBe(textHash(NEWER));   // canon reads fresher than the copy above it
+    expect(after.live(WORKING, POND)?.text).toBe(POND_WORKING);
+  });
+
+  test("M9 — two faces: each face's working rows carry its own bases, never the face the daemon wears", async () => {
+    const two = new FakeHouse([{ handleIndex: 0, petname: "one", relation: F1 }, { handleIndex: 1, petname: "two", relation: F3 }], "grant", F1);
+    two.held.add("garden");
+    put(`projections/wikis/daemon-${F3}/ha.ka.ba/notes/pond.tid`, tid(POND, "face two's pond"));
+    const B1 = `sha256:${"1".repeat(64)}`, B3 = `sha256:${"3".repeat(64)}`;
+    writeFaceBases(F1, { [POND]: B1 }, join(root, "projections"));
+    writeFaceBases(F3, { [POND]: B3 }, join(root, "projections"));
+    const { manifest } = await carryExport(out, { acceptOmissions: false, doors: { ...two.carryDoors(), overrideBases: async () => ({ [POND]: `sha256:${"9".repeat(64)}` }) } });
+    const rowOf = (pet: string) => manifest.rows.find((r) => r.layer === "working" && r.face === pet && r.title === POND);
+    expect(rowOf("one")?.overrideBase).toBe(B1);
+    expect(rowOf("two")?.overrideBase).toBe(B3);
+  });
+
+  test("M10 — an uncarded former folder: the seed names the import; the import writes its card; the next seed adopts it", async () => {
+    const old = await oldVessel();
+    await carryExport(out, { acceptOmissions: false, doors: old.carryDoors() });
+    rmSync(faceCardPath(F1, join(root, "projections")));          // a face that stood before its vessel wrote cards
+    // The former face wrote one more memory after the export: the bundle never carried it.
+    put(`projections/wikis/daemon-${F1}/ha.ka.ba/notes/after-export.tid`, tid("lar:///ha.ka.ba/notes/after-export", "written after the export"));
+    const after = refound();
+    const refused = await seedMirrors({ apply: true, doors: after.mirrorDoors() }).then(() => null, (e: Error) => e);
+    expect((refused as MirrorRefused).code).toBe("seed-face-uncarded");
+    expect(refused?.message).toMatch(/lares import <bundle> --apply/);
+    expect(after.layers.size).toBe(0);
+    const imported = await carryImport(out, { apply: true, doors: after.carryDoors() });
+    expect(imported.carded).toEqual([{ relation: F1, petname: "hearth-one" }]);
+    expect(readFaceCard(F1, join(root, "projections"))?.petname).toBe("hearth-one");
+    // The folder holds a file the bundle never carried, so it stays out of ashes and says why.
+    expect(imported.ashes).toEqual([]);
+    expect(imported.ashesLeft.find((a) => a.relation === F1)?.why).toMatch(/never carried/);
+    // The next seed adopts it by the card the import wrote, the late memory among it, and only then moves it to ashes.
+    const seeded = await seedMirrors({ apply: true, doors: after.mirrorDoors() });
+    expect(seeded.adoptions.map((a) => a.relation)).toEqual([F1]);
+    expect(after.live(WORKING, "lar:///ha.ka.ba/notes/after-export")?.text).toBe(tid("lar:///ha.ka.ba/notes/after-export", "written after the export"));
+    expect(seeded.ashes.map((a) => a.relation)).toEqual([F1]);
+  });
+
+  test("M11 — a fresh face that reads no relation and no stage never halts the seed", async () => {
+    const v = new FakeHouse([{ handleIndex: 0, petname: "hearth-one", relation: F1 }, { handleIndex: 1, petname: "fresh", relation: null, kahua: [] }], "grant", F1);
+    v.held.add("garden");
+    const r = await seedMirrors({ apply: true, doors: v.mirrorDoors(), liftKahua: 1 });
+    expect(r.adoptions).toEqual([]);
+    expect(v.live(WORKING, POND)?.text).toBe(POND_WORKING);
   });
 });
