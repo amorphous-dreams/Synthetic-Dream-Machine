@@ -5,8 +5,12 @@
  * sensed on disk; `lares ingest --apply` asks its settle word.
  */
 
+import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { larRuntimeHome } from "@lararium/node";
 import { summaryOutput, type SubmitResult } from "./verb-result.js";
 import { runVerb } from "./verb-call.js";
+import { LocalWaitExpired } from "./local-connector.js";
 
 /** The verb the island answers at its disk shore (`@lararium/node` `shore-verb.ts`, `SHORE_VERB`). */
 export const SHORE_VERB = "shore";
@@ -100,6 +104,30 @@ export async function readShoreList(
  */
 export const SETTLE_PAGE = 32;
 
+/**
+ * THE STALL WINDOW. A settle keeps asking while pages keep settling, and stops only where no page newly settled
+ * for this long. A live seed of a 468-carrier bag ran its projector past one page's own wait while it still made
+ * progress; a window measured from the last settled page tells "slow" apart from "stopped".
+ */
+export const SETTLE_STALL_MS = 120_000;
+
+/** A pause between two retry rounds, so a retry queue never spins against an island that answers at once. */
+export const SETTLE_RETRY_PAUSE_MS = 1_000;
+
+/** The carriers a settle reading names by uri at most; the counts carry the rest, the record holds them all. */
+export const SETTLE_NAMED = 64;
+
+/** The seams a settle's wait reads: the stall window, the clock, and the pause between retry rounds. */
+export interface SettleWaitOptions {
+  readonly stallMs?: number;
+  readonly now?: () => number;
+  readonly pauseMs?: number;
+  readonly sleep?: (ms: number) => Promise<void>;
+}
+
+/** One carrier as a settle word names it. */
+export interface SettleCarrier { readonly uri: string; readonly records: string; readonly heads?: readonly string[] }
+
 /** What the settle word said, as a gesture reports it. */
 export interface SettleReading {
   /** True where the island answered that the projection the named records cause has run. */
@@ -112,9 +140,52 @@ export interface SettleReading {
   readonly elsewhereCount: number;
   /** Carriers a later settle word took over: this word ended, claiming no projection for them. */
   readonly supersededCount: number;
+  /** True where the settle ended on the stall window: no page newly settled for `SETTLE_STALL_MS`. */
+  readonly stalled: boolean;
+  /** Carriers no word reached when the settle ended (0 where it settled whole). */
+  readonly pendingCount: number;
+  /** Of those, the carriers whose page was asked and timed out without a word (the rest went unasked). */
+  readonly stalledCount: number;
+  /** The pending carriers by uri, at most `SETTLE_NAMED` of them. */
+  readonly pendingUris: readonly string[];
+  /** Where a stalled settle left its resumable record (`lares shore settle --bag <bag> --pending`). */
+  readonly recordPath?: string;
   readonly refusal?: string;
   readonly why?: string;
 }
+
+/**
+ * THE RESUMABLE RECORD. A settle that stalled writes the carriers still waiting under the house's run dir
+ * (`<LAR_ROOT>/run/settle-pending/<bag slug>.json`): run state, outliving the process yet no house content.
+ * A settle that ends whole clears it.
+ */
+export interface SettlePendingRecord { readonly bag: string; readonly carriers: SettleCarrier[] }
+
+/** A bag's slug: the uri with every run outside `[A-Za-z0-9._-]` folded to `_`. A bare slug reads as itself. */
+export function settleBagSlug(bag: string): string { return bag.replace(/[^A-Za-z0-9._-]+/g, "_"); }
+
+export function settlePendingPath(bag: string): string {
+  return join(larRuntimeHome(), "settle-pending", `${settleBagSlug(bag)}.json`);
+}
+
+/** The record a stalled settle left for the bag (by uri or slug), or null where none stands. */
+export function readSettlePending(bag: string): SettlePendingRecord | null {
+  const path = settlePendingPath(bag);
+  if (!existsSync(path)) return null;
+  const read = JSON.parse(readFileSync(path, "utf8")) as Partial<SettlePendingRecord>;
+  if (typeof read.bag !== "string" || !Array.isArray(read.carriers)) return null;
+  return { bag: read.bag, carriers: read.carriers };
+}
+
+export function writeSettlePending(record: SettlePendingRecord): string {
+  const path = settlePendingPath(record.bag);
+  mkdirSync(join(larRuntimeHome(), "settle-pending"), { recursive: true });
+  writeFileSync(`${path}.tmp`, JSON.stringify(record, null, 2) + "\n");
+  renameSync(`${path}.tmp`, path);
+  return path;
+}
+
+export function clearSettlePending(bag: string): void { rmSync(settlePendingPath(bag), { force: true }); }
 
 /**
  * THE SETTLE WORD. A gesture that landed records names each carrier with the hash its records render, and with
@@ -122,16 +193,35 @@ export interface SettleReading {
  * those records cause has run (`settle`, `shore-verb.ts`), so a scan that follows reads what the projection
  * left. The island holds no clock for it. A word that named heads ends by name (`far-side-closed`) when the
  * link that would carry them closes first, so the caller's own wait stands as one bound among others.
+ *
+ * With `record`, a settle that stalled writes its still-pending carriers as the bag's resumable record, and a
+ * settle that ended whole clears it.
  */
 export async function askSettle(
   ask: (shoreArgs: Readonly<Record<string, unknown>>) => Promise<ShoreAnswer>,
-  bag: string, carriers: ReadonlyArray<{ readonly uri: string; readonly records: string; readonly heads?: readonly string[] }>,
+  bag: string, carriers: ReadonlyArray<SettleCarrier>,
+  opts: { readonly record?: boolean } = {},
 ): Promise<SettleReading> {
   const answer = await ask({ op: "settle", bag, carriers: carriers.map((c) => ({ uri: c.uri, records: c.records, ...(c.heads !== undefined && c.heads.length > 0 ? { heads: [...c.heads] } : {}) })) });
   const o = answer.output;
   const count = (name: string): number => (typeof o[name] === "number" ? (o[name] as number) : 0);
-  if (!answer.ok) return { settled: false, shore: true, mirrored: true, settledCount: 0, elsewhereCount: 0, supersededCount: 0, refusal: answer.refusal ?? "verb-error", why: answer.why ?? "the island refused" };
-  return { settled: true, shore: o["shore"] !== false, mirrored: o["mirrored"] !== false, settledCount: count("settledCount"), elsewhereCount: count("elsewhereCount"), supersededCount: count("supersededCount") };
+  const idle = { stalled: false, pendingCount: 0, stalledCount: 0, pendingUris: [] as string[] };
+  if (!answer.ok) return { settled: false, shore: true, mirrored: true, settledCount: 0, elsewhereCount: 0, supersededCount: 0, ...idle, refusal: answer.refusal ?? "verb-error", why: answer.why ?? "the island refused" };
+  const base = { shore: o["shore"] !== false, mirrored: o["mirrored"] !== false, settledCount: count("settledCount"), elsewhereCount: count("elsewhereCount"), supersededCount: count("supersededCount") };
+  const pendingAll = Array.isArray(o["pendingUris"]) ? (o["pendingUris"] as string[]) : [];
+  if (o["stalled"] !== true) {
+    if (opts.record) clearSettlePending(bag);
+    return { settled: true, ...base, ...idle };
+  }
+  const waiting = new Set(pendingAll);
+  let recordPath: string | undefined;
+  if (opts.record) recordPath = writeSettlePending({ bag, carriers: carriers.filter((c) => waiting.has(c.uri)).map((c) => ({ uri: c.uri, records: c.records, ...(c.heads !== undefined && c.heads.length > 0 ? { heads: [...c.heads] } : {}) })) });
+  return {
+    settled: false, ...base, stalled: true,
+    pendingCount: count("pendingCount"), stalledCount: count("stalledCount"), pendingUris: pendingAll.slice(0, SETTLE_NAMED),
+    ...(recordPath !== undefined ? { recordPath } : {}),
+    refusal: "settle-stalled", why: typeof o["why"] === "string" ? o["why"] : "no page of the settle settled within the stall window",
+  };
 }
 
 type RunVerb = (name: string, args: Record<string, unknown>, did: string, opts: { timeoutMs: number }) => Promise<SubmitResult>;
@@ -176,7 +266,10 @@ const refusedAt = (island: ShoreIsland, a: ShoreAnswer): ShoreAnswer =>
  *            answers for the mirrors it holds, and the word stands where every island gave it. Each carrier
  *            reads ONCE across islands: settled where any island that mirrors the bag projected it, superseded
  *            where a later word took it and none projected it, elsewhere otherwise. `mirrored` reads true where
- *            any island mirrors the bag, and `shore` false where no island mounts a disk shore at all
+ *            any island mirrors the bag, and `shore` false where no island mounts a disk shore at all. A
+ *            page whose ask ran out this caller's own wait retries while other pages keep settling; the
+ *            settle ends `stalled` where no page newly settled for the stall window (`SETTLE_STALL_MS`),
+ *            naming what still waits (`pendingCount`, `stalledCount`, `pendingUris`)
  *   answers  (`take-records`, `restore`, `remove`) go to the island whose list holds the state: the standoff
  *            under the named key, or the pending removals the answer names (by carrier, by bag, or all).
  *            Where both islands hold it, or a set splits across them, the answer refuses by name
@@ -188,7 +281,7 @@ const refusedAt = (island: ShoreIsland, a: ShoreAnswer): ShoreAnswer =>
  * (`node-daemon-island.ts`), so the second line stands wherever the first does; a line that fails refuses
  * by name rather than reading as an empty shore.
  */
-export async function askShore(shoreArgs: Readonly<Record<string, unknown>>, did: string, run: RunVerb = runVerb): Promise<ShoreAnswer> {
+export async function askShore(shoreArgs: Readonly<Record<string, unknown>>, did: string, run: RunVerb = runVerb, wait: SettleWaitOptions = {}): Promise<ShoreAnswer> {
   const ask = (island: ShoreIsland) => (a: Readonly<Record<string, unknown>>) => askIsland(island, a, did, run);
   const op = typeof shoreArgs["op"] === "string" ? shoreArgs["op"] : "list";
 
@@ -231,35 +324,69 @@ export async function askShore(shoreArgs: Readonly<Record<string, unknown>>, did
     const kinds = ["settled", "elsewhere", "superseded"] as const;
     const reading = new Map<string, Set<(typeof kinds)[number]>>();
     let shore = false; let mirrored = false; let requestId: string | undefined;
-    for (const page of pages) {
-      for (const island of SHORE_ISLANDS) {
-        const answer = await ask(island)({ ...shoreArgs, carriers: page });
-        if (!answer.ok) { if (holdsNoShore(answer)) continue; return refusedAt(island, answer); }
-        shore = true;
-        requestId ??= answer.requestId;
-        const o = answer.output;
-        if (o["mirrored"] !== true) continue;
-        mirrored = true;
-        // AN ISLAND THAT MIRRORS THE BAG READS EVERY CARRIER OF THE PAGE EXACTLY ONCE: rows that miss one, name
-        // one twice, or name one the page never asked refuse by name, never count.
-        const asked = (page as Array<{ uri?: unknown }>).map((c) => String(c?.uri)).sort();
-        const named = kinds.flatMap((kind) => (Array.isArray(o[kind]) ? (o[kind] as unknown[]).map(String) : [])).sort();
-        if (asked.length !== named.length || asked.some((uri, i) => uri !== named[i])) {
-          return { ok: false, output: {}, refusal: "shore-answer-incomplete", why: `the ${island === "wiki" ? "active wiki's" : "daemon"} island's settle answer reads ${named.length} row(s) for the ${asked.length} carrier(s) it was asked` };
-        }
-        for (const kind of kinds) {
-          const rows = o[kind];
-          const count = o[`${kind}Count`];
-          if (!Array.isArray(rows) || (typeof count === "number" && count !== rows.length)) {
-            return { ok: false, output: {}, refusal: "shore-answer-incomplete", why: `the ${island === "wiki" ? "active wiki's" : "daemon"} island's settle answer carries no whole ${kind} rows` };
+    const stallMs = wait.stallMs ?? SETTLE_STALL_MS;
+    const now = wait.now ?? Date.now;
+    const pauseMs = wait.pauseMs ?? SETTLE_RETRY_PAUSE_MS;
+    const sleep = wait.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
+    // SETTLE BY PROGRESS. The unit of work: one page at one island. A unit whose ask ran out this caller's own
+    // wait (`LocalWaitExpired`) goes back on the retry queue, and the loop asks the rest; a page stands settled
+    // once every island answered it. The settle stops only where no page newly settled for the stall window.
+    // The per-page wait keeps `askIsland`'s formula (36.4 s at a full page): well inside the window, so one slow
+    // page never spends the window alone, and a shorter wait would only re-ask a page the projector still works.
+    // Re-asking a page sends the same word again; the island answers it once the projection has run.
+    const answered = pages.map(() => new Set<ShoreIsland>());
+    const timedOut = new Set<number>();
+    let queue = pages.map((_, i) => i);
+    let lastProgress = now();
+    let stalled = false;
+    let round = 0;
+    outer: while (queue.length > 0) {
+      if (round++ > 0) await sleep(pauseMs);
+      const retry: number[] = [];
+      for (const p of queue) {
+        const page = pages[p]!;
+        for (const island of SHORE_ISLANDS) {
+          if (answered[p]!.has(island)) continue;
+          if (now() - lastProgress >= stallMs) { stalled = true; break outer; }
+          let answer: ShoreAnswer;
+          try {
+            answer = await ask(island)({ ...shoreArgs, carriers: page });
+          } catch (err) {
+            if (!(err instanceof LocalWaitExpired)) throw err;
+            timedOut.add(p);
+            continue;
           }
-          for (const uri of rows as string[]) {
-            let held = reading.get(uri);
-            if (!held) { held = new Set(); reading.set(uri, held); }
-            held.add(kind);
+          answered[p]!.add(island);
+          if (!answer.ok) { if (holdsNoShore(answer)) continue; return refusedAt(island, answer); }
+          shore = true;
+          requestId ??= answer.requestId;
+          const o = answer.output;
+          if (o["mirrored"] !== true) continue;
+          mirrored = true;
+          // AN ISLAND THAT MIRRORS THE BAG READS EVERY CARRIER OF THE PAGE EXACTLY ONCE: rows that miss one, name
+          // one twice, or name one the page never asked refuse by name, never count.
+          const asked = (page as Array<{ uri?: unknown }>).map((c) => String(c?.uri)).sort();
+          const named = kinds.flatMap((kind) => (Array.isArray(o[kind]) ? (o[kind] as unknown[]).map(String) : [])).sort();
+          if (asked.length !== named.length || asked.some((uri, i) => uri !== named[i])) {
+            return { ok: false, output: {}, refusal: "shore-answer-incomplete", why: `the ${island === "wiki" ? "active wiki's" : "daemon"} island's settle answer reads ${named.length} row(s) for the ${asked.length} carrier(s) it was asked` };
+          }
+          for (const kind of kinds) {
+            const rows = o[kind];
+            const count = o[`${kind}Count`];
+            if (!Array.isArray(rows) || (typeof count === "number" && count !== rows.length)) {
+              return { ok: false, output: {}, refusal: "shore-answer-incomplete", why: `the ${island === "wiki" ? "active wiki's" : "daemon"} island's settle answer carries no whole ${kind} rows` };
+            }
+            for (const uri of rows as string[]) {
+              let held = reading.get(uri);
+              if (!held) { held = new Set(); reading.set(uri, held); }
+              held.add(kind);
+            }
           }
         }
+        if (answered[p]!.size === SHORE_ISLANDS.length) lastProgress = now();
+        else retry.push(p);
       }
+      queue = retry;
     }
     // ONE READING PER CARRIER, whichever islands mirror its bag.
     let settledCount = 0, elsewhereCount = 0, supersededCount = 0;
@@ -268,7 +395,17 @@ export async function askShore(shoreArgs: Readonly<Record<string, unknown>>, did
       else if (held.has("superseded")) supersededCount += 1;
       else elsewhereCount += 1;
     }
-    const output: Record<string, unknown> = { ok: true, op, ...(typeof shoreArgs["bag"] === "string" ? { bag: shoreArgs["bag"] } : {}), shore, mirrored, settledCount, elsewhereCount, supersededCount };
+    // WHAT STILL WAITS: every carrier of a page some island never answered; stalled where that page was asked
+    // and timed out, the rest never asked before the window closed.
+    const uriOfRow = (c: unknown): string => String((c as { uri?: unknown } | null)?.uri);
+    const pendingPages = pages.map((_, i) => i).filter((i) => answered[i]!.size < SHORE_ISLANDS.length);
+    const pendingUris = pendingPages.flatMap((i) => pages[i]!.map(uriOfRow));
+    const stalledCount = pendingPages.filter((i) => timedOut.has(i)).reduce((n, i) => n + pages[i]!.length, 0);
+    const output: Record<string, unknown> = {
+      ok: true, op, ...(typeof shoreArgs["bag"] === "string" ? { bag: shoreArgs["bag"] } : {}), shore, mirrored, settledCount, elsewhereCount, supersededCount,
+      stalled, pendingCount: pendingUris.length, stalledCount, pendingUris,
+      ...(stalled ? { why: `no page of the settle settled for ${Math.round(stallMs / 1000)}s; ${pendingUris.length} carrier(s) still wait` } : {}),
+    };
     return { ok: true, output, refusal: null, why: null, ...(requestId !== undefined ? { requestId } : {}) };
   }
 
