@@ -835,7 +835,6 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // row rests clear before the place tree binds and under the seal after; a sealed keystore with no unlock yet answers
   // `vessel-locked`, and the daemon island's open asks again once the boot's unlock stood.
   const standFloorKey = () => standBrowserFloorKey(idbName, repo);
-  let floorKeyGrant = await standFloorKey();
   // THE DEVICE DAEMON DOCUMENTS the control document names, filed by their owners (answers whether any filing moved): the
   // map re-reads, and the lifted session seals what now maps to its face.
   const classDeviceDaemonDocs = (controlDoc: LarDoc | undefined): void => {
@@ -874,6 +873,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     return handle;
   };
   held.stood.push({ what: "repo", down: () => { sealedRest.store.endHydration(); return repo.shutdown(); } });
+  // The first stand reads the keystore, so it runs once the Repo's stand-down stands recorded: a read that faults ends the
+  // boot through its own teardown, never around it.
+  let floorKeyGrant = await standFloorKey();
   // R2's booking, by the change's own writer (T4): a change this replica made books the vessel's unlocked session while
   // it stands, and a peer's change books its peer writer and rests as received under that session.
   sealedRest.watch(repo, () => sealedCells.session);
