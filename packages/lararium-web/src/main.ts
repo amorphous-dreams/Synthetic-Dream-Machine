@@ -555,7 +555,11 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
   if (fleetRootHost) mountFleetRootDoor(fleetRootHost, vessel.fleetRoot);
   // THE CARRIED SEAT: a face this browser joined asks its seat by file; a kept grant restarts the daemon island in place, and its seat reads it.
   const fleetSeatHost = document.getElementById("fleet-seat-door");
-  if (fleetSeatHost) mountFleetSeatDoor(fleetSeatHost, vessel.fleetSeat, { onKept: (face) => console.log(`[vessel] a carried seat grant rests for face ${face.slice(0, 12)}…; the daemon island restarted and its seat reads it`) });
+  if (fleetSeatHost) mountFleetSeatDoor(fleetSeatHost, vessel.fleetSeat, { onKept: (face) => {
+    // The kept grant lifts the face at this browser's place, and the place session stands only at boot: re-enter it.
+    console.log(`[vessel] a carried seat grant rests for face ${face.slice(0, 12)}…; the page boots again, lifts the face at its place and seats it`);
+    location.reload();
+  } });
   // ── /leaf-fleet ──
   if (relayUrl) {
     console.log(`[vessel] this leaf's key: ${did}`);

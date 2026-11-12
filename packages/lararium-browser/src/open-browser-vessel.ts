@@ -28,6 +28,7 @@ import { browserDeviceFiling } from "./browser-device-filing.js";
 import { writeBrowserFaceLabel } from "./browser-face-labels.js";
 import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, sealedBagMap, vesselDocStoreDoor, bindSecretHomeRest, nameControlHome, daemonFaceCanonBag, SecretHomeUnavailable, DAEMON_SLOT_PREFIX, DAEMON_WIKI_SLOT_BAGS, type LitDeviceFaces, type SecretHome, type SealedBag } from "@lararium/mesh";
 import { openBrowserSecretHome, standBrowserSecretHome } from "./browser-secret-home.js";
+import { browserSeatKept } from "./browser-fleet-seat.js";   // leaf-fleet (Leaf-Finisher)
 import { keepBrowserVeilLift } from "./browser-veil-lift.js";
 import * as A from "@automerge/automerge";
 import type { DocHandle, AutomergeUrl, PeerId } from "@automerge/automerge-repo";
@@ -65,7 +66,7 @@ import { readHearthFloor, type HearthFloorRead } from "./browser-floor-read.js";
 import { browserFloorAccept, browserFloorStatus, type BrowserFloorBinding } from "./browser-floor-pin.js";
 import { composeBrowserFacePresentation } from "./browser-face-presentation.js";
 import { browserIslandReceipt, browserSessionLift, type BrowserUnlockedSession } from "./browser-island-caps.js";
-import { browserLiftsAtPlace, mintBrowserPlaceSession } from "./browser-place-session.js";
+import { browserLiftsAtPlace, mintBrowserPlaceSession, type PlaceLiftReading } from "./browser-place-session.js";
 import { composeVessel, islandFloorStack, islandLiftStack, larVesselOf } from "@lararium/mesh";
 import { admittedCanonDocs, hearthCanonDocIds, hearthCrossingOf, provenCrossingPlanes, seatHearthCanon, type HearthCanonDocs } from "./hearth-canon.js";
 import { makeSurfaceReturnLeg, type ReturnLegVerdict } from "./surface-return-leg.js";
@@ -1985,13 +1986,16 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       let flushLift: (() => Promise<void>) | null = null;
       // THE SESSION THE LIFT STANDS ON: the joined face's Nexus presentation, else the self-founded face's place session.
       let unlocked: { readonly session: BrowserUnlockedSession; readonly close: () => void } | null = null;
+      let placeReading: PlaceLiftReading | null = null;
       if (facePresentation !== null) {
         const certificate = facePresentation.certificate;
         unlocked = { session: { signer: facePresentation.signer, chain: { scope: certificate.scope, vesselFaceKey: certificate.vesselFaceKey } }, close: () => {} };
-      } else if (wornGroup !== null && wornAtom !== null && browserLiftsAtPlace({
+      } else if (wornGroup !== null && wornAtom !== null && browserLiftsAtPlace(placeReading = {
         presented: false,
         joined: faceJoined || Boolean(admit) || Boolean(social.hearthDaemonUrl),
         rootHeld: await browserPersonaRootHeld(idbName, wornMount?.handleIndex ?? FOUNDING_PERSONA_INDEX).catch(() => false),
+        // leaf-fleet (Leaf-Finisher): a joined face whose carried seat grant this browser keeps lifts at its own place, roadless.
+        seatKept: await browserSeatKept(idbName, repo, wornGroup),
         proved: provenWornPlaneUrl !== null,
         placeStands: placeKel?.ok === true,
       })) {
@@ -1999,6 +2003,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         if ("refusal" in minted) console.log(`[sealed-rest] the place session stands not (${minted.refusal}): the face's saves wait in memory, never clear`);
         else unlocked = minted;
       }
+      // A joined face holds no root here and lifts at its place only on a kept seat grant: a face that lifts nowhere names why.
+      if (unlocked === null && placeReading !== null && !placeReading.rootHeld) console.log(`[sealed-rest] the joined face lifts at no place (seat grant ${placeReading.seatKept ? "kept" : "absent"}, proved ${placeReading.proved}, place ${placeReading.placeStands ? "stands" : "absent"}): its saves wait in memory, never clear`);
       // THE VEIL FLOOR STANDS NO LIFT: no face signs here, so no session books a face's save. The floor's own documents
       // seal under the vessel-held key with no session (the held homes), and every face-half bag stays unmapped.
       if (unlocked !== null && wornGroup !== null) {

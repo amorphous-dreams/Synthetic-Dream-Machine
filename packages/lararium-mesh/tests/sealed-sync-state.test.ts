@@ -73,7 +73,7 @@ describe("a peer's sync state never waits on a face's session", () => {
     const island = new Repo({ storage: memoryAdapter(), network: [new MessageChannelNetworkAdapter(channel.port2)], peerId: "island" as PeerId });
     // barrier: both ends hear each other before the island asks (a find with no peer reads unavailable at once).
     for (let i = 0; i < 100 && !(island.peers.includes("vessel" as PeerId) && vessel.peers.includes("island" as PeerId)); i++) await settle(20);
-    const arrived = island.find<{ note?: string }>(clear.url as AutomergeUrl).then((h) => h.doc().note ?? null);
+    const arrived = island.find<{ note?: string }>(clear.url as AutomergeUrl).then((h) => h.doc()?.note ?? null);
     const out = await Promise.race([arrived, settle(3000).then(() => "never arrived")]);
     expect(out).toBe("the floor's own words");
     vesselStore.endHydration();

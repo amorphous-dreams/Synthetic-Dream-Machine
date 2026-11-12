@@ -515,8 +515,8 @@ export function standVesselHost(env: VesselHostEnv = {}) {
             case "fleet-seat:faces": reply(msg.callId, async () => ({ kind: "faces", faces: await browserJoinedFaces(idbName) })); return;
             case "fleet-seat:request": reply(msg.callId, async () => { const v = await vessel(); return { kind: "seat-request", text: JSON.stringify(await browserSeatRequest({ idbName, repo: v.repo, personaGroup: msg.personaGroup })) }; }); return;
             case "fleet-seat:land": reply(msg.callId, async () => { const v = await vessel(); const face = (await browserSeatGrantLand({ idbName, repo: v.repo, grant: JSON.parse(msg.text) as unknown })).personaGroup;
-              // THE SEAT READS ITS GRANT AT ITS FIRST PASS: the daemon island restarts in place (the session stays unlocked, the page stays), and its seat finds the carried grant.
-              await v.restartDaemonIsland("a carried seat grant landed");
+              // THE SEAT READS ITS GRANT AT THE NEXT BOOT: the kept grant lifts the face at this browser's place (its session stands only at
+              // boot, so the page re-enters it), and the daemon island's seat finds the grant at its first pass.
               return { kind: "seat-kept", face }; }); return;
             // ── /leaf-fleet ──
             case "walk:restart":

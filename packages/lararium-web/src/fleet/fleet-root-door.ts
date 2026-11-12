@@ -129,8 +129,8 @@ export interface FleetSeatPort {
 
 /**
  * THE JOINED LEAF's seat door: with no road to the vessel that holds the face, this browser shows its seat request and
- * takes the grant back by the same hands that carried the join. `onKept` runs once a grant rests and the vessel's seat has
- * been woken to read it.
+ * takes the grant back by the same hands that carried the join. `onKept` runs once a grant rests; the page then boots again,
+ * where the kept grant lifts the face at this browser's place and the daemon island's seat reads it.
  */
 export function mountFleetSeatDoor(host: HTMLElement, port: FleetSeatPort, opts: { readonly onKept: (face: string) => void; readonly cameraHost?: CameraHost }): { refresh(): Promise<void> } {
   host.dataset["larFleetDoor"] = "seat";
@@ -159,7 +159,7 @@ export function mountFleetSeatDoor(host: HTMLElement, port: FleetSeatPort, opts:
           grantHost.dataset["larFleetStep"] = "seat-grant";
           takeCarriage(grantHost, { label: "the seat grant the root holder shows", ...(opts.cameraHost ? { cameraHost: opts.cameraHost } : {}), onText: (grant) => {
             port.land(grant).then(
-              (kept) => { say("✓ seat grant kept. This browser's daemon restarted in place and takes its seat.", "ok"); opts.onKept(kept); },
+              (kept) => { say("✓ seat grant kept. This browser boots again, lifts the face at its own place and takes its seat.", "ok"); opts.onKept(kept); },
               (err: unknown) => { say(`✗ ${words(err)}`, "refused"); },
             );
           } });

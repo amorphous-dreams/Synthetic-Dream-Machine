@@ -14,10 +14,10 @@
  */
 import type { AutomergeUrl, Repo } from "@automerge/automerge-repo";
 import {
-  DOCUMENT_HANG_BOUND_MS, ed25519SignerFromSeed, faceAtomKeyFromSeed, personaActRecordsOfGroup, type LarDoc,
+  DOCUMENT_HANG_BOUND_MS, ed25519SignerFromSeed, faceAtomKeyFromSeed, personaActRecordsOfGroup, tiddlerText, type LarDoc,
 } from "@lararium/mesh";
 import {
-  CarriedSeatRefused, composeSeatRequest, keepCarriedSeatGrant, placeSeatRequest, readSeatGrant, readSeatRequest, seatGrantOnPlane,
+  CarriedSeatRefused, carriedSeatGrants, composeSeatRequest, keepCarriedSeatGrant, placeSeatRequest, readSeatGrant, readSeatRequest, seatGrantOnPlane,
   seatRequestDevice, type FleetSeatGrant, type FleetSeatRequest,
 } from "@lararium/keyhive";
 import { requireBrowserFaceAtomSeed } from "./browser-face-atom.js";
@@ -91,6 +91,28 @@ export async function browserSeatGrantLand(opts: { readonly idbName: string; rea
   keepCarriedSeatGrant(home.handle, grant);
   await opts.repo.flush([home.handle.documentId]);
   return { personaGroup: group };
+}
+
+/**
+ * Does this browser keep the root holder's carried seat grant for its own device of `personaGroup`? It reads the grant at its
+ * own title in the secret home and checks it names this face and this device (`readSeatGrant`). The daemon island's seat
+ * judges its signature and the founder's standing; a grant that fails there seats nothing. A secret home that does not open
+ * (a locked keystore) reads as no grant.
+ */
+export async function browserSeatKept(idbName: string, repo: Repo, personaGroup: string): Promise<boolean> {
+  const overlay = (await keptOverlays(idbName))[personaGroup];
+  if (!overlay?.deviceEdge) return false;
+  const self = { group: personaGroup, deviceKey: overlay.deviceEdge.deviceVerifyingKey };
+  try {
+    const home = await openBrowserSecretHome(idbName, repo);
+    const [kept] = await carriedSeatGrants({
+      listVisible: async () => Object.keys(home.handle.doc()?.tiddlers ?? {}),
+      get: async (title) => { const text = tiddlerText(home.handle.doc()?.tiddlers?.[title]); return typeof text === "string" ? { tiddler: { text } } : null; },
+    }, self.group, self.deviceKey);
+    if (!kept) return false;
+    readSeatGrant({ kind: "fleet-seat-grant", personaGroup, title: kept.title, record: kept.record }, self);
+    return true;
+  } catch { return false; }
 }
 
 /** The faces this browser JOINED (it holds their edge and no root): each may ask its seat by file. */

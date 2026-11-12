@@ -62,13 +62,25 @@ async function browser(card: boolean): Promise<{ idbName: string; atomKey: strin
 
 describe("a self-founded browser face lifts at its own place", () => {
   test("P1 — the decision: only a self-founded, proved, unjoined face on a browser whose place stands lifts at its place", () => {
-    const lifts = { presented: false, joined: false, rootHeld: true, proved: true, placeStands: true };
+    const lifts = { presented: false, joined: false, rootHeld: true, seatKept: false, proved: true, placeStands: true };
     expect(browserLiftsAtPlace(lifts), "CONTROL: the self-founded face lifts").toBe(true);
     expect(browserLiftsAtPlace({ ...lifts, rootHeld: false }), "joined to another's face: no root here, stays at the floor").toBe(false);
     expect(browserLiftsAtPlace({ ...lifts, joined: true }), "a hearth's admit or dial: it lifts through its Nexus").toBe(false);
     expect(browserLiftsAtPlace({ ...lifts, presented: true }), "a Nexus presentation stands: that lift serves").toBe(false);
     expect(browserLiftsAtPlace({ ...lifts, proved: false }), "an unproved face lifts nothing").toBe(false);
     expect(browserLiftsAtPlace({ ...lifts, placeStands: false }), "no place KEL: nothing to present the atom to").toBe(false);
+  });
+
+  test("P1b — RED: a device joined to another's face that keeps its carried seat grant lifts at its own place, roadless", () => {
+    // The root holder's seat grant admits the device (device-capabilities-2026#/device-seats ruling 7): with no road, no Nexus
+    // presentation ever stands for it, so without its own place session nothing of the face rests and a reload loses it.
+    const seated = { presented: false, joined: false, rootHeld: false, seatKept: true, proved: true, placeStands: true };
+    expect(browserLiftsAtPlace(seated), "a kept seat grant lifts the joined face at this browser's place").toBe(true);
+    expect(browserLiftsAtPlace({ ...seated, joined: true }), "the landing boot carries its admit: the grant still lifts it").toBe(true);
+    expect(browserLiftsAtPlace({ ...seated, seatKept: false }), "CONTROL: joined, no seat grant yet: it stays at its floor").toBe(false);
+    expect(browserLiftsAtPlace({ ...seated, presented: true }), "a Nexus presentation stands: that lift serves").toBe(false);
+    expect(browserLiftsAtPlace({ ...seated, proved: false }), "an unproved face lifts nothing").toBe(false);
+    expect(browserLiftsAtPlace({ ...seated, placeStands: false }), "no place KEL: nothing to present the atom to").toBe(false);
   });
 
   test("P2 — RED: the place session signs a booked seal, the value reads back after a restart, and the relock drops it all", async () => {

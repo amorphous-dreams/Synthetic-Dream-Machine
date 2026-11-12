@@ -59,12 +59,16 @@ async function house(opts: { control?: CompositeStore } = {}) {
     faceDoor: makeFaceBagDoor({ face: kh, groupId: group.groupId }) as never, workbenchRealm,
     announceLifted: (slug: string, documentId: string) => { lifted.push(`${slug}:${documentId}`); },
     workbenchDoc: (url: string) => materializeSharedLarDoc(repo, url as never, "board:workbench") });
+  // The same vessel with a face pinned (its join landed) and not yet seated (no seat grant read): leaf-fleet.
+  const pinned = () => makeSlotDocResolver({ ...base, personaGroupId: group.groupId, faceSeated: async () => false,
+    faceDoor: makeFaceBagDoor({ face: kh, groupId: group.groupId }) as never, workbenchRealm,
+    workbenchDoc: (url: string) => materializeSharedLarDoc(repo, url as never, "board:workbench") });
   const trace = { wikiDocId: wikiHandle.url, libraryBagDocIds: [] as readonly string[] };
   const fingerprint = await computeRecipeFingerprint(trace);
   const write = async (url: string, title: string, text: string) => { const h = await repo.find<LarDoc>(url as never); await h.whenReady(); h.change((doc) => { doc.tiddlers[title] = mutableLarRecord(title, { text }, "test"); }); };
   const read = async (url: string, title: string) => { const h = await repo.find<LarDoc>(url as never); await h.whenReady(); const r = h.doc()?.tiddlers[title]; return r ? tiddlerText(r) : null; };
   const done = async () => { await kh.dispose(); await repo.shutdown(); };
-  return { kh, group, repo, control, daemon, ledger, floor, faced, trace, fingerprint, order, write, read, done, catalogHandle, lifted };
+  return { kh, group, repo, control, daemon, ledger, floor, faced, pinned, trace, fingerprint, order, write, read, done, catalogHandle, lifted };
 }
 
 describe("★ the veil floor stands its own wiki content, and a seat's landing lifts it ★", () => {
@@ -176,6 +180,31 @@ describe("★ the veil floor stands its own wiki content, and a seat's landing l
     const again = await faced.liftFloor();
     expect(again.moved).toEqual([]);
     expect(await h.read(faceSlot.url, "Memory")).toBe("the veil remembers");
+    await h.done();
+  });
+
+  test("RED V8 — a face pinned and not yet seated keeps the floor's slots, so nothing waits on a session; its seat lifts them, once", async () => {
+    // leaf-fleet: a joined leaf with no road wears its face pinned until the carried seat grant lands. A slot of the face's
+    // own would seal under a session that stands only once the face seats, so its bytes would wait in memory and a reload
+    // would lose them (smoke: the daemon working layer read unavailable after the reload).
+    const h = await house();
+    const pinned = h.pinned();
+    const daemonAt = (await pinned.slotDoc("daemon", "working"))!;
+    expect(tiddlerText(await h.control.get(`${CONTROL_HOME_ID}/daemon-slot/working/floor`)), "the daemon wiki keeps the floor's slot").toBe(daemonAt.url);
+    expect(await h.control.get(`${CONTROL_HOME_ID}/daemon-slot/working/${encodeURIComponent(h.group.groupId)}`), "no slot of the face mints").toBeNull();
+    const out = await pinned.bindings(h.fingerprint, h.trace, "garden");
+    expect(out.workingUrl, "the wiki's working layer stands at the floor").toBe(tiddlerText(await h.control.get(floorSlotTitle("garden", "working"))));
+    expect(ledgerWorkbenches(h.ledger.doc()), "no workbench realm founds while the face stands unseated").toEqual([]);
+    await h.write(daemonAt.url, "Memory", "pinned words");
+    await h.write(out.workingUrl!, "Note", "written while pinned");
+    const faced = h.faced();
+    const lifted = await faced.liftFloor();
+    expect(lifted.skipped).toEqual([]);
+    const bench = (await faced.slotDoc("garden", "working"))!.url;
+    expect(await h.read(bench, "Note"), "the seat lifts the pinned wiki words into the face's workbench").toBe("written while pinned");
+    expect(await h.read((await faced.slotDoc("daemon", "working"))!.url, "Memory")).toBe("pinned words");
+    const again = await faced.liftFloor();
+    expect(again.moved, "a replay moves nothing").toEqual([]);
     await h.done();
   });
 

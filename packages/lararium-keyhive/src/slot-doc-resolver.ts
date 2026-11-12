@@ -187,7 +187,8 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
    * address and rests before the slot answers.
    */
   const workingDoc = async (slug: string, mint: boolean): Promise<SlotDoc | null> => {
-    if (!args.personaGroupId || !args.workbenchRealm) {
+    // leaf-fleet (Leaf-Finisher): a face pinned and not yet seated stands the floor's working layer, as a faceless vessel does.
+    if (!args.personaGroupId || !args.workbenchRealm || !(await seated())) {
       // No face: the veil floor's own document where the control document reads, and none where it does not.
       const floorDoc = await floorWorking(slug, mint);
       if (floorDoc || !mint) return floorDoc;
@@ -224,7 +225,11 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
   const deviceMints = new Map<string, Promise<SlotDoc>>();
   const deviceSlot = async (kind: Exclude<WikiSlotKind, "temp">, mint: boolean): Promise<SlotDoc | null> => {
     if (!args.control) throw new Error("slot-doc: device-scoped slots require control store");
-    const title = `${CONTROL_HOME_ID}/daemon-slot/${kind}/${encodeURIComponent(args.personaGroupId ?? "floor")}`;
+    // leaf-fleet (Leaf-Finisher): A FACE PINNED AND NOT YET SEATED keeps the floor's slot. Its own slot would seal under a
+    // session that stands only once the face seats, so its bytes would wait in memory and a reload would lose them; the
+    // floor's slot rests under the vessel's key, and the Lift carries it into the face's slot when the seat lands.
+    const owner = args.personaGroupId && await seated() ? args.personaGroupId : "floor";
+    const title = `${CONTROL_HOME_ID}/daemon-slot/${kind}/${encodeURIComponent(owner)}`;
     const named = tiddlerText(await args.control.get(title));
     if (named) return { url: named, reach: "vessel-only" };
     if (!mint) return null;
@@ -344,7 +349,7 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
       // THE FACELESS FLOOR: a realm seats a face, so no workbench stands here. Where the vessel's control document reads, the
       // veil floor stands the wiki's working layer in its own floor document (`floorWorking`); where it does not (a locked
       // floor, a herm that holds none), the wiki boots on its canon, draft and personal alone with no default writable.
-      if (!args.personaGroupId || !args.workbenchRealm) return { personalUrl: personal.url, draftUrl: draft.url, workingUrl: (await floorWorking(slug, true))?.url ?? null };
+      if (!args.personaGroupId || !args.workbenchRealm || !(await seated())) return { personalUrl: personal.url, draftUrl: draft.url, workingUrl: (await floorWorking(slug, true))?.url ?? null };
       const working  = (await workingDoc(slug, true))!;
       return { personalUrl: personal.url, draftUrl: draft.url, workingUrl: working.url };
     },
