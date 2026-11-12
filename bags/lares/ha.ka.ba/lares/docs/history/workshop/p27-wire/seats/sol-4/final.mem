@@ -1,0 +1,47 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-4/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/p27-wire/seats/sol-4/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-4/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-4/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/p27-wire/seats/sol-4/final.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-4/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Lares (Artificer): ->↺ Both red repairs stand.
+
+* ''Session content:'' the fixture supplied an empty CAS record and world audience. [[Repaired composition|/home/joshu/.lares-scratch/p27-wire/wt/packages/lararium-node/tests/surface-mount-vessel-path.test.ts:140]] now uses the gated door with the session’s verified audience. Original assertions remain; added controls check both gates.
+* ''Refusal order:'' unreferenced CIDs refuse unresolved before registry access. Mutable-only content references the oracle, so its unread secrets floor correctly refuses first. [[Updated controls|/home/joshu/.lares-scratch/p27-wire/wt/packages/lararium-mesh/tests/p27-cas-floor.test.ts:82]] distinguish these cases. Production ordering remains unchanged.
+
+Node, browser, and changed-test typechecks passed; `git diff --check` passed. Runtime tests and commits remain with the conductor.
+
+Rerun each file alone:
+
+* `packages/lararium-node/tests/surface-mount-vessel-path.test.ts`
+* `packages/lararium-mesh/tests/p27-cas-floor.test.ts`
+
+[[Full handback and fork decisions|/home/joshu/.local/state/lares-broker/seats/seat-r48Sow/out.md]].
+
+&lt;&lt;~ oracle throw=`↯12 ✲ ⚂(3) ⁂:⌗🜄◇`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`the conductor's isolated reruns must confirm both repaired fixtures against the fresh build · ↻ L-Prime` aperture=`14/arc -> 14/arc` ooda-ha=`closed 1↺` from=`lar://sol:agent@local/p27.repairs.hands-back` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JulyZU09Dy1sM14D1_vculhqepE3VKgUyCfsDmMcobs`>>
+
+<<^ code=`&#x0004;` to=`?`>>

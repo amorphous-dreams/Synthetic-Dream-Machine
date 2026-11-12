@@ -1,0 +1,213 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-3/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/p27-wire/seats/sol-3/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-3/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-3/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/p27-wire/seats/sol-3/out.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-3/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Lares (Artificer): P27 step 3 edits stand. Both requested typechecks passed (exit 0); git diff &#45;-check passed. No runtime test, build, browser runner, daemon, socket, vessel, git write or commit ran in this seat. The conductor retains runtime verdicts and commits. Prior steps' work remains; the worker-local CAS shortcut was deliberately replaced because it bypassed the new boundary.
+
+Crossings and audience sources
+
+* Node Repo: packages/lararium-node/src/self-slot-share.ts:122 — Structural branch proves in-process / fleet / contract / world; node composition passes the held floor.
+* Browser Repo: packages/lararium-browser/src/open-browser-vessel.ts:2396 — Sibling proof -> fleet; relay without a gate -> fleet, gated relay -> world; other local peers -> in-process. Both hooks share one decision.
+* Composed CAS: packages/lararium-mesh/src/lar-vessel.ts:68 — Required host-supplied audience, held CID references or explicit immutable genesis declaration; require before and after resolver await.
+* Node daemon: packages/lararium-node/src/worker-handle.ts:171 — Daemon class -> in-process; worker-supplied audience fields carry no authority.
+* Browser daemon: packages/lararium-mesh/src/capability-record.ts:168 — answerIslandAsks daemon door -> in-process.
+* Node pool relation: packages/lararium-node/src/open-node-vessel.ts:4118 — Live worn face persona-plane URL; effective recipe registry plane. Catalog -> in-process, oracle -> world; absent/faulting/mismatched relation -> named unresolved refusal.
+* Browser pool relation: packages/lararium-browser/src/open-browser-vessel.ts:2166 — Live port face persona-plane URL plus effective recipe registry plane; same mapping as node.
+* Node pool byte doors: packages/lararium-node/src/vessel-island-pool.ts:31 — readContent calls the record; wiki worker spawn captures host mount context for cas:want.
+* Browser pool byte doors: packages/lararium-browser/src/browser-vessel-island-pool.ts:93 — Raw wiki CAS and scoped view content use the same host-bound audience; raw session CAS remains refused.
+* Host mount context: packages/lararium-mesh/src/vessel-island-pool-core.ts:712 — Host constructs IslandAudienceContext; scoped session view still proves its content grant first.
+* Herm shore: packages/lararium-node/src/bulb-read-face.ts:167 — Released-floor, own-public, and realm-public reference paths all tighten as world.
+* HTTP /cas: packages/lararium-node/src/bulb-read-face.ts:222 — Always consults the world shore before verified byte read; no genesis inventory bypass on /cas.
+* Node boot worker: packages/lararium-node/src/sovereign-island-model.ts:193 — All kernel reads ask vessel; no worker filesystem byte shortcut.
+* Browser boot worker: packages/lararium-browser/src/browser-sovereign-island-model.ts:77 — All kernel reads ask vessel; no worker OPFS byte shortcut.
+* Kernel boot sites: packages/lararium-tw5/src/sovereign-kernel.ts:355 — Engine line 436, plugins line 442, genesis floor line 476 use this reader; session worker chooses SessionDocumentView.content first.
+* Genesis publication: packages/lararium-mesh/src/genesis-doc.ts:278 — ROOT_BAGS public system material and immutable bulb inventory supply explicit PUBLIC byte declarations.
+* Node genesis binding: packages/lararium-node/src/open-node-vessel.ts:2409 — readGenesisCasManifest immutable build seed, never mutable oracle inventory.
+* Browser genesis binding: packages/lararium-browser/src/open-browser-vessel.ts:1344 — genesisSeed immutable build inventory, never mutable oracle inventory.
+* Held genesis declaration: packages/lararium-mesh/src/held-share-floor.ts:73 — Synthetic genesis-public:&lt;cid> declaration goes through the one predicate. Unknown ordinary CIDs still refuse.
+
+Red/control proofs for the conductor (written, not executed here)
+
+* packages/lararium-mesh/tests/p27-cas-floor.test.ts: same private CID reads in-process and refuses world / unreadable audience by name; both substrate resolvers remain unread on denial; public control reads; genuine buildGenesisDoc engine, floor manifest and genesis bag snapshot inventory reads with no held doc; unnamed/undeclared and mutable-only inventory refuse; withdrawal during resolver await withholds bytes.
+* packages/lararium-mesh/tests/p27-worker-cas.test.ts: actual shared worker byte asker + daemon answer + gated record admit private daemon bytes; same CID world refuses by name; repeated reads consult gate/resolver again; corrupt bytes refuse CID mismatch. Source witnesses pin both kernel worker readers to the shared port door; faulting relation reader resolves no audience.
+* packages/lararium-node/tests/p27-island-audience.test.ts: fake worker ports (no worker/socket) exercise node worker-handle and pool content reader. Daemon, catalog wiki and current-face surface read private bytes; oracle wiki/world and unreadable/mismatched face refuse by name; forged worker audience does not change the host relation.
+* packages/lararium-node/tests/p27-public-cas.test.ts: public registration/release/realm references cannot loosen a held VEIL declaration; PUBLIC control reads; live secrets floor withholds again. Exercises the HTTP authorization shore without a listener.
+* packages/lararium-node/tests/p27-repo-share.test.ts: proven sibling cannot pull VEIL; PERSONAGROUP control crosses.
+* packages/lararium-browser/tests/p27-repo-share.test.ts: browser announce/access both refuse VEIL for sibling, both allow PERSONAGROUP control. BROWSER RUNNER — lead runs.
+* packages/lararium-mesh/tests/one-composer.test.ts: both floors pass explicit tiers/documentsForCid; original one-composer, lift and source-integrity guards remain.
+* packages/lararium-mesh/tests/lar-vessel.test.ts: asserts wrapped member calls resolver with CID/audience, not function identity; all floor fixtures pass required tier inputs.
+
+Forks and grounding
+
+# Audience follows the asking island's host-held relation, never CID syntax, a worker claim, or the target's tier. The daemon stands in-process. Pool recipes read catalog/oracle relation; current verified face surfaces stand in-process. Unreadable relations carry declared-tier-audience-unresolved across byte doors. This implements identity-as-relation and causal-island boundaries.
+# Immutable genesis inventory declares public bytes by construction (genesis-doc.ts publication comment, ROOT_BAGS public definitions, existing bulb publication). Only that build-derived set grants the synthetic byte declaration. No directory scan or mutable oracle mutation manufactures publication. A later private reference cannot recall already published identical immutable bytes. With no immutable inventory, held oracle references still permit own in-process boot; they grant no automatic external readership.
+# Engine/plugin/floor boot reads formerly bypassed the boundary through worker-local filesystem/OPFS readers. They now ask the composed record over the port, including local hits, and verify returned hashes. Session kernels retain their narrower SessionDocumentView content grant before the same gate. Local storage remains the vessel resolver's first tier.
+# Kept one tighten predicate for Repo and byte crossings. Structural denials stay denials; declared tier meets the structural/secrets floor. No compatibility fallback or clock was added.
+
+Drift found and addressed
+
+* Interrupted audience threading covered pool contexts but left worker-local boot readers outside the gated record. Replaced those readers deliberately; updated real-worker test fixtures to supply an explicit CAS capability.
+* Browser retained an independent empty CapabilityRecord initializer, violating one-composer's source guard. Replaced it with a nullable composed-record reference and a named refusal if the pool starts before composition.
+* Existing share/shore/pool fixtures predated the required floor/audience members. Migrated them explicitly; structural-policy fixtures use a PUBLIC test-only boundary, while the P27 red/control files use live private/public tier changes. No product back-compat shim.
+* No stale-dist runtime verdict was read. Browser runtime and worker/vessel/socket proofs remain conductor work, not seat claims.
+* Existing browser gated-relay Repo classification remains world (siblings remain fleet); this CAS span does not redesign that prior structural relation policy.
+
+Static checks, completed
+
+* pnpm exec tsc -p packages/lararium-node/tsconfig.typecheck.json &#45;-noEmit — passed, exit 0.
+* pnpm exec tsc -p packages/lararium-browser/tsconfig.typecheck.json &#45;-noEmit — passed, exit 0.
+* git diff &#45;-check — passed.
+
+Conductor execution list — run each file alone after the conductor's fresh build; never the battery. Every browser entry requires the browser runner. Real worker/vessel/socket files remain lead runs. This list includes all changed test files plus the two relevant island door/integrity controls; no runtime result is claimed here.
+
+* BROWSER RUNNER — lead runs: packages/lararium-browser/tests/browser-island-caps.test.ts
+* BROWSER RUNNER — lead runs: packages/lararium-browser/tests/browser-island-pool-plugin-resolution.test.ts
+* BROWSER RUNNER — lead runs: packages/lararium-browser/tests/browser-repo-in-island.test.ts
+* BROWSER RUNNER — lead runs: packages/lararium-browser/tests/browser-share-config.test.ts
+* BROWSER RUNNER — lead runs: packages/lararium-browser/tests/browser-verb-breathing.test.ts
+* BROWSER RUNNER — lead runs: packages/lararium-browser/tests/hearth-canon.test.ts
+* BROWSER RUNNER — lead runs: packages/lararium-browser/tests/p27-repo-share.test.ts
+* BROWSER RUNNER — lead runs: packages/lararium-browser/tests/pool-lifecycle.test.ts
+* BROWSER RUNNER — lead runs: packages/lararium-browser/tests/wiki-sense-supervision.test.ts
+* lead runs, one file: packages/lararium-mesh/tests/face-switch-mid-compose.test.ts
+* lead runs, one file: packages/lararium-mesh/tests/lar-vessel.test.ts
+* lead runs, one file: packages/lararium-mesh/tests/one-composer.test.ts
+* lead runs, one file: packages/lararium-mesh/tests/p27-cas-floor.test.ts
+* lead runs, one file: packages/lararium-mesh/tests/p27-worker-cas.test.ts
+* lead runs, one file: packages/lararium-node/tests/blob-sovereignty.test.ts
+* lead runs, one file: packages/lararium-node/tests/cas-at-rest-verify.test.ts
+* lead runs, one file: packages/lararium-node/tests/cas-construction.test.ts
+* lead runs, one file: packages/lararium-node/tests/dial-relation.test.ts
+* lead runs, one file: packages/lararium-node/tests/edge-shadow-ring.test.ts
+* lead runs, one file: packages/lararium-node/tests/event-routing.test.ts
+* lead runs, one file: packages/lararium-node/tests/face-fleet-view.test.ts
+* lead runs, one file: packages/lararium-node/tests/floor-fleet-lanes.test.ts
+* lead runs, one file: packages/lararium-node/tests/gate-widening.test.ts
+* lead runs, one file: packages/lararium-node/tests/herm-follows-realm-public.test.ts
+* lead runs, one file: packages/lararium-node/tests/herm-reshares-public-blob.test.ts
+* lead runs, one file: packages/lararium-node/tests/herm-rungs.test.ts
+* lead runs, one file: packages/lararium-node/tests/island-doors-by-class.test.ts
+* lead runs, one file: packages/lararium-node/tests/island-reply-integrity.test.ts
+* lead runs, one file: packages/lararium-node/tests/kahu-canon-guard.test.ts
+* lead runs, one file: packages/lararium-node/tests/kahu-guard-lanes.test.ts
+* lead runs, one file: packages/lararium-node/tests/kahu-guard-standing.test.ts
+* lead runs, one file: packages/lararium-node/tests/ledger-private-guard.test.ts
+* lead runs, one file: packages/lararium-node/tests/m3-breathing.test.ts
+* lead runs, one file: packages/lararium-node/tests/multiple-nexus-household.test.ts
+* lead runs, one file: packages/lararium-node/tests/own-fleet-sync.test.ts
+* lead runs, one file: packages/lararium-node/tests/p27-island-audience.test.ts
+* lead runs, one file: packages/lararium-node/tests/p27-public-cas.test.ts
+* lead runs, one file: packages/lararium-node/tests/p27-repo-share.test.ts
+* lead runs, one file: packages/lararium-node/tests/pool-mount-intensity.test.ts
+* lead runs, one file: packages/lararium-node/tests/port-page-real-island.test.ts
+* lead runs, one file: packages/lararium-node/tests/repo-in-island.test.ts
+* lead runs, one file: packages/lararium-node/tests/same-operator-refold.test.ts
+* lead runs, one file: packages/lararium-node/tests/self-slot-circles.test.ts
+* lead runs, one file: packages/lararium-node/tests/self-slot-share.test.ts
+* lead runs, one file: packages/lararium-node/tests/session-sign-lift.test.ts
+* lead runs, one file: packages/lararium-node/tests/surface-mount-real-island.test.ts
+* lead runs, one file: packages/lararium-node/tests/surface-mount-vessel-path.test.ts
+* lead runs, one file: packages/lararium-node/tests/verb-tiddler-dispatch.test.ts
+* lead runs, one file: packages/lararium-node/tests/vessel-island-pool.test.ts
+* lead runs, one file: packages/lararium-node/tests/vessel-private-guard.test.ts
+* lead runs, one file: packages/lararium-node/tests/wiki-switch-remount.test.ts
+
+Files changed across the retained step 1/2/3 working tree (70; all uncommitted)
+
+* packages/lararium-browser/src/browser-sovereign-island-model.ts
+* packages/lararium-browser/src/browser-vessel-island-pool.ts
+* packages/lararium-browser/src/open-browser-vessel.ts
+* packages/lararium-browser/tests/browser-island-caps.test.ts
+* packages/lararium-browser/tests/browser-island-pool-plugin-resolution.test.ts
+* packages/lararium-browser/tests/browser-repo-in-island.test.ts
+* packages/lararium-browser/tests/browser-share-config.test.ts
+* packages/lararium-browser/tests/browser-verb-breathing.test.ts
+* packages/lararium-browser/tests/hearth-canon.test.ts
+* packages/lararium-browser/tests/pool-lifecycle.test.ts
+* packages/lararium-browser/tests/wiki-sense-supervision.test.ts
+* packages/lararium-mesh/src/capability-record.ts
+* packages/lararium-mesh/src/genesis-doc.ts
+* packages/lararium-mesh/src/index.ts
+* packages/lararium-mesh/src/island-protocol.ts
+* packages/lararium-mesh/src/lar-vessel.ts
+* packages/lararium-mesh/src/share-tighten.ts
+* packages/lararium-mesh/src/vessel-host.ts
+* packages/lararium-mesh/src/vessel-island-pool-core.ts
+* packages/lararium-mesh/tests/face-switch-mid-compose.test.ts
+* packages/lararium-mesh/tests/lar-vessel.test.ts
+* packages/lararium-mesh/tests/one-composer.test.ts
+* packages/lararium-node/src/bulb-read-face.ts
+* packages/lararium-node/src/open-node-vessel.ts
+* packages/lararium-node/src/self-slot-share.ts
+* packages/lararium-node/src/sovereign-island-model.ts
+* packages/lararium-node/src/vessel-island-pool.ts
+* packages/lararium-node/src/worker-handle.ts
+* packages/lararium-node/tests/blob-sovereignty.test.ts
+* packages/lararium-node/tests/cas-at-rest-verify.test.ts
+* packages/lararium-node/tests/cas-construction.test.ts
+* packages/lararium-node/tests/cas-test-setup.ts
+* packages/lararium-node/tests/dial-relation.test.ts
+* packages/lararium-node/tests/edge-shadow-ring.test.ts
+* packages/lararium-node/tests/event-routing.test.ts
+* packages/lararium-node/tests/face-fleet-view.test.ts
+* packages/lararium-node/tests/floor-fleet-lanes.test.ts
+* packages/lararium-node/tests/gate-widening.test.ts
+* packages/lararium-node/tests/herm-follows-realm-public.test.ts
+* packages/lararium-node/tests/herm-reshares-public-blob.test.ts
+* packages/lararium-node/tests/herm-rungs.test.ts
+* packages/lararium-node/tests/kahu-canon-guard.test.ts
+* packages/lararium-node/tests/kahu-guard-lanes.test.ts
+* packages/lararium-node/tests/kahu-guard-standing.test.ts
+* packages/lararium-node/tests/ledger-private-guard.test.ts
+* packages/lararium-node/tests/m3-breathing.test.ts
+* packages/lararium-node/tests/multiple-nexus-household.test.ts
+* packages/lararium-node/tests/own-fleet-sync.test.ts
+* packages/lararium-node/tests/pool-mount-intensity.test.ts
+* packages/lararium-node/tests/port-page-real-island.test.ts
+* packages/lararium-node/tests/repo-in-island.test.ts
+* packages/lararium-node/tests/same-operator-refold.test.ts
+* packages/lararium-node/tests/self-slot-circles.test.ts
+* packages/lararium-node/tests/self-slot-share.test.ts
+* packages/lararium-node/tests/session-sign-lift.test.ts
+* packages/lararium-node/tests/surface-mount-real-island.test.ts
+* packages/lararium-node/tests/surface-mount-vessel-path.test.ts
+* packages/lararium-node/tests/verb-tiddler-dispatch.test.ts
+* packages/lararium-node/tests/vessel-island-pool.test.ts
+* packages/lararium-node/tests/vessel-private-guard.test.ts
+* packages/lararium-node/tests/wiki-switch-remount.test.ts
+* packages/lararium-browser/tests/p27-repo-share.test.ts
+* packages/lararium-mesh/src/held-share-floor.ts
+* packages/lararium-mesh/src/island-audience.ts
+* packages/lararium-mesh/tests/p27-cas-floor.test.ts
+* packages/lararium-mesh/tests/p27-worker-cas.test.ts
+* packages/lararium-mesh/tests/public-share-fixture.ts
+* packages/lararium-node/tests/p27-island-audience.test.ts
+* packages/lararium-node/tests/p27-public-cas.test.ts
+* packages/lararium-node/tests/p27-repo-share.test.ts
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;FpCto7XARzgdnC-8AB5qCMKeR6r285YhMPdgsQ60C-Y`>>
+
+<<^ code=`&#x0004;` to=`?`>>

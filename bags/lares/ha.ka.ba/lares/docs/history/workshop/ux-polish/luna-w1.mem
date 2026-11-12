@@ -1,0 +1,54 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/ux-polish/luna-w1`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-09 (file date) — source `.lares-scratch/ux-polish/luna-w1.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/ux-polish/luna-w1"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/ux-polish/luna-w1"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! luna-w1.md — plan, 2026-11-09
+
+Verbatim scratch record `.lares-scratch/ux-polish/luna-w1.md` (plan, file date 2026-11-09); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/ux-polish/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Ink-Clerk (Cold Reader) · Map-Wisp (Cold Reader)
+
+''Judgement:'' The likely first-time tripwire is unclear feedback during long waits, followed by a founding command that may have finished its work while the terminal still appears stuck. I found no confirmed repeated-work loop in seed. The ranked fixes below give wave 2 concrete targets.
+
+# ''Founding’s ~16-second apparent hang — S, founding path marked WAIT.''
+[[found.ts|/home/joshu/Synthetic-Dream-Machine/packages/lares-cli/src/commands/found.ts:170]] prints `stand it: lares vessel stand` as its final success line. The shim then runs `compose --profile offline run --rm …` at [[lares-container.sh|/home/joshu/Synthetic-Dream-Machine/tools/lares-container.sh:381]]. The prompt helper restores raw mode and pauses stdin at [[prompt-secret.ts|/home/joshu/Synthetic-Dream-Machine/packages/lares-cli/src/prompt-secret.ts:55]], which makes it a less likely cause; no evidence here proves the source of the delay. ''Confirm:'' time CLI exit separately from `compose run` return, then compare with a found run that avoids TTY prompts; check whether the CLI has exited while Compose waits to tear down. If teardown accounts for it, print `Founding complete; closing the temporary container…` before exit and consider `--wait`/Compose teardown settings. If Node remains alive, inspect active handles; only close/unref the handle demonstrated to keep it alive. Don’t label stdin as the cause without that check.
+
+# ''Seed progress — S.''
+[[seed.ts|/home/joshu/Synthetic-Dream-Machine/packages/lares-cli/src/commands/seed.ts:169]] prints the roster, then `seedRun` processes holdings serially without per-holding output at lines 151–155; child `cmdAct`/`cmdIngest` output can be verbose. Add a concise start/completion line per holding with submitted/loaded count and elapsed time, plus periodic ticks during long ingest; fold CREATE detail to one line by default and preserve it under `--verbose`. Example: `Seed bags/wiki: loading 226 carriers…` then `✓ bags/wiki: 226 carriers · 18s`; finish with `Seed complete: 8/8 holdings · 1m40s`.
+Repeated work: each non-system holding does idempotent CREATE, LOAD to working, then MOVE to canon ([[seed.ts|/home/joshu/Synthetic-Dream-Machine/packages/lares-cli/src/commands/seed.ts:113]]); CREATE is intentional registration, not a canon reread. System holdings use INGEST, which submits candidates and waits for projection settle ([[ingest.ts|/home/joshu/Synthetic-Dream-Machine/packages/lares-cli/src/commands/ingest.ts:193]]). That settle is a required read-after-write barrier, not a second ingest. No loop or redundant canon reread is apparent.
+
+# ''Raw trace / jargon — S.''
+#* Found refusals are partly named, but unknown founding errors escape at [[found.ts|/home/joshu/Synthetic-Dream-Machine/packages/lares-cli/src/commands/found.ts:121]] and can produce a stack. Give expected operational errors a sentence plus next step; reserve traces for explicit debug output. Example: `Founding could not finish. Check the vessel logs, then run found again; no success was reported.` ''WAIT'' (founding path).
+#* `down` prints raw census stderr at [[lares-container.sh|/home/joshu/Synthetic-Dream-Machine/tools/lares-container.sh:268]], potentially exposing stack/jargon. Replace with `The vessel could not confirm whether pending work would be lost. It remains running. Check “lares-container.sh logs”, then retry down.` Keep detailed output behind a diagnostic option.
+#* `up` retry after interruption: [[lares-container.sh|/home/joshu/Synthetic-Dream-Machine/tools/lares-container.sh:316]] relies on `compose up -d --wait`; Compose errors pass through untranslated. On failure, add `The vessel did not become ready. Check “lares-container.sh logs”; if it is already running, retry “up”.`
+#* Vault unlock failures already render sentences and next steps at [[vault.ts|/home/joshu/Synthetic-Dream-Machine/packages/lares-cli/src/commands/vault.ts:188]]. Avoid surfacing internal `reading` labels; the unknown fallback at line 204 can expose a JSON answer and should say `Unlock did not complete. Check vessel status and try again.`
+
+# ''First-timer wording — S.''
+[[custody-prompt.ts|/home/joshu/Synthetic-Dream-Machine/packages/lares-cli/src/custody-prompt.ts:162]]: “A founding seals…” → `Founding protects the vessel’s keys and links a passphrase or paper recovery code.` Gloss “route” as recovery method.
+[[found.ts|/home/joshu/Synthetic-Dream-Machine/packages/lares-cli/src/commands/found.ts:172]]: gloss “seed charter” as `recovery setup`; “chair” as `keyholder`; “place” as `this vessel’s hearth`; “persona zero” as `first face/profile`; “generation” as `key version`; “holding” as `content folder`; “carrier” as `content file`; “alreadyStood” as `already created on an earlier attempt`. ''WAIT'' for founding copy.
+
+# ''Reruns — S.''
+Seed reports only failed holdings and exit numbers at [[seed.ts|/home/joshu/Synthetic-Dream-Machine/packages/lares-cli/src/commands/seed.ts:171]], leaving the operator unsure what succeeded. Report each holding’s outcome and whether retry is safe; for interrupted act outcomes, point to its existing request/change-id recovery hint rather than inviting a fresh mutation. Also print the count and elapsed time for successful holdings, not only failed ones.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;z8y8w2e7TAFwgCiR4zCFodNSrAU5eED0CTD0-p2oysY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

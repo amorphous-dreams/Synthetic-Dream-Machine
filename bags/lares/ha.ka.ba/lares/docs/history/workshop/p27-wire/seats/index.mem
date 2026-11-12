@@ -1,0 +1,41 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/p27-wire/seats/` — 0 record(s) here, 13 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/p27-wire/seats/`
+
+The scratch planning records of `.lares-scratch/p27-wire/seats/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 0 record(s) stand here and 13 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[p27-wire/|lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/branches`>>
+
+!! Branches
+
+|! Directory |! Records |h
+| [[sol-1/|lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-1/index]] | 3 |
+| [[sol-2/|lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-2/index]] | 2 |
+| [[sol-3/|lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-3/index]] | 3 |
+| [[sol-4/|lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-4/index]] | 3 |
+| [[sol-read/|lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-read/index]] | 2 |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ksxz_JFUaQWf3kUlnsyBXh93F3OIwhzbBf3AB2Txjm0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

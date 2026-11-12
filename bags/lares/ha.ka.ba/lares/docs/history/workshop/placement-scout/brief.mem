@@ -1,0 +1,46 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/placement-scout/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-09 (file date) — source `.lares-scratch/placement-scout/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/placement-scout/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/placement-scout/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-09
+
+Verbatim scratch record `.lares-scratch/placement-scout/brief.md` (brief, file date 2026-11-09); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/placement-scout/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Owed-Scout: Lares (Tasked Spirit). &lt;&lt;~ node action=`refreshes the libation dish, the shrine incense burns`>> Read CLAUDE.md once for house law. SCOUT seat: read-only code reading plus live web research. Your job is to turn each item below from "owed" into either "settled, here is the evidence" or "uncertain, here is exactly what decides it". Do not edit files.
+
+You stand in the placement integration tree (branch feature/green-jello-dinosaur-5&#45;-placement-int): the placement-over-patterns leap. Records reach disk by WHERE THEY REST (layer + mirror), never by title. New homes: a vessel CONTROL document (`packages/lararium-mesh/src/control-home.ts`; summons, outcomes, receipts, ward audits, mailbox, lease epochs titled under `bags/control/…`, no recipe, no mirror); a vessel SECRET document (item A, still being built elsewhere: seals, dyads, Keyhive cap bytes, sealed before first write); the PersonaGroup plane as a private-synced home (catalog kind `private-synced`); the daemon wiki per face (working `wikis/daemon-<F>` and canon `bags/daemon-<F>` device-private; `kahua-<F>` fleet-synced by signed lift). The operator walks the live vessel by hand after the land; a full CI run follows the walk.
+
+THE OWED ITEMS — for each: what the code does today (file:line), what decides the open question, the smallest cure, and the risk if it ships unresolved:
+# `packages/lararium-web/tests/e2e/stage-walk.e2e.test.ts` reads `kahua-propose` outcomes with a TW5 filter on `…/bags/daemon/outcomes/`; outcomes now rest in the control document, which no wiki mounts. How else can the page read back a proposal id? (the verb's own answer over the page's verb channel? a read verb? Look at how the page dispatches kahua-propose and what the answer carries.)
+# Suites that STALLED (no output, never finished) in builder seats: the node full suite and the browser full suite (vitest, `--maxWorkers=4`). Find likely causes in the test setup (tools/vitest-scratch-house.mjs, each package's vitest.config, globalSetup, open handles: Automerge repos, websockets, timers, WASM). Research on the web: known vitest worker-pool hangs (threads vs forks, `teardownTimeout`, `--pool=forks`, hanging-process reporter `--reporter=hanging-process`) for vitest 5.x; say which diagnostic flag to run first.
+# Two browser test files failed to IMPORT in the full browser suite (find which by reading packages/lararium-browser tests that import names this branch renamed or removed: e.g. persona-plane composite access, `bags/daemon` canon, observe paths, control-family titles; or a missing generated asset). Name them and the cause.
+# `packages/lararium-tw5/tests/daemon-withheld-ingest.test.ts` asserts an INGEST into `bags/daemon` naming a cap event / group-secret seal / checkpoint refuses BY TITLE — retired by placement. What should it assert instead (the structural ward `assertDiskWavePlacement`, the private-home LOAD refusal, the secret home)? Draft the replacement assertions in words.
+# `packages/lararium-node/tests/foreign-title-projection.test.ts` and `projection-standoff-alert.test.ts` fail from the placement base's projector change (the `disk-projection: no` field / LOCI removal). Are they asserting retired behaviour (rewrite) or catching a real regression (cure)? Evidence from the projector diff (`git diff 11b40bdb8 -- packages/lararium-node/src/disk-projector.ts`).
+# Carry (`packages/lares-cli/src/commands/carry*.ts`): does export/import read the face's daemon canon `bags/daemon-<F>` and its working `wikis/daemon-<F>` from their mirrors, and does anything still name `bags/daemon` or `observe/daemon` as content? (A device-scope change and an observe retirement land in parallel seats; flag only what they would not cover.)
+# `foundThePlace` / `runInit` and the bootstrap: item A must persist the secret document's address across restart. Read what the bootstrap (`social-bootstrap.json`) carries today and where the control document's address persists (the daemon document names it). Is there a restart path where the control or secret document cannot be found again? (Read only; A's seat builds it.)
+# Web research, short: Automerge-repo `shareConfig` (announce/access) — does a document a peer never announces still sync to a peer that already knows its URL? This decides whether "device-private" docs (named only in the vessel's control document) could leak to a face's other devices that somehow learn the URL. Cite the automerge-repo docs or source.
+
+OUTPUT: one section per item, each ending in a verdict line — SETTLED (with the evidence) or UNCERTAIN (with the one fact or ruling that decides it) — plus the cure size S/M/L. Under 1,400 words. Cite file:line and URLs.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VRGxOsqBxUC6W2FgqYDJxwVgXpdOlUN8qp0qnieW95s`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,40 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/one-root/steps/step-001/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-08 (file date) — source `.lares-scratch/one-root/steps/step-001/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/one-root/steps/step-001/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/one-root/steps/step-001/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-08
+
+Verbatim scratch record `.lares-scratch/one-root/steps/step-001/out.md` (hand-back, file date 2026-11-08); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/one-root/steps/step-001/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/step-1-hand-back`>>
+
+! Step 1 hand-back
+
+Step 1 stays open at a design question. HEAD remains `fa5f50e16be2be4aaf8e06d3a3bf82dc65b74877`; no commit or push occurred. The lane carries two untracked red tests: `packages/lararium-node/tests/house-root-weld.test.ts` and `packages/lararium-sensorium/scripts/test_house_root.py`. The resolver inventory lives at `steps/step-001/resolver-inventory.txt` outside the worktree.
+
+The requested layout names no acquired library location. `packages/lararium-node/src/library-store.ts` defaults to `larariumDataHome()/library`, and acquisition moves source bodies into that library by default. `packages/lararium-sensorium/scripts/testbeds/bed_manifest.py` mirrors that location. Mapping `larariumDataHome()` to `hearth` would put those acquired bodies inside the re-found deletion boundary. Mapping it to `projections` would also send sensoriums there unless their callers split, and the library holds acquired files rather than only deliberate plaintext projections. Options: place the acquired library under `projections/library` and explicitly preserve it; place it under `hearth/library` and include its contents in the R3 accept-loss inventory; or name another surviving house location. Lean: `projections/library`, with explicit TS/Python library resolvers and re-found preservation, because acquisition moves the source and those bytes may have no other copy. The operator's choice determines the library and reset boundary.
+
+Red evidence: broker request 001 ran `house-root-weld.test.ts`, with two expected failures: unset `LAR_ROOT` did not throw and both languages still resolved `data/lares` instead of `hearth`. `python3 -m pytest packages/lararium-sensorium/scripts/test_house_root.py -q` failed because unset `LAR_ROOT` did not throw. The current weld covers vessel and identity only; expand it to the complete TS/Python resolver tables. No production resolver changed. Tests beyond these red checks remain unrun.
+
+After a ruling, inventory callers of the broad helpers, implement the complete table and Python mirror together, switch affected test isolation to scratch `LAR_ROOT`, and run every affected file. Next relay request: 002. Step 2 and Step 3 remain owed; the Step 3 shim and compose changes need the controller's SHIP.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2VAElTvICvzDSRdV10cwLqXiIpEtTBMCDi5eiZZYP7s`>>
+
+<<^ code=`&#x0004;` to=`?`>>

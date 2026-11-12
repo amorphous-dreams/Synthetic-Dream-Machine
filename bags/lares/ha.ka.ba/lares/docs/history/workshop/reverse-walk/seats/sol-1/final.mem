@@ -1,0 +1,387 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/reverse-walk/seats/sol-1/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/reverse-walk/seats/sol-1/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/reverse-walk/seats/sol-1/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/reverse-walk/seats/sol-1/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/reverse-walk/seats/sol-1/final.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/reverse-walk/seats/sol-1/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/m4-as-the-code-defines-it`>>
+
+!! M4 as the code defines it
+
+Tag: `Backwalker: Lares (Tasked Spirit)`.
+
+Anchor this reading to ''`e1d801042680596ce1fa344c55dc838452c1260b`'', including its `store-wall` merge. The live checkout had advanced; every citation below names the requested snapshot. Hold the roadmap as `_0`: acknowledge its presence; test its testimony against code. Ran no tests, builds, daemon, socket, network operation, or git write. Read no credential file.
+
+Resolve abbreviated citations against these paths:
+
+| Prefix | Path |h
+| `R` | `bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem` |
+| `F` | `bags/lararium/ha.ka.ba/lararium/mesh/founding-runbook.mem` |
+| `BL` | `bags/lares/ha.ka.ba/lares/docs/pono/browser-vessel-lift.mem` |
+| `C` | `packages/lares-cli/src` |
+| `N` | `packages/lararium-node/src` |
+| `V` | `packages/lararium-browser/src` |
+| `W` | `packages/lararium-web/src` |
+| `M` | `packages/lararium-mesh/src` |
+| `K` | `packages/lararium-keyhive/src` |
+| `T` | `tools` |
+
+Read `STANDS` as ''source exists and reaches the traced path'', without a claim of passing execution.
+
+Find three different boundaries behind “the hearth stands”:
+
+# ''Found the private hearth, offline.''
+`lares vessel found --hearth --name '<private label>'` dispatches through:
+#* `packages/lares-cli/src/bin/lares.ts:197`
+#* `packages/lares-cli/src/commands/found.ts:112`
+#* `packages/lares-cli/src/commands/found.ts:148`
+#* `packages/lararium-node/src/commands/found-hearth.ts:200`
+
+That act initializes the place, seats the one-chair seed charter, founds persona zero, admits its group, and lands the Kahu realm. It prints “the hearth stands” ''before starting a daemon''. (`N/commands/found-hearth.ts:206`, `:211`, `:215`, `:216`, `:217`, `:227`; `C/commands/found.ts:168`, `:177`.)
+
+# ''Run the executable compound rite.''
+`lares vessel rite founding` calls ''found → stand → seed'', forwarding the caller’s arguments and forcing `--apply --yes` for seed. It neither supplies `--hearth` nor calls unlock. It stops only on a nonzero primitive exit. (`packages/lares-cli/src/commands/vessel.ts:111`, `:123`, `:125`, `:126`, `:127`, `:131`.)
+
+# ''Stand the live, sovereign, seeded household under the operator’s hand.''
+The existing runbook uses separate host operations: `found --hearth`, `up`, then `vessel seed --apply --yes`; `up` attempts TTY unlock. Browser binding and fleet join follow through their own paths. No call inside `runFoundingRite` demands household HTTPS, a phone, the joined gate, or M6. The road nevertheless requires those qualifications before the operator’s M4. (`F:153`, `:155`, `:156`, `:165`; `R:46`, `:70`, `:77`, `:78`; `BL:109`.)
+
+''Name the shortest mechanical route:'' reuse the separate hearth-found, host-start, unlock, and seed primitives. ''Name the shortest authorized route:'' finish the road’s outstanding pre-rite qualifications, prove the final candidate, then let the operator perform those primitives on a TTY. The code does not enforce the road’s whole admission rule.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-backward-walk`>>
+
+!! The backward walk
+
+Read this walk as a dependency graph. Links 3–7 contain independent branches; they do not demand one serial implementation train.
+
+# ''Require the operator’s qualified M4 handoff · UNWIRED as an executable gate.''
+
+The road places M6, the joined gate, phone durability, and the owed reviews before M4. The executable rite checks none of those receipts; its complete step list contains three primitive calls. A successful offline `found --hearth` also prints its success before any live stand. (`R:46`, `:49`, `:70`, `:77`; `C/commands/vessel.ts:123`; `C/commands/found.ts:168`.)
+
+''Clear — INFER:'' gather the required receipts against the final candidate and preserve the operator’s TTY act. No new product gate follows necessarily from this discrepancy.
+
+# ''Require a joined household over trusted HTTPS, with a real phone · UNWIRED as a complete proved gate.''
+
+Browser admission, worker custody, and face/session lift already reach production composition. The browser stands its face atom, keeps its archive, and composes a lifted capability record. (`V/open-browser-vessel.ts:849`, `:869`, `:1727`, `:1731`.)
+
+Household HTTPS also has executable surfaces: the compose terminator refuses absent host/certificate/key/zone inputs; the issuer has its own profile and named refusals. Default vessel publishing binds loopback HTTP. A phone arriving through ordinary LAN HTTP reaches the browser’s `insecure-origin` refusal. (`docker-compose.surface.yml:181`, `:225`, `:235`, `:236`, `:237`, `:238`, `:239`, `:425`, `:436`; `V/secure-context-gate.ts:70`, `:73`.)
+
+The available weld cannot certify the whole household: W5 explicitly reports an unwired node-disk leg, while the driver can exit zero with gaps. That disk leg belongs to the later `L4p` proof; do not silently substitute it for, or pull it ahead of, the distinct joined-founding gate. (`T/browser-weld/weld.mjs:352`, `:355`, `:369`; `R:655`; `BL:109`.)
+
+''Clear — INFER:'' complete links 3–7, configure the existing HTTPS surfaces, and have the lead run a scratch node/browser/real-phone founding and join against the final image. Record both devices’ mutual visibility, lifecycle behavior, secure-origin refusal, and storage reading.
+
+# ''Require browser founding/retry idempotence · UNWIRED across the whole founding sequence.''
+
+Founding runs the ceremony, names the face, saves its atom, mints its address secret, saves its archive, and keeps its anchor before scheduling bootstrap persistence. Bootstrap lands later inside `loadGenesis`. The code explicitly anticipates a stop before bootstrap followed by another founding. (`V/open-browser-vessel.ts:927`, `:944`, `:947`, `:949`, `:950`, `:953`, `:955`, `:967`, `:1292`.)
+
+Individual persistence helpers stand. This sequence supplies no single commit spanning ceremony, atom, archive, anchor, and bootstrap. The road specifically demands a kill between atom persistence and bootstrap, plus same-head retries across worker respawn. (`V/open-browser-vessel.ts:212`; `BL:105`, `:107`.)
+
+''Clear — INFER:'' retain a durable founding-operation identity and resume the same atom/group across those cut points; connect retries to durable transaction identity. Prove one atom, one group, no orphan rows, and one application after a lost answer. Do not infer that result from separate successful writes.
+
+# ''Require durability disclosure before binding · UNWIRED.''
+
+The storage probe and warning formatter stand, including an explicit unknown reading. The page starts the vessel, waits for its opening, marks it live, and only then asynchronously requests and reports durability. Its catch suppresses an unreadable storage surface. (`V/secure-context-gate.ts:148`, `:158`, `:170`, `:204`; `W/main.ts:493`, `:515`, `:524`, `:590`, `:603`, `:608`.)
+
+A partially missing identity already produces `continuity-lost` and refuses to mint. That behavior does not satisfy the road’s requested named fresh-vessel/rejoin behavior after erasure. (`V/browser-vessel-identity.ts:329`, `:331`, `:333`; `BL:106`.)
+
+''Clear — INFER:'' obtain and show the durability reading before either founding or joining binds; carry unknown readings explicitly. Settle partial-keystore loss and whole-origin loss separately. Distinguish requested drain, durable acknowledgement, and verified projection.
+
+# ''Require P27’s four crossing restrictions · UNWIRED; its composer prerequisite STANDS.''
+
+`capTierShareDecision` and `makeContractSecretsRegistry` exist. Production-source caller searches found no invocation of either; the registry’s own source says no production secrets store currently stands. (`M/federation-gate.ts:551`; `N/plane-secrets.ts:47`, `:61`.)
+
+Existing crossings still use:
+* Node repo sharing: `selfSlotShareDecision`. (`N/open-node-vessel.ts:1325`.)
+* Browser repo sharing: `federationShareDecision`. (`V/open-browser-vessel.ts:2353`, `:2355`.)
+* Node public CAS HTTP shore: its public-reference/tier machinery. (`N/bulb-read-face.ts:46`, `:71`.)
+* Island CAS: the node resolver and browser OPFS reader seated directly in their floor records. (`N/open-node-vessel.ts:1938`, `:2325`; `V/open-browser-vessel.ts:1713`, `:1715`.)
+
+The browser island dispatcher invokes `caps.cas(cid)` without adding a tier decision. (`M/capability-record.ts:164`, `:169`.)
+
+''Reach standing ground:'' node and browser already call the shared `composeVessel` with floor/lift stacks; herm composition also reaches that composer. No prerequisite remains to rebuild 5b. (`N/open-node-vessel.ts:2325`, `:4354`, `:4467`; `V/open-browser-vessel.ts:1713`, `:1731`.)
+
+''Clear — INFER:'' finish P27’s critical review, then seat the declared-tier/structural-floor decision at all four crossings, including both shores’ island CAS member. Connect registry entries to actual plane-producing acts; do not invent a secrets store merely to give the registry a caller. (`R:803`; `N/plane-secrets.ts:47`.)
+
+# ''Require the named security dispositions · mixed STANDS / UNWIRED / BROKEN.''
+
+* ''L23 promotion-drop floor · BROKEN against the required rollback rule.'' The verifier trusts tombstones supplied by the same ledger; node custody can rewrite that entire ledger. No independent drop floor appears in this path. (`M/promote.ts:55`, `:57`, `:112`, `:114`, `:117`; `N/promoted-store.ts:26`, `:30`, `:31`, `:33`.)
+''Clear — INFER:'' bind drops to the board or a ward-authenticated ledger head; demonstrate refusal after stripping a tombstone and restoring an older signed row. The static path supports the rollback concern; this seat did not execute the exploit. (`R:679`.)
+
+* ''L24 renewal writer · STANDS; whole cure remains unproved.'' The current root-answer path appends a replacement `device-edge` for a seated admission whose digest changed. It rejects a cached answer that no longer matches the seated edge and directs a fresh request. The lease command also refuses rolls that would strand seated devices. (`N/commands/device-admit.ts:424`, `:444`, `:445`, `:475`, `:476`; `N/commands/persona-lease.ts:112`, `:119`.)
+''Clear — INFER:'' remeasure every epoch-advancing writer and the fresh-request renewal/control. Do not rebuild an allegedly absent writer.
+
+* ''L25/L26 tag and admission residues · UNWIRED as completed dispositions.'' Node tags already mint random per-face secrets independently of the place key. The admission path still carries the `signedInput` fallback; an occupied tag without a matching admission refuses. (`N/vessel-face-tag-store.ts:45`, `:52`, `:74`; `N/commands/device-admit.ts:414`, `:419`, `:450`.)
+''Clear — INFER:'' settle origin erasure, lost-atom re-entry, incomplete admission/edge state, and the fallback under the intended lease end state. Preserve fresh-founding controls. (`R:675`, `:676`.)
+
+* ''L27 ward base · STANDS; residual proof UNWIRED.'' `awaitOnRolled` waits for the hook’s own settlement and maps rejection to false; production hosting calls it. That confirms the clock cure, without proving the ward-refusal reason or Kahu-gated projection witness. (`N/store-door-verbs.ts:172`; `N/open-node-vessel.ts:4189`; `R:677`.)
+''Clear — INFER:'' measure those two residuals against the landed hook.
+
+* ''L29 drain base · STANDS; tails UNWIRED as complete proof.'' The common receipt dispatcher handles `asks-done`; browser lift/floor teardown ordering and shared-holder closure paths exist. (`M/capability-record.ts:155`, `:160`; `V/open-browser-vessel.ts:1722`, `:1814`; `V/shared-holder-core.ts:313`, `:530`.)
+''Clear — INFER:'' measure the two broad fault exits, dedicated-worker pagehide writes, and full herm teardown before deciding whether code changes remain. (`R:672`.)
+
+* ''K22 and L28 review dispositions · UNWIRED.'' Recovery still exposes a reconstruction wrapper without a live CLI consumer; `rollEnrolments` remains a primitive without a production caller found by the source search. (`N/recovery-keel.ts:31`, `:37`, `:42`, `:45`; `M/persona-group-secret.ts:227`.)
+''Clear — INFER:'' perform the mandated retire/wire/reshape reviews after settling M6’s authority shape. Do not wire reconstruction into production merely to close K22: M7 explicitly requires rotation without reconstruction. (`R:760`, `:674`, `:80`.)
+
+* ''K23 retirement · STANDS.'' The dead names have a dedicated absence census; production source searches found no remaining implementation. Keep the surviving inner-ring interface separate. (`packages/lararium-mesh/tests/k23-identity-slot-burnt.test.ts:35`, `:38`; `R:761`.)
+''Clear:'' no implementation slice identified.
+
+# ''Require M6 before the rite · UNWIRED to its complete end state.''
+
+Anchored lineage and remove-wins machinery stand in current readers. Yet live lease readers still fold signed epochs and floor them through a face; `persona lease` still rolls a signed lease epoch and raises the anchor. Browser founding still writes `leaseEpoch: 0`. (`K/board-dyad-reader.ts:27`, `:35`; `K/lease-frontier.ts:64`, `:69`; `N/commands/persona-lease.ts:121`, `:122`; `V/open-browser-vessel.ts:957`.)
+
+The existing lease census checks signed-reader spellings and approved scan locations. It does not, by itself, prove the requested complete dyad census or refusal under every incomplete view. (`packages/lararium-mesh/tests/lease-law-census.test.ts:8`, `:10`, `:56`; `R:76`.)
+
+Genesis also retains the exact format literal `lararium-genesis-seed/v1` in reader and seed. The reader rejects a ''top-level'' `schemaVersion`; the tracked seed carries none. Do not diagnose a current seed refusal from nested blob versions. (`M/genesis-doc.ts:247`, `:253`, `:284`, `:287`; `genesis/seed.json:2`.)
+
+''Clear — INFER:'' finish the authority-reader/dyad census, demonstrate incomplete-view refusal, remove remaining lease authority, then burn its obsolete writers and renewals. Complete the declared format-literal change in the single final bake. Reconcile L24/L28 with that result rather than extending an epoch model scheduled for retirement. (`R:76`, `:363`.)
+
+# ''Require successful seeding under a lit, unlocked face · STANDS as primitives; BROKEN in the bare compound route.''
+
+Seed discovers holdings under `LAR_BAGS`; missing holdings return 3. Infrastructure holdings use INGEST, other holdings follow their load path, and any failed holding makes seed return 1. INGEST needs the daemon socket. (`C/commands/seed.ts:60`, `:91`, `:97`, `:158`, `:167`, `:174`; `C/verb-call.ts:172`.)
+
+A floor refuses content actions through `lightAFace`. The compound rite neither creates a hearth by default nor unlocks the daemon before seed. (`K/operator-daemon-behavior.ts:215`, `:760`, `:783`; `C/commands/vessel.ts:125`.)
+
+''Clear — INFER:'' use existing `found --hearth` → start → successful live unlock → seed. Preserve `--apply --yes`, the intended bags mount, and each holding’s result. Treat Kahu projection as a required receipt, not an implication of socket availability.
+
+# ''Require a live sovereign daemon · STANDS; compound success propagation BROKEN.''
+
+Every daemon boot starts with an empty custody holder and composes its floor. Unlock reaches the custody frame and triggers recomposition. Offline unlock proves credentials but retains no open key; it cannot prepare the next daemon boot. Sovereign composition failure can fall back to the floor. (`N/main.ts:349`, `:351`, `:447`, `:457`, `:476`; `C/commands/vault.ts:221`, `:226`, `:235`; `N/main.ts:415`, `:433`.)
+
+`stand` can emit `ok: false` for missing dist/bootstrap or failed standing and still return zero. The compound rite therefore can continue into seed after a failed stand. (`C/commands/stand.ts:234`, `:237`, `:383`, `:435`, `:437`; `C/commands/vessel.ts:131`.)
+
+Container `vessel rite` merely routes into the CLI; it does not perform the host shim’s start/unlock orchestration. A host-held engine prevents the inner CLI from launching a replacement daemon. (`T/lares-container.sh:243`; `C/commands/stand.ts:230`.)
+
+''Clear — INFER:'' keep the shortest route on the existing host `up`/unlock path and verify held custody plus sovereign standing. If retaining a compound hearth rite, add live unlock and fail it on an unsuccessful stand payload. Do not use `up` exit alone: the shim deliberately tolerates an abandoned unlock. (`T/lares-container.sh:99`, `:105`, `:220`.)
+
+# ''Require a private seed charter, persona zero, custody, and card readback · STANDS.''
+
+`found --hearth` runs initialization, seats the private charter, then lights persona zero and its Kahu admission. Bare `found` initializes a faceless place; later `persona new 0` refuses without a seed charter. (`N/commands/found-hearth.ts:206`, `:211`, `:215`, `:227`; `C/commands/found.ts:112`, `:114`; `N/commands/init.ts:606`, `:608`.)
+
+A fresh route requires a TTY. Cold cards also require a live terminal and refuse `--json` outside the explicit harness stand-in. The hearth act requires its private label. (`C/custody-prompt.ts:21`, `:37`, `:157`; `C/cold-card-readback.ts:31`, `:37`; `C/commands/found.ts:139`.)
+
+''Clear:'' supply the real TTY, label, human custody route, and place/chair card readbacks. Reuse this act. Persona zero needs no second founding call; the runbook’s optional second line adds a public Handle. (`F:153`, `:154`, `:163`.)
+
+# ''Require fresh roots, usable genesis, and runnable artifacts · STANDS conditionally; final artifact qualification UNWIRED.''
+
+Before asking for a new route, founding refuses occupied storage without a custody tree. Missing genesis engine CID throws. The container requires explicit state/workspace roots and provides separate bags, wikis, and genesis locations. Web composition requires declared origins; compose supplies same-origin configuration. (`C/commands/found.ts:104`, `:108`; `N/commands/init.ts:224`, `:229`; `T/lares-container.sh:56`; `docker-compose.surface.yml:140`, `:143`, `:149`, `:150`, `:151`, `:152`, `:172`; `N/lan-address.ts:182`, `:189`.)
+
+Docker copies committed genesis and builds node/web/CLI; it does not run `build:genesis`. A shipped-seed pin can reject a changed seed, but missing pins permit an explicitly unpinned boot. Pin creation follows initialization and uses a separate file write. (`Dockerfile:60`, `:64`, `:65`, `:66`, `:128`; `N/genesis-resolve.ts:61`, `:66`, `:77`, `:87`; `N/commands/init.ts:178`.)
+
+''Clear — INFER:'' after the final code lands, perform the one required genesis bake and image build; verify artifact/seed correspondence and revision. On a fresh machine, supply fresh roots without moving anything. On the operator’s existing machine, stop and rename the homes resolved by the old build. Confirm projection destinations by hand. (`R:50`, `:1253`, `:1256`.)
+
+# ''Reach today’s code and instruments · STANDS; green qualification remains unread.''
+
+Shared composition, TTY custody, charter/face founding, floor boot, live unlock, seed, browser lift, HTTPS profiles, and store-wall refusal paths already exist at this head.
+
+In particular, shared module inodes receive a named refusal, the launcher invokes that check, and the relay opens requests nonblocking and refuses nonregular files before reading. (`T/module-inodes.mjs:19`, `:25`, `:33`; `T/launch-codex.mjs:384`; `T/commit-relay.mjs:56`, `:61`.)
+
+Held-out evaluation checks each receipt’s head and rejects missing cells. This seat read the instrument, without reading a green execution result. (`T/held-out-cells.mjs:112`, `:120`, `:130`, `:133`.)
+
+''Clear — INFER:'' obtain the lead’s exact-candidate receipts. Rebuild no component solely because an older roadmap inventory calls it absent.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-shortest-path-forward`>>
+
+!! The shortest path forward
+
+''INFER — size and scheduling estimates.'' Reverse the dependency walk into these slices. Respect the road’s four-lane maximum and one owner per composition hunk. (`R:46`, `:49`.)
+
+# ''S — Reuse the standing foundation [links 12–8].''
+Confirm the candidate’s instrument receipts and inventory the existing manual hearth path. Keep 5b, custody, charter founding, live unlock, seed, and HTTPS machinery. Parallel: start HTTPS/DNS/certificate preparation alongside code work.
+
+# ''L — Finish M6 [link 7].''
+Complete the authority/dyad census and incomplete-view controls; retire lease authority and settle the format burn. Parallel: independent security work below. Serialize changes that touch the same readers or compose hunks.
+
+# ''L — Close the security dispositions [link 6].''
+Fix L23. Re-measure L24’s existing renewal and all roll writers. Finish L25/L26, L27’s residual witnesses, and L29’s remaining measurements. Review K22/L28 for retirement or reshaping under M6; retain K23’s completed retirement. Parallel: disjoint sub-slices, within the lane limit.
+
+# ''L — Wire P27 at all four crossings [link 5].''
+Build on existing 5b. Parallel: M6/security changes on disjoint files; serialize shared composition edits. Do not add a new vault-store project to make an unused registry look wired.
+
+# ''L — Complete browser slices 6 and 7, then X0b [links 3–4].''
+Follow P27 in the road’s specified order. Preserve one founding across crashes and retries; disclose durability before binding; settle erasure behavior and acknowledgement semantics. (`R:49`; `BL:111`.)
+
+# ''M — Bake and build the final candidate [link 11].''
+After code completion, perform the labelled genesis bake and final image build. Check revision, genesis, web artifact, and mounts together. Parallel: operator-side HTTPS preparation, without touching live homes.
+
+# ''M/L — Prove M3 from that candidate [link 2].''
+Lead runs: joined node/browser founding, X0b crash/retry controls, G55 compatibility, G56 dial-order measurement, lifecycle/drain checks, and the real phone over household HTTPS. Require durability disclosure before binding. Record green CI/held-out receipts for the candidate actually qualified.
+
+# ''S — Perform pre-rite and M4 by hand [links 1, 9–11].''
+Confirm projection; stop and rename old resolved homes where applicable. On the attached TTY, use the existing path:
+
+```sh
+   tools/lares-container.sh found --hearth --name '<private label>' --chair '<chair label>'
+   tools/lares-container.sh up
+   # Complete its live unlock; verify held custody and sovereign standing.
+   tools/lares-container.sh vessel seed --apply --yes
+   tools/lares-container.sh vessel read
+   tools/lares-container.sh persona list --json
+   tools/lares-container.sh nexus seal show
+   tools/lares-container.sh meme list --recipe default --json
+```
+
+Then bind the browser slot, carry the join acts, and perform the operator’s home-tending step. The runbook supplies this primitive route; the road assigns the human browser/join actions separately. (`F:153`, `:155`, `:156`, `:157`, `:158`, `:159`, `:160`, `:165`; `R:649`.)
+
+''Avoid making compound-rite repair another prerequisite:'' the existing manual route supplies the missing orchestration. Repair its misleading help and success behavior as a bounded defect if the project intends to keep advertising that compound path.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/roadmap-rows-sorted`>>
+
+!! Roadmap rows sorted
+
+Apply the requested ''executable-dependency'' test. Mark `†` for an explicit pre-rite road obligation even where the rite never calls it. ''OFF-PATH does not waive that obligation.'' The operator’s authorization boundary still includes it. (`R:46`, `:49`, `:70`.)
+
+| Class | Row | Reason |h
+| OFF-PATH† | M0 leaf-join signature order | Held-out qualification; no invocation from the rite’s primitive list. (`R:73`; `C/commands/vessel.ts:123`.) |
+| OFF-PATH† | M0 C4 weld anchor | Qualification/control, outside executable founding. (`R:73`; `T/held-out-cells.mjs:44`.) |
+| OFF-PATH† | M0 late-take certificate | Train qualification, outside executable founding. (`R:73`; `C/commands/vessel.ts:123`.) |
+| OFF-PATH† | M0 weld control legs | Instrument qualification; a zero weld exit can retain gaps. (`R:73`; `T/browser-weld/weld.mjs:369`.) |
+| OFF-PATH† | M0 standing load-reds | Required green evidence; this seat established no verdict. (`R:73`; `T/held-out-cells.mjs:130`.) |
+| OFF-PATH† | M1 G59 | Green-ancestor train policy, outside the product rite. (`R:74`; `C/commands/vessel.ts:123`.) |
+| OFF-PATH† | M1 DIRECT held-out read | Landing policy, outside executable founding. (`R:74`; `T/held-out-cells.mjs:120`.) |
+| OFF-PATH† | M1 broker test door | Development execution infrastructure. (`R:74`; `C/commands/vessel.ts:123`.) |
+| OFF-PATH† | M1 launcher P1–3 | Seat infrastructure; the operator’s product commands launch no seat. (`R:74`; `C/commands/vessel.ts:123`.) |
+| OFF-PATH† | M1 door-fix | Development door qualification. (`R:74`; `C/commands/vessel.ts:123`.) |
+| OFF-PATH† | M1 store-wall | Development wall; source already supplies inode/FIFO refusals. (`T/module-inodes.mjs:33`; `T/commit-relay.mjs:61`.) |
+| OFF-PATH† | M1 hook/test clocks | Instrument law; not a founding runtime dependency. (`R:74`; `C/commands/vessel.ts:123`.) |
+| ON-PATH | M2 / slice 5b | Live node/browser island records compose through it. (`N/open-node-vessel.ts:2325`; `V/open-browser-vessel.ts:1713`.) |
+| OFF-PATH† | M2 P27 | Required restriction, currently absent from the live share/CAS calls; those calls can run without it. (`R:803`; `N/open-node-vessel.ts:1325`, `:2326`.) |
+| OFF-PATH† | M2 slice 6 | Crash/retry acceptance; the normal first-run path does not demand its proof. (`BL:105`; `V/open-browser-vessel.ts:927`.) |
+| OFF-PATH† | M2 slice 7 | Pre-bind durability acceptance; current page probes after opening. (`BL:106`; `W/main.ts:524`, `:603`.) |
+| OFF-PATH† | M2 X0b | Idempotence qualification, outside the CLI compound. (`BL:107`; `C/commands/vessel.ts:123`.) |
+| OFF-PATH† | M2 K22 | Recovery wrapper lacks a production CLI consumer; first founding never calls it. (`N/recovery-keel.ts:37`, `:42`.) |
+| OFF-PATH† | M2 K23 | Completed retirement; no missing runtime component to wire. (`R:761`; mesh test `k23-identity-slot-burnt.test.ts:38`.) |
+| OFF-PATH† | M2 L28 | Rotation enrolment helper has no production caller found; review remains mandatory. (`M/persona-group-secret.ts:227`; `R:674`.) |
+| OFF-PATH† | M6 timeout sweep | Product/instrument law, without a completion check in founding. Named-wait work already reaches `awaitOnRolled`. (`R:76`; `N/store-door-verbs.ts:172`.) |
+| OFF-PATH† | M6 domain/version burn | Required model change; current reader and seed still agree on the old format literal. (`R:76`; `M/genesis-doc.ts:247`; `genesis/seed.json:2`.) |
+| ON-PATH | M6 landed lineage readers | Current admission/lease authority uses verified face lineage. (`N/commands/persona-lease.ts:103`; `K/lease-frontier.ts:69`.) |
+| OFF-PATH† | M6 remaining dyad/authority census | Required completeness proof; the existing lexical census cannot supply it alone. (`R:76`; mesh test `lease-law-census.test.ts:56`.) |
+| OFF-PATH† | M6 lease burn | Current first founding still operates with epochs; no startup guard demands their retirement. (`V/open-browser-vessel.ts:957`; `N/commands/persona-lease.ts:121`.) |
+| OFF-PATH† | M3 joined gate | Mandatory qualification; absent from the compound call list. (`BL:109`; `C/commands/vessel.ts:123`.) |
+| OFF-PATH† | M3 real-phone walk | Mandatory human qualification; no CLI phone dependency. (`R:77`; `C/commands/vessel.ts:123`.) |
+| ON-PATH | M3 usable artifact/root/origin projection | Boot and seed consume these actual inputs. (`N/lan-address.ts:189`; `C/commands/seed.ts:159`; compose `:149`.) |
+| OFF-PATH† | M3 final rebuild/label/hand confirmation | Release qualification; existing shim warns rather than proving the whole candidate. (`R:50`; `T/lares-container.sh:219`.) |
+| ON-PATH | M4 fresh empty storage | Founding refuses occupied unsealed storage before route collection. (`C/commands/found.ts:104`, `:108`.) |
+| ON-PATH | M4 TTY custody and cards | Both live route and card readback demand the terminal. (`C/custody-prompt.ts:37`; `C/cold-card-readback.ts:37`.) |
+| ON-PATH | M4 valid genesis | Missing engine CID throws. (`N/commands/init.ts:224`, `:229`.) |
+| ON-PATH | M4 `found --hearth` | Seats the charter and persona zero required by this hearth path. (`N/commands/found-hearth.ts:211`, `:215`.) |
+| ON-PATH | M4 live unlock | Every boot begins without held custody. (`N/main.ts:351`, `:476`; `C/commands/vault.ts:221`.) |
+| ON-PATH | M4 seed | Compound and manual live-house paths explicitly invoke it. (`C/commands/vessel.ts:127`; `F:156`.) |
+| OFF-PATH† | M4 browser passphrase slot | Required household action, outside node founding; browser founding itself requires its slot. (`R:51`; `V/open-browser-vessel.ts:906`.) |
+| OFF-PATH† | M4 fleet join acts | Required household action, outside the compound rite. Production store-door verbs exist. (`R:51`; `N/store-door-verbs.ts:183`.) |
+| OFF-PATH | L3 / operator `home tend` | Separate operator operation; no call from the founding composition. (`R:649`; `C/commands/vessel.ts:123`.) |
+| ON-PATH | L1 | Existing container/web inputs supply the chosen household surface. (`R:648`; compose `:175`, `:176`.) |
+| ON-PATH | L2 | State/corpus separation supplies founding and seed roots. (compose `:140`, `:143`, `:149`, `:150`.) |
+| ON-PATH | L5 | Live daemon/CLI rendezvous supplies seed’s write door. (`C/verb-call.ts:172`; compose `:155`.) |
+| ON-PATH | L7 and L1/L2 tails | Existing root/artifact projection participates in this install path; final receipt still required. (`R:650`; compose `:145`, `:175`.) |
+| ON-PATH | L22 / S1–S3, S2b, S3-pre-b, S3b runtime ward/tag model | Founding and admission invoke face custody, tag and ward proof paths. (`N/vessel-face-tag-store.ts:63`; `V/open-browser-vessel.ts:940`; `R:670`.) |
+| OFF-PATH† | L23 | No dropped promotion needs replay during first founding; security floor still required before release. (`M/promote.ts:62`, `:112`; `R:679`.) |
+| OFF-PATH† | L24 | First founding needs no expired-edge renewal; existing writer needs qualification. (`N/commands/device-admit.ts:444`; `R:671`.) |
+| OFF-PATH† | L25 | Rotation/erasure residues do not block an untouched first founding. (`N/vessel-face-tag-store.ts:52`; `R:675`.) |
+| OFF-PATH† | L26 | Lost-atom/replay/incomplete-state residues need controls beyond normal first founding. (`N/commands/device-admit.ts:419`, `:450`; `R:676`.) |
+| UNCLEAR† | L27 residual projection witness | Seed’s real Kahu-gated projection receipt would settle whether the remaining failure affects this path. (`R:677`; `C/commands/seed.ts:97`.) |
+| ON-PATH | L29 drain foundation | Unlock recomposition tears down the prior composition; receipt/floor ordering participates. (`N/main.ts:451`; `M/capability-record.ts:160`.) |
+| UNCLEAR† | L29 outstanding tails | Dedicated-browser and herm measurements must distinguish missing proof from remaining loss. (`R:672`.) |
+| OFF-PATH† | G55 | Node compatibility qualification; product image pins Node 24, browser CI supplies 26. (`Dockerfile:17`; `.github/workflows/ci.yml:3`; `R:893`.) |
+| UNCLEAR† | G56 | Dial-order failure could obstruct joined acceptance; controlled listener/gate ordering must settle it. (`R:894`; `N/open-node-vessel.ts:1942`.) |
+| UNCLEAR | F11 hand-profile gate | Required before agent writes; measure the intended MCP/session profile if such writes enter M4 acceptance. (`R:654`.) |
+| UNCLEAR | L16 non-dev install | A cold corpus directory without `.git` must prove this deployment shape. (`R:665`; `C/commands/seed.ts:60`.) |
+| OFF-PATH | L15 live-house land-train handling | Governs development alongside a running house, outside its founding call graph. (`R:664`; `C/commands/vessel.ts:123`.) |
+| OFF-PATH | L4p, L4f and M5 memory rows | Explicitly follow M4; do not pull daemon-wiki page/MCP proof into the joined-founding gate. (`R:52`, `:655`, `:656`.) |
+| OFF-PATH | S4–S6, L30, mirror/harness/PR84/AI-harness tails | Road explicitly assigns them after standing. (`R:46`, `:673`.) |
+| OFF-PATH | M7 rotation recovery; M8/X0/TWO HEARTHS | Later household capabilities; no first-hearth invocation. Preserve their constraints while reviewing old helpers. (`R:80`, `:81`; `C/commands/vessel.ts:123`.) |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/canon-vs-code-collisions`>>
+
+!! Canon vs code collisions
+
+# ''Retire the “store-wall still owed” testimony.''
+Canon: M1 calls it outstanding and rank 1 lists its lane in flight. Code: the requested head merges PR #194 and contains inode refusal, launcher enforcement, and nonblocking regular-file validation. (`R:74`, `:49`; `T/module-inodes.mjs:33`; `T/launch-codex.mjs:384`; `T/commit-relay.mjs:56`, `:61`; commit `e1d801042`.)
+
+# ''Retire L24’s “no production writer” claim.''
+Canon: no writer appends a renewed `device-edge`, and no door frees the joinee. Code: the root-answer path appends that renewal; stale cached answers still refuse, requiring a fresh request. The lease command also refuses stranding rolls. Keep the remaining qualification work. (`R:671`; `N/commands/device-admit.ts:444`, `:475`, `:476`; `N/commands/persona-lease.ts:119`.)
+
+# ''Reject the advertised bare end-to-end CLI recipe.''
+Canon/runbook: Stable founding uses `found --hearth`. CLI help instead advertises bare `rite founding`, then `persona new 0`. Code: bare found creates no seed charter, and persona zero explicitly refuses without one. (`R:1099`; `F:146`; `C/commands/vessel.ts:191`, `:192`; `C/commands/found.ts:112`; `N/commands/init.ts:608`.)
+
+# ''Reject the compound rite’s claim to halt at every failed step.''
+Its comment promises first-refusal halting; its loop checks exit codes. `stand` deliberately returns zero for most unsuccessful payloads. (`C/commands/vessel.ts:117`, `:131`; `C/commands/stand.ts:383`, `:435`, `:437`.)
+
+# ''Replace the compound rite’s environment/passphrase explanation.''
+Its commentary describes boot class through whether an archive opens and a passphrase reaches the environment. Current boot deliberately starts without custody; TTY credentials reach the live custody frame. (`C/commands/vessel.ts:103`; `N/main.ts:351`, `:476`; `C/custody-prompt.ts:25`; `C/commands/vault.ts:221`.)
+
+# ''Do not treat “the hearth stands” output as M4 qualification.''
+The road’s M4 names the operator’s live founding rite; the founding command prints that phrase before instructing the operator to stand the vessel. (`R:78`; `C/commands/found.ts:168`, `:177`.)
+
+# ''Replace `OldShapeRefusal` with the actual refusal.''
+Canon names `OldShapeRefusal` before route collection. Code preserves that ordering but names `OccupiedStoreRefusal`. (`R:1258`; `C/commands/found.ts:105`, `:108`.)
+
+# ''Retire older blanket “unwired browser/archive/socket” inventories.''
+Older roadmap passages leave socket cutover, signer/archive custody, and the browser custody path absent or unreached. Current code seats peer admission, keeps browser face archives, invokes custody-backed founding, and lifts browser session signing. Remaining completeness work does not erase those callers. (`R:516`, `:526`, `:587`, `:1166`; `N/open-node-vessel.ts:1318`; `V/open-browser-vessel.ts:869`, `:915`, `:953`, `:1727`.)
+
+# ''Replace the ambient `.env` shim diagnosis.''
+Canon retains an environment-bleed concern. Current shim explicitly selects its configured env file or `/dev/null` for compose. (`R:1229`; `T/lares-container.sh:66`, `:68`, `:70`.)
+
+# ''Preserve the collision inside recovery direction.''
+K22 proposes production recovery wiring around a helper that reconstructs a root. M7 requires contacts to rotate the root and reconstruct nothing. The helper’s source confirms reconstruction. A critical review must resolve that conflict before wiring. (`R:760`, `:80`; `N/recovery-keel.ts:31`, `:45`.)
+
+# ''Resolve the road’s competing test-recut ordering.''
+One road passage places test recut before founding; the explicit operator-order passage assigns the later harness/AI batch after standing. Neither establishes a product-code dependency. Prefer the explicit order until the controller trues the carrier. (`R:602`, `:46`.)
+
+# ''Keep targets separate from landed claims.''
+M6’s complete lease/version retirement, slice 6 idempotence, and slice 7 pre-bind disclosure remain unmet targets in source. The road itself marks their remaining work; treat them as gaps, without manufacturing a contradiction or claiming present completion. (`R:76`; `BL:105`, `:106`; `N/commands/persona-lease.ts:121`; `W/main.ts:603`.)
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/what-i-could-not-settle`>>
+
+!! What I could not settle
+
+* ''Settle exact-candidate green:'' have the lead provide CI and held-out receipts matching the final SHA. Source inspection proves neither a passing run nor absence of standing load failures. (`T/held-out-cells.mjs:120`, `:130`.)
+
+* ''Settle artifact freshness:'' have the lead perform the final bake/build and compare image revision, genesis manifest/bytes, node/web artifacts, and boot-selected seed. Docker copying committed genesis supplies no fresh-bake proof. (`Dockerfile:60`, `:128`.)
+
+* ''Settle M6 completeness:'' enumerate every authority decision and dyad reader, then inject missing lineage, missing raises, stale replicas, and incomplete frontiers. Require explicit refusal; the lexical lease census alone cannot certify that property. (`K/board-dyad-reader.ts:27`; mesh test `lease-law-census.test.ts:56`.)
+
+* ''Settle crash behavior:'' lead runs kills after atom persistence, after archive/anchor persistence, before bootstrap, and after applying a write without answering it. Compare atom/group identities, causal heads, orphan rows, and duplicate effects. (`BL:105`, `:107`.)
+
+* ''Settle erasure behavior on real phones:'' distinguish a missing keystore with surviving continuity from a fully erased origin; measure both recovery/refusal and named fresh-vessel join behavior. (`V/browser-vessel-identity.ts:331`; `BL:106`.)
+
+* ''Settle L24’s full scope:'' enumerate all current lease-advancing acts and test fresh-request renewal plus the no-operator-answer control. Existing renewal code disproves absence; it does not certify every device’s survival. (`N/commands/device-admit.ts:444`; `N/commands/persona-lease.ts:112`.)
+
+* ''Settle L27/L29 residuals and G56:'' lead runs the named Kahu projection, ward-refusal, dedicated-pagehide, herm-drain, and controlled listener/gate-order witnesses. Each needs live execution beyond this read seat. (`R:677`, `:672`, `:894`.)
+
+* ''Settle household infrastructure:'' the operator/lead must demonstrate trusted HTTPS and DNS on the actual phone, including encrypted-DNS behavior where applicable. This seat neither inspected credentials nor contacted the household. (`R:1281`; compose `:235`.)
+
+* ''Settle the pre-rite/M4 boundary:'' record that a scratch household qualified the final candidate before the live operator re-found. ''INFER:'' this ordering avoids demanding a live household phone join before that household’s first founding; the road separately permits scratch qualification and reserves the operator’s hand act. (`R:646`, `:649`, `:1246`.)
+
+* ''Settle shipped-seed pin interruption:'' lead runs a kill between initialization and pin persistence. Current code permits an unpinned boot, so do not report the pin as an atomic founding guarantee. (`N/commands/init.ts:179`; `N/genesis-resolve.ts:66`, `:77`.)
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BHCBywWxEXQfDv_qDQEr5x59bSdnHkhMerDAbZP4TWg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

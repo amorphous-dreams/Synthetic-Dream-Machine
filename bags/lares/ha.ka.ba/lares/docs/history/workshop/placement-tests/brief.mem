@@ -1,0 +1,44 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/placement-tests/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-09 (file date) — source `.lares-scratch/placement-tests/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/placement-tests/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/placement-tests/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-09
+
+Verbatim scratch record `.lares-scratch/placement-tests/brief.md` (brief, file date 2026-11-09); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/placement-tests/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Test-Wright: Lares (Tasked Spirit). Read CLAUDE.md once for house law, then implement. This is an IMPLEMENTATION task: start editing within your first few actions. Do not write a plan file. Done means the diff below exists and the listed tests pass.
+
+WHY: the placement leap ruled that a record reaches disk by WHERE IT RESTS (its layer and that layer's mirror), never by its title or a field. The disk projector (packages/lararium-node/src/disk-projector.ts) dropped the `disk-projection: no` field exclusion and the title-based barriers (LOCI fragments, bag-manifest titles, the volatile VM plane title); effect records stay withheld by record kind. See `git diff 11b40bdb8 -- packages/lararium-node/src/disk-projector.ts`.
+
+CHANGE (tests assert retired behaviour; rewrite, never re-add the retired rules):
+# packages/lararium-node/tests/projection-standoff-alert.test.ts (~line 61): the case that expects setting `disk-projection: no` to clear a standoff alert asserts a retired field rule. Replace it with the placement equivalent if one exists in the projector (e.g. the record moves to a layer with no mirror, or its bag's mirror drops), else delete that case and say so. Keep the standoff dedup and resolution cases intact.
+# packages/lararium-node/tests/foreign-title-projection.test.ts (~line 482): the LOCI-refusal case asserts a blanket title barrier on fragments / bag-manifest titles. Rewrite it to what placement says (a title sites where its selected mirror sites it; an occupied path still refuses; origin-bag/mirror selection still holds) using the projector's current behaviour, or delete the case if it only restates the retired rule. Keep every other case.
+# packages/lares-cli/src/commands/carry.ts module docstring (~line 8): it still describes daemon control content under `bags/daemon`. True it: control records rest in the vessel control document and never travel in a bundle; the daemon wiki travels as the face's working (`wikis/daemon-<F>`) and canon (`bags/daemon-<F>`) mirrors; kahua as `bags/kahua-<F>`. Present tense, no history.
+
+TESTS: `cd packages/lararium-node && npx vitest run tests/projection-standoff-alert.test.ts tests/foreign-title-projection.test.ts --maxWorkers=2` green (build + stamp node first if the dist guard asks: <code>pnpm &#45;-filter &#64;lararium/node build &amp;&amp; node tools/stamp-build.mjs . &#45;-pkg lararium-node</code>); <code>pnpm &#45;-filter &#64;lares/cli typecheck</code>; `node tools/evergreen-boundary.mjs`.
+
+LIMITS: only these three files. No commit, no push, no stash; never touch ~/.lares or docker.
+FINAL MESSAGE: what each case became (rewritten to X / deleted because Y), test counts, typecheck and evergreen results.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sgwJVfEShlgT6nbgHxa6CeIlErV8k2t23Mpev2GGuqM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,99 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/w1-b/report`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-11-08 (file date) — source `.lares-scratch/survive-research/w1-b/report.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/w1-b/report"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/survive-research/w1-b/report"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! report.md — research, 2026-11-08
+
+Verbatim scratch record `.lares-scratch/survive-research/w1-b/report.md` (research, file date 2026-11-08); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/w1-b/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+web search: Claude Code manage memory auto memory MEMORY.md site:code.claude.com/docs ...
+exec
+/usr/bin/zsh -lc "cat > final.md &lt;&lt;'EOF'
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/draft-keeper-lares`>>
+
+! Draft-Keeper: Lares (Tasked Spirit)
+
+Research brief, wave 1, seat B · 8 November 2026. Recommendations below apply to the supplied architecture, not an independent repository inspection. “Never lose” is an objective with explicit failure boundaries: a projection on the same disk cannot survive destruction of that disk, an unexported whole-root wipe, or a write that was never durably acknowledged. [[SQLite WAL|https://www.sqlite.org/wal.html]]; [[Google offline status|https://support.google.com/docs/answer/6388102?co=GENIE.Platform%3DDesktop&hl=en]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/principles`>>
+
+!! Principles
+
+# ''Preserve unfinished work independently of promotion:'' Vim swap recovery, Emacs auto-save, VS Code hot exit, and JetBrains Local History protect work before the user declares it finished. [[Vim|https://vimhelp.org/recover.txt.html]]; [[Emacs|https://www.gnu.org/software/emacs/manual/pdf/emacs.pdf]]; [[VS Code|https://code.visualstudio.com/docs/editing/codebasics]]; [[JetBrains|https://www.jetbrains.com/help/idea/local-history.html?section=Icons_Reference.xml]].
+# ''Define the acknowledgment and loss window:'' durable commit requires ordering, sync, error reporting, and recovery; debounce alone leaves a window of unflushed work. [[SQLite WAL|https://www.sqlite.org/wal.html]]; [[Vim|https://vimhelp.org/recover.txt.html]].
+# ''Keep a separate recoverable copy outside the wipe boundary:'' offline availability and same-device saves are useful but do not substitute for an independently retained export. [[Google Docs|https://support.google.com/docs/answer/6388102?co=GENIE.Platform%3DDesktop&hl=en]]; [[Notion|https://www.notion.com/help/use-pages-offline]].
+# ''Separate readable content recovery from causal history recovery:'' Automerge's binary document carries its change history, while a plain current-state export does not; Yjs updates are binary and garbage collection affects recoverable old content. [[Automerge format|https://automerge.org/automerge-binary-format-spec/]]; [[Yjs updates|https://docs.yjs.dev/api/document-updates]]; [[Yjs GC|https://docs.yjs.dev/api/y.doc]].
+# ''Make expiry visible and reversible before destruction:'' trash, retention periods, and observable asynchronous lifecycle jobs make cleanup understandable, while Gmail's unrecoverable discarded drafts show the cost of immediate deletion. [[Gmail|https://support.google.com/mail/answer/7015314?co=GENIE.Platform%3DDesktop&hl=en]]; [[S3 lifecycle|https://docs.aws.amazon.com/AmazonS3/latest/userguide/troubleshoot-lifecycle.html?linkId=236887413&sc_campaign=Support&sc_channel=sm&sc_content=Support&sc_country=global&sc_geo=GLOBAL&sc_outcome=AWS+Support&sc_publisher=REDDIT&trk=Support]].
+# ''Keep memory inspectable and indexes replaceable:'' plain text supports ordinary tools and versioning; atomic observations and scoped files make review and selective retrieval practical. [[Plain-text argument|https://bookatgithub.github.io/books/The%20Pragmatic%20Programmer/020161622x_snode31.html]]; [[MCP memory|https://github.com/modelcontextprotocol/servers/blob/main/src/memory/README.md]]; [[Cursor rules|https://docs.cursor.com/context/rules-for-ai]].
+# ''Treat concurrent edits, deduplication, and forgetting as semantic operations, not silent overwrites:'' even offline systems warn about conflicting properties, and temporal facts may need invalidation rather than replacement. [[Notion|https://www.notion.com/help/use-pages-offline]]; [[Zep facts|https://help.getzep.com/facts]].
+# ''Respect the user's confidentiality boundary in every recovery copy:'' auto-save, backups, temporary files, indexes, and trash can all contain the content they protect, so their storage and permissions need the same deliberate policy. [[Emacs|https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html]]; [[MCP file-permissions issue|https://github.com/modelcontextprotocol/servers/issues/4827]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/temp-draft-and-personal-projections`>>
+
+!! Temp, draft and personal projections
+
+''Proposed boundary.'' Under "'`~/.lares/`, separate `durable/projections/` and `durable/trash/` from resettable `state/`, `cache/`, and `run/`; the ordinary re-found command must target only resettable paths and refuse a broader wipe when the durable tree is inside the target. A whole `~/.lares` removal still destroys both: export an independent copy first, verify it, and report the export time and coverage. The reset and export commands described here are proposed interfaces, not existing commands. This follows the distinction between offline copies and actual separate recovery copies. [[Google offline|https://support.google.com/docs/answer/6388102?co=GENIE.Platform%3DDesktop&hl=en]]; [[SQLite durability|https://www.sqlite.org/wal.html]].
+
+''Opt in explicitly.'' A non-secret projection flag enables the feature, but each bag requires an explicit, persistent operator choice; scope includes temp, draft, personal, and the daemon memory bag individually. No decrypted scratch file, swap, audit text, or index escapes that choice. Show the selected paths and warn that plaintext remains after locking custody. The flags contain no credentials. [[Vim swap|https://vimhelp.org/recover.txt.html]]; [[MCP permission example|https://github.com/modelcontextprotocol/servers/issues/4827]].
+
+''Layout and flush.'' Use `durable/projections/<bag-id>/<layer>/<record-id>.mem`; opaque stable IDs, never titles, make paths safe and avoid collisions. A versioned plaintext header records bag, layer, record ID, title, timestamps, content hash and last projected heads; the body is memetic wikitext. Preserve recipe-layer identity and all required record fields in the format, or explicitly list omissions in export coverage. On each accepted write, commit to sealed storage and enqueue projection; use a short debounce, e.g. 250 ms with a 2 s maximum, plus idle and orderly shutdown flush. Status must distinguish //sealed//, //projection pending//, //projected and synced//, and //error//: a durability-sensitive caller waits for the last state. Create a mode-0600 same-directory temporary file in a 0700 directory, write and fsync it, rename atomically, then fsync the directory where supported; serialize per record, retry failures, surface disk-full and never claim success on failure. No shutdown hook can rescue a kill or power failure inside the debounce window. [[SQLite sync tradeoffs|https://www.sqlite.org/wal.html]]; [[MCP atomic save|https://github.com/modelcontextprotocol/servers/blob/main/src/memory/index.ts]].
+
+''Recovery and re-ingest.'' On startup reconcile a durable pending-work marker against projections; never silently overwrite a file changed externally. Import is explicit and dry-run by default: validate format, IDs, bag consent and hashes; import absent records as new CRDT changes, skip identical content, and place diverged file/store versions in a reviewable conflict set, preserving both. Heads are comparison hints only after re-found, not restored ancestry; preserve distinct concurrent values separately when exporting or report the loss. Use idempotent IDs and an import manifest so interruption and repeat imports are safe. Automerge conflict/history behavior makes this distinction essential. [[Automerge history|https://automerge.org/automerge-swift/documentation/automerge/changesandhistory/]]; [[Automerge storage|https://automerge.org/docs/reference/under-the-hood/storage/]].
+
+''Automatic cleanup.'' Proposed defaults: daily and at startup, mark inactive temp records eligible after 30 days; offer promotion or pinning; move eligible unpinned items to private trash with a 30-day recovery window, then purge. Draft and personal records never expire by default. A configurable size cap triggers warnings and blocks new temporary allocations when full; it must not evict unexpired, pinned, unsynced, conflicted, or sole copies. Recheck age, pin, promotion and content hash immediately before each move or purge; retry and log failures. Append a content-free audit event with ID, bag, action, policy, time and outcome, itself bounded and included in export. TTL defines eligibility, not an exact deletion time. A true never-lose promise conflicts with any automatic final purge: clearly disclose this and permit retention to be disabled. [[S3 lifecycle|https://docs.aws.amazon.com/AmazonS3/latest/userguide/lifecycle-expire-general-considerations.html]]; [[Gmail trash|https://support.google.com/mail/answer/7015314?co=GENIE.Platform%3DDesktop&hl=en]].
+
+A local `export` should flush and report omissions, then copy selected projections and manifest to an operator-chosen destination outside the reset tree; a corresponding `import` validates and previews before applying. Verify checksums and test a restore in a fresh disposable state. This is ''content migration'', not identity continuity, CRDT history, signed acts, face bundles, emergency recovery or full backup restore; defer those designs until after the two-operator Nexus. [[Automerge serialization|https://automerge.org/automerge-binary-format-spec/]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ai-memory-stage`>>
+
+!! AI memory stage
+
+Use one opted-in `.mem` per atomic memory in the durable projection tree, with stable ID, body, scope, provenance/source reference, created/updated times, status, and optional validity and supersedes links. The sealed wiki is the live authority while running; its plaintext projection is the portable content recovery source after a re-found, so startup must reconcile edits rather than blindly overwrite either. A derived lexical/vector index can be deleted and rebuilt from these files; record model/version and hashes to detect stale entries. Original transcripts remain separate sources where available. [[MCP observations|https://github.com/modelcontextprotocol/servers/blob/main/src/memory/README.md]]; [[Zep temporal facts|https://help.getzep.com/facts]].
+
+Before adding, exact-normalized matches can be deduplicated deterministically; semantic matches are candidates for review, not proof of equivalence. Keep contradictions and provenance visible; supersede or invalidate old facts with dates rather than silently replacing them, and permit explicit forget with recoverable trash and eventual purge across derived indexes. Treat memory content as untrusted data, not automatic higher-priority instructions. Letta'"'s memory audit and backup before reorganization and Zep's temporal facts support reviewable consolidation. [[Letta|https://github.com/letta-ai/letta-docs-md/blob/main/configuration/memory/index.md]]; [[Zep|https://help.getzep.com/facts]].
+
+Prior art varies: Claude Code uses "'`CLAUDE.md` for standing instructions; Cursor project rules are versioned `.mdc` files, while its generated memories are managed in settings, and the cited documentation does not specify their underlying format. MCP'"'s reference server uses readable JSONL and graph observations; Letta's current MemFS is a Git-backed editable filesystem. Mem0 exposes memory update, deletion and history with a vector store; Zep uses a temporal knowledge graph; LangGraph checkpoint implementations use SQLite or PostgreSQL for execution state, with task-level writes for resumption. These databases serve retrieval or execution recovery and are not inherently portable one-file-per-memory archives. [[Claude Code|https://code.claude.com/docs/en/settings]]; [[Cursor rules|https://docs.cursor.com/context/rules-for-ai]]; [[Cursor memories|https://docs.cursor.com/en/context/memories]]; [[MCP|https://github.com/modelcontextprotocol/servers/blob/main/src/memory/README.md]]; [[Letta|https://github.com/letta-ai/letta-docs-md/blob/main/configuration/memory/index.md]]; [[Mem0|https://github.com/mem0ai/mem0/blob/main/skills/mem0/client/python.md]]; [[Zep|https://help.getzep.com/v2/graphiti/getting-started/overview]]; [[LangGraph|https://github.com/langchain-ai/langgraphjs/blob/main/docs/docs/concepts/persistence.md]]; [[task writes|https://github.com/langchain-ai/docs/blob/main/src/oss/langgraph/checkpointers.mdx]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/risks-and-contrary-evidence`>>
+
+!! Risks and contrary evidence
+
+Plaintext projections expose private content to local accounts with access, malware running as the user, backups, search indexes, and anyone with the unlocked device; full-disk encryption helps against an offline stolen disk but does not protect an unlocked session. Protect directories, avoid unapproved indexing and backup copies, disclose the path and retention, and let the operator opt in per bag. Secure erasure cannot be promised for SSDs, snapshots, or exported copies. [[Apple FileVault|https://support.apple.com/guide/security/filevault-sec4c6dc1b6e/web]]; [[NIST media sanitization|https://csrc.nist.gov/pubs/sp/800/88/r2/final]].
+
+''Contradictions:'' Gmail discards drafts irrecoverably; automatic expiry necessarily sacrifices indefinite preservation. Google Docs and Notion emphasize synchronized service-backed offline caches, which are not portable local-first backups. History-preserving Automerge binary is more complete than latest plaintext; Yjs GC deliberately trades old-content recovery for reduced retained data. CRDT tombstones cannot safely be deleted merely because a wall-clock TTL passed: causal stability and replica membership matter. Finally, locked-custody in-memory writes cannot be both secret and crash durable without an authorized durable encrypted write path; reject or visibly mark them volatile rather than secretly project them. [[Gmail|https://support.google.com/mail/answer/7015314?co=GENIE.Platform%3DDesktop&hl=en]]; [[Notion|https://www.notion.com/help/use-pages-offline]]; [[Automerge|https://automerge.org/automerge-binary-format-spec/]]; [[Yjs|https://docs.yjs.dev/api/y.doc]]; [[CRDT GC|https://perso.lip6.fr/Marc.Shapiro/papers/Comprehensive-CRDTs-RR7506-2011-01.pdf]].
+EOF
+cat > out.md &lt;&lt;'EOF'
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1T0oyOeofZnAp1ApkoRUr5bYZaUL7REfURKk6zQAopY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

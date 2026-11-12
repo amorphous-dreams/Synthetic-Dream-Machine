@@ -1,0 +1,116 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/w1-a/clean`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-11-08 (file date) — source `.lares-scratch/survive-research/w1-a/clean.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/w1-a/clean"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/survive-research/w1-a/clean"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! clean.md — research, 2026-11-08
+
+Verbatim scratch record `.lares-scratch/survive-research/w1-a/clean.md` (research, file date 2026-11-08); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/w1-a/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/survival-layout-and-export-prior-art`>>
+
+! Survival layout and export prior art
+
+//Root-Cartographer: Lares (Tasked Spirit) · Research wave 1, seat A//
+
+The recommended first deliverable is a ''content migration'', not a full backup: deliberately projected, latest-version content can be exported outside the wipe boundary and imported into a newly founded vessel. It cannot restore identities, signed authority, CRDT history, unprojected content, or saves still in memory. These limitations follow from the supplied Lares code-read facts; the contrast between interchange and complete migration is also explicit in [[Zotero's transfer guidance|https://www.zotero.org/support/kb/transferring_a_library]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/principles`>>
+
+!! Principles
+
+# Classify each byte by loss consequence and reconstruction source, not by which subsystem wrote it: XDG calls user content data, restart-persistent but less portable material state, nonessential material cache, and login-lifetime sockets runtime. [[XDG|https://specifications.freedesktop.org/basedir/]]
+# A directory name is not a backup: preservation requires an independent copy outside the actual wipe boundary and a tested restore. [[Ink & Switch|https://www.inkandswitch.com/essay/local-first/]], [[Zotero|https://www.zotero.org/support/kb/transferring_a_library]]
+# User-controlled, readable files improve longevity, but a latest-text projection is a lossy view of a CRDT and must be described as such. [[Ango|https://stephango.com/file-over-app]], [[Automerge repository export|https://github.com/automerge/automerge-repo/blob/main/packages/automerge-repo/src/Repo.ts]]
+# Make privacy an explicit per-bag choice; a backup, temporary projection, index, or Git commit must not silently turn sealed records into durable cleartext. [[Ink & Switch|https://www.inkandswitch.com/essay/local-first/]], [[KeePassXC|https://keepassxc.org/docs/KeePassXC_UserGuide]]
+# Capture a consistent point in time, including pending writes, rather than copying live database files piecemeal. [[Zotero data directory|https://www.zotero.org/support/zotero_data]]
+# Specify exactly which records, metadata, attachments, identities and versions an export contains; interchange and full-fidelity recovery are separate contracts. [[Zotero|https://www.zotero.org/support/kb/transferring_a_library]], [[KeePassXC|https://keepassxc.org/docs/KeePassXC_UserGuide]]
+# Keys and encrypted payloads have separate failure modes: an encrypted archive is useless without its recovery secret, while account-bound exports can fail after identity replacement. [[Signal|https://support.signal.org/hc/en-us/articles/360007059752-Backup-and-Restore-Messages]], [[Bitwarden|https://bitwarden.com/pdf/help-export-your-data.pdf]]
+# Restore must detect corruption, incomplete input and conflicts, preserve existing data, and be exercised before destructive reset. [[restic|https://restic.readthedocs.io/en/stable/045_working_with_repos.html]], [[Joplin|https://joplinapp.org/plugins/plugin/io.github.jackgruber.backup/?search=maintainer%3D%22jackgruber%22+max-results%3D20]]
+
+Ink & Switch's seven ideals are speed, multi-device access, offline work, collaboration, longevity, privacy, and user control; its later [[Keyhive work|https://www.inkandswitch.com/keyhive/]] explores access control and encryption for local-first collaboration, so readable files alone do not satisfy the whole set. [[Original essay|https://www.inkandswitch.com/essay/local-first/]]
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/survival-classes`>>
+
+!! Survival classes
+
+| Class | Wipe, export and import policy | Prior art |h
+| Irreplaceable secrets and identity | Wipe destroys continuity; exclude from this content export, report omission; future separately protected recovery needs its own design and independent key. | [[Signal|https://support.signal.org/hc/en-us/articles/360007059752-Backup-and-Restore-Messages]]; [[Element|https://element.io/blog/resetting-the-server-side-key-backup/]]; [[Borg|https://borgbackup.readthedocs.io/_/downloads/en/1.1.6/pdf/]] |
+| Irreplaceable content and provenance | Preserve sealed live store; export only authorized projected content now; import as new content, reporting history and signatures lost. | [[TiddlyWiki|https://tiddlywiki.com/dev/alltiddlers.html]]; [[Zotero|https://www.zotero.org/support/kb/transferring_a_library]] |
+| User configuration | Preserve/export an allowlisted portable subset, flag machine-specific paths; never treat config as all disposable. | [[XDG|https://specifications.freedesktop.org/basedir/]]; [[Obsidian|https://obsidian.md/help/data-storage]] |
+| Re-derivable indexes | Delete on wipe; omit and rebuild only if all original inputs remain available; otherwise classify as content. | [[Zotero full-text index|https://www.zotero.org/support/zotero_data]] |
+| Rebuildable cache | Purge freely; omit and regenerate. | [[Apple|https://developer.apple.com/documentation/foundation/optimizing-your-app-s-data-for-icloud-backup?changes=_7&language=objc]]; [[Android|https://developer.android.com/identity/data/autobackup?authuser=104]] |
+| Runtime and staging | Sockets/locks are disposable; pending or staged //unique// writes are content until durably committed, so block export/reset if they cannot be flushed. | [[XDG|https://specifications.freedesktop.org/basedir/]]; [[Zotero WAL|https://www.zotero.org/support/zotero_data]] |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/layout-proposal`>>
+
+!! Layout proposal
+
+"'`~/.lares` is the ''house root'', not the wipe target. A re-found deletes only `hearth/`; an export must still be copied outside `~/.lares` to survive loss of the house or device. These names are an application convention, not XDG-compliant base directories merely because their names resemble XDG. [[XDG|https://specifications.freedesktop.org/basedir/]]
+
+```text
+~/.lares/
+  hearth/             # disposable as a unit only after preservation checks
+    vessel/           # sealed store, CRDT history
+    identity/         # custody and seat material
+    nexus/            # local Nexus identity/state
+    state/            # operational checkpoints and logs
+    run/              # local sockets and locks
+  projections/        # deliberate plaintext: bags/<id>, wikis/<id>, faces/<id>
+  config/             # house settings, per-bag projection policies
+  indexes/            # rebuildable memory, mesh, memetic-wikitext indexes
+  cache/              # scratch sensoriums
+```
+
+Mapping from the brief: `data/lares/{vessel,identity,nexus}` → `hearth/{vessel,identity,nexus}`; `data/lararium/sensoriums/{memory,mesh,memetic-wikitext}` and their Chroma indexes → `indexes/{memory,mesh,memetic-wikitext}` ''only after confirming the input transcripts survive''; `state/{projection,harvest,harvest-stage}` → `hearth/state/{projection,harvest,harvest-stage}` after separating any unique pending writes; `cache/` → `cache/`; `config/` → `config/`; `run/` → `hearth/run/` or the actual private XDG runtime directory; house/private `bags/`, `wikis/`, and face kahua → `projections/`; canon-sourced checkout projections stay in the checkout. Treat `projections/` as sensitive durable content even though regenerable in normal operation: it may be the sole content surviving re-found. These mappings are recommendations from the supplied Lares facts, informed by [[XDG|https://specifications.freedesktop.org/basedir/]] and [[Apple'"'s directory guidance|https://developer.apple.com/library/content/documentation/FileManagement/Conceptual/FileSystemProgrammingGuide/FileSystemOverview/FileSystemOverview.html]].
+
+For the immediate memory stage, explicitly enable projection for the chosen memory bag and, separately, an opt-in temp-layer flag bound to per-bag consent. Write atomic files into a marked projection subtree; track ownership, source ID and last-written hash; on expiration or disabling, automatically delete only projector-owned, unchanged expired files, quarantine/report edited or conflicting files, and never delete user-created files. State the retention interval and that cleanup cannot erase copies, Git history or backups. A reset/export must report disabled, locked, unprojected and pending content instead of declaring success. [[TiddlyWiki file naming|https://tiddlywiki.com/static/Customising%2520Tiddler%2520File%2520Naming.html]], [[Git bundle scope|https://git-scm.com/docs/git-bundle]]
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/two-command-content-migration`>>
+
+!! Two-command content migration
+
+# "'`lares export /safe/location/house-export` obtains an unlocked, consistent checkpoint, flushes pending writes, then copies ''only already-authorized projected'' bags, including opted-in temp, and explicitly selected portable config into a new directory outside `hearth/`. A versioned manifest records bundle ID, format/schema version, source bag and stable record IDs, layer, filename mapping, recipe/order, applicable metadata and attachments, snapshot time, per-file size and SHA-256; enumerate all omissions and errors. If `.mem` does not preserve required fields, add documented sidecar metadata or fail for those records. Refuse incomplete success when custody is locked or writes cannot flush; do not project a new bag implicitly. [[TiddlyWiki'"'s fields and file formats|https://tiddlywiki.com/static/Customising%2520Tiddler%2520File%2520Naming.html]], [[Zotero's WAL warning|https://www.zotero.org/support/zotero_data]].
+# "'`lares import /safe/location/house-export` verifies schema, counts, hashes, safe relative paths and attachment references before mutation; rejects traversal, links and duplicate IDs; stages changes, previews conflicts, and atomically commits to the freshly founded sealed store. Preserve content IDs and bag/recipe relationships where valid; map old authority to new explicitly rather than replaying signatures. Same bundle ID plus hash is a no-op; changed content at an existing ID is a conflict requiring an explicit choice, never silent overwrite. Record successful import durably and verify counts and representative records after import. This is a design recommendation addressing [[Joplin'"'s documented duplicate imports and broken cross-export links|https://joplinapp.org/plugins/plugin/io.github.jackgruber.backup/?search=maintainer%3D%22jackgruber%22+max-results%3D20]].
+
+The directory is inspectable plaintext; optionally package the same tree as a conventional archive for transport, with the same manifest. Hashes catch accidental corruption, ''not malicious replacement''; authenticity needs an independently trusted signature or MAC, deferred with identity recovery. Keep permissions private, make cleartext explicit, and store an independent copy. If an encrypted transport is later offered, use a standard authenticated format and a separate recovery secret, prompted interactively—not flags, environment, or pipes—and never tie its only decryptor to keys being wiped. [[age recipients and identities|https://github.com/FiloSottile/age/blob/main/doc/age.1.ronn]], [[SOPS|https://github.com/age-sops/sops]], [[Bitwarden|https://bitwarden.com/pdf/help-export-your-data.pdf]].
+
+A future full-fidelity backup could contain consistent Automerge binary saves and encrypted key material under a separately recoverable scheme; "'`Automerge.save`/`load` preserve document history, unlike `.mem`, but historical deleted content can remain visible and compatible document identity, authority and restore semantics need design. Do not advertise this as implemented now. [[Automerge internals|https://github.com/superdev-tech/automerge/blob/main/INTERNALS.md]], [[Automerge repo|https://github.com/automerge/automerge-repo/blob/main/packages/automerge-repo/src/Repo.ts]]. Face bundles, identity continuity, emergency recovery and full backup restore remain deferred until the two-operator Nexus stands.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/checks-against-prior-art`>>
+
+!! Checks against prior art
+
+Obsidian uses a local vault folder with vault-specific `.obsidian` settings and rebuildable metadata cache; Logseq OG uses Markdown graph files, including `pages` and `journals`; Anytype distinguishes native protobuf recovery from Markdown interchange; TiddlyWiki embeds tiddlers in one HTML file or stores individual files plus wiki metadata under Node; Joplin'"'s JEX export is separate from profile settings; Zotero keeps database and attachments together and excludes its rebuildable full-text index. [[Obsidian|https://obsidian.md/help/data-storage]], [[Logseq|https://github.com/logseq/docs/blob/master/pages/How%20to%20create%20a%20Logseq%20graph%20using%20existing%20Markdown%20files.md]], [[Anytype Toolbox|https://docs.anytype-toolbox.org/guides/backup-restore/]], [[TiddlyWiki|https://tiddlywiki.com/static/TiddlyWikiFolders.html]], [[Joplin|https://joplinapp.org/plugins/plugin/io.github.jackgruber.backup/?search=maintainer%3D%22jackgruber%22+max-results%3D20]], [[Zotero|https://www.zotero.org/support/zotero_data]].
+
+''Contradictions:'' First, Zotero expressly advises against export/import for complete migration because formats omit data, break document links and can duplicate items; the proposed fresh-identity text migration must accept that loss. Second, automatic temp plaintext conflicts with the expectation that temp is short-lived and with sealed-at-rest privacy unless explicitly opted in and bounded; cleanup is not secure erasure. Third, Git supports offline history, but a bundle contains reachable committed refs—not uncommitted projections—and retains historical cleartext; it is not an automatic complete or private backup. [[Zotero|https://www.zotero.org/support/kb/transferring_a_library]], [[Apple|https://developer.apple.com/documentation/foundation/using-the-file-system-effectively?changes=latest_minor]], [[Git|https://git-scm.com/docs/git-bundle]].
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;J6Ez2PD2FHrck08HbWECm5DlP7coC8jII0dHBX2DSZQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

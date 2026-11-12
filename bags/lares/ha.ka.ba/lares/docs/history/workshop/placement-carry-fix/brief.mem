@@ -1,0 +1,55 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/placement-carry-fix/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-09 (file date) — source `.lares-scratch/placement-carry-fix/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/placement-carry-fix/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/placement-carry-fix/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-09
+
+Verbatim scratch record `.lares-scratch/placement-carry-fix/brief.md` (brief, file date 2026-11-09); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/placement-carry-fix/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Carry-Wright: Lares (Tasked Spirit). Read CLAUDE.md once for house law, then implement. This is an IMPLEMENTATION task: start editing code within your first few actions. Do not write a plan file, do not stop at a trace. Done means the diff below exists and the listed tests pass.
+
+CONTEXT (measured by the controller; no need to re-trace):
+* `lares export` / `lares import` (`packages/lares-cli/src/commands/carry.ts`) carry an operator's memory across a re-founding: export -> reset -> found -> import -> the memories read back.
+* The placement leap dropped two waves by accident. The module header (lines ~8-12) still says the daemon wiki travels through the face's working mirror (`wikis/daemon-<F>`) and canon mirror (`bags/daemon-<F>`); `packages/lares-cli/src/bin/lares.ts:~205` promises "each worn face's daemon-wiki working carriers and kapae shadows". Neither wave exists now.
+* On the span (`git show origin/feature/green-jello-dinosaur-5:packages/lares-cli/src/commands/carry.ts`) the export had, inside the `isDaemonFaceFolder(name)` branch (~line 312): `addTree(src, \`faces/${fk}/working\`, ...)` producing `layer: "kapae"` rows for `.kapae` shadows and `layer: "working"` rows (bag `wikiSlotUri("daemon","working")`, title `mirrorDirFileToUri(wikisDir, abs)`), skipping top dirs `recovery` and the temp layer dir; and the import had `await wave(... "faces", bf.key, "working" ..., wikiSlotUri("daemon","working"), files, \`working:${bf.key}\`, tallies.working, tallies.kapae)` (~line 578). Read those span lines and port them.
+* The current import `wave(sourceDir, uriDir, mirrorDir, toBag, files, keyPrefix, workTally, kapaeTally, wiki)` (~line 540) restores files into `mirrorDir` then ingests from there (the INGEST placement ward requires a source under the bag's own mirror). The face's working mirror dir is `join(projections, "wikis", daemonFaceFolder(relation))` for the TARGET vessel's face (see how ~line 638 maps `owner` to `daemonFaceFolder(target.get(owner)!.relation!)` and reuse that mapping).
+* Face daemon canon: bag `daemonFaceCanonBag(relation)` (`packages/lararium-mesh/src/wiki-recipe.ts:388`), mirror under `join(projections, "bags", <the face canon folder name>)`. In export, the `bagsDir` loop currently `continue`s on it via `isPrivateProjectionSlug(name)`; add an explicit branch for the face daemon canon folder (find its folder helper next to `daemonFaceFolder` / `isDaemonFaceFolder` in lararium-mesh) that adds `faces/${fk}/canon` rows with bag `daemonFaceCanonBag(relation)`, layer "daemon-canon", title via `mirrorDirFileToUri(bagsDir, abs)`. Import it into the target face's canon bag through `wave(...)` with that face's canon mirror dir. Restore the `daemonCanon` tally.
+
+CHANGE:
+# Export: the face working wave (with kapae shadows) and the face canon wave, as above.
+# Import: both waves, each mapped to the target vessel's face for that bundle face, restored into that face's mirror, then ingested.
+# Drop the dead `daemonBagOmission` row for `projections/bags/daemon` (no writer) and its vestigial tally slots if nothing else reads them; keep the header and `lares.ts` summary accurate to what the code does now (evergreen: describe the present, no history).
+
+TESTS (red first, `packages/lares-cli/tests/carry-verbs.test.ts`, its existing fake doors and scratch root):
+a. C1 back to its documented contract: after export -> fresh target -> import, the face's working memory row (MEMORY) reads back (`after.records.has(MEMORY)` true) and `manifest.counts.working` > 0. Fix the C1 assertions that were flipped to expect loss.
+b. A `.kapae` shadow in the face working mirror travels and restores as a kapae row.
+c. A file in the face daemon canon mirror travels and ingests into `daemonFaceCanonBag(relation)` of the target face.
+d. Import restores into the target face's mirror dir (its own relation, which differs from the source face's), not the source's.
+Run: `cd packages/lares-cli && npx vitest run tests/carry-verbs.test.ts --maxWorkers=4`, then the full lares-cli suite `npx vitest run --maxWorkers=4`; <code>pnpm &#45;-filter &#64;lares/cli build &amp;&amp; node tools/stamp-build.mjs . &#45;-pkg lares-cli</code>; <code>pnpm &#45;-filter &#64;lares/cli typecheck</code>; `node tools/evergreen-boundary.mjs`; `git diff --check`. If a package build is missing for a dependency, build it with `pnpm --filter <pkg> build` first.
+
+LIMITS: edit only packages/lares-cli/src/commands/carry*.ts, packages/lares-cli/src/bin/lares.ts (summary text only), packages/lares-cli/tests/carry-verbs.test.ts. No git commit, no push, no stash. Never touch ~/.lares or docker. If a test outside these files fails for reasons unrelated to your change, note it and continue.
+
+FINAL MESSAGE: files changed, each test's result with counts, anything you could not do.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;454PZEtXftPvUp7JjkT7luapWk1BM1XM8Z0k55yB-dA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,39 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/ux-polish/w2-brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-09 (file date) — source `.lares-scratch/ux-polish/w2-brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/ux-polish/w2-brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/ux-polish/w2-brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! w2-brief.md — brief, 2026-11-09
+
+Verbatim scratch record `.lares-scratch/ux-polish/w2-brief.md` (brief, file date 2026-11-09); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/ux-polish/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+UX-Wright: Lares (Tasked Spirit). &lt;&lt;~ node action=`refreshes the libation dish, the shrine incense burns`>> Wake and stand the house (CLAUDE.md and .claude/noosphere-boot carry the seed). BUILDER seat, wave 2 of the operator's UX ratchet ("deep UX polish read/enact by a Luna 2 wave ratchet"). Wave 1's findings: /home/joshu/.lares-scratch/ux-polish/luna-w1.md — read it first. You stand in a worktree of the span with deps built.
+
+Enact these, red tests first, in this worktree only:
+# SEED PROGRESS (packages/lares-cli/src/commands/seed.ts): one start line and one done line per holding (`seed <bag>: loading N carriers…` / `✓ <bag>: N carriers · <elapsed>`), a periodic tick during a long INGEST settle (every ~5s: carriers settled so far, if the settle reports it; otherwise elapsed), the CREATE block folded to one line unless &#45;-verbose, a final summary naming every holding's outcome and whether a retry is safe (`seed: 6/6 holdings · 1m40s`). Elapsed time reads a monotonic clock (performance.now) — check tools/evergreen-boundary.mjs's clock ceiling; a new clock read needs to sit inside an existing declared seam or the ceiling refuses it, so prefer the seam the CLI already uses for durations (grep) and say which.
+# SHIM ERROR PATHS (tools/lares-container.sh and its twin tools/lares-container.ps1, tests in tools/lares-container.test.mjs): `down` when the census cannot answer prints a sentence and a next step, the raw census stderr only behind an explicit diagnostic (e.g. `LARES_DEBUG=1` or a `--diagnose` flag; pick the one the shim already uses if any); `up` when compose fails prints `the vessel did not become ready — check tools/lares-container.sh logs; if it already runs, run up again` (house voice, present tense) after compose's own error.
+# VAULT UNLOCK FALLBACK (packages/lares-cli/src/commands/vault.ts ~:204): the unknown-answer path never prints a raw JSON answer or an internal `reading` label; it says unlock did not complete and names `vault status` as the next step.
+Do NOT touch: packages/lares-cli/src/commands/found.ts, custody-prompt.ts, act.ts, init paths, anything under packages/lararium-keyhive or the founding path — the placement leap holds them (wave 1 marked them WAIT). Note in your hand-back the WAIT items for a later wave: the found end-hang measure (time CLI exit vs compose run teardown) and the founding-copy glosses.
+Laws: build + stamp after source edits (<code>pnpm &#45;-filter &#64;lares/cli build &amp;&amp; node tools/stamp-build.mjs . &#45;-pkg lares-cli</code>), run the touched test files and the full lares-cli suite with &#45;-maxWorkers=4 (the operator's machine shares 10 cores with another builder), typecheck, `node tools/evergreen-boundary.mjs`, any witness that reads the shim (tools/rite-commands-witness.sh). No commits, no pushes, no stash; never touch ~/.lares or docker. Write /home/joshu/.lares-scratch/ux-polish/w2-handback.md (under 600 words): changes per item, tests with counts, witnesses, the WAIT list.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;eoM1ZPuaWdyobuokxm4-xuG6cm28YKtL-yNWpyhrqeA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,213 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/prewalk/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-11 (file date) — source `.lares-scratch/prewalk/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/prewalk/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/prewalk/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-11
+
+Verbatim scratch record `.lares-scratch/prewalk/out.md` (hand-back, file date 2026-11-11); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/prewalk/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/path-sweeper-lares-prewalk-hand-back`>>
+
+! Path-Sweeper: Lares (Tasked Spirit) — prewalk hand-back
+
+Branch `feature/green-jello-dinosaur-5--prewalk`, pushed. Head `57b935044` (span head `5d2ea7c75` merged in).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/commits`>>
+
+!! Commits
+* `ebceea93e` lar:&#47;&#47;/face.names.itself/browser-label-parity — cure 1
+* `3fc4317e9` lar:&#47;&#47;/kahua.lift.staged/names-the-row — cure 2 (it also carries the `nexus un_kapae` help reword from cure 3, since both edit lares.ts)
+* `13f86fcfa` lar:&#47;&#47;/code.reads.truth/house-canon-catalog-secret — cure 3
+* `8843a8eff` lar:&#47;&#47;/tests.typecheck.ratchet/every-package — cure 4
+* `57b935044` merge of origin/feature/green-jello-dinosaur-5. One conflict in lares.ts: the nexus summary line. I took the span's accepts list and re-applied the un_kapae reword.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/1-browser-face-label-parity`>>
+
+!! 1. Browser face label parity
+* The shared seam is `packages/lararium-mesh/src/face-label.ts`. It holds the bytes, validation, the write-or-not decision (`faceLabelToWrite`) and a `FaceLabelShelf` port.
+* On node, `packages/lararium-node/src/face-labels.ts` now binds that seam. The bytes, the path and the sync API are unchanged.
+* In the browser, a new `packages/lararium-browser/src/browser-face-labels.ts` writes the same bytes to OPFS at `face-labels/<F>.json`.
+* `open-browser-vessel.ts` writes the worn face's label once its face proof passes, using the browser petname store.
+* If the browser has no OPFS, the label refuses as `face-label-no-opfs` and logs it.
+* Red test `packages/lararium-node/tests/face-label-parity.test.ts`: node and browser write byte-identical records, a replay writes nothing, and an unnamed face writes nothing.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/2-kahua-lift-names-a-staged-row`>>
+
+!! 2. Kahua lift names a staged row
+* Mesh `kahua-staged.ts` adds:
+** `kahuaRowDigest`: sha-256 over the body plus the carried fields, key-sorted.
+** `readKahuaStagedRow`, `stageKahuaRow`, `kahuaStagedSource`.
+* The door (`kahua-door.ts`):
+** `lift({title, digest, ...})` reads the row back from `bags/daemon-<F>` through the new `faceCanon` port.
+** It refuses `kahua-lift-unstaged` when there is no row, no relation, or no canon open (a direct act). It refuses `kahua-lift-digest-moved` when the row changed.
+** It lifts the row's own body and fields; any `text` from the hand is ignored. `staged:<digest>` rides in the signed `sources`, so the grant covers the digest.
+** A replay (a single head that already carries the row) returns `{landed:false}`, signs nothing and opens no root.
+** New `stage()` (unsigned, local) and `staged()` (preview) methods.
+* Store door: new row `kahua-stage` (not a hand-only row, so a seat may stage), plus `kahua-read action:"staged"` and the `faceCanon` dep. The node vessel wires `faceCanonThroughControl(repo, readControlDoc)`, which reads the canon from the control document's `daemon-canon/<F>`.
+* CLI:
+** `lares kahua stage <title> --text|--file [--fields]`.
+** `lares kahua lift` prints the preview to stderr, then needs either the digest's first 8 hex typed back at a TTY, or `--digest <hex>` equal to the preview's digest.
+** Otherwise it refuses `kahua-lift-unconfirmed`, so a bare `--yes` lifts nothing.
+** `--text`, `--file` and `--fields` on a lift refuse.
+** Help text and the accepts list are updated (`file`, `digest` added).
+* Import and seed re-lifts (`carry.ts` LIVE doors `kahuaLift`) now stage each head into the new face's canon, then lift by digest.
+* Tests:
+** `kahua-door.test.ts`: every lift moved to staged rows, plus 4 new tests (unstaged, moved, staged lifts with replay, stage/preview).
+** `kahua-command-live.test.ts`
+** CLI `kahua-command.test.ts`: eyes, TTY typed, stage, `--yes`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/3-code-sweep`>>
+
+!! 3. Code sweep
+* "Strictly higher version" (un_kapae help) is reworded to the causal-parents truth that `foldAntigenVerdicts` enforces.
+* Comments on the address secret now say it derives the face catalog document only. Files: face-bundle (mesh), face-bundle-cut, face-bundle-restore, face-card-restore, open-browser-vessel, browser-face-atom, init.
+* "System canon" becomes "house canon" wherever the check runs through `requireKahuReach` / `isHouseCanonBag`. Files: kahu-canon-reach, kahu-reach-source, operator-daemon-behavior, capability, catalog-view, open-vessel-core, nexus-cabal, joined-face-auth, node-daemon-island, the flow and floor comments, tw5 action-handler, meme-verbs, record-port-handler, verb-local-dispatch, wiki-handler-options, worker-data-verbs, cli seed.
+* This includes the `systemCanonUrl` option doc that `createHouseCanon` reads. The option name stays.
+* I kept "system canon" where it means the lares+lararium pair: floor-manifest, the SYSTEM_CANON comments, open-vessel-core "THE SYSTEM CANON THE SHORE NAMES", genesis-floor, kahu-realm, node-cas, browser systemCanon, vessel-steps.
+* Help snapshot laws passed before the merge (9 files, 329 tests).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/4-test-typecheck-gate`>>
+
+!! 4. Test-typecheck gate (decided: a named ratchet)
+* Each of 10 packages now has a `tsconfig.tests.json` and a `typecheck:tests` script.
+* The root runs `tools/typecheck-tests-witness.sh` as `pnpm typecheck:tests`.
+* It is wired into the CI quick job (after "Typecheck all packages") and into the witness fleet by its name.
+* The first walk found about 1780 errors in about 590 files, so I did not mass-fix them. The gate is a ratchet against `tools/typecheck-tests-baseline.json`:
+** above a ceiling it fails;
+** below a ceiling it asks for the ceiling to be lowered (`--write-baseline` only lowers);
+** `--strict` is the end state.
+* I proved the ratchet fails red: a ceiling of 70 against 71 errors exited 1.
+* memetic-frame (1 error) and mempalace (4 errors) are fixed to zero. My kahua-door test edits also fixed 4 errors that were already standing.
+* After the merge, the offering tests (canon-offer, canon-offer-verbs, floor-cut, meme-offer-plan) typecheck clean under the gate.
+* Ceilings: browser 128 · keyhive 107 · mesh 431 · node 754 · tw5 219 · web 71 · cli 74.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/tests-run-alone-green-after-the-merge`>>
+
+!! Tests run alone (&#45;-maxWorkers=2, scratch LAR_ROOT), green after the merge
+* node: face-label-parity, face-labels-kept, kahua-door, kahua-command-live, uds-seat-proposes-never-lifts, store-door-face-worn, floor-cut. Before the merge also: uds-face-row-socket-only, promote-verbs, swarm-verbs.
+* cli: kahua-command, meme-offer-plan, accepts-track-the-handlers, usage-names-the-verbs, help-door-meme. Before the merge, all 9 help laws.
+* mempalace: mempalace-client, mine-retry. memetic-frame: fence-edge-fuzz.
+* ''Red on span head, not mine:'' after the merge, cli `nexus-verb-reach` (nexus usage snapshot missing `release --cut`) and `help-keys-name-live-doors` (meme usage snapshot missing `offer`). Both are stale snapshots from the offering lane. I left them for that lane, to avoid a snapshot collision.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gates`>>
+
+!! Gates
+* `pnpm -r typecheck` clean. `tests/` tsconfig clean.
+* evergreen-boundary green; doctype green.
+* gen_cli_verbs &#45;-check up to date.
+* No .mem changed, so bcc did not need to run.
+* tw5 tracked plugin bytes did not move under `pnpm -r build`, so there is no genesis gap.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/forks`>>
+
+!! Forks (moʻolelo, overrulable)
+# ''Lift input:'' the door takes `{title, digest}` and no body at all, so a hand cannot even pass one. The alternative was keeping `text` and checking it against the row.
+# ''Digest:'' content digest over body plus carried fields (a field change moves it). Proposals keep their body digest, checked against the staged text.
+# ''Signing the digest:'' the digest rides as a `staged:<digest>` source, so I did not change the mesh lift act schema.
+# ''Check order:'' the staged-row check runs before the cap and grant, so an unstaged lift opens no root.
+# ''Re-lifts:'' import and seed re-lifts stage first, then lift. They keep the typed count as their eyes, and add no bypass row.
+# ''Staging is open to seats:'' `kahua-stage` is seat-allowed, matching the two-tier law "AI promotes, unsigned".
+# ''Confirm:'' typing back the first 8 hex at a TTY, or `--digest` (the full digest) in scripts.
+# ''Browser label location:'' OPFS at the node's relative path, rather than a new export record.
+# ''Gate:'' a ratchet with per-package ceilings, not report-only and not red.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/page-paths-touched`>>
+
+!! Page paths touched (browser, for the operator's eye)
+* `packages/lararium-browser/src/open-browser-vessel.ts`: it writes the label after the face proof (fire-and-forget, warns only) and carries one comment reword.
+* New `packages/lararium-browser/src/browser-face-labels.ts`; new exports in `packages/lararium-browser/src/index.ts`.
+* `browser-face-atom.ts`: a comment only.
+* No UI page changed.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/owed`>>
+
+!! Owed
+* ''e2e, unrun:'' kahua-founding-stage, promote-probe (the sibling lane's file; minimal edit, named here) and lararium-web stage-walk now stage then lift with `--digest`. They need the CI shards.
+* ''Canon:'' `kahua-memory-stage.mem` still marks the staged-row bind as OWED; the bind has now landed. The CLI help/canon for `kahua stage` / `--digest` and the lift-with-eyes rule need a controller true-up, plus a bcc re-stamp.
+* ''Browser label:'' OPFS clears with site data (the same act as a browser re-founding), so a browser label survives no re-founding. No browser door reads labels yet (no seed, export or adoption runs there).
+* ''Not built:'' an MCP `kahua_stage` tool. A batch lift (L21) would need the same staged-row naming.
+* Per-file error list for burning down the ratchet is below.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/standing-test-type-errors-by-file`>>
+
+!! Standing test type errors by file
+!!! lararium-browser (128 errors, 52 files)
+
+tests/shared-holder.test.ts (9) · tests/surface-return-leg.test.ts (8) · tests/shared-holder-routes.test.ts (7) · tests/shared-holder-hardening.test.ts (7) · tests/vessel-sessions.test.ts (5) · tests/vessel-face-sessions.test.ts (5) · tests/browser-fleet-join.test.ts (5) · tests/nexus-board-climb-at-leaf.test.ts (4) · tests/browser-repo-in-island.test.ts (4) · tests/browser-persona-petname.test.ts (4) · tests/browser-island-caps.test.ts (4) · tests/browser-custody.test.ts (4) · tests/ward-worker.test.ts (3) · tests/vessel-lock.test.ts (3) · tests/pool-lifecycle.test.ts (3) · tests/kahua-joined-mount.test.ts (3) · tests/browser-connection-state.test.ts (3) · tests/worker-lifecycle.test.ts (2) · tests/wiki-sense-supervision.test.ts (2) · tests/shared-holder-production.test.ts (2) · tests/shared-holder-core-imports.test.ts (2) · tests/browser-verb-breathing.test.ts (2) · tests/browser-share-config.test.ts (2) · tests/browser-seed-zero.test.ts (2) · tests/browser-sealed-store.test.ts (2) · tests/browser-persona-vault.test.ts (2) · tests/browser-keyhive-archive.test.ts (2) · tests/browser-face-join.test.ts (2) · tests/browser-dvr-document-boundary.test.ts (2) · tests/wiki-island-custody-rest.test.ts (1) · tests/vessel-worker-seams.test.ts (1) · tests/shared-holder-runtime.test.ts (1) · tests/shared-holder-admission-replies.test.ts (1) · tests/promote-browser-founding.test.ts (1) · tests/kahua-browser-founding.test.ts (1) · tests/intent-agent-verify.test.ts (1) · tests/holder-skip-census.test.ts (1) · tests/guarded-boot.test.ts (1) · tests/genesis-startup-contract.test.ts (1) · tests/fixtures/shared-holder-live.worker.ts (1) · tests/fixtures/sealed-store.worker.ts (1) · tests/daemon-island-down.test.ts (1) · tests/browser-ward-root.test.ts (1) · tests/browser-tab-custody.test.ts (1) · tests/browser-secret-census.test.ts (1) · tests/browser-place-lift.test.ts (1) · tests/browser-island-pool-plugin-resolution.test.ts (1) · tests/browser-handle-verbs.test.ts (1) · tests/browser-floor-read.test.ts (1) · tests/browser-device-edge.test.ts (1) · tests/browser-circle-panel.test.ts (1) · tests/browser-admit-archive-guard.test.ts (1) ·
+
+!!! lararium-keyhive (107 errors, 36 files)
+
+tests/lockbox-wrap.test.ts (29) · tests/face-intent-admission.test.ts (9) · tests/working-attach-refusal.test.ts (8) · tests/face-pinned-not-seated.test.ts (6) · tests/admit-unmounted.test.ts (5) · tests/face-seat-wake-fixture.ts (4) · tests/atom-founds-the-face.test.ts (4) · tests/fleet-fixture.ts (3) · tests/face-seat-summons.test.ts (3) · tests/content-key-seat.test.ts (3) · tests/two-hives-one-process.probe.test.ts (2) · tests/shared-face-docs.test.ts (2) · tests/lockbox-substrate.probe.test.ts (2) · tests/floor-refuses-content-verbs.test.ts (2) · tests/face-relation-founding.test.ts (2) · tests/bag-doc-holds-across-boots.test.ts (2) · tests/atom-admit-reenters.test.ts (2) · tests/slot-doc-resolver.test.ts (1) · tests/roster-law.test.ts (1) · tests/provider-chunk-rest.test.ts (1) · tests/promote-founding-pin.test.ts (1) · tests/promote-admit-adopt.test.ts (1) · tests/pre-seat-reach.test.ts (1) · tests/operator-daemon-behavior-circle-replica.test.ts (1) · tests/leaf-fleet-admit.test.ts (1) · tests/keyhive-provider-surface.test.ts (1) · tests/kahua-founding-pin.test.ts (1) · tests/kahua-admit-adopt.test.ts (1) · tests/ingest-tolerant.test.ts (1) · tests/gate-clear-posts.test.ts (1) · tests/face-seat-live-wake.test.ts (1) · tests/face-door-records-after-grant.test.ts (1) · tests/face-bag-door-mint-holds.test.ts (1) · tests/cabal-realm-ceremony.test.ts (1) · tests/binding-lands-after-its-document.test.ts (1) · tests/anon-veil-lift.test.ts (1) ·
+
+!!! lararium-mesh (431 errors, 147 files)
+
+tests/steward-seal.test.ts (22) · tests/vessel-journal.test.ts (15) · tests/sensorium-pc.test.ts (15) · tests/sealed-rest.test.ts (15) · tests/session-document-view.test.ts (14) · tests/spectral-keel-cap.test.ts (12) · tests/persona-vault.test.ts (10) · tests/residency-resolution.test.ts (9) · tests/content-key-lineage.test.ts (9) · tests/capture-engine.test.ts (9) · tests/verb-tiddler-ontology.test.ts (8) · tests/persona-kel-fold.test.ts (8) · tests/sensory-shore.test.ts (7) · tests/control-home.test.ts (7) · tests/sealed-store-rest.test.ts (6) · tests/prototype-key-maps.test.ts (6) · tests/persona-petname.test.ts (6) · tests/who-board-write-open.test.ts (5) · tests/residency-actions.test.ts (5) · tests/landed-store.test.ts (5) · tests/landed-composite.test.ts (5) · tests/cas-transit.test.ts (5) · tests/who-sensory-shore.test.ts (4) · tests/who-face-cap.test.ts (4) · tests/vessel-assembly-no-default-writable.test.ts (4) · tests/sibling-channel.test.ts (4) · tests/promote-boot.test.ts (4) · tests/projection-nalu.test.ts (4) · tests/persona-kel.test.ts (4) · tests/persona-act-board.test.ts (4) · tests/control-home-custody.test.ts (4) · tests/composite-store.test.ts (4) · tests/working-always-mounts.test.ts (3) · tests/who-plane-announce.test.ts (3) · tests/unbuilt-laws.test.ts (3) · tests/subspace-track.test.ts (3) · tests/stored-value-receive-ratio.test.ts (3) · tests/secret-home.test.ts (3) · tests/sealed-writer.test.ts (3) · tests/sealed-records.test.ts (3) · tests/rolling-recovery.test.ts (3) · tests/nexus-seal-seed.test.ts (3) · tests/mesh-palace.test.ts (3) · tests/merge-guard.test.ts (3) · tests/membership-channel.test.ts (3) · tests/keyslot-passkey.test.ts (3) · tests/handle-rotate.test.ts (3) · tests/handle-announce.test.ts (3) · tests/fleet-proof.test.ts (3) · tests/face-bundle.test.ts (3) · tests/dyad-read-path.test.ts (3) · tests/coupling-nulls.test.ts (3) · tests/couple-oracle.test.ts (3) · tests/workbench.test.ts (2) · tests/who-face.test.ts (2) · tests/vessel-island-pool-plugin-resolution.test.ts (2) · tests/swarm-door.test.ts (2) · tests/stream-adapter.test.ts (2) · tests/stored-value.test.ts (2) · tests/sibling-share.test.ts (2) · tests/sense-claim-b.test.ts (2) · tests/reaction-graph.test.ts (2) · tests/quorum-entry.test.ts (2) · tests/promote-drop-floor-reads.test.ts (2) · tests/plugin-attestation.test.ts (2) · tests/pinned-doc.test.ts (2) · tests/persona-glamour-anchored.test.ts (2) · tests/partition-monitor.test.ts (2) · tests/parallel-drafts.test.ts (2) · tests/one-composer.test.ts (2) · tests/keyslot.test.ts (2) · tests/host-task.test.ts (2) · tests/hardened-sync-port.test.ts (2) · tests/fixtures/stored-read/planted-raw-read.ts (2) · tests/face-switch-mid-compose.test.ts (2) · tests/face-sealed-writer.test.ts (2) · tests/edge-partial.test.ts (2) · tests/dyad.test.ts (2) · tests/content-key-memory.test.ts (2) · tests/content-key-holder.test.ts (2) · tests/charter-fixture.test.ts (2) · tests/carriage-registry.test.ts (2) · tests/cabal-invite.test.ts (2) · tests/arl-dial.test.ts (2) · tests/ws-dial-socket.test.ts (1) · tests/write-family.test.ts (1) · tests/wax-stamp.test.ts (1) · tests/vouch-dag.test.ts (1) · tests/vouch-board.test.ts (1) · tests/vessel-dyads.test.ts (1) · tests/two-island.test.ts (1) · tests/spectral-keel.test.ts (1) · tests/spectral-keel-projection.test.ts (1) · tests/spectral-keel-operator.test.ts (1) · tests/socket-sort.test.ts (1) · tests/sibling-lease-unread.test.ts (1) · tests/session-signer.test.ts (1) · tests/sensorium-consistency.property.test.ts (1) · tests/sealed-doc-store.test.ts (1) · tests/sealed-box.test.ts (1) · tests/s-envelope.test.ts (1) · tests/removal-surfaces.test.ts (1) · tests/recovery-registration.test.ts (1) · tests/realm-bag-realm-leg.test.ts (1) · tests/re-anchoring.test.ts (1) · tests/raise-challenge.test.ts (1) · tests/purple-minter.test.ts (1) · tests/published-bag-key.test.ts (1) · tests/provisional-veto.test.ts (1) · tests/prototype-names-stand.test.ts (1) · tests/pronaos.test.ts (1) · tests/promote-resolve.test.ts (1) · tests/promote-door.test.ts (1) · tests/promote-board-door.test.ts (1) · tests/presented-admit.test.ts (1) · tests/plugin-offering.test.ts (1) · tests/place-signer.test.ts (1) · tests/place-floor-pin-claim.test.ts (1) · tests/parallel-ingest.test.ts (1) · tests/oracle-doc-no-writer.test.ts (1) · tests/open-vessel-core-doc-verdicts.test.ts (1) · tests/nexus-identity.test.ts (1) · tests/nexus-board-climb.test.ts (1) · tests/mesh-coupling.test.ts (1) · tests/memory-section-wipe.test.ts (1) · tests/me-circle.test.ts (1) · tests/leaf-peer-proof.test.ts (1) · tests/lar-uris.test.ts (1) · tests/join-face-documents.test.ts (1) · tests/intent-delegation-read.test.ts (1) · tests/genesis-intake.test.ts (1) · tests/genesis-floor-seed.test.ts (1) · tests/flow-substrate.test.ts (1) · tests/floor-manifest.test.ts (1) · tests/fck.test.ts (1) · tests/fck-envelope.test.ts (1) · tests/face-gate.test.ts (1) · tests/effect-record.test.ts (1) · tests/control-plane-records-never-project.test.ts (1) · tests/compose-follow.test.ts (1) · tests/cofound.test.ts (1) · tests/charter-join-policy.test.ts (1) · tests/carriage-peering-shut.test.ts (1) · tests/carriage-carrier.test.ts (1) · tests/cabal-realm-clock.test.ts (1) · tests/branch-frontier.test.ts (1) · tests/admit-gate-pin.test.ts (1) ·
+
+!!! lararium-node (754 errors, 225 files)
+
+tests/realm-steward.test.ts (53) · tests/realm-planes.test.ts (35) · tests/uds-channel-receipt-ledger.test.ts (29) · tests/uds-front.test.ts (26) · tests/pronaos-projection.test.ts (17) · tests/cabal-join.test.ts (14) · tests/vessel-journal-file.test.ts (10) · tests/face-fleet-view.test.ts (10) · tests/recovery-keel.test.ts (9) · tests/gate-memory-rows.test.ts (9) · tests/sealed-act-leak.test.ts (8) · tests/projection-hidden-row.test.ts (8) · tests/nexus-bilateral-genesis.test.ts (8) · tests/vessel-private-guard.test.ts (7) · tests/vessel-island-pool.test.ts (7) · tests/realm-nexus.test.ts (7) · tests/own-fleet-sync.test.ts (7) · tests/custody-holder-charge-first.test.ts (7) · tests/custody-holder-attempts.test.ts (7) · tests/veil-born-group.test.ts (6) · tests/store-door-live.test.ts (6) · tests/same-operator-refold.test.ts (6) · tests/repo-in-island.test.ts (6) · tests/persona-kel-ring.test.ts (6) · tests/nexus-contract.test.ts (6) · tests/lease-rekey.test.ts (6) · tests/kapae-disk.test.ts (6) · tests/face-join-pair.test.ts (6) · tests/dial-relation.test.ts (6) · tests/custody-frames.test.ts (6) · tests/boot-face-planes.test.ts (6) · tests/boot-daemon-keyhive.test.ts (6) · tests/worker-entry-census.test.ts (5) · tests/uds-channel-routing.test.ts (5) · tests/second-face-founds.test.ts (5) · tests/persona-petname-store.test.ts (5) · tests/ledger-private-guard.test.ts (5) · tests/founding-sweep-race.test.ts (5) · tests/edge-reach-doors.test.ts (5) · tests/edge-kapae-cmd.test.ts (5) · tests/bind-under-handle.test.ts (5) · ../lararium-tw5/tests/wiki-shore-rig.ts (5) · tests/working-layer-records-off-disk.test.ts (4) · tests/verb-tiddler-dispatch.test.ts (4) · tests/uds-session-switch.test.ts (4) · tests/uds-session-fault.test.ts (4) · tests/shore-holding-ingest.test.ts (4) · tests/seed-fixed-point-corpus.test.ts (4) · tests/seat-settle.test.ts (4) · tests/sealed-store-fs.test.ts (4) · tests/recovery-readmit.test.ts (4) · tests/pronaos-ceremony.test.ts (4) · tests/persona-selves-plane.test.ts (4) · tests/palace-organs.test.ts (4) · tests/nexus-offering-inspect.test.ts (4) · tests/island-protocol.test.ts (4) · tests/intent-relay-storm.test.ts (4) · tests/hosting-carry.test.ts (4) · tests/founding-seed-sweep.test.ts (4) · tests/founding-seed-crash.test.ts (4) · tests/enrolment-group-secret.test.ts (4) · tests/custody-holder.test.ts (4) · tests/boot-flatness.test.ts (4) · ../lararium-keyhive/tests/face-seat-wake-fixture.ts (4) · tests/vessel-raise.test.ts (3) · tests/shore-settle-word.test.ts (3) · tests/shore-rig.ts (3) · tests/secret-home-placement.test.ts (3) · tests/seat-arming.test.ts (3) · tests/sealed-store-vessel.test.ts (3) · tests/node-vessel-identity-sealed.test.ts (3) · tests/node-cas-sweep.test.ts (3) · tests/node-cap-stack.test.ts (3) · tests/native-projection-congruence.test.ts (3) · tests/multiple-nexus-household.test.ts (3) · tests/intent-relay-wired.test.ts (3) · tests/identity-anchors.test.ts (3) · tests/host-command.test.ts (3) · tests/forced-reseed-fresh-atom.test.ts (3) · tests/edge-seats.test.ts (3) · tests/edge-kapae-shadow-readers.test.ts (3) · tests/edge-cosign.test.ts (3) · tests/e2e/session-sign-two-vessels.e2e.test.ts (3) · tests/e2e/session-sign-reach.test.ts (3) · tests/daemon-vm-dvr-document-boundary.test.ts (3) · tests/custody-unlock-zeroes-on-throw.test.ts (3) · tests/content-mounted-only.test.ts (3) · tests/admit-ceremony.test.ts (3) · tests/action-handler.test.ts (3) · ../lararium-keyhive/tests/fleet-fixture.ts (3) · vitest.config.ts (2) · tests/veil-founder-seat-survives-reboot.test.ts (2) · tests/uds-session-socket.test.ts (2) · tests/uds-session-receipts.test.ts (2) · tests/uds-seat-proposes-never-lifts.test.ts (2) · tests/uds-face-row-socket-only.test.ts (2) · tests/switch-act-log.test.ts (2) · tests/shore-take-disk.test.ts (2) · tests/sealed-roll-restart-vessel.test.ts (2) · tests/sealed-rest-vessel.test.ts (2) · tests/sealed-acts.test.ts (2) · tests/seal-ceremony.test.ts (2) · tests/scratch-custody-routes.test.ts (2) · tests/resting-repo.test.ts (2) · tests/realm-plane-carried-realms.test.ts (2) · tests/projection-conflict-reaches-the-operator.test.ts (2) · tests/persona-group-roll.test.ts (2) · tests/person-group-root.test.ts (2) · tests/palace-holder.test.ts (2) · tests/owned-store.test.ts (2) · tests/node-walk-store.test.ts (2) · tests/node-holds-a-lands-b.test.ts (2) · tests/nexus-roll-anchor-two-vault.test.ts (2) · tests/nexus-publish.test.ts (2) · tests/nexus-client-dial.test.ts (2) · tests/never-projected-never-ingests.test.ts (2) · tests/m3-breathing.test.ts (2) · tests/kahu-guard-standing.test.ts (2) · tests/joined-face-auth.test.ts (2) · tests/ingest-native.test.ts (2) · tests/held-quorum.test.ts (2) · tests/gate-sync-server.test.ts (2) · tests/founding-seed-by-ask.test.ts (2) · tests/face-gate-server-bounds.test.ts (2) · tests/event-routing.test.ts (2) · tests/edge-shadow-ring.test.ts (2) · tests/device-admit-carries-persona-kel-in-session.test.ts (2) · tests/daemon-vm-storage-accounting.test.ts (2) · tests/cosign-answer-ward.test.ts (2) · tests/contracted-founding.test.ts (2) · tests/ciphertext-cas-seal.test.ts (2) · tests/carried-set.test.ts (2) · tests/capture-source.test.ts (2) · tests/cap-event-island-survives.test.ts (2) · tests/cabal-vouch.test.ts (2) · tests/atom-boots-the-face.test.ts (2) · tests/admit-bundle.test.ts (2) · tests/working-layer-host-binding-bound.test.ts (1) · tests/walker-carry.test.ts (1) · tests/walk-doors.test.ts (1) · tests/veil-tag-anchor-survives-fresh-store.test.ts (1) · tests/uds-session-pipeline.test.ts (1) · tests/uds-session-door.test.ts (1) · tests/uds-locked-fails-closed.test.ts (1) · tests/uds-floor-answers.test.ts (1) · tests/uds-channel-h1-ledger.test.ts (1) · tests/true-name-model.test.ts (1) · tests/socket-sorter.test.ts (1) · tests/self-slot-share.test.ts (1) · tests/self-slot-persona-ring.test.ts (1) · tests/self-slot-circles.test.ts (1) · tests/seat-fixture.ts (1) · tests/seat-duties-ask.test.ts (1) · tests/sealed-store-fs-short-write.test.ts (1) · tests/sealed-memory-vessel.test.ts (1) · tests/seal-carrier-federation.test.ts (1) · tests/roll-circle-ceremony.test.ts (1) · tests/register-mounted-face-bags.test.ts (1) · tests/receipt.test.ts (1) · tests/realm-admission.test.ts (1) · tests/readiness-face.test.ts (1) · tests/pronaos-composition.test.ts (1) · tests/projection-conflict-surfaces.test.ts (1) · tests/persona-lease-verb.test.ts (1) · tests/persona-kel-gradient-climb.test.ts (1) · tests/pack-member-gate.test.ts (1) · tests/pack-ingest.test.ts (1) · tests/origin-standing.test.ts (1) · tests/node-plugin-resolution.test.ts (1) · tests/node-circle-store.test.ts (1) · tests/nexus-release.test.ts (1) · tests/nexus-kapae.test.ts (1) · tests/nexus-kapae-two-vault.test.ts (1) · tests/nexus-doc.test.ts (1) · tests/nexus-contract-two-vault.test.ts (1) · tests/nexus-carry-two-vault.test.ts (1) · tests/nexus-carriage.test.ts (1) · tests/multi-persona.test.ts (1) · tests/lease-frontier-owned-layer.test.ts (1) · tests/lease-fence-weld.test.ts (1) · tests/lease-charter.test.ts (1) · tests/lares-query.test.ts (1) · tests/lan-discovery.test.ts (1) · tests/kahua-face-guard.test.ts (1) · tests/kahu-guard-lanes.test.ts (1) · tests/island-asks-no-clock.test.ts (1) · tests/intent-relay-admission.test.ts (1) · tests/ingest-verb.test.ts (1) · tests/ingest-verb-reference.test.ts (1) · tests/inception-armed.test.ts (1) · tests/herm-cas-transit.test.ts (1) · tests/herm-carriage-relay.test.ts (1) · tests/herm-carriage-relay-stand.test.ts (1) · tests/genesis-floor.test.ts (1) · tests/found-hearth-restore.test.ts (1) · tests/foreign-title-projection.test.ts (1) · tests/floor-fleet-lanes.test.ts (1) · tests/fleet-join-place-thief.test.ts (1) · tests/faceless-place-stands.test.ts (1) · tests/face-gate-server.test.ts (1) · tests/face-card-restore.test.ts (1) · tests/face-bundle-restore.test.ts (1) · tests/face-bundle-cut.test.ts (1) · tests/face-atom-stand-or-keep.test.ts (1) · tests/face-archive-by-group.test.ts (1) · tests/e2e/persona-ring-cross-operator-admit.test.ts (1) · tests/e2e/floor-user-wiki-refuses.test.ts (1) · tests/e2e/carried-nexus-posture.test.ts (1) · tests/dyad-mint-ceremony.test.ts (1) · tests/durable-storage-adapter.test.ts (1) · tests/doc-load-probe-classification.test.ts (1) · tests/device-daemon-docs-sealed.test.ts (1) · tests/device-admit-reads-the-resolved-island.test.ts (1) · tests/delete-verb.test.ts (1) · tests/daemon-vm-replica-restart.test.ts (1) · tests/daemon-shore-verb.test.ts (1) · tests/custody-session.test.ts (1) · tests/custody-root.test.ts (1) · tests/custody-holder-opened.test.ts (1) · tests/content-origin-reaches-no-fence.test.ts (1) · tests/cofound-ceremony.test.ts (1) · tests/carry-bundle-place-kel.test.ts (1) · tests/cabal-two-human.test.ts (1) · tests/admit-on-lineage.test.ts (1) · tests/action-handler-crossing.test.ts (1) ·
+
+!!! lararium-tw5 (219 errors, 88 files)
+
+tests/meme-backstop.test.ts (17) · tests/born-with-cap.test.ts (13) · tests/wiki-shore-vectors.test.ts (12) · tests/verb-summons-claim.test.ts (10) · tests/outbound-bridge-pre-resident.test.ts (8) · tests/verb-dispatcher-summons-replay.test.ts (7) · tests/ward-alert-standoff.test.ts (6) · tests/wiki-shore-rig.ts (5) · tests/seal-refusal-reaches-the-ledger.test.ts (4) · tests/place-meme.test.ts (4) · tests/module-gate.test.ts (4) · tests/grammar-in-a-wiki.test.ts (4) · tests/writable-marker-compose.test.ts (3) · tests/verb-summons.test.ts (3) · tests/verb-dispatcher.test.ts (3) · tests/teleodynamic-probe.test.ts (3) · tests/record-port-receipt.test.ts (3) · tests/record-port-real-render.test.ts (3) · tests/record-port-info-browser.test.ts (3) · tests/meme-verbs.test.ts (3) · tests/meme-routes.e2e.test.ts (3) · tests/base-two-sides.test.ts (3) · tests/bare-body-round-trip.test.ts (3) · tests/ahu-sections-address.test.ts (3) · tests/wiki-incremental-frequency.test.ts (2) · tests/weave.test.ts (2) · tests/verb-vm.test.ts (2) · tests/verb-dispatcher-hand-only.test.ts (2) · tests/syncer-back-parity.e2e.test.ts (2) · tests/slot-spelling-one-address.test.ts (2) · tests/rotate-recipe-links.test.ts (2) · tests/record-port-widen.test.ts (2) · tests/pranala-attribute-spellings.test.ts (2) · tests/parallel-drafts-surface.test.ts (2) · tests/memetic-diagnostics-vm.test.ts (2) · tests/meme-routes.test.ts (2) · tests/meme-container-working-refusal.test.ts (2) · tests/load-yields-host-task.test.ts (2) · tests/load-slice-one-change.test.ts (2) · tests/load-lands-on-working.test.ts (2) · tests/lar-kind.test.ts (2) · tests/island-caps.test.ts (2) · tests/hana-body-render.test.ts (2) · tests/goldens/interaction/engine-runner.ts (2) · tests/export-carrier-file.test.ts (2) · tests/circle-verbs.test.ts (2) · tests/child-name-blocks.test.ts (2) · tests/canon-change-warns-fresher.test.ts (2) · tests/binary-carrier-roundtrip.test.ts (2) · tests/worker-data-verbs.test.ts (1) · tests/wiki-shore-landing-failed.test.ts (1) · tests/wiki-shore-faults.test.ts (1) · tests/wiki-sensorium-cap.test.ts (1) · tests/tw5-file-info-parity.test.ts (1) · tests/sigil-alignment.test.ts (1) · tests/session-form-title.test.ts (1) · tests/root-law-one-spelling.test.ts (1) · tests/rename-rehomes-standing-records.test.ts (1) · tests/record-port-real-fault.test.ts (1) · tests/record-port-listener-timing.test.ts (1) · tests/record-port-handler.test.ts (1) · tests/recipe-watch.test.ts (1) · tests/receipt-hands.test.ts (1) · tests/quoteblock-floor-ingest.test.ts (1) · tests/quoteblock-floor-doors.test.ts (1) · tests/pragma-bang-optional.test.ts (1) · tests/native-skinny-door.test.ts (1) · tests/meme-normalize.test.ts (1) · tests/meme-face.test.ts (1) · tests/meme-exporter.test.ts (1) · tests/kernel-teardown-drain.test.ts (1) · tests/kahu-reach-gate-envelope.test.ts (1) · tests/island-realm-standing.test.ts (1) · tests/has-capture.test.ts (1) · tests/frames-per-carrier.test.ts (1) · tests/daemon-withheld-ingest.test.ts (1) · tests/daemon-vm-holder.test.ts (1) · tests/daemon-verse-one-forward.test.ts (1) · tests/daemon-intent-tiddlers.test.ts (1) · tests/daemon-hand-boundary.test.ts (1) · tests/daemon-behavior-seed-order.test.ts (1) · tests/closer-belongs-to-opener.test.ts (1) · tests/carry-restores-override-base.test.ts (1) · tests/carrier-family-by-declaration.test.ts (1) · tests/carrier-edges.test.ts (1) · tests/bundle-tracks-source.test.ts (1) · tests/bag-is-user-space.test.ts (1) · tests/ack-paced-trigger.test.ts (1) ·
+
+!!! lararium-web (71 errors, 11 files)
+
+tests/e2e/shore-writes.e2e.test.ts (56) · tests/vessel-host-surface.test.ts (3) · tests/interaction-goldens-offers.page.test.ts (2) · tests/genesis-anchor.test.ts (2) · tests/e2e/ceremony.e2e.test.ts (2) · tests/vessel-port.test.ts (1) · tests/projection-sink.test.ts (1) · tests/glass-walk.page.test.ts (1) · tests/glass-boot.page.test.ts (1) · tests/e2e/stage-walk.e2e.test.ts (1) · src/workers/worker-boot.ts (1) ·
+
+!!! lares-cli (74 errors, 29 files)
+
+tests/laws/moves-need-evidence.law.test.ts (21) · tests/reality-tunnel.test.ts (8) · tests/nexus-seal-grow.test.ts (5) · tests/store-failure.test.ts (4) · tests/kapae-repour.test.ts (4) · tests/watch-vanish-pairs.test.ts (3) · tests/port-control.test.ts (3) · tests/nexus-seal-rotate-anchor.test.ts (3) · tests/seed-road.test.ts (2) · tests/help-door-meme.test.ts (2) · tests/vessel-condition.test.ts (1) · tests/store-door.test.ts (1) · tests/session-connector.test.ts (1) · tests/seat-needs-no-handle.test.ts (1) · tests/sealed-act-door.test.ts (1) · tests/seal-rotate-refusal-codes.test.ts (1) · tests/seal-roll.test.ts (1) · tests/seal-cold-rehearse.test.ts (1) · tests/promotion-receipt.test.ts (1) · tests/promotion-approval-crossing.test.ts (1) · tests/nexus-seal-lineage.test.ts (1) · tests/meme-promote.test.ts (1) · tests/mcp-seat.test.ts (1) · tests/laws/custody-stays-behind-the-door.law.test.ts (1) · tests/ingest-settles-every-row.test.ts (1) · tests/host-bridge.test.ts (1) · tests/circle-command.test.ts (1) · tests/carry-verbs.test.ts (1) · tests/act-load-effect-split.test.ts (1) ·
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/follow-up-commit-07d53bdc4-pushed`>>
+
+!! Follow-up (controller's second ask) — commit `07d53bdc4`, pushed
+* ''cli snapshots:'' `nexus-verb-reach` now shows `release --cut`, and `help-keys-name-live-doors` shows meme `offer`. I regenerated both with `vitest -u` from the real help, checked them against the built binary's `nexus --help` and `meme --help`, and re-ran both files alone with no `-u`: 30 tests green.
+* ''kahua-memory-stage.mem:'' the OWED paragraph is gone. A new as-built section, "the staged lift, lane prewalk, 2026-11-11", covers: stage; the lift by {title, digest}; the preview; the confirm (8 hex typed back, or `--digest`); a bare `--yes` lifts nothing; the unstaged and digest-moved refusals; the digest signed into the sources; a replay landing nothing; re-lifts staging first. The proposals, hand, two-crossings, adoption and status-why lines now describe the staged row. The new lines carry no copula. Re-stamped with `lares meme normalize`; bcc ok 807/807; doctype and evergreen green.
+* ''CHANGELOG:'' three Added entries (the staged lift, the browser face label, the test-typecheck ratchet).
+* No new span commits since `5d2ea7c75`.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GiaXWBVfI9f9z_P8wSQF7lA33UkmBdh-5xvVvEarR9I`>>
+
+<<^ code=`&#x0004;` to=`?`>>

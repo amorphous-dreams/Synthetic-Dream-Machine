@@ -1,0 +1,53 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-3/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-07 (file date) — source `.lares-scratch/p27-wire/seats/sol-3/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-3/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-3/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/p27-wire/seats/sol-3/brief.md` (brief, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-3/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/p27-wiring-step-3-build-seat-lane-p27-wire`>>
+
+! P27 wiring, step 3 — build seat (Sol), lane p27-wire
+
+Conductor: Lares-Kiaʻi. Same wall as steps 1-2: workspace-write in /home/joshu/.lares-scratch/p27-wire/wt, network off; you EDIT, the conductor runs tests and commits. Steps 1 and 2 ran before a launcher fault (now cured) stopped each at 600 s mid-work; their edits stand UNCOMMITTED in the tree (`git diff --stat` shows ~34 files). Read both briefs whole: /home/joshu/.lares-scratch/p27-wire/seats/sol-1/brief.md and /home/joshu/.lares-scratch/p27-wire/seats/sol-2/brief.md. Step 2's owed list is YOUR owed list. Measure where step 2 left each item (it was threading an `IslandAudienceContext` through the island pool when it stopped) and finish it; do not restart from scratch, and do not undo step 1/2 work without naming why.
+
+Finish, in order: (1) the audience fork (the CAS audience reads off the asking island's relation; daemon island in-process, pool wiki island its plane, herm shore and HTTP /cas world; an unreadable relation refuses by name), with its red and control; (2) genesis and engine blobs at boot (measure, decide, prove); (3) the fixtures in packages/lararium-mesh/tests/one-composer.test.ts and lar-vessel.test.ts; (4) typecheck node and browser (`tsc -p … --noEmit`).
+
+WRITE YOUR FINAL MESSAGE as soon as the edits stand, before any long check. Hand back outcome first: files changed, each crossing's wiring (file:line) with its audience source, each red/control file and what it asserts, forks decided and why under the house laws, drift found, and the exact test files the conductor runs alone (marking browser-runner ones).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* A read seat writes no file: its final message carries the hand-back. Any other seat writes `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;M33YPNJjScN_p7VFSscIo8rwCE5hkPmfQWqFCQ3alA0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

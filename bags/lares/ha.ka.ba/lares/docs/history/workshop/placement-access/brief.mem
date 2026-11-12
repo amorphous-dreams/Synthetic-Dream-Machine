@@ -1,0 +1,50 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/placement-access/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-09 (file date) — source `.lares-scratch/placement-access/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/placement-access/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/placement-access/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-09
+
+Verbatim scratch record `.lares-scratch/placement-access/brief.md` (brief, file date 2026-11-09); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/placement-access/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Access-Wright: Lares (Tasked Spirit). Read CLAUDE.md once for house law, then implement. This is an IMPLEMENTATION task: start editing code within your first few actions (red tests first). Do not write a plan file. Done means the diff below exists and the listed tests pass.
+
+WHY (measured): Automerge-repo syncs a document to any peer the ACCESS verdict allows, announced or not (automerge-repo ShareConfig: announce vs access). The node vessel's verdict (packages/lararium-node/src/open-node-vessel.ts:1318, `shareConfig: shareConfigOf(async (peerId, documentId) => …selfSlotShareDecision…)`) full-syncs a same-operator WS peer — another device of the face — so a document meant to stay on one device leaks to any device that asks for its id. Operator rulings: the daemon wiki's working/draft/personal docs and its canon `bags/daemon-<F>` stay on ONE device; the vessel CONTROL document and (soon) the SECRET document never leave the vessel.
+
+CONTEXT: the control document (packages/lararium-mesh/src/control-home.ts: `controlHomeUrlOf(daemonDoc)`, `CONTROL_HOME_ID`) names per-device daemon docs under titles `${CONTROL_HOME_ID}/daemon-slot/<kind>/<group>` and `${CONTROL_HOME_ID}/daemon-canon/<faceRelation>` (see packages/lararium-keyhive/src/slot-doc-resolver.ts `deviceSlot`, packages/lararium-node/src/face-daemon-canon.ts). Node: `houseIslands` (open-node-vessel.ts:1301, filled at :1397 by `islandPeersOf(repo)`) names the house's own in-process island peers; `controlDocId` / `readControlDoc` sit at :929 and :2352. Browser: `browserShareConfig(relayPeers, fedGateOf, siblings)` at packages/lararium-browser/src/open-browser-vessel.ts:2361, wrapping mesh `federationShareDecision`.
+
+CHANGE:
+# mesh: add `vesselOnlyDocIds(controlDoc: LarDoc | null | undefined, controlUrl: string | null): Set<string>` (in control-home.ts) returning the document IDs (not urls: strip `automerge:`) of the control document itself and every doc its `daemon-slot/` and `daemon-canon/` titles name; and a small live holder `makeVesselOnlyDocs()` with `has(documentId)`, `refresh(controlDoc, controlUrl)` and `add(documentId)` (the secret document joins through `add` when item A lands — leave a one-line comment saying so, present tense).
+# node: build the holder in open-node-vessel.ts, refresh it whenever the control document changes (subscribe to its handle's `change` event once it stands) and once at stand. In the verdict, FIRST: if `vesselOnly.has(documentId)`, return true only when the peer is one of the house's own in-process islands (no WS socket, `houseIslands.has(peerId)`, not a proven sibling); otherwise false. Everything else keeps today's path untouched.
+# browser: the same rule in `browserShareConfig`: a vessel-only document reaches only the tab's own in-process workers — never a relay peer, never a sibling. Thread the holder in from the browser vessel where the control document stands.
+
+TESTS (red first):
+a. mesh: `vesselOnlyDocIds` returns the control doc id and the named daemon-slot/daemon-canon ids, and nothing else (a user wiki binding named elsewhere stays out).
+b. node: extend the existing share-policy test (find it: `ls packages/lararium-node/tests | grep -i share`) or add one: a same-operator WS peer asking a vessel-only doc by id is DENIED; CONTROL: the same peer still gets an ordinary face-synced doc; CONTROL: a house island peer still gets the vessel-only doc.
+c. browser: a relay peer and a sibling are denied a vessel-only doc; an in-tab worker peer is admitted.
+Then build + stamp (mesh, node, browser), typecheck each, run the touched test files, then the full mesh suite, then node, then browser, one at a time with `--maxWorkers=4` (stop a run silent 15 minutes and report its last file). `node tools/evergreen-boundary.mjs`; `bash tools/placement-residency-witness.sh`. Failures reading `secret-home-unavailable` belong to item A: count them apart.
+
+LIMITS: do not touch the sealed map / SealedDocumentStore wiring (the `docsOf` / `sealNowMapped` code), Keyhive custody, commands/init.ts or the found path. No commit, no push, no stash; never touch ~/.lares or docker.
+FINAL MESSAGE: files changed, where each verdict check sits (file:line), test counts per suite (secret-home-unavailable apart), anything you could not do.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yxmONaAzGWJCI4WMU7yFOLeSmbRiOL3jrixPJ6C97Q8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

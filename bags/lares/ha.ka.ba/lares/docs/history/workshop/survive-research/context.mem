@@ -1,0 +1,47 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/context`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-08 (file date) — source `.lares-scratch/survive-research/context.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/context"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/survive-research/context"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! context.md — plan, 2026-11-08
+
+Verbatim scratch record `.lares-scratch/survive-research/context.md` (plan, file date 2026-11-08); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/local-context`>>
+
+!! Local context (you cannot read the repo; these facts come from the controller's code reads)
+
+The Lares stack: a local-first, web3-only "vessel" (Node daemon) that holds an Automerge CRDT store of tiddler-like records ("memes") composed into wikis by RECIPES over BAGS (a TiddlyWiki-like model). Layers top to bottom in a wiki: temp -> draft -> personal -> working -> canon -> kahua (governance) -> library bags -> oracle. Records stay sealed at rest under a custody key (passphrase and/or paper-pin slots). A disk PROJECTOR renders the latest text of some records to plaintext `.mem` files (memetic wikitext) on disk; projection holds latest text only, never CRDT history. An AI agent (Claude Code, Codex) reads and writes memory through an MCP server into the daemon's own wiki.
+
+Layout today: one root ($LAR_ROOT, default ~/.lares; in the container ~/.lares/state mounts at /state) holding XDG-shaped subtrees: data/ (data/lares/{vessel,identity,nexus}, data/lararium/sensoriums/{memory,mesh,memetic-wikitext} with chroma.sqlite3 indexes), state/ (projection, harvest, harvest-stage), cache/ (scratch sensoriums), config/, run/ (sockets), plus bags/ and wikis/ projection folders for house-minted and private bags. The source checkout (git) holds bags/ and wikis/ for canon-sourced bags; those project back into git. Path names repeat semantics (".lares/state/data/lares/identity", ".lares/state/data/lares/vessel/st").
+
+The operator re-founds the hearth often in early alpha (wipe the state root, found fresh keys and a fresh charter, re-seed canon from git). A code read found what a re-found loses:
+* Plaintext that projects only under the state root (the daemon wiki where AI memory lands, house-minted bags, private planes, per-face kahua folders) dies with it.
+* The temp, personal and (by default) draft layers never project at all.
+* All CRDT history (heads, versions, concurrent drafts, signed governance acts) and every key/identity (custody, seat keys, the Nexus AID).
+* Saves held in memory while custody sat locked.
+The memory index (vector sensorium) rebuilds from source transcripts that survive elsewhere.
+
+The operator's direction: (1) the immediate need: essential user data and the AI memory stage reach disk as plaintext projections, even temp layers (behind a flag, with an automated, principled cleanup); (2) a root layout inside ~/.lares split by what survives and how, so a couple of commands bundle/export a backup and re-import it after a re-found. Identity continuity across re-founds, face bundles, emergency recovery and backup restores stay DEFERRED until after a two-operator Nexus stands; note them, don't design them deep.
+
+House laws that bind any proposal: web3-only and local-first (no cloud service in the stack proper; a web2 bridge sits behind a boundary); no credential through a flag, env var or pipe; plaintext on disk carries cleartext only by deliberate projection (the operator owns that choice per bag); a projection stays a deliberate act, not a side-channel.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BEkSDHcZiJoCUTwsdTRsHZTH0GxHvVE8S2GthUGEWVI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

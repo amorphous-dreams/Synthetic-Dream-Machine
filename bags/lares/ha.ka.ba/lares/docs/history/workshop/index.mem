@@ -1,0 +1,85 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "top index of the workshop: every scratch planning record carried from `.lares-scratch/` into the memegraph (703 records), mirrored by directory; verbatim records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — the scratch planning record
+
+Every planning Markdown file the house kept under `.lares-scratch/` (controller notes, briefs, hand-backs, research waves, resumes, PR bodies, plans and session transcripts) stands here as a verbatim record, mirrored by its scratch directory, so the house's tools read it and the live Lararium can carry it. 703 records in all. Each record's role line names its source path, its file date and its kind; each directory carries an index.
+
+The records inform and never govern: they hold the words as the spirits and the controller wrote them, superseded readings included. Live rulings and owed rows ride the road and design memes.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/branches`>>
+
+!! Branches
+
+|! Directory |! Records |h
+| [[b1-lift/|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/index]] | 50 |
+| [[canon/|lar:///ha.ka.ba/lares/docs/history/workshop/canon/index]] | 1 |
+| [[ci-reds/|lar:///ha.ka.ba/lares/docs/history/workshop/ci-reds/index]] | 1 |
+| [[ci-reds2/|lar:///ha.ka.ba/lares/docs/history/workshop/ci-reds2/index]] | 1 |
+| [[ci-reds3/|lar:///ha.ka.ba/lares/docs/history/workshop/ci-reds3/index]] | 1 |
+| [[ci-reds4/|lar:///ha.ka.ba/lares/docs/history/workshop/ci-reds4/index]] | 1 |
+| [[controller/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/index]] | 189 |
+| [[crud/|lar:///ha.ka.ba/lares/docs/history/workshop/crud/index]] | 14 |
+| [[floor/|lar:///ha.ka.ba/lares/docs/history/workshop/floor/index]] | 1 |
+| [[full-mirror/|lar:///ha.ka.ba/lares/docs/history/workshop/full-mirror/index]] | 2 |
+| [[glass-mirror/|lar:///ha.ka.ba/lares/docs/history/workshop/glass-mirror/index]] | 2 |
+| [[glass2/|lar:///ha.ka.ba/lares/docs/history/workshop/glass2/index]] | 1 |
+| [[leaf-fleet/|lar:///ha.ka.ba/lares/docs/history/workshop/leaf-fleet/index]] | 1 |
+| [[lease-end/|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/index]] | 70 |
+| [[offering/|lar:///ha.ka.ba/lares/docs/history/workshop/offering/index]] | 1 |
+| [[one-root/|lar:///ha.ka.ba/lares/docs/history/workshop/one-root/index]] | 7 |
+| [[p27-wire/|lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/index]] | 21 |
+| [[placement/|lar:///ha.ka.ba/lares/docs/history/workshop/placement/index]] | 4 |
+| [[placement-access/|lar:///ha.ka.ba/lares/docs/history/workshop/placement-access/index]] | 2 |
+| [[placement-answer/|lar:///ha.ka.ba/lares/docs/history/workshop/placement-answer/index]] | 4 |
+| [[placement-browser/|lar:///ha.ka.ba/lares/docs/history/workshop/placement-browser/index]] | 2 |
+| [[placement-carry/|lar:///ha.ka.ba/lares/docs/history/workshop/placement-carry/index]] | 2 |
+| [[placement-carry-fix/|lar:///ha.ka.ba/lares/docs/history/workshop/placement-carry-fix/index]] | 2 |
+| [[placement-device/|lar:///ha.ka.ba/lares/docs/history/workshop/placement-device/index]] | 2 |
+| [[placement-floor/|lar:///ha.ka.ba/lares/docs/history/workshop/placement-floor/index]] | 1 |
+| [[placement-homes/|lar:///ha.ka.ba/lares/docs/history/workshop/placement-homes/index]] | 1 |
+| [[placement-observe/|lar:///ha.ka.ba/lares/docs/history/workshop/placement-observe/index]] | 2 |
+| [[placement-persona/|lar:///ha.ka.ba/lares/docs/history/workshop/placement-persona/index]] | 2 |
+| [[placement-scout/|lar:///ha.ka.ba/lares/docs/history/workshop/placement-scout/index]] | 2 |
+| [[placement-tests/|lar:///ha.ka.ba/lares/docs/history/workshop/placement-tests/index]] | 2 |
+| [[prewalk/|lar:///ha.ka.ba/lares/docs/history/workshop/prewalk/index]] | 1 |
+| [[research/|lar:///ha.ka.ba/lares/docs/history/workshop/research/index]] | 224 |
+| [[reverse-walk/|lar:///ha.ka.ba/lares/docs/history/workshop/reverse-walk/index]] | 2 |
+| [[seat-harness/|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/index]] | 51 |
+| [[survive-lanes/|lar:///ha.ka.ba/lares/docs/history/workshop/survive-lanes/index]] | 2 |
+| [[survive-research/|lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/index]] | 23 |
+| [[ux-polish/|lar:///ha.ka.ba/lares/docs/history/workshop/ux-polish/index]] | 4 |
+| [[veil/|lar:///ha.ka.ba/lares/docs/history/workshop/veil/index]] | 1 |
+| [[workbench/|lar:///ha.ka.ba/lares/docs/history/workshop/workbench/index]] | 1 |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[harness-pr1|lar:///ha.ka.ba/lares/docs/history/workshop/harness-pr1]] | PR body | 2026-11-07 | `harness-pr1.md` |
+| [[landmark-map-pr|lar:///ha.ka.ba/lares/docs/history/workshop/landmark-map-pr]] | PR body | 2026-11-07 | `landmark-map-pr.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;x7enWoOPM3-z1g10dpYWB_t3JvDRlZGWOOm_iAtvCBo`>>
+
+<<^ code=`&#x0004;` to=`?`>>
