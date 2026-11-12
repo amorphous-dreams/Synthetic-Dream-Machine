@@ -384,6 +384,9 @@ export { requestCertificate, issueCertificate, mintVesselFaceKey, checkVesselCha
 export type { VesselFaceKeyCustody, MintedKey, VesselChainVerdict } from "./face-authority.js";
 export type { VesselFaceCertificate, VesselFaceCertificateRequest, VesselFaceKey, FaceKey } from "./face-proof-subjects.js";
 export * from "./fleet-join.js";
+// THE SEAT a face's root holder gives one joining device (the tag law, the admission, the edge): one core for the node's
+// `device-admit` and the browser's `browser-fleet-root`.
+export * from "./device-seat.js";
 // THE JOINED VESSEL'S SESSION, named here by its first caller: the node's joined-face proof (`joined-face-proof`)
 // hands it the vessel's own certificate, grant, key and custody door. The session table stays private to the mesh.
 export { openJoinedFaceSession, prepareJoinedFace, type JoinedFaceTarget } from "./session-face.js";
