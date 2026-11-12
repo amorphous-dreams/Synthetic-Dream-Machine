@@ -48,7 +48,7 @@ Within-Nexus sync = Automerge CRDT (reliable). Cross-Nexus = explicit treaty, wi
 
 ## Package Map (active)
 
-Eight packages carry the stack. Each owns one boundary; cross-cutting work travels through the contracts in `@lararium/mesh`.
+Eleven packages carry the stack. Each owns one boundary; cross-cutting work travels through the contracts in `@lararium/mesh`.
 
 **This map names boundaries, never files.** A file inventory here rots the moment the tree moves, and a stale inventory misleads worse than none — read the package's own `src/` for what lives in it.
 
@@ -107,6 +107,10 @@ realm-public controls remain the source-backed red/green witness for the Herm re
 
 `@lararium/mempalace` resolves the pinned Python library and its holders for sovereign Sensoriums, and keeps the separate upstream `~/.mempalace` installation reachable as a guest comparator by deliberate operator act. `@lararium/sensorium` carries the Python perception machina and capture scripts. The guest never owns the lararium's memory Sensorium, and neither store federates. See `lar:///ha.ka.ba/lararium/api/mempalace-integration` and `lar:///ha.ka.ba/lares/api/pono/sensorium-machina`.
 
+`@lararium/memetic-frame` carries the carrier frame alone: the SOH/STX/ETX/EOT marks, the head and block-check reading, and the frame verdicts (`match`, `stale`, `absent`, `torn`, `bare`, `head-unbound`). It depends on `@noble/hashes` and nothing else, so every host reads a carrier the same way.
+
+`tree-sitter-memetic-wikitext` carries the carrier-only grammar (`grammar.js`, `scanner.c`) and its TypeScript and Python hosts. The sigil vocabulary stays wiki data, never grammar.
+
 `@lares/cli` carries the operator-facing surface: the `lares` binary, arg parsing, process spawn, the socket invoker, the harness-wiring on `wake`, and the verb family in `commands/`. The CLI carries no protocol logic and **no transport of its own beyond one socket** — every verb dispatches to `@lararium/node` handlers through the daemon's UDS verb-channel (`verb-call.runVerb` → `local-connector.invokeLocal` → `<dataDir>/lares.sock`); an absent socket raises `DaemonUnreachable`, never a fallback. WS lives at the daemon's relay, for genuine remote peers; the CLI holds no Automerge dependency at all.
 
 <<~/ahu>>
@@ -139,7 +143,7 @@ TW5 child edit
   -> projection fan-out + ReactionGraph dispatch
 ```
 
-Residency transitions travel through the ACTION verb surface (`ADD`, `COPY`, `MOVE`, `CLEAR`, `DROP`, `LOAD`) governed by the [Residency Model Epic](EPIC-RESIDENCY-MODEL.md). The `lares act` CLI carries the operator surface; no `promote` shim exists. Do not let live wiki edits write `bags/` directly — operators land bag content through ACTION verbs.
+Residency transitions travel through the ACTION verb surface (`ADD`, `COPY`, `MOVE`, `CLEAR`, `DROP`, `LOAD`) governed by the [Residency Model Epic](.shelf/EPIC-RESIDENCY-MODEL.md). The `lares act` CLI carries the operator surface; no `promote` shim exists. Do not let live wiki edits write `bags/` directly — operators land bag content through ACTION verbs.
 
 <<~/ahu>>
 
@@ -159,7 +163,7 @@ Runtime       openNodeVessel  /  openBrowserVessel          finds docs, wires la
 
 ### Admin VM (landed)
 
-Admin state lives in its own Automerge doc at `lar:///ha.ka.ba/bags/admin` (bag URI; aligned to the bag-tag rule in [lar-uri.md](../bags/lares/ha.ka.ba/lares/api/pono/lar-uri.md)). The logical room presents at `lar:///ha.ka.ba/lararium/rooms/admin` (room URI). Two URIs, one doc — the bag-as-doc invariant gives admin its own sync boundary. The admin VM hosts itself through `open-admin-vm` (node) and `open-browser-admin-vm` (browser); bag-mirror configs ride as `$:/tags/LarariumBagMirror` tiddlers inside admin.
+Admin state lives in its own Automerge doc at `lar:///ha.ka.ba/bags/admin` (bag URI; aligned to the bag-tag rule in [lar-uri](../bags/lares/ha.ka.ba/lares/api/pono/lar-uri.mem)). The logical room presents at `lar:///ha.ka.ba/lararium/rooms/admin` (room URI). Two URIs, one doc — the bag-as-doc invariant gives admin its own sync boundary. The admin VM hosts itself through `open-admin-vm` (node) and `open-browser-admin-vm` (browser); bag-mirror configs ride as `$:/tags/LarariumBagMirror` tiddlers inside admin.
 
 Operator-private to one node, federated to the operator's own devices via `cap=admin` device delegations through `@lararium/keyhive`.
 
@@ -177,7 +181,7 @@ Projections register as kinds with `LarProjectionRegistry`. The node-scoped `dis
 
 ## Boundary Law
 
-**Core MUST NOT import** TW5, React, filesystem APIs, DOM APIs, or Automerge runtime objects. `@lararium/mesh` stays neutral.
+**Core MUST NOT import** TW5, React, filesystem APIs or DOM APIs. Automerge enters core only as the store law and the island `Repo` factory (`makeIslandRepo`), re-exported through the mesh barrel; a vessel's own `Repo` stays with the vessel-opening packages. `@lararium/mesh` stays neutral.
 
 **Browser code SHOULD NOT** import Node-shaped disk paths. If `fs`, `path`, `vm`, or Node crypto enter a browser bundle, surface the shore. Use the `@lararium/browser/__stubs__` pattern for browser-incompatible deps.
 
@@ -189,7 +193,7 @@ Projections register as kinds with `LarProjectionRegistry`. The node-scoped `dis
 
 **Capability layer is the only authority gate.** Do not invent ad-hoc auth checks; route through `@lararium/keyhive` or the `admin-auth-gate` in `@lararium/node`.
 
-**Bag URI law.** Bag tags occupy `child[1]` only. Do not promote a `child[N]` sigil to bag identity. See [lar-uri.md](../bags/lares/ha.ka.ba/lares/api/pono/lar-uri.md).
+**Bag URI law.** Bag tags occupy `child[1]` only. Do not promote a `child[N]` sigil to bag identity. See [lar-uri](../bags/lares/ha.ka.ba/lares/api/pono/lar-uri.mem).
 
 <<~/ahu>>
 
@@ -265,7 +269,7 @@ Prefer one shore per loop. Patch the package that owns the behavior. Add or upda
 
 Before changing a public export, check browser and node consumers (and `@lares/cli`, which depends on both `@lararium/mesh` and `@lararium/node`). Before changing parser or carrier grammar, check `bags/lares/ha.ka.ba/lares/api/pono/`, `bags/lares/ha.ka.ba/lares/docs/pono/`, and core parser tests. Before changing TW5 sync, check echo-loop guards and draft guards.
 
-Documentation memes go to `bags/` as `.md` files. `.tid` files live in TW5 packages and carry runtime widget / procedure code only.
+Documentation memes go to `bags/` as `.mem` carriers. `.tid` files live in TW5 packages and carry runtime widget / procedure code only.
 
 When reporting back, use OODA-HA receipts: observe facts, orient boundary, decide shore, act summary, ho'oko commands, aftermath risks.
 
