@@ -59,12 +59,25 @@ export function isPublicBagRow(title: string, row: StoredLarRecord | null | unde
  * wiki's floor half, and the floor's own vessel-only slot documents (a draft floor, a working floor), which the anon
  * lift reads and burns. Every other row (a user bag, a wiki and its recipe, a face plane, the kahua stage, a slot
  * binding, a title nothing classes) rests on the face: a row that names no class never lands on the floor. A bag row that
- * carries `cap-tier = public` (the row `bag declare --tier public` stamps) names a public book and rests on F too; given no
- * row, the title alone decides. A house canon bag (`isHouseCanonBag`) takes no catalog row at all (it rests in the Kahu
+ * carries `cap-tier = public` (the row `bag declare --tier public` stamps) names a public book and rests on F too, and so
+ * does a bag row the vessel itself minted at its floor (`isVeilBagRow`); given no row, the title alone decides. A house canon bag (`isHouseCanonBag`) takes no catalog row at all (it rests in the Kahu
  * realm), and a title naming one classes to F, so no face's half ever holds a pointer to canon.
  */
+/**
+ * A VEIL ROW: a bag row the vessel itself minted at its floor, with no face (`face-reach = vessel-only`, the mark the floor's
+ * slot documents already carry). It names the vessel's OWN content (the-veil-ladder#/the-base-model: "its own local content,
+ * no group"), so it rests on the floor's half, mounts with no face worn, and no face's catalog ever lifts it. Only the exact
+ * value reads; anything else fails toward the face. THE MARK AND THE SEAL TRAVEL TOGETHER: whoever stamps it files the row's
+ * document under the vessel's key in the same act (a `floor-slot` control row, `device-daemon-docs`), since the sealed map
+ * holds a face-half document and leaves a floor-half one to its filing.
+ */
+export function isVeilBagRow(title: string, row: StoredLarRecord | null | undefined): boolean {
+  return isBagId(title) && !!row && plainField(row, "face-reach") === "vessel-only";
+}
+
 export function catalogRowHalf(title: string, row?: StoredLarRecord | null): CatalogHalf {
   if (row !== undefined && row !== null && isPublicBagRow(title, row)) return "floor";
+  if (row !== undefined && row !== null && isVeilBagRow(title, row)) return "floor";
   if (FLOOR_ROWS.has(title) || isHouseCanonBag(title)) return "floor";
   if (title.startsWith(CATALOG_CORPUS_PREFIX) || title.startsWith(`${REALM_ROOT}/`)) return "floor";
   if (title.startsWith(WIKIS_ROOT) && /\/drafts\/[^/]+$/.test(title)) return "floor";
