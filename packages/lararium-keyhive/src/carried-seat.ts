@@ -169,8 +169,24 @@ export async function verifyCarriedSeatGrant(input: { readonly grant: FleetSeatG
   try { writeIntentEntry(intents, grant.outcome); } catch { return { ok: false, reason: "the grant's outcome does not read as an intent entry" }; }
   const persona = { tiddlers: { [grant.title]: storedLarRecord(grant.title, { text: JSON.stringify(grant.record) }, "carried-seat") } } as unknown as LarDoc;
   const answer = seatGrantAnswering(intents, persona, request);
-  if (answer.state !== "granted") return { ok: false, reason: answer.state === "refused" ? answer.reason : "the grant answers another request than this leaf's own" };
+  if (answer.state === "refused") return { ok: false, reason: answer.reason };
+  if (answer.state !== "granted") return { ok: false, reason: unansweredReason(grant.outcome, request) };
   return verifyFaceGrantRecord(grant.record, ctx);
+}
+
+/**
+ * WHY a carried pair does not answer this request, named by the joint that failed: the outcome's signer (a hand other than
+ * the hearth the request pins), its cause (another intent than this leaf's own), or the record (bytes other than the ones
+ * the hearth's outcome names: changed in carriage, or re-signed). Each names a different act for the person holding the file.
+ */
+function unansweredReason(outcome: SignedIntentEntry, request: FleetSeatRequest): string {
+  const body = request.entry.body as unknown as { issuer: string; verb: string; args: unknown; nonce: string; audience?: { atom?: string } };
+  const hearth = bare(String(body.audience?.atom ?? ""));
+  const read = readIntentEntry(outcome as never, { group: request.personaGroup, authorize: (signer) => bare(signer) === hearth });
+  if (!read.ok) return "the grant's outcome carries a signature the pinned hearth never signed";
+  const cause = (read.entry.body as unknown as { cause?: unknown }).cause;
+  if (cause !== intentId({ issuer: body.issuer, verb: body.verb, args: body.args, nonce: body.nonce })) return "the grant answers another request than this leaf's own";
+  return "the grant's record differs from the one the hearth's outcome names (changed in carriage, or signed again)";
 }
 
 /** The carried grants a vessel's own store holds for one device of one face: the seat's second source, read before the plane. */

@@ -57,10 +57,16 @@ describe("a carried grant earns a seat only by its full verification", () => {
     const refused = async (g: FleetSeatGrant, r = h.request) => { const v = await verifyCarriedSeatGrant({ grant: g, request: r, ctx: h.ctx }); return v.ok ? "verified" : v.reason; };
     expect(await refused(await h.grant(genuine, null))).toMatch(/no outcome/);
     expect(await refused(await h.grant(genuine, h.reminted)), "an outcome for another request").toMatch(/another request/);
-    expect(await refused(await h.grant(genuine, h.request, h.stranger)), "an outcome a stranger signed").toMatch(/another request/);
+    expect(await refused(await h.grant(genuine, h.request, h.stranger)), "an outcome a stranger signed").toMatch(/pinned hearth never signed/);
     expect(await refused(await h.grant(genuine, h.request), h.reminted), "a re-minted card meets the old grant").toMatch(/another request/);
     // A forger signs the record under a key the pinned root never licensed, and even names it in a matching outcome.
     expect(await refused(await h.grant(await h.record(FORGER_SEED), h.request)), "a record the founder never signed").toMatch(/signature/);
+    // A RECORD CHANGED IN CARRIAGE (one byte of its signature) under the hearth's true outcome for this very request: the
+    // refusal names the record, never the request. The smoke's forged step once read "another request" here, and that word
+    // sent a whole seat hunting a fault on the root holder that never stood.
+    const changed = { ...(await h.grant(genuine, h.request)), record: { ...genuine, sig: genuine.sig.replace(/^../, (c) => (c === "00" ? "11" : "00")) } };
+    expect(await refused(changed), "a changed record under a true outcome").toMatch(/record differs/);
+    expect(await refused(changed), "a changed record never reads as another request").not.toMatch(/another request/);
     // The founder's standing unread: pending, never a pass.
     const pending = await verifyCarriedSeatGrant({ grant: await h.grant(genuine, h.request), request: h.request, ctx: { ...h.ctx, dyad: () => "unknown" as const } });
     expect(pending.ok).toBe(false);
