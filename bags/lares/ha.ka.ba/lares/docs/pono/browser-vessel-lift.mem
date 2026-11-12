@@ -187,6 +187,7 @@ The order follows the dependencies: 0, 1, 2, 1b, 3 with 5a, 3b, 5b, 6, 7, then t
 # ''Passkey and PRF (the house's default, overrulable).'' The ward refuses passkeys (seat-harness); custody admits a PRF wrap that never stands as the sole copy (secure-context). The ceremony document hosts a passphrase answer kind (ward and custody) and a WebAuthn PRF answer kind (custody only); a passkey slot gets built; the ceremony document carries its own reach witness.
 # ''Sealed-store step three joins the lift (the house's default, overrulable).'' It becomes slice 3b on sub-lane `b1-seal`, before the rite; steps four and five stay on the sealed-store road.
 # ''The txId ledger rests durably (the house's default, overrulable).'' Slice 6's lands-once red then holds across a respawn.
+# ''The root holder's door asks the ward once (the house's default, overrulable).'' A browser that founded a face answers a fleet join through the vessel worker: the page hands over the joinee's request as a file, the worker asks the face's ward through the ceremony document once for that answer, and the one route opens the seat (the root signs the joinee's edge) and the signature over the answer. The page receives the answer as a file and holds no key, route or secret; a request that names no nonce never opens the ceremony. <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026`>> #/device-seats
 # ''Pending operator ruling (DEFAULT PENDING; it changes admission bytes).'' Each device's ward public key rides its signed admission, and a ward-act approval carries that key's signature; the browser gains its own answer door.
 
 <<~/ahu>>
@@ -202,6 +203,6 @@ The order follows the dependencies: 0, 1, 2, 1b, 3 with 5a, 3b, 5b, 6, 7, then t
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;J5fVCRwjJK5owgj_bi9_LMX1lXiZ_OzL_zXhpvzfvMA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;EXBYxj2SNPtB6rhXtuT1Ll9MouniwJqo7E9nUdBS-gk`>>
 
 <<^ code=`&#x0004;` to=`?`>>
