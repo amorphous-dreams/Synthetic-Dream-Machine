@@ -85,7 +85,8 @@ describe("★ the veil floor stands its own wiki content, and a seat's landing l
     expect(row?.tiddler["face-reach"]).toBe("vessel-only");
     expect(row?.tiddler["minted-by"]).toBe(VERIFYING_KEY);
     // Named to the vessel's sealed map as the vessel's own, once, before any row could land in it.
-    expect(h.order).toEqual([`announce:garden:working:${out.workingUrl!.replace(/^automerge:/, "")}`]);
+    expect(h.order.filter((o) => o.startsWith("announce:garden:working:"))).toEqual([`announce:garden:working:${out.workingUrl!.replace(/^automerge:/, "")}`]);
+    expect(h.order.length, "the floor's three documents each announce once (working, draft, personal: F1)").toBe(3);
     expect((await h.floor.bindings(h.fingerprint, h.trace, "garden")).workingUrl, "one floor document per wiki").toBe(out.workingUrl);
     expect((await h.floor.slotDoc("garden", "working", { mint: false }))?.reach).toBe("vessel-only");
     expect(ledgerWorkbenches(h.ledger.doc()), "a floor founds no realm").toEqual([]);
@@ -266,4 +267,51 @@ describe("★ the veil floor stands its own wiki content, and a seat's landing l
     expect(h.lifted).toEqual([`tabs:${canon.documentId}`]);
     await h.done();
   }, 30_000);
+  test("RED F1 — a keyed floor names a wiki's DRAFT and PERSONAL documents in its own registry, each announced before its row; the catalog and the daemon's binding rows name neither", async () => {
+    const h = await house({ control: floorAnswerStore(new ControlHomeUnavailable("this place names no control document", CONTROL_HOME_UNNAMED)) });
+    const out = await h.floor.bindings(h.fingerprint, h.trace, "garden");
+    for (const kind of ["draft", "personal"] as const) {
+      const url = kind === "draft" ? out.draftUrl : out.personalUrl;
+      const row = await h.daemon.get(floorSlotTitle("garden", kind));
+      expect(tiddlerText(row), `the floor registry names the ${kind} document`).toBe(url);
+      expect(row?.tiddler["face-reach"]).toBe("vessel-only");
+      expect(row?.tiddler["minted-by"]).toBe(VERIFYING_KEY);
+      expect(h.order, `the ${kind} document announces as the floor's own`).toContain(`announce:garden:${kind}:${url.replace(/^automerge:/, "")}`);
+    }
+    expect(Object.keys(h.catalogHandle.doc()?.tiddlers ?? {}).filter((k) => k.includes("/drafts/")), "the catalog names no floor draft").toEqual([]);
+    expect((await h.daemon.listVisible()).filter((t) => t.startsWith(`${PERSONAL_BINDINGS_PREFIX}/`)), "no vessel-only binding row stands").toEqual([]);
+    const again = await h.floor.bindings(h.fingerprint, h.trace, "garden");
+    expect([again.draftUrl, again.personalUrl], "one floor document per kind").toEqual([out.draftUrl, out.personalUrl]);
+    expect((await h.floor.slotDoc("garden", "draft", { mint: false }))?.url).toBe(out.draftUrl);
+    expect((await h.floor.slotDoc("garden", "personal", { mint: false }))?.url).toBe(out.personalUrl);
+    await h.done();
+  });
+
+  test("RED F2 — the seat's landing lifts the floor's draft and personal rows under the face, once; rows another face's pinned label minted stand apart", async () => {
+    const h = await house();
+    const at = await h.floor.bindings(h.fingerprint, h.trace, "garden");
+    await h.write(at.draftUrl, "Draft Song", "Am Dm");
+    await h.write(at.personalUrl, "$:/StoryList", "Draft Song");
+    const faced = h.faced();
+    const lifted = await faced.liftFloor();
+    expect(lifted.moved).toEqual(expect.arrayContaining([floorSlotTitle("garden", "draft"), floorSlotTitle("garden", "personal")]));
+    for (const kind of ["draft", "personal"] as const) expect(await h.daemon.get(floorSlotTitle("garden", kind)), `the floor's ${kind} row leaves`).toBeNull();
+    const under = await faced.bindings(h.fingerprint, h.trace, "garden");
+    expect([under.draftUrl, under.personalUrl]).not.toEqual([at.draftUrl, at.personalUrl]);
+    expect(await h.read(under.draftUrl, "Draft Song")).toBe("Am Dm");
+    expect(await h.read(under.personalUrl, "$:/StoryList")).toBe("Draft Song");
+    expect((await faced.slotDoc("garden", "draft", { mint: false }))?.reach).toBe("face");
+    expect((await faced.liftFloor()).moved, "a replay moves nothing").toEqual([]);
+    // A SECOND FACE, pinned on this browser and not yet seated, stands floor rows under its own label. The first face's
+    // lift never carries them: they wait for their own face's seat.
+    const OTHER = "cd".repeat(32);
+    const other = makeSlotDocResolver({ repo: h.repo, daemonStore: h.daemon, control: h.control, floor: floorRegistryOf(h.daemon, () => null), keyhive: h.kh,
+      catalog: makeCatalogAccessor(h.repo, h.catalogHandle.url), vesselDid: () => didFromVerifyingKey(OTHER), mintedByHex: () => OTHER, personaGroupId: "ef".repeat(16), faceSeated: async () => false });
+    const theirs = await other.bindings(h.fingerprint, h.trace, "garden");
+    await h.write(theirs.draftUrl, "Their Draft", "E7");
+    expect((await faced.liftFloor()).moved, "the first face lifts nothing of the second's").toEqual([]);
+    expect(tiddlerText(await h.daemon.get(floorSlotTitle("garden", "draft"))), "the second face's floor row stands").toBe(theirs.draftUrl);
+    expect(await h.read(under.draftUrl, "Their Draft"), "and its words never reach the first face's draft").toBeNull();
+    await h.done();
+  });
 });

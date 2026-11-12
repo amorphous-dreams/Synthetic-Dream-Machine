@@ -46,6 +46,9 @@ export interface SlotDocRepo extends DocMinter {
   create<T = LarDoc>(initialValue: T): { readonly url: string; readonly documentId: string; whenReady?(): Promise<unknown> };
 }
 
+/** The kinds of a wiki's slot the veil floor stands a document of its own for (`floor/slot/<slug>/<kind>`). */
+export type FloorSlotKind = "working" | "draft" | "personal";
+
 export interface SlotDocResolverArgs {
   /** How long the floor lift waits on a silent floor document before it names it and skips it (default: the house document-ready bound). */
   readonly liftReadBoundMs?: number;
@@ -64,7 +67,7 @@ export interface SlotDocResolverArgs {
    * Name a VEIL FLOOR wiki slot's document to the vessel's sealed map before its first byte moves: the vessel owns it, so it
    * files held and seals under the floor's rest key (`announceSlotDoc` with `floor`).
    */
-  readonly announceFloor?: (slug: string, kind: "working", documentId: string) => void;
+  readonly announceFloor?: (slug: string, kind: FloorSlotKind, documentId: string) => void;
   /** The Lift carried a veil-minted wiki's canon in place: tell the vessel, which re-files its seal under the face (`announceLiftedDoc`). */
   readonly announceLifted?: (slug: string, documentId: string) => void;
   /** The daemon-bag composite — binding records live here. */
@@ -167,6 +170,9 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
 
   /** The draft FLOOR doc — keyed by the vessel DID in the catalog registry; minted on absent. */
   const floor = async (slug: string, mint: boolean): Promise<string | null> => {
+    // WHERE THE FLOOR'S REST KEY STANDS, the draft rests in a floor document the floor's registry names
+    // (`floor/slot/<slug>/draft`), sealed under that key as the working layer's does. The catalog names it nowhere.
+    if (floorStands()) return (await floorSlot(slug, "draft", mint))?.url ?? null;
     const catalog = args.catalog;
     if (!catalog) throw new Error(`slot-doc: the draft floor for "${slug}" needs the catalog registry, and this vessel holds no catalog grant`);
     const key = wikiDraftDocKey(slug, requireLarDid(await args.vesselDid(), "slot-doc floor"));
@@ -214,6 +220,16 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
       stood.add(url);
     }
     return { url, reach: "face" };
+  };
+
+  /**
+   * THE PERSONAL MARGIN. A seated face holds it by binding (PersonaGroup × fingerprint). With no seat, where the floor's
+   * rest key stands, it rests in a floor document the floor's registry names (`floor/slot/<slug>/personal`); the Lift
+   * carries it under the face's binding when a seat lands. A floor with no key keeps the faceless binding row.
+   */
+  const personalDoc = async (slug: string, fingerprint: string, recipeTrace: RecipeTrace): Promise<SlotDoc> => {
+    if (!(await seated()) && floorStands()) return (await floorSlot(slug, "personal", true))!;
+    return binding("personal", fingerprint, recipeTrace);
   };
 
   const draftDoc = async (slug: string, fingerprint: string, recipeTrace: RecipeTrace): Promise<SlotDoc> =>
@@ -294,9 +310,13 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
    * stands none and answers null. The Lift moves its rows into the face's realm workbench when a seat lands (`anon-lift`).
    */
   const floorMints = new Map<string, Promise<SlotDoc | null>>();
-  const floorWorking = async (slug: string, mint: boolean): Promise<SlotDoc | null> => {
+  /** Whether the floor's rest key stands on this vessel now (its registry refuses nothing). */
+  const floorStands = (): boolean => floorRegistry.refusal() === null;
+  const floorWorking = (slug: string, mint: boolean): Promise<SlotDoc | null> => floorSlot(slug, "working", mint);
+  /** One floor document of a wiki, by kind: the working layer, the draft, or the personal margin. One law names all three. */
+  const floorSlot = async (slug: string, kind: FloorSlotKind, mint: boolean): Promise<SlotDoc | null> => {
     const registry = floorRegistry;
-    const title = floorSlotTitle(slug, "working");
+    const title = floorSlotTitle(slug, kind);
     let named: string | null;
     // THE GATE RESTS ON THE FLOOR'S OWN KEY, never on a host's name and never on a control document: the registry answers
     // only where the floor's rest key stands. A locked hearth refuses `vessel-locked` and a place that derives no floor key
@@ -315,14 +335,14 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
       const minter = args.repo;
       if (typeof minter.import !== "function") {
         const doc = minter.create<LarDoc>(emptyLarDoc());
-        args.announceFloor?.(slug, "working", doc.documentId);
+        args.announceFloor?.(slug, kind, doc.documentId);
         await name(doc.url);
         await doc.whenReady?.();
         await minter.flush([doc.documentId]);
         return { url: doc.url, reach: "vessel-only" };
       }
       const documentId = mintVesselDocumentId();
-      args.announceFloor?.(slug, "working", documentId);
+      args.announceFloor?.(slug, kind, documentId);
       await name(`automerge:${documentId}`);
       const handle = minter.import(A.save(A.from(emptyLarDoc() as unknown as Record<string, unknown>)), { docId: documentId as never });
       await handle.whenReady?.();
@@ -350,7 +370,8 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
       const url = await floor(slug, false);
       return url ? { url, reach: "vessel-only" } : null;
     }
-    if (mint) return binding(kind, fingerprint, recipeTrace);
+    if (mint) return kind === "personal" ? personalDoc(slug, fingerprint, recipeTrace) : binding(kind, fingerprint, recipeTrace);
+    if (kind === "personal" && !(await seated()) && floorStands()) return floorSlot(slug, "personal", false);
     const rec = await args.daemonStore.get(bindingKey(kind, fingerprint));
     const url = tiddlerText(rec);
     return url ? { url, reach: rec?.tiddler["face-reach"] === "face" ? "face" : "vessel-only" } : null;
@@ -366,7 +387,7 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
         const working = (await deviceSlot("working", true))!;
         return { personalUrl: personal.url, draftUrl: draft.url, workingUrl: working.url };
       }
-      const personal = await binding("personal", fingerprint, recipeTrace);
+      const personal = await personalDoc(slug, fingerprint, recipeTrace);
       const draft    = await draftDoc(slug, fingerprint, recipeTrace);
       // THE FACELESS FLOOR: a realm seats a face, so no workbench stands here. Where the floor's rest key stands, the
       // veil floor stands the wiki's working layer in its own floor document (`floorWorking`); where it does not (a locked
@@ -388,6 +409,13 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
         ...(args.floorMinter ? { floor: args.floorMinter() } : {}),
         // THE WORKING FLOOR lifts into the face's realm workbench, stood on ask (`workingDoc` with mint).
         ...(args.floor && args.workbenchRealm ? { working: { floor: args.floor, workbench: async (slug: string) => (await workingDoc(slug, true))!.url } } : {}),
+        // THE FLOOR'S DRAFT AND PERSONAL MARGIN lift into the face's own binding of that kind, stood on ask.
+        ...(args.floor ? { margins: { floor: args.floor, faceSlot: async (slug: string, kind: "draft" | "personal") => {
+          const url = await args.catalog?.urlOf(wikiBagUri(slug)).catch(() => null);
+          if (!url) return null;
+          const recipeTrace = { wikiDocId: url, libraryBagDocIds: [] as readonly string[] };
+          return (await binding(kind, await computeRecipeFingerprint(recipeTrace), recipeTrace)).url;
+        } } } : {}),
         // THE DAEMON WIKI'S FLOOR MEMORY lifts into the face's own device slot of each kind (face-private).
         ...(args.floor ? { daemon: { floor: args.floor, faceSlot: async (kind: "working" | "personal" | "draft") => (await deviceSlot(kind, true))!.url } } : {}),
         // THE CANON OF A WIKI THE VEIL MINTED stays where it stands; the vessel re-files its seal on this word.

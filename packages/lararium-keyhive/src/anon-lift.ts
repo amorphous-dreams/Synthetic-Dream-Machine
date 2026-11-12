@@ -12,7 +12,8 @@
  * ── THE SET IS DERIVED, NEVER LISTED ────────────────────────────────────────────────────────────
  * Every record this vessel minted at the floor and has not yet moved: daemon-bag binding records reading `vessel-only` (personal
  * and draft kinds alike) the catalog's floor draft records keyed by this vessel's DID, and the floor registry's
- * WORKING slots (`floor/slot/<slug>/working` in the place's daemon document, the veil floor's own wiki content). Another vessel's records never match (`minted-by`),
+ * slots (`floor/slot/<slug>/working`, `…/draft` and `…/personal` in the place's daemon document, the veil floor's own wiki content;
+ * the draft and personal rows carry into the face's own binding of that kind, the working rows into its realm workbench). Another vessel's records never match (`minted-by`),
  * and a record that already reads `face` never matches.
  *
  * ── THE WORKING FLOOR GOES TO THE FACE'S REALM WORKBENCH ────────────────────────────────────────
@@ -72,6 +73,14 @@ export interface LiftArgs {
   readonly working?: {
     readonly floor: FloorRegistry;
     readonly workbench: (slug: string) => Promise<string>;
+  };
+  /**
+   * THE FLOOR'S DRAFT AND PERSONAL MARGIN (`floor/slot/<slug>/draft`, `…/personal`): the floor registry that names them, and
+   * the face's own binding document of that kind for the wiki (stood on ask; null where the wiki registers no canon).
+   */
+  readonly margins?: {
+    readonly floor: FloorRegistry;
+    readonly faceSlot: (slug: string, kind: "draft" | "personal") => Promise<string | null>;
   };
   /** THE DAEMON WIKI'S FLOOR SLOTS: the floor registry that names them, and the face's own device slot of a kind (stood on ask). */
   readonly daemon?: {
@@ -330,6 +339,22 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
       if (!named || named.kind !== "working" || !fields || !floorUrl || fields["face-reach"] !== "vessel-only" || !mintedHere(args, fields["minted-by"])) continue;
       try { await carryFloor(working.floor, title, floorUrl, await working.workbench(named.slug), named.slug); }
       catch (error) { if (error instanceof FloorDocumentUnavailable) { held(error, title); continue; } throw error; }
+    }
+  }
+  // THE FLOOR'S DRAFT AND PERSONAL MARGIN: each row this vessel minted carries into the face's own binding document of that
+  // kind, additively, as the working rows carry into the workbench. A row another face's pinned label minted stays.
+  const margins = args.margins;
+  if (margins) {
+    for (const { title, record } of await floorEntries(margins.floor)) {
+      const named = title.startsWith(FLOOR_SLOT_ROOT) ? floorSlotOf(title) : null;
+      const fields = fieldsOf(record);
+      const floorUrl = tiddlerText(record);
+      if (!named || (named.kind !== "draft" && named.kind !== "personal") || !fields || !floorUrl || fields["face-reach"] !== "vessel-only" || !mintedHere(args, fields["minted-by"])) continue;
+      try {
+        const into = await margins.faceSlot(named.slug, named.kind);
+        if (into === null || into === floorUrl) continue;
+        await carryFloor(margins.floor, title, floorUrl, into, `${named.slug}/${named.kind}`);
+      } catch (error) { if (error instanceof FloorDocumentUnavailable) { held(error, title); continue; } throw error; }
     }
   }
   // THE DAEMON WIKI'S FLOOR MEMORY (operator ruling 2026-10-22, "all its keyed material"; the AI-memory ruling keeps it
