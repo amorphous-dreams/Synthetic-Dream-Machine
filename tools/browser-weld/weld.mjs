@@ -407,9 +407,14 @@ async function readMirror(page) {
     const svg = root?.querySelector(".tc-tiddler-controls button svg, .tc-page-controls button svg");
     const frame = root?.querySelector(".tc-story-river .tc-tiddler-frame");
     const reading = host?.larMirrorReading ?? null;
+    const ground = root?.querySelector(".lar-mirror");
+    const box = (node) => { if (!node) return null; const r = node.getBoundingClientRect(); return { x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height) }; };
     return {
       sheetHasSidebarRule: /\.tc-sidebar-scrollable\s*\{/.test(sheet),
       sidebarPosition: sidebar ? getComputedStyle(sidebar).position : null,
+      sidebarBox: box(sidebar), hostBox: box(host), breakpoint: reading?.breakpoint ?? null,
+      groundBackground: ground ? getComputedStyle(ground).backgroundColor : null,
+      pageBackground: reading?.colours?.["page-background"] ?? null,
       svgWidth: svg ? Math.round(svg.getBoundingClientRect().width) : null,
       frameBackground: frame ? getComputedStyle(frame).backgroundColor : null,
       paletteBackground: reading?.colours?.["tiddler-background"] ?? null,

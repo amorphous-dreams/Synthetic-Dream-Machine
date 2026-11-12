@@ -49,7 +49,8 @@ function red(name, message, declared, row) {
  * THE STYLED READINGS. `probe` comes off the mirror's shadow root: `sheetHasSidebarRule` (the `<style>` text carries a
  * `.tc-sidebar-scrollable` rule), `sidebarPosition` (its computed position), `svgWidth` (a toolbar icon's rendered width, px),
  * `frameBackground` (a tiddler frame's computed background colour, rgb) and `paletteBackground` (the palette's own
- * `tiddler-background`, as the engine reads it). `svgBound` caps the icon width.
+ * `tiddler-background`, as the engine reads it), `sidebarBox`/`hostBox`/`breakpoint` (`sidebarInPane`), and `groundBackground`
+ * (the mirror container's computed background) beside `pageBackground` (the palette's `page-background`). `svgBound` caps the icon width.
  */
 export function styledReadings(probe, unbaked, { svgBound = 48 } = {}) {
   const theme = unbaked.find((s) => STOCK_THEME.test(s));
@@ -58,9 +59,10 @@ export function styledReadings(probe, unbaked, { svgBound = 48 } = {}) {
   out.push(probe.sheetHasSidebarRule
     ? { name: "M2 styled-sheet", status: "ok", message: "the mirror's sheet carries a .tc-sidebar-scrollable rule (the stock vanilla theme stands)" }
     : red("M2 styled-sheet", "the mirror's sheet carries no .tc-sidebar-scrollable rule: no stock theme reached the mirror's engine", theme, theme));
-  out.push(probe.sidebarPosition === "fixed"
-    ? { name: "M2 styled-sidebar", status: "ok", message: "the sidebar's computed position reads fixed" }
-    : red("M2 styled-sidebar", `the sidebar's computed position reads ${probe.sidebarPosition ?? "(no sidebar)"}, not fixed`, theme, theme));
+  const pane = sidebarInPane(probe);
+  out.push(pane.ok
+    ? { name: "M2 styled-sidebar", status: "ok", message: pane.message }
+    : red("M2 styled-sidebar", pane.message, theme, theme));
   out.push(typeof probe.svgWidth === "number" && probe.svgWidth > 0 && probe.svgWidth <= svgBound
     ? { name: "M2 styled-icons", status: "ok", message: `a toolbar icon renders ${probe.svgWidth}px wide (bound ${svgBound}px)` }
     : red("M2 styled-icons", `a toolbar icon renders ${probe.svgWidth ?? "(none)"}px wide, past the ${svgBound}px bound`, theme, theme));
@@ -69,7 +71,28 @@ export function styledReadings(probe, unbaked, { svgBound = 48 } = {}) {
     ? { name: "M2 styled-palette", status: "ok", message: `the tiddler frame's background reads the palette's tiddler-background ${probe.paletteBackground}` }
     : red("M2 styled-palette", `the tiddler frame's background reads ${probe.frameBackground ?? "(no frame)"}; the palette's tiddler-background reads ${probe.paletteBackground ?? "(no palette colour)"}`,
       theme ?? shadows, theme ?? shadows));
+  const ground = rgbOf(probe.pageBackground);
+  out.push(ground !== null && probe.groundBackground === ground
+    ? { name: "M2 styled-ground", status: "ok", message: `the mirror's ground reads the palette's page-background ${probe.pageBackground}` }
+    : red("M2 styled-ground", `the mirror's ground reads ${probe.groundBackground ?? "(no ground)"}; the palette's page-background reads ${probe.pageBackground ?? "(no palette colour)"}`,
+      theme ?? shadows, theme ?? shadows));
   return out;
+}
+
+/**
+ * THE SIDEBAR LAYS OUT IN THE PANE. The mirror's host stands as the engine's viewport: TW5's breakpoint reads the pane's width,
+ * so the sidebar reads `fixed` beside the story where the pane stands at least the breakpoint wide and flows beneath it where
+ * narrower, and either way its box starts inside the host's box (never at the window's corner). Boxes are `{ x, y, w, h }`, px.
+ */
+export function sidebarInPane({ sidebarPosition, sidebarBox, hostBox, breakpoint }) {
+  if (!sidebarPosition || !sidebarBox || !hostBox) return { ok: false, message: `no sidebar box beside a host box (sidebar ${sidebarPosition ?? "absent"})` };
+  const px = Number.parseFloat(String(breakpoint ?? ""));
+  if (!Number.isFinite(px)) return { ok: false, message: `the engine names no sidebar breakpoint (${breakpoint ?? "absent"})` };
+  const inside = sidebarBox.x >= hostBox.x - 1 && sidebarBox.x + sidebarBox.w <= hostBox.x + hostBox.w + 1 && sidebarBox.y >= hostBox.y - 1;
+  if (!inside) return { ok: false, message: `the sidebar paints at (${sidebarBox.x}, ${sidebarBox.y}) ${sidebarBox.w}px wide, outside the pane at (${hostBox.x}, ${hostBox.y}) ${hostBox.w}px wide` };
+  const wide = hostBox.w >= px;
+  if (wide !== (sidebarPosition === "fixed")) return { ok: false, message: `the pane stands ${hostBox.w}px against the ${px}px breakpoint, yet the sidebar reads ${sidebarPosition}: the breakpoint read another width` };
+  return { ok: true, message: `the sidebar lays out inside the pane (${sidebarPosition}; the pane stands ${hostBox.w}px against the ${px}px breakpoint)` };
 }
 
 /** `#rrggbb` → `rgb(r, g, b)`, the computed-style spelling; anything else reads null. */

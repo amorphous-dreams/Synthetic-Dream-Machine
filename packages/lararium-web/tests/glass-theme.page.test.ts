@@ -58,3 +58,46 @@ test("the mirror opens its story after the port's first snapshot, on the wiki's 
   try { expect(bare.first).toBe("GettingStarted"); }
   finally { bare.result.unmount(); bare.r.host.remove(); }
 });
+
+/** A pane of `width` px: the host the mirror stands in, sized the way a page lays it. */
+async function standIn(width: number) {
+  const r = await rig({ preloads: preloads(true), records: [paletteRecord(), welcomeRecord] });
+  r.host.style.width = `${width}px`;
+  const result = await standMirror(r.options, r.seams) as Awaited<ReturnType<typeof standMirror>> & { settled: Promise<unknown>; unmount(): void };
+  await result.settled;
+  const root = r.host.shadowRoot!;
+  const sidebar = root.querySelector<HTMLElement>(".tc-sidebar-scrollable")!;
+  return { r, result, root, sidebar, side: sidebar.getBoundingClientRect(), pane: r.host.getBoundingClientRect() };
+}
+
+test("the sidebar lays out inside the pane: fixed beside the story in a pane past the breakpoint, in flow beneath it in a narrower one; CONTROL: never at the window's corner", async () => {
+  const wide = await standIn(1200);
+  try {
+    expect(getComputedStyle(wide.sidebar).position).toBe("fixed");
+    expect(wide.side.left).toBeGreaterThanOrEqual(wide.pane.left - 1);
+    expect(wide.side.right).toBeLessThanOrEqual(wide.pane.right + 1);
+    expect(wide.side.top).toBeGreaterThanOrEqual(wide.pane.top - 1);
+    expect(wide.side.bottom).toBeLessThanOrEqual(wide.pane.bottom + 1);
+    // The story river scrolls inside the pane; the fixed sidebar stands where it stood.
+    const scroller = wide.root.querySelector<HTMLElement>(".lar-mirror")!;
+    scroller.scrollTop = 200;
+    expect(wide.sidebar.getBoundingClientRect().top).toBeCloseTo(wide.side.top, 0);
+  } finally { wide.result.unmount(); wide.r.host.remove(); }
+  forgetEvidence();
+  const narrow = await standIn(600);
+  try {
+    // The breakpoint reads the pane's 600px, not the window: the sidebar flows beneath the story.
+    expect(getComputedStyle(narrow.sidebar).position).not.toBe("fixed");
+    expect(narrow.side.left).toBeGreaterThanOrEqual(narrow.pane.left - 1);
+    expect(narrow.side.right).toBeLessThanOrEqual(narrow.pane.right + 1);
+    expect(narrow.side.top).toBeGreaterThanOrEqual(narrow.pane.top - 1);
+  } finally { narrow.result.unmount(); narrow.r.host.remove(); }
+});
+
+test("the mirror's ground wears the palette's page-background, where a page's body.tc-body would; CONTROL: the house sheet's own body rule reaches no element outside the shadow root", async () => {
+  const stood = await standIn(800);
+  try {
+    expect(getComputedStyle(stood.root.querySelector(".lar-mirror")!).backgroundColor).toBe("rgb(29, 32, 33)");
+    expect(getComputedStyle(document.body).backgroundColor).not.toBe("rgb(29, 32, 33)");
+  } finally { stood.result.unmount(); stood.r.host.remove(); }
+});

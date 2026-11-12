@@ -1,5 +1,6 @@
 import type { TW5ChangeRecord, TW5FakeElement, TW5Instance } from "./types/tiddlywiki.js";
 import { TW5_PAGE_STYLESHEET, TW5_ROOT_TEMPLATE } from "./tw5-camera.js";
+import { shadowSheet } from "./glass-sheet.js";
 
 /** The parts of a TW5 widget the camera reads to find the editor a person types in. */
 type EditorWidget = { children?: EditorWidget[]; editTitle?: string; editField?: string; editIndex?: string;
@@ -45,7 +46,8 @@ export function mountGlassCamera({ tw, shadowRoot, template = TW5_ROOT_TEMPLATE,
   const doc = shadowRoot.ownerDocument;
   const style = doc.createElement("style");
   const container = doc.createElement("div");
-  container.className = "lar-mirror";
+  // The container stands where a page's `body.tc-body` stands, so the theme's ground and fonts reach it (`glass-sheet.ts`).
+  container.className = "lar-mirror tc-body";
   shadowRoot.append(style, container);
   // Setup is one act: a throw anywhere below gives back every assignment made so far.
   const twAny = tw as unknown as Record<string, any>;
@@ -88,10 +90,12 @@ export function mountGlassCamera({ tw, shadowRoot, template = TW5_ROOT_TEMPLATE,
   });
   widget = tw.wiki.makeTranscludeWidget(template, { document: doc, parentWidget: root });
   styleWidget = tw.wiki.makeTranscludeWidget(stylesheet, { document: doc, parentWidget: root });
-  // The sheet renders into a detached holder; its text lands in the shadow root's one <style>, as core's own page render does.
+  // The sheet renders into a detached holder; its text lands in the shadow root's one <style>, as core's own page render does,
+  // read against the host as the engine's viewport (`shadowSheet`).
   const sheet = doc.createElement("div");
   styleWidget.render(sheet as unknown as TW5FakeElement, null);
-  style.textContent = sheet.textContent;
+  let rendered = sheet.textContent ?? "";
+  style.textContent = shadowSheet(rendered);
   widget.render(container as unknown as TW5FakeElement, null);
   const hold = (): HeldEdit | null => {
     const node = focusedIn(shadowRoot);
@@ -128,7 +132,7 @@ export function mountGlassCamera({ tw, shadowRoot, template = TW5_ROOT_TEMPLATE,
     widget!.refresh(changes);
     if (held) giveBack(held);
     styleWidget!.refresh(changes);
-    if (style.textContent !== sheet.textContent) style.textContent = sheet.textContent;
+    if (rendered !== (sheet.textContent ?? "")) { rendered = sheet.textContent ?? ""; style.textContent = shadowSheet(rendered); }
   };
   tw.wiki.addEventListener("change", onChange);
   } catch (error) { release(); throw error; }

@@ -4,12 +4,14 @@
  */
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { contentReading, labelReading, rgbOf, settleOf, styledReadings, unbakedSources } from "./browser-weld/mirror-read.mjs";
+import { contentReading, labelReading, rgbOf, settleOf, sidebarInPane, styledReadings, unbakedSources } from "./browser-weld/mirror-read.mjs";
 
 const THEME = "packages/lararium-tw5/plugins/tiddlywiki-vanilla.json";
 const SHADOWS = "packages/lararium-tw5/plugins/lararium-boot-shadows.json";
 const GRAMMAR = "packages/lararium-tw5/plugins/lares-memetic-wikitext.json";
-const styled = { sheetHasSidebarRule: true, sidebarPosition: "fixed", svgWidth: 18, frameBackground: "rgb(40, 40, 40)", paletteBackground: "#282828" };
+const pane = { sidebarBox: { x: 1090, y: 10, w: 330, h: 700 }, hostBox: { x: 320, y: 10, w: 1100, h: 720 }, breakpoint: "960px" };
+const styled = { sheetHasSidebarRule: true, sidebarPosition: "fixed", ...pane, svgWidth: 18, frameBackground: "rgb(40, 40, 40)", paletteBackground: "#282828",
+  groundBackground: "rgb(29, 32, 33)", pageBackground: "#1d2021" };
 
 test("RED: a skinny mirror with no named reason has not settled; CONTROL: full settles, and skinny settles once it names why", () => {
   assert.equal(settleOf({ mirror: "skinny", why: null }), null);
@@ -29,7 +31,7 @@ test("the page evaluates settleOf from its own source, so one implementation dec
 test("RED: an unstyled mirror fails each styled reading by name where no source stands declared", () => {
   const out = styledReadings({ sheetHasSidebarRule: false, sidebarPosition: "static", svgWidth: 640, frameBackground: "rgba(0, 0, 0, 0)", paletteBackground: null }, []);
   assert.deepEqual(out.map((r) => [r.name, r.status]), [
-    ["M2 styled-sheet", "bad"], ["M2 styled-sidebar", "bad"], ["M2 styled-icons", "bad"], ["M2 styled-palette", "bad"]]);
+    ["M2 styled-sheet", "bad"], ["M2 styled-sidebar", "bad"], ["M2 styled-icons", "bad"], ["M2 styled-palette", "bad"], ["M2 styled-ground", "bad"]]);
   assert.match(out[2].message, /640px wide, past the 48px bound/);
 });
 
@@ -48,6 +50,18 @@ test("CONTROL: a styled mirror passes every styled reading, the palette colour c
   assert.equal(rgbOf("#282828"), "rgb(40, 40, 40)");
   assert.equal(rgbOf("transparent"), null);
   assert.equal(styledReadings({ ...styled, frameBackground: "rgb(41, 40, 40)" }, [])[3].status, "bad");
+});
+
+test("RED: a sidebar painted at the window's corner, or one whose breakpoint read the window, fails; CONTROL: fixed in a wide pane and in flow in a narrow one both pass", () => {
+  assert.equal(sidebarInPane({ ...pane, sidebarPosition: "fixed", sidebarBox: { x: 1050, y: 0, w: 350, h: 900 }, hostBox: { x: 321, y: 120, w: 758, h: 720 } }).ok, false);
+  assert.match(sidebarInPane({ ...pane, sidebarPosition: "fixed", hostBox: { x: 0, y: 0, w: 758, h: 720 }, sidebarBox: { x: 10, y: 400, w: 700, h: 300 } }).message, /breakpoint read another width/);
+  assert.equal(sidebarInPane({ ...pane, sidebarPosition: "fixed" }).ok, true);
+  assert.equal(sidebarInPane({ sidebarPosition: "static", hostBox: { x: 321, y: 120, w: 758, h: 720 }, sidebarBox: { x: 340, y: 900, w: 700, h: 300 }, breakpoint: "960px" }).ok, true);
+  assert.equal(sidebarInPane({ ...pane, sidebarPosition: "fixed", breakpoint: null }).ok, false);
+});
+
+test("RED: a mirror whose ground shows the host page beneath fails the ground reading", () => {
+  assert.equal(styledReadings({ ...styled, groundBackground: "rgba(0, 0, 0, 0)" }, [])[4].status, "bad");
 });
 
 test("RED: a story opened before the wiki landed fails even where the landing stands declared unbaked", () => {

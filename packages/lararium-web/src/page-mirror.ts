@@ -7,13 +7,14 @@ const NONE = (why: string) => ({ kind: "floor" as const, width: "none" as const,
 interface ReadableEngine { wiki: {
   getTiddlerText(title: string): string | null | undefined; filterTiddlers(filter: string): string[]; getTiddlerList(title: string): string[];
   extractTiddlerDataItem(title: string, index: string): string | undefined; } }
-/** What the mirror's engine reads now: the open story, the wiki's own default story, and the palette pointer with two of its colours. */
-export function mirrorReading(tw: ReadableEngine): { story: string[]; defaults: string[]; palette: string; colours: Record<string, string | null> } {
+/** What the mirror's engine reads now: the open story, the wiki's own default story, the palette pointer with two of its colours, and the theme's sidebar breakpoint. */
+export function mirrorReading(tw: ReadableEngine): { story: string[]; defaults: string[]; palette: string; colours: Record<string, string | null>; breakpoint: string | null } {
   const wiki = tw.wiki;
   const palette = wiki.getTiddlerText("$:/palette") ?? "";
   const colour = (name: string): string | null => (palette ? wiki.extractTiddlerDataItem(palette, name) ?? null : null);
   return { story: wiki.getTiddlerList("$:/StoryList"), defaults: wiki.filterTiddlers(wiki.getTiddlerText("$:/DefaultTiddlers") ?? ""), palette,
-    colours: { "tiddler-background": colour("tiddler-background"), "page-background": colour("page-background") } };
+    colours: { "tiddler-background": colour("tiddler-background"), "page-background": colour("page-background") },
+    breakpoint: wiki.getTiddlerText("$:/themes/tiddlywiki/vanilla/metrics/sidebarbreakpoint") ?? null };
 }
 
 /**
