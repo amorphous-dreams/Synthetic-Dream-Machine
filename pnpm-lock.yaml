@@ -323,6 +323,9 @@ importers:
       idiomorph:
         specifier: 0.8.0
         version: 0.8.0
+      qrcode:
+        specifier: 1.5.4
+        version: 1.5.4
     devDependencies:
       '@keyhive/keyhive':
         specifier: 0.3.0-alpha.1
@@ -330,6 +333,9 @@ importers:
       '@lararium/keyhive':
         specifier: workspace:*
         version: link:../lararium-keyhive
+      '@types/qrcode':
+        specifier: 1.5.6
+        version: 1.5.6
       '@vitest/browser':
         specifier: 5.0.5
         version: 5.0.5(vite@8.3.4(@types/node@26.6.6)(esbuild@0.28.2)(tsx@4.23.15))(vitest@5.0.5)
