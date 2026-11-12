@@ -49,7 +49,7 @@
     "floor-manifest": {
       "id": "floor-manifest",
       "version": "1",
-      "sha256": "cc9720d2ae3326ffaa42ed6b4a654e5a8e005d6b7874e30e83300bd7f649a210",
+      "sha256": "5ea1d64cfbb3bdf7105011abd6cebbed4ca38b3335d01ed20f383ef0239e71c6",
       "mimeType": "application/vnd.lararium.floor-manifest+json",
       "kind": "floor"
     },
@@ -70,14 +70,14 @@
     "floor-lararium": {
       "id": "floor-lararium",
       "version": "1",
-      "sha256": "468aac0c72e0262f6fe2381ea248f5ba70b1253897fd313c3bbf0ee8478900ea",
+      "sha256": "3a98257b9b726b1bc3e3674004a20c7b270c4ea3f1917f1a73452345122abdeb",
       "mimeType": "application/vnd.lararium.floor-snapshot",
       "kind": "floor"
     },
     "floor-lares": {
       "id": "floor-lares",
       "version": "1",
-      "sha256": "655927c0db658567bb6f718867caf78cbfe5ca0887856c2dfa7d8ea7737b22b3",
+      "sha256": "5d0b6969d96c94c511a5360bedd34dc2d175d1862cebc2ed2b6587874cacc1f0",
       "mimeType": "application/vnd.lararium.floor-snapshot",
       "kind": "floor"
     },
@@ -224,7 +224,7 @@
       "tiddler": {
         "title": "lar:///ha.ka.ba/bags/oracle/blobs/floor-lararium",
         "text": "floor-lararium",
-        "sha256": "468aac0c72e0262f6fe2381ea248f5ba70b1253897fd313c3bbf0ee8478900ea",
+        "sha256": "3a98257b9b726b1bc3e3674004a20c7b270c4ea3f1917f1a73452345122abdeb",
         "version": "1",
         "mimeType": "application/vnd.lararium.floor-snapshot",
         "tags": "blob-descriptor",
@@ -238,7 +238,7 @@
       "tiddler": {
         "title": "lar:///ha.ka.ba/bags/oracle/blobs/floor-lares",
         "text": "floor-lares",
-        "sha256": "655927c0db658567bb6f718867caf78cbfe5ca0887856c2dfa7d8ea7737b22b3",
+        "sha256": "5d0b6969d96c94c511a5360bedd34dc2d175d1862cebc2ed2b6587874cacc1f0",
         "version": "1",
         "mimeType": "application/vnd.lararium.floor-snapshot",
         "tags": "blob-descriptor",
@@ -252,7 +252,7 @@
       "tiddler": {
         "title": "lar:///ha.ka.ba/bags/oracle/blobs/floor-manifest",
         "text": "floor-manifest",
-        "sha256": "cc9720d2ae3326ffaa42ed6b4a654e5a8e005d6b7874e30e83300bd7f649a210",
+        "sha256": "5ea1d64cfbb3bdf7105011abd6cebbed4ca38b3335d01ed20f383ef0239e71c6",
         "version": "1",
         "mimeType": "application/vnd.lararium.floor-manifest+json",
         "tags": "blob-descriptor",
@@ -376,7 +376,7 @@
       "tiddler": {
         "title": "lar:///ha.ka.ba/bags/oracle/genesis-cid-floor",
         "text": "",
-        "cid": "cc9720d2ae3326ffaa42ed6b4a654e5a8e005d6b7874e30e83300bd7f649a210",
+        "cid": "5ea1d64cfbb3bdf7105011abd6cebbed4ca38b3335d01ed20f383ef0239e71c6",
         "note": "genesis floor manifest content-CID",
         "$origin-bag": "lar:///ha.ka.ba/bags/oracle"
       },
