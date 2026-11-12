@@ -131,11 +131,11 @@ beforeAll(async () => {
 
 describe("an own-fleet joinee dials on what the answer carried", () => {
   test("F2 RED: a moved admit, or one the root re-signed past its quorum, refuses at land and writes nothing", async () => {
-    const moved = { ...answer, admit: { ...answer.admit, admit: { ...answer.admit.admit, parents: ["moved"] } } };
+    const moved = { ...answer, admit: { ...answer.admit!, admit: { ...answer.admit!.admit, parents: ["moved"] } } };
     await expect(as(B, () => direct(runFleetJoinLand)({ storageDir: B.storage, answer: moved }))).rejects.toMatchObject({ refusal: "answer-unsigned" });
     // The root signs an admit whose quorum signatures were stripped: the answer reads, the admit holds nowhere.
     const forged = await as(A, async () => {
-      const body = { ...answer, admit: { ...answer.admit, admit: { ...answer.admit.admit, signatures: [] } } } as FleetJoinAnswer;
+      const body = { ...answer, admit: { ...answer.admit!, admit: { ...answer.admit!.admit, signatures: [] } } } as FleetJoinAnswer;
       const seed = await loadPersonaGroupRootSeed(0);
       try { return { ...body, signature: hex(await ed25519.signAsync(fleetJoinAnswerImage(body), seed)) }; } finally { seed.fill(0); }
     });
@@ -277,12 +277,12 @@ describe("an own-fleet joinee dials on what the answer carried", () => {
 
   test("F5 RED: a rotated sovereign pin mints the household admit again and replaces the kept one", async () => {
     const rotated = custodyRootDoor({ derive: () => new Uint8Array(32).fill(0x5e) });
-    const before = answer.admit;
+    const before = answer.admit!;
     const mint = () => as(A, () => direct(ensureFaceHouseholdAdmit)({ storageDir: A.storage, sealHome: larSealHome(), face: 0, gateDoor: rotated, syncUrl }));
     const minted = await mint();
     const newPin = hearthSovereignPin(aidA, rotated);
     expect(gateBundleDigest(minted.opening.carriage.gatePin)).toBe(gateBundleDigest(newPin));
-    expect(gateBundleDigest(newPin)).not.toBe(gateBundleDigest(answer.carriage.gatePin));
+    expect(gateBundleDigest(newPin)).not.toBe(gateBundleDigest(answer.carriage!.gatePin));
     expect(minted.admit.carriageCommit).not.toBe(before.admit.carriageCommit);
     expect(minted.admit.nym).toBe(before.admit.nym);
     const keptPath = await withLarRoot(A.root, async () => faceHouseholdAdmitPath(larSealHome(), aidA, minted.admit.nym));

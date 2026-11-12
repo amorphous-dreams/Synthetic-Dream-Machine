@@ -95,6 +95,11 @@ export { parseAdmitCarriage, toAdmitCarriage, ADMIT_KIND, StaleAdmitCarriage } f
 export {
   browserFleetJoinRequest, browserFleetJoinLand, browserFleetJoinSettle, browserFleetJoinAbandon, browserVesselFaceKeyCustody, BrowserFleetJoinRefused,
 } from "./browser-fleet-join.js";
+// THE FLEET-JOIN DOOR's ROOT-HOLDER half: a face this browser founded offers and answers, with no node in the walk.
+export {
+  browserFleetJoinOffer, browserFleetJoinAnswer, browserSeatDevice, browserStandingFaceScopes, BrowserFleetRootRefused, issuedRow,
+  type BrowserRootFace, type BrowserSeatFace, type BrowserSeatInput,
+} from "./browser-fleet-root.js";
 
 // The mint-time context gate — refuse where a browser withholds, and name the cause and the cure.
 export type {
