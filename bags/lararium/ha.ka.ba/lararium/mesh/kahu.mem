@@ -467,6 +467,14 @@ The cabal ⊥ quorum split stands in code where it can:
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/seats-per-tier`>>
+
+!! Seats per tier ~ each scale seats its own quorum (operator ruling 2026-11-12)
+
+//"Pono, approve both leans (many floors, Kahu seats)."// Each tier of the Nexus stack (a Household, a Crossroads, a Temple, a True-Named planetary Nexus; <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-nexus-scales`>>) seats its own Kahu quorum under its own charter (#/nexus-scale). ''Any human may hold seats at several tiers'', each seat its own key in its own custody (#/nexus-scale, a seat holds its own key). ''No tier's seats count toward another tier's quorum'': a Temple's admit, kāpae or seal takes the Temple's seats alone, whoever else those humans seat for, and a wider tier reaches a narrower one only by the floors that tier accepts by pull, never by a signature. The separation lives in the charters, never in the person, as the recovery contact's does (#/nexus-scale).
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/chartered-classes`>>
 
 !! Chartered classes ~ the charter's own seats set every class, and a promotion approves exact bytes
@@ -689,6 +697,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;DuGmrFKuFQVtuXt9wZNIkaOzJlFFcU6oQxsfTpaYqjI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;F7Qxh_r_JDuSgkMVuHfb8FxS33opfThJoyp3CwSLAtU`>>
 
 <<^ code=`&#x0004;` to=`?`>>
