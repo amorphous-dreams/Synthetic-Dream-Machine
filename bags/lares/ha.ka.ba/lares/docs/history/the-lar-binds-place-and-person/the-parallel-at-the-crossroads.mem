@@ -27,7 +27,7 @@ A hearth holds its Lar by address. In the seasons after the cut, people start ar
 
 !! Source
 
-Braided against [[the Engineer's Notebook|the-engineers-notebook.mem]]: every Elyncia beat mirrors a Gaia beat, and this locus names only the shrine.
+Every Elyncia beat mirrors a Gaia beat. This locus names only the shrine, and the arc index's act map names the commits.
 
 Staging flags, for the operator:
 
@@ -417,17 +417,14 @@ Forward, open:
 !! Edges
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/the-lar-binds-place-and-person/index`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/the-lar-binds-place-and-person/the-engineers-notebook`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-necroscript`>>
 <<~ loulou uri=`lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/the-hoard-workshop`>>
 <<~ loulou uri=`lar:///ha.ka.ba/elyncia/characters/npcs/telarus`>>
 <<~ loulou uri=`lar:///ha.ka.ba/elyncia/characters/primary-characters/reya`>>
 <<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/the-black-widow`>>
 
-<<~ pranala slot=`#braids-with-notebook` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/the-lar-binds-place-and-person/the-engineers-notebook` family=`relation` role=`braids-with`>>
-
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;jau6QflsI_ufAuApxdHVLs08lQnrQzr0luPAOp9IfzA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GSisiJjcgWWkGAB4O9aYmne9N3G9h2DK44MHHceOCjU`>>
 
 <<^ code=`&#x0004;` to=`?`>>
