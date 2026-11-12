@@ -131,7 +131,7 @@ written           = "2026-10-22"
 A lost answer repairs by one law on every path: the sender resends the ''same id'' a bounded number of times within a live epoch; the receiver treats the resend idempotently and replays its original answer; the loop ends on an answer or on an epoch change. No timer decides when to resend or when to stop: the sender resends at its next causal boundary (a reconnect, a fresh frame, the next act) and the bound counts attempts.
 
 * The port's `txId` retry (#/write) follows it: the ledger replays the original `port:written`.
-* The camera's page-control resend follows it: `projection-sink.ts` holds each pending reliable act whole and resends the same `eventId` at a fresh frame under the same mount epoch, at the next act (first, in order) and at a re-arm of the doors, three attempts at most; an epoch change ends the loop with `stale-target` beside the target, the bound ends it with `binding-unavailable`, and the island's answer ring replays the answer.
+* The camera's page-control resend follows it: `projection-sink.ts` holds each pending reliable act whole and resends the same `eventId` at a fresh frame under the same mount epoch, at the next act (first, in order) and at a re-arm of the doors, three attempts at most; an epoch change ends the loop with `stale-target` beside the target, the bound ends it with `binding-unavailable`, and the island's answer ring replays the answer. ''The bound counts only sends the vessel never acknowledged'' (controller ruling, an overrulable moʻolelo): a resend that meets its act still waiting at the vessel draws a named, causal reply (`control-pending`, carrying the act's id) and reaches nothing, and that send refunds its attempt; the vessel holds the act's id from the moment it arrives, before its lit vessel answers. A vessel that never answers still exhausts the bound. The frames an act's own write painted travel ahead of its answer on the same channel, so the bound may fire with the answer queued behind them: the page keeps that act named, and its late answer clears the bound's words or paints its own.
 
 <<~/ahu>>
 
@@ -188,6 +188,6 @@ What stays owed, each by name:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;aA99hdwidC8boVf_UogK2yrXyO6FmKd7yZmeWQdqVHQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;P9v4NT9yszN47-60OSkVDh12kZRtdk2ciOz-gKbM2VY`>>
 
 <<^ code=`&#x0004;` to=`?`>>
