@@ -154,4 +154,12 @@ describe("a veil floor's wiki slot reaches the house's wiki islands; a daemon de
     expect(docs.floorWiki("group-doc")).toBe(false);
     expect(docs.floorWiki("unknown")).toBe(false);
   });
+
+  test("V1d: a floor-minted wiki's CANON row files its document under the wiki's canon bag, as the vessel's own", () => {
+    const { docs, floor } = table();
+    expect(docs.readControl(control({ [floorSlotTitle("tabs", "canon")]: "tabs-canon" }))).toBe(true);
+    expect(floor).toEqual([["tabs-canon", "lar:///ha.ka.ba/bags/tabs"]]);
+    expect(docs.floorWiki("tabs-canon"), "the wiki island mounts its canon").toBe(true);
+    expect(docs.bagOf("tabs-canon", lit(G1, F1, FACE1)), "no lit face seals it").toBeUndefined();
+  });
 });

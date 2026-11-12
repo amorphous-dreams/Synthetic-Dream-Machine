@@ -157,7 +157,7 @@ import { persistArchiveFloor } from "./archive-floor-write.js";
 import { replicaHeads, hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, holdsKahuReach, isHouseCanonBag, realmStandingDocUrl } from "@lararium/mesh";
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
 import { readLeaseUnderFace, controlLayerOf, type LeaseFrontier } from "./lease-frontier.js";
-import { readFace, answerDocStoreAsks, announceSlotDoc, documentIdOfUrl, type WikiSlotKind } from "@lararium/mesh";
+import { readFace, answerDocStoreAsks, announceSlotDoc, documentIdOfUrl, floorSlotTitle, type WikiSlotKind } from "@lararium/mesh";
 import { makeSlotDocResolver, litFaceSlotDocs, type SlotDocResolver, type LitFaceSlotDocs } from "./slot-doc-resolver.js";
 import { makeLitFaceTarget, type LitFace } from "./lit-face-target.js";
 import { type FaceJoinSummons } from "./face-join.js";
@@ -1438,9 +1438,29 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         };
         // The wiki-minting and composing verbs write under the face's reach, so a floor refuses them by
         // naming the lift, as it does the ACTION verbs.
+        // THE GATE NAMES THE HELD KEY (the-veil-ladder#/the-base-model): a face seated passes; with no face, the vessel that
+        // holds its own key open (its control document reads) mints and composes as the VEIL, and its writes seal under the
+        // vessel's key. A locked floor (`vessel-locked`) and a herm (`control-home-unnamed`) cannot seal, so each still
+        // refuses by naming the lift. The probe fails closed: any read that does not answer refuses.
         const faceStands = !!daemonAuth.personaGroupId;
-        const underFace = (verb: string, reactor: VerbReactor): VerbReactor => faceStands ? reactor : lightAFace(verb);
-        registry.register("init-wiki",   underFace("init-wiki", makeInitWikiReactor(wikiMintOpts)));
+        const veilStands = async (): Promise<boolean> => { try { await controlOf(ctx).get(floorSlotTitle("lares", "working")); return true; } catch { return false; } };
+        const underFace = (verb: string, reactor: VerbReactor, atFloor: VerbReactor = reactor): VerbReactor =>
+          faceStands ? reactor : async (args, vctx) => ((await veilStands()) ? atFloor(args, vctx) : lightAFace(verb)(args, vctx));
+        // The veil's own mint: the place asks, no Keyhive registers, the row carries the veil's mark and the canon document
+        // files as the vessel's own in the same act (announced `floor`, then named by the control document).
+        const veilMintOpts = {
+          ...wikiMintOpts,
+          vesselDid: async () => didFromVerifyingKey(daemonAuth.placeVerifyingKey),
+          registerBag: async () => {},
+          veilFloor: {
+            mintedBy: daemonAuth.placeVerifyingKey,
+            nameCanon: async (slug: string, documentId: string, url: string) => {
+              if (docStoreDoor) announceSlotDoc(docStoreDoor, wikiBagUri(slug), documentId, true);
+              await controlOf(ctx).put(mutableLarRecord(floorSlotTitle(slug, "canon"), { text: url, kind: "oracle", "face-reach": "vessel-only", "minted-by": daemonAuth.placeVerifyingKey }, "wiki-init:floor"), { kind: "lares-verb", requestId: "wiki-init:floor" });
+            },
+          },
+        };
+        registry.register("init-wiki",   underFace("init-wiki", makeInitWikiReactor(wikiMintOpts), makeInitWikiReactor(veilMintOpts)));
         registry.register("open-wiki",   makeOpenWikiReactor({ composite: ctx.composite, catalog, post: ctx.post }));
         registry.register("prune-stale", underFace("prune-stale", makePruneStaleReactor(wikiMintOpts)));
         registry.register("list-wikis",  makeListWikisReactor(catalog, sysPlane, systemCanonUrl));

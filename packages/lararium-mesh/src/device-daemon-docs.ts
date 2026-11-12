@@ -15,15 +15,15 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/control-home
  */
-import { CONTROL_HOME_ID } from "./lar-uris.js";
+import { CONTROL_HOME_ID, bagUri } from "./lar-uris.js";
 import { daemonFaceCanonBag, wikiSlotUri } from "./wiki-recipe.js";
 import { tiddlerText, type LarDoc } from "./base-doc.js";
 import { documentIdOfUrl, type SealedBag } from "./sealed-rest.js";
 
 /**
  * THE VEIL FLOOR'S WIKI SLOTS (the-veil-ladder#/the-base-model: every vessel holds "its own local content, no group"). A wiki's
- * working layer a vessel stands with no face rests in a floor document the control document names
- * (`floor-slot/<slug>/<kind>`); the vessel owns it, so it seals beside the control document under the vessel's key, on
+ * working layer a vessel stands with no face, and the canon document of a wiki it mints there, each rest in a floor document
+ * the control document names (`floor-slot/<slug>/<kind>`, kind `working` or `canon`); the vessel owns it, so it seals beside the control document under the vessel's key, on
  * every vessel class, and waits held from its announce until the control document names it.
  */
 export const FLOOR_SLOT_ROOT = `${CONTROL_HOME_ID}/floor-slot/`;
@@ -116,7 +116,8 @@ export function deviceDaemonDocs(io: { readonly enrollFloor: (documentId: string
         } else if (title.startsWith(FLOOR_SLOT_ROOT)) {
           const named = floorSlotOf(title);
           if (!named) continue;
-          moved = file(documentId, wikiSlotUri(named.slug, named.kind as never), { kind: "floor" }) || moved;
+          // `canon` names the wiki's own canon bag (`bags/<slug>`); every other kind names that wiki slot.
+          moved = file(documentId, named.kind === "canon" ? bagUri(named.slug) : wikiSlotUri(named.slug, named.kind as never), { kind: "floor" }) || moved;
         } else if (title.startsWith(canonPrefix)) {
           const relation = decodeURIComponent(title.slice(canonPrefix.length));
           let bagId: string;
