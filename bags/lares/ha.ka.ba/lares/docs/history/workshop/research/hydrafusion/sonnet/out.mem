@@ -1,0 +1,143 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/hydrafusion/sonnet/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-28 (file date) — source `.lares-scratch/research/hydrafusion/sonnet/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/hydrafusion/sonnet/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/hydrafusion/sonnet/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — research, 2026-10-28
+
+Verbatim scratch record `.lares-scratch/research/hydrafusion/sonnet/out.md` (research, file date 2026-10-28); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/hydrafusion/sonnet/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/project-hydrafusion-research-report`>>
+
+! Project HydraFusion: research report (Sonnet seat, 2026-10-28)
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/0-existence-finding`>>
+
+!! 0. Existence finding
+HydraFusion EXISTS at primary sources. Not a rumour. All fetched by me on 2026-10-28:
+* SOURCED. Announcement: https://github.blog/ai-and-ml/github-copilot/project-hydrafusion-frontier-quality-via-multi-model-orchestration/ (GitHub Staff, 2026-09-04).
+* SOURCED. Community discussion #206492 (maintainer ebndev, dated 2026-09-01 on the page; comments to 2026-10-23): https://github.com/orgs/community/discussions/206492. (Blog says Sep 4, discussion says Sep 1: minor date discrepancy, unresolved.)
+* SOURCED. Changelog 2026-09-30, VS Code + Copilot app: https://github.blog/changelog/2026-09-30-hydrafusion-in-vs-code-and-the-github-copilot-app/
+* SOURCED. Changelog 2026-10-14, Max option + pool: https://github.blog/changelog/2026-10-14-hydrafusion-updates-and-new-max-option/
+* SOURCED. Changelog 2026-10-28 (today): "GitHub Copilot Fusion is generally available": https://github.blog/changelog/2026-10-28-route-and-orchestrate-models-with-github-copilot-fusion/
+* Secondary only (not relied on): InfoQ, GIGAZINE, MarkTechPost, DEV (pwd9000), ai-tldr.
+* Not found: docs.github.com/en/copilot/concepts/fusion returned 404 (my guessed URL). The changelogs cite docs.github.com/en/early-access/copilot/hydrafusion and a "Copilot Fusion concepts page"; I did not retrieve them. Gap: billing fine print and annual-plan treatment likely live there.
+* IMPORTANT: "HydraFusion" is now being folded into "Copilot Fusion" (GA today). The thing to evaluate is Fusion.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/1-what-it-is`>>
+
+!! 1. What it is
+* SOURCED (blog 09-04): research preview, "runtime orchestration"; builds a per-request execution plan across models from multiple providers to draft, critique, revise or escalate; user sees one result. Follows Auto model selection (Auto picks a model per request; HydraFusion picks a WORKFLOW and coordinates several models inside one turn, per 09-30 changelog).
+* Timeline SOURCED: CLI via `/update`, `/experimental on`, `/model` -> "HydraFusion (Research Preview)" (09-01/04). VS Code >=1.140 (setting `chat.copilot.hydraFusion.enabled`) and Copilot app (09-30). "HydraFusion Max" and new pool (10-14). Renamed/merged into Copilot Fusion, GA, with effort levels Standard/High/Max, in VS Code, Copilot app, CLI, JetBrains (10-28). Research-preview selections migrate to matching Fusion levels.
+* Plans SOURCED: preview: Pro, Pro+, Business, Enterprise (Business/Enterprise need admin to enable preview). Fusion GA: "all Copilot plans" (10-28).
+* Metering SOURCED: "based on the tokens consumed by the models HydraFusion uses, priced at each model's standard rate"; "no separate HydraFusion charge" (blog; discussion). Not premium-request multiplier per the blog. Fusion GA: billed per model used at standard rate; "for a limited time" 30% discount on model costs for paid plans. Users in the discussion quote AI-credit (AIC) burn figures (one: ~500 AIC planning + 2,300 implementation, "40% of a Pro+ package"; another: ~10% of usual burn) = user anecdote, SOURCED as reports only.
+* Legacy annual plan: NOT ADDRESSED in any source I read (discussion says "legacy plans are not addressed"; GA page does not mention annual plans). REASONED: if the annual plan still meters in premium requests, whether Fusion's per-token billing maps onto it is unknown; confirm in docs/billing before relying on it. Org model policies apply (SOURCED).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/2-architecture`>>
+
+!! 2. Architecture (all SOURCED from the 09-04 blog unless noted)
+* Three workflows per request: Single (one model); Cascade (efficient model drafts, quality gate accepts or escalates); Critique (drafter -> independent READ-ONLY, tool-less critic from a DIFFERENT model family -> drafter revises ONCE; follows the "Rubber Duck" review pattern).
+* Router: workflow selection treated as an optimisation problem; capability signals (reasoning, codegen, debugging, tool use); picks "the least complex workflow expected to meet its needs"; routing policy built with beam search, not hand-tuned thresholds; model pool and bindings validated before execution.
+* 10-14 changelog (SOURCED): medium effort for drafts, high for review; Cascade gained a JUDGING step that inspects work and requests a repair only when needed (instead of escalating); Critique critics now use workspace-inspecting tools and run as parallel critics. Pool: Claude Opus 5.5, GPT-6 Astra, GPT-6.1 Sol, GPT-6 Luna.
+* Roles: drafter/solver (shared workspace, normal permission-aware agent loop), critic (isolated, read-only), reviser (= drafter), gate/judge. No planner/worker-fleet, no persistent memory across sessions, no merge-of-parallel-writers: it is a single-writer chain with a reviewer, not a swarm.
+* State: runtime records "role, outcome, cost, latency, diagnostics of each leg"; user gets "one coherent response and one permission-aware change set". Workspace: solver writes the shared workspace; reviews run isolated "without modifying the repository".
+* Human checkpoints: none described; intermediate drafts are HIDDEN until the final result (staff: show "the final reviewed result rather than text that could change moments later"); progress shows stages only; blog admits visibility is a real trade-off.
+* Integration surfaces SOURCED: CLI, VS Code, Copilot app, JetBrains (Fusion). Not mentioned: API, MCP, SDK, Actions, headless/scriptable use. REASONED: it is a selectable "model" in the Copilot picker, so a headless Copilot CLI seat with `--model` might reach it (a user reported `--model hydrafusion` failed without a feature flag in preview; unofficial workaround only, do not rely on it).
+* Users cannot choose or exclude models; "we don't publish a fixed roster" (staff, discussion). Admins can restrict models per Fusion via org/enterprise policy (GA page).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/3-verification-and-safety`>>
+
+!! 3. Verification and safety
+* SOURCED: "Apply no patch when the workflow is cancelled or fails validation"; per-leg timeouts and cancellation; fallback and retry costs counted in aggregated cost (draft+critique+revise+escalate+retry+fallback); extra calls only when likely to help.
+* SOURCED gap: no sandbox/permission detail beyond "permission-aware"; no test-running verifier described as a gate (the "quality gate"/judge is not specified); no budget cap the USER sets; observability is internal per-leg records, not user-facing spend logs (users asked for per-session model/token breakdowns, and the CLI counter mismatched the response total).
+* Reported issues (discussion, user reports; staff acknowledged only the plan-mode bug): plan mode reverts model; "fusion routing returned an invalid response" with fallback to gpt-5.6-luna; spend skewing to older/pricier models; "Working" indicator stuck; slow cancel. One secondary reviewer notes a discarded draft's file edits may not be undone (SECONDARY, unverified: it contradicts "no patch on failure" only if drafter writes before validation; the blog says solver works in the shared workspace, so REASONED this is plausible).
+* Benchmarks (SOURCED, offline, vs Claude Opus 5, medium reasoning): TerminalBench 2.1 +4.9 pts / 67% cheaper; DeepSWE -1.5 pts / 36% cheaper; internal CheckpointBench -0.1 pts / 65% cheaper. Caveats SOURCED: policies tuned on the same sets, TB2.1 "relatively saturated", first-turn single-prompt tasks only, multi-turn is future work, two harness failures excluded. 10-28: Artificial Analysis Coding Agent Index, Fusion Max 60, within 2 of Claude Code+Opus 5.5 Max at ~half cost (vendor-reported on GitHub's page).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/4-collision`>>
+
+!! 4. COLLISION
+| Pattern | Theirs (HydraFusion/Fusion) | Ours (mixed-model swarm) | Stronger integrity |h
+| Who rules | Learned router picks workflow per prompt, opaque | Opus controller rules, reads every diff | Ours: a named reader answers for each landing; theirs is unauditable by the user |
+| Writers | One drafter in shared workspace; critic never writes | One writer per worktree; seats never read a diff they wrote | Ours for sound structure; theirs matches the "reader never writes" half |
+| Cross-lineage review | Critic from a different model family, read-only, tool-less (later tool-equipped, parallel) | Lens law: second lineage earns its seat by seeing what the first misses; Terra/Luna/Sol/5.3-codex count as ONE lineage | Even; ours is explicit about counting lineages; theirs enforces it by construction |
+| Review bound | Revise ONCE | Red test as own commit, fresh reader before the train | Ours (evidence, not another opinion); their once-only bound is a good loop cap |
+| Escalation by cost | Cascade: cheap draft, gate, escalate; least complex workflow wins | Terra builds, Luna reads, Sol only on a named ask | Theirs is automatic; ours is deliberate and explained. Both prize cheap-first. Theirs adapts per prompt |
+| Verification | Hidden "quality gate"/judge; offline benchmarks; policies tuned on the eval sets | CI + held-out cells + train + crucible; measure over agree | Ours, clearly (held-out is exactly what their tuning lacks) |
+| Failure | No patch on cancel/failed validation; per-leg timeout | Red-first, fences, o-takiage returns what it superseded | Theirs has a clean atomic-apply rule worth naming; ours covers more |
+| Spend | Per-leg accounting inside the runtime, aggregate incl. retries/fallback; user cannot cap | `spend.py` tallies each tool's own logs; Codex pool floor; Copilot overage off | Ours (independent, user-owned); theirs has the better "count the retries and fallbacks" completeness |
+| Visibility | Drafts hidden until final | Controller reads every chunk | Ours: hiding intermediate legs removes the human checkpoint |
+| Model choice | Not selectable, undisclosed roster | Named seats, pinned models, effort level | Ours (reproducible); theirs drifts as pool changes (10-14 changed pool and effort mid-preview) |
+| Workspace isolation | Reviews isolated; solver shared | Walled seats, scratch LAR_ROOT, launcher walls pinned by tests | Ours |
+| Scope | Single-turn tasks | Lanes, sub-branches, PRs, trains | Ours; they do not attempt multi-slice work |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/5-pono-pattern-integrities-worth-borrowing`>>
+
+!! 5. Pono pattern integrities worth borrowing
+# Reader-never-writes, by construction: critic is read-only and tool-less. We already have it as a rule; lean to make the launcher test pin it (already for Luna/Sol). Fit: no change; confirms seat law.
+# Revise-once cap: bound a review loop at one revision then escalate to the controller, never ping-pong. Fit: add as an eighth refinement or note under the build pair.
+# Least-complex-workflow-first: record the workflow a lane chose (single seat / build+read / +Sol) in the brief with the reason, and justify any extra seat by the finding it could add. Fit: brief template line; costs nothing.
+# Atomic apply: "no patch when cancelled or failed validation": a seat's worktree changes land only through the lead's diff pull (already true); state it explicitly as the failure law for a vanished seat.
+# Aggregate accounting incl. retries and fallbacks: have `spend.py` tally retries/relaunches and fallback seats as lane cost, not just first launches. Fit: spend law.
+# Per-leg record (role, outcome, cost, latency, diagnostics): add a one-line leg record to each seat handback so a lane's cost reads per seat per role. Fit: handback form in noosphere-boot #/worker-swarm.
+# Pool/binding validation before launch: launcher preflight that the pinned models exist and are reachable before a lane starts. Fit: `tools/launch-*.mjs` preflight.
+# Warning from their misses (anti-patterns): tuning on the eval sets, hidden intermediate output, unpinned roster. Ours already refuses all three.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/6-where-ours-holds-stronger`>>
+
+!! 6. Where ours holds stronger
+Human/controller checkpoint on every diff; held-out cells and a train as the land gate (their gate is an unspecified judge plus self-tuned benchmarks); pinned, named seats with reproducible effort; independent user-owned spend tallies and a pool floor; walled launchers pinned by tests; one-writer worktrees with red-first commits; o-takiage; multi-slice PR lanes. HydraFusion is a per-prompt optimiser, not a lane governor.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/7-integration-options`>>
+
+!! 7. INTEGRATION options
+| Option | Cost | Risk | Lean |h
+| A. Adopt as a seat (Copilot seat selects Fusion for reads/scouts) | Per-token billing at each model's rate (30% off for a limited time); unknown mapping to our legacy plan/allowance; our Copilot allowance model is per premium request | Opaque routing breaks "pinned seat, known lineage": we cannot say which family read the diff, so the lens law cannot be applied; hidden drafts; routing errors fell back to Luna; CLI access flaky in preview | Not for builds. For reads only, a trial AFTER confirming billing on the legacy plan. Weak maybe |
+| B. Adopt as controller of a lane | Same, plus loss of Opus controller read | Violates "controller reads every diff" and one-writer law: its drafter writes the shared workspace under a hidden policy; no land gate | No |
+| C. Borrow ideas only (section 5) | Near zero; edits to brief template, handback form, spend.py, launcher preflight | Low | YES, lean |
+| D. Ignore | Zero | Miss cheap wins (leg records, retry accounting, revise-once) and the pricing signal | No; C dominates |
+Optional measured probe (REASONED, not done): one bounded Fusion read of a finished slice beside a Luna read, compared on findings caught, to measure whether its cross-family critique sees what our fresh reader misses. Only after plan-billing is confirmed.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/8-open-items-for-round-two-terra-twin`>>
+
+!! 8. Open items for round two / Terra twin
+* Retrieve docs.github.com early-access HydraFusion page and the Copilot Fusion concepts page (billing, legacy and annual plan treatment, headless CLI selection, budget controls).
+* Confirm whether Fusion is addressable non-interactively (`copilot -p --model ...`) with our `tools/launch-copilot.mjs` walls intact.
+* Check Discussion #211017 (Fusion feedback) for spend and routing complaints.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GKPVqPdYwSG1Q8EuWM-99qczT2SMXrKmQ4Mh8jK2OYE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

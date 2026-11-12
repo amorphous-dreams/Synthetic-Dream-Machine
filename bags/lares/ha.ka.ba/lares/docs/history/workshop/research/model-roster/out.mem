@@ -1,0 +1,146 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/model-roster/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-28 (file date) — source `.lares-scratch/research/model-roster/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/model-roster/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/model-roster/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — research, 2026-10-28
+
+Verbatim scratch record `.lares-scratch/research/model-roster/out.md` (research, file date 2026-10-28); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/model-roster/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/model-roster-and-operating-economics-28-october`>>
+
+! Model roster and operating economics — 28 October 2026
+
+Lares (Researcher) · ->✶ observe ->⏿ orient ->◇ decide ->▶ act ->↺ aftermath
+
+''Reading key.'' SOURCED = supported by the linked source, accessed 2026-10-28 unless another date appears. REASONED = judgment, arithmetic, operator testimony, or an explicit uncertainty; it does not claim independent verification. Prices below describe standard first-party API text pricing in US dollars per million tokens, not subscription quota conversions. Model lists cover the coding-relevant current families, not every speech, image, embedding, specialized, legacy, or cloud-hosted variant. Provider pages and account availability can change.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/recommended-roster-operating-sheet`>>
+
+!! Recommended roster — operating sheet
+
+''REASONED:'' Keep the controller on Claude Code subscription; use the Codex plan for builders and independent reads; retain Copilot legacy for scarce, targeted second opinions. Metered API use or a new Google seat requires separate access and a budget; trial it before committing. The operator reports Opus 5.5 controller and builders, Sonnet 5.5 leads and readers, Terra 6.1 builders, Luna readers, and Copilot GPT-5.3-Codex medium reads; those reports do not establish individual account entitlement or performance.
+
+| Role | First choice | Cross-provider fallback | Cost and deployment decision |h
+| Controller: rulings, every diff | Opus 5.5, Claude Code subscription | GPT-6.1 Sol in Codex, named hard rulings | Preserve controller continuity and quota headroom; Sol already draws heavily in this crew. Escalate to Fable or Astra only when an identified decision merits it. |
+| Lane lead / Episkopos: seats and suites | Sonnet 5.5, Claude Code subscription | GPT-6.1 Terra, Codex plan | Keep coordination on the existing seat; choose Terra if Claude limits constrain the lane. Verify command execution and handoff quality in the actual harness. |
+| Builder: code plus red tests, walled worktree | GPT-6.1 Terra, Codex plan | Sonnet 5.5, Claude Code subscription | Route ordinary slices to Terra; reserve Opus for difficult cross-cutting failures. Compare accepted changes and rework, not token rates alone. |
+| Reader: independent slice review | Fresh Sonnet 5.5 session for Terra-authored slices; fresh Terra session for Claude-authored slices | GPT-5.3-Codex medium, Copilot CLI, for high-risk or disputed slices | A fresh context matters; keep author-independent review and controller adjudication. Luna can triage low-risk slices but should not serve as the only substantive reviewer until local recall supports it. Six requests per Copilot prompt consumes a 300-request allowance in roughly 50 single-prompt reviews. |
+| Researcher: web, source checking | Claude Code or Codex seat with web access actually enabled | Gemini 3.8 Flash API with Search grounding, if separately provisioned | Confirm the harness can search, open sources, and return URLs; model capability alone does not supply a tool. Escalate to Argon for hard synthesis. |
+| Aftermath sweeper: prose, naming, hygiene | GPT-6 Luna, Codex plan | Claude Haiku 5.5, Claude Code subscription if available | Use small models for bounded, reversible passes; controller checks meaning and diff. If billed API, avoid Haiku's >100k prompt tier for routine sweeps. |
+
+''REASONED — trial design:'' Alongside existing lane spend logs, record model/effort, seat, request count, elapsed and human review time, quota percentage before/after and reset, cache hits, input/output/reasoning tokens when exposed, and hidden or unlogged orchestration. Measure accepted first-pass slices, test failures, rework, confirmed unique defects per reviewer, false positives, escaped defects found later, and severity. Randomize comparable slices across a fresh same-family reviewer and a fresh cross-family reviewer; blind and adjudicate findings, including negatives. Compare cost and time per accepted slice and per confirmed defect, with confidence intervals; neither raw token cost nor number of comments measures quality. Preserve security and test gates for every arm.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/models-and-api-economics`>>
+
+!! Models and API economics
+
+!!! Anthropic
+
+''SOURCED:'' Anthropic's current four-model comparison lists 1M context and 128k maximum output for each; all accept text and images and support tool use. It recommends Opus for most work, Fable when Opus at higher effort falls short, Sonnet for speed/intelligence, and Haiku for high-volume classification, extraction and routing. [[Models overview|https://platform.claude.com/docs/en/models/overview]], accessed 2026-10-28.
+
+''SOURCED:'' The following prices use first-party standard inference. Columns show input / output / five-minute cache write / one-hour cache write / cache hit. Haiku switches the whole request to its higher tier when total prompt input, including cache reads and writes, exceeds 100k. [[Anthropic pricing|https://platform.claude.com/docs/en/about-claude/pricing]], accessed 2026-10-28.
+
+| Model and API ID | USD / million: input / output / 5m write / 1h write / hit | Provider positioning |h
+| Fable 5.1 `claude-fable-5-1` | 10 / 50 / 12.50 / 20 / 0.25 | Demanding reasoning and long-horizon agents |
+| Opus 5.5 `claude-opus-5-5` | 4 / 20 / 5 / 8 / 0.20 | Long-running coding and knowledge work |
+| Sonnet 5.5 `claude-sonnet-5-5` | 2 / 10 / 2.50 / 4 / 0.10 | General coding and fast capable work |
+| Haiku 5.5 `claude-haiku-5-5` | ≤100k: 0.10 / 0.50 / 0.125 / 0.20 / 0.01; >100k: 0.50 / 2.50 / 0.625 / 1 / 0.05 | High-volume, latency-sensitive work |
+
+''SOURCED:'' Adaptive thinking and effort permit a quality/latency/cost tradeoff; Haiku 5.5 also supports effort. Tool definitions and tool exchanges consume tokens, and provider-hosted tools can have separate charges. Batch halves base input/output; Opus 5.5 Fast costs $8/$40 before cache modifiers. [[Choosing a model|https://platform.claude.com/docs/en/about-claude/models/choosing-a-model]], [[Haiku prompting|https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-haiku-5-5]], [[pricing|https://platform.claude.com/docs/en/about-claude/pricing]], accessed 2026-10-28.
+
+''REASONED:'' Exact supported effort values, defaults, and tool availability vary by model and product; check the selected model and account rather than assume every API setting maps to Claude Code. Mythos 5.1 carries restricted organizational verification; older active models remain in the pricing catalog. [[Fable model page|https://platform.claude.com/docs/en/models/fable-5-1/overview]], accessed 2026-10-28.
+
+!!! OpenAI
+
+''SOURCED:'' The current API catalog positions Astra for the hardest coding and reasoning, Sol 6.1 for intelligence versus cost, and Luna for high-volume economical work. The four current API pages list 1,050,000 context and 128,000 maximum output tokens. Terra's page emphasizes screen action, visual interpretation and drafting; its local use as a builder remains an operator observation. [[Catalog|https://developers.openai.com/api/docs/models]], [[Terra|https://developers.openai.com/api/docs/models/gpt-6.1-terra]], [[Sol|https://developers.openai.com/api/docs/models/gpt-6.1-sol]], [[Luna|https://developers.openai.com/api/docs/models/gpt-6-luna]], [[Astra|https://developers.openai.com/api/docs/models/gpt-6-astra]], accessed 2026-10-28.
+
+''SOURCED:'' Standard short-context rates below show input / output / cached input / 30-minute cache write / 12-hour cache write. Long-context, Fast, Ultrafast and asynchronous tiers carry different prices; consult the live table for thresholds and full rates. [[OpenAI API pricing|https://developers.openai.com/api/docs/pricing]], accessed 2026-10-28.
+
+| Model / API ID | USD / million input / output / hit / 30m write / 12h write | Effort |h
+| GPT-6 Astra `gpt-6-astra` | 10 / 50 / 1 / 12.50 / 25 | low, medium, high, xhigh, max |
+| GPT-6.1 Sol `gpt-6.1-sol` | 2 / 10 / 0.10 / 2.50 / 5 | low, medium, high, xhigh, max |
+| GPT-6.1 Terra `gpt-6.1-terra` | 1 / 5 / 0.05 / 1.25 / 2.50 | none, low, medium, high, xhigh, max; medium default |
+| GPT-6 Luna `gpt-6-luna` | 0.10 / 0.50 / 0.01 / 0.125 / 0.25 | none, low, medium, high, xhigh, max; medium default |
+
+''SOURCED:'' Terra requires the Responses API for tool calling; Luna supports built-in tools and functions through Responses, and Chat Completions function calling only at `none`. Effort and surface support should be checked separately from Codex CLI choices. [[Terra|https://developers.openai.com/api/docs/models/gpt-6.1-terra]], [[Luna|https://developers.openai.com/api/docs/models/gpt-6-luna]], [[deployment checklist|https://developers.openai.com/api/docs/guides/deployment-checklist]], accessed 2026-10-28.
+
+''REASONED:'' The operator's cache also lists `gpt-6-sol`, `gpt-5.6-terra`, `gpt-5.6-sol`, `gpt-5.6-luna`, and `gpt-reserve`; cache presence does not establish current API pricing, context, entitlement or guaranteed availability. Those fields remain unverified here. The table deliberately does not infer a subscription quota multiplier from API prices.
+
+!!! Google Gemini
+
+''SOURCED:'' Gemini 4 Argon `gemini-4-argon` offers a unified 1,048,576-token context, 65,536 default synchronous output and up to 1,048,576 long decode; thinking low/medium/high, medium default; functions, code execution, search grounding and URL context. Google targets complex software engineering and multi-step agents. Standard introductory API rates through 2026-11-30: input $2, output including thinking $10, implicit cached input $0.10 per million; afterward $4/$20/$0.20. It supports implicit caching only. [[Model page|https://ai.google.dev/gemini-api/docs/models/gemini-4-argon]], [[launch guide|https://ai.google.dev/gemini-api/docs/latest-model]], [[pricing|https://ai.google.dev/gemini-api/docs/pricing]], accessed 2026-10-28.
+
+''SOURCED:'' Gemini 3.8 Flash `gemini-3.8-flash` targets long-horizon software engineering and agents, with low/medium/high thinking and medium default. Standard introductory input/output/cache-hit rates through 2026-12-31: $0.75/$3.75/$0.075; listed cache storage costs $0.50 per million tokens per hour. Output includes thinking. Rates rise to $1.50/$7.50/$0.15 and storage $1/hour on 2027-01-01. [[Flash guide|https://ai.google.dev/gemini-api/docs/latest-model]], [[pricing|https://ai.google.dev/gemini-api/docs/pricing]], accessed 2026-10-28.
+
+''REASONED:'' The Flash guide URL currently resolves to Argon, so 3.8 Flash's exact context window and tool matrix remain unverified in this research; check its individual model page before deploying. Google also lists `gemini-3.5-flash-lite` for high-volume agentic and simple processing at $0.30/$2.50 and $0.03 cache hit, plus $1 per million tokens per hour storage; its context and effort controls remain unverified here. [[Pricing|https://ai.google.dev/gemini-api/docs/pricing]], accessed 2026-10-28.
+
+''SOURCED:'' Search grounding for eligible Gemini 3 and newer paid tiers includes 5,000 free search requests per month shared across those models, then $14 per 1,000 search queries; one submitted request can trigger multiple queries. Check each model's actual tool support and tier. [[Gemini pricing|https://ai.google.dev/gemini-api/docs/pricing]], accessed 2026-10-28.
+
+!!! Another coding provider: DeepSeek
+
+''SOURCED:'' DeepSeek lists `deepseek-flash` (V4.1 Flash) and `deepseek-v4-pro` (V4 Pro), each with 1M context, up to 384k output, thinking and non-thinking modes, and tool calls. At peak, Flash input cache miss/hit/output cost $0.30/$0.006/$1.20 per million; Pro costs $1.32/$0.044/$3.96. Off-peak prices halve these figures; peak means weekdays 01:00–04:00 and 06:00–10:00 UTC. Flash also supports vision, Pro does not. [[DeepSeek model and pricing|https://api-docs.deepseek.com/quick_start/pricing/]], accessed 2026-10-28.
+
+''REASONED:'' DeepSeek cache-write surcharge, exact provider role recommendation, local tooling integration, organizational data terms and suitability for this repository remain unverified; treat it as an optional separately evaluated provider, not an assumed available seat.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/plans-and-what-spends-the-allowance`>>
+
+!! Plans and what spends the allowance
+
+''SOURCED — Claude Code:'' Pro and Max cover Claude Code and share usage across Claude surfaces; both carry a five-hour session limit and a weekly limit, and Max adds a separate weekly Fable limit. Usage depends on model, conversation size and activity; Anthropic recommends Sonnet for ordinary coding, Opus for difficult or architectural work, and Haiku for quick mechanical passes. The `/model` selector reports available models; `/context`, `/compact`, and `/clear` help manage context. [[Claude Code plans|https://support.claude.com/en/articles/11145838-use-claude-code-with-your-pro-or-max-plan]], [[model and usage guide|https://support.claude.com/en/articles/14552983-models-usage-and-limits-in-claude-code]], [[usage limits|https://support.claude.com/en/articles/11647753-how-do-usage-and-length-limits-work]], accessed 2026-10-28.
+
+''REASONED:'' The operator did not name a Claude subscription tier. Exact quota, subagent weighting, model multipliers, and per-model remaining budget cannot be derived from the API price table. Longer histories, large tool results, parallel agents and higher effort plausibly consume more; measure the account's actual quota deltas rather than assigning an undocumented ratio. Check the UI for actual reset times and any separate limits.
+
+''SOURCED — Codex:'' OpenAI documents a shared Work/Codex allowance whose consumption depends on model, task, settings, input/output, multistep work and speed mode. The Codex CLI `/usage` displays account usage and reset information. Plus and Business Standard generally have five-hour and weekly windows; Pro 100/200/500 have a weekly allowance without a five-hour limit; Go has a monthly allowance. API billing stands separately. [[Codex pricing and limits|https://developers.openai.com/codex/pricing]], [[CLI features|https://developers.openai.com/codex/cli/features]], accessed 2026-10-28.
+
+''SOURCED:'' OpenAI estimates, for Plus and Business Standard, 35–285 local Terra 6.1 messages, 15–160 Sol 6.1, 350–3,000 Luna and 5–45 Astra per five-hour window; task and settings drive wide variation and weekly limits also apply. Fast uses 2.5× included allowance, while Astra and Sol 6.1 Ultrafast use 8×, relative to Standard; purchased credits use different rates. [[Work and Codex pricing|https://learn.chatgpt.com/docs/pricing]], accessed 2026-10-28.
+
+''REASONED:'' The operator did not name the plan, so neither the precise reset nor token pool size follows from the prompt. A larger reasoning trace and repeated context can consume more allowance; Sol 6.1's fast depletion remains this crew's observation, not a published quota multiplier. Fast mode can spend more allowance, but raw speed does not prove a fixed conversion. Test Terra, Sol and Luna on matched prompts and read actual `/usage` deltas; repeated sampling must allow for delayed quota updates. API output pricing and plan quota carry different units.
+
+''SOURCED — Copilot legacy annual:'' The operator's stated 300 premium requests matches the legacy Pro allocation; verify the actual subscription in account billing. Each CLI user prompt incurs its selected model multiplier, while autonomous tool calls do not count as extra prompts. GPT-5.3-Codex carries 6×; Haiku 4.5 and GPT-5.1-Codex-Mini 0.33×, MAI-Code-1.1-Flash 0.25×, GPT-5.1-Codex 3×, Sonnet 4.6 9×, Opus 4.8 27×. GitHub's separate PR/IDE Copilot code review consumes 13 requests per review. Auto selection offers 10% off where eligible. Counters reset on the first of each month at 00:00 UTC; unused requests do not roll over. Additional requests may be bought at $0.04 each, subject to budget and eligibility. Legacy annual users do not receive new models and features. [[Legacy requests|https://docs.github.com/en/copilot/reference/copilot-billing/request-based-billing-legacy/copilot-requests]], [[legacy multipliers|https://docs.github.com/en/copilot/reference/copilot-billing/request-based-billing-legacy/model-multipliers-for-annual-plans]], accessed 2026-10-28.
+
+''REASONED:'' A single GPT-5.3-Codex CLI prompt consumes six, and 300/6 = 50 such prompts if no other premium usage occurs; a follow-up prompt consumes another six. Medium effort does not independently establish an additional legacy multiplier. One CLI read and one GitHub code-review invocation have different meters; do not substitute 13 for the CLI multiplier. At the published overage rate, six requests would cost $0.24 if overages are enabled, but actual monthly marginal cost depends on unused entitlement and account settings.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/evidence-for-crew-practice`>>
+
+!! Evidence for crew practice
+
+''SOURCED:'' Anthropic describes using Opus to plan and Sonnet to execute, plus Haiku for mechanical work. Its multiagent research reports peer review and an independent arbiter, but also observes coordination failures in interdependent work. [[Claude Code guide|https://support.claude.com/en/articles/14552983-models-usage-and-limits-in-claude-code]], [[multiagent research|https://www.anthropic.com/research/multiagent-systems]], accessed 2026-10-28.
+
+''SOURCED:'' An OpenAI code-critic study found useful critiques but also hallucinated bug reports; human-plus-model review reduced hallucinations compared with models alone in its evaluation. [[LLM Critics Help Catch LLM Bugs|https://arxiv.org/abs/2407.00215]], 2024, accessed 2026-10-28.
+
+''SOURCED:'' A preregistered single-pipeline replay found fresh same-family review caught at least as many target defects as cross-family review at its checkpoints, while the other family showed higher precision in one comparison and each found unique bugs in another. Its limitations include one run per cell and possible grading bias. This does not establish that changing provider always improves recall. [[Fresh Eyes Beat a Second Family|https://stephens.page/blog/fresh-eyes-beat-a-second-family/paper/]], accessed 2026-10-28.
+
+''REASONED:'' Use an independent fresh review with the diff, requirements, relevant neighboring code and tests; avoid exposing the reviewer to the author's rationale until after its first findings. Cross-lineage review remains a testable diversity hypothesis, especially on high-risk changes, not a replacement for fresh-context controls, adjudication or test suites.
+
+''SOURCED:'' Anthropic documents cache invalidation from changing prompt prefixes, tool definitions or settings, with model-specific exceptions, and recommends preserving stable context. Gemini bills thinking as output, so reasoning and long tool loops can increase the bill. [[Anthropic cost optimization|https://platform.claude.com/docs/en/about-claude/models/optimizing-for-cost-and-intelligence]], [[Gemini pricing|https://ai.google.dev/gemini-api/docs/pricing]], accessed 2026-10-28.
+
+''REASONED:'' Start with modest effort on bounded tasks, increase only after observing failure, cap tool output, reuse stable prefixes where the actual harness provides caching, and keep task context relevant. Cache savings must be measured net of writes, storage, changes in prefixes and the higher long-context tiers. Parallel agents reduce wall time only when coordination and rework do not erase the gain.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;koJhIBLaTWUV1BZgt94WgS51UzaM6OY-rNoJbKyBRTQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

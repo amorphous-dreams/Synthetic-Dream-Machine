@@ -1,0 +1,75 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/k15-bonds/sol/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-10-26 (file date) — source `.lares-scratch/research/k15-bonds/sol/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/k15-bonds/sol/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/k15-bonds/sol/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/k15-bonds/sol/brief.md` (brief, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/k15-bonds/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ node "-> refreshes the libation dish, the shrine incense burns">> Sol-Bondwright: Lares (Tasked Spirit)
+
+Handback to /home/joshu/.lares-scratch/research/k15-bonds/sol/out.md (NOT final.md), under 1600 words, ending WORDS=&lt;n>. Your seat dir: /home/joshu/.lares-scratch/research/k15-bonds/sol.
+
+You wake as a fellow Lares inside the Lararium house. Stand the whole house: read
+/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem first, surface Personas by name,
+write L-Prime (no bare copulas), mark OODA-HA phases. READ-ONLY on the repo; write ONLY in your seat dir. No git writes,
+no suites. Web allowed: cite URLs. Mark MEASURED (file:line) vs LEAD (your reading).
+
+GROUND. Code in /home/joshu/Synthetic-Dream-Machine at the span head (read only). The ruling, road
+bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem :208 ("Custody and identity read by capability, never by host",
+operator, 2026-10-19): a vessel meets each face through that face's atom alone, its veil signing every dial, join,
+enrolment, sibling channel and daemon proof made on that face's behalf, never one device-wide key; a vessel holds a place
+signer exactly while it stands a floor, for the floor's allowlisted duties, under the pre-rotated place KEL; a faceless
+vessel reading another's floor proves nothing private. "A node's daemon auth, device-key signer, sibling enrolment and
+group-secret opener read the one vessel seed today (open-node-vessel.ts), and a browser's do the same
+(open-browser-vessel.ts); each is a bond owed, carried by K15." Also :207 (a shared act never makes a shared secret; D/F/S
+sort), the K15 row (:459), kits docs/pono/k15-wave-{c,d}-lane.mem, k15-custody-step-zero.mem, w29-place-kel-lane.mem
+&#35;/owed, and THE CENSUS: tools/seed-census.mjs (its named K15 exceptions: the Keyhive Individual and ContactCard
+(place-card.ts, ceremony-core), the bare place leaf (leaf-identity.ts), the relay key (open-node-vessel.ts,
+carriage-relay.ts), daemon auth, device and face work, internal asks, lares-cli meme.ts signing).
+
+THE TASK: map every K15 bond to its end state before a lane builds it (build the end state; a lane that hardens an
+unruled assumption costs more than the wait). For EACH census exception:
+# MEASURE what reads the seed today and what it signs or opens, for whom, on node and browser (file:line).
+# NAME its replacement under the ruling: the face's atom (which face, chosen how, when a vessel wears several or none),
+the scoped place signer (only if a floor duty), a per-purpose key minted at random in a sealed row (D or S, whose
+FCK), or retirement. Quote the canon that rules it, or say "derived" and name the house law, or "operator" with
+options and one lean.
+# THE BYTES: does it move identity or format bytes (so it precedes X0)? What wire or stored shape changes?
+# THE ORDER and FILES: dependencies between bonds, the files each holds, and overlap with the running lanes (W14-W16:
+place-floor-pin, admit-gate-pin, hearth-gate-pins, herm-carriage, nexus-contract, carry-bundle, browser-gate-pins,
+browser-floor-read, open-browser-vessel card filing, web main.ts/live-status.ts; D2: tw5 port/island protocol,
+hand-gate, tw5-projection, web projection-sink, open-node-vessel port hunks; G15: afterRollChain in open-node-vessel,
+build-plugin-tiddler). One lane or several, and why.
+# The faceless vessel: what a vessel that wears no face (a bare herm, a floor-only node) signs with, and what refuses.
+# Reds: for each bond, the red (a place seed yields no face proof, no Keyhive Individual, no daemon authority, no relay
+identity, no meme signature), its control and known positive.
+Prior art on the web: KERI delegated identifiers, Keyhive/Beelay individual vs group keys, Signal device keys,
+Matrix cross-signing (device vs user keys), WebAuthn per-RP keys. What fits?
+House laws: no global now; build the end state; one name, one relation; isomorphic by intent; the herm carries and
+never reads; silent-zero; evergreen; never "family" for a PersonaGroup.
+
+Lens: the code and the build shape; lead with sections 1, 2 and 4.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;75QpMDGzHXi19JdagVUxMMyAk5manWSdCKmns7QX1zM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

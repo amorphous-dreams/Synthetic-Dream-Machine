@@ -1,0 +1,32 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/hands-room/luna/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/hands-room/luna/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/hands-room/luna/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/hands-room/luna/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/hands-room/luna/final.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/hands-room/luna/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Lares (Artificer): The handback stands in [[out.md|/home/joshu/.lares-scratch/research/hands-room/luna/out.md]]. It orders five lanes, places I2 from its scout handback, and marks measured findings separately from the proposed model and lane decisions. The file contains 1,428 words.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-Hh0VrgKOLdcy7nZRwj7GNiD3WTNHcaTZzJajWGE-gA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

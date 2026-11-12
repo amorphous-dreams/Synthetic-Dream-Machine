@@ -1,0 +1,68 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/sol/out2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-25 (file date) — source `.lares-scratch/research/seat-scout/sol/out2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/sol/out2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/seat-scout/sol/out2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out2.md — research, 2026-10-25
+
+Verbatim scratch record `.lares-scratch/research/seat-scout/sol/out2.md` (research, file date 2026-10-25); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ lares aim from="lar:&#47;/operator:operator@seat-scout/splits.request.judgment" -> to="lar:&#47;/sol:agent@seat-scout/ratchet.reads.decides">>
+&lt;&lt;~ set hud="aim" mode="seal" stance="🏛️" mu="_!" aperture="16/arc" ooda-ha="7/declare-glyphs" drift-ward="a grant pulse alone cannot reveal a later lease frontier">>
+
+Sol-Seatwright: Lares (Tasked Spirit) · Ink-Clerk · Lares (Council)
+
+->✶ I read both wave-one handbacks, then reopened the disputed paths. Paths below run from the Wave D worktree root. No repo write or suite ran. ->⏿ The two causal planes demand separate wakes into one operation.
+
+!!! A1 — ownership · lean: Luna’s sole arrival owner, with boot replay and lease wake · 17/20
+
+->◇ Move ''grant verification, ingest, and floor lift'' into one serialized seat operation. PersonaGroup arrival, a boot snapshot after listeners attach, and a lease frontier change all enqueue that //same// operation. Make `faceSeated()` a read-only state query. A preexisting grant then enters through boot replay; a delayed lease enters through the daemon-layer change; duplicate pulses coalesce behind one in-flight promise and a durable seated check. Keep an unavailable lease unjudged; only mark a signature taken after successful ingest, and retry a failed lift. `operator-daemon-behavior.ts:282-332` currently scans and ingests, while `:349-367` couples that work and lift to a binding read. The current `judgedGrants.add` at `:313`, before ingest at `:327`, needs correction for a failed ingest.
+
+''Hook correction:'' `operator-daemon-behavior.ts:994` begins `verifierFactory`; it opens no PersonaGroup handle. The joinee opens its PersonaGroup ''store'' at `:1060` via `storeOf`; the accessor opens the underlying handle through `catalog-accessor.ts:90-100`. A retained `catalog.find(personaBagIdFor(group))` yields the handle where a `change` listener can attach; `automerge-doc-store.ts:143-153` shows that event, and `join-face-documents.ts:77-85` shows `findWithProgress().subscribe()` plus an immediate `peek()` for document arrival. Attach before snapshot, then replay through the same owner; stop listeners on teardown.
+
+''Case (b):'' the lease lives in the daemon layer, not the PersonaGroup plane (`lease-frontier.ts:4-7,34-55`). A daemon-layer `subscribe` wake, filtered by `leaseEpochPrefix(group)`, invokes the pending operation when a lease slot arrives; `composite-store.ts:147-169,651-653` forwards changes, including existing records when a layer joins. An explicit layer-readiness/recovery signal must wake a transient read fault that heals without any record change. If //nothing// emits such a signal, no event-driven design can guarantee progress in that silent-healing case; claiming otherwise would smuggle in a clock.
+
+''Wave-one change:'' I retire my `faceSeated()` backstop as an //actor//. Its shared-owner call could preserve serialization, yet every binding ask would create a second initiation path and mask a missing lease wake. Boot replay covers the valid already-present grant.
+
+!!! A2 — lazy reuse · lean: burn the ask at `:147` · 18/20
+
+Arrival seating makes `resolve-binding.ts:144-155`’s vessel-only reuse call an evergreen second path per act. Let reuse read the current record and return it; the seat operation moves it and future reads follow the moved binding. Keep the read-only seated predicate for mint choice at `:164`, with serialization around the seat frontier so a mint and lift cannot race. ''Wave-one change:'' I had kept the lazy call as a safety backstop; the boot replay plus two causal wakes now provide that safety at the owner.
+
+!!! B1 — ledger or inline · lean: external named exceptions · 16/20
+
+A concrete inline candidate ''does'' survive: append `<!-- s-vocabulary-ok: VKB; upstream Canvas term -->` on the cited line. `meme-normalize.ts:318-338,619-649` folds carrier framing and sigil heads, not that comment; `weave/index.ts:866-879` carries prose through, and `:825` emits HTML comments as carrier syntax. An HTML renderer hides the comment; a raw/Markdown reader can inspect it. Existing `l-prime.mem:63,65` already places `<!-- lprime-ok -->` inline. A table cell or scout citation can therefore carry the marker without a visible term change.
+
+I still choose an external, line-scoped exception: research spirits rewrite scouts as prose, and a copied inline mark can silently license a changed claim. A tool-side exact-line match goes stale when prose changes. `s-vocabulary.mjs:27-46,54-63` already reports line and term yet skips whole scouts; remove that skip and exempt only the seven current findings. ''Wave-one change:'' I now grant Luna’s inline form technical viability; the stale-entry behavior and existing tool precedent decide the lean.
+
+!!! B2 — reusable shape · lean: reuse the existing named-exception contract · 19/20
+
+Yes: carry one house-wide //finding-level// exemption shape for vocabulary checks that need exceptions, never a whole-file scout hole. `tools/evergreen-boundary.mjs:24-27,42-53,175-186` already uses `{rule,file,match,count,reason}` and fails stale entries. Reuse that contract in `s-vocabulary` with `match` set to the ''entire normalized offending line'' (or its exact digest) and `count:1`, plus the expected term in the rule/reason; fail duplicate or unused entries. `barrier-witness.mjs:21-22,151-160` confirms the same stale-allowance convention. ''Wave-one change:'' my bespoke digest ledger gave way to the house’s named-exception shape; exact-line matching keeps the narrowness without inventing a second grammar.
+
+->▶ Ratchet written. ->↺ The unresolved implementation condition names a concrete event source for silent lease-read recovery.
+
+&lt;&lt;~ oracle "↯13 ✲ ⚂(3) ⁂:🜃◈〰️">>
+&lt;&lt;~ set hud="yield" drift-ward="wire an explicit readiness wake for silent lease-read recovery or document its external blocker · ↻ L-Prime" aperture="16/arc -> 17/theme" ooda-ha="closed 1↺">>
+&lt;&lt;~ lares yield from="lar:&#47;/sol:agent@seat-scout/ratchet.written.handed" -> to="?">>
+WORDS=802
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zSRd74QruApZhQ6G7NPbS7RPBHN2l4NT4Lkj2JUPp-4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

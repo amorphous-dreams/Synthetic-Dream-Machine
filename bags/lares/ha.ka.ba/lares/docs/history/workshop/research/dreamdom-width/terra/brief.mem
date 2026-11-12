@@ -1,0 +1,55 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/terra/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-10-28 (file date) — source `.lares-scratch/research/dreamdom-width/terra/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/terra/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/terra/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-10-28
+
+Verbatim scratch record `.lares-scratch/research/dreamdom-width/terra/brief.md` (brief, file date 2026-10-28); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/terra/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/research-dreamdom-s-default-width-across-every-v`>>
+
+! Research: DreamDOM's default width across every vessel class — prior art, pattern-integrity rhymes, golden principles
+
+The Lararium project renders a TiddlyWiki-5 wiki through "cameras" of different widths, over a worker "island" that holds all truth and keys:
+* ''full'' — a main-thread TW5 engine "mirror" over the real DOM, fed only by a port from the worker (operator-approved, unprivileged, no keys, no truth);
+* ''skinny'' — the same mirror, but tiddler bodies fetched on open over the port;
+* ''story'' — a narrower reading surface (held until promotion lands);
+* ''none'' — the worker renders frames into main-thread "sinks"; no engine on the page.
+The mirror opens through the vessel's port grant (never a URL flag or a boolean); the real boot (shadow root, CAS read, engine boot, first snapshot, paint) is the probe; it steps down only on a named step failure, a caught RangeError/QuotaExceededError, or the grant revoked, at most once per boot, never by a clock. Skinny-paints-first-then-promotes is built.
+
+''The question in front of the operator:'' what is the default width, and should it differ by vessel class? The operator's stated instinct: "a full-cap browser should default to a full capability DreamDom". A fresh measurement on one host (WSL2, Chromium, 2,000 tiddlers, median of 3; phone, WebKit and Android UNMEASURED) reads: heap after paint stock 32.2 MiB / full 35.6 / skinny 21.7; first paint 836 / 942 / 677 ms; keystroke-to-paint p95 15.1 / 26.5 / 23.7 ms; none's bytes per key 63 kB against a 52 kB budget. The full numbers were 33 s and 106 MiB until an echo-storm bug was fixed. The project's own memory gate: full may use at most +25 % heap over a stock TW5 tab, with a 150 MiB tripwire.
+
+''The vessel classes the roadmap targets'' (from the project's device-capabilities carrier): phone on iOS 26 (a leaf; a full vessel only after Home Screen install; iOS kills a tab's web content process past roughly 1.5 GB and reloads into the same death), phone on Android 16 / Chrome (a leaf; full as a WebAPK; SharedWorker since 148), tablet (a leaf that may stand a household's always-on "waking floor"), desktop browser on every engine (a leaf; a full vessel minus the inbound gate), node (Node.js: the full vessel and the herm relay; no page DOM unless a browser attaches), plus guests that are never vessels: Mudlet (telnet probe) and Unreal (a guest island over a host bridge, or a Pixel Streaming camera whose vessel sits server-side).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/find-with-sources`>>
+
+!! Find, with sources
+# PRIOR ART for choosing a rendering tier by device: islands architecture and partial hydration (Astro, Fresh), resumability (Qwik), React Server Components and selective hydration, progressive enhancement in offline-first apps, worker-rendered UI (Partytown, Comlink-style off-main-thread UIs, the WorkerDOM/AMP precedent), local-first editors' renderers (Figma, tldraw, Excalidraw, Obsidian, Logseq, Notion offline, TiddlyWiki's own lazy loading and its "skinny tiddlers"), and mobile constraints (iOS jetsam, Android low-memory killer, bfcache, page lifecycle freeze). For each: what tier rule it uses, what it defaults to, and what broke for them.
+# PATTERN-INTEGRITY RHYMES: where these systems echo the house's own laws (capability read by what a vessel can do, never which host; no truth on the main thread; no clock deciding; a step-down named, never silent; one writer; the person's intent rides their face). Name each rhyme with its source.
+# GOLDEN PRINCIPLES the field agrees on for default-full versus default-light rendering, with the counter-cases where each principle failed.
+# PER VESSEL CLASS: the width you'd default to and why, citing constraints (memory ceilings, process kills, install state, input latency budgets, battery), and the step-down path.
+
+Write ONLY `out.md` in this directory (under 600 lines). Mark every claim SOURCED (URL, date) or REASONED. Never read a credential file; never edit any repository.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sU7eBhlIx6kaWLtXTx8dbR9ZM9N-fgQVw9GIM4DiClw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

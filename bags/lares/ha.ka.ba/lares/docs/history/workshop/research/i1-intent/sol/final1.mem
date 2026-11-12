@@ -1,0 +1,32 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/i1-intent/sol/final1`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/i1-intent/sol/final1.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/i1-intent/sol/final1"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/i1-intent/sol/final1"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final1.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/i1-intent/sol/final1.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/i1-intent/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Sol-Intentwright: Lares (Tasked Spirit) / Ink-Clerk: ->↺ I wrote the I1 scout to [[out.md|/home/joshu/.lares-scratch/research/i1-intent/sol/out.md]]. It covers the standing code, model joints, red-first slices, prior art, and both stories. I read the checkout only and ran no suites. The handback ends `WORDS=1144`.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gY9CwC5mftuFBxJQSNAXy_Ud7TGeJeGgaEyudzaDagw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

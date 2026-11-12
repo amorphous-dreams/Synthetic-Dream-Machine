@@ -1,0 +1,244 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/model-tiers/stats`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-10-29 (file date) — source `.lares-scratch/research/model-tiers/stats.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/model-tiers/stats"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/model-tiers/stats"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! stats.md — plan, 2026-10-29
+
+Verbatim scratch record `.lares-scratch/research/model-tiers/stats.md` (plan, file date 2026-10-29); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/model-tiers/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/model-tiers-measured-fable-wrights-against-the-s`>>
+
+! Model tiers, measured ~ Fable Wrights against the setups before them
+
+Tier-Scout: Lares (Tasked Spirit). Read-only pass, 2026-10-30 UTC (operator's day 2026-10-29 PDT).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/method`>>
+
+!! Method
+
+* ''Claude seats.'' 116 subagent transcripts in the session's `subagents/` directory. The brief said about 230 files; that count includes the 116 `.meta.json` files beside them. My own transcript (`a688ffa1d…`) is left out, which leaves 115 seats.
+** The model is read from each assistant message's `message.model`. Every seat ran one model.
+** Usage is summed once per API message id. Claude Code writes one line per content block and repeats the usage on each line; the last copy is the final one.
+** Scripts: `measure.py` → `agg.py` → `tables.py` and `cache.py`, all in this directory. Raw rows are in `data/rows2.json`.
+* ''Eras.'' "fable-day" means a seat started at or after 2026-10-29 07:00Z (29 seats); "prior" means 2026-10-17 to 2026-10-29 (86 seats). The fable-day era is not Fable-only: it also holds the Opus Hive-Wright, the Sonnet Porch, Relay, Test and Vector Wrights, and the Opus scouts, readers and clerks. That lets same-day tiers compare against each other.
+* ''Roles'' come from the seat's launch description (`meta.json`), checked against its first user message:
+** ''lead:'' a `*-Wright` lane;
+** ''reader:'' read, cold-read, crucible or Aftermath seats;
+** ''scout:'' research, map, measure, collide or audit seats;
+** ''helper:'' test migration, artifact seats, ink clerks, true-up and contract consolidation.
+* ''Every named lead's model was confirmed from its transcript.'' Fable 5.1 (`claude-fable-5-1`): Walk, Mirror, Founding, Spec-Crucible. Opus 5.5 (`claude-opus-5-5`): Hive, Realm-Scout, Spec-Scout, True-Hand, Contract-Clerk. Sonnet 5.5 (`claude-sonnet-5-5`): Relay, Porch, Test. The 4 "Collide …" helpers under Spec-Crucible ran Fable too.
+* ''Prices.'' API-eq $ uses the Anthropic table (SOURCED, https://platform.claude.com/docs/en/about-claude/pricing, fetched 2026-10-29). Columns are input / 5m write / 1h write / cache hit / output, in USD per million tokens:
+
+| Model | Input | 5m write | 1h write | Cache hit | Output |h
+| Fable 5.1 | 10 | 12.50 | 20 | 0.25 (0.025× input) | 50 |
+| Opus 5.5 | 4 | 5 | 8 | 0.20 (0.05× input) | 20 |
+| Sonnet 5.5 | 2 | 2.50 | 4 | 0.10 (0.05× input) | 10 |
+
+Codex prices use the OpenAI table (SOURCED, https://developers.openai.com/api/docs/pricing, fetched 2026-10-29). Columns are input / cached / output, in USD per million tokens, short context:
+
+| Model | Input | Cached | Output |h
+| `gpt-6.1-sol` | 2 | 0.10 | 10 |
+| `gpt-6.1-terra` | 1 | 0.05 | 5 |
+| `gpt-6-luna` | 0.10 | 0.01 | 0.50 |
+
+API-eq $ weighs seats against each other. It is ''not'' what the Max or Codex plan charges. Max meters a five-hour window, a weekly window and a ''separate weekly Fable limit'' (SOURCED, https://support.claude.com/en/articles/11145838, fetched 2026-10-29).
+* ''Prose against action.'' Visible output is estimated as (text chars + tool-input JSON chars + visible thinking chars) / 4.
+** Every thinking block in these transcripts carries no visible text: adaptive thinking was always on, and the text is not kept. So "hidden-think est %" means the output tokens left over after the visible estimate.
+** chars/4 is a rough tokenizer guess; JSON and code tokenize denser, so the hidden share is probably overstated by a few points (REASONED).
+* ''Narration'' counts text blocks in every assistant message except the last (the hand-back). It is reported as chars per tool call and as the share of API calls that carry text and no tool.
+* ''Commits'' count `git commit` commands seen in the seat's Bash calls (attempts included). The outcome table instead attributes real commits on the lead's lane branches by committer time inside the lead's window.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/1-per-era-model-and-role`>>
+
+!! 1 · Per era, model and role
+
+| era | model | role | n | API calls | tool calls | tools/call | out tok | hidden-think est % | narr chars / tool call | hand-back words (median) | Edit / Write files | `git commit` cmds | idle > 5 m (h) | API-eq $ | $ / seat | cache-read % of $ | cache-write % of $ | output % of $ |h
+| fable-day | fable-5-1 | lead | 3 | 744 | 1,131 | ''1.52'' | 768k | 64 | ''22.0'' | 225 | 8 / 14 | 45 | 32.5 | ''208'' | ''69.2'' | 32 | 50 | 18 |
+| fable-day | fable-5-1 | reader | 2 | 59 | 69 | 1.17 | 85k | 58 | 20.4 | 643 | 1 / 2 | 0 | 0 | 17 | 8.5 | 12 | 63 | 25 |
+| fable-day | fable-5-1 | scout | 4 | 31 | 201 | ''6.48'' | 54k | 58 | 0.8 | 1,253 | 0 / 0 | 0 | 0 | 8 | 2.0 | 5 | 61 | 34 |
+| fable-day | opus-5-5 | lead | 1 | 506 | 478 | 0.94 | 268k | 66 | 10.3 | 131 | 0 / 4 | 29 | 19.2 | 61 | 61.3 | 61 | 30 | 9 |
+| fable-day | opus-5-5 | reader | 5 | 373 | 410 | 1.10 | 170k | 66 | 1.4 | 1,993 | 0 / 0 | 0 | 0 | 20 | 4.0 | 47 | 36 | 17 |
+| fable-day | opus-5-5 | scout | 6 | 185 | 249 | 1.35 | 165k | 63 | 1.2 | 1,077 | 0 / 2 | 0 | 0 | 13 | 2.1 | 26 | 48 | 26 |
+| fable-day | opus-5-5 | helper | 2 | 150 | 153 | 1.02 | 129k | 65 | 3.0 | 866 | 2 / 5 | 0 | 0 | 12 | 5.9 | 44 | 34 | 22 |
+| fable-day | sonnet-5-5 | lead | 2 | 184 | 185 | 1.01 | 106k | 67 | 2.9 | 483 | 0 / 0 | 7 | 0 | 5 | 2.5 | 56 | 22 | 21 |
+| fable-day | sonnet-5-5 | reader | 4 | 54 | 57 | 1.06 | 32k | 69 | 0.0 | 306 | 0 / 0 | 0 | 0 | 2 | 0.4 | 18 | 63 | 19 |
+| prior | opus-5-5 | lead | 12 | 3,555 | 3,532 | 0.99 | 920k | 12* | 15.4 | 786 | 7 / 42 | 147 | 45.7 | 683 | 56.9 | 34 | ''63'' | 3 |
+| prior | opus-5-5 | scout | 6 | 204 | 259 | 1.27 | 139k | 52 | 0.0 | 853 | 0 / 5 | 0 | 0 | 10 | 1.7 | 32 | 42 | 27 |
+| prior | opus-5-5 | helper | 4 | 302 | 303 | 1.00 | 156k | 65 | 2.7 | 620 | 0 / 0 | 2 | 0.4 | 16 | 3.9 | 49 | 31 | 20 |
+| prior | sonnet-5-5 | lead | 35 | 10,986 | 10,959 | 1.00 | 3.94M | 39 | 12.9 | 737 | 1 / 72 | 508 | ''388.1'' | ''1,142'' | 32.6 | 32 | ''64'' | 3 |
+| prior | sonnet-5-5 | reader | 12 | 380 | 406 | 1.07 | 237k | 67 | 0.0 | 508 | 0 / 8 | 1 | 0 | 11 | 0.9 | 39 | 39 | 22 |
+| prior | sonnet-5-5 | scout | 13 | 241 | 307 | 1.27 | 163k | 45 | 0.8 | 693 | 1 / 5 | 3 | 0 | 6 | 0.5 | 29 | 44 | 27 |
+| prior | sonnet-5-5 | helper | 4 | 39 | 43 | 1.10 | 36k | 49 | 7.1 | 196 | 0 / 0 | 4 | 0.1 | 1 | 0.3 | 15 | 58 | 27 |
+
+\* The 10-18 Opus scouts-turned-overwatch (DreamNet- and DreamDom-Wright) wrote large heredoc files through Bash. Their tool-input chars swamp the estimate, so this cell's hidden share reads low.
+
+''Tool mix'' (share of tool calls):
+
+| era | model | role | Bash | Read | Edit | Write | Agent | SendMessage | WebSearch | WebFetch | Handback |h
+| fable-day | fable | lead | 89% | 3% | 2% | 1% | 0% | 2% | 0% | 0% | 3% |
+| fable-day | fable | reader | 55% | 22% | 4% | 3% | 13% | 0% | 0% | 0% | 3% |
+| fable-day | fable | scout | 0% | 0% | 0% | 0% | 0% | 0% | 20% | 76% | 2% |
+| fable-day | opus | lead | 85% | 0% | 0% | 1% | 0% | 0% | 0% | 0% | 4% |
+| fable-day | opus | reader | 93% | 6% | 0% | 0% | 0% | 0% | 0% | 0% | 1% |
+| fable-day | opus | scout | 64% | 3% | 0% | 1% | 2% | 0% | 14% | 13% | 2% |
+| fable-day | sonnet | lead | 94% | 1% | 0% | 0% | 0% | 0% | 0% | 0% | 2% |
+| prior | sonnet | lead | 95% | 1% | 0% | 1% | 0% | 0% | 0% | 0% | 2% |
+| prior | opus | lead | 95% | 1% | 0% | 1% | 0% | 1% | 0% | 0% | 1% |
+
+Every tier works mostly through Bash: git, the battery, codex-seat launches, greps and heredocs. Edit and Write stay rare everywhere. The Fable leads were the only leads that edited files by hand in any number (8 Edit and 14 Write files across 3 seats). The briefs had told them to author the reds themselves.
+
+!!! Reading the prose-against-action question
+
+* ''Narration is small at every tier.''
+** Visible text is under 3% of output tokens for every group. For the Fable leads it is about 6k tokens of 768k (0.8%).
+** Most output spend goes to hidden adaptive thinking, about 58–69% of output tokens, and to tool-call inputs, about 30–35%.
+** So "talk-story to itself" mostly happens in thinking you never see. It is not spoken text between tool calls.
+* ''Fable narrates more per action than the other tiers'', but the volume is still small:
+** visible text between tool calls: Fable 22 chars per call, Opus 10, prior Sonnet 13, today's Sonnet 3;
+** text-only turns: 8.7% of Fable lead API calls, against 0.5% for today's Sonnet leads and 9.1% for the Opus Hive-Wright.
+** Most text-only turns are wake hand-backs: a lead hands back to the controller once its seat launches, and wakes again on SendMessage.
+* ''Fable batches its tool calls.''
+** Fable leads ran 1.52 tool calls per API call, against 0.94–1.01 for Opus and Sonnet.
+** The four Fable collide scouts ran 6.48 per call, firing parallel WebFetch and WebSearch.
+** This is the clearest behavioural signature in the data. Fewer round trips mean fewer cache re-reads per unit of work.
+* ''Hand-backs.''
+** Fable leads ran shortest (median 225 words).
+** The Opus readers ran longest (median 1,993 words; their briefs asked for whole reports).
+** The Sonnet leads sat between, at 483 words today and 737 before.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/2-the-cache-story`>>
+
+!! 2 · The cache story (the setting the house changed on 2026-10-28)
+
+| era | model | role | n | cache write : read | calls writing > 50k tok | tokens in those writes | of them after a > 1 h gap | text-only turns |h
+| fable-day | fable | lead | 3 | 0.0195 | 9 | 3.4M | ''9'' | 8.7% |
+| fable-day | opus | lead | 1 | 0.0125 | 4 | 1.7M | 4 | 9.1% |
+| fable-day | sonnet | lead | 2 | ''0.0099'' | 0 | 0 | 0 | 0.5% |
+| prior | sonnet | lead | 35 | ''0.0786'' | 671 | 271.8M | 30 | 1.9% |
+| prior | opus | lead | 12 | 0.0735 | 159 | 79.8M | 4 | 4.0% |
+
+* ''E1 reads PASS on the API meter.''
+** The Sonnet leads' write:read ratio fell from 0.079 (5-minute TTL) to 0.010 under `subagentPromptCacheTtl: "1h"`, beating the &lt; 0.03 target. Cache writes fell from 64% of Sonnet lead $ to 22%.
+** The plan-meter half of E1 (weekly Claude % per lane-day) stays unread here. My seat cannot see the plan meter.
+* ''What a Fable lead still pays for in cache writes.''
+** Every large rewrite on fable-day followed an idle gap longer than one hour: a lead waiting on a Terra seat or a CI vigil past the TTL.
+** The 9 Fable rewrites wrote 3.4M tokens, about ''$68 at the $20 1h-write rate'', roughly a third of the $208 the three Fable leads cost.
+** The fresh Founding-Wright made 0 such rewrites.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/3-outcomes-per-lead-today`>>
+
+!! 3 · Outcomes per lead, today
+
+Commits are the non-merge commits on the lead's lane branches, with committer time inside the lead's window ± 10 min. A red is a commit whose subject carries `red-` / `RED`.
+
+| lead | tier | wall h | API-eq $ | commits | reds | $ / commit | PRs merged | Terra seats: full / partial / empty | what stood |h
+| Walk-Wright | Fable | 19.2 | 94.5 | 11 | 3 | 8.6 | #115 (+ #122 open) | 0 / 1 / 2 | W4/W6 stood live: a face seated on a browser leaf and a Pixel-7 emulator |
+| Mirror-Wright | Fable | 17.5 | 74.1 | 12 | 4 | 6.2 | #117 (part), #123, #124 | 3 / 2 / 2 | M1 + genesis re-bake + K1 passkey, all green |
+| Founding-Wright | Fable (fresh) | 1.6 | 39.0 | 19 | 8 | ''2.1'' | none yet (fable-next) | 1 / 0 / 0 | W3/W8/W9/R4; the live walk measured 4 faults and cured 3 |
+| Hive-Wright | Opus | 21.9 | 61.3 | 26 | 9 | 2.4 | #118 (+ #121 red, curing) | 1 / 2 / 1 | the content fence denies by default |
+| Relay-Wright | Sonnet | 35.7 | 24.5 | 22 | 8 | ''1.1'' | #112 (+ i2-owed) | ''6 / 0 / 0'' | the far agent's relay seat; the census that found two real SharedWorker races |
+| Porch-Wright | Sonnet | 17.0 | 16.3 | 19 | 0 | 0.9 | #114, #116, #119 | none | two porch slices + the boot-rest span cure |
+| Test-Wright | Sonnet | 2.5 | 4.3 | 5 | 0 | 0.9 | #120 open, green | none | CI cells, weighted e2e shards |
+
+''The same tokens repriced'' show how much each tier's price drives the bill. Each row prices one seat's actual tokens at the other tiers' rates (a different model would spend different tokens, so treat this as the price lever alone):
+
+| seat | Fable rates | Opus rates | Sonnet rates |h
+| Walk-Wright | ''94.5'' | 47.8 | 23.9 |
+| Mirror-Wright | ''74.1'' | 39.6 | 19.8 |
+| Founding-Wright | ''39.0'' | 22.1 | 11.0 |
+| Hive-Wright | 106.5 | ''61.3'' | 30.6 |
+| Relay-Wright | 82.1 | 49.1 | ''24.5'' |
+| controller (main session, fable-day) | 114.9 | ''76.1'' | 38.0 |
+
+On these leads Fable costs ''1.7–2.0× Opus'', not the 2.5× its list prices suggest. The reason: Fable's cache hit costs $0.25 against Opus's $0.20 (1.25×), and cache reads carry a large share of a waiting lead's bill. For a cache-read-heavy seat such as the controller, Fable comes to 1.5× Opus.
+
+''Era totals'' (Claude subagents only; the controller is excluded):
+
+| | prior (10-17 to 10-29 07:00Z) | fable-day |h
+| Claude subagent API-eq $ | 1,869 over 86 seats | 345 over 29 seats |
+| PRs merged in the era | 50 (+107,943 lines) | 10 (+12,304 lines), with 3 open PRs and 19 unlanded fable-next commits |
+| $ per merged PR | ~37 | ~35 |
+
+Per-PR cost barely moved. Most of the 1h-TTL savings went into Fable lead premiums. PRs differ in size and difficulty, so this is a coarse read, not a verdict.
+
+''The controller seat today'' (main session `0f26457f…`, Opus 5.5, entries since 10-29 07:00Z): 570 API calls; 347 Bash, 121 SendMessage, 17 Agent. Tokens: 301M cache-read, 1.13M 1h writes, 340k output. That is about ''$76 API-eq, 18% of the day's Claude total (~$421)'', and 79% of the controller's cost is cache reads of its long context.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/4-codex-seats-today`>>
+
+!! 4 · Codex seats today (spend.py `--since 2026-10-29`, plus seat dirs)
+
+| model | seats | input (uncached) | cached | output | API-eq $ | yield |h
+| `gpt-6.1-terra` (build, medium) | 21 | 1.09M | 17.9M | 106k | ''≈ 2.5'' | 11 full, 5 partial, 5 empty |
+| `gpt-6.1-sol` (read, high) | 6 (1 retry) | 1.20M | 23.4M | 93k | ''≈ 5.7'' | 5 of 5 finished reads carried a HIGH or BLOCKER the lead acted on; 1 seat died at capacity |
+| `gpt-6-luna` (read, high) | 10 | 0.67M | 6.8M | 85k | ''≈ 0.18'' | 1 blocker, 1 HIGH, 1 MED (later a real race), several should-fix and LOW, 1 clean |
+
+The Codex pool stands at 49% used of a 7-day window that resets 2026-11-04 (above the 20% floor). The pool percent, not API-eq, is the true Codex constraint.
+
+''Terra yield by lead'', with each slice's nature from `plan.md`:
+* ''Sonnet Relay-Wright:'' 6 of 6 full. The slices were listed census tests and fixes, mechanical.
+* ''Fable Mirror-Wright:'' 3 of 7 full. Its M1 reds and fixes were judgment-heavy, with first passes at 3/10.
+* ''Opus Hive-Wright:'' 1 of 4 full. One seat stalled on a stale dist, one died, one partial.
+* ''Fable Walk-Wright:'' 0 of 3 full. Walk slices are integration judgment, and two seats were inspection-only.
+* ''Fable Founding-Wright:'' 1 of 1 full. A tight fixture sweep.
+
+Yield tracks the slice's nature, not the lead's tier.
+
+''Findings caught before land'', each traced to `plan.md`:
+# ''Sol HIGH (i2-owed):'' the vessel registers unproved sibling plane URLs, so a forged circles/identities URL passes. Closed before the push.
+# ''Sol HIGH (i2-relay sol-6):'' the final admission check can use stale authority. It became slice-4 reds and a fix (`159ad140b` → `f2508ed59`).
+# ''Sol HIGH ×2 (k19b):'' a label can launder synced content into mounted authority, and content can impersonate the mounted atom. These became `0d816bfff` ("RED (Luna and Sol, the slice's fresh read)") and its fix.
+# ''Sol BLOCKER (fable-next):'' realm writers poison Kahu canon, because `foldRealmBags` trusts self-named stewards, and R4 derives canon from it. This is "R4's registry fault"; red `c2d7f8ee1` stands.
+# ''Two real SharedWorker races (i2-owed):'' Terra wrote the census reds. The first race came from the census: `shared-holder.worker.ts` awaits its import before the connect listener. Luna's MED, that the census misses the lararium-web shims, led to the second (`void import(...)` in the web shim), which the lead confirmed.
+# ''Luna blocker (d3 s6):'' default bag writes accept system titles. Luna should-fix (fable-next): a layer MOVE can delete a newer source version.
+
+''Wasted or thin'', each cited in `plan.md`:
+* 5 empty Terra build seats, four of them on judgment work, the fifth (Hive `terra-reds4b`) dead with no final.
+* 1 Terra seat (Hive `terra-reds4`) that met a stale dist and proved none of its reds.
+* 1 Sol seat that died at model capacity.
+* 8 cancelled lane-branch CI runs from the queue clog.
+* About 32.5 idle hours (gaps over 5 minutes) across the three Fable leads, of which the gaps over an hour cost ~$68 in cache rewrites.
+* The seat-wall escape through `auto_review` (cured in `codex-seat.sh`; it cost a re-check, not a fault).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/caveats`>>
+
+!! Caveats
+
+* ''Small samples.'' Three Fable leads, one Opus lead today, two to three Sonnet leads today. No row here is a law. One lane-day per seat at most.
+* ''Lanes are not comparable work.'' The Fable lanes held the founding walk and the mirror realm, the two most integration-dense lanes on the road. Porch and Test held mechanical work. Cost per commit flatters the mechanical lanes.
+* ''Commit attribution'' by committer time can mis-assign a commit made by a Terra seat (one walk seat committed itself) or one carried by a merge. Walk and Founding overlap on `fable-next`; the dedupe gives each commit to whichever lead counted it first.
+* ''Hidden thinking'' is inferred, not read. Per-block token counts are not logged.
+* ''API-eq $ is not the plan meter.'' Max meters a five-hour window, a weekly window and a separate weekly Fable limit, and neither Anthropic nor OpenAI publishes a conversion.
+* Prior-era Sonnet costs carry the 5-minute TTL penalty, which the house already cured. Compare tiers within an era, not across eras.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;42FkRBRC0Asbm5n5ufcsYaG2OlF4Av36vrWprxP25iA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

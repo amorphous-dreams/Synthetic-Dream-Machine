@@ -1,0 +1,91 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/after-the-seat-b`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-10-25 (file date) — source `.lares-scratch/research/after-the-seat-b.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/after-the-seat-b"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/after-the-seat-b"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! after-the-seat-b.md — plan, 2026-10-25
+
+Verbatim scratch record `.lares-scratch/research/after-the-seat-b.md` (plan, file date 2026-10-25); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/after-the-seat-rows-26-to-end-shape-audit`>>
+
+! After-the-seat, rows 26 to end (half B): shape audit
+
+Source: bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem, `#/after-the-seat` (lines 545-621). Fence: line 98 (ruling) and X0 (line 535).
+Read-only. No test ran. Code checked at the cited lines.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/table`>>
+
+!! Table
+
+| row | class | reason |h
+| W11 | BEHAVIOUR | Four alarm probes on Keyhive 0.3.0-alpha.1; the test only measures (`packages/lararium-keyhive/tests/face-chain-substrate.probe.test.ts:1-20`). Writes no bytes. |
+| W17 | UNSURE | "Face switching on one device". Canon says the switch ACT persists, vessel-private, never on the wire (`api/pono/session-contract.mem:116`, `:258-270`). No switch-act code exists yet (only a comment, `packages/lararium-browser/src/browser-face-presentation.ts:21`). Ruling at road line 98 says the face-switch act lands before the live test with two operators. Settle: the act row's field list and whether any CID or address derives from it. |
+| W19 | BEHAVIOUR | A browser-weld walk (test road); the row names no format. |
+| W20 | BEHAVIOUR | Guards by name for burned names. The browser one is an IDB upgrade that deletes `boot-invite-burned` (`packages/lararium-browser/src/browser-vessel-identity.ts:119`); moving the guard edits no live store. Note: that delete is itself a tolerant migration, and the bake makes it dead code. |
+| W22 | BEHAVIOUR | `composeCasTransits` combines two fetch transports (`packages/lararium-node/src/node-cas.ts:171`); a fetch by CID leaves the CID alone. `walkInvite` option takes a carried invite string (`open-browser-vessel.ts:265`, `:600`). |
+| W23 | BEHAVIOUR | A CI job and a vitest-config guard test. |
+| W24 | BEHAVIOUR | Walk steps plus readiness entries and waiters. `ReadinessMap` is an in-process map (`packages/lararium-node/src/disk-projector.ts:198,1566`). |
+| F1 | BEHAVIOUR | Mounts an already-specified view (`session-document-view.ts`, `gated-sync-leg.ts`) at callers; names no new rest or wire format. Its address work (`F3`) belongs to the other scout. |
+| F2 | BEHAVIOUR | Moves compose sites onto `resolveSurfaceRecipe` / `mountSurface`; pool key is in memory. |
+| F6 | BEHAVIOUR | Slice four moves the daemon kernel into the holder. Slice three (Repo move, sealed writes) already stands (row text), so the rest format is already fixed. Holder messages ride ports, not storage. Low confidence: I did not read the holder code. |
+| F8 | BEHAVIOUR | Test assertions only ("burned-name guard assertions in `lar-wire.test.ts`"). |
+| F9 | SHAPE (moderate) | "The vessel-wide selector retires". The selector rests in a persisted store: IDB `ACTIVE_PERSONA_STORE` (`browser-vessel-identity.ts:101`) and the node's active-persona index (`wearPersona`, `lararium-mesh/src/persona-vault.ts:59,187`; `lararium-node/src/sealed-acts.ts:409`). Retiring it after the bake leaves that store in founded vessels; the only ways out are a delete-on-upgrade reader (the pattern at `browser-vessel-identity.ts:119`) or a re-genesis. Also the road lists "the switch" in train O1 before "TWO HEARTHS" and ruling line 98 puts it before the live test. |
+| H1 | UNSURE | `host door` / `host answer`. The introduction and sealed answer shapes already stand (`packages/lararium-mesh/src/introduction.ts:1-45`). The hosting store keeps no introduction rows (`lararium-node/src/hosting-store.ts:1-40`); a door that "shows what waits" needs a place to rest them. Settle: whether that new store is sealed and outside CID-bearing bytes (then BEHAVIOUR; it adds a class, no old reader). |
+| H3 | BEHAVIOUR | Opens the shut `grant`/`claim` arms (`lararium-node/src/socket-sorter.ts:11,28`) over the landed signed grant (`walker-grant.ts`). Sorter logic. |
+| H4 | BEHAVIOUR | `strangersHeld` is already a field of the hosting act (`lararium-mesh/src/hosting-delegation.ts:54,112,123`); the dial wires an existing field. |
+| H7 | BEHAVIOUR | One doctrine line (canon prose). |
+| B2 | BEHAVIOUR | Two tabs, two faces, one holder. Live routes stay in memory by canon (`session-contract.mem:116`). Depends on the switch act (see W17). |
+| B4 | BEHAVIOUR | QR carries the invite string the vessel already takes as data ("by QR, by paste", `open-browser-vessel.ts:246-258`). Adds a decoder and camera road, no format. |
+| B5 | BEHAVIOUR | A real-browser proof walk. |
+| B6 | BEHAVIOUR | A walk (rung 4). |
+| X0b | UNSURE | Has the id `X0b`. A sweep that renames any clock- or counter-named row would change persisted names. The G37 witness already fences clock and counter sinks (`tools/evergreen-boundary.mjs:1-5`, ceilings in G37 text). I found no counter-named rest row in `*store*.ts` under node or mesh. Settle: run the row's own instrument (N boots, double replay) before the bake; any finding that renames a persisted row belongs in the bake. |
+| X1 | BEHAVIOUR | Two-container witness (test). |
+| X2 | BEHAVIOUR | Runbook walk. |
+| X4 | BEHAVIOUR | Dress-rehearsal walk of parallel drafts; records reads. |
+| X5 | BEHAVIOUR | Four departure walks recording display words. |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-id-less-rows`>>
+
+!! The id-less rows
+The row between B6 and X1 is `X0b`, and it does carry an id. It needs no new id. The true id-less rows are the ten bullets after X5 (first words: "The boot's order holds four named reds nobody wrote", "Wikis-first writes: `meme promote` holds no in-wiki path", "Whether the browser shore serves its worn face plane", "Fleet gathering must batch", "No SES or Compartment realm gate", "Operator power reaches no browser vessel", "Observer-local hardening by silence", "The bag-tier reader takes the hearth's manifest alone", "The declared tier's share gate", "A startup module inside the VM"). I read each as BEHAVIOUR or a question; none names a byte. They need ids only if a train will cite them.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/move-before-the-bake`>>
+
+!! Move before the bake
+# F9 (selector retires): stride-2-floor. It retires a persisted store (see table). Landing it after X0 leaves the store in a founded vessel. Cure: retire it with the switch slice, before X0.
+# W17 and the switch act it needs (also B2, F9): UNSURE, but ruling line 98 already says "the face-switch act ... ALL land before" the two-operator live test. Shelving them after the seat contradicts that ruling. Controller decision: either move the switch slice to stride-2-floor, or amend line 98. If the act row stays vessel-private and sealed (`session-contract.mem:116`), the shape risk is low, since no old version exists to read.
+# X0b: its instrument should run once before X0. Findings that rename rows go into the bake.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/rows-i-did-not-trace-to-the-bottom`>>
+
+!! Rows I did not trace to the bottom
+F6 slice four (holder code unread), H1 (no store code exists to read). Everything else rests on the row text and the files cited.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Q_99pmofvL-ttyAd29sLZ6esaCnBWT656O8JO-xMNC0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

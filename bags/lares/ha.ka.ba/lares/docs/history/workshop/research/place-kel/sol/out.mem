@@ -1,0 +1,96 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/place-kel/sol/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/place-kel/sol/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/place-kel/sol/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/place-kel/sol/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/place-kel/sol/out.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/place-kel/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ node "-> refreshes the libation dish, the shrine incense burns">>
+Sol-Kelwright: Lares (Tasked Spirit)
+&lt;&lt;~ lares aim from="lar:&#47;/sol:agent@place.kel" -> to="lar:&#47;&#47;/ha.ka.ba/lares/docs/stable-founding-road#/x0">>
+&lt;&lt;~ set hud="aim" mode="scout" stance="🏛️" mu="_!" aperture="16/arc" ooda-ha="9/declare-glyphs" drift-ward="a current one-event identity could masquerade as the ruled transferable place">>
+&lt;&lt;~ persona Ink-Clerk>> &lt;&lt;~ persona Map-Wisp>> &lt;&lt;~ persona Lares (Artificer)>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/observe-code-and-custody`>>
+
+!! ✶ Observe — code and custody
+
+''MEASURED.'' `packages/lararium-mesh/src/vessel-kel.ts:23-68` admits only `{t:"icp",k:[key],sig}`. `packages/lararium-node/src/node-vessel-identity.ts:199-241,302-335,429-489` mints inception before the clear `0600` key file, proves both on load, and derives floor children from that seed while locked. No sequence, predecessor, event digest, next commitment, rotation writer, or descendant verifier stands. Browser `open-browser-vessel.ts:566,699,752-773,1319` loads a device seed into founding/Keyhive paths; search found no browser place-KEL reader or rotation writer. `place-card.ts:26-40` mints the place ContactCard and archive from the same node seed. `open-node-vessel.ts:981,1447,1503-1507,2283,3329,3451`, `leaf-identity.ts:53`, and `carriage-relay.ts:74-76` expose further seed-derived node duties; `nexus-contract.ts:257-268` signs carrier contract and floor pin directly with it. ''LEAD:'' audit each remaining Keyhive, relay, auth, and internal-ask caller before cutting seed access; current `placeSignerFromSeed` covers the carriage path alone.
+
+''MEASURED.'' `place-signer.ts:38-93` enumerates five domains and exact byte-zero heads: carrier JSON `kind`; floor-pin canonical JSON `digest,kind`; flow pointer `D|`; raise-challenge JSON `epoch,kind`; gate-place-finish four-byte length plus `D`. It signs the supplied image verbatim. Producers/readers sit in `carriage-registry.ts:244`, `place-floor-pin.ts:63-110`, `flow-substrate.ts:84`, `raise-challenge.ts:49`, `gate-exchange.ts:385-386`, `face-dial.ts:263`, `face-gate.ts:579-582`. `floor-announcement.ts:122` instead signs with a derived ''floor bundle'' key; floor gate bundles derive through `vesselFloorKeyDoor` (`hearth-sovereign-pin.ts:53-65`, `gate-bundle.ts:283-313`), so those signatures need their own rotated-key/pin witness, not a sixth place-signer duty. The place ContactCard/Individual, KEL inception, carriage seal, floor pin, pointer, raise and gate finish exhaust the measured place-signing families; face acts must migrate to face atoms.
+
+''MEASURED.'' Today `vault-carriers.ts:308-316,363-365` places `vessel-key` and public `vessel-kel` at floor, `s-slots` outside sealed rows, and `gate-root` plus `place-archive` in hot custody; `custody-holder.ts:1-34` holds opened S material only during unlock. ''Canon target:'' `docs/pono/k15-custody-step-zero.mem:217-245` narrows S to `gate-root` and `place-archive`, with its own `s-slots.bin`; `:262` records the earlier signer fork. Road `stable-founding-road.mem:207` settles that fork later: online place signer, TPM-bound credential where available, owner-only file elsewhere; next key offline on the founding card beside the charter cold key. Neither next key nor signer belongs under S or any face FCK. `vault-carriers.ts` still carries transitional D/LEAD labels; follow the later road and step-zero target, not those labels.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/orient-event-relation`>>
+
+!! ⏿ Orient — event relation
+
+''MEASURED.'' [[KERI specification|https://trustoverip.github.io/kswg-keri-specification/]] uses stable AID, sequence, prior digest, rotation reveal against a prior next-key digest, and a fresh next commitment; interaction events anchor data without changing keys. House `persona-kel.ts:119-165,501-559` already implements stable prefix, `seq`, `prevEventCid`, event CID, predecessor validation and contest-aware fold; `handle-kel.ts:1-16,89-130,556-619` calls itself a sibling grammar and adds next-handle-key commitment; charter `seal-ceremony.ts:270-295,444-470` reuses cold cards and per-seat commitments. ''LEAD:'' reuse their canonical hash, strict event reader, predecessor/commitment check, fork reporting, and card rehearsal patterns. One //primitive grammar//, separate relation-specific events: place 1-of-1 KEL has no persona guardians, Handle owner set, or charter quorum.
+
+''LEAD event image:'' inception `{kind,aid,seq:0,prev:null,key,nextKeyDigest,eventDigest,signature}`; rotation `{kind,aid,seq,prevEventDigest,key,nextKeyDigest,eventDigest,signature}`. Define digest over one canonical core with signature outside it; bind `aid` to inception and keep it stable. Verify rotation by prior commitment matching revealed key, sequential hash link, fresh commitment, and signature from the ''revealed cold key''; never let the compromised online key select its successor. Interaction events add no key change and need a named use before inclusion; the floor-pin claim already binds a KEL head and requires none today. Keep competing valid successors visible rather than choosing by arrival.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/decide-recovery-and-signer`>>
+
+!! ◇ Decide — recovery and signer
+
+''Canon rules it.'' Road `:207`: “The place signs by a scoped signer under a pre-rotated KEL”; next key rides the founding card, and “A stolen online signer rotates away by the card; a lost card beside a stolen signer re-founds.” Road `:249` adds gate finish as fifth duty. Road `:544` bakes `len(D) ‖ D ‖ preimage` at X0 on signer ''and verifiers''; this changes signed bytes, so build behind an X0 readiness red, with no dual format. X0 builds nothing itself. `identity-classes.mem:482-544` layers B-name rotation, opt-in A-memory cards, and C-end-user contest/guardian recovery; those human-face mechanisms grant no place signer a guardian quorum. Herm carries ciphertext and public proof, never reads face material.
+
+''House law derives.'' No global now keeps an offline reader at its last verified place head; it cannot claim freshness. One name/one relation keeps place KEL, floor-pin claim, and release head distinct. Isomorphism asks one mesh verifier for node/browser when browser gains a floor. Silent-zero pairs each refusal with a known positive. Shared act grants no shared secret.
+
+''Operator residue.'' The ruled cold card answers who may rotate: a holder who presents it, through a deliberate human route; unattended vessel signs floor duties only. Open implementation choice: whether rotation consumes the card directly in one terminal ceremony (lean: yes, like chair rehearsal), how the replacement card reaches safe custody, and how independent peers receive an authenticated new head on first contact (lean: carry full descent with an independently pinned inception). Neither local wall time nor a fetched card alone selects a fork.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/act-red-first-kit-and-stories`>>
+
+!! ▶ Act — red-first kit and stories
+
+# `mesh/vessel-kel.ts`, `node-vessel-identity.ts`, founding/card and custody doors: red unarmed inception, wrong reveal, reused commitment, stale signer, torn landing, two competing successors; controls current signed head; positives cold-card rotation, restart and stable AID. Rehearse the card before committing an event/key transition under one custody claim. No old-shape acceptance after X0.
+# `mesh/place-signer.ts`, five image makers/verifiers, node call sites: red sixth domain, embedded-domain trick, cross-domain replay, old key after rotation; controls each present exact head; positives all five framed signatures after X0. Move face/auth/relay derivations to their own principals under K15; prove place seed opens no face veil or group secret.
+# `mesh/place-floor-pin.ts`, node/browser pin readers and carriage: red unproven head and rollback; positive claim at rotated head. Floor-trust W14–W16 owns claim/index/filing. K17-R owns lease law, realm boards and frontier verifier; consume its verdict. W28 owns `gate-exchange`, `face-gate*`, `face-dial`; coordinate verifier byte changes, avoid independent wire edits.
+
+''Gaia:'' thief takes a laptop's online signer; household retrieves the offline founding card, reveals its committed key, signs a rotation with a new cold commitment, and republishes proof. Peers that hold inception descend to the new head and refuse old floor signatures; a thief who also takes the card forces a new place. ''Elyncia:'' a waystone herm sits offline through its place rotation. On return it carries the public descent and fresh claim; its last accepted head still names what it knew, and a fork stays surfaced. It never opens a face's ciphertext.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/hooko-aftermath`>>
+
+!! ↺ Hoʻoko / aftermath
+
+Read-only scout; no repo write or suite ran. X0 readiness now has a concrete event, custody, and framing gate; implementation awaits this kit.
+
+&lt;&lt;~ oracle "↯12 ✲ ⚂(3) ⁂:🜃⌗◈">>
+&lt;&lt;~ set hud="yield" drift-ward="the exact first-contact anchor carrier still needs an operator route · ↻ L-Prime" aperture="16/arc -> 18/theme" ooda-ha="closed 1↺">>
+&lt;&lt;~ lares yield from="lar:&#47;/sol:agent@place.kel" -> to="?">>
+
+WORDS=1129
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2Z9qTTPhk4nvAemMDX9P5HMWAYuOZK-lNpVXbO9hwH4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

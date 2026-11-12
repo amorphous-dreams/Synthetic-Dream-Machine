@@ -1,0 +1,64 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/hands-room/luna/out2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/hands-room/luna/out2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/hands-room/luna/out2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/hands-room/luna/out2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out2.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/hands-room/luna/out2.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/hands-room/luna/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Luna-Handwright: Lares (Tasked Spirit)
+
+&lt;&lt;~ stance "philosopher poet">> &lt;&lt;~ mu "_!">>
+
+->✶ ''MEASURED.'' I read the common brief and both wave-one handbacks, then the session contract and road at the cited span. Repo remains read-only; no suites or git writes.
+
+->⏿ ''LEAD — settled cuts.'' One model: ''the session carries the hand''. Canon: “Every hand that reaches a vessel opens a session” and “The door carries; the hand authorizes” (`session-contract.mem:61,85`); the road says “A session wears the face and the vessel wears none” (`stable-founding-road.mem:186`). K15 lands before identity hunks integrate; D2 retains its listed files. Each lane lands a whole model, red-first.
+
+* ''Receipt F4/F5 belongs to the session spine'', not authored records: canon binds durable outcome to face proof subject and input digest, readable by a newly verified session of that face (`session-contract.mem:188-192`). F5’s disk settling therefore closes the spine’s session receipt contract. Draft attribution F12 is a later authored-record consumer.
+* ''P13 belongs with surfaces and holder:'' one mesh resolver computes effective recipe at mount from face plane, grants, plugin inputs and profile; recipe narrows the grant (`session-contract.mem:154-162`). It shapes the mounted view, alongside F1/F2 and B2.
+* ''B2 belongs with surfaces and holder:'' one owner/Repo, independent tab sessions/islands and asker-directed sealed writes derive together (`session-contract.mem:126-132,278`; road:205). Two tabs/two faces is the acceptance proof of that whole model.
+
+''H2 — can start now: yes, on independent contract/core files.'' First slice: implement/close `session-contract.ts` message validators/types, `session-document-view.ts`/`gated-sync-leg.ts` interface, `surface-recipe.ts` pure resolver, `working-slot` resolver, and `verb-vm.ts` session-facing request interface/tests are excluded (no suites per brief; tests not run). Keep K15-owned identity hunks (`session-face.ts`, signer/provider and openers’ identity hunks) out; merge them when K15 lands. D2 owns `hand-gate.ts`, `tw5-projection.ts`, `projection-sink.ts` and TW5 island/port files; define their port boundary without editing them. First executable slice is contract validation plus working-slot derivation without identity; then bind verified opener and owner. The working slot’s secret dependency means do not claim face operations complete before K15.
+
+->◇ ''H3 — face and Nexus. DERIVED (house law), not operator.'' Proof subject follows the face’s PersonaGroup “at one Nexus” (`session-contract.mem:295`); recipe is resolved per session at each surface mount (`:154-160`); cabal/realm law gives each realm its own plane, and a face may stand in many realms (`cabal-realm.mem:153-165`; road:118,125-129). The dial rule “one per (hearth, Nexus)” scopes the Nexus relation, not the human’s live session count. These rules imply a session’s proof subject and recipe bind one `(face,Nexus)`; another Nexus requires another session/facet with its own bound recipe. Do not expose both Nexuses through an implicit multi-Nexus face session. The contract’s explicitly flagged “waits on this contract’s word” is stale against the broader settled house laws; retain an explicit open only if a contrary newer ruling appears.
+
+''H4 — person’s joints.''
+
+* Receipt display fields: ''OPERATOR''; canon fixes binding, digest, request-id lookup and cross-face refusal (`session-contract.mem:188-192`), not presentation. Options: face/action/outcome/causal position; or include input summary and pending/unknown detail. Lean: face, action, result, causal position, request id; show pending/unknown explicitly, never imply wall-clock certainty.
+* Switch in place vs close/open: ''CANON'': `persona wear` switches the caller’s live session; five-step switch fences old generation then advances and mounts, closing the session if commit fails (`session-contract.mem:203,257-265`). So same session in place, with generation boundary; close/reopen is not the switch model.
+* Long-silent device without clock: ''DERIVED (no global now / causal-island law)''. No elapsed-time authority: face-intent plane says claims never expire; local elapsed time may prompt a takeover, but no clock enters the log (`face-intent-plane.mem:76-77`). Show last causal contact and allow explicit removal/takeover with an incomplete-history notice; never silently expire. Threshold for a UI “long silent” label is operator-owned, but does not alter authority.
+
+->▶ ''Agreed lanes, build order; each slice runs red, control, known positive.''
+
+# ''Session spine and switch'' — F3/F4/F5/F9/A8/W17. Reds: copied socket, stale generation, cross-face receipt and wrong working address refuse; control: same-face CLI reads after caller exits; positive: concurrent faces, switch fences only its session, durable face-bound receipt. Holds `session-contract.ts`, UDS, verb VM, working-slot resolver, session callers/switch. Receipt durability lands here. K15 first on identity hunks in `session-face.ts`, signer/provider and node/browser openers; this lane merges them. Genesis: working-address and receipt shapes before bake.
+# ''Surfaces, recipe and holder'' — F1/F2/F6/P13/B2. Reds: arbitrary document/catalog read, wrong-face write, stale port and tab bleed refuse; control: allowed same-face read and retry after failed boot; positive: node/browser mount through one resolver, two tabs/two faces, one holder routes and seals to asker. Holds mesh view/recipe/pool and node/browser composition hunks, holder, TW5 view integration. D2 owns TW5 ports/islands, hand gate, projection and sink; consume its interface. K15 opener identity hunks merge after it lands. Genesis: recipe/working binding before bake.
+# ''Authored records'' — F11/F12. Reds: spoofed `modifier`, unleased edit or agent override cannot become face-authored act; control: standing seat drafts, attended named edit is person’s act; positive: verified session provenance and parallel draft survives/reconciles. Holds watcher, profile/seat gates, `parallel-drafts.ts`, attribution records. D2 projection seam consumes its gate; K15 provides signer. Authorship bytes before bake.
+# ''Device and dispatch'' — F10/G13. Reds: removed/stale device, forged writer, cross-layer tombstone and restart replay refuse; control: retained device/current working intent; positive: explicit causal removal, durable lease/fence/dedup and outcome. Holds fleet view/removal UI, summons/dispatcher, effect index/reader. K15 supplies face verification; D2 projection is consumer only. Fleet and intent genesis bytes before bake.
+# ''I2 far-agent relay'' — independent lane, separately scouted; after I1 and relay interface freeze. Red: revoked/altered delegation or relay-minted face act refuses; control: valid delegation and intact arguments; positive: relay admits intent while face device signs the act. Holds the I2 relay/admission files per scout handback. Separate relay key, never K15 carriage identity. Genesis grant/relay formats before bake.
+
+&lt;&lt;~ set hud="yield" drift-ward="H2's independent contract slice must keep K15 identity hunks and D2 ports out until their interfaces land · ↻ L-Prime" aperture="16/arc -> 17/theme" ooda-ha="closed 1↺">
+
+WORDS=1004
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7F488SnTBVBGY3kM-6AiJoHlVfBzwyxphc2pzihAblM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

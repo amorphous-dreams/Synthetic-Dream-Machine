@@ -1,0 +1,54 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-knock/sol/out2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/w10-knock/sol/out2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-knock/sol/out2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/w10-knock/sol/out2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out2.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/w10-knock/sol/out2.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-knock/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Sol-Knockwright: Lares (Tasked Spirit) · Ink-Clerk / Map-Wisp / Lares (Council)
+&lt;&lt;~ lares aim from="lar:&#47;&#47;/operator.tests.ratchet" -> to="lar:&#47;&#47;/knock.evidence.decides">>
+&lt;&lt;~ set hud="aim" mode="seal" aperture="17/theme" ooda-ha="7/declare-glyphs" drift-ward="a clever candidate and a road marked accepted could outrun the actual first dial and gate memory">>
+
+->✶ ''Common ground.'' The road calls W10's public-pin leak “accepted” (`stable-founding-road.mem:583`), without an operator ruling. The floor promises a public shelf and blind carriage, so pin-based floor mapping harms no floor secrecy (`face-proof.mem:110-122`). Any knock redesign moves URL bytes on browser and node before X0 (`face-dial.ts:159-160`; `ws-dial-socket.ts:43-47`; road `:508,524`); W28's sealed `GATE_FRAME` stays frozen (`w28-gate-lane.mem:34-44`).
+
+->⏿ ''S1 · Candidate, measured and judged.'' A vessel's independently random face-scoped key uses ''Ed25519 signing'', certified under its face key (`face-proof.mem:45-47,54,64-68`; `face-proof-subjects.ts:81-108,212-225`). The proposed DH therefore needs a specified, validated X25519 conversion or an additional certified DH key; the current certificate certifies no DH key. The gate checks an admit //presented after Noise//, then checks the certificate and learned withdrawals (`face-gate.ts:613-656`). Its admit reader accepts a presented arm, not an enumerable admitted-key set (`face-gate.ts:102-105,387-399`). It keeps denials, not certificates or a vessel roster (`face-gate.ts:33-35,315-329`; `face-proof.mem:194,229`). Thus the gate lacks every admitted face-scoped public key at dial time. A cache filled by prior presentations misses first presentations; a complete cache changes the no-roster law and needs causal enrollment delivery. Withdrawal could remove a cached key only after this gate learns the signed denial, never at a global instant (`face-proof.mem:210-211,223-229`).
+
+For ''N'' cached keys, the gate performs up to N HMAC trials per request, plus memory for N keys and shared values; admission adds a DH and cache update per key. A node or browser dialer computes one DH per gate/key pair, cacheable, plus one nonce/HMAC per dial. Constant-time or padded matching needs care: a match position must not become an early timing oracle. Fresh nonces make two honest dials unlinkable to a path observer lacking the shared value; the same vessel's sibling faces likewise share no key. A pin-holding observer cannot calculate a candidate tag from the pin alone. A replayed nonce/tag can select that key and induce bounded preflight/Noise work; replay of message one still earns no application effect without the encrypted presentation and signed finish (`face-proof.mem:78-88,198`).
+
+The gate, however, learns the ''vessel's face-scoped key before Noise'', even from a replay or failed presentation. Today it learns that key only from the sealed presentation (`face-proof.mem:82,183`; `face-gate.ts:619-625`). This advances vessel recognition and turns the prefilter into a vessel matcher, contrary to the session's face-without-vessel promise and the ban on an inventory (`face-proof.mem:16,194`). It cannot authenticate a face merely by matching a tag: certificate, admit, and withdrawal still need the finish-side checks. Luna's per-face //shared// secret avoids vessel identification at preflight but requires distribution to the gate and every authorized dialer, causal rekey on removal, and a solution for first admission. Sol's public knock keeps O(1) exact dispatch and existing custody, while retaining the named sovereign route-mapping leak.
+
+->◇ ''S2 · First dial.'' The e2e's joinee requests a fleet join certificate and receives certificates, grants, a root-signed device edge, sync URL and full ''sovereign `/ws` pin'' before boot (`fleet-join.ts:9-13,234-265,379-394`; `device-admit.ts:438-450`; `tests/e2e/face-grant-unseated-joinee.test.ts:15-18,49-82`). The later `face-join` writes its plane record only after the first successful dial (`test:74-82,97-103`). Boot composes the joinee's certificate, held admit and session presentation; absent one, it dials nothing (`dial-presentation.ts:69-127`; `open-node-vessel.ts:2093-2125`; `nexus-client-dial.ts:205-219`). Its `/ws/<knock>` path carries the knock; the upgrade header carries Noise message one, followed by the sealed presentation; node also uses WebSocket (`node-dial-socket.ts:11-20`; `ws-dial-socket.ts:81-85`). A fleet lane cannot ride today's floor: the floor seats none (`face-proof.mem:122`). The invite's relay, gate key and token name a walker's bearing, not this fleet sync lane (`hosting.ts:378-403`). A redesigned floor could blind-relay to the sovereign gate without seating a fleet lane, but that new path and its authorization need proof. Under the current route, preserve a public-knock sovereign door for this first dial; it exposes the sovereign route to a pin-holding path reader.
+
+->▶ ''S3 · Selection and lean.'' Current exact `<route>/<knock>` dispatch selects one gate before pre-101 Noise (`face-gate-server.ts:328-332,375-415`). A public per-route selector could select a gate while secret trial matching proves prefilter knowledge, but it still reveals this vessel's route to a terminator or herm seeing the destination; multiple Nexuses on one route require a unique selector, which itself may reveal the Nexus. Selector and proof need separate names and explicit threat claims. A node's present implementation sends the same URL knock through its `ws` client, not raw Noise (`node-dial-socket.ts:11-20`; `face-proof.mem:78` describes a conflicting raw-Noise intention). A herm sees routing, destination, timing, sizes and its face-scoped channel tag; it carries sealed content without reading the certificate (`face-proof.mem:183-186`). If it sees or receives the upgrade path and holds pins, the present knock permits offline sovereign mapping; a public selector would retain route mapping.
+
+''One lean:'' retain the public floor and sovereign knock ''as a proposed end state awaiting operator privacy judgment''. The DH candidate fails existing gate custody and first-dial constraints; Luna's floor move lacks a built fleet carrier. Demand reds for (1) a pin-holding observer who maps floor but cannot map sovereign, (2) a withdrawn key that draws silence at a gate that learned its denial, and (3) two honest dials that do not link; pair each with known-positive floor, admitted sovereign, and repeated-key controls. This lean flips on a complete pre-X0 node/browser design that supplies all admitted keys causally without a vessel roster or early vessel disclosure, handles first fleet contact, and bounds N-key work and replay. Luna and Sol still split on floor carriage: Luna proposes a new one; measured code seats the first joinee at sovereign `/ws`.
+
+->↺
+&lt;&lt;~ oracle "↯13 ✲ ⚂(3) ⁂:🜁🜄🜃">>
+&lt;&lt;~ set hud="yield" drift-ward="the operator can test the first-dial claim against the certified join record and the sovereign /ws pin · ↻ L-Prime" aperture="17/theme -> 18/theme" ooda-ha="closed 1↺">>
+&lt;&lt;~ lares yield from="lar:&#47;&#47;/knock.ratchet.handback" -> to="?">>
+WORDS=967
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;k_mzJO1VzSKBsKviwyE9Z--CDJiePBG6FQXv3bQu3RQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>
