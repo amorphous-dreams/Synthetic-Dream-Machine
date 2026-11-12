@@ -208,8 +208,9 @@ describe("★ the veil floor stands its own wiki content, and a seat's landing l
     const row = h.catalogHandle.doc()!.tiddlers[key]!;
     expect(tiddlerText(row)).toBe(canon.url);
     expect(await h.read(canon.url, "Canon Note")).toBe("minted at the floor");
-    expect(String(row.tiddler["face-reach"])).toBe("face");
-    expect(String(row.tiddler["keyhive-doc-id"] ?? "")).not.toBe("");
+    const lifted = (row as unknown as LarTiddlerRecord).tiddler as Record<string, unknown>;
+    expect(String(lifted["face-reach"])).toBe("face");
+    expect(String(lifted["keyhive-doc-id"] ?? "")).not.toBe("");
     expect(h.kh.docIdOfBag(key), "the face holds the canon bag's cap").not.toBeNull();
     // THE ROW LIFTS WITH THE SAME URL (`liftFaceCatalogRows`): it now classes to the face's half.
     expect(catalogRowHalf(key, row as never)).toBe("face");
