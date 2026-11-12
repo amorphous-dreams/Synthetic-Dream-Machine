@@ -1,0 +1,42 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna2/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-04 (file date) — source `.lares-scratch/seat-harness/luna2/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna2/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/seat-harness/luna2/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-04
+
+Verbatim scratch record `.lares-scratch/seat-harness/luna2/final.md` (hand-back, file date 2026-11-04); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna2/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/findings`>>
+
+!! Findings
+
+* ''HIGH — Canary verdicts can select another rollout'' ([[launch-codex.mjs|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:379]], [[launch-codex.mjs|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:350]]): the launcher snapshots rollout paths //after// spawning Codex. If the canary rollout appears before that snapshot, it is recorded in `rollouts-before.json` and `--check-canary` excludes it. If multiple new rollouts share the seat cwd, `findRollout` chooses the earliest start, not necessarily the canary’s. The test writes a synthetic rollout after launch and never checks selection under either condition.
+
+* ''MED — Check reports failure as success'' ([[launch-codex.mjs|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:353]]): `--check-canary` returns 0 even when compaction did not fire; callers cannot use its exit status to gate on the claimed proof.
+
+* ''MED — Canary run test would pass if the feature did nothing'' ([[launch-codex.test.mjs|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:491]]): it doesn’t assert that a canary rollout is excluded from the prelaunch snapshot, nor that the returned rollout belongs to this launch. Its fixture manually creates a matching rollout after launch.
+
+* ''LOW — Verdict call count misses tool variants'' ([[launch-codex.mjs|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:146]]): only three payload types count, so the reported call total can undercount actual tool calls. The brief asks for ~100 calls, but the verdict never validates that count.
+
+The `-c` overrides appear before the positional brief, and dry-run returns before the canary brief write. I found no defect in those points. The tests validate argv presence, not that Codex accepts these override keys or their placement.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;P3n_KlaJoIgMJc3XHF3V73gdwVuq8rDOHTw8ljmMJHw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

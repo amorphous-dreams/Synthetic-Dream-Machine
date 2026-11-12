@@ -1,0 +1,44 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna13/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-04 (file date) — source `.lares-scratch/seat-harness/luna13/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna13/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/seat-harness/luna13/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-04
+
+Verbatim scratch record `.lares-scratch/seat-harness/luna13/final.md` (hand-back, file date 2026-11-04); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna13/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+''HIGH — `tools/launch-codex.mjs:418–420`''
+The exit handler sends `SIGKILL` to `-child.pid` after the child’s exit event. By then the child has been reaped; if its group is empty and the PID/PGID is reused in that gap, the signal can hit an unrelated group.
+
+''MED — `tools/launch-codex.mjs:517–525`''
+Lead-step setup claims the step and advances `state.json` before creating the broker seat directory. If that later mkdir/open refuses, the launch fails but the step remains spent and claimed.
+
+''MED — `tools/launch-codex.mjs:439–444, 447–450`''
+After the 5-second group poll, a live group returns `"unstopped"` without hand-back. But if `watchSeat` already returned `"unstopped"` and the fallback kill later empties the group, hand-back runs while the stale verdict is still returned. `superviseMain` discards either verdict and exits 0, so callers cannot distinguish these outcomes.
+
+''LOW — `tools/held-dir.mjs:114–115`''
+The 64-entry limit is applied before filtering hidden names. A seat can leave 64 dotfiles that sort before `final.md`, causing the hand-back to omit the result.
+
+The BSD itself is created with mode `0700` at `launch-codex.mjs:525`; the default broker directory is outside each lane tree and isn’t reachable through the lead’s added roots. The relay’s fixed `iso/seats` path is also outside the lane, though the launcher creates the broker directory before checking placement (`498–502`). `peekStep` reads state before preflight (`tools/launch-codex.mjs:479–495`), but I found no consequential write or disclosed state from that ordering.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-N4hW0dgfwa6XgDFseLxOERbMuTSdf9zbK1Wplgf8k0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

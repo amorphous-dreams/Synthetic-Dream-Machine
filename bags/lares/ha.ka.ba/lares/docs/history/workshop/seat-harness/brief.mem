@@ -1,0 +1,61 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-04 (file date) — source `.lares-scratch/seat-harness/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/seat-harness/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-04
+
+Verbatim scratch record `.lares-scratch/seat-harness/brief.md` (brief, file date 2026-11-04); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/lane-brief-the-seat-harness-owed-rows`>>
+
+! Lane brief: the seat-harness owed rows (controller, 2026-11-04)
+
+OPERATOR APPROVED: a Sonnet-led lane building the owed rows of the new canon carrier `bags/lares/ha.ka.ba/lares/docs/pono/seat-harness.mem` (#/owed). Read that carrier WHOLE first, then `mixed-model-swarm.mem`, then the evidence: ~/.lares-scratch/autopsy/reconcile.{py,txt} (the spend reconciliation: one long Codex lead drew 172M tokens, 100% cached, and moved the weekly pool 44%->86%), ~/.lares-scratch/autopsy/wave-2-summary.md (sourced cures), and ~/.lares-scratch/harness-design/luna-b/final.md (the ratcheted broker design and its five proof tests).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-rows`>>
+
+!! The rows (build in this order; one PR-sized commit series each)
+# ''Per-seat ceilings.'' tools/launch-codex.mjs gains a ceiling per mode (default about 15M total tokens for a lead step, about 8M for build/read/research; overridable per launch). A detached watchdog tails the seat's rollout (`~/.codex/sessions/**`, matched by the seat's session id or cwd) and sums `token_count.total_token_usage.total_tokens`; at the ceiling it stops the seat (SIGTERM, then SIGKILL) and writes `ceiling.md` in the seat dir naming the reading. Never read run.log's "tokens used" line.
+# ''Pool-aware launching.'' The preflight already reads `rate_limits.primary.used_percent`. Add thresholds: a lead refuses above 50% used, build/research above 60% (keep the existing 20%-left floors too); read seats stay at the 0% floor. Name the reading in the refusal.
+# ''Compaction canary.'' A `canary` seat recipe (a brief that makes many tool calls inside one turn) plus a check that reads its rollout for a compaction event. Set `model_auto_compact_token_limit` and `tool_output_token_limit` ONLY as launcher `-c` overrides (never edit ~/.codex/config.toml: that file belongs to the operator). Report whether compaction fired inside `codex exec`.
+# ''Fresh-per-step lead mode.'' A lane state file (`<lane-root>/state.json`: head, owed rows, live seats, worktree map, next step) and a launcher `lead-step` behavior: each lead launch reads the state, does ONE step, writes the state and its hand-back, and stops; the next launch is fresh. A step ceiling (the row-1 lead ceiling) bounds it.
+# ''The ratcheted broker'' (Luna B's design): data-only git plumbing (write-tree/commit-tree/update-ref with an expected old head, hook-free, a fixed env with pinned absolute binaries, an isolated HOME and TMP); hooks and validators run in a separate CHECK SEAT whose receipt the broker verifies (the tree sha plus the check set); installs run in an INSTALL SEAT; the go bound to branch AND head; no checkout filters or submodule commands in the broker. Prove it with the five proof tests (planted hooks and credential helper; a .gitattributes filter and a submodule; hostile lifecycle scripts and .npmrc; a poisoned PATH/HOME/GIT_*/NODE_OPTIONS with a symlink race; malicious build/test/editor config), homed in tools/commit-relay.test.mjs. When it stands, the carrier's #/the-trust-model drops the ruled exception and states the new boundary.
+# ''The live-wiki controls (DESIGN ONLY):'' the crew cap, the push go, the lane state and the seat roster as tiddlers the controller's hand signs, read through each seat's capability. The live Lararium wiki doesn't stand yet, so write the design into seat-harness.mem's #/owed row and build nothing.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/lane-law`>>
+
+!! Lane law (read ~/.claude/projects/-home-joshu-Synthetic-Dream-Machine/memory/feedback_red_tests_first.md: RED-FIRST, HOMED)
+* Branch `feature/green-jello-dinosaur-5--seat-harness`, cut from `feature/green-jello-dinosaur-5--promote` at 7478a5012, in a worktree ~/.lares-scratch/seat-harness/wt (`df -h /` first; the worktree cap is 6 in total, and main, promote/wt, promote/wt-migrate46 and promote/wt-recovery47 already stand; never remove those).
+* Crew: YOU (Sonnet) lead, author every red and judgment slice, commit, and push the lane branch. The Codex pool sits under its 20% build floor until 11-09, so builders are Copilot: `LAR_ROOT=<seat>/lar-root node tools/launch-copilot.mjs build --name <n> --model gpt-5.3-codex --cwd <your wt> --brief <file> --seat-dir <dir under ~/.lares-scratch/seat-harness/> --effort medium`. A Copilot seat may be denied node/pnpm; then YOU run the tests. Readers: a Codex Luna read seat (`node tools/launch-codex.mjs --mode read --model gpt-6-luna`, works at the 0% floor) for a cold read before each push. Read seats hand back by their final message.
+* Commits: -F with &#45;-only paths, `lar:///w1.w2.w3 — summary`, ending with:
+Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01V63vwNsTbwswaievYNJosw
+(plus `GitHub Copilot gpt-5.3-codex` or `Codex <model>` trailers for seat work).
+* Never: git stash in ANY form (a hook refuses even `stash list`), &#45;-no-verify, push -u, force-push, .git/config or ~/.codex/config.toml edits, a write to the main checkout, a bare in-tree boot, a local e2e loop, a revert of a dirty file you didn't author, a credential read.
+* Canon edits (seat-harness.mem): normalize twice with `node packages/lares-cli/bin/lares.mjs meme normalize <file>` (the second pass must change nothing), then `meme check` and `meme check --edges`. L-Prime in prose.
+* Hand back to the controller after EACH row lands (pushed, CI read): one status line, the head sha, CI ids, tests run, and any operator question with your lean. Then continue to the next row. The SOL read of the whole lane comes from the controller, never from you.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ltgga_OBo4VlTvJas6sASUfzA-Rk3EO-8xuN_pvIFxA`>>
+
+<<^ code=`&#x0004;` to=`?`>>
