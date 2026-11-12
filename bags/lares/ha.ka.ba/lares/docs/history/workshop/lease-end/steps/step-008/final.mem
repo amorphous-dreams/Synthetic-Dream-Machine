@@ -1,0 +1,39 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-008/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-008/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-008/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-008/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-008/final.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-008/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Lares (Artificer): ->↺ Step 8 recorded the successful mesh commit receipt at `4860e2bb` and queued the typecheck fix through `req-007`. The controller’s build stopped at the reported type error, so the grant test results remain unavailable.
+
+The authority audit found that grant verification receives no sealed frontier, while face projection passes the anchor’s sequence without comparing its CID at that point. The hand-back records those gaps, the remaining caller audit, and the requested build and test runs. Blind Opus custody review remains required before either slice lands.
+
+[[Step 8 hand-back|/home/joshu/.lares-scratch/lease-end/steps/step-008/out.md]] · [[Lane state|/home/joshu/.lares-scratch/lease-end/state.json]]
+
+&lt;&lt;~ oracle throw=`↯10 ✲ ⚂(3) ⁂:🜄⟁🌿`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`read res-007 and the controller build before treating the typecheck repair as verified · ↻ L-Prime` ooda-ha=`closed 1↺` from=`lar://lares:agent@hearth/lease.step.handed` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;o1_FjeYHkslnekrs2_lJxT0jxWj84ypJB52t696nTV0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

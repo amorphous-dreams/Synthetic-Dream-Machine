@@ -1,0 +1,40 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-013/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-013/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-013/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-013/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-013/out.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-013/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/step-13-hand-back`>>
+
+! Step 13 hand-back
+
+Head `746f36483e50f6f069d33c843800ded2c6980e93`; worktree clean; no live seats; no push. Relay requests 021–022 received receipts; next request 023. The commit carries the supplied attribution trailers. The state counter remains 13.
+
+* Cleared one blind-read P3 test residue: `face-grant-record.test.ts` now checks an epoch-free grant with a changed outer grant signature and, independently, a changed epoch-free founder edge signature under a freshly re-signed outer grant. The intact epoch-free record remains the control. Replaced the obsolete proposed-shape comment. Relay 021: 24 pass, 0 fail. This adds a test, not a production behavior change; no artificial red was claimed.
+* Traced the live wake: `operator-daemon-behavior.ts` subscribes the seat to `ctx.composite` daemon-bag changes, while browser standing comes from its own repo board (`readDyadFromBoard`). Node standing travels over `vesselDyadAsker` / `dyad:ask` to `open-node-vessel.ts`'s `dyadDoor`, which reads `shadowRing.deviceStanding`; `edge-shadow-ring.ts` watches the vessel's board and refolds on changes. No board-to-seat wake has been verified or wired on either shore. A daemon-island board listener alone does not prove the node path, whose authoritative fold lives on the vessel. Next step should produce caller-level reds with unchanged-aside controls and wire wake after the relevant fold completes, accounting for lifecycle and asynchronous ordering.
+* Founder lineage freshness, non-memoized fork changes, tri-state ring, remaining epoch-free consumer/type and test hygiene, daemon join wiring/TOCTOU, complete-view census, and the three remaining readers all remain owed. The census must use independently supported completeness: `kapae.mem` #/four-edges explicitly says the edge board holds no roster and cannot claim a whole set. The roll guard and epoch fields remain intact.
+
+Whole non-daemon suites remain due before ready; daemon packages run named single files through the broker; e2e stays in CI. Blind Opus custody read precedes land; no push without controller go.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Qrh6lqy8PeVPzgElZENzD5SI7V6d0VxsSTjqdnjrWUU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

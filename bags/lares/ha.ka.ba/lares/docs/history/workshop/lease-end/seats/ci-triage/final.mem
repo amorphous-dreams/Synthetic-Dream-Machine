@@ -1,0 +1,54 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/seats/ci-triage/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/seats/ci-triage/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/seats/ci-triage/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/seats/ci-triage/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/seats/ci-triage/final.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/seats/ci-triage/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ci-triage-run-42364010916-at-3b9cac44d`>>
+
+!! CI triage — run 42364010916 at `3b9cac44d`
+
+''Witness cell rest — CAUSED.'' The failing test is ''E9, “real corpus holds under its ceilings…”'' Its first assertion error is:
+
+> `AssertionError [ERR_ASSERTION]: [evergreen-boundary] 3782 file(s) read · version 55/55 · version-excepted 1 · clock 53/53 · clock-excepted 17 · narration 166/164 · narration-excepted 0`
+
+This is the evergreen narration inventory: it allows 164 findings and reads 166. The lane adds two counted narration findings in [[`device-delegation.ts`|/home/joshu/.lares-scratch/lease-end/wt/packages/lararium-mesh/src/device-delegation.ts:24]]: “legacy shape until their own slices land” at line 24 and “Canonical legacy signed string” at line 26. The diff identifies both lines; the span’s CI was green at `e723dda17`.
+
+''Smallest cure:'' reword those two comments so the evergreen scanner no longer counts them. Keep the 164 ceiling unchanged.
+
+''E2E / Shard tests 3/4 — reads as unrelated load-red/flake.'' The failing test is ''“no lares command opens the store beside a booting vessel”'' in `tests/e2e/boot-holds-the-store.test.ts`. The supplied log does not include its assertion failure; its first diagnostic is:
+
+> `boot-holds-the-store acts {"besideTheAct":"error:{\"code\":\"error\",\"message\":\"the store at /tmp/lares-staged-boot-holds-O4AeFJ/data/lares/vessel stays held by a direct lares command (pid 7692) for one act — run ","atClaim":"daemon","atBoot":"daemon","begun":{"atClaim":"claimed","atBoot":"boot"}}`
+
+Those observed results match the test’s expected behavior: the probe during the held direct act is refused, and probes at both boot phases reach the daemon. The diagnostic is emitted before later assertions in the test, but this log uses blob/JSON reporters and gives no assertion detail after it. The test exercises store ownership and boot ordering; its source is unchanged by the lane. The long interval before the diagnostic—about ten minutes after the shard command began—also fits a slow/load-sensitive run. The available log does not identify the exact assertion that failed.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/verdict-mixed`>>
+
+!! Verdict: MIXED
+
+The witness red is caused by the lane’s two new narration findings. The E2E red reads as unrelated load/flake from the evidence available; its exact assertion is absent from the supplied log.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;SmPSF9b_7E25JJiV7mu29iJDYcEy4XDbeR4cj7cdOQA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

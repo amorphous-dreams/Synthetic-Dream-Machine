@@ -1,0 +1,77 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-001/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-001/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-001/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-001/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-001/out.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-001/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/step-1-census-and-red-first-contract`>>
+
+! Step 1 — census and red-first contract
+
+Head at launch: `5c3d032dc7be49704d26f4f12b10e6fdacf88380`. Commit request `relay/req-001.json` awaits the broker; do not assume a new head until its response arrives. Controller runs `packages/lararium-keyhive/tests/face-grant-record.test.ts` and confirms each red fails for its intended assertion and each control passes. No git or tests ran inside this wall. No production files changed.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/census`>>
+
+!! Census
+
+Measured with `rg` across `packages/*/src`; line numbers refer to the launch head. Standing means the specific decision shown, not a claim of full-path coverage. All replacements require verified anchor-pinned persona lineage and a qualifying, anti-rollback remove-wins standing/frontier; absent, forked, or rolled-back evidence refuses or stays pending. Preserve the anchor's identity, edge digest and act frontier.
+
+| File:line | Decision or propagation | Set-aside already enforced? | Replacement for face-lease read |h
+| `lararium-mesh/src/device-delegation.ts:110,230` | Require signed edge epoch; compare against expected epoch | No, crypto/freshness only | Epoch-free signed edge and relation proof plus standing at authority gates |
+| `lararium-mesh/src/persona-kel.ts:839,846` | Forward epoch while verifying edge under KEL head | No | Verify pinned KEL and pass standing proof to authority decision |
+| `lararium-mesh/src/face-reading.ts:44,48-55`; `lease-advance.ts:53` | Fold signed face advances, floor against anchor | No; projection also reads persona acts | Keep verified lineage and act projection; replace lease fold with standing/frontier proof |
+| `lararium-mesh/src/face-anchor.ts:68,81,105,119,128`; `face-boot-proof.ts:41` | Parse, mint, raise, floor lease pin and bind epoch in edge digest | No; anchor pins identity/edge and act frontier | Burn lease pin and epoch component; retain pins and act anti-rollback |
+| `lararium-mesh/src/leaf-peer-proof.ts:187,211,394` | License peer edge during handshake and relicense | No fleet set-aside read in these calls | Prove both peers' pinned lineage and qualifying remove-wins standing, recheck on frontier change |
+| `lararium-mesh/src/sibling-channel.ts:466,499,508,934,965` | Supply epoch to sibling proof and relicense; KEL enrolment governs leaf standing | KEL enrolment yes; fleet set-aside not shown | Wire qualifying fleet standing into leaf and live sessions; preserve KEL verification |
+| `lararium-keyhive/src/ceremony-core.ts:530,540,781,841`; `recovery-core.ts:32-37` | Mint founding/admission/readmission edge at supplied epoch | Admission gate elsewhere, not mint itself | Mint epoch-free edge after pinned lineage and standing proof; K18 remains separately owed |
+| `lararium-keyhive/src/face-grant-record.ts:111,137-155` | Authorize consuming founder grant via pinned root/KEL and optional epoch | No founder dyad read | Require founder remove-wins standing and anchored lineage before accepting grant |
+| `lararium-keyhive/src/face-seat.ts:141-149` | Wait for epoch then verify grant before ingest | No founder set-aside passed to verifier | Fetch qualifying founder standing and pinned lineage; pending on unavailable evidence |
+| `lararium-keyhive/src/face-join.ts:159-170` | License join edge at epoch | Yes: aside and unknown refused | Remove epoch and retain/strengthen verified standing and lineage |
+| `lararium-keyhive/src/boot-daemon-keyhive.ts:158-175` | Bind local device at boot with anchor-floored epoch | Yes for explicit aside/unknown; optional missing dyad needs audit | Require qualifying own standing and pinned lineage, refuse missing evidence |
+| `lararium-keyhive/src/lease-frontier.ts:35,64-70` | Load signed face lease and floor it under anchor | No | Replace callers with verified standing/frontier read; retire face-specific fold |
+| `lararium-keyhive/src/operator-daemon-behavior.ts:283-292,498-540,889-926,1385` | Feed boot, binding, join and grant-seat readers | Boot and join request dyad; seat does not pass founder standing | Supply per-edge standing to each reader; stop gating on lease availability |
+| `lararium-node/src/commands/device-admit.ts:149,351,362-377,424` | Check joinee and mint edge at observed/floored epoch | Yes: signed fleet frontier and dyad | Retain and verify standing/lineage; mint without epoch |
+| `lararium-node/src/open-node-vessel.ts:3036-3038,3249-3260`; `lease-observation.ts:10` | Raise anchored epoch and supply sibling expected epoch (`?? 0`) | No standing established by these epoch reads | Remove lease observation; feed proof-backed standing to sibling reader; fail closed on missing proof |
+| `lararium-browser/src/open-browser-vessel.ts:862,943,1466-1469,1836-1843` | Mint anchors, raise observed lease and supply sibling epoch (`?? 0`) | No standing established by these epoch reads | Retain anchor identity/act frontier; supply proof-backed sibling standing |
+| `lararium-node/src/commands/init.ts:345,685` | Mint face anchors with edge/genesis epoch | No; identity-pin creation | Mint anchor without lease field |
+| `lararium-node/src/commands/persona-lease.ts:93,117-125`; `lease-rekey.ts:70-76` | Guard roll, count standing epoch edges and raise anchor | Guard protects seated edges; not proof of every reader | Keep guard until all gates pass standing coverage, then remove face roll path and face fields; retain unrelated quorum lease writer |
+| `lararium-mesh/src/persona-group-secret.ts:153-157,230-240` | Mint/reissue enrolment edges with epoch, including op-key rotation | No set-aside check in these helpers | Epoch-free edge shape; caller establishes standing; preserve op-key rotation |
+
+`lararium-node/src/recovery-keel.ts:36-41` documents the unimplemented readmission epoch input, not a working authority door. KEL sequence epochs (`face-reading` lineage and intent readers), Nexus/realm quorum leases, cabal invite fences, `keyhive-identity-slot` bag-capability fence, and UI mount epochs concern different relations; keep them outside this burn. Search output also sits at `lease-end/epoch-census.txt` as an uncommitted working aid.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/reds-controls-and-fork`>>
+
+!! Reds, controls, and fork
+
+`packages/lararium-keyhive/tests/face-grant-record.test.ts` adds two behavioral tests. One supplies a clear versus aside dyad reading for the same properly signed fresh-epoch founder grant; today the verifier ignores that context and accepts both. This isolates the verifier contract with a stubbed standing result; a later integration red must prove the result from concurrent signed remove-wins acts and the pinned frontier. The second signs an epoch-free edge under a proposed format (same domain and fields without the final epoch component), countersigns it, signs a grant, and expects a clear reader to accept it; a corrupt grant signature supplies its control. The proposed signed bytes must be adopted or the fixture rewritten consistently during the mesh slice. Both tests target the current reader, not an invented helper; existing epoch-enforcing tests conflict intentionally until the retirement slice rewrites them.
+
+Fork — ''Sword / philosopher'': keep the face lease as an extra fleet switch, or retire it under the ruling. A roll gives the user a one-shot fleet cutoff but assumes its delivery as a shared now; removal by signed edge set-asides, face kapae, or K18 re-anchor costs more actions and offline islands learn only at their own frontier. ''Cup / poet'': identity follows the verified relation at each causal island, while the infrastructure's myth keeps the hearth's own proof visible. Early-alpha re-genesis permits burning old signed shapes instead of a dual parser. Decision: retire the face lease; keep the roll guard until standing coverage proves complete. Residual uncertainty: the exact epoch-free signature shape and standing-proof API need review during the mesh slice, with anti-rollback and concurrent-removal integration tests.
+
+Overlap: no composer or sibling source hunks changed in this step. Later edits at `sibling-channel.ts:499,508,934,965`, `open-browser-vessel.ts:1466-1469,1836-1843`, and `open-node-vessel.ts:3036-3038,3249-3260` overlap b5b; sequence after b5b and touch only relevant readers. Browser anchor construction at 862/943 and node anchor construction in `commands/init.ts` also need the final shape burn. Controller provides blind Opus custody review before each slice lands.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Q0Gm8YNWnL7D1tU40iQFY40Gnu5cVj02bARrWkoDHQI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,38 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-019/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-019/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-019/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-019/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-019/out.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-019/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/step-19-hand-back`>>
+
+! Step 19 hand-back
+
+Head `19048159c1c5beec52f72c049e5c53dc20cb6779`; state counter stays 19; no live seats, commit, or push. Next unused relay request: 037. Requests 035–036 resolved; receipt helper has a 120-second LIVENESS bound naming a broker that may have died; no timeout occurred.
+
+The uncommitted fleet watcher now queues an attach request received during an in-flight open, retrying once that open fails, and daemon bag changes request attachment again. Request 035 ran the focused test red: the queued wake was lost (1 failure, 3 controls green). Request 036 passed all 4 tests, including the already-attached control. `git diff --check` passes. This only provides event-driven recovery: a failed open with no subsequent daemon bag change has no guaranteed retry. The test drives the watcher directly, not actual node/browser vessel composition or the daemon subscription; prove a real causal retry source and lifecycle recovery in both vessels. The previous unused ring invalidation callback remains uncommitted and has no consumer; resolve after proving direct observation or wire it safely.
+
+Critical outstanding: `absorbCapEvents` can mutate Keyhive before its await returns. Add a guarded or serialized commit boundary and red with control exercising the authority mutation; post-await proof-version checking cannot cure it. Live browser/node proof of attachment, refold and local replica behavior remains outstanding; `onRefold` after rejection cannot certify publication. Founder lineage freshness and tri-state ring, blind-read residues and daemon join TOCTOU, independently complete dyad census (fleet board has no roster), and `runApplyAdmitPayload`, holder-session-proof and leaf-peer-proof remain owed. Preserve roll guard and epoch fields. Follow the named single-file broker test rule for daemon packages; run whole non-daemon suites before ready; e2e stays in CI. Obtain blind Opus custody read before land; no push without controller go.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2UfnmrD57mVuTO9mPjfspLsxDU0xnK2prztmxn-JnDU`>>
+
+<<^ code=`&#x0004;` to=`?`>>
