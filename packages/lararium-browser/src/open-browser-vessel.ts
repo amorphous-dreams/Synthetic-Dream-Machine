@@ -422,6 +422,9 @@ export type ProjectionSurfaceFrame = LarMsg_Frame & { readonly surface: string }
 
 /** The ONE shared VesselResult (no vessel-by-type) + browser's one substrate extra. */
 export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPool, DaemonVmCore> {
+  // ── leaf-fleet (Leaf-Wright): the island this vessel's persona-KEL board keys on, for the fleet-root door's seat ──
+  kelIsland: string;
+  // ── /leaf-fleet ──
   /** The public identity receipt composed by this vessel. Private signing material never leaves the vessel. */
   identity: BrowserVesselIdentity;
   /** The face (PersonaGroup) this vessel boots: the one its founding named, its admit joined, or its store holds. */
@@ -2538,6 +2541,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   return {
     identity: vesselIdentity,
     face: bootedFace,
+    kelIsland: nexusPubkey,   // leaf-fleet (Leaf-Wright): read by `browserFleetRootDoor`
     faceProviders: {
       // THE BOOTED FACE lights in its daemon manifest; another face's provider needs that face's signed device edge, which
       // this browser's store does not hold (one bootstrap names one face), so it refuses by name.

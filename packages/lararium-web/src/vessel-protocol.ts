@@ -102,6 +102,9 @@ export interface VesselError { readonly name: string; readonly message: string; 
 
 export type JoinOfferReply = { readonly kind: "request"; readonly text: string };
 /** `face` names the PersonaGroup the landed join joins: the tab selects it, so its next hello wears it. */
+/** leaf-fleet (Leaf-Wright): the root holder's replies. `faces` lists the faces this browser holds a root for; a file reply carries one file's text. */
+export type FleetRootFacesReply = { readonly kind: "faces"; readonly faces: readonly { readonly personaGroup: string; readonly label: string }[] };
+export type FleetRootFileReply = { readonly kind: "offer" | "answer"; readonly text: string };
 export type JoinAnswerReply = { readonly kind: "landed"; readonly carriage: string; readonly signerDid: string; readonly face: string };
 
 export type PageToVessel =
@@ -122,6 +125,11 @@ export type PageToVessel =
   | { readonly t: "read:floor"; readonly callId: string; readonly baseUrl: string }
   | { readonly t: "join:offer"; readonly callId: string; readonly text: string; readonly abandonPending: boolean }
   | { readonly t: "join:answer"; readonly callId: string; readonly text: string }
+  // ── leaf-fleet (Leaf-Wright): the fleet-join door's ROOT-HOLDER half. Files in, files out; the vessel asks the face's ward by the ceremony door. ──
+  | { readonly t: "fleet-root:faces"; readonly callId: string }
+  | { readonly t: "fleet-root:offer"; readonly callId: string; readonly personaGroup: string }
+  | { readonly t: "fleet-root:answer"; readonly callId: string; readonly personaGroup: string; readonly text: string }
+  // ── /leaf-fleet ──
   | { readonly t: "spawned"; readonly spawnId: string; readonly port?: MessagePort; readonly refused?: string }
   | { readonly t: "walk:restart"; readonly callId: string; readonly reason: string }
   | { readonly t: "walk:ward"; readonly callId: string; readonly bytes: Uint8Array };

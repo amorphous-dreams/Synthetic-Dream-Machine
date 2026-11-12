@@ -42,6 +42,7 @@ declare const __LAR_WALK_DOOR__: boolean;
 import {
   openBrowserVessel, readBrowserCustody, readBrowserSeedWrap,
   parseAdmitCarriage, toAdmitCarriage, readBrowserCustodyPasskeys, readFaceCustodyPasskeys, browserWardSign,
+  browserFleetRootDoor, openBrowserSecretHome,
   browserFleetJoinRequest, browserFleetJoinLand, browserFleetJoinSettle, browserFleetJoinAbandon, BrowserFleetJoinRefused,
   standVesselHouse, sessionLifetimeLock, VesselSessionRefused, readBrowserVesselFaces, wardAskWords,
   type BrowserVesselResult, type ProjectionSurfaceFrame, type CustodyAnswer, type CustodyAsk, type HouseAsk, type PageLife, type VesselHouse, type VesselSession, type LockHost, type WardAskKind,
@@ -367,6 +368,15 @@ export function standVesselHost(env: VesselHostEnv = {}) {
         await vessel();
         return admitted!.catch(() => { throw new VesselSessionRefused("session-unadmitted"); });
       };
+      // ── leaf-fleet (Leaf-Wright): the root holder's door over the lit vessel (`browser-fleet-root`) ──
+      const fleetRoot = async (asker: Conn) => {
+        const v = await litFaceVessel();
+        return browserFleetRootDoor({
+          idbName, repo: v.repo, kelIsland: v.kelIsland, askWard: (act) => askWardOf(asker)(act),
+          extraDocs: async () => [(await openBrowserSecretHome(idbName, v.repo).catch(() => null))?.handle.doc()],
+        });
+      };
+      // ── /leaf-fleet ──
       const reply = (callId: string, work: () => Promise<unknown>): void => {
         void work().then((value) => post({ t: "reply", callId, ok: true, value }), (err: unknown) => post({ t: "reply", callId, ok: false, error: errorOf(err) }));
       };
@@ -493,6 +503,15 @@ export function standVesselHost(env: VesselHostEnv = {}) {
             case "read:floor": reply(msg.callId, async () => (await vessel()).readFloor(msg.baseUrl)); return;
             case "join:offer": reply(msg.callId, async () => { const { h, s } = await own(); return join.offer(conn, h, s, msg.text, msg.abandonPending); }); return;
             case "join:answer": reply(msg.callId, async () => { const { h, s } = await own(); return join.answer(h, s, msg.text); }); return;
+            // ── leaf-fleet (Leaf-Wright): the root holder's half. The ward ask rides this connection's ceremony door, once per answer. ──
+            case "fleet-root:faces": reply(msg.callId, async () => ({ kind: "faces", faces: await (await fleetRoot(conn)).faces() })); return;
+            case "fleet-root:offer": reply(msg.callId, async () => ({ kind: "offer", text: JSON.stringify(await (await fleetRoot(conn)).offer(msg.personaGroup), null, 2) })); return;
+            case "fleet-root:answer": reply(msg.callId, async () => {
+              const { h, s } = await own();
+              const answer = await h.faceAct(s.sessionId, msg.personaGroup, async () => (await fleetRoot(conn)).answer(msg.personaGroup, JSON.parse(msg.text) as unknown));
+              return { kind: "answer", text: JSON.stringify(answer) };
+            }); return;
+            // ── /leaf-fleet ──
             case "walk:restart":
               // A harness-only door, compiled out of every default build.
               if (!(typeof __LAR_WALK_DOOR__ !== "undefined" && __LAR_WALK_DOOR__)) { post({ t: "reply", callId: msg.callId, ok: false, error: { name: "Error", message: "walk-door-absent" } }); return; }

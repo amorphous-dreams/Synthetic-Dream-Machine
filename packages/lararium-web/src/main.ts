@@ -18,6 +18,8 @@ declare const __LAR_WALK_DOOR__: boolean;
  * story), verifying every step on the vessel worker's thread. Location-agnostic: served from localhost / LAN / elyncia.app,
  * the vessel always runs in this browser; the origin is a static host, never an authority.
  */
+import { mountFleetRootDoor } from "./fleet/fleet-root-door.js";
+import { showCarriage } from "./fleet/carriage-panel.js";
 import { createLoafBuffer } from "./loaf-buffer.js";
 import {
   DAEMON_SURFACE_ID, requestDurableStorage, storageFloorReport, vesselLockName, type HearthFloorRead,
@@ -321,6 +323,9 @@ function mountAdmitSurface(verifyingKeyHex: string, vessel: VesselPort): void {
             });
             paste.value = request.text;
             paste.select();
+            // leaf-fleet (Leaf-Wright): the request also shows as a file to save and QR codes for the root holder's lens.
+            const shown = document.getElementById("admit-carriage");
+            if (shown) showCarriage(shown, { text: request.text, fileName: "request.json", label: "this browser's fleet-join request" });
             statusEl.textContent = "✓ request minted — carry it back to the root holder: `lares fleet join answer <request-file>`, then paste the answer here.";
             statusEl.className = "ok";
             return;
@@ -545,6 +550,10 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
   // Identity custody stays in the browser vessel. The web surface renders the public receipt the vessel reported.
   const did = result.did;
   mountAdmitSurface(result.verifyingKey, vessel);
+  // ── leaf-fleet (Leaf-Wright): the root holder's door. It paints a face only where this browser holds that face's root. ──
+  const fleetRootHost = document.getElementById("fleet-root-door");
+  if (fleetRootHost) mountFleetRootDoor(fleetRootHost, vessel.fleetRoot);
+  // ── /leaf-fleet ──
   if (relayUrl) {
     console.log(`[vessel] this leaf's key: ${did}`);
     console.log("[vessel] to join a face's fleet, on the root holder: lares fleet join offer --out offer.json, then paste the offer here");

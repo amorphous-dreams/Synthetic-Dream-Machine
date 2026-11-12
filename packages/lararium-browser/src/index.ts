@@ -96,8 +96,9 @@ export {
   browserFleetJoinRequest, browserFleetJoinLand, browserFleetJoinSettle, browserFleetJoinAbandon, browserVesselFaceKeyCustody, BrowserFleetJoinRefused,
 } from "./browser-fleet-join.js";
 // THE FLEET-JOIN DOOR's ROOT-HOLDER half: a face this browser founded offers and answers, with no node in the walk.
+export { openBrowserSecretHome } from "./browser-secret-home.js";
 export {
-  browserFleetJoinOffer, browserFleetJoinAnswer, browserSeatDevice, browserStandingFaceScopes, BrowserFleetRootRefused, issuedRow,
+  browserFleetJoinOffer, browserFleetJoinAnswer, browserSeatDevice, browserRootFaces, browserFleetRootDoor, browserStandingFaceScopes, BrowserFleetRootRefused, issuedRow,
   type BrowserRootFace, type BrowserSeatFace, type BrowserSeatInput,
 } from "./browser-fleet-root.js";
 

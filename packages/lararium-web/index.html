@@ -64,6 +64,9 @@
         background: #0d1117; color: #c9d1d9; font-family: inherit; font-size: 16px;
       }
       #admit-apply { width: 100%; margin-top: 0.6rem; }
+      .carriage textarea { width: 100%; }
+      .carriage [data-lar-carriage-frame] svg { width: min(18rem, 100%); height: auto; display: block; cursor: pointer; }
+      .carriage [data-lar-carriage-video] { width: min(18rem, 100%); display: block; }
       #admit-status { padding-top: 0.5rem; font-size: 0.88rem; min-height: 1.3rem; }
       @media (max-width: 560px) {
         main { margin: 2vh auto; }
@@ -111,6 +114,8 @@
                     placeholder='{ "kind": "fleet-join-offer", … }'></textarea>
           <button id="admit-apply" type="button">join this face's fleet</button>
           <div id="admit-status"></div>
+          <div id="admit-carriage" class="carriage"></div>
+          <div id="fleet-root-door" class="carriage"></div>
           <p class="found-face">This browser stands as an unbound veil until a face joins it. <a id="found-face" href="?found">Found a face of its own here</a>: the ceremony asks a first passphrase and shows a place card to write down.</p>
         </div>
       </section>

@@ -10,7 +10,7 @@ import type { LarMsg_ControlEvent, LarMsg_ControlResult } from "@lararium/mesh";
 import type { PortTransportDoors } from "./port-transport.js";
 import type { CeremonyAskKind } from "./ceremony-protocol.js";
 import type {
-  JoinAnswerReply, JoinOfferReply, PageToVessel, VesselBoot, VesselError, VesselStatus, VesselToPage,
+  FleetRootFacesReply, FleetRootFileReply, JoinAnswerReply, JoinOfferReply, PageToVessel, VesselBoot, VesselError, VesselStatus, VesselToPage,
 } from "./vessel-protocol.js";
 
 /** An ask as the page hears it: public words alone. The page opens the ceremony document for it and takes no answer. */
@@ -187,6 +187,13 @@ export function standVesselPort(worker: VesselWorkerLike, handlers: VesselPortHa
     readFloor: (baseUrl: string) => call<HearthFloorRead>((callId) => ({ t: "read:floor", callId, baseUrl })),
     joinOffer: (text: string, abandonPending: boolean) => call<JoinOfferReply>((callId) => ({ t: "join:offer", callId, text, abandonPending })),
     joinAnswer: (text: string) => call<JoinAnswerReply>((callId) => ({ t: "join:answer", callId, text })),
+    // ── leaf-fleet (Leaf-Wright): the root holder's three verbs (`fleet/fleet-root-door` `FleetRootPort`) ──
+    fleetRoot: {
+      faces: async () => (await call<FleetRootFacesReply>((callId) => ({ t: "fleet-root:faces", callId }))).faces,
+      offer: async (personaGroup: string) => (await call<FleetRootFileReply>((callId) => ({ t: "fleet-root:offer", callId, personaGroup }))).text,
+      answer: async (personaGroup: string, text: string) => (await call<FleetRootFileReply>((callId) => ({ t: "fleet-root:answer", callId, personaGroup, text }))).text,
+    },
+    // ── /leaf-fleet ──
     restartDaemonIsland: (reason: string) => call<{ restarts: number; leg: string }>((callId) => ({ t: "walk:restart", callId, reason })),
     /** A harness-only door (the walk build): one ward act over `bytes`, its passphrase asked through the ceremony. */
     walkWardAct: (bytes: Uint8Array) => call<{ key: string; signature: string }>((callId) => ({ t: "walk:ward", callId, bytes })),

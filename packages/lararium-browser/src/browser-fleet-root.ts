@@ -38,7 +38,7 @@ import {
 } from "@lararium/mesh";
 import { runDeviceAdmitEdge, type DeviceAdmitPayload } from "@lararium/keyhive";
 import type { WardRoute } from "./ward-core.js";
-import { browserPersonaRootHeld, generateOrLoadBrowserPersonaRoot, loadBrowserPersonaRootSeed, FLEET_JOIN_STORE, idbGet, idbPut, openVesselIdb } from "./browser-vessel-identity.js";
+import { browserPersonaRootHeld, generateOrLoadBrowserPersonaRoot, listBrowserPersonaRoots, loadBrowserPersonaRootSeed, FLEET_JOIN_STORE, idbGet, idbPut, openVesselIdb } from "./browser-vessel-identity.js";
 import { loadBrowserFaceAnchor } from "./browser-face-anchor.js";
 import { readBrowserFaceAddressSecret, requireBrowserFaceAtomSeed } from "./browser-face-atom.js";
 
@@ -238,4 +238,82 @@ export async function browserSeatDevice(input: BrowserSeatInput): Promise<FleetJ
     if (seat.appended.length) personaHandle.change((draft) => { for (const act of seat.appended) writePersonaAct(draft, act as SignedAct); });
     return { edge: seat.payload, reach: { syncUrl: input.syncUrl, islandKind: null, islandScope: null }, hearth: null };
   } finally { atomSeed.fill(0); }
+}
+
+// ── The door a vessel host stands over its live vessel ──────────────────────────────────────────
+
+/** One face's overlay as the boot record keeps it (`open-browser-vessel` `BrowserBootstrap.faces`), read for the pins a seat needs. */
+interface KeptOverlay { readonly personaGroupId?: string; readonly meshCabalDocIdHex?: string; readonly signerDid?: string; readonly personaKelPrefix?: string; readonly personaUrl?: string; readonly daemonUrl?: string }
+
+/** Every face overlay this browser's boot record holds, by PersonaGroup: the map, and a record's own top-level face. */
+async function keptOverlays(idbName: string): Promise<Record<string, KeptOverlay>> {
+  const db = await openVesselIdb(idbName);
+  try {
+    const record = await idbGet<KeptOverlay & { readonly faces?: Readonly<Record<string, KeptOverlay>> }>(db, "bootstrap", "social-bootstrap");
+    if (!record) return {};
+    return { ...(record.personaGroupId && !record.faces?.[record.personaGroupId] ? { [record.personaGroupId]: record } : {}), ...(record.faces ?? {}) };
+  } finally { db.close(); }
+}
+
+/**
+ * The faces this browser holds a ROOT for, each mapped from its overlay record onto the persona index its root rests at:
+ * a face it founded names its own root as the overlay's signer, and a face it joined names another vessel's. The read
+ * opens no ward. A face whose root this thread cannot read now (another face worn) stays off the list.
+ */
+export async function browserRootFaces(idbName = "lares:vessel"): Promise<readonly (BrowserRootFace & { readonly seat: BrowserSeatFace })[]> {
+  const out: (BrowserRootFace & { readonly seat: BrowserSeatFace })[] = [];
+  const roots = await listBrowserPersonaRoots(idbName).catch(() => [] as number[]);
+  for (const [personaGroup, overlay] of Object.entries(await keptOverlays(idbName))) {
+    const { meshCabalDocIdHex, signerDid, personaKelPrefix, personaUrl, daemonUrl } = overlay;
+    if (!signerDid || !personaKelPrefix || !personaUrl || !daemonUrl || meshCabalDocIdHex === undefined) continue;
+    for (const handleIndex of roots) {
+      const key = await generateOrLoadBrowserPersonaRoot(idbName, handleIndex, undefined, personaGroup).then((r) => bare(r.verifyingKey), () => null);
+      if (key === null || key !== bare(signerDid)) continue;
+      out.push({ personaGroup, handleIndex, seat: { personaGroupId: personaGroup, meshCabalDocIdHex, personaKelPrefix, personaUrl, daemonUrl } });
+      break;
+    }
+  }
+  return out;
+}
+
+/**
+ * The root holder's door over a live vessel: what the vessel host answers the page's three verbs with. `askWard` asks the
+ * face's unlock by the ceremony door, ONCE per answer; the route it hands back opens the seat and the signature and
+ * rests nowhere.
+ */
+export function browserFleetRootDoor(vessel: {
+  readonly idbName: string; readonly repo: Repo;
+  /** The island this vessel's persona-KEL board keys on. */
+  readonly kelIsland: string;
+  readonly askWard: (act: string) => Promise<WardRoute>;
+  /** Where a joinee dials to meet this fleet, where the person configured a relay; null otherwise. */
+  readonly syncUrl?: string | null;
+  /** Further documents carrying the face's signed records (the vessel's secret home), read at each answer. */
+  readonly extraDocs?: () => Promise<readonly (LarDoc | null | undefined)[]>;
+}): {
+  faces(): Promise<readonly { readonly personaGroup: string; readonly label: string }[]>;
+  offer(personaGroup: string): Promise<FleetJoinOffer>;
+  answer(personaGroup: string, request: unknown): Promise<FleetJoinAnswer>;
+} {
+  const { idbName } = vessel;
+  const held = async (personaGroup: string) => {
+    const face = (await browserRootFaces(idbName)).find((f) => f.personaGroup === personaGroup);
+    if (!face) throw new BrowserFleetRootRefused("root-absent", "this browser holds no root for that face; the vessel that founded the face answers its fleet joins.");
+    return face;
+  };
+  return {
+    faces: async () => (await browserRootFaces(idbName)).map((f) => ({ personaGroup: f.personaGroup, label: `${f.personaGroup.slice(0, 10)}…` })),
+    offer: async (personaGroup) => browserFleetJoinOffer({ face: await held(personaGroup), idbName }),
+    answer: async (personaGroup, request) => {
+      const face = await held(personaGroup);
+      // The request reads its nonce before the person is asked anything: a paste that names none never opens the ceremony.
+      if (typeof (request as { nonce?: unknown } | null)?.nonce !== "string") throw new BrowserFleetRootRefused("request-malformed", "the request names no nonce.");
+      const ward = await vessel.askWard(`answer a fleet join for face ${personaGroup.slice(0, 10)}…`);
+      const extraDocs = vessel.extraDocs ? await vessel.extraDocs() : [];
+      return browserFleetJoinAnswer({
+        face, request, ward, idbName,
+        seat: (read, signerSeed) => browserSeatDevice({ repo: vessel.repo, idbName, face: face.seat, kelIsland: vessel.kelIsland, request: read, signerSeed, syncUrl: vessel.syncUrl ?? null, extraDocs }),
+      });
+    },
+  };
 }
