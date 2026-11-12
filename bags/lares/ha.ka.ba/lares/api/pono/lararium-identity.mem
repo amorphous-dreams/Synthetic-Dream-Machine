@@ -161,6 +161,10 @@ Revocation rides ''Keyhive concap'' — delegation + revocation as ''convergent 
 moved //to//, away from UCAN's external-state revocation. The standing edge carries no clock: `boundEpoch` against the PersonaGroup lease epoch records causal supersession. Quiet never lapses standing; departure, relation-scoped kapae, or renewal supersession records lapse. An epoch bump stays the heavy hammer for re-founding only. Revocation holds first-class standing and
 converges, never the deferred afterthought.
 
+''What `hearthTrueName` holds'' (operator ruling R1, 2026-10-05; the operator's approval of 2026-11-12). The field names the hearth's seed-charter Nexus AID, never an engine CID: an engine names a class, and a place takes its name from its charter (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus`>>). ''A hearth-agnostic leaf binds `hearthTrueName: ""`'', stated and never omitted, and the root's signature with Keyhive membership carries the edge. ''No place wall stands for a leaf'': the edge runs sideways between a face's own devices (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-circle`>>), so no founding device stands as a root to wall to. The wall a hearth gives arrives by an act: when a face founds or joins a hearth, that device gains an AID-bound edge, and its `""` edge stays good between leaves. A place's KEL prefix stays a floor duty and never enters a face relation.
+
+''Owed, the next leap: the integer `boundEpoch` retires'' (approved 2026-11-12, not built). An edge will name the head digest of the PersonaGroup lineage it bound under, a causal link in place of a counter. Supersession rides acts (a Keyhive revoke, a kapae, a renewal record linked by digest), and a hard break forks as exit: a new PersonaGroup id, or a new seed charter for a hearth. No clock and no global count orders any of it.
+
 <<~/ahu>>
 
 <<~ ahu slot=`#/capability-and-petnames`>>
@@ -549,6 +553,6 @@ folded in; the FS-limit stated as posture). Standing dissent kept, with re-entry
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Zh5h2wruS-XS45qyO727sedefGoEEBeQT-sOkdmwNFo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ivzYT_zbEyv-d2Yu2AzMY2q-Xkmanehk9byB9pMBUnk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

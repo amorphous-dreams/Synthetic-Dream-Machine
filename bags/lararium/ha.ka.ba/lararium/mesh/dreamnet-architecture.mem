@@ -145,7 +145,7 @@ The corpus-kahu hold ''kahu'' at this layer — a k-of-n quorum seated from the 
 
 ''The engine cadence runs per Nexus, and devices move by adoption.'' A Nexus admits a rolling window of engine epochs; a cadence threshold seated apart from its kahu quorum — a self-governing lineage held by those who bear the reboot cost (operators whose places run the engine) — offers the next engine and advances the window. ''Each device moves only by its own adoption'' — a reboot onto the offered engine — and carrying never counts toward the cadence (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/contract`>>, the seated engine-update authority at <<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/engine-watch`>>).
 
-''Grammar drift alone does not separate Nexuses — the engine epoch binds who-can-talk.'' (And a PLUGIN drift makes no grammar drift at all: the grammar holds its own region, so an operator's collection moves `pluginsCid` and touches no reading but their own.) Membership rides `hearthTrueName` = `engineCid`, signed into every device-delegation edge, so two operators on one engine differ in grammar without schisming; only a DIFFERENT engine reaches the disjoint-station-set break (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces#/the-real-mover`>>).
+''Grammar drift alone does not separate Nexuses — the engine epoch binds who-can-talk.'' (And a PLUGIN drift makes no grammar drift at all: the grammar holds its own region, so an operator's collection moves `pluginsCid` and touches no reading but their own.) Membership rides `hearthTrueName`, the hearth's seed-charter Nexus AID (operator ruling R1, 2026-10-05; <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus`>>), signed into every device-delegation edge with the engine as a separate claim, so two operators on one engine differ in grammar without schisming; only a DIFFERENT engine reaches the disjoint-station-set break (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces#/the-real-mover`>>).
 
 <<~/ahu>>
 
@@ -679,6 +679,6 @@ The carriage-client fetch row stays OWED (measured 2026-10-22). The vessel-side 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Bo47qLqsxwNRaOBvMiJxTDrLXn3C8Nt9MbmFNBaH60s`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;U9JmMRsEY1AT8Mj_2K8QEvTOLHTe0dCNJAi8Vre3Eno`>>
 
 <<^ code=`&#x0004;` to=`?`>>
