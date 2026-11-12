@@ -29,7 +29,7 @@
  */
 
 import {
-  CONTROL_HOME_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX,
+  CONTROL_HOME_ID, ControlHomeUnavailable, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX,
   computeRecipeFingerprint, emptyLarDoc, floorSlotTitle, realmWorkbenchDocUrl, mintVesselDocumentId, storedLarRecord, mutableLarRecord, resolveSlotDoc, tiddlerText,
   wikiBagUri, wikiDraftDocKey, requireLarDid, didFromVerifyingKey,
   type CompositeStore, type LarDoc, type SlotReach, type WikiSlotKind,
@@ -260,8 +260,8 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
    * THE VEIL FLOOR'S WORKING LAYER (the-veil-ladder#/the-base-model; the one slot-doc law: "never refuses for want of a
    * group"). A vessel that wears no face and whose control document reads stands a wiki's working layer in a floor document
    * the control document names (`floor-slot/<slug>/working`), named before its first byte, exactly as the daemon wiki's
-   * floor device slot stands. A vessel whose control document does not read (a locked floor, a herm that holds none) stands
-   * none and answers null. The Lift moves its rows into the face's realm workbench when a seat lands (`anon-lift`).
+   * floor device slot stands. A vessel whose control document refuses by name (a locked hearth, a herm that names none)
+   * stands none and answers null. The Lift moves its rows into the face's realm workbench when a seat lands (`anon-lift`).
    */
   const floorMints = new Map<string, Promise<SlotDoc | null>>();
   const floorWorking = async (slug: string, mint: boolean): Promise<SlotDoc | null> => {
@@ -269,7 +269,12 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
     if (!control) return null;
     const title = floorSlotTitle(slug, "working");
     let named: string | null;
-    try { named = tiddlerText(await control.get(title)); } catch { return null; }   // the control document does not read: no floor stands
+    // THE GATE RESTS ON THE VESSEL'S OWN KEY, never on a host's name: a control document reads only where the vessel's held key
+    // stands open (control-home `standControlHome`). A locked hearth's stand-in refuses `vessel-locked` and a faceless place's
+    // (a herm, which never unlocks) refuses `control-home-unnamed`; either refusal means no floor stands, and nothing mints.
+    // Any other fault of the control store surfaces as itself.
+    try { named = tiddlerText(await control.get(title)); }
+    catch (error) { if (error instanceof ControlHomeUnavailable) return null; throw error; }
     if (named) return { url: named, reach: "vessel-only" };
     if (!mint) return null;
     const pending = floorMints.get(title);

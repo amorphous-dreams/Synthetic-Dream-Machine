@@ -14,7 +14,7 @@ import { makeIslandRepo } from "@lararium/mesh";
 import {
   CompositeStore, CONTROL_HOME_ID, DAEMON_BAG_ID, PERSONAL_BINDINGS_PREFIX, computeRecipeFingerprint, didFromVerifyingKey, emptyLarDoc,
   floorSlotTitle, mutableLarRecord, wikiBagUri, wikiSlotUri, realmWorkbenchDocUrl, privateCabalRealmId, ledgerWorkbenches, materializeSharedLarDoc, workbenchKeyDocs,
-  refusingControlStore, vesselLockedRefusal, tiddlerText,
+  refusingControlStore, vesselLockedRefusal, tiddlerText, floorAnswerStore, ControlHomeUnavailable, CONTROL_HOME_UNNAMED,
   type LarDoc, type LarTiddlerRecord,
 } from "@lararium/mesh";
 import { MemoryTiddlerStore, makeCatalogAccessor } from "@lararium/tw5";
@@ -87,6 +87,25 @@ describe("★ the veil floor stands its own wiki content, and a seat's landing l
     const out = await h.floor.bindings(h.fingerprint, h.trace, "garden");
     expect(out.workingUrl).toBeNull();
     expect(h.order).toEqual([]);
+    await h.done();
+  });
+
+  test("RED V2c — a HERM's composition stands no floor working slot: its control stand-in refuses `control-home-unnamed`, and nothing mints", async () => {
+    // The very store a faceless place's daemon island holds (control-home `standIn` + `controlStoreOf`): a herm never unlocks.
+    const h = await house({ control: floorAnswerStore(new ControlHomeUnavailable("this place names no control document", CONTROL_HOME_UNNAMED)) });
+    const out = await h.floor.bindings(h.fingerprint, h.trace, "garden");
+    expect(out.workingUrl, "a herm gains no writable layer").toBeNull();
+    expect(h.order, "nothing announces").toEqual([]);
+    expect(await h.floor.slotDoc("garden", "working", { mint: false })).toBeNull();
+    await expect(h.floor.slotDoc("garden", "working")).rejects.toThrow(/no-face/);
+    await h.done();
+  });
+
+  test("RED V2d — only the control document's own refusal reads as no floor; any other fault of the control store surfaces", async () => {
+    const broken = new CompositeStore();
+    broken.addLayer({ bagId: CONTROL_HOME_ID, writable: true, defaultWritable: true, store: Object.assign(Object.create(new MemoryTiddlerStore(CONTROL_HOME_ID)), { get: async () => { throw new Error("disk-torn"); } }) as never });
+    const h = await house({ control: broken });
+    await expect(h.floor.bindings(h.fingerprint, h.trace, "garden")).rejects.toThrow(/disk-torn/);
     await h.done();
   });
 
