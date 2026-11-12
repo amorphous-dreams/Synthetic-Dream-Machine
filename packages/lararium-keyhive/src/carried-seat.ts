@@ -20,11 +20,11 @@
  * Meme: lar:///ha.ka.ba/lararium/keyhive/carried-seat
  */
 import {
-  buildIntent, faceIntentVerbs, intentEntryCid, storedLarRecord, tiddlerText, writeIntentEntry,
+  buildIntent, faceIntentVerbs, intentEntryCid, intentEntryRecordsOfGroup, intentId, readIntentEntry, storedLarRecord, tiddlerText, writeIntentEntry,
   type DeviceDelegationTiddler, type DocHandle, type IntentSigner, type LarDoc, type SignedIntentEntry,
 } from "@lararium/mesh";
 import { faceJoinNonce } from "./face-intent-door.js";
-import { FACE_GRANT_PREFIX, faceGrantTitle, type FaceGrantRecord } from "./face-grant-record.js";
+import { FACE_GRANT_PREFIX, faceGrantRecordCid, faceGrantTitle, type FaceGrantRecord } from "./face-grant-record.js";
 import type { FaceJoinSummons } from "./face-join.js";
 
 export interface FleetSeatRequest { readonly kind: "fleet-seat-request"; readonly personaGroup: string; readonly entry: SignedIntentEntry }
@@ -84,6 +84,32 @@ export function seatGrantOnPlane(plane: LarDoc | undefined | null, group: string
   const raw = tiddlerText(plane?.tiddlers?.[title]);
   if (typeof raw !== "string") return null;
   try { return { kind: "fleet-seat-grant", personaGroup: group, title, record: JSON.parse(raw) as FaceGrantRecord }; } catch { return null; }
+}
+
+/**
+ * THE GRANT THAT ANSWERS THIS REQUEST, never merely the one standing for its device. The root holder's door answers each
+ * intent once and signs an outcome naming the intent (`cause`) and the grant record it wrote (`recordCid`); the grant at the
+ * device's title answers this request only where its content address is the one this intent's outcome names. A request
+ * whose card the leaf minted again is another intent, so a grant an earlier intent left standing never answers it.
+ * `pending`: the door has not answered this intent yet. `refused`: its outcome names no grant (the gate did not pass).
+ */
+export type SeatAnswer = { readonly state: "granted"; readonly grant: FleetSeatGrant } | { readonly state: "pending" } | { readonly state: "refused"; readonly reason: string };
+export function seatGrantAnswering(intents: LarDoc | undefined | null, persona: LarDoc | undefined | null, request: FleetSeatRequest): SeatAnswer {
+  const body = request.entry.body as unknown as { issuer: string; verb: string; args: unknown; nonce: string; audience?: { mode?: string; atom?: string } };
+  const cause = intentId({ issuer: body.issuer, verb: body.verb, args: body.args, nonce: body.nonce });
+  const hearth = body.audience?.mode === "pinned" && typeof body.audience.atom === "string" ? bare(body.audience.atom) : null;
+  if (hearth === null) return { state: "refused", reason: "the request pins no hearth" };
+  // The outcome the pinned hearth signed for this intent alone, its signature checked.
+  const outcome = intentEntryRecordsOfGroup(intents, request.personaGroup)
+    .map((raw) => readIntentEntry(raw, { group: request.personaGroup, authorize: (signer) => bare(signer) === hearth }))
+    .map((read) => (read.ok ? (read.entry.body as unknown as { entry?: unknown; cause?: unknown; result?: Record<string, unknown> }) : null))
+    .find((b) => b?.entry === "outcome" && b.cause === cause);
+  if (!outcome) return { state: "pending" };
+  const recordCid = outcome.result?.["recordCid"];
+  if (typeof recordCid !== "string") return { state: "refused", reason: String(outcome.result?.["reason"] ?? "the door answered this intent and wrote no grant") };
+  const standing = seatGrantOnPlane(persona, request.personaGroup, seatRequestDevice(request));
+  // The outcome landed before its grant reached this replica, or a later intent's grant stands: wait for the one it names.
+  return standing !== null && faceGrantRecordCid(standing.record) === recordCid ? { state: "granted", grant: standing } : { state: "pending" };
 }
 
 /** Read a carried seat grant on the joined leaf: its face and its device. The seat's own verifier judges the signature and the founder's standing. */

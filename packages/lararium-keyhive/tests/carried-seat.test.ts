@@ -1,10 +1,10 @@
 /** The carried seat's two files: their shapes, the device and face they bind, and the seat's second source. */
 import { describe, expect, test } from "vitest";
-import { tiddlerText, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, faceIntentVerbs, intentEntryRecordsOfGroup, readIntentEntry, type DeviceDelegationTiddler, type DocHandle, type LarDoc } from "@lararium/mesh";
+import { buildOutcome, tiddlerText, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, faceIntentVerbs, intentEntryRecordsOfGroup, intentId, readIntentEntry, storedLarRecord, writeIntentEntry, type DeviceDelegationTiddler, type DocHandle, type LarDoc } from "@lararium/mesh";
 import {
-  carriedSeatGrants, composeSeatRequest, keepCarriedSeatGrant, placeSeatRequest, readSeatGrant, readSeatRequest, seatGrantOnPlane, seatRequestDevice,
+  carriedSeatGrants, composeSeatRequest, keepCarriedSeatGrant, placeSeatRequest, readSeatGrant, readSeatRequest, seatGrantAnswering, seatGrantOnPlane, seatRequestDevice,
 } from "../src/carried-seat.js";
-import { faceGrantTitle, type FaceGrantRecord } from "../src/face-grant-record.js";
+import { faceGrantRecordCid, faceGrantTitle, type FaceGrantRecord } from "../src/face-grant-record.js";
 
 const GROUP = "0xb7f1c2a9d4e60381";
 const seed = (n: number) => new Uint8Array(32).fill(n);
@@ -62,5 +62,35 @@ describe("the carried seat's files", () => {
     expect((await carriedSeatGrants(store, GROUP, mine)).map((g) => [g.title, g.record.sig])).toEqual([[faceGrantTitle(GROUP, mine), grant.record.sig]]);
     expect(await carriedSeatGrants(undefined, GROUP, mine)).toEqual([]);
     expect(await carriedSeatGrants(store, GROUP, theirs)).toEqual([]);
+  });
+
+  test("RED: the root holder hands back the grant that answers THIS request, never one an earlier intent left standing", async () => {
+    const key = await ed25519VerifyingKeyFromSeed(seed(3)), hearthKey = await ed25519VerifyingKeyFromSeed(seed(4)), strangerKey = await ed25519VerifyingKeyFromSeed(seed(5));
+    const atom = { key, sign: ed25519SignerFromSeed(seed(3)) }, hearth = { key: hearthKey, sign: ed25519SignerFromSeed(seed(4)) }, stranger = { key: strangerKey, sign: ed25519SignerFromSeed(seed(5)) };
+    const edge = { deviceVerifyingKey: key } as DeviceDelegationTiddler;
+    const first = await composeSeatRequest({ group: GROUP, atom, hearthAtom: hearthKey, contactCard: "{\"card\":1}", deviceEdge: edge });
+    // The leaf minted its card again (a wiped store, a fresh landing): the same device asks by another intent.
+    const again = await composeSeatRequest({ group: GROUP, atom, hearthAtom: hearthKey, contactCard: "{\"card\":2}", deviceEdge: edge });
+    const causeOf = (r: typeof first) => { const b = r.entry.body as unknown as { issuer: string; verb: string; args: unknown; nonce: string }; return intentId(b); };
+    const intents = memoryDoc(), persona = memoryDoc();
+    const standing = grantFor(key);
+    persona.change((d) => { d.tiddlers[standing.title] = storedLarRecord(standing.title, { text: JSON.stringify(standing.record) }, "t"); });
+    // A grant stands for the device, and no outcome answers this intent yet: it waits.
+    expect(seatGrantAnswering(intents.doc(), persona.doc(), first)).toEqual({ state: "pending" });
+    // An outcome a stranger signed answers nothing.
+    const forged = await buildOutcome({ group: GROUP, signer: stranger, cause: causeOf(first), result: { status: "done", recordCid: faceGrantRecordCid(standing.record) } });
+    intents.change((d) => writeIntentEntry(d, forged));
+    expect(seatGrantAnswering(intents.doc(), persona.doc(), first).state).toBe("pending");
+    // The pinned hearth's outcome for the first intent names the grant standing: that grant answers it.
+    const answered = await buildOutcome({ group: GROUP, signer: hearth, cause: causeOf(first), result: { status: "done", recordCid: faceGrantRecordCid(standing.record) } });
+    intents.change((d) => writeIntentEntry(d, answered));
+    const granted = seatGrantAnswering(intents.doc(), persona.doc(), first);
+    expect(granted.state === "granted" ? granted.grant.record.sig : null).toBe(standing.record.sig);
+    // The re-minted request meets the grant the first intent left standing, and waits for its own.
+    expect(seatGrantAnswering(intents.doc(), persona.doc(), again), "a stale grant never answers a re-minted card").toEqual({ state: "pending" });
+    // An outcome that names no grant refuses by its reason.
+    const refused = await buildOutcome({ group: GROUP, signer: hearth, cause: causeOf(again), result: { status: "done", reason: "the edge did not pass" } });
+    intents.change((d) => writeIntentEntry(d, refused));
+    expect(seatGrantAnswering(intents.doc(), persona.doc(), again)).toEqual({ state: "refused", reason: "the edge did not pass" });
   });
 });

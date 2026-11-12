@@ -17,8 +17,7 @@ import {
   DOCUMENT_HANG_BOUND_MS, ed25519SignerFromSeed, faceAtomKeyFromSeed, personaActRecordsOfGroup, tiddlerText, type LarDoc,
 } from "@lararium/mesh";
 import {
-  CarriedSeatRefused, carriedSeatGrants, composeSeatRequest, keepCarriedSeatGrant, placeSeatRequest, readSeatGrant, readSeatRequest, seatGrantOnPlane,
-  seatRequestDevice, type FleetSeatGrant, type FleetSeatRequest,
+  CarriedSeatRefused, carriedSeatGrants, composeSeatRequest, keepCarriedSeatGrant, placeSeatRequest, readSeatGrant, readSeatRequest, seatGrantAnswering, type FleetSeatGrant, type FleetSeatRequest,
 } from "@lararium/keyhive";
 import { requireBrowserFaceAtomSeed } from "./browser-face-atom.js";
 import { browserRootFaces, keptOverlays } from "./browser-fleet-root.js";
@@ -60,21 +59,24 @@ export async function browserSeatGrant(opts: { readonly idbName: string; readonl
   if (!(await browserRootFaces(opts.idbName)).some((f) => f.personaGroup === group)) return refuse("root-absent", "this browser holds no root for that face; the vessel that founded the face seats its devices.");
   const overlay = (await keptOverlays(opts.idbName))[group];
   if (!overlay?.intentsUrl || !overlay.personaUrl) return refuse("seat-planes-unread", "this browser's record names no intents or persona plane for that face.");
-  const device = seatRequestDevice(request);
   const [intents, persona] = await Promise.all([opts.repo.find<LarDoc>(overlay.intentsUrl as AutomergeUrl), opts.repo.find<LarDoc>(overlay.personaUrl as AutomergeUrl)]);
-  // A REPLAYED REQUEST meets the grant its first answer wrote: the door answers one intent once.
-  const standing = seatGrantOnPlane(persona.doc(), group, device);
+  // THE GRANT THAT ANSWERS THIS REQUEST (`seatGrantAnswering`): the door's outcome for this very intent names the grant it
+  // wrote. A replayed request meets that outcome again; a request whose card the leaf minted again is another intent, and a
+  // grant an earlier intent left standing for the device never answers it.
   placeSeatRequest(intents, request);
-  if (standing !== null) return standing;
-  // THE DOOR ANSWERS ON THE PLANE: wait on the persona plane's own changes. The one bound here reads LIVENESS (the house's
-  // document hang bound): a door that never answers refuses by name, and the person asks again.
+  // THE DOOR ANSWERS ON THE PLANES: wait on the intents and persona planes' own changes. The one bound here reads LIVENESS
+  // (the house's document hang bound): a door that never answers refuses by name, and the person asks again.
   return new Promise<FleetSeatGrant>((resolve, reject) => {
+    const stop = (): void => { clearTimeout(bound); intents.off("change", settle); persona.off("change", settle); };
     const settle = (): void => {
-      const grant = seatGrantOnPlane(persona.doc(), group, device);
-      if (grant === null) return;
-      clearTimeout(bound); persona.off("change", settle); resolve(grant);
+      const answer = seatGrantAnswering(intents.doc(), persona.doc(), request);
+      if (answer.state === "pending") return;
+      stop();
+      if (answer.state === "granted") resolve(answer.grant);
+      else reject(new CarriedSeatRefused("seat-grant-refused", `this face's intent door answered the request and wrote no grant: ${answer.reason}`));
     };
-    const bound = setTimeout(() => { persona.off("change", settle); reject(new CarriedSeatRefused("seat-grant-unanswered", "this face's intent door wrote no grant: the request's edge, standing or pinned hearth did not pass its gate, or the door stands shut; read the vessel's console and ask again.")); }, opts.withinMs ?? DOCUMENT_HANG_BOUND_MS);
+    const bound = setTimeout(() => { stop(); reject(new CarriedSeatRefused("seat-grant-unanswered", "this face's intent door wrote no grant: the request's edge, standing or pinned hearth did not pass its gate, or the door stands shut; read the vessel's console and ask again.")); }, opts.withinMs ?? DOCUMENT_HANG_BOUND_MS);
+    intents.on("change", settle);
     persona.on("change", settle);
     settle();
   });
