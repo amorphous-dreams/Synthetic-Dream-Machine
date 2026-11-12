@@ -115,13 +115,14 @@ derives a `did:key`. The literature converges: ''admit by signing, never by shar
 warns against (SSB-fusion, Veilid lose per-device revocation by it; Keybase built its
 per-device model to escape it).
 
-So genesis mints a ''distinct per-vessel device key'' ''and'' an operator ''PersonaGroup'';
-the vessel stands as the group's first member, never as the group itself. The device key
-''binds to its operator by a signed delegation edge'' into the PersonaGroup
-(#/delegation-edge) — the bond climbs the ''WHO / social axis'' (#/five-scale), never an
-absolute plane-index. The behavioral split (drop the `kind="operator"` brand on the device
-tiddler; mint the operator PersonaGroup and sign the delegation edge) rides the genesis
-refactor — single-vessel-correct, no Beelay needed.
+So a vessel's first boot mints its ''distinct per-vessel device key'' with no ceremony, and
+mints no PersonaGroup: the vessel stands at its floor, anonymous, on its own key alone
+(the two-layer ruling, 2026-10-11; below). A face lands later, by an ''act'': a founding or a
+fleet join mints or joins a ''PersonaGroup'', and the vessel then stands as one member of
+that group, never as the group itself. The face's atom ''binds to its operator by a signed
+delegation edge'' into the PersonaGroup (#/delegation-edge) — the bond climbs the
+''WHO / social axis'' (#/five-scale), never an absolute plane-index. Single-vessel-correct,
+no Beelay needed.
 
 !!! Two layers, never fused ~ vessel roots below, the face/persona layer above
 
@@ -548,6 +549,6 @@ folded in; the FS-limit stated as posture). Standing dissent kept, with re-entry
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;WEOC6FE4_IY0zg1qpIHsotmvH81fPW5ZGfQQHA5IGqg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bluRXIXjDCx5MatpNqaafpjVAQkiI68yE1BonzoAcP0`>>
 
 <<^ code=`&#x0004;` to=`?`>>
