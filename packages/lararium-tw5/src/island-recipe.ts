@@ -100,7 +100,7 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
     const base: LarTiddlerStore = slot === KAHUA_BAG
       ? kahuaLayerStore(handle, input.kahuaFace ?? (() => null), input.kahuaFaceWatch)
       : new AutomergeDocStore(handle, slot);
-    const store = slot === ORACLE_BAG ? floorReadFace({ rows: floorRows ?? [], base }) : base;
+    const store = slot === ORACLE_BAG ? floorReadFace({ rows: floorRows ?? [], base, bagId: slot }) : base;
     // Oracle takes no writes; other CRDT slots accept writes through the in-wiki bag-paths cascade
     // (lar:///ha.ka.ba/lararium/config/bag-paths). A ceremony that names its own slot writes the
     // slot's store directly, carrying the bag on the put option — never a field on the record. The

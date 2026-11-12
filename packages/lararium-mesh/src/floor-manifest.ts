@@ -10,7 +10,7 @@ import { sha256HexBytesSync } from "./crypto.js";
 import { pinnedDoc } from "./pinned-doc.js";
 import { storedRecord } from "./stored-record.js";
 import { plainRecord, ownEntry, hasOwnEntry, type StoredLarRecord } from "./stored-value.js";
-import type { LarTiddlerChange, LarTiddlerRecord, LarTiddlerStore } from "./tiddler-store.js";
+import type { ChangeOrigin, LarTiddlerChange, LarTiddlerRecord, LarTiddlerStore } from "./tiddler-store.js";
 import { docPrototypeKeyFault } from "./prototype-key-shore.js";
 import { SYSTEM_CANON_SLUGS } from "./kahu-canon-reach.js";
 
@@ -269,13 +269,18 @@ export function floorRowsInOrder(floor: ResolvedFloor): Readonly<Record<string, 
 export function floorReadFace(opts: {
   readonly rows: readonly Readonly<Record<string, LarTiddlerRecord>>[];
   readonly base?: LarTiddlerStore;
-}): LarTiddlerStore {
+  /** The slot this face stands in: every change it tells carries it, as a doc slot's own replay does. */
+  readonly bagId?: string;
+}): LarTiddlerStore & { emitInitialReplay(): void; markSyncComplete(): void } {
   const rowFor = (title: string): LarTiddlerRecord | null => {
     for (const rows of opts.rows) if (hasOwnEntry(rows, title)) return ownEntry(rows, title) ?? null;
     return null;
   };
   const shadows = (title: string): boolean => opts.rows.some((rows) => hasOwnEntry(rows, title));
   const baseReader = opts.base as (LarTiddlerStore & { readNow?: (title: string) => { record: LarTiddlerRecord | null; heads?: readonly string[] } }) | undefined;
+  const replaying = opts.base as (LarTiddlerStore & { emitInitialReplay?: () => void; markSyncComplete?: () => void }) | undefined;
+  const listeners = new Set<(change: LarTiddlerChange) => void>();
+  const origin: ChangeOrigin = { kind: "crdt-remote", edgeIsland: opts.bagId ?? "oracle-floor" };
   return {
     async get(title) { return shadows(title) ? rowFor(title) : (opts.base?.get(title) ?? null); },
     ...(typeof baseReader?.readNow === "function" ? {
@@ -301,8 +306,25 @@ export function floorReadFace(opts: {
     async tombstone(title) { throw new FloorWriteRefusal(title); },
     async remove(title) { throw new FloorWriteRefusal(title); },
     subscribe(fn: (change: LarTiddlerChange) => void) {
-      return opts.base?.subscribe((change) => { if (!shadows(change.title)) fn(change); }) ?? (() => {});
+      listeners.add(fn);
+      const off = opts.base?.subscribe((change) => { if (!shadows(change.title)) fn(change); }) ?? (() => {});
+      return () => { listeners.delete(fn); off(); };
     },
+    // THE FLOOR REACHES THE WIKI: the recipe replays each slot to the projections it fans (the island adaptor that lands records
+    // in the engine), and the face replays its pinned rows first-wins, then the live seed's replay beneath, filtered of every title
+    // a floor row shadows. Without it the floor read through the composite and never landed in an engine.
+    emitInitialReplay() {
+      const seen = new Set<string>();
+      for (const rows of opts.rows) for (const [title, record] of Object.entries(rows)) {
+        if (seen.has(title)) continue;
+        seen.add(title);
+        if (record.meta?.deleted) continue;
+        const change: LarTiddlerChange = { title, record, origin, ...(opts.bagId !== undefined ? { bag: opts.bagId } : {}) };
+        for (const fn of [...listeners]) fn(change);
+      }
+      replaying?.emitInitialReplay?.();
+    },
+    markSyncComplete() { replaying?.markSyncComplete?.(); },
     async getHeads() { return null; },
   };
 }
