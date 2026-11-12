@@ -77,7 +77,7 @@ The build prints three CIDs and seals each into the seed as a witness tiddler, a
 three tiers of one thing:
 
 |!Region |!What it folds |!What advancing it means |
-|`engineCid` |the TW5 core — the hearth true-name |the SLOW ratchet; it re-binds membership mesh-wide and rides inside every signed device-delegation preimage |
+|`engineCid` |the TW5 core — the engine a place boots |the SLOW ratchet; it moves the engine under every vessel of a mesh, and no device-delegation edge signs it (an edge's `hearthTrueName` names the seed-charter Nexus AID) |
 |`grammarCid` |the required grammar ALONE |marked to RETIRE — the grammar holds no versions (kahu#/contract); retirement owed in code, pending a scout's measurement of its consumers |
 |`pluginsCid` |the plugin-class blobs the bake packs — neither the grammar nor the base seed |a REGION, never a kāhuli tier — an operator's own offerings travel by `nexus publish`, and plugin drift never counts as grammar drift |
 
@@ -121,6 +121,6 @@ than none, because every vessel downstream would carry the lie by hash.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/keyhive/capability-provider`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Zed-iRf-tCgDvTEEGsXIdi9X87v32yM_Tzmrszf8VQY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;kUh9OZC2iBN_y06ZObaxhEp-VkA7IBb3bjq2WPNqT-k`>>
 
 <<^ code=`&#x0004;` to=`?`>>

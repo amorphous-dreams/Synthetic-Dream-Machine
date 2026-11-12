@@ -302,4 +302,21 @@ describe("house canon takes no row in any face's catalog (cap-tier.mem, house ca
     expect(catalogRowHalf(bagUri("sdm"))).toBe("face");
     expect(catalogRowHalf(bagUri("lares"))).toBe("floor");
   });
+
+  test("RED VEIL — a wiki the vessel itself minted at its floor (`face-reach = vessel-only`) mounts with no face; a face-sealed one still waits", () => {
+    const veil = bagUri("tabs"), sealed = bagUri("journal");
+    const catalog = {
+      [veil]: storedLarRecord(veil, { text: "automerge:veil", kind: "oracle", "face-reach": "vessel-only" }, "test"),
+      [sealed]: storedLarRecord(sealed, { text: "automerge:sealed", kind: "oracle" }, "test"),
+    };
+    // The vessel's own content rests on the floor's half: no face ever sealed it.
+    expect(catalogRowHalf(veil, catalog[veil])).toBe("floor");
+    expect(catalogRowHalf(sealed, catalog[sealed])).toBe("face");
+    expect(facelessWikiWaits({ wikiId: "tabs", source: "boot-arg", wikiBagId: veil, faceWorn: false, catalog }), "the veil floor mounts its own wiki").toBeNull();
+    expect(facelessWikiWaits({ wikiId: "journal", source: "boot-arg", wikiBagId: sealed, faceWorn: false, catalog })?.reason).toBe("wiki-awaits-face");
+    // The mark alone decides, and only its exact value: any other value fails toward the face.
+    expect(catalogRowHalf(veil, storedLarRecord(veil, { text: "automerge:x", "face-reach": "face" }, "test"))).toBe("face");
+    // A title alone (no row in hand) still classes a user bag to the face.
+    expect(catalogRowHalf(veil)).toBe("face");
+  });
 });

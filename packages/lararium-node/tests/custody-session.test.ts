@@ -16,7 +16,7 @@ import { createHash } from "node:crypto";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { CensusRefusal, OccupiedStoreRefusal, S_SEAL_MAGIC, DEVICE_DELEGATION_DOMAIN, encodeIndexRow, mintOutboxKey, readIndexRow, readsAsOutboxSeal, restDigest, sealOutboxParcel, writeSealedCarrier } from "@lararium/mesh";
+import { CensusRefusal, OccupiedStoreRefusal, S_SEAL_MAGIC, DEVICE_DELEGATION_DOMAIN, floorRestKey, encodeIndexRow, mintOutboxKey, readIndexRow, readsAsOutboxSeal, restDigest, sealOutboxParcel, writeSealedCarrier } from "@lararium/mesh";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { appendFaceEntry } from "../src/face-index.js";
 import { handleRowPathIn } from "./face-paths.js";
@@ -178,6 +178,24 @@ describe("an unbind that rotates runs as ONE act", () => {
     if (opened.reading !== "opens") throw new Error(`custody root reads ${opened.reading}`);
     expect(custodyDerive(custodyRootFromBytes(opened.opened), DEVICE_DELEGATION_DOMAIN)).toEqual(child);
     expect((await openCustodyRootCarrier({ io, treeKey: f.treeKey, identityDir: homes.identity })).reading).not.toBe("opens");
+  });
+
+  test("RED: the FLOOR's rest key holds across a rotation of the S key: the same custody root re-seals, so every floor document still opens", async () => {
+    const f = await foundCustody({ io, homes, slots: [TEST_SLOT] });
+    const before = floorRestKey((info) => custodyDerive(f.root, info));
+    const bound = await bindCustodySlot({ io, homes, treeKey: f.treeKey, spec: slotOf("second route") });
+    const out = await unbindCustodySlot({ io, homes, treeKey: f.treeKey, slotId: bound.slotId, rotate: [TEST_SLOT] });
+    expect(out.rotated).toBe(true);
+    expect(out.treeKey).not.toEqual(f.treeKey);
+    const opened = await openCustodyRootCarrier({ io, treeKey: out.treeKey, identityDir: homes.identity });
+    if (opened.reading !== "opens") throw new Error(`custody root reads ${opened.reading}`);
+    const after = floorRestKey((info) => custodyDerive(custodyRootFromBytes(opened.opened), info));
+    expect([...after]).toEqual([...before]);
+    // A second rotation holds it too.
+    const again = await rotateCustody({ io, homes, oldTreeKey: out.treeKey, slots: [TEST_SLOT] });
+    const reopened = await openCustodyRootCarrier({ io, treeKey: again.treeKey, identityDir: homes.identity });
+    if (reopened.reading !== "opens") throw new Error(`custody root reads ${reopened.reading}`);
+    expect([...floorRestKey((info) => custodyDerive(custodyRootFromBytes(reopened.opened), info))]).toEqual([...before]);
   });
 
   test("RED: a sealed file no row names refuses the rotation BEFORE the unbind, so the slot stays bound and no byte moved", async () => {

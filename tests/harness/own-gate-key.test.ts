@@ -22,7 +22,7 @@ const FLOOR_THEN_HEARTH = [
   "[custody] unlocked: slot 03e2d54c919ae4f2ecbfadb17fcbd8dd opened the vessel key",
   "[lararium] phase → live",
   `[lararium] gate key: ${HEARTH_KEY}`,
-  `[lararium]   http://${ADDR}/?relay=ws://${ADDR}/ws   (loopback)`,
+  `[lararium]   http://${ADDR}/   (loopback)`,
 ].join("\n");
 
 describe("ownGateKey — the hearth's own line", () => {

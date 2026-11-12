@@ -53,7 +53,7 @@ head and the pin's digest), beside the place's KEL rows (`place-kel-board`). Any
 # LAST, the standing: the signer at the head is a counted `carry` of the reader's OWN held root (`place-uncarried`), or the AID is the anchor the reader was handed apart from the card (`place-unanchored`).
 
 A card alone never anchors. Three conveyances stand: the founder's own genesis, an authenticated admit (a claim set a sovereign
-crossing carried, whose first claim adopts the AID), and a deliberate person-to-person transfer (`#anchor=<aid>`).
+crossing carried, whose first claim adopts the AID), and a deliberate person-to-person transfer (the place AID carried alone to the page's carriage door, apart from the card).
 
 <<~/ahu>>
 
@@ -113,6 +113,6 @@ counted `uncarry` that descends from it leaves the place with no arm to present.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/node/herm-carriage`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/node/carry-bundle`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;bqzzNlejTULxBmElinCplLYldvIdW5JOzTIYkijpoio`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;I20BF1GYsWqC_-OIX5ePPs58kjx_nhtclfi8gv5WpxA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

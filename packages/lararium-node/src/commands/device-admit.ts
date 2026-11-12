@@ -28,7 +28,7 @@ import {
   buildDeviceDelegationRootHalf,
   faceAtomKeyFromSeed,
   leaseEpochPrefix, readControlHome, readFace,
-  signPersonaAct, actCid, edgeBodyDigest, vesselFaceTagHolds, wardKeyPopHolds, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
+  seatDeviceInFace, DeviceSeatRefused, ed25519VerifyingKeyFromSeed,
   tiddlerText, FLEET_HAND, AutomergeDocStore, type LarDoc, ownEntry, findOrThrow, DOCUMENT_HANG_BOUND_MS} from "@lararium/mesh";
 import { makeCatalogAccessor } from "@lararium/tw5";
 import { larBootstrapPath, larSealHome } from "../vessel-paths.js";
@@ -382,7 +382,6 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   if (issuerAnchor.personaKelPrefix !== personaKelPrefix) throw new Error("[lares fleet join answer] Face proof: prefix; the bootstrap and daemon doc name a KEL prefix this face's sealed anchor does not; re-found or re-admit the face");
   const reading = readFace(personaKelChain, issuerAnchor);
   if (!reading) throw new Error("[lares fleet join answer] Face proof: no-lineage; re-found the face");
-  const boundEpoch = reading.leaseEpoch(personaGroupId, leaseSlotValues);
 
   // THE FACE'S PROOF ANSWERS FOR THE PLANE (sealed-store#/owed, U1): the plane's row rests in the face's own catalog,
   // sealed, which a door with no vessel standing never opens; the bootstrap names the plane, and the projection below
@@ -396,92 +395,48 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   const records = await readFacePersonaRecords(repo, { personaUrl, group: personaGroupId,
     // This face's carried admit acts rest in the vessel's secret home until its plane syncs (never the daemon document).
     extraDocs: [(await openVesselSecretHomeIfNamed(repo))?.handle.doc() as LarDoc | undefined] });
-  const projection = reading.project(records, personaGroupId);
-  if (!projection.founded || projection.fork || !projection.head) {
-    throw new Error("[lares fleet join answer] Face proof: founding log absent or forked; re-found the face");
-  }
-  // THE WRITER NEVER BRANCHES BELOW WHAT THIS DEVICE ACCEPTED: the log it signs from must hold the anchor's pinned act at the
-  // pinned seq (the boot's own `frontier-falls` check), so a replica that replays an older valid log signs nothing.
-  if (issuerAnchor.frontier.actSeq >= 0 && projection.cids[issuerAnchor.frontier.actSeq] !== issuerAnchor.frontier.actCid) {
-    throw new Error("[lares fleet join answer] Face proof: frontier-falls; this replica's log stands below the act this device accepted; sync the face's persona plane and retry");
-  }
-  const signerKey = await ed25519VerifyingKeyFromSeed(signerSeed);
-  if (!reading.currentSigner(signerKey)) {
-    throw new Error("[lares fleet join answer] Face proof: root signer has no current KEL seat; re-admit the face");
-  }
-  // THE TAG LAW, before the root signs: the joining vessel's tag holds for this face and atom, and no admission of this face
-  // already seats it, so one vessel never takes two seats here.
+  // THE SEAT (`seatDeviceInFace`, the one core every root holder's vessel seats through): the face's proof, the tag law,
+  // the admission or the renewal, and the root's signature over the joinee's edge. This door hands it the node's reads
+  // and runs the enrolment over the fleet board's frontier.
   const deviceKey = opts.joineeVerifyingKey.toLowerCase();
-  const { vesselTag, vesselSig, wardKey, wardPop } = opts.vesselTag;
-  if (vesselTag === undefined || vesselSig === undefined) throw new DeviceAdmitTagRefused("vessel-tag-absent", "the join carries no blinded vessel tag for this face");
-  if (wardKey === undefined) throw new DeviceAdmitTagRefused("ward-key-absent", "the join names no per-face ward key for its device");
-  if (!vesselFaceTagHolds(personaGroupId, deviceKey, { vesselTag, vesselSig, wardKey })) throw new DeviceAdmitTagRefused("vessel-tag-invalid", "the vessel tag's signature covers another face, atom or ward key");
-  if (!wardKeyPopHolds(personaGroupId, deviceKey, { wardKey, wardPop })) throw new DeviceAdmitTagRefused("ward-key-unproven", "the join's ward key signs no proof over this face, atom and key: the joinee holds no key it names");
-  // A retried answer for the atom that already holds this tag is a replay, not a second seat: the same vessel under another atom refuses.
-  const bodyOf = (r: unknown): Record<string, unknown> | undefined => (r as { body?: Record<string, unknown> } | null)?.body;
-  const seatedAdmission = records.find((r) => {
-    const b = bodyOf(r);
-    return b?.["act"] === "admission" && b["deviceKey"] === deviceKey && b["vesselTag"] === vesselTag
-      && projection.admissions.some((a) => a.cid === actCid(b as never));
+  const seat = await seatDeviceInFace({
+    personaGroupId, reading, issuerAnchor, records, leaseSlotValues, signerSeed, hearthTrueName, deviceKey,
+    kelEpoch: personaKelChain[personaKelChain.length - 1]!.seq,
+    vesselTag: opts.vesselTag,
+    rootHalf: buildDeviceDelegationRootHalf,
+    enrol: async ({ boundEpoch, personaActs, signedEdge }) => {
+      const operation = { store: operationStore, atomSeed,
+        signedInput: opts.signedRequest ?? new TextEncoder().encode(JSON.stringify(signedEdge)) };
+      const fleetRoot = (await ed25519VerifyingKeyFromSeed(signerSeed)).toLowerCase();
+      const fleetBoard = await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(fleetRoot), "board:edge-kapae");
+      const edgeFrontier = fleetFrontierCarriage(fleetBoard.doc(), fleetRoot);
+      return runDeviceAdmitEdge({
+        edgeFrontier,
+        operation,
+        signerSeed,
+        joineeVerifyingKey: deviceKey,
+        personaKelPrefix,
+        personaKelChain,
+        personaActs,
+        hearthTrueName,
+        personaGroupId,
+        meshCabalDocIdHex,
+        boundEpoch,
+        syncUrl:      deviceAdmitSyncUrl(opts.syncUrl),
+        islandDocUrl: opts.islandDocUrl ?? null,
+        // THE DOOR. Defaults to this hearth's OWN daemon doc, read from the same bootstrap the sentinel ids come
+        // from — a joinee seeds its own plane at admission, so only this url tells it where to knock.
+        hearthDaemonUrl: opts.hearthDaemonUrl ?? daemonUrl,
+        personaUrl,
+      });
+    },
+  }).catch((error: unknown) => {
+    if (!(error instanceof DeviceSeatRefused)) throw error;
+    if (error.refusal === "face-proof") throw new Error(`[lares fleet join answer] ${error.detail}`);
+    throw new DeviceAdmitTagRefused(error.refusal, error.detail);
   });
-  if (projection.vesselTags.includes(vesselTag as string) && !seatedAdmission) throw new DeviceAdmitTagRefused("vessel-already-admitted", "this vessel already holds a seat in this face");
-  // A retried answer for a seated atom and tag serves the seat as it stands. The edge the log seats for it reads off the
-  // fold (`projection.edges`, the latest verified device-edge act for that device), never off the act linked first.
-  const seatedDigest = seatedAdmission ? projection.edges[deviceKey] : undefined;
-  // THE ROOT SIGNS ONLY PAST THE TAG LAW: every refusal above reaches no signature over the joinee's edge.
-  const signedEdge = await buildDeviceDelegationRootHalf({ personaRootSeed: signerSeed,
-    deviceVerifyingKey: deviceKey, hearthTrueName, boundEpoch });
-  // The edge mints deterministically from root, device, hearth and epoch, so it rebuilds the seated edge exactly while none
-  // of them moved, and the replay appends nothing. Where the seated edge binds an epoch the lease rolled past (or a root or
-  // hearth the face moved off), THE RENEWAL: the root appends one `device-edge` act for the seated admission at the current
-  // epoch, and the answer serves that edge. It never appends a second admission and never moves the tag; a device the fleet
-  // set aside refused above (`assertDyadBinds`), and an atom the fold seats no admission for never reaches this branch.
-  const servedDigest = edgeBodyDigest(signedEdge);
-  const replayLapsed = (): DeviceAdmitTagRefused => new DeviceAdmitTagRefused("replay-edge-lapsed",
-    `this request's answer carries an edge the face's log does not seat (now epoch ${boundEpoch}); retry the join with a fresh request`);
-  const signer = { key: signerKey, sign: ed25519SignerFromSeed(signerSeed) };
-  const epoch = personaKelChain[personaKelChain.length - 1]!.seq;
-  let appended: Awaited<ReturnType<typeof signPersonaAct>>[] = [];
-  if (!seatedAdmission) {
-    const admission = await signPersonaAct(projection.head, { group: personaGroupId, act: "admission", epoch,
-      fields: { deviceKey, vesselTag, vesselSig, wardKey, wardPop } }, signer);
-    const edgeAct = await signPersonaAct({ seq: admission.body.seq, cid: actCid(admission.body) },
-      { group: personaGroupId, act: "device-edge", epoch,
-        fields: { deviceKey, edgeDigest: servedDigest } }, signer);
-    appended = [admission, edgeAct];
-  } else if (seatedDigest !== servedDigest) {
-    appended = [await signPersonaAct(projection.head, { group: personaGroupId, act: "device-edge", epoch,
-      fields: { deviceKey, edgeDigest: servedDigest } }, signer)];
-  }
-  const personaActs = [...records, ...appended];
-  const operation = { store: operationStore, atomSeed,
-    signedInput: opts.signedRequest ?? new TextEncoder().encode(JSON.stringify(signedEdge)) };
-  const fleetRoot = (await ed25519VerifyingKeyFromSeed(signerSeed)).toLowerCase();
-  const fleetBoard = await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(fleetRoot), "board:edge-kapae");
-  const edgeFrontier = fleetFrontierCarriage(fleetBoard.doc(), fleetRoot);
-  const payload = await runDeviceAdmitEdge({
-    edgeFrontier,
-    operation,
-    signerSeed,
-    joineeVerifyingKey: opts.joineeVerifyingKey.toLowerCase(),
-    personaKelPrefix,
-    personaKelChain,
-    personaActs,
-    hearthTrueName,
-    personaGroupId,
-    meshCabalDocIdHex,
-    boundEpoch,
-    syncUrl:      deviceAdmitSyncUrl(opts.syncUrl),
-    islandDocUrl: opts.islandDocUrl ?? null,
-    // THE DOOR. Defaults to this hearth's OWN daemon doc, read from the same bootstrap the sentinel ids come
-    // from — a joinee seeds its own plane at admission, so only this url tells it where to knock.
-    hearthDaemonUrl: opts.hearthDaemonUrl ?? daemonUrl,
-    personaUrl,
-  });
-  // WHAT THE ANSWER SERVES EQUALS WHAT THE LOG HOLDS: the operation cache never decides a replay. A request whose cached
-  // answer carries an edge the log seats no more refuses by name, before any act lands.
-  if (seatedAdmission && edgeBodyDigest(payload.deviceEdge) !== servedDigest) throw replayLapsed();
-  if (appended.length) appendPersonaActs(personaHandle, appended);
+  const payload = seat.payload;
+  if (seat.appended.length) appendPersonaActs(personaHandle, [...seat.appended]);
 
   // THE PIN NAMES THE DIAL (hearth-dial-pin.ts): the hearth's full sovereign sync pin at the Nexus its own sync gate
   // STANDS at (`stoodSovereignPin`: the primary charter's AID, the hearth's true name above), never the island standing's

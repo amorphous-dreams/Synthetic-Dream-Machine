@@ -15,6 +15,7 @@
 import { Repo, parseAutomergeUrl, type AutomergeUrl, type DocHandle, type DocumentId } from "@automerge/automerge-repo";
 import { SecretHomeUnavailable, heldHomeSeed, mintVesselDocumentId, secretHomeRestOf } from "./secret-home.js";
 import { CONTROL_HOME_ID, SECRET_HOME_ID } from "./lar-uris.js";
+import { FLOOR_REGISTRY_ROOT } from "./device-daemon-docs.js";
 import { emptyLarDoc, tiddlerText, type LarDoc } from "./base-doc.js";
 import { ownEntry } from "./stored-value.js";
 import { storedLarRecord } from "./stored-record.js";
@@ -23,6 +24,17 @@ import { AutomergeDocStore } from "./automerge-doc-store.js";
 import type { ChangeOrigin, LarTiddlerChange, LarTiddlerRecord, LarTiddlerStore } from "./tiddler-store.js";
 import { EFFECT_URI_PREFIX, OUTCOME_URI_PREFIX } from "./verb-tiddler.js";
 import { RETIRED_EVENT_ID, effectRecordUri } from "./effect-record.js";
+
+/** The documents the place's daemon document names as the FLOOR's own (`FLOOR_REGISTRY_ROOT`): each stays on this vessel. */
+export function floorOnlyDocIds(daemonDoc: LarDoc | null | undefined): Set<string> {
+  const ids = new Set<string>();
+  for (const [title, record] of Object.entries(daemonDoc?.tiddlers ?? {})) {
+    if (!title.startsWith(FLOOR_REGISTRY_ROOT)) continue;
+    const url = tiddlerText(record);
+    if (url?.startsWith("automerge:") && url.length > 10) ids.add(url.slice(10));
+  }
+  return ids;
+}
 
 export function vesselOnlyDocIds(controlDoc: LarDoc | null | undefined, controlUrl: string | null): Set<string> {
   const ids = new Set<string>();
@@ -42,8 +54,9 @@ export function vesselOnlyDocIds(controlDoc: LarDoc | null | undefined, controlU
  */
 export function makeVesselOnlyDocs(opts: { readonly onGrow?: () => void } = {}) {
   let named = new Set<string>();
+  let floor = new Set<string>();
   const added = new Set<string>();
-  const has = (documentId: string) => named.has(documentId) || added.has(documentId);
+  const has = (documentId: string) => named.has(documentId) || floor.has(documentId) || added.has(documentId);
   return {
     has,
     /** Read the control document's names afresh; answers whether the set grew (and told `onGrow`). */
@@ -51,6 +64,14 @@ export function makeVesselOnlyDocs(opts: { readonly onGrow?: () => void } = {}) 
       const next = vesselOnlyDocIds(controlDoc, controlUrl);
       const grew = [...next].some((id) => !has(id));
       named = next;
+      if (grew) opts.onGrow?.();
+      return grew;
+    },
+    /** Read the floor registry's names afresh off the place's daemon document; answers whether the set grew (and told `onGrow`). */
+    refreshFloor: (daemonDoc: LarDoc | null | undefined): boolean => {
+      const next = floorOnlyDocIds(daemonDoc);
+      const grew = [...next].some((id) => !has(id));
+      floor = next;
       if (grew) opts.onGrow?.();
       return grew;
     },

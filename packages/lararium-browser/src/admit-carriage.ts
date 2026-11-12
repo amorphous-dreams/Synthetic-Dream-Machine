@@ -56,7 +56,9 @@ export function parseAdmitCarriage(carriage: string): CarriedAdmitPayload | null
   // that authority now — the joinee's Binding Gate pins it and walks the KEL to the head.
   if (typeof p["signerDid"] !== "string" || !p["signerDid"]) return null;
   if (typeof p["personaKelPrefix"] !== "string" || !p["personaKelPrefix"]) return null;
-  if (typeof p["hearthTrueName"] !== "string" || !p["hearthTrueName"]) return null;
+  // THE TRUE NAME RIDES STATED: a hearth's name, or "" where the root holder stood no gate (a leaf's root binds no place).
+  // An absent field still refuses: a carriage that omits its binding never admits.
+  if (typeof p["hearthTrueName"] !== "string") return null;
   if (!p["deviceEdge"] || typeof p["deviceEdge"] !== "object") return null;
   // A well-formed admit that lacks the signed-record fields is a STALE carriage, not a garbled one: it names the re-admit
   // instead of vanishing into the founding flow.

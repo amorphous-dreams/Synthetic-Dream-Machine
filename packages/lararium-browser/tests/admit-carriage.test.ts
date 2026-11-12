@@ -75,6 +75,16 @@ describe("the carried admission", () => {
     }
   });
 
+  test("RED: an admit from a root holder that stood no gate binds no hearth, and says so: an EMPTY true name parses; an absent one still refuses", () => {
+    // A leaf's root (a browser, a phone) stands no hearth: its edge binds `hearthTrueName: ""`, stated, never omitted.
+    const gateless = parseAdmitCarriage(toAdmitCarriage({ ...PAYLOAD, hearthTrueName: "" }));
+    expect(gateless?.hearthTrueName).toBe("");
+    const absent = { ...PAYLOAD } as Record<string, unknown>;
+    delete absent["hearthTrueName"];
+    expect(parseAdmitCarriage(toAdmitCarriage(absent as unknown as DeviceAdmitPayload))).toBeNull();
+    expect(parseAdmitCarriage(toAdmitCarriage({ ...PAYLOAD, hearthTrueName: 7 } as unknown as DeviceAdmitPayload))).toBeNull();
+  });
+
   test("RED: a well-formed admit missing the signed-record fields throws the named stale-carriage refusal, never vanishing into the founding flow; CONTROL: the whole payload parses", () => {
     for (const missing of ["personaActs", "edgeFrontier"] as const) {
       const partial = { ...PAYLOAD } as Record<string, unknown>;

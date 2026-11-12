@@ -17,7 +17,7 @@
  * Residual, named: the ceremony document's own (browser-vessel-lift#/the-ceremony); no page script reads the route.
  */
 import { browserKeystoreCustodyIo, BrowserWardRefused } from "./browser-custody.js";
-import { chargeWardAttempt, landBrowserWardRows, readBrowserWardKey, readBrowserWardRows, refuseWardOfAnotherFace } from "./browser-ward-tree.js";
+import { chargeWardAttempt, landBrowserWardRows, readBrowserWardKey, readBrowserWardRows, wornFaceTreeOf } from "./browser-ward-tree.js";
 import {
   wardCredentialOf, wardSignRowsOf, type WardActAnswer, type WardActRequest, type WardKeyActRequest, type WardKeyMintAnswer, type WardKeyMintRequest, type WardRoute,
 } from "./ward-core.js";
@@ -73,12 +73,23 @@ const refusedBy = (e: unknown): never => {
 /** A face's ward key rows, a malformed face name refusing in this page's own class (`ward-key-unnamed`). */
 const signRowsOf = (group: string): ReturnType<typeof wardSignRowsOf> => { try { return wardSignRowsOf(group); } catch (e) { return refusedBy(e); } };
 
-/** Sign `bytes` as face `handleIndex`'s root in one ward act. A miss spends one of the page's attempts for this keystore. */
+/**
+ * The custody tree of the face this session wears, where a ward act looks for its root: `ward-absent` where the session wears no
+ * face or its tree does not stand. `handleIndex` rides the mesh vault port's ordinal, and this browser's vault serves one face
+ * (the one worn) at the founding ordinal; any other names no root here.
+ */
+async function wornWardTree(idbName: string, handleIndex: number): Promise<string> {
+  const tree = handleIndex === 0 ? await wornFaceTreeOf(idbName) : null;
+  if (tree === null) throw new BrowserWardRefused("ward-absent", "the face this session wears holds no warded root in this browser");
+  return tree;
+}
+
+/** Sign `bytes` as the worn face's root in one ward act. A miss spends one of the page's attempts for this keystore. */
 export async function browserWardSign(idbName: string, handleIndex: number, route: WardRoute, bytes: Uint8Array, spawn: WardWorkerSpawn = defaultSpawn): Promise<{ readonly key: string; readonly signature: string }> {
   try { wardCredentialOf(route); } catch (e) { refusedBy(e); }
-  const rows = await readBrowserWardRows(idbName, handleIndex).catch(refusedBy);
-  await refuseWardOfAnotherFace(idbName, handleIndex);   // the ward signs only for the face this session wears
-  return chargeWardAttempt(idbName, () => browserWardSignOnce({ ...rows, handleIndex, route, bytes }, spawn)).catch(refusedBy);
+  const faceTree = await wornWardTree(idbName, handleIndex);
+  const rows = await readBrowserWardRows(idbName, faceTree).catch(refusedBy);
+  return chargeWardAttempt(idbName, () => browserWardSignOnce({ ...rows, faceTree, route, bytes }, spawn)).catch(refusedBy);
 }
 
 /** The PUBLIC half of face `group`'s ward key on this browser, off plain bytes beside its ward (no seed opens), or null where none stands. */
@@ -147,8 +158,7 @@ async function browserWardActOnce<A>(request: WardActRequest | WardKeyActRequest
  */
 export async function browserWardSigner(idbName: string, handleIndex: number, route: WardRoute, spawn?: WardWorkerSpawn): Promise<{ readonly key: string; sign(bytes: Uint8Array): Promise<string> }> {
   try { wardCredentialOf(route); } catch (e) { refusedBy(e); }
-  const line = { verifyingKey: await readBrowserWardKey(idbName, handleIndex).catch(refusedBy) };
-  await refuseWardOfAnotherFace(idbName, handleIndex);   // the ward signs only for the face this session wears
+  const line = { verifyingKey: await readBrowserWardKey(idbName, await wornWardTree(idbName, handleIndex)).catch(refusedBy) };
   let held: WardRoute | null = route;
   return {
     key: line.verifyingKey,

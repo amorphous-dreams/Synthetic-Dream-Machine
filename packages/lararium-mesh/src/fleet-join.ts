@@ -78,6 +78,8 @@ export const FLEET_JOIN_REFUSALS = [
   "answer-malformed",
   "answer-pin-other-nexus",   // the carried pin stands at another Nexus than the island the answer names
   "answer-nexus-absent",       // the answer names no Nexus: its edge names no true name and its island is no charter
+  "answer-hearth-partial",     // the answer carries part of a hearth's dial: its carriage, charter and admit stand together or not at all
+  "answer-hearthless-names-nexus", // an answer carrying no hearth's dial names a hearth true name, an island or a floor pin
   "answer-admit-other-commit", // the face's admit does not commit to the answer's carriage under the salt it carries
   "answer-admit-other-face",   // the face's admit names another key than the face key certified at the hearth's Nexus
   "answer-floor-pin-refused",  // a floor pin refuses, stands at another tier or Nexus, or repeats a route
@@ -90,6 +92,8 @@ export const FLEET_JOIN_REFUSALS = [
   "grant-missing",             // a certified scope carries no grant
   "seal-secret-other",         // the seal secret the caller holds differs from the one behind the request's seal key
   "secret-unopened",           // the sealed address secret opens to nothing under the request's key
+  "request-scope-household-absent", // the request asks no certificate at the hearth's Nexus for the face's admitted key
+  "no-address-secret",         // the face holds no address secret for the answer to seal
 ] as const;
 export type FleetJoinRefusalName = (typeof FLEET_JOIN_REFUSALS)[number];
 export interface FleetJoinRefusal { readonly refusal: FleetJoinRefusalName; readonly cause?: FaceProofRefusal }
@@ -180,20 +184,39 @@ export interface FleetJoinAnswer {
   readonly personaGroup: string;
   /** The device edge the PersonaGroup root signed, carried whole; the answer's image binds its digest. */
   readonly edge:         unknown;
-  /** The hearth's gate pin and canon list. */
-  readonly carriage:     AdmitCarriage;
+  /** The hearth's gate pin and canon list; null where the root holder stands no gate (`FleetJoinHearthDial`). */
+  readonly carriage:     AdmitCarriage | null;
   readonly reach:        FleetJoinReach;
-  /** The hearth's charter, as its seal file's text: the joinee reads its admit at the root this charter seats. */
-  readonly charter:      string;
-  /** The face's own admit at the hearth's Nexus. */
-  readonly admit:        FleetJoinFaceAdmit;
-  /** The hearth's floor pins at its Nexus, one per floor route: the oracle's pins, held before any crossing. */
+  /** The hearth's charter, as its seal file's text: the joinee reads its admit at the root this charter seats. Null with the carriage. */
+  readonly charter:      string | null;
+  /** The face's own admit at the hearth's Nexus. Null with the carriage. */
+  readonly admit:        FleetJoinFaceAdmit | null;
+  /** The hearth's floor pins at its Nexus, one per floor route: the oracle's pins, held before any crossing. None with no carriage. */
   readonly floorPins:    readonly GateBundlePin[];
   readonly certificates: readonly VesselFaceCertificate[];
   readonly grants:       readonly FaceKeyGrant[];
   readonly secret:       SealedAddressSecret;
   /** The PersonaGroup root's signature over `fleetJoinAnswerImage`. */
   readonly signature:    string;
+}
+
+/**
+ * THE HEARTH'S DIAL an answer carries: the gate pin and canon list, the charter, the face's admit there and the floor
+ * pins. ONE CAPABILITY DECIDES IT: a root holder that stands an inbound gate carries its dial whole; a root holder that
+ * stands none (a browser, a phone: a leaf) carries none, and its answer names no hearth true name, no floor pin, and no
+ * island but the holder's own. The four fields stand together or not at all, inside the root's signature either way.
+ */
+export interface FleetJoinHearthDial {
+  readonly carriage:  AdmitCarriage;
+  readonly charter:   string;
+  readonly admit:     FleetJoinFaceAdmit;
+  readonly floorPins: readonly GateBundlePin[];
+}
+
+/** The hearth's dial a read answer carries, or null where its root holder stood no gate. */
+export function fleetJoinHearthOf(answer: Pick<FleetJoinAnswer, "carriage" | "charter" | "admit" | "floorPins">): FleetJoinHearthDial | null {
+  if (answer.carriage === null || answer.charter === null || answer.admit === null) return null;
+  return { carriage: answer.carriage, charter: answer.charter, admit: answer.admit, floorPins: answer.floorPins };
 }
 
 /** What a verified answer hands its joinee: every field read, and the address secret opened. */
@@ -271,11 +294,11 @@ export function faceKeyGrantImage(personaGroup: string, scope: FaceScope): Uint8
 export function fleetJoinAnswerImage(a: Omit<FleetJoinAnswer, "kind" | "signature" | "certificates" | "grants">): Uint8Array {
   return signed(FLEET_JOIN_ANSWER_DOMAIN, {
     nonce: a.nonce, atomKey: a.atomKey, personaGroup: a.personaGroup, edge: fleetJoinEdgeDigest(a.edge),
-    gatePin: admitGatePinDigest(a.carriage.gatePin), canon: a.carriage.canon,
+    gatePin: a.carriage === null ? null : admitGatePinDigest(a.carriage.gatePin), canon: a.carriage === null ? null : a.carriage.canon,
     syncUrl: a.reach.syncUrl, islandKind: a.reach.islandKind, islandScope: a.reach.islandScope,
     secret: { epk: a.secret.epk, nonce: a.secret.nonce, ciphertext: a.secret.ciphertext },
-    charter: hex(sha256(utf8Bytes(a.charter))),
-    admit: hex(sha256(canonicalJsonBytes({ admit: a.admit.admit, lineage: a.admit.lineage, salt: a.admit.salt }))),
+    charter: a.charter === null ? null : hex(sha256(utf8Bytes(a.charter))),
+    admit: a.admit === null ? null : hex(sha256(canonicalJsonBytes({ admit: a.admit.admit, lineage: a.admit.lineage, salt: a.admit.salt }))),
     floorPins: a.floorPins.map(gateBundleDigest),
   });
 }
@@ -442,13 +465,30 @@ function readFaceAdmit(value: unknown): FleetJoinFaceAdmit | null {
 export function readFleetJoinAnswer(value: unknown, args: {
   request: FleetJoinRequest; personaGroup: string; rootKey: string; sealSecret: Uint8Array; apart?: KeysHeldApart;
 }): VerifiedFleetJoin | FleetJoinRefusal {
+  const signed = readAnswerSigned(value, args);
+  if (isRefusal(signed)) return signed;
+  const addressSecret = openAddressSecret(signed.secret, args.sealSecret, signed.nonce, signed.atomKey);
+  if (addressSecret === null) return refuse("secret-unopened");
+  return { answer: signed, addressSecret };
+}
+
+/** Read an answer's every signed field against its request under the root key. With a seal secret it must stand behind
+ *  the request's seal key; with none (the root holder reading back what it composed) the seal stays shut. */
+function readAnswerSigned(value: unknown, args: {
+  request: FleetJoinRequest; personaGroup: string; rootKey: string; sealSecret: Uint8Array | null; apart?: KeysHeldApart;
+}): FleetJoinAnswer | FleetJoinRefusal {
   return guarded("answer-malformed", () => {
     const keys = ["kind", "nonce", "atomKey", "personaGroup", "edge", "carriage", "reach", "charter", "admit", "floorPins", "certificates", "grants", "secret", "signature"];
     if (!record(value) || !exactly(value, keys) || value["kind"] !== "fleet-join-answer") return refuse("answer-malformed");
     if (!isKey(args.rootKey)) return refuse("answer-unsigned");
     const { nonce, atomKey, personaGroup, signature } = value;
+    // THE HEARTH'S DIAL STANDS WHOLE OR NOT AT ALL (`FleetJoinHearthDial`): a null carriage, charter and admit name a root
+    // holder with no gate; one of them null beside another standing refuses by name.
+    const nulls = [value["carriage"], value["charter"], value["admit"]].filter((v) => v === null).length;
+    if (nulls !== 0 && nulls !== 3) return refuse("answer-hearth-partial");
+    const hearthless = nulls === 3;
     const edge = value["edge"] === undefined ? undefined : snapshot(value["edge"], FLEET_JOIN_EDGE_BOUND);
-    const carriage = readAdmitCarriage(value["carriage"]);
+    const carriage = hearthless ? null : readAdmitCarriage(value["carriage"]);
     const reach = readReach(value["reach"]);
     const secret = value["secret"];
     // THE PIN STANDS AT THE HEARTH'S NEXUS: the true name its device edge names (the Nexus its sync gate stands at), and
@@ -458,18 +498,32 @@ export function readFleetJoinAnswer(value: unknown, args: {
     if (carriage !== null && pinNexus !== null && !("pin" in readAdmitGatePinAt(carriage.gatePin, pinNexus))) {
       return refuse("answer-pin-other-nexus");
     }
-    if (carriage === null || reach === null || typeof signature !== "string" || !HEX128.test(signature) || edge === undefined) return refuse("answer-malformed");
-    // AN ANSWER NAMES ITS NEXUS: every Nexus-bound check below (the floor pins, the admit's face) reads at it, so an answer
-    // naming none refuses here rather than skip them.
-    if (pinNexus === null) return refuse("answer-nexus-absent");
-    const charter = value["charter"];
-    if (typeof charter !== "string" || charter.length === 0 || utf8Bytes(charter).length > FLEET_JOIN_CHARTER_BOUND) return refuse("answer-malformed");
-    const faceAdmit = readFaceAdmit(value["admit"]);
-    if (faceAdmit === null) return refuse("answer-malformed");
-    // THE ADMIT OPENS OVER THE ANSWER'S OWN CARRIAGE: the pin the joinee dials is the pin the quorum committed to.
-    if (admitCarriageCommit({ carriage, salt: faceAdmit.salt }) !== faceAdmit.admit.carriageCommit) return refuse("answer-admit-other-commit");
-    const floorPins = readHearthFloorPins(value["floorPins"], hex(utf8Bytes(pinNexus)));
-    if (floorPins === null) return refuse("answer-floor-pin-refused");
+    if ((!hearthless && carriage === null) || reach === null || typeof signature !== "string" || !HEX128.test(signature) || edge === undefined) return refuse("answer-malformed");
+    let faceAdmit: FleetJoinFaceAdmit | null = null;
+    let floorPins: readonly GateBundlePin[] = Object.freeze([]);
+    let charter: string | null = null;
+    if (carriage === null) {
+      // NO HEARTH, NO NEXUS: the edge names no true name and no floor pin rides. The reach names no island, or the root
+      // holder's OWN one (`own`, its key: the private Nexus of one whose boards the joinee stands beside it on); a charter,
+      // an anchor or an explicit island names a Nexus a gateless answer cannot carry the dial for.
+      const ownIsland = reach.islandKind === "own" && isKey(reach.islandScope);
+      if (edgeNexus !== null || (!ownIsland && (reach.islandKind !== null || reach.islandScope !== null))) return refuse("answer-hearthless-names-nexus");
+      if (!Array.isArray(value["floorPins"]) || value["floorPins"].length !== 0) return refuse("answer-hearthless-names-nexus");
+    } else {
+      // AN ANSWER NAMES ITS NEXUS: every Nexus-bound check below (the floor pins, the admit's face) reads at it, so an answer
+      // naming none refuses here rather than skip them.
+      if (pinNexus === null) return refuse("answer-nexus-absent");
+      const text = value["charter"];
+      if (typeof text !== "string" || text.length === 0 || utf8Bytes(text).length > FLEET_JOIN_CHARTER_BOUND) return refuse("answer-malformed");
+      charter = text;
+      faceAdmit = readFaceAdmit(value["admit"]);
+      if (faceAdmit === null) return refuse("answer-malformed");
+      // THE ADMIT OPENS OVER THE ANSWER'S OWN CARRIAGE: the pin the joinee dials is the pin the quorum committed to.
+      if (admitCarriageCommit({ carriage, salt: faceAdmit.salt }) !== faceAdmit.admit.carriageCommit) return refuse("answer-admit-other-commit");
+      const pins = readHearthFloorPins(value["floorPins"], hex(utf8Bytes(pinNexus)));
+      if (pins === null) return refuse("answer-floor-pin-refused");
+      floorPins = pins;
+    }
     if (!record(secret) || !exactly(secret, ["epk", "nonce", "ciphertext"])
       || typeof secret["epk"] !== "string" || !HEX64.test(secret["epk"])
       || typeof secret["nonce"] !== "string" || !/^[0-9a-f]{48}$/.test(secret["nonce"])
@@ -478,9 +532,11 @@ export function readFleetJoinAnswer(value: unknown, args: {
     if (nonce !== args.request.nonce || atomKey !== args.request.atomKey || personaGroup !== args.personaGroup) return refuse("answer-other-request");
     const joineeKeys = [args.request.atomKey, ...args.request.requests.flatMap((q) => [q.vesselFaceKey, q.scope.faceKey])];
     if (joineeKeys.includes(args.rootKey)) return refuse("answer-root-reused");
-    let sealMatches = false;
-    try { sealMatches = hex(x25519.getPublicKey(args.sealSecret)) === args.request.sealKey; } catch { sealMatches = false; }
-    if (!sealMatches) return refuse("seal-secret-other");
+    if (args.sealSecret !== null) {
+      let sealMatches = false;
+      try { sealMatches = hex(x25519.getPublicKey(args.sealSecret)) === args.request.sealKey; } catch { sealMatches = false; }
+      if (!sealMatches) return refuse("seal-secret-other");
+    }
 
     const sealed: SealedAddressSecret = { epk: secret["epk"], nonce: secret["nonce"], ciphertext: secret["ciphertext"] };
     const body = { nonce, atomKey, personaGroup, edge, carriage, reach, charter, admit: faceAdmit, floorPins, secret: sealed } as Omit<FleetJoinAnswer, "kind" | "signature" | "certificates" | "grants">;
@@ -512,16 +568,13 @@ export function readFleetJoinAnswer(value: unknown, args: {
     if (granted.size !== certified.size) return refuse("grant-missing");
     for (const c of certificates) if (!grants.some((g) => sameFaceScope(g.scope, c.scope))) return refuse("grant-missing");
     // THE ADMIT IS THE FACE'S OWN at the hearth's Nexus: its nym is the face key a certificate here certifies there.
-    if (!certificates.some((c) => c.scope.nexus === pinNexus && c.scope.faceKey === faceAdmit.admit.nym.toLowerCase())) {
-      return refuse("answer-admit-other-face");
+    if (faceAdmit !== null) {
+      const nym = faceAdmit.admit.nym.toLowerCase();
+      if (!certificates.some((c) => c.scope.nexus === pinNexus && c.scope.faceKey === nym)) return refuse("answer-admit-other-face");
     }
-
-    const addressSecret = openAddressSecret(sealed, args.sealSecret, nonce, atomKey);
-    if (addressSecret === null) return refuse("secret-unopened");
-    const answer: FleetJoinAnswer = Object.freeze({
+    return Object.freeze({
       kind: "fleet-join-answer", ...body, certificates: Object.freeze(certificates), grants: Object.freeze(grants), signature,
-    });
-    return { answer, addressSecret };
+    }) as FleetJoinAnswer;
   });
 }
 
@@ -563,4 +616,104 @@ export async function composeFleetJoinRequest(args: {
   const body = { nonce: args.offer.nonce, atomKey, sealKey: args.sealKey, vesselTag: tag.vesselTag, vesselSig: tag.vesselSig, wardKey: tag.wardKey, wardPop: tag.wardPop, requests };
   const signature = await args.sign(fleetJoinRequestImage(body));
   return readFleetJoinRequest({ kind: "fleet-join-request", ...body, signature }, args.offer, [args.offer.rootKey]);
+}
+
+// ── The root holder's offer and answer, composed ────────────────────────────────────────────────
+
+/** A root holder's act refused by name: a reader's refusal over the request or the composed answer, or the composer's own. */
+export class FleetJoinRootRefused extends Error {
+  override readonly name = "FleetJoinRootRefused";
+  constructor(readonly refusal: FleetJoinRefusalName, readonly under?: FaceProofRefusal) {
+    super(`fleet-join: ${refusal}${under ? ` (${under.refusal})` : ""}`);
+  }
+}
+
+/**
+ * The root holder's offer over the scopes the face stands at now, under a fresh nonce. The vessel reads its own face
+ * (its PersonaGroup, its root's public key, its standing scopes) and hands them here, so a node and a browser spell one
+ * offer alike.
+ */
+export function composeFleetJoinOffer(args: { personaGroup: string; rootKey: string; scopes: readonly FaceScope[] }): FleetJoinOffer {
+  return fleetJoinOffer({ ...args, nonce: hex(webGetRandomValues(new Uint8Array(32))) });
+}
+
+/** What seating the joinee answers: the device edge the root signed, where the joinee dials, and the hearth's dial
+ *  (null where this root holder stands no gate). */
+export interface FleetJoinSeat {
+  readonly edge:   unknown;
+  readonly reach:  FleetJoinReach;
+  readonly hearth: FleetJoinHearthDial | null;
+}
+
+/** The doors a root holder's vessel hands the answer's composer: its custody and its stores, each behind one act. */
+export interface FleetJoinRootDoors {
+  /** Seat the joining vessel in the face: sign its device edge and read this holder's hearth. It runs once the request
+   *  has read against the face's offer; a refusal thrown here leaves no certificate, grant or answer signed. */
+  seat(request: FleetJoinRequest): Promise<FleetJoinSeat>;
+  /** Issue one certificate over a requested face-scoped key, under that scope's face key. */
+  certify(request: VesselFaceCertificateRequest, apart: KeysHeldApart): Promise<VesselFaceCertificate>;
+  /** Note every certificate this answer issues beside the device it names, before the answer leaves. */
+  noteIssued(issued: { readonly device: string; readonly certificates: readonly VesselFaceCertificate[] }): Promise<void>;
+  /** Open the PersonaGroup root for ONE act: `sign` answers the root's signature over an image, 128 hex. The door asks
+   *  its ward as its vessel does, and closes the key when the act settles, whatever it answered. */
+  withRoot<T>(act: (sign: (image: Uint8Array) => Promise<string>) => Promise<T>): Promise<T>;
+  /** The face's address secret, 32 bytes, the composer's own copy to zero-fill; null where the face holds none. */
+  addressSecret(): Promise<Uint8Array | null>;
+}
+
+/**
+ * The root holder's answer to ONE request, composed over the vessel's own doors: the request reads against the offer
+ * rebuilt over the scopes that stand now and the request's own nonce; the joinee takes its seat; each requested key
+ * takes a certificate, noted before anything leaves; then, inside one opening of the root, each scope takes a grant,
+ * the address secret seals to the request, and the root signs the whole. The answer reads back under the root key
+ * before it returns, so a door that signed under another key refuses here by name and nothing leaves the vessel.
+ *
+ * The node's door (`commands/fleet-join`) and the browser's (`browser-fleet-root`) both answer through here. A refusal
+ * throws `FleetJoinRootRefused`; a door's own error passes through untouched.
+ */
+export async function composeFleetJoinAnswer(args: {
+  request: unknown; personaGroup: string; rootKey: string; scopes: readonly FaceScope[]; apart?: KeysHeldApart;
+  doors: FleetJoinRootDoors;
+}): Promise<FleetJoinAnswer> {
+  const nonce = record(args.request) ? args.request["nonce"] : undefined;
+  if (typeof nonce !== "string" || !HEX64.test(nonce)) throw new FleetJoinRootRefused("request-malformed");
+  const offer = fleetJoinOffer({ personaGroup: args.personaGroup, rootKey: args.rootKey, nonce, scopes: args.scopes });
+  const apart = [...new Set([args.rootKey, ...(args.apart ?? [])])];
+  const request = readFleetJoinRequest(args.request, offer, apart);
+  if (isRefusal(request)) throw new FleetJoinRootRefused(request.refusal, request.cause);
+
+  const seat = await args.doors.seat(request);
+  const hearth = seat.hearth;
+  if (hearth !== null) {
+    // THE ADMIT'S KEY TAKES A CERTIFICATE: the joinee asks one at the hearth's Nexus for the key the face's admit names,
+    // or its landing reads an admit no certificate of its own answers.
+    const nym = hearth.admit.admit.nym.toLowerCase();
+    if (!request.requests.some((q) => q.scope.faceKey === nym)) throw new FleetJoinRootRefused("request-scope-household-absent");
+  }
+  const certificates: VesselFaceCertificate[] = [];
+  for (const q of request.requests) certificates.push(await args.doors.certify(q, apart));
+  await args.doors.noteIssued({ device: request.atomKey, certificates });
+
+  const answer = await args.doors.withRoot(async (sign) => {
+    const grants: FaceKeyGrant[] = [];
+    for (const q of request.requests) grants.push({ personaGroup: args.personaGroup, scope: q.scope, signature: await sign(faceKeyGrantImage(args.personaGroup, q.scope)) });
+    const secret = await args.doors.addressSecret();
+    if (secret === null) throw new FleetJoinRootRefused("no-address-secret");
+    let sealed: SealedAddressSecret;
+    try { sealed = sealAddressSecret({ secret, request }); } finally { secret.fill(0); }
+    const body = {
+      nonce, atomKey: request.atomKey, personaGroup: args.personaGroup, edge: seat.edge,
+      carriage: hearth === null ? null : { gatePin: hearth.carriage.gatePin, canon: { ...hearth.carriage.canon } },
+      reach: seat.reach,
+      charter: hearth === null ? null : hearth.charter,
+      admit: hearth === null ? null : hearth.admit,
+      floorPins: hearth === null ? [] : hearth.floorPins,
+      secret: sealed,
+    };
+    return { kind: "fleet-join-answer" as const, ...body, certificates, grants, signature: await sign(fleetJoinAnswerImage(body)) };
+  });
+  // THE READ-BACK, through canonical JSON as a courier carries it: the bytes that leave equal the bytes that read.
+  const back = readAnswerSigned(JSON.parse(JSON.stringify(answer)), { request, personaGroup: args.personaGroup, rootKey: args.rootKey, sealSecret: null, apart: args.apart ?? [] });
+  if (isRefusal(back)) throw new FleetJoinRootRefused(back.refusal, back.cause);
+  return answer;
 }

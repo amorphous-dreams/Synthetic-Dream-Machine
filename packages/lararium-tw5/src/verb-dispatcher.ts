@@ -53,6 +53,7 @@ import {
   SUMMONS_URI_PREFIX,
   verbInputDigest,
   wikiSlugOfBag,
+  ControlHomeUnavailable,
 } from "@lararium/mesh";
 import { dispatchVerb, placeVerb, copyEffectOutcome, writeOutcome, removeVerb, EFFECT_URI_PREFIX } from "./verb-vm.js";
 import type { TW5Engine } from "./tw5-vm.js";
@@ -554,6 +555,9 @@ export class VerbDispatcher {
     // Startup scan: persisted pending summons are heeded once. The request-id set shared with live
     // delivery keeps a record that also arrives as a change from firing twice.
     this.startupScan = this.scanSummons().catch((err) => {
+      // A FLOOR HOLDS NO SUMMONS: a place with no readable control document (no face landed, or its key stays shut) rests none,
+      // so its scan reads the stand-in's refusal by name and nothing waits. Any other fault of the scan surfaces as itself.
+      if (err instanceof ControlHomeUnavailable) { console.log(`[verb-dispatcher] no summons scan at the floor (${err.refusal})`); return; }
       console.error("[verb-dispatcher] summons startup scan crashed:", err);
     });
 

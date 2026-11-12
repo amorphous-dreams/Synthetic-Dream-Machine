@@ -50,6 +50,22 @@ let browser: Browser | null = null;
 let scratch = "";
 let bannerUrl = "";
 let bannerAnchor = "";
+/** The floor card's carriage file, which the banner prints on a line of its own (`{"kind":"floor-card",…}`). */
+let bannerCard = "";
+/** The relay the hearth's own origin answers with: the page dials it, and no URL names it. */
+const relayOfBanner = (): string => { const u = new URL(bannerUrl); return `${u.protocol === "https:" ? "wss:" : "ws:"}//${u.host}/ws`; };
+/** Carry one text in at the page's floor carriage door by its paste road: the page keeps it per origin and boots again. */
+async function carryIn(page: Page, text: string): Promise<void> {
+  const door = page.locator("#floor-carriage-door");
+  await door.locator("[data-lar-carriage-paste]").fill(text);
+  await Promise.all([page.waitForEvent("load"), door.locator("[data-lar-carriage-take]").click()]);
+}
+/** A device arrives at the banner's page and takes the floor card, and (where handed) the place AID apart from it. */
+async function arrive(page: Page, opts: { readonly anchored: boolean }): Promise<void> {
+  await page.goto(bannerUrl);
+  await carryIn(page, bannerCard);
+  if (opts.anchored) await carryIn(page, bannerAnchor);
+}
 let joined: Page | null = null;
 const contexts: BrowserContext[] = [];
 const lines: string[] = [];
@@ -228,7 +244,8 @@ beforeAll(async () => {
   for (;;) {
     bannerUrl = /^\[lararium\] {3}(https?:\/\/\S+) {3}\(/m.exec(hearth.bootLog())?.[1] ?? "";
     bannerAnchor = /^\[lararium\] floor anchor: ([0-9a-f]{64}) /m.exec(hearth.bootLog())?.[1] ?? "";
-    if ((bannerUrl && bannerAnchor) || performance.now() > deadline) break;
+    bannerCard = /^\[lararium\] {3}(\{"kind":"floor-card".*\})$/m.exec(hearth.bootLog())?.[1] ?? "";
+    if ((bannerUrl && bannerAnchor && bannerCard) || performance.now() > deadline) break;
     await new Promise((r) => setTimeout(r, 250));
   }
   browser = await chromium.launch({ headless: true, ...(process.env["LAR_CHROMIUM"] ? { executablePath: process.env["LAR_CHROMIUM"] } : {}) });
@@ -270,7 +287,7 @@ describe("the stage walk: the node half, the join, and the page's save route", (
     const page = await context.newPage();
     page.on("console", (m) => { lines.push(m.text()); });
     page.on("pageerror", (e) => { lines.push(`[pageerror] ${e.message}`); });
-    await page.goto(`${bannerUrl}&anchor=${bannerAnchor}`);
+    await arrive(page, { anchored: true });
     expect(await awaitLive(page), tail()).toMatch(/^live/);
     const offerFile = join(scratch, "offer.json"), requestFile = join(scratch, "request.json"), answerFile = join(scratch, "answer.json");
     const offered = await hearth!.cli(["fleet", "join", "offer", "--out", offerFile]);
@@ -284,7 +301,7 @@ describe("the stage walk: the node half, the join, and the page's save route", (
     }, undefined, { timeout: WAIT }).then((h) => h.jsonValue() as Promise<{ refused?: string; request?: string }>);
     expect(minted.refused, tail()).toBeUndefined();
     writeFileSync(requestFile, minted.request!);
-    const relay = new URL(bannerUrl).searchParams.get("relay")!;
+    const relay = relayOfBanner();
     const answered = await hearth!.cli(["fleet", "join", "answer", requestFile, "--sync-url", relay, "--out", answerFile]);
     expect(answered.code, answered.stderr).toBe(0);
     await page.evaluate(() => { (globalThis as { __beforeLand?: boolean }).__beforeLand = true; });
@@ -406,7 +423,7 @@ describe("the stage walk: the node half, the join, and the page's save route", (
     contexts.push(context);
     const stranger = await context.newPage();
     stranger.on("console", (m) => { lines.push(`[stranger] ${m.text()}`); });
-    await stranger.goto(`${bannerUrl}&anchor=${bannerAnchor}`);
+    await arrive(stranger, { anchored: true });
     expect(await awaitLive(stranger), tail()).toMatch(/^live/);
     // The stranger renders the SAME list the joined page did: a stage title reads as a tiddler only where the stage mounts.
     await authorInPage(stranger, "L4/stranger-reads", `<$list filter="[[${DRAFT.title}]is[tiddler]]"><span class="walk-leak">LEAKED</span></$list><span class="walk-stranger-ready">ready</span>`);

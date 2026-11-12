@@ -34,7 +34,7 @@ async function readMembership(provider: KeyhiveProvider, groupId: string, identi
 describe("THE_ROSTER_LAW", () => {
   it("witnesses the place absent and the atoms present on the face roster after a founding, an admit and a fleet join seat", async () => {
     const founderRepo = repo();
-    const founderPlace = withMemorySecretHome(await foundThePlace({ repo: founderRepo, hearthTrueName: "hearth" }), founderRepo);
+    const founderPlace = withMemorySecretHome(await foundThePlace({ repo: founderRepo }), founderRepo);
     const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
       repo: founderRepo,
       daemonHandle: founderPlace.daemonHandle, secretHandle: founderPlace.secretHandle, secretRest: { assertSealed: async () => true },
@@ -73,7 +73,7 @@ describe("THE_ROSTER_LAW", () => {
     });
 
     const joineeRepo = repo();
-    const joineePlace = withMemorySecretHome(await foundThePlace({ repo: joineeRepo, hearthTrueName: "hearth" }), joineeRepo);
+    const joineePlace = withMemorySecretHome(await foundThePlace({ repo: joineeRepo }), joineeRepo);
     const joinee = await runApplyAdmitPayload({
       repo: joineeRepo,
       daemonHandle: joineePlace.daemonHandle, secretHandle: joineePlace.secretHandle, secretRest: { assertSealed: async () => true },
@@ -105,7 +105,7 @@ describe("THE_ROSTER_LAW", () => {
 
   it("control — the founded atom reads present on its own face roster", async () => {
     const founderRepo = repo();
-    const founderPlace = withMemorySecretHome(await foundThePlace({ repo: founderRepo, hearthTrueName: "hearth" }), founderRepo);
+    const founderPlace = withMemorySecretHome(await foundThePlace({ repo: founderRepo }), founderRepo);
     const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
       repo: founderRepo,
       daemonHandle: founderPlace.daemonHandle, secretHandle: founderPlace.secretHandle, secretRest: { assertSealed: async () => true },

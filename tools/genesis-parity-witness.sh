@@ -12,7 +12,7 @@
 # ── WHY A RED HERE NEVER MEANS "BAKE NOW" BY ITSELF ─────────────────────────────────────────────
 # A bake counts as an ACT, never a build step. It moves the seed's actor and the grammar address, so a
 # store founded on the earlier seed reads a different genesis and re-founds from the bags; where the
-# engine blob moved, it moves the hearth true-name too, and every device-delegation edge signs that name.
+# engine blob moved, it moves the engine every vessel of the mesh boots (no edge signs it: an edge names its hearth's Nexus AID).
 # So the house bakes ON PURPOSE, in one labelled `GENESIS RE-BAKE` commit, and a lane that changes the
 # plugin may lawfully leave the bake to a later hand. This witness exists so that span never stands
 # UNSEEN: a bundle running ahead of genesis reads RED until someone either bakes or DECLARES the gap.

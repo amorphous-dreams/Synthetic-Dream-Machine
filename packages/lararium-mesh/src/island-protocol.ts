@@ -176,6 +176,10 @@ export interface IslandGrants {
   /** The control document's refusal while the vessel cannot read it (`vessel-locked`: the key stays shut; `control-home-unnamed`:
    *  the place holds no face). The island resolves nothing then: its control store refuses every read and write by this name. */
   controlRefusal?: "vessel-locked" | "control-home-unnamed" | "control-home-unavailable";
+  /** THE FLOOR'S REST KEY as the vessel holds it for this composition (`floor-registry`): `stands` where the vessel derived
+   *  it, else the refusal the floor's registry answers (`vessel-locked`: the key stays shut; `floor-unkeyed`: the place
+   *  derives none, a herm). Granted to the daemon island alone; absent reads as `floor-unkeyed` (fail closed). */
+  floorKey?: "stands" | "vessel-locked" | "floor-unkeyed";
   /** The worn face's daemon canon (`daemonFaceCanonBag`), the document its catalog row names: the daemon recipe's
    *  `canonBag` slot mounts from this grant alone. Absent at the floor, where the daemon wiki reads no canon. */
   canonUrl?:    string | null;

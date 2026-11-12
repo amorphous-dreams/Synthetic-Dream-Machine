@@ -40,11 +40,11 @@ import { createServer }  from "http";
 import { networkInterfaces }             from "os";
 import WebSocket                         from "isomorphic-ws";
 import { resolve }                       from "path";
-import { deriveReachFaces, wsUrlForOrigin, crossingBannerLines, originCompositionForFace, assertWaystoneCustody, OriginCustodyRefusal, type ExplicitOriginComposition, type InterfaceTable } from "./lan-address.js";
+import { deriveReachFaces, wsUrlForOrigin, crossingBannerLines, floorCarriageBannerLines, originCompositionForFace, assertWaystoneCustody, OriginCustodyRefusal, type ExplicitOriginComposition, type InterfaceTable } from "./lan-address.js";
 import { openNodeVessel, openNodeHerm, standNodeFloor, seatedSovereignReaders, type AskedStanding, type NodeFloor, type SovereignReaders } from "./open-node-vessel.js";
 import type { HeldSaves, MountManifest } from "@lararium/mesh";
 import { bootFaultReport }                 from "./boot-fault.js";
-import { standAs, FLOW_SOCKET_ROUTE, HEARTH_FLOOR_CARD_ROUTE, hearthFloorCardText } from "@lararium/mesh";
+import { standAs, FLOW_SOCKET_ROUTE, HEARTH_FLOOR_CARD_ROUTE, hearthFloorCardText, floorCardCarriageText } from "@lararium/mesh";
 import { hearthFloorProof } from "./hearth-floor-claims.js";
 import { randomBytes } from "node:crypto";
 import {
@@ -60,6 +60,7 @@ import { deriveMeshSelf } from "./node-caps.js";
 import { parseMeshPeer } from "@lararium/mesh";
 import { ratedReceiptRing, ratedReceiptRingBytes } from "@lararium/mesh";
 import { makeUdsSeat, serveUdsFront, type UdsChannelOptions, type UdsFront } from "./uds-channel.js";
+import { floorVerbsFor } from "./floor-verbs.js";
 import { nodeSwitchActLog } from "./switch-act-log.js";
 import { STORE_DOOR_HAND_CODES, STORE_DOOR_HAND_ONLY_ACTS, REALM_KEY_VERBS, REALM_SESSION_ACTS, STORE_DOOR_FACE_ROWS, faceRowAnswer } from "./store-door-verbs.js";
 import { makeCustodyHolder } from "./custody-holder.js";
@@ -562,6 +563,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
     // floor under its own name, and calling it a wayfarer would tell its operator they built the wrong thing.
     hostId:     askedStanding === "herm" ? "lares-viales" : "lararium-node",
     floor,
+    askedHerm:  askedStanding === "herm",
     sovereign,
     wikiId,
     storageDir,
@@ -668,6 +670,8 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
   front.attach(makeUdsSeat({
     controlHandle: herm.daemon.controlHandle,
     control:      herm.daemon.control,
+    // A veil floor (its rest key stands) also answers the wiki-minting and composing verbs, as the veil.
+    floorVerbs:   floorVerbsFor(herm.floorKey === "stands"),
     placeVerb:    (o) => herm.daemon.placeVerb(o),
     claim:        floor.storeClaim,
     repo:         herm.repo,
@@ -775,11 +779,10 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
       return null;
     }
   })();
-  const floorCard = floorCardPack?.text ?? null;
-  if (floorCardPack) console.log(`[lararium] floor anchor: ${floorCardPack.aid}   (hand it to a device beside the card, apart from the URL: #anchor=<aid>; the card never anchors itself)`);
   console.log("[lararium] browser crossing — open one of these on the device that crosses; it stands at the floor:");
   const crossings = reachFaces.map((face, i) => ({ face, composition: originCompositions[i]! }));
-  for (const line of crossingBannerLines("lararium", crossings, floorCard)) console.log(`[lararium]   ${line}`);
+  for (const line of crossingBannerLines("lararium", crossings)) console.log(`[lararium]   ${line}`);
+  for (const line of floorCarriageBannerLines(floorCardPack ? { cardFile: floorCardCarriageText(floorCardPack.text), aid: floorCardPack.aid } : null)) console.log(`[lararium] ${line}`);
   console.log("[lararium]   (a leaf joins a face by the fleet-join door: `lares fleet join offer` here, the offer pasted on the leaf's page)");
 
   // The CLIENT dial-out (Socket A) is read inside the vessel, from the hearth pin its admit carries and the pair index
@@ -804,6 +807,8 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   front.attach(makeUdsSeat({
     controlHandle: result.daemon.controlHandle,
     control:      result.daemon.control,
+    // One reading on every composition: where no control document stands and the floor's rest key does, the veil's four verbs pass.
+    floorVerbs:   floorVerbsFor(result.floorKey === "stands"),
     placeVerb:    (o) => result.daemon.placeVerb(o),
     retireAsk:    (requestId) => result.daemon.retireAsk(requestId),
     claim:        floor.storeClaim,

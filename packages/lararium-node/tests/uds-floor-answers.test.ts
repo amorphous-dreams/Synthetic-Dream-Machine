@@ -25,6 +25,7 @@ import {
   CONTROL_HOME_UNNAMED, RECEIPT_FACT_URI_PREFIX, OUTCOME_URI_PREFIX, VESSEL_LOCKED, type CompositeStore, type LarDoc,
 } from "@lararium/mesh";
 import { startUdsChannel } from "../src/uds-channel.js";
+import { VEIL_FLOOR_VERBS, floorVerbsFor } from "../src/floor-verbs.js";
 import { FLOOR_VERBS } from "../src/floor-verbs.js";
 import { claimStore } from "../src/owned-store.js";
 
@@ -62,6 +63,36 @@ describe("a place with no readable control document answers its floor", () => {
     await v.repo.shutdown();
   });
 
+  test("F5 — RED: an UNLOCKED faceless place (its floor key stands) answers the veil's own mint at the door; a floor whose key does not stand refuses it by name", async () => {
+    // No face landed, so no control document stands (operator ruling 2026-11-09): the door still reads the unnamed stand-in.
+    // What moves is the floor's rest key: where it stands, the veil mints and composes as itself (in-house ruling 7).
+    expect(VEIL_FLOOR_VERBS.every((verb) => floorVerbsFor(true).has(verb))).toBe(true);
+    expect(VEIL_FLOOR_VERBS.filter((verb) => floorVerbsFor(false).has(verb)), "a locked hearth and a herm pass none of the four").toEqual([]);
+    for (const keyed of [true, false]) {
+      const v = faceless();
+      const control = await standControlHome(v.repo, v.daemon);
+      expect(controlHomeRefusal(control)?.refusal).toBe(CONTROL_HOME_UNNAMED);
+      const store = controlStoreOf(control);
+      const placed: string[] = [];
+      const seat = await door(control, store, v.repo, (o) => { placed.push(o.verb); answerLater(store, o); }, floorVerbsFor(keyed));
+      try {
+        const minted = await send(seat.socketPath, { verb: "init-wiki", args: { slug: "veil-own" }, requestedBy: "did:key:veil", requestId: `veil-mint-${keyed}` });
+        if (keyed) {
+          expect(minted["status"], JSON.stringify(minted)).toBe("done");
+          expect(placed).toEqual(["init-wiki"]);
+        } else {
+          expect(minted["refusal"]).toEqual({ reason: CONTROL_HOME_UNNAMED });
+          expect(placed).toEqual([]);
+        }
+        // A verb that acts as a face still refuses by the stand-in's name on either floor.
+        const write = await send(seat.socketPath, { verb: "memory-write", args: { text: "heron" }, requestedBy: "did:key:veil", requestId: `veil-write-${keyed}` });
+        expect(write["refusal"]).toEqual({ reason: CONTROL_HOME_UNNAMED });
+        expect(titles(control, OUTCOME_URI_PREFIX), "nothing rests in the stand-in").toEqual([]);
+      } finally { await seat.close(); }
+      await v.repo.shutdown();
+    }
+  });
+
   test("F3 — CONTROL (Gaia Tuesday, locked): a place row runs on the floor; the memory write still refuses `vessel-locked`", async () => {
     const v = await foundedThenLocked();
     const control = await standControlHome(v.repo, v.daemon);
@@ -97,10 +128,10 @@ function answerLater(store: CompositeStore, o: { requestId: string; verb: string
   }, 20);
 }
 
-async function door(controlHandle: Awaited<ReturnType<typeof standControlHome>>, control: CompositeStore, repo: Repo, placeVerb: (o: { requestId: string; verb: string }) => void) {
+async function door(controlHandle: Awaited<ReturnType<typeof standControlHome>>, control: CompositeStore, repo: Repo, placeVerb: (o: { requestId: string; verb: string }) => void, floorVerbs?: ReadonlySet<string>) {
   const dir = mkdtempSync(join(tmpdir(), "uds-floor-"));
   const claim = await claimStore(dir, { holder: "vessel" });
-  const channel = startUdsChannel({ controlHandle, control, claim, repo, timeoutMs: 3_000, placeVerb });
+  const channel = startUdsChannel({ controlHandle, control, claim, repo, timeoutMs: 3_000, placeVerb, ...(floorVerbs ? { floorVerbs } : {}) });
   for (let i = 0; i < 100 && !existsSync(claim.socketPath); i++) await new Promise((r) => setTimeout(r, 10));
   return { socketPath: claim.socketPath, close: async () => { await channel.close(); await claim.release(); rmSync(dir, { recursive: true, force: true }); } };
 }

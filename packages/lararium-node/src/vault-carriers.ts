@@ -85,6 +85,7 @@ import { nativeKdf } from "@lararium/mesh/node";
 import { custodyRootPath } from "./custody-root.js";
 import { VEIL_ARCHIVE_FILE } from "./identity-anchors.js";
 import { FACE_ATOM_GROUP_FILE, FACE_ATOM_ASK_FILE } from "./face-atom-store.js";
+import { VEIL_LIFT_GROUP_FILE } from "./node-veil-lift.js";
 import { FACES_DIR, FACE_INDEX_FILE, WARD_TREE_FILE } from "./face-index.js";
 import { FACE_ANCHOR_GROUP_FILE } from "./face-anchor-store.js";
 import { PROMOTED_FILE, KAPAE_FILE } from "./promoted-store.js";
@@ -376,6 +377,10 @@ function buildTable(): readonly CarrierRow[] {
          writer: "custody-root (founding)" }),
     faceRowOf({ row: "veil-archive", target: tgt(["D"], LEAD, "archive-row-selector"), inner: VEIL_ARCHIVE_FILE, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "device-minted",
          writer: "identity-anchors", name: (m) => `veil-archive-g${m[1]}`, face: (m) => `group:${m[1]}` }),
+    // A face's private veil-lift link (`node-veil-lift`): the vessel's key signed {veil, face, atom}, so it names THIS vessel's veil and
+    // stays on it; it rests under its face alone and leaves with that face's tree.
+    faceRowOf({ row: "veil-lift", target: tgt(["D"]), inner: VEIL_LIFT_GROUP_FILE, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: null,
+         writer: "node-veil-lift", name: (m) => `veil-lift-g${m[1]}`, face: (m) => `group:${m[1]}`, bundle: "stays" }),
     // A group digest owns this local atom row; bundles leave its seed on this vessel.
     faceRowOf({ row: "face-atom", target: tgt(["D"]), inner: FACE_ATOM_GROUP_FILE, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "device-minted",
          writer: "face-atom-store", name: (m) => `face-atom-g${m[1]}`, face: (m) => `group:${m[1]}`, bundle: "stays" }),

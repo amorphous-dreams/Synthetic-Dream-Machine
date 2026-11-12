@@ -50,7 +50,7 @@ async function joinedPage(opts: { readonly pin: boolean; readonly catalogRow?: (
   const founderRepo = newRepo(), joineeRepo = newRepo();
   const founderSeed = new Uint8Array(32).fill(71), signerSeed = new Uint8Array(32).fill(72);
   const atomSeed = new Uint8Array(32).fill(73), joineeAtom = new Uint8Array(32).fill(74);
-  const founder = await foundThePlace({ repo: founderRepo, vesselSeed: founderSeed, hearthTrueName: "hearth" });
+  const founder = await foundThePlace({ repo: founderRepo, vesselSeed: founderSeed });
   const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
     repo: founderRepo, daemonHandle: founder.daemonHandle, ...memorySecretHome(founderRepo), placeVerifyingKey: key(founderSeed), vesselDisplayName: "founder",
     binding: { mode: "self-stood", signerSeed }, hearthTrueName: "hearth", nexusPubkey: key(founderSeed), atomSeed,

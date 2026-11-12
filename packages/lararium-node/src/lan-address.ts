@@ -246,34 +246,44 @@ export function flowOriginForFace(face: ReachFace, declaration: ExplicitOriginCo
 }
 
 /**
- * Build the crossing URL a device opens: the web origin and the relay it dials, and, where the hearth stands an flow
- * floor gate, its floor card in the fragment (`hearthFloorCardText`), which never reaches a server. The URL names no gate
- * key: a fresh device stands at the floor and reads what the floor offers under the card, and a face joined to it by the
- * fleet-join door carries the full sovereign pin inside the root's signature. The relay rides the SAME name the web
- * surface came from — a phone that loaded the web surface over a LAN address cannot dial `localhost` (which on that phone
- * names the phone), and a browser on a TLS name cannot dial a `ws://` relay from an `https://` page (mixed content), so a
- * declared face carries `wss` throughout.
+ * The page a device opens to cross: the web origin, and nothing else. No query string names the relay (the page asks its own
+ * origin's arrival descriptor, and dials that origin's relay) and no fragment carries the floor card (the fragment stays the
+ * wiki's own permalink; the card travels by the carriage door, `floorCarriageBannerLines`). The URL names no gate key: a fresh
+ * device stands at the floor, and a face joined to it by the fleet-join door carries the full sovereign pin inside the root's
+ * signature.
  */
-export function crossingUrl(opts: { webOrigin: string; wsUrl: string; floorCard: string | null }): string {
-  const base = `${opts.webOrigin.replace(/\/+$/, "")}/?relay=${opts.wsUrl}`;
-  return opts.floorCard ? `${base}#floor=${opts.floorCard}` : base;
+export function crossingUrl(opts: { webOrigin: string }): string {
+  return `${opts.webOrigin.replace(/\/+$/, "")}/`;
 }
 
 /**
- * The crossing banner's lines — one crossing URL per face, tagged with the face's kind. Only a lararium
+ * The floor's carriage lines: the hearth's floor card as the one-line file a person carries to the page's carriage door (paste it,
+ * save it as a file, or show it as a QR), and the place AID on a line of its own, conveyed apart (the card never anchors itself).
+ * A hearth that stands no floor gate at a Nexus yields no line.
+ */
+export function floorCarriageBannerLines(floor: { readonly cardFile: string; readonly aid: string } | null): string[] {
+  if (floor === null) return [];
+  return [
+    "floor card — carry this one line to the page's carriage door (paste, file or QR):",
+    `  ${floor.cardFile}`,
+    `floor anchor: ${floor.aid}   (carry it to the same door by its own act, apart from the card; the card never anchors itself)`,
+  ];
+}
+
+/**
+ * The crossing banner's lines — one page URL per face, tagged with the face's kind. Only a lararium
  * speaks them: a herm serves no Web surface for a leaf to open, so a herm (or any composition without a
  * Web origin) yields no line.
  */
 export function crossingBannerLines(
   standing: OriginStanding,
   entries: readonly { readonly face: ReachFace; readonly composition: StandingOriginComposition }[],
-  floorCard: string | null,
 ): string[] {
   if (standing !== "lararium") return [];
   const lines: string[] = [];
   for (const { face, composition } of entries) {
     if (composition.webOrigin === undefined) continue;
-    lines.push(`${crossingUrl({ webOrigin: composition.webOrigin, wsUrl: wsUrlForOrigin(composition.relayOrigin), floorCard })}   (${face.kind})`);
+    lines.push(`${crossingUrl({ webOrigin: composition.webOrigin })}   (${face.kind})`);
   }
   return lines;
 }

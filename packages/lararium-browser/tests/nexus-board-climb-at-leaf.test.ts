@@ -358,8 +358,12 @@ describe("the leaf climb stays scoped to antigen and crossroads", () => {
     //    the pinned prefix is known.
     expect(bootSrc, "a climb nested under a face guard would stop a FACELESS leaf from carrying")
       .toMatch(/\n {2}await climbNexusBoards\(\{/);
+    //    The carry sits one level deeper than `openDaemon`'s own depth: inside the `faced` closure, which a veil floor
+    //    (a record naming no face, so no pinned prefix) never enters.
     expect(bootSrc, "the KEL carry rides where the pinned prefix is read")
-      .toMatch(/\n {6}await carryPersonaKelUpTheGradient\(\{/);
+      .toMatch(/\n {8}await carryPersonaKelUpTheGradient\(\{/);
+    expect(bootSrc, "the KEL carry rides inside the face's own closure, which the veil floor never enters")
+      .toMatch(/const faced = bootFace === null \? null : await \(async \(social: FacedBootstrap\) => \{[\s\S]*?\n {8}await carryPersonaKelUpTheGradient\(\{/);
 
     // ⑥ ORDER. Every index reads POSITIVE first — `indexOf` answers -1 for an absent call, and -1 is
     //    less than everything, so an ordering assertion over an absent call passes VACUOUSLY.

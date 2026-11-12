@@ -154,8 +154,8 @@ export interface FoundingCeremonyInput {
   /** HOW this founding binds its device — the two modes `vessel-standing` names. REQUIRED: every
    *  founding binds, and the mode says whether this vessel signs its own binding or carries one. */
   binding: FoundingBinding;
-  /** The hearth true-name (engine content-CID) this vessel binds TO — the place in (vessel × hearthTrueName).
-   *  REQUIRED: a founding with no place to bind to is no founding. */
+  /** The hearth true name this vessel's edge binds TO: the seed-charter Nexus AID of the hearth it stands at, or the
+   *  stated empty name of a gateless leaf (no hearth stands there). Never an engine CID: the engine moves, the name stays. */
   hearthTrueName:      string;
   /** The Nexus pubkey (this node's own gate key) the per-Nexus persona-KEL board derives from. The founding
    *  seats the KEL INCEPTION onto that board so the very first boot walks the identifier→head mapping locally.
@@ -223,11 +223,10 @@ export interface FoundingCeremonyResult {
 //
 // Canon: lar:///ha.ka.ba/lares/api/pono/waking-floor · lar:///ha.ka.ba/lararium/mesh/identity-classes
 
-/** What a place-founding needs: a key, a name, and the hearth it stands at. No persona anywhere. */
+/** What a place-founding needs: the repo its daemon document stands in. No persona anywhere, and no hearth: a place binds
+ *  no hearth until a face lands, and the face's own edge then states the true name (`mountFace`, the admit's landing). */
 export interface PlaceFoundingInput {
   repo:               Repo;
-  /** The hearth true-name (engine content-CID) this place stands at. */
-  hearthTrueName:     string;
 }
 
 export interface PlaceFoundingResult {
@@ -246,18 +245,13 @@ export interface PlaceFoundingResult {
  * by founding rather than by falling.
  */
 export async function foundThePlace(input: PlaceFoundingInput): Promise<PlaceFoundingResult> {
-  const { repo, hearthTrueName } = input;
+  const { repo } = input;
 
   // THE PLACE WRITES NOTHING SECRET: the vessel's secret home enrolls on its own sealed rest (the store's one holder), and
   // a place founding neither creates nor names it.
+  // NO TRUE NAME LANDS HERE. The true-name record states the hearth a FACE's edge binds (the seed-charter Nexus AID, or
+  // the stated empty name of a leaf), so it lands with the face. A place alone binds no hearth and writes none.
   const daemonHandle = seedDaemonDoc(repo);
-
-  daemonHandle.change((doc) => {
-    doc.tiddlers[HEARTH_TRUE_NAME_TIDDLER] = storedRecord({
-      tiddler: { title: HEARTH_TRUE_NAME_TIDDLER, text: hearthTrueName, kind: "hearth-true-name" },
-      meta: { authority: "lares-init" },
-    });
-  });
 
   return {
     daemonUrl: daemonHandle.url as string,
@@ -394,7 +388,7 @@ async function landFaceCheckpoint(handle: ReturnType<typeof seedDaemonDoc>, secr
     doc.tiddlers[DEVICE_DELEGATION_SELF_TIDDLER] = storedRecord({
       tiddler: { title: DEVICE_DELEGATION_SELF_TIDDLER, ...result.founderEdge }, meta: { authority: "lares-init" },
     });
-    // The hearth the mounted face binds: its edge's true name, which a place founding wrote before any hearth stood.
+    // The hearth the mounted face binds: its edge's true name. This write lands the record first; a place founding writes none.
     doc.tiddlers[HEARTH_TRUE_NAME_TIDDLER] = storedRecord({
       tiddler: { title: HEARTH_TRUE_NAME_TIDDLER, text: result.founderEdge.hearthTrueName, kind: "hearth-true-name" }, meta: { authority: "lares-init" },
     });
@@ -762,10 +756,7 @@ export async function runFoundingCeremony(
   input: FoundingCeremonyInput,
 ): Promise<FoundingCeremonyResult> {
   if (!input.secretHandle || !input.secretRest || !await input.secretRest.assertSealed()) throw new Error("secret-home-unavailable: founding requires a separately held secret document with sealed rest");
-  const place = await foundThePlace({
-    repo:           input.repo,
-    hearthTrueName: input.hearthTrueName,
-  });
+  const place = await foundThePlace({ repo: input.repo });
   const face = await foundTheFace({
     repo:               input.repo,
     daemonHandle:       place.daemonHandle,
@@ -805,7 +796,7 @@ export interface DeviceAdmitEdgeInput {
   /** Signed persona records to carry to the joinee's daemon doc. */
   personaActs:           readonly unknown[];
   edgeFrontier: { readonly records: readonly unknown[]; readonly snapshots: readonly (readonly [string, readonly string[]])[] };
-  /** The hearth true-name (engine CID) the joinee binds TO. */
+  /** The hearth true name the joinee's edge binds TO (the root holder's seed-charter Nexus AID; "" from a gateless leaf). */
   hearthTrueName:         string;
   /** The face's PersonaGroup (a Keyhive group's id) and the MeshCabal sentinel the founding seated it in. */
   personaGroupId:   string;
@@ -990,7 +981,8 @@ export async function runApplyAdmitPayload(
   // never write a half-bound daemon doc (the confused-deputy / mycelium-PCD hole). The persona-KEL PREFIX
   // is part of that authority now: the joinee's Binding Gate pins it, so a payload with no pin would admit a
   // vessel that boots with nothing to walk (a fail-closed halt) — refuse it here, precisely, instead.
-  if (!payload.signerDid || !payload.deviceEdge || !payload.hearthTrueName || !payload.personaKelPrefix) {
+  // leaf-fleet (Leaf-Wright): the true name rides STATED, a hearth's name or "" where the root holder stood no gate; absent still refuses.
+  if (!payload.signerDid || !payload.deviceEdge || typeof payload.hearthTrueName !== "string" || !payload.personaKelPrefix) {
     throw new Error("[ceremony] runApplyAdmitPayload: payload lacks signerDid/deviceEdge/hearthTrueName/personaKelPrefix — refusing to admit.");
   }
   // The KEL chain and shared document are required for a joined face.

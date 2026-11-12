@@ -86,7 +86,7 @@ async function founderForB() {
   const atomSeed = new Uint8Array(32).fill(73);
   const founderKey = faceAtomKeyFromSeed(vesselSeed, "founder-vessel").key;
   const hearthTrueName = "hearth-for-secret-home";
-  const place = await foundThePlace({ repo: founderRepo, hearthTrueName });
+  const place = await foundThePlace({ repo: founderRepo });
   const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
     repo: founderRepo, daemonHandle: place.daemonHandle, ...memorySecretHome(founderRepo),
     placeVerifyingKey: founderKey, vesselDisplayName: "founder B",

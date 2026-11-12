@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Lararium web surface — composes DOM, Vite, and projection capabilities with browser-native capabilities in one local Web device/context peer; when reachable, it reads the public @oracle face. Location-agnostic: served from localhost / LAN / elyncia.app, static distribution never grants authority.",
+  "description": "Lararium web surface \u2014 composes DOM, Vite, and projection capabilities with browser-native capabilities in one local Web device/context peer; when reachable, it reads the public @oracle face. Location-agnostic: served from localhost / LAN / elyncia.app, static distribution never grants authority.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -19,13 +19,15 @@
     "@lararium/browser": "workspace:*",
     "@lararium/mesh": "workspace:*",
     "@lararium/tw5": "workspace:*",
-    "idiomorph": "0.8.0"
+    "idiomorph": "0.8.0",
+    "qrcode": "1.5.4"
   },
   "devDependencies": {
-    "@vitest/browser": "5.0.5",
-    "@vitest/browser-playwright": "5.0.5",
     "@keyhive/keyhive": "0.3.0-alpha.1",
     "@lararium/keyhive": "workspace:*",
+    "@types/qrcode": "1.5.6",
+    "@vitest/browser": "5.0.5",
+    "@vitest/browser-playwright": "5.0.5",
     "vite": "8.3.4",
     "vite-plugin-arraybuffer": "0.1.4",
     "vite-plugin-wasm": "3.6.0",

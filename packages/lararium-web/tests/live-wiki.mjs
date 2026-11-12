@@ -45,13 +45,12 @@ function required(name) {
 const WALK_SETTLE_MS = 3_000;
 
 /**
- * The crossing URL: the served origin, dialing the relay on that same origin. A face crosses the sovereign gate
- * under the pin its fleet join carries inside the root's signature, so the URL names no gate key.
+ * The crossing page: the served origin's own URL. The page dials the relay that origin answers with (its arrival descriptor), so
+ * the URL names no relay and no gate key; a face crosses the sovereign gate under the pin its fleet join carries.
  */
 function crossingAt(source) {
   const url = new URL(source);
-  const relay = `${url.protocol === "https:" ? "wss" : "ws"}://${url.host}/ws`;
-  return `${url.origin}${url.pathname}?relay=${encodeURIComponent(relay)}`;
+  return `${url.origin}${url.pathname}`;
 }
 
 /** Load a crossing URL and require the vessel's own page; a refused or foreign answer names itself. */

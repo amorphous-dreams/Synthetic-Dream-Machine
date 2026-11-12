@@ -2,8 +2,9 @@
  * ward-core — THE PURE CORE OF ONE BROWSER WARD ACT (seat-harness#/the-ward), run inside a per-act worker the page terminates.
  *
  * A browser face's root rests under that face's WARD key, the browser twin of the node's `ward-slots.bin`: the ward tree rests at
- * `ward/h<N>/slots` (a keyslot tree over the face's human routes), and the root at `ward/h<N>/persona-root`, sealed in the ward's
- * own frame (`lares-ward-seal`, domain `custody-carrier-ward`). The keystore's tree key wraps neither, so no unlocked custody
+ * `ward/root/<fcid>/slots` (a keyslot tree over the face's human routes), and the root at `ward/root/<fcid>/persona-root`, sealed in
+ * the ward's own frame; `<fcid>` names the face's own custody tree, which stands at the mint and which the face index joins to its
+ * PersonaGroup at the naming, so no handle index files a root (persona-circle#/the-atom). The frame reads `lares-ward-seal`, domain `custody-carrier-ward`. The keystore's tree key wraps neither, so no unlocked custody
  * opens the root.
  *
  * The act receives the ward tree and the warded root row as raw bytes (no key rides them), the route the person typed for this act,
@@ -27,16 +28,24 @@ import {
 
 /** The keystore rows a face's ward holds: its tree, and its root under it. Every name starts `ward/`. */
 export const WARD_ROW_PREFIX = "ward/";
-export const wardTreeRowOf = (handleIndex: number): string => `${WARD_ROW_PREFIX}h${handleIndex}/slots`;
-export const wardRootRowOf = (handleIndex: number): string => `${WARD_ROW_PREFIX}h${handleIndex}/persona-root`;
-/** The root's PUBLIC key beside its ward, so a ward act's signer names its key with the page's custody locked. */
-export const wardKeyRowOf = (handleIndex: number): string => `${WARD_ROW_PREFIX}h${handleIndex}/public-key`;
+/** Every root ward's rows start here; the next segment names the face's custody tree. */
+export const WARD_ROOT_PREFIX = `${WARD_ROW_PREFIX}root/`;
+const FACE_TREE_ID = /^[0-9a-f]{32}$/;
 /**
- * THE FACE THE WARD BELONGS TO: the opaque id (fcid) of the face tree that stood worn when the root minted. It lands before the
- * ward's tree, so a torn mint resumes owned; a ward act, a mint and a possession read answer only for the face whose tree it names,
- * and that face's clear removes the ward with it.
+ * A face root's rows, FILED BY THE FACE'S OWN CUSTODY TREE (its fcid): the ward tree, the root under it, and the root's PUBLIC key
+ * beside them (so a ward act's signer names its key with the page's custody locked). The path names the owner, so a second face
+ * neither inherits nor collides, and a face's clear removes the rows under its tree. A name that reads as no tree id refuses.
  */
-export const wardOwnerRowOf = (handleIndex: number): string => `${WARD_ROW_PREFIX}h${handleIndex}/face-tree`;
+export function wardRootRowsOf(faceTree: string): { readonly prefix: string; readonly tree: string; readonly root: string; readonly key: string } {
+  if (!FACE_TREE_ID.test(faceTree)) throw new WardRefused("ward-absent", "a root ward names its face's custody tree");
+  const prefix = `${WARD_ROOT_PREFIX}${faceTree}/`;
+  return { prefix, tree: `${prefix}slots`, root: `${prefix}persona-root`, key: `${prefix}public-key` };
+}
+/** The face tree a root ward row names, or null for any other row. */
+export function wardRootTreeOf(row: string): string | null {
+  const m = /^ward\/root\/([0-9a-f]{32})\//.exec(row);
+  return m ? m[1]! : null;
+}
 
 /** A face's ward key rows: its own ward tree, its seed under that ward, and its PUBLIC half beside it (plain bytes, opening nothing). */
 export function wardSignRowsOf(group: string): { readonly tree: string; readonly seed: string; readonly key: string } {
@@ -51,8 +60,8 @@ export function wardSignCarrier(group: string): FaceCarrier {
 }
 
 /** The carrier the warded root's AEAD binds: bytes moved to another face's row open nowhere. */
-export function wardRootCarrier(handleIndex: number): FaceCarrier {
-  return { name: `browser-ward/h${handleIndex}/persona-root`, path: wardRootRowOf(handleIndex), kind: "persona-root", ref: `h${handleIndex}`, owner: `h${handleIndex}`, store: WARD_STORE };
+export function wardRootCarrier(faceTree: string): FaceCarrier {
+  return { name: `browser-ward/root/${faceTree}/persona-root`, path: wardRootRowsOf(faceTree).root, kind: "persona-root", ref: faceTree, owner: faceTree, store: WARD_STORE };
 }
 
 /** A ward route as the page hands it: the typed passphrase, or a credential. A passkey credential refuses at every door. */
@@ -77,8 +86,8 @@ export function wardPinOf(credential: Credential): PinSpec {
 }
 
 /** The keypair a warded row opens to under `wardKey`; any other reading refuses by name. The plaintext zero-fills before this returns. */
-export function openWardedRoot(wardKey: WardKey, handleIndex: number, bytes: Uint8Array | null): { readonly verifyingKey: string; readonly signingKey: string } {
-  const opened = openUnderWard(wardKey, wardRootCarrier(handleIndex), bytes);
+export function openWardedRoot(wardKey: WardKey, faceTree: string, bytes: Uint8Array | null): { readonly verifyingKey: string; readonly signingKey: string } {
+  const opened = openUnderWard(wardKey, wardRootCarrier(faceTree), bytes);
   if (opened.reading === "absent") throw new WardRefused("ward-absent", "no warded root stands for this face");
   if (opened.reading !== "opens") throw new WardRefused("ward-root-unopenable", `the warded root reads ${opened.reading}`);
   try {
@@ -95,7 +104,8 @@ export function openWardedRoot(wardKey: WardKey, handleIndex: number, bytes: Uin
 export interface WardActRequest {
   readonly tree: Uint8Array;
   readonly sealedRoot: Uint8Array;
-  readonly handleIndex: number;
+  /** The custody tree of the face whose root signs: the warded row's seal binds it. */
+  readonly faceTree: string;
   readonly route: WardRoute;
   readonly bytes: Uint8Array;
 }
@@ -144,7 +154,7 @@ async function runWardRootAct(req: WardActRequest, kdf: KdfPort, watch?: (secret
     watch?.(opened.treeKey);
     let seed: Uint8Array | null = null;
     try {
-      const root = openWardedRoot(opened.treeKey, req.handleIndex, req.sealedRoot);
+      const root = openWardedRoot(opened.treeKey, req.faceTree, req.sealedRoot);
       seed = signingSeedFromHex(root.signingKey);
       watch?.(seed);
       const key = await ed25519VerifyingKeyFromSeed(seed);

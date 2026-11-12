@@ -106,7 +106,7 @@ Every wiki but the daemon's rests its working layer in the wiki's realm workbenc
 
 The working layer follows the wiki across recipe recomposition; it never follows the recipe's composition fingerprint. Two faces share a wiki's working layer by seats in its realm, never by a copy: the multitude of one human's faces reads as a private cabal of one, so a face shares with its sibling face through the same cabal grammar it shares with another person (operator ruling 2026-11-11: //"the multitude of faces reads as a private cabal for 1 human. Pattern integrities!"//). Presence and multiplayer spaces sit above.
 
-A leaf with an admit and no seat writes nothing to the face's wikis, and a vessel that wears no face stands no working layer (`no-face`). Join first; the face arrives at the face-proof join (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-proof#/the-chain`>>).
+A leaf with an admit and no seat writes nothing to the face's wikis, and a vessel that wears no face stands a working layer only as an unlocked veil: its control document reads, so the layer rests in a floor document of the vessel's own, sealed under the vessel's key (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/the-veil-ladder`>> #/the-base-model). A locked floor and a herm stand none (`no-face`). Join first; the face arrives at the face-proof join (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-proof#/the-chain`>>).
 
 A face the share stops naming loses its seat by Keyhive's convergent revoke, and its later writes refuse `workbench-not-a-member`. The workbench keeps its address; a hard cut forks the realm, so a new realm id names a new address.
 
@@ -335,6 +335,6 @@ At every ending the session's facets, signer handles, dials, scoped views, route
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ELSsqfbTWpHzT6CaE40a7PmUq8xPRJOe3S9dzEz9mM4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yOygrxwiOBP7mJJq8BuVfHNb6FVYOy_N7IUT4UjaEmA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

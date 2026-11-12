@@ -2,7 +2,7 @@
  * kahua-browser-founding — a browser that founds its own face ends that founding with the kahua stage's `plane` act, the
  * same act a node founding signs: the stage mints INSIDE the face's founding act, by whichever device founds the face.
  *
- * The browser's FOUND branch (`openBrowserVessel` with no admit and no bootstrap) runs `runFoundingCeremony` under a
+ * The browser's FOUND branch (`openBrowserVessel` with no admit and no bootstrap) runs `foundTheFace` under a
  * self-stood binding, and the ceremony lands the genesis log through `landFaceGenesis`, the one path every founding takes.
  * The walk boots the real vessel over a synthetic custody slot and reads the founded log at `bootstrap-kept`, before the
  * genesis island opens: the founding has signed its log by then and nothing after it may add a pin.
@@ -28,8 +28,8 @@ vi.mock("@lararium/keyhive", async (importOriginal) => {
   const real = await importOriginal<typeof import("@lararium/keyhive")>();
   return {
     ...real,
-    runFoundingCeremony: async (input: Parameters<typeof real.runFoundingCeremony>[0]) => {
-      const result = await real.runFoundingCeremony(input);
+    foundTheFace: async (input: Parameters<typeof real.foundTheFace>[0]) => {
+      const result = await real.foundTheFace(input);
       seen.foundings.push({ repo: input.repo, result: { ...result } as Record<string, unknown> });
       return result;
     },
@@ -41,7 +41,7 @@ describe("a browser founding ends with the kahua stage's plane act", () => {
     const idbName = `browser-kahua-found-${crypto.randomUUID()}`;
     await bindSyntheticBrowserCustodySlot(idbName);
     let read: { pin: string | null; pins: number; founded: boolean; fork: unknown; first: string | null; group: string } | null = null;
-    await expect(openBrowserVessel({ idbName, askWardRoute: fixtureWardDialog, onPhase: (phase: string) => {
+    await expect(openBrowserVessel({ idbName, foundFace: true, askWardRoute: fixtureWardDialog, onPhase: (phase: string) => {
       if (phase !== "bootstrap-kept") return;
       const founding = seen.foundings[0];
       if (!founding) throw new Error("the browser boot ran no founding");

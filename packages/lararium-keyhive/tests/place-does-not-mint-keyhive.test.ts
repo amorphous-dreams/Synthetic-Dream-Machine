@@ -13,7 +13,7 @@ describe("a place carries no Keyhive identity", () => {
     const atomSeed = mintFaceAtomSeed();
     const placeKey = groupSecretOpenerFromSeed(placeSeed).deviceKey;
     const init = vi.spyOn(KeyhiveProvider.prototype, "init");
-    const founded = await foundThePlace({ repo, hearthTrueName: "hearth" });
+    const founded = await foundThePlace({ repo });
     expect(init).not.toHaveBeenCalled();
     // THE PLACE WRITES NOTHING SECRET: it neither creates nor names the secret home, which its vessel's rest enrolls.
     expect(Object.keys(founded).sort()).toEqual(["daemonHandle", "daemonUrl"]);
@@ -42,7 +42,7 @@ describe("a place carries no Keyhive identity", () => {
 
   it("refuses a missing or aliased secret handle before founding a face", async () => {
     const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
-    const place = withMemorySecretHome(await foundThePlace({ repo, hearthTrueName: "hearth" }), repo);
+    const place = withMemorySecretHome(await foundThePlace({ repo }), repo);
     const bare = { repo, daemonHandle: place.daemonHandle } as Parameters<typeof foundTheFace>[0];
     await expect(foundTheFace(bare)).rejects.toThrow("secret-home-unavailable");
     await expect(foundTheFace({ ...bare, secretHandle: place.daemonHandle })).rejects.toThrow("secret-home-shared");

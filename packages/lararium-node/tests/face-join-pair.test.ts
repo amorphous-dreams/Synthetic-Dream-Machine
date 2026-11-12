@@ -268,7 +268,7 @@ describe("the hearth's door — kept where a joinee always reads it", () => {
     const founderRepo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
     const founderSeed = new Uint8Array(32).fill(81), signerSeed = new Uint8Array(32).fill(82);
     const atomSeed = new Uint8Array(32).fill(83), joineeAtom = new Uint8Array(32).fill(72);
-    const founder = withMemorySecretHome(await foundThePlace({ repo: founderRepo, vesselSeed: founderSeed, hearthTrueName: HEARTH }), founderRepo);
+    const founder = withMemorySecretHome(await foundThePlace({ repo: founderRepo, vesselSeed: founderSeed }), founderRepo);
     const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
       repo: founderRepo, daemonHandle: founder.daemonHandle, secretHandle: founder.secretHandle, secretRest: { assertSealed: async () => true }, placeVerifyingKey: key(founderSeed), vesselDisplayName: "founder",
       binding: { mode: "self-stood", signerSeed }, hearthTrueName: HEARTH, nexusPubkey: key(founderSeed), atomSeed,

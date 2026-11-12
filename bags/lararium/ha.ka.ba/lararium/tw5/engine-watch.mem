@@ -100,7 +100,7 @@ auto-merged genesis on CID divergence (`reconcileIslandFromGenesis` inside
 only. The running engine still swaps only on reboot (EW-2).
 
 ''EW-7 — kāhuli ACTS the EW-5 authority at MESH scale.'' `lares nexus kahuli`
-is the verb that rolls `hearthTrueName` forward across the mesh — it ACTS the
+is the verb that rolls the engine CID forward across the mesh (`hearthTrueName` names the seed-charter Nexus AID since ruling R1, and an engine roll moves no edge's true name) — it ACTS the
 engine-update grant EW-5 already seated (operator(admin) at the Lararium, the
 kahu quorum at DreamNet), never a fresh authority, and re-opens no shore EW-5
 closed. The roll is a ''FORWARD-REBIND'': it re-admits every vessel gracefully
@@ -127,6 +127,6 @@ each island adopts the roll in; kāhuli is the mesh-scale act that offers it.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;DY2Wz0O969uCLBK2LRflhaX1mvR6qO_CauMOJvk5dLQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GYKVQUsbuIX9baO2WYp8_LTKjPOEi9L34jag7QN_gAw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

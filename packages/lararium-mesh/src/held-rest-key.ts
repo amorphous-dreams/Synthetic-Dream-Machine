@@ -18,6 +18,7 @@
 import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { defaultCryptoProvider, hexToBytes, utf8Bytes, type RandomProvider } from "./crypto.js";
+import { FLOOR_REST_KEY_INFO } from "./domains.js";
 import {
   authorizeAddress, keyVersionIdOf, openChunk, readContentKey, sealChunk, sealedAddressOf, sealedImage,
   type ChunkRole, type ContentKey, type OpenResult, type SealResult,
@@ -38,6 +39,32 @@ export function mintHeldRestKey(random: Pick<RandomProvider, "getRandomValues"> 
 /** Read a held rest key off its bytes; null: not 32 bytes. */
 export function readHeldRestKey(value: unknown): HeldRestKey | null {
   return value instanceof Uint8Array && value.length === HELD_REST_KEY_LEN ? (Uint8Array.from(value) as HeldRestKey) : null;
+}
+
+/**
+ * A FLOOR KEY DOOR: one host's way to a 32-byte child under a registered domain. A node hands its custody root's derive
+ * door (it answers only while the custody stands unlocked, so a locked hearth and a herm, which never unlocks, derive
+ * nothing); a browser hands `seedFloorDoor` over its `floor-rest` seed row. A door that cannot answer throws.
+ */
+export type FloorKeyDoor = (info: string) => Uint8Array;
+
+/** The floor door of a host that keeps a random seed for its floor (a browser's `floor-rest` row). */
+export function seedFloorDoor(seed: Uint8Array): FloorKeyDoor {
+  if (!(seed instanceof Uint8Array) || seed.length !== HELD_REST_KEY_LEN) throw new TypeError("held-rest-key: a floor seed rides exactly 32 bytes");
+  const held = Uint8Array.from(seed);
+  return (info) => hkdf(sha256, held, undefined, utf8Bytes(info), HELD_REST_KEY_LEN);
+}
+
+/**
+ * THE FLOOR'S REST KEY, one helper for every host (the-veil-ladder#/the-base-model): the key a vessel's floor documents
+ * seal under, derived through the host's own door under `FLOOR_REST_KEY_INFO`. It names no secret home: the floor stands
+ * with no face, and the secret home's random key mints with the face. Each floor bag still binds its own content key
+ * (`sealHeld` and `openHeld` derive per bag), so two floor bags never open under one key.
+ */
+export function floorRestKey(door: FloorKeyDoor): HeldRestKey {
+  const key = readHeldRestKey(door(FLOOR_REST_KEY_INFO));
+  if (key === null) throw new TypeError("held-rest-key: the floor door answered no 32-byte child");
+  return key;
 }
 
 /** The bag's content key: HKDF-SHA-256 over the held key, bound to the bag's own id. */

@@ -79,6 +79,7 @@ const SOWN: Record<string, string> = {
   "identity/secret-home.json": "x",
   [`identity/faces/${FCID}/outbox-key-h0.bin`]: "x",
   [`identity/faces/${FCID}/veil-archive-g${"a".repeat(64)}.bin`]: "x",
+  [`identity/faces/${FCID}/veil-lift-g${"a".repeat(64)}.json`]: "x",
   [`identity/faces/${FCID}/face-atom-g${"a".repeat(64)}.bin`]: "x",
   [`identity/faces/${FCID}/face-anchor-g${"a".repeat(64)}.json`]: "x",
   [`identity/faces/${FCID}/face-atom-ask-${"b".repeat(64)}.bin`]: "x",
@@ -142,7 +143,7 @@ const RULED: Record<string, CustodyClass> = {
   "sealed-rest": "floor-plain", "sealed-own": "floor-plain", "sealed-chunk": "floor-plain",
   // The outbox's parcels rest under the outbox key, which its face key seals in a face-hot row.
   "sealed-outbox": "outbox", "outbox-key": "face-hot",
-  "gate-root": "hot", "veil-archive": "face-hot", "face-anchor": "face-hot", "face-atom": "face-hot", "face-atom-ask": "face-hot", "promoted": "face-hot", "kapae-local": "face-hot", "face-owner": "face-hot", "face-ward-key": "face-hot",
+  "gate-root": "hot", "veil-archive": "face-hot", "veil-lift": "face-hot", "face-anchor": "face-hot", "face-atom": "face-hot", "face-atom-ask": "face-hot", "promoted": "face-hot", "kapae-local": "face-hot", "face-owner": "face-hot", "face-ward-key": "face-hot",
   "fk-slots": "floor", "face-index": "floor-plain",
   // A session switch's acts name two faces together, so they rest sealed on this vessel and in no document.
   "switch-acts": "hot", "enroll-pending": "hot", "grant-pending": "hot", "recovery-contact-set": "face-hot", "admissions": "hot", "anchors": "face-hot",
@@ -219,6 +220,7 @@ describe("the carrier table", () => {
       expect(at("identity", `faces/${FCID}/cofound-h0-${"5a".repeat(32)}.json`)).toMatchObject({ row: "cofound", custody: "face-hot", face: 0 });
       expect(at("identity", `faces/${FCID}/cadence-key-h0-${"7c".repeat(16)}.bin`)).toMatchObject({ row: "cadence-key", custody: "face-cold", face: 0, keyClass: "device-minted" });
       expect(at("identity", `faces/${FCID}/veil-archive-g${"a".repeat(64)}.bin`)).toMatchObject({ row: "veil-archive", face: `group:${"a".repeat(64)}`, bare: null });
+      expect(at("identity", `faces/${FCID}/veil-lift-g${"a".repeat(64)}.json`)).toMatchObject({ row: "veil-lift", face: `group:${"a".repeat(64)}`, custody: "face-hot", bare: null });
       expect(at("identity", `faces/${FCID}/face-atom-g${"a".repeat(64)}.bin`)).toMatchObject({ row: "face-atom", face: `group:${"a".repeat(64)}`, bare: null });
       expect(at("identity", `faces/${FCID}/face-atom-ask-${"b".repeat(64)}.bin`)).toMatchObject({ row: "face-atom-ask", face: `fcid:${FCID}`, bare: null });
       expect(at("storage", "sealed/lockbox/aa.bb-cc")?.row).toBe("sealed-rest");

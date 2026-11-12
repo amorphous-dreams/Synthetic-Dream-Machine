@@ -51,7 +51,7 @@ import {
 import {
   BrowserCustodyRefused, browserKeystoreCustodyIo, custodyPinOf, readBrowserCustody, withCustodyRows, type ConfirmDoor, type CustodyBindRoute,
 } from "./browser-custody.js";
-import { WARD_ROW_PREFIX } from "./ward-core.js";
+import { WARD_ROW_PREFIX, wardRootRowsOf } from "./ward-core.js";
 
 /** The ward's roster row under the place tree (`browser-ward-tree.ts` owns its codec). */
 const PERSONA_ROSTER_ROW = "persona-root-roster";
@@ -60,7 +60,7 @@ export const FACE_INDEX_ROW = "face-index";
 export const FACE_TREE_PREFIX = "face-slots/";
 export const FACE_SEALED_PREFIX = "face-sealed/";
 const ANCHOR_ROW = "anchor";
-/** A persona root rests under its face's ward (`ward/h<N>/…`), never under a face key: the row name refuses at every face door. */
+/** A persona root rests under its face's ward (`ward/root/<fcid>/…`), never under a face key: the row name refuses at every face door. */
 const ROOT_ROW = "persona-root";
 const SIDECAR = ".sealing";
 const ROW_NAME = /^[A-Za-z0-9][A-Za-z0-9._:/-]*$/;
@@ -497,26 +497,21 @@ export async function clearFaceCustody(idbName: string, face: string | null, cre
   const anchored = anchor === null ? null : new TextDecoder().decode(anchor);
   anchor?.fill(0);
   if (anchored !== named) throw new FaceCustodyRefused("face-index-mismatch");
-  // THE FACE'S ROOT GOES WITH IT: every ward this face's tree owns (`ward/h<N>/face-tree`), its roster line under the place tree,
+  // THE FACE'S ROOT GOES WITH IT: the ward filed under this face's tree (`ward/root/<fcid>/…`), its roster line under the place tree,
   // and its ward key's rows (`ward/sign/<G>/…`). The roster needs the place tree open, so a locked one refuses before the ask.
-  const owned: number[] = [];
-  for (const r of await io.list()) {
-    const m = /^ward\/h(\d+)\/face-tree$/.exec(r);
-    if (m && new TextDecoder().decode((await io.read(r)) ?? new Uint8Array()) === entry.fcid) owned.push(Number(m[1]));
-  }
-  if (owned.length > 0) {
+  const wardPrefix = wardRootRowsOf(entry.fcid).prefix;
+  const warded = (await io.list()).some((r) => r.startsWith(wardPrefix));
+  if (warded) {
     const place = await readBrowserCustody(idbName);
     if (place.reading === "sealed" && !place.unlocked) throw new BrowserCustodyRefused("sealed-locked", idbName, PERSONA_ROSTER_ROW);
   }
   if (!confirm(CLEAR_FACE_QUESTION)) return { reading: "asked" };
-  if (owned.length > 0) {
+  if (warded) {
     await withCustodyRows(idbName, async (act) => {
-      const raw = await act.read(PERSONA_ROSTER_ROW) as { roots?: readonly { readonly handleIndex: number }[] } | undefined;
-      if (raw?.roots) await act.write(PERSONA_ROSTER_ROW, { roots: raw.roots.filter((l) => !owned.includes(l.handleIndex)) });
-      // THE OWNER ROW GOES LAST: a clear torn partway leaves it, so the clear run again finds the rows still standing.
-      const wardRows = (await io.list()).filter((r) => owned.some((h) => r.startsWith(`${WARD_ROW_PREFIX}h${h}/`)));
-      for (const r of wardRows) if (!r.endsWith("/face-tree")) await io.remove(r);
-      for (const r of wardRows) if (r.endsWith("/face-tree")) await io.remove(r);
+      const raw = await act.read(PERSONA_ROSTER_ROW) as { roots?: readonly { readonly tree: string }[] } | undefined;
+      if (raw?.roots?.some((l) => l.tree === entry.fcid)) await act.write(PERSONA_ROSTER_ROW, { roots: raw.roots.filter((l) => l.tree !== entry.fcid) });
+      // THE PATH NAMES THE FACE: a clear torn partway leaves rows under this tree, and the clear run again finds them standing.
+      for (const r of await io.list()) if (r.startsWith(wardPrefix)) await io.remove(r);
     });
   }
   for (const r of await io.list()) if (r.startsWith(`${WARD_ROW_PREFIX}sign/${named}/`)) await io.remove(r);

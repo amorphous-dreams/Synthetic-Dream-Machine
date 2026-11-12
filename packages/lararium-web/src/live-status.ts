@@ -19,7 +19,7 @@ export function sameOriginRelayUrl(location: Pick<ServedLocation, "protocol" | "
 }
 
 /**
- * The relay a page dials when its own origin answers as a lararium's Pronaos and `?relay=` names none.
+ * The relay a page dials: the one its own origin answers with, where that origin stands as a lararium's Pronaos. No URL names a relay.
  *
  * The proof stands on a capability, never a host: the same-origin arrival descriptor (`/.well-known/lar`)
  * answers JSON whose `format` reads `lar-arrival`. A Vite dev server answers every unknown path with its
@@ -53,36 +53,41 @@ export async function arrivalRelayUrl(
 }
 
 /**
- * The hearth's floor card the arrival URL carries in its fragment (`#floor=<card>`), which never reaches a server: the place's
- * signed floor pin claim for the flow route and the KEL rows that fold to its head, read by the mesh's one reader
- * (`readHearthFloorCard`). A torn card reads none. The card never anchors itself (`floorAnchorOf`).
+ * WHAT THE FLOOR'S CARRIAGE DOOR TAKES (paste, file or QR; never a URL): the hearth's floor card as its carried file
+ * (the mesh's `floorCardCarriageText`, read by its `readFloorCardCarriage`: the place's signed floor pin claim for the flow route and the KEL rows that fold to its head, read by
+ * the mesh's one reader), or the place AID alone (W14 first contact: a deliberate person-to-person transfer, conveyed APART from
+ * the card). A torn card reads as a card that does not read; any other text reads as nothing. The card never anchors itself: a
+ * card file that carries a second key refuses whole, so no anchor rides beside it.
  */
-export function floorCardOf(
-  hash: string,
+export type FloorCarriage =
+  | { readonly kind: "card"; readonly text: string; readonly card: HearthFloorCard | null }
+  | { readonly kind: "anchor"; readonly aid: string };
+export function readFloorCarriage(
+  text: string,
+  read: { readonly file: (text: string) => string | null; readonly card: (text: string) => HearthFloorCard | null },
+): FloorCarriage | null {
+  const carried = text.trim();
+  if (/^[0-9a-f]{64}$/.test(carried)) return { kind: "anchor", aid: carried };
+  const card = read.file(carried);
+  return card === null ? null : { kind: "card", text: card, card: read.card(card) };
+}
+
+/**
+ * What this origin KEPT from the carriage door (and, for the anchor, from an authenticated admit): the card through the one reader,
+ * and the anchor where its AID reads. Each stands alone; the card adds no weight toward the anchor.
+ */
+export function keptFloorOf(
+  kept: { readonly card: string | null; readonly anchor: { readonly aid: string; readonly via: "admit" | "transfer" | "genesis" } | null },
   read: (text: string) => HearthFloorCard | null,
-): { readonly text: string; readonly card: HearthFloorCard | null } | null {
-  const text = new URLSearchParams(hash.replace(/^#/, "")).get("floor");
-  return text ? { text, card: read(text) } : null;
+): { readonly floor: { readonly text: string; readonly card: HearthFloorCard | null } | null; readonly anchor: FloorAnchor | null } {
+  return {
+    floor: kept.card ? { text: kept.card, card: read(kept.card) } : null,
+    anchor: kept.anchor && /^[0-9a-f]{64}$/.test(kept.anchor.aid) ? { aid: kept.anchor.aid, via: kept.anchor.via } : null,
+  };
 }
 
 /**
- * The place AID conveyed APART from the card (W14 first contact): a deliberate person-to-person transfer in the fragment
- * (`#anchor=<aid>`, the AID the hearth's banner prints on its own line), or the one this browser kept from an earlier transfer or
- * an authenticated admit (`kept`). The card in the same fragment carries no weight toward it. Only a 64-hex AID reads; else null.
- */
-export function floorAnchorOf(hash: string, kept?: { readonly aid: string; readonly via: "admit" | "transfer" | "genesis" } | null): FloorAnchor | null {
-  const carried = new URLSearchParams(hash.replace(/^#/, "")).get("anchor");
-  if (carried !== null && /^[0-9a-f]{64}$/.test(carried)) return { aid: carried, via: "transfer" };
-  return kept && /^[0-9a-f]{64}$/.test(kept.aid) ? { aid: kept.aid, via: kept.via } : null;
-}
-
-/** The relay a page dials: the `?relay=` its URL names (the hearth's banner prints it), or none for a pure local boot. */
-export function resolveRelayUrl(params: URLSearchParams): string | undefined {
-  return params.get("relay") || undefined;
-}
-
-/**
- * The line the web status owes when `?flow=` names a hearth other than the relay's: a read at another hearth
+ * The line the web status owes when `?flow=` names a hearth other than the one whose relay this page dials: a read at another hearth
  * dials under no Nexus the page holds, so the browser reads only its own hearth's flow until a carried pin set
  * reaches browsers. Null when `?flow=` is absent or names the relay's own host.
  */

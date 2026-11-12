@@ -344,12 +344,17 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     const marked = this.drain.titles();
     // A whole-drain target the Drain displaced (`superseded`: it keeps the oldest and the newest) never says the acts' writes rest: the hold
     // asks again for the generation marked by now. An empty bag list releases the receipt at once, so the hold waits on a real rest.
-    void this._whenAllRested().then(() => {
+    void this._whenAllRested().then((outcome) => {
+      // A bag the island holds no replica of (the vessel's own temp plane) names no heads: the store call that wrote it already answered.
+      const receipt = this.caps.receipt;
+      const held = (bag: string): boolean => receipt?.holds?.(bag) ?? true;
       for (const { hold, members } of holds) {
         const bags = [...new Set([...members, ...marked])].filter((title) => !this.drain.owes(title)).map((title) => this.lastWriteBag.get(title));
-        // A member the drain still owes was refused: the act's verdict reads false and names it, never `applied`.
-        const owed = members.filter((title) => this.drain.owes(title));
-        void hold.done([...new Set(bags.filter((bag): bag is string => bag !== undefined))], owed.length > 0 ? { titles: owed, refused: true } : { titles: members });
+        // A member the drain still owes was refused: the act's verdict reads false and names it, never `applied`. Once every generation
+        // marked by the rest's ask reads acked, a member still owed owes a LATER act's mark (the next draft under the same title, typed
+        // while this rest returned): this act's own writes rest, and its verdict reads kept.
+        const owed = outcome.kind === "acked" ? [] : members.filter((title) => this.drain.owes(title));
+        void hold.done([...new Set(bags.filter((bag): bag is string => bag !== undefined && held(bag)))], owed.length > 0 ? { titles: owed, refused: true } : { titles: members });
       }
     });
   }
