@@ -1,5 +1,7 @@
 export { TW5Engine } from "./tw5-vm.js";
-export { makeGlassPortAdaptor } from "./glass-port-adaptor.js";
+export { glassPortOpen, makeGlassPortAdaptor } from "./glass-port-adaptor.js";
+export { makeBootHandoff } from "./glass-handoff.js";
+export type { GlassBootInputs, GlassBootNames } from "./glass-handoff.js";
 export type { GlassTransport } from "./glass-port-adaptor.js";
 export { mountGlassCamera } from "./glass-camera.js";
 export { preloadsFromCasBlob } from "./cas-preloads.js";

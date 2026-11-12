@@ -18,12 +18,12 @@ async function fixture(refusal?: string) {
     place(_surface, _binding, raw) {
       const msg = raw as Record<string, any>; messages.push(msg);
       if (refusal && msg.type === "port:open") return { ok: false as const, reason: refusal };
-      if (msg.type === "port:open" || msg.type === "port:widen") queueMicrotask(() => port.deliver({ type: "port:snapshot", portId: msg.portId,
+      if (msg.type === "port:open") queueMicrotask(() => port.deliver({ type: "port:snapshot", portId: msg.portId,
         snapshotId: `snapshot-${messages.length}`, i: 1, n: 1, records: [] }));
       return { ok: true as const };
     }, close() {},
   } });
-  // readInputs supplies real core bytes without requiring an OPFS fixture.
+  // readInputs supplies real core bytes in place of the port's boot handoff.
   const seams = { readInputs: async () => ({ coreBytes: bytes, coreCid, preloadedTiddlers: [] }) };
   return { host, port, messages, seams, options: { host, port, inputs: { coreCid: cid, pluginCids: [] }, wikiUri: "wiki", actor: "actor" } };
 }
@@ -35,11 +35,12 @@ async function runDefault(search: string) {
     const result = await door()(f.options, f.seams);
     expect(result).toMatchObject({ kind: "mirror" });
     expect(await result.settled).toEqual({ width: "full" });
-    expect(f.messages.find(m => m.type === "port:widen")?.width).toBe("full");
+    expect(f.messages.filter(m => m.type === "port:open").map(m => m.width)).toEqual(["full"]);
+    expect(f.messages.some(m => m.type === "port:widen")).toBe(false);
     result.unmount();
   } finally { history.replaceState(null, "", original); f.host.remove(); }
 }
-test("R1 CONTROL: a page with no selector opens skinny and promotes to full", async () => { await runDefault(""); });
+test("R1 CONTROL: a page with no selector opens full", async () => { await runDefault(""); });
 test.each(["skinny", "none", "junk"])("R1: query glass=%s cannot select a width", async value => { await runDefault(`?glass=${value}`); });
 test("R1: stored glass and width values cannot select a width", async () => {
   const saved = [localStorage, sessionStorage].map(s => [s.getItem("glass"), s.getItem("width")]);
@@ -63,8 +64,8 @@ test.each(["port-not-granted", "transport-closed"])("R3: %s floors and returns l
 });
 test.each([
   ["L1", "mirror-no-shadow-root", { attachShadow: () => { throw new Error("no root"); } }],
-  ["L2 miss", `glass-core-cas-miss:${cid}`, { readInputs: async () => { throw new Error(`glass-core-cas-miss:${cid}`); } }],
-  ["L2 hash", `glass-core-sha256-mismatch:${cid}`, { readInputs: async () => { throw new Error(`glass-core-sha256-mismatch:${cid}`); } }],
+  ["L2 miss", `mirror-boot-member-missing:${cid}`, { readInputs: async () => { throw new Error(`mirror-boot-member-missing:${cid}`); } }],
+  ["L2 hash", `mirror-boot-member-mismatch:${cid}`, { readInputs: async () => { throw new Error(`mirror-boot-member-mismatch:${cid}`); } }],
   // bootEngine plants an L3 refusal; paint plants an L5 render failure.
   ["L3", "mirror-engine-refused:RangeError", { bootEngine: () => { throw new RangeError("capacity"); } }],
   ["L5", "mirror-paint-threw:Error", { paint: () => { throw new Error("paint"); } }],

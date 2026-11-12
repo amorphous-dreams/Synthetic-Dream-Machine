@@ -1,7 +1,7 @@
 /** The record port binds one island's store, log, asks, and clockless presence. */
 import {
   readPortVesselMsg, mkPortAnswer, mkPortChanges, mkPortPresence, mkPortReset,
-  mkPortSnapshot, mkPortWritten,
+  mkPortBoot, mkPortSnapshot, mkPortWritten, PORT_BOOT_CHUNK_BYTES,
   type PortMsg_Open, type PortMsg_Ask, type PortMsg_Write, type PortMsg_Written, type PortWireRecord,
 } from "@lararium/mesh/record-port";
 import { isVerbRefusal, requireKahuReach, type CapTier, type KahuReachSource, type LarTiddlerRecord, type Verb } from "@lararium/mesh";
@@ -239,6 +239,33 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
     });
     for (const port of ports.values()) postEntries(ctx, port, logged);
   };
+  /**
+   * Hand the port this island's boot set: the engine blob, then each plugin blob, verbatim from the island's own CAS, each re-hashed
+   * against its CID before a byte leaves. A member the CAS cannot answer true ends the handoff with nothing more sent, and the
+   * projection names the member it never received. Returns false when the port closed or its face moved while the bytes resolved.
+   */
+  const postBoot = async (msg: PortMsg_Open, ctx: IslandContext, port: OpenPort): Promise<boolean> => {
+    const set = ctx.bootSet;
+    if (!set || !ctx.resolveByCid) return true;
+    const cids = [set.engineCid, ...set.pluginCids];
+    for (let member = 1; member <= cids.length; member++) {
+      const cid = cids[member - 1]!.toLowerCase();
+      const bytes = await ctx.resolveByCid(cid);
+      if (!faceHolds(port) || ports.get(msg.portId) !== port) return false;
+      if (!bytes) return true;
+      const digest = await crypto.subtle.digest("SHA-256", new Uint8Array(bytes));
+      if (!faceHolds(port) || ports.get(msg.portId) !== port) return false;
+      if (Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("") !== cid) return true;
+      const n = Math.max(1, Math.ceil(bytes.byteLength / PORT_BOOT_CHUNK_BYTES));
+      for (let i = 1; i <= n; i++) {
+        const part = bytes.subarray((i - 1) * PORT_BOOT_CHUNK_BYTES, i * PORT_BOOT_CHUNK_BYTES);
+        let binary = "";
+        for (let offset = 0; offset < part.length; offset += 32768) binary += String.fromCharCode(...part.subarray(offset, offset + 32768));
+        ctx.post(mkPortBoot({ portId: msg.portId, cid, role: member === 1 ? "engine" : "plugin", member, members: cids.length, i, n, bytesBase64: btoa(binary) }));
+      }
+    }
+    return true;
+  };
   const open = async (msg: PortMsg_Open, ctx: IslandContext, port: OpenPort): Promise<void> => {
     if (msg.since) {
       const answer = log.changesSince(msg.since, port.shape);
@@ -248,6 +275,9 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
       const reservation = log.openSnapshot(port.shape, [], msg.maxBatchBytes, port.baseSeq);
       port.snapshotId = reservation.snapshotId;
       try {
+        // THE BOOT HANDOFF rides ahead of the snapshot: a projection that boots its own engine receives this island's boot set whole
+        // before any record, so its engine unpacks the same plugins this one did (`port:boot`).
+        if (msg.boot && !(await postBoot(msg, ctx, port))) return;
         const entries = await ctx.composite.entries();
         if (!faceHolds(port) || ports.get(msg.portId) !== port) return;
         const records = entries.filter(entry => visible(entry.title, port) && !port.dirty.has(entry.title)).map(entry => {

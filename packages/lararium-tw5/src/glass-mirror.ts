@@ -1,7 +1,8 @@
 import { TW5Engine } from "./tw5-vm.js";
 import { MIRROR_TOKEN } from "./glass-token.js";
-import { makeGlassPortAdaptor } from "./glass-port-adaptor.js";
+import { glassLocalTitle, makeGlassPortAdaptor } from "./glass-port-adaptor.js";
 import type { GlassPortOptions } from "./glass-port-adaptor.js";
+import type { PortWireRecord } from "@lararium/mesh/record-port";
 import { mountGlassCamera } from "./glass-camera.js";
 import { openDefaultStory } from "./default-story.js";
 
@@ -50,21 +51,82 @@ export function censusPreloads(preloads: Record<string, unknown>[], sealedRest: 
   return { accepted, refused };
 }
 
+const shadowsOf = (text: unknown): Record<string, unknown>[] | null => {
+  try {
+    const tiddlers = (JSON.parse(String(text ?? "{}")) as { tiddlers?: Record<string, unknown> }).tiddlers ?? {};
+    return Object.values(tiddlers).filter((value): value is Record<string, unknown> => !!value && typeof value === "object");
+  } catch { return null; }
+};
+/**
+ * THE RECORD CENSUS: which of the wiki's own records the mirror's engine boots with. The whole handoff lands before the engine
+ * stands, so a record reaches `$tw.preloadTiddlers` and TW5 unpacks a person's plugin, theme, palette or language at boot, the way
+ * it unpacks a store a server handed it. A record boots with the engine unless one of these holds it back:
+ *
+ *   boot-set-shadow     its title names a tiddler of the verified boot set (the core, the house plugin, a stock theme): a record
+ *                       never replaces bytes the vessel named by CID.
+ *   plugin-syncadaptor  a plugin carrying a `syncadaptor` or `saver` shadow, or a loose module of either type: the mirror takes
+ *   module-syncadaptor  its truth from the port alone.
+ *   plugin-gate         a plugin or a loose module that evaluates JavaScript, on a vessel whose store does not yet rest sealed
+ *   module-gate         (`sealedRest`); a plugin that lays only wikitext, styles and data boots at once.
+ *   (unreadable)        a plugin or module record whose body the port left out (a skinny open) or whose packed text will not
+ *                       parse: nothing can read what it would evaluate, so it waits like a gated one.
+ *
+ * A held record still LANDS, after boot, as an ordinary record: the person sees it, edits it, deletes it. TW5 defines a module
+ * and registers a plugin's modules during boot alone, so a record that lands after boot evaluates nothing; TW5's own ordering
+ * keeps the gate, and no field of the record changes.
+ */
+export function censusRecords(records: readonly PortWireRecord[], bootTitles: ReadonlySet<string>, sealedRest: boolean, localFilter: readonly string[] = []) {
+  const preloaded: PortWireRecord[] = [];
+  const held: PortWireRecord[] = [];
+  const refused: { title: string; kind: string }[] = [];
+  for (const record of records) {
+    if (record.deleted || glassLocalTitle(record.title, localFilter)) continue;
+    const fields = record.fields;
+    const hold = (kind: string): void => { held.push(record); refused.push({ title: record.title, kind }); };
+    if (bootTitles.has(record.title)) { hold("boot-set-shadow"); continue; }
+    const moduleType = fields["module-type"];
+    const plugin = fields["plugin-type"] !== undefined;
+    if (!plugin && moduleType === undefined) { preloaded.push(record); continue; }
+    if (!plugin) {
+      if (moduleType === "syncadaptor" || moduleType === "saver") hold("module-syncadaptor");
+      else if (!sealedRest) hold("module-gate");
+      else preloaded.push(record);
+      continue;
+    }
+    const shadows = record.omitted?.includes("text") ? null : shadowsOf(fields["text"]);
+    if (shadows === null) { hold("plugin-gate"); continue; }
+    const evaluates = shadows.some(value => value["module-type"] !== undefined || value["type"] === "application/javascript");
+    if (shadows.some(value => value["module-type"] === "syncadaptor" || value["module-type"] === "saver")) hold("plugin-syncadaptor");
+    else if (evaluates && !sealedRest) hold("plugin-gate");
+    else preloaded.push(record);
+  }
+  return { preloaded, held, refused };
+}
+/** Every title the boot set lays: each preload's own title and the shadows a plugin packs. */
+export function bootSetTitles(preloads: readonly Record<string, unknown>[]): Set<string> {
+  const titles = new Set<string>(["$:/core", "$:/boot/boot.js", "$:/boot/bootprefix.js", "$:/library/sjcl.js"]);
+  for (const preload of preloads) if (typeof preload["title"] === "string") titles.add(preload["title"]);
+  return titles;
+}
+
 /**
  * The one door through which a main-thread engine boots: engine, port adaptor and camera open together and close
  * in reverse. The caller holds the D2 port binding and passes it as the transport; the mirror reads and writes
  * through that port alone. `deferPaint` leaves the camera unmounted until `paint()` runs, so a caller can
  * wait for the port's first snapshot before it paints.
  */
-export async function openMirror(options: Omit<GlassPortOptions, "wiki" | "Tiddler" | "adopt" | "inheritTags" | "inheritDeferred"> & {
+export async function openMirror(options: Omit<GlassPortOptions, "wiki" | "Tiddler" | "adopt" | "inheritTags" | "inheritDeferred" | "opened"> & {
   inputs: { coreBytes: Uint8Array; coreCid: string; preloadedTiddlers: Record<string, unknown>[]; sealedRest?: boolean };
   shadowRoot: ShadowRoot;
   deferPaint?: boolean;
+  /** The first whole snapshot the boot's handoff read off the already-open port: the engine boots with these records. */
+  opened?: { records: readonly PortWireRecord[] };
 }, seams: MirrorSeams = {}) {
   const engine = new TW5Engine();
   let adaptor: Adaptor | undefined;
   let camera: ReturnType<typeof mountGlassCamera> | undefined;
   let closed = false;
+  let wikiCensus: ReturnType<typeof censusRecords> | null = null;
   // The titles the port landed since the camera last refreshed: a refresh that carries one is a repaint the person never asked for, and it keeps their focus.
   const landedSince = new Set<string>();
   const noteLanding = (change: { title: string }): void => { landedSince.add(change.title); };
@@ -87,15 +149,23 @@ export async function openMirror(options: Omit<GlassPortOptions, "wiki" | "Tiddl
     try {
       await seams.bootEngine?.();
       const census = censusPreloads(options.inputs.preloadedTiddlers, options.inputs.sealedRest === true);
-      await engine.boot({ bytes: options.inputs.coreBytes, sha256: options.inputs.coreCid }, census.accepted, MIRROR_TOKEN);
+      const sealed = options.inputs.sealedRest === true;
+      wikiCensus = options.opened ? censusRecords(options.opened.records, bootSetTitles(census.accepted), sealed, options.localFilter) : null;
+      // THE STORE A SERVER HANDS A BROWSER: the verified boot set, then the wiki's own records, all in `$tw.preloadTiddlers`
+      // before TW5 unpacks a plugin or defines a module.
+      const store = [...census.accepted, ...(wikiCensus?.preloaded ?? []).map(record => ({ ...record.fields, title: record.title }))];
+      await engine.boot({ bytes: options.inputs.coreBytes, sha256: options.inputs.coreCid }, store, MIRROR_TOKEN);
       const tw = engine.$tw;
+      census.refused.push(...(wikiCensus?.refused ?? []));
       for (const refusal of census.refused) tw.wiki.addTiddler(new tw.Tiddler({ title: `$:/temp/lares/alert/refused/${refusal.kind}/${refusal.title}`, text: `Plugin refused: ${refusal.title}`, tags: ["$:/tags/Alert"] }));
       if (census.refused.length) options.shadowRoot.host.setAttribute("data-lar-refused-plugins", String(census.refused.length));
       const runtime = tw as unknown as { syncer?: unknown; syncadaptor?: unknown };
       if (runtime.syncer !== undefined || runtime.syncadaptor !== undefined) throw new Error("syncer-stood");
     } catch (error) { if (error instanceof Error && error.message === "syncer-stood") throw error; throw new Error(`mirror-engine-refused:${nameOf(error)}`); }
     const tw = engine.$tw;
-    adaptor = makeGlassPortAdaptor({ ...options, wiki: tw.wiki, Tiddler: tw.Tiddler });
+    const { opened: _opened, ...portOptions } = options;
+    adaptor = makeGlassPortAdaptor({ ...portOptions, wiki: tw.wiki, Tiddler: tw.Tiddler,
+      ...(wikiCensus ? { opened: { preloaded: wikiCensus.preloaded, held: wikiCensus.held } } : {}) });
     adaptor.onLanded(noteLanding);
     if (seams.landed) adaptor.onLanded(seams.landed);
     if (seams.refused) adaptor.onRefused(seams.refused);
@@ -110,7 +180,7 @@ export async function openMirror(options: Omit<GlassPortOptions, "wiki" | "Tiddl
         const inheritTags = adaptor!.tagImages();
         const inheritDeferred = adaptor!.deferredTitles();
         adaptor!.close();
-        adaptor = makeGlassPortAdaptor({ ...options, ...next, wiki: tw.wiki, Tiddler: tw.Tiddler, adopt, inheritTags, inheritDeferred });
+        adaptor = makeGlassPortAdaptor({ ...portOptions, ...next, wiki: tw.wiki, Tiddler: tw.Tiddler, adopt, inheritTags, inheritDeferred });
         adaptor.onLanded(noteLanding);
         if (seams.landed) adaptor.onLanded(seams.landed);
         if (seams.refused) adaptor.onRefused(seams.refused);

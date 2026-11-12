@@ -1,14 +1,15 @@
 import { openMirror } from "@lararium/tw5/glass";
-import type { GlassTransport, MirrorSeams } from "@lararium/tw5/glass";
-import type { PortWidthName } from "@lararium/mesh/record-port";
-import type { GlassBootInputs } from "./cas.js";
+import type { GlassBootInputs, GlassTransport, MirrorSeams } from "@lararium/tw5/glass";
+import type { PortWidthName, PortWireRecord } from "@lararium/mesh/record-port";
 import type { ReturnTypeOfPagePort } from "./transport-type.js";
 
 export type GlassWidth = Extract<PortWidthName, "full" | "skinny" | "story">;
 
-export function bootGlass({ shadowRoot, inputs, port, wikiUri, actor, width, transport, seams, deferPaint }: {
+export function bootGlass({ shadowRoot, inputs, port, wikiUri, actor, width, transport, seams, deferPaint, portId, opened }: {
   shadowRoot: ShadowRoot; inputs: GlassBootInputs; port: ReturnTypeOfPagePort;
   wikiUri: string; actor: string; width: GlassWidth; transport?: GlassTransport; deferPaint?: boolean;
+  /** The port the boot's handoff already opened, and the first whole snapshot it read: the engine boots with those records. */
+  portId?: string; opened?: { records: readonly PortWireRecord[] };
   seams?: MirrorSeams;
 }) {
   const binding: GlassTransport = transport ?? {
@@ -18,5 +19,5 @@ export function bootGlass({ shadowRoot, inputs, port, wikiUri, actor, width, tra
     }),
   };
   return openMirror({ transport: binding, inputs, shadowRoot, wikiUri, actor, width, ...(deferPaint ? { deferPaint } : {}),
-    portId: crypto.randomUUID(), mintTx: () => crypto.randomUUID() }, seams);
+    ...(opened ? { opened } : {}), portId: portId ?? crypto.randomUUID(), mintTx: () => crypto.randomUUID() }, seams);
 }

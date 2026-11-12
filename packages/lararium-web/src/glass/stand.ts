@@ -1,54 +1,60 @@
-import type { GlassTransport } from "@lararium/tw5/glass";
+import { glassPortOpen, makeBootHandoff } from "@lararium/tw5/glass";
+import type { GlassBootInputs, GlassBootNames, GlassTransport } from "@lararium/tw5/glass";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
 import type { ReturnTypeOfPagePort } from "./transport-type.js";
 import { bootGlass } from "./boot.js";
-import type { readGlassBootInputs } from "./cas.js";
 
-type Inputs = { coreCid: string; pluginCids: readonly string[]; sealedRest?: boolean };
-type Seams = { readInputs?: typeof readGlassBootInputs; attachShadow?: (host: HTMLElement) => ShadowRoot;
+type Seams = {
+  /** A test's boot set in place of the port's handoff: the open then asks the island for no boot member. */
+  readInputs?: (names: GlassBootNames) => Promise<GlassBootInputs>;
+  attachShadow?: (host: HTMLElement) => ShadowRoot;
   bootEngine?: () => void | Promise<void>; paint?: () => void;
-  /** Runs on each record the mirror lands, with the width that landing serves, so a test can plant a capacity error in it. */
+  /** Runs on each record the mirror lands after its boot, with the width that landing serves, so a test can plant a capacity error in it. */
   landed?: (change: { title: string }, width: "skinny" | "full") => void };
 type Evidence = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 /** What a standing mirror tells its caller after the first paint. */
 export type MirrorEvent =
-  | { type: "promoted"; width: "full" }
   | { type: "stepped"; width: "skinny"; why: string }
   | { type: "gone"; why: string }
   | { type: "floor"; why: string };
 /** A state a caller can show while the mirror lights; no timer ends or raises one. */
-export type MirrorState = { kind: "waiting"; for: "greeting" | "promotion" } | { kind: "evidence-unavailable"; why: string }
+export type MirrorState = { kind: "waiting"; for: "handoff" } | { kind: "evidence-unavailable"; why: string }
   | { kind: "write-refused"; title: string; reason: string };
-/** How the boot's promotion ended: full landed, skinny held or stepped to, or the none floor. */
+/** How the boot ended: full stands, skinny held or stepped to, or the none floor. */
 export type MirrorSettled = { width: "full" | "skinny" | "none"; why?: string };
-/** The per-tab record, one per wiki: a promotion to full began and its first full paint has not happened. It records an event and never a width. */
+/** The per-tab record, one per wiki: a full boot began and its first full paint has not happened. It records an event and never a width. */
 export const MIRROR_EVIDENCE_KEY = "mirror:began";
 export const mirrorEvidenceKey = (wikiUri: string): string => `${MIRROR_EVIDENCE_KEY}:${wikiUri}`;
 /** The second per-tab record: a full page stands (written at full's first paint, cleared on `pagehide`). A boot that finds it knows the last full page ended without a leave: the jetsam shape. */
 export const MIRROR_STANDING_KEY = "mirror:full-standing";
 export const mirrorStandingKey = (wikiUri: string): string => `${MIRROR_STANDING_KEY}:${wikiUri}`;
 const floor = (why: string) => ({ kind: "floor" as const, width: "none" as const, why });
-const capacity = (error: unknown): boolean => error instanceof Error && (error.name === "RangeError" || error.name === "QuotaExceededError");
+const CAPACITY = ["RangeError", "QuotaExceededError"];
+const capacity = (error: unknown): boolean => error instanceof Error &&
+  (CAPACITY.includes(error.name) || CAPACITY.some(name => error.message.endsWith(`:${name}`)));
 const reasonOf = (error: unknown): string => error instanceof Error ? error.message : String(error);
 const tabStorage = (): Evidence | null => { try { return window.sessionStorage; } catch { return null; } };
+type Fault = { why: string; capacity: boolean };
 
 /**
- * Light the mirror cap, one real step at a time. Each step completes or names its floor, and no step reads a clock:
- * L1 shadow root, L2 CAS read, L3 engine boot, L4 the port's first snapshot (the greeting decides), L5 the default story, L6 paint.
- * The mirror opens skinny and paints; it then promotes to full by one widen row on the same port. A tab whose
- * earlier full boot left its evidence record stays at skinny. After it stands, a caught capacity error steps it
- * down to skinny once on the same engine, a second one unmounts it, and `port:gone` closes it; nothing steps
- * back up within the boot but the one promotion.
+ * Light the mirror, one real step at a time. Each step completes or names its floor, and no step reads a clock:
+ *   L1 the shadow root;
+ *   L2 the WHOLE HANDOFF: one `port:open` asks the vessel's island for its boot set and its records, and the page waits for the
+ *      engine blob, every plugin blob and the first whole snapshot, each boot member verified against the name the vessel gave;
+ *   L3 the engine boots from that store alone (the kernel, then `$tw.preloadTiddlers` carrying the boot set and the wiki's records);
+ *   L4 the wiki's default story; L5 the paint.
+ * The page reads no store of its own. The mirror opens FULL, the width a full-capability browser carries. A tab whose earlier full
+ * boot left an evidence record opens skinny and says why. A caught capacity error takes the ONE step down to skinny (before the
+ * engine stands: a fresh handoff at skinny; after: a fresh open on the same engine); a second one tears the mirror down to the
+ * floor, and `port:gone` closes it. Nothing steps back up within the boot.
  */
 export async function standMirror(options: {
-  host: HTMLElement; port: ReturnTypeOfPagePort; inputs: Inputs; wikiUri: string; actor: string;
+  host: HTMLElement; port: ReturnTypeOfPagePort; inputs: GlassBootNames; wikiUri: string; actor: string;
   onState?: (state: MirrorState) => void; evidence?: Evidence;
 }, seams: Seams = {}) {
   let shadowRoot: ShadowRoot;
   try { shadowRoot = options.host.shadowRoot ?? (seams.attachShadow?.(options.host) ?? options.host.attachShadow({ mode: "open" })); }
   catch { return floor("mirror-no-shadow-root"); }
-  let inputs: Awaited<ReturnType<typeof readGlassBootInputs>>;
-  try { inputs = await (seams.readInputs ?? (await import("./cas.js")).readGlassBootInputs)(options.inputs); }
-  catch (error) { return floor(reasonOf(error)); }
 
   const evidence = options.evidence ?? tabStorage();
   const evidenceKey = mirrorEvidenceKey(options.wikiUri);
@@ -60,30 +66,27 @@ export async function standMirror(options: {
   };
   const standingKey = mirrorStandingKey(options.wikiUri);
   let held = false;
-  let heldWhy = "full-promotion-unfinished";
+  let heldWhy = "full-boot-unfinished";
   remember(store => {
     if (store.getItem(evidenceKey) !== null) held = true;
     else if (store.getItem(standingKey) !== null) { held = true; heldWhy = "full-ended-without-pagehide"; }
   });
 
   let generation = 0;
-  let width: "full" | "skinny" = "skinny";
-  let promoting = false;
+  let width: "full" | "skinny" = held ? "skinny" : "full";
   let ended = false;
+  let stood = false;
   let stepped = false;
   let stepReason = "";
-  let greeted = false;
   let gone = false;                    // a port:gone ends its generation: later messages do not step it
+  let bootFault: Fault | null = null;  // a fault that landed while the boot ran: the boot reads it at its next step
+  let bootWake: (() => void) | null = null;
   let settledAlready = false;
   let settle!: (outcome: MirrorSettled) => void;
   const settled = new Promise<MirrorSettled>(resolve => { settle = outcome => { if (settledAlready) return; settledAlready = true; resolve(outcome); }; });
-  const chunks = new Map<string, number>();
-  let greeting!: (reason: string | null) => void;
-  const waiting = new Promise<string | null>(resolve => { greeting = resolve; });
   const listeners = new Set<(event: MirrorEvent) => void>();
   const emit = (event: MirrorEvent) => { for (const listener of listeners) listener(event); };
   let endedWhy = "";
-  let early: string | null = null;     // a capacity error that landed before the door returned
   let mirror: Awaited<ReturnType<typeof bootGlass>> | null = null;
 
   // The standing record follows the page's own leave: `pagehide` clears it, a back-forward restore (`pageshow` persisted) writes it again.
@@ -97,15 +100,17 @@ export async function standMirror(options: {
     else { remember(store => store.removeItem(standingKey)); window.removeEventListener("pagehide", onHide); window.removeEventListener("pageshow", onShow); }
   };
   const end = (event: MirrorEvent & { why: string }) => { if (ended) return; ended = true; standing(false); endedWhy = event.why; mirror?.unmount(); settle({ width: "none", why: event.why }); emit(event); };
+  /** The one step down of a standing mirror: a fresh skinny open on the same engine. A failure at skinny, or a second one, reads the none floor. */
   const stepDown = (why: string) => {
     if (ended || gone) return;
-    if (!mirror) { early = why; return; }
-    // Skinny is the lowest width the mirror holds: a failure there, or after the one step, reads the none floor.
-    if (stepped || (!promoting && width === "skinny")) { greeting(why); end({ type: "floor", why }); return; }
-    stepped = true; stepReason = why; width = "skinny"; promoting = false; generation += 1; standing(false);
-    chunks.clear();
-    mirror.reopen({ transport: transportFor(generation), portId: crypto.randomUUID(), width: "skinny" });
+    if (stepped || width === "skinny") { end({ type: "floor", why }); return; }
+    stepped = true; stepReason = why; width = "skinny"; generation += 1; standing(false);
+    mirror!.reopen({ transport: transportFor(generation), portId: crypto.randomUUID(), width: "skinny" });
     emit({ type: "stepped", width: "skinny", why });
+  };
+  const fault = (why: string, kind: "capacity" | "gone"): void => {
+    if (!stood) { bootFault ??= { why, capacity: kind === "capacity" }; bootWake?.(); return; }
+    if (kind === "gone") end({ type: "gone", why }); else stepDown(why);
   };
   const transportFor = (mine: number): GlassTransport => {
     let own: string | null = null;     // the port this generation opened: another port's messages are not its own
@@ -114,12 +119,7 @@ export async function standMirror(options: {
       if (message.type === "port:open") own = String(message.portId);
       // A closed generation still closes its own port; every other message from it dies.
       if (mine !== generation && message.type !== "port:close") return { ok: false, reason: "transport-closed" };
-      const result = options.port.send(message) as { ok: boolean; reason?: string };
-      if (message.type === "port:open") {
-        if (result.ok) options.onState?.({ kind: "waiting", for: "greeting" });
-        else greeting(result.reason ?? "port-refused");
-      }
-      return result;
+      return options.port.send(message);
     },
     onMessage(listener) {
       return options.port.onMessage(message => {
@@ -127,65 +127,82 @@ export async function standMirror(options: {
         if (gone || (own !== null && (message as { portId?: unknown }).portId !== own)) return;
         if (message.type === "port:gone") {
           gone = true;
-          const why = String((message as { reason?: unknown }).reason ?? "port-gone");
-          if (greeted) { end({ type: "gone", why }); return; }
-          greeting(why); return;
+          fault(String((message as { reason?: unknown }).reason ?? "port-gone"), "gone");
+          return;
         }
         try { listener(message as unknown as Parameters<typeof listener>[0]); }
-        catch (error) { if (capacity(error)) { stepDown(`mirror-snapshot-refused:${(error as Error).name}`); return; } throw error; }
-        // A snapshot completes when its last chunk lands, not its first.
-        if (message.type === "port:snapshot") {
-          const { snapshotId, n } = message as unknown as { snapshotId: string; n: number };
-          const seen = (chunks.get(snapshotId) ?? 0) + 1;
-          chunks.set(snapshotId, seen);
-          if (seen < n) return;
-          chunks.delete(snapshotId);
-          if (!greeted) { greeted = true; greeting(null); }
-          else if (promoting) {
-            promoting = false; width = "full";
-            settle({ width: "full" }); emit({ type: "promoted", width: "full" });
-            // The record clears after a page frame has run over the landed full tree, not when its snapshot lands: a death between the two leaves it.
-            // The frame acknowledges a refreshed tree; whether the host shows is the page's affair.
-            const landedIn = mine;
-            requestAnimationFrame(() => requestAnimationFrame(() => {
-              if (ended || landedIn !== generation || width !== "full") return;
-              remember(store => store.removeItem(evidenceKey));
-              standing(true);
-            }));
-          } else if (stepped) settle({ width: "skinny", why: stepReason });
-        }
+        catch (error) { if (capacity(error)) { fault(`mirror-snapshot-refused:${(error as Error).name}`, "capacity"); return; } throw error; }
       });
     },
     };
   };
-  const { landed: probe, ...mirrorSeams } = seams;   // the probe takes the width too; the door's seam takes the change alone
+  const { landed: probe, readInputs, ...mirrorSeams } = seams;   // the probe takes the width too; the door's seam takes the change alone
   const refused = (result: { title: string; reason: string }): void => options.onState?.({ kind: "write-refused", title: result.title, reason: result.reason });
-  const landed = probe ? (change: { title: string }) => probe(change, promoting || width === "full" ? "full" : "skinny") : undefined;
+  const landed = probe ? (change: { title: string }) => probe(change, width) : undefined;
 
-  try {
-    mirror = await bootGlass({ ...options, shadowRoot, inputs, width: "skinny", transport: transportFor(0),
-      seams: { ...mirrorSeams, ...(landed ? { landed } : {}), refused }, deferPaint: true });
-    if (ended) { mirror.unmount(); return floor(endedWhy); }   // a port:gone landed before the door returned
-    if (early !== null) stepDown(early);
-    const reason = await waiting;
-    if (reason !== null) { mirror.unmount(); return floor(reason); }
-    // The port's first whole snapshot has landed: the wiki's own landing stands, so the story opens now and the first paint reads it.
-    mirror.openStory();
-    mirror.paint();
-  } catch (error) { mirror?.unmount(); return floor(reasonOf(error)); }
+  /** One whole boot at one width: the handoff off the port, then the engine from that store. Null when the mirror stands unpainted. */
+  const bootOnce = async (at: "full" | "skinny"): Promise<Fault | null> => {
+    const mine = ++generation;
+    bootFault = null;
+    const portId = crypto.randomUUID();
+    const transport = transportFor(mine);
+    const hand = makeBootHandoff(readInputs ? null : options.inputs, portId, sha256HexBytesSync);
+    let forward: Parameters<GlassTransport["onMessage"]>[0] | null = null;
+    let whole = false;
+    const arrived = new Promise<void>(resolve => { bootWake = resolve; });
+    const off = transport.onMessage(message => {
+      if (forward) { forward(message); return; }
+      if (hand.take(message) && !whole) { whole = true; bootWake?.(); }
+    });
+    const quit = (failure: Fault): Fault => { off(); if (mine === generation) transport.send({ type: "port:close", portId }); return failure; };
+    const sent = transport.send(glassPortOpen({ portId, wikiUri: options.wikiUri, actor: options.actor, width: at }, !readInputs)) as { ok: boolean; reason?: string };
+    if (!sent.ok) return quit({ why: sent.reason ?? "port-refused", capacity: false });
+    options.onState?.({ kind: "waiting", for: "handoff" });
+    await arrived;
+    if (bootFault) return quit(bootFault);
+    let inputs: GlassBootInputs;
+    try { inputs = readInputs ? await readInputs(options.inputs) : hand.inputs(); }
+    catch (error) { return quit({ why: reasonOf(error), capacity: capacity(error) }); }
+    if (bootFault) return quit(bootFault);
+    const facade: GlassTransport = {
+      send: message => transport.send(message),
+      // The adaptor takes the road once the engine stands: what arrived while it booted reaches it first, in order.
+      onMessage(listener) { forward = listener; for (const message of hand.later()) listener(message); return () => { forward = null; off(); }; },
+    };
+    try {
+      mirror = await bootGlass({ shadowRoot, inputs, port: options.port, wikiUri: options.wikiUri, actor: options.actor, width: at, transport: facade,
+        portId, opened: { records: hand.records() }, seams: { ...mirrorSeams, ...(landed ? { landed } : {}), refused }, deferPaint: true });
+    } catch (error) { return quit({ why: reasonOf(error), capacity: capacity(error) }); }
+    if (bootFault || ended) { const failure = bootFault ?? { why: endedWhy, capacity: false }; mirror.unmount(); mirror = null; return failure; }
+    return null;
+  };
 
-  if (held) settle({ width: "skinny", why: heldWhy });
-  else {
-    // The record stands from the moment full begins until full has landed: a boot that dies between leaves it behind.
-    remember(store => store.setItem(evidenceKey, crypto.randomUUID()));
-    promoting = true;
-    const sent = mirror.adaptor.widen("full") as { ok?: boolean; reason?: string } | undefined;
-    if (sent && sent.ok === false) {
-      // The widen never reached the island: the tab stays at skinny and says why; nothing began, so no record stands.
-      promoting = false; remember(store => store.removeItem(evidenceKey));
-      settle({ width: "skinny", why: sent.reason ?? "widen-refused" });
-    } else options.onState?.({ kind: "waiting", for: "promotion" });   // the island answers a widen with a snapshot or with nothing; the wait has a name either way
+  // The record stands from the moment a full boot begins until full has painted: a boot that dies between leaves it behind.
+  if (!held) remember(store => store.setItem(evidenceKey, crypto.randomUUID()));
+  let failure = await bootOnce(width);
+  if (failure?.capacity && width === "full" && !gone) {
+    // THE ONE STEP, before any engine stood: a fresh handoff at skinny.
+    stepped = true; stepReason = failure.why; width = "skinny";
+    emit({ type: "stepped", width: "skinny", why: failure.why });
+    failure = await bootOnce("skinny");
   }
+  if (failure) return floor(failure.why);
+  try {
+    // The handoff landed whole: the wiki's own landing stands in the engine, so the story opens now and the first paint reads it.
+    mirror!.openStory();
+    mirror!.paint();
+  } catch (error) { mirror!.unmount(); return floor(reasonOf(error)); }
+  stood = true;
+  if (width === "full") {
+    settle({ width: "full" });
+    // The record clears after a page frame has run over the painted full tree, not when the paint returns: a death between the two leaves it.
+    const paintedIn = generation;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      if (ended || paintedIn !== generation || width !== "full") return;
+      remember(store => store.removeItem(evidenceKey));
+      standing(true);
+    }));
+  } else settle({ width: "skinny", why: stepped ? stepReason : heldWhy });
   return {
     kind: "mirror" as const,
     get width() { return width; },

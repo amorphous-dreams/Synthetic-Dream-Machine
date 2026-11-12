@@ -18,7 +18,7 @@ export function mirrorReading(tw: ReadableEngine): { story: string[]; defaults: 
 }
 
 /**
- * The page root's one call: stand the mirror for the surface the page shows, from the engine inputs the vessel names for it.
+ * The page root's one call: stand the mirror for the surface the page shows, from the boot set the vessel names for it and the vessel's island hands over the port.
  * The binding arrives explicitly (the root holds it); nothing ambient selects it. The host element carries the outcome in
  * `data-lar-mirror` (`skinny`, `full`, or `none:<why>`), so the page and its tests read one word. A floor leaves the
  * none projection exactly as it stood.
@@ -26,7 +26,8 @@ export function mirrorReading(tw: ReadableEngine): { story: string[]; defaults: 
 export async function standPageMirror(root: {
   port: ReturnTypeOfPagePort; host: HTMLElement; actor: string;
   surface: () => string | null;
-  mirrorInputs: (surface: string) => Promise<{ coreCid: string; pluginCids: readonly string[] } | null>;
+  /** The vessel's names for the surface's boot set; the bytes come from its island over the port. */
+  mirrorInputs: (surface: string) => Promise<{ coreCid: string; pluginCids: readonly string[]; sealedRest?: boolean } | null>;
   onState?: (state: MirrorState) => void;
 }, seams: Stand = {}) {
   // `data-lar-mirror` names the width; `data-lar-shown` names which surface the person reads: the mirror once it stands, else the floor.
@@ -60,7 +61,7 @@ export async function standPageMirror(root: {
   result.unmount = () => { unmountMirror(); letGo(); mark("none:unmounted"); };
   result.onEvent(event => { if (event.type === "gone" || event.type === "floor") letGo(); });
   void result.settled.then(outcome => { if (outcome.width === "none") letGo(); });
-  result.onEvent(event => { mark(event.type === "promoted" ? "full" : event.type === "stepped" ? "skinny" : `none:${event.why}`, event.type === "stepped" ? event.why : null); });
+  result.onEvent(event => { mark(event.type === "stepped" ? "skinny" : `none:${event.why}`, event.type === "stepped" ? event.why : null); });
   void result.settled.then(outcome => { mark(outcome.width === "none" ? `none:${outcome.why ?? "unmounted"}` : outcome.width, outcome.why ?? null); });
   return result;
 }

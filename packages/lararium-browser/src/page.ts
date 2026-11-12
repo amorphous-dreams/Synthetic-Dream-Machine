@@ -12,7 +12,6 @@ export { wardAskWords, type WardAskKind } from "./ward-ask-words.js";
 export { vesselLockName } from "./vessel-lock.js";
 export { requestDurableStorage, storageFloorReport } from "./secure-context-gate.js";
 export type { StoragePersistence, StorageReading } from "./secure-context-gate.js";
-export { readCasBlobFromOpfs } from "./browser-genesis.js";
 export type { BrowserConnectionSnapshot, BrowserConnectionListener, BrowserConnectionState } from "./browser-connection-state.js";
 export type { CustodyAsk, CustodyAnswer, BootCustodyVerdict } from "./browser-boot-custody.js";
 export type { HearthFloorRead } from "./browser-floor-read.js";

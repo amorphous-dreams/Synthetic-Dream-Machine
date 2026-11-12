@@ -1,6 +1,6 @@
 /**
  * e2e/glass-mirror: a page with a founded vessel stands its mirror through `standMirror` with the vessel's real core
- * inputs. No URL value and no stored value selects the width: the page opens skinny, paints, and promotes to full.
+ * inputs. No URL value and no stored value selects the width: the page takes the whole handoff off the port, boots full, and paints.
  */
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -40,7 +40,7 @@ afterAll(async () => {
 });
 
 describe("a founded vessel stands its mirror", () => {
-  test("the page's mirror host paints the story and reads full once promoted", async () => {
+  test("the page's mirror host paints the story and reads full", async () => {
     expect(url, "the hearth printed its URL").toMatch(/^https?:/);
     const context = await browser!.newContext();
     await armTestCustody(context, "glass-mirror-1");

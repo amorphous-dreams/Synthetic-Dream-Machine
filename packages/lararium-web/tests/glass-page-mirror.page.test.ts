@@ -12,7 +12,7 @@ test("the page root stands its mirror from the vessel's mirrorInputs and tells t
       mirrorInputs: async surface => { asked.push(surface); return { coreCid: "0".repeat(64), pluginCids: [] }; } }, r.seams) as any;
     expect(asked).toEqual(["lares"]);
     expect(result.kind).toBe("mirror");
-    expect(r.opens()[0]).toMatchObject({ wikiUri: "lares", actor: "did:key:zActor", width: "skinny" });
+    expect(r.opens()[0]).toMatchObject({ wikiUri: "lares", actor: "did:key:zActor", width: "full" });
     await result.settled;
     expect(attr(r.host)).toBe("full");
     result.unmount();
@@ -80,7 +80,7 @@ test("a mirror the tab's evidence holds at skinny names why on the host; CONTROL
       mirrorInputs: async () => ({ coreCid: "0".repeat(64), pluginCids: [] }) }, held.seams) as any;
     await result.settled;
     expect(attr(held.host)).toBe("skinny");
-    expect(held.host.getAttribute("data-lar-mirror-why")).toBe("full-promotion-unfinished");
+    expect(held.host.getAttribute("data-lar-mirror-why")).toBe("full-boot-unfinished");
     // The weld's read-only reading: the open story, the wiki's default story, and the palette pointer.
     expect((held.host as any).larMirrorReading).toMatchObject({ story: expect.any(Array), defaults: expect.any(Array), palette: expect.any(String) });
     result.unmount();

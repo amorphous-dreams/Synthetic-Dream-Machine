@@ -1,7 +1,6 @@
 import { describe, expect, test } from "vitest";
 import * as glass from "@lararium/tw5/glass";
 import { TW5Engine } from "@lararium/tw5/glass";
-import { named } from "../src/glass/cid.js";
 import coreUrl from "../../lararium-tw5/tw5-core/tiddlywikicore-5.5.0-prerelease.js?url";
 
 async function coreBytes(): Promise<Uint8Array> {
@@ -66,13 +65,5 @@ describe("glass boot on the real page", () => {
     host.remove();
     // CONTROL: the lends stay for the engine's life and leave with it.
     expect(typeof (globalThis as Record<string, unknown>)["Buffer"]).toBe("undefined");
-  });
-});
-
-describe("glass cas names", () => {
-  test("a malformed core or plugin id refuses by name before any read; a hash passes", () => {
-    expect(() => named("core", "not-a-cid")).toThrow("glass-core-cid-refused:not-a-cid");
-    expect(() => named("plugin", "../x")).toThrow("glass-plugin-cid-refused:../x");
-    expect(named("core", "0".repeat(64))).toBe("0".repeat(64));
   });
 });

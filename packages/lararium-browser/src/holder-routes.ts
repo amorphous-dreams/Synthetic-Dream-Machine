@@ -12,6 +12,7 @@ export const HOLDER_ROUTES = {
 
   // The record port streams records to the tab whose session holds its lease.
   // A reply without a lease drops by name (`no-port-lease`).
+  "port:boot": "port",
   "port:snapshot": "port",
   "port:changes": "port",
   "port:reset": "port",

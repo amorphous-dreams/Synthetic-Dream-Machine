@@ -83,6 +83,11 @@ export interface IslandContext {
    * `cid == hash(bytes)` — content-addressed trust, never host trust.
    */
   resolveByCid?: (cid: string) => Promise<Uint8Array | null>;
+  /**
+   * The boot set this island's engine stood up from: the engine blob's CID and each plugin blob's CID, in boot order. A port that
+   * opens with `boot` receives these same bytes (`port:boot`), so a projection's engine boots from what this one booted from.
+   */
+  bootSet?: { readonly engineCid: string; readonly pluginCids: readonly string[] };
   /** The island's half of the vessel's receipt capability: a save act's result and the coherence fold wait on it. Absent where no vessel issues one. */
   receipt?: ReceiptCapability;
   /**
