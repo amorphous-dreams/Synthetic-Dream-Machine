@@ -41,8 +41,8 @@ describe.skipIf(wikiSkip)(`an act's receipt hold beside the volatile plane${skip
     for (let turn = 0; turn < 8 && verdicts.length === 0; turn++) await turns(16);
     expect(verdicts.length, "control: the act released its hold").toBeGreaterThan(0);
     expect(r.calls.some((c) => c.bag === tempBag && c.puts.includes("$:/temp/volatile/beside")), "control: the temp title went to the memory store").toBe(true);
-    expect(named.flat().some((bag) => Object.hasOwn(r.handles, bag)), `control: the hold names a bag the island holds (${JSON.stringify(named)})`).toBe(true);
-    expect(named.flat(), "the hold names no bag the island holds no replica of").not.toContain(tempBag);
+    expect(named.flatMap((n) => n ?? []).some((bag) => Object.hasOwn(r.handles, bag)), `control: the hold names a bag the island holds (${JSON.stringify(named)})`).toBe(true);
+    expect(named.flatMap((n) => n ?? []), "the hold names no bag the island holds no replica of").not.toContain(tempBag);
     expect(await Promise.all(verdicts), "the act's verdict reads kept").toEqual(verdicts.map(() => true));
     receipt.close();
     await r.stop();
