@@ -1,0 +1,98 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-020-out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-020-out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-020-out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-020-out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! step-020-out.md — plan, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-020-out.md` (plan, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/step-20-hand-back`>>
+
+! Step 20 hand-back (Lease-Wright, Opus seam lead, outside the relay)
+
+Head `a49ce62e1c9fee4dfb50cc77c5214702618ad0d5`; state step 20; no seats; six commits, unpushed. Next relay request 037 (unused).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/commits`>>
+
+!! Commits (red, then fix)
+
+| commit | what | measured |h
+| `a117a24cf` red | live wake: a founder lift on the fleet board never reaches the composed seat (browser + node), with `ringDyadDoor` extracted verbatim from `open-node-vessel.ts` | browser 2 red / 1 control green; node 1 red / 1 control green |
+| `65bd62089` red | a board standing nowhere at boot never wakes the seat when the founding arrives by sync | red at HEAD; also red against Terra's `findWithProgress().whenReady()` watcher (measured) |
+| `a9efd30b8` fix | `watchFaceSeatFleet` over the island's own replica, opened by `materializeSharedLarDoc`; Terra's queued retry + unit test carried | live-wake 4/4, live-wake-node 2/2, fleet-watch 4/4, lands-on-grant 32/32, summons 8/8 |
+| `498a724cd` red | an overtaken reading still mutates Keyhive membership (real Keyhive crossing; seat with a store-open await) | 2 red / 2 controls green |
+| `3ff2be35c` fix | `absorbCapEvents(…, { admit })` asks the guard synchronously before `ingestPeerEvents`, refuses `IngestOvertaken`; the seat hands `proofAtRead === proofVersion`; the composition forwards it | boundary 4/4, absorption 3/3, variant-honest 3/3, seat suites green; keyhive + node typecheck clean |
+| `a49ce62e1` test | two lease-epoch welds that went stale under steps 10–15 (unknown hold now follows the fork walk; `...said`) | 7/7 (was 2 red at 19048159c) |
+
+Also green after the fix: gate-clear-posts 4, seat-roll-ledger-composition 3, working-seat-lift 4, edge-shadow-ring 15.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-witnesses-drive-the-production-composition`>>
+
+!! The witnesses drive the production composition
+
+`face-seat-wake-fixture.ts` stands `operatorDaemonOptions(...).verifierFactory` over a real Repo, a real CompositeStore, a catalog row, a persona plane holding the grant, and a fleet board founded and signed the way a founding signs it. Two seams stand in for what a face-join would mint: the Keyhive boot (a recording sink) and the grant's signature check (it reads only the founder's standing). Nothing calls `daemonChanged`. The browser shore runs `readDyadFromBoard: true`. The node shore runs `dyadReading: ringDyadDoor(ring)` over a real `makeEdgeShadowRing`. Both shores share one Repo in the test. In production the node island's replica syncs from the vessel's (islands get full sync), so a move the island sees has already turned the ring dark.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/forks-decided`>>
+
+!! Forks decided
+
+* ''The wake source: the island's own replica, not the ring's callback.'' Both shores replicate the board in the island. On node, the vessel's door refolds a dark reading before it answers. The `onInvalidate` hook dropped: it had no consumer and would add a second transport for nothing.
+* ''Open by `materializeSharedLarDoc`.'' `findWithProgress().whenReady()` rejects while the board stands nowhere, and only a daemon-layer change would reopen it (red `65bd62089`). Materializing under the deterministic id means a missing board can never fail the attach. The founding then merges in when it arrives. The daemon-layer retry stays for repo faults. No timer and no LIVENESS bound were needed.
+* ''Commit boundary = a guard asked at the call, not a lock.'' Keyhive mutates inside the call, so the guard rides into `absorbCapEvents` and gets asked with no await in between. A change after that line meets a committed membership. That stays owed (post-commit set-aside), never a rollback.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/owed`>>
+
+!! Owed (sharpened in state.json)
+
+* founder lineage freshness: the seat verifies under the boot chain
+* tri-state ring: dark or unread readings answer `aside`
+* blind-read residues + the founder-side join TOCTOU at `addGroupMember`
+* post-commit set-aside
+* complete-view census: the board holds no roster
+* `runApplyAdmitPayload`: payload-named signer, unguarded absorb
+* holder-session-proof: self-pinned root
+* leaf-peer-proof: lineage yes, epoch still threaded, no standing
+
+The roll guard and the epoch fields burn last.
+
+Blind Opus custody read before land; no push without the controller's go.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ci-cures-pushed-at-9decbdf5b`>>
+
+!! CI cures (run 42434136970), pushed at 9decbdf5b
+
+* Merge span eacb354a5 → 51f950550.
+* D6 (`dyad.test.ts:136`): a source weld still matched the inline dyad door that a117a24cf moved verbatim into `ringDyadDoor`. Product unchanged; weld now demands `ringDyadDoor(shadowRing)` once and the door's body in edge-shadow-ring.ts (dd9dbb46f). 7/7.
+* K2 ceremony e2e: not slice 2's. Same assertion and the same `worker-in: a string` hit in p27-wire run 42434026974, whose head (918864e79) carries none of slice 2. Both lanes share base beed5a2c1, whose CI passed. Slice 2 touches no browser, web or ceremony code.
+* Evergreen narration 165→163/163: two seat comments rewritten (9decbdf5b).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;uUm7jKrLSi-xXrafrK2LCgg1tLiHV4vMxNSf61AHwqw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

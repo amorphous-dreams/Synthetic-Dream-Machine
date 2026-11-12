@@ -1,0 +1,38 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/luna-rulings/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/controller/luna-rulings/` — 2 record(s) here, 2 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/luna-rulings/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/luna-rulings/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/controller/luna-rulings/`
+
+The scratch planning records of `.lares-scratch/controller/luna-rulings/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 2 record(s) stand here and 2 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[controller/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[brief|lar:///ha.ka.ba/lares/docs/history/workshop/controller/luna-rulings/brief]] | brief | 2026-11-05 | `brief.md` |
+| [[final|lar:///ha.ka.ba/lares/docs/history/workshop/controller/luna-rulings/final]] | hand-back | 2026-11-05 | `final.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bu-9-g-7uI9lYSKCnzOvWjYyEsxpnXFBzoWGgETHYKk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

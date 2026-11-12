@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/mesh-seat-0c7ec63d3a9f0fb81cf053c7991bbe5d5b69961d`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-07 (file date) — source `.lares-scratch/controller/ship/mesh-seat-0c7ec63d3a9f0fb81cf053c7991bbe5d5b69961d.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/mesh-seat-0c7ec63d3a9f0fb81cf053c7991bbe5d5b69961d"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/mesh-seat-0c7ec63d3a9f0fb81cf053c7991bbe5d5b69961d"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! mesh-seat-0c7ec63d3a9f0fb81cf053c7991bbe5d5b69961d.md — plan, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/controller/ship/mesh-seat-0c7ec63d3a9f0fb81cf053c7991bbe5d5b69961d.md` (plan, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+SHIP mesh-seat 0c7ec63d3a9f0fb81cf053c7991bbe5d5b69961d
+read: the span's held-out lane (the land train's DIRECT-over-red rule): its own held-out run 42398135251 at 0c7ec63d3a9f0fb81cf053c7991bbe5d5b69961d reads GREEN on every cell (the mesh scenarios, herm-mesh, herm-mesh-roll, browser-weld W3) and CI 42398135346 GREEN; reserve-seat collide (Lares-Kiaʻi, Opus) of 841065fcd: pono (the PACING reason, the one-shot MessageChannel yield, the flight queue) with one gap (a read mid-pause), answered at 0c7ec63d3a9f0fb81cf053c7991bbe5d5b69961d by construction plus a pinned test whose negative control fails without the flight queue; controller read each step's handback and the container-founding audit (only the mesh compose and test tools reach lararium-container-boot.sh; production composes and the Dockerfile stay unseated); Kiaʻi's three guards hold (test composes only, one seat, held-out on the cure's head).
+owed: the browser return leg's remaining silent refusals in vessel-host.ts:450 (session-unadmitted, light failure; pending stays silent), before the rite; the plugin byte move declared in genesis/unbaked.json for the pre-rite re-bake; "one founding harness, named once" as a row after the rite.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oZJBPnDgQu-Qiz8dcAAza3NMS1AvPGXBs3s0wrEw0jM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,46 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/controller/seats/` — 0 record(s) here, 31 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/seats/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/controller/seats/`
+
+The scratch planning records of `.lares-scratch/controller/seats/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 0 record(s) stand here and 31 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[controller/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/branches`>>
+
+!! Branches
+
+|! Directory |! Records |h
+| [[copilot-train-t2/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/copilot-train-t2/index]] | 6 |
+| [[opus-kdf/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/opus-kdf/index]] | 1 |
+| [[opus-land-queue/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/opus-land-queue/index]] | 1 |
+| [[sol-train-b4/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-b4/index]] | 2 |
+| [[sol-train-b5/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-b5/index]] | 2 |
+| [[sol-train-b5-retry/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-b5-retry/index]] | 3 |
+| [[sol-train-t1/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t1/index]] | 3 |
+| [[sol-train-t2/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t2/index]] | 4 |
+| [[sol-train-t3/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t3/index]] | 5 |
+| [[sol-train-t4/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t4/index]] | 4 |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0frZNKX0ONptkarGXoIp8M0cofHAsRWMF7UobR7XK-M`>>
+
+<<^ code=`&#x0004;` to=`?`>>

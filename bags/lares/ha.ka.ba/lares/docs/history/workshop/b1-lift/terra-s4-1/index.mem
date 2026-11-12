@@ -1,0 +1,40 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-1/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/b1-lift/terra-s4-1/` — 4 record(s) here, 4 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-1/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-1/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/b1-lift/terra-s4-1/`
+
+The scratch planning records of `.lares-scratch/b1-lift/terra-s4-1/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 4 record(s) stand here and 4 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[b1-lift/|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[brief|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-1/brief]] | brief | 2026-11-06 | `brief.md` |
+| [[final|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-1/final]] | hand-back | 2026-11-06 | `final.md` |
+| [[out|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-1/out]] | hand-back | 2026-11-06 | `out.md` |
+| [[resume-excerpt|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-1/resume-excerpt]] | resume | 2026-11-06 | `resume-excerpt.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wDttn6dRU0jcTrRy6wxkUodp_KmVKOqhfT-ewSbmA3U`>>
+
+<<^ code=`&#x0004;` to=`?`>>

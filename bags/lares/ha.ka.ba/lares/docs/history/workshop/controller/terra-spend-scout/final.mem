@@ -1,0 +1,63 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-spend-scout/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-06 (file date) — source `.lares-scratch/controller/terra-spend-scout/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-spend-scout/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/terra-spend-scout/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/terra-spend-scout/final.md` (hand-back, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-spend-scout/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+# ''THE CURRENCY — INFER: Target each provider’s percentage-point draw from its own weekly pool; use API-equivalent dollars only as a temporary diagnostic.'' Calculate Codex’s share as `Codex percentage points / (Codex + Claude percentage points)` over matched intervals, splitting at either reset. This measures relative depletion, though it does not imply equal pool sizes or economic value.
+
+''MEASURED:'' Codex rollout `rate_limits.primary` reports weekly used percent and reset; its `token_count` reports input, cached input and output. The current rollout reported ''0% used'', resetting ''Nov 13, 08:57 UTC'': [[rollout|/home/joshu/.codex/sessions/2026/11/06/rollout-2026-11-06T00-57-42-01a1b013-fedf-7460-92dc-1e0fb217f488.jsonl]]. Claude transcripts expose model and token usage, while the contract says its pool meter cannot be read in-session; the operator must supply meter readings. Claude also has five-hour and weekly limits, plus a separate Fable limit. [[Contract|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/pono/mixed-model-swarm.mem:276]], [[roster research|/home/joshu/.lares-scratch/research/model-roster/out.md:76]].
+
+''INFER:'' Raw tokens are a poor cross-model currency: count cached input once at full token weight for raw totals, but models consume pool capacity differently. API-equivalent dollars weight model, output and cache rates, but are neither subscription charges nor proven pool weights. The recorded rates are in the [[roster research|/home/joshu/.lares-scratch/research/model-roster/out.md:28]].
+
+# ''THE MEASURED SPLIT — INFER: The requested 48-hour pool split is UNMETERED; the available records support the following bounded proxy.''
+
+''MEASURED:'' Window attempted: ''Nov 4, 08:58:50–Nov 6, 08:58:50 UTC''. Codex figures below subtract the last cumulative token event before the cutoff from the last in-window event, where available. Claude figures include //whole files modified// during the window; they can include older work. Because the brief restricts Claude transcript reads to usage and model fields, adjacent identical usage records were collapsed without message IDs; these are approximate, not an exact deduplicated 48-hour tally. Sources: [[Claude project transcripts|/home/joshu/.claude/projects/-home-joshu-Synthetic-Dream-Machine/]] and [[Codex rollouts|/home/joshu/.codex/sessions/]].
+
+| Source and model | Input including cache | Output | API-equivalent |h
+| Claude controller, Opus 5.5 | 1,900.21M | 2.67M | $542.01 |
+| Claude subagents, Opus 5.5 | 1,311.42M | 4.21M | $469.01 |
+| Claude subagents, Sonnet 5.5 | 627.42M | 1.81M | $116.90 |
+| Claude subagents, Fable 5.1 | 17.53M | 0.08M | $13.47 |
+| Codex Terra 6.1 | 217.23M | 0.38M | $17.17 |
+| Codex Luna | 17.71M | 0.23M | $0.48 |
+| Codex Sol 6.1 | 8.55M | 0.04M | $2.33 |
+
+''MEASURED:'' Claude input above includes cache writes and reads; Codex cached input is included in input. The pricing calculation uses the recorded one-hour Claude cache-write and cache-hit rates and standard Codex rates. Named Claude subagent descriptions include scouts, blind custody readers, and `Wright` leads; for example, scout-labelled Sonnet files total ''32.73M raw tokens'', and blind-labelled Opus files ''78.06M''. Codex’s largest seat directories were `promote/wt` at approximately ''173.8M'' input plus output, `promote/wt-recovery47` ''21.90M'', and `promote/wt-migrate46` ''10.32M''; broker-owned seat directories account for approximately ''10.24M'' across Terra and Luna. These are rollout-cwd groupings, not necessarily lane attribution.
+
+''MEASURED:'' A `gpt-6-sol` rollout adds ''25,065 raw tokens'' but has no price in the roster. Claude pool deltas, unrecorded or ephemeral Codex runs, other Claude surfaces, and any run without usage evidence are ''UNMETERED'', not zero. The mixed-window proxy is approximately ''$20 Codex / $1,141 Claude''; it cannot establish the actual split.
+
+# ''THE MOVE — INFER: Move ordinary leads, repo scouts and bounded sweeps to Codex; retain Claude for the controller and independent reads of Codex-written pieces, including blind Opus custody reads.'' A fresh Codex reader can independently read Claude-authored work only if it wrote none of that piece. The two-lineage and no-self-read rules remain binding. [[Lens law|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/pono/mixed-model-swarm.mem:125]].
+
+''MEASURED:'' Tonight’s actual lead launcher grants a worktree and lane root, ''disables network'', and relies on the external broker for git acts and seat launches; the lead can run worktree builds under its separate lead law. Fresh steps use lane state. The launcher refuses leads above ''50% weekly used'' or at the ''20% remaining floor''. The older mode table says network on, but the launcher and actor table say off. [[Launcher|/home/joshu/Synthetic-Dream-Machine/tools/launch-codex.mjs:204]], [[harness|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/pono/seat-harness.mem:29]].
+
+''INFER:'' A purely illustrative equal-token transfer of the scout-labelled work moves the mixed-file raw-token proxy from ''5.9% to 6.7% Codex''; adding “fresh step”-labelled work reaches ''11.8%''. These are not forecasts: the windows differ, labels are incomplete, and replacement seats will draw differently. No defensible estimate says these moves reach 70/30 in pool units; measure successive batches.
+
+# ''THE STEER — INFER: Extend `spend.py` with a per-batch balance record containing both providers’ timestamped used-percent readings and reset IDs, plus an explicit UNKNOWN state.'' Read it at batch boundaries; steer eligible launches toward the under-target side while preserving floors and lens law. The controller needs an operator-supplied Claude reading until a supported local source exists.
+
+''MEASURED:'' [[spend.py|/home/joshu/.lares-scratch/controller/spend.py:47]] already tallies subagent usage and Codex rollouts, but omits controller transcripts, filters by file modification time, and cannot attribute new broker-seat cwd paths to lanes. The parked `6a63e0991` spend table already supplies window-keyed ''Codex launch limits'', not cross-provider balance. ''INFER:'' Keep the ratio as a separate observational row or report; adding it to that strict limits grammar requires changing its parser and should not make an unknown Claude reading silently become zero.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;f_RVkXJ4bLtTEHnREEXAw0Tq-c805HPyGPcrMbC2HEg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

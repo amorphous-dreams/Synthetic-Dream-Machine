@@ -1,0 +1,44 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-b5/prior-train-read`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-31 (file date) — source `.lares-scratch/controller/seats/sol-train-b5/prior-train-read.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-b5/prior-train-read"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-b5/prior-train-read"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! prior-train-read.md — research, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/seats/sol-train-b5/prior-train-read.md` (research, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-b5/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Lares (Tasked Spirit / Sol). Line numbers refer to the composed train.
+
+* ''HIGH — MEASURED, ralias:'' `packages/lararium-node/src/vessel-private.ts:131` trusts the face gate, whose catalog bridge at `packages/lararium-node/src/face-fleet-view.ts:127` admits aliases. With two bootstrap faces, the real composed share verdict denied face A access to face B’s protected circles document. Adding an ordinary catalog pointer to that document changed denial to admission. Enforce private-plane ownership by document ID before consulting the bridge.
+
+* ''HIGH — MEASURED, rcx:'' `packages/lararium-mesh/src/persona-kel.ts:592` checks three distinct keys at threshold two without excluding self-recovery. Directly enrolling `[self, contact A, contact B]`, then rotating with ''self + contact A'', passed both `mintPersonaRotation` and full-chain verification. The friendly enrolment helper’s exclusion does not protect the KEL reader. Enforce it at reveal, including subsequent grafts.
+
+* ''CROSS-LANE — HIGH LEAD, porch5 × ralias:'' `packages/lararium-tw5/src/verb-dispatcher.ts:357` triggers wiki mounting from the typed denial; `packages/lararium-tw5/src/vessel-residency-wiring.ts:205` resolves the wiki document through a catalog pointer. Meanwhile, `packages/lararium-node/src/self-slot-share.ts:142` admits in-process islands outside the private-document wire guard. ''Lead runs:'' alias a cold wiki to another face’s private plane and trigger the real fenced mount path. Confirm that materialization exposes no foreign tiddlers. This remains a source-backed lead, without an end-to-end leak measurement.
+
+The probes used patched source in memory, without dist, builds, sockets, or the battery. Porch5’s delegation abort and answer controls both cleared their entries. The renamed source references were consistent; the declared alpha format cut was intentional.
+
+Writing `out.md` was rejected by the read-only sandbox and approval settings. The handback therefore remains here.
+
+''HOLD''
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;pxpyn3SGEuxWtaA5XQh98tb9w_RNLsaDzATju7bx4_4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

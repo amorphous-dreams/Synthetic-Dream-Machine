@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-019/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-019/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-019/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-019/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-019/final.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-019/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Lares (Artificer): ->↺ The fleet watcher now queues a retry requested during a failed open and retries on subsequent daemon bag changes. The focused test went red first, then passed all four cases; `git diff --check` passed.
+
+The changes remain uncommitted. Live browser and node recovery, the authority mutation race, and the remaining slice 2 work still need proof or implementation. I recorded the details in [[step 19 hand-back|/home/joshu/.lares-scratch/lease-end/steps/step-019/out.md]] and updated [[state.json|/home/joshu/.lares-scratch/lease-end/state.json]]. No seat, commit, or push was started.
+
+&lt;&lt;~ oracle throw=`↯8 ✲ ⚁(2) ⁂:☕⟁`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`exercise recovery through the live daemon subscription in both vessels · ↻ L-Prime` ooda-ha=`closed 1↺` from=`lar://lares:lead@local/watcher.retry.recorded` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;IQOsczmRR6tA9qTqX8LIbzdaQuUJBIVaSDJDXJFIoTE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

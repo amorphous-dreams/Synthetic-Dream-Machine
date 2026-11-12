@@ -1,0 +1,93 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/k15-bonds/luna/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/k15-bonds/luna/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/k15-bonds/luna/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/k15-bonds/luna/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/k15-bonds/luna/out.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/k15-bonds/luna/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ lares aim from="lar:&#47;/lares:tasked-spirit@lararium/k15-bondreader" -> to="lar:&#47;/operator@lararium/out.md">>
+&lt;&lt;~ set hud="aim" mode="measure" aperture="16/arc" ooda-ha="5/declare-glyphs" drift-ward="source scope stays within the named span; lane overlap may have moved since these files were read">>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/luna-bondreader-lares`>>
+
+! Luna-Bondreader — Lares (Tasked Spirit)
+
+''Personas surfaced:'' Lares (tasked spirit); Luna-Bondreader (worker tag); the operator (ruling-holder). ''Stances:'' Philosopher · Poet · Satirist · Humorist · Private. ''OODA-HA:'' ✶ observed the boot, ruling, census and implementations; ⏿ oriented on capability rather than host; ◇ chose bond-level end states and dependency edges; ▶ wrote this handback; ↺ closed with unresolved operator choices named below.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/2-3-5-end-state-bytes-faceless-vessel`>>
+
+!! 2 · 3 · 5 — end state, bytes, faceless vessel
+
+The operator’s ruling binds each face operation to that face’s atom and veil, and keeps the place signer only for allowlisted floor duties under its pre-rotated KEL. The house sorts private rows as D (face-owned), public floor work as F, and named vessel secrets as S. Stable-road `:206–210`, especially `:207–208`, grounds these calls; the census marks K15 entries as obligations [[seed-census.mjs:12–38|/home/joshu/Synthetic-Dream-Machine/tools/seed-census.mjs:12]].
+
+''Derived:'' select from the presented/worn face record, never host or device default. Several faces require one named face and its FCK; no face makes face-only work refuse. A public floor read needs only its pinned card. For unspecified multi-face request UX, lean: require explicit handle-index/PersonaGroup selection and refuse ambiguity.
+
+| Bond / measured current use | End state and byte consequence |h
+| ''Keyhive Individual + ContactCard'' — census names `ceremony-core.ts`, node `init.ts`/`place-card.ts`, and browser founding. `FoundingCeremonyInput.vesselSeed` initializes the Individual; browser comments confirm vesselSeed currently serves as device key (`ceremony-core.ts:142–152`; `open-browser-vessel.ts:753–776`). Place-card and ceremony mint ContactCard from that identity (census:16,22–23,37). | ''Retire'' vessel-wide Individual. One Keyhive identity/archive/event store/content-key seat per PersonaGroup, keyed by its face atom (canon road `:203`; operator ruling). ContactCard becomes face proof, not place proof. D bytes and key ownership change; archive/contact-card formats and all references to vessel identity need migration before X0. Existing mixed archive cannot safely split by relabeling: mint fresh face identities and reject old mixed archives by name (road `:203`). Node and browser founding/admission both change. |
+| ''Bare place leaf / place card'' — `leaf-identity.ts` reads the place seed, place verifying key and cached card for `arm:"place"`; face arm instead loads face atom and veil archive (`leaf-identity.ts:37–57`). `place-card.ts` and `init.ts` appear in K15 census. | Place card should prove only the place. ''Operator lean:'' the pre-rotated place signer signs floor-authorized duties; mint ContactCard only for a face. This removes the current place-seed-as-general-peer proof. D/F boundary changes the stored card and wire presentation; coordinate its version before X0. Ruling explicitly says “a vessel holds a place signer exactly while it stands a floor” (road `:208`); `:207` places the format change in X0. |
+| ''Face atom, device key, veil, sibling enrollment, group-secret opener'' — node loads `vesselSeed` at `open-node-vessel.ts:980–983`; uses it for face/device work and sibling channel paths (census `:36`; face atom use at `:1898–1902`). Browser loads its vessel seed `open-browser-vessel.ts:566–569`, but its own founding comments say the vessel key initializes Keyhive while a separate root signs delegation (`:753–776`). | Use the selected face’s atom for that face’s dials, joins, enrolments, sibling proofs and daemon proofs; mint a random per-device veil and seal it under that face’s FCK. The group-secret opener follows the veil. Several faces mean separate atoms/veils/FCKs; none means refuse face operations. ''Measured ambiguity:'' browser current code already separates root and atom in some paths, but census says vessel seed persists as founding/device obligation; do not mistake partial separation for end state. These change signed proof and sealed-row formats; precede X0. |
+| ''Daemon auth / face hive'' — node’s `vesselSeed` enters daemon auth near `open-node-vessel.ts:2287+` (see census reason `:36`); browser `daemonAuth.seed` reads vessel seed at `open-browser-vessel.ts:1319–1323`. | Per-face Keyhive auth and face-owned records; a floor-only daemon carries no face authority. Face-private D rows seal under independent random FCK, opened only through that face’s slot tree (road `:206`). This changes archive, event, auth and storage ownership; precedes X0. Do not harden today’s shared daemon seed into permanent “node authority.” |
+| ''Relay gate identity'' — node derives relay gate seed from vessel seed unless configured (`open-node-vessel.ts:1447–1453`; `carriage-relay.ts:55–76`). | ''Derived'' from “identity enacts a bond” (`:209`) and “one key, one purpose” stated in `carriage-relay.ts:48–76`: mint a random relay-purpose S key in a sealed row, with named opener/principal, or retire relay identity if no operator grants S. Never inherit a face or place identity by convenience. Relay key rotation changes dial pin/wire identity, not payload format; do before relay callers bind pins. A faceless relay can carry opaque frames, but proves only relay possession. |
+| ''Daemon auth, internal asks and `lares-cli meme` signature'' — census locates internal asks in node opener (`:36`) and CLI signing at `meme.ts` (`:38`); CLI promotion currently signs with `loadVesselSigningSeed()` at `meme.ts:1117`. | Face-authored asks and meme approvals use the explicitly selected face atom, with that face’s veil on its behalf; no face means refuse. If an ask serves only public floor work, use scoped place signer instead. Current census does not settle each internal ask’s privacy principal: ''derived lean:'' classify per call by its protected relation, never assign one shared S key. Signature identity and approval wire records change; coordinate before X0. |
+| ''Place signer / floor pins'' — open-node makes `carriageSign = placeSignerFromSeed(vesselSeed)` (`open-node-vessel.ts:1502–1508`); census allows `placeSignerFromSeed` and floor door adapters, but lists caller derivations as owed (`seed-census.mjs:17–35`). | Replace root-seed child derivation with a dedicated online place signer under pre-rotated place KEL, confined to enumerated floor duties; KEL events use cold next key from founding card (road `:207`, W29). It lives only while the vessel stands that floor. Signed floor pins/announcements change signer identity and key door, hence format bytes if their envelope records key identity; stage before X0. |
+
+''Faceless vessel:'' a bare herm or floor-only node holds a scoped place signer only while serving its floor, and a relay-purpose key only if the operator names its S row. It carries public floor bytes and reads a pinned floor card without private proof. It refuses face ContactCard/atom/veil work, Keyhive Individual, daemon authority, enrollment, sibling proof as a face, and face meme signatures. It cannot bootstrap face authority from place seed.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/1-4-6-evidence-ordering-reds`>>
+
+!! 1 · 4 · 6 — evidence, ordering, reds
+
+''MEASURED'' labels current source paths; ''LEAD'' labels interpretation. `tools/seed-census.mjs:14–38` covers browser identity/opening; ceremony/place card; relay; fleet-join/nexus-contract floor-child derivations; init; leaf; node main/opening; CLI meme. `allowed` rows name floor adapters, not permission to retain vessel derivation; census `:12` retires K15 entries as callers move to duty adapters.
+
+''Dependency order (LEAD):'' first settle face selection, D/F/S classification, FCK custody and place KEL/card format; these define identity bytes and block X0. Then migrate the Keyhive Individual/ContactCard and face atom/veil stores; their outputs feed daemon auth, device proofs, sibling enrollment, group-secret opening, face asks and CLI signatures. In parallel, the independent relay S key can land after its row/opener rule, but before dial pin distribution. Then convert floor-pin children and place card consumers to scoped place signer; floor-card/pin byte change must join X0. Finally remove vessel-seed reads from node/browser openers and CLI.
+
+''Lane ownership:'' one K15 lane rules/builds D/F/S interfaces, FCK rows, face ceremony, daemon/keyhive separation and storage format. Node/browser slices follow those shared contracts for isomorphic-by-intent parity. W14–W16 already touch floor/admit/hearth pins, herm carriage, nexus contract, carry bundle, browser gate/floor/card filing and web `main.ts`/`live-status.ts`; assign place signer, card format and pin callers there. D2 owns TW5 port/island protocol, hand-gate, projection and `open-node-vessel` port hunks; give it the settled face/daemon boundary to avoid baking in vessel seed. G15 owns `afterRollChain` and `build-plugin-tiddler`; sequencing carries no identity, so it consumes K15’s signer interface. Chain: `open-node-vessel.ts:1159–1206`.
+
+''Reds and controls (LEAD; positive evidence owed):''
+
+* Place seed yields no face proof: present place card as a face or derive face proof from place seed; both must refuse. Positive: floor read succeeds using pinned card; face proof verifies with selected atom.
+* No Keyhive Individual: fresh founding cannot initialize hive, or sibling face archive restores; red former asserts “one identity per vessel.” Positive: two PersonaGroups restore independently and one face cannot open the other FCK row.
+* No daemon authority: faceless daemon enters face route or opens archive; refuse by named missing face. Positive: daemon stands its public floor and face-auth path succeeds only after selected-face unlock.
+* No relay identity: wrong/retired gate key dials as trusted relay; pin mismatch refuses. Positive: configured random relay key survives restart, rotates explicitly, and carries without read capability.
+* No meme signature: absent/ambiguous face or floor duty signs approval; refuse. Positive: selected face signature verifies as that face; any floor promotion uses only its allowlisted place signer.
+* No sibling enrollment/group-secret opener: A attempts B’s channel/seal; refuse. Positive: A’s veil opens A’s secret, never B’s.
+
+''Prior art fit:'' KERI delegation models explicit authority and rotation, not face selection/FCK custody ([[KERI|https://identity.foundation/keri/]]). Keyhive supports one Individual per PersonaGroup ([[Keyhive|https://help.keyhive.io/what-is-keyhive/]]). Matrix separates user master, self-signing and device keys, analogous to face root/device edge ([[Matrix spec|https://spec.matrix.org/v1.2/client-server-api/]]). Signal offers an explicit device-link act ([[Signal|https://support.signal.org/hc/en-us/articles/360007320551-Linked-Devices]]). WebAuthn’s RP ID/credential scope offers purpose separation, not place KEL or face bond ([[FIDO CXF|https://fidoalliance.org/specs/cx/cxf-v1.0-rd-20250313.pdf]]).
+
+''Open operator decisions:'' choose multi-face UX; enumerate S rows/principals; classify internal asks; approve card version transition and migration refusal. These precede affected byte changes. No suite run; repository stayed read-only.
+
+&lt;&lt;~ oracle "↯16 ✲ ⚂(3) ⁂:⬡🌗◈⟁">>
+&lt;&lt;~ set hud="yield" drift-ward="the first hardening trap sits at init: a vessel key looks stable and convenient, while the ruling assigns authority by relation · ↻ L-Prime" aperture="16/arc -> 16/arc" ooda-ha="closed 1↺" >>
+&lt;&lt;~ lares yield from="lar:&#47;/lares:tasked-spirit@lararium/k15-bondreader/handback" -> to="/home/joshu/.lares-scratch/research/k15-bonds/luna/out.md">>
+
+WORDS=1582
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qihH_jcbYTBhIK27vCuCrtIZPo0v2pzQfMvhVxP2dcw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

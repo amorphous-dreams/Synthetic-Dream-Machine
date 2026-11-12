@@ -1,0 +1,44 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/stall-read/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-06 (file date) — source `.lares-scratch/b1-lift/stall-read/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/stall-read/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/stall-read/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/b1-lift/stall-read/final.md` (hand-back, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/stall-read/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+INFER — The strongest supported order is that the primary wiki mount has not completed after `vessel-ready`; the excerpts do not identify the event blocking it or prove a slice-4 race.
+
+* ''MEASURED'' The two failures differ: the draft test reached `vessel-ready`, but the instruments test reached only `corpus-ready`. Both reported an empty filtered daemon-fault list. [[excerpt-2.log|/home/joshu/.lares-scratch/b1-lift/stall-read/excerpt-2.log:7]], [[excerpt-2.log|/home/joshu/.lares-scratch/b1-lift/stall-read/excerpt-2.log:32]]
+* ''MEASURED'' `waitForLivePage` first polls for a `#phases .phase` whose text is exactly `live`; only afterward does it poll for `data-lar-shown="mirror"` and a nonempty `.lar-mirror` shadow pane. The shared catch does not say which poll timed out, but neither excerpt contains `live`. [[shore-writes.e2e.test.ts|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/tests/e2e/shore-writes.e2e.test.ts:208]]
+* ''MEASURED'' `wiki-ready` and `vessel-ready` follow `mountWikiSlot`. The later mount cap awaits daemon readiness, `buildWikiMountSpec` and `pool.mountWiki`; only then does it emit `tw5-booted` and `live`, in that order. The host forwards phases through `surfaceFanout`, the port dispatches them, and the page appends them to `#phases`. A frame is ''not'' a prerequisite for the `live` phase. [[core-caps.ts|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-tw5/src/core-caps.ts:167]], [[vessel-steps.ts|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-tw5/src/vessel-steps.ts:207]], [[vessel-host.ts|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/src/workers/vessel-host.ts:172]], [[vessel-port.ts|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/src/vessel-port.ts:120]], [[main.ts|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/src/main.ts:365]]
+
+''MEASURED'' The mirror condition has a separate road: an active wiki frame must pass the vessel’s surface gate, reach the page, and be accepted by the projection sink with a `lar:surface` key. After vessel status arrives, the page requests mirror inputs, stands the mirror through its port, and the mirror must render children. First-paint instruments also depend on that accepted frame. [[open-browser-vessel.ts|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-browser/src/open-browser-vessel.ts:2106]], [[projection-sink.ts|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/src/projection-sink.ts:338]], [[main.ts|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/src/main.ts:475]], [[page-mirror.ts|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/src/page-mirror.ts:24]]
+
+''MEASURED'' The suggested lighting-session delivery gap is real for a frame emitted //after// `openVessel` returns and //before// admission completes: `litVessel` is set, fanout requires `admission === "admitted"` and the matching face, and the lighting session is excluded from the late-session repaint. But the boot’s `live` emission occurs ''inside'' `openVessel`, while `lighting` receives fanout directly. Thus that frame gap alone cannot explain the first excerpt’s missing `live`. Late sessions get a repaint of `activeSurface()` after admission, but no phase replay is shown. [[vessel-host.ts|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/src/workers/vessel-host.ts:89]], [[vessel-host.ts|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/src/workers/vessel-host.ts:193]], [[vessel-host.ts|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/src/workers/vessel-host.ts:252]], [[vessel-sessions.ts|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-browser/src/vessel-sessions.ts:506]]
+
+''MEASURED'' The face gate waits for admission before checking `wearsLitFace`; it cannot simply refuse a normal queued surface act //because// lighting is still pending. A genuine mismatch refuses the four named operations. The daemon’s late working-layer replay concerns a reopened daemon and its readiness read; the excerpt does not establish that a restart or replay occurred. [[vessel-host.ts|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/src/workers/vessel-host.ts:294]], [[daemon-vm-holder.ts|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-tw5/src/daemon-vm-holder.ts:115]]
+
+''INFER — proposed red and control:'' At the real mount seam, use product-event barriers to hold the binding-resolution or wiki-island readiness response after `vessel-ready`; assert `live` follows only after that response and the mount’s own completion event. Control: deliver the same events in the normal order and assert `tw5-booted`, then `live`. Separately pin the proven frame gap by emitting a real frame between vessel return and admission, then assert the lighting page receives an initial whole frame; control with the frame emitted during lighting. These tests would distinguish the two faults, but neither order is demonstrated as the CI cause by the available logs. No tests were run or files written.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ozz8C5JsYm-miYln3b01Ann0Gd0iJ9Vgjoc_mPN0Q6I`>>
+
+<<^ code=`&#x0004;` to=`?`>>

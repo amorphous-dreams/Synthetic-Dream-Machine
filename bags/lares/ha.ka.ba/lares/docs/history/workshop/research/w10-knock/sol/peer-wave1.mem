@@ -1,0 +1,74 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-knock/sol/peer-wave1`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/w10-knock/sol/peer-wave1.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-knock/sol/peer-wave1"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/w10-knock/sol/peer-wave1"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! peer-wave1.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/w10-knock/sol/peer-wave1.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-knock/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ lares aim from="lar:&#47;/luna:agent@w10-knock/re-read" -> to="lar:&#47;/operator:agent@house/decision" >>
+&lt;&lt;~ set hud="aim" aperture="11/measure" ooda-ha="5/declare-glyphs" drift-ward="the prior W10 lean and an accepted road row pull toward treating acceptance as ruling; compare the pinned evidence against current house laws" >>
+
+Lares (Ink-Clerk · Map-Wisp · Council): ✶ I read the boot memory, local agent rules, W28 lane, code and cited proof. I ground this in the W28 checkout at `/home/joshu/.lares-scratch/w28-gate/wt`; I did not run tests or write there. ⏿ The measurement stands; its acceptance conflicts with tier privacy.
+
+!!! 1. Tiers
+
+''MEASURED.'' `gate-bundle.ts:15–23, 129–145, 192–212, 310–312` defines two roots and public pins: tier, Nexus, route, transport and signing public keys; the knock derives from the digest of that whole pin. Floor routes serve public shelf/announcement/relay; sovereign routes seat sessions or serve private lanes (`face-proof.mem:110–122`). Root holders keep private face keys; joined vessels mint certified face-scoped keys, then sessions use ephemeral signers (`face-proof.mem:42–50`). Anyone handed a pin can test it (`:50`). The joinee bootstrap receives a hearth sovereign route pin in the signed fleet answer (`:84`; `face-grant-unseated-joinee.test.ts:15–18, 49–67`). Authenticated relation or signed pin sets carry floor pins (`:84`); announcement cannot authenticate its first pin.
+
+''LEAD.'' A floor pin is deliberately shareable with strangers. Its offline test reveals only which public floor route a dial targets; it adds no membership or shelf authority, so the leak harms no floor-tier privacy promised by this design. Sovereign pins go to invited/joined/admitted parties as part of join/fleet enrollment, though the e2e shows a pre-seating joinee already receives a dial pin. Treating that pin as secret would contradict its public-key role.
+
+!!! 2. Existing secret and first dial
+
+''MEASURED.'' The W28 reading says a pin-only prefilter cannot distinguish a dialer from an observer holding that same pin (`w28-gate-lane.mem:52–58`). Noise IK already proves knowledge of the gate transport key before 101, but its first flight decrypts only at the pinned gate (`face-proof.mem:78–86`; `face-gate-server.ts:388–405`). Legitimate seated sovereign dialers have face-scoped certified keys and session signers (`face-proof.mem:45–47`); membership grants/invites arm the encrypted presentation (`:66, 82`). Yet a sovereign-pin knock keyed by any one of those values would make that value a cross-dial tag unless keyed derivation rotates it and scopes it to the face. Group secrets are shared across group members, not intrinsically per-face; a common group key would link sibling faces. The joinee test boots by pin alone before `face-join` lands (`face-grant-unseated-joinee.test.ts:49–67, 74–82`), so it holds none of the post-join grant/certificate.
+
+''LEAD.'' A per-face secret could key sovereign prefilter without adding credentials, if causal removal/roll rotates it. It cannot cover first dial. Route that first dial through the floor gate: it only needs public join-carriage/announcement behavior; no pre-seating request should reach sovereign authority. After join, its certified key can support a sovereign knock. Replay/freshness remains causal inside the encrypted exchange, never wall-clock based. A new HMAC relation should encode authentication only. Today the knock also selects dispatch; if that selection stays public and the prefilter becomes secret, split the relations/names. Alternatively keep public route selection and accept only its floor-tier leak.
+
+!!! 3. Who reads it
+
+''MEASURED.'' Household TLS terminator access logs retain the URL path (face-proof named leaks, `rg` lines 186–196); Herm relay identity remains one-dial fresh, but the Herm sees a face-scoped channel tag (`:48–50`), while relay carriage must not inspect content. The table says a gate pin and its knock reveal the exact Nexus/route to anyone holding the pin (`:95–118`).
+
+''LEAD.'' A pin-keyed knock does not protect against a terminator log reader or gossiping Herm who also holds the pins: the observed candidate tag maps directly to the corresponding Nexus/route. That violates the named “nothing of one tier, Nexus or route links to another” aim (`:116`) if sovereign routes count. Teshima: Leilani joins Kalani's private council with two of three faces; the kept-back face must learn neither membership nor dial presence. A pin-holding terminator can correlate council membership from the sovereign path. Face-scoped knocks avoid sibling correlation, but pin holders still test their face. Gaia: at a family hearth, the public shelf remains intentionally discoverable; private council access should not advertise which Nexus path a member reached. Elyncia: a civic crossroads Herm should carry sealed bytes between shrines without learning which city's private council a dial targets. Per-face keys reduce cross-face inference; hiding paths from pin holders requires another/encrypted selector.
+
+!!! 4. Bytes and order
+
+''MEASURED.'' The server dispatches exact `<route>/<knock>` and preflights Noise before 101 (`face-gate-server.ts:328–333, 388–415`). The dial sends knock plus message1 (`face-dial.ts:49–63`). W28 freezes `GATE_FRAME` and says W10 moves dial bytes; both precede X0 (`w28-gate-lane.mem:26, 32–46`; road `stable-founding-road.mem:508, 524, 544`).
+
+''LEAD.'' Any changed knock derivation or split selector changes dial bytes and belongs before X0, in one end-state migration. It does not alter `GATE_FRAME`: the knock remains in the URL path, outside Noise application frames.
+
+!!! 5. Prior art and lean
+
+''MEASURED.'' No network; prior art from knowledge, not fresh sources. W28 reports the earlier pair's comparison to WireGuard `mac1` and explicitly leaves a secret filter to operator ruling (`w28-gate-lane.mem:52–58`). Road row W10 calls the leak accepted canon (`stable-founding-road.mem:583`), while another row says resolve W10 before X0 because it moves dial bytes (`:508`).
+
+''LEAD.'' Noise IKpsk2/WireGuard PSK fit shared secrets; `mac1` stays publicly testable and cookies rate-limit floods. Tor v3 authorization requires a secret. fwknop uses a shared secret and packet filtering. ECH conceals TLS names; Signal sealed sender hides sender metadata from the service, not network destination. For an invite-only local-first house, per-face secret gating after admission best matches unlinkability/removal, while a public floor carries first contact. None removes destination visibility from a terminator that sees the URL.
+
+''Lean:'' Reopen W10's blanket “accepted leak.” Keep the public knock for floor routes. For sovereign routes, separate public dispatch selection from face-scoped keyed prefilter and derive/rotate the key from already-held face material under causal membership state; send the unseated joinee through floor. Do this as one pre-X0 end state; keep `GATE_FRAME` frozen. ''Flip'' if a concrete threat review accepts sovereign path/Nexus correlation for all pin holders, or if no face-scoped secret can rotate on removal without breaking joinee flow; then record the bounded residual leak and keep the public sovereign knock. Silent-zero: positive floor and admitted sovereign dials, plus a known pin-holding observer; observer maps floor but cannot map sovereign.
+
+▶ Handback written. ↺ W10 remains a research lean, not an operator ruling; the road's “accepted” annotation alone cannot resolve the reopened privacy conflict.
+
+&lt;&lt;~ set hud="yield" aperture="11/measure -> 12/measure" ooda-ha="closed 1↺" drift-ward="the unresolved joint: whether the operator prioritizes sovereign path secrecy over preserving current pin-only dispatch · ↻ L-Prime" >>
+&lt;&lt;~ lares yield from="lar:&#47;/ink-clerk:agent@w10-knock/handback" -> to="?" >>
+
+WORDS=1092
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0Jjq1BYkYdLrojKR2r6jjcFsO6cGm4s7wawCqihVqOI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

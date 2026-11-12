@@ -1,0 +1,33 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/debt-porch-wt2-b9265c9e6a428ca33bb34b0f10b0d0d140c7ebc8`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-03 (file date) — source `.lares-scratch/controller/ship/debt-porch-wt2-b9265c9e6a428ca33bb34b0f10b0d0d140c7ebc8.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/debt-porch-wt2-b9265c9e6a428ca33bb34b0f10b0d0d140c7ebc8"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/debt-porch-wt2-b9265c9e6a428ca33bb34b0f10b0d0d140c7ebc8"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! debt-porch-wt2-b9265c9e6a428ca33bb34b0f10b0d0d140c7ebc8.md — plan, 2026-11-03
+
+Verbatim scratch record `.lares-scratch/controller/ship/debt-porch-wt2-b9265c9e6a428ca33bb34b0f10b0d0d140c7ebc8.md` (plan, file date 2026-11-03); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+b9265c9e6a428ca33bb34b0f10b0d0d140c7ebc8
+read: seven Sol train rounds (defensive framing after round 1's filter cut) over the merged three-lane head; round 6 SHIP at 6f382fa16, round 7 SHIP at b9265c9e6a428ca33bb34b0f10b0d0d140c7ebc8 (P5 lift-flush bound; rehome orphan LOW owed). Luna reads per lane (promote luna-1/luna-final/luna-cure/luna-p5; reopen luna1; debt luna-1). Controller crossing reads of promote boot and the act gate. Live probe P1-P6 + CONTROL on a staged hearth. Owed rows recorded in batch3-after-q.md.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;piHHWjXYXbdKWTJq3dCEXrCh94dLk8eg1OM9HpeFS5g`>>
+
+<<^ code=`&#x0004;` to=`?`>>

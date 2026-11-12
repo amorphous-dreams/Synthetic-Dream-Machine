@@ -1,0 +1,32 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/crud/sol-a/final2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-10-25 (file date) — source `.lares-scratch/crud/sol-a/final2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/crud/sol-a/final2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/crud/sol-a/final2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final2.md — hand-back, 2026-10-25
+
+Verbatim scratch record `.lares-scratch/crud/sol-a/final2.md` (hand-back, file date 2026-10-25); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/crud/sol-a/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Lares (Artificer): Wrote the wave 2 handback to [[out2.md|/home/joshu/.lares-scratch/crud/sol-a/out2.md]]. I kept the custody overwrite guard and marked its historical error name for removal. No suite ran, and the repo remained untouched.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dGzKdWfThT90G7RGEP15_fhvow-gZfwiyGAXUQfXkmg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

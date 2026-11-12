@@ -1,0 +1,97 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/canon/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-11 (file date) — source `.lares-scratch/canon/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/canon/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/canon/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-11
+
+Verbatim scratch record `.lares-scratch/canon/out.md` (hand-back, file date 2026-11-11); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/canon/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/canon-truer-hand-back-feature-green-jello-dinosa`>>
+
+! Canon-Truer hand-back — feature/green-jello-dinosaur-5&#45;-canon
+
+Head `3156b4e94`, cut at `c0e0622a2`, pushed. No span drift at push. Canon-only: 33 `.mem` carriers, no code, no CHANGELOG (canon true-ups move nothing a person can do). Never baked; house-canon floor bytes moved (lares, lararium) — the controller bakes.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/commits`>>
+
+!! Commits
+* `173aeae57` lar:&#47;&#47;/road.records.rulings/house-canon-workbench-litset — stable-founding-road, kahua-memory-stage
+* `cf6cc96d7` lar:&#47;&#47;/canon.names.housecanon/floor-pin — 19 house-canon / floor / clockless carriers
+* `3156b4e94` lar:&#47;&#47;/canon.names.workbench/open-worn-faces — 12 workbench / faces carriers
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/carriers-trued`>>
+
+!! Carriers trued
+* ''Roadmap'' (`stable-founding-road`): new `!!! Operator rulings, 2026-11-11` block, each quoted: house canon at contract / CIDs public; the vessel pins the floor; faces = private cabal of one; contracted members sync the working layer (cross-operator owed); personal carries the private margin; full new design, no lift; faces name themselves at creation; plaintext survives to disk; the top layer always shadows; NO version numbers; open faces, one worn (house reading, landed `029d87df8`). Landed rows name commits. `F3` moved to #/ashes. The working-address house ruling points at the workbench. The floor-announcement house ruling reads `{kind, nexus, floorPin, standing, prior}`. The 2026-10-16 floor ruling reads vessel pin + house canon. The fleets ruling reads worn/open. `W26` widens to house canon. The rung line drops F3. "Working floor" dropped from the promote-owed line.
+* ''kahua-memory-stage'': two tiers. working → `bags/daemon-<F>` is AI, unsigned (residency MOVE; no hand-only row). `daemon-<F>` → `kahua-<F>` is the human's eyes plus a signed lift (`beyond-profile` for a seat). As-built homes/disk lines now name the wired face canon (`daemonFaceCanonBag`) and `daemonDiskMirrors`.
+* ''House canon / floor'' (Floor-Truer fork): w26-floor-lane (shape, recipe order, slices 3/6, owed rows), kahu, cap-tier (posture quote), disk-projection, founding-runbook (vessel-floor paragraph), genesis-doc, oracle-governance, pronaos, base-doc, genesis-island, island-protocol, recipe, recipe-watch, realm-bag-brief, k19-hive-lane, peer-coordination, wiki-layer-ontology (vessel pin; working in workbench), lararium-identity (handle card: nym/chain/actCid/parents), quorum-entry (causal parents, no monotone version).
+* ''Workbench / faces'' (Face-Truer fork): session-contract #/the-working-layer, personal-slot, recipe-layer-model, hands-spine-lane, face-proof, custody, k15-custody-step-zero (the address secret derives the catalog half only), dreamnet-architecture, persona-policy, persona-circle, sealed-store (#/the-lit-set open≠worn; #/the-share-config cabal of one), membership-doctrine (`cabal-invite` domain, no `/v1`).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/calls-decided`>>
+
+!! Calls decided
+* "System canon" stays only where it means exactly lares+lararium (`SYSTEM_CANON_SLUGS` remains a live code name), so code comments were not swept.
+* Launch kits (train-o1/x/w), causal-islands' grant illustration and the canvas "view-state" carriers are left as written.
+* no-global-now's historical version language, hearths' dated log and dreamdom-port-contract's delivery `seq` are left; w14's KEL `seq` stays as the cross-check.
+* The CHANGELOG is not edited.
+* "Plaintext survives to disk" is recorded at 2026-11-11 as a re-affirmation beside the 11-10 line.
+* The "NO version numbers" quote is taken in its fuller form ("…enter our stack ('no global now' no clocks, no scalar-clocks either)").
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gaps-candidate-owed-rows`>>
+
+!! Gaps: candidate owed rows
+# ''Browser face label'': a browser-founded face writes no label; `writeFaceLabel` lives in the node and CLI only. Named owed in #/rulings.
+# ''Kahua lift source bind'': a lift names daemon sources by title/revision (`kahua-door.ts`) but takes its body from the hand, and nothing binds it to a `bags/daemon-<F>` row. Named owed in kahua-memory-stage.
+# ''Share config vs the cabal'': bag shares ride the catalog lift plus owner-hive delegation (`share-config.ts:15-24`, `share-apply`); only wiki rows seat faces in a realm. Owed in #/rulings and sealed-store.
+# ''Per-session wear'': the worn face is vessel-wide (`open-node-vessel.ts:581` `wornOrdinal`, `face-selector.ts`); ruling 1b's per-session wear is owed.
+# ''Cross-operator workbench join'': owed at the realm member consult.
+# ''CLI help names a version'': `packages/lares-cli/src/bin/lares.ts:236` reads "un_kapae … strictly higher version"; quorum-entry orders by parents.
+# ''Stale address-secret comments'' (code, evergreen sweep): `face-bundle.ts:22,120`, `face-bundle-restore.ts:359`, `face-bundle-cut.ts:21,136`, `face-card-restore.ts:22-23`, `open-browser-vessel.ts:1038,1508-1511` still say the secret derives working documents.
+# ''"System canon" in comments'' where the check now covers the whole house canon: `verb-local-dispatch.ts:126,163`, `action-handler.ts:253,286`, `meme-verbs.ts:96,106`, `worker-data-verbs.ts:46`, `floor-manifest.ts:22`, `kahu-realm.ts:330`, and test docblocks.
+# ''`bags/oracle` → floor rename'' (`ORACLE_BAG`, `BAG_IDS.oracle`): it now rides its own re-bake.
+# ''Sensorium selector'' `book-text/v1` (`trial_book_owned.py:28`, sensorium-runbook:93): left alone because the arc is deferred.
+# ''Seed-named floor rows'' wording in disk-projection:81 and oracle-governance, beside their existing owed rows.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gates`>>
+
+!! Gates (final tree)
+bcc ok 807 / 0 mismatch · doctype 807, 0 stragglers · ahu-sections 7/7 · evergreen-boundary version 0/0, narration 162/162, canon-history 98/98 · domain-registry 186 clean. No suites, no tree-clean, no browser-weld. No watchers left.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/process-notes`>>
+
+!! Process notes
+* The two forks' restamps overlapped once: Floor-Truer stamped sibling files mid-flight. The final bcc reads all 807 ok, and the Face-Truer edits are present in the diff.
+* `meme normalize` got piped through `head` twice (once by Face-Truer, once by me), which raised EPIPE. Each file was then re-run unpiped and reads canonical.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GjQgmB9OugMm8QgOGcFzcOvSnlAu16Bvmf69CyH9JGY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,183 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/offering/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-11 (file date) — source `.lares-scratch/offering/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/offering/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/offering/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-11
+
+Verbatim scratch record `.lares-scratch/offering/out.md` (hand-back, file date 2026-11-11); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/offering/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gift-bearer-lares-the-offering-door-hand-back`>>
+
+! Gift-Bearer: Lares (Tasked Spirit) — the offering door, hand-back
+
+Branch `feature/green-jello-dinosaur-5--offering` (cut at c0e0622a2), pushed. Commits: `8a87ed2fe` (the offering door), `723a0e1f6` (charter-seat retire + floor-cut test, after the controller re-ruled fork 4), `b8d128f4b` (merge of the span head 3156b4e94, clean), and a final narration cure.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-loop-as-built`>>
+
+!! The loop, as built
+
+OFFER → PROMOTE → RELEASE → ACCEPT → READ.
+
+* ''Offer.'' `offerCanonRecords` (mesh). The lit face reads each named title off its own working layer (`wikis/<slug>/working`, its realm workbench) and opens a body `{kind, nexus, bag, face, offerer, records}`. Each record carries its fields, its digest (`carrierHashOf`) and a fork base (`overrideBase` of the working copy, or null). The face atom signs the body; the CID is sha-256 of the canonical body bytes. The offer lands as `$:/lar/canon-offer/<cid>` on the Nexus's offer table (`canonOfferDocUrl(nexus)`). Canon never moves. Replaying the same offer gives the same CID and `landed: false`.
+* ''Review.'' `readCanonOffers` and `showCanonOffer` give each record's freshness: `new` · `base-holds` · `landed` · `canon-is-fresher`, plus field diffs. "canon is fresher" is a warning only.
+* ''Promote.'' `promoteCanonOffer` calls `requireKahuReach(bag)` ''first'', so a non-steward gets `kahu-reach` and nothing is read or written. If the base moved and the steward passed no `overFresher`, it refuses `offer-base-moved`. Otherwise it writes the offered bytes into the canon CRDT and adds a steward-signed retire `$:/lar/canon-offer-retired/<offerCid>`. The offer row stays. Replaying a promotion hits the retire and lands nothing.
+* ''Release.'' `cutReleaseFloor` (mesh) cuts the next floor from live canon. It re-cuts each slug the prior floor names, keeps the prior snapshot for any slug with no live doc here, and stages blobs before the manifest is written. On node this is the `floor-cut` store-door row, run by `lares nexus release <manifest-file> --cut`. After that the existing `nexus promote open|sign` and `nexus release --approval` run unchanged. If canon hasn't moved, the cut returns the prior manifest's own CID.
+* ''Accept + read.'' These are Leap 1's `acceptFloorRelease` and `resolveFloor`/`floorReadFace`, unchanged. The composition test proves h1 reads the promoted record.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shared-seam-and-adapters`>>
+
+!! Shared seam and adapters
+
+* ''Seam:'' `packages/lararium-mesh/src/canon-offer.ts` holds every decision and the port compositions. It adds `cutCanonFloor` in `floor-manifest.ts`, `canonOfferDocUrl` in `deterministic-doc.ts`, and the domains `canon-offer` and `canon-offer-retire` in `domains.ts`.
+* ''Daemon skins (both hosts):'' `packages/lararium-tw5/src/canon-offer-verbs.ts` defines `offer-make` · `offer-list` · `offer-show` · `offer-promote`. `packages/lararium-keyhive/src/operator-daemon-behavior.ts` registers them; the node and browser daemon islands both run that file. The ports bind by capability:
+** working and canon access through `makeBagAccess` (now exported from `action-handler.ts`);
+** the canon write only after `requireKahuReach` over the vessel's Kahu source;
+** the board through `materializeSharedLarDoc(canonOfferDocUrl)`;
+** the face atom as signer.
+
+The Nexus is the only binding that differs by host: node reads it off the shore's charter (`kahuCabal`); browser takes the call's own `nexus` arg (its island reads no charter). A named Nexus that differs from the charter's refuses `offer-foreign-nexus`.
+* ''Node adapter:'' `packages/lararium-node/src/commands/floor-cut.ts` plus the `floor-cut` row in `store-door-verbs.ts`.
+* ''CLI:'' `lares meme offer <uri…> --bag <slug>` · `offer list [--bag] [--all]` · `offer show <cid>` · `offer promote <cid> [--over-fresher]` in `commands/meme.ts`. `lares nexus release <file> --cut` is in `commands/nexus-release.ts`. Help, accepts rows and `BOOLEAN_FLAGS` (`over-fresher`) are updated. No new top-level verb.
+* ''MCP:'' `meme_offer` · `meme_offer_list` · `meme_offer_show` in `lares_mcp.py`, all HOTL. Promote has no tool: it stays the steward's hand. Also updated: `OFFER_VERBS`, `gen_cli_verbs.mjs` CLI_FORMS, the regenerated `fixtures/cli-verbs.json`, and the tool-set union in `test_lares_mcp.py`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/red-tests`>>
+
+!! Red tests (each run alone, `--maxWorkers=2`)
+
+* `packages/lararium-mesh/tests/canon-offer.test.ts` — 10 pass:
+** an unadmitted face offers and canon stays unmoved;
+** withheld/`cap/**` titles refuse, and a forged row carrying one is set aside;
+** a replayed offer lands nothing;
+** a non-steward promote refuses for 4 stranger kinds;
+** the steward promotes and retires;
+** a replayed promote lands nothing;
+** a moved base warns, refuses, then lands on the explicit choice;
+** the full loop: offer h1 → promote h0 → `cutReleaseFloor` → `assembleFloorRelease` → `acceptFloorRelease` → `floorReadFace` reads the record;
+** node (Automerge board and canon doc) and browser (memory) reach the same decision;
+** a digest guard.
+
+These were red while the module was absent. I also checked by mutation: removing the reach call, the retire hold, the fresher refusal, the replay guard, or the cap-path law each turns its named test red.
+* `packages/lararium-tw5/tests/canon-offer-verbs.test.ts` — 3 pass. Through the real reactors: offer → stranger promote refuses `kahu-reach` (also fail-closed with no source) → steward promotes → replay holds. A `cap/**` title refuses as data, and a faceless floor refuses `waking-floor`. Node (charter Nexus) and browser (call-named Nexus) reach the same decision through the same reactor; foreign and absent Nexus refuse.
+* `packages/lares-cli/tests/meme-offer-plan.test.ts` — 2 pass (routing and usage refusals).
+* I touched these, ran each alone, and they stay green: lares-cli `parse-args`, `laws/accepts-track-the-handlers`, `help-flags`, `laws/routing-follows-declaration`; node `floor-door`.
+* Each test file typechecks under its package config (temporary tsconfig, removed afterwards).
+* ''Not run green:'' `packages/lararium-sensorium/scripts/test_lares_mcp.py`. 4 tests fail on `ModuleNotFoundError: mcp.server.mcpserver` in this venv, which is an environment fault and not caused by the edit. I checked parity statically instead: `mirrored` equals the tool tuples and every tool has a seat.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gates`>>
+
+!! Gates
+
+* `pnpm -r build` passed; plugin bytes unchanged, so nothing is unbaked and `genesis/unbaked.json` is not needed.
+* `tools/typecheck-witness.sh`: all 11 projects clean.
+* bcc: ok 807.
+* doctype: 807 carriers ok.
+* evergreen: version 0/0, narration 162/162.
+* domain-registry: 188 domains ok.
+* No e2e, no full suites, no tree-clean or browser-weld witness. No boot was run.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/canon`>>
+
+!! Canon
+
+* `bags/lares/ha.ka.ba/lares/docs/pono/offering.mem` has a new section `#/the-canon-offer` covering the design, the moʻolelo forks and what stays owed, plus 3 pranala edges. The bcc was re-stamped with `lares meme normalize` (scratch `LAR_ROOT`).
+* No other canon file was touched.
+* One CHANGELOG line was added.
+* Genesis is ''not'' re-baked (that's the controller's call). The canon edit moves the lares snapshot whenever the next bake runs.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/forks-decided`>>
+
+!! Forks decided (moʻolelo, each overrulable; full text in offering.mem #/the-canon-offer)
+
+# ''Where an offer rests: an offer table beside the Kahu realm, one per Nexus.'' Gaia 2026: patches go to a subsystem list, versus PRs from scattered forks. Elyncia 5492: the votive table at the temple's door, versus a pilgrim walking into the sanctum. Fable's realm-drafts lean would either seat h1/h2 inside the Kahu realm (the ruling withholds that) or fork the ruling. An outbox leaves the steward no derivable place to look across vessels. This reopens if realm drafts gain an append-only, non-member write class.
+# ''Fork base = the working copy's own `overrideBase`, never canon's current carrier at offer time.'' A copy that never forked from canon reads "canon is fresher" wherever canon holds the title.
+# ''A stale promote refuses `offer-base-moved` until `--over-fresher`.'' The retire records the fresher canon digests it overrode. No auto-merge.
+# ''A retire's authority is its signature plus the offer-CID key.'' A forged retire can only hide an offer from the open list (`--all` still shows it); it can never move canon, which only moves under the reach.
+# ''The verb lives at `lares meme offer …`.'' `lares meme promote` already names the residency crossing.
+# ''The browser names its Nexus per call.'' A browser promote fails closed because it holds no Kahu board.
+# ''The floor cut is `nexus release --cut`.'' `cut` was already a boolean flag; the manifest path stays positional.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/page-paths-touched`>>
+
+!! Page paths touched (browser)
+
+None. No page or UI file moved. The browser side gets the parity at the worker level: `operator-daemon-behavior.ts` registers the offer verbs on the browser daemon island too. A browser page surface for offering is owed.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/owed`>>
+
+!! Owed
+
+* Federation-gate carriage of the offer table across vessels. Today one hearth's faces share one Repo, so the dogfood loop works on one vessel.
+* A browser page surface for the offer verbs, and a browser Kahu board so a steward could promote from a browser.
+* Offering a removal (a tombstone), and a steward `decline` retire.
+* Paging `offer list` past one outcome's row bound.
+* A node unit test for `runFloorCut` (the mesh `cutReleaseFloor` is covered).
+* Running the sensorium MCP pytest in an environment that has the `mcp` package.
+* A genesis re-bake (controller).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/round-two-the-controller-s-three-asks`>>
+
+!! Round two — the controller's three asks
+
+# ''Fork 4 re-ruled: a forged retire hides nothing.''
+#* A retire now carries the charter's epoch lineage, the way a floor release does.
+#* Every reader (fold, list, show, the promote decision) honours a retire only where `rosterOfLineage(nexus, lineage, epoch)` proves the roster of its epoch and the signer holds a seat in that roster.
+#* Any other retire reads `retire-unauthorised` and the offer stays open. `offer show` names the refused retire and its signer, and `offer list` notes it.
+#* Rows are keyed `<offer cid>/<retire cid>`, so a forgery written first can't occupy the steward's key.
+#* ''Why a charter seat stands for "the steward's hand":'' an atom key names no group a reader can verify without a persona KEL; a seat proves itself in the lineage.
+#* ''Split this forced:'' the seat keys live in the vault beside the store door, not in the daemon island. So `offer-promote` (daemon verb, Kahu reach first) now only writes canon. The retire is the new store-door row `offer-retire` (`packages/lararium-node/src/commands/offer-retire.ts`), which calls `retireCanonOffer`. That function:
+#** refuses `offer-not-landed` until canon carries every digest;
+#** refuses `offer-retire-unseated` before signing with an unseated key.
+#* `lares meme offer promote` runs both steps. If the retire can't land, it says so and exits non-zero (canon write stands, offer stays open).
+#* ''Red test:'' "a stranger-signed retire leaves the offer open". It covers a stranger's key with the true lineage and a seat of a different charter. As a control, the real seat still retires afterwards. Proven by mutation: dropping the seat check turns it red.
+#* ''Known edge, in canon:'' a retire names its own epoch, so a seat removed by a later roll could still retire under the epoch it held.
+# ''Node unit test for the floor cut:'' `packages/lararium-node/tests/floor-cut.test.ts`, 4 passing. `runFloorCut` now binds through a testable `runFloorCutOver`. The test covers:
+#* the promoted row riding the cut, a slug with no live doc keeping its snapshot, and the floor standing whole in the CAS with the file holding the exact manifest bytes;
+#* an unmoved cut returning the prior CID;
+#* an absent prior refusing `floor-cut-refused` with no file written;
+#* a source check that `runFloorCut` goes through `runFloorCutOver`.
+# ''Merge:'' origin/feature/green-jello-dinosaur-5 (3156b4e94) merged cleanly. Re-run alone afterwards:
+#* mesh canon-offer: 11
+#* tw5 canon-offer-verbs: 3
+#* node floor-cut: 4, floor-door: 3
+#* cli meme-offer-plan, accepts-track, parse-args, help-flags: green
+#* bcc 807 ok; doctype ok; domain-registry ok; typecheck witness clean
+#* Evergreen read narration 163/162 after the merge. I reworded one doc line in canon-offer.ts and it went back to 162/162.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yLb7H7qpOLDdxUJQ84S7BQzMeC3FY8IK59JL_l3cpzg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

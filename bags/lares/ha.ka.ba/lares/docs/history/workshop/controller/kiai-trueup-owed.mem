@@ -1,0 +1,482 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/kiai-trueup-owed`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-12 (file date) — source `.lares-scratch/controller/kiai-trueup-owed.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/kiai-trueup-owed"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/kiai-trueup-owed"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! kiai-trueup-owed.md — plan, 2026-11-12
+
+Verbatim scratch record `.lares-scratch/controller/kiai-trueup-owed.md` (plan, file date 2026-11-12); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/next-leap-heads`>>
+
+! NEXT LEAP HEADS (operator approved 2026-11-12)
+* Retire the integer boundEpoch: edges name the PersonaGroup lineage head digest; supersession by acts (Keyhive revoke, kapae, renewal by digest); hard break forks (new group id / new seed charter).
+* Found a hearth as an existing face: node `found` path with no face 0 -> veil floor -> carriage join to F -> seed charter as F; node CLI seat verbs.
+* (Closed, no build) A leaf binds hearthTrueName "" by design; the AID wall arrives by act at a hearth.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/open-now`>>
+
+! OPEN NOW (2026-11-11, supersedes the 2026-11-10 list below)
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate-on-every-lane`>>
+
+!! Gate on every lane (operator, 2026-11-11 reconfirm)
+* Isomorphic + idempotent by intent: one shared implementation in the isomorphic package; only substrate bindings fork, behind capability-named ports; parity cured before landing, never filed; a cross-host test per lane; a replay lands nothing new. Leap 1 (floor accept/remount) and Leap 4 (offering) briefs carry it from the start. Existing debt to fold: override-base canonicalCarrierForm duplicates TW5 .tid serialization.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/running`>>
+
+!! Running
+* Leap 0 clockless sweep (&#45;-clockless): no /vN, no announcement version/position, KEL hash-chain order with seq cross-check, IDB constant, evergreen ceiling falls. On land: controller genesis bake, gates, push.
+* Leap 2a+3 private workbench + workspaces (&#45;-workbench), carrying operator rulings: personal absorbs the private margin (per-face disk mirror, seeds back); NO lift, per-face working doc ripped out for non-daemon wikis; every non-daemon wiki = realm workbench (unshared = private cabal of one); daemon stays face-private; /lar/workspaces/&lt;name> bind class.
+* CI on fc920d34c (runs 43100420667 / 43100420779).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/queued-in-order`>>
+
+!! Queued, in order
+# Leap 1 vessel floor + accept (after Leap 0's renames): one pin per (vessel, Nexus); `lares floor accept/status`; fast-forward by `prior`; two heads = fork stand-off; live remount or restand alert; browser parity.
+# Leap 4 offering door (after 1 + 2a): offer by digest with fork base into realm drafts; steward promotes; release -> accept -> read.
+# Leap 5 canon true-up (alongside 4): w26-floor-lane (vessel pin), recipe-layer-model, kahua-memory-stage, cap-tier, open-but-not-active faces, private cabal, disk-projection personal/working.
+# Leap 6 proof (adds a BROWSER LEG: least human-eyes QA so far; the operator opens the hearth page, boots, crosses the genesis anchor, reads a face's wiki and the floor status; a Playwright pass records it): CI green on the span; Fable blind custody read of the workbench + floor; rebuild CLI + image; operator's three-face walk (found -> up -> persona new 1/2 -> vault unlock &#45;-all -> seed -> MCP memories -> shared wiki between two faces -> export -> down -> reset -> re-found -> seed adopts -> read back -> import + seed land nothing).
+# Leap 2b cross-operator workbench: waits on canon-owed member consult (cabal-realm #/many-realms).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/owed-rows-riding-the-leap`>>
+
+!! Owed rows riding the leap (fold into a lane where one touches the file)
+* realm-per-wiki founding cost: measure once 2a lands (every non-daemon wiki stands a realm).
+* createHouseCanon cleared-at-gate with no kahuReach source reads the steward as a stranger.
+* sibling slot resolvers write bindings into the worn face's daemon store.
+* "system canon" in source comments; CHANGELOG line for LitFaceSlotSpec.atomKey.
+* home-read brief over-count (tunnel-door.ts:44); face-intent-door flake; found end-hang.
+* override-base canonicalCarrierForm duplicates TW5 .tid serialization.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/after-the-walk`>>
+
+!! After the walk
+* AI memory frame (memories land as bare data); Mu on the two floor confirmations; M5 memory migration; kahua two-tier lift.
+* Control-plane leap (bags/daemon -> vessel control home).
+* Span -> main PR; then `develop`; branch burn by reachability.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/wake-condition-rows`>>
+
+!! Wake-condition rows
+* herm-never-unlocks refusal (before a real herm); F7 signed channel (before a second human); parallel-drafts door; `lares vessel read --control`.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/open-now-2`>>
+
+! OPEN NOW (consolidated 2026-11-10; dated history below is the record)
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/next-in-order`>>
+
+!! Next, in order
+# Span cloud run 42954730827 on b7e9d90a7 (the seed design whole). Prior run on f7e7116ac FAILED: read it beside this one; cure any red.
+# Walk-UX lane (shares seed.ts; after the run): one in-place seed progress line; quiet compose chatter in found; tidy seed output; plainer "same typed route" prompt; `home tend` speed + progress; bridge echoes the operator's own path spelling.
+# Operator's fresh loop (clear list given 2026-11-10: move aside projections/{wikis/daemon-0a15…, bags/daemon, observe, kahua-index.toml} + config/carry-1), then found → up → seed → memories → export → down → reset → found → up → seed (adopts by label) → read back → import (lands nothing) → seed (lands nothing).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/small-fixes-owed`>>
+
+!! Small fixes owed
+* home-read brief over-count (tunnel-door.ts:44 counts `touched` on aligned rows).
+* face-intent-door.test.ts timing flake (await the detach, not a clock).
+* canon-change-warns-fresher.test.ts:71 type error in an unchanged line.
+* override-base canonicalCarrierForm re-implements TW5's .tid serialization in mesh; one algorithm, one authority: derive from the projector's carrier form or test the two agree.
+* found ends a beat late until Enter (unmeasured); a re-run `up` after an interrupted `up` errored (capture on next sighting).
+* ~/.lares/config.json at the root: trace its reader, then keep or move.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/decide-after-the-walk-once-the-lararium-stands`>>
+
+!! Decide after the walk / once the Lararium stands
+* The AI's memory frame (memories land as "bare data … UNSTABLE"; structure + provenance as fields).
+* Mu on the two floor confirmations (floor daemon writes memory-only; CARRIAGE_RECEIPT_DOMAIN sixth floor duty).
+* M5 memory migration (rulings + feedback first into the daemon wiki).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/rows-with-wake-conditions`>>
+
+!! Rows with wake conditions
+* herm-never-unlocks refusal: before any herm stands for real.
+* F7 signed local channel covers meme_put: before a second human / remote seat / non-operator process writes the hearth.
+* parallel-drafts door: when a second place joins a face.
+* `lares vessel read --control`; daemon-document vessel state into the control document; page-visible verb answers across islands.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/housekeeping`>>
+
+!! Housekeeping
+* True-up walk: roadmap memes + ~/.lares-scratch/controller/placement-plans/PLACE-*.md → done items to o-takiage ashes; rulings into #/rulings (the Walk-Wright added the 2026-11-09/10 rulings; true the rest).
+* Branch burn by reachability after the span reaches main (worktrees already removed 2026-11-10; branches kept).
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/owed-at-the-next-state-true-up`>>
+
+! Owed at the next #/state true-up (Lares-Kiaʻi seat, 2026-11-07)
+* Lands this seat: store-wall #194 (e1d801042), rollout-find #197 (beed5a2c1), pool-line #198 (d2a8164dd), landmark-map #199 (pending).
+* Operator 2026-11-07: "Set the codex pool limit down to 20% (its really a soft limit)" -> lead/build/research launch until 20% left (pool-line). Road #/rulings.
+* Seat ruling: P27's CAS audience reads off the asking island's relation (daemon island in-process, pool wiki its plane, herm + HTTP /cas world); genesis immutable inventory declares public bytes.
+* Seat call: P27 groundwork carried from parked secrets-store onto lane p27-wire (5 commits); the operator's vault/porkbun commits stay parked. Operator may overrule.
+* Owed P3 rows (store-wall blind reads): F3/F5 check-then-use races, F8 bounded read past fstat, F7 timer clears on exit, N1 guard walk follows a swapped symlink, F6, F10, F11, build-freshness lock mkdir.
+* Tools: lane-state's lead-step brief carries no commit trailers (lease-end step 10 stopped on it) -> leadStepBrief names the session's trailers or reads them from state.
+* Tools: a chain waiting on `pgrep -f <pattern>` matches its own command line (seat practice: wait on a pid or marker, never a self-matching pattern).
+* Stale-dist mechanism (cured in store-wall): parallel self-tests rebuilt a real package's dist in the shared checkout.
+* From the landmark map (Awakens): M1/rank 1 still list store-wall owed; L24 "no writer" is false (device-admit ~:444); #/fresh-start OldShapeRefusal -> OccupiedStoreRefusal; stale "unwired socket/archive/browser custody" inventories; .env bleed resolved (shim picks its env or /dev/null); loulou #/milestones -> landmark-map; K22 holds for its review vs M7; rite: `vessel rite founding` flows a failed stand into seed + help text names `persona new 0` -> pre-rite owed (bounded build-seat lane).
+* L23 opened as a security lane (red-first exploit, blind Opus before land).
+* RULING (operator 2026-11-07, verbatim): "Pono, approve the dogfood/keeper split." -> road #/rulings + landmark-map gets a 'dogfood stand' landmark ahead of M4; M5 becomes the spine after it; 11-05/11-06 rulings bind the keeper rite. (memory: project_dogfood_keeper_split.md)
+* SEAT RULING (talked out, overrulable, 2026-11-07): P27 browser face planes -> (b) the secrets plane is node-only (vault on the node, never on a surface: road #/rulings stories' leans item 5); a browser leaf floors by established absence (NO_CONTRACT_SECRETS_PLANE). The node face-catalog arc is not ported to the browser. P27 owed rows ride: realm lane, F6 gated sync leg (claim narrowed to four crossings), F7b/F9c, F8, F9a, canon-bag blobs at world, isFaceScopedBag any-face match, porch /cas cache headers; promoted plugin on an oracle-plane (world) wiki faults by name (ledger tier PERSONAGROUP).
+* OPERATOR (2026-11-07, via Awakens, verbatim): "Yes, Kia'i works to stand an early Lararium we can 'dogfood' from, so that handoff sits pono with the next milestone." Harness lane closes into the seat once its batch lands; one controller.
+* Harness rows the seat carries (hand-back ~/.lares-scratch/controller/awakens-harness-handback.md): row 3 seam-measure home + writeState generation; cached-token fresh-vs-resumed measure; wait-marker.mjs (fs.watch on done marker/pid); F3 remainder, N2, check-list validation at broker boot, F1 socket probe in the real Codex wall; parked: brokered one-named-test e2e door, F11b workspace-yaml fence, deterministic controller (after standing). Step-back: faults cluster at handoffs; harness drifted Claude-heavy (~70:30 vs 80:20) -> Codex first for harness rows; ~90 feedback memories ready for a retirement o-takiage after standing.
+* Harness (research report 2, collided by Awakens): capability manifest as single source generating launcher args, canon seat tables and witness expectations + a drift test (strongest new harness row; the lead caps lived in 3 copies, 2 stale, trued in the batch); F11b acceptance probe first (adversarial virtualStoreDir/globalVirtualStoreDir/lockfileDir under the real install wall); report 1's 'broker.json / three concurrent brokers' incidents UNVERIFIED in primary sources.
+
+* RULING (operator 2026-11-07, verbatim, via Awakens): "We stand the LArarium and dogfodo the harness INTO the LArarium before all that (delete that last direction from the plan/roadmaps, it's just more churn)". The crossover is retracted (never enters canon). Order: stand the dogfood Lararium -> M5 memory stage -> the harness moves INTO the Lararium (swarm controls in the daemon wiki, seat-harness #/the-swarm-controls) -> only then any measurement work (outcome ledger, cached-token measure, the capability-manifest drift test rank behind it).- P27 PARKED (seat, under the split): ecb26d4d0 reds real boots in CI (manifest handler DeclaredTierRefusal declared-tier-audience-unresolved; browser 'house' TypeError; own-hearth canon pin; persona-ring admit; isomorphic hull; heavy roster). Old deciders stand; lane keeps its work (PR #200 open, state.json names the reds). Lesson for the harness: a lane touching boot composition needs a booted-vessel witness before land; unit + composition greens missed the manifest-handler path.
+* OPERATOR (2026-11-07, verbatim): "1) yes this needs a deterministic set of e2e tests, but please try to find existing ones to update first (hand this design+build to a one-off Luna spirit). 2) I would like to work out of the main repo in a `develop` branch once the dogfood stands and proove itself(#1) -> we'll merge all outstanding work into `feature/green-jello-dinosaur-5` once dogfooding prooves itself, and then merge that to main! Then jump to `develop` to continue the roadmap while dogfooding here in main. So MU the workspace question. 3) incude this in the dogfood stand/proof. 4) agree, we need the main repo on the full read-to-dogfood stte, then a full rebuild, then a check tht the live Lararium will launch containterized and pono-web3-local-first." -> road: dogfood proof set (lane dogfood-proof, Luna seat); branch plan span -> main, then develop; dogfood in main.
+* BRANCH PLAN TRUED (operator 2026-11-07, verbatim): "the primary repo here will just serve `develop` until the roadmap clears, no split needed, we dogfood and develop on one checked out root-nbrach `develop`, then PR back to main after milestones."
+* SEAT DECISIONS on the memory-stage row path (talked out under the recipe/bags model, 2026-11-07; overrulable):
+(a) The stage law also holds on READ: a native page edit or a peer's merged change reaches no meme door, so the stage's readers (the L11 cold-boot index filter over the daemon wiki's composed recipe view, every stage reader) treat a row whose title disagrees with its row-key as a named fork, never a row; the backstop writes its refusal as a diagnostic tiddler in the working bag, not only a log line. Owed on L11 (+ meme-backstop).
+(b) Concurrent same-key edits on two devices of the face (one row, one tiddler, in the face's working bag) surface, never resolve silently: stage readers read the CRDT's conflict set on the row's text and show both sides (the talk-story conflict-surfacing practice). Measure first how the island stores a tiddler's text field. Owed on L12/L11 before multi-device dogfooding.
+(c) A burned stage row raises a kāpae in the working bag (kapae.mem law: an exclusion gesture raises a kāpae, never retracts to absent), so it shadows a lower-layer or re-poured copy; the disk projection must carry kāpae records and the re-pour must pour them, so a re-found never resurrects a burned memory. Measure whether projection writes kāpae today. GATES L19 (the flat memories move in).
+(d) Two distinct memories choosing one readable key: authoring discipline (L19 class/slug) plus placeMeme's baseHash refusal; no new mechanism.
+Durability beyond this machine: stage rows stay in the kahua working projection under the kept state root (cleartext only on disk + live wiki), never pushed to git; off-machine durability rides the vault backup door. Parity with today's flat memories (~/.claude, not in git).
+* SEAT DECISIONS, trued for the layers ABOVE working (drafts, session/slot and other upper layers; operator note 2026-11-07):
+(a') The stage law reads at the WORKING seam, where a row becomes a row: drafts and other upper layers hold work in progress (a rename mid-edit may disagree with its row-key legitimately), so stage readers and the L11 index read working + canon, never drafts, and the fork rule applies there.
+(b') Concurrency catches at the draft -> working save, not as a CRDT conflict after the fact: a save from a draft carries the base the draft opened on (the meme doors' baseHash, extended to the native save path); a moved base refuses the save and keeps the draft standing beside the new working row (both visible), never a silent winner. The CRDT conflict read stays the backstop for writes that skip a draft.
+(c') A burn must govern the layers above it too: raising the kāpae in working also discards or shadows open drafts and upper-layer copies of that row (a stale or synced draft must not re-surface a burned memory in the composed view); exports and re-pours carry the working layer and its kāpae records only, never drafts.
+Measure: do drafts or session layers sync across a face's devices (if they do, (b') and (c') hold across devices too).
+* MEASURED (Luna read seat, 2026-11-07; /home/joshu/.lares-scratch/dogfood-proof/seats/luna-measure/final.md), trues the stage-path decisions:
+*# Daemon wiki recipe, top to bottom: temp -> draft -> personal -> working -> daemon canon -> kahua bag -> library bags -> oracle (wiki-recipe.ts:347-374); a kāpae shadows downward only (island-adaptor.ts:1115-1133) => (c') upward discard of drafts on a burn STANDS as owed.
+*# DiskProjector unlinks a deleted record and writes no kāpae file (disk-projector.ts:693-702); ingest-back reads none => (c) CONFIRMED GAP: a re-pour of an old export resurrects a burned row. The projection writes kāpae records (or the export carries the burns) BEFORE L19.
+*# text rests as a whole scalar (stored-value.ts:4-21); `readParallelDrafts` already surfaces concurrent values via getConflicts (parallel-drafts.ts) => (b) mostly BUILT: stage readers read through readParallelDrafts.
+*# Drafts sync across a seated face's fleet (wiki-recipe.ts:149-160); temp stays local => (b')/(c') hold across devices.
+*# The native draft save carries captured Automerge heads as its writeFamily base (island-adaptor.ts:1317-1330) => (b') the heads base IS the native save's base; no baseHash bolt-on, and a moved base surfaces through parallel drafts.
+* kapae-disk (PR #205, 0cf54631d): seat decisions (overrulable): (1) the watcher sends .kapae shadows like carriers (owed row; both ends no-op a repeat); (2) a tombstone raised while the projector stood stopped writes no shadow at boot (owed row, pre-existing gap); (3) titles ingest-back cannot address (foreign titles, FileSystemPaths rules) get no usable shadow (named limit); (4) ACCEPTED: rename re-link uses removeIn (relocation retracts to absent per kapae.mem; a lower copy surfaces).
+* dogfood-proof SHIP owed P3s: unset LAR_BAGS LAR_GENESIS in tools/dogfood-proof.sh; stage-row gate raw-string prefix and /path children collisions (read-side law covers); corepack fetch under fresh HOME.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/owed-research-seat-s-final-md-clobbered`>>
+
+!! Owed (2026-11-08): research seat's final.md clobbered
+A research seat writes its report to final.md in the broker seat dir, then its closing chat line replaces final.md on copy-back (survive-research w1-a, w1-b: 1.3k-word reports reduced to a 30-word pointer; recovered from run.log). Cure in tools/launch-codex.mjs: keep the seat's own final.md where one exists and save the closing message as out.md / last-message.md, or the research brief line names "your final message IS the report". Harness lane.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/road-row-owed-the-control-plane-leap`>>
+
+!! Road row owed (2026-11-08): the control-plane leap (after the survival walk)
+bags/daemon serves as the vessel control plane while the wiki pattern names it the daemon wiki's canon. Leap: a vessel-scoped `control` layer (R/E families: summons, outcomes, receipts, mailbox, delegate, face-row, lease-epoch, ledger/*, pin, hearth/*, sentinel, active-wiki, flows), projected behind the observe toggle; a never-projected `secret` home for cap/** and any seal-shaped payload; the daemon wiki's canon IS the face's kahua stage (bags/kahua, resolved per worn face to that face's fleet doc, mirrored bags/kahua-&lt;F>): promotion = signed lift; NO bags/daemon-&lt;F> bag gets minted, and bags/daemon renames to the vessel `control` home (operator 2026-11-08: 'bags/kahua-&lt;face> is the fleet-syned daemon memory store, and need to be bound "per face" too. This is really the big architecural difference in the daemon wiki. Other wikis just "get shared" by bag or recipe'); isControlPlaneUri, DAEMON_BAG_ID (sync audience), kahua-door's lift refusal and ~50 readers move together (inventory: survive-lanes/ontology/final.md). Law: no per-face state mount; vessel control never under a face's authority.
+* TWO-TIER DAEMON MEMORY (operator 2026-11-08, quote license: "Approve your lean, but working -> daemon-&lt;face> may promote to local cannon, that's why the fleet sync needs a human's eyes."): the daemon wiki reads working (wikis/daemon-&lt;F>) -> bags/daemon-&lt;F> (the face's LOCAL, unsynced canon) -> bags/kahua (the face's fleet doc, mirrored bags/kahua-&lt;F>) -> library -> oracle. The AI MAY promote working -> daemon-&lt;F> by itself (a move, unsigned, local). The lift daemon-&lt;F> -> kahua-&lt;F> carries the human gate: the operator's eyes and signed grant (kahua-door: lokahi cap + root grant); the AI may propose a lift, never land one. The control-plane leap mints bags/daemon-&lt;F>; bags/daemon becomes the vessel `control` home.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/branch-burn-we-ll-delete-the-landed-branches-onc`>>
+
+!! Branch burn (operator 2026-11-08): "we'll delete the landed branches once proof of live Lararium and green-jello-dinosaur-5 PR merges to main."
+106 lane branches reachable from the span (checked 2026-11-08) wait for: the live-Lararium walk proven AND the span's PR merged to main. Then delete by reachability (from main), never by name.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/lane-owed-projection-filter-yin-cut-and-then-sim`>>
+
+!! Lane owed (2026-11-08): projection-filter YIN cut (operator: "standardize that, under one of the TW5 standard $:/... namespaces that doesn't sync (or make a new one to match the TW5 pattern integrity there), and then simplify/YIN cut that code.")
+Today: isControlPlaneUri (lar path bags/daemon/** + $:/lares/swarm/**), isDaemonCanonWithheld (control plane + bags/** + dreamnet/** + $:/), isVolatileVmUri, isTempLayerInternalTitle ($:/ + lar:&#47;&#47;/ha.ka.ba/lararium/config/), the projector's effect-record and manifest filters: hand string matchers over two title kinds. Cut: ONE TW5 filter tiddler, $:/config/lares/ProjectionFilter, the analogue of TW5's $:/config/SyncFilter (which already keeps $:/temp/ and $:/state/ from saving), shipped in genesis and evaluated by the TW5 filter engine at every mirror decision; every matcher above retires into its default text. Machine-internal, vessel-local bookkeeping moves to a $:/ namespace in the control-plane leap; federated relations (dreamnet/**, persona bindings) keep their lar: names and stay withheld by the filter.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/owed-stage-walk-s2-race`>>
+
+!! Owed (2026-11-08): stage-walk S2 race (seen on train 383ccdee7, both attempts; passes 9/9 locally)
+S2's joined boot fails `[document-unavailable] lar:///ha.ka.ba/wikis/lares/working ... reported unavailable by every reachable peer` right after `save-unsealed: <doc> waits in memory` and "face SEATED": the joined leaf's own working doc sits unsealed in memory when the face seat lands, and the remount after the seat asks peers for it. Code: open-vessel-core.ts mountWikiSlot + sealed-rest / sealed-doc-store. Cure shape: hold the seat's remount until the working doc seals, or carry the unsealed doc across the remount. Red: a seat landing while the working doc sits save-unsealed -> the remount finds the doc locally.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/exception-land`>>
+
+!! Exception land (operator 2026-11-09: "Approve exception. Land it now, we'll manually QA on the walk.")
+carry (PR #213) landed as 655bf3a42 on red CI 42581679245: GitHub 504 on wasi-sdk/binaryen downloads (Quick gates, Witness cell rest; grammar-parity, commit-relay and test-door ✖ read as the 504 cascade, unproven) + the owed stage-walk S2-S6 race. The span's next CI run must read green or name them; the S2 race lane rises in priority. Also owed: span node-b 10s timeouts (42562314409), floor-unlock F1w todo "operator call".
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/walk-findings`>>
+
+!! Walk findings (2026-11-09, direct span fixes landed: 5adf92c91 + 5648bb417 card read-back, 11b40bdb8 census null root)
+* Owed: `found --hearth` hangs a beat after its last line until Enter (offline-run teardown or an open handle; unmeasured).
+* Owed: a re-run `up` after an interrupted `up` errored (output not captured); trace on the next sighting.
+* Owed: CI on the span must read these direct lands (no lane CI ran by operator's ask).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/placement-leap`>>
+
+!! Placement leap (operator 2026-11-09: placement over patterns; whole feature lands before founding)
+Worktree ~/.lares-scratch/placement/wt (branch feature/green-jello-dinosaur-5&#45;-placement, uncommitted, 81 files). Plan: PLACE-PLAN.md there (A secret doc sealed · B control doc · C daemon-&lt;F> · D persona plane off browsing recipe · E carry LOAD->MOVE · F daemon mirror restored · G verify). Moʻolelo approved (persona plane private-synced). Terra sessions: 01a1bf92 (1.15M tokens, ran long) -> fresh session 3. Before land: blind Opus custody read, merge over span bd203d3de.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/coffee-talk-rulings`>>
+
+!! Coffee-talk rulings (operator 2026-11-09, verbatim: "Full CI on placement after founding QA proof; rulings move first, deep UX polish read/enact by a Luna 2 wave ratchet (now if pono).")
+* Placement lands direct for the founding QA walk; a full CI run on the span reads it right after the walk proves founding (walk-as-CI exception ends there).
+* M5 memory migration order: rulings (and feedback) move into the daemon wiki first, project history after.
+* Deep UX polish (found end-hang, seed silence/progress, the TTY walk end to end): Luna wave 1 reads, wave 2 enacts on wave 1's ratchet, in its own worktree; files the placement leap holds wait for placement to land.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/placement-fork-rulings-post-walk-rows`>>
+
+!! Placement fork rulings (operator 2026-11-09: "Approve all five") — post-walk rows
+* ROW: `lares vessel read --control` — a read-only, redacted live view of control records (receipts, outcomes, summons, mailbox) via CLI and MCP; nothing written to disk.
+* ROW: move the daemon document's vessel state (bindings, bag-doc ledger, active-wiki marker, wiki mints, proof ledger) into the control document.
+* OWED before placement lands: `packages/lararium-web/tests/e2e/stage-walk.e2e.test.ts` reads `kahua-propose` outcomes through a TW5 filter on `bags/daemon/outcomes/`; outcomes now rest in the control document (no wiki reads them), so the page needs another way to read back proposal ids (the verb's own answer, or the control read row). Integration branch: feature/green-jello-dinosaur-5&#45;-placement-int (0b21a9420 = B,C,F + browser C + D + E; typecheck clean ×5).
+* OWED before land (scout 2026-11-09, ~/.lares-scratch/placement-scout/luna-scout.md):
+T1 ACCESS DENY: vessel-only docs (control, secret, daemon per-device slots + canon) admitted only to in-process island peers in the access verdict (node open-node-vessel ~1314 selfSlotShareDecision; browser twin) — Automerge syncs any doc access allows, announced or not. Red: a same-operator WS peer asking a vessel-only doc by id is denied.
+T2 stage-walk page reads the kahua-propose verb answer's {id,cid} (kahua-door.ts:127, store-door-verbs.ts:372) instead of the outcomes filter.
+T3 rewrite stale node tests (projection-standoff-alert disk-projection:no case; foreign-title-projection LOCI case) + carry.ts module docstring.
+AT MERGE: run stalled suites with &#45;-reporter=hanging-process first; read the two browser import errors; item A must persist the secret address durably.
+* POST-WALK ROW: page-visible verb answers across islands (a page-dispatched verb's answer travels back to the summoning page island; no dispatch loop) — pairs with `lares vessel read --control`. Until then the hand-authored dispatch+outcome-list pattern shows no outcomes in-page; the CLI/MCP read the kahua stage and intents.
+* AT MERGE: daemon-vm-floor-crossing.test.ts reads an undefined control handle's url on the integration tree (D's test meets B's control handle).
+* MUST-FIX at merge (sealed map, item A ground): the per-device daemon documents (control `daemon-slot/*`, `daemon-canon/*`) are minted by plain repo.create; the vessel's sealed map must name them under the lit face (docsOf), or they save clear / sit held (save-unmapped) and vanish at restart.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/queued-plan-to-do-3-aftermath-loops-through-the`>>
+
+!! QUEUED (operator 2026-11-09: "After this handback (& while the first e2e runs), plan to do 3 Aftermath loops through the code, then an evergreen/true-up walk through the roadmap Memes and scratch plans to move done items to their o-takiage ashes ahu/sections.")
+Trigger: Custody-Wright's A6/A5/sealed-map hand-back on placement-int; start the first e2e run (named files: face-lit-stays-bootable, vessel-reboot, fleet-join, face-join, face-grant-unseated-joinee, sealed-wiki-restart, vessel-sealed, kahua-founding-stage, load-tw5-filetypes, corpus-feed, residency-create, stage-walk, carry e2e) in the background, then:
+# Three Aftermath loops over the placement diff (11b40bdb8..placement-int): what crud burns (dead helpers, stale comments, unused exports, leftover PLACE-*/scratch, title-pattern remnants), evergreen (present tense, no archaeology), L-Prime pass on new prose; each loop closes before the next opens.
+# Evergreen/true-up walk of the roadmap memes (stable-founding-road.mem, landmark-map.mem, controller-handoff.mem, disk-projection.mem, kahua-memory-stage.mem, CLAUDE.md adapter) and scratch plans (kiai-trueup-owed.md, PLACE-*.md, survive-carry-notes.md, RESUME notes): done items move to their o-takiage ashes ahu/sections; open items stay true; rulings of 2026-11-08/09 land in #/rulings.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/queued-at-last-lane-landing`>>
+
+!! Queued at last-lane landing (operator, 2026-11-10)
+* Operator: "Cancel the earlier test runs, run an e2e once the last spirit lands. Also at that time have the Advisor session deep read the working branch, not the changes, but the overall machina for a POSIWID view. at aperture 18."
+* Earlier CI runs cancelled (42751804833). Floor-Wright + Board-Wright commit locally, no push; controller merges both into placement-int, verifies build/typecheck/witnesses, pushes ONCE -> one e2e run on PR #215.
+* At that same moment: SendMessage Lares-Awakens (Fable advisor): POSIWID deep read of the whole working branch (placement-int head), the overall machina, NOT the diff; aperture 18/theme.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/post-walk-rows`>>
+
+!! Post-walk rows (operator approved 2026-11-10)
+* Home-read brief over-count: packages/lares-cli/src/commands/tunnel-door.ts:44 counts `touched` on rows whose state reads `aligned`, so the wake hook prints phantom "off the tunnel" items (8 of 14 today: claude.retain/wake-hook/loads-hook/ingest-stop/ingest-end, codex.retain/retain-uncapped/ingest-stop) whenever a harness rewrites settings.json/config.toml. Cure: the brief counts only drift/foreign/unreachable (touched stays for undo). Red test first.
+* Walk step (operator's hand, approved): after the image rebuild with the vessel up, run `lares home tend` (inspect planned writes before consent) to move the six pre-one-root lares MCP seats (claude without LAR_ROOT; codex, copilot, 3x vscode on the native venv seat) to the container seat.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/floor-wright-confirmations`>>
+
+!! Floor-Wright confirmations (operator, 2026-11-10)
+* Operator: "Approve both confirmations; but we shall MU both after the Lararium stands and we can dogfood the design from inside the system."
+*# A herm's / locked floor's daemon wiki writes rest in memory only, dropped at recompose.
+*# The carriage log adds a sixth floor duty with its own place-signer domain (CARRIAGE_RECEIPT_DOMAIN); peer cosignature + non-inclusion proof owed.
+* Both stand for now; after the dogfood Lararium stands, re-open both (Mu) and weigh them from inside the system.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/posiwid-a-g-unasked`>>
+
+!! POSIWID A-G unasked (operator, 2026-11-10)
+* "Mu A-G POSIWID. The code may have advanced further than the memes." The seven behaviour-vs-canon items are not code defects; canon true-up runs code -> meme. Walk-Wright item 5 (F mailbox drop, G card message) dropped.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/four-defaults-decided-by-the-story-rung`>>
+
+!! Four defaults decided by the story rung (operator: "Approve all four defaults if they survive gaia-2026/elyncia-5492 user stories", 2026-11-10)
+# Self-founded, unjoined browser face lifts locally while custody stands unlocked (parity with node). SURVIVED, scoped: only a face this device founded itself; a device joined to another's face stays at the floor until admitted (2026-10-16 ruling keeps its meaning). Not on the walk path: a lane after the walk.
+# Unencrypted export bundle may rest under /lar/config (= $LARES_HOUSE/config, outside the checkout, beside projections already cleartext by law). SURVIVED; the verb says it rests unencrypted; never inside the tracked tree.
+# herm-never-unlocks refusal deferred until dogfood. SURVIVED with a wake condition: it lands before any herm stands for real (a VPS herm for a household nexus); herm-floor e2e R5 (which unlocks a herm) is re-read then. Measured: a herm founding runs foundCustody, so it can unlock, but with mint-with-face nothing operator-private sits behind that key.
+# F7 authority by designation held for dogfood. SURVIVED with a wake condition: road F11 (signed local channel) covers meme_put before a second human, a remote seat, or any non-operator process class writes the hearth. Same-uid processes already read/write ~/.claude memory and projections, so designation widens nothing during dogfood.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/before-merge`>>
+
+!! Before merge (controller, 2026-11-10)
+* Genesis re-bake on the FINAL placement-int head (genesis-parity witness RED in run 42801312695: lararium-tw5/plugins/lares-memetic-wikitext.json drifted from genesis cas; genesis/unbaked.json declaration stale). <code>pnpm &#45;-filter &#64;lararium/node build:genesis</code>, then ONE labelled "GENESIS RE-BAKE" commit: genesis/seed.json, new genesis/cas blob (git add), superseded blob removed, genesis/unbaked.json removal where it stands. See feedback_regenesis_commit_untracked_cas.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/post-walk-row`>>
+
+!! Post-walk row (walk 1, 2026-11-10)
+* Host `lares vault unlock` (any vessel verb) without LAR_ROOT prints a raw HouseRootUnnamed stack trace (lares-cli local-connector udsSocketPath -> larDataDir). Cure: the CLI names the cause and the next step ("on this host, run tools/lares-container.sh &lt;verb>; the container sets LAR_ROOT=/lar") with no stack. Also: `up` already unlocks on a TTY, so the runbook/walk says no separate unlock step after up.
+* (walk 2, 2026-11-10) found's "bind [p]assphrase, [s]heet, [b]oth (p):" accepted "pp" as p. Cure: a malformed answer asks again, naming the choices.
+* (walk 2) seed lares: outcome-unknown after 36.4s settle budget (468 carriers) -> Seed-Wright item C (settle by progress).
+* (walk 2) meme_put of unframed text lands as "bare data … UNSTABLE"; decide the memory frame the AI writes (structure + provenance as fields) once past the walk.
+* (walk 2) export "left behind: parallel-drafts": another place's unmerged drafts (wikis/&lt;slug>/drafts/&lt;did>) have no door and never travel. Owed, wake condition: a second place joins a face.
+* (walk 2) Walk-UX lane (after Seed-Wright, shares seed.ts): seed progress as one in-place TTY line; quiet compose "Container … Creating/Created" in found; tidy seed human output (CREATE CREATE, boundedArrayCount blob); plainer "same typed route" question; measure+show progress in `lares home tend` (1m32s for 6 writes); the bridge echoes the operator's own path spelling back (export printed /lar/config/carry-1 for ~/.lares/config/carry-1).
+* (2026-11-10) PR #217 CI: lararium-mesh tests/face-intent-door.test.ts "RED: a door detached while its owed-retry-held path holds open publishes no outcome after the detach…" failed once (73ms) on a help-only change; re-ran failed jobs. If it reds again anywhere, it's a timing flake to cure (await the detach, not a clock).
+* (ruling 2026-11-10) "\"pet-names in plain text\" reads fine for now." The face label (projections/face-labels/&lt;F>.json) carries the pet-name in the clear; the contract witness excludes that file by name. Re-entry key: "for now" — revisit with the M5 / custody pass once the Lararium stands.
+* (2026-11-11, operator: "the multitude of faces reads as a private cabal for 1 human. Pattern integrities!") Canon true-up + design: face sharing as a private cabal of one (share config = surface over cabal read-scope); "one active face per device" gains open-but-not-active; the vessel tier vs the cap tiers' set-inclusion chain (house canon may simply be PUBLIC). After the Lararium stands, under the Mu.
+* (2026-11-11) K2 (ceremony e2e): intermittently a worker string carrying the test passphrase reached the page thread (2 of ~11 runs); 16 instrumented runs never re-fired. The redacted K2 spy rides the span so a future failure names its line. Until caught: no real face unlocks in the browser surface. S3 relay race: partly explained by browserIslandReceipt lacking node's re-find (Span-Ready-Wright ports it); the rest unfound.
+* (2026-11-11) Sample branches feature/green-jello-dinosaur-5&#45;-races-s1/-s2/-s3 (Race-Wright CI samplers): delete with the branch burn, by reachability, after the span reaches main.
+* (2026-11-11) W26 slice 5 (accept act) build CANCELLED by the operator: "that's not a finished design yet". Its partial work was discarded (nothing committed). LAW breach still on the span, owed to the floor design pass (same files): the floor manifest format `lararium-floor/v2` (+ "v1 refuses by name") must take a versionless, shape-read name; release ordering by causal link only (no counters, no version numbers, no scalar epochs as order). Operator: "NO version numbers enter our stack ('no global now' no clocks, no scalar-clocks either)."
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/leap-backlog`>>
+
+!! LEAP BACKLOG (operator: "Enact all in flowstate", 2026-11-11)
+Rulings: the VESSEL pins the floor (one pin per (vessel, Nexus)), faces don't; engine per device by adoption at reboot. Private shared wikis mirror in ~/.lares/projections/wikis OR operator-configured "workspaces" dirs, never the public checkout. Counters: KEL seq = cross-check under hash-chain order; IDB_VERSION = pinned platform constant (controller leans, enacted under "enact all").
+0 clockless sweep -> 1 vessel floor + accept -> 2 shared workbench (Fable design read first) || 3 workspaces -> 4 offering door -> 5 canon true-up (alongside) -> 6 proof (CI + Fable blind custody read + walk).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/from-the-ci-red-cure`>>
+
+!! From the CI-red cure (landed fc920d34c, 2026-11-11)
+* createHouseCanon: a composition cleared-at-gate with no kahuReach source reads even the steward as a stranger (readsFloor). Harmless today (CREATE routes to the daemon bag), but wrong if a CREATE ever reaches a wiki island; the option doc still says "system".
+* Sibling slot resolvers write binding rows into the WORN face's daemon store (daemonStore: ctx.composite). Only device slots reach this path today; a non-device sibling slot would misplace rows.
+* Source comments still say "system canon": evergreen sweep.
+* CHANGELOG owes a line for LitFaceSlotSpec.atomKey (a sibling face labels slots by its own key, no longer the place key).
+* Prove the sibling label path in a real two-face boot (sealed-rest-composed / lit-set e2e) in the walk.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/from-leap-0`>>
+
+!! From Leap 0 (landed e2fc2158c + bake 6d2f476f3, 2026-11-11)
+* web genesis-anchor.ts + live-status.ts hand-copy seed format and `lar-arrival`: folded into Leap 1 (mesh `wire-names` subpath; real-seed unit test).
+* seq sorts in the persona KEL (persona-kel-board, face-bundle-restore, face-provisional, persona-kel-ring, sibling-channel); face-authority `position`; edge-frontier and journals: hash-chain order, seq cross-check only.
+* Python sensorium trial tags (book-lines-v1, PREREG_VERSION): weigh separately (may key stored trial data).
+* Left by design: TW5 upstream blob `version` labels, MCP protocolVersion (external).
+* Floor announcement now carries `prior` (digest link); no reader yet -> Leap 1 reads it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/from-leap-2a-3`>>
+
+!! From Leap 2a+3 (landed 952f50dec, 2026-11-11)
+* Stale-row window: between a replica ingesting a Keyhive revoke and its next roster read, the old seat row stands. Re-project on every ingest or route the guard into the island. Put it in the Fable custody read.
+* Per-device key Documents: Keyhive can't derive a Document id, so each device keys the derived realm with its own sentinel Document. A member seated on device A holds no seat on B until B enacts the share row. Test a share made on A against a mount on B in the walk.
+* Re-bake owed: canon edits (cabal-realm, disk-projection, recipe-layer-model, session-contract, hands-spine-lane) move house-canon floor bytes. Bake once after Leap 1 lands.
+* `pnpm -r typecheck` skips test files (six stale tests slipped past it): add a test-typecheck gate.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/from-leap-1`>>
+
+!! From Leap 1 (landed + bake, 2026-11-11)
+* Live floor swap in the island (every accept raises the reboot alert today).
+* Which Nexus's pin a wiki mounts, once recipes name their Nexus (today: the vessel's only pin; two pins disagreeing fall back to genesis and say so).
+* Page floor pane (no page UI calls the floor doors yet): browser leg of the walk.
+* Relay that carries floor announcements to the reader.
+* Node integration of nodeFloorPorts against a scratch-root founded vessel: covered by the walk's `lares vessel floor status`.
+* browser-weld-witness C4.2 reload flaked 3x then passed 3x (cold dev cache, unproven).
+* LAW SLIP x2 (Benchwright, Floor-Pinner): spirits ran tree-clean-witness / browser-weld-witness locally. Future briefs name both as e2e drivers, banned locally.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/from-leap-5-canon-true-up-re-bake-owed-after-lea`>>
+
+!! From Leap 5 canon true-up (landed 3156b4e94, 2026-11-11). Re-bake owed after Leap 4 (lares+lararium floor bytes moved)
+* Browser-founded face writes no face label (writeFaceLabel node/CLI only): PARITY, cure before the walk.
+* Kahua lift takes its body from the hand, unchecked against a row in bags/daemon-&lt;F> (custody: the lift should name a staged row by digest).
+* Bag shares ride their own resolver in share-config.ts, not the cabal grammar (only wiki shares seat realm faces).
+* Worn face is per vessel (wornOrdinal), not per session.
+* Code sweep lane (small): CLI help lares.ts:236 "strictly higher version" (kāpae lift, user-facing); comments in face-bundle*, face-card-restore, open-browser-vessel say the address secret derives working docs; "system canon" comments where the check covers house canon (SYSTEM_CANON_SLUGS stays for the lares+lararium pair).
+* bags/oracle -> floor rename waits on its own re-bake.
+* Seat MOVE into bags/daemon-&lt;F> unsigned: unproven by a run (walk: AI writes a memory, promotes locally).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/from-leap-4-offering-door`>>
+
+!! From Leap 4 offering door (landed 312c2f2a0 + bake, 2026-11-11)
+* Offer table rides no federation gate: offers from another vessel never reach the steward's replica.
+* Retire counts any seat of the epoch it names (a seat a later roll removed could still retire under its old epoch): close by reading the charter head. Hides an offer only; never moves canon.
+* Promote runs in two steps (daemon canon write, then store-door retire signed by a seat); a failed retire leaves canon written and the offer open (exit non-zero). The walk exercises it.
+* Browser offering page and browser Kahu board; offering a removal; steward "decline" retire; `offer list` paging.
+* MCP pytest needs the `mcp` package in the venv (4 tests ModuleNotFoundError mcp.server.mcpserver).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/from-the-pre-walk-lane`>>
+
+!! From the pre-walk lane (landed 07d53bdc4 + bake 5a8b5e603, 2026-11-11)
+* Three hand-edited e2e files (promote-probe, kahua-founding-stage, web stage-walk) stage-then-lift; first run = CI shards.
+* Test-typecheck ratchet: ~1780 test-file type errors (browser 128, keyhive 107, mesh 431, node 754, tw5 219, web 71, cli 74); ceilings only fall. Burn-down lane after the walk.
+* Browser face label rests in OPFS and dies with site data; no browser door reads labels yet.
+* MCP kahua_stage tool; batch lift naming staged rows.
+* Binding answer carries the full workbench snapshot on every faced mount; trim to create-time or changes-since-heads when workbenches grow.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/from-the-glass-mirror-lane`>>
+
+!! From the glass-mirror lane (landed 00c7af858 + bake, 2026-11-11)
+* Mirror page background: stock TW5 colours body.tc-body, which nothing in the shadow root matches; host page shows beneath gruvbox frames.
+* G3 doors (modal, notify, clipboard, download, route); M4 goldens at full vs stock; D6 SSR face; StartupAction re-run + .mem registration (tw5-vm-gaps-scout row 17 remainder).
+* First-boot $:/StoryList save and weld M5 (real edit through the mirror) proved only by CI held-out.
+* ahu-pair-parity witness needs the tree-sitter wasm on the host.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/from-the-full-mirror-build`>>
+
+!! From the full-mirror build (landed fd20249aa, 2026-11-11; Fable-authored commits carry a Fable 5.2 co-author line)
+* Interaction goldens 01-13 at full against stock TW5 (definition of done): untouched.
+* e2e glass-mirror, glass-tabs, mirror-boot-makes-no-request, rest-before-reload may still wait on a skinny word or full-promotion-unfinished: CI shows.
+* Skinny projection carries no system/plugin bodies: a stepped-down mirror paints unstyled with every plugin held.
+* sealedRest reaches no mirror: code plugins held everywhere.
+* Absent: http-request door (D15), open-surface, route-in from a link, StartupAction/PostRender; node-served page asking port:boot; switching the mirror's wiki (daemon stays width none).
+* port:boot rides with no ack and outside the lag budget; a plugin record >1 MiB fails the wire reader whole.
+* Follower-tab handoff over BroadcastChannel unproven with real boot chunks.
+* Stock language switcher writes lang/dir on the page's documentElement.
+* Kernel rides inside the engine blob (one CID), not a separate kernel member.
+* Browser vessel boot to live takes 40-50 s on a warm local dev profile (mirror handoff only 1.5-3 s after); suspect the ~5.6k floor rows each island lands at seed (glass2 replay). Trace before the browser leg matters.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/leaf-device-user-fleets`>>
+
+!! Leaf-device user fleets (gap found 2026-11-12, next lane after Veil-Wright)
+* Under the veil floor, a browser founds no face at first boot. A user with only leaf devices then has no way to found a PersonaGroup (U5 owed) and no browser-side root-holder door to OFFER a fleet join or ANSWER a request (the page only pastes offers/answers that a node CLI printed). Users' leaf-only fleets need both: the persona-mint door over the veil floor (found a face on purpose → the Lift runs) and the browser root-holder fleet-join door (offer + answer), isomorphic with the node CLI's.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tucKncHCsAKsJsn3PpfvUUBzh8AB8cKpg_klm0eW1jo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

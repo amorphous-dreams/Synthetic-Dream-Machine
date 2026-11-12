@@ -1,0 +1,48 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/i1-intent/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/research/i1-intent/` — 2 record(s) here, 18 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/i1-intent/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/i1-intent/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/research/i1-intent/`
+
+The scratch planning records of `.lares-scratch/research/i1-intent/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 2 record(s) stand here and 18 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[research/|lar:///ha.ka.ba/lares/docs/history/workshop/research/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/branches`>>
+
+!! Branches
+
+|! Directory |! Records |h
+| [[luna/|lar:///ha.ka.ba/lares/docs/history/workshop/research/i1-intent/luna/index]] | 8 |
+| [[sol/|lar:///ha.ka.ba/lares/docs/history/workshop/research/i1-intent/sol/index]] | 8 |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[brief-common|lar:///ha.ka.ba/lares/docs/history/workshop/research/i1-intent/brief-common]] | brief | 2026-10-26 | `brief-common.md` |
+| [[wave2-common|lar:///ha.ka.ba/lares/docs/history/workshop/research/i1-intent/wave2-common]] | research | 2026-10-26 | `wave2-common.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Kx_uBzz4h-E074ZXF51QyjyhDrGPzlsE0bUKzpuvpyk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

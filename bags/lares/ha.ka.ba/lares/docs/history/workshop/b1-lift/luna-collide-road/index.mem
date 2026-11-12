@@ -1,0 +1,38 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/luna-collide-road/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/b1-lift/luna-collide-road/` — 2 record(s) here, 2 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/luna-collide-road/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/luna-collide-road/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/b1-lift/luna-collide-road/`
+
+The scratch planning records of `.lares-scratch/b1-lift/luna-collide-road/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 2 record(s) stand here and 2 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[b1-lift/|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[brief|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/luna-collide-road/brief]] | brief | 2026-11-05 | `brief.md` |
+| [[final|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/luna-collide-road/final]] | hand-back | 2026-11-05 | `final.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jy6wKUYMhbtpwrpE8JjqyNe39u458HuQy6rFwUPoDtU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

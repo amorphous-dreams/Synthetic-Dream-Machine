@@ -1,0 +1,48 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-010/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-010/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-010/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-010/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-010/out.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-010/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/step-10-hand-back`>>
+
+! Step 10 hand-back
+
+Head `beed5a2c152583e0bdc9be9036e2bd1c22d189f1`; no commit or push. No seats live. Lane worktree holds one uncommitted test edit in `packages/lararium-keyhive/tests/face-grant-record.test.ts`.
+
+Wall: LEAD LAW requires each commit to end with the two trailers from this session's attribution reminder. This launch supplied no such reminder or trailer values. Older Claude sessions' trailers do not establish attribution for this Codex session. Controller: supply the exact two lines. Red-first ordering prevents applying the fix before committing the red.
+
+Measured at head, source reading (not a complete slice census):
+
+* Blind P3: `verifyFounderAuthority` reads dyad before lineage, masking a held fork with pending unknown. Red added: fork plus unknown must name fork; control: unforked plus unknown stays pending. Relay `req-009`/`res-009` runs the named file: 23 pass, 1 fails at the fork assertion after the control passed; actual reason says dyad unknown. `req-008` also demonstrated the failure, before control reordered. No fix yet. Other blind P3s remain owed, including tri-state ring, stale lineage, memoization, epoch-free consumers and tests, join wiring and TOCTOU. Ruling explicitly makes owing standing; no new operator ruling needed for that question.
+* Census: `kapae.mem` four-edges expressly says the edge board holds no roster and cannot establish a whole set. Decide census must take independently evidenced known dyads and explicit completeness, refusing incomplete view; never infer completeness from that board. Source and proof of completeness still need measuring and reds/controls.
+* `runApplyAdmitPayload` projects carried lineage and seeds/changes documents before it countersigns and verifies the edge; its verification pins to payload `signerDid`, and does not establish dyad standing there. Needs independent anchor, standing, no-side-effect reds and valid controls; actual anchor and frontier wiring remain to investigate.
+* `holder-session-proof` verifies the edge using the edge's own root as pin; browser `shared-holder-core` then selects a house using that root. No KEL or standing enters this verifier. Needs trusted independent anchor and standing plumbing, red/control and caller-level tests.
+* `leaf-peer-proof` walks the held KEL for the peer and relicense but passes no independent prefix/root pin or dyad reading; it still applies optional epoch. Needs pinned lineage and remove-wins on initial proof and relicense; measure live callers and add red/control before changing.
+
+Fork decided: cure fork masking first because it has a bounded existing fixture and independently observable refusal. Do not burn epoch guard or fields; ruling places those last. No test for other items was written or run this step. No claim that a fleet census can establish global completeness across causal islands.
+
+Next: controller supplies attribution lines, commit red through broker request 010 and read receipt in same step; move lineage check before unknown dyad while retaining explicit aside/unknown semantics, test and commit fix; continue remaining items red-first. Keep `step` counter 10 per step law.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_j5Bnm5Ule2Lh3ROQugNlCab7D6AZQX6DJT6nxwXzr0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

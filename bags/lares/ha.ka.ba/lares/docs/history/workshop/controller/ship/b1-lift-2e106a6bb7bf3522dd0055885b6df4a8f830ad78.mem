@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/b1-lift-2e106a6bb7bf3522dd0055885b6df4a8f830ad78`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-06 (file date) — source `.lares-scratch/controller/ship/b1-lift-2e106a6bb7bf3522dd0055885b6df4a8f830ad78.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/b1-lift-2e106a6bb7bf3522dd0055885b6df4a8f830ad78"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/b1-lift-2e106a6bb7bf3522dd0055885b6df4a8f830ad78"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! b1-lift-2e106a6bb7bf3522dd0055885b6df4a8f830ad78.md — plan, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/ship/b1-lift-2e106a6bb7bf3522dd0055885b6df4a8f830ad78.md` (plan, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+SHIP b1-lift 2e106a6bb7bf3522dd0055885b6df4a8f830ad78
+read: blind Opus over merge c98557881 (LAND-AFTER-CURES; P2-1..3 cured red-first); blind Opus (Blind-Warden-II) over c98557881..2bbfb2413 (LAND-AFTER-CURES: inbound face gate, torn-founding ward lock); cures 8bc247e9c (reds) + 55b631484 (greens) read by the controller's own diff read; CI green run 42256555201 at 55b631484; 0df40b07b merges the span (.mem alone) by hunk; 2e106a6bb (test only, the shore-writes live wait ends on the page's own events) read by the controller's diff read; CI green run 42270237951 at 2e106a6bb (node-a's first-sighted hook-budget load-red rerun once per land-train's policy).
+owed: P3s per /home/joshu/.lares-scratch/b1-lift/blind-warden-2.md (askWardRoute bound to the lighting conn; rowFace unchecked at browserVesselFaceTagDoor and ward key sign/mint; walk:ward vs worn face; port:want before admission; liveness sweep on a timer; stale comment browser-ward-tree.ts:15-18; swept torn face's stray tree rows).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;z7GSaHPcjEaa6KMOo3RNYvE_PKX6vcnbZ6C_odHtli4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,33 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/land-queue-c761c29f3`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-01 (file date) — source `.lares-scratch/controller/ship/land-queue-c761c29f3.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/land-queue-c761c29f3"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/land-queue-c761c29f3"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! land-queue-c761c29f3.md — plan, 2026-11-01
+
+Verbatim scratch record `.lares-scratch/controller/ship/land-queue-c761c29f3.md` (plan, file date 2026-11-01); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ship-lane-land-queue-head-c761c29f30f774c4143677`>>
+
+! SHIP · lane land-queue · head c761c29f30f774c41436771c9a400215b087612b
+Reads: Sonnet cold read (HOLD→SHIP); blind Opus Gatehouse-Reader (HOLD: H-A rename, H-B table) → cure bf26ee04b re-read SHIP with two MEDIUMs → cured c761c29f3; controller read the final delta (resumed links meet the table + SHIP; SHIP-refused entry drops by name; tsconfig in table). 2026-11-01.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mQvZx82cUpR43v304Dl1nGIhCjyoItgyoI9qNibsrLI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

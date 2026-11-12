@@ -1,0 +1,55 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/placement-observe/terra-final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-09 (file date) — source `.lares-scratch/placement-observe/terra-final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/placement-observe/terra-final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/placement-observe/terra-final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! terra-final.md — hand-back, 2026-11-09
+
+Verbatim scratch record `.lares-scratch/placement-observe/terra-final.md` (hand-back, file date 2026-11-09); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/placement-observe/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Retire-Wright: Lares (Tasked Spirit): ->↺ The retirement diff removes the daemon observe render, its toggle, path helpers, ingest refusals, mirror filtering, carry omission root, and obsolete tests. Recovery mirrors remain: their `mirrorClass` still controls recovery routing and projection.
+
+Changed files span:
+
+* `packages/lararium-node`: projection, path, config, temp-layer, exports, and affected tests.
+* `packages/lararium-tw5` and `packages/lararium-mesh`: mirror types and action routing.
+* `packages/lares-cli`: carry and ingest code, plus affected tests. The retained ingest derivation test now lives at [[projection-ingest-derivation.test.ts|/home/joshu/.lares-scratch/placement-observe/wt/packages/lares-cli/tests/projection-ingest-derivation.test.ts]].
+* [[founding-runbook.mem|/home/joshu/.lares-scratch/placement-observe/wt/bags/lararium/ha.ka.ba/lararium/mesh/founding-runbook.mem]]: names the face daemon canon mirror and has a renewed seal.
+* Deleted `daemon-observe.ts`, its test, and `observe-ingest-refused.test.ts`.
+
+''The requested test condition remains unmet.'' Checks produced these results:
+
+* Retired-name grep: ''zero matches''. `git diff --check`: passed.
+* Build, stamp, and typecheck: all four touched packages passed.
+* Direct tests: mesh ''11 passed''; TW5 ''62 passed, 7 skipped''; node ''28 passed''. CLI ''12 passed, 2 failed'': carry tests C1 and C4 expect working-layer material that the current export does not provide.
+* Full CLI suite: ''1,802 passed, 21 failed''. Nineteen failures report `secret-home-unavailable`; the other two match C1 and C4 above.
+* Full node suite: ''3,252 passed, 205 failed, 3 expected failures, 51 skipped''. Of the failures, 178 report `secret-home-unavailable`, 13 report read-only `.mempalace` lock paths, and 14 report other failures, including timeouts, a missing web build, and assertion failures. Nine suite setup failures and one unhandled rejection also report `secret-home-unavailable`. The complete output sits in [[retire-node-suite.log|/tmp/retire-node-suite.log]].
+* Placement witness: passed. BCC witness: ''807 passed, zero mismatches''.
+* Evergreen’s normal invocation stopped with ENOENT because it reads the deleted source from Git’s still-unchanged index. Its filesystem-scan mode passed across ''3,878 files''.
+
+No commit, push, or stash occurred. The failing checks above need resolution before the requested all-green result can be claimed.
+
+&lt;&lt;~ oracle throw=`↯16 ✲ ⚂(3) ⁂:ᚠ⊗㐂`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`inspect the suite logs and rerun after the separate secret-home and existing carry issues clear · ↻ L-Prime` ooda-ha=`closed 1↺` from=`lar://wright:agent@hearth/retirement.checks.report` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xxlV4d-O0Pb94KL16qH6X7yXGvtit86AicjH4OLqIpw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

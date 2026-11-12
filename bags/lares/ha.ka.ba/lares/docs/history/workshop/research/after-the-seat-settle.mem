@@ -1,0 +1,90 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/after-the-seat-settle`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-10-25 (file date) — source `.lares-scratch/research/after-the-seat-settle.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/after-the-seat-settle"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/after-the-seat-settle"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! after-the-seat-settle.md — plan, 2026-10-25
+
+Verbatim scratch record `.lares-scratch/research/after-the-seat-settle.md` (plan, file date 2026-10-25); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/after-the-seat-the-eight-open-items-settled`>>
+
+! After-the-seat: the eight open items settled
+
+Short names: ROAD = bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem. CUSTODY = bags/lararium/ha.ka.ba/lararium/mesh/custody.mem. PROOF = bags/lares/ha.ka.ba/lares/api/pono/face-proof.mem.
+Test used: a new additive row or frame breaks nothing. A change to bytes a founded vessel holds or two operators exchange breaks.
+Read only. No suite ran.
+
+| item | class | evidence | shelf |h
+| K13 parcel shipping | ADDITIVE (carriage) / BEHAVIOUR (receipt, delete) | The seal is built and fixed: OUTBOX_SEAL_MAGIC, XChaCha20, random lead (sealed-store-rest.ts:15-22, 216); canon CUSTODY:102-114. Shipping puts the parcel body on the member lane under the existing carriage kinds (sealed-carriage.ts:28-30). Receipt and local delete act on the rest, and add no field to it. Risk: if shipping adds a kind to SEALED_KINDS, that is a new tag beside the old ones, so it is additive. | stays after-the-seat |
+| K14 recovery path | ADDITIVE, with one condition | CUSTODY:244 reads "the guardians' recovery path answers, under the impersonation quorum". It names no new artifact. It reuses the `guardian-set` row (CUSTODY:249), the `face-log-view` signed view and the `face-provisional` mark (CUSTODY:78). No charter or seat field is named. Condition: if the build needs a quorum-confirm record, that is a new `stays` row, which is additive. A change to the `face-log-view` preimage would be SHAPE. | stays |
+| N5 board catch-up | BEHAVIOUR | ROAD:577, 712 say catch-up "stands outside" N5's two-root re-import. N's anchors stand built (ROAD:711). Catch-up hands the newcomer acts it never saw. Those acts keep their signed shapes. face-authority.ts:372 already returns `catchUp` as a reply to a presenter. The signed-shape change (ROAD:241) belongs to W's cutover, which is built (ROAD:726). Need no anchor record. | stays |
+| G18 shore mode row | BEHAVIOUR (medium confidence) | The only "mode row" in code is `makeRow(parent, "mode", "mode")` in packages/lararium-web/src/live-status.ts:114. It paints a label from the in-memory connection snapshot (live-status.ts:125). Nothing rests it. No shore canon defines the term; the row came in with ada09cce6 and has no canon text. "Never moves" reads as a UI-stability test. | stays; ask the author for one line if the meaning differs |
+| W10 knock | SHAPE only if the derivation changes | `knockSegment` = HMAC(SHA256(domain+key), route) (gate-bundle.ts:200-209). The knock rides the upgrade path in the clear (ROAD:272). It derives from the bundle digest (PROOF:95), and the digest rests in the signed admit pin (ROAD:725). Noise IK already carries message one (ROAD:370; PROOF:78-79), so the leak (ROAD:376, 583) is accepted. A different derivation changes the path two operators' vessels dial, and the pin they hold. Two vessels on different versions fail to connect. Quote: "The socket's handshake changes once" (ROAD:281; PROOF:147). That sentence promises one change, and the cutover has landed (ROAD:726). | W10 row stays after-the-seat as an accepted leak. Move the research pair (ROAD:554) to stride-2-floor, with the rule below. |
+| H1 host door | ADDITIVE | hosting-store holds `state.json` and spend rows only (hosting-store.ts:1-40). It "never holds" a roster. The door that shows what waits needs a new sealed row class. No old reader exists for it. Introduction and sealed-answer shapes already stand (introduction.ts:1-45). Condition: do not add a field to the existing `spent-` rows. | stays |
+| X0b idempotent pass | BEHAVIOUR (the pass) / SHAPE (its findings) | ROAD:604. The instrument: N boots, each Archive replayed twice, each verb retried. It sweeps for rows named by clock or counter. A finding that renames a persisted row changes bytes founded vessels hold. The row's own text says "Each finding before the bake cures as its own bug", yet it sits after the seat and reads "after the founding bake". That wording contradicts the fence. | Split. Run the instrument once before X0 as a read-only census, beside G37 (ROAD:541). X0b stays after-the-seat for the remainder. |
+| Rowless wire layout | SHAPE | See below. | new row, stride-2-floor |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-rowless-wire-layout`>>
+
+!! The rowless wire layout (gate-exchange.ts:56)
+
+* The header reads "Frames on the sealed channel (provisional layout)". Tags: presentationPart 0x01, presentationEnd 0x02, finish 0x03, answerPart 0x11, answerEnd 0x12, verdict 0x13. The frame also fixes the body bound and the fragment rule (full parts then one end frame; gate-exchange.ts:58-90).
+* Canon: PROOF:372 says the layout "stands as the house's own, and the cutover may move it". The cutover is built (ROAD:726). That licence has lapsed. PROOF:351 names the module as the exchange's subjects but fixes no tags.
+* No row owns it. A grep of ROAD for GATE_FRAME and "provisional layout" finds nothing. The sibling rows (W10, W12 to W22) do not name it.
+* Users: face-dial.ts:176-192, 266-271 and face-gate.ts:507-525. Both ends must agree on every tag, the part size and the 65-byte verdict.
+* After the bake, two operators' vessels speak it on every dial. A change breaks any dial between a vessel on the old layout and one on the new. Nothing persisted breaks, but the live test (ROAD:96) runs two machines from day one. That is the "wire frames both operators speak" case. Class: SHAPE.
+* Recommended owner: a new row on stride-2-floor, group W, named `W-frames` (or `W27`, per the next free id). It lands before X0. Its work: freeze the tag table and the fragment bound, add a version byte or a reserved-tag rule so later frames add tags and never move one, and remove "provisional" from the header. It pairs with the W10 research pair, since both change the dial's bytes once.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/rule-for-the-w10-research-pair`>>
+
+!! Rule for the W10 research pair
+
+The pair ends in one of two outcomes. (a) Keep `knockSegment` as it stands and close W10 as an accepted leak. (b) Change the derivation or the IK flight, and land that before X0 with the frames row.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edits-the-roadmap-owes`>>
+
+!! Edits the roadmap owes
+
+# Move the row "Research pair: the knock's leak" (`W10`, ROAD:554) from #/after-the-seat to #/stride-2-floor.
+# Add to #/stride-2-floor a row reading: "`W27` The sealed channel's frame layout (`gate-exchange.ts` `GATE_FRAME`) freezes before the bake: the tag table, the fragment bound and the verdict length, with a reserved-tag rule so a later frame adds a tag and moves none. Pairs with the `W10` research pair. W."
+# Edit PROOF:372: replace "and the cutover may move it" with "and row `W27` freezes it before the bake".
+# Edit ROAD:604 (`X0b`): replace "after the founding bake" with "its instrument runs once as a census before the founding bake; the rest follows the bake". Add the instrument's name to `G37`'s list at ROAD:541.
+# Keep `K13`, `K14`, `N5`, `G18`, `H1` on #/after-the-seat. Append to `K14`: "a new quorum record, if the build needs one, adds a `stays` row; the `face-log-view` preimage does not change."
+# Append to `H1`: "its waiting-introduction rows take a new sealed class; they add no field to the `spent-` rows."
+# Append to `G18`: "the mode row means the live-status panel row (`live-status.ts`); it rests nothing."
+# Settle `ROAD:98` with scout B's note: rows `F9` (the vessel-wide selector retires; it rests in `ACTIVE_PERSONA_STORE`, browser-vessel-identity.ts:54,101, and in the node persona index) and `W17` (face-switch act) read as SHAPE or fenced by the ruling at ROAD:96. Move `F9` to stride-2-floor, or add a delete-on-upgrade reader. I did not re-verify them.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/limits`>>
+
+!! Limits
+
+I did not find a definition of "mode row" in canon, so the G18 reading rests on the one code match. I did not read host-cmd.ts or any `host door` code (none found beyond the CLI file). N5 has no code citation in the road; my reading rests on ROAD:241, 711-712, 726.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5qSEpUvt-Z83iVWxHZoho5ljg2r9YsYKUGbOhvyZtAU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

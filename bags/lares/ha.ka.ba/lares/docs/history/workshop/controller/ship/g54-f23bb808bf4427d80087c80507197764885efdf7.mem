@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/g54-f23bb808bf4427d80087c80507197764885efdf7`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-06 (file date) — source `.lares-scratch/controller/ship/g54-f23bb808bf4427d80087c80507197764885efdf7.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/g54-f23bb808bf4427d80087c80507197764885efdf7"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/g54-f23bb808bf4427d80087c80507197764885efdf7"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! g54-f23bb808bf4427d80087c80507197764885efdf7.md — plan, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/ship/g54-f23bb808bf4427d80087c80507197764885efdf7.md` (plan, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+SHIP g54 f23bb808bf4427d80087c80507197764885efdf7
+read: the controller (Lares-Kiaʻi) read tools/ci-verdict.mjs's diff (the cure 9d30d1016 over its red 5fc97235d): one `gh api rate_limit` read per &#45;-wait round sets the next wait to max(floor, floor × core.limit / max(1, core.remaining)), capped at the timer limit; a missing or malformed quota leaves the configured floor; the UNREADABLE retries take the same wait; no reading of the quota touches a verdict. The red and control in tools/ci-verdict.test.mjs (40/40 outside the lead wall); the pre-push gate GREEN after the span merge and a rebuild. The span merge (b55de2826, #175 and #176) reads as landed.
+verdict: the pace only widens; the floor stands; no guard loosens. Land on CI green at f23bb808bf4427d80087c80507197764885efdf7.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3xWKC6yOho5Zl795buRRwDo9qSw1S74UAXkIXBKi0c4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,91 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/ground-lane`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-10-25 (file date) — source `.lares-scratch/research/ground-lane.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/ground-lane"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/ground-lane"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! ground-lane.md — plan, 2026-10-25
+
+Verbatim scratch record `.lares-scratch/research/ground-lane.md` (plan, file date 2026-10-25); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ground-lane-scout-2026-10-25`>>
+
+! Ground lane scout (read-only), 2026-10-25
+
+Wave D diff (120 files) lies in lararium-node custody src/tests, lares-cli custody commands, lararium-mesh fck*/sealed-writer, and tools/custody-census, restore/unlock-test-custody, two-phase-boot, vault-restore-door, mesh-scenarios, tests/e2e/vessel-sealed.test.ts.
+It touches NONE of: disk-projector.ts, shore-verb.ts, shore-core.ts, island-adaptor.ts, action-handler.ts, hand-gate.ts, ingest-core.ts, lar-uris.ts, mesh-palace.ts, and no e2e file but vessel-sealed.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/rows`>>
+
+!! Rows
+G36 settle word causal end. Medium.
+* Change: `LarDiskProjector.settled` (disk-projector.ts ~1138) waits on change events and ends by supersede/stop/caller give-up. It holds no timer, but a wait for records that never arrive has no causal end. The ingest verb (lararium-tw5/src/action-handler.ts) must report the heads it landed; the wait then follows those heads through the view.
+* Files: disk-projector.ts, action-handler.ts, shore-verb.ts (calls settled, line ~149), lares-cli/src/commands/ingest.ts and watch.ts (askSettle), tests: shore-verb.test.ts, shore-remove-reads-back.test.ts, disk-projector-journal.test.ts.
+* Wave D overlap: none. Compose hunks: none. Ruling: none (road row says G).
+* Clock wait: yes, indirect. e2e tests cure their "quiet window" clocks by asking the settle word (see below).
+
+G33 teardown refusal. Small to medium, BLOCKED.
+* Road text itself says "Owed: a ruling on where such a hand rests (kept draft, close that refuses, or next-boot record). House." Needs operator ruling. Also rides a plugin bundle bake. Files: island-adaptor.ts. No Wave D overlap. Skip.
+
+G17 tests only. Small.
+* Mutation survivors a closing review named, plus sealed-suite coverage of the harness root split. Test files only. Survivors list not named in the row, so the builder must find the review first. Risk: the sealed suite sits near Wave D's sealed-acts / vessel-sealed tests. Treat as overlap-prone; defer.
+
+G10 wiki shore echo law. Small, verify-only.
+* "Verify at the shore lane's close." Probe: leaked change routes as a save (tw5 outbound-bridge.test.ts, wiki-shore-*.test.ts). No overlap. Needs no ruling; the lane's close not yet reached is the only gate.
+
+G18 mode row never moves. Small.
+* Shore. Live-status.ts mentions mode row. Row says "G or B"; unclear owner. No overlap seen. Needs a one-line scope check, not a ruling.
+
+G27 shore verb for live unpinned wiki island. Medium to large.
+* Touches shore-core.ts (askShore), shore-verb.ts, island routing. Behaviour change, probably needs design. No Wave D overlap. Same shore ground as G36, so a later follow-on.
+
+G8 measures (flush re-measure, pack-PIN recursion, assertBodyIndexTier caller). Medium. Measurement plus one production caller; no overlap known; no ruling; no clock wait.
+
+G6 evergreen sweep remainder. Medium. Names open-node-vessel.ts, open-browser-vessel.ts, nexus-seal-seed.ts, seed-wrap-prf.ts: the compose-hunk owner holds them. Ground may only touch ingest-core.ts, lar-uris.ts, mesh-palace.ts tolerant readers. Do the partial, comment-only; skip owner files.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/clock-shaped-waits-outside-wave-d`>>
+
+!! Clock-shaped waits outside Wave D (top five to cure)
+# tests/e2e/ingest-quiescence.test.ts: `awaitSettled` quiet window (4s) and `sleep(6_000)` in Q3. Cure: ask the settle word (`lares shore` settle, `projector.settled`) and read after it. Q3 "zero writes after N" then reads a barrier-bounded state; keep a bounded check on the write journal rather than a clock.
+# tests/e2e/wikis-ingest-back.test.ts: copy of the same `awaitSettled(4_000)` quiet-window helper. Same cure. Share one helper.
+# tests/e2e/minted-canon-projection.test.ts: `sleep(300/500)` plus `awaitCarrier` 500ms poll and 20s port poll. Cure: settle word for the carrier; port free via close event.
+# packages/lararium-tw5/tests/wiki-shore-vectors.test.ts: 18 sleeps of `HandGate.TRAILING_MS + 80` and 60ms. Cure: HandGate (hand-gate.ts) exposes a flush/rest promise; await it. Needs a small src seam, no Wave D overlap.
+# packages/lararium-node/tests/sealed-act-leak.test.ts: `setTimeout 150` "let any late write land" x4, socket-exists poll x200/10ms. CAUTION: sealed suite, near Wave D (sealed-acts). A silent-absence probe, so the cure is the far-side barrier (the act's ack/receipt), but defer until Wave D lands.
+Runners-up: tests/e2e/leaf-sibling-sync.test.ts (2000ms sleeps), meme-realm-bag.test.ts (3s/4s/1s), corpus-feed.test.ts (quiet count heuristics, already partly cured by "every root stands"), uds-channel-receipt-ledger.test.ts (10ms x500 polls), owned-store.test.ts.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/recommended-lane-the-settle-word-ends-causally-a`>>
+
+!! Recommended lane: "the settle word ends causally, and its clock readers fall"
+One Sonnet builder, one tree: disk-projector.ts, action-handler.ts, shore-verb.ts, ingest cmd, plus three e2e/test files. All disjoint from Wave D. No ruling.
+Order, red-first:
+# G36 red: shore-verb/disk-projector test where the named records never arrive and the caller's wait is gone: the word must end with a causal reason (heads reported by ingest, followed through the view). Add a control (records do arrive: settles). Then build: ingest verb reports landed heads; `settled` follows them.
+# Seam: expose one e2e helper `awaitSettleWord` (askSettle over the ingest result) in tests/e2e support.
+# Cure waits 1 and 2 (ingest-quiescence, wikis-ingest-back): red = the quiet-window helper replaced and the suites still pass with the clock removed; run the whole e2e set, not shards.
+# Cure wait 4 (HandGate rest promise in wiki-shore-vectors) if the builder has room. It stays tw5-local.
+Hold out: G10 verify as a close-out check inside step 1 (cheap). G33 waits on the operator. G17/G6 owner files and sealed tests wait for Wave D to land.
+Caveat: I did not run anything; the "no overlap" claim rests on name grep of Wave D's file list at origin/...&#45;-k15-wave-d, which will grow.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-SETto8G7vcOqv7_onYGEB7f4Icw-PdCsfLZBOMUMtg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

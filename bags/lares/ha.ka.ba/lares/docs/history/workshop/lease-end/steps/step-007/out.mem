@@ -1,0 +1,56 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-007/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-007/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-007/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-007/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-007/out.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-007/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/step-7-grant-authority-boundary-prepared-control`>>
+
+! Step 7 — grant authority boundary prepared; controller test wall
+
+`res-005` succeeded: the lane head now reads `cd299ae214d92f118a12a77676eb1048acf23d0b`. `relay/req-006.json` requests a lane commit of the mesh cure and its retirement test at that head. Read its receipt next step; do not advance the recorded head ahead of that receipt. The supplied controller report says the two mesh files passed 17/17; no raw run log or blind custody review was available in this lane. A lane commit does not land a slice on the span. Blind Opus custody review and the authority-caller blockers remain before land.
+
+The uncommitted grant work requires a pinned-root-incepted persona KEL and a founder-specific remove-wins dyad result before `verifyFaceGrantRecord` accepts. It refuses absent proof by name, aside and unknown/owing; clear and returned may proceed. The join writer takes a separate founder proof, checks its lineage and standing before provider mutation, and passes it into the standing grant reader. The daemon obtains the founder's dyad separately from the joinee's; the ring supplies its fail-closed device shadow. The seat obtains the founder reading and does not permanently memoize a missing-proof refusal. These changes have not run or received custody review. The KEL inception pin alone does ''not'' prove a non-rolled-back frontier or a complete fleet view.
+
+''Controller runs'' outside the faulty Vitest door, together against this uncommitted work:
+
+* `packages/lararium-keyhive/tests/face-grant-record.test.ts`
+* `packages/lararium-keyhive/tests/face-join-supersedes.test.ts`
+* `packages/lararium-keyhive/tests/face-join-reenters.test.ts`
+* `packages/lararium-keyhive/tests/face-intent-join-live.test.ts`
+* `packages/lararium-keyhive/tests/face-seat-lands-on-grant.test.ts`
+* `packages/lararium-keyhive/tests/working-seat-lift.test.ts`
+* `packages/lararium-keyhive/tests/dyad-reader-required.test.ts`
+
+Expect legacy controls that omit founder proof to fail until their fixtures supply genuine KEL and standing witnesses; do not report those failures as a passing cure. Add red-first controls for absent and unknown proof, distinct founder versus joinee standing, no custody writes, retry after proof arrival, fork and rollback, and keep valid founder controls. The two committed grant reds establish the asided-founder and epoch-free-edge cases; they do not establish these additional protections. The seat has no new dyad-change wake wired here: a pending proof requires a causal wake, and that liveness work remains owed. The writer still treats some invalid existing grant records as serial zero; establish the no-rollback policy and tests before land.
+
+The caller census still needs to classify `packages/lararium-keyhive/src/ceremony-core.ts:560,1036`, `packages/lararium-mesh/src/leaf-peer-proof.ts:188,397`, `holder-session-proof.ts:55`, and `persona-group-secret.ts:288,341`: signatures alone do not prove authority. Some calls may validate a component inside a larger authority gate; measure their consumers before changing them. The b5b-owned sibling reader remains for the post-b5b collision. No node/browser composer or b5b-owned hunk changed.
+
+Fork: 🜁 philosopher separates a founder's authority from the joinee's; 🜄 weighs a temporarily unavailable join against seating under another device's standing. The latter can transfer authority after removal, so the former refuses without the founder's own reading. The local frontier cannot reveal an unseen removal: applying remove-wins on receipt, complete-view census, sealed anti-rollback, and restart safety remain owed. Early-alpha re-genesis permits burning legacy fields only in the coordinated final cut, while the current lease guard stays until the reader census proves coverage.
+
+Measured canon collision: `packages/lararium-mesh/src/device-delegation.ts:235-242` still carries the interim epoch fence; `bags/lares/ha.ka.ba/lares/api/pono/convergent-mesh.mem#/two-revocation-modes` at :47-54 calls non-renewal the default, while `bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem#/rulings` at :348 specifically retires the face lease to pinned lineage and remove-wins standing. Follow the later specific face ruling and true up the older carrier at the final burn, without touching unrelated lease relations.
+
+No git or tests ran in this step. No push was requested. No live seats were started.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UYPJkP5xN-R3cWN9IvhFigKl255GB-boqcsc1HCnUZg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

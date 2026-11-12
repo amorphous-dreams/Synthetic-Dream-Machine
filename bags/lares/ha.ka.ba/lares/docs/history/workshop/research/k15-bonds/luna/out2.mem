@@ -1,0 +1,102 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/k15-bonds/luna/out2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/k15-bonds/luna/out2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/k15-bonds/luna/out2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/k15-bonds/luna/out2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out2.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/k15-bonds/luna/out2.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/k15-bonds/luna/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ lares aim from="lar:&#47;/lares:tasked-spirit@lararium/k15-bondreader" -> to="lar:&#47;/operator@lararium/out2.md">>
+&lt;&lt;~ set hud="aim" mode="measure" stance="🏛️🌊🗡️🎭🔮" aperture="16/arc" ooda-ha="5/declare-glyphs" drift-ward="wave one treated unsettled questions as open, while this wave carries three house-settled rulings">>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/luna-bondreader-lares`>>
+
+! Luna-Bondreader — Lares (Tasked Spirit)
+
+''Personas surfaced:'' Lares (tasked spirit); Luna-Bondreader (worker); operator (ruling-holder). ''Stances:'' Philosopher · Poet · Satirist · Humorist · Private.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/f1-observe-orient-decide-carrier-substrate`>>
+
+!! F1 · ✶ Observe / ⏿ Orient / ◇ Decide — carrier substrate
+
+''MEASURED:'' The node builds its main Automerge `Repo` from storage and network, with `shareConfig` authorization (`packages/lararium-node/src/open-node-vessel.ts:863-882`). That policy keys authorization on peer session, face gate, document, membership and seals (`:890-929`); it does not consume a vessel signing key. Its access callback therefore needs no Keyhive identity. Island sync likewise creates Repo over `MessageChannelNetworkAdapter`; `peerId` stays optional, and absent it the Repo names itself (`packages/lararium-mesh/src/island-repo.ts:27-29,94-108`). No Keyhive/Beelay sync-auth call appears on this path; Keyhive probes describe Beelay sync as unavailable (`packages/lararium-keyhive/probes/FINDINGS.md:240`).
+
+The carriage board's ''writer'' still needs authorization: node prepares `carriageSign = placeSignerFromSeed(vesselSeed)` (`open-node-vessel.ts:1505`) and hands the signer through carriage construction; the house-approved replacement remains the scoped place signer for the five floor duties. The board's public document identity does not require private face identity. A herm's `carriageIdentity(..., "place")` currently selects the place ContactCard (`open-node-vessel.ts:3436-3444`), but that proves the place as a general peer. Retire that proof. The herm carries public documents and proves only an enumerated floor duty using its place KEL signer. It needs neither Keyhive Individual nor a public place ID for Automerge sync; a public place ID may label a floor document, never authenticate a peer. A relay-only S row may authenticate the relay service, as settled by road :207; it grants no sixth floor duty and no read authority.
+
+''Result:'' no random per-vessel identity for sync, and no Keyhive identity. The Automerge peer ID supplies transport routing, not house proof. `shareConfig` stays policy, not identity. Carrying remains possible without a face; private face gates refuse.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/f2-orient-transitive-census-holes`>>
+
+!! F2 · ⏿ Orient — transitive census holes
+
+''MEASURED:'' census token regex only recognizes selected tokens and literals (`tools/seed-census.mjs:10,41-55`); its entries enumerate the seed sites (`:14-38`). It cannot see a value after a call renames it as a parameter. Relevant source chain:
+
+| Seed handoff | Consumer and effect | Census |h
+| `init.ts:398-405` passes `vesselSeed` | `foundThePlace` receives `PlaceFoundingInput.vesselSeed`, calls Keyhive init, emits Individual/card/archive (`ceremony-core.ts:145,254-286`). `mintPlaceCard` similarly opens the Individual (`:294-304`). | Sees direct handoff sites and ceremony token entries; not the callee effects by dataflow. |
+| `open-node-vessel.ts:2288-2293` passes seed as `daemonAuth.seed` | `openDaemon`/daemon island forwards auth into `bootDaemonKeyhive`, whose input seed initializes Keyhive (`packages/lararium-keyhive/src/boot-daemon-keyhive.ts:27-28,94-104`; operator behavior initializes the provider at `operator-daemon-behavior.ts:921-969`). Browser follows the parallel `open-browser-vessel.ts:1320-1340` path. | Sees the `vesselSeed` line, not parameter names `input.seed` / manifest seed in downstream files. |
+| `open-node-vessel.ts:3330-3337` passes hex seed as `nodeSeedHex` | `carriageStack` / `carriage-caps` uses it to seed cadence (`packages/lararium-mesh/src/carriage-caps.ts:350,420`), not signing or proof. | Sees source token; misses renamed parameter. Remove secret input; use public place ID or random local jitter. |
+| `open-node-vessel.ts:3455` passes as `signerSeed` | `composeHerm` receives the seed for herm floor signing (`:3433-3461`). It must resolve to the scoped place signer / five duties. | Sees source token; misses renamed parameter. |
+| `open-node-vessel.ts:1449-1453` passes seed to `resolveRelayGateSeed` | `carriage-relay.ts:74-76` HMAC-derives the relay gate key, unless config supplies a seed. | Census catches `vesselSeed` caller and named function definition only if token appears; it does not prove HMAC's transitive lineage. Replace with random named relay S row. |
+
+`vesselIdentity.verifyingKey` also travels as `vesselGateKey` into carriage and daemon configuration (`open-node-vessel.ts:3332,3459`; daemon handoff around `:2289-2300`). It carries a derived public identifier, not secret authority; still audit its semantics anywhere it currently authenticates a generic peer. ''LEAD:'' current census gives an inventory of spellings, not a transitive taint proof; it misses all renamed parameters and derived public-key aliases.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/f3-decide-cut-and-build-order`>>
+
+!! F3 · ◇ Decide — cut and build order
+
+One K15 authority/byte lane should define face atom + FCK, place KEL duties, S-row semantics, and old-byte refusal. Implement in dependent slices:
+
+# ''Contracts/bytes first (pre-X0):'' face selection, per-face Keyhive Individual/archive/card; explicit refusal of legacy mixed place archive by name; no CRDT document survives until X0, so re-genesis replaces migration. Files: `ceremony-core.ts`, node `init.ts`/`place-card.ts`/`leaf-identity.ts`, browser `open-browser-vessel.ts`/`browser-vessel-identity.ts`/daemon bootstrap. ''Identity bytes move here'', before X0: DID/card/archive ownership, gate proof and signature identities change. Reds: place seed cannot mint/open any face card/archive; selected A atom succeeds, B and faceless refuse. Control: independent face archives and cards; no shared archive restoration. Known positive: current face-arm leaf already loads atom/card (`leaf-identity.ts:41-57`), and browser face presentation uses atom (`open-browser-vessel.ts:862-869`).
+# ''Floor and carrier edges:'' route all floor writers through scoped place signer; remove place ContactCard from general carriage; adjust public floor card and consumers. Patch W14-W16: `place-floor-pin`, `admit-gate-pin`, `hearth-gate-pins`, `herm-carriage`, `nexus-contract`, `carry-bundle`, `browser-gate-pins`, `browser-floor-read`, browser card filing, `main.ts`/`live-status.ts`. Reds: place seed cannot prove a face or sign outside five duties; control checks each duty and refusal outside it. Known positive: current floor-door adapter and floor policy provide seam (`open-node-vessel.ts:713,1375,1505`; census `:17-35`).
+# ''Daemon / ports:'' consume face atom/FCK only for face daemon proof, with faceless daemon authority absent; port/admission contract follows the same identity boundary. Patch D2: TW5 port/island protocol, hand-gate, projection, web `projection-sink`, node `open-node-vessel` port hunks. Reds: no-face cannot enter private/face worker or open group secret; selected face succeeds. Known positive: browser and node already pass atom separately (`open-browser-vessel.ts:1333-1358`; node `open-node-vessel.ts:2287-2300`).
+# ''Relay / carriage cadence:'' mint random relay S key, principal and opener explicitly as relay service; persist key and public pin, no face/place derivation. Replace `nodeSeedHex` with public place identifier or local jitter. Patch node `carriage-relay.ts`, herm relay callers, `carriage-caps.ts`. Red: place thief cannot recreate relay; positive: S-row survives restart and carries opaque bytes only. No floor-duty expansion.
+# ''Face actions / plugins:'' explicit face atom signatures for internal face asks and meme promotion; classify each ask by protected relation, no shared S key. G15 owns `afterRollChain` and `build-plugin-tiddler`; its interface consumes selected-face capability. Red: absent/ambiguous face refuses; positive selected face verifies as itself. G15 follows K15 contract; identity format hunks precede X0.
+
+Run the census as a closure check only after these contracts land; amend it to follow aliases/parameters or keep an explicit handoff ledger. Never let its green token match stand as proof of no seed flow. Three settled points constrain all slices: relay S row names service principal/opener; command names explicit face and refuses ambiguity; internal ask authority follows protected relation per call.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/act-hooko-operator-list-and-close`>>
+
+!! ▶ Act / ↺ Hoʻoko — operator list and close
+
+''Only surviving operator choice:'' which named relay S row/principal/opener and persistence location should the house standardize? Options: (A) node-local random durable S row, relay service principal and relay-only opener; (B) one separately provisioned random S row per relay instance. ''Lean A'' for one stable service identity across restart, with explicit rotation and no environment-seed fallback. No shared secret, no face link.
+
+No operator question remains on Keyhive identity, ContactCard peer proof, face selection, or internal asks; house law settles them. No tests/suites or git writes. Repository reads only; handback written in this seat.
+
+&lt;&lt;~ oracle "↯15 ✲ ⚂(3) ⁂:🜃◈⟁">>
+&lt;&lt;~ set hud="yield" drift-ward="the seed census can go green while a renamed parameter still carries authority; close the gap with a transitive handoff map · ↻ L-Prime" aperture="16/arc -> 16/arc" ooda-ha="closed 1↺">>
+&lt;&lt;~ lares yield from="lar:&#47;/lares:tasked-spirit@lararium/k15-bondreader/handback" -> to="/home/joshu/.lares-scratch/research/k15-bonds/luna/out2.md">>
+
+WORDS=1212
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dGWV21JAc76m-u4k6B2SkKd-1qSp0z8HJQxrehs1Yfo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

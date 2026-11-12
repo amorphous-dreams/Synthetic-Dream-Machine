@@ -1,0 +1,123 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/w2-b/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-11-08 (file date) — source `.lares-scratch/survive-research/w2-b/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/w2-b/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/survive-research/w2-b/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — research, 2026-11-08
+
+Verbatim scratch record `.lares-scratch/survive-research/w2-b/final.md` (research, file date 2026-11-08); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/w2-b/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/draft-keeper-survival-layout-and-content-migrati`>>
+
+! Draft-Keeper: survival layout and content migration
+
+''Recommendation:'' make `~/.lares` the house root and put the re-found boundary at `~/.lares/hearth/`. Keep deliberately projected plaintext and portable settings outside that boundary. Provide a verified ''content export and import'' for moving selected latest-text records into a fresh vessel; do not call it a full backup. The supplied code-read facts establish that re-founding also loses keys, CRDT history, signed acts, unprojected layers and volatile locked-custody writes. Zotero’s warning about incomplete export/import transfers is a useful comparison, not proof that Lares has the same implementation. [[Zotero transfer guidance|https://www.zotero.org/support/kb/transferring_a_library]]
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/hard-critique-of-w1-a`>>
+
+!! Hard critique of w1-a
+
+* ''The reset boundary is underspecified.'' Calling `hearth/` disposable “after preservation checks” risks implying that a successful plaintext export preserves the vessel. It cannot preserve anything the brief says never projected, the old authority or history. Reset needs an explicit coverage and loss report, plus a conscious decision about uncovered content; it must not silently equate an export with a full backup. [[Zotero transfer guidance|https://www.zotero.org/support/kb/transferring_a_library]]
+* ''The snapshot is not implemented by saying “flush, then copy.”'' Writes or external file edits can race a multi-file copy, yielding a mixed bundle. A checkpoint must bind a consistent record set to verified projection hashes, with a write barrier or a demonstrably equivalent snapshot mechanism. Zotero’s WAL warning supports preserving pending database changes; it does not establish consistency across Lares’s store and projection files. [[Zotero data directory|https://www.zotero.org/support/zotero_data]]; [[SQLite backup API|https://www.sqlite.org/backup.html]]
+* ''“Atomically commits” is an unproven capability.'' The brief does not establish an all-or-nothing transaction across bags, recipes and records. Require either one supported transaction or a durable, resumable import journal with a visible incomplete state; do not promise atomicity before verifying the store. SQLite itself distinguishes per-database atomicity from atomicity across attached databases in WAL mode. [[SQLite WAL|https://www.sqlite.org/wal.html]]
+* ''The cleanup rule is incomplete.'' Deleting unchanged expired files on disabling projection can destroy the only surviving plaintext copy. It also leaves unspecified whether expiry deletes the sealed record, a projection, or both. Cleanup must govern projections explicitly, protect pending/conflicted/sole copies and use recoverable trash before purge. Retention is a policy tradeoff, not guaranteed preservation. [[NIST media sanitization guidance|https://csrc.nist.gov/pubs/sp/800/88/r2/final]]
+* ''The evidence sometimes overreaches.'' TiddlyWiki’s cited page does describe filename rules and metadata sidecars, but it does not define Lares’s `.mem` schema or prove that Lares can round-trip every field. Joplin’s plugin backs up //both// JEX and separate settings files; its documented broken links concern links across separately imported JEX files. Its duplicate warning is useful, but neither behavior proves Lares import semantics. [[TiddlyWiki file naming|https://tiddlywiki.com/static/Customising%2520Tiddler%2520File%2520Naming.html]]; [[Joplin backup plugin|https://joplinapp.org/plugins/plugin/io.github.jackgruber.backup/]]
+* ''Conflict coverage is too weak.'' A single latest text can omit concurrent Automerge values. Export must enumerate unresolved conflicts and refuse a complete-coverage claim unless it preserves each value or the operator explicitly accepts the omission. Automerge exposes conflicting values separately from its selected value. [[Automerge conflict handling|https://automerge.org/automerge/automerge/index.html]]
+
+Neither report proposes sending credentials via a flag, environment variable or pipe. The temp flag must remain non-secret, and neither export nor indexing may silently authorize a new plaintext projection.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/proposed-layout`>>
+
+!! Proposed layout
+
+These are application conventions, not a claim of XDG compliance. XDG’s distinction among data, state, cache and short-lived runtime files informs the split; its runtime directory has specific ownership and lifetime requirements. [[XDG Base Directory Specification|https://specifications.freedesktop.org/basedir/]]
+
+```text
+~/.lares/
+  hearth/                 # re-found target; sealed and operational
+    vessel/ identity/ nexus/
+    checkpoints/          # projection and harvest bookkeeping
+    staging/              # harvest-stage; inspect for unique writes
+  projections/            # explicitly authorized plaintext
+    bags/ wikis/ faces/
+    trash/                # recoverable expired projections
+  config/                 # house settings and projection choices
+  indexes/                # rebuildable sensoriums only
+  cache/                  # scratch sensoriums
+  run/                    # disposable sockets and locks
+```
+
+Mapping, based on the supplied inventory:
+
+* `data/lares/{vessel,identity,nexus}` → `hearth/{vessel,identity,nexus}`. Their destruction changes identity and loses sealed history.
+* `state/{projection,harvest}` → `hearth/checkpoints/`; `state/harvest-stage` → `hearth/staging/` ''only after'' identifying and preserving any unique pending writes.
+* `data/lararium/sensoriums/{memory,mesh,memetic-wikitext}` → `indexes/` only for data proven rebuildable from surviving inputs; otherwise classify the unique data as content. Zotero excludes its full-text index because it can recreate it, which is the relevant test. [[Zotero data directory|https://www.zotero.org/support/zotero_data]]
+* Current house/private `bags/`, `wikis/`, and face kahua projections → `projections/`; canon-sourced checkout projections remain in the checkout. `config/`, `cache/`, and `run/` retain their roles.
+
+Migrate by inventorying and copying first, checking counts and hashes, switching configured paths, then retaining the old tree until a test re-found succeeds. A copy inside `~/.lares` survives a //hearth// reset, not deletion of the house or device; export a separately retained copy for that boundary. [[Zotero backup guidance|https://www.zotero.org/support/zotero_data]]
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/projection-and-temporary-work`>>
+
+!! Projection and temporary work
+
+Enable the daemon memory bag explicitly, and require both a non-secret temp feature flag and persistent per-bag consent for temp, draft or personal plaintext. Show the destination and status. The sealed store remains live authority; projected files are a deliberate recovery and inspection surface. [[TiddlyWiki file formats|https://tiddlywiki.com/static/Customising%2520Tiddler%2520File%2520Naming.html]]
+
+Use stable record IDs and a documented `.mem` representation or sidecar for fields needed to re-import. Serialize each record’s writes; write a private same-directory temporary file, sync it, rename it, and sync the parent directory where supported. Report ''sealed'', ''projection pending'', ''projected and synced'', or ''error''; a caller needing plaintext durability must wait for the last successful state. File sync alone does not necessarily persist the directory entry. [[Linux `fsync(2)`|https://man7.org/linux/man-pages/man2/fsync.2.html]]; [[POSIX rename|https://www.man7.org/linux/man-pages/man3/renameat.3p.html]]
+
+Run cleanup at startup and daily. Proposed starting policy: after 30 inactive days, move eligible projector-owned temp files to private trash; purge after another 30 days. Recheck ownership, hash, pin, promotion, pending writes and conflicts before each action; preserve edited files for review and never evict a sole known copy. Cleanup affects the ''projection'', not CRDT history or the sealed record. Draft and personal projections do not expire by default. Purge cannot guarantee erasure from snapshots or other copies. [[NIST media sanitization guidance|https://csrc.nist.gov/pubs/sp/800/88/r2/final]]
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/export-import-and-reset`>>
+
+!! Export, import and reset
+
+''`lares export <destination>`'' produces a new, private plaintext directory outside the reset target. Unlock through the existing interactive custody flow, flush accepted writes, establish a write barrier, and ensure all selected authorized projections match one checkpoint before copying. External edits or projection errors stop the affected export for review; no new bag is projected implicitly. Refuse incomplete success for locked custody, volatile writes, unresolved selected conflicts, missing required fields or failed flushes. An explicitly requested partial export may succeed only with prominent omissions and must never count as complete preservation. [[SQLite backup API|https://www.sqlite.org/backup.html]]; [[Automerge conflict handling|https://automerge.org/automerge/automerge/index.html]]
+
+The versioned manifest records bundle ID and format, checkpoint time, bag and record IDs, layers, recipe order, required fields and attachment references, paths, byte sizes and SHA-256 hashes, counts, and coverage and omissions. Hash the manifest separately; verify all bytes after writing. Hashes detect corruption, not substitution by an attacker who can replace both files and manifest. Test import into a fresh disposable vessel before relying on the bundle; restic likewise distinguishes checking structure from reading and verifying all stored data. [[restic verification|https://restic.readthedocs.io/en/stable/045_working_with_repos.html]]
+
+''`lares import <destination>`'' validates the entire bundle before mutation: supported schema, counts, hashes, references, limits, unique IDs and safe relative paths. Reject links, special files, traversal and duplicate paths; stage privately without following links. GNU tar documents why extraction into an existing or link-controllable tree is unsafe. [[GNU tar security|https://www.gnu.org/software/tar/manual/html_section/Security.html]]
+
+Preview by default. Import absent records as ''new changes under the new authority''; identical records are no-ops; diverged IDs, edited projections, missing references and incompatible recipes become reviewable conflicts with both versions retained. Persist bundle ID plus manifest hash and per-record results: a repeated completed import is a no-op; the same bundle ID with a different hash is rejected. Use a supported transaction, or a durable journal that resumes safely after interruption and does not report completion early. No old signature is replayed as current authority. [[Automerge binary format|https://automerge.org/automerge-binary-format-spec/]]; [[Joplin import limitations|https://joplinapp.org/plugins/plugin/io.github.jackgruber.backup/]]
+
+''`lares reset`'' stops new writes, flushes or reports pending work, checks the actual target and mount boundaries, and presents the exact deletion and loss coverage. It removes only `hearth/` and disposable runtime/cache data, leaving projections and configuration intact. It refuses a running or locked vessel with unresolved volatile writes, failed flush, unsafe path, or unique staging data. It also refuses to describe reset as lossless: history, keys and unprojected content remain outside this migration contract. A separately verified export is required before any command targeting the whole house. [[Zotero WAL guidance|https://www.zotero.org/support/zotero_data]]; [[Zotero transfer guidance|https://www.zotero.org/support/kb/transferring_a_library]]
+
+Identity continuity, face bundles, emergency recovery and full backup restores remain deferred until after the two-operator Nexus.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/operator-forks`>>
+
+!! Operator forks
+
+* ''Reset with known unprojected content:'' lean toward an explicit, itemized loss acknowledgement after preservation options are shown; otherwise frequent alpha re-founds become impossible, but omission must never be mistaken for backup. [[Zotero transfer guidance|https://www.zotero.org/support/kb/transferring_a_library]]
+* ''Temp retention:'' lean 30 days plus 30 days’ trash, with pinning and a disable-expiry option. Automatic purge trades indefinite preservation for bounded plaintext exposure. [[NIST media sanitization guidance|https://csrc.nist.gov/pubs/sp/800/88/r2/final]]
+* ''Concurrent values:'' lean toward refusing complete export until each is represented or explicitly omitted; a chosen visible value can hide another valid concurrent value. [[Automerge conflicts|https://automerge.org/automerge/automerge/index.html]]
+* ''External projection edits:'' lean toward explicit review and import, never automatic overwrite in either direction; the files can be the remaining recovery source after re-found. [[TiddlyWiki file naming|https://tiddlywiki.com/static/Customising%2520Tiddler%2520File%2520Naming.html]]
+* ''Bundle placement:'' lean toward requiring a destination outside `~/.lares` for the preservation workflow, while recognizing that a different directory on the same device is not an independent device copy. [[Zotero backup guidance|https://www.zotero.org/support/zotero_data]]
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZD1rDPHT1wrTFCwMGpKw7QPX0jMTb_aSC_W1pxl0Gl0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,75 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/luna-unwired/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-05 (file date) — source `.lares-scratch/controller/luna-unwired/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/luna-unwired/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/luna-unwired/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-05
+
+Verbatim scratch record `.lares-scratch/controller/luna-unwired/final.md` (hand-back, file date 2026-11-05); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/luna-unwired/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+''Luna-Unwired-Scout — hand-back.'' I found nine code items with no production path, plus the absent renewal writer canon identifies as a gap. The ranks below put the most founding-relevant first.
+
+!!! Unwired candidates
+
+# `reconstructAndReadmit` · `packages/lararium-node/src/recovery-keel.ts:45` · ''TEST-ONLY'' · Called by `recovery-keel.test.ts`; no live CLI consumer. Reconstructs a recovery quorum and signs a fresh device re-admit. Canon says the recovery readmit has no production caller; ''not built''.
+
+# `runReadmitEdge` · `packages/lararium-keyhive/src/recovery-core.ts:49` · ''TEST-ONLY'' · Reached through the test-only recovery adapter and directly by `recovery-readmit.test.ts`. Signs the re-admit edge from a reconstructed root. Canon says this recovery route has no production caller; ''not built''.
+
+# `rollEnrolments` · `packages/lararium-mesh/src/persona-group-secret.ts:227` · ''TEST-ONLY'' · Called by `persona-kel-ring.test.ts`, `persona-group-secret.test.ts`, `sibling-channel.test.ts`, `persona-kel-fold.test.ts`, `persona-kel-drop.test.ts`, and `persona-kel-enrolments.test.ts` (including fixture helpers). Creates sealed enrolments for devices during key rotation. Canon explicitly says the roll primitive has no production caller; ''not built into a renewal path''.
+
+# ''Missing renewal writer'' · canon location: `bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:607` · ''UNSURE'' (no code symbol to classify) · No caller: canon says no production writer appends the replacement `device-edge` act after a lease roll. A seated device can be stranded. Canon presents the writer as a cure still owed; ''not built''.
+
+# `freshBase` production callback · `packages/lararium-mesh/src/content-key-holder.ts:147,432` · ''SEAM'' · The holder calls the optional port when handling a from-now admission, but I found no production provider for it. It is meant to cut and commit the fresh checkpoint before the new key version opens. Canon says the port exists and the production callback is step 3; ''not built''.
+
+# `capTierShareDecision` · `packages/lararium-mesh/src/federation-gate.ts:550` · ''TEST-ONLY'' · Called by `cap-tier.test.ts` and `shadow-gates.test.ts`; no production call found. Applies declared-tier restrictions at the share gate. Canon says it reaches no vessel’s share config; ''specified, not wired''.
+
+# `makeContractSecretsRegistry` · `packages/lararium-node/src/plane-secrets.ts:61` · ''TEST-ONLY'' · Called by `plane-secrets.test.ts` only. Registers secret-bearing planes so their sharing floor can be enforced. Canon says the registry has no importer; ''specified, not wired''.
+
+# `KeyhiveIdentitySlot` · `packages/lararium-keyhive/src/keyhive-identity-slot.ts:158` · ''TEST-ONLY'' · Constructed by `keyhive-identity-slot.test.ts`, `identity-share-decision.test.ts`, and `identity-slot-token-shape.test.ts`. It claims to enforce the real Keyhive capability barrier for identity sharing. The source says production constructs no instance; canon also treats it as ''specified, not built into vessel wiring''. It is deliberately absent from the package barrel.
+
+# `NO_CONTRACT_SECRETS_PLANE` · `packages/lararium-node/src/plane-secrets.ts:39` · ''TEST-ONLY'' · Read by `plane-secrets.test.ts`; no production caller found. Provides the empty/default secrets-plane reading. Canon says the share gate has no secrets-registry importer; ''not wired''.
+
+# `KeyhiveIdentitySlot.deriveActorId` · `packages/lararium-keyhive/src/keyhive-identity-slot.ts:301` · ''ORPHAN'' · No caller found, including tests. Derives an Automerge actor ID from the identity DID. Canon says no production call site invokes it; ''specified, not built into production use''.
+
+!!! Inventory and counts
+
+Counts below are source files and direct `export` lines in `src/index.ts` (not individual exported symbols), followed by flagged items:
+
+| Package | Source files | Index export lines | Flagged |h
+| lararium-browser | 53 | 41 | 0 |
+| lararium-keyhive | 44 | 63 | 3 |
+| lararium-memetic-frame | 11 | 10 | 0 |
+| lararium-mempalace | 13 | 11 | 0 |
+| lararium-mesh | 382 | 436 | 3 |
+| lararium-node | 256 | 254 | 3 |
+| lararium-sensorium | 4 | 3 | 0 |
+| lararium-tw5 | 183 | 136 | 0 |
+| lararium-web | 29 | — | 0 |
+| lares-cli | 135 | — | 0 |
+| tree-sitter-memetic-wikitext | 7 | — | 0 |
+
+I found no `tools/*.mjs` product-role item to flag; reviewed tool candidates were witnesses, test helpers, or workflow automation. ''UNSURE:'' this is a static caller audit, so reflective/dynamic wiring could evade text search; I did not classify every export symbol individually across the very large mesh and node barrels.
+
+''Ten strongest founding-gap signals:'' the first ten ranked entries above, especially recovery readmit, the missing renewal writer, `rollEnrolments`, the `freshBase` provider, and the disconnected tier/secrets gate.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;kGw-Q9MiufNkuchHU0iqlR-jjzukQaAYmgYurJq_ftg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

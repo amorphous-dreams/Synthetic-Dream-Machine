@@ -1,0 +1,48 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna13/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-04 (file date) — source `.lares-scratch/seat-harness/luna13/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna13/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/seat-harness/luna13/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-04
+
+Verbatim scratch record `.lares-scratch/seat-harness/luna13/brief.md` (brief, file date 2026-11-04); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna13/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/cold-read-git-c-home-joshu-lares-scratch-seat-ha`>>
+
+! Cold read: `git -C /home/joshu/.lares-scratch/seat-harness/wt show HEAD` (round-5 structural cure: broker-owned seat dir, hand-back copy, held lane root for lead steps, group SIGKILL on exit). Write nothing.
+Find real defects: (1) a seat now WRITES in .broker-seats (default under ~/.lares-scratch): does a build/lead seat's workspace-write sandbox or add-dir reach a path a lead could pre-plant, is the BSD mode 0700 and the brokerDir itself lead-reachable (brokerDir default created by pathname before checks); (2) copyBack: files a LEAD planted in the BSD? (the bsd is broker-only), unlink-then-create race in the lane dir (EEXIST on race → skipped silently), names starting with '.', TOCTOU between lstat and open of the source, cap by size read; (3) exit handler SIGKILLs -child.pid: pid reuse after reap (group empty case), an exit event firing for a child that already... ; groupAlive polling 50x100ms; verdict semantics when unstopped but copyBack runs; (4) stepPlan: state written (step spent) before the BSD mkdir — a later refusal leaves the step spent? (5) lead-step peekStep(laneHeld) before preflight; (6) relay passes &#45;-broker-dir iso/seats: is that dir created and placement-checked (mkdirSync recursive in launcher before verifying it is outside the lane tree?). Rank HIGH/MED/LOW with file:line. Under 300 words.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* A read seat writes no file: its final message carries the hand-back. Any other seat writes `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HRrCwGWkpyY7fXXkGjHocYzTqXo0WjvWsxcWpIOoHvI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

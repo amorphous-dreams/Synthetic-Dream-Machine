@@ -1,0 +1,35 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/lease-end-9decbdf5bf8e4a998637eac752a9dfbe81d16903`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-07 (file date) — source `.lares-scratch/controller/ship/lease-end-9decbdf5bf8e4a998637eac752a9dfbe81d16903.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/lease-end-9decbdf5bf8e4a998637eac752a9dfbe81d16903"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/lease-end-9decbdf5bf8e4a998637eac752a9dfbe81d16903"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! lease-end-9decbdf5bf8e4a998637eac752a9dfbe81d16903.md — plan, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/controller/ship/lease-end-9decbdf5bf8e4a998637eac752a9dfbe81d16903.md` (plan, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+SHIP lease-end 9decbdf5bf8e4a998637eac752a9dfbe81d16903
+read: blind Opus (Blind-Warden-Lease) over beed5a2c1...a49ce62e1 (slice 2): LAND, no P1/P2; keyhive slice tests 75/75 + node live-wake 2/2 in bwrap; real-Keyhive wasm probe on the commit boundary (/home/joshu/.lares-scratch/lease-end/seats/blind-opus-slice2.md). Lanes: Terra lead steps 10-15 (red/fix pairs), Opus seam step 20 (live wake both shores, absorbCapEvents guard at the call).
+read (head moved, no product change): a49ce62e1..9decbdf5bf8e4a998637eac752a9dfbe81d16903 = span merge eacb354a5 + dyad D6 source-weld retargeted to ringDyadDoor (product unchanged) + two evergreen comment rewrites; controller read the diff. K2 ceremony e2e red read as not slice 2's (also on p27-wire 918864e79; base beed5a2c1 green).
+owed (P3, after the dogfood stand): F1 the commit-boundary wording ("at the call"; a microtask queued ahead of admit still runs before the wasm put) + optional real-Keyhive residual test; F2 ring-generation vs island-replica window (fold the ring's generation into admit, or name it in kapae #/four-edges); F3 proofVersion bumps on every daemon-bag title (bump on proof-carrying titles only, or compare board heads); F4 node wake test crosses no sync port, browser test passes no dyadLedger; F5 epoch-free tamper control's reason pattern too broad; F6 aside grant re-verifies its KEL each pass (cache lineage per record.sig). Slice-2 owed rows (KEL freshness, tri-state ring, founder join TOCTOU, post-commit set-aside, complete-view census, runApplyAdmitPayload, holder-session-proof, leaf-peer-proof) and the roll guard + epoch burn ride after the dogfood stand (operator 2026-11-07 split). Outside the diff: open-browser-vessel.ts:1845 'stands === true -> aside' reads inverted on its face; check in the every-reader sweep.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;05zfZ8AZfl4oRZyhkP3lC6gVY0XvLZ3FKKmwVWzpjl8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

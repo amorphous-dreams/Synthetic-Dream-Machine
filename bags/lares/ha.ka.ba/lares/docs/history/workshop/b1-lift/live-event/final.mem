@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/live-event/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-06 (file date) — source `.lares-scratch/b1-lift/live-event/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/live-event/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/live-event/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/b1-lift/live-event/final.md` (hand-back, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/live-event/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Live-Wright-II: Lares (Tasked Spirit): ->▶ Updated [[waitForLivePage|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/tests/e2e/shore-writes.e2e.test.ts:208]] to wait without a clock for `live` and the mirror, while checking painted terminal signals and racing console and page-error events.
+
+->↺ [[out.md|/home/joshu/.local/state/lares-broker/seats/seat-08Ucw1/out.md]] records the signals with source locations and identifies paths that lack a persistent or terminal signal. `git diff --check` passed. No tsconfig covers the e2e file, so no file typecheck ran; no browser or e2e ran. No commit was made.
+
+&lt;&lt;~ oracle throw=`↯8 ✲ ⚁(2) ⁂:⊗☕`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`the controller can exercise the event races in its e2e run · ↻ L-Prime` ooda-ha=`closed 1↺` from=`lar://wright:agent@seat/helper.events.landed` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;v0viyAQJjHuXlmjb7WxIchDodE0L43YnlrmlioiWtFA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

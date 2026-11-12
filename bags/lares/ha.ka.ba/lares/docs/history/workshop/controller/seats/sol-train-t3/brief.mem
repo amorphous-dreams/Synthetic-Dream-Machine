@@ -1,0 +1,71 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t3/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-10-31 (file date) — source `.lares-scratch/controller/seats/sol-train-t3/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t3/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t3/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/seats/sol-train-t3/brief.md` (brief, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t3/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Train-Reader T3: Lares (Tasked Spirit). One Sol read covers this whole train before it lands (standing contract: one Sol read per train head, read floor 0%). The pool runs low, so read the deltas beside this brief and nothing wider. The repo at /home/joshu/Synthetic-Dream-Machine holds the span (dadfbdd85). Read files there for context. If your write wall refuses temp files, probe with in-process scripts.
+
+The train, in order:
+# ''#141 recut-gates, security class'' (recut-gates-141.patch, design recut-gates-design.md).
+#* `gateSweep` is a new transport-free mesh stage owning the gate readings. Each refold refreshes the carried postures, then drops what they demote, then moves the gates. Both refold paths and floorGates call it, and the realm-plane refold now sweeps too. Old shapes burn: gateReadings, resweepGates, gateNexuses, syncStood, standSyncGates.
+#* A gate stood down cuts the sockets it seated.
+#* A share input that has not stood (antigen ring, edge shadow, the protected-doc guard, the Kahu holder) withholds by name from wire and sibling peers; in-process islands pass.
+#* systemCanon is required in every keel.
+#* Teardown: the fetch door stands down right after it opens, and the island's doors drop after the island shuts.
+# ''hearth, shore class'' (hearth.patch, design hearth-design.md).
+#* `lares vessel stand --page` names the built web root and receipt only where both exist, never overwrites a declared value, and declares same-origin only where undeclared.
+#* A node-served page fetches /.well-known/lar and dials its own origin's /ws only when the answer reads format lar-arrival. ?relay= still wins.
+#* One genesis resolver serves the daemon, main.ts and the CLI. A shipped-seed founding pins its seed CID, and the daemon refuses a boot whose resolved seed differs.
+#* A surface-compose wiring witness.
+# ''#140 u1, custody class, delta since the last SHIP read only'' (u1-delta.patch: 68c836d93..1c8881c1a, the commits before the span merges).
+#* With no chain standing, cutMemory answers an empty memory section ONLY when no lockbox at rest opens for this seat (#opensAnyLockbox); otherwise it refuses as before. C1 (no reading without the chain) stays.
+#* The holder's chainless refusal now carries the name chain-absent across seal, mint, import and roll.
+
+Answer:
+* (a) #141: can a peer still reach a document while a share input stands null? Can a stale or out-of-order sweep re-stand a gate for an uncarried Nexus, or keep a stranger seated after a carried Nexus tightens? Does teardown ever leave a door answering, or the next composition unable to stand its gates?
+* (b) hearth: can the page's origin probe be steered into dialing a relay other than its own origin? Can a declared environment be overridden? Can the genesis pin be bypassed, or wrongly refuse a declared or root-held seed?
+* (c) u1 delta: can a chainless cut ever carry a key or plaintext, or answer empty for a seat whose lockbox does open? Check #opensAnyLockbox's key hygiene: it overwrites each opened key at once.
+* (d) Cross-lane: #141 and u1 both touch open-node-vessel.ts teardown entries (u1's session-sign door versus gates' "island doors" entry). Does the merged order drop every door after the island shuts?
+
+Name each finding HIGH, MEDIUM or LOW with file:line. End with SHIP or HOLD per lane.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* Write `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;EOHtso2Ezi3-P2ogjB3J199c-4Ov1W6k5vG1AlNZWWI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

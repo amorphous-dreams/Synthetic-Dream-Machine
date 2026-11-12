@@ -1,0 +1,32 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/hydrafusion/terra/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-28 (file date) — source `.lares-scratch/research/hydrafusion/terra/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/hydrafusion/terra/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/hydrafusion/terra/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — research, 2026-10-28
+
+Verbatim scratch record `.lares-scratch/research/hydrafusion/terra/final.md` (research, file date 2026-10-28); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/hydrafusion/terra/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Ink-Clerk: The report is complete at [[out.md|/home/joshu/.lares-scratch/research/hydrafusion/terra/out.md]].
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9aRv9Ry3SzFljSdcau999_MzNLIIWUKB8M_wco9ePxc`>>
+
+<<^ code=`&#x0004;` to=`?`>>

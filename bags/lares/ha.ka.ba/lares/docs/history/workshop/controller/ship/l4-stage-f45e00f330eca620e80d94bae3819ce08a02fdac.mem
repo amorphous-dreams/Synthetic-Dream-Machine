@@ -1,0 +1,33 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/l4-stage-f45e00f330eca620e80d94bae3819ce08a02fdac`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-02 (file date) — source `.lares-scratch/controller/ship/l4-stage-f45e00f330eca620e80d94bae3819ce08a02fdac.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/l4-stage-f45e00f330eca620e80d94bae3819ce08a02fdac"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/l4-stage-f45e00f330eca620e80d94bae3819ce08a02fdac"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! l4-stage-f45e00f330eca620e80d94bae3819ce08a02fdac.md — plan, 2026-11-02
+
+Verbatim scratch record `.lares-scratch/controller/ship/l4-stage-f45e00f330eca620e80d94bae3819ce08a02fdac.md` (plan, file date 2026-11-02); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+f45e00f330eca620e80d94bae3819ce08a02fdac
+read: blind Opus security read (Stage-Seer) HOLD on 69dd7072d (H1 genesis base picks seed); focused re-read of cures 69dd7072d..f45e00f33 → SHIP. H1/M2/M3 closed, L1/L2 cover every reader. LOW residuals owed: LOW-1 same-origin non-default base + foreign descriptor reads cross (require descriptor on page origin when base non-default; no relay → no compare); LOW-2 'bags&#47;/daemon' empty segment passes cp (fold empty segments / refuse &#47;/); LOW-3 RawMarkup/Global/Stylesheet tags + charset'd js type lift (operator-signed); LOW-4 no CONTROL that &lt;root>/wikis/daemon stays absent; island verb takes ensure from caller (idempotent). M1 hand-only key, L3 CLAUDE.md isolation note, L4 taint/replay owed.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ha-1N8Uw8tjPVqNv6RUrTf_cNSMOeEVylPZC5pN1JPw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

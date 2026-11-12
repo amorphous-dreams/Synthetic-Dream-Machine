@@ -1,0 +1,33 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/pre-rite-bf5fad6c76c48a76538c3b4bce987610a0ab644b`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-05 (file date) — source `.lares-scratch/controller/ship/pre-rite-bf5fad6c76c48a76538c3b4bce987610a0ab644b.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/pre-rite-bf5fad6c76c48a76538c3b4bce987610a0ab644b"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/pre-rite-bf5fad6c76c48a76538c3b4bce987610a0ab644b"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! pre-rite-bf5fad6c76c48a76538c3b4bce987610a0ab644b.md — plan, 2026-11-05
+
+Verbatim scratch record `.lares-scratch/controller/ship/pre-rite-bf5fad6c76c48a76538c3b4bce987610a0ab644b.md` (plan, file date 2026-11-05); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+bf5fad6c76c48a76538c3b4bce987610a0ab644b
+read: blind Opus cold read of the pre-rite lane at e397e655e (HOLD: L7 missed the recompose window), cured; the same reader's re-read of e397e655e..dbb910c63 = SHIP (no torn read of the composing flag: single thread, depth set before the first await, cleared before the answer); its P2 (a stale reading across the passphrase prompt) and P3s cured at bf5fad6c7 (CI 42066346159 green, no reruns). The custody-class change answers the read-only custody STATE query beside the chain (no key material in the answer; it names only locked / composing / ready, as vault status already tells the owner-only socket). No Terra read on this lane: the Codex pool stood at 5% and the operator's Terra-at-punctures ruling was kept for the capability/caps lanes.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1fsedjZnKiu_yxbQG_2eMB-DbMeEP4ujJPhS-Ew4uCw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

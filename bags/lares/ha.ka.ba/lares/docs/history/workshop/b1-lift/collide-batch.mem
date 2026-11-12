@@ -1,0 +1,75 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/collide-batch`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-05 (file date) — source `.lares-scratch/b1-lift/collide-batch.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/collide-batch"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/collide-batch"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! collide-batch.md — plan, 2026-11-05
+
+Verbatim scratch record `.lares-scratch/b1-lift/collide-batch.md` (plan, file date 2026-11-05); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/b1-collision-batch-three-colliders-reports-for-t`>>
+
+! B1 collision batch (2026-11-05): three colliders' reports, for the carrier step after slice 2
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/house-decisions`>>
+
+!! House decisions (overrulable)
+# Same-face tabs: the vessel worker lights ONE Keyhive provider per face at the face's first unlock; each later tab proves its own unlock to admit its own session; the face's LAST session closing drops the provider and its keys (keeps session-contract:92 and the per-tab-sessions ruling).
+# Passkey/PRF: the ward refuses passkeys (seat-harness:119-120); custody admits a PRF wrap that never stands as the sole copy (secure-context:191-192). The ceremony document hosts both: a passphrase answer kind (ward + custody) and a WebAuthn PRF answer kind (custody only); a passkey slot gets built (keyslot.ts builds passphrase and paper only); the ceremony document gets its own reach witness (slice 0 covers main.ts only).
+# sealed-store STEP THREE (the document store's values sealed as `change` and `checkpoint`, hydration checked against the session's face, the browser island's rest and holder seat) becomes a B1 slice before the rite, on its own sub-lane `b1-seal`. Steps four (the DreamNet carriage protocol between vessels) and five (a public bag at a locked node's floor) belong to the sealed-store road, not to the lift; they keep their own rows and rank (corrected by the controller after reading sealed-store #/owed).
+# The G4 txId ledger becomes durable so slice 6's lands-once red holds across a respawn.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/custody-collider`>>
+
+!! Custody-Collider (Sonnet)
+
+(Collider reports condensed by the controller; carrier:line cites are the colliders' and rest on excerpt reads — verify each line before editing it.)
+
+!!! B1 must carry (EXTENDS / forgotten)
+* K15 (k15-custody-step-zero:112,126,138-140,174): a per-face custody key (FCK) map and per-face slot trees inside the vessel worker; every `ask` and `clear` carries a `face` (the PersonaGroup, never `h<N>`); K15's isolation red runs inside the worker (unlock A, bypass the router, B's rows still refuse); a PRF slot stands only after its derivation gets measured on target devices; iOS Home Screen + Android WebAPK lifecycle reds (asker killed mid-write; relaunch starts at the floor and asks again); "an installed app or worker does not extend authority": the SharedWorker's lifetime never stands in for authority.
+* Wave B (k15-wave-b-lane:43-45,61-63,102): slice 3 adds the stranger's-port red (a port with no admitted session refuses by name), the same-face controls (another session of the same face still reads; an admitted same-face port receives its body); "the asker seals" keeps `seal-awaits-session`, and only another admitted unlocked session of the same face may seal when the asker cannot answer; the dispatcher's local-verb mark binds to the session id.
+* sealed-store (lararium/mesh/sealed-store:231,232,243,247,339,358,365): no bare key crosses a worker port or reaches disk (the broker never carries a content key); the last-session transition calls the holder's lock (overwrites every key; a lock ends an act in flight; check before each write); "a session signs, or nothing mints" (slice 3 rides slice 5a's session signer); steps 2-4 as slices (house decision 3); a face change (B8) re-checks hydration against the session's face.
+* waking-floor (lares/api/pono/waking-floor:58,73,99-117,349): a named floor reading for the locked vessel worker (public bytes only, no sovereign signature, `signer-unavailable` on asks); the ceremony document and the service worker stay reachable at the floor with no secret; a missing passphrase never silently degrades: the ceremony refuses by name on a CSP or origin failure and never falls back to the surface page's form.
+* Pronaos (lararium/mesh/pronaos:196-207,248-252,322-330): declare every new route (the ceremony document, the service worker and its scope, `vessel.worker.ts`, the SharedWorker) in the route inventory with a CSP delivery policy; name that a phone can't hash-check a top-level page, so the ceremony's trust rests on the origin.
+* system-pattern-integrities (MIND_3_SW_SHELL:60): the broker's handoff never becomes the sw-shell readiness signal; say what readiness waits on.
+* founding-runbook (lararium/mesh/founding-runbook:98,237,253,355): fold the real-device probe into step 8's `tools/capability-probe/` phone walk and name it in the pre-rite gate; a red that no seed crosses `join:offer` / `join:answer`; each browser device mints its own key in the worker; the ceremony refuses by name on an insecure origin.
+* ember (lararium/mesh/ember:151,279): the browser leaf's ember row (one secret per hearth, never synced, lost on eviction, answers signed asks) rides the leaf's custody slot: add it to slice 3's keystore and ask path.
+* K19 (k19-hive-lane:22,41-42,53): one Keyhive provider per unlocked joined face; face lock/unlock as causal messages (`daemon:face-drop`, `daemon:face-lit`), no clock, no recompose; a session acts only as the face it wears, booked by request id.
+* session-contract (lares/api/pono/session-contract:28,59,90,121,232,243,257,307): a face switch reads as a five-step fence that advances a generation (B8), each session binds one (face, Nexus), a face hint grants nothing; abrupt tab loss sends no close, so the last-session drop also rides port loss or the holder's local monotonic liveness budget (own liveness only), never `page:life` alone; the owner persists no roster of sessions (session records stay in memory); a respawned vessel reissues `ownerEpoch` and fresh session ids, and no tab trusts an earlier greeting; hostile same-origin code can take a Web Lock or approach the SharedWorker, so the broker stands as no boundary between same-origin scripts and the `store-owned` refusal stays loud.
+* device-capabilities-2026:151,167,170: PRF wraps and never mints; Web Lock `ifAvailable` refuses loud and `steal` stays forbidden; SharedWorker lifetime under the 7-day rule stays unmeasured on Safari and Firefox.
+* secure-context (lararium/mesh/secure-context:38,123,156,182,184,189,191-192,196,199): the secure-context wall (a service worker and WebAuthn need a secure context; a plain `http://192.168.x.x` page refuses by name); `seedRest=open` names the pre-bind window only (only the place seed and veil archives stand clear before a slot binds; `bind-first` names that window and its close); PRF-wrapped custody replaces the cleartext resting form.
+* dreamdom-seed:171: ceremony and custody reds run on scratch roots with synthetic names and secrets.
+* road:200,205 + handoff:110: a browser leaf holds a passphrase or PAPER slot before it holds a persona root; every boot rests at the floor until a human unlocks; the root mint refuses `no-custody-slot` and binds a slot and unlocks before the vessel composes.
+* seat-harness:119-120: the ward's laws stated in the carrier: never a passkey, one act one unlock, no route or key cached between acts, zeroed after use.
+* kahua-memory-stage:72,193,198,275: two faces on one device project two folders, each session leasing its own wiki; a locked vessel or torn row loads no promoted code and never falls back to stage bytes; the board watcher stops at session close / the last-tab transition; the vessel's seed self-consistency check against the hearth's arrival descriptor keeps its named mismatch refusals.
+* disk-projection:62: durability status distinguishes a requested drain or in-memory flush from a storage-backed acknowledgement and a confirmed projection hash.
+* blob-carriage:179: minted `blob:` URLs stay per session and out of persisted CRDT and disk records.
+* full-detached-worker-authority-pool-sprint (lararium/browser): no HTTP/RPC coordinator surface, no browser singleton authority rooted in ambient page boot; record B1's answer (house plus floor) to its open question.
+* The G4 page-side `mirror:began` sessionStorage record survives on the page: exempt the page from any no-sessionStorage census.
+
+!!! Truing queue (carriers B1 contradicts or stales; true them in the same lane)
+session-contract:233 (one tab owns, others refuse → every tab its own session via the broker) and :93, :223-233, :307; d3-glass-lane:33,56,62 (G4 leader/follower/lend dissolves; the ledger turns durable) and dreamdom:103,179,562; dreamdom-roadmap:46 (`?holder` refusal dissolves); secure-context:123,197 (opened tree key in page memory → discharged by slice 3); daemon-surface:52,68,130-132 (custody pane reads `status{seedRest}`; key bytes live on the vessel worker's thread; `?holder` gone); seat-harness:121 (a browser ward signs from the ceremony document's bytes, never a page dialog); dreamdom's 2026-10-29 bullet ("its shape stays research") gains the approved ceremony; full-detached-worker sprint's "island runtime realms" → threads.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WMaHAsEyRPpOv3qXxzHIVhXNkjShkVIjWEM-aYIk0-o`>>
+
+<<^ code=`&#x0004;` to=`?`>>

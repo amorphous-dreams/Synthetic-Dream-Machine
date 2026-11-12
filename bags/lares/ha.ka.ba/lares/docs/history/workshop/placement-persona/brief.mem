@@ -1,0 +1,54 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/placement-persona/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-09 (file date) — source `.lares-scratch/placement-persona/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/placement-persona/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/placement-persona/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-09
+
+Verbatim scratch record `.lares-scratch/placement-persona/brief.md` (brief, file date 2026-11-09); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/placement-persona/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Plane-Wright: Lares (Tasked Spirit). Read CLAUDE.md once for house law, then implement. This is an IMPLEMENTATION task: start editing code within your first few actions. Do not write a plan file, do not stop at a trace. Done means the diff below exists and the listed tests pass.
+
+RULING (operator, approved): persona acts rest in the PersonaGroup plane, a PRIVATE-SYNCED home. "Acts leave the browsing recipe, and the proof readers keep direct access." Placement decides, never a title pattern: do NOT add a check keyed on the string `persona-` in a title or bag id.
+
+CONTEXT (measured; no need to re-trace):
+* `packages/lararium-tw5/src/daemon-vm-core.ts:407-412` mounts the persona plane as a writable layer of the daemon VM's `composite` (the store the verbs read and write through): `composite.addLayer({ bagId: personaBagId, store: personaStore, writable: true, defaultWritable: false })`. The browser's daemon VM passes `personaHandle`/`personaBagId` into the same core (`packages/lararium-browser/src/open-browser-daemon-vm.ts:118,152`).
+* `packages/lararium-node/src/open-node-vessel.ts:3141` registers the plane in the catalog: `registerInCatalog(personaBagIdFor(plane.personaGroupId), plane.url)`.
+* Proof readers already use their own access: `packages/lararium-node/src/persona-selves-plane.ts:86` builds `new AutomergeDocStore(handle, personaBagIdFor(...))` itself; `commands/intent.ts:162` and `commands/persona-lease.ts:109` resolve the plane's URL themselves; `face-plane-registration.ts:14`; Keyhive ceremony writes through the plane handle (`packages/lararium-keyhive/src/ceremony-core.ts:456`, `plane.change(...)`).
+
+CHANGE:
+# `daemon-vm-core.ts`: stop adding the persona plane as a composite layer. Keep `personaHandle`/`personaBagId` available on the VM for any code that needs DIRECT access (proof, Keyhive replay); expose it as a named direct handle (e.g. `personaPlane: { bagId, handle } | null` on the VM's returned object or opts), never through `composite`. Update the comment at :157-158 and :405-407 to say: the VM holds the persona plane as a direct handle for proof readers; no verb reads or writes it through the composite.
+# Run the tw5 suite. Every caller that breaks because it read or wrote the persona bag THROUGH THE COMPOSITE moves to the direct handle (the persona-selves-plane pattern). List each one you move in your final message.
+# Catalog: check whether any page- or verb-facing read (meme-get / meme-list / list-wikis / the island's registered-bag mount) can open `bags/persona-<tag>` through the catalog entry registered at open-node-vessel.ts:3141. If one can, cure it by PLACEMENT: register the plane with a private-synced kind or flag on its catalog entry (or a separate private registry the proof readers read), and have the verb/island mount path skip entries of that kind. If none can, leave the registration and say so with the file:line you checked.
+
+TESTS (red first):
+a. tw5: a daemon VM built with a persona handle answers a meme read (or list) naming the persona bag id with not-found or a named refusal — the persona plane is not a composite layer.
+b. node: the persona-selves / proof path still reads a face's persona acts (find the existing test around persona-selves-plane or face proof, e.g. `ls packages/lararium-node/tests | grep -i -E 'persona|selves|face-proof'`, and keep it green; add one assertion if none covers the direct read).
+c. If step 3 found a catalog path: a test that the verb/island path cannot open the persona plane while the proof reader still can.
+Then: <code>pnpm &#45;-filter &#64;lararium/tw5 build &amp;&amp; node tools/stamp-build.mjs . &#45;-pkg lararium-tw5</code>; same for any other touched package (`lararium-node`, `lararium-browser`); typecheck each touched package; full vitest suite of tw5, then node, then browser, ONE AT A TIME with `--maxWorkers=4`; `node tools/evergreen-boundary.mjs`. Node and CLI founding/face tests failing with `secret-home-unavailable` are a known unrelated red (another seat's item): count them separately and do not try to fix them.
+
+LIMITS: edit only what this change needs in packages/lararium-tw5, packages/lararium-node, packages/lararium-browser (and mesh only for a catalog-entry kind if step 3 needs it). Do not touch Keyhive's secret-home or custody code, commands/init.ts, the found path, or the control-plane writers (verb-dispatcher, uds-channel, verb-vm, swarm, mailbox). No git commit, no push, no stash. Never touch ~/.lares or docker.
+
+FINAL MESSAGE: files changed, callers moved to the direct handle, the catalog finding with file:line, each suite's counts (secret-home-unavailable failures counted apart), anything you could not do.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8AoU_OdMP9Zy6KOVIq4thdblAML2Nc_BKAvBUfQB4S0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

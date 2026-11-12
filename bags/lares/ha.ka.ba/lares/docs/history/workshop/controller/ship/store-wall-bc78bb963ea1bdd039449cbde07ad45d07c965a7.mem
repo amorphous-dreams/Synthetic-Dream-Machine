@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/store-wall-bc78bb963ea1bdd039449cbde07ad45d07c965a7`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-07 (file date) — source `.lares-scratch/controller/ship/store-wall-bc78bb963ea1bdd039449cbde07ad45d07c965a7.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/store-wall-bc78bb963ea1bdd039449cbde07ad45d07c965a7"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/store-wall-bc78bb963ea1bdd039449cbde07ad45d07c965a7"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! store-wall-bc78bb963ea1bdd039449cbde07ad45d07c965a7.md — plan, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/controller/ship/store-wall-bc78bb963ea1bdd039449cbde07ad45d07c965a7.md` (plan, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+SHIP store-wall bc78bb963ea1bdd039449cbde07ad45d07c965a7
+read: blind Opus (Blind-Warden-Store) over f9a67fe70...8e597b79f: LAND-AFTER-CURES (P1 live lanes share module inodes, P2 live relay on pre-lane code, P3s) (/home/joshu/.lares-scratch/store-wall/seats/blind-opus/out.md); cures at bc78bb963 red-first (inode guard at provision, door and launch; stamp writer; stamp dir fd-relative; symlinked farm refuses; install seat LIVENESS; request size; flag naming; snapshot); blind re-read over 8e597b79f..bc78bb963: LAND at bc78bb963ea1bdd039449cbde07ad45d07c965a7 (/home/joshu/.lares-scratch/store-wall/seats/blind-opus/reread.md), 191/191 in bwrap; lead ran a REAL offline pnpm 11.28.5 install inside the wall, store and cache unchanged, verify-store 54339/54339 clean.
+owed: operational at land: re-provision lease-end/wt (copy-install) before its relay restarts; spend-burn and secrets-store re-provision before any seat touches them; every relay restarts from the main checkout. P3 rows: F3 and F5 check-then-use races (fd-relative O_NOFOLLOW chain; refuse on openFarm ELOOP), F8 readFile past fstat size (bounded fh.read), F7 timer clears on exit, N1 guard walk follows a swapped symlink (fd-relative walk or st.dev check), F6 failed policy leaves imported packages, F10 frozen-store immutable reads vs a concurrent writer, F11 pnpm-workspace.yaml settings outside the allowlist and &#45;-tmpfs /run, build-freshness lock mkdir follows a symlinked .lares-build.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;M3GSAd50gXfSXwqz47VPEL6GfYzBD8xi6rVI5W09Id0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

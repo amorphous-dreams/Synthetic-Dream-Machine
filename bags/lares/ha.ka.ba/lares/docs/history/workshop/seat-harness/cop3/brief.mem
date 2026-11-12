@@ -1,0 +1,40 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/cop3/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-04 (file date) — source `.lares-scratch/seat-harness/cop3/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/cop3/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/seat-harness/cop3/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-04
+
+Verbatim scratch record `.lares-scratch/seat-harness/cop3/brief.md` (brief, file date 2026-11-04); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/cop3/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/build-row-3-the-compaction-canary-in-tools-launc`>>
+
+! Build: row 3, the compaction canary, in tools/launch-codex.mjs (worktree /home/joshu/.lares-scratch/seat-harness/wt)
+RED tests already stand at the end of tools/launch-codex.test.mjs ("row 3: ..."), plus the updated "lead argv exact" test. Edit ONLY tools/launch-codex.mjs so they pass. You cannot run node:test; read the tests carefully and match them exactly. The lead runs them.
+Required in tools/launch-codex.mjs:
+# `export const COMPACT_LIMIT = 120000; export const TOOL_OUTPUT_LIMIT = 8000;`
+# seatArgs: in the `common` array, right after `"-o", join(seatDir,"final.md")`, add `"-c", \`model_auto_compact_token_limit=${compactLimit ?? COMPACT_LIMIT}\`, "-c", \`tool_output_token_limit=${TOOL_OUTPUT_LIMIT}\&#96;&#96;; seatArgs takes an optional `compactLimit` in its destructured object. Only launcher -c overrides; never touch ~/.codex/config.toml.
+# `export function canaryVerdict(lines)` -> `{fired, events, calls, tokens}`: events = lines whose JSON has top-level type "compacted", or payload.type "context_compacted" or "compaction" (parse each line with JSON.parse in try/catch, skip junk); calls = lines with payload.type "function_call"; tokens = rolloutTokens(lines) (existing; null when none -> the test expects 90 when present); fired = events > 0.
+# `export function canaryBrief()` -> brief text: tells a read-only seat to read /home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs, then tools/launch-codex.test.mjs, then the seat-harness.mem under bags/lares/ha.ka.ba/lares/docs/pono/ of that worktree, in 40-line slices with `sed -n`, "one tool call per slice", about 100 slices in all, no summary until done, then the final message exactly `CANARY DONE <n> calls`.
+# CLI: parse gains boolean flags `--canary` and `--check-canary`. With `--canary` (read mode only; refuse otherwise with a SEAT-REFUSED-style refusal): after preflight and before the law append, write canaryBrief() to `<seatDir>/brief.md`, and pass `compactLimit: 50000` to seatArgs. With `--check-canary --seat-dir D` (no other flags required: relax the required-keys check for it like `--watch` does): find the seat's rollout with `findRollout(readers.realHome, { cwds: [real(D)], before })` where `before` is the Set from `<D>/rollouts-before.json` if it exists else an empty Set; no rollout -> err(`no rollout found for ${D}`) and return 2; else verdict = canaryVerdict(lines of the rollout) and log `COMPACTION-FIRED events=<n> calls=<n> tokens=<n>` or `COMPACTION-NOT-FIRED events=0 calls=<n> tokens=<n>`, return 0. Update the file's header comment to mention both flags.
+Hand back by your final message: what you changed, anything unclear.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vYwMfE8k0gthzV0a9_eAm1ZgJrezjFnxgjz3EPsHrkQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

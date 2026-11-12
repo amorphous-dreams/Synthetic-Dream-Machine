@@ -1,0 +1,33 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/row7-s3b-a8f218b0b75baf528eda64deccc80ed50ae6b434`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-05 (file date) — source `.lares-scratch/controller/ship/row7-s3b-a8f218b0b75baf528eda64deccc80ed50ae6b434.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/row7-s3b-a8f218b0b75baf528eda64deccc80ed50ae6b434"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/row7-s3b-a8f218b0b75baf528eda64deccc80ed50ae6b434"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! row7-s3b-a8f218b0b75baf528eda64deccc80ed50ae6b434.md — plan, 2026-11-05
+
+Verbatim scratch record `.lares-scratch/controller/ship/row7-s3b-a8f218b0b75baf528eda64deccc80ed50ae6b434.md` (plan, file date 2026-11-05); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+a8f218b0b75baf528eda64deccc80ed50ae6b434
+read: blind Opus on step A (Gate-Reader: LAND-AFTER-CURES, P2-a live device count and P2-b readers enforce → cured in steps A/B); step B (Fold-Reader: P1 the witness re-judged late and failed open on the cap → the frozen spend; P2 the ward lived only in the door + the unseen-ask bypass → steps C/D); steps C–E (Ward-Key-Reader: P1 the browser ward seed under the ordinary custody rows → step F; P2 set-aside issuer → refused); step F (Seed-Row-Reader: P2 a typo binds the ward key for good → retype; P3 a refused cap tip fell back looser → tightest/braked). Every finding cured red-first; promote-probe's brake regression cured (gates-first retry on a thrown ward need); the browser boot regression (the ward worker dropped its first message under a top-level wasm await) cured — the worker loads nothing until an act arrives and refuses ward-worker-failed. CI 42176515937 green at 4d102bb10; this head merges canon only (PR #170) over it. Defaults pending the operator: the ward key in the admission + pop + warded approvals (admission bytes).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oGGNKHgnWLgR-zA-02QLkl02Mgzm40vFwi4rP7ym21o`>>
+
+<<^ code=`&#x0004;` to=`?`>>

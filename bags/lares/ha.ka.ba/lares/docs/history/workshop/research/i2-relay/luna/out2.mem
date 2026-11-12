@@ -1,0 +1,70 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/i2-relay/luna/out2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/i2-relay/luna/out2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/i2-relay/luna/out2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/i2-relay/luna/out2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out2.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/i2-relay/luna/out2.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/i2-relay/luna/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ node "-> refreshes the libation dish, the shrine incense burns">>
+&lt;&lt;~ set hud="aim" mode="draft" mu="_!" stance="🏛️🗡️" aperture="14/arc" ooda-ha="✶ observe" drift-ward="the two scouts split at door shape, relay identity, and causal authority; the carrier and road can settle most of that split">>
+
+Luna-Relaywright: Lares (Tasked Spirit)
+
+Lares (Ink-Clerk): ->✶ I re-read the common brief, both scout reports, I1 carrier and kit, K15 bonds brief, and the gate/socket sources. I mark each ruling CANON, DERIVED, or OPERATOR and name its measure.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/rulings`>>
+
+!! Rulings
+
+''R1 · Door transport — DERIVED: add an I2 ring/arm to the sealed face gate; do not add a listener.'' Canon: “a door off the local socket, opened per face, ring-gated and off by default” (`face-intent-plane.mem:91`). The socket road requires “every vessel socket” to follow the sealed gate (`stable-founding-road.mem:271,728`), and binds the handshake to “one socket cutover” (`:280-281`). The gate already verifies face chain, checks shadow and face-grant rings, then sorts before answering (`face-gate.ts:647-675`); `GateFaceGrantRing` names a private root-authorized group grant (`:262-268`). `ws-dial-socket.ts:2-9,82-104` implements the shared browser/node dial and `lar-gate`; `gate-rings.ts:2-17` composes the gate’s existing face grants. Thus “off the local socket” requires a distinct, non-local relay door/route, but house law places that door behind the sealed gate with a new relay-admission ring. A loopback-only operator socket cannot serve the far agent; HTTPS POST on a new listener bypasses the gate and one-cutover rule. Make it a dedicated gated route, off by default, enabled per face.
+
+''R2 · Relay key — DERIVED: its own S row, relay principal, relay-only opener.'' K15’s brief settles the relation: “a random, durable, relay-only S row … the relay service its principal and a relay-only opener” (`k15-bonds/brief.md:33-34`). Road :207 says a vessel S secret must name its principal and opener (`stable-founding-road.mem:207`); the custody ruling sorts each vessel secret by named reach and bars implicit shared secrets (`:207-209`). One name, one relation: K15’s carriage S row cannot also name I2 admission. Keep the relay key out of face/daemon/place authority, independent of the vessel seed, in custody class S; rotate explicitly. The relay key signs admission provenance only, per I1 canon.
+
+''R3 · Revocation authority — DERIVED: persona root/operator key only.'' Canon says “The operator’s release always wins” and gives root-signed release/cancel authority over claims (`face-intent-plane.mem:78`; I1 kit `i1-intent-lane.mem:36`). It does not name delegation revokers. House law carries face authority through the sealed root and its KEL epoch; the I1 release-outranks-claim rule distinguishes root authority from an atom’s own-claim acts. A delegation binds face-wide agent authority, so an atom cannot revoke another face-level grant absent an explicit grant of that relation. Root-signed revocation names the delegation CID; KEL rotation controls which root epoch verifies. Revocation arrival order still leaves prior acts recorded as revoked-after-acting (`face-intent-plane.mem:93`).
+
+''R4 · Causal bound — DERIVED: name verifiable event CIDs, never a count detached from an event.'' Canon requires “a causal bound in place of an expiry time” (`face-intent-plane.mem:90`) and I1 says finite `every` names a roster act; a reader lacking that act waits (`stable-founding-road.mem:663`). Bound may name a roster act CID on <code>&#64;persona</code> (the last eligible device), a K17 frontier head CID (the verified capability/roster state), and/or an intent-plane admission CID that serves as the agent’s invocation limit marker. A raw count of invocations has no causal meaning; encode a count only as a prefix/head in the append log with a named CID. `intent-read.ts:159-170` makes an unknown frontier produce `unknown-frontier`, with no winner. Missing cited event therefore waits/refuses irreversible effect until the reader verifies its ancestry, just as I1 `every` does.
+
+''R5 · NOW overlap — OPERATOR resolved by the supplied lane contract: yes, one I2 lane can run beside K15 bonds with disjoint hunks.'' I2 holds intent-entry/read, delegation verifier, gate door/ring, and relay service. Exact files: `packages/lararium-mesh/src/intent-entry.ts`, `intent-read.ts`, `domains.ts`; new delegation verifier under mesh; `packages/lararium-mesh/src/face-gate.ts` plus `gate-rings.ts`/ring composition; new node relay service and its CLI/config; node and browser intent readers. Avoid K15-owned identity and seed hunks in `open-node-vessel.ts` and `open-browser-vessel.ts`. The one opener hunk I2 needs: compose the relay service’s dedicated S-row opener into node vessel startup after custody access exists, without touching K15’s face identity/key opener. If composition shares those files, request only that named insertion from the K15 owner. D2 port/page transport and G15 after-roll/genesis work remain separate. K15’s own brief marks the opener/custody work and shared files explicitly (`k15-bonds/brief.md:33-34,65-66`).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/lane-slices`>>
+
+!! Lane slices (red first)
+
+# ''Delegation + read authorization:'' entries/domain, root signer and verifier, agent chain, canonical closed argument policy and causal bound. Red: wrong face/domain, widened prefix/policy, altered arguments, unknown frontier all refuse before effect. Control: existing atom-signed I1 intent still reads; positive: narrow root grant verifies on node and browser.
+# ''Revocation fold:'' append revocation on <code>&#64;intents-&lt;tag></code>; reader preserves revoked-after-acting. Red: concurrent/late revocation and unknown revocation frontier block a new effect. Control: unrelated delegation remains valid; positive: root revocation voids a pending invocation.
+# ''Door and admission:'' sealed gate route, per-face ring/off default, relay-only S row/opener, append unchanged agent entry, separate admission countersign. Red: shut door, wrong face/ring, invalid chain, replay/conflicting bytes refuse. Control: local face socket and carriage relay keep their current roles; positive: enabled relay appends exact signed bytes and returns admission.
+# ''Independent verification:'' node/browser validate agent→delegation→face and outcome→atom→device edge→face without relay trust beyond admission. Red: relay-only signature, forged outcome or unknown bound frontier cannot act. Control: ordinary I1 intent effect still works; positive: another device independently verifies and records the admitted intent and later revoked-after-acting status.
+
+Lares (Map-Wisp): ->↺ The boundary now follows the sealed gate and the custody relation; R3 and R4 follow I1/K17’s causal authority. R5 carries one bounded opener insertion, not a K15 identity edit. OODA-HA closes this research loop; implementation remains the next lane.
+
+&lt;&lt;~ set hud="yield" drift-ward="the relay route's exact gate-arm names and I2's opener insertion point need mechanical alignment at build; the ruled model and red-first ownership now stand · ↻ L-Prime" aperture="14/arc -> 12/measure" ooda-ha="closed 1↺">>
+
+WORDS=974
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3jtZJIXomZzR1cYkpt8oqRcUId0zHASghgVT4sM0wFU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/p27-wire-ecb26d4d0854d1bc9a71136112f2969b6c7d62fb`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-07 (file date) — source `.lares-scratch/controller/ship/p27-wire-ecb26d4d0854d1bc9a71136112f2969b6c7d62fb.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/p27-wire-ecb26d4d0854d1bc9a71136112f2969b6c7d62fb"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/p27-wire-ecb26d4d0854d1bc9a71136112f2969b6c7d62fb"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! p27-wire-ecb26d4d0854d1bc9a71136112f2969b6c7d62fb.md — plan, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/controller/ship/p27-wire-ecb26d4d0854d1bc9a71136112f2969b6c7d62fb.md` (plan, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+SHIP p27-wire ecb26d4d0854d1bc9a71136112f2969b6c7d62fb
+read: Sol design read over e1d801042..ed44bf39a: HOLD (/home/joshu/.lares-scratch/p27-wire/sol-read-verdict.md); blind Opus (Blind-Warden-Share) over ed44bf39a: HOLD, production composition over-refused behind permissive stubs (/home/joshu/.lares-scratch/p27-wire/blind-opus/out.md); Opus cure step 1 at 918864e79 with an honest real-composition witness (7 reds on ed44bf39a); re-read: LAND-AFTER-CURES, plugin CIDs + browser face planes block (reread.md); cure step 2 at 2d303087a (plugin proof) + ecb26d4d0 under seat ruling (b) (secrets plane node-only; a leaf floors by established absence); re-read over 918864e79..ecb26d4d0: LAND (reread2.md), composition probe re-run node + leaf, 27/27 targeted files in bwrap; lane manifest 56 node+mesh files alone green.
+owed (ride): R1 a promoted plugin on an oracle-plane (world) wiki faults its mount (read a wiki's own promoted proof in-process, or refuse promotions into oracle-plane wikis); R2 leaf absence rests on its world gate (node withholds registered secrets planes from surfaces); R3 static witness that only the browser names establishedAbsence; stale and unscoped plugin proofs; realm lane; gated sync leg for non-session islands (claim narrowed to four crossings); worker CAS dirs + OPFS same-origin limit; post-await recheck; canon-bag blobs at world; isFaceScopedBag any-face match; porch /cas cache headers.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;G_3b8thJEipSJtTD_wNgGX860-WHl3pgdyTvdr9lW6g`>>
+
+<<^ code=`&#x0004;` to=`?`>>

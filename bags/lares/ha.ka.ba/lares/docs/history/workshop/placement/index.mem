@@ -1,0 +1,40 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/placement/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/placement/` — 4 record(s) here, 4 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/placement/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/placement/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/placement/`
+
+The scratch planning records of `.lares-scratch/placement/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 4 record(s) stand here and 4 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[workshop|lar:///ha.ka.ba/lares/docs/history/workshop/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[moolelo-persona-acts|lar:///ha.ka.ba/lares/docs/history/workshop/placement/moolelo-persona-acts]] | plan | 2026-11-09 | `moolelo-persona-acts.md` |
+| [[terra-final-2|lar:///ha.ka.ba/lares/docs/history/workshop/placement/terra-final-2]] | hand-back | 2026-11-09 | `terra-final-2.md` |
+| [[terra-final-3|lar:///ha.ka.ba/lares/docs/history/workshop/placement/terra-final-3]] | hand-back | 2026-11-09 | `terra-final-3.md` |
+| [[terra-final|lar:///ha.ka.ba/lares/docs/history/workshop/placement/terra-final]] | hand-back | 2026-11-09 | `terra-final.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HS_aVC_cRvRojHkuUPfNJugCcL9UIV_bYsBQeU2jTPA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

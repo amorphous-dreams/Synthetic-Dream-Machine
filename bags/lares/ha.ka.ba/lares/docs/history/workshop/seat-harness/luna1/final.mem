@@ -1,0 +1,38 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna1/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-04 (file date) — source `.lares-scratch/seat-harness/luna1/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna1/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/seat-harness/luna1/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-04
+
+Verbatim scratch record `.lares-scratch/seat-harness/luna1/final.md` (hand-back, file date 2026-11-04); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna1/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+* ''HIGH — `tools/launch-codex.mjs:273,278`'': The watchdog identifies the seat only by numeric PID. If that process exits and the PID is reused before the next poll, `alive()` can mistake the replacement for the seat and signal its process group. The detached process-group kill is otherwise appropriate for the child launched with `detached: true`, but it needs an identity check to protect against PID reuse.
+
+* ''MED — `tools/launch-codex.mjs:81,312`'': Rollout matching can fail or select the wrong seat for valid paths containing commas or JSON-escaped characters. The launcher comma-joins cwd values, then the watchdog splits them; matching compares those raw strings to the regex-captured, still-escaped `cwd`. With concurrent seats sharing a worktree, choosing the newest matching rollout can also make both watchdogs follow the same session.
+
+* ''MED — `tools/launch-codex.test.mjs:389–401`'': The matching test covers distinct plain cwd values and an old mtime, but not escaped/comma paths or simultaneous seats sharing a cwd. It therefore does not catch the matching defects above.
+
+* ''LOW — `tools/launch-codex.test.mjs:403–430`'': Watchdog behavior tests exercise injected callbacks, not the real PID/process-group signaling or rollout polling path. They verify the loop’s logic, but would still pass if `watchMain` targeted the wrong process group. The pool refusal tests do verify threshold refusals and boundary controls; I found no refusal-ordering defect.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;suoeTWbJhFT1HofjGLbn6296eUcsYjrXLQhXL4eApiQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

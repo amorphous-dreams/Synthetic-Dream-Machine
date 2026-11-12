@@ -1,0 +1,206 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/opus-land-queue/design`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-01 (file date) — source `.lares-scratch/controller/seats/opus-land-queue/design.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/opus-land-queue/design"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/seats/opus-land-queue/design"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! design.md — plan, 2026-11-01
+
+Verbatim scratch record `.lares-scratch/controller/seats/opus-land-queue/design.md` (plan, file date 2026-11-01); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/opus-land-queue/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/land-queue-design-sketch`>>
+
+! land-queue — design sketch (Queue-Wright, 2026-11-01)
+
+Worktree `~/.lares-scratch/land-queue/wt` · branch `feature/green-jello-dinosaur-5--land-queue` · cut at 13d24a218.
+Marks: [MEASURED] ran today · [READ] code or doc read today · [INFER] reasoning, a red must prove it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-shape-in-one-breath`>>
+
+!! The shape in one breath
+
+`tools/land-train.mjs` gains a QUEUE mode and keeps two others. A queued lane enters on its own CI green. The tool
+derives every base, builds the train as the CHAINED LAND COMMITS themselves (house message, ` — merge PR #` subject,
+parents prev-land + lane head) with `git merge-tree --write-tree` (no worktree, no install, no build), pushes the
+chain head to `<span>--train-<n>`, reads that sha's CI with ci-verdict, and on green fast-forwards the span to that
+exact sha under a lease on the head it read. No new commit ever lands that CI did not read.
+
+* DIRECT stays as it stands (the control): one lane whose head holds the span head lands on the lane CI's own read.
+* QUEUE (new default for every other land): cloud verify on the merge result.
+* `--local` keeps today's battery as the fallback verifier, run over the same chain head.
+
+[MEASURED] `git merge-tree --write-tree <span-prev> <lane-head>` reproduced the tree of the last 8 span lands
+exactly, the two train-built ones (3726248e5, ece08dcd1) among them. git 2.43 on the box.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/why-the-chain-makes-bisection-free`>>
+
+!! Why the chain makes bisection free
+
+Commit i of the chain carries the tree of span + lanes 1..i. Every prefix train therefore already stands as an
+intermediate commit of the full train, with its own sha. Bisecting a red train pushes an EXISTING chain commit to a
+probe branch and reads its CI; no rebuild. A green prefix lands at once by fast-forward (it descends from the span).
+The first red prefix j names lane j the culprit (prefix j-1 read green); lane j drops, lanes j+1..k re-chain on the
+new span head and verify again. Halving over k lanes costs ⌈log2 k⌉ probes; a single-lane train has no bisect.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/threat-sketch-every-authority-input`>>
+
+!! Threat sketch — every authority input
+
+| Input | Source | What proves it | Law lives in | Fails closed as |h
+| Lane list, owner order, PR, message file | controller argv / enqueue | head = `origin/<span>--<suffix>` exactly; message non-empty AND its subject carries ` — merge PR #<pr>` (today unchecked: a land without the marker reads later as a road commit) | `parseSpec` + preflight | exit 3 head moved · exit 2 message |
+| Lane green | GitHub CI on the lane branch | ci-verdict at the exact lane head (ignored-only head carried by a green lane ancestor, as today) | `classifyLane` | exit 8 not green · 10 UNREADABLE |
+| Base | DERIVED: `merge-base origin/<span> <lane>` | no input; never typed | the chain builder | — (exit 9 burns) |
+| Span head | `git fetch` → `origin/<span>` | CI green AT THAT SHA on the span OR on a `<span>--train-*` branch (`gh run list --commit <sha>` filtered by headBranch, so a deleted train branch still answers); an ignored-only head carried by a green ancestor (today's walk) | span gate (F2) | refuses to build: a red span would blame every lane in a bisect |
+| Merge result | local `git merge-tree` | exit 0 with a tree; exit 1 names conflicted paths | chain builder | the lane drops, named (F5) |
+| Train verdict | CI run on `<span>--train-<n>` | the run whose `headSha` IS the chain head; a run of any other sha never counts; the branch is pushed under a lease expecting it absent | ci-verdict `--json` | red → rerun-once then bisect (F4) · cancelled-clean → VOID exit 13, never a wait |
+| Fast-forward | `git push --force-with-lease=<span>:<SP>` of the train sha | chain walks first-parent from the train head to SP exactly through k land commits, each `^2` = its lane head, each tree = merge-tree's | pre-push structure check | span moved → re-chain on the new head (F8); structure break → exit 5 |
+| Security class | `tools/security-class-paths.json` read from the SPAN HEAD's tree (`git show <SP>:…`), never the lane's | a lane whose `diff --no-renames --name-only <base>..<head>` meets a glob is security-class; the table and land-train itself sit in the table | `securityClass()` | needs SHIP |
+| SHIP | `~/.lares-scratch/controller/ship/<suffix>-<full-sha>.md`, controller-written | file exists for the FULL lane head sha, and its body names that sha and a `read:` line | `shipRefusal()` | exit 12, by lane name, before anything pushes (F6) |
+| Queue state | `~/.lares-scratch/train/` ledger (train counter, sha → train branch, drops) | advisory only: every green re-reads GitHub; the ledger never stands for a verdict | — | a lost ledger costs a re-read, never a false land |
+| Author | `git config user.name/email` | non-empty | as today | exit 2 |
+
+Every wait ends on a result or a process exit. A train wait polls ci-verdict and ends on GREEN, RED, VOID (run
+cancelled clean), a hard read error (exit 3), or UNREADABLE settled (six reads, exit 10). The one open-ended span
+waits for a run to APPEAR after the push; it ends on the run or on the land process's exit, and the tool refuses
+up front a train whose diff over SP changes ignored paths alone (no run would come; canon goes direct, item 8).
+The sleeps between reads pace polling and decide nothing.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/speculation-and-budget`>>
+
+!! Speculation and budget
+
+At most TWO train runs in flight (ci-ten's ten-job run, twenty-job account). Train size caps at 4 (flow-scout's
+batch math: past 5 a red costs more than it saves). While train N verifies, lanes queued behind it chain on N's head
+as train N+1 and push. N green → land N, then N+1 already descends from the span and lands on its own green. N red →
+N+1's run gets cancelled (its base no longer lands) and re-chains after N's bisect settles. Bisect probes take a
+slot ahead of a speculative train.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/exits`>>
+
+!! Exits (alpha, no back-compat: exit 9 and the `<base>` positional burn)
+
+0 every lane landed · 2 usage/identity/message/checkout · 3 a head moved · 5 nothing landed (every lane red) or the
+chain broke · 6 disk/worktree cap (`--local` only) or a run in flight on the span · 8 a lane not green · 10 UNREADABLE
+· 11 some landed, the rest dropped, each named with its failing jobs · 12 a security-class lane lacks its SHIP · 13 VOID.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/reds`>>
+
+!! Reds (after the ruling; each its own commit, a control beside it)
+
+# A lane lacking the span head lands through a train (red today: exit 9).
+# A train's verdict reads the pushed train head's CI (a verdict stub keyed by branch+sha), never the local battery; CONTROL: a green on another sha of the train branch does not land.
+# A red train of 3 drops the culprit (probe stub: prefix 1 green, prefix 2 red) and lands lanes 1 and 3; prefix 1 lands by fast-forward to its EXISTING chain sha.
+# A security-class lane with no SHIP refuses by name (exit 12) and nothing pushes; CONTROL: the SHIP for the exact sha passes, one for another sha refuses.
+# Train N+1 re-chains when N reds.
+# CONTROL: DIRECT still lands a lane holding the span head, unchanged.
+Plus: a message without ` — merge PR #<pr>` refuses (2); a cancelled-clean train run exits 13 and never waits.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/forks-two-rounds-with-a-sonnet-reader-settled-ru`>>
+
+!! Forks — two rounds with a Sonnet reader (YANG), settled rules
+
+Round one: the reader found eight holes. The worst three:
+* H1: a red span reads green through the ignored-only carry, and that red then gets blamed on a lane.
+* H2: held-out runs as decoration under cancel-in-progress.
+* H3: cancelling the span CI would hang every `--wait` vigil.
+
+Round two traded the revised leans below.
+
+* ''F1 SETTLED, my lean flipped.'' The span's CI on the landed sha runs uncancelled, so the vigil and every reader stay as they are; the next land's push cancels it anyway. Only inside land-train, the span-head verdict reads the span's run at the sha, else the train branch's run at that sha (ledger first, else `gh run list --commit <sha> --workflow CI` filtered to train headBranches), checked by headSha. The ci-verdict CLI stays unchanged. [INFER: `--commit` with `--workflow` and no `--branch`; measure before the red.]
+* ''F2 SETTLED.'' No CI pre-gate on the span head. The queue pauses when the newest COMPLETED whole held-out run on the span reads red (naming the sha it covered), or when more than M=3 lands stand past the last held-out-covered sha. That count also lets a held-out run finish despite cancel-in-progress.
+* ''H1 rule (with F9).'' A culprit is named only at a green-then-red prefix pair whose green is a REAL run at that exact sha, never a carry. When the span head has no real run, prefix 0 (the span head) is probed on a red, with the same rerun-once, before any lane gets blamed. A red prefix 0 pauses the queue as "SPAN RED" and drops no lane.
+* ''F3 SETTLED.'' Enqueue entries come from the controller, and `run` re-validates every field as argv does (head = origin ref, message marker, SHIP). The lock is a pid file; a takeover RESUMES by re-reading the remote `--train-*` refs and their verdicts, never cancelling blind and never trusting the ledger. Train branches carry the sha: `<span>--train-<n>-<sha9>`.
+* ''F4 SETTLED.'' On any red, `gh run rerun --failed` runs once. The wait ends when the run's `attempt` advances or the run completes; then it reads again.
+* ''F5 SETTLED.'' A conflict drops lane j by name, together with every later lane whose head contains lane j's commits.
+* ''F6 SETTLED.'' A security-class lane with no SHIP for its exact full sha refuses at enqueue and again at chain build: exit 12, nothing pushes. Every mode checks, DIRECT and `--local` included. Said plainly: SHIP guards against mistakes, and a hostile same-user process could forge one.
+* ''F7 SURVIVES → controller'' (see the hand-back). Both options take the round-two path seed: itself, land-train.mjs, ci-verdict.mjs, ci-ignored-paths.*, held-out-cells.mjs, witness-all.sh, evergreen-boundary.mjs, battery.sh, provision-worktree.mjs, .github/workflows/**, package.json, pnpm-lock.yaml, pnpm-workspace.yaml, .npmrc, .gitattributes (merge drivers move merge-tree), packages/lararium-keyhive/**. The diff runs `--no-renames --raw`, so a mode change or a symlink retargeted onto a table path counts too.
+* ''F8 SETTLED.'' Canon pushes hold while a train flies. `land-train status` prints the in-flight trains and exits nonzero while one flies, so a canon push script can gate on it. If the span moves anyway, the train re-chains and re-verifies, and never lands an unread tree.
+* ''F9 SETTLED.'' The base walk and exit 9 retire in QUEUE mode, and only together with the H1 rule. `--local` keeps the walk.
+* ''H5 rule.'' The run-appearance wait stays open and decides nothing. Each round it re-lists by `--commit`, confirms the origin ref equals the chain head, and prints `NO RUN YET <sha>`, so the controller can see it and stop the process. An ignored-only train refuses up front.
+* ''H8 rule.'' `--depth` (default 2) counts every train and probe run in flight, plus the span's own active runs.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/measures-before-the-reds-ship-stays-a-mistake-gu`>>
+
+!! Measures before the reds (controller ruling 2026-11-01: F7 (a); SHIP stays a mistake guard)
+
+(1) [MEASURED] `gh run list --commit <sha> --workflow CI --json headBranch,attempt,…` with no `--branch` returns runs
+from any branch (0dd843a27 → run 41280151942 on `--recut-rolls`, headBranch, attempt 1). The span-head reading by sha
+across the span and its train branches holds as designed. `attempt` is a list field, so F4's wait reads it directly.
+
+(2) [MEASURED, 7 lands] Pushing an existing sha to a second ref raises a run there when the push's own diff touches a
+non-ignored path, and raises none when it changes nothing:
+* 3726248e5 (train-built) and ece08dcd1 (train-built) are span shas pushed afterwards to their lane branches, whose
+tree differed. Each raised a lane-branch CI run, which land-train cancelled.
+* 13d24a218, ec3c990be, 5535ebe8c and b333ed731 are DIRECT lands, whose tree equals the lane head's, so the lane push
+changed no file. None raised any run: paths-ignore matches an empty diff.
+* a39b1f5df, from before paths-ignore landed, raised runs anyway.
+
+So an already-seen sha raises a run on a new ref. The fast-forward of the span (before = SP, after = the train head,
+whose diff holds the lanes' code) raises a span CI run and a held-out run at the train sha. F1 (span CI uncancelled)
+and F2 (held-out per land on the span) stand unchanged. [INFER, unmeasured: the span push itself; the lane pushes
+above stand as the analogue.]
+
+The held-out pause, measured against this: right after a land, the newest COMPLETED held-out run covers an older sha,
+and the new run sits in flight at the train sha. The count rule reads lands past the covered sha, so a run of lands
+under held-out's ~40 min (each cancelling the last) pauses the queue at M=3. The pause then waits on the in-flight run
+(a result) and never on a clock.
+
+Two consequences for the build:
+* A lane whose diff changes ignored paths alone would raise no train or probe run (a dead `NO RUN YET`). The queue
+refuses such a lane at enqueue: a meme-only lane that holds the span head lands DIRECT, and canon goes direct.
+* The prefix-0 probe needs a real run at SP. It reads any completed CI run at that sha (span or train branch) and
+waits on one in flight. Only when no run exists does it dispatch `gh workflow run CI --ref <span>`, which ci.yml
+documents for exactly this case.
+
+Side finding: after a DIRECT land, the cancel loop waits three rounds for lane-branch runs that never come (equal
+tree, paths-ignore). It costs time and decides nothing; the cure runs that loop only after a train land.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/as-built-three-points-the-design-left-open`>>
+
+!! As built (the cure), three points the design left open
+
+* ''The queue's span push skips the "no run in flight on the span" gate.'' DIRECT and `--local` keep it. A queue land
+fast-forwards the span to a sha whose own CI the train run already read. Held-out cancel-in-progress is bounded by the
+M=3 gate, so waiting out the span's runs (~40 min) would re-impose the serial land the queue exists to remove.
+This changes canon #/the-lanes ("the span pushes only while no run flies on it"); the canon text goes to the controller.
+* ''Depth.'' The first train on the span always builds. A speculative one builds only while
+trains + the span's active runs &lt; `--depth`. Counting the span's runs against even the first train would make each
+run after a land wait ~40 min for a train that GitHub's runner queue would simply hold.
+* ''The DIRECT land no longer waits on lane-branch runs to cancel'' (measure (2): that push raises none).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7LLgpUs1KSeiAYa7G1SeB67mP_WKp98xMPFex7VF92M`>>
+
+<<^ code=`&#x0004;` to=`?`>>

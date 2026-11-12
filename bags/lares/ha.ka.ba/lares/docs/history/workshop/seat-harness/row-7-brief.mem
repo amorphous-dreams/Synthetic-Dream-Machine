@@ -1,0 +1,126 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/row-7-brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-05 (file date) — source `.lares-scratch/seat-harness/row-7-brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/row-7-brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/seat-harness/row-7-brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! row-7-brief.md — brief, 2026-11-05
+
+Verbatim scratch record `.lares-scratch/seat-harness/row-7-brief.md` (brief, file date 2026-11-05); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/row-7-the-wiki-daemon-key-cap-enacted-at-standin`>>
+
+! Row 7: the wiki-daemon key cap, enacted AT STANDING (controller, 2026-11-04)
+
+OPERATOR RULING: "enact the full wiki-daemon key cap design now. I'd like that at standing, not as more owed rows." The swarm's controls live in the daemon wiki and get signed by the VESSEL through identity-as-relation: no new keys, no key on any surface, no key file a seat can read. This replaces the relay's in-memory HMAC key and the flat go file. It lands before the founding, so the wiki stands with it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-design`>>
+
+!! The design (the operator's talk-story, 2026-11-04; carry it into seat-harness.mem #/owed row 6 -> a NEW standing section, and remove the owed row)
+| Control tiddler (daemon wiki) | Signed by, as relation | Writer |
+| `$:/lares/swarm/house-cap` (builders/readers live across all lanes) | the operator's FACE, by hand | the hand only (the promote panel's hand-only verb pattern: VerbTable.handOnly, surface origin) |
+| `$:/lares/swarm/lane/<lane>/share` (a lane's share of the house cap; never sums past it) | the face by hand, or the controller under a cap the hand granted | hand / controller |
+| `$:/lares/swarm/go/<branch>` (binds branch + head; spent on the attempt) | the face by hand, or the controller under a granted cap | hand / controller |
+| `$:/lares/swarm/lane/<lane>/state` (the fields of state.json) | the lead, under its own seat name | the lead |
+| `$:/lares/swarm/roster/<seat>` (model, mode, live token reading, ceiling, outcome) | the VESSEL (the daemon's device -> face relation), as witness | the watchdog reports; the daemon signs; never the measured lead |
+| `$:/lares/swarm/receipt/<tree>` (the check seat's verdict over tree + check names + definitions) | the VESSEL, same | the broker asks after the walled checks pass; the daemon signs |
+A lead may add NOTE rows beside its roster rows under its own seat name. It never signs spend.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-mechanism`>>
+
+!! The mechanism
+* The daemon exposes the signing verbs over its existing verb channel. They're NOT callable by a lead. The broker and the watchdog present a CAPABILITY the daemon mints at their start and hands over in memory (an inherited fd or pipe); a lead never holds it. MEASURE FIRST, as a red: can a Codex `workspace-write`, network-off seat connect to the daemon's unix socket (AF_UNIX)? If it can, the verb refuses anything that lacks the capability, so the socket alone grants nothing.
+* The broker reads the go from the wiki through the daemon, verifies the vessel or face signature, and spends it. The flat go file retires.
+* The check receipt gets signed by the vessel, and the broker verifies through the daemon. The relay's in-memory HMAC key retires.
+* The watchdog reports readings to the daemon, which signs and writes roster rows; the launcher's cap enforcement reads the house cap and lane shares from the wiki.
+* Seats launch as SIBLINGS of the daemon, never its children (ptrace_scope=1, Yama restricted, measured: a process can't attach to a non-descendant). State that as an invariant, with a test that the launcher's spawn tree keeps the daemon out of any seat's ancestry.
+* Before the wiki stands (no daemon, or no face yet): every swarm act REFUSES by name ("no standing daemon: swarm controls need the founded wiki"). No silent flat-file fallback, no "a now, b later".
+* House law: no $tw.syncer; capability, not account; identity-as-relation; no key on a surface; red-first, homed; L-Prime.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/crew-and-order`>>
+
+!! Crew and order
+Start ONLY after Terra round 3 reads SHIP on rows 1-6. The builder is an OPUS Claude subagent (Agent tool, model "opus"); you lead, author the reds, review and commit. Cold Luna read before the push; the controller runs Terra after. Daemon-side verbs touch packages/lararium-node and keyhive: single test files only, never whole suites locally (OOMs write crash dumps to C:); CI runs the suites.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/addendum-the-ward-built-in-row-7`>>
+
+!! Addendum (controller, 2026-11-04 late): the ward, built in row 7
+Read memory project_wards_bind_daemon_and_kahua.md. The operator ruled: users keep full caps over their own wikis, while the daemon wiki and the kahua stage are bound by the wards, including the startup actions. NEVER a passkey or WebAuthn (a web2.5 registry). Built here, before founding:
+* One hand-act mechanism for the daemon realm: the face grant key stays sealed even while custody is unlocked. A ward-gated act unlocks it fresh from the passphrase (the minted KDF port: native scrypt / noble, same bytes), signs that one act, and zeroes it. The CO-SIGN of a second device of the face (through the face intent plane) binds only acts whose effect leaves the device: kapae-lower, the house cap, the push go. A local daemon/kahua promote-commit needs the fresh unlock alone. A browser vessel and a node vessel count as two devices even on one metal.
+* Bound acts: promote-commit and kapae-lower in the daemon and kahua wikis, plus this row's house cap and push go. Free acts: kapae-raise, promote-drop, orphan-drop, promote-keep, every lift, and everything in a user's own wiki.
+* Reds: a script holding unlocked custody can't commit a daemon/kahua promote or sign a go (control: the fresh unlock can); a user wiki's promote stays advisory (control); a two-device face refuses a kapae-lower, cap or go without the co-sign, and a local promote-commit lands on the fresh unlock alone (control).
+* Class-blind: the same ward on a browser-only user fleet (no node). Reds: a browser vessel's daemon/kahua promote needs the fresh unlock in its worker; a two-browser fleet needs the co-sign for kapae-lower; a one-device fleet lands kapae-lower on the fresh unlock alone (control).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/addendum-2-the-scout-s-map-and-the-house-s-decis`>>
+
+!! Addendum 2 (controller, 2026-11-04 late): the scout's map and the house's decisions
+Read ~/.lares-scratch/row7-scout/notes.md (Row7-Scout, measured anchors with file:line). Slices in landing order:
+S1 swarm tiddler model + hand-only verbs (`$:/lares/swarm/...` via daemon verbs, never a raw meme_put; kept off disk projection) · S2 the ward (a new `faces/<fcid>/ward-slots.bin` tree wrapping a ward key over the persona-root seed; fresh openTreeKey per act through the KdfPort, zeroed in finally; never inserted in `faces`; passkey PinKind refused; node + browser worker) · S3 co-sign on the intent plane (needs:"approval" + a signed answer from a distinct enrolled device; an offline second device REFUSES, never falls back) · S4 the capability channel + the AF_UNIX probe witness (both outcomes asserted) · S5 vessel-signed roster/receipt (signAsVesselFace), broker swap, no flat go or HMAC key (grep witness), no-daemon refuses by name · S6 canon.
+Decided in-house (talk-out): (1) assume a Codex seat CAN reach the unix socket until S4 measures; swarm verbs ride a daemon-made fd-inherited socketpair, never the face-wearing socket path. (2) The controller's cap mint is a ward act at each lane start. (3) The operator's real face is born with its ward key at the fresh founding; pre-ward dev faces refuse bound acts by name with the cure `ward rewrap` (no silent rewrap, no back-compat). (4) House cap + lane shares sync fleet-wide via the face-private board (co-signed: they cross devices); go, roster and receipts stay device-local. (5) The receipt trust root = the daemon's vessel key, named as a residual. Also fold in F11 (the road's hand-profile gate pulled to the hearth): vault and admit verbs ride the same ward.
+Key finding to carry: a same-uid seat can open `session:open hand:"cli"` and wear the unlocked face (session-connector.ts:81, HAND_PROFILES session-contract.ts:70); the ward closes that for bound acts; the lift posture stays advisory for user wikis.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/addendum-3-ward-scout-s-build-ready-specs-the-ho`>>
+
+!! Addendum 3 (controller, 2026-11-05): Ward-Scout's build-ready specs + the house's calls
+The specs for S1 and S2 (measured files and lines, reds homed in their suites, commit order, the Opus read-list) are in ~/.lares-scratch/ward-scout/notes.md, plus that scout's hand-back as the controller relays it. Build from them.
+
+''Changes the scout's evidence forced:''
+* ''S1 off-disk:'' `$:/lares/swarm/` joins `isControlPlaneUri` (lar-uris.ts:351) and `neverProjects` (verb-tiddler.ts:128), and the record also carries the field. Swarm tiddlers stay device-local by document anchor; a two-device witness is owed.
+* ''The cap and lane shares:'' a sibling record family (`swarm-board.ts`, its own domain `lares/swarm-act/v1`) on the face-private promote board doc. The fold takes the causal head and, on concurrent heads, the minimum, so it fails closed.
+* ''S2:'' promote-commit gains `PromotionRow.wardSig`, and boot voids an unsigned daemon/kahua row even when it was written straight into custody. `kapae-lower` rides the warded root; `kapae-raise` takes a device-atom signature (it only adds a brake, so it fails safe).
+* ''Browser:'' a per-act, terminated `ward-worker.ts`. The page passes only the typed passphrase over a MessagePort and never holds the ward key or seed; name that as a residual. `writeBrowserSeedWrap` refuses a warded face (a PRF wrap is a passkey path).
+
+''The open question, decided in-house:'' every act that reads the persona-root seed and changes who belongs to the face, or what the face trusts, becomes a ward act: admit, fleet-join, recovery-contact enrolment, handle and nexus publish, the founder certificate, seal ceremony, edge-kāpae and the bound acts. Otherwise a script could admit its own "second device" and defeat the co-sign. A root-reading act that is MEASURED to run unattended (check persona-lease.ts:60 and intent.ts:228 first) moves to the existing device-atom signature under the face grant chain instead of prompting. No new keys. One prompt per act, never cached.
+
+''Crew:'' S1 runs on a Sonnet lead with a Copilot builder. S2 needs an OPUS builder who reads the custody list first, with a cold Terra read before the push and a blind Opus colliding on the custody paths.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/addendum-4-s3-s6-specs-the-house-s-calls`>>
+
+!! Addendum 4 (controller, 2026-11-05): S3-S6 specs + the house's calls
+Specs measured at promote 2f330bc48 and harness 08104b1be: ~/.lares-scratch/swarm-scout/notes.md (the anchor index) plus the controller-relayed hand-back. Build from them.
+''Live holes the scout found (cure them inside these slices):''
+* S3: the intent plane approves a SELF-answer today (intent-read.ts:75-77, :239: any enrolled device answers, with no check that the answerer differs from the asker). The judge `ward-cosign.ts` requires a distinct, standing, enrolled device and a digest of (act, face, wiki, head cid), and refuses contested or spent intents.
+* S4: launch-codex.mjs:605 passes fds 3 and 4 non-CLOEXEC into the supervisor, which probably leaks them into bwrap and Codex. Treat that as red until measured. A witness asserts the seat sees only fds 0-2, and the cure closes fds 3 and up before `exec bwrap`.
+
+''Decided in-house:''
+# Holders (broker, watchdog) start through a ward act, `swarm-holder-start`. The daemon spawns from a pinned tool path with `stdio[3]="pipe"` (libuv's socketpair) through an `sh` double-fork, so the holder reparents to init (siblings, never children). A ppid-chain witness proves it. The bearer fallback runs only if that witness can't hold.
+# The co-signing device also fresh-unlocks.
+# Set-aside devices count toward the device total (so a free raise can't drop the co-sign) and never co-sign.
+# With no fd present, the relay refuses at start ("no standing daemon: swarm controls need the founded wiki") and writes nothing.
+# The socket probe measures first (try `codex sandbox linux` / `codex debug landlock` from `codex --help`; no model call). Then `tools/seat-socket-probe.expect.json` pins the measured result.
+# The swarm verbs form their own `swarmDoor`, never in `sessionActs.names`. Scopes: the broker gets go-read, go-spend, receipt-sign, receipt-verify and cap-read; the watchdog gets roster-write only.
+''Naming:'' the road row for the swarm controls and the ward is ''L22'', since L21 is the batch lift.
+''Slice order:'' S1 (building) -> S2 the ward (Opus) -> S3 (judge + self-answer cure first; the gate hook after S2) -> S4 -> S5 -> S6 canon.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2rEIb_kjonLtTcgor-P4OgHSSnNtIjNmtQvnAkTBotQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

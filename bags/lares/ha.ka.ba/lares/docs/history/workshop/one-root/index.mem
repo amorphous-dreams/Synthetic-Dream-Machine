@@ -1,0 +1,46 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/one-root/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/one-root/` — 1 record(s) here, 7 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/one-root/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/one-root/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/one-root/`
+
+The scratch planning records of `.lares-scratch/one-root/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 1 record(s) stand here and 7 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[workshop|lar:///ha.ka.ba/lares/docs/history/workshop/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/branches`>>
+
+!! Branches
+
+|! Directory |! Records |h
+| [[steps/|lar:///ha.ka.ba/lares/docs/history/workshop/one-root/steps/index]] | 6 |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[pr|lar:///ha.ka.ba/lares/docs/history/workshop/one-root/pr]] | PR body | 2026-11-08 | `pr.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7dpXwcMUsniTgqT6ox-jSdn3AXa9a7rO9MzrnHkAiNs`>>
+
+<<^ code=`&#x0004;` to=`?`>>

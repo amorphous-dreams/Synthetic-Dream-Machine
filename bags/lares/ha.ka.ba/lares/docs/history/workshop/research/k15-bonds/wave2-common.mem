@@ -1,0 +1,57 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/k15-bonds/wave2-common`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/k15-bonds/wave2-common.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/k15-bonds/wave2-common"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/k15-bonds/wave2-common"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! wave2-common.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/k15-bonds/wave2-common.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/k15-bonds/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+WAVE TWO (the ratchet). Common brief: /home/joshu/.lares-scratch/research/k15-bonds/brief-common.md. Your wave one:
+SEAT/own-wave1.md. Your peer's: SEAT/peer-wave1.md. Read all three, then the code again where you split.
+
+You agree: retire the vessel-wide Keyhive Individual and the place ContactCard as general peer proof; every face
+operation (dial, join, edge, enrolment, sibling, daemon proof, group-secret open, internal face ask, meme promotion)
+signs or opens by the selected face's atom under its FCK; a faceless vessel signs only its five floor duties under the
+scoped place signer and refuses face work; old mixed archives refuse by name (no CRDT document survives until X0, so
+re-genesis replaces migration). The controller reads these as settled by house law, not operator questions:
+* The relay key: road :207 says an S row's "principal and opener the house names row by row", so a random relay-only S
+row with the relay service as principal falls to the house (no sixth place duty).
+* Face selection: "A command names its face" and the session-wears-the-face ruling already require an explicit face and
+refuse ambiguity (I1's CLI takes &#45;-face N).
+* Internal asks: classify per call by its protected relation; no shared S key.
+Contest any of these only with a measured reason. Settle:
+F1. THE FACELESS CARRIER'S SUBSTRATE NEED. Does a faceless herm or floor-only node need ANY Keyhive identity to sync or
+carry documents (automerge-repo peer id, Keyhive/Beelay sync auth, the share policy, the carriage board's writer)?
+MEASURE the herm's sync path and the share policy (grep peerId, sharePolicy, Individual, beelay in mesh/node/keyhive).
+If one stands, name what replaces it (a random per-vessel carriage identity in an S or F row? a public place id?)
+without making it a shared secret or a face link.
+F2. THE CENSUS'S BLIND SPOTS. Sol warned the token matcher catches selected spellings. Trace TRANSITIVE consumers: every
+caller that receives a value derived from the vessel seed (vesselKey, vesselSigner, keypair.secretKey, device key)
+through a parameter, not by name. List each, file:line, and whether the census sees it.
+F3. THE CUT. One lane or several? Name the slices in build order, each with files, its reds (the place-seed thief, the
+controls, the known positives), and which hunks go as patches to W14-W16 (floor pins, card, nexus-contract), D2
+(open-node-vessel port hunks) and G15 (afterRollChain). Say which slice moves identity bytes and must precede X0.
+F4. THE OPERATOR LIST: only what survives F1-F3 and the three settled points, each with options and one lean.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6d1am2ziKekIoMrtxzlRMg4Aso9j1aWMvVdXI7QXnV4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

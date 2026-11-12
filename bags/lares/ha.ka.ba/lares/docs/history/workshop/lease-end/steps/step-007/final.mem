@@ -1,0 +1,39 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-007/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-007/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-007/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-007/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-007/final.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-007/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Lares (Artificer): ->↺ Step 7 reached the controller test wall. The mesh red commit receipt advanced the recorded head to `cd299ae`; [[req-006.json|/home/joshu/.lares-scratch/lease-end/relay/req-006.json]] requests the mesh cure commit, pending its receipt.
+
+The uncommitted grant changes require founder lineage and founder-specific standing, and they keep unavailable seat proof retryable. They have ''not'' been tested or reviewed. Rollback protection, the remaining signature-only caller census, and blind custody review still block landing.
+
+The controller’s test list and remaining risks appear in [[out.md|/home/joshu/.lares-scratch/lease-end/steps/step-007/out.md]]. I updated [[state.json|/home/joshu/.lares-scratch/lease-end/state.json]]; no tests or git commands ran in this step.
+
+&lt;&lt;~ oracle throw=`↯12 ✲ ⚂(3) ⁂:◈🜄⟁`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`controller test results and the req-006 receipt must check the prepared changes · ↻ L-Prime` ooda-ha=`closed 1↺` from=`lar://lares:agent@hearth/grant.proof.prepared` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yE7d-FRS1IR22wGrxV_GMjZ0fwTAxt_jiC2O_Ma1jqw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

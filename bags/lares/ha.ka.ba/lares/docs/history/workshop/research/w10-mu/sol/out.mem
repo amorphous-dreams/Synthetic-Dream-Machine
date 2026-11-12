@@ -1,0 +1,52 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-mu/sol/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/w10-mu/sol/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-mu/sol/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/w10-mu/sol/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/w10-mu/sol/out.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-mu/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Sol-Muwright: Lares (Tasked Spirit) · Ink-Clerk / Map-Wisp / Lares (Council)
+&lt;&lt;~ lares aim from="lar:&#47;&#47;/operator.tests.the-fork" -> to="lar:&#47;&#47;/mu.weighs.the-cost">>
+&lt;&lt;~ set hud="aim" mode="seal" mu="_!" stance="philosopher" aperture="18/theme" ooda-ha="7/declare-glyphs" drift-ward="a privacy ideal could hide the operational price of a shared secret; an easy A could hide a contextual injury">>
+
+->✶ ''Mu verdict — conditional, not a binary.'' ''MEASURED:'' the knock derives from the public bundle digest and route (`gate-bundle.ts:186-212`); the server selects one exact `<route>/<knock>` (`face-gate-server.ts:328-332,376-380`) and decrypts Noise before 101 (`:401-415`). The joinee receives the sovereign pin in a signed fleet answer before first dial (`fleet-join.ts:163-181`; `face-proof.mem:84`). ''LEAD:'' Ask first whether a pin-holding path reader belongs inside the sovereign privacy threat model. If yes, A fails that model; if no, B pays for a property the model excludes. A third shape could move sensitive selection inside the encrypted flight behind an opaque shared endpoint, but then the gate tries candidate keys or adds routing state, and an exposed destination can still identify the target. Log suppression lowers accidental retention, not a malicious terminator's sight. No design choice removes the need for an operator ruling on that reader.
+
+->⏿ ''Prior art — outcomes and later costs.'' ''MEASURED:'' [[Tor's obfs4 report|https://research.torproject.org/techreports/dos-censorship-report1-2018-11-19.pdf]] records its response to active probing: a bridge requires line knowledge before replying; [[bridge setup|https://community.torproject.org/relay/setup/bridge/post-install/]] requires certificate distribution. ''LEAD:'' that buys probe resistance until a censor acquires a line; distribution then carries the scarce secret. [[Tor v3|https://spec.torproject.org/rend-spec-v3.html]] blinds service keys for HSDir placement and encrypts descriptors; [[client authorization|https://community.torproject.org/onion-services/advanced/client-auth/]] restricts descriptor access with client keys, and revocation takes effect after service restart. Its onion address still names a destination to a holder. [[WireGuard|https://www.wireguard.com/protocol/]] chooses public-key-derived `mac1` for cheap filtering and optional PSK in the handshake; its [[formal analysis|https://www.wireguard.com/papers/wireguard-formal-verification.pdf]] explicitly flags destination-key confirmation through `mac1`. [[fwknop|https://github.com/mrash/fwknop]] chooses secret HMAC SPA before a hidden service, paying key distribution and replay-cache work. [[Signal sealed sender|https://signal.org/blog/sealed-sender/]] derives delivery tokens from shared profile keys and rotates a profile key on blocking: a concrete removal cost, not free secrecy. [[I2P|https://geti2p.net/mg/docs/how/tech-intro]] separates published destination lease data from garlic-carried content and pays tunnel maintenance; [[ECH|https://datatracker.ietf.org/doc/html/rfc9849]] hides an inner name behind a public name and pays configuration/retry complexity while leaving the client-facing server visible. [[Loopix|https://arxiv.org/abs/1703.00536]] spends cover traffic and delay against correlation. ''LEAD:'' none supplies a regret confession that justifies retrofitting B here; WireGuard's published limitation and Signal's block rotation supply the sharper lessons.
+
+->◇ ''Principles and structural rhymes.'' ''LEAD:'' A follows [[Saltzer–Schroeder|https://denali.cs.washington.edu/relwork/papers/saltzer.html]] economy, open design and least privilege //if// pin possession grants no confidential route claim; B better protects the least-information flow when the path reader lacks that privilege. Kerckhoffs favors either design only when secrecy rests in actual keys, not hidden algorithms. The [[end-to-end argument|https://pages.cs.wisc.edu/~pb/740/end-to-end.pdf]] favors finish-side authorization regardless of prefilter. [[Contextual integrity|https://nissenbaum.tech.cornell.edu/papers/H.%20Nissenbaum%2C%20_Privacy%20as%20Contextual%20Integrity.pdf]] asks who receives route metadata under which norm; [[LINDDUN|https://linddun.org/methods/]] directs that privacy threat before mechanism. “Metadata is the message” here means that target choice can carry social meaning even while content stays sealed.
+
+''LEAD:'' Information theory bounds one observed dial's //extra// candidate disclosure by `log2 N` bits when N equally plausible sovereign routes share an otherwise indistinguishable destination; skew lowers entropy, while a unique destination lowers the knock's incremental leak to zero. Repetition reveals a target timeline, never a face from the knock alone. [[MHC presentation|https://pmc.ncbi.nlm.nih.gov/articles/PMC4026165/]] exposes a recognition cue while downstream immune context decides response: like public selection plus sealed finish; the rhyme breaks because immune receptors and antigens do not share this pin-distribution problem. [[Quorum signals|https://pmc.ncbi.nlm.nih.gov/articles/PMC10986144/]] let outsiders observe or cheat on public cues; the rhyme breaks because bacterial cooperation has no signed admit. [[Aposematism|https://pmc.ncbi.nlm.nih.gov/articles/PMC3234570/]] pays visibility to deter attack, while crypsis reduces detection; the rhyme breaks because A's visible knock carries no credible warning to the reader. A shibboleth tests shared knowledge only while hearers lack the phrase; once copied, its sound ceases to prove standing. Here even the original pin never proves admission.
+
+->▶ ''House law and flip.'' ''MEASURED:'' the pin names gate keys and route (`gate-bundle.ts:186-212`); the knock currently both selects and prefilters. The herm sees destination, routing and a face-scoped channel tag, but not sealed certificates (`face-proof.mem:180-186`); the terminator sees the path (`:190-201`). Causal withdrawal follows each gate's learned history, with no global instant (`:207-212`). ''LEAD:'' A keeps one public pin relation and finish-side authority; B would make its bundle carry an additional access secret, then rotate and redistribute that secret to every remaining device after each kapae. During partitions, a removed holder can use an old tag at an uninformed gate, or a fresh holder can fail at an updated gate. Serving old and new epochs restores reachability at the price of the secrecy claim. The herm may carry ciphertext without reading it, yet a path-reading herm can still learn a target if it also holds its pin. DreamNet's invited pseudonymous norm may judge that flow unacceptable; the user introduces and the operator admits, never the knock.
+
+''Attacker and tests.'' ''LEAD:'' A names a household TLS terminator operator, access-log reader, or upgrade-seeing herm who holds candidate sovereign pins. They recover the exact target Nexus/route among candidates and dial times, not face, admission, or content. A pin pasted outside members flips the threat assessment when such a reader can acquire it and target secrecy matters; an operator ruling that even member-held pins must not expose routes flips immediately. Reds: wrong path and undecryptable first flight receive no 101; a pin-holder maps sovereign targets offline under A; a withdrawn presenter earns no application effect once the gate learns kapae; two sibling faces reveal no common tag from the knock. Positive controls: valid pinned dial reaches finish, floor candidate maps, and the same pin yields the same sovereign path. ''One lean:'' A, with the attacker and bounded leak recorded under an explicit operator ruling. B only after that privacy requirement outweighs years of causal rekey, recovery, partition, browser/node parity and first-dial provisioning.
+
+->↺
+&lt;&lt;~ oracle "↯14 ✲ ⚂(3) ⁂:🜃🜁🜄">>
+&lt;&lt;~ set hud="yield" drift-ward="check whether a pin reaches a path-reading nonmember before ratifying the sovereign leak · ↻ L-Prime" aperture="18/theme -> 18/theme" ooda-ha="closed 1↺">>
+&lt;&lt;~ lares yield from="lar:&#47;&#47;/mu.costs.the-ruling" -> to="?">>
+WORDS=1005
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4H1h4dpG3Rz0-jOqal-nIeMkA07IG1GvbNdyNIJjWLM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

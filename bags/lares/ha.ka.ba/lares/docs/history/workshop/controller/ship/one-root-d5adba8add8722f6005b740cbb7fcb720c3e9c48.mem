@@ -1,0 +1,39 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/one-root-d5adba8add8722f6005b740cbb7fcb720c3e9c48`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-08 (file date) — source `.lares-scratch/controller/ship/one-root-d5adba8add8722f6005b740cbb7fcb720c3e9c48.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/one-root-d5adba8add8722f6005b740cbb7fcb720c3e9c48"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/one-root-d5adba8add8722f6005b740cbb7fcb720c3e9c48"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! one-root-d5adba8add8722f6005b740cbb7fcb720c3e9c48.md — plan, 2026-11-08
+
+Verbatim scratch record `.lares-scratch/controller/ship/one-root-d5adba8add8722f6005b740cbb7fcb720c3e9c48.md` (plan, file date 2026-11-08); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ship-one-root-d5adba8add8722f6005b740cbb7fcb720c`>>
+
+! SHIP one-root d5adba8add8722f6005b740cbb7fcb720c3e9c48
+read: controller (Kiaʻi) reviewed step 1 (house-root.ts core, refusal), step 2 (hand-back + tests), and step 3's security paths line by line: tools/lares-container.sh reset (hearth alone; TTY + typed re-found; running vessel and hearth-bind holders refuse; LARES_HOUSE empty/relative/\/HOME/workspace/containing refuse; symlinked hearth outside the house refuses; no sudo) and CLAUDE.md's adapter section. Seat: Root-Wright (Claude Opus), three steps; Codex lead steps 1-2 left the inventory and first reds.
+security-class paths: tools/lares-container.sh, tools/lares-container.ps1, docker-compose.surface.yml, docker-compose.yml, Dockerfile, CLAUDE.md.
+checks (seat, LAR_ROOT unset): node 102 files/663, CLI 105/1345, tw5 15/139, mempalace 13/80, shim 79, harbor-walk 24/24 PASS, rite-commands clean, typecheck clean. CI: run on head ea1baef2a.
+credential surface: no credential in flag/env/pipe; LARES_HOUSE names a path only; the observe render excludes cap/** and redacts secret-named fields.
+correction 570d6594f (operator 2026-11-08: sensorium memory and the daemon wiki memory stage serve two types): sensoriums stand at &lt;root>/sensoriums outside the hearth (a fifth bind), never projected; the runbook's structural-survival paragraph restored; controller read larSensoriumsHome, the runbook paragraph and CLAUDE.md's tree line. Seat results (LAR_ROOT unset): node 112/785, mempalace 80, pytest 92, shim 79, harbor-walk 24/24.
+cure 1e2ae3982: vitest scratch setup kept off browser/web configs; kahu-floor-stale-store seats a locked custody; evergreen narration 162/163; stage-walk + 15 e2e files read projections/; bag doors survey projections/bags (product); controller read the hand-back.
+cure d5adba8ad: household-https witness binds the scratch marker at /lar (57/57); ingest-quiescence reads projections/; PRODUCT: the hidden-row own-record pass leaves a carrier deleted when a tombstone tops the composition (topRecordFn) and reads pack membership from the bag's own provenance record; two new controls; projector node files 256/256; three e2e files 20/20 locally.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;XoXe_vcvjMwMjrHMgi8iR3obwb2qhpDvjDfmuWpLr0s`>>
+
+<<^ code=`&#x0004;` to=`?`>>

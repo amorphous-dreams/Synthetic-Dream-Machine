@@ -1,0 +1,51 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s6-2/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-06 (file date) — source `.lares-scratch/b1-lift/terra-s6-2/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s6-2/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s6-2/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/b1-lift/terra-s6-2/brief.md` (brief, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s6-2/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Terra-Control-Sender: Lares (Tasked Spirit), a build seat in /home/joshu/.lares-scratch/b1-lift/wt (branch feature/green-jello-dinosaur-5&#45;-b1-lift; uncommitted: terra-s6-1's per-session fan-out in packages/lararium-web/src/workers/vessel-host.ts — build ON it, do not revert it). Edit ONLY packages/lararium-web/src/workers/vessel-host.ts and packages/lararium-web/tests/vessel-host-surface.test.ts. Never commit, build, run browser-mode vitest, or open a socket.
+
+THE RED (write it first, from this spec, in vessel-host-surface.test.ts beside SV1/SV2, using the same harness): "SV3 — a control result answers its sender alone." Two admitted sessions A and B of the lit face. A sends a `control-event` whose `ev.eventId` = "evA"; the vessel answers onControlResult with a result whose `eventId` = "evA". Assert: A receives exactly one `control-result` carrying eventId "evA"; B receives none. CONTROL in the same test: a frame (onFrame) still reaches both A and B. A second CONTROL: a control result whose eventId no session sent reaches every admitted session of the lit face (liveness; never lost).
+THE GREEN: in vessel-host.ts, the host records, when a connection's `control-event` arrives (the case at ~line 367), `msg.ev.eventId -> that connection's post`; `onControlResult` delivers to the recorded sender and forgets the entry; an eventId with no recorded sender falls back to the lit-face fan-out terra-s6-1 built. A session's loss forgets its recorded event ids.
+Verify: <code>pnpm &#45;-filter &#64;lararium/web exec tsc &#45;-noEmit -p .</code>. Write out.md: the diff summary and the exact test names. Browser checks: lead runs.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* A read seat writes no file: its final message carries the hand-back. Any other seat writes `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0nOcexHdfbejQJ1outRLobqCBVprW_EXcbo58Gp3W4I`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,213 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/opus/out4`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-28 (file date) — source `.lares-scratch/research/dreamdom-width/opus/out4.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/opus/out4"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/opus/out4"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out4.md — research, 2026-10-28
+
+Verbatim scratch record `.lares-scratch/research/dreamdom-width/opus/out4.md` (research, file date 2026-10-28); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/opus/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/dreamdom-width-wave-four-concede-hold-settle`>>
+
+! DreamDOM width · wave four (Opus): concede, hold, settle
+
+Opus, 2026-10-28. This wave answers `terra/out3.md`. It re-reads `stand.ts`, `glass-port-adaptor.ts`, `spike/run.mjs` and `spike/page.ts` in the D3 worktree, and fetches four pages.
+
+Marks:
+* ''SOURCED (URL, date)'' for a field claim; ''SOURCED (repo: path:line)'' for a house read.
+* ''REASONED'' for inference or design.
+* ''AGREED'' where Terra and I now hold the same point; ''STILL DIVIDED'' where we do not.
+
+Nothing was run.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/0-the-settled-ruling-in-six-lines`>>
+
+!! 0. The settled ruling in six lines
+
+# ''AGREED.'' Every class that renders a page uses one rule: the mirror opens through the port grant, paints skinny, and promotes to full. Device name and install state never choose width. Node, Mudlet and Unreal hold no width of their own.
+# ''AGREED.'' "Full by promotion" is the ''code default'' on every class. Phones and tablets are ''unvalidated'' until real-device process, growth, recovery and screen-reader tests pass. Release claims say so by name.
+# ''AGREED.'' The `mirror:began` marker is weaker than either earlier wave said:
+#* it clears when the promotion snapshot //lands//, not when full paints;
+#* it covers no death after promotion;
+#* it fails silently where storage throws.
+
+It needs a sharper boundary (§3, R-M).
+# ''AGREED.'' The spike measured a topology no browser vessel ships. Its authority is a TW5 engine ''in Node behind a loopback WebSocket'' (`run.mjs:60-67`, `page.ts:27`). The in-browser island worker was never in the page. Every memory number on file describes "a browser attached to a remote authority".
+# ''AGREED.'' Body eviction is a prototype with a named dependency set, not a close hook. The floor tablet keeps the common policy until eviction is proved and a floor-survival run reports.
+# ''STILL DIVIDED, but only on the lean, since the operator must rule either way.'' The built full → skinny → none path needs an explicit rule: one mirror-to-mirror step plus a terminal teardown. My lean is to amend the rule to that shape. Terra's is to hold the literal one-step wording until the operator amends it.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/1-where-terra-contests-me-concede-or-hold`>>
+
+!! 1. Where Terra contests me: concede or hold
+
+| # | Terra's contest | Verdict | Deciding evidence |h
+| C1 | Fresh: the framework default does have support | ''CONCEDE'' | "No JavaScript is sent to the client, unless you specifically include something from the `/islands/` folder." ''SOURCED'' https://usefresh.dev/docs/1.x/concepts/server-components, accessed 2026-10-28. My V12 faulted the page cited, not the claim. |
+| C2 | The marker clears before full paint | ''CONCEDE'' | `stand.ts:118-121`: on the last chunk of the promotion snapshot, `promoting = false; width = "full"; remember(store => store.removeItem(MIRROR_EVIDENCE_KEY))`. No paint acknowledgment stands between the landing and the clear. TW5's refresh paints after the change lands, so a death in that window, or at any time after it, reloads with no marker. ''SOURCED (repo).'' My "one death per tab" was wrong. |
+| C3 | Marker persistence can fail or be copied | ''CONCEDE'' | `remember` swallows every throw (`stand.ts`: `catch { /* storage may be blocked */ }`). MDN: `sessionStorage` "survives over page reloads and restores"; a page with an `opener` starts with "a copy of the opener's `sessionStorage`"; `SecurityError` is thrown when "the user has configured the browsers to prevent the page from persisting data." ''SOURCED'' https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage, accessed 2026-10-28. MDN does not say whether a crash-restored tab keeps it. The key also names no wiki (`MIRROR_EVIDENCE_KEY = "mirror:began"`), so two wikis in one tab share it. ''SOURCED (repo).'' |
+| C4 | The marker adds a fourth step-down cause the contract lacks | ''HOLD: the operator already ruled it'' | Memory `project_dreamdom_mirror_ruling`, group B (2): "one per-tab sessionStorage record of a full boot that died before paint counts as evidence, not a flag (breaks the iOS crash-reload loop)." Terra's brief listed the three causes and not this ruling. ''Concede the name:'' `why: "full-boot-did-not-paint"` overstates. Under the built clear point the record means "a promotion began and its snapshot never finished landing". Rename to `full-promotion-unfinished`. |
+| C5 | Workers share the WebContent kill domain: plausible, not proven | ''CONCEDE the certainty; HOLD the risk'' | No WebKit page I found states where a dedicated worker lives. The strongest field evidence is indirect. In a Wasm app jetsammed for `per_process_limit` at ">1.4GB", the reporter found "wasmTable seems to be copied over to all web workers", and a WebKit engineer pressed them to cut "20 workers", which they cut to 7. The same engineer: "WebKit assigns the cost GPU process memory for a tab to the tab itself." ''SOURCED'' https://bugs.webkit.org/show_bug.cgi?id=256703, 2023-05-12 to 2023-06-21. ''REASONED:'' that strongly suggests worker memory charges the tab's limit, and GPU memory does by statement. The house measures its own topology before relying on either reading (owed M2). |
+| C6 | Retract the "40× margin" and "under 100 MiB doubled" | ''CONCEDE'' | They compared a post-GC page-isolate number against an OS process limit. They are different quantities, and C9 below makes it worse: the spike's page never held the island at all. |
+| C7 | My 20,000 arithmetic | ''CONCEDE'' | Terra's recomputation under my own model is right. A 12–15 MiB base gives skinny ''81.6–108.6 MiB'' and full ''220.6–247.6 MiB''. I under-reported skinny's top bound. Both remain a scenario from one corpus size. |
+| C8 | The 150 MiB tripwire is not new | ''CONCEDE'' | The roadmap states it (`dreamdom-roadmap.mem:109`, "a 150 MB tripwire"). What I added is narrower: a separate //process// figure beside it, and the observation that the relative gate cannot see growth because stock grows too. Terra agrees with both. The tripwire's subject is undefined; §4. |
+| C9 | Skinny "converges to full" | ''CONCEDE the wording; HOLD the retention fact'' | `glass-port-adaptor.ts:266-267`: `openBody` adds to `opened` and loads; `closeBody(title) { opened.delete(title); }` releases no text. Line 170 drops a title from `opened` only on a peer delete. ''SOURCED (repo).'' Restate it as: closing a tiddler does not release its body, so skinny's resident bodies grow with what a person opens. Equal-to-full is not claimed. |
+| C10 | Eviction needs a dependency set, not a close hook | ''CONCEDE'' | Terra's list stands: no open view, draft, pending write, composition, transclusion, filter/widget dependency, or in-flight load; omission metadata kept; a stale-response race guarded. TW5 transcludes closed tiddlers routinely, so "left the story" proves nothing. ''REASONED.'' |
+| C11 | "Screen readers favour the mirror" is a hypothesis | ''CONCEDE the ranking; HOLD the obligation'' | Same-root IDREFs can serialize, and a keyed sink can keep live regions. No matched test has run on any width. ''Hold:'' none's page controls stand unbuilt (`table-final.md`: "none page controls UNMEASURED … staged hearth … required"), and the roadmap makes none lose on a failed accessibility probe (`dreamdom-roadmap.mem:109`). None cannot be a default before those probes pass, and Terra agrees. |
+| C12 | "One adaptor cures tier decay" is not a guarantee | ''CONCEDE'' | Shared code reduces drift; parity tests prove it. G1 becomes a design preference with goldens as its proof. |
+| C13 | Waking floor: keep the common policy for now | ''CONCEDE'' | Eviction is not built (C9, C10). A default that rests on unbuilt code violates "build the end-state". The floor's case is now a measurement (M5), not a default. |
+| C14 | Node first surface: do not settle the topology | ''CONCEDE, with a new fact'' | See C15. |
+
+''C15 · new, and it settles part of C14.'' The spike's "authority" is `new TW5Engine(); await authority.boot(core, corpus)` in the Node runner over an `AtomicMemoryStore` (`spike/run.mjs:60-67`). The page reaches it through `new WebSocket(ws://…/relay)` (`spike/page.ts:27`). ''SOURCED (repo).''
+
+* The table's every number is therefore the //remote-authority// shape: one page process holding only the mirror.
+* The shipping browser vessel, with an island worker, Automerge Repo and keys in-tab, is ''unmeasured at every width''.
+* The 50 ms plant shows skinny's sensitivity to relay delay. It is not a LAN measurement, as Terra says.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/2-terra-s-new-claims-tested`>>
+
+!! 2. Terra's new claims, tested
+
+| # | Claim | Verdict | Evidence |h
+| T1 | The heap metric is the page target's `JSHeapUsedSize` after forced GC | ''HOLDS'' | `run.mjs:147`. And C15 shows the island was never in that page. |
+| T2 | WebKit places service workers in a separate process | ''HOLDS, not re-fetched; irrelevant to width'' | Terra cites webkit.org/blog/8090 (2018-02-07). The house's island is a dedicated worker, plus a SharedWorker on some paths (`shared-holder.ts`). A SharedWorker's placement on iOS is also unread. Owed M2 measures placement instead of reading it. |
+| T3 | The skinny/full bounds under my model | ''HOLDS'' (C7) | Arithmetic checked: (21.7 − 15) × 10 + 15 = 82.0; (21.7 − 12) × 10 + 12 = 109.0; plus 139.0. |
+| T4 | Body retention on close | ''HOLDS'' (C9) | `glass-port-adaptor.ts:266-267`. |
+| T5 | The marker clears at snapshot landing, not paint | ''HOLDS'' (C2) | `stand.ts:118-121`. |
+| T6 | `port:gone` versus disconnection | ''HOLDS, and the code already separates them'' | `stand.ts`: `port:gone` carries `reason` and is dropped unless `mine === generation`. A transport close reaches the mirror as its own reason (`transport-closed` in `capability-default/out2.md` §4, L4). ''REASONED:'' keep "revoked" for a vessel-posted `port:gone` and "gone-by-transport" for a dropped socket, and re-greet only the second. |
+| T7 | A floor (none) is reported, but no none sink is shown to mount | ''HOLDS'' | `stand.ts` returns `floor(...)` = `{kind: "floor", width: "none", why}` and unmounts. Nothing in `stand.ts` mounts a sink. Whether `main.ts` does is owed G3 (`d3-glass-lane.mem` #/owed: "`main.ts` calling `standMirror` … stand owed"). Until it is built, the honest floor is a named unavailable face. |
+| T8 | A release gate needs a decision rule, not only measurements | ''AGREED'' | §4 states device, corpus, N, metric and the threshold for each. |
+| T9 | An explicit local width choice by an authorized face could be legitimate | ''STILL DIVIDED (narrowly)'' | Terra: a face-authorized width choice differs from an untrusted URL flag. Me: a face intent crosses devices, so a //width// name in it re-imports the flag one layer up. An //experience// ("fewer bodies resident", "less motion") maps per vessel. Both of us accept a per-device local choice that never leaves the device. §5 Q5. |
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/3-the-settled-ruling`>>
+
+!! 3. THE SETTLED RULING
+
+''R0 · the common contract (AGREED).''
+* The mirror opens only through the vessel's port grant (`port:open{width}`).
+* L1 shadow root → L2 CAS read → L3 engine boot → L4 greeting (the snapshot's last chunk) → L5 paint, at skinny. Then one `port:widen` promotes to full.
+* Width changes only on a named step failure, a caught `RangeError` or `QuotaExceededError`, a vessel-posted `port:gone`, or the ruled marker. Never by a clock, a host name, an install state or a heap reading.
+* Revocation ends mirror access at once.
+* None mounts only under its own grant, with a working sink. Otherwise the person sees a named unavailable face.
+* A process death is a new boot, never an in-process fallback.
+* Story stays held.
+
+''R-S · the step count (STILL DIVIDED, operator rules).'' The code allows full → skinny on one capacity error, then a teardown on a second.
+* //Opus:// amend to "one mirror-to-mirror step, then terminal teardown". A failed skinny with nothing painted helps no one, and teardown never climbs back.
+* //Terra:// hold the literal one-step wording, and either change the code or amend the rule explicitly. A teardown that leaves no mounted sink is not "stepping to none".
+* //AGREED:// whichever way it goes, the rule text and `stand.ts` must say the same thing, and a red pins it.
+
+''R-M · the marker (AGREED in shape; it builds against the existing ruling).''
+* (a) Rename the reason `full-promotion-unfinished`.
+* (b) Clear it at the first full ''paint'': the refresh after the last promotion chunk, read from the camera's own paint completion. Do not clear it at snapshot landing.
+* (c) Key it by wiki URI.
+* (d) A storage throw reads as a named `evidence-unavailable` beside the surface, never silence.
+* (e) ''Proposal, REASONED, for Terra's and the operator's word:'' a second record `mirror:full-standing:<wiki>`, written at full paint and removed on `pagehide`. A boot that finds it knows the last full page ended without a `pagehide`, which is the jetsam shape, and holds skinny for the tab. A normal reload fires `pagehide` and clears it. The trigger is causal, not a clock. A false positive costs one skinny tab. This covers the death after promotion that C2 exposed. It is not built and not agreed.
+
+''Per class (AGREED unless marked):''
+
+| Class | Default | Step-down | Boot reads (no clocks) | Reds that prove it |h
+| iPhone, tab or Home Screen | full by promotion; install moves nothing (WebKit blog 13878, 2023-02-16) | R0 + R-S; after a death, R-M | L1–L5 outcomes, capacity errors, `port:gone` + generation, marker(s), `pageshow.persisted` → re-greet | `promotion-death-reloads-skinny`; `full-paint-clears-marker` (control); `storage-denied-names-evidence-unavailable`; `opener-copy-does-not-hold-new-tab` |
+| Android Chrome, tab or WebAPK | same | same; `wasDiscarded` never read (desktop-only, Chrome lifecycle page, updated 2026-10-16) | same | same, on device; `hidden-discard-keeps-promotion` |
+| iPad / tablet, person's surface | same | same | same | as iPhone, on an iPad separately (bug 268816: "4GB+" for 8 GB iPads, 2024-03-13) |
+| Tablet standing a waking floor | same, provisionally (C13) | camera changes never take down the island | same, plus the floor's own liveness | `floor-survives-camera-teardown`; a plant that kills the process, then peer continuity; eviction reds once prototyped |
+| Desktop, each engine | same | same | same | five-site walk and goldens 1–13 at full on Chromium, Firefox ''and'' WebKit |
+| Browser attached to a node | same camera rule in both topologies; the topology is unsettled (Q4) | plus `gone-by-transport` → re-greet, versus revoked → end | same | `relay-drop-regreets-revocation-ends` |
+| Node · Mudlet · Unreal stream client | no width | n/a | n/a | n/a |
+
+''Release gates (AGREED; run by the house, never read by a boot):''
+# ''Relative:'' full ≤ +25 % over stock, page isolate, post-GC, same corpus, N ≥ 3, per engine.
+# ''Absolute:'' the existing 150 MiB tripwire, ''defined as post-paint post-GC page JS heap'', so its subject is stated. Recorded beside it, never replacing it: ''process peak and steady footprint'' per reference device (Safari Web Inspector Memory timeline, separating JS, images, layers and page, per WebKit blog 6425, 2016-05-05, Terra's citation; `dumpsys meminfo` on Android). A process threshold waits on M2's numbers and an operator ruling.
+# ''Growth:'' figures at fixed //event// counts (bodies opened, peer writes), never at wall-clock marks. Two workloads: a fixed corpus with repeated identical cycles (must flatten), and a changing corpus (slope reported).
+# ''Accessibility:'' VoiceOver/Safari, TalkBack/Chrome and one desktop screen reader. Labels, live announcements, focus, composition and selection across promotion and step-down, per width. A width that fails is unavailable for that task, by name.
+# ''Energy:'' per fixed operation and background drain in a controlled scenario. Wall time may //measure//, never decide.
+
+''Decision rule (AGREED):'' if a gate cannot run on a class, that class's row reads UNMEASURED in the release note. The code default stands, and the claim of validation does not.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/4-measurements-owed-before-the-operator-can-rule`>>
+
+!! 4. Measurements owed before the operator can rule with confidence (final, AGREED)
+
+* ''M1. The shipping topology, re-measured.'' The browser vessel with its island worker in-tab: full, skinny and none at 2,000, on Chromium. C15 makes this first, because every number on file is the remote-authority shape.
+* ''M2. Process grain on a reference iPhone, an iPad and an Android phone.'' Peak and steady, per width, with worker placement observed, not assumed (C5, T2).
+* ''M3. Corpus slope.'' 2k / 5k / 10k / 20k, with non-repeating Unicode bodies, some images and the house plugins, then the slope fitted (Terra's design, AGREED). This tests the 220–248 MiB scenario.
+* ''M4. Long session.'' Open every body once, then repeated identical cycles, then 10,000 peer writes, at event counts. Retention measured with and without the eviction prototype.
+* ''M5. The floor.'' A tablet standing a floor: camera teardown, process kill, restart, peer continuity, wake lock refusal (MDN wake lock: rejected under "power save mode or low battery level", accessed 2026-10-28).
+* ''M6. Marker boundaries.'' A death before landing, between landing and paint, and after paint; storage denied; opener copy; two wikis in one tab; bfcache restore.
+* ''M7. Accessibility matrix'' (gate 4), at every width that can mount.
+* ''M8. Phone keystroke p95'', full against stock against skinny (on host: 26.5 / 15.1 / 23.7 ms).
+* ''M9. WebKit desktop and Firefox at N = 3.''
+* ''M10. Energy per fixed operation'' on both phones.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/5-the-operator-s-open-questions`>>
+
+!! 5. The operator's open questions
+
+# ''The step count (R-S).'' Amend to "one mirror step plus terminal teardown", or change the code to the literal one step?
+#* //Opus lean:// amend.
+#* //Terra lean:// the literal wording until amended.
+#* ''DIVIDED on the lean; AGREED that one must be chosen and pinned by a red.''
+# ''The floor tablet's width.''
+#* //Both:// the common policy now, eviction prototyped, then M5 decides. A role-keyed policy stays legitimate later under an explicit contract (roles read by capability, `isomorphic-by-intent`).
+#* ''AGREED.''
+# ''A corpus-size promotion ceiling.''
+#* //Both:// not yet; M3 first.
+#* //Terra's correction, accepted:// evicting bodies at "full" makes a new width semantics and must be named as one, not slipped under "full".
+#* ''AGREED.''
+# ''The browser on the node's own box: its own vessel, or a port into the node's island?''
+#* //Opus lean:// port into the node's island (one copy of truth; the spike's numbers already describe that shape, C15).
+#* //Terra:// prototype both before choosing.
+#* ''DIVIDED on the lean; AGREED that the camera rule is the same either way.''
+# ''The "lighter surface" face intent.''
+#* //Both:// it carries an experience (fewer bodies resident, less motion) across devices, and reduced motion works at every width.
+#* //Divided narrowly (T9):// Terra admits a face-authorized width choice; I admit one only per-device, never crossing devices.
+#* ''MOSTLY AGREED.''
+# ''Phones before M2.''
+#* //Both:// the code default stays full by promotion. Before founding, the users are the operator's household, which is the experimental cohort Terra names. No release text calls phones validated until M2, M6 and M7 report.
+#* ''AGREED.''
+# ''New: the marker's second record (R-M e)'', written at full paint and cleared on `pagehide`, to cover the death after promotion.
+#* //Opus lean:// build it under the existing evidence ruling.
+#* //Terra:// not yet asked.
+#* ''OPEN.''
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Voa8_mvEN_VFVOn7TY2_9SLyjW4vSHefs0b_1AfJF00`>>
+
+<<^ code=`&#x0004;` to=`?`>>

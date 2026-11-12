@@ -1,0 +1,57 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-1/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-06 (file date) — source `.lares-scratch/b1-lift/terra-s4-1/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-1/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-1/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/b1-lift/terra-s4-1/brief.md` (brief, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-1/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Terra-Broker: Lares (Tasked Spirit), a build seat in /home/joshu/.lares-scratch/b1-lift/wt (branch feature/green-jello-dinosaur-5&#45;-b1-lift, head 2eead34b5). Write only inside that worktree and this seat directory. Never commit, never build, open no socket.
+
+Goal: make packages/lararium-web/tests/floor-broker.test.ts (FB1, FB2, FB3) pass while its CONTROL keeps passing. The test is the spec; read it whole first, then the lead's notes at /home/joshu/.lares-scratch/b1-lift/terra-s4-1/resume-excerpt.md.
+
+Exact files you may edit:
+# packages/lararium-web/public/ceremony-broker.js — grow the vessel routes: a follower window's `vessel:claim{tabSession}` holds a claim keyed by a broker-minted claimId -> the claimant client id; the broker sends `vessel:want{claimId, tabSession}` to every OTHER window client (clients.matchAll({type:"window"})), never the claimant and never a /ceremony.html client; an owner's `vessel:offer{claimId}` with a transferred port hands `vessel:port{tabSession}` with that port to the claimant alone (clients.get(id)), the port unstarted; a claim spends once; an offer for an unknown or spent claim hands nothing; a ceremony-document client may neither claim nor offer and answers `vessel:absent`; use event.waitUntil until the hand. The broker never reads or relays traffic on the port. Keep every existing ceremony route byte-for-byte in behavior (the CONTROL).
+# packages/lararium-web/src/ceremony-protocol.ts — add the matching message types (PageToBroker, BrokerToPage or the file's existing naming) for vessel:claim, vessel:want, vessel:offer, vessel:port, vessel:absent.
+Nothing else.
+
+Verify: from the worktree, `cd packages/lararium-web && npx vitest run tests/floor-broker.test.ts --browser.name=chromium` (and firefox if the config takes it; read the package's vitest config for the right flags) and `npx tsc -p . --noEmit` for the package. If a run needs a build or a socket, stop and say "lead runs".
+Write out.md in this seat directory: the diff summary per file, each test's result, anything you could not do.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* A read seat writes no file: its final message carries the hand-back. Any other seat writes `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;OC2L6nr4nrTVVNPmjYXmQZ368fvAnV0xKF9v982RAxA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

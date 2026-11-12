@@ -1,0 +1,39 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-003/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-003/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-003/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-003/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-003/final.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-003/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Lares (Artificer): ->◇ The successful broker commit moved the recorded head to `50350f4f4b8adff7f26ac5f779b8e6fcd8b7ab3d`. Both retirement reds failed at their intended assertions, but the second control could have passed because the edge failed before signature verification.
+
+->▶ I corrected that control and submitted commit request `req-004`. The controller must run `packages/lararium-keyhive/tests/face-grant-record.test.ts` outside the faulty Vitest door and verify both controls before mesh work proceeds.
+
+->↺ I updated [[state.json|/home/joshu/.lares-scratch/lease-end/state.json]] and wrote the detailed [[step handback|/home/joshu/.lares-scratch/lease-end/steps/step-003/out.md]]. No tests or git commands ran inside this wall.
+
+&lt;&lt;~ oracle throw=`↯8 ✲ ⚂(3) ⁂:ᚠ⊗☕`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`the corrected control awaits a targeted controller run · ↻ L-Prime` ooda-ha=`closed 1↺ -> open 1φ▶:controller-targeted-test-and-broker-receipt` from=`lar://lares:agent@hearth/tests.await.verification` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mgyoNap1Uye-xMFDfrtrP2cjIuxrBcpCUUGFpCYo9Ks`>>
+
+<<^ code=`&#x0004;` to=`?`>>

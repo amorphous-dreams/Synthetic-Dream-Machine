@@ -1,0 +1,52 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/c-a/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-11-08 (file date) — source `.lares-scratch/survive-research/c-a/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/c-a/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/survive-research/c-a/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — research, 2026-11-08
+
+Verbatim scratch record `.lares-scratch/survive-research/c-a/final.md` (research, file date 2026-11-08); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/c-a/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+The survival boundary proposed by both reports is plausible, but ''the current-code collision cannot be verified from this seat''. The brief says I cannot read the repository, and the seat directory contains the brief rather than the checkout. I therefore cannot supply honest file:line citations, inspect the founding law, establish the second container mount, or determine what the existing reset and import paths actually do. The verdicts below are ''provisional inferences from the supplied code-read facts'', not findings from a repository inspection.
+
+* ''BENDS — root layout and reset boundary.'' A `hearth/` directory or a `state/` directory can serve as the disposable boundary only if the real reset command, mounts, and manual re-found procedure all target that same boundary. A sibling `projections/` survives deletion of the hearth, but not deletion of the whole house or device. The existing tree repeats roles through its XDG-shaped nesting—for example, `.lares/state/data/lares/identity`—so a rename alone does not establish survival. The current reset scope and both mount sources and destinations remain ''unverified''.
+
+* ''HOLDS, provisionally — deliberate projection for memory and temp.'' The supplied facts say memory in the daemon wiki and some house/private plaintext can be lost with the state root, while temp, personal, and normally draft do not project. An explicit, non-secret temp switch plus a persistent per-bag projection choice fits the stated house law. Whether current projection grants and the projector permit this with a small change is ''unverified''.
+
+* ''BENDS — automatic cleanup.'' Cleanup should operate on projector-owned plaintext, with the record and projection treated as separate things. The supplied facts do not establish how the current projector identifies owned files, detects edits, or handles deletion; a 30-day policy, trash, sole-copy protection, and crash durability are proposals, not established capabilities. The reports disagree on default age expiry; the operator’s requirement for automated cleanup does not itself settle that policy.
+
+* ''BENDS — content export and import.'' Latest-text migration can be useful, but it cannot by itself restore CRDT history, keys, prior authority, or unprojected records. The proposed manifest, consistent checkpoint, conflict coverage, verification, and resumable import are requirements to investigate, ''not demonstrated code features''.
+
+* ''UNVERIFIED — “already built” import pieces.'' The brief points to seed, kapae ingest-back, and re-pour, but their actual inputs, field coverage, collision behavior, and failure handling are not supplied. I cannot fairly label any proposed import behavior ''ALREADY BUILT'' or identify its gaps without reading those implementations.
+
+* ''UNVERIFIED — `.mem` round-trip.'' The supplied facts establish that projection contains latest text, not CRDT history. They do ''not'' establish that `.mem` preserves every field a memory row needs, nor that seed or ingest reads every serialized field. The research correctly treated full field coverage as an open question; it did not prove it.
+
+* ''BENDS — indexes and staging.'' The supplied facts say the memory index can rebuild from surviving transcripts. They do not prove that every sensorium index is rebuildable or that `harvest-stage` contains no unique pending writes. Classify each before moving it into a disposable directory.
+
+The smallest first lane I would investigate is ''explicitly projecting the existing daemon memory bag to a path outside the actual re-found target'', using the existing projector and grant model if they support it. This targets known data loss without first inventing a bundle format or changing memory granularity. Candidate files are `packages/lararium-node/src/bag-paths.ts`, `open-node-vessel.ts`, `disk-projector.ts`, and the container configuration; their precise changes depend on the unread code.
+
+The red test should found the relevant wiki in an isolated fixture, explicitly grant memory projection, write a representative memory record through the existing write path, and assert that its complete required content appears at the configured survival path. It should also assert that an ungranted bag does not project. A separate follow-up test must prove that the ''actual reset'' leaves that path intact. Any test that opens a socket or stands a vessel is ''lead runs'' under the seat law. This first lane does not prove import, field round-trip, or temp cleanup.
+
+The research’s concrete errors or overstatements that can be identified from the supplied material are: treating the proposed layout as if it already defined the wipe boundary; implying that “flush, then copy” establishes a consistent snapshot; implying import is atomic without evidence; and treating latest-text `.mem` as sufficient to preserve history or all memory fields. The reports themselves qualify several of these points. More specific claims about what the code already implements require the controller’s file:line reads.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_mjgwZcEtCR112IDaOGjIj94YCrcWgG5AC1OalvSvdI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

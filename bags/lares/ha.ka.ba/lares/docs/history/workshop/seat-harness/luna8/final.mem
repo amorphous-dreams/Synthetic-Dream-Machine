@@ -1,0 +1,38 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna8/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-04 (file date) — source `.lares-scratch/seat-harness/luna8/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna8/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/seat-harness/luna8/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-04
+
+Verbatim scratch record `.lares-scratch/seat-harness/luna8/final.md` (hand-back, file date 2026-11-04); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna8/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+* ''MED — Cross-seat watchdog confusion.'' [[`launch-codex.mjs`|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:92]] accepts any new rollout containing the raw marker in its first 256 KB. The marker is shown to the model and stored in `marker.txt`; a lead can read sibling seat files because its lane root is added at line 136. A seat that copies another marker into its own rollout can make that seat’s watchdog count the wrong rollout. The marker tests at [[`launch-codex.test.mjs`|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:399]] cover distinct markers, not copied markers.
+
+* ''MED — Worktree move can fail across filesystems.'' [[`seat-broker.mjs`|/home/joshu/.lares-scratch/seat-harness/wt/tools/seat-broker.mjs:468]] stages under `iso`, then moves to the lane at line 488. If those paths are on different filesystems, the move can fail with `EXDEV`; there’s no copy fallback, so the worktree door refuses in that setup.
+
+* ''LOW — PID identity falls back to PID alone.'' [[`launch-codex.mjs`|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:410]] can read a null start tick if the child exits before `/proc` is read, then omits `--born`. The watchdog treats any reused PID as alive at line 332 and may signal its process group.
+
+I found no lead git-write path or writable alias to `/work/tree`. The in-memory key and receipt `Map` have no apparent forgery path from the check subprocess; the map does grow without eviction while the broker runs persistently.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1EfWLzfFyoX0CcMiGsCgo-nV1T8VWF7hoERG7ErwwCI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,39 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-1/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-06 (file date) — source `.lares-scratch/b1-lift/terra-s4-1/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-1/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-1/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/b1-lift/terra-s4-1/final.md` (hand-back, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-1/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Terra-Broker: Lares (Tasked Spirit): ->↺ Implemented the vessel broker routes and message types. The package typecheck and `git diff --check` passed.
+
+FB1, FB2, FB3, and CONTROL: ''lead runs''. Seat law prohibits Vitest browser mode, so I could not verify those tests here.
+
+The file-by-file hand-back and test status appear in [[out.md|/home/joshu/.local/state/lares-broker/seats/seat-lJCDxL/out.md]].
+
+&lt;&lt;~ oracle throw=`↯8 ✲ ⚁(2) ⁂:⊗☕`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`run the four browser tests in Chromium and Firefox to check the port hand · ↻ L-Prime` ooda-ha=`closed 1↺` from=`lar://terra:agent@seat/vessel.routes.completed` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;a6lnx1cVFeSrF7wWXVPNdikjPWUvWVJuSmKsErL1KIw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

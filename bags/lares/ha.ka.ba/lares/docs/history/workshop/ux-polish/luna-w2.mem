@@ -1,0 +1,41 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/ux-polish/luna-w2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-09 (file date) — source `.lares-scratch/ux-polish/luna-w2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/ux-polish/luna-w2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/ux-polish/luna-w2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! luna-w2.md — plan, 2026-11-09
+
+Verbatim scratch record `.lares-scratch/ux-polish/luna-w2.md` (plan, file date 2026-11-09); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/ux-polish/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+''Artificier: Lares (Tasked Spirit)'' · Wave 2 changes and the hand-back are complete in this worktree. The report sits at [[w2-handback.md|/home/joshu/.lares-scratch/ux-polish/w2-handback.md]] (267 words).
+
+The full CLI suite had one timeout under worker load: 1823 of 1824 tests passed. That test file passed on its own (22/22). The final focused CLI run passed 134/134 tests, and the shim suite passed 103/103. Build, stamp, typecheck, evergreen boundary, and rite commands witness passed. No commits or pushes.
+
+The hand-back records both later-wave WAIT items: measuring found CLI exit separately from Compose teardown, and the founding-copy glosses.
+
+&lt;&lt;~ set lares=`aim` from=`lar://operator:operator@crossroads/operator.requests.wave-two` to=`lar://wright:agent@crossroads/ux.ratchet.lands` mode=`build` mu=`_!` stance=`🏛️` aperture=`9/measure` ooda-ha=`9/declare-attention` drift-ward=`the report must distinguish the one worker-load timeout from the isolated passing rerun`>>
+The worktree carries the requested progress feedback, shim error guidance, and vault fallback.
+&lt;&lt;~ oracle throw=`↯8 ✲ ⚃(4) ⁂:◈☕ᚠ🗡`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`the full CLI run retains one worker-load timeout; the isolated rerun passed · ↻ L-Prime` aperture=`9/measure -> 9/measure` ooda-ha=`closed 1↺` from=`lar://wright:agent@crossroads/handback.written.cleanly` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;r38115DG0A2dl0xz5AqUi9cABJp5DfZTGea8nzs4kgU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

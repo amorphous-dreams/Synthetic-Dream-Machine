@@ -1,0 +1,90 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/one-root/steps/step-002/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-08 (file date) — source `.lares-scratch/one-root/steps/step-002/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/one-root/steps/step-002/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/one-root/steps/step-002/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-08
+
+Verbatim scratch record `.lares-scratch/one-root/steps/step-002/brief.md` (brief, file date 2026-11-08); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/one-root/steps/step-002/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/lead-step-2`>>
+
+! Lead step 2 (fresh; read this brief whole, then do ONE step)
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/lane-state`>>
+
+!! Lane state (from /home/joshu/.lares-scratch/one-root/state.json)
+* head: fa5f50e16be2be4aaf8e06d3a3bf82dc65b74877
+* next step: Step 1 (resolvers) continues: library placement ruled (&lt;root>/library/); expand the weld to every table entry; implement; run every affected test file. Next relay request 002.
+
+!!! Owed rows
+* RULINGS (operator 2026-11-08, quote license): 'Aprpove the hearth/ rename/tree restructure.'; 'The resolvers fall back to XDG homes when LAR_ROOT is unset. This reads design time crud from when the lararium sat in the main WSL instance, but we've gone to containerized.'; R1 AI memory never rides git by default (promotion into a git-tracked bag stays a deliberate per-memory act); R2 temp: housekeeping only, age-expiry opt-in; R3 reset with unprojected content: itemized list + typed accept-loss. Drafts stay projected (2026-11-04: 'unsaved drafts survive in CRDT state and file projection'). Road row fa5f50e16 defers identity continuity, face bundles, CRDT history, emergency restore until after M8.
+* CONTROLLER RULING (2026-11-08, under the operator's 'Pick the most pono path'): the ACQUIRED LIBRARY takes its own surviving root, &lt;root>/library/. It holds originals the house acquired, not renders of the CRDT, so it sits neither in projections/ (renders) nor in hearth/ (wiped). Step 3 binds it into the container as a third mount (&lt;house>/library -> /lar/library); reset never touches it. The layout reads: hearth/ (wiped), projections/, library/, config/, cache/, run/.
+* THE AIM: ONE named house root. A re-found clears &lt;root>/hearth/ alone; every deliberate plaintext projection survives in &lt;root>/projections/. Layout: &lt;root>/hearth/{vessel,identity,nexus,checkpoints,staging,sensoriums}, &lt;root>/projections/{bags,wikis,trash,audit}, &lt;root>/config/, &lt;root>/cache/, &lt;root>/run/. One level per meaning; retire the nested XDG facets (data/lares vs data/lararium, state/, vessel/st repetition) inside the root.
+* STEP 1 (resolvers): packages/lararium-node/src/vessel-paths.ts and packages/lararium-mempalace/src/xdg-base.ts read LAR_ROOT ALONE; unset refuses by name (no XDG fallback, no homedir default); the table maps the layout above. The Python mirror in packages/lararium-sensorium/scripts (sensorium.py, meta_io.py, lares_uds.py, guest_harvest.py, structurepalace_io.py, bed_manifest.py, conftest.py; list EVERY resolver call site before editing: grep XDG_, homedir, expanduser, .local/share) moves in the SAME step. A weld test reads both tables and asserts them equal. ~45 tests that isolate through XDG_* switch to a scratch LAR_ROOT. Red first: unset LAR_ROOT refuses in TS and Python; the weld test. The mempalace/ submodule stays out of scope (external). Run every affected test file, not samples.
+* STEP 2 (projections): packages/lararium-node/src/bag-paths.ts projectionRoots, both kahua-&lt;F> mirror factories (daemon working wiki, kahua stage) and the per-wiki grants in open-node-vessel.ts (~4036-4075) take &lt;root>/projections/. KEEP: canon-sourced bags write back to the canon source (LAR_BAGS / the checkout) with wikis beside it; bags/daemon stays unmirrored (control plane); draft recovery grants; .kapae shadows. disk-projector.ts atomicWrite: fsync the temp file, rename, fsync the parent dir, create the temp with mode 0600; name the body/.meta order so a crash never leaves new meta over an old body. Red first in packages/lararium-node/tests/projection-roots-split.test.ts: distinct state, canon and projection roots -> house bags + both kahua-&lt;F> mirrors under projections, canon in the checkout, bags/daemon absent; a test that the fsync runs.
+* STEP 2 ADDS (hidden-row read, 2026-11-08, gap CONFIRMED): the working mirror follows the RESOLVED view (island-adaptor.ts:536 _landOne; disk-projector.ts:717 reconcile returns when the winner's origin bag is unmirrored; start scans wiki.allTitles() ~529, and listVisible() only for recovery mirrors ~513). A working row shadowed by a same-title draft or personal row never projects, and a crash between its sealed write and the notification leaves it off disk for good. Cure in disk-projector.ts: at start, enumerate each ordinary mirror's OWN bag records and project them through a renderer that takes the record's fields, not the resolved view; reconcile projects the mirrored bag's own record when a higher layer shadows it. Red: working + higher draft at one title, stop after the working store write before the notification, fresh projector -> the working carrier holds the working record. Control: no shadow -> the resolved working row projects as today.
+* STEP 3 (container): docker-compose.surface.yml sets LAR_ROOT=/lar and binds two host dirs: &lt;house>/hearth -> /lar/hearth and &lt;house>/projections -> /lar/projections (env file names them; ~/.lares/lares-surface.env holds LARES_STATE today: rename to the house root's hearth path, and add the projections path; keep every existing refusal in the compose header about locations). tools/lares-container.sh: found passes &#45;-root /lar; reset clears &lt;house>/hearth alone (keeps the typed re-found, TTY, running-vessel and bind-holder refusals) and refuses when hearth and projections overlap or either sits inside the other or the workspace. Red first in tools/lares-container.test.mjs: reset leaves projections/ and config/; overlap refuses. Update tools/harbor-walk-witness.sh / rite-commands-witness.sh where they read the old paths. SECURITY-CLASS: the shim + compose need the controller's SHIP; say so in the hand-back.
+* LAWS: evergreen prose (no history words); L-Prime in prose you write; no credential via flag/env/pipe; no new swarm-control env var (LAR_ROOT and the compose LARES_* names stand); never pnpm install outside the broker; daemon packages (node, keyhive) run single test files under the broker's test door; e2e stays in CI.
+* CLAUDE.md's 'Claude Adapter Surface' section describes the projection rule and LAR_ROOT; true it in step 3 to the new tree (the controller reviews it).
+
+!!! Live seats
+* (none)
+
+!!! Worktrees
+* lane: /home/joshu/.lares-scratch/one-root/wt
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/commit-trailers`>>
+
+!! COMMIT TRAILERS (end every lane commit message with exactly these lines)
+Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01V63vwNsTbwswaievYNJosw
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/step-law`>>
+
+!! STEP LAW
+* ONE step per launch: do the next step above, then stop. A step stays under about 10 to 15 minutes or 40 tool calls.
+* Before you stop, rewrite /home/joshu/.lares-scratch/one-root/state.json (same keys; keep the step counter as it stands) with the new head, the owed rows, the live seats, the worktree map and the next step (the trailers stay as they stand), and write your hand-back to /home/joshu/.lares-scratch/one-root/steps/step-002/out.md.
+* A seat you start runs outside your context: record it in the state and stop; never poll for it. The next step reads its result path.
+* Stop at a wall, at a design question that needs an operator ruling (name it with its options and your lean), or at the push go.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/lead-law`>>
+
+!! LEAD LAW (appended by tools/launch-codex.mjs to a lead brief; it binds this lead)
+* You hold no git write access and no credential. Every git act goes through the broker: write a request file `req-<id>.json` (zero-padded, in order) into `<lane-root>/relay/` and read your own `res-<id>.json` in the same step: use `node tools/wait-receipt.mjs <lane-root>/relay/res-<id>.json` for an event wait for the file to appear, bounded by a named `// LIVENESS: ... broker ... died` timeout. Never poll for a receipt; never poll or wait inside your context for a seat. The doors are `commit` (`paths`, the commit message as inline `message` text up to 16 KiB, and `expectHead`), `push` (only when the controller's go names the branch and the head), `worktree`, `worktree-remove`, `install`, `launch` and `test` (`runner` Node or Vitest, nonempty named `files`).
+* A commit message follows the `lar:///w1.w2.w3 — summary` convention and ends with the lines your brief's COMMIT TRAILERS section carries, verbatim. No `git stash` in any form, no `--no-verify`, no `git push -u`, no force-push, no edit of .git/config.
+* Never write the main checkout (~/Synthetic-Dream-Machine) or its submodule worktrees; work in your own worktree under ~/.lares-scratch only.
+* Never read a credential file or the controller's directory.
+* Never boot a daemon in-tree bare; any boot uses a scratch LAR_ROOT and no global LAR_BAGS.
+* No local e2e loops (unit first; e2e in CI via tools/e2e-shards.mjs or a raw ci/* branch).
+* Seats start only through the broker's launch door; a Sol seat only through the controller.
+* A stop that needs more than this wall names itself in out.md and stops.
+* Report to the controller (final.md) for any push beyond the lane's go, and never push without its go.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jF2c6AEG5GOCxUtvL5Mt-c9DlDuxjpJbcHq70orCKe0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

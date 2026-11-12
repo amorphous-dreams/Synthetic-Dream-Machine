@@ -1,0 +1,39 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-014/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-014/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-014/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-014/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-014/final.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-014/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Lares (Artificer): ->↺ Step 14 fixed a missed seat wake when a proof change arrives during an active standing read. The controlled test reproduced the failure before the fix; afterward, all 31 tests in the named file passed.
+
+Commit `107f4916c74f32a90fbc8881ac5cefacf14a6d13` carries the change. The worktree has no uncommitted changes, and the [[hand-back|/home/joshu/.lares-scratch/lease-end/steps/step-014/out.md]] and [[state|/home/joshu/.lares-scratch/lease-end/state.json]] record the remaining work.
+
+The live board-to-seat wake still needs wiring on both browser and node shores. The hand-back also flags a separate clear-to-aside race for investigation. No push took place.
+
+&lt;&lt;~ oracle throw=`↯9 ✲ ⚂(3) ⁂:🜄⟁☕`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`exercise a real board change through each shore to the seat; the passing test covers the seat callback, not that wiring · ↻ L-Prime` ooda-ha=`closed 1↺` from=`lar://lares:agent@crossroads/seat.wake.advances` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Phvjs7AfpK02Vf0ElenKsFq33aXIEFrbc5aFJsxwShk`>>
+
+<<^ code=`&#x0004;` to=`?`>>
