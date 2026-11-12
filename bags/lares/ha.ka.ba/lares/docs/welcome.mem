@@ -1,0 +1,28 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/welcome`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+caption   = "Welcome"
+l-space   = "stable"
+role      = "the house landing: the tiddler a lares wiki opens on, named by the $:/tags/lares/Landing tag the house $:/DefaultTiddlers shadow reads"
+tags      = ["$:/tags/lares/Landing"]
+title     = "lar:///ha.ka.ba/lares/docs/welcome"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/welcome"
+```
+
+! Welcome to the Lararium
+
+This wiki opens on the house landing. A lararium node keeps a place: its records rest in bags, the wikis compose those bags, and the page you read mirrors one wiki through a port onto its vessel.
+
+* The road the house walks toward stable founding: <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>>
+* What the house names a Lararium, and how its parts hold together: <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/lararium`>>
+
+A wiki names its own landing by tagging a record of its bags `$:/tags/lares/Landing`; the house's `$:/DefaultTiddlers` reads that tag and falls back to TiddlyWiki's GettingStarted where no landing stands. A wiki that authors its own `$:/DefaultTiddlers` keeps it.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;EMX-y8-t2SZejAD-lPv2Ap-dFDz2iskkO7-2RzgUCBw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -7,7 +7,11 @@ export const lends = () => Object.fromEntries(["global", "Buffer", "process"].ma
  * A vessel stub. Each `port:open` and each `port:widen` answers with a snapshot of `chunks` chunks on the portId it names.
  * The first chunk of an open answers at once; the rest wait on `gate` when one stands (a released promise, never a clock).
  */
-export async function rig(options: { gate?: Promise<void>; chunks?: number; refuseWiden?: string; swallowWiden?: boolean; sealedRest?: boolean } = {}) {
+export async function rig(options: { gate?: Promise<void>; chunks?: number; refuseWiden?: string; swallowWiden?: boolean; sealedRest?: boolean;
+  /** The engine preloads the vessel names (default: the house plugin alone). */
+  preloads?: Record<string, unknown>[];
+  /** Records the wiki carries: each snapshot's first chunk lands them beside its own. */
+  records?: Array<{ title: string; fields: Record<string, unknown> }> } = {}) {
   const chunks = options.chunks ?? 1;
   const bytes = new Uint8Array(await (await fetch(coreUrl)).arrayBuffer());
   const digest = await crypto.subtle.digest("SHA-256", bytes);
@@ -21,7 +25,7 @@ export async function rig(options: { gate?: Promise<void>; chunks?: number; refu
       const msg = raw as Record<string, any>; messages.push(msg);
       for (const watcher of placed) watcher(msg);
       const chunk = (i: number) => port.deliver({ type: "port:snapshot", portId: msg.portId, snapshotId: `s-${messages.length}`, i, n: chunks,
-        records: [{ title: `Landed${i}`, fields: { text: "t" }, seq: i }] });
+        records: [...(i === 1 ? (options.records ?? []).map((record, n) => ({ ...record, seq: 1000 + n })) : []), { title: `Landed${i}`, fields: { text: "t" }, seq: i }] });
       if (msg.type === "port:open") {
         if (chunks === 1) void Promise.resolve(options.gate).then(() => chunk(1));
         else { queueMicrotask(() => chunk(1)); void Promise.resolve(options.gate).then(() => { for (let i = 2; i <= chunks; i++) chunk(i); }); }
@@ -32,7 +36,7 @@ export async function rig(options: { gate?: Promise<void>; chunks?: number; refu
     }, close() {},
   } });
   // The house plugin rides as the vessel's own preload (the page's pluginCids carry it); `sealedRest` is the vessel's word, false unless a test stands for a sealed vessel.
-  const seams = { readInputs: async () => ({ coreBytes: bytes, coreCid, preloadedTiddlers: [housePlugin as Record<string, unknown>], sealedRest: options.sealedRest === true }) };
+  const seams = { readInputs: async () => ({ coreBytes: bytes, coreCid, preloadedTiddlers: options.preloads ?? [housePlugin as Record<string, unknown>], sealedRest: options.sealedRest === true }) };
   const options2 = { host, port, inputs: { coreCid: "0".repeat(64), pluginCids: [] }, wikiUri: "wiki", actor: "actor" };
   return { host, port, messages, seams, options: options2, onPlace: (watcher: (msg: Record<string, any>) => void) => { placed.push(watcher); },
     opens: () => messages.filter(m => m.type === "port:open"), widens: () => messages.filter(m => m.type === "port:widen") };

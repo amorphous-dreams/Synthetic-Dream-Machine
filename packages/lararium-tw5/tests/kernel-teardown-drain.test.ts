@@ -23,7 +23,11 @@ vi.mock("../src/island-kernel.js", () => ({ IslandKernel: class {
     delete instance.larariumWritableStand;
     await stand();
   }
-  tw5() { return {}; }
+  // The engine the kernel opens its default story on once the seed drains: a wiki holding nothing, so the story opens empty.
+  tw5() {
+    const wiki = { getTiddlerText: () => "", filterTiddlers: () => [], tiddlerExists: () => false, addTiddler: () => {}, getModificationFields: () => ({}) };
+    return { $tw: { wiki, hooks: { invokeHook: (_name: string, value: string[]) => value } } };
+  }
   sendEa(wikiUri: string) { this.post({ type: "ea", wikiUri }); }
   teardown() {}
 } }));

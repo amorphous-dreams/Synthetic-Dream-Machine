@@ -33,7 +33,7 @@ const tabStorage = (): Evidence | null => { try { return window.sessionStorage; 
 
 /**
  * Light the mirror cap, one real step at a time. Each step completes or names its floor, and no step reads a clock:
- * L1 shadow root, L2 CAS read, L3 engine boot, L4 the port's first snapshot (the greeting decides), L5 paint.
+ * L1 shadow root, L2 CAS read, L3 engine boot, L4 the port's first snapshot (the greeting decides), L5 the default story, L6 paint.
  * The mirror opens skinny and paints; it then promotes to full by one widen row on the same port. A tab whose
  * earlier full boot left its evidence record stays at skinny. After it stands, a caught capacity error steps it
  * down to skinny once on the same engine, a second one unmounts it, and `port:gone` closes it; nothing steps
@@ -169,6 +169,8 @@ export async function standMirror(options: {
     if (early !== null) stepDown(early);
     const reason = await waiting;
     if (reason !== null) { mirror.unmount(); return floor(reason); }
+    // The port's first whole snapshot has landed: the wiki's own landing stands, so the story opens now and the first paint reads it.
+    mirror.openStory();
     mirror.paint();
   } catch (error) { mirror?.unmount(); return floor(reasonOf(error)); }
 

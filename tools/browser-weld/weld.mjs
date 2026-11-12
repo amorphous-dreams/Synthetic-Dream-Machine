@@ -16,6 +16,11 @@
  *   W1-W3 need only a browser — the web surface boots a sovereign island, "no node attached". A red here is
  *         browser-side and cannot be a crossing fault.
  *   W4-W5 need a node vessel — a red here cannot be a DOM fault, because W1-W3 already passed.
+ *   M1-M5 read the PERSON'S surface, the glass mirror (`#mirror`). Once it stands the page hides the worker-rendered floor
+ *         that W2-W4 drive, so W2-W4 prove the none-width return leg beneath it and M1-M5 prove what a person reads and
+ *         types: the settle, the stock theme and palette, the wiki's own default story, the pane's name, and a real edit
+ *         typed through Playwright's own mouse and keyboard, read back from the worker. A red reading whose source
+ *         `genesis/unbaked.json` declares reads as a gap naming the row (mirror-read.mjs).
  *
  * Nothing here retries or waits on a wall clock beyond a bounded settle: a vector that needs patience
  * says how much and why, so a slow machine reads as slow rather than as broken.
@@ -25,6 +30,9 @@ import { chromium } from "playwright";
 import { armTestCustody } from "../../packages/lararium-node/dist/probes/browser-test-custody.js";
 import { workerTraceInitScript } from "./worker-trace.mjs";
 import { awaitPage, waitForWitness } from "./page-wait.mjs";
+import { readFileSync, existsSync } from "node:fs";
+import { randomUUID } from "node:crypto";
+import { contentReading, labelReading, settleOf, styledReadings, unbakedSources } from "./mirror-read.mjs";
 
 const WEB = process.env.WELD_WEB_URL ?? "http://localhost:5173";
 
@@ -349,6 +357,9 @@ const main = async () => {
     }
   }
 
+  // ── M1-M5 · the person's surface: the glass mirror ─────────────────────────────────────────────
+  await readMirror(page);
+
   // ── W5 · the edit reaches the NODE's disk ─────────────────────────────────────────────────────
   // The founding gate. Declared here and reported as a gap while unwired, so the vector exists and
   // says what it waits on rather than being absent and forgotten.
@@ -362,6 +373,80 @@ const main = async () => {
     await browser.close();
   }
 };
+
+const report = (r) => (r.status === "ok" ? ok : r.status === "gap" ? gap : bad)(r.name, r.message);
+const UNBAKED = new URL("../../genesis/unbaked.json", import.meta.url);
+
+/**
+ * The mirror vectors. M1 waits on the product's own settle (`full`, or `skinny` with a named reason) through `settleOf`, whose
+ * source the page evaluates, so one implementation decides on both sides. M2-M4 read the shown mirror's shadow root and the
+ * engine's read-only reading (`larMirrorReading`). M5 types through Playwright's real mouse and keyboard into the mirror and
+ * reads the saved title back off the worker-rendered floor, the worker's own render of the same wiki.
+ */
+async function readMirror(page) {
+  const settled = await awaitPage(page, ({ arg: source, seen }) => {
+    const host = document.querySelector("#mirror");
+    const words = { mirror: host?.getAttribute("data-lar-mirror") ?? null, why: host?.getAttribute("data-lar-mirror-why") ?? null };
+    const verdict = new Function(`return (${source})`)()(words);
+    if (verdict) return { done: { ...verdict, shown: host?.getAttribute("data-lar-shown") ?? null } };
+    const step = (words.mirror ?? "").length + (words.why ?? "").length;
+    return step > seen ? { progress: step } : false;
+  }, settleOf.toString(), { livenessMs: 60_000, what: "the mirror's settle (full, or skinny with a named reason)" }); // LIVENESS: a mirror that never settles
+  const settle = "refused" in settled ? null : settled.value;
+  if (!settle) { bad("M1 mirror-settles", `${settled.refused ?? "no settle"} — data-lar-mirror never read full, a named skinny, or a floor`); gap("M2-M5 mirror-surface", "skipped — M1 found no settled mirror"); return; }
+  if (settle.settled === "floor") { bad("M1 mirror-settles", `the mirror tore down to the floor: ${settle.why}`); gap("M2-M5 mirror-surface", "skipped — the floor shows"); return; }
+  if (settle.shown !== "mirror") { bad("M1 mirror-settles", `the mirror settled ${settle.settled} but data-lar-shown reads ${settle.shown}: the person reads the floor`); return; }
+  ok("M1 mirror-settles", settle.settled === "full" ? "the mirror stands at full and shows" : `the mirror holds skinny and names why: ${settle.why}`);
+
+  const unbaked = unbakedSources(existsSync(UNBAKED) ? readFileSync(UNBAKED, "utf8") : null);
+  const probe = await page.evaluate(() => {
+    const host = document.querySelector("#mirror");
+    const root = host?.shadowRoot;
+    const sheet = [...(root?.querySelectorAll("style") ?? [])].map((style) => style.textContent ?? "").join("\n");
+    const sidebar = root?.querySelector(".tc-sidebar-scrollable");
+    const svg = root?.querySelector(".tc-tiddler-controls button svg, .tc-page-controls button svg");
+    const frame = root?.querySelector(".tc-story-river .tc-tiddler-frame");
+    const reading = host?.larMirrorReading ?? null;
+    return {
+      sheetHasSidebarRule: /\.tc-sidebar-scrollable\s*\{/.test(sheet),
+      sidebarPosition: sidebar ? getComputedStyle(sidebar).position : null,
+      svgWidth: svg ? Math.round(svg.getBoundingClientRect().width) : null,
+      frameBackground: frame ? getComputedStyle(frame).backgroundColor : null,
+      paletteBackground: reading?.colours?.["tiddler-background"] ?? null,
+      firstTitle: frame?.getAttribute("data-tiddler-title") ?? null,
+      reading,
+      paneWiki: document.getElementById("projection-wiki")?.getAttribute("data-lar-pane-wiki") ?? null,
+      cardWiki: [...document.querySelectorAll("#vessel .row")].find((row) => row.querySelector(".k")?.textContent === "wiki")?.querySelector(".v")?.textContent ?? null,
+    };
+  });
+  for (const reading of styledReadings(probe, unbaked)) report(reading);
+  report(contentReading(probe.firstTitle, probe.reading, unbaked));
+  report(labelReading(probe.paneWiki, probe.cardWiki));
+
+  // M5: a new tiddler typed through real input. Playwright's locators pierce the open shadow root; its clicks and keys are real
+  // input events, never a synthetic dispatch on a hidden node.
+  const title = `weld-mirror-${randomUUID().slice(0, 8)}`;
+  try {
+    await page.locator('#mirror button[aria-label="new tiddler"]').first().click({ timeout: 10_000 });
+    const titleField = page.locator("#mirror input.tc-titlebar").first();
+    await titleField.click({ timeout: 10_000 });
+    await page.keyboard.press("ControlOrMeta+A");
+    await page.keyboard.type(title);
+    await page.locator('#mirror .tc-tiddler-edit-frame button[aria-label="Confirm changes to this tiddler"]').first().click({ timeout: 10_000 });
+  } catch (error) {
+    bad("M5 mirror-edit", `the mirror's new-tiddler road refused real input: ${String(error).split("\n")[0].slice(0, 140)}`);
+    return;
+  }
+  const back = await awaitPage(page, ({ arg: wanted }) => {
+    const floor = document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection")?.innerHTML ?? "";
+    if (floor.includes(wanted)) return { done: "worker" };
+    const refused = document.querySelector("#mirror")?.getAttribute("data-lar-mirror") ?? "";
+    if (refused.startsWith("none:")) return { done: `mirror tore down: ${refused}` };
+    return false;
+  }, title, { livenessMs: 20_000, what: "the typed title's read-back from the worker-rendered floor" }); // LIVENESS: a write that never reaches the worker
+  if (!("refused" in back) && back.value === "worker") ok("M5 mirror-edit", `"${title}" typed in the mirror reads back from the worker's own render`);
+  else bad("M5 mirror-edit", `"${title}" typed in the mirror never read back from the worker: ${"refused" in back ? back.refused : back.value}`);
+}
 
 function finish() {
   if (failures > 0) printConsoleCapture();

@@ -428,6 +428,9 @@ function configureIslandRuntime(instance: TW5Instance, engineCid?: string): void
   // readBrowserTiddlers:true steers initStartup AWAY from the node block (process/path/module);
   // paired with the no-op loadTiddlersBrowser above, it reads nothing from a (absent) DOM.
   tw.boot.tasks = { trapErrors: false, readBrowserTiddlers: true };
+  // TW5's `story` startup opens `$:/DefaultTiddlers` inside boot, before the island's seed lands, so the story read the core's
+  // GettingStarted (tw5-vm-gaps-scout row 17). The island opens its story once its seed drains (`default-story.ts`).
+  tw.boot.disabledStartupModules = [...(tw.boot.disabledStartupModules ?? []), "story"];
   // The ONE agnostic global-`document` leak: utils.extractVersionInfo() (startup.js) reads
   // `$tw.packageInfo.version` when set, else falls to `document.getElementsByTagName("meta")`.
   // Node sets packageInfo before startup; the island does the same — the version guard, not a

@@ -139,6 +139,8 @@ Evidence: `docs/pono/two-way-interaction-scout` §7; `docs/pono/host-attractors-
 
 ''The field proves the split.'' TW5 itself holds skinny tiddlers under `lazy-all` and loads text on touch. Zero replicates subsets of rows per query; LiveStore materialises a log into per-tab SQLite; Datomic peers embed the index and subscribe to the transactor's log; Observable computes a variable only while something observes it. TidGi-Desktop and TidGi-Mobile run the two-engine hosting on Electron and on a phone, where TW5's startup indexers, not the port, set the phone's boot number: the skinny notch exists for that.
 
+''The glass wears stock TW5.'' At full and skinny the glass boots the boot set's stock vanilla and snowwhite themes by CID beside the core, under the house palette, and opens the wiki's own default story at the port's first whole snapshot, never inside engine boot (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/d3-glass-lane`>> #/the-visible-mirror).
+
 ''Two TW5 instances on one box read as a setting, never a smell.'' The daemon's actor and a pinned wiki's actor already stand as two engines in the Node vessel; the browser adds a camera to each, and a replica engine beside the camera only where the dial says it pays. Which width the first surface defaults to, only the three-boot spike decides (`dreamdom-roadmap#/the-spikes`).
 
 ''Pattern integrity'': a standing filter reads as a subscription; the engine owns the index, the projection owns the view; the replica's width reads as a setting, never an architecture.
@@ -623,6 +625,6 @@ The DreamDOM's founding story: every later DreamDOM ruling answers to these seve
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;7H8EXVuRdxHOfHkDUDJdifeY5SWSIi9T1S8QEO-JVGA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;W83NYm4zEWQGeqtvBkbJwm7SzqFmfk1CsIsc9LFmU5w`>>
 
 <<^ code=`&#x0004;` to=`?`>>

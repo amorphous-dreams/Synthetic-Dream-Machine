@@ -3,6 +3,7 @@ import { MIRROR_TOKEN } from "./glass-token.js";
 import { makeGlassPortAdaptor } from "./glass-port-adaptor.js";
 import type { GlassPortOptions } from "./glass-port-adaptor.js";
 import { mountGlassCamera } from "./glass-camera.js";
+import { openDefaultStory } from "./default-story.js";
 
 export interface MirrorSeams {
   bootEngine?: () => void | Promise<void>; paint?: () => void;
@@ -16,10 +17,15 @@ const nameOf = (error: unknown): string => error instanceof Error ? error.name :
 
 const HOUSE = "lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext";
 /**
- * THE CENSUS AND THE GATE, before any module evaluates. A plugin carrying a `syncadaptor` or a `saver` shadow, or a promoted loose module carrying either type, refuses:
- * the mirror is fed by the port alone. Every other person's plugin (not the house plugin, not the core) evaluates only on
- * a vessel whose boot inputs carry `sealedRest` (the browser store's sealed-rest capability, S's row); until then the gate holds it
- * by its own name and never defaults open. The inputs come from the vessel, never from a page value.
+ * THE CENSUS AND THE GATE, before any module evaluates. A plugin of any type carrying a `syncadaptor` or a `saver` shadow, or a
+ * promoted loose module carrying either type, refuses: the mirror is fed by the port alone. Every other person's plugin (not the
+ * house plugin, not the core) evaluates only on a vessel whose boot inputs carry `sealedRest` (the browser store's sealed-rest
+ * capability, S's row); until then the gate holds it by its own name and never defaults open.
+ *
+ * THE GATE READS CAPABILITY, NEVER A NAME. A theme or a language plugin whose shadows carry no JavaScript module evaluates no code:
+ * it lays stylesheets, palettes and wikitext, so it passes the closed gate (the stock vanilla and snowwhite themes the boot set
+ * carries by CID among them). A theme or language that carries a module waits on the seal like any plugin. The inputs come from
+ * the vessel, never from a page value.
  */
 export function censusPreloads(preloads: Record<string, unknown>[], sealedRest: boolean) {
   const refused: { title: string; kind: string }[] = [];
@@ -29,12 +35,15 @@ export function censusPreloads(preloads: Record<string, unknown>[], sealedRest: 
       refused.push({ title, kind: "module-syncadaptor" });
       return false;
     }
-    if (plugin["plugin-type"] !== "plugin") return true;
+    if (plugin["plugin-type"] === undefined) return true;
     let shadows: Record<string, unknown> = {};
     try { shadows = (JSON.parse(String(plugin.text ?? "{}")) as { tiddlers?: Record<string, unknown> }).tiddlers ?? {}; }
     catch { /* Invalid plugin content is left to the engine. */ }
-    const dangerous = Object.values(shadows).some(value => value && typeof value === "object" && ["syncadaptor", "saver"].includes(String((value as Record<string, unknown>)["module-type"])));
-    const kind = dangerous ? "plugin-syncadaptor" : !sealedRest && title !== HOUSE && title !== "$:/core" ? "plugin-gate" : "";
+    const fields = Object.values(shadows).filter((value): value is Record<string, unknown> => !!value && typeof value === "object");
+    const dangerous = fields.some(value => ["syncadaptor", "saver"].includes(String(value["module-type"])));
+    const evaluates = fields.some(value => value["module-type"] !== undefined || value["type"] === "application/javascript");
+    const gated = plugin["plugin-type"] === "plugin" || evaluates;
+    const kind = dangerous ? "plugin-syncadaptor" : gated && !sealedRest && title !== HOUSE && title !== "$:/core" ? "plugin-gate" : "";
     if (kind) refused.push({ title, kind });
     return !kind;
   });
@@ -93,6 +102,8 @@ export async function openMirror(options: Omit<GlassPortOptions, "wiki" | "Tiddl
     if (!options.deferPaint) paint();
     return {
       tw, get adaptor() { return adaptor!; }, paint, unmount,
+      /** Open the wiki's default story; the caller runs it once the port's first whole snapshot has landed, never inside engine boot. */
+      openStory: () => openDefaultStory(tw as never),
       /** Close the port and open a fresh one on the same engine; unsettled writes resend under their txId. */
       reopen(next: { transport: GlassPortOptions["transport"]; portId: string; width: GlassPortOptions["width"] }) {
         const adopt = adaptor!.pendingWrites();
