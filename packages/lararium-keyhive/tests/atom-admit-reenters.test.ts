@@ -16,7 +16,7 @@ const repo = () => makeIslandRepo({ syncPort: new MessageChannel().port1 });
 describe("atom admit re-entry", () => {
   it("the joinee completes the root half and re-entry lands one atom seat", async () => {
     const founderRepo = repo();
-    const place = withMemorySecretHome(await foundThePlace({ repo: founderRepo, vesselSeed, hearthTrueName: "hearth" }), founderRepo);
+    const place = withMemorySecretHome(await foundThePlace({ repo: founderRepo, vesselSeed }), founderRepo);
     const face = await foundTheFace({ vesselTag: testVesselTagDoor(1), repo: founderRepo, daemonHandle: place.daemonHandle, secretHandle: place.secretHandle, secretRest: { assertSealed: async () => true }, vesselSeed,
       placeVerifyingKey: key(vesselSeed), vesselDisplayName: "founder", binding: { mode: "self-stood", signerSeed: rootSeed },
       hearthTrueName: "hearth", nexusPubkey: key(vesselSeed), atomSeed });

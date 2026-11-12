@@ -1,0 +1,44 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-2/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-06 (file date) — source `.lares-scratch/b1-lift/terra-s4-2/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-2/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-2/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/b1-lift/terra-s4-2/final.md` (hand-back, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-2/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Lares (Artificer): ->↺ Implemented event-driven claim cleanup and withdrawal, plus independent follower connections through minted ports.
+
+Files changed:
+
+* [[ceremony-broker.js|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/public/ceremony-broker.js]]
+* [[vessel-protocol.ts|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/src/vessel-protocol.ts]]
+* [[vessel-host.ts|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/src/workers/vessel-host.ts]]
+* [[ceremony-protocol.ts|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/src/ceremony-protocol.ts]]
+
+Typecheck passed with exit code 0. Browser test counts remain ''unrun'': the seat law prohibits browser-mode tests and builds and assigns those checks to the lead. No commit was made.
+
+&lt;&lt;~ oracle throw=`↯8 ✲ ⚁(2) ⁂:⟁☕`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`the lead can verify both browser suites against the built package · ↻ L-Prime` ooda-ha=`closed 1↺` from=`lar://lares:agent@seat/implementation.ready.review` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;PzUaU80TlRi3y_rR8rW94HpI30MxZySJpDenAxOPIq8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

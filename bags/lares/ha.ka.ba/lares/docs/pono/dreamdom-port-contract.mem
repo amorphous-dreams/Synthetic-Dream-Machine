@@ -131,7 +131,7 @@ written           = "2026-10-22"
 A lost answer repairs by one law on every path: the sender resends the ''same id'' a bounded number of times within a live epoch; the receiver treats the resend idempotently and replays its original answer; the loop ends on an answer or on an epoch change. No timer decides when to resend or when to stop: the sender resends at its next causal boundary (a reconnect, a fresh frame, the next act) and the bound counts attempts.
 
 * The port's `txId` retry (#/write) follows it: the ledger replays the original `port:written`.
-* The camera's page-control resend follows it: `projection-sink.ts` holds each pending reliable act whole and resends the same `eventId` at a fresh frame under the same mount epoch, at the next act (first, in order) and at a re-arm of the doors, three attempts at most; an epoch change ends the loop with `stale-target` beside the target, the bound ends it with `binding-unavailable`, and the island's answer ring replays the answer.
+* The camera's page-control resend follows it: `projection-sink.ts` holds each pending reliable act whole and resends the same `eventId` at a fresh frame under the same mount epoch, at the next act (first, in order) and at a re-arm of the doors, three attempts at most; an epoch change ends the loop with `stale-target` beside the target, the bound ends it with `binding-unavailable`, and the island's answer ring replays the answer. ''The bound counts only sends the vessel never acknowledged'' (controller ruling, an overrulable moʻolelo): a resend that meets its act still waiting at the vessel draws a named, causal reply (`control-pending`, carrying the act's id) and reaches nothing, and that send refunds its attempt; the vessel holds the act's id from the moment it arrives, before its lit vessel answers. A vessel that never answers still exhausts the bound. The frames an act's own write painted travel ahead of its answer on the same channel, so the bound may fire with the answer queued behind them: the page keeps that act named, and its late answer clears the bound's words or paints its own.
 
 <<~/ahu>>
 
@@ -174,6 +174,9 @@ What stays owed, each by name:
 * ''A flaky neighbour.'' `wiki-shore-draft-road` T2 failed once under full-suite load and passed alone and in repeats; it stays on the house flake list, untraced.
 * ''Read scope, ruled.'' Snapshot, changes, `load`, `filter` and `render` read the world the island's camera already paints to its one face, so the port ships with no `bagRead` lend: an island that serves readers of more than one authority needs a per-bag read lend before it opens a port to the second. The port holds the line: once the composer lends `faceOf`, an open must name a proven face with a stable string `id` (the verifier's subject, never the whole proof, which may rotate): the port remembers the first `id` and answers an open under another id, or under a lookup that throws or names no id, with a reset and holds nothing (`port-one-island-one-face`, `port-face-key-is-the-stable-id`). Every later message, and every delivery or answer that resumes after an await, re-reads the face: unless the id still equals the one the open proved, an ask or write is refused `face-changed` and the port retires, so a moved face reads, answers and acts under nothing: presence fan-out checks each recipient, and each bag-grant check a verb reactor makes re-reads the face. A reactor already past its last grant check when the face moves still finishes, since the island cannot cancel it mid-effect; that residue stays owed to the actor gate (`port-face-must-hold-for-every-ask-and-write`). The island keeps its first face for its whole life: a second face reuses a rebuilt island, since the wiki it serves may still carry the first face's records.
 * ''Control traffic.'' Presence and ack carry no per-port rate bound; the holder's lease and transport own that budget.
+* ''The wire field bound.'' A plugin record above the 1 MiB wire field fails the reader whole with the snapshot message that carries it; the boot handoff chunks blobs, the snapshot does not chunk a record.
+* ''The follower tab's handoff.'' `port:boot` over the BroadcastChannel to a follower tab passes with the seam (`glass-topology`); the real handoff over the bus with real boot chunks stays unproven.
+* ''`port:widen` stands in the contract unsent.'' No mirror widens in place since full stands first; the island's row stays until a projection asks it or the contract drops it.
 * ''D4's actor gate covers the `lar:act` path.'' Camera clicks reach TW5 widget listeners through `tw5-projection` and bypass `wiki-behavior`; the port's gate covers `port:ask{invoke}` alone.
 
 <<~/ahu>>
@@ -188,6 +191,6 @@ What stays owed, each by name:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;aA99hdwidC8boVf_UogK2yrXyO6FmKd7yZmeWQdqVHQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;we3g6C5WzL0d-woHk8ekJnu_cDs1IP8piiEWw03qHtU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

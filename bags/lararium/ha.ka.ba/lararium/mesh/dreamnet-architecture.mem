@@ -145,7 +145,28 @@ The corpus-kahu hold ''kahu'' at this layer — a k-of-n quorum seated from the 
 
 ''The engine cadence runs per Nexus, and devices move by adoption.'' A Nexus admits a rolling window of engine epochs; a cadence threshold seated apart from its kahu quorum — a self-governing lineage held by those who bear the reboot cost (operators whose places run the engine) — offers the next engine and advances the window. ''Each device moves only by its own adoption'' — a reboot onto the offered engine — and carrying never counts toward the cadence (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/contract`>>, the seated engine-update authority at <<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/engine-watch`>>).
 
-''Grammar drift alone does not separate Nexuses — the engine epoch binds who-can-talk.'' (And a PLUGIN drift makes no grammar drift at all: the grammar holds its own region, so an operator's collection moves `pluginsCid` and touches no reading but their own.) Membership rides `hearthTrueName` = `engineCid`, signed into every device-delegation edge, so two operators on one engine differ in grammar without schisming; only a DIFFERENT engine reaches the disjoint-station-set break (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces#/the-real-mover`>>).
+''Grammar drift alone does not separate Nexuses — the engine epoch binds who-can-talk.'' (And a PLUGIN drift makes no grammar drift at all: the grammar holds its own region, so an operator's collection moves `pluginsCid` and touches no reading but their own.) Membership rides `hearthTrueName`, the hearth's seed-charter Nexus AID (operator ruling R1, 2026-10-05; <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus`>>), signed into every device-delegation edge with the engine as a separate claim, so two operators on one engine differ in grammar without schisming; only a DIFFERENT engine reaches the disjoint-station-set break (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces#/the-real-mover`>>).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-nexus-scales`>>
+
+!! The Nexus scales ~ one Lararium per human, then a recursive stack by contract (talk-story, 2026-11-12)
+
+The shrine tiers of #/infra-axis read at five scales. Each scale keeps its own charter, its own engine cadence and its own Kahu, and none commands the scale beneath it; a wider scale gathers narrower ones by contract and treaty, never by a chain of command.
+
+* ''One human, one Lararium.'' A person's many nodes, browsers and phones stay one Lararium, however many faces that person wears. The Nexus threshold sits at a second sovereign (#/infra-axis), so no quorum forms across one human's own faces (#/social-axis, plurality).
+* ''The Household Nexus.'' Two operators under one roof found a fresh joint charter beside each household's own seed, under a settlement-free PEER contract; its true name names that joint charter's AID (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus`>>).
+* ''The Crossroads.'' A neighbourhood's Nexus: flat carriage over a shared leyline fabric (the IXP rhyme), its own Kahu, its own public board (<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/crossroads`>>).
+* ''The Temple.'' A city's Nexus: any-to-any carriage at civic radius, commanding no tier below it.
+* ''The True-Named planetary Nexus.'' New-Delos and Neo-Thracia in the fiction: a recursive `#has`-stack of Nexuses held together by carriage contracts and treaties. Each member keeps its charter, its engine cadence and its Kahu, and accepts the parent's floors by pull, the way a vessel accepts a floor release (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-vessel-pin`>>).
+
+''Two laws bind the stack'' (operator, 2026-11-12: //"Pono, approve both leans (many floors, Kahu seats)."//).
+
+* ''Many floors stack innermost-first.'' A vessel standing in several Nexuses pins one floor per Nexus, and its recipe stacks them innermost-first: its Household's canon shadows the Crossroads', which shadows the Temple's, with the planetary floor beneath. The top layer shadows across tiers as it does within one recipe (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/many-floors`>>).
+* ''A Kahu seat per tier.'' Each tier seats its own Kahu quorum. Any human may hold seats at several tiers, and no tier's seats count toward another tier's quorum (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/seats-per-tier`>>).
+
+''The DreamNet hosts each scale in one of three postures'' (#/publication-and-discovery): ''private'' (the Nexus announces nothing; its members reach it by invitation and carried pins alone), ''contracted'' (it carries for the Nexuses it signed a PEER or TRANSIT contract with, and they read its floor by pull), or ''public'' (its boards and floor releases announce on the crossroads plane, and their CIDs read public to every DreamNet user).
 
 <<~/ahu>>
 
@@ -226,6 +247,29 @@ A lararium hosts an ''operator'' (sovereign — founds the lararium, holds the f
 !!! plurality ~ many handles × many cap-stacks
 
 One human carries ''many Handles'' (personaGroups on the WHO axis) crossed with ''many cap-stacks'' (INFRA vessels) — the connections soft, never hard-fused. A test engineer ''sprays ephemeral cap-stacks'': short-lease vessels that mesh, run, and decay to the floor, no fresh social self minted per box. The personas stay plural and severable, and ''a quorum MUST NOT form across one human's own faces''. Those handles bind ONE principal's instruments — below the seam, joined by compose — so a gauge reads them nominal BY LAW, and several of them co-signing where a protocol asks for many bodies satisfies the count while supplying ''one locus of cost at both ends''. The plurality still reads first-class for reach and disclosure; it buys no quorum (`first-realm-arc#the-arc`). the shape holds; the quorum-across-own-personas dial (how many bodies a protocol demands distinct) waits on the local instrument.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-walkers`>>
+
+!! The walkers ~ a user, an operator and the crossing between them (talk-story, 2026-11-12)
+
+The operator's words frame the stories: //"a human carries multiple faces"//, //"isomorphic by intent for all vessels by capability"//, //"users have leaf-device fleets, operators have leaf+node fleets"// (2026-11-12). Each story names what the person holds and where it stops.
+
+* ''Mele, a user.'' Mele holds a leaf fleet: a phone and a laptop browser. Each leaf arrives as a veil (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/the-veil-ladder#/the-base-model`>>); her phone founds her face through its own door, and the laptop joins by three files the two screens trade, then seats by two more, with no server between them (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026#/device-seats`>>). Her edges state `hearthTrueName: ""`, since no hearth holds her. A lost device leaves by an act (the root strikes its edge), and a lost root returns by her recovery contacts, never by a custodian.
+* ''Leilani, an operator.'' Leilani holds a hearth: a node that founded her seed charter, her leaves joined to its face. Her edges name the seed charter's AID. She contracts into a Crossroads by a signed PEER edge, and she leaves a Nexus by forking: a new charter, her own seat, her relations re-bound under it.
+* ''Mele becomes an operator.'' Mele buys a Pi. It stands its veil floor, joins her existing face through the carriage, then seals a seed charter as that face, so her leaves keep the face they already wear and gain a hearth's wall by that act. Today `found` mints a fresh face 0, so this crossing stands owed (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-leaps`>>).
+
+''A home mints only where a vessel rests content.'' The vessel types read by what each can hold.
+
+|! Vessel |! Stands as |! Rests content |
+| a node | a full vessel, or a herm | yes: its store, its keys, an inbound gate |
+| a browser, a phone, a tablet | a leaf vessel | yes: its OPFS and IndexedDB store, its device key; no inbound socket |
+| Mudlet | a surface | no: no key, no store; it reads and writes through a node's doors |
+| UE6 | a surface, or a sidecar vessel carrying a store of its own | only as the sidecar |
+| QuickJS without WASM | an engine | no: it runs a wiki and holds no store |
+
+A surface or a bare engine holds no secret home and no control document, since nothing of a face rests there; the vessel it ports onto holds both.
 
 <<~/ahu>>
 
@@ -679,6 +723,6 @@ The carriage-client fetch row stays OWED (measured 2026-10-22). The vessel-side 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Bo47qLqsxwNRaOBvMiJxTDrLXn3C8Nt9MbmFNBaH60s`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Kd6QHXuXDYaHEQ3c0BckQeEN5hVMvMEuM_PdDa2YOg4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

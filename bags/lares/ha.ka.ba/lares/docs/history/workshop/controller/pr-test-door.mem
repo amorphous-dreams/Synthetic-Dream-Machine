@@ -1,0 +1,38 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/pr-test-door`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — PR body, 2026-11-06 (file date) — source `.lares-scratch/controller/pr-test-door.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/pr-test-door"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/pr-test-door"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! pr-test-door.md — PR body, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/pr-test-door.md` (PR body, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Lane test-door (road M1): the commit broker gains a `test` door. A walled lead names test files; the broker runs them with node &#45;-test or the file's own package vitest inside a bwrap namespace (PID, IPC and network unshared, new session, clean env), binding only the worktree (its `.git` read-only from a held fd), scratch, the active Node version and system dirs. Every worktree path walks held O_NOFOLLOW segments; no parse error echoes file bytes; a named LIVENESS silence bound ends a hung run through killGroup; zero-test runs refuse; tallies stay advisory, never a receipt. The launcher P1-3 flake is cured by causal order (the stub prints before its token event). Canon: seat-harness #/the-broker names the door.
+
+Reads: Luna, a blind Opus read and a fresh re-read, each cured. Suites: test-door 20/20, commit-relay 40/40 (the access witness among them), launch-codex 94/94 under load in a PID namespace.
+
+🤖 Generated with [[Claude Code|https://claude.com/claude-code]]
+
+https://claude.ai/code/session_01V63vwNsTbwswaievYNJosw
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iPTWMrAGkWG_Jsa_t0p1hWuo-XEFcAPCdIej9LIJRSs`>>
+
+<<^ code=`&#x0004;` to=`?`>>

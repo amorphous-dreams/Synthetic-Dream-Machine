@@ -543,6 +543,13 @@ export const PRIVATE_CABAL_REALM_DOMAIN = mint("private-cabal-realm");
  *  apart from every seal above: the PRF output is a cloud-synced-class secret and the wrap must never
  *  derive into an admit seal. */
 export const SEED_WRAP_PRF_INFO = mint("seed-wrap-prf");
+/**
+ * THE FLOOR'S REST KEY (the-veil-ladder#/the-base-model): the key a vessel's FLOOR documents rest sealed under (a wiki's
+ * working layer and canon it stands with no face, the daemon wiki's floor memory). A name of its own, apart from the secret
+ * home's random key: the floor stands before any face mints a secret home, and each host derives it through its own door
+ * (`held-rest-key` `floorRestKey`: a node through its custody root, a browser through its `floor-rest` seed).
+ */
+export const FLOOR_REST_KEY_INFO = mint("floor-rest-key");
 
 // ── PLANES + SCOPES (HMAC name derivations) ─────────────────────────────────────────────────────
 /** One PersonaGroup's private plane name, derived from that group's own doc id. */

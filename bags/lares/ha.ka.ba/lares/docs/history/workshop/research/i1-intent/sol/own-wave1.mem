@@ -1,0 +1,97 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/i1-intent/sol/own-wave1`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/i1-intent/sol/own-wave1.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/i1-intent/sol/own-wave1"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/i1-intent/sol/own-wave1"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! own-wave1.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/i1-intent/sol/own-wave1.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/i1-intent/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ lares aim from="lar:&#47;/operator:operator@lararium/intent.seeks.ground" -> to="lar:&#47;/sol-intentwright:agent@lararium/code.rules.scout">>
+&lt;&lt;~ set hud="aim" mode="draft" stance="🏛️" mu="_!" aperture="16/arc" ooda-ha="7/declare-glyphs" drift-ward="the carrier's draft words may hide decisions its red list cannot settle">>
+
+Sol-Intentwright: Lares (Tasked Spirit) / Ink-Clerk:
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/1-observe-standing-ground`>>
+
+!! 1. ✶ Observe — standing ground
+
+''MEASURED.'' `I1` follows the sealed anchor; Wave C, K15-H and Wave D landed ([[road:487,459|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem]]). No production <code>&#64;intents-</code> plane surfaced in the code search. The carrier already names five planes, while the current derivation and ring enumerate four ([[persona-scope.ts:121|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/persona-scope.ts]], [[persona-group-ring.ts:136|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/persona-group-ring.ts]]). The shared HMAC tag derives from the PersonaGroup ID; one bag name follows each relation ([[persona-scope.ts:81|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/persona-scope.ts]]). Founding creates plane documents and bootstrap entries; a `plane` act in signed <code>&#64;persona</code> must vouch for each URL before registration. The verifier re-derives canonical bytes, checks Ed25519 and authorizes against face anchor/KEL; the projector admits only URLs backed by those acts ([[init.ts:129|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/commands/init.ts]], [[signed-act.ts:2|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/signed-act.ts]], [[persona-act.ts:96|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/persona-act.ts]]). Node registers all proven held planes and mounts the worn face; browser registers after face proof ([[open-node-vessel.ts:2200|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/open-node-vessel.ts]], [[open-browser-vessel.ts:1181|/home/joshu/Synthetic-Dream-Machine/packages/lararium-browser/src/open-browser-vessel.ts]]). The ring lets each face's own devices sync governed documents ([[persona-group-ring.ts:136|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/persona-group-ring.ts]]); the herm carries without opening them. Wave D seals atom and anchor as separate face custody rows under each face's FCK; the plane itself retains its distinct rest/wire seal rules ([[k15-wave-d-lane.mem:33|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/pono/k15-wave-d-lane.mem]], [[plane-seal.ts:5|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/plane-seal.ts]]).
+
+''MEASURED.'' Node loads the worn face's atom from custody; browser derives its atom key from that face's seed. The device seed serves substrate duties; the atom signs face proof and face acts ([[open-node-vessel.ts:1887|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/open-node-vessel.ts]], [[open-browser-vessel.ts:686|/home/joshu/Synthetic-Dream-Machine/packages/lararium-browser/src/open-browser-vessel.ts]], [[open-browser-vessel.ts:861|/home/joshu/Synthetic-Dream-Machine/packages/lararium-browser/src/open-browser-vessel.ts]]). Today a remote summons lands in the daemon Automerge doc, each daemon dispatcher converts it to local volatile invocation, tombstones transport, and writes an outcome back to the daemon doc; each vessel runs its own daemon VM ([[verb-dispatcher.ts:1|/home/joshu/Synthetic-Dream-Machine/packages/lararium-tw5/src/verb-dispatcher.ts]]). `face-join` runs there, rejects joinee self-seating, then records its grant on <code>&#64;persona</code>; two hearths can still re-key before either sees an outcome ([[operator-daemon-behavior.ts:601|/home/joshu/Synthetic-Dream-Machine/packages/lararium-keyhive/src/operator-daemon-behavior.ts]], [[face-join.ts:189|/home/joshu/Synthetic-Dream-Machine/packages/lararium-keyhive/src/face-join.ts]]). Reactors register in the daemon island, sometimes posting pool work to main; browser composes the same island/dispatcher. The CLI names a face per invocation ([[operator-daemon-behavior.ts:371|/home/joshu/Synthetic-Dream-Machine/packages/lararium-keyhive/src/operator-daemon-behavior.ts]], [[daemon-behavior.ts:182|/home/joshu/Synthetic-Dream-Machine/packages/lararium-tw5/src/daemon-behavior.ts]], [[CHANGELOG.md:17|/home/joshu/Synthetic-Dream-Machine/CHANGELOG.md]]).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/3-orient-red-first-lane-slices`>>
+
+!! 3. ⏿ Orient — red-first lane slices
+
+''LEAD.'' One I1 lane should carry a single wire image and node/browser parity through the summons cutover; place relay research and build in a later lane. Each red below needs its named passing control.
+
+# ''Plane and image:'' red: two faces cross-read, a late joinee misses the plane, unsigned URL registers, or plane projects; controls: same-face sync, signed URL registration, projected wiki file. Hold `persona-scope`, `register-bags`, `persona-group-ring`, founding/admit bundles, signed act/projector, node/browser openers, seal and mirror guards.
+# ''Execution:'' red: prior outcome still triggers effect; wrong pinned atom acts; class-addressed single-effect issues. Controls: fresh intent acts; matching pinned atom acts. Hold shared `intent-plane`/verb policy and both daemon composers/dispatcher bridges.
+# ''Fold:'' red: partitioned idempotent duplicate, replay with same nonce, `every` reduced to one slot, claim zombie after takeover, injected clock read. Controls: fresh nonce changes ID; fenced current claimant acts; one outcome per `every` device. Hold shared image/verifier/fold plus effect adapters.
+# ''Void and join:'' red: sleeping device acts after observed cancel/revocation/roster edge; two hearths re-key one joinee. Controls: unbounded intent acts; one hearth grants and second stands down; CLI-selected face reaches its own plane. Hold face-join, operation store, daemon behavior and node/browser join bridges.
+# ''Read pane and rubric:'' red: pane writes through, keystrokes/save emit intent, duplicate-answer counter silently reads zero. Controls: committed move emits one intent/outcome; seeded duplicate trips counter; projected wiki still mirrors while intent plane does not. Hold daemon wiki view, UI bridge and instrumentation.
+
+''MEASURED overlap.'' W14–W16 touch `place-floor-pin`, `admit-gate-pin`, card filing and `nexus-contract`; K17 touches frontier/lease/realm boards; W26 slice 5 touches a sealed floor accept row per (face, Nexus) ([[road:512|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem]], [[road:515|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem]]). I1 should consume their verified frontier/face readers and avoid editing those files; a shared composer hunk needs one owner at integration. Their signed acts never substitute for intent outcomes.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/2-decide-model-joints`>>
+
+!! 2. ◇ Decide — model joints
+
+''Canon rules:'' the carrier explicitly orders `intent/outcome/asks/answer/claim/release/takeover/supersede/cancel`, four audience modes, hash of issuer/verb/arguments/nonce, empty nonce for idempotent verbs, outcome cause/signer, preference winner then lowest `H(atom ‖ intent id)`, no timed expiry, operator release priority, causal voids, late `every` membership, and single-effect refusal for class/any-device ([[carrier:47–92|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/api/pono/face-intent-plane.mem]]). A duplicate winner changes the read, never undoes an effect. House law ''no global now'' forbids timestamp arbitration; ''one name, one relation'' calls for one shared image; ''isomorphic by intent'' calls for one fold on both hosts. The rubric rules cross-device, settled, answerable authority decisions and excludes bodies, keystrokes and ordinary wiki saves; the pane reads only ([[carrier:111–139|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/api/pono/face-intent-plane.mem]]).
+
+''Operator-owned choices, with leans:'' (a) Does `answer` assigning an executor replace an invalid unpinned single-effect intent, or only complete an `asks` gate? Lean: require an explicit ask and bind the answer to its ID before execution. (b) Which signed canonical envelope and content hash version binds all kinds, and how do concurrent cancel/takeover/release fold? Lean: domain-separated canonical signed entries with stable IDs, per-intent causal references, authority-first release; never arrival order. (c) What fences an irreversible face-join re-key before outcome visibility? Lean: pinned hearth or preference order plus operation ID checked at the Keyhive effect door; outcome stand-down alone cannot prevent partitioned double action. (d) Does `every` mean joined devices at issue or all later joins until causal bound? Canon selects later joins; decide a bounded roster edge for finite campaigns. (e) How does the view expose duplicate, void-after-act and unknown frontier? Lean: show all, label counted outcome, never hide conflict. These decisions need operator ruling before slice 1 freezes the image.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/4-act-prior-art-and-stories`>>
+
+!! 4. ▶ Act — prior art and stories
+
+''MEASURED outside.'' [[Automerge sync|https://automerge.org/docs/tutorial/local-sync/]] and [[local-first doctrine|https://www.inkandswitch.com/essay/local-first/]] support offline replica convergence; [[Keyhive/Beelay|https://github.com/inkandswitch/keyhive/blob/main/README.md]] supplies signed delegation and authorized sync. [[OTP supervisors|https://www.erlang.org/doc/system/sup_princ.html]] restart local workers, while [[actor mailboxes|https://www.erlang.org/doc/system/ref_man_processes.html]] serialize one actor's intake; neither guarantees one fleet-wide effect. [[Patchwork tasks|https://www.inkandswitch.com/patchwork/notebook/tasks-01/]] show CRDT-carried work; the intent/outcome fold still needs application semantics. [[Kubernetes leader election|https://kubernetes.io/docs/concepts/cluster-administration/coordinated-leader-election/]] uses renew time, duration and a central compare-and-swap. ''LEAD:'' this house substitutes signed causal bounds, audience slots, idempotent effects and explicit takeover, never a clock lease.
+
+''Gaia.'' Laptop commits “rebuild the wiki” as one intent while phone sleeps. Laptop acts and signs outcome; phone wakes, syncs, sees its slot answered and stands down. If both acted under partition, their idempotency key converges and both receipts remain visible.
+
+''Elyncia.'' Two shrine hearths see one keeper-face join summons. A pinned hearth seats the joinee; the second reads the outcome and stands down. If the first vanishes, a human release/answer redirects through a signed causal act; no sunset clock grants the second permission.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/hooko-aftermath`>>
+
+!! ↺ Hoʻoko / aftermath
+
+''LEAD:'' Rule the five choices above, then cut the red-first lane. Repo inspection only; no suites ran. Next observation should verify the signed image against the live floor/frontier integration head.
+
+&lt;&lt;~ oracle "↯15 ✲ ⚂(3) ⁂:◈🜃⌗">>
+&lt;&lt;~ set hud="yield" drift-ward="the face-join effect fence needs a concrete Keyhive operation key before this lane can freeze its wire image · ↻ L-Prime" aperture="16/arc -> 16/arc" ooda-ha="closed 1↺">>
+&lt;&lt;~ lares yield from="lar:&#47;/sol-intentwright:agent@lararium/intent.model.waits" -> to="?">>
+
+WORDS=1144
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BGNcU94gFpwgGkQ_c1BhFKvorX666hCT7P3AiEtseHM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

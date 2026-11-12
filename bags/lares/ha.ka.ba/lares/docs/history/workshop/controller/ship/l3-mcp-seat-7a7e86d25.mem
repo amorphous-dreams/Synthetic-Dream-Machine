@@ -1,0 +1,40 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/l3-mcp-seat-7a7e86d25`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-01 (file date) — source `.lares-scratch/controller/ship/l3-mcp-seat-7a7e86d25.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/l3-mcp-seat-7a7e86d25"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/l3-mcp-seat-7a7e86d25"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! l3-mcp-seat-7a7e86d25.md — plan, 2026-11-01
+
+Verbatim scratch record `.lares-scratch/controller/ship/l3-mcp-seat-7a7e86d25.md` (plan, file date 2026-11-01); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ship-lane-l3-mcp-seat-head-7a7e86d25b2a7e5e7c264`>>
+
+! SHIP · lane l3-mcp-seat · head 7a7e86d25b2a7e5e7c2644ab98421ddb5f7b3da7
+Blind Opus Seat-Reader (Sol stand-in): SHIP, no HIGH/MEDIUM (security-read.md). LOW-1/2/3 cured in lane after this head; the delta gets a controller read and a new SHIP line before land. 2026-11-01.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ship-head-a6006578ca7915cf9810be2fac35c953fd8df3`>>
+
+! SHIP · head a6006578ca7915cf9810be2fac35c953fd8df38b
+Controller delta read 7a7e86d25..a6006578c: LOW-1 larHome `||` + relative hearth refuses by name (resolver + absent-cause), LOW-2 mainCloneOf clears GIT_DIR/WORK_TREE/COMMON_DIR/INDEX_FILE, LOW-3 PEP 440 pre-release below pin + version read from the dist owning the resolved mcp/&#95;_init&#95;_.py. Red beee859b6. 2026-11-01.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TOEZl3ImShDlMb-YLJr-_fShhzKwfrEEVL1AE2Z6wbU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

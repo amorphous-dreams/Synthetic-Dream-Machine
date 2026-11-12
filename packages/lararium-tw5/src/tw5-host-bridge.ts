@@ -435,7 +435,7 @@ function configureIslandRuntime(instance: TW5Instance, engineCid?: string): void
   // `$tw.packageInfo.version` when set, else falls to `document.getElementsByTagName("meta")`.
   // Node sets packageInfo before startup; the island does the same — the version guard, not a
   // queryable fake DOM, is the root cure (every other `document.*` sits behind `if($tw.browser)`).
-  // The version IS the engine's content-address (its CID = hearthTrueName) — source-ridden-along,
+  // The version IS the engine's content-address (its CID) — source-ridden-along,
   // not a magic semver. A content-addressed engine has no version but the hash of its own bytes.
   tw.packageInfo ??= { name: "tiddlywiki", version: engineCid ?? "island-engine" };
   // TW5's utils-browser escapecss module reads window.CSS.escape. The island stays DOM-less;

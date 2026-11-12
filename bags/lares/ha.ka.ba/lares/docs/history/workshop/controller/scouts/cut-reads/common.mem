@@ -1,0 +1,80 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/common`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-10-31 (file date) — source `.lares-scratch/controller/scouts/cut-reads/COMMON.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/common"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/common"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! COMMON.md — plan, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/scouts/cut-reads/COMMON.md` (plan, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/common-brief-for-every-cut-read-spirit`>>
+
+! Common brief for every cut-read spirit (2026-10-31)
+
+Operator ruling, verbatim: "Pono, I want the 'cut candidates' to get batched Sonnet-scout-spirit cold-readers in full before we even touch them."
+
+You read ONE batch of cut candidates IN FULL: every line of your span, never excerpts or skims. No lane opens on a cut until your report stands. You read cold: you built none of this.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/context`>>
+
+!! Context (read first)
+* The design meme: /home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/pono/test-recut-road.mem. Its rows T1-T18 list the candidates; its #/rulings and #/laws bind you.
+* The lift map: /home/joshu/.lares-scratch/controller/scouts/godmethod-lift/report.md. Read the AMENDED note at its top: the cut sorts by CAPABILITY, never host. Browser vessels use these caps and may take a node-like role later. Never call a stage a "node shell".
+* The testability report: /home/joshu/.lares-scratch/controller/scouts/testability/final.md.
+* The memory law: /home/joshu/.claude/projects/-home-joshu-Synthetic-Dream-Machine/memory/project_isomorphic_by_intent.md.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/for-each-candidate-in-your-batch-report`>>
+
+!! For EACH candidate in your batch, report
+# Its exact current span (file:line; line numbers drift, so re-find them).
+# What it does, in one or two verb-forward sentences.
+# The state it reads and writes: closure-captured lets, module globals, env, fs, clock.
+# Its callers and callees, found by grep across the whole workspace (pnpm-workspace.yaml runs wider than packages/*).
+# Its tests today: which tests reach it, and whether only through a whole boot.
+# Its lift target: VM / pure / shared cap-stack stage (mesh or tw5) / substrate adapter / worker boundary / burn. Give the capability-named port it would sit behind.
+# The house laws it touches: no key on a surface, capability not host, one owner per registry, no global now, web3-only, old shapes burn.
+# The cut's risk: hidden coupling, order dependence, a failure mode that flips open vs closed, and collisions with in-flight lanes. u1 is uncommitted in ~/.lares-scratch/u1/wt (`git -C ... diff --stat`); ralias sits at ~/.lares-scratch/ralias/wt (`git -C ... diff 27bc0cb6b --stat`).
+# The red-first shape: the red that proves the cut, and its control.
+# A verdict: CUT-READY / NEEDS-RULING (name the fork and give a lean) / DO-NOT-CUT (why).
+
+Flag anything that reads like a security fault (fails open, a key reaching a surface, a cross-face leak) at the TOP of your report as a FINDING, separate from the cut notes.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/fences`>>
+
+!! Fences
+READ-ONLY. No edits except your one report file. No git writes, no suites, no boots, no builds. Read the main checkout at /home/joshu/Synthetic-Dream-Machine.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/output`>>
+
+!! Output
+Write /home/joshu/.lares-scratch/controller/scouts/cut-reads/&lt;batch>.md. If the write is refused, return the whole report as text. Hand back under 300 words: the verdict tally, any FINDING, and the path.
+
+Stand the whole house (CLAUDE.md seed: Personas by name, L-Prime). Your tag: `<Name>: Lares (Tasked Spirit)`.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rBjn7UMV-k86vqxgboGVp8teUGDmLdJ5Qm3WIzVPvrI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

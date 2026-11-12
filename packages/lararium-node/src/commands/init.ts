@@ -18,6 +18,7 @@
  * on disk, the function returns early without re-seeding.
  */
 
+import { keepNodeVeilLift } from "../node-veil-lift.js";
 import { wardCredentialOfRoute, type WardCredential } from "../ward-credential.js";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import type { Repo } from "@automerge/automerge-repo";
@@ -215,20 +216,20 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
   mkdirSync(genesisDir, { recursive: true });
 
   // ── THE PRECONDITION RUNS BEFORE THE FIRST MUTATION ──────────────────────────────────────────
-  // A founding binds (device × hearthTrueName), so an absent engine CID means there is nothing to bind
-  // TO and no founding can complete. Checked LATER, this same refusal arrived after the vessel keypair
+  // A founding stands on the genesis engine, so an absent engine CID means no engine to boot
+  // and no founding can complete. Checked LATER, this same refusal arrived after the vessel keypair
   // and the PersonaGroup root had already been minted — a tree carrying keys and no charter, which reads
   // like damage even though both mints load-or-create and a re-run heals them.
   //
   // A gate that fires after the act it guards teaches the operator to distrust a clean refusal.
-  const hearthTrueName = GENESIS_ENGINE_CID(genesisDir);
+  const engineCid = GENESIS_ENGINE_CID(genesisDir);
   const genesisUsed = genesisResolutionAt(genesisDir, { explicit: process.env["LAR_GENESIS"], configured: loadLaresConfig().resources?.genesis, corpusRoot: daemonCorpusRoot(), shippedRoot: repoRoot });
-  if (hearthTrueName) {
+  if (engineCid) {
     console.log(`[lares vessel found] ${genesisFoundingLine(genesisUsed)}`);
   }
-  if (!hearthTrueName) {
+  if (!engineCid) {
     throw new Error(
-      "[lares vessel found] cannot found: hearth true-name (engine CID) absent from " + genesisDir + " —\n" +
+      "[lares vessel found] cannot found: the genesis engine CID reads absent from " + genesisDir + " —\n" +
       "  the genesis seed carries it. In this repo: `pnpm --filter @lararium/node build:genesis`.\n" +
       "  Founding an ISOLATED root (LAR_ROOT)? Seed the tracked genesis into it first:\n" +
       "    (cd <repo> && git ls-files -z genesis/ | xargs -0 -I{} cp --parents \"{}\" \"$LAR_ROOT/\")",
@@ -420,7 +421,7 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
   // THE PLACE MINTS NO SECRET HOME AND NO CONTROL DOCUMENT (operator ruling 2026-11-09): both mint with the FACE, where its
   // founding or its admission lands (`runFoundTheFace`, the fleet-join land above). The place writes nothing secret and
   // holds no control family; a herm that never lights a face holds neither, and its custody row names none.
-  const place = await foundThePlace({ repo, hearthTrueName });
+  const place = await foundThePlace({ repo });
 
   // THE FLUSH COMES FIRST, and the catalog pointer already carries the reason: a pointer written
   // after its referent is durable can be stale; one written BEFORE can be a LIE. Automerge saves ride
@@ -436,7 +437,7 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
 
   console.log(`[lares vessel found] ${bootstrap} written`);
   console.log(`  daemon-doc    ${place.daemonUrl}`);
-  console.log(`  hearth-name   ${hearthTrueName.slice(0, 20)}…  (the place this vessel stands at)`);
+  console.log(`  engine        ${engineCid.slice(0, 20)}…  (the genesis engine this place boots)`);
   console.log("[lares vessel found] the PLACE stands — carrying, serving the public shelf, faceless.");
   console.log("  stand it:      lares vessel stand");
   console.log("  light a face:  lares persona new 0 --name '<label>'");
@@ -697,6 +698,8 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   });
   await settleFaceCustody(askDigest, face.personaGroupId, async () => {
     await keepAndRetireFoundingSeed(face.personaGroupId, foundingAsk, atomSeed);
+    // THE VEIL-LIFT LINK: a founding over the floor links the veil to its first face as a join does, under the face's custody alone.
+    await keepNodeVeilLift(face.personaGroupId, atomSeed);
     await settleFoundingVesselFaceTag(askDigest, face.personaGroupId);
   });
   // THE FACE'S ADDRESS SECRET MINTS AT ITS FOUNDING, beside its atom and behind its custody: the face's catalog document

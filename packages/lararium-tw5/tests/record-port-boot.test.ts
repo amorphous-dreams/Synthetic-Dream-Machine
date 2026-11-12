@@ -14,9 +14,13 @@ const shadows = blob([{ title: "$:/palette", text: "p" }, { title: "$:/theme", t
 const cas = new Map([engine, plugin, shadows].map(bytes => [cidOf(bytes), bytes]));
 const bootSet = { engineCid: cidOf(engine), pluginCids: [cidOf(plugin), cidOf(shadows)] };
 
-/** The island hashes each member off-thread before it sends; the snapshot follows the last member, so its arrival ends the wait. */
+/**
+ * The island hashes each member off-thread before it sends; the snapshot follows the last member, so its arrival ends the wait. No turn
+ * count bounds it: the digest rides a thread pool a loaded host schedules late (a 200-turn bound read three members and no snapshot on a
+ * CI run), and the test's own timeout bounds a snapshot that never comes.
+ */
 const handed = async (r: { messages: { type: string }[] }): Promise<void> => {
-  for (let turn = 0; turn < 200 && !r.messages.some(m => m.type === "port:snapshot"); turn++) await pump();
+  while (!r.messages.some(m => m.type === "port:snapshot")) await pump();
 };
 async function island(extra: Record<string, unknown> = {}) {
   const r = await realPort({}, undefined, { bootSet, resolveByCid: async (cid: string) => cas.get(cid) ?? null, ...extra });

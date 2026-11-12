@@ -16,6 +16,7 @@ const ALLOWED: Record<string, string> = {
   "lararium-node/src/commands/device-admit.ts": "passes face slot texts to readFace.leaseEpoch, which verifies signed advances against the face lineage",
   "lararium-node/src/open-node-vessel.ts": "passes face slots to raiseAnchorFromSlots and readFace.leaseEpoch, both verified lineage readers",
   "lararium-browser/src/open-browser-vessel.ts": "passes face slots to readFace.observedLease and readFace.leaseEpoch, both signed lineage readers",
+  "lararium-browser/src/browser-fleet-root.ts": "passes face slot texts to seatDeviceInFace, which reads them through readFace.leaseEpoch, a signed lineage reader",
   "lararium-mesh/tests/epoch-lease.test.ts": "checks only address shape",
   "lararium-mesh/tests/lease-ownership.test.ts": "checks only address ownership",
 };

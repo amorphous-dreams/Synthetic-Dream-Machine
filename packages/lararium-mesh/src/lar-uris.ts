@@ -559,7 +559,8 @@ export const HEARTH_DAEMON_URL_TIDDLER     = `${DAEMON_BAG_ID}/hearth/daemon-url
 /** Persona oracle tiddler: the PINNED signer DID ("0x"+hex) the Binding Gate verifies the edge against —
  *  self-DID for an anon (self-signed), a granting root-DID for a delegated/operator vessel. */
 export const SIGNER_DID_TIDDLER            = `${PERSONA_NAMESPACE}/binding/signer-did`;
-/** Persona oracle tiddler: the hearth true-name (engine content-CID) this vessel binds TO — the place in (vessel × hearthTrueName). */
+/** Persona oracle tiddler: the hearth true name a face's edge binds on this vessel (the seed-charter Nexus AID; the stated
+ *  empty name on a gateless leaf). It lands with the face, never with the place, and never names an engine CID. */
 export const HEARTH_TRUE_NAME_TIDDLER      = `${PERSONA_NAMESPACE}/hearth/true-name`;
 /** The prefix every OWN-PERSONA self tiddler sits under — the human's labels for their own faces, one per
  *  handle-index. The persona plane rides the PRIVATE tier: the self-slot FLEET-syncs it same-operator, and the

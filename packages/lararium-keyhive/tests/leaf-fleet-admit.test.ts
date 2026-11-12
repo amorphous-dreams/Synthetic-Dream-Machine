@@ -7,8 +7,8 @@
  *
  * TWO PROPERTIES SEPARATE THIS FLEET FROM AN OPERATOR'S.
  *
- * First, a self-stood leaf is HEARTH-AGNOSTIC — it founds with `hearthTrueName: ""`, because a vessel that
- * binds to no engine CID has no place to name. So the gate's hearth check compares "" against "" for every
+ * First, a self-stood leaf is HEARTH-AGNOSTIC — it founds with `hearthTrueName: ""`, because no seed-charter Nexus
+ * stands at a leaf, so its edge has no hearth to name. So the gate's hearth check compares "" against "" for every
  * leaf on earth and separates NOTHING. In an operator's fleet the hearth true-name is a second wall; here the
  * ROOT SIGNATURE carries the whole weight, and the cross-fleet vector below is the one that proves it.
  *

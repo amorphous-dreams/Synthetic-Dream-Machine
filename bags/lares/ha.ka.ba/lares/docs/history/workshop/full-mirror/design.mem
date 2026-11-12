@@ -1,0 +1,142 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/full-mirror/design`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-11 (file date) — source `.lares-scratch/full-mirror/design.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/full-mirror/design"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/full-mirror/design"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! design.md — plan, 2026-11-11
+
+Verbatim scratch record `.lares-scratch/full-mirror/design.md` (plan, file date 2026-11-11); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/full-mirror/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-full-mirror-design-as-built`>>
+
+! The full mirror: design as built (Mirror-Seer, 2026-11-11)
+
+Branch `feature/green-jello-dinosaur-5--full-mirror`, cut at a8f6058d0. Canon carries the same design at
+`bags/lares/ha.ka.ba/lares/docs/pono/d3-glass-lane.mem` (#/the-handoff, #/the-doors, #/moolelo, #/owed) and
+`dreamdom-port-contract.mem` (#/boot). This file adds the readings behind it and the parts left owed.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/1-what-the-controller-s-reading-got-right-and-on`>>
+
+!! 1. What the controller's reading got right, and one correction (read in code)
+
+* ''Bare TW5 in a browser.'' Confirmed in `TiddlyWiki5/boot/boot.js`: `loadStartup` (:2538) reads the page's store, then
+`$tw.preloadTiddlers`; `execStartup` (:2553) registers and unpacks plugins, then defines modules from tiddlers.
+* ''The VM holds even the kernel as tiddlers.'' `core/templates/external-js/tiddlywiki.js.tid` builds the engine blob: its `_load`
+pushes every tiddler it evaluates into `$tw.preloadTiddlers`, so each worker VM's wiki carries `$:/library/sjcl.js`,
+`$:/boot/bootprefix.js`, `$:/boot/boot.js` and `$:/core`. Read from the template, not observed in a running VM.
+* ''The mirror read page CAS itself.'' Confirmed at a8f6058d0: `glass/cas.ts` `readGlassBootInputs` read OPFS by the pool's CIDs.
+* ''Correction: browser mode had already landed.'' `prepareHostBootInstance`'s page branch uses `makePageBootEnv`, no
+`configureIslandRuntime`, no window lends (`mirror-browser-mode` tests). The canon #/owed row "Page-window lends" stood stale;
+canon now reads as the code.
+* ''The port's snapshot reads the composite store, never the engine'' (`record-port-handler.ts` `ctx.composite.entries()`), so
+boot-set plugins never rode the port before this build; and a wire field caps at 1 MiB, below `$:/core`'s packed text.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/2-the-boot-shape`>>
+
+!! 2. The boot shape (built)
+
+One `port:open{boot: true}` at the mirror's width. The island answers:
+
+# `port:boot` chunks: the engine blob (kernel + `$:/core`, TW5's own bundle), then each plugin blob in boot order; verbatim from
+the island's CAS, re-hashed before a byte leaves, 196,608 raw bytes a chunk, base64 on the wire.
+# `port:snapshot` chunks (the wiki's records at the stable base), then `port:changes`.
+
+The page (`glass-handoff.ts`, `glass/stand.ts`) hashes each member against the CIDs the vessel names (`mirrorInputs`), waits for
+the first whole snapshot, then boots: kernel in browser mode, `$tw.preloadTiddlers` = boot set + the wiki's records. The port
+adaptor adopts the open port (`opened`), holds booted records as landed, and sends no second open.
+
+''Probe and step-down under it.'' L1 shadow root · L2 the whole handoff · L3 engine boot · L4 default story · L5 paint. The mirror
+opens full. Evidence (`mirror:began`, `mirror:full-standing`) opens it skinny with a named reason. A caught capacity error takes
+the one step: before the engine stands, a fresh handoff at skinny; after, a fresh skinny open on the same engine. A second
+failure floors. `port:gone` floors or closes. The skinny-then-promote path and the mirror's in-place widen left.
+
+''The plugin gate.'' `censusPreloads` still reads the CAS boot set. `censusRecords` reads the wiki's records and holds out of the
+boot: a boot-set title shadow, a syncadaptor or saver, a code plugin or loose module while `sealedRest` reads false, an unreadable
+plugin, a `$:/tags/StartupAction` record. A held record lands after boot as an ordinary record; TW5 evaluates modules during boot
+alone, so nothing runs and no field changes.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/3-the-full-experience`>>
+
+!! 3. The full experience (built, with three doors owed)
+
+See canon #/the-doors for the table. Built: modal, switcher, notify, pane scroller, focus, rename/relink, clipboard, download,
+full screen, print, open-external, refresh (re-boots the mirror), permalink/permaview (clipboard), home, page-refresh hooks,
+pane-scoped keyboard shortcuts, the stock-shaped pane document. Stock TW5's in-engine surface (story river, sidebar, edit, draft,
+save, tag pickers, popups, import, drag-drop) runs unmodified beside the control; the walk witness and M5 cover part of it.
+
+''Writes and drafts.'' Every record change crosses as `port:write{txId}`, drafts included, one write in flight per title. Story,
+history, `$:/state`, `$:/temp`, `$:/status`, `$:/info` stay on the glass.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/4-which-wiki-the-mirror-shows`>>
+
+!! 4. Which wiki the mirror shows (read, not changed)
+
+The mirror serves the surface the page shows when it first stands (`main.ts` `mirrorSurface`), named by the pane label; the
+vessel's `pagePortGrant` lends edits on a user wiki and a read-only port on the daemon surface. The daemon camera stays at width
+none (daemon-surface question 5: its `$:/temp/lares/*` panes never cross the record port). A switch of wiki re-points the floor;
+the mirror keeps its first wiki for its life. Switching the mirror itself (unmount, stand on the new surface) stands owed: the
+`reload` road in `main.ts` gives the seam.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/5-isomorphic`>>
+
+!! 5. Isomorphic
+
+`sovereign-kernel.ts` names `bootSet` to the port on Node and in a browser worker alike, and `record-port-handler.ts` serves
+`port:boot` on both. The node vessel exposes `ports.place` (open-node-vessel.ts:4664) with a read-only grant and refuses its
+daemon surface; no node-served page reaches that door yet. Owed: the node page door (a transport from a page to `ports.place`).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/6-goldens`>>
+
+!! 6. Goldens (owed)
+
+The interaction goldens 01-13 at width full against stock TW5 did not move in this build. The page tests added here
+(`glass-doors`, `glass-full-first`, `glass-stepdown`) and weld M1-M6 prove the boot, the gate and the doors; the golden scripts at
+full remain the definition of done for G6.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/7-uncertainties-that-survive-each-with-its-defau`>>
+
+!! 7. Uncertainties that survive, each with its default
+
+| # | Question | Default taken |h
+| U1 | Kernel alone, or the engine blob whole, as the first member | The blob whole: one CID the vessel already names. A split wants a second pinned hash at genesis. |
+| U2 | Full first overturns the 2026-10-28 skinny-then-promote ruling | Full first, on G7's measured pass; phones unmeasured. Operator may overrule. |
+| U3 | A wiki's StartupAction records on the surface | Held out of the mirror's boot; `PostRender` never runs. |
+| U4 | Where a permalink opens | Clipboard only; the page fragment has two other owners (floor card, floor story). |
+| U5 | Skinny's projection | Unchanged: no palette body, every plugin record held. Wants system and plugin bodies. |
+| U6 | `sealedRest` | No vessel speaks it; the gate stays closed for code plugins. |
+| U7 | `port:boot` over a narrow relay | Chunks ride outside the lag budget with no ack. |
+| U8 | A plugin record above the 1 MiB wire field bound | The snapshot message fails the door's reader whole (pre-existing bound). |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HcVyc2zSAoXUhDd5N08kasBYn4KizHtkIXkMJAgZHkc`>>
+
+<<^ code=`&#x0004;` to=`?`>>

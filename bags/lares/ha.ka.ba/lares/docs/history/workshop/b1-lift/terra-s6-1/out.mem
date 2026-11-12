@@ -1,0 +1,38 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s6-1/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-06 (file date) — source `.lares-scratch/b1-lift/terra-s6-1/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s6-1/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s6-1/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/b1-lift/terra-s6-1/out.md` (hand-back, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s6-1/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/slice-4-hand-back`>>
+
+! Slice 4 hand-back
+
+* Changed `packages/lararium-web/src/workers/vessel-host.ts`: surface callbacks fan out to admitted sessions wearing the lit face; callbacks during opening reach the lighting connection. Port messages follow binding ownership, cross-session placement refuses, and session loss closes its own bindings. Updated the header and recorded the vessel-wide active surface as owed.
+* <code>pnpm &#45;-filter &#64;lararium/web exec tsc &#45;-noEmit -p .</code>: passed, exit 0, 0 diagnostics.
+* `git diff --check`: passed, exit 0.
+* Reading chosen: recheck binding ownership after admission resolves to handle concurrent placements; remove a newly recorded binding if placement throws as well as when it returns non-ok.
+* Browser-mode vitest and glass-tabs e2e: lead runs, per brief. No commit made.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;B2dMHdQejMXj2pzXlLPTQeJghpemGOdTNEKIajTJwY0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

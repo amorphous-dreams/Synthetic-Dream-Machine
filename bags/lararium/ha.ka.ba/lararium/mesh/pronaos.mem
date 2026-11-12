@@ -275,6 +275,13 @@ dials a mirror, and mints the device's own key (`kindle.ts#pullArrival`). `pullA
 exported beside `pullBulb`; no CLI verb carries it. The composition reads no standing and no archive and runs
 before the boot reads either, so a house at its waking floor serves all of it.
 
+''The arrival names the page alone.'' A device opens the house's page URL with no query string and no fragment. The page
+asks its own origin for this descriptor and, where the origin answers as a lararium's Pronaos, dials that origin's relay; no
+URL names a relay. The hearth's floor card travels as a one-line file the banner prints, and the place AID travels apart on a
+line of its own; a person carries each to the page's carriage door (paste, file or QR), where it rests per origin. The
+fragment stays the wiki's own permalink (`lararium-web/src/live-status.ts`, `lararium-node/src/lan-address.ts`). A composition
+whose relay origin differs from its web origin stands owed: the descriptor names no relay.
+
 ''The descriptor never carries the floor's announcement.'' That announcement speaks to PEERS over the socket or
 relay, once per carried Nexus, and never at `/.well-known/lar`
 (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/waking-floor#/the-announcement`>>). So the bytes a floor serves here
@@ -399,6 +406,6 @@ without making any approach keeper of every archive, persona, or causal island i
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;hgOosHz1fVcyIMU5eGfgDbf5wOqwcic3B5TSvkBS5xw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ty88IIsQDJjNem1HPQUzygPNWL4E-pdIyCAY4OQSRSk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -14,7 +14,7 @@ describe("one random atom founds the face", () => {
     const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
     const atomSeed = mintFaceAtomSeed();
     const placeKey = await key(vesselSeed);
-    const place = withMemorySecretHome(await foundThePlace({ repo, vesselSeed, hearthTrueName: "hearth" }), repo);
+    const place = withMemorySecretHome(await foundThePlace({ repo, vesselSeed }), repo);
     const face = await foundTheFace({ vesselTag: testVesselTagDoor(1), repo, daemonHandle: place.daemonHandle, secretHandle: place.secretHandle, secretRest: { assertSealed: async () => true }, vesselSeed, placeVerifyingKey: placeKey,
       vesselDisplayName: "place", binding: { mode: "self-stood", signerSeed: rootSeed }, hearthTrueName: "hearth",
       nexusPubkey: placeKey, atomSeed });
@@ -42,7 +42,7 @@ describe("one random atom founds the face", () => {
     const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
     const atomSeed = mintFaceAtomSeed();
     const placeKey = await key(vesselSeed);
-    const place = withMemorySecretHome(await foundThePlace({ repo, vesselSeed, hearthTrueName: "hearth" }), repo);
+    const place = withMemorySecretHome(await foundThePlace({ repo, vesselSeed }), repo);
     const input = { vesselTag: testVesselTagDoor(1), repo, daemonHandle: place.daemonHandle, secretHandle: place.secretHandle, secretRest: { assertSealed: async () => true }, vesselSeed, placeVerifyingKey: placeKey,
       vesselDisplayName: "place", binding: { mode: "self-stood" as const, signerSeed: rootSeed }, hearthTrueName: "hearth",
       nexusPubkey: placeKey, atomSeed };
@@ -66,7 +66,7 @@ describe("one random atom founds the face", () => {
     const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
     const atomSeed = mintFaceAtomSeed();
     const placeKey = await key(vesselSeed);
-    const place = withMemorySecretHome(await foundThePlace({ repo, vesselSeed, hearthTrueName: "hearth" }), repo);
+    const place = withMemorySecretHome(await foundThePlace({ repo, vesselSeed }), repo);
     await foundTheFace({ vesselTag: testVesselTagDoor(1), repo, daemonHandle: place.daemonHandle, secretHandle: place.secretHandle, secretRest: { assertSealed: async () => true }, placeVerifyingKey: placeKey,
       vesselDisplayName: "place", binding: { mode: "self-stood", signerSeed: rootSeed }, hearthTrueName: "hearth",
       nexusPubkey: placeKey, atomSeed });

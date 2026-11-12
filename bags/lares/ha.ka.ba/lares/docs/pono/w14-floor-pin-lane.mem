@@ -31,7 +31,7 @@ Three road rows share one shape: the `#floor=` card read unsigned on origin trus
 * ''No release head in the claim.'' W26's release tracks floor CONTENT; the claim tracks the place's KEY STATE. A card may point at release evidence beside the claim, and nothing signs that pointer into pin succession.
 * ''KEL descent orders the pin.'' A floor route's keys derive from the place floor key, tier, Nexus and route (`gate-bundle.ts`), so a pin changes on its route only when the place key rotates: no per-route successor log. The pair index (`admit-gate-pin.ts`) replaces first-wins with a SET fold: a descendant claim replaces; a known ancestor refuses `rollback`; two claims at one head, a sibling rotation and another AID at one key surface as a fork and the index serves the settled ancestor (or nothing where none is held); arrival order never selects. An offline reader holds its last accepted head and says "as of my last sync". Node and browser run this one fold.
 * ''Two standings, one reader.'' A claim files when the signer AT ITS HEAD is a counted `carry` of the reader's own held root (herm boards, bundles, partials), or when its AID is the anchor the reader was handed apart from the card.
-* ''First contact takes an anchor apart from the card.'' Three conveyances stand: the founder's own genesis; an authenticated admit (a claim set a sovereign crossing carried, whose first claim adopts the AID, and every later claim must descend from it); a deliberate person-to-person transfer (`#anchor=<aid>`, printed on its own banner line). The card alone never anchors: an unanchored or forged card refuses by name.
+* ''First contact takes an anchor apart from the card.'' Three conveyances stand: the founder's own genesis; an authenticated admit (a claim set a sovereign crossing carried, whose first claim adopts the AID, and every later claim must descend from it); a deliberate person-to-person transfer (the place AID, printed on its own banner line and carried alone to the page's carriage door; no URL carries it). The card alone never anchors: an unanchored or forged card refuses by name.
 * ''Two-vault carry.'' A carry partial (`nexus-partial`, family `carry`) crosses with its claim and the KEL rows that fold to its head. The claim files ONLY atomically with the counted act, in one write; a partial below the quorum exposes no pin. The carrier seal verifies under the signer the KEL seats at the claim's head (`verifyCarrierContractAtHead`). The herm carries the claim opaque.
 * ''Rotation carries again.'' A carry names the signer at the head, so a rotated place is carried again under its new signer; the older signer's name answers nothing once the new claim replaces the old.
 * ''Hostile rows are bounded at the board.'' A board read takes at most `PLACE_FLOOR_PIN_ROWS` (512) claim rows and `PLACE_KEL_BOARD_ROWS` (4096) KEL rows in key order, treats a payload past its byte bound as noise, folds each (AID, head) once per filing pass, and the index keeps at most 256 claims per set and 1024 noted KEL forks.
@@ -66,6 +66,6 @@ Three road rows share one shape: the `#floor=` card read unsigned on origin trus
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;9Ejtf5nQBDxD7V3fUJODOpUaYqMQx36kQUyaxhvxp6g`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ogzFiBfXVU9nmOxjraxrd9VGbXlnv_9xHiT-dmi9sPg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

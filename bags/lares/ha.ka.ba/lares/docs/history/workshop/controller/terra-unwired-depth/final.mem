@@ -1,0 +1,52 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-unwired-depth/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-06 (file date) — source `.lares-scratch/controller/terra-unwired-depth/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-unwired-depth/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/terra-unwired-depth/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/terra-unwired-depth/final.md` (hand-back, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-unwired-depth/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+''Scope:'' MEASURED: HEAD is `ffe05bc792ae1c8bd04d960df034bf24b721fc0e`. This was a read-only source review; no tests were run.
+
+# ''Presenter binding — default bends.'' MEASURED: `verifyDelegation` passes the token’s `payload.audience` to the provider; it accepts no authenticated presenter ([[keyhive-identity-slot.ts:250|/home/joshu/Synthetic-Dream-Machine/packages/lararium-keyhive/src/keyhive-identity-slot.ts:250]]). The inbound gate verifies a session-key signature over the handshake and binds its certificate to `scope.faceKey` ([[face-gate.ts:618|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/face-gate.ts:618]]). Node seats `session.scope?.faceKey ?? session.placeKey` as `identHex` in `peerIdentifierMap` ([[open-node-vessel.ts:1025|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/open-node-vessel.ts:1025]]); the share decision receives `peerId`, not the identity itself ([[open-node-vessel.ts:1139|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/open-node-vessel.ts:1139]]). Browser’s dial exposes the ''remote gate key'' through `provenKeyOf` ([[lar-ws-client-adapter.ts:179|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/lar-ws-client-adapter.ts:179]]); siblings expose a proven device key ([[open-browser-vessel.ts:587|/home/joshu/Synthetic-Dream-Machine/packages/lararium-browser/src/open-browser-vessel.ts:587]]).
+
+MEASURED: S3b verifies `wardPop` over group, device and ward key at admission ([[device-admit.ts:402|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/commands/device-admit.ts:402]]; [[ward-answer.ts:47|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/ward-answer.ts:47]]). INFER: that static admission proof is not proof that the current socket presents the token. Bind to the authenticated session key’s authorized identity, with an explicit verified mapping to the token’s audience; equality is safe only once their identity formats and authority are established. ''Size:'' cross-platform session-to-capability bridge and identity mapping; not a signature-only edit.
+
+# ''Actors — default stands.'' MEASURED: node and browser construct their repos without an actor option ([[open-node-vessel.ts:1103|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/open-node-vessel.ts:1103]]; [[open-browser-vessel.ts:593|/home/joshu/Synthetic-Dream-Machine/packages/lararium-browser/src/open-browser-vessel.ts:593]]). Each tab constructs its own repo; the application supplies no DID-derived writer actor. `deriveActorId` hashes the DID deterministically ([[keyhive-identity-slot.ts:301|/home/joshu/Synthetic-Dream-Machine/packages/lararium-keyhive/src/keyhive-identity-slot.ts:301]]). INFER: assigning it to concurrent writers of one DID collides. MEASURED: deterministic genesis and pinned documents intentionally use fixed seed actors ([[genesis-doc.ts:710|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/genesis-doc.ts:710]]; [[pinned-doc.ts:28|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/pinned-doc.ts:28]]); the source search found no other per-DID Automerge actor assignment. Exact library allocation lifecycle is ''UNSETTLED'' without reading the installed Automerge implementation. ''Size:'' small interface retirement; preserve deterministic seed actors.
+
+# ''Secrets floor — default stands conditionally.'' MEASURED: there are ''zero production calls'' to `makeTierFloorSource`; its optional `secrets` defaults false ([[cap-tier.ts:206|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/cap-tier.ts:206]]). The registry is an unpersisted set with no production importer ([[plane-secrets.ts:60|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/plane-secrets.ts:60]]). INFER: requiring the named reading breaks no production caller, but existing test callers must change. ''UNSETTLED:'' exhaustive proof that no production document holds contract secrets requires a store-by-store data inventory; absence of a registry importer alone does not prove absence of secrets. Pass `NO_CONTRACT_SECRETS_PLANE` only where that absence is established. ''Size:'' small API change plus future store inventory.
+
+# ''Declared tier — default bends.'' MEASURED: node has six potentially allowing returns: sibling, same-operator face, walker hosting, contracted hosting, carrier and in-process ([[self-slot-share.ts:118|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/self-slot-share.ts:118]]); earlier unstood, shadow, protected-document, conflicting carrier, antigen and walker-carriage checks deny. Browser has sibling, in-process, null-gate and federated returns, with shadow/conflict/aside/no-document denials ([[federation-gate.ts:179|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/federation-gate.ts:179]]). Each repo uses one decision for both announce and access ([[federation-gate.ts:602|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/federation-gate.ts:602]]). No production `DeclaredTierSource` implementation was found; manifest parsing exists ([[bag-manifest.ts:81|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/bag-manifest.ts:81]]).
+
+INFER: there are ''two repo composition sites'', with the above branches to cover, plus the node bulb/CAS read face ([[bulb-read-face.ts:208|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/bulb-read-face.ts:208]]) and a separate block-serving decision ([[cas-wire.ts:85|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/cas-wire.ts:85]]). Simply calling the existing helper misses sibling/early paths: it exempts peers outside its relay set ([[federation-gate.ts:563|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/federation-gate.ts:563]]). ''Size:'' at least four integration surfaces, a document/CID-to-declaration source, and a reusable tightening predicate.
+
+# ''Recovery — default stands.'' MEASURED: production contact enrolment exists; its core requires three distinct contacts, threshold two and possession proofs ([[recovery-keel-core.ts:385|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/recovery-keel-core.ts:385]]; [[recovery-contact-enrolment.ts:161|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/recovery-contact-enrolment.ts:161]]). Quorum rotation and reanchor are library operations ([[recovery-keel-core.ts:280|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/recovery-keel-core.ts:280]]; [[face-anchor.ts:143|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/face-anchor.ts:143]]). `rollEnrolments` creates immutable secret hex and plaintext copies ([[persona-group-secret.ts:234|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/persona-group-secret.ts:234]]).
+
+INFER: a production verb still needs contact collection, fresh-root custody, verified rotation and publication, remaining-device enrolments, edge/log renewal, reanchor, current log/frontier carriage and fresh-device apply, with failure recovery and wiping. No founding or join caller of these rotation helpers was found; K18 is ''not a code dependency of founding/join''. MEASURED: the road schedules K18 separately, while L24 is pre-rite ([[road:692|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:692]]; [[road:46|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:46]]). ''Size:'' multi-component ceremony, not a wrapper.
+
+# ''Stuck joinee — fork already partly resolved.'' MEASURED: a fresh authorized join answer renews the seated edge; a cached answer carrying the old edge still refuses ([[device-admit.ts:416|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/commands/device-admit.ts:416]]). The lease verb currently refuses rolls that strand seated devices ([[persona-lease.ts:112|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/commands/persona-lease.ts:112]]). Canon records renewal at roll plus a local pin update as the house ruling ([[seat-harness.mem:170|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/pono/seat-harness.mem:170]]). INFER: log renewal alone does not update existing sealed anchors; roll-time renewal and safe pin advancement remain necessary and share work with Q5, but also apply to ordinary lease rolls. The requested verbatim ''(a)/(b) options are UNSETTLED'': the searched road and harness do not enumerate them at this head; their original ruling text would settle their labels. ''Size:'' roll writer, delivery and boot-pin update across devices.
+
+''Additional defect:'' MEASURED: the earlier review omitted the separate node CAS block door, which makes its own carrier decision and serves bytes ([[cas-wire.ts:95|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/cas-wire.ts:95]]). INFER: a declared-tier fix confined to repo share hooks can leave that crossing outside the new policy.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sikkjM8mWdAW_GDz2UIxb51WHwOwrdqzEBjVHlIuQic`>>
+
+<<^ code=`&#x0004;` to=`?`>>

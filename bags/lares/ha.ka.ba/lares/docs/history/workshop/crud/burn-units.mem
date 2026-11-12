@@ -1,0 +1,76 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/crud/burn-units`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-10-25 (file date) — source `.lares-scratch/crud/burn-units.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/crud/burn-units"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/crud/burn-units"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! burn-units.md — plan, 2026-10-25
+
+Verbatim scratch record `.lares-scratch/crud/burn-units.md` (plan, file date 2026-10-25); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/crud/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/burn-units-the-controller-s-assignment`>>
+
+! Burn units: the controller's assignment (2026-10-25)
+
+Sources: two Sol-6 seats, a 2-wave ratchet, each cross-verifying its twin. Read `sol-a/out2.md` section (d) and `sol-b/out2.md` section (d) for file:line detail. Both seats agree on every unit below.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-edge-of-the-ruling`>>
+
+!! The edge of the ruling
+The operator's ruling: an old-name refusal lives one commit, then burns. The ratchet found that some "old shape" checks also guard a live invariant: they refuse forged, foreign, occupied or malformed bytes, such as any standing carrier with no tree, unknown envelopes, or cleartext beside a tree. For those, burn the historical NAME, its old-name lists, the advice that narrates the past, and the tests that pin retired names. Keep the invariant, renamed in present tense, with its present tests. If a check's only rows name retired shapes, burn it whole.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/wave-d-owns-these-since-they-sit-on-its-ground`>>
+
+!! Wave D (Hearth-Wright) owns these, since they sit on its ground
+* ''W1, custody refusal vocabulary.'' Rename `OldShapeRefusal` and its export to a present no-overwrite name. Keep the pre-route and under-claim occupied-store scans (sealed-writer.ts `assertNoOldCustodyShape` and its calls; found.ts:99-108). Burn the earlier-shape advice (found.ts:69-73, vault.ts:37, custody-session.ts:98-110, tools/seed-test-custody.mjs:32-39) and update the tests that pin the name: keyslot.test.ts:295-310, custody-io.test.ts:319-358, found-refusals.test.ts:42-55, seed-test-custody.test.mjs:92-99.
+* ''W2, the flat face-name census.'' Burn the `earlier` regex list (vault-carriers.ts:575-587 and its calls). Keep the present face-row census and the unknown-envelope and cleartext-beside-tree guards (custody-shape.ts:87-100). Restate custody-shape.ts's header as present law.
+* ''W3, resolver history prose.'' resolver.ts:8-22,54-69: keep the current contract only.
+* ''W4, browser schema history.'' This shares a file with slice 4's selector retirement. Remove the delete-on-upgrade arms and the fleet-join secret-row cursor (browser-vessel-identity.ts:91-132) and the history comments, and burn BC28/BC31 plus the retired-store absence assertions (browser-custody.test.ts:897-965). Keep the numeric IDB version, present-store creation and the continuity check.
+* ''Plus'' every old-name check Wave D itself added, including `vk-slots`/`lares-vk-seal`, after its one commit.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-span-lane-owns-these-after-g36-lands`>>
+
+!! The span lane (Pyre-Wright) owns these, after G36 lands
+# Digest one-shape read (agile-digest.ts: colon and RFC only; dash goes), with ingest-core.ts:214-222 and memetic-wikitext-sensorium.ts:163-172 prose.
+# Lifecycle reader: require a declared valid state on parse; keep the builder's derivation (sensorium.ts, sensorium-lifecycle.ts, parity-manifest.test.ts:72-76).
+# Synced-tree `.json` probe goes; the directory-path collision guard stays (synced-tree.ts:165-179).
+# Harness MCP old-seat reapers go (claude-wire.ts:59-75,278-284; copilot-wire.ts:57-85).
+# Retired-name tests: unknown-command-refuses.test.ts:19-65 (keep the generic unknown and live-help controls), turn-key-one-leg.test.ts:26-43, flow-closed-door.test.ts:94-103, lares-config.test.ts:74-89.
+# Historical parity and mutation fixtures: ffz-measure-parity.test.ts (`legacyStep`), doctor.test.ts:80-90, store-door-verbs-represented.test.ts:55-69.
+# Capture staged names (build-patch.ts:141-178): require the run-bearing basename for house names, and keep an explicit unknown result for foreign files.
+# Browser move ledger: deletion-map.mem and pono-charter.mem:21-22,99,103-113. Restate the present package and adapter boundary.
+# Canon and comment history, as B1 prose in small commits: doctype.mjs, direct-repo-witness.sh, rendezvous-parity-witness.sh, island-protocol.mem:30-49, vm-projection-bus.mem:118-147, living-grammar-palace.mem:306-348, quine-principles.mem:219-227, memetic-wikitext-framing.mem:909-916 (with working-procedures.mem:173-174, which states the migration exception), tiddlywiki.d.ts:15-31, seal-ceremony.ts:203 ("or in an earlier shape"), lar-uris.ts:370-375 comment, uefn-scene.mem:45, identity-classes.mem:357, lar-telemetry.mem:48-55 (prose only; `lar_hv` stays live).
+# The witness that stops regrowth (last): extend tools/evergreen-boundary.mjs with (i) a tracked-test census of retired-name assertions (`not.toContain("<retired>")`, retired-command arrays, old env/URL fixtures), (ii) a structural rule refusing `onupgradeneeded` bodies that delete stores or rows by retired keys, and (iii) the live canon corpus (`bags/**/api`, `mesh`, `browser` .mem, excluding record carriers) for history-narrating words. Measure each new class's count BEFORE setting its ceiling. A red with a known positive and a control comes for each class (silent-zero law).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/held-not-burned`>>
+
+!! Held, not burned
+* o-takiage-names.test.ts burns with its own Slice 5 rename, not ahead of it.
+* Live law, keep: the TW5 plugin title, nexus-board-climb, the cabal-realm-clock decimal reader, CID multihash readers, frozen signing domains, the turn-harvest foreign-input fallback, frame verdict malformed-head tests, the evergreen exception engine itself, and the TW5 `deprecated` goldens (third-party engine observations).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ahZxypj372ponUXTTAIJGVgggBQ2syEZZPACFJbd7NQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

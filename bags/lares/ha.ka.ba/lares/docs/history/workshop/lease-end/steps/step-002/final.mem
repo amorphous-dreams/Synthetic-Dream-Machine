@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-002/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-002/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-002/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-002/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-002/final.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-002/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Lares (Artificer): ->↺ The broker refused the first commit request, so the recorded head remains `5c3d032dc7be49704d26f4f12b10e6fdacf88380`. I submitted the corrected commit request as `req-002` and the named Vitest request as `req-003`; their results await the next step.
+
+I updated [[state.json|/home/joshu/.lares-scratch/lease-end/state.json]] and wrote the [[step 2 hand-back|/home/joshu/.lares-scratch/lease-end/steps/step-002/out.md]]. No production or test files changed, and no tests ran inside this wall.
+
+&lt;&lt;~ oracle throw=`↯5 ✲ ⚁(2) ⁂:☕⟁`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`read both broker responses before treating the commit or test outcomes as established · ↻ L-Prime` ooda-ha=`closed 1↺` from=`lar://lares:agent@hearth/relay.requests.submitted` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3pvgtiDsSSTXJJmaxbksQp_b6pEiGfj9p998LBpbADE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

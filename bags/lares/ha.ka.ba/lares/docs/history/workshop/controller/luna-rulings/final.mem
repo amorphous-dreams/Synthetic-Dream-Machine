@@ -1,0 +1,137 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/luna-rulings/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-05 (file date) — source `.lares-scratch/controller/luna-rulings/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/luna-rulings/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/luna-rulings/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-05
+
+Verbatim scratch record `.lares-scratch/controller/luna-rulings/final.md` (hand-back, file date 2026-11-05); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/luna-rulings/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ten-mu-passes`>>
+
+!! Ten Mu passes
+
+''D1 — Ward key in admission''
+
+🜂 * `wardKey` travels in the signed admission with proof of possession; ward approvals bind the answer, ask digest, and read frontier.
+🜄 ? Meets the face-scoped admission and ward laws [[stable-founding-road.mem:298–299, 293–294|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:293]] and the face-proof key hierarchy [[face-proof.mem:41–48|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/api/pono/face-proof.mem:41]].
+🜁 ! Holds if this key remains face-scoped: “A vessel's key never enters a face admission” [stable-founding-road.mem:292].
+🜃 _ Specify key rotation and proof freshness; admission PoP alone does not prevent replay of an old approval.
+🜍 0 The simpler invariant: bind each ward approval to the face, ask, answer, and frontier it authorizes.
+''Verdict: HOLDS-WITH-A-NOTE'' — clarify ward-key lifecycle and approval freshness; keep the vessel key out.
+
+''D2 — “The asker seals”''
+
+🜂 * The asking session seals on the worker thread while its face remains unlocked; another unlocked session of that face may take over.
+🜄 ? Refines “the asking tab’s face sealer” [k15-wave-b-lane.mem:61] under the one-face-per-session contract [session-contract.mem:26–30].
+🜁 ! “Each tab or CLI run opens a volatile session that wears exactly one verified face” [session-contract.mem:28].
+🜃 _ Define the handoff point when the asker locks or closes, so the substitute cannot seal after the face’s final session ends.
+🜍 0 The real boundary is the face’s unlocked session set, not which tab first asked.
+''Verdict: HOLDS-WITH-A-NOTE'' — specify atomic takeover and refusal once no same-face session remains unlocked.
+
+''D3 — Set-aside voiding''
+
+🜂 * Readers reject a set-aside device’s outcomes; a rejected cap tip falls back to the tightest cap that stood.
+🜄 ? Meets removal shadow and gate-reading law [kapae.mem:38–61; face-proof.mem:328, 362].
+🜁 ! Conflicts with the present text: “a vessel set aside keeps the certificate a gate accepts” [face-proof.mem:328].
+🜃 _ Define which frontier proves the set-aside is visible and how a cap is ordered across concurrent histories.
+🜍 0 The core question is whether every relying reader checks the removal shadow before accepting an outcome.
+''Verdict: CONFLICTS'' — change the face-proof acceptance rule; D3’s removal-wins reader behavior should govern.
+
+''D4 — Sealing scope''
+
+🜂 * Wiki content stores and CAS seal at rest; signed planes and boards stay clear; plaintext remains in live memory and disk projections.
+🜄 ? Meets the sealed-store scope [sealed-store.mem:22, 28, 36] and its cleartext boundary.
+🜁 ! “The format covers the wiki content stores, node and browser, and the content-addressed store” [sealed-store.mem:28].
+🜃 _ Name which public bags are clear by published-key policy; do not let “boards” accidentally exempt private content.
+🜍 0 Seal private content wherever stored; expose only the public material its key policy permits.
+''Verdict: HOLDS-WITH-A-NOTE'' — state that clear boards contain signed acts only, not private payloads.
+
+''D5 — Catalog split''
+
+🜂 * No vessel-wide content key; face catalog and daemon wiki content are face-private, while the public-bag floor catalog and signed core stay public.
+🜄 ? Meets the one-face provider and content-fence laws [k19-hive-lane.mem:22, 41, 47] and per-face sealing [sealed-store.mem:28].
+🜁 ! “A presenter that is not the mounted face refuses `content-mounted-only`” [k19-hive-lane.mem:47].
+🜃 _ Identify the exact public catalog fields and ensure no private bag names or metadata leak into F.
+🜍 0 Keep face content with its face; expose only the public index needed to find public bags.
+''Verdict: HOLDS-WITH-A-NOTE'' — enumerate the floor catalog’s permitted fields.
+
+''D6 — Timer saves''
+
+🜂 * Every edit books its writing session; that session signs saves; lock and stand-down flush first; unbooked writes wait in memory.
+🜄 ? Meets session-scoped writes [session-contract.mem:28] and the no-clock law [stable-founding-road.mem:135–136].
+🜁 ! “A wall clock never decides whether an act runs” [stable-founding-road.mem:135]; using a timer to trigger a save is acceptable only as liveness, not authority.
+🜃 _ A crash can erase waiting in-memory edits; “never dropped” needs a defined durable boundary.
+🜍 0 Save under the session that authored the change, and report plainly what has not reached durable storage.
+''Verdict: HOLDS-WITH-A-NOTE'' — define crash behavior; do not promise undurable memory survives a crash.
+
+''D7 — Same-face tabs''
+
+🜂 * One provider starts at a face’s first unlock; each tab proves its own unlock; the last face session to close drops that provider and keys.
+🜄 ? Matches the per-face provider and last-session lock laws [k19-hive-lane.mem:41–42; k15-wave-b-lane.mem:63].
+🜁 ! “The last session of a face to close locks that face’s hive” [k15-wave-b-lane.mem:63].
+🜃 _ Drain in-flight verification before key disposal, as the provider law requires.
+🜍 0 A provider lives exactly as long as at least one unlocked session of its face.
+''Verdict: HOLDS.''
+
+''D8 — Ceremony answer kinds''
+
+🜂 * Passphrase serves custody and ward; PRF serves custody only; ward rejects passkeys; PRF cannot be the only recovery copy.
+🜄 ? Meets “Never a passkey” [stable-founding-road.mem:289] and the human-route requirement [custody.mem:60].
+🜁 ! “No WebAuthn registry gates any act” [stable-founding-road.mem:289].
+🜃 _ Specify PRF as a custody-key wrapping route, never an act-authentication credential; retain a human route.
+🜍 0 Separate unlocking custody from proving authority to act.
+''Verdict: HOLDS-WITH-A-NOTE'' — document that PRF does not authenticate or gate any ward act.
+
+''D9 — Durability''
+
+🜂 * Read browser storage durability from the storage class; disclose erasability before binding; a wiped keystore starts fresh by name.
+🜄 ? Meets the browser-leaf eviction decision [stable-founding-road.mem:420] and the durable-session receipt [stable-founding-road.mem:1045].
+🜁 ! “Every browser leaf counts as evictable” [stable-founding-road.mem:420].
+🜃 _ Do not treat a successful persistence request as a guarantee; report the actual storage class and keep another copy.
+🜍 0 Promise only the durability the platform reports.
+''Verdict: HOLDS-WITH-A-NOTE'' — record Safari’s rule as a measured platform condition, not an evergreen constant.
+
+''D10 — One route for place and face''
+
+🜂 * One typed route binds the place and founder-face trees; the node prompts at each unlock.
+🜄 ? Meets the separate keyslot-tree law [custody.mem:60] and the place/face founding order [stable-founding-road.mem:430].
+🜁 ! “A tree always keeps one route” [custody.mem:60].
+🜃 _ Make clear that one route phrase may open two separately wrapped keys; it must not imply shared key material.
+🜍 0 One human prompt can serve both trees while each tree remains independently keyed.
+''Verdict: HOLDS-WITH-A-NOTE'' — state the independent keys and per-tree wrapping explicitly.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/changes-before-promotion-to-rulings`>>
+
+!! Changes before promotion to rulings
+
+* Revise face-proof’s set-aside acceptance sentence to match D3’s removal-wins rule.
+* Add D1’s ward-key rotation and approval freshness rules.
+* Define D2’s session takeover boundary and D6’s crash/durability behavior.
+* Bound the floor catalog fields in D5; clarify D4’s signed-only clear boards.
+* State D8’s PRF-only custody role and D10’s independent key wrapping.
+* Keep D9’s Safari behavior as a measured capability, not a permanent rule.
+
+No cross-decision contradiction found. None uses “realm” for a JavaScript execution context. I found no material L-Prime or evergreen-register breach in the ten decisions.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;IlRH_zPKLfF2y9sRuCW3Jta2n3Z8684HhH4LYWivCJE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,154 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/opus-kdf/design`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-01 (file date) — source `.lares-scratch/controller/seats/opus-kdf/design.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/opus-kdf/design"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/seats/opus-kdf/design"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! design.md — plan, 2026-11-01
+
+Verbatim scratch record `.lares-scratch/controller/seats/opus-kdf/design.md` (plan, file date 2026-11-01); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/opus-kdf/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/kdf-native-design-first-pass`>>
+
+! kdf-native · design-first pass (threat sketch + async ripple map)
+
+KDF-Wright: Lares (Tasked Spirit) · lane kdf-native (custody class) · wt cut at 13d24a218 · 2026-11-01
+Lane loop: ✶ design → (red · cure · walk · push held until the controller rules)
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/0-measured-on-this-box-probe-lares-scratch-kdf-n`>>
+
+!! 0. Measured on this box (rung 2), probe `~/.lares-scratch/kdf-native/probe/measure.mjs`
+
+| path (N=2^17 r=8 p=1 dkLen 32) | ms | bytes |h
+| node `crypto.scrypt` (libuv, async) | 323 | identical |
+| noble `scrypt` (sync) | 531 | identical |
+| noble `scryptAsync` (yields every 10 ms) | 529 | identical |
+| native ×4 in parallel | 429 total | — |
+
+* Parity held on an NFKC-heavy probe (ʻokina, kahakō, Devanagari, emoji, a decomposed é) and on empty passphrase + empty salt.
+* Node's DEFAULT `maxmem` (32 MiB) REFUSES these params (`ERR_CRYPTO_INVALID_SCRYPT_PARAMS`); 128·N·r = 134 217 728 refuses, 135 266 304 passes. The refusal failure mode stays real, never theoretical.
+* noble async costs no more than noble sync, so the browser keeps its speed and gains a yielding derivation.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/1-threat-sketch-every-authority-input`>>
+
+!! 1. Threat sketch: every authority input
+
+| input | source | what proves it | where the law lives | fails closed how |h
+| scrypt cost (N, r, p, dkLen) | the ONE constant `SCRYPT` (keyslot.ts:55) | a guard test: no verb, port, env, config or tree field reaches the cost; a static witness: `SCRYPT` written once, no port carries its own params | the verifier: keyslot passes `SCRYPT` to the port on every call; the port gets no other cost source | nothing to fail: no input exists. A tree that carries a cost field reads as today (the decoder never reads one) |
+| the KDF port itself | a mint inside <code>&#64;lararium/mesh</code> alone: `nobleKdf` (barrel), `nativeKdf` (<code>&#64;lararium/mesh/node</code>) | a branded token held in a module-private WeakSet (the `ConfirmedPaperPin` pattern) | keyslot refuses any port its WeakSet does not hold, BEFORE it derives | a hand-built `{ derive }` object refuses by name: an argument never lowers cost |
+| `maxmem` (native only) | derived inside the native port from the `SCRYPT` it receives: 2·128·N·r·p | the parity witness runs the native path at real params; a red shows the node default refuses | the native port | a native refusal THROWS a named error (`keyslot: kdf-refused`); it never reads as `no-slot-opens`, so it spends no attempt and never blames the passphrase; no fallback to noble (F3) |
+| passphrase bytes | the operator's credential, NFKC-normalised in keyslot, then UTF-8 encoded ONCE in keyslot | parity witness over NFKC-heavy, empty, short, long passphrases and edge salts (empty, 16 zero bytes, 16 0xff) | keyslot owns normalisation + encoding; both ports receive bytes, never a string (no per-implementation string encoder to diverge) | an empty passphrase stays refused at bind (unchanged); open treats it as any non-opening material |
+| salt | the pin record, `fromHex(…, 16)` | unchanged decoder | keyslot | a malformed salt throws before any derivation (unchanged) |
+| attempt count | `custody-holder` `spent` / `faceSpent`, serialised on `unlockChain` | the open still refuses exactly as today (control); a derivation counter (no clock) | the holder, unchanged | a thrown KDF refusal increments nothing (the `await` throws past `spent++`) |
+| timing | lazy derivation stops at the first opening material | — | — | the time leaks the matching credential's INDEX among the caller's own offered list: the caller's own order, no secret. Today's eager open already leaks how many pins it visited. No new secret-bearing channel |
+| memory | 128 MiB per live native derivation | — | lazy open derives ONE at a time (no `Promise.all`), so one open holds ≤ 128 MiB | concurrent opens across the process stay bounded by libuv's pool (4 by default ≈ 512 MiB); the holder already serialises unlocks |
+
+!!! Observed outside the lane (surfaced, not cured: the brief keeps attempt limits unchanged)
+* ''Attempt amplification.'' One unlock attempt carries any number of passphrase credentials, and today's open derives EVERY offered passphrase against every passphrase pin it visits. Three attempts per boot can carry thousands of guesses. Lazy derivation lowers the CPU cost of a right guess but leaves a wrong list's cost and the guess count unchanged. Lean: a road row (count each passphrase credential as an attempt, or cap passphrase credentials per open at the slot count), its own lane. Canon already concedes unlimited OFFLINE guessing to a thief of the file (custody.mem:295); this names the ONLINE path.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/2-the-two-rows-shaped`>>
+
+!! 2. The two rows, shaped
+
+''Row 1 · the native KDF where the host offers it.''
+```ts
+// keyslot.ts (barrel-safe)
+export interface KdfPort { readonly [kdfBrand]: true }            // opaque; only mesh mints one
+export const nobleKdf: KdfPort                                     // derive = noble scryptAsync(bytes, salt, SCRYPT)
+/* internal */ export function mintKdfPort(derive: (pw: Uint8Array, salt: Uint8Array, cost: typeof SCRYPT) => Promise<Uint8Array>): KdfPort
+// node.ts (host door): export const nativeKdf: KdfPort            // derive = promisify(crypto.scrypt) with maxmem from cost
+```
+`passphraseMaterial(passphrase, salt, kdf)` becomes async, checks the brand, NFKC + UTF-8 encodes, calls `derive(pw, salt, SCRYPT)`, checks the output length is `SCRYPT.dkLen` (a port that returns short fails closed).
+
+''Row 2 · the lazy keyslot.'' `openTreeKey` drops the per-pin `materials` array: for each passphrase pin it derives one offered passphrase, tries the unwrap, and returns on the first share; paper secrets keep their eager combine (no KDF). Worst case (a wrong list) stays K×M derivations, as today; a right route costs only the derivations before it. Reds count derivations through a counting port minted by a test-only mesh door (F6) — no clock.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/3-async-ripple-map`>>
+
+!! 3. Async ripple map (sync → async, every signature named; no sync shim)
+
+| signature | today | after | callers that gain `await` (all already async) |h
+| `keyslot.bindSlot(tree, treeKey, spec, rng?)` | `SlotTree` | `(…, rng, kdf): Promise<SlotTree>` | sealed-writer `rotateHeld`; face-bundle `bindBundleRoutes`; node `foundCustody` (×2), `bindCustodySlot`, `bindFaceSlot`, holder `doFoundFace`; browser `sealBrowserKeystore`, `bindBrowserCustodySlot` |
+| `keyslot.openTreeKey(tree, credentials)` | `TreeKeyUnlock` | `(…, kdf): Promise<TreeKeyUnlock>` | face-bundle `openBundleKey`; node `openServingTree`, `openCustodyNodeKey`, `openFaceTree`; cli `vaultUnbindFace`, `vaultUnbind`; browser `openWith`, `proveRouteOpens` |
+| `keyslot.passphraseMaterial` (private) | `Uint8Array` | `Promise<Uint8Array>` | `bindSlot`, `openTreeKey` |
+| `face-bundle.bindBundleRoutes(key, routes, rng?)` | `SlotTree` | `(…, rng, kdf): Promise<SlotTree>` | cli `cutBundleToFile` (async) |
+| `face-bundle.openBundleKey(tree, credentials)` | `BundleKeyOpening` | `(…, kdf): Promise<BundleKeyOpening>` | cli `restoreFromBundle`, `openRestoreBundle` (async) |
+| browser `proveRouteOpens` (private) | `void` | `Promise<void>` | `sealBrowserKeystore`, `bindBrowserCustodySlot` (async) |
+| `sealed-writer.RotateTreeKeyArgs` / `RotateFckArgs` | `rng?` | `+ kdf` (required) | `rotateTreeKey` ← node `vault-carriers.ts:597`; `rotateFck` ← node `face-slot-ops.ts:57` (both async) |
+| `openPasskeyPin`, `unbindSlot`, encode/decode | — | UNCHANGED (no KDF) | — |
+
+The ripple stops one hop out: every caller of a changed verb already runs async. Tests: 107 call sites across 15 files (`*/tests`) plus `tools/vault-{restore,backup}-door.test.mjs`; each gains an `await` and a named port. That list runs long and mechanical: a Sonnet helper takes it as a listed edit (no Terra: the pool sits spent), one writer in my worktree.
+
+Port carriage after F1's lean: lararium-node's custody files and lares-cli import `nativeKdf` from <code>&#64;lararium/mesh/node</code> and pass it; lararium-browser passes `nobleKdf`; mesh internal callers (`rotateHeld`, the bundle wrappers) take it from their caller. No host check anywhere: the package that IS the host names its capability.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/4-forks`>>
+
+!! 4. Forks (ladder: canon → measure → stories → two YIN/YANG rounds)
+
+''F1 · how the port rides.'' (a) a REQUIRED `kdf` argument on each verb; (b) optional, defaulting to noble; (c) one ambient seat set at host boot; (d) package `exports` conditions (`node`/`browser`) choosing the file.
+* R1 YANG for (b): least churn, browser call sites stay untouched. YIN: a forgotten node site silently stays slow, and every mesh test keeps paying 0.53 s per derivation — the very drag the operator asked to unask; typecheck catches none of it.
+* R1 YANG for (c): one line at boot. YIN: process-global authority over cost-bearing code; test isolation breaks; canon reads custody by CAPABILITY handed over, and an ambient seat any module can reassign reads as a host check by another name. (d) puts the choice in a resolver: a host check at build time, which the brief bars.
+* R2 YANG for (a): the typechecker becomes the ripple map's witness — every site must name its port, so none drifts. YIN: browser sites gain a word they never needed. Answer: that word names the browser's own capability, which the brief asks to keep legible.
+* ''Lean (a), required.'' Survived both rounds; the controller rules.
+
+''F2 · how far a port gets trusted.'' (a) branded closed set (WeakSet; only mesh mints); (b) known-answer self-check of each port at first use against a stored vector at real cost; (c) an open interface.
+* R1: (c) lets an argument lower cost (a port that ignores `cost`), breaching the canon line. (b) catches a diverging implementation, but costs one extra 0.3–0.5 s derivation per process per port — the agility the lane serves.
+* R2: an in-process adversary defeats (a) and (b) alike, so the threat stays mistakes, and (a) closes the mistake path at the type and runtime level; CI's parity witness at real params covers implementation drift (node or noble upgrade) where (b) would.
+* ''Lean (a), plus the parity witness in CI. Settles at rung 1+2'' (canon's `ConfirmedPaperPin` pattern, the measure); no controller ruling needed unless you want (b) as belt-and-braces.
+
+''F3 · when native refuses.'' (a) throw `keyslot: kdf-refused` (fail closed, no attempt spent); (b) fall back to noble at the SAME cost, logged.
+* R1 YANG (b): never strands an operator; noble at the same cost lowers nothing. YIN: the refusal comes only from params (fixed) or memory pressure — a fallback masks a build bug and doubles memory exposure under the very pressure that refused.
+* R2 YANG (b): memory pressure stays transient; one retry would open. YIN: then the operator retries the act; the brief says "never fall back silently", and (b) needs a log line to dodge "silently" while still choosing for the operator.
+* ''Lean (a).'' Settles on the brief (rung 1).
+
+''F4 · noble path in the browser: `scrypt` (sync) or `scryptAsync`.'' Measured equal (531 vs 529 ms); async yields to the page every 10 ms. ''Lean `scryptAsync`.'' Settles at rung 2.
+
+''F5 · parallel derivation within one open (`Promise.all` over offered passphrases).'' Faster for a multi-route open (4 natives in 429 ms), but it defeats laziness (a right first guess still pays for all) and holds 128 MiB × K. ''Lean: sequential and lazy.'' Settles on the brief's row 2.
+
+''F6 · how a red counts derivations without a clock.'' (a) a test-only counting port minted through an internal mesh door (`mintKdfPort` reachable from tests by its source path, absent from the barrel and from `node.ts`); (b) `vi.spyOn` on the noble module. (b) breaks once the port wraps the import; (a) exercises the brand law too. ''Lean (a).'' The guard test also proves `mintKdfPort` stays off both public doors.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/5-reds-planned`>>
+
+!! 5. Reds planned (none written until the controller rules)
+
+# `keyslot-kdf-parity.test.ts` — native ≡ noble at real params over the passphrase/salt table; control: noble alone vs a stored vector.
+# `keyslot-kdf-cost-guard.test.ts` — a hand-built port refuses at bind and open; no env/config/tree field reaches cost; `mintKdfPort` off both doors; native with node's default `maxmem` refuses (proves the derived `maxmem` matters).
+# `keyslot-lazy-open.test.ts` — derivations per open via the counting port: right route first = 1; control: every existing open/refuse/notes test passes unchanged, holder attempt counts unchanged.
+# A native-refusal red: a forced refusal throws `kdf-refused`, the holder spends no attempt.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/6-canon-text-for-the-controller`>>
+
+!! 6. Canon text for the controller (custody.mem, after the slot-tree line)
+> A passphrase stretches through the host's native scrypt where the host offers one and through noble elsewhere, at ONE cost and to the same bytes; the cost rides no port, setting or tree field, and a native refusal fails closed, never falling back.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xUZahkpBfE0HflrYHnstBPloDk_zCw5Y1nN7HUio320`>>
+
+<<^ code=`&#x0004;` to=`?`>>

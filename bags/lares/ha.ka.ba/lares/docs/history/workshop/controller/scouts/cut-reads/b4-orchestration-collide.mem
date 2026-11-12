@@ -1,0 +1,99 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b4-orchestration-collide`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-10-31 (file date) — source `.lares-scratch/controller/scouts/cut-reads/b4-orchestration-collide.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b4-orchestration-collide"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b4-orchestration-collide"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! b4-orchestration-collide.md — plan, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/scouts/cut-reads/b4-orchestration-collide.md` (plan, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/b4-orchestration-collision-read-only-lines-are-o`>>
+
+! b4-orchestration collision (Anvil-Four, 2026-10-31). Read-only; lines are open-node-vessel.ts unless noted.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/new-findings`>>
+
+!! New findings (top)
+N1. standSyncGates failed stand FAILS CLOSED inbound (ruling below). But three stale-revocation seams sit beside it:
+a. STALE POSTURE ORDER (1274-1277): onRefold runs `dropNoLongerHeld()` (reads `postureOf` -> `gateReadings` cache, 1245) BEFORE `resweepGates()`, and gateReadings refreshes only inside `gateNexuses` (1487) during that later async sweep. A carried Nexus flipping open->private is judged on the OLD posture, so strangers' sockets stay seated (public shelf only) until the next refold; nothing re-runs the drop. Same cache serves the gate sorter (`posture: () => deps.posture(nexus)`), so a failed sweep keeps a stale-open posture for new knocks. Reach: public shelf, not private planes. Fails open-stale. Red: carried Nexus open, stranger seated, flip to private, fire onRefold, assert socket closed with no second refold.
+b. NO SERIALIZATION (1514-1550): refold sweeps run concurrent and unqueued (`void resweepGates()`). The loop after `await gateNexuses()` is synchronous, but two sweeps can apply out of read order: an older set landing last re-stands a gate for an uncarried Nexus. Contrast intent-relay.ts:36-38 (`turn` chain, and read failure downs every gate = fail closed). The sync gates do the opposite on read failure: warn and keep the old set. Also `intentRelay === null` check races: two first sweeps can both call standIntentRelay (second hits "a gate already stands"). Unproven by test; narrowed to "possible".
+c. The unstand loop (1519-1520) aborts the whole sweep on a throw, leaving later revoked gates standing. Low odds (unstand paths are idempotent), one-line red.
+Per-dial admits read the held root fresh (vessel-gates.ts:44-46), so a stale standing gate does not admit a revoked presenter; the exposure is posture and socket lifetime.
+N2. daemonAuth carries seeds for EVERY unlocked joined face (`joinedFaces` via joinedFaceAuth, 2511-2516), not only the worn atom (2532), plus hex address secret. A pure `buildDaemonAuth` returns secret-bearing data: red tests need sentinel seeds asserted absent from logs and JSON.stringify.
+N3. Pool core hard-codes two more 10s deadlines (teardown ack 816, wiki place-verb 888) that T17 neither names nor injects.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/per-finding-rulings`>>
+
+!! Per-finding rulings
+* F1 herm wiki verbs TypeError: CONFIRMED. Registered at 3039-3231, bodies deref forward `let x!` (set only in makePool); composeNodeHermOn passes p.wireVerbs (3685). Fails closed (rejection on invoke; `wiki-act` is reachable by lares-cli shore-core.ts:157). Red: compose herm, assert the six verbs absent.
+* F2: NARROWED. The 120s/3x PAIR has two literal homes (node 3386-3387 as 120_000/360_000; tw5 daemon-vm-core.ts:134,141, 3x derived). The pool default (10_000 via `??`, core 395-396) is a third, DIFFERENT value, not a third copy. `??` also passes 0/NaN through. No NodeVesselOptions knob exists. Wave 1's red/control stand.
+* daemonAuth seed: CONFIRMED crossing, NOT a fault. island-protocol.ts:245-251 states wiki manifests omit it and the crossing is operator-confirmed custody. Island is a worker_thread, not a surface. Hygiene gap: `atomSeed` Uint8Array never zeroed (address secret is, 2080); hex copy is unzeroable.
+* P6 gate-stand fail-mode (the open question): FAIL CLOSED inbound, rigorously: (1) only WS entry is `gateSync.wss` (766-770) fed solely through gateServer.handleUpgrade; no stood path -> http-face-dispatcher.ts:98-100 destroys the upgrade before 101; with no `opts.dispatcher` nothing routes at all. (2) Share verdict is independent: WS peer absent from peerIdentifierMap -> false (1021); class absent -> cross-operator. (3) Afterthe boot completes before gates stand (void, 3273): window is closed, not open. (4) resweepGates is assigned before the first stand (3272) so a later refold retries; with no refold, gates stay down (availability, not security). Residual: N1.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/per-verdict-rulings`>>
+
+!! Per-verdict rulings
+* T17 CUT-READY: AGREE, with the red also asserting the daemon island receives the same pair and N3 named.
+* afterDaemon "DO-NOT-CUT until fail-mode confirmed": confirmed closed, so the gate stand may move as-is; DO NOT add serialization silently inside a move (separate red-first lane for N1).
+* wiki verb group: AGREE lean (lift to wiki cap).
+* T14: AGREE pure module first. See VM research.
+* Others unchanged.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/t14-vm-lift-research`>>
+
+!! T14 VM-lift research (boot.js read in full, TiddlyWiki5/boot/boot.js:2553-2720)
+* Ordering: tasks run in registration order unless `after`/`before` constrain. `after` naming a task that never runs (typo, wrong platform, disabled, or nameless module) leaves the dependent SILENTLY never run: the loop ends and the boot callback fires. So the witness must assert `$tw.lares.<x>Vm` is defined after boot, not just that the module is packed. A nameless module cannot be depended on.
+* Sync default: `synchronous` absent = sync call (2632); a thenable return is awaited; a throw escapes execStartup and kills the island boot. Wrap startup bodies.
+* House pattern: header `/*\ title/type: application/javascript/module-type: startup \*/`, `export const name`, pure `computeX`, `startup()` sets `$tw.lares.xVm` (worldline-read-vm.ts 149-163); query-derive-vm adds `after=["lararium-grammar-cache"]`. Pure subpath imports only (barrel drags wasm). plugin-build discover-modules walks src/ for headers, enforces unique title and output filename.
+* Hidden coupling wave 1 missed: tests/goldens/filter-cts*.json list every startup module title; a new module regenerates those goldens. TW5 `platforms` knows only browser/node, so "daemon-only" cannot be module metadata; it rides plugin/offering selection (daemon resolves via resolveNodeIslandPluginCids recipe wikiSlug "daemon"), which T15 must witness.
+* Module state is per VM (`let _causal`); no cross-island sharing.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/sources`>>
+
+!! Sources (date-stamped 2026-10-31)
+* TW5 boot.js, local, READ in full.
+* https://tiddlywiki.com/dev/static/StartupMechanism.html (WebFetch; silent on missing-`after`, local source settles it).
+* https://automerge.org/automerge-repo/interfaces/_automerge_automerge-repo.RepoConfig.html and ShareConfig types (SEARCH-ONLY): access vs announce split, default open; confirms house comment 1012-1016 that a bare sharePolicy leaves access open. The house verdict seats both hooks; house law stricter than default.
+* https://wiki.owasp.org/index.php/Fail_securely (SEARCH-ONLY): exceptions in a control must not enable what it blocks; silent catch-alls flagged (matches `.catch(warn)`; fits inbound, not stale revocation). Revocation/stale-cache guidance not found.
+* Conflict: outside practice says re-check/deny on read failure; house intent-relay does, sync gates keep the old set. No-global-now favors ordering by causal chain (serialize turns), not timers.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/merged-recommendations`>>
+
+!! Merged recommendations
+* T17: CUT-READY. Red: boot with 200ms injection refuses within window; control asserts exact 120_000/360_000 at the constructor and the daemon island pair. Lean: one node-side `mountDeadlines()` source.
+* T12 wiki group + F1: NEEDS-RULING lean wiki cap; red = herm lacks the verbs.
+* afterDaemon pin list/gates: bootPins CUT-READY; gate stand moves unchanged; N1 a separate red-first lane (posture-order test, serialized sweep turn, fail-closed on read failure).
+* T14: pure `diffMismatch`/coupleSignal/crystallizeSignal first; VM step second, with startup-ran witness, golden regen, T15 first.
+* buildDaemonAuth: CUT-READY with sentinel-seed no-leak control.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sndFxk4wrtdbP2nR6s4hzBdY9WqYWhcESSIFJYAiMWs`>>
+
+<<^ code=`&#x0004;` to=`?`>>

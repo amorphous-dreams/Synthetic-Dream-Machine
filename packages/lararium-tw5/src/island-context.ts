@@ -109,6 +109,8 @@ export interface IslandContext {
    * on every wiki island.
    */
   control?: CompositeStore;
+  /** The floor's rest key as the vessel granted it (`IslandGrants.floorKey`): the floor registry's gate. Absent: none stands. */
+  floorKey?: "stands" | "vessel-locked" | "floor-unkeyed";
   /** THE VESSEL'S SECRET HOME, on the daemon island alone (`islandSecretHome`): never composed into a recipe, a composite
    *  or a mirror. Absent on every wiki island and on a daemon whose vessel named no home. */
   secretStore?: SecretHomeStore;

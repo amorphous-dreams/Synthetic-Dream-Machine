@@ -36,7 +36,7 @@
  *
  * Node-main only: a worker never imports this module.
  */
-import { GATE_FLOOR_BUNDLE_INFO, WardRefused, custodyRootDoor, type CustodyRootDoor } from "@lararium/mesh";
+import { FLOOR_REST_KEY_INFO, GATE_FLOOR_BUNDLE_INFO, WardRefused, custodyRootDoor, type CustodyRootDoor } from "@lararium/mesh";
 import { CustodyLocked, CustodyRowUnavailable, FaceLocked, type CustodyHolder, type FaceRef, type RowUpdate, type WardSeat } from "./custody-holder.js";
 import { wardCredentialsOf, wardOrGather, type WardCredential } from "./ward-credential.js";
 import { CustodyRootRefused } from "./custody-root.js";
@@ -229,6 +229,22 @@ export function custodyGateDoor(): CustodyRootDoor {
       return holder.derive(domain);
     },
   });
+}
+
+/**
+ * THE FLOOR'S REST KEY DOOR (`@lararium/mesh` `floorRestKey`): one child of the sealed custody root, under the floor's own
+ * registered domain and no other. It answers only while this home's seat holds its key, so a locked hearth derives none
+ * (`CustodyLocked`) and a herm, which never unlocks, derives none either. The custody root mints once at the custody's
+ * founding and a rotation of the S key re-seals its carrier whole, so the child holds across a rotation and across every
+ * face that lands.
+ */
+export function custodyFloorKeyDoor(): (info: string) => Uint8Array {
+  return (info) => {
+    if (info !== FLOOR_REST_KEY_INFO) throw new CustodyRootRefused("the floor's key door derives the floor's rest key alone");
+    const holder = seats.get(larIdentityDir())?.holder;
+    if (!holder) throw new CustodyLocked();
+    return holder.derive(info);
+  };
 }
 
 // ── faces: the founding and opening acts a face's custody takes through this home's seated holder ──────────────

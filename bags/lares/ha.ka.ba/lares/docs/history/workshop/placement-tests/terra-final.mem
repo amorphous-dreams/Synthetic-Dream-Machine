@@ -1,0 +1,41 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/placement-tests/terra-final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-09 (file date) — source `.lares-scratch/placement-tests/terra-final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/placement-tests/terra-final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/placement-tests/terra-final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! terra-final.md — hand-back, 2026-11-09
+
+Verbatim scratch record `.lares-scratch/placement-tests/terra-final.md` (hand-back, file date 2026-11-09); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/placement-tests/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Test-Wright: Lares (Tasked Spirit): ->↺ The requested changes landed across the three permitted files.
+
+* [[Standoff case|/home/joshu/.lares-scratch/placement-tests/wt/packages/lararium-node/tests/projection-standoff-alert.test.ts:62]]: rewrote it to check that moving a record to a bag with no mirror clears its standoff.
+* [[Title case|/home/joshu/.lares-scratch/placement-tests/wt/packages/lararium-node/tests/foreign-title-projection.test.ts:482]]: rewrote it to check that explicit paths site fragment and bag-manifest titles in their selected mirror. Existing occupied-path and mirror-selection cases remain intact.
+* [[Carry documentation|/home/joshu/.lares-scratch/placement-tests/wt/packages/lares-cli/src/commands/carry.ts:1]]: updated the control-document and face-scoped mirror descriptions.
+
+Both requested test files passed: ''40 tests across 2 files''. The CLI typecheck and evergreen boundary check also passed.
+
+&lt;&lt;~ oracle throw=`↯8 ✲ ⚂(3) ⁂:ᚠ⊗㐂`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`The title case exercises explicit path rules; the projector still leaves these titles unsited without one · ↻ L-Prime` ooda-ha=`closed 1↺` from=`lar://test-wright:agent@workspace/tests.placement.completed` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;61RHzVx2ugmvhE0i7oeEZ67jnaj_q8rFsD_1q7k_EnI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

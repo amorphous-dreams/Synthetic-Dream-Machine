@@ -1,0 +1,96 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/cop3/b3-out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-04 (file date) — source `.lares-scratch/seat-harness/cop3/b3.out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/cop3/b3-out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/seat-harness/cop3/b3-out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! b3.out.md — hand-back, 2026-11-04
+
+Verbatim scratch record `.lares-scratch/seat-harness/cop3/b3.out.md` (hand-back, file date 2026-11-04); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/cop3/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+I’ll patch `tools/launch-codex.mjs` to match the red tests exactly, using the existing patterns in that file and its tests as the source of truth.
+
+● Read launch-codex.mjs
+│ tools/launch-codex.mjs
+└ 1 line read
+
+● Read launch-codex.test.mjs
+│ tools/launch-codex.test.mjs
+└ 1 line read
+
+/ Search (grep)
+│ "row 3|lead argv exact|canary|check-canary|COMPACT_LIMIT|TOOL_OUTPUT_LIMIT|seatArgs|canaryVerdic
+│ t|canaryBrief|COMPACTION" (tools/launch-codex.test.mjs)
+└ 37 lines found
+
+/ Search (grep)
+│ "seatArgs|COMPACT_LIMIT|TOOL_OUTPUT_LIMIT|canary|check-canary|rolloutTokens|findRollout|required
+│ -keys|watch|brief.md|law append|preflight|SEAT-REFUSED|parse" (tools/launch-codex.mjs)
+└ 35 lines found
+
+● Read launch-codex.mjs
+│ tools/launch-codex.mjs
+└ L1:220 (220 lines read)
+
+● Read launch-codex.mjs
+│ tools/launch-codex.mjs
+└ L221:420 (117 lines read)
+
+● Read launch-codex.test.mjs
+│ tools/launch-codex.test.mjs
+└ L430:560 (84 lines read)
+
+● Read launch-codex.test.mjs
+│ tools/launch-codex.test.mjs
+└ L1:130 (130 lines read)
+
+/ Search (grep)
+│ "&#45;-check-canary|&#45;-canary|required|unknown option|watch" (tools/launch-codex.test.mjs)
+└ 13 lines found
+
+I’ve located the exact test expectations; next I’m applying a single surgical patch to `tools/launch-codex.mjs` for row-3 canary support and CLI wiring.
+
+● Edit
+└ Edit tools/launch-codex.mjs
+
+✗ Syntax-check updated launcher file (shell)
+│ node &#45;-check /home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs
+└ Permission denied because no interactive user response was available. Retry in an interactive
+session so the user can approve it, or try an alternative that does not require this permission.
+Approval check
+└ ✗ Denied, no one to approve
+
+● Read launch-codex.mjs
+│ tools/launch-codex.mjs
+└ L1:210 (210 lines read)
+
+● Read launch-codex.mjs
+│ tools/launch-codex.mjs
+└ L240:390 (151 lines read)
+
+''Outcome:'' `tools/launch-codex.mjs` now implements row-3 compaction canary support exactly as requested, including CLI flags and canary verdict/brief behavior.
+
+I added `export const COMPACT_LIMIT = 120000` and `export const TOOL_OUTPUT_LIMIT = 8000`; updated `seatArgs` to accept optional `compactLimit` and inject both `-c model_auto_compact_token_limit=...` and `-c tool_output_token_limit=...` immediately after `-o <seat>/final.md`; added `canaryVerdict(lines)` (compaction event detection + function-call count + `rolloutTokens`); added `canaryBrief()` with the required read-only/sliced/one-call-per-slice instructions and exact closing line `CANARY DONE 100 calls`; added parse/run support for `--canary` and `--check-canary` with the required behaviors (read-only enforcement/refusal, canary brief write timing, lowered compact limit `50000`, relaxed required args for check mode, rollout discovery via `findRollout(readers.realHome, { cwds: [real(seatDir)], before })`, and exact `COMPACTION-FIRED|COMPACTION-NOT-FIRED ...` reporting). I also updated the file header usage comment to mention both new flags.
+
+''Unclear:'' I could not execute validation locally in this environment (`node --check` was permission-blocked), so this is aligned strictly to the tests/spec text rather than runtime verification.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;v9y7F1NfuLV2j74YGO2hbEa2qFqxWvUJfaJhL1jafz4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

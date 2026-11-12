@@ -8,7 +8,7 @@
  * `openBrowserVessel` composes its sealed rest over this filing, so a suite that stands it stands the vessel's own path.
  */
 import type { Repo } from "@automerge/automerge-repo";
-import { deviceDaemonDocs, enrollBesideSecretHome, vesselHeldBagOf, vesselHeldHomes, type LitDeviceFaces, type SealedBag } from "@lararium/mesh";
+import { deviceDaemonDocs, enrollBesideSecretHome, releaseBesideSecretHome, vesselHeldBagOf, vesselHeldHomes, type LitDeviceFaces, type SealedBag } from "@lararium/mesh";
 
 export interface BrowserDeviceFiling {
   readonly deviceDocs: ReturnType<typeof deviceDaemonDocs>;
@@ -20,7 +20,11 @@ export interface BrowserDeviceFiling {
 /** `litDevices` reads the vessel's lit set: a browser vessel carries one lit face at most, so its set holds one member or none. */
 export function browserDeviceFiling(opts: { readonly repo: () => Repo; readonly litDevices: () => LitDeviceFaces }): BrowserDeviceFiling {
   const secretHomes = vesselHeldHomes();
-  const deviceDocs = deviceDaemonDocs({ enrollFloor: (documentId, bagId) => { if (!secretHomes.has(documentId)) enrollBesideSecretHome(opts.repo(), documentId, bagId); } });
+  const deviceDocs = deviceDaemonDocs({
+    enrollFloor: (documentId, bagId) => { if (!secretHomes.has(documentId)) enrollBesideSecretHome(opts.repo(), documentId, bagId); },
+    // The Lift re-files a floor wiki's canon under a face: it leaves the held homes with the device table's release.
+    releaseFloor: (documentId) => { releaseBesideSecretHome(opts.repo(), documentId); },
+  });
   return {
     deviceDocs,
     secretHomes,

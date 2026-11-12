@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/parity-9c59d1cc8b7a047968b15dd89b0ed2a0a1901a0b`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-01 (file date) — source `.lares-scratch/controller/ship/parity-9c59d1cc8b7a047968b15dd89b0ed2a0a1901a0b.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/parity-9c59d1cc8b7a047968b15dd89b0ed2a0a1901a0b"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/parity-9c59d1cc8b7a047968b15dd89b0ed2a0a1901a0b"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! parity-9c59d1cc8b7a047968b15dd89b0ed2a0a1901a0b.md — plan, 2026-11-01
+
+Verbatim scratch record `.lares-scratch/controller/ship/parity-9c59d1cc8b7a047968b15dd89b0ed2a0a1901a0b.md` (plan, file date 2026-11-01); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ship-lane-parity-head-9c59d1cc8b7a047968b15dd89b`>>
+
+! SHIP · lane parity (Train R) · head 9c59d1cc8b7a047968b15dd89b0ed2a0a1901a0b
+read: blind Opus Train-Reader-R SHIP at b87a410eb (train-r/train-security-read.md; no HIGH/MEDIUM, 30 malleability variants clean, genesis reproduced); controller delta read b87a410eb..b59d3cc1e03cf03dd0976aa215293682dfaba3b4: span merge moved 3 feet into the slot unchanged; LOW-1 scanAhu line law, LOW-2 weave FRAME_LINE anchored, LOW-3 verifyBcc folds frame faults; vm-grammar-boundary routed through the meme-ast door (no exempt); ci.yml seed step drops only the 40K budget clause (operator ruling), keeps the missing-seed exit 1. 2026-11-01.
+read: + controller delta read b59d3cc1e..9c59d1cc8b7a047968b15dd89b0ed2a0a1901a0b: frame fence-mask opens on backtick runs only (TW5 law; zero live ~~~ fences measured, a tilde-quoted mark stands live and named), weave follows; ahu closer counts only when it opens its line or shares its opener's (scanAhu + plugin); parity witness positive = planted mutant reader; carrier-shape message keyed on STX-without-ETX; one closing genesis bake. 2026-11-01.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dL_0NA20n3ETAQztrpRAP1KJHb7uTmRDBu0eq5cBz2M`>>
+
+<<^ code=`&#x0004;` to=`?`>>

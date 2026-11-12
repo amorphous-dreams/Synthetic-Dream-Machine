@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/carry-a1089fa0d09fb2a24781d7f34ace8dd746cb6aca`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-08 (file date) — source `.lares-scratch/controller/ship/carry-a1089fa0d09fb2a24781d7f34ace8dd746cb6aca.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/carry-a1089fa0d09fb2a24781d7f34ace8dd746cb6aca"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/carry-a1089fa0d09fb2a24781d7f34ace8dd746cb6aca"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! carry-a1089fa0d09fb2a24781d7f34ace8dd746cb6aca.md — plan, 2026-11-08
+
+Verbatim scratch record `.lares-scratch/controller/ship/carry-a1089fa0d09fb2a24781d7f34ace8dd746cb6aca.md` (plan, file date 2026-11-08); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ship-carry-a1089fa0d09fb2a24781d7f34ace8dd746cb6`>>
+
+! SHIP carry a1089fa0d09fb2a24781d7f34ace8dd746cb6aca
+read: controller (Kiaʻi) read Carry-Wright's four hand-backs (export/import flows, manifest and re-declare shapes, face remap, journal under config/, the namespace withhold that keeps the group-secret seals off disk, the island INGEST guard, the projection filter's call-site map and equivalence suite), resolved the outbound-bridge conflict to the new ruling at projections/bags/daemon, and staged the four commits by cherry-pick on span + wave 2.
+security: withheld titles (control plane, bags/**, dreamnet/**, $:/) never project and refuse at the island; cap/** never anywhere; no credential travels; the bundle carries no key, signature or AID.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dZaa3r-LEJXEYKh0VEi6JK8LHhjtEoXzpmj8Q2rSuiM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

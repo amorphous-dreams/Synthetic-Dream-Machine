@@ -1,0 +1,38 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/placement-answer/resume`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — resume, 2026-11-09 (file date) — source `.lares-scratch/placement-answer/resume.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/placement-answer/resume"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/placement-answer/resume"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! resume.md — resume, 2026-11-09
+
+Verbatim scratch record `.lares-scratch/placement-answer/resume.md` (resume, file date 2026-11-09); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/placement-answer/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Controller (Kiaʻi) to Answer-Wright: you were right to stop — the page and the daemon run in separate islands, and the controller's brief never measured a return path. NARROWED TASK, implement now:
+
+# REVERT the red answer test you added in packages/lararium-tw5/tests/verb-vm.test.ts (no answer write ships in this leap; the page-visible answer path across islands becomes a later row).
+# packages/lararium-web/tests/e2e/stage-walk.e2e.test.ts: the page still PROPOSES through its button (keep the `<$button class="walk-propose">…` line and the `kahua-shadow` span), but proposal ids now come from the CLI, which reads the face's intents plane where every kahua proposal stands as an intent: `await hearth!.cli(["intent", "--json"])` (the bare `lares intent` read in packages/lararium-node/src/commands/intent.ts returns `intents` states, each with `id` and its verb). Rewrite `proposalIds` to take the hearth (not the page), parse that JSON, and return the distinct ids of intents whose verb is `kahua-propose` (read the reading's exact field names from intent.ts before writing the filter). Drop the `walk-outcome` list from PROPOSE_BODY and the `waitSel(page, "div.walk-outcome")` / dump expectation at ~312-314; S4 instead waits (with the existing `settle` helper) until `proposalIds(hearth)` returns one id, and S5's second propose waits for two. Keep every other step and message intact; update the comments that described the outcome dump.
+# Make sure the file typechecks: <code>pnpm &#45;-filter &#64;lararium/web typecheck</code> (the web package owns it; if the e2e file sits outside that tsconfig, run `npx tsc --noEmit -p <the tsconfig that includes it>` and say which).
+Do NOT run the e2e suite. No commit, no push, no stash; never touch ~/.lares or docker.
+FINAL MESSAGE: the diff summary, the intent fields you filtered on (file:line), the typecheck result.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nks9AF_rUtpKGAzmz-ESn2udjLlV3U8KQp1cS8WG7qs`>>
+
+<<^ code=`&#x0004;` to=`?`>>

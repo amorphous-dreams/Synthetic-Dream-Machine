@@ -3,10 +3,11 @@
  * KEL this browser armed at its founding, no Nexus admit (session-contract#/the-hands). The node mints the same session
  * (`placeSessionCell` + `preparePlaceFace`); this file ports its mint to the browser's own custody rows.
  *
- * WHO LIFTS AT ITS PLACE (`browserLiftsAtPlace`): a face this browser founded (it holds the face's PersonaGroup root), proved
- * at boot, joined to no hearth, on a browser whose place KEL stands. A device joined to ANOTHER's face holds no root of that
- * face and stays at its floor until a hearth admits it (operator ruling, 2026-10-16); a joined face lifts through its Nexus
- * presentation instead.
+ * WHO LIFTS AT ITS PLACE (`browserLiftsAtPlace`): a face proved at boot, on a browser whose place KEL stands, that either this
+ * browser founded (it holds the face's PersonaGroup root, joined to no hearth) or this browser joined and holds the root
+ * holder's carried seat grant for (device-capabilities-2026#/device-seats ruling 7: the grant admits the device, by file, with
+ * no road). A device joined to ANOTHER's face with no seat grant holds no root of that face and stays at its floor until it is
+ * admitted (operator ruling, 2026-10-16); a face a Nexus presentation serves lifts through that presentation instead.
  *
  * THE KEYS STAY ON THE VESSEL'S THREAD: the atom's seed reads afresh from its custody row at the mint and zero-fills after
  * the one certificate it signs; the session key lives in the signer alone, and the island receives signatures, never a key.
@@ -27,15 +28,18 @@ export interface PlaceLiftReading {
   readonly joined: boolean;
   /** This browser holds the worn face's PersonaGroup root: it founded that face. */
   readonly rootHeld: boolean;
+  /** This browser keeps the root holder's carried seat grant for its own device of the worn face (`browserSeatKept`). */
+  readonly seatKept: boolean;
   /** The worn face's plane passed its face proof at this boot. */
   readonly proved: boolean;
   /** This browser's place KEL stands (its founding armed one through the cold card). */
   readonly placeStands: boolean;
 }
 
-/** A self-founded, unjoined, proved face on a browser whose place stands lifts at its place; every other reading stays put. */
+/** A proved face on a browser whose place stands lifts at its place where this browser founded it (and joined no hearth) or
+ *  keeps its seat grant; every other reading stays put. */
 export function browserLiftsAtPlace(r: PlaceLiftReading): boolean {
-  return !r.presented && !r.joined && r.rootHeld && r.proved && r.placeStands;
+  return !r.presented && r.proved && r.placeStands && ((r.rootHeld && !r.joined) || r.seatKept);
 }
 
 /** One minted place session: the session a lift stands on, and its table's close (the lock runs it after the drop). */

@@ -23,9 +23,9 @@
  */
 import * as ed25519 from "@noble/ed25519";
 import {
-  bytesEqual, composeFleetJoinRequest, fleetJoinSealPair, hex, hexToBytes, readFleetJoinAnswer, readFleetJoinOffer,
+  bytesEqual, composeFleetJoinRequest, fleetJoinHearthOf, fleetJoinSealPair, hex, hexToBytes, readFleetJoinAnswer, readFleetJoinOffer,
   readFleetJoinRequest,
-  type FaceScope, type FleetJoinAnswer, type FleetJoinOffer, type FleetJoinRequest, type VesselFaceKeyCustody,
+  type FaceScope, type FleetJoinAnswer, type FleetJoinHearthDial, type FleetJoinOffer, type FleetJoinRequest, type VesselFaceKeyCustody,
 } from "@lararium/mesh";
 import { carriedAdmitOfFleetJoin, type CarriedAdmitPayload } from "@lararium/keyhive";
 import {
@@ -51,11 +51,7 @@ const isRefusal = (v: unknown): v is { refusal: string } => typeof v === "object
 export const faceKeyRow = (personaGroup: string, scope: FaceScope): string => `vessel-face-key/${personaGroup}|${scope.nexus}|${scope.faceKey.toLowerCase()}`;
 
 /** The dial a landed answer carried, kept per face (`dial:<group>`): what the face's presentation reads at its hearth. */
-export interface KeptFleetJoinDial {
-  readonly charter:  FleetJoinAnswer["charter"];
-  readonly admit:    FleetJoinAnswer["admit"];
-  readonly carriage: FleetJoinAnswer["carriage"];
-}
+export type KeptFleetJoinDial = Pick<FleetJoinHearthDial, "charter" | "admit" | "carriage">;
 /** The row a face's kept dial rests at in the fleet-join store. */
 export const dialRow = (personaGroup: string): string => `dial:${personaGroup}`;
 
@@ -212,6 +208,7 @@ export async function browserFleetJoinLand(opts: { readonly answer: unknown; rea
   const { answer, addressSecret } = verified;
   const admit = carriedAdmitOfFleetJoin(answer);
   if (isRefusal(admit)) { addressSecret.fill(0); throw new BrowserFleetJoinRefused(admit.refusal, "the answer's device edge does not found this face."); }
+  const hearth = fleetJoinHearthOf(answer);
   const secretRow = faceAddressSecretRow(answer.personaGroup);
   const recordRow = `record:${answer.personaGroup}`;
   try {
@@ -233,7 +230,8 @@ export async function browserFleetJoinLand(opts: { readonly answer: unknown; rea
       await rows.write(secretRow, addressSecret);
       await withDb(idbName, (db) => inOneTransaction<void>(db, FLEET_JOIN_STORE, (os, _refuse, done) => {
         os.put({ personaGroup: answer.personaGroup, rootKey: offer.rootKey, certificates: answer.certificates, grants: answer.grants }, recordRow);
-        os.put({ charter: answer.charter, admit: answer.admit, carriage: answer.carriage } satisfies KeptFleetJoinDial, dialRow(answer.personaGroup));
+        // The dial rests where the answer carried one; a root holder that stood no gate carried none, and no row lands.
+        if (hearth !== null) os.put({ charter: hearth.charter, admit: hearth.admit, carriage: hearth.carriage } satisfies KeptFleetJoinDial, dialRow(answer.personaGroup));
         done(undefined);
       }));
       await rows.write(pendingRow(offer.personaGroup), { ...p, landed: true } satisfies PendingJoin);

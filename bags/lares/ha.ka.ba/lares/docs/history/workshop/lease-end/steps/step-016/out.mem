@@ -1,0 +1,40 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-016/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-016/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-016/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-016/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-016/out.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-016/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/step-16-hand-back`>>
+
+! Step 16 hand-back
+
+Head `19048159c1c5beec52f72c049e5c53dc20cb6779`; no live seats; no push; no commit. The state counter stays 16. ''Broker liveness wall:'' request 031's `node tools/wait-receipt.mjs` returned `receipt-timeout: res-031.json absent or incomplete after 120000ms; broker may have died`. Its execution and eventual result remain unknown; resolve that request before issuing another, and do not assume the broker accepted or finished it. Next unused request 032.
+
+Two uncommitted files carry the bounded work: `packages/lararium-node/src/edge-shadow-ring.ts` and `packages/lararium-node/tests/edge-shadow-ring.test.ts`. The test extends the existing clean-board control to demand a synchronous invalidation when a followed board moves, before its asynchronous refold notification. Relay 030 returned the intended red: 14 pass, 1 fail at the new invalidation assertion. The implementation adds optional `onInvalidate` immediately after the reading goes dark and its refold is queued. `git diff --check` passed. Relay 031 requested the same single-file green run but timed out awaiting a receipt; ''green remains unverified''. No consumer connects the new callback yet.
+
+The ring callback by itself cannot fence cross-worker proof changes: the daemon's face seat reads its own board through `boardDyadReader`, while the node ring lives on the vessel side. Both invalidation and a wake after the authoritative refold need lifecycle-safe transport or a proven equivalent local subscription; test movement during refold and initial attachment races on node and browser. Existing `onRefold` currently fires even when refold rejects (the catch precedes the callback), so a consumer must not mistake that signal alone for a successfully published fold. A movement during ingest needs more than a post-await version test: `absorbCapEvents` invokes `kh.ingestPeerEvents`, then settles and persists; those operations can mutate authority before returning. Establish and test a guarded or serialized commit boundary before claiming that race closed.
+
+All remaining work from step 15 stays owed: founder lineage freshness, tri-state ring, remaining blind-read residues and daemon join TOCTOU; a complete-view dyad census with independently supported completeness (the fleet board has no roster); `runApplyAdmitPayload`, holder-session-proof and leaf-peer-proof authority readers. Keep roll guard and epoch fields until later slices. Whole non-daemon suites remain due before ready; daemon suites run named single files through the broker. E2e stays in CI. Obtain blind Opus custody read before land; no push without controller go.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vCcagLMzbUM6qtwlepuNtFdt7BHEY7FHFM-1fxtz6Bg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

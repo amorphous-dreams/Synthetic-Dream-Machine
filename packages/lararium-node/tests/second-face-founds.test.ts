@@ -81,7 +81,7 @@ async function foundFace(
 describe("a per-persona founding stands a second face without unseating the first", () => {
   test("★ mount:false founds a DISTINCT, fully-founded individual and leaves h0's mount pins standing ★", async () => {
     const repo = new Repo({ sharePolicy: async () => true });
-    const place = withMemorySecretHome(await foundThePlace({ repo, vesselSeed: VESSEL_SEED, hearthTrueName: "" }), repo);
+    const place = withMemorySecretHome(await foundThePlace({ repo, vesselSeed: VESSEL_SEED }), repo);
 
     // ── h0 lights the hearth fire and MOUNTS (the operator's live founding path) ──
     const h0 = await foundFace(repo, place.daemonHandle, ROOT_H0);
@@ -111,7 +111,7 @@ describe("a per-persona founding stands a second face without unseating the firs
 
   test("CONTROL — the founding face (mount default) writes the singular pins exactly", async () => {
     const repo = new Repo({ sharePolicy: async () => true });
-    const place = withMemorySecretHome(await foundThePlace({ repo, vesselSeed: VESSEL_SEED, hearthTrueName: "" }), repo);
+    const place = withMemorySecretHome(await foundThePlace({ repo, vesselSeed: VESSEL_SEED }), repo);
     const h0 = await foundFace(repo, place.daemonHandle, ROOT_H0);   // no mount arg → defaults true
 
     const p = pins(place.daemonHandle);

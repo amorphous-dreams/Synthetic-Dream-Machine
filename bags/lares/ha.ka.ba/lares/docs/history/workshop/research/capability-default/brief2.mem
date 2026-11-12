@@ -1,0 +1,56 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/capability-default/brief2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-10-28 (file date) — source `.lares-scratch/research/capability-default/brief2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/capability-default/brief2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/capability-default/brief2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief2.md — brief, 2026-10-28
+
+Verbatim scratch record `.lares-scratch/research/capability-default/brief2.md` (brief, file date 2026-10-28); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/capability-default/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/second-wave-dreamdom-s-capability-default-ratche`>>
+
+! Second wave (Opus): DreamDOM's capability default — ratchet the first round
+
+You are the second, ratcheting round of a research pair for the Lararium project's DreamDOM. The first round (OpenAI Terra-6.1 with web search) wrote `/home/joshu/.lares-scratch/research/capability-default/out.md`; its brief is `brief.md` beside it. Read both whole first. Write your result ONLY to `/home/joshu/.lares-scratch/research/capability-default/out2.md`. You may read the repository at /home/joshu/Synthetic-Dream-Machine read-only (never edit, build, commit or boot there).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ground-you-hold`>>
+
+!! Ground you hold
+* The operator's rulings (2026-10-28): a main-thread TW5 engine "mirror" for full-glass DreamDOM is APPROVED (unprivileged, no keys, no truth, fed only by the port; truth stays in the worker island); the `?glass=` URL flag and any in-page `{glass:true}` boolean are UNAPPROVED as design-time language leaking into implementation; a full-capability browser defaults to full DreamDOM, the capability KNOWN, not requested. Memory: `/home/joshu/.claude/projects/-home-joshu-Synthetic-Dream-Machine/memory/project_dreamdom_mirror_ruling.md`, `project_isomorphic_by_intent.md`, `project_off_main_thread_engine_laws.md`, `project_dreamdom_fork_ruling.md`.
+* The build today, read it: the D3 lane's worktree `/home/joshu/.lares-scratch/d3-glass/wt` (branch `--d3-glass`): `packages/lararium-web/src/glass/` (`flag.ts`, `stand.ts`, `boot.ts`, `cas.ts`), `packages/lararium-tw5/src/glass-port-adaptor.ts`, `glass-camera.ts`, the leader and tab-bus modules, and the kit `bags/lares/ha.ka.ba/lares/docs/pono/d3-glass-lane.mem`. Its spike table: `/home/joshu/.lares-scratch/d3-glass/spike/table-2000.md`.
+* The project's capability vocabulary: grep the repo for how capability atoms already pass on the vessel side (e.g. `capability`, `cap`, `lends`, the port lease and its grant from D2: `docs/pono/d2-port-lane.mem`). A design that reuses the project's own grant shape beats a new one.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/your-work`>>
+
+!! Your work
+# VERIFY: spot-check the first round's load-bearing SOURCED claims (at least the Figma probe, Compute Pressure, deviceMemory, measureUserAgentSpecificMemory, Web Locks ifAvailable) by fetching the cited pages; mark each HOLDS / OVERSTATED / WRONG with your quote.
+# GAPS: what the first round missed that this project needs: (a) the island's own existing grant/lease shapes, so the mirror's handle is a D2 port lease rather than a new object kind; (b) Safari/WebKit and mobile constraints (OPFS in workers, Web Locks, BroadcastChannel, memory kills on iOS); (c) multi-tab: the leader holds the mirror? each tab? how a follower tab's tier resolves; (d) how the capability persists or re-measures across reloads without becoming a stored flag (a remembered downgrade is itself a flag: rule on it).
+# YIN against the first round's design: argue the strongest case that probing at boot costs too much or lies (cold caches, background tabs, a probe that passes then the real workload fails), and the strongest case for a different shape (e.g. start skinny and promote, or a worker-first default). Then YANG: what survives.
+# THE DESIGN, ratcheted, one page: what the composition root measures, the handle (preferably the D2 lease), the default and the step-down with hysteresis, multi-tab, persistence, and the red tests (each: plants / must read), reconciled with the D3 code as it stands (name each file that changes and what of `flag.ts`/`stand.ts` burns).
+# Open questions only the operator can rule, each with your lean.
+
+Mark every claim SOURCED (URL) or REASONED. Keep out2.md under 600 lines. Reply when done with a 10-line summary.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zkI5umDjPwWLm2wRGm24wL92Itkzaxz7KAiAGbA7Zh4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

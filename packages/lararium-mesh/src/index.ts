@@ -135,7 +135,7 @@ export * from "./text-stream-adapter.js";
 export * from "./sensorium-pc.js";
 export * from "./aperture-selector.js";
 export * from "./epoch-lease.js";
-export { controlHomeUrlOf, standControlHome, readControlHome, nameControlHome, ControlHomeUnavailable, controlStoreOf, vesselOnlyDocIds, makeVesselOnlyDocs, VESSEL_LOCKED, CONTROL_HOME_UNNAMED, controlHomeRefusal, assertControlHomeOpen, refusingControlStore, floorAnswerStore, isFloorAnswerTitle, FLOOR_ANSWER_RING, vesselLockedRefusal, type ControlHomeRefusal } from "./control-home.js";
+export { controlHomeUrlOf, standControlHome, readControlHome, nameControlHome, ControlHomeUnavailable, controlStoreOf, vesselOnlyDocIds, floorOnlyDocIds, makeVesselOnlyDocs, VESSEL_LOCKED, CONTROL_HOME_UNNAMED, controlHomeRefusal, assertControlHomeOpen, refusingControlStore, floorAnswerStore, isFloorAnswerTitle, FLOOR_ANSWER_RING, vesselLockedRefusal, type ControlHomeRefusal } from "./control-home.js";
 export { vesselOnlyBook, repoReverdict } from "./vessel-only-book.js";
 export * from "./lar-did.js";
 export * from "./device-delegation.js";
@@ -251,6 +251,7 @@ export { DEFAULT_FEDERATION_POSTURE } from "./federation-gate.js";
 export * from "./quorum-entry.js";
 export * from "./sealed-box.js";
 export * from "./ed25519-door.js";
+export * from "./veil-lift.js";
 export * from "./kapae-antigen.js";
 export { antigenEntriesFromBoard, writeAntigenEntry, antigenEntryKey, ANTIGEN_ENTRY_PREFIX } from "./antigen-board.js";
 // The operator MEMBERS-registry — the Kapae-antigen's ALLOW-twin (members{} ⊥ blocked{}); contracts, never identities.
@@ -384,6 +385,9 @@ export { requestCertificate, issueCertificate, mintVesselFaceKey, checkVesselCha
 export type { VesselFaceKeyCustody, MintedKey, VesselChainVerdict } from "./face-authority.js";
 export type { VesselFaceCertificate, VesselFaceCertificateRequest, VesselFaceKey, FaceKey } from "./face-proof-subjects.js";
 export * from "./fleet-join.js";
+// THE SEAT a face's root holder gives one joining device (the tag law, the admission, the edge): one core for the node's
+// `device-admit` and the browser's `browser-fleet-root`.
+export * from "./device-seat.js";
 // THE JOINED VESSEL'S SESSION, named here by its first caller: the node's joined-face proof (`joined-face-proof`)
 // hands it the vessel's own certificate, grant, key and custody door. The session table stays private to the mesh.
 export { openJoinedFaceSession, prepareJoinedFace, type JoinedFaceTarget } from "./session-face.js";
@@ -411,7 +415,7 @@ export type { ChannelSocket, ChannelCloseReason, GateChannelBounds, GateSessionC
 // client adapter files it, and the fleet-join answer carries it signed (house ruling "The admit's gate pin").
 export {
   HEARTH_FLOOR_PINS_SESSION_KIND, HEARTH_FLOOR_PIN_BOUND, FLOOR_CARD_KEL_BOUND, readHearthFloorPins, hearthFloorPinsBody, readHearthFloorPinsBody,
-  readHearthFloorProofBody, fileSessionClaims, HEARTH_FLOOR_CARD_ROUTE, hearthFloorCardText, readHearthFloorCard, verifyHearthFloorCard,
+  readHearthFloorProofBody, fileSessionClaims, HEARTH_FLOOR_CARD_ROUTE, hearthFloorCardText, readHearthFloorCard, FLOOR_CARD_CARRIAGE_KIND, floorCardCarriageText, readFloorCardCarriage, verifyHearthFloorCard,
   fileHearthFloorCard, lastSyncNote,
 } from "./hearth-floor-pins.js";
 export type { ClaimDoor, HearthFloorCard, HearthFloorProof, FloorAnchor, VerifiedFloorCard, FloorCardFiling } from "./hearth-floor-pins.js";
@@ -660,9 +664,10 @@ export * from "./lockbox-wrap.js";
 export * from "./content-key-holder.js";
 export * from "./sealed-doc-store.js";
 export * from "./sealed-rest.js";
-export { deviceDaemonDocs, vesselHeldBagOf, DAEMON_SLOT_PREFIX, type DeviceDaemonDocs, type LitDeviceFace, type LitDeviceFaces } from "./device-daemon-docs.js";
+export { deviceDaemonDocs, vesselHeldBagOf, DAEMON_SLOT_PREFIX, FLOOR_REGISTRY_ROOT, FLOOR_SLOT_ROOT, FLOOR_DAEMON_SLOT_ROOT, floorSlotTitle, floorDaemonSlotTitle, isFloorRegistryTitle, floorSlotOf, type DeviceDaemonDocs, type LitDeviceFace, type LitDeviceFaces } from "./device-daemon-docs.js";
 export * from "./published-bag-key.js";
 export * from "./held-rest-key.js";
+export { floorRegistryOf, FloorUnavailable, FLOOR_UNKEYED, type FloorRegistry, type FloorKeyRefusal } from "./floor-registry.js";
 export * from "./secret-home.js";
 export * from "./memory-section.js";
 export * from "./face-bundle.js";

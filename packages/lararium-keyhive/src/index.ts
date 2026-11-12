@@ -29,8 +29,8 @@ export { memoryProviderChunkRest } from "./capability-provider.js";
 export { packPersonaCrossing, applyPersonaCrossing } from "./persona-crossing.js";
 export type { PersonaCrossingBundle, CrossingContent, CrossingPlaintext } from "./persona-crossing.js";
 export { runFaceJoin, gateFaceJoin } from "./face-join.js";
-export { faceGrantTitle, signFaceGrantRecord, verifyFaceGrantRecord, FACE_GRANT_PREFIX } from "./face-grant-record.js";
-export type { FaceGrantRecord, UnsignedFaceGrantRecord, FaceGrantVerifyContext, FaceGrantVerdict } from "./face-grant-record.js";
+export { faceGrantRecordCid, faceGrantTitle, signFaceGrantRecord, verifyFaceGrantRecord, FACE_GRANT_PREFIX } from "./face-grant-record.js";
+export type { FaceGrantRecord, UnsignedFaceGrantRecord, FaceGrantVerifyContext, FaceGrantVerdict, FounderLineage } from "./face-grant-record.js";
 // THE ONE assembly of the PersonaGroup identity-slot ring — node and browser both call it; only the proof source differs.
 export { assemblePersonaGroupRing } from "./persona-group-ring-assembly.js";
 export type { PersonaGroupRingInput } from "./persona-group-ring-assembly.js";
@@ -110,6 +110,7 @@ export {
 export type { FoundedWorkbench, LedgerDoc, WorkbenchMember, LandWorkbenchPorts, LandedWorkbench } from "./workbench-realm.js";
 export { forkCabalRealm } from "./fork-realm-ceremony.js";
 // THE FLEET-JOIN ANSWER'S ADMIT: the one shape the node's `runInit` and the browser's admit boot found a face by.
+export * from "./carried-seat.js";
 export { carriedAdmitOfFleetJoin, FLEET_JOIN_ADMIT_REFUSALS, type FleetJoinAdmitRefusalName } from "./fleet-join-admit.js";
 export type { ForkCabalRealmOpts } from "./fork-realm-ceremony.js";
 
@@ -145,7 +146,7 @@ export interface DeviceAdmitPayload {
    *  sibling proofs and channel tags run on. REQUIRED: an enrolment that delivers no secret leaves the joinee
    *  unable to meet a single sibling, so `runApplyAdmitPayload` refuses a payload without one. */
   readonly groupSecretSeal:        GroupSecretSeal;
-  /** The hearth true-name (engine CID) the joinee binds TO. */
+  /** The hearth true name the joinee's edge binds TO (the root holder's seed-charter Nexus AID; "" from a gateless leaf). */
   readonly hearthTrueName:         string;
   /** Founder sentinel oracle IDs — for the founding sentinel dance + the future affiliation layer. */
   readonly personaGroupId:    string;

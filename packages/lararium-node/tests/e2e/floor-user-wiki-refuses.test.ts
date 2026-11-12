@@ -17,10 +17,28 @@
  *       names none waiting.
  *   W0  CONTROL: a floor node asked for a floor row's wiki (`lares`) boots at the floor and names none waiting.
  *
+ * THE VEIL SPLIT (the-veil-ladder#/the-base-model, in-house rulings of 2026-11-12). "A floor" names three states now, and W0-W3
+ * read two of them. A LOCKED floor (W2: a founded node before its unlock) and a HERM cannot seal, so each still refuses a
+ * wiki that needs a face and mints none. A floor that asks for a wiki NO vessel minted (W1: `floor-user` holds no row) waits
+ * the same way: a title with no row in hand classes to the face. The third state stands outside these vectors: an UNLOCKED
+ * VEIL (no face, its floor's rest key standing) mints a wiki as the vessel's own (`init-wiki`, the row marked
+ * `face-reach = vessel-only`), and that wiki mounts with no face worn. Its proofs rest below this e2e: keyhive
+ * veil-floor-verbs G1-G3 (the unlocked veil mints; the locked floor and the herm refuse all four verbs), mesh catalog-view
+ * RED VEIL (the marked row rests on the floor's half, so `facelessWikiWaits` mounts it).
+ *
+ *   W4  an UNLOCKED VEIL (no face founded, the vessel key open by the test custody route) mints a wiki over its own verb
+ *       channel (`init-wiki`, as `lares wiki init` asks it), stands down, boots again asking for that wiki, and mounts it
+ *       with none waiting: the row's `vessel-only` mark carries it across the restart.
+ *       No control document stands for it (the place mints none until a face lands, operator ruling 2026-11-09): the veil's
+ *       wiki takes its name in the floor's registry, in the place's daemon document, and seals under the floor's rest key
+ *       the custody root derives. The vector asks through a served front (`serveUdsFront` over the composition's own claim,
+ *       seated with the veil's verbs), as main.ts serves it; `openNodeVessel` claims the socket and serves none itself.
+ *
  * Canon: lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift#/the-slices (slice 5b)
  */
 import { afterEach, describe, expect, test } from "vitest";
 import { EventEmitter } from "node:events";
+import { createConnection } from "node:net";
 import { cpSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -31,9 +49,11 @@ import { direct } from "../direct-store.js";
 import { TEST_CUSTODY, TEST_PASSPHRASE, TEST_SLOT } from "../found-route.js";
 import {
   runInit, runFoundTheFace, foundSeedCharter, openNodeVessel, seatFaceRoute, seatWardGatherer,
-  FsCustodyIo, makeCustodyHolder, seatCustody, larDataDir, larIdentityDir, larSealHome,
+  FsCustodyIo, makeCustodyHolder, seatCustody, larDataDir, larIdentityDir, larSealHome, loadVesselVerifyingKey,
 } from "../../dist/src/index.js";
 import type { NodeOpenPhase, NodeVesselResult } from "../../dist/src/open-node-vessel.js";
+import { makeUdsSeat, serveUdsFront } from "../../dist/src/uds-channel.js";
+import { floorVerbsFor } from "../../dist/src/floor-verbs.js";
 
 seatFaceRoute(async () => [TEST_SLOT]);
 seatWardGatherer(async () => TEST_SLOT.pins.flatMap((pin) => (pin.kind === "passphrase" ? [{ kind: "passphrase" as const, passphrase: pin.passphrase }] : [])));
@@ -97,6 +117,22 @@ async function markedRoot(): Promise<Staged> {
   return at;
 }
 
+/** One verb over the vessel's own channel, as the CLI's `call` sends it: a line of JSON in, the outcome's line back. */
+function askOverChannel(socketPath: string, inv: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return new Promise((resolve, reject) => {
+    const sock = createConnection(socketPath);
+    let buf = "";
+    sock.setEncoding("utf8");
+    sock.on("connect", () => sock.write(JSON.stringify(inv) + "\n"));
+    sock.on("data", (chunk: string) => {
+      buf += chunk;
+      const nl = buf.indexOf("\n");
+      if (nl !== -1) { sock.end(); resolve(JSON.parse(buf.slice(0, nl)) as Record<string, unknown>); }
+    });
+    sock.on("error", reject);
+  });
+}
+
 type Waiting = { name?: string; reason?: string; wikiId?: string; source?: string; message?: string };
 /** The waiting wiki the composition names: `absent` where the result carries no such reading at all. */
 const waiting = (v: NodeVesselResult): Waiting | null | "absent" => {
@@ -132,6 +168,35 @@ describe("a floor asked for a user wiki stands and names the wiki that waits", (
     expect(vessel.activeWikiId, "the unlock mounts the waiting wiki").toBe("marker-user");
     expect(phases).toContain("wiki-ready");
     expect([null, "absent"], "nothing waits once the face stands").toContain(waiting(vessel));
+  }, 600_000);
+
+  test("W4: an unlocked veil mints a wiki, restarts, and boots on it with none waiting", async () => {
+    const at = await stage(false);
+    // `lares vault unlock` on a root that founded no face: the vessel key opens, and no face lights.
+    await withLarRoot(at.root, () => unlockTestCustody());
+    const first = await compose(at, "lares", false);
+    expect(first.vessel.activeWikiId, "the veil stands on its floor wiki").toBe("lares");
+    const requestedBy = await withLarRoot(at.root, async () => `0x${await loadVesselVerifyingKey()}`);
+    expect(first.vessel.floorKey, "the unlocked veil's floor key stands").toBe("stands");
+    // THE SERVED FRONT, as main.ts stands it: the composition's own claim, its daemon's control stand-in and place door, and
+    // the verbs a floor answers where its rest key stands.
+    const front = serveUdsFront({ claim: first.vessel.storeClaim });
+    front.attach(makeUdsSeat({
+      controlHandle: first.vessel.daemon.controlHandle, control: first.vessel.daemon.control,
+      placeVerb: (o) => first.vessel.daemon.placeVerb(o), claim: first.vessel.storeClaim, repo: first.vessel.repo,
+      floorVerbs: floorVerbsFor(first.vessel.floorKey === "stands"),
+    }));
+    try {
+      const minted = await askOverChannel(first.vessel.storeClaim.socketPath, { verb: "init-wiki", args: { slug: "veil-own" }, requestedBy, requestId: "w4-init-veil-own" });
+      expect(minted["status"], `the veil mints its own wiki: ${JSON.stringify(minted)}`).toBe("done");
+    } finally { await front.close(); }
+    await first.down();
+    // The restart: the same root, still unlocked, asks for the wiki it minted.
+    await withLarRoot(at.root, () => unlockTestCustody());
+    const { phases, vessel } = await compose(at, "veil-own", false);
+    expect(vessel.activeWikiId, "the restart mounts the wiki the veil minted").toBe("veil-own");
+    expect(phases).toContain("wiki-ready");
+    expect([null, "absent"], "a wiki the vessel minted waits for no face").toContain(waiting(vessel));
   }, 600_000);
 
   test("W0 CONTROL: a floor row's wiki boots at the floor and names none waiting", async () => {

@@ -1,0 +1,64 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-unwired-review/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-05 (file date) — source `.lares-scratch/controller/terra-unwired-review/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-unwired-review/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/terra-unwired-review/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-05
+
+Verbatim scratch record `.lares-scratch/controller/terra-unwired-review/final.md` (hand-back, file date 2026-11-05); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-unwired-review/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+The five items are ''not ready for direct wiring''. The current road retains their general purposes, but each needs either a different composition or a security defect fixed first. “MEASURED” below means observed in the source; “INFER” means a consequence or required design step. No tests were run, and no files were written.
+
+# ''Recovery readmit — (c) PONO-BUT-WRONG-SHAPE.'' [[K18|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:692]] requires a two-of-three ''recovery-contact rotation'', reanchoring, then readmission with the current persona log and signed frontier. The existing path instead reconstructs the old root and signs with it; the separate self-recovery road remains ruled, so the primitive should not simply be burned.
+
+''P1 INFER:'' Wiring [[recovery-core.ts:49|/home/joshu/Synthetic-Dream-Machine/packages/lararium-keyhive/src/recovery-core.ts:49]] as K18 would leave the lost root and old authority in place. ''P2 MEASURED:'' The quorum brand is compile-time only; the exported signer accepts its bytes without a runtime quorum check. The wrapper zeroes the reconstructed buffer in `finally` ([[recovery-keel-core.ts:100|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/recovery-keel-core.ts:100]]), but the signer alone does not. The [[readmit test|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/tests/recovery-readmit.test.ts:53]] supplies a fabricated chain and empty frontier; it does not prove an accepted product readmission.
+
+Build the K18 contact ceremony and door around rotation, `reanchorAfterRotation`, the live lease, current log and signed frontier; treat self-recovery separately. Reds: lost old key cannot authorize after rotation; fewer than two distinct contacts refuse by name; missing or stale frontier refuses; success survives a fresh-device apply.
+
+# ''`rollEnrolments` — (c) PONO-BUT-WRONG-SHAPE.'' The rotation intent remains in [[identity-slot policy|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/pono/identity-slot-policy.mem:145]]; [[L24|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:607]] separately requires a warded renewal writer for the persona log’s edge digest.
+
+''P2 MEASURED:'' [[persona-group-secret.ts:234|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/persona-group-secret.ts:234]] converts the derived secret to an immutable hex string and serializes plaintext for each box without wiping those copies. Boxes are sealed and signed; no wall clock decides rotation. Tests exercise real crypto with constructed chains, not a production rotation door.
+
+Use wipeable secret/plaintext buffers and compose enrolments into the K18 rotation, with verified device roster and current lease; separately append L24’s `device-edge` renewal on the operator’s warded answer. Reds: excluded device cannot open the new head; altered list fails verification; stale digest refuses `replay-edge-lapsed` until authorized renewal; failure paths wipe temporary buffers.
+
+# ''`capTierShareDecision` — (c) PONO-BUT-WRONG-SHAPE.'' The declared-tier rule remains explicit in the [[road|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:838]].
+
+''P1 INFER:'' Merely replacing the [[node’s carrier call|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/self-slot-share.ts:157]] misses earlier sibling, same-operator and special-board returns; the [[browser|/home/joshu/Synthetic-Dream-Machine/packages/lararium-browser/src/open-browser-vessel.ts:2095]] has a separate gate. ''P2 MEASURED:'' A null tier ring allows the base verdict ([[federation-gate.ts:563|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/federation-gate.ts:563]]); it does not enforce a declaration. Unit tests call the helper with fixtures.
+
+Compose a tightening at every ruled crossing and bulb read, preserving existing denials and supplying the real document-to-bag declaration and all three floor readings. Reds: a declared private public-shelf document is withheld on announce ''and'' access on node and browser, including early-return lanes; structural denials remain denials; missing required composition refuses.
+
+# ''Secrets-plane registry — (c) PONO-BUT-WRONG-SHAPE.'' The [[road’s three-reading requirement|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:838]] retains the intent.
+
+''P1 INFER:'' An unregistered or restart-forgotten secrets document can floor PUBLIC when also federatable: the registry is an in-memory set ([[plane-secrets.ts:61|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/plane-secrets.ts:61]]), and the [[floor constructor|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/cap-tier.ts:206]] silently defaults a missing secrets reading to false. The no-secrets constant is safe only when absence is actually established. The [[tests|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/tests/plane-secrets.test.ts:42]] assemble fixtures; their “cannot forget” claim does not establish that property.
+
+When a secrets store exists, register its identity before exposure, reconstruct its classification before serving after restart, and require the live oracle at the tier composer. Reds: omission and restart cannot publish a known secrets document, including one also on the public shelf.
+
+# ''`KeyhiveIdentitySlot` and `deriveActorId` — (c) PONO-BUT-WRONG-SHAPE.'' [[Ground|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:437]] still calls for capability wiring; [[K15|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:681]] requires per-face custody.
+
+''P1 MEASURED/INFER:'' [[verifyDelegation|/home/joshu/Synthetic-Dream-Machine/packages/lararium-keyhive/src/keyhive-identity-slot.ts:250]] checks the token’s named audience, but does not bind the presenting peer to it. A copied valid token can therefore impersonate that audience unless a separate authenticated binding is enforced. It returns boolean refusals, not named reasons; absent seal or lease denies, and no wall clock decides. ''P2 INFER:'' [[deriveActorId|/home/joshu/Synthetic-Dream-Machine/packages/lararium-keyhive/src/keyhive-identity-slot.ts:301]] gives every writer sharing a DID the same actor ID; do not wire it as a per-peer actor generator. Tests use real providers and test seals, not the live share composition.
+
+Compose a per-face capability check behind the existing outer denial, resolving document IDs in the owning island and returning verdicts across the port without keys. Bind authenticated presenter to delegation before using tokens. Reds: copied token from another presenter, unresolved document, revoked capability and wrong face all refuse; concurrent writers use distinct actor IDs.
+
+''Order:'' close the secrets-floor and crossing-gate composition together; implement K18 and L24 with the enrolment fixes; then wire the per-face capability barrier with presenter binding. Across these excerpts I found no direct key-over-port or clear-at-rest write, but that is not a complete end-to-end custody audit.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gvX0T8cQJjQTcq0_sHrRXnXydjjXzcQI9EHFbpC9umE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

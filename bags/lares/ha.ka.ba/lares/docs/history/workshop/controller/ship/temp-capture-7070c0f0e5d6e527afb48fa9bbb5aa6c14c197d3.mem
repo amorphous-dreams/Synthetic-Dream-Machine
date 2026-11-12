@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/temp-capture-7070c0f0e5d6e527afb48fa9bbb5aa6c14c197d3`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-08 (file date) — source `.lares-scratch/controller/ship/temp-capture-7070c0f0e5d6e527afb48fa9bbb5aa6c14c197d3.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/temp-capture-7070c0f0e5d6e527afb48fa9bbb5aa6c14c197d3"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/temp-capture-7070c0f0e5d6e527afb48fa9bbb5aa6c14c197d3"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! temp-capture-7070c0f0e5d6e527afb48fa9bbb5aa6c14c197d3.md — plan, 2026-11-08
+
+Verbatim scratch record `.lares-scratch/controller/ship/temp-capture-7070c0f0e5d6e527afb48fa9bbb5aa6c14c197d3.md` (plan, file date 2026-11-08); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ship-temp-capture-7070c0f0e5d6e527afb48fa9bbb5aa`>>
+
+! SHIP temp-capture 7070c0f0e5d6e527afb48fa9bbb5aa6c14c197d3
+read: controller (Kiaʻi) read the hand-back (Temp-Wright, Claude seat): read-back ordering before the start scan, namespace bar, consent keys, audit shape; merged the landed span (one-root) clean.
+clock cure 7070c0f0e: one wall-clock seam in temp-layer.ts, declared in evergreen-boundary's exceptions (age expiry + orphan settle need wall time); clock 53/53.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;248AzW3mH5yksQ-a-abCVB6dJzoM15umHwjT-mbssHE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

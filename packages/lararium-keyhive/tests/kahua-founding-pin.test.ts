@@ -24,7 +24,7 @@ const key = (seed: Uint8Array) => groupSecretOpenerFromSeed(seed).deviceKey;
 async function founded() {
   const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
   const vesselSeed = new Uint8Array(32).fill(71), signerSeed = new Uint8Array(32).fill(72), atomSeed = new Uint8Array(32).fill(73);
-  const place = withMemorySecretHome(await foundThePlace({ repo, vesselSeed, hearthTrueName: "hearth" }), repo);
+  const place = withMemorySecretHome(await foundThePlace({ repo, vesselSeed }), repo);
   const input = {
     vesselTag: testVesselTagDoor(1),
     repo, daemonHandle: place.daemonHandle, secretHandle: place.secretHandle, secretRest: { assertSealed: async () => true }, placeVerifyingKey: key(vesselSeed), vesselDisplayName: "founder",

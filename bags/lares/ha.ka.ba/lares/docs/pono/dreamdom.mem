@@ -564,6 +564,11 @@ The DreamDOM's founding story: every later DreamDOM ruling answers to these seve
 * ''The browser vessel's opened key lives in its own worker'', never in page memory; the per-tab ask stands, and the shared holder carries no unlock. The unlock ceremony paints where the surface cannot reach (the boundary sits where the person types the secret). The operator approved its shape (2026-11-05: //"Approve"//): a clean ceremony document takes the secret and sends its bytes down a service-worker-brokered port to the vessel worker (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift`>>).
 * ''The full mirror runs people's plugins only after sealed-store steps 2 and 3 land for the browser store'' (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store`>>). No clear row stands under the full mirror, and the device key rests non-extractable.
 
+!!! Ruled, 2026-11-11 and 2026-11-12 (the full mirror, the third runtime and the address)
+* ''The worker VM stands as the third runtime'' (operator, 2026-11-11: //"hold the VMs are 'a third thing, never seen before'"//). Neither a browser page nor a Node process: a TW5 that holds every tiddler of its wiki, TW5's kernel and `$:/core` among them, beside the CRDT store that holds the truth. Every camera reads that engine; none replaces it.
+* ''The mirror renders the active wiki through the live projection, whole'' (operator, 2026-11-11: //"The mirror 'should' render the active/pinned VM worker's 'wiki' through the live TW5 projection…"//; //"We then focus on the 'full mirror' browser experience. That's where this design drifted, it built the minimal first (unpono in early alpha, we design and land full features)."//). The page's mirror boots from what the active wiki's island hands it over the port (the engine blob, every plugin blob, then the records) and paints stock TW5 at full width with its whole surface: modals, notifications, the pane's scroller, clipboard, download, full screen, print and refresh. Skinny stays the one named step down. Built (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/d3-glass-lane#/the-handoff`>>, #/the-doors); the mirror still keeps the wiki it first stood on, and a switch of wiki stays owed (d3-glass-lane #/owed).
+* ''No query string overrides the page'' (operator, 2026-11-12: //"I don't like query strings as overrides, that interrupts the tw5 native uri handling (or if we can pipe it through the mirror & tw5 vm it may read pono)."//). TW5's own address handling reads the address; a page act rides the page's own doors, never a query key. Where a request must reach the page from a link, it reaches TW5 through the mirror and the VM as TW5 reads its own address. The route door carries any URL intent: the founding ask left its query key for the identity panel's button, and the arrival address names the page alone (the relay comes from the page's own origin through its arrival descriptor, and the floor card and its anchor come in at the carriage door by paste, file or QR, so the fragment stays the wiki's permalink). The page's remaining keys (`?flow=`, `?mesh=`, `?c4trace`) stand owed (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-leaps`>>).
+
 !!! Standing open
 # ''The key grain for the browser camera at width none.'' One whole-surface key until measured, or river frames plus order plus membership. Blocks nothing; D1 measures.
 
@@ -625,6 +630,6 @@ The DreamDOM's founding story: every later DreamDOM ruling answers to these seve
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;8FX0fBYUAncdaHVYUJ-RLk55vAv5ZhcGRFHPVkCYdTE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;CBrkpZ6_Jzm0ZjFu4D0MejJW2i72uM_qOwQy8-EqkJQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

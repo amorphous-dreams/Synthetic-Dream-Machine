@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/door-fix-41bfdbe2f4b4f66337af906debf67f1c359304ad`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-07 (file date) — source `.lares-scratch/controller/ship/door-fix-41bfdbe2f4b4f66337af906debf67f1c359304ad.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/door-fix-41bfdbe2f4b4f66337af906debf67f1c359304ad"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/door-fix-41bfdbe2f4b4f66337af906debf67f1c359304ad"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! door-fix-41bfdbe2f4b4f66337af906debf67f1c359304ad.md — plan, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/controller/ship/door-fix-41bfdbe2f4b4f66337af906debf67f1c359304ad.md` (plan, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+SHIP door-fix 41bfdbe2f4b4f66337af906debf67f1c359304ad
+read: blind Opus (Blind-Warden-Door) over e5a4848bc..1fed7d8ab: LAND-AFTER-CURES (P2 unbounded pool walk-back + a softened RED; P3s); cures at 41bfdbe2f red-first; blind re-read over 1fed7d8ab..41bfdbe2f: LAND, nothing new reaches outside the wall (/home/joshu/.lares-scratch/door-fix/seats/blind-opus-door-2.md); controller ran launch-codex, test-door-build, test-door, commit-relay outside the wall 162/162.
+owed: lane store-wall: hardlinked node_modules shared with the main checkout (P1, older than this lane, confirmed by inode 161959 x8) + readHeldAsync (commit-relay.mjs:48) reads req-*.json without the O_NONBLOCK/regular-file guard (a planted FIFO stalls the broker); P3: two launches in a burst can share one stale pool record (the third refuses); a planted receipt's true answer lives only in broker stderr.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mJZqSYusjlgMEcDdUVBQXw8htlFYqKdFA8UyfLlPa34`>>
+
+<<^ code=`&#x0004;` to=`?`>>

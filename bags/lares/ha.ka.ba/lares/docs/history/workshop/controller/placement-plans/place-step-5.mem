@@ -1,0 +1,38 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/place-step-5`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-10 (file date) — source `.lares-scratch/controller/placement-plans/PLACE-STEP-5.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/place-step-5"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/place-step-5"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! PLACE-STEP-5.md — plan, 2026-11-10
+
+Verbatim scratch record `.lares-scratch/controller/placement-plans/PLACE-STEP-5.md` (plan, file date 2026-11-10); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/placement-step-5-witness-and-canon`>>
+
+! Placement step 5 — witness and canon
+
+The placement witness now reads the projector, CLI ingress/carry, and legacy control-door sites. It fails if residency decisions return to title patterns; `tools/witness-all.sh` includes it, and the CI rest cell invokes the witness collection. `CLAUDE.md` keeps the projection adapter paragraph thin. Disk-projection, sensorium-runbook, and kahua-memory-stage canon were edited and normalized with the built CLI.
+
+Validation: `node tools/placement-residency-witness.mjs` passed. `node tools/evergreen-boundary.mjs` passed (3,874 files; all ceilings held). `git diff --check` passed. The node full suite completed with 82 failed files, 468 passed; 221 failed tests, 3,234 passed, 59 skipped, and one unhandled error. Founding/face failures primarily report `secret-home-unavailable`, because sealed-rest enrollment and the founding/admission custody sweep remain unwired. Full suites/build-stamp/typecheck across all five touched packages are not complete, so step 5 and the overall leap are not verified as landed.
+
+Proposed commit subject: `lar:///ha.ka.ba/placement/witnesses-the-residency-law`
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cbkc16FdVY8a_D0rYWY9ttvK64pC2YauzXTIOzJErSw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

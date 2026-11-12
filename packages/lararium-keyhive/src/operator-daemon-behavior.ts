@@ -13,6 +13,7 @@
  * Meme: lar:///ha.ka.ba/lararium/keyhive/operator-daemon-behavior
  */
 
+import { seatGrantsReader } from "./carried-seat.js";   // leaf-fleet
 import {
   makeDaemonBehavior, makeWhereReactor, makeResolveReactor, makeListWikisReactor,
   makePinReactor, makeUnpinReactor, makeRegisterColdReactor, registerActionReactors, makeFresherCanonReactor, makeOverrideBasesReactor, makeTw5Deserializer,
@@ -157,13 +158,13 @@ import { persistArchiveFloor } from "./archive-floor-write.js";
 import { replicaHeads, hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, holdsKahuReach, isHouseCanonBag, realmStandingDocUrl } from "@lararium/mesh";
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
 import { readLeaseUnderFace, controlLayerOf, type LeaseFrontier } from "./lease-frontier.js";
-import { readFace, answerDocStoreAsks, announceSlotDoc, documentIdOfUrl, type WikiSlotKind } from "@lararium/mesh";
+import { readFace, answerDocStoreAsks, announceSlotDoc, announceLiftedDoc, documentIdOfUrl, floorSlotTitle, floorRegistryOf, FloorUnavailable, type FloorRegistry, type WikiSlotKind } from "@lararium/mesh";
 import { makeSlotDocResolver, litFaceSlotDocs, type SlotDocResolver, type LitFaceSlotDocs } from "./slot-doc-resolver.js";
 import { makeLitFaceTarget, type LitFace } from "./lit-face-target.js";
 import { type FaceJoinSummons } from "./face-join.js";
 import { answerFleetSeatDuties, type FleetSeatFacts } from "./fleet-seat-duties.js";
 import { announceSeatRoll } from "./seat-duty-executor.js";
-import { FACE_GRANT_PREFIX, verifyFaceGrantRecord, type FaceGrantRecord } from "./face-grant-record.js";
+import { verifyFaceGrantRecord } from "./face-grant-record.js";
 import { makeFaceSeat, makeGroupDocListener, watchFaceSeatFleet, type GroupDocHandle } from "./face-seat.js";
 import { runFaceJoinOperation } from "./face-join-operation.js";
 import { makeFaceIntentDoor } from "./face-intent-door.js";
@@ -479,13 +480,21 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     const seated = await projectWorkbenchRoster(hive, ledger, held, slug, new Map([[face, await hive.whoami()]])).catch(() => [] as readonly string[]);
     return seated.includes(face) ? held : null;
   };
+  // THE FLOOR'S REGISTRY (`floor-registry`): the daemon document's floor rows, gated on the floor's rest key as the vessel
+  // granted it for this composition. A grant that names none reads as a place that derives no floor key.
+  let floorRegistry: FloorRegistry | null = null;
+  const floorOf = (ctx: IslandContext): FloorRegistry =>
+    (floorRegistry ??= floorRegistryOf(ctx.composite, () => ctx.floorKey === "stands" ? null : ctx.floorKey ?? "floor-unkeyed"));
   const slotDocsOf = (ctx: IslandContext): SlotDocResolver => {
     if (slotDocs) return slotDocs;
     slotDocs = announcing(makeSlotDocResolver({
       repo: askReceipt ? restingMinter(ctx.repo, (ids) => askReceipt(ids,
         gateCleared ? undefined : gateClear, islandHeadsOf(ctx.repo, ids))) : ctx.repo,
-      deviceScoped: (slug) => slug === DAEMON_WIKI_SLUG, control: controlOf(ctx),
+      deviceScoped: (slug) => slug === DAEMON_WIKI_SLUG, control: controlOf(ctx), floor: floorOf(ctx),
       ...(docStoreDoor ? { announceDevice: (kind: Exclude<WikiSlotKind, "temp">, documentId: string) => announceSlotDoc(docStoreDoor, wikiSlotUri(DAEMON_WIKI_SLUG, kind), documentId) } : {}),
+      // THE VEIL FLOOR'S WIKI SLOT names itself to the vessel as the vessel's own, before its first byte (it seals under the floor's rest key).
+      ...(docStoreDoor ? { announceFloor: (slug: string, kind: "working" | "draft" | "personal", documentId: string) => announceSlotDoc(docStoreDoor, wikiSlotUri(slug, kind), documentId, true) } : {}),
+      ...(docStoreDoor ? { announceLifted: (slug: string, documentId: string) => announceLiftedDoc(docStoreDoor, wikiBagUri(slug), documentId) } : {}),
       daemonStore: ctx.composite, ...(kh ? { keyhive: kh } : {}),
       catalog: ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl, ctx.faceCatalogUrl) : null,
       vesselDid: () => didFromVerifyingKey(mintedByHex),
@@ -507,8 +516,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
    * working slot (`deviceSlot`). A projected daemon surface edits: TW5 writes each `Draft of …` to the draft slot and its
    * story list to the personal slot through the recipe's own routing (`current-wiki-draft`, `current-wiki-personal`). With
    * neither mounted, every such write refused `unrouted-save`, and a control event that wrote one never settled, so the
-   * frame's save click after it fell as `control-event-pending` (e2e stage-walk S6). A floor that reads no control
-   * document holds each in this island's memory alone, as it holds its working layer.
+   * frame's save click after it fell as `control-event-pending` (e2e stage-walk S6). A floor whose rest key does not stand
+   * holds each in this island's memory alone, as it holds its working layer.
    */
   const attachDaemonEditSlots = async (ctx: IslandContext): Promise<void> => {
     const slug = ctx.recipe.wikiSlug;
@@ -521,7 +530,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       let resolved: Awaited<ReturnType<SlotDocResolver["slotDoc"]>>;
       try { resolved = await slotDocsOf(ctx).slotDoc(slug, kind); }
       catch (cause) {
-        if (!(cause instanceof ControlHomeUnavailable)) { console.warn(`[daemon] the ${kind} slot stands not: ${cause instanceof Error ? cause.message : String(cause)}`); continue; }
+        if (!(cause instanceof ControlHomeUnavailable || cause instanceof FloorUnavailable)) { console.warn(`[daemon] the ${kind} slot stands not: ${cause instanceof Error ? cause.message : String(cause)}`); continue; }
         ctx.composite.addLayer({ bagId: bag, store: new MemoryTiddlerStore(bag), writable: true, defaultWritable: false }, recipeLayerIndex(ctx.composite, ctx.recipe, bag));
         floorBags.add(bag);
         continue;
@@ -554,11 +563,12 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       let resolved: Awaited<ReturnType<SlotDocResolver["slotDoc"]>>;
       try { resolved = await slotDocsOf(ctx).slotDoc(slug, "working"); }
       catch (cause) {
-        // A LOCKED (OR FACELESS) FLOOR FAILS CLOSED: the daemon wiki's working slot is a device document the control
-        // document names, and a control document the vessel cannot read names none and mints none. The floor's daemon wiki
-        // writes its engine state into a layer held in this island's memory alone: no document, no rest, no sync, gone at
-        // the next composition. Every control act still refuses by name; nothing here waits for a key.
-        if (!(cause instanceof ControlHomeUnavailable)) throw cause;
+        // A FLOOR THAT CANNOT SEAL FAILS CLOSED: the daemon wiki's floor working slot is a device document the floor registry
+        // names, and a floor whose rest key does not stand (a locked hearth, a herm) names none and mints none; a face's
+        // slot waits the same way on a control document the vessel cannot read. The daemon wiki then writes its engine
+        // state into a layer held in this island's memory alone: no document, no rest, no sync, gone at the next
+        // composition. Every control act still refuses by name; nothing here waits for a key.
+        if (!(cause instanceof ControlHomeUnavailable || cause instanceof FloorUnavailable)) throw cause;
         const scratch = new MemoryTiddlerStore(working);
         ctx.composite.addLayer({ bagId: working, store: scratch, writable: true, defaultWritable: true }, recipeLayerIndex(ctx.composite, ctx.recipe, working));
         floorBags.add(working);
@@ -1436,9 +1446,29 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         };
         // The wiki-minting and composing verbs write under the face's reach, so a floor refuses them by
         // naming the lift, as it does the ACTION verbs.
+        // THE GATE NAMES THE FLOOR KEY (the-veil-ladder#/the-base-model): a face seated passes; with no face, the vessel whose
+        // floor's rest key stands mints and composes as the VEIL, and its writes seal under that key. A locked floor
+        // (`vessel-locked`) and a herm (`floor-unkeyed`) cannot seal, so each still refuses by naming the lift. The gate
+        // fails closed: a grant that names no floor key refuses.
         const faceStands = !!daemonAuth.personaGroupId;
-        const underFace = (verb: string, reactor: VerbReactor): VerbReactor => faceStands ? reactor : lightAFace(verb);
-        registry.register("init-wiki",   underFace("init-wiki", makeInitWikiReactor(wikiMintOpts)));
+        const veilStands = async (): Promise<boolean> => floorOf(ctx).refusal() === null;
+        const underFace = (verb: string, reactor: VerbReactor, atFloor: VerbReactor = reactor): VerbReactor =>
+          faceStands ? reactor : async (args, vctx) => ((await veilStands()) ? atFloor(args, vctx) : lightAFace(verb)(args, vctx));
+        // The veil's own mint: the place asks, no Keyhive registers, the row carries the veil's mark and the canon document
+        // files as the vessel's own in the same act (announced `floor`, then named by the floor registry).
+        const veilMintOpts = {
+          ...wikiMintOpts,
+          vesselDid: async () => didFromVerifyingKey(daemonAuth.placeVerifyingKey),
+          registerBag: async () => {},
+          veilFloor: {
+            mintedBy: daemonAuth.placeVerifyingKey,
+            nameCanon: async (slug: string, documentId: string, url: string) => {
+              if (docStoreDoor) announceSlotDoc(docStoreDoor, wikiBagUri(slug), documentId, true);
+              await floorOf(ctx).put(floorSlotTitle(slug, "canon"), { text: url, "minted-by": daemonAuth.placeVerifyingKey }, "wiki-init:floor");
+            },
+          },
+        };
+        registry.register("init-wiki",   underFace("init-wiki", makeInitWikiReactor(wikiMintOpts), makeInitWikiReactor(veilMintOpts)));
         registry.register("open-wiki",   makeOpenWikiReactor({ composite: ctx.composite, catalog, post: ctx.post }));
         registry.register("prune-stale", underFace("prune-stale", makePruneStaleReactor(wikiMintOpts)));
         registry.register("list-wikis",  makeListWikisReactor(catalog, sysPlane, systemCanonUrl));
@@ -1588,8 +1618,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     },
     onWritable: async (ctx: IslandContext) => {
       if (!daemonAuth.atom && !daemonAuth.personaGroupId && !daemonAuth.deviceEdge) {
-        // AT THE FLOOR THE DAEMON'S SLOT STANDS ON THE FLOOR'S OWN DEVICE DOCUMENT (sealed-store#/U1), named in the control
-        // document under the floor's own key (`daemon-slot/working/floor`), so its verb outcomes land. No user wiki stands a
+        // AT THE FLOOR THE DAEMON'S SLOT STANDS ON THE FLOOR'S OWN DEVICE DOCUMENT (sealed-store#/U1), named in the floor
+        // registry (`floor/daemon-slot/working` in the place's daemon document) and sealed under the floor's rest key. No user wiki stands a
         // working layer here: each rests in a realm workbench, which a face stands (cabal-realm#/the-workbench).
         await attachDaemonWorking(ctx);
         return { state: "standing" };
@@ -1613,20 +1643,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           group, selfVerifyingKey: edge.deviceVerifyingKey, personaRootDid: edge.personaRootDid,
           personaKel: daemonAuth.personaKel,
           knowsAgent: (agent) => veil.knowsAgent(agent),
-          grants: async () => {
-            const store = await homeStoreOf(catalog, personaBagIdFor(group));
-            if (!store) return [];
-            const prefix = `${FACE_GRANT_PREFIX}${group}/`;
-            const self = edge.deviceVerifyingKey.toLowerCase();
-            const found: { title: string; record: FaceGrantRecord }[] = [];
-            for (const title of await store.listVisible()) {
-              if (!title.startsWith(prefix) || !title.toLowerCase().endsWith(self)) continue;
-              const raw = (await store.get(title))?.tiddler.text;
-              if (typeof raw !== "string") continue;
-              try { found.push({ title, record: JSON.parse(raw) as FaceGrantRecord }); } catch { /* An unreadable record grants nothing. */ }
-            }
-            return found;
-          },
+          // ── leaf-fleet: THE CARRIED GRANT, read before the plane (`seatGrantsReader`, carried-seat). A leaf with no road to the
+          // face's hearth never holds the persona plane; a grant a person carried to it by file rests in this vessel's own
+          // secret home, and the seat judges it by the same verifier as a synced one. ──
+          grants: seatGrantsReader({ carried: ctx.secretStore, plane: () => homeStoreOf(catalog, personaBagIdFor(group)), group, deviceKey: edge.deviceVerifyingKey }),
           // The founder's standing, off this vessel's own fold of the face's fleet board: no reader composed reads nothing as clear.
           founderStanding: async (key) => requireDyadReader(dyadReader(ctx), "the grant founder")(edge.personaRootDid, key),
           verify: verifyFaceGrantRecord,
@@ -1635,6 +1655,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             const lifted = await slotDocsOf(ctx).liftFloor();
             if (lifted.moved.length + lifted.finished.length > 0)
               console.log(`[daemon] the seat landed: ${lifted.moved.length} floor record(s) moved under the face, ${lifted.finished.length} burn(s) finished`);
+            // THE LIFT NAMES WHAT IT MOVED AND WHAT IT LEFT, so a count that reads short shows which record stayed at the floor.
+            if (lifted.moved.length > 0) console.log(`[daemon] face lift moved: ${lifted.moved.join(" · ")}`);
+            if ((lifted.kept?.length ?? 0) > 0) console.log(`[daemon] face lift kept at the floor: ${lifted.kept!.map((k) => `${k.slug}: ${k.titles.join(", ")}`).join(" · ")}`);
             // One wake per skipped document, on what it waits for: a document peers have not delivered wakes on its arrival (`whenReady`); a
             // document whose flush storage never confirmed wakes when a flush of it rests. A ready document's arrival would resolve at once.
             const arrivals = lifted.skippedDocs.map(({ url, waits }) => ctx.repo.find<LarDoc>(url as never).then((handle) =>

@@ -1,0 +1,32 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/hands-room/luna/final2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/hands-room/luna/final2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/hands-room/luna/final2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/hands-room/luna/final2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final2.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/hands-room/luna/final2.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/hands-room/luna/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+''Luna-Handwright: Lares (Tasked Spirit)'' — I wrote the handback to [[out2.md|/home/joshu/.lares-scratch/research/hands-room/luna/out2.md]]. It settles the lane boundaries, start-now slice, face–Nexus question and person’s joints, then lists the lanes in build order with red-first slices and file ownership. The handback is under 1,200 words and ends with `WORDS=1004`.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;pr0NSaPVxJvZrwqJT91f9qeWJLl66x3bft-pNcloluo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

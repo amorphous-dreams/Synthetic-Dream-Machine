@@ -1,0 +1,36 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna14/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-04 (file date) — source `.lares-scratch/seat-harness/luna14/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna14/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/seat-harness/luna14/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-04
+
+Verbatim scratch record `.lares-scratch/seat-harness/luna14/final.md` (hand-back, file date 2026-11-04); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna14/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+* ''HIGH — `tools/launch-codex.mjs:418–424, 460`:'' The supervisor treats any bwrap exit as a normal seat exit. If bwrap fails before starting Codex—for example, if PID namespace creation is denied—the supervisor can still write `done-*` and return success. `HAVE_BWRAP` only probes a basic bind-and-run at `tools/seat-walls.mjs:52–53`; it does not prove this containment command works. Check the child’s exit result and distinguish setup failure from a completed seat.
+
+* ''HIGH — `tools/launch-codex.mjs:448–451`:'' If `copyBack` throws after copying only some files, the catch leaves `copied` empty and the supervisor still writes the done marker. A waiter can see “done” while the hand-back is incomplete, contrary to the marker’s guarantee.
+
+* ''MED — `tools/launch-codex.mjs:410–419, 447–453`:'' If the supervisor crashes or is killed, `--die-with-parent` can end bwrap, but nothing writes the completion marker. The documented `until [ -f done-* ]` wait can therefore hang indefinitely. Provide a crash-visible completion or failure path.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;si7wWkIOhyoVNKRau5YpBnnxAohLsF7TVg6LwmGSzdQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

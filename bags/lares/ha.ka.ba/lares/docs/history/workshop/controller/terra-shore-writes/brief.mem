@@ -1,0 +1,49 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-shore-writes/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-06 (file date) — source `.lares-scratch/controller/terra-shore-writes/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-shore-writes/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/terra-shore-writes/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/terra-shore-writes/brief.md` (brief, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-shore-writes/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Terra-Shore-Writes: Lares (Tasked Spirit). Read-only diagnosis. Repo: /home/joshu/Synthetic-Dream-Machine (span ed193feee) and the b1-lift worktree /home/joshu/.lares-scratch/b1-lift/wt (head d6c5b494c). Write nothing. Mark claims MEASURED (file:line, log line) or INFER.
+packages/lararium-web/tests/e2e/shore-writes.e2e.test.ts reads red in CI for the third time tonight across three lanes (b1-lift twice: runs 42197282289 attempt 1 and 42234220343; b1-seal: 42205053266), each time two cases ("served wiki saves a draft tiddler without worker errors", "the vessel page reports its instruments …") with `page.waitForFunction: Timeout 20000ms exceeded` at waitForLivePage, phases reaching vessel-ready, no faults; it passed on one rerun and 5/5 locally. Excerpt: /home/joshu/.lares-scratch/controller/terra-shore-writes/fail-excerpt.log; logs: /home/joshu/.lares-scratch/b1-lift/ci-42234220343.log, /home/joshu/.lares-scratch/b1-lift/ci-42197282289.log, /home/joshu/.lares-scratch/b1-seal/ci-42205053266.log. House law: a recurrence reads as a new fault; a race gets pinned by the product's own event, never a sleep, a retry loop or a wider budget.
+Find: what waitForLivePage waits for (file:line), which product event should satisfy it, and what can delay or drop that event under CI load (a worker boot ordering, a service-worker claim, the mirror's promotion, a timer the product owns); whether the 20 s budget bounds a real product wait or masks a lost event. Name the minimal cure (product-side, pinned on its own event) and the red that must fail first, with a control. Final message under 600 words.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* A read seat writes no file: its final message carries the hand-back. Any other seat writes `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TZPhMnaR5AkLtnDoWYvuW98UaVEOyLzkI9n9WHmTQ8E`>>
+
+<<^ code=`&#x0004;` to=`?`>>

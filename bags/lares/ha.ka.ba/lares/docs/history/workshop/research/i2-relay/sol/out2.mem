@@ -1,0 +1,51 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/i2-relay/sol/out2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/i2-relay/sol/out2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/i2-relay/sol/out2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/i2-relay/sol/out2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out2.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/i2-relay/sol/out2.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/i2-relay/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ node "-> refreshes the libation dish, the shrine incense burns">>
+&lt;&lt;~ set hud="aim" mu="_!" stance="🏛️🗡️" aperture="16/arc" ooda-ha="✶ observe -> ⏿ orient -> ◇ decide -> ▶ act -> ↺ hoʻoko/aftermath">>
+
+Sol-Relaywright: Lares (Tasked Spirit) — ''✶ Observe → ⏿ Orient.'' I reread the two wave-one handbacks against the carrier and current code. This ratchet accepts one I2 lane, an agent-held key, root-signed domain-separated delegation, signed face-plane control entries, unchanged agent entry plus separate relay admission signature, independent read verification, causal refusal when proof lacks a required frontier, and preserved revoked-after-acting history. The carrier rules: “A far agent's intent, admitted by a relay, verifies on a device that never saw the relay” (`face-intent-plane.mem:138`). Existing `intent-entry.ts:9-31,64-85` lacks the needed kinds; `intent-read.ts:58-77` admits device atoms or root control signers today.
+
+''R1 — the door's transport: OPERATOR.'' Options: (a) a new HTTPS POST listener, (b) a loopback/local operator socket, (c) an intent route and dedicated admission ring on the existing sealed outward gate. ''Lean (c).'' Canon says “a door off the local socket, opened per face, ring-gated and off by default” (`face-intent-plane.mem:91`): //off// reads as outside the local daemon socket, not necessarily a fresh network listener. The road places the local socket inside the container (`stable-founding-road.mem:109`); its “one socket cutover” changes the sync handshake once (`:280-281`, `#/the-trains` W), not a blanket ban on later routes. One upgrade dispatcher already seats gates by route and knock; an undecryptable Noise IK first flight dies before `101` (`face-gate-server.ts:2-16,398-404`; `ws-dial-socket.ts:2-13`). The private face grant ring proves sibling-face membership, not an agent's intent authority (`face-gate.ts:263-267`; `gate-rings.ts:2-23`); I2 needs its own per-face enablement and admission predicate. Extend the sealed gate protocol by its reserved frame/tag rule if needed (`stable-founding-road.mem:661`), without giving the agent a sync session. A loopback door alone cannot admit a far agent. Existing carriage relay transports ciphertext hints under another port and relation (`carriage-relay.ts:1-18`); it does not supply this door.
+
+''R2 — the relay's key: DERIVED.'' “A shared act never makes a shared secret”: each S row names its principal and opener (`stable-founding-road.mem:207`; `custody-per-face-2026.mem:31-32`). K15 explicitly assigns its durable random relay-only S row to //carriage// (`k15-bonds/brief.md:33-35,54-55`; `carriage-relay.ts:1-18`). I2 admission signs a different assertion, so it gets a separate random durable ''S row'', principal `intent-admission service`, opened only through that service's scoped custody door. The two rows share neither key nor authority. A browser holds no S (`stable-founding-road.mem:207`); it verifies the public admission signature, while the face root's private key remains D and signs delegation. K15's row implementation supplies a custody pattern, not an alias for admission.
+
+''R3 — who revokes: OPERATOR.'' Options: current KEL-authorized root only, or a face device atom with a separately root-granted revocation power. ''Lean root only'' for the first wire shape. Canon says “The operator's release always wins” over claims (`face-intent-plane.mem:78`) and says a revoked delegation refuses on read (`:93`), but neither line authorizes a device atom to revoke a //delegation//. Current `intent-read.ts:58-65,91-100` permits root control kinds and device claim releases; this precedent does not transfer authority. Verify the revocation root signature against the signed KEL epoch (`intent-read.ts:49-51`), including root rotation; a former root cannot sign a new revocation after its epoch. A later learned revoke voids pending acts and labels earlier outcomes; it never erases them.
+
+''R4 — the bound's name: DERIVED for events, OPERATOR for count.'' Canon names “a causal bound in place of an expiry time” (`face-intent-plane.mem:90`) and lists supersession, delegation revocation, roster edge and cancellation as causal voids (`:77`). Valid concrete references: a signed roster-act CID (`intent-read.ts:147-164` already reads `void`/`through` roster CIDs); a verified K17 frontier head and its ancestry, including the root/KEL epoch; and explicit signed control-entry CIDs. A reader missing a cited event, head, snapshot or revocation closure returns `unknown-frontier` and waits before effect, as `mayAct` does (`intent-read.ts:173-199`). An admitted-invocation ''count'' lacks a unique order in this concurrent plane. Options: omit it, or add a signed per-delegation sequence/frontier protocol. Lean omit for I2; neither relay-local counts nor a wall clock can settle it.
+
+''R5 — order and overlap: DERIVED, with one coordination hunk.'' I2 can start now alongside K15 bonds as one lane, working on `packages/lararium-mesh/src/{domains,intent-entry,intent-read,intent-issue}.ts`, a new mesh delegation verifier, `packages/lararium-keyhive/src/face-intent-door.ts`, `packages/lararium-node/src/{gate-rings,face-gate-server}.ts` (or a sibling intent ring/service module), `packages/lararium-node/src/commands/intent.ts`, and reader-only browser wiring in `packages/lararium-browser/src/open-browser-vessel.ts:1270-1319`. The ''one shared opener hunk'' adds explicit per-face relay stand/close plus dispatcher registration in `open-node-vessel.ts:708-724,1360-1397`, without touching K15's seed/identity/custody code or carriage key path at `:1419-1434`. Hold that hunk for integration with K15's owner. D2's TW5 port/lease, hand gate and projection sink take no I2 hunk. The hands room follows K15 bonds; I2's agent intent admission does not implement hands. All tests below name targeted witnesses, no suite requested here.
+
+''▶ Act — red-first slices.'' (1) //Delegation grammar/read//: red wrong group, domain, KEL epoch, prefix, argument, forged key or unknown policy; control ordinary device intent; positive root grant pins one agent key and narrow invocation reads on node and browser. (2) //Causal revoke/bound//: red revoke-first, revoke-later, unknown frontier and concurrent revoke/effect; control unrelated grant and known frontier; positive pending invocation refuses while prior signed outcome remains `revoked-after-acting`. (3) //Ring and relay custody//: red off face, wrong route/ring, borrowed carriage key and place-seed alias; control existing sealed sync and carriage; positive one enabled face admits with its own S row after restart. (4) //Admission/effect//: red argument substitution, forged admission, replay, missing chain and hostile relay countersign alone; control ordinary I1 effect; positive unchanged agent entry reaches another device, verifies without the relay, and executes once through `face-intent-door.ts:36-67`. Each slice needs its known positive beside the refusal.
+
+''↺ Hoʻoko/aftermath.'' The remaining operator rulings concern transport composition and device revocation, plus whether invocation counts warrant a new sequence protocol. The reader's safety rests on signed causal knowledge, never the relay's claim of a global now.
+
+WORDS=952
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;FP2CurLSq8JAUZmJPzn1tKyrwg-h8hd5jqzOswl8B5I`>>
+
+<<^ code=`&#x0004;` to=`?`>>

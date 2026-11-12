@@ -1,0 +1,39 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-016/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-016/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-016/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-016/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-016/final.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-016/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Lares (Artificer): Step 16 stopped at a broker liveness wall. The new node ring timing test reproduced the missing invalidation signal: ''14 passed, 1 failed''. I added the callback, but the green run timed out waiting for request 031’s receipt, so the change remains unverified and uncommitted.
+
+The callback also remains unwired to the face seat. Cross-worker delivery, browser wiring, and protection against board changes during ingest remain open.
+
+The hand-back and next-step state are recorded in [[step-016/out.md|/home/joshu/.lares-scratch/lease-end/steps/step-016/out.md]] and [[state.json|/home/joshu/.lares-scratch/lease-end/state.json]]. No push occurred.
+
+&lt;&lt;~ oracle throw=`↯10 ✲ ⚂(3) ⁂:⟁☕🜄`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`request 031 has no complete receipt; inspect its result before issuing another relay request · ↻ L-Prime` ooda-ha=`closed 1↺ -> open 1φ⏿:broker.receipt.timeout` from=`lar://codex:agent@local/broker.receipt.awaits` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mdXW6A-kNCiLudpmmraC3l0ydsrtOSM8Nw8jO7jvpOM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

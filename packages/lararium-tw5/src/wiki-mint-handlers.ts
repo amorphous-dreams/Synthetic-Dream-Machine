@@ -65,6 +65,8 @@ export function makeInitWikiReactor(opts: WikiMintHandlerOptions): VerbReactor {
     const wikiHandle = existingWikiUrl
       ? await opts.repo.find(existingWikiUrl as AutomergeUrl)
       : opts.repo.create(emptyLarDoc());
+    // AT THE VEIL FLOOR the canon document files as the vessel's own before its first byte rests (sealed under the vessel's key).
+    if (!existingWikiUrl && opts.veilFloor) await opts.veilFloor.nameCanon(slug, wikiHandle.documentId, wikiHandle.url);
     if (!existingWikiUrl) await wikiHandle.whenReady();
 
     if (!existingWikiUrl || !existingRecipeRec) {
@@ -78,6 +80,8 @@ export function makeInitWikiReactor(opts: WikiMintHandlerOptions): VerbReactor {
           kind: "oracle",
           "path-filter": "lar-bag-path[wiki-shadow]",
           "mirror-root": `wikis/${slug}`,
+          // The veil's mark: the vessel itself minted this wiki with no face, so the row rests on the floor's half.
+          ...(opts.veilFloor && !existingWikiUrl ? { "face-reach": "vessel-only", "minted-by": opts.veilFloor.mintedBy } : {}),
         }, "lares-cli:wiki-init");
         if (!existingRecipeRec) {
           tiddlers[recipeTitle] = storedLarRecord(recipeTitle, {

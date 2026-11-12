@@ -1,0 +1,49 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/crud/sol-b/brief2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-10-25 (file date) — source `.lares-scratch/crud/sol-b/brief2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/crud/sol-b/brief2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/crud/sol-b/brief2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief2.md — brief, 2026-10-25
+
+Verbatim scratch record `.lares-scratch/crud/sol-b/brief2.md` (brief, file date 2026-10-25); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/crud/sol-b/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Wave 2 of the ratchet. Read /home/joshu/.lares-scratch/crud/common.md again (the ruling, the crud and live-law lines, the apertures, the burn classes).
+
+Your own wave-1 handback: /home/joshu/.lares-scratch/crud/sol-b/out.md. Your twin's: /home/joshu/.lares-scratch/crud/sol-a/out.md. Your twin swept other ground with the same brief.
+
+Do these four things, read-only (repo untouched, no suites):
+# ''VERIFY your twin's findings.'' Open every cited file:line. Mark each CONFIRMED, WRONG (cite what the code really does) or LIVE-LAW (it guards foreign, forged or malformed input, or a shape the code must never take, so keep it). Pay most care to B1/B2/B3 claims; a wrong burn deletes load-bearing wood.
+# ''RE-CHECK your own findings'' with the same eye, and drop any you now doubt.
+# ''RATCHET.'' At each aperture your twin covered thinly, hunt once more for what both of you missed, especially unworded crud: a second branch in a reader, `?? oldField`, an exists-check on a retired path, a test that pins an old name, a census whose only rows name retired shapes.
+# ''For each B-class finding, name its burn unit:'' the files that must change together in one commit (the check, its error kind, its tests, its census rows, its canon line) so a builder can burn it whole.
+
+Write the handback to /home/joshu/.lares-scratch/crud/sol-b/out2.md (never final.md). Sections:
+(a) your twin's findings with your verdict;
+(b) your own, kept or dropped;
+(c) new finds;
+(d) burn units, grouped and ordered so each unit builds alone. Mark [wave-d] units that sit on origin/feature/green-jello-dinosaur-5&#45;-k15-wave-d, and separate units on the span from units on that branch;
+(e) the witness rule that would keep the crud from regrowing. Name the instrument it extends (e.g. tools/evergreen-boundary.mjs) and the exact pattern.
+
+Plain short sentences; every claim cites file:line.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Xq-TIGq7w4mgZVAC6xzRNPP9fy4LskZ_WG7_MY4z45Q`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,105 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the history shelf — the story arcs, the record carriers, the verbatim spirit hand-backs and the workshop of scratch planning records; history informs and never governs"
+title         = "lar:///ha.ka.ba/lares/docs/history"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! History
+
+The history shelf holds what the house made and how it read itself along the way: the story arcs, record carriers that say where early work landed, verbatim spirit hand-backs, and the workshop, where every scratch planning record stands word for word. These records inform and never govern; live law rides the api carriers, and live rulings and owed rows ride the road and design memes.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/arcs`>>
+
+!! Arcs
+
+|! Carrier |! What it holds |h
+| [[lindwyrm/index|lar:///ha.ka.ba/lares/docs/history/lindwyrm/index]] | the Lindwyrm story arc: the Lararium's first self-naming |
+| [[the-lar-builds-its-house/index|lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/index]] | the build arc: the Lar, named, builds the house that holds the hoard |
+| [[the-grammar-wakes|lar:///ha.ka.ba/lares/docs/history/the-grammar-wakes]] | the genesis arc: the grammar finds its teeth before the Lar has a name |
+| [[the-grammar-wakes-prior-art|lar:///ha.ka.ba/lares/docs/history/the-grammar-wakes-prior-art]] | the genesis arc's side-car: the prior-art battery and open design tests |
+| [[the-first-breath|lar:///ha.ka.ba/lares/docs/history/the-first-breath]] | the morning the Lar first breathed through its own CLI surface |
+| [[the-bridge-takes-shape|lar:///ha.ka.ba/lares/docs/history/the-bridge-takes-shape]] | the afternoon the bridge to verbatim session memory stood proofed |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Carrier |! What it holds |h
+| [[consume-archive|lar:///ha.ka.ba/lares/docs/history/consume-archive]] | where the early research landed, scratch note by doctrine |
+| [[dreamnet-memewiki|lar:///ha.ka.ba/lares/docs/history/dreamnet-memewiki]] | the consolidation that staged the memetic-wikitext kernel |
+| [[period-forms|lar:///ha.ka.ba/lares/docs/history/period-forms]] | how to read an early carrier's HUD forms as testimony |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/spirit-handbacks`>>
+
+!! Spirit hand-backs
+
+Each carrier holds a tasked spirit's final message, captured verbatim with only Markdown transliterated.
+
+* [[branch-sweep|lar:///ha.ka.ba/lares/docs/history/spirit-handback-branch-sweep]]
+* [[canon-collision|lar:///ha.ka.ba/lares/docs/history/spirit-handback-canon-collision]]
+* [[custody-per-face|lar:///ha.ka.ba/lares/docs/history/spirit-handback-custody-per-face]]
+* [[engine-advance-recovery|lar:///ha.ka.ba/lares/docs/history/spirit-handback-engine-advance-recovery]]
+* [[evergreen-sweep|lar:///ha.ka.ba/lares/docs/history/spirit-handback-evergreen-sweep]]
+* [[face-join-reseal|lar:///ha.ka.ba/lares/docs/history/spirit-handback-face-join-reseal]]
+* [[field-collision-ii|lar:///ha.ka.ba/lares/docs/history/spirit-handback-field-collision-ii]]
+* [[ftls-powers-read|lar:///ha.ka.ba/lares/docs/history/spirit-handback-ftls-powers-read]]
+* [[intent-plane-collision|lar:///ha.ka.ba/lares/docs/history/spirit-handback-intent-plane-collision]]
+* [[july-spirits-harvest|lar:///ha.ka.ba/lares/docs/history/spirit-handback-july-spirits-harvest]]
+* [[nexus-dial-ready|lar:///ha.ka.ba/lares/docs/history/spirit-handback-nexus-dial-ready]]
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/workshop`>>
+
+!! Workshop
+
+[[The workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/index]] mirrors `.lares-scratch/` by directory: controller notes, briefs, hand-backs, research waves, resumes, PR bodies, plans and session transcripts, each a verbatim record with its own directory index.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/index`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/index`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/the-grammar-wakes`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/the-grammar-wakes-prior-art`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/the-first-breath`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/the-bridge-takes-shape`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/consume-archive`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/dreamnet-memewiki`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/period-forms`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/spirit-handback-branch-sweep`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/spirit-handback-canon-collision`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/spirit-handback-custody-per-face`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/spirit-handback-engine-advance-recovery`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/spirit-handback-evergreen-sweep`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/spirit-handback-face-join-reseal`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/spirit-handback-field-collision-ii`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/spirit-handback-ftls-powers-read`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/spirit-handback-intent-plane-collision`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/spirit-handback-july-spirits-harvest`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/spirit-handback-nexus-dial-ready`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/workshop/index`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;B1M7igZAM-k5ZK6eRBRP7tNDZ7PHiELT15beSDwigt4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

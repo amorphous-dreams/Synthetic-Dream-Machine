@@ -154,6 +154,30 @@ export function hearthFloorCardText(card: HearthFloorCard): string {
   return base64UrlEncode(utf8Bytes(JSON.stringify({ claim: card.claim, kel: card.kel })));
 }
 
+/** The `kind` a floor card's carried FILE names (the carriage door reads a file by its kind, as it reads a fleet-join file). */
+export const FLOOR_CARD_CARRIAGE_KIND = "floor-card";
+
+/**
+ * A floor card as the FILE a person carries by hand (paste, file or QR) from the hearth's banner to a device's carriage door:
+ * `{ kind: "floor-card", card }`, and nothing else. It carries no anchor: the place AID travels apart, by its own act.
+ */
+export function floorCardCarriageText(cardText: string): string {
+  return JSON.stringify({ kind: FLOOR_CARD_CARRIAGE_KIND, card: cardText });
+}
+
+/** The card text a carried floor card file holds, or null where the text reads as no such file (any second key refuses it whole). */
+export function readFloorCardCarriage(text: unknown): string | null {
+  try {
+    if (typeof text !== "string" || text.length === 0 || text.length > FLOOR_CARD_TEXT_BOUND + 64) return null;
+    const value = JSON.parse(text) as unknown;
+    if (typeof value !== "object" || value === null || Array.isArray(value)) return null;
+    const keys = Reflect.ownKeys(value);
+    if (keys.length !== 2 || !keys.includes("kind") || !keys.includes("card")) return null;
+    const { kind, card } = value as { kind: unknown; card: unknown };
+    return kind === FLOOR_CARD_CARRIAGE_KIND && typeof card === "string" && card.length > 0 ? card : null;
+  } catch { return null; }
+}
+
 /** Read a carried floor card's SHAPE: a claim on the flow route and KEL events that decode; else null. Nothing here trusts the card. */
 export function readHearthFloorCard(text: unknown): HearthFloorCard | null {
   try {

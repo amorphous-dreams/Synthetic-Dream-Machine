@@ -47,7 +47,7 @@ async function foundHalted(tag: string): Promise<{ idbName: string; group: strin
   const idbName = `face-rows-${tag}-${crypto.randomUUID()}`;
   const asked: string[] = [];
   const opts = {
-    idbName,
+    idbName, foundFace: true,
     askCustody: async (q: { readonly kind: string }) => { asked.push(q.kind); return ROUTE; },
     onPhase: (phase: string) => { if (phase === "bootstrap-kept") throw new BootHalted(); },
   };
@@ -76,11 +76,11 @@ describe("a production founding keeps its face's rows under the face's own tree"
       fcid = index.entries[0]!.fcid;
     } finally { db.close(); }
     const under = keys.filter((k) => k.startsWith(`face-sealed/${fcid}/`)).map((k) => k.slice(`face-sealed/${fcid}/`.length)).sort();
-    expect(under, "the face's rows rest under its own tree").toEqual(["anchor", "face-address-secret", "face-anchor", "face-atom", "veil-archive", "vessel-face-tag"]);
+    expect(under, "the face's rows rest under its own tree").toEqual(["anchor", "face-address-secret", "face-anchor", "face-atom", "veil-archive", "veil-lift", "vessel-face-tag"]);
     expect(keys, "the face's tree stands").toContain(`face-slots/${fcid}`);
     // The face's root rests under its own ward, never under a custody tree; the ward's public roster rests beside the place seed.
-    expect(keys, "the face's root rests under its ward").toContain("ward/h0/persona-root");
-    expect(keys.filter((k) => k.startsWith("sealed/")), "CONTROL: the shared tree keeps the place seed, the ward's public roster and the vessel's secret home's address alone").toEqual(["sealed/persona-root-roster", "sealed/secret-home", "sealed/vessel-key"]);
+    expect(keys, "the face's root rests under its ward").toContain(`ward/root/${fcid}/persona-root`);
+    expect(keys.filter((k) => k.startsWith("sealed/")), "CONTROL: the shared tree keeps the place seed, the floor's rest seed, the ward's public roster and the vessel's secret home's address alone").toEqual(["sealed/floor-rest", "sealed/persona-root-roster", "sealed/secret-home", "sealed/vessel-key"]);
   }, SLOW);
 
   test("FR2 RED a face whose last session left reads nothing, and a second face opens only under its own unlock — CONTROL: the face's own unlock reads again", async () => {
@@ -106,7 +106,7 @@ describe("a face row never rests under the place tree", () => {
     // A persona root keyed by its handle index beside the place seed, under the place tree.
     const db = await openVesselIdb(idbName);
     try { await idbPut(db, "keystore", "sealed/persona-root-h0", new Uint8Array([1, 2, 3])); } finally { db.close(); }
-    const refused = await openBrowserVessel({ idbName, askCustody: async () => ROUTE } as unknown as BrowserVesselOptions).catch((e: unknown) => e);
+    const refused = await openBrowserVessel({ idbName, foundFace: true, askCustody: async () => ROUTE } as unknown as BrowserVesselOptions).catch((e: unknown) => e);
     expect(String(refused)).toMatch(/face-row-shared/);
     expect((refused as { reading?: unknown }).reading).toBe("face-row-shared");
     await expect(readKeystoreRow(idbName, "nexus-key/h0/aid")).rejects.toMatchObject({ reading: "face-names-a-handle" });

@@ -1,0 +1,63 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t4/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-10-31 (file date) — source `.lares-scratch/controller/seats/sol-train-t4/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t4/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t4/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/seats/sol-train-t4/brief.md` (brief, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t4/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Train-Reader T4: Lares (Tasked Spirit). One Sol read covers this train before it lands (standing contract: one Sol read per train head). Read the delta beside this brief and nothing wider. The repo at /home/joshu/Synthetic-Dream-Machine holds the span (ec3c990be). Read files there for context. If your write wall refuses temp files, probe in process.
+
+The train:
+# ''#144 recut-rolls, security class'' (recut-rolls.patch, design recut-rolls-design.md).
+#* ''T33:'' roll marks count only under a receipt this vessel's own key signed (`verifiedRollMarks`). `ledger:edge` joins the vessel-private class under a `device` owner; `classDeviceLedgers` classes every face key held at boot. The fold keeps a planted mark's raise owed.
+#* ''T34:'' every edge-seats door takes `worn = { fleetRoot, atomKey }` from the composer, the worn face deciding, never the roster. A joinee's seat-duties settles its own foundings. `lares edge settle` carries the worn fleet through the store door.
+#* ''T35:'' `fleetRaisesOf` takes `worn | null`. Only a no-face vessel reads unread; a worn face with an unread root or atom refuses.
+# ''#142 recut-fixture, test-side only:'' landed-ledger.ts `whenLanded`, a scratch env fixture, and a test helper opening scratch custody one route at a time. It needs no security read; skim it for any product-path change.
+
+Answer, MEASURED where you can:
+* (a) Can a planted or replayed mark still lift a raise, skip a roll or flip a device standing? Does every reader pass the ledger's own atom key, and does a wrong or empty key fail closed?
+* (b) Can `worn` widen authority? Look for a session or CLI path that hands a foreign fleet root or atom, the composer's custodyGroup gate on the sign door, and the joinee settler running on a sovereign composition only.
+* (c) T35: any path where a worn face reads unread and seals, or a no-face vessel seals with an owed raise counted?
+* (d) Can any lane still open `ledger:edge`: realm alias, sibling gate, same-face view, wire stranger, a face whose key opens after boot (the named residual)?
+* (e) Merge interactions with #141's share law (null inputs withhold; the tests moved to NO_BANS/NOBODY_ASIDE) and #140's sign door.
+
+Name each finding HIGH, MEDIUM or LOW with file:line. End with SHIP or HOLD per lane.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* Write `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;U7PJhzNCJxOTKHaNPwf7YTof45hSUdHPfr19XtqMom0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

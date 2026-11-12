@@ -1,0 +1,44 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t2/u1-threat-sketch`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-10-31 (file date) — source `.lares-scratch/controller/seats/sol-train-t2/u1-threat-sketch.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t2/u1-threat-sketch"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t2/u1-threat-sketch"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! u1-threat-sketch.md — plan, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/seats/sol-train-t2/u1-threat-sketch.md` (plan, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t2/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/u1-threat-sketch-a-face-s-session-reaches-the-se`>>
+
+! u1 threat sketch — a face's session reaches the sealed store (2026-10-31)
+
+| authority input | source | what proves it | where the law lives | fails closed to |h
+| which session signs | the UDS seat's booking: request id + verb → that socket's signer, for the call's life | the owner's SessionTable, asked by the signer before and after every signature | `session-sign-door.ts` (book), `SessionSigner.sign` | `signer-unavailable` (no booking / other verb / summons) |
+| the signature | the session's own SessionSigner on the main thread | its table check; secret never leaves the object | `session-signer.ts` | `signer-refused` (dropped by lock/close/switch) |
+| anchor | the supply's anchor (nexus / place) | the session door's proof at that anchor | book: `session-anchor-place` | place sessions reach no sealed verb |
+| the face | the booking's proof subject (main), never `invocation.face` | equals faceProofSubjectRef(own chain scope) | island `sessionOf` | `session-face-foreign` |
+| the chain (who may write) | the dial presentation's VesselFaceCertificate (scope, vesselFaceKey), public | composed only when the dial's presentation composed at the pin | `dialAnchorCell().chain`, island `ownChainStanding` | holdsWrite false: cert not under the vessel's own chain, or bag not in registerBags |
+| ask origin | `context.local` (vessel's own channel) + main's booking | the dispatcher's local-ask book; main books only session calls | island + book | summons refuses (content fence / signer-unavailable) |
+
+Exempt by name: `sealed-memory-*` (vessel-key-signed asks, the house's own; import takes a session signer only where one booked), `sealed-rolls` (vessel receipts).
+OPEN (fork F7): seat rolls carry no session → removal rolls stay owed while seals continue under the old version.
+Browser: waits for U4 (F6 slice four); route table stays total.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ykXwc3qXPa9HwIB93_BGVpxYqNQgYDmCRKwCKACnuOk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

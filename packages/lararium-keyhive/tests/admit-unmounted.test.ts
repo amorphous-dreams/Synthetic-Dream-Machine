@@ -24,7 +24,7 @@ async function admitInput() {
   const founderSeed = new Uint8Array(32).fill(41);
   const signerSeed = new Uint8Array(32).fill(42);
   const atomSeed = new Uint8Array(32).fill(43);
-  const founder = withMemorySecretHome(await foundThePlace({ repo: founderRepo, vesselSeed: founderSeed, hearthTrueName: "hearth" }), founderRepo);
+  const founder = withMemorySecretHome(await foundThePlace({ repo: founderRepo, vesselSeed: founderSeed }), founderRepo);
   const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
     repo: founderRepo, daemonHandle: founder.daemonHandle, secretHandle: founder.secretHandle, secretRest: { assertSealed: async () => true }, placeVerifyingKey: key(founderSeed),
     vesselDisplayName: "founder", binding: { mode: "self-stood", signerSeed },

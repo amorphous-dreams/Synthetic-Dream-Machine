@@ -1,0 +1,101 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/design`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-06 (file date) — source `.lares-scratch/b1-lift/design.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/design"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/design"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! design.md — plan, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/b1-lift/design.md` (plan, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/b1-lift-the-design-the-controller-collided`>>
+
+! B1 lift — the design the controller collided (2026-11-05)
+
+Two blind waves (Terra measure at 3293533a4, `measure.md` beside this file; Opus Lift-Seer design) agree on the facts. Operator ruled 2026-11-05: "Browser + Node is part of founding", so B1 rises before the rite.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/what-the-page-holds-today`>>
+
+!! What the page holds today (measured)
+`index.html` loads `src/main.ts` as a page module; `main.ts` ~527 calls `openBrowserVessel`; `bootUnderLock` runs in page memory: the Repo with its IDB adapter, the relay WebSocket, the fedGate and share policy, `runFoundingCeremony` / `runApplyAdmitPayload`, the persona-root seed (`loadBrowserPersonaRootSeed(…, wardRoute)` opens the ward in-page at founding), the atom seed (hex into `daemonAuth`), the fleet-join mints, the verb registry, and the unlocked custody tree key in a module-level `const unlocked = new Map` (`browser-custody.ts` ~114). The shared holder holds no key by design and routes `custody:write` back to a `session:sealer` tab. Off the page already: the daemon/wiki kernels, the per-act `ward.worker`, the holder's in-realm daemon island. The browser builds no `CapabilityRecord`; `holder-routes` sends `cas:want` / `receipt:request` / `custody:write` to the "owner" tab. Node and browser share `composeCoreVessel`, but the browser builds identity, ceremonies and dial outside it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/target-shape`>>
+
+!! Target shape
+| realm | holds |h
+| page | DOM, projection sink, TW5 mirror, the ask dialogs, `navigator.storage.persist`, Worker construction only (a substrate spawner) |
+| vessel worker (a SharedWorker house where the engine offers one, else a dedicated worker; chosen by capability, never a flag) | the whole `bootUnderLock`: Repo, IDB, relay, custody tree key, founding/admit, face proof, verbs, CapabilityRecord |
+| islands (daemon/wiki) | as today; the holder runs them in-realm |
+| ward act worker | one act; its rows arrive from the vessel over a transferred port, the route from the page |
+
+Port, page→vessel: `hello{tabSession}`, `answer{askId}` (on a fresh MessageChannel carrying a transferred UTF-8 ArrayBuffer: it detaches in the page and the input clears), `control-event`, `set-surface`, `join:offer{text}`, `join:answer{text}`, `page:life{hidden|pagehide}`, `mirror:port`.
+Vessel→page: `phase`, `frame`, `control-result`, `port-msg`, `ask{askId, kind: unlock|bind-first|clear|ward, act}`, `status{custody, seedRest, connection, did, wiki…}`, `join:request{text}`, `spawn{role}` (the page builds a Worker and transfers its port without reading it), `ended{why}`.
+Passphrase path: page form → bytes on a one-shot port → the vessel (or the ward worker for a ward act). Residual, named: the input element's string lingers until GC.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/slices`>>
+
+!! Slices (each red-first)
+* ''Slice 0 — red witnesses (S).'' A page-entry import-graph witness: `main.ts` must not reach <code>&#64;automerge/automerge-repo</code>, <code>&#64;lararium/keyhive</code>, `browser-custody`, `browser-vessel-identity`, `ward-core`, `seed-wrap-prf`. Fails today; DECLARE it in `unbuilt-laws.test.ts` until slice 2 makes it hold.
+* ''Slice 1 — substrate seams (S–M).'' `localStorage` identity continuity (`browser-vessel-identity.ts` ~255-282) → an IDB row; `confirm()` (`browser-custody.ts` ~681) → the existing `ConfirmDoor` param; `document` visibility/pagehide (`browser-vessel-island-pool.ts` ~33) and `dataset.larRest` → `page:life` / status messages. Red: the vessel modules boot under a worker-global shim (no window, document, localStorage); fails today at continuity.
+* ''Slice 2 — the move (L).'' A dedicated `vessel.worker.ts` runs `openBrowserVessel` unchanged; `BrowserVesselOptions` callbacks map one-to-one onto port messages; `main.ts` talks to a `vesselPort`; islands spawn nested from the dedicated worker. Red: slice 0 holds; a real-browser e2e boots, founds and paints the mirror.
+* ''Slice 3 — custody in the vessel (M).'' Each port is a session admitted by its tab's own route; the face's last session closing drops the key; sealing happens in the vessel's realm. Red: two tabs, B without an unlock reads no sealed row; after all tabs close no tree key stands; reopening asks again.
+* ''Slice 5a (S, rides slice 3).'' The browser answers island asks through a `CapabilityRecord`: receipt/cas/dyad at construction, `custodyWrite` lifted on unlock. Red: a browser herm refuses `session:sign` with `signer-unavailable`, as `composeHerm` does.
+* ''Slice 6 — idempotence (M).'' Reload mid-ask; a retried ask (`askId` = digest of act+session+nonce, never a counter); a crashed vessel worker (respawn, re-ask, same heads); a founding killed between `keepBrowserFaceAtomSeed` and the bootstrap write.
+* ''After standing:'' slice 4 (the SharedWorker hosts slice 2's body, the dedicated worker becomes the floor, `?holder` goes) and slice 5b (one `composeVessel(substrate, floor, lifts)` shared with the node; roles as predicates over the record; one LarVessel). The X0b sweep.
+* ''The rite needs:'' slices 0–3, 5a, and slice 6's reload and retry witnesses.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/what-dissolves-outright`>>
+
+!! What dissolves outright
+The `sessionStorage` admit stash + `location.reload()` (the vessel re-enters boot inside itself); the `session:sealer` announce and route-to-tab; `onLock: lockBrowserCustody` / `onBrowserCustodyLock` page listeners; `houseOfBoot`'s page reads of IDB; the "first founding takes the dedicated floor, the house stands next boot" split; `standBrowserCustody`'s pre-boot page step and `offerBootRetry`'s re-boot; the tab topology leader/follower and lend (wherever a SharedWorker stands); `?holder`; `holder-routes` owner routing for the four asks; the page-realm `readBrowserCustody` / `readBrowserSeedWrap` status reads; the browser-ward "residual, named" shrinks to the form alone.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/founding-after-the-cut`>>
+
+!! Founding after the cut
+# The page connects the port; the vessel reads its stores and stands the floor (place key). 2. `ask bind-first` → the form → bytes to the vessel; the slot binds and the root mints under the ward from the same route, zeroed after. 3. The ceremony mints atom, anchor and bootstrap; the daemon island builds with its record; frames reach the mirror. 4. Join: `join:offer` → an ask → `join:request`; `join:answer` → the vessel lands the admit and re-enters. 5. The node founds via `lares vessel found`; the crossing dials from the worker.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/risks-and-constraints`>>
+
+!! Risks and constraints
+SharedWorker on Android Chrome stands unmeasured, so the floor (dedicated worker) carries the rite; a SharedWorker cannot spawn nested workers (why today's holder runs islands in-realm); Keyhive WASM init must happen in the vessel worker (`worker-boot.ts`); Vite `?worker&url` resolves differently for nested spawns; people's plugins in the full mirror share the page realm with the form, so the full-mirror gate (sealed-store steps 2 and 3) stays; the holder's teardown `setTimeout(finish, 5_000)` lets a clock decide (cure: the ack or the lock release); `WARD_ATTEMPTS_PER_PAGE` resets on reload (count per session in the vessel); a re-run founding mints a fresh atom/group and orphans earlier rows (X0b: re-entry reaches the same end). Every slice keeps: no key on a surface, each tab's own unlock, the last tab returns the browser to its floor, one owner per store (Web Lock), one Keyhive identity per PersonaGroup, refusals by name, red-first. Engine facts to probe before slice 2: SharedWorker nesting, Android Chrome SharedWorker, WebSocket in a dedicated worker.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/house-decisions`>>
+
+!! House decisions (Mu + stories, overrulable by the operator)
+# The page form → worker path holds as the interim ceremony boundary for the rite; the ceremony's final shape stays research (dreamdom).
+# Floor followers (no SharedWorker), trued to the 2026-11-06 ruling (every tab carries a live session; leader/follower/lend dissolves): a second tab claims a port through the service-worker broker (`vessel:claim`); the owning tab's vessel worker mints a MessageChannel (`port:want` -> `port:minted`), connects one end as a fresh connection, and its page offers the other end unread; the follower's own `hello` opens its own session, admitted only by its own unlock through its own ceremony door; the broker hands both ports and carries neither's traffic, so it never sees a ceremony answer; an unanswered claim ends on an event (the claimant's withdraw, or its client gone at the broker's next event), never a timer; no tab relays a passphrase.
+# One realm per house; the page learns the house only as an opaque digest.
+# Operator default pending: "the asker seals" (2026-10-19) rewords to "the asker's session seals, in the vessel's own realm, while that face's session stands unlocked"; the `seal-awaits-session` wait stays.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;OP_6BSqnnrY8KdM_MA2Ec8MM4DVt5BDupRrY03tVg68`>>
+
+<<^ code=`&#x0004;` to=`?`>>

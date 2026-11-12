@@ -1,0 +1,33 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/row7-s3a-f5280b0ad9661fa386fd43202def198c02a6351d`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-05 (file date) — source `.lares-scratch/controller/ship/row7-s3a-f5280b0ad9661fa386fd43202def198c02a6351d.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/row7-s3a-f5280b0ad9661fa386fd43202def198c02a6351d"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/row7-s3a-f5280b0ad9661fa386fd43202def198c02a6351d"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! row7-s3a-f5280b0ad9661fa386fd43202def198c02a6351d.md — plan, 2026-11-05
+
+Verbatim scratch record `.lares-scratch/controller/ship/row7-s3a-f5280b0ad9661fa386fd43202def198c02a6351d.md` (plan, file date 2026-11-05); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+f5280b0ad9661fa386fd43202def198c02a6351d
+read: blind Opus cosign read at e68c7ba34 = LAND-AFTER-CURES (the pinned-audience P2) and Terra = HOLD (ranks rolled into C2-C4); cured C1-C4 red-first; Terra re-read of the cures = LAND-AFTER-CURES (R1 replay after a lease roll, R2 stale tables), cured red-first with the real edge producer. Tag secret: Terra and a blind Opus both CONFLICTS-WITH-RULING (the seed-derived vessel-wide tag secret sorted S, linkable faces, the browser held it); cured with a random per-face secret (D, bundle stays, under the face's FCK), the derivation and its domain retired, the census made to see the browser; a blind Opus read of the cure = LAND, its P3-a (floor door refuses every vessel-face-tag* domain) and a crash red between mint and settle landed. Terra regrant read: no way out for a stuck joinee → the renewal (one root-signed device-edge at the current epoch, served as the log holds it). Blind Opus read of the renewal + lease guard = LAND-AFTER-CURES: the guard failed open on an unreadable log → refuses lease-roll-log-unread; the guard moved into the roll (required, runs right before signing). The census and evergreen reds cured (reads through the doors; narration at its ceiling). Span merged at 8dafa0376 by hunk. CI 42149924850 green at this head. Owed before the rite (canon rows L24-L26): renewal-at-roll for every seated device, tag residuals.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JOv8J473a788e3Gcutg1_Ps7kUp30VhYOWygZ3atjVc`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,138 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/crud/sol-b/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-10-25 (file date) — source `.lares-scratch/crud/sol-b/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/crud/sol-b/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/crud/sol-b/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-10-25
+
+Verbatim scratch record `.lares-scratch/crud/sol-b/out.md` (hand-back, file date 2026-10-25); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/crud/sol-b/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-b-handback-canon-config-and-code-machinery`>>
+
+! Seat B handback — canon, config, and code machinery
+
+Read-only sweep of `feature/green-jello-dinosaur-5`. `[wave-d]` cites `origin/feature/green-jello-dinosaur-5--k15-wave-d`; its owner burns those rows. I did not run suites, builds, or installs. The present-shape rule itself stands at `bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem:173-174`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/line-aperture`>>
+
+!! Line aperture
+
+| id | file:line | what it does | why crud (the earlier shape it serves) | burn class | confidence |h
+| L1 | `packages/lararium-browser/src/browser-vessel-identity.ts:99-100` | Deletes `persona-roots` and `persona-roster` on an IndexedDB upgrade. | These names belong to retired browser secret stores; the current founding creates the present stores at `:97-108`. | B3 | high |
+| L2 | `packages/lararium-browser/src/browser-vessel-identity.ts:115-119` | Deletes `hosting-walk`, `nexus-keys`, `vessel-face-keys`, and `boot-invite-burned`. | Delete-on-upgrade code knows four retired store names. | B3 | high |
+| L3 | `packages/lararium-browser/src/browser-vessel-identity.ts:104-110` | Explains v2→v3 and v3→v4 additive stores. | The comments teach earlier schemas in the current reader. Keep present store-purpose comments at `:57-70`. | B1 | high |
+| L4 [wave-d] | `packages/lararium-mesh/src/resolver.ts:8-16,60-64` | Retells the removed `packages/lares-core/memes` mapping and old hostful type; the Wave D branch retains these lines. | These docblocks retain the repository's own superseded topology and type shape; the present contract appears at `:2-6,54-59,68-69`. | B1 | high |
+| L5 | `tools/doctype.mjs:22-24,76-78` | Names the prior positional declaration and `code:` spelling inside a present-shape witness. | The checks can state the positive grammar without naming the spellings the corpus burned. The `code=` check itself remains current grammar. | B1 | high |
+| L6 | `tools/direct-repo-witness.sh:13-16,21-22`; `tools/rendezvous-parity-witness.sh:8-11` | Narrates the incidents that prompted live seam witnesses. | The witnesses guard present invariants, but their headers keep prior repository shapes. | B1 | high |
+| L7 | `bags/lararium/ha.ka.ba/lararium/mesh/island-protocol.mem:33-34,42` | Lists a retired ACK, removed oracle-delta delivery, and the old resolver dictionary among live clauses. | The current protocol at `:30-38,44-49` needs no obsolete message names. | B1 | high |
+| L8 | `bags/lares/ha.ka.ba/lares/api/pono/memetic-wikitext-framing.mem:219` | Says earlier `x-` media types remain read-side aliases. | A current grammar promises a reader for an older spelling. The same parser may read independent foreign carriers, so rule on provenance before collapsing the alias. | R | medium |
+| L9 | `bags/lares/ha.ka.ba/lares/api/pono/uefn-scene.mem:45`; `bags/lararium/ha.ka.ba/lararium/mesh/identity-classes.mem:357` | Carries “stays retired” and a parenthetical about the retired charter reserve. | These sentences use old internal choices to explain current canon. | B1 | medium |
+| L10 | `bags/lararium/ha.ka.ba/lararium/browser/deletion-map.mem:43,95` | Leaves a prospective RootTemplate compatibility shim in the browser architecture record. | The old whole-page surface remains a possible path in standing design text. Confirm current DOM adapter needs before removing the clause. | R | medium |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/function-aperture`>>
+
+!! Function aperture
+
+| id | file:line | what it does | why crud (the earlier shape it serves) | burn class | confidence |h
+| F1 | `packages/lararium-browser/src/browser-vessel-identity.ts:91-132` | Runs schema upgrade and delete-on-upgrade paths during every browser open. | The function embeds past IndexedDB schema steps and retires old secret rows at `:99-119,123-129`. Rebuild a fresh-store creator for the present shape; inspect continuity before changing the open path. | B2 | high |
+| F2 [wave-d] | `packages/lararium-mesh/src/sealed-writer.ts:168-188` (Wave D `:183-204`); `packages/lares-cli/src/commands/found.ts:99-105` | Pre-reads a store for missing tree plus standing carriers, then raises `OldShapeRefusal`. | The named case exists to recognize the house's earlier cleartext custody shape. Burn the specialized census and collapse founding onto present-shape ownership checks. Preserve any independently needed refusal for arbitrary pre-existing or tampered files. | B2 | medium |
+| F3 | `packages/lararium-mesh/src/genesis-doc.ts:643-647` | Copies optional `compatibilityTitle` from a plugin attestation into the genesis descriptor. | The duplicate title may be a bridge to the `$:/plugins/…` TW5 name. `packages/lararium-tw5/scripts/build-plugin-tiddler.ts:255-263` still writes both plugin artifacts, so settle whether TW5 requires that name before cutting it. | R | medium |
+| F4 | `packages/lararium-mesh/src/nexus-board-climb.ts:94-114,241-264` | Carries board entries from lower Nexus islands at boot. | It calls itself a migration, but the resolver's live scope gradient at `packages/lararium-mesh/src/nexus-identity.ts:272-309` appears to move a vessel after a current charter or anchor change. Rule on whether this covers live movement before burning. | R | medium |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/file-module-aperture`>>
+
+!! File/module aperture
+
+| id | file:line | what it does | why crud (the earlier shape it serves) | burn class | confidence |h
+| M1 | `bags/lares/ha.ka.ba/lares/api/pono/vm-projection-bus.mem:118-144` | Teaches migration from `_larKukaliHook` with old and current code blocks. | A standing API carrier retains an extinct house hook rather than only the current per-VM registration. | B1 | high |
+| M2 | `bags/lararium/ha.ka.ba/lararium/browser/deletion-map.mem:19-29,35-84,104-113` | Keeps a migration allowlist, line-numbered inventory, and migration log for moving browser code. | It records the package's previous move and stale prospective surfaces; `pono-charter.mem:21-22,103-113` still requires future entries in the log. Retain any current boundary law in the charter, then burn the migration ledger. | B3 | medium |
+| M3 | `bags/lararium/ha.ka.ba/lararium/api/living-grammar-palace.mem:306-348` | Preserves the retired fusion stack below the new tower law. | The carrier explicitly says the paragraphs record a retired internal mechanism at `:335-336`. Move any historical value to an allowed record carrier, then remove this section from live canon. | B1 | high |
+| M4 | `bags/lares/ha.ka.ba/lares/api/pono/quine-principles.mem:219-227` | Gives a dated “Today → Sprint 6 → Sprint N” storage migration path. | A live principle carrier still describes the house's earlier resolver road as an implementation plan. | B1 | high |
+| M5 | `bags/lararium/ha.ka.ba/lararium/api/lar-telemetry.mem:48-55` | Retains `lar_hv` only for legacy-drawer backfill. | A standing backfill exists solely for the house's older drawer stamps; inspect the implementation and burn both if no outside source owns them. | B2 | medium |
+| M6 | `bags/lararium/ha.ka.ba/lararium/mesh/content-resolution.mem:117,278` | Plans in-band SHA-256→BLAKE3 migration while old IDs remain parseable. | The IDs may name live content shared across vessels. Their immutability may make dual hash parsing live law, so a ruling must decide the lifetime before any deletion. | R | medium |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seam-aperture`>>
+
+!! Seam aperture
+
+| id | file:line | what it does | why crud (the earlier shape it serves) | burn class | confidence |h
+| S1 [wave-d] | `packages/lararium-mesh/src/sealed-writer.ts:150-188` (Wave D `:165-204`); `packages/lares-cli/src/commands/found.ts:71-72,99-105`; `packages/lararium-node/src/custody-session.ts:110`; `tools/seed-test-custody.mjs:36-37` | Wires `OldShapeRefusal` through mesh, CLI, node founding, and a fixture helper. | One past custody shape drives a cross-package error family and its presentation. Burn together with the specialized assertions in `packages/lares-cli/tests/found-refusals.test.ts:42-51` and `tools/seed-test-custody.test.mjs:92-99`. | B3 | medium |
+| S2 | `genesis/seed.json:175-177`; `packages/lararium-mesh/src/genesis-doc.ts:61-64,643-647`; `packages/lararium-tw5/scripts/build-plugin-tiddler.ts:260-263`; `packages/lararium-tw5/tests/standalone-plugin-parity.test.ts:63` | Pins a canonical plugin title beside a `$:/plugins/…` compatibility title from build to seed and test. | It looks like a house-authored name bridge, but TW5's plugin loader may require the `$:/` title today. Resolve actual consumer before burn. | R | medium |
+| S3 | `bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem:173-174`; `bags/lares/ha.ka.ba/lares/api/pono/memetic-wikitext-framing.mem:910-916` | Current evergreen law forbids old-shape readers while the framing specification recommends migration readers. | The latter gives an exception for internal carrier shapes that the former explicitly disallows. Narrow the spec to foreign bytes or remove the exception. | B1 | high |
+| S4 | `bags/lararium/ha.ka.ba/lararium/browser/pono-charter.mem:21-22,103-113`; `bags/lararium/ha.ka.ba/lararium/browser/deletion-map.mem:104-113` | Requires an entry in a migration log for future package code movement. | A present code-placement policy depends on an internal move ledger. Replace with present responsibility and proof criteria at `pono-charter.mem:95-99,107-111`. | B3 | medium |
+| S5 | `packages/lararium-browser/src/browser-vessel-identity.ts:93-132`; `tools/evergreen-boundary.mjs:34` | The evergreen witness exempts `IDB_VERSION`, while the opener uses a monotonically numbered upgrade path. | The exemption states only that the browser API takes a number; it does not justify preserving eleven house schema generations. Keep an API-required numeric argument if needed, but burn the upgrade steps and narration. | B3 | high |
+| S6 | `bags/lararium/ha.ka.ba/lararium/mesh/island-protocol.mem:33-42`; `packages/lararium-mesh/src/island-protocol.ts:1` | Live protocol canon narrates the retired ACK and resolver table while the code defines present envelopes. | Canon can state present message types without teaching retired envelopes to readers. | B1 | high |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/system-aperture`>>
+
+!! System aperture
+
+| id | file:line | what it does | why crud (the earlier shape it serves) | burn class | confidence |h
+| Y1 | `tools/evergreen-boundary.mjs:30-48,154-163`; `tools/evergreen-boundary-witness.sh:2-5` | Lets 58 authored-version, 57 clock, and 199 narration findings pass under ratcheting ceilings. | The witness measures debt but its green state still admits past-shape narration. Audit each hit and lower narration debt to zero; keep exceptions only for present external API requirements. | B3 | high |
+| Y2 [wave-d] | `packages/lararium-mesh/src/sealed-writer.ts:150-188` (Wave D `:165-204`); `packages/lararium-mesh/src/index.ts:546-547`; `packages/lares-cli/src/commands/vault.ts:37` | Makes `OldShapeRefusal` a public error kind and CLI category. | This system-level error family names a previous custody format rather than the current invariant. A generic refusal may still guard an occupied or tampered store. | B3 | medium |
+| Y3 | `packages/lararium-browser/src/browser-vessel-identity.ts:51-53,91-132`; `tools/evergreen-boundary.mjs:34` | Preserves version-counter and upgrade-step convention in browser persistence. | Current code knows retired store names and old version stages. IndexedDB itself requires numeric open versions, so distinguish its API number from the house's migration ladder. | B3 | high |
+| Y4 | `bags/lararium/ha.ka.ba/lararium/browser/pono-charter.mem:21-22,103-113`; `bags/lararium/ha.ka.ba/lararium/browser/deletion-map.mem:19-29,104-113` | Keeps a cross-file migration governance scheme for code ownership. | The policy asks future moves to extend a historical ledger instead of testing the present package boundary. | B3 | medium |
+| Y5 | `tools/domain-registry-witness.sh:11-28`; `packages/lararium-mesh/src/domains.ts:1` | Keeps frozen `/v1` domain tags and scans older tag spellings. | Signed domain bytes may still verify live signatures and derive keys, so this mechanism can be present cryptographic law. Rule on actual live material before any burn; do not treat every `/v1` as crud. | R | high |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/boundary-calls`>>
+
+!! Boundary calls
+
+Keep `CensusRefusal` for unlisted sealed files during rotation: it detects a present custody hazard, not a previous house name (`packages/lararium-mesh/src/sealed-writer.ts:132-139,377-387`). Keep the browser continuity refusal if it prevents silent identity re-founding after local storage loss (`packages/lararium-browser/src/browser-vessel-identity.ts:46-48,270-279`). Keep transcript grammar tolerance when the source comes from outside the house's re-renderable carrier store (`bags/lares/ha.ka.ba/lares/api/pono/wild-bytes.mem:62-67,133-142`). Keep API-required tool versions, CI dependency versions, and cryptographic domains unless a separate ruling proves them internal dead artifacts (`tools/evergreen-boundary.mjs:33-37`; `.github/workflows/ci.yml:82-84`; `tools/domain-registry-witness.sh:11-28`).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/top-10-by-payoff`>>
+
+!! Top 10 by payoff
+
+# S1/Y2 — remove the specialized custody old-shape error across mesh, node, CLI, fixture, and tests (`packages/lararium-mesh/src/sealed-writer.ts:150-188`; `packages/lares-cli/src/commands/found.ts:71-72`).
+# F1/Y3 — collapse the browser IndexedDB upgrade ladder after checking continuity semantics (`packages/lararium-browser/src/browser-vessel-identity.ts:91-132`).
+# Y1 — drive evergreen narration debt down from the standing ceiling of 199 and remove stale exceptions (`tools/evergreen-boundary.mjs:30-48`).
+# M2/S4 — retire the browser migration ledger and charter dependency (`bags/lararium/ha.ka.ba/lararium/browser/deletion-map.mem:104-113`; `bags/lararium/ha.ka.ba/lararium/browser/pono-charter.mem:103-113`).
+# M3 — remove the explicitly retired fusion stack from live canon (`bags/lararium/ha.ka.ba/lararium/api/living-grammar-palace.mem:306-348`).
+# S3 — reconcile the framing spec's migration exception with evergreen law (`bags/lares/ha.ka.ba/lares/api/pono/memetic-wikitext-framing.mem:910-916`).
+# M1 — remove the old global `_larKukaliHook` lesson (`bags/lares/ha.ka.ba/lares/api/pono/vm-projection-bus.mem:118-144`).
+# L7/S6 — state only present island protocol clauses (`bags/lararium/ha.ka.ba/lararium/mesh/island-protocol.mem:30-42`).
+# L4 — remove obsolete resolver topology and type history (`packages/lararium-mesh/src/resolver.ts:8-16,60-64`).
+# M4 — replace the dated resolver migration path with current architecture (`bags/lares/ha.ka.ba/lares/api/pono/quine-principles.mem:219-227`).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/witness-pattern-to-keep-crud-from-regrowing`>>
+
+!! Witness pattern to keep crud from regrowing
+
+Extend the standing narration witness beyond `packages/*/src` and `tools/` to live API and lararium canon, excluding `history/`, `research/`, `hoike/`, testimony, and CHANGELOG carriers (`tools/evergreen-boundary.mjs:143-151`; `bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem:173-174`). Make each exception name a present external protocol or trust boundary, with a stale-exception failure like `tools/evergreen-boundary.mjs:114-125`. For persistence, witness the narrower present invariant: no delete-on-upgrade for retired house stores, no old-name lookup, and no specialized OldShapeRefusal family (`packages/lararium-browser/src/browser-vessel-identity.ts:94-119`; `packages/lararium-mesh/src/sealed-writer.ts:150-188`). Burn any one-commit retired-name census after its moving commit, as the ruling requires (`bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem:173-174`).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4n_pIObOQ1IIeWjbdwslrOU5GamxHOqmGzfAnVaqxlY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

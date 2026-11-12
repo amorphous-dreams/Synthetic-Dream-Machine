@@ -43,6 +43,12 @@ export interface WikiMintHandlerOptions {
    */
   readonly registerBag?: (bagUrl: string) => Promise<void>;
   /**
+   * THE VEIL FLOOR'S MINT (the-veil-ladder#/the-base-model): present where the vessel wears no face and holds its own key
+   * open. The new wiki's catalog row then carries `face-reach = vessel-only` and `minted-by`, and `nameCanon` files the canon
+   * document as the vessel's own BEFORE its first byte rests (the mark and the seal travel together). Absent: a face mints.
+   */
+  readonly veilFloor?: { readonly mintedBy: string; readonly nameCanon: (slug: string, documentId: string, url: string) => Promise<void> };
+  /**
    * THE ONE DRAFT RESOLVER (`resolveSlotDoc`, seated in the keyhive-holding daemon): the wiki's draft
    * doc — the PersonaGroup × fingerprint binding when the vessel holds a seat, else the device floor
    * keyed by the vessel DID — and which of the two it reached. Every site that names the draft doc

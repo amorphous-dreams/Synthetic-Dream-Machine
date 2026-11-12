@@ -1,0 +1,59 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b6-exports-homes-bridge-collide`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-10-31 (file date) — source `.lares-scratch/controller/scouts/cut-reads/b6-exports-homes-bridge-collide.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b6-exports-homes-bridge-collide"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b6-exports-homes-bridge-collide"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! b6-exports-homes-bridge-collide.md — plan, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/scouts/cut-reads/b6-exports-homes-bridge-collide.md` (plan, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/b6-collide-2026-10-31-returned-as-text-controlle`>>
+
+! b6 collide (Anvil-Six, Sonnet), 2026-10-31. Returned as text; controller persisted. Web: git-scm.com/docs/git-config (read, partial).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/new-finding-n-1-persona-roots-mint-silently-unde`>>
+
+!! New finding N-1 (custody): persona roots mint silently under a changed login
+generateOrLoadPersonaGroupRoot (node-vessel-identity.ts:~920) reads the roster for loginHint(); a login with no roster line -> commitRoot(login, ..., generate()) writes .persona-group-root-&lt;login>-hN.json + roster row. Needs only open custody, no founding card. orphanPersonaRoots consulted only in landPersonaRoot (restore), current login only. A login flip (git timeout, HOME unset, GIT_CONFIG_GLOBAL, edited email) -> `lares persona new` mints a SECOND root, first orphaned. makeNodeFsPersonaVault (:856) freezes login per vault (narrows mid-run drift), not across processes.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/rulings`>>
+
+!! Rulings
+* F-1 NARROWED. readLocalOperatorHint (:124) never rejects; 11 .catch wrappers dead (:420,492,523,540,583,856,882); 13 call sites re-shell; only placeReadingWatch (:343) freezes. REFUTED for the vessel key: generateOrLoadVesselIdentity save (~:436) needs openedCustody + founding-card read-back, else PlaceFoundingCardUnread. Callers: init.ts:252 (found, passes card), init.ts:586 (persona new, no card, fails closed), kindle.ts:182. Boot/load paths refuse "no key file". Reach: boot/sign fail closed (availability); `found` on a flipped login mints a 2nd KEL+key; persona roots mint a 2nd root (N-1). place-rotation.test.ts:56-60 pins the freeze; no flip test.
+Red: tmp LAR_ROOT, GIT_CONFIG_GLOBAL file email a@x, mint persona root h0; rewrite to b@x; generateOrLoadPersonaGroupRoot(0) must refuse by name (today created:true). Control: unchanged config -> created:false.
+Cure: resolve login once at open and record it, or RETIRE the suffix (vault-carriers.ts:235 loginKeyed already accepts any suffix: census treats all logins as one custody), or refuse when a sibling key/root exists under another login.
+* F-2 CONFIRMED: verifyWaxStampSig (wax-stamp.ts:498) and mintWaxStamp have no caller; fail closed. Keep; test owed with W30.
+* F-3 CONFIRMED+NARROWED (security): cabalInviteId (cabal-invite.ts:171) = hex(bytes), not a digest, single occurrence; no seen-cache; only the epoch lease fence expires. decideCabalJoin binds realm + joiner before signature. One-use NOT enforced: a REMOVED joiner can re-present the same invite until the epoch advances. NEEDS-RULING: wire a seen set, or burn function + docstring claim (lean burn).
+* T4: 25 sampled CUT-READY/CONSUME names each occur once (declaration only). 35+12+14+6=67 holds; mesh CUT-READY lists 25, not 24. ~25 public-API mesh names confirmed: run evergreen-boundary + typecheck witness before cutting; one announced batch after a controller land.
+* Bridge catalogForViews DO-NOT-CUT confirmed: one assignment (:2035), one consumer (:865); road F1 (:579), O1 (:764) name it the stopgap O1 replaces; defaults shut; ralias edits the hunk.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/merged`>>
+
+!! Merged
+T16/F-1/N-1 NEEDS-RULING, lean retire the login suffix, N-1 red first. F-2 keep + owe test. F-3 NEEDS-RULING, lean burn (or wire seen set). Mesh cuts one batch.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Z_g88d4dOBVNbZ0G5JXtl-2Gk2_2PWbayfuHT4Q-2Fg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

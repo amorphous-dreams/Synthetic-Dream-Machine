@@ -10,7 +10,7 @@ import type { LarMsg_ControlEvent, LarMsg_ControlResult } from "@lararium/mesh";
 import type { PortTransportDoors } from "./port-transport.js";
 import type { CeremonyAskKind } from "./ceremony-protocol.js";
 import type {
-  JoinAnswerReply, JoinOfferReply, PageToVessel, VesselBoot, VesselError, VesselStatus, VesselToPage,
+  FleetRootFacesReply, FleetRootFileReply, FleetSeatLandReply, WorkbenchReadingReply, JoinAnswerReply, JoinOfferReply, PageToVessel, VesselBoot, VesselError, VesselStatus, VesselToPage,
 } from "./vessel-protocol.js";
 
 /** An ask as the page hears it: public words alone. The page opens the ceremony document for it and takes no answer. */
@@ -50,6 +50,7 @@ export interface VesselPortHandlers {
   onPhase?(phase: string): void;
   onFrame?(frame: ProjectionSurfaceFrame): void;
   onControlResult?(surface: string, result: LarMsg_ControlResult): void;
+  onControlPending?(surface: string, eventId: string): void;
   onPortMessage?(binding: string, islandKey: string, msg: unknown): void;
   onStatus?(status: VesselStatus): void;
   /** The vessel asks the person: the page opens the ceremony document, and the answer travels ceremony to vessel, never here. */
@@ -120,6 +121,7 @@ export function standVesselPort(worker: VesselWorkerLike, handlers: VesselPortHa
       case "phase": handlers.onPhase?.(msg.phase); return;
       case "frame": handlers.onFrame?.(msg.frame); return;
       case "control-result": handlers.onControlResult?.(msg.surface, msg.result); return;
+      case "control-pending": handlers.onControlPending?.(msg.surface, msg.eventId); return;
       case "coherence": return;
       case "port-msg": handlers.onPortMessage?.(msg.binding, msg.islandKey, msg.msg); return;
       case "port:refused":
@@ -187,6 +189,20 @@ export function standVesselPort(worker: VesselWorkerLike, handlers: VesselPortHa
     readFloor: (baseUrl: string) => call<HearthFloorRead>((callId) => ({ t: "read:floor", callId, baseUrl })),
     joinOffer: (text: string, abandonPending: boolean) => call<JoinOfferReply>((callId) => ({ t: "join:offer", callId, text, abandonPending })),
     joinAnswer: (text: string) => call<JoinAnswerReply>((callId) => ({ t: "join:answer", callId, text })),
+    // ── leaf-fleet (Leaf-Wright): the root holder's three verbs (`fleet/fleet-root-door` `FleetRootPort`) ──
+    fleetRoot: {
+      faces: async () => (await call<FleetRootFacesReply>((callId) => ({ t: "fleet-root:faces", callId }))).faces,
+      offer: async (personaGroup: string) => (await call<FleetRootFileReply>((callId) => ({ t: "fleet-root:offer", callId, personaGroup }))).text,
+      answer: async (personaGroup: string, text: string) => (await call<FleetRootFileReply>((callId) => ({ t: "fleet-root:answer", callId, personaGroup, text }))).text,
+      seat: async (text: string) => (await call<FleetRootFileReply>((callId) => ({ t: "fleet-root:seat", callId, text }))).text,
+    },
+    fleetSeat: {
+      faces: async () => (await call<FleetRootFacesReply>((callId) => ({ t: "fleet-seat:faces", callId }))).faces,
+      request: async (personaGroup: string) => (await call<FleetRootFileReply>((callId) => ({ t: "fleet-seat:request", callId, personaGroup }))).text,
+      land: async (text: string) => (await call<FleetSeatLandReply>((callId) => ({ t: "fleet-seat:land", callId, text }))).face,
+      workbench: async () => { const { slug, bagId, documentUrl } = await call<WorkbenchReadingReply>((callId) => ({ t: "fleet-seat:workbench", callId })); return { slug, bagId, documentUrl }; },
+    },
+    // ── /leaf-fleet ──
     restartDaemonIsland: (reason: string) => call<{ restarts: number; leg: string }>((callId) => ({ t: "walk:restart", callId, reason })),
     /** A harness-only door (the walk build): one ward act over `bytes`, its passphrase asked through the ceremony. */
     walkWardAct: (bytes: Uint8Array) => call<{ key: string; signature: string }>((callId) => ({ t: "walk:ward", callId, bytes })),

@@ -134,6 +134,7 @@ The order follows the dependencies: 0, 1, 2, 1b, 3 with 5a, 3b, 5b, 6, 7, then t
 !! The founding path after the cut
 
 # The page connects its port; the vessel worker reads its stores and stands the floor (the place key).
+# A bare arrival ends here: the vessel stands as a veil (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/the-veil-ladder`>> #/the-base-model), asks nothing, mounts its floor wiki and writes under the vessel-held key; the steps below run where the founding ask (the identity panel's button, carried across one boot as `VesselBoot.foundFace`) or a fleet join rides the arrival.
 # The vessel asks `bind-first`; the ceremony document takes the secret and sends the bytes down its brokered port; the slot binds and the root mints under the ward from the same route, zeroed after.
 # The ceremony mints the atom, the anchor and the bootstrap; the daemon island builds with its record; frames reach the mirror.
 # The join: `join:offer` raises an ask and answers `join:request`; `join:answer` hands the vessel the admit, which it lands and re-enters.
@@ -156,7 +157,7 @@ The order follows the dependencies: 0, 1, 2, 1b, 3 with 5a, 3b, 5b, 6, 7, then t
 
 ''Carried constraints, every slice.''
 * The secure-context wall: a service worker and WebAuthn need a secure context, so a plain `http://192.168.x.x` page refuses by name.
-* `seedRest=open` names the pre-bind window alone (only the place seed and the veil Archives stand clear before a slot binds; `bind-first` names that window and its close); PRF-wrapped custody replaces the cleartext resting form.
+* `seedRest=open` names the pre-bind window alone (only the place seed and the veil Archives stand clear before a slot binds; `bind-first` names that window and its close); PRF-wrapped custody replaces the cleartext resting form. A veil with no face and no slot reads `seedRest=open-veil`: the window then holds the place seed and the `secret-home` address row (the key the floor's own documents seal under), the page words it as the throwaway rung, and the first bind moves both rows under the seal.
 * The ward stays passphrase-only: never a passkey, one act one unlock, no route or key cached between acts, zeroed after use.
 * The broker stands as no boundary between same-origin scripts: hostile same-origin code can take a Web Lock or approach the SharedWorker, and the `store-owned` refusal stays loud.
 * A face switch reads as the five-step fence that advances a generation (row `B8`); each session binds one (face, Nexus), and a face hint grants nothing.
@@ -187,6 +188,7 @@ The order follows the dependencies: 0, 1, 2, 1b, 3 with 5a, 3b, 5b, 6, 7, then t
 # ''Passkey and PRF (the house's default, overrulable).'' The ward refuses passkeys (seat-harness); custody admits a PRF wrap that never stands as the sole copy (secure-context). The ceremony document hosts a passphrase answer kind (ward and custody) and a WebAuthn PRF answer kind (custody only); a passkey slot gets built; the ceremony document carries its own reach witness.
 # ''Sealed-store step three joins the lift (the house's default, overrulable).'' It becomes slice 3b on sub-lane `b1-seal`, before the rite; steps four and five stay on the sealed-store road.
 # ''The txId ledger rests durably (the house's default, overrulable).'' Slice 6's lands-once red then holds across a respawn.
+# ''The root holder's door asks the ward once (the house's default, overrulable).'' A browser that founded a face answers a fleet join through the vessel worker: the page hands over the joinee's request as a file, the worker asks the face's ward through the ceremony document once for that answer, and the one route opens the seat (the root signs the joinee's edge) and the signature over the answer. The page receives the answer as a file and holds no key, route or secret; a request that names no nonce never opens the ceremony. <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026`>> #/device-seats
 # ''Pending operator ruling (DEFAULT PENDING; it changes admission bytes).'' Each device's ward public key rides its signed admission, and a ward-act approval carries that key's signature; the browser gains its own answer door.
 
 <<~/ahu>>
@@ -202,6 +204,6 @@ The order follows the dependencies: 0, 1, 2, 1b, 3 with 5a, 3b, 5b, 6, 7, then t
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;J5fVCRwjJK5owgj_bi9_LMX1lXiZ_OzL_zXhpvzfvMA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;pPjUhbClCQeHW0fTqB1WYw8UT-5LJdmWgtBVWgOEPac`>>
 
 <<^ code=`&#x0004;` to=`?`>>

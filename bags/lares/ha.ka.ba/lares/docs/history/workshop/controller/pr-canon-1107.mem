@@ -1,0 +1,36 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/pr-canon-1107`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — PR body, 2026-11-06 (file date) — source `.lares-scratch/controller/pr-canon-1107.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/pr-canon-1107"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/pr-canon-1107"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! pr-canon-1107.md — PR body, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/pr-canon-1107.md` (PR body, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Canon only: stable-founding-road and controller-handoff #/state true to 2026-11-07 — the four Codex-led lanes and their heads, M6's three parts, the night's operator rulings (the focus test, the Opus seat swapping per batch, Codex carries the lanes, the spend gauge rests, no backward compatibility in early alpha, the field collides first, the swarm moves into the Lararium as L30, the stories' leans), the clock law's two house readings (PACING marker, the two-phase teardown drain), and the order to the rite.
+
+🤖 Generated with [[Claude Code|https://claude.com/claude-code]]
+
+https://claude.ai/code/session_01V63vwNsTbwswaievYNJosw
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7wteU9ZB5LSbmUWYb9eANYId0cuhZQnn_ckkJNHJeso`>>
+
+<<^ code=`&#x0004;` to=`?`>>

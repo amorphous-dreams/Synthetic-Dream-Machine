@@ -1,0 +1,33 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/narrow-proto-4c9f422edb2ca9a244974aaf5aad861aea45693d`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-02 (file date) — source `.lares-scratch/controller/ship/narrow-proto-4c9f422edb2ca9a244974aaf5aad861aea45693d.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/narrow-proto-4c9f422edb2ca9a244974aaf5aad861aea45693d"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/narrow-proto-4c9f422edb2ca9a244974aaf5aad861aea45693d"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! narrow-proto-4c9f422edb2ca9a244974aaf5aad861aea45693d.md — plan, 2026-11-02
+
+Verbatim scratch record `.lares-scratch/controller/ship/narrow-proto-4c9f422edb2ca9a244974aaf5aad861aea45693d.md` (plan, file date 2026-11-02); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ship-lane-narrow-proto-head-4c9f422edb2ca9a24497`>>
+
+! SHIP · lane narrow-proto · head 4c9f422edb2ca9a244974aaf5aad861aea45693d
+read: controller read of ef1777324..4c9f422edb2ca9a244974aaf5aad861aea45693d: the prototype key set narrows to ''proto'' (operator ruling); the refusal still fires on every path (title, field, nested key, raw-change and storage chunk, local 3.5.0 write); 11 bare/aliased by-key reads now ride ownEntry (strengthens harden's door, closing reads harden's scan never covered); the grep law extends to tiddlers maps with counted, reasoned exemptions; genesis unmoved. Harden's re-reader (security-read-2) measured the door it leans on. 2026-11-02.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ghjvKAap30WRleNKDfg6AmvjG16MojfpbumQv8jLyeg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

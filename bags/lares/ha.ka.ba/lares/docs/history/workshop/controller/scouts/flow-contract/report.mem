@@ -1,0 +1,148 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/flow-contract/report`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-10-31 (file date) — source `.lares-scratch/controller/scouts/flow-contract/report.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/flow-contract/report"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/scouts/flow-contract/report"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! report.md — hand-back, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/scouts/flow-contract/report.md` (hand-back, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/flow-contract/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/flow-scout-report-a-more-pono-agile-landing-cont`>>
+
+! Flow-Scout report: a more pono + agile landing contract (2026-11-01)
+Flow-Scout: Lares (Tasked Spirit). Research depth: WebSearch snippets plus one docs fetch. The read tool answered only the merge-queue page. See Sources for read vs search-only.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/tl-dr`>>
+
+!! TL;DR
+* Mu on the batch model: the pain comes from two things, and batching cures only one. (1) The rule "a lane lands only when its head holds the span head" forces CI to run on lane ancestry. CI should run on the tree that lands (the merge result). Every merge queue surveyed (GitHub merge_group, Zuul, Bors, Uber SubmitQueue) tests the merge result, so no lane ever rebases. (2) Runner throughput. At 19 jobs per run against a 20-job cap, the Free plan runs about one full CI at a time. Lane parallelism therefore buys nothing in CI; it only buys queueing.
+* Tonight's measure: 7 lands in ~10 h is about 85 min per land, against a 28 min CI. About 57 min per land is rebase and re-CI tax.
+* Recommended: ''"Controller train, tested at the merge result"'' (candidate D) plus a trimmed lane gate plus a self-hosted ephemeral runner. It keeps every house law and needs nothing beyond the Free plan. The operator's batch model survives inside it as the train.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/evidence-that-shapes-the-choice`>>
+
+!! Evidence that shapes the choice (the first five are search-only)
+* GitHub merge queue: `merge_group` builds a temp branch of base plus queued PRs. Settings: build concurrency 1-100, min/max group size 1-100, wait time. A failing PR is removed and the rest rebuilt. Plan eligibility was NOT confirmed. From memory, user-owned repos are excluded and org repos need Team or Enterprise. Treat as unavailable.
+* Zuul: speculative, dependent pipelines. Each change is tested atop the changes queued ahead of it. A failure aborts and restarts the tests behind it.
+* Bors-NG: batches on a `staging` branch; a failed batch is split in two and re-queued (bisection). The repo is archived (2024-04).
+* Uber SubmitQueue (EuroSys 2019): speculative builds plus a probability model keep master green. The main was green 52% of the time before it (an iOS mainline).
+* arXiv 2308.13129: batching with bisection cuts feedback time when fewer than 40% of builds fail.
+* DORA trunk-based capability (secondary sources only): branches live under 1 day, with 3 or fewer active. A 4-5 lane crew with a continuous integration branch fits.
+* Agent-team practice (vendor blogs plus the July 2026 arXiv "AI Agent PRs on GitHub: merge conflict rates"): generate in parallel, serialize the landing step, test behavior after every merge. No platform standard exists.
+* Not found in search: Chromium CQ, Google TAP, Shopify queue, Graphite/Sapling/ghstack, Nx/Bazel affected. I know them from background only; the contract does not lean on them.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/batch-math`>>
+
+!! Batch math (my arithmetic)
+Let p be the residual interaction-failure rate per lane (own-lane failures are already caught at the lane gate) and k the batch size.
+* P(green) = (1-p)^k. Expected full CIs per batch ≈ 1 + (1-(1-p)^k) · ~(log2 k + 1) when bisecting.
+* p=0.10, k=4: P(green)=0.66, about 1.7 CIs per batch, so 0.43 CI per land.
+* p=0.29 (tonight's 2 reds in 7, mostly process faults), k=3: about 2.0 CIs per batch, 0.67 per land.
+* Serial landing costs 1.0 CI per land plus the rebase CIs. Best k is about 3-4. Past 5, a red batch costs more than it saves.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/candidate-contracts`>>
+
+!! Candidate contracts
+
+!!! A. Status quo (hold the head, rebase on every solo land)
+* Flow: red commit, fix, local fast tier, lane push, lane CI, a read, the lane lands via DIRECT or a train, every other lane merges the span and re-runs CI.
+* Laws: all kept.
+* Time per land: about 85 min measured (7 lands in ~10 h); the CI floor is 28 min. Runner cap means 4 lanes pushing queue for 20+ min.
+* Failure mode: land cost grows with lane count (each land forces N-1 rebases), CI is wasted on stale ancestry, and the crew idles.
+* Needs: Free plan only.
+
+!!! B. Batch integration branch (operator's model)
+* Flow: lanes merge continuously into `span--next` on the fast tier only. One CI and one read per batch, and one push to the span.
+* Laws: red-first kept. Verification kept at the batch. "CI as the verdict" kept for the span only. The security read runs once per batch on a larger delta, which is a weaker read. No wall clock is needed if the batch closes on handbacks.
+* Time per land: one CI (28-30 min) plus a read (~15 min) per batch of 4-5, about 10-12 min per land when green. A red batch with no per-lane gate costs 2-3 more CIs, 60-90 min. At p≈0.29 and k=5, P(green)≈0.18, so most batches go red.
+* Failure mode: no lane gate means bisect-or-rework on a red; a single read over a big delta misses holes; the fast tier misses indirect-suite breakage (one of tonight's reds).
+* Needs: nothing beyond the Free plan (a branch plus the existing CI). It does not require the GitHub merge queue.
+
+!!! C. Land on a fast gate, verify after, auto-revert on red (postsubmit)
+* Flow: lane merges the span after the local fast tier plus affected CI. Full CI runs on the span afterward. A red triggers a revert or forward-fix. Google TAP and Chromium postsubmit work this way, per my background knowledge.
+* Laws: red-first kept. "CI as the verdict" is bent, because the verdict arrives after the land, so the span is sometimes red. Verification is not removed but delayed. "Security read before custody/crypto/gate work reaches the span" is violated unless those lanes are excluded.
+* Time per land: about 5-8 min to land, with the verdict 30 min later and async.
+* Failure mode: lanes cut from a red span inherit the red; reds stack; revert churn. Poor fit at p≈0.29.
+* Needs: a `span-verified` tag, which is cheap. Not recommended as the main path.
+
+!!! D. Controller train, tested at the merge result (recommended)
+* Flow: a lane is red-first, fast tier, then a lane push. Lane CI is the trimmed affected set, about 8 of 19 jobs, and is the lane gate. A lane lead never rebases or merges the span. When 2-4 lanes stand green and read, the controller merges them in owner order into a train branch cut from the current span head. ONE full CI runs on the train head, plus ONE security read (Sol or a blind Opus) on the security-class delta only. Green: DIRECT land of the train head to the span. Red: bisect by prefix. The lane order is known, so test the first half. Lanes keep working off the span. After a land they may merge the span lazily, with no CI cost until their next train.
+* Laws: red-first kept at the lane. Verification never bends: the full suite runs on the exact tree that lands, which is stronger than today's lane-head CI. The span only ever receives green trees. The security read is kept, once per train. No global now: trains close on handbacks, never on a clock. Alpha, no back-compat: nothing preserved. Operator originates: divergence surfaces at the train. Web3: CI tooling only.
+* Time per land: for a k=3 train, ~28 min CI plus ~15 min read plus ~10 min controller = about 53 min per train, or ~18 min per land. Tonight's 85 min drops to about 20 (green) or ~35 (one bisect). Lane rebase CIs drop from 2-3 per lane to 0.
+* Failure mode: the controller becomes the bottleneck for the train merge; a red train costs a bisect CI; a conflict at train-merge time lands on the controller (mitigate with the owner order already in the lead law).
+* Needs: Free plan only. `land-train.mjs` already builds a train branch.
+
+!!! E. D plus self-hosted ephemeral runner and CI trimming (throughput multiplier)
+* Flow: as D, with CI split into a fast gate (~8 jobs: build, typecheck, evergreen, witnesses, affected vitest) for lane pushes, and a slow full suite for the train head only.
+* Time per land: removes the 20-job queue wait (20+ min when 4 lanes push). The node suite is about 1,500 s dominated by scrypt foundings; keep the real KDF params in one witness job and shard the rest.
+* Failure mode: a self-hosted runner on a public repo executes whatever a workflow runs. A fork PR could run code on the dev box. Mitigate: ephemeral (`--ephemeral`), runner only for pushes to branches in this repo, "require approval for all outside collaborators", no secrets on the box. I did not verify that WSL ephemeral runners fit the Free plan; from memory self-hosted runners are free and not bound by the hosted job cap.
+* Needs: Free plan plus a runner on the dev box (10 cores).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/recommended-d-now-e-as-the-second-wave`>>
+
+!! Recommended: D now, E as the second wave
+''tools/land-train.mjs''
+# Drop exit 9 "LANE LACKS THE BASE" as a refusal. Replace it with: the train branch is cut from SP and each lane head is merged in owner order, so the train head holds the base by construction. Keep exit 8 (lane not green).
+# Make a train mandatory for every land with 2+ lanes. Keep DIRECT only when one lane already holds the span head.
+# Add `--bisect <red-train>`: it plans prefix trains (lanes 1..j) and reports the first red. Uses CI on the prefix head, with no clock.
+# The final CI verdict must be read on the train head sha, never on the lane shas. Keep the existing "span moved by non-land commit not read green" refusal.
+
+''CI''
+# Split the workflow: `lane-gate` (affected-only, ~8 jobs) on lane branch push, and `train-full` (all 19 jobs) on `*--train*` branches only.
+# paths-ignore must not skip the suite for canon commits that tests read. Tonight's red on a .mem commit shows this. Derive the ignore list from a witness that reads the test inputs.
+# Name the indirect-suite breakage (the second red) in the affected-graph witness.
+
+''Lead law (`lead-law-wave1.md`)''
+# Replace "holds the span head" with "the train head runs the full suite and the read; a lane's own CI is the lane gate".
+# Lanes no longer merge the span before a push. They merge it only when the lead needs a span commit's content.
+# Sol stays per train on security-class slices. Cold readers re-read cure deltas. No batch-wide Sol on routine slices.
+# Train size: 2-4 lanes. The cap lives in the lead law as a rule, not a clock.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/operator-asks`>>
+
+!! Operator asks (each survived two rounds of talk-out)
+* ''Self-hosted runner on the dev box.'' Lean: yes, ephemeral, for pushes only. Round 1 said the box is a single point of risk. Round 2 said the cap makes it the only throughput lever on the Free plan. Survives because the operator owns the box risk.
+* ''Cheaper scrypt params in the test founding fixtures.'' Lean: yes, but only with ONE witness job on real params, and the operator must rule it. Round 1: it bends verification. Round 2: only if the real-params witness is dropped; with it, coverage holds.
+* ''Postsubmit (candidate C) for routine non-custody lanes.'' Lean: no for now. Round 1: C is fast. Round 2: reds stack at p≈0.29 and the span would stop being green.
+Forks dropped after talk-out: stacked diffs (Graphite/ghstack need a paid tool or client; the owner-order train covers dependent lanes), GitHub merge queue (plan unverified, likely unavailable), flaky quarantine (no flake data tonight; revisit when a flake appears).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/sources`>>
+
+!! Sources
+Read: https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-a-merge-queue, and /home/joshu/.lares-scratch/controller/lead-law-wave1.md, working-procedures.mem #/red-first, tools/land-train.mjs (grep).
+Not read in full (the mixed-model-swarm.mem canon was only measured by size).
+Search-only: Uber SubmitQueue (https://eng.uber.com/research/keeping-master-green-at-scale), Zuul gating (https://opendev.org/zuul/zuul/src/commit/ded241e59865d98b1fe3e55798f26ff25f9ccf4c/doc/source/user/gating.rst), Bors-NG (https://github.com/bors-ng/bors-ng), arXiv 2308.13129, DORA secondary (mergify.com, octopus.com), Mergify agents post (https://mergify.com/blog/merge-queues-and-ai-coding-agents), arXiv 2607.04697.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GNiE3RdXNWbrw4GdUu2DAE9W-E9nE1527pPXI3ZzjrM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

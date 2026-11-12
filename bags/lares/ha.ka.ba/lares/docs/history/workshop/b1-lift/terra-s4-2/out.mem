@@ -1,0 +1,41 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-2/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-06 (file date) — source `.lares-scratch/b1-lift/terra-s4-2/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-2/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-2/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/b1-lift/terra-s4-2/out.md` (hand-back, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-2/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Implemented event-driven vessel claim cleanup, withdrawal, broker message typing, and independent minted host connections.
+
+Changed files:
+* packages/lararium-web/public/ceremony-broker.js
+* packages/lararium-web/src/vessel-protocol.ts
+* packages/lararium-web/src/workers/vessel-host.ts
+* packages/lararium-web/src/ceremony-protocol.ts
+
+Typecheck: <code>pnpm &#45;-filter &#64;lararium/web exec tsc &#45;-noEmit -p .</code> passed (exit 0).
+Browser test counts: not run; seat law prohibits browser mode and assigns those checks to the lead. Build not run; seat law prohibits builds. No commit made.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;AsWah20E5IITRGhrKas7aEMYk5WyZos_7QPKsTmdYzo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

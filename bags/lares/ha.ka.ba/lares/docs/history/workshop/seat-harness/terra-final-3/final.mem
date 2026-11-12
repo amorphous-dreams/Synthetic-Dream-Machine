@@ -1,0 +1,52 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-3/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-04 (file date) — source `.lares-scratch/seat-harness/terra-final-3/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-3/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-3/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-04
+
+Verbatim scratch record `.lares-scratch/seat-harness/terra-final-3/final.md` (hand-back, file date 2026-11-04); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-3/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+''HOLD.'' The round-3 changes close the specific relay-directory swap and worktree-move windows under their intended directory layout, but the broker still has an unsafe accepted layout and a message-file race. The watchdog can also lose enforcement after it finds a rollout.
+
+All findings below are ''LEAD'': source and test conclusions, not reproductions. I did not run tests or construct payloads. The 21/21 local result and green CI at `e5e254b74` are ''MEASURED reports supplied in the hand-off'', not measurements of this review; the stated CI run skipped four bubblewrap proofs.
+
+# ''P1 — Broker state can be placed inside the lead’s writable lane.'' [[commit-relay.mjs:27|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.mjs:27]] checks that the ''go directory'' is outside the lane and worktree, but sets `iso` to its `broker-iso` child and checks only the child’s parent ([[line 40|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.mjs:40]]). A permitted configuration with the lane itself named `broker-iso` beneath that go directory therefore makes the supposedly broker-owned registry and staging area lead-writable. On restart, the relay trusts the registry’s paths ([[line 73|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.mjs:73]]); doors subsequently use those paths, including recursive cleanup after removal ([[line 89|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.mjs:89]]). This invalidates the staging cure’s ownership assumption. The [[registry test|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:466]] uses a separate controller directory and does not cover this overlap. Validate the actual isolated directory against every writable root, including equality and ancestor relationships.
+
+# ''P1 — A commit message can be redirected after its lane check.'' The relay resolves and checks the message pathname at [[commit-relay.mjs:120|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.mjs:120]], then later opens it in [[seat-broker.mjs:362|/home/joshu/.lares-scratch/seat-harness/wt/tools/seat-broker.mjs:362]]. `O_NOFOLLOW` protects the final component only ([[line 186|/home/joshu/.lares-scratch/seat-harness/wt/tools/seat-broker.mjs:186]]); a replaceable parent can redirect the later read outside the lane. Those bytes become the commit message. The [[race tests|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:273]] cover worktree content, not this message path. Hold and validate the message file or its parent through the read.
+
+# ''P1 — A rollout read error can leave a live seat unsupervised.'' Once a rollout is selected, [[tokenTail|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:66]] opens it on every tick. An open or read failure propagates through [[watchSeat|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:170]] and rejects the supervisor without stopping its detached child ([[line 395|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:395]]). The blind counter handles `null`, not exceptions. The [[blindness test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:646]] injects only `null`; it does not exercise a failed read after matching. Errors must cause a controlled stop or count toward a fail-closed stop while retaining supervision.
+
+# ''P1 — A stale token reading disables the blindness limit.'' [[tokenTail|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:67]] returns the last numeric total even when no new token event arrives. [[watchSeat|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:171]] resets `blind` on every such return. If token events stop while the seat continues, the watchdog can remain indefinitely below the ceiling on an old value. The [[tail test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:657]] explicitly pins the cached return, while the blindness test covers only a stream that never produced a reading. Track freshness separately from the last total.
+
+The other round-3 cures have narrower supporting evidence:
+
+* The relay holds its directory through `/proc/self/fd`; the [[swap test|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:438]] has a pathname-based control that would write outside. The stage stays in place and the lane link is created and rolled back through a held parent; the [[parent-swap test|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:410]] exercises both removal and rename swaps. Those tests do not cover the `iso` overlap in finding 1.
+* The supervisor now spawns its own child and signals its child group ([[launch-codex.mjs:391|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:391]]); the [[live stub test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:619]] exercises a ceiling stop. This addresses the prior post-spawn PID lookup problem, but findings 3–4 prevent confirming continuous enforcement.
+* Rollout matching parses the first user-prompt event without the old byte cap. The [[deep-prompt and non-user controls|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:631]] pin that change. The launcher placement restriction and its [[test|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:457]] close the reported scratch-worktree launcher placement.
+* The broker’s fixed Git environment, disabled hooks, raw blob hashing, and filter-free export have targeted [[poison and race tests|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:273]]. Install uses a separate wall with scripts disabled; the claimed universal boundary remains unconfirmed given finding 1.
+* The receipt signs the tree, names and definitions, is kept in memory, and is spent after commit; the [[forgery|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:387]] and [[read-only tree|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:399]] tests cover those properties. Secrecy still relies on the documented host ptrace and seat seccomp boundary, which I did not measure.
+* Missing bubblewrap returns named refusals before either wall runs lane code ([[seat-walls.mjs:68|/home/joshu/.lares-scratch/seat-harness/wt/tools/seat-walls.mjs:68]], [[line 161|/home/joshu/.lares-scratch/seat-harness/wt/tools/seat-walls.mjs:161]]); the [[refusal test|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:430]] pins both names.
+* The relay rejects lead launches, and the go binds branch and head. The launcher’s mode-argument, floor and new threshold tests cover the intended changes ([[launch-codex.test.mjs:361|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:361]]). I found no additional floor regression, but cannot certify the complete lead boundary while the broker path findings remain.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;s8wo1Bjpz2tCNNKy8ou-VKDliCgoDtSlDadJs1Ypfok`>>
+
+<<^ code=`&#x0004;` to=`?`>>

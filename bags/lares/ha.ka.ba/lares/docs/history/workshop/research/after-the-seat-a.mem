@@ -1,0 +1,92 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/after-the-seat-a`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-10-25 (file date) — source `.lares-scratch/research/after-the-seat-a.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/after-the-seat-a"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/after-the-seat-a"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! after-the-seat-a.md — plan, 2026-10-25
+
+Verbatim scratch record `.lares-scratch/research/after-the-seat-a.md` (plan, file date 2026-10-25); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/after-the-seat-rows-1-25-shape-audit`>>
+
+! After-the-seat rows 1-25: shape audit (scout A)
+
+Road file: bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem (cited "road:N"). Rows sit at road:557-582. The fence (road:99) lists: engine re-mint, genesis re-bake, carrier and key-class changes, Stable re-found, every signed-shape change, every load-bearing rename. X0 is at road:541.
+
+Result: no row in 1-25 reads as a SHAPE row on evidence. 4 rows stay UNSURE. 21 rows read BEHAVIOUR. I read code for the rows with a wire, rest or signing smell; the rest I judged from row text and the file or verb it names.
+
+| row | class | reason |h
+| G6 | BEHAVIOUR | Removes stale prose and tolerant readers. One reader seen: `digestsEqual` accepts the legacy SRI `-` spelling beside `:` (ingest-core.ts:219-221). Dropping it writes no new bytes. Risk: an old on-disk synced-tree base with `-` would read changed. That base is local, not CID-bearing. |
+| G8 | BEHAVIOUR | Measures plus one assert caller. `assertBodyIndexTier` has one definition (content-handle.ts:201). "pack-PIN" points at the PIN cap, which tiddler-carriage.mem:99 labels "shape held, not built". A measure creates no shape. |
+| G10 | BEHAVIOUR | Verify-at-lane-close of an echo law (road:561). No code named. |
+| G17 | BEHAVIOUR | Tests only, by its own text. |
+| G18 | UNSURE | "The mode row never moves" (road:563). I found no code or canon that says what the mode row is. Would settle it: the shore lane's shape file, to see whether the row persists. |
+| G19 | BEHAVIOUR | Canon prose sweeps. |
+| G27 | BEHAVIOUR | `askShore` (shore-core.ts:189) is a CLI verb path to a live island. No persisted bytes named. |
+| G36 | BEHAVIOUR | `LarDiskProjector.settled` (disk-projector.ts:1138) is an in-process wait. The change adds heads to an ingest verb's answer. The reply carries no signed or rested bytes. |
+| S2 | BEHAVIOUR | Live proof of the engine fold on a rebuilt image (road:685). A proof run changes nothing. |
+| A8 | BEHAVIOUR | `persona wear` waits on a session switch (O1 train). A timing change in the CLI. |
+| A9 | BEHAVIOUR | Test harness image. |
+| A10 | BEHAVIOUR | Household proof in docker. |
+| A11 | BEHAVIOUR | CI reading (`tools/ci-verdict.mjs` exists). |
+| A12 | BEHAVIOUR | Progress lines and a measurement. Row says no small cure reads. |
+| A13 | BEHAVIOUR | Fix in `tools/lararium-container-boot.sh` for staged disposable roots only. Row says it binds those roots alone. |
+| K8 | BEHAVIOUR | The key and its hand-over line stand built (`nexus-leaf.ts`). Remainder is the gate reading the line. The road lists the socket cutover as built (road:723-730). |
+| K13 | UNSURE | Parcel rest format already stands: `OUTBOX_SEAL_MAGIC` "lares-outbox-seal", XChaCha20 seal, random-lead name (sealed-store-rest.ts:15-22, 216). Parcel body is `encodeKeyParcel` (operator-daemon-behavior.ts:823). Owed work is shipping over the member lane, receipt and delete. Local delete and receipt look behaviour. If shipping defines a new carriage frame or receipt record, that is a wire shape. Would settle it: the sealed-store canon for the shipping frame, or a draft of the receipt. |
+| K14 | UNSURE | Most owed items are guards (refusals at the crossing, edge kapae, device admit, two-founder act, session signer purpose). The signer already refuses `purpose-beyond-profile` (session-signer.ts:55-56). The last item, a guardians' recovery path where every party stays unreachable, may name a new recovery artifact. Would settle it: custody.mem#/the-restore text for that path. I could not find that file by path tail. |
+| N5 | UNSURE | "Newcomer board catch-up stands outside the witnessed charter re-import" (road:577, 711-712). No code cited. Tag is N, X. Would settle it: whether catch-up replays acts under existing signed shapes (behaviour) or needs a new anchor record. |
+| P3 | BEHAVIOUR (lean) | The vouch already signs under the voucher key it names (`verifyEd25519` on `voucherDid`, edge-ledger.ts:302-304). The worn-face key door stands (cabal-face.ts:1-40). Face proof subjects exist (face-proof-subjects.ts). Owed is the consult path, a read. If the vouch preimage must change what it names, that moves to SHAPE; I found no sign of it. |
+| P8 | BEHAVIOUR | Floor release answer is `W26`'s slice (already in X0). The remainder is the Handle table, "off the ceremony's chain by ruling". |
+| P17 | BEHAVIOUR | Adds an island-to-vessel door "in the shape of `dyad:ask`", touching the capability inventory and compose files. That reads as an in-process message kind, not rested or signed bytes. |
+| P18 | BEHAVIOUR | `kahuCabalCanonAccess` exists (kahu-cabal-admission.ts:212) and takes roster, acts and sentinel flag. Work is threading those inputs into both vessels' read. It reads existing acts. |
+| P19 | BEHAVIOUR | The act already names its epoch; owed is the refold hook. `onRolled` exists (store-door-verbs.ts:120). No new act field named. |
+| W10 | UNSURE | `knockSegment` derives HMAC(SHA256(domain, key), route) from the bundle digest (gate-bundle.ts:200-209). Noise IK already stands (noise-ik.ts:50). The row accepts the leak. The research pair (road:554) may replace the knock. A new knock changes a wire path and the bundle derivation; I found no persisted knock. The admit signs the sync route pin (road:725), not the knock. Road:147 and road:281 say "the socket's handshake changes once". Would settle it: the research pair's outcome. |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/move-before-the-bake`>>
+
+!! Move before the bake
+
+None of the 25 rows is a proven SHAPE row. Watch the four UNSURE rows:
+
+# W10 (stride-2-floor). Only if the research pair changes knock derivation or the IK flight. That is a wire change, not a rest change, but road:281 holds that the handshake changes once. The report path is that the cure lands before the first second-operator dial.
+# K13 (stride-2-floor, if shipping adds a frame). The rest side is built. Fix the ship frame and receipt record before a second operator's vessel pins parcels.
+# K14 (stride-2-floor, recovery path part only). A recovery artifact would persist and bind a charter or seat shape. Ask for its canon first.
+# N5 and G18 (undecided). No evidence either way.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/aside-found-while-reading`>>
+
+!! Aside found while reading
+
+`gate-exchange.ts:56` heads the sealed-channel frame table "provisional layout" (frame tags 0x01-0x13, `GATE_FRAME`). That is a wire layout the code itself calls provisional. It carries no row id in my half. The controller may want to check whether the sibling half or X0's G37 renames cover it before the second seat.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/method-limits`>>
+
+!! Method limits
+
+I read row text, the files each row names where I could find them, and grepped for evidence. I ran no tests. I did not find `lararium/mesh/custody.mem` by the path I tried; its `#/the-table` and `#/the-restore` sections remain unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TRFSQXCpIbDJPPBq7g79EKDK18TIzrBBpHETDmiHDU4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

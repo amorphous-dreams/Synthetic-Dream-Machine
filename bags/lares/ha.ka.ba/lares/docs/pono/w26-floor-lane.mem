@@ -147,6 +147,16 @@ action reactors, `meme` and `where` by `systemCanonUrl`, and a recipe's library 
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/many-floors`>>
+
+!! Many floors ~ one pin per Nexus, stacked innermost-first (operator ruling 2026-11-12)
+
+//"Pono, approve both leans (many floors, Kahu seats)."// A vessel standing in several Nexuses holds one floor pin per Nexus (#/the-vessel-pin), and its recipe stacks those floors ''innermost-first'': its Household's canon shadows the Crossroads' floor, which shadows the Temple's, with the planetary floor beneath (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-nexus-scales`>>). The top layer shadows across tiers exactly as it shadows within one recipe (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>, 2026-11-11), so a narrower Nexus reads its own canon first and a wider one fills what it leaves open; no tier retracts another's record, and each pin moves only by its vessel's own accept along that Nexus's `prior` chain.
+
+''Owed, the next leap'': no recipe stacks more than one floor yet. The pool mounts the vessel's sole pin (`vesselFloorCid`), and two pins naming different floors mount genesis and say so (#/owed, the mount's Nexus). The build orders the pins by the vessel's Nexus nesting (a Household inside a Crossroads inside a Temple), mounts one read-face per pin beneath the wiki's canon, and names the order in `floor status`; a pin whose nesting no contract names refuses by name rather than guessing a rank.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/owed`>>
 
 !! Owed beside the slices
@@ -192,6 +202,6 @@ action reactors, `meme` and `where` by `systemCanonUrl`, and a recipe's library 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;xYqSTqXyJUuu0vBIMGP_Kj7amNphLxAjwNds4K_i6O8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qHzgCpxMYy7vjVA5-uxVtlScGP3FuedH9yOA2FZ0Rr4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

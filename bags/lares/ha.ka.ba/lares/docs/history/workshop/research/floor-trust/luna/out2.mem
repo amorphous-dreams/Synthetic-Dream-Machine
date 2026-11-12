@@ -1,0 +1,94 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/floor-trust/luna/out2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/floor-trust/luna/out2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/floor-trust/luna/out2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/floor-trust/luna/out2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out2.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/floor-trust/luna/out2.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/floor-trust/luna/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ node "-> refreshes the libation dish, the shrine incense burns">>
+Luna-Floorreader: Lares (Tasked Spirit)
+
+&lt;&lt;~ persona Ink-Clerk>> &lt;&lt;~ persona Map-Wisp>> &lt;&lt;~ persona Lares (Council)>> &lt;&lt;~ persona Lares (Artificer)>>
+&lt;&lt;~ stance "🏛️ 🌊 🗡️ 🎭 🔮">> &lt;&lt;~ mu "_!">>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/observe-measured-at-span-head`>>
+
+!! ✶ Observe — measured at span head
+
+W14–W16 share one shape: ''floor-pin succession'' — a place-signed floor statement bound to the place KEL head, filed by causal descent. “Floor standing” collides with realm standing, `standsInRealm`, and vessel-standing relations; “Floor Position” collides with causal position. “Succession” names this pin’s ordered replacement relation without reusing either house term. Place KEL authorizes the signer; Nexus AID never signs as place. Known forks surface/refuse; arrival order never selects. Offline readers hold the last accepted head and say “as of my last sync.” First contact requires an anchor conveyed apart from the card (genesis, authenticated admit, or deliberate person-to-person transfer). A partial carries the statement and files it only atomically with quorum-counted carry; herm carries it opaque.
+
+''MEASURED.'' `place-floor-pin.ts:50–68,88–110` currently signs `{kind,placeKey,pin,sig}`; no position. `admit-gate-pin.ts:84–134` indexes `(hearth,Nexus,route,tier)` first-wins. Node `hearth-gate-pins.ts:69–123` and browser `browser-gate-pins.ts:18–46,77–85` seed/file pins; browser `open-browser-vessel.ts:806–816` files the URL card’s pin. `main.ts` / `live-status.ts` carry/parse `#floor`; `browser-floor-read.ts` reads, but acceptance does not persist there. Node `floor-porch.ts:78–96` serves W26 answer/CIDs; mesh `floor-answer.ts:62–96` checks release chain and content. `nexus-contract.ts:450–509` limits two-vault partials to admit/revoke, sets `floorPin:null`; whole acts carry/write the optional statement. Thus W16 currently lands no pin.
+
+''F1–F4.'' W26 owns content canon: the road says “A vessel moves its floor pin only when it accepts a newer signed release” [stable-founding-road.mem:195]. `floor-answer.ts` folds release lineage; porch serves those rows and blobs. That head tracks ''content''. A gate pin tracks ''place key state''. Binding release head into the pin statement fuses two relations; W26 remains release owner, its head may accompany as evidence, and W14–16 position only by place KEL head.
+
+`gate-bundle.ts:2–23` derives both floor transport and signing keys from floor key + tier + Nexus + route. Route-specific outputs differ, but no independent route/transport-key change exists while that root stays fixed. A place-key change alone advances KEL and orders every derived pin; no per-route successor event needed.
+
+Place KEL today (`vessel-kel.ts:1–15,23–52`) holds only `t:"icp"`, one key, and self-signature: no sequence, event digest, rotation event, or next-key commitment. Road X0 carries the pre-rotation/founding format; current code has not built it. Therefore today’s statement cannot bind `(place AID, sequence, event digest)`. The scoped signer/pre-rotated KEL must first become a build. House law says build the end state; place-KEL build should land in its own prior lane, then this lane binds its verified head. Do not hide that prerequisite inside the floor-pin lane.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/orient-f5-ruling-sort`>>
+
+!! ⏿ Orient — F5 ruling sort
+
+''(a) Canon quotes:'' signer: “The place signs by a scoped signer under a pre-rotated KEL” (road:207); W26 release acceptance quote above; “A floor route’s keys derive from the floor key” (road:188; gate-bundle). Fork law: “A fork stays a fork… no clock, no longest chain and no third-party quorum picks a branch” (road:227). These rule signer, two axes, fork behavior. ''(b) House law derives:'' no global now ⇒ last accepted head / “as of my last sync”; one name/relation; build-end-state ⇒ separate KEL prerequisite; herm carries, never reads; isomorphic-by-intent ⇒ same node/browser verifier; silent-zero requires known-positive. ''(c) Operator choices only:'' first-contact anchor carrier: genesis card, authenticated admit, or deliberate human transfer. Lean: authenticated admit for joins, deliberate transfer for bootstrap; keep genesis available for founder. W16 filing moment already ruled by brief’s accepted atomic-quorum contract, not reopened.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/decide-dependencies-and-handback-kit`>>
+
+!! ◇ Decide — dependencies and handback kit
+
+Place KEL build first; then floor-pin succession slices, red-first:
+
+# KEL head reader/statement schema in mesh `vessel-kel.ts`, `place-floor-pin.ts`: reject missing/foreign head, wrong place/Nexus, bad signature; positive pre-rotated descendant verifies.
+# Causal index/fold in `admit-gate-pin.ts`: reject known ancestor; report same-head divergence/fork; positive descendant replaces. Node/browser consume same fold; restart and replay preserve head.
+# Card anchor and live filing in web `main.ts`, `live-status.ts`; browser `browser-floor-read.ts`, `browser-gate-pins.ts`, `open-browser-vessel.ts`; node `hearth-gate-pins.ts`: red forged/unanchored card and stale known head; positive admitted successor refiles live; offline answer states last sync.
+# Atomic two-vault carry in node `commands/nexus-contract.ts`, `carry-bundle.ts` and mesh partial/judge: red partial cannot expose pin; positive quorum lands act+statement atomically. Herm carriage files/presents bytes without interpretation.
+# Storm witness across node/browser, reorder/restart/offline: same evidence yields same head; no arrival winner. Silent-zero control pairs empty input with known-positive rotation/carry.
+
+Hold place-KEL files for prerequisite lane; this lane holds `place-floor-pin.ts`, `admit-gate-pin.ts`, node/browser filing/readers, `nexus-contract.ts`, carry bundle and herm wiring. ''Overlap:'' W26 owns release records, content verification, porch; consume its release as separate evidence only. W28 owns `gate-exchange`, `face-gate*`, `face-dial`; avoid those files. K17-R owns frontier verifier and lease/realm boards; consume verifier where applicable, do not redefine frontier semantics.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/act-scout-complete`>>
+
+!! ▶ Act — scout complete
+
+No code changed; repository remained read-only. No suites run.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/aftermath`>>
+
+!! ↺ Aftermath
+
+Floor-pin succession proceeds after the X0 place-KEL build; one open operator choice remains: select the first-contact anchor path per the lean above. OODA-HA: closed 1↺.
+
+WORDS=936
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8KKlP3aQLlfRQGDXJkG12imgHPlR5FmAtkA4II0ISa0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

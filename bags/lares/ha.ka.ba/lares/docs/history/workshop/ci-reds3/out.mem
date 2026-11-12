@@ -1,0 +1,178 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/ci-reds3/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-11 (file date) — source `.lares-scratch/ci-reds3/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/ci-reds3/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/ci-reds3/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-11
+
+Verbatim scratch record `.lares-scratch/ci-reds3/out.md` (hand-back, file date 2026-11-11); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/ci-reds3/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/redmender-ii-browser-weld-w1-cure`>>
+
+! Redmender-II — browser-weld W1 cure (branch feature/green-jello-dinosaur-5&#45;-ci-reds3, pushed)
+
+Commit: c75502f0a lar:&#47;&#47;/host.awaits.island/workbench-stood (on span head c84b3311d)
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/cause`>>
+
+!! Cause
+Under a face, the lares working slot resolves to the realm workbench at a DERIVED address. The island stands it with
+`materializeSharedLarDoc`, which first asks every peer, the HOST included. The host holds nothing, answers `unavailable`,
+and automerge-repo 2.6 caches that verdict in the host's find progress (the handle itself reads "ready"; `find` rejects in
+0 ms). The island then imports the blank board and pushes it to the host, but the binding reply rides a different port.
+When the reply lands first, the host's `findOrThrow` in `mountWikiSlot` meets its own cached verdict, and you get the weld's
+exact message. Verified with a probe: the host find fails at once, and after about a second the island's push heals it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/which-commit-is-to-blame`>>
+
+!! Which commit is to blame (honest read)
+Between 5a8b5e603 and c84b3311d the FACED path changed in only one way: the browser face-label IIFE moved a few lines,
+to after the anchor pin. `bindings`, the binding reply, `mountWikiSlot` and the host settle all behave identically when a
+working url exists. The race predates c84b3311d; the new test goes red against 5a8b5e603's mountWikiSlot as well. Most
+likely the label move shifted vessel-worker timing so the reply now wins. It could also be chance (one red run against three
+greens).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/cure`>>
+
+!! Cure (mesh, the one host mount)
+`findOrThrow({ islandNamed: true })`: where the host's repo ALREADY answered this url `unavailable` (an island asked
+first), that verdict reads as stale. The host then waits through `findWithProgress` for the island's copy until the bound,
+and refuses by name with `waitedMs` set if nothing arrives.
+* A url never asked behaves as before: it fails fast.
+* A `failed` load refuses at once.
+* It never mints a blank.
+
+`mountWikiSlot` passes this option for the working slot. The island side is unchanged: it stands the document before naming it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/test`>>
+
+!! Test (chromium vitest)
+packages/lararium-browser/tests/working-mount-island-stood.test.ts. It joins two real Repos with one MessageChannel, the way
+the browser joins host and island, and runs the real `materializeSharedLarDoc` (the island's workbench door) and the real
+`mountWikiSlot`.
+* R1: the face's workbench mounts as the working layer and default writable. RED with the cure reverted (the weld's exact
+refusal), GREEN in 3 of 3 runs.
+* C1: the faceless floor names no working document; the wiki mounts with no default writable.
+* C2: a never-asked url refuses at once.
+* C3: a url the island asked about but never stood refuses at the bound.
+* Not a full openBrowserVessel boot: no browser test here boots a real vessel worker, so the test reproduces the failing seam.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/proved-locally`>>
+
+!! Proved locally (scratch LAR_ROOT, no LAR_BAGS)
+* browser: working-mount-island-stood, 4/4, three times.
+* mesh: working-document-resolve and working-always-mounts, 4/4. The first cure draft waited on every unavailable and broke
+"a document no peer holds refuses by name", so the wait is now gated on a prior unavailable answer.
+* node: face-cell-lights-proved and working-layer-host-composite, 4/4.
+* Typecheck green (mesh, tw5, keyhive, browser, node); every typecheck:tests ceiling holds; build and stamp done.
+* No e2e or weld run. CI's held-out browser-weld proves W1.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/smells`>>
+
+!! Smells
+* The same poison can hit any document an island stands at a derived address after asking its host (boards through
+`materializeSharedLarDoc`) whenever the host then `find`s it. Only the working mount carries `islandNamed` today.
+* The wait relies on the island pushing the stood document to the host (a generous share policy). If an island ever stops
+announcing, the mount waits the full 60 s bound and then refuses by name.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/turn-2-the-causal-cure`>>
+
+! Turn 2 — the causal cure (controller ruling: a timer decides liveness, never ordering)
+
+Commit: 725c31b72 lar:&#47;&#47;/answer.carries.document/workbench-stood. It sits on c75502f0a; no force-push. It removes c75502f0a's
+`islandNamed` timer wait from find-or-throw and mountWikiSlot, so those two files read as they did at c84b3311d.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/option-chosen-the-answer-carries-the-document`>>
+
+!! Option chosen: (b), the answer carries the document
+* island: keyhive operator-daemon-behavior `resolveBinding` is the single binding owner. For every wiki but the daemon's,
+it reads the stood working url from its own repo and puts the bytes on the answer (`workingDoc`, mesh `stoodDocumentBytes`).
+* wire: `DaemonMsg_ResolveBindingResult.workingDoc` (mesh island-protocol, set by `mkDaemonResolveBindingResult`).
+tw5 daemon-behavior forwards it.
+* vessel: tw5 daemon-vm-core, the single settle path both hosts run, calls `landBindingDocuments` to import the bytes at
+`workingUrl` BEFORE the answer settles. Probed: automerge-repo 2.6 `import` with a docId clears the cached `unavailable`
+and merges incrementally onto an existing handle. The mount's ordinary findOrThrow then finds the document; its own bound
+stays the holder's give-up.
+* Node and browser run identical code (shared operator behavior, daemon-behavior and daemon-vm-core).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/other-derived-address-documents-by-name`>>
+
+!! Other derived-address documents (risk 1), by name
+* daemon wiki device slots: minted at a fresh id no peer was ever asked about, so they carry nothing.
+* edge ledger (`edgeLedgerDocUrl`), canon-offer board, fleet edge-kapae board, workbench ledger: the vessel reaches each
+through its own `materializeSharedLarDoc`. That falls back to the same pinned genesis and merges, and no vessel
+`findOrThrow`s them, so none can refuse this way.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/test-browser-working-mount-island-stood-chromium`>>
+
+!! Test (rewritten), browser working-mount-island-stood, chromium, green in 3 of 3 runs
+* M0: the url alone, with the island's push still in flight, refuses `document-unavailable` (the weld's red).
+* R1: the answer carries the stood bytes; the host lands them and mounts the workbench as its working layer, with the
+island's content.
+* C1: the faceless floor carries nothing and mounts with no default writable.
+* C2: landing again after the doc has synced merges to the island's heads.
+* Against c84b3311d, R1 cannot run because the carry does not exist there; M0 shows the race.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/proved-alone`>>
+
+!! Proved alone (scratch LAR_ROOT, no LAR_BAGS)
+* browser: working-mount-island-stood 4/4 (×3); vessel-worker-seams and shared-holder-routes 28/28.
+* node: face-cell-lights-proved (C1 runs the real faced binding through the carry) and working-layer-host-composite, 4/4.
+* mesh: working-document-resolve and working-always-mounts, 4/4.
+* keyhive: slot-doc-resolver, floor-refuses-content-verbs and workbench-realm, 26/26.
+* tw5: wiki-mount-private-alias, daemon-vm-holder and wiki-act-mounts-its-wiki, 71/71.
+* Typecheck green (mesh, tw5, keyhive, browser, node); every typecheck:tests ceiling holds; build and stamp done.
+* No e2e or weld run.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/smells-2`>>
+
+!! Smells
+* Every faced mount now carries a full snapshot of the workbench in the binding answer. Cheap today; a large shared
+workbench makes it heavier. Possible later trim: carry only when this call stood the document, or carry the change since
+the vessel's heads.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lacflG5tf7Qv8F9FJE165VlA5eipyOB75T3Cn-BVJKU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

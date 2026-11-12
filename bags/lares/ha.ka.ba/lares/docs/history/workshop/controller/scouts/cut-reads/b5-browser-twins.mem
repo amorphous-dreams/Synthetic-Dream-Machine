@@ -1,0 +1,115 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b5-browser-twins`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-10-31 (file date) — source `.lares-scratch/controller/scouts/cut-reads/b5-browser-twins.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b5-browser-twins"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b5-browser-twins"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! b5-browser-twins.md — plan, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/scouts/cut-reads/b5-browser-twins.md` (plan, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/b5-browser-twins-reader-five-lares`>>
+
+! b5-browser-twins (row T13) — Reader-Five: Lares (Tasked Spirit)
+
+Read in full: packages/lararium-browser/src/open-browser-vessel.ts (1962 lines; bootUnderLock 490-1946, all of it) and the node counterparts in packages/lararium-node/src/open-node-vessel.ts (3770 lines; every twin region read), plus edge-shadow-ring.ts, nexus-standing.ts, hearth-dial-pin.ts, node-plugin-resolution.ts, worn-mount.ts, persona-act-store.ts, lease-observation.ts, mesh wiki-activation.ts, tw5 vessel-residency-wiring.ts. Line numbers as of main checkout 27bc0cb6b.
+Fences kept: read-only, no suites, no boots.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/findings`>>
+
+!! FINDINGS (top)
+
+F1 [correctness, fails CLOSED; not a key/cross-face leak] An admitted browser leaf resolves a DIFFERENT island on every boot after the admit boot.
+* Admit boot (browser 630-642): nexusPubkey = admittedJoineeIsland({hearthGatePubKey, hearthIslandKind, hearthIslandScope}); runApplyAdmitPayload seeds the KEL inception onto that island's board (706-716).
+* The admit rides ONE boot only (packages/lararium-web/src/main.ts 373: takeStashedAdmit). The bootstrap it writes (729-747) keeps hearthGatePubKey/hearthGatePin but NOT hearthIslandKind/Scope.
+* Every later boot: admit undefined -> nexusIdentity(nexusStandsAt) with anchorGateKey: null, no genesis (619-623, 644). Island = the vessel's own key (or walk.nexusAid). carryPersonaKelUpTheGradient only reads islands BELOW own (none), so the chain seated at the hearth's island is absent from the own-key board -> the Binding Gate throws "persona-KEL chain ... absent" (1249-1251). The leaf bricks on its second boot.
+* The node closed this exact defect: nodeNexusStandsAt (nexus-standing.ts 55-84) re-reads the admit's island snapshot (hearth-dial-pin.ts HEARTH_ISLAND_KIND/SCOPE/GATE_KEY tiddlers in the bootstrap) every boot; init.ts 300-310's comment states "Seeding one island and reading another HALTS the Binding Gate fail-closed at first boot".
+* UNPROVEN: no test reboots after an admit. nexus-board-climb-at-leaf.test.ts 387-410 is a source-grep ("toContain('admittedJoineeIsland({')"), and every whole-boot unit test halts at catalog-ready or bootstrap-kept. Needs a red (admit boot, then a second boot with no admit, assert same nexusPubkey) before any cure. The cure is the cut itself: persist the island snapshot in the bootstrap and read it through ONE mesh stage (see C1).
+
+F2 [correctness, UI-state; not security] Browser wiki-switch (1539-1552) tests `if (active)` on the object ensureActive returns. WikiActivationResult is {ok:true}|{ok:false,cause,detail} (mesh wiki-activation.ts 45-47), always truthy. A FAILED activation still flips activeSurfaceId, places open-wiki, and returns `active: {ok:false,...}` (an object, not a boolean). Node reads `active.ok` (3209) and returns cause/detail. Typecheck cannot see it. The cut (C8) cures it by construction.
+
+F3 [watch, not a fault] Catalog failure policy diverges. Node: pointer file written only after repo.flush(); a missing catalog doc is TERMINAL (resolveBootDoc). Browser: catalogUrl in boot keys is written later (loadGenesis, 1099) with NO flush; a missing doc re-founds BLANK with a loud console.error (loadFoundedCatalogOrWarn). A crash between pointer and doc flush reads in the browser as a false DATA-AMNESIA and silently orphans every registered wiki. This is a deliberate leaf tolerance, but the unflushed pointer is the same hazard node measured. NEEDS-RULING, do not collapse the body.
+
+No key reaches a surface and no cross-face read leaks in what I read. atomSeed/wornAtomSeed are zero-filled after use (717, 780, 1213, 1369). siblingAside / deviceAside fail closed before the first fleet read (562, 1479).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/twin-table`>>
+
+!! Twin table (browser span -> node span, verdict on substance)
+
+Code lines = non-blank, non-comment. "Raw" = the span.
+
+| # | Twin | Browser | Node | Same contract? | Shared stage + port | Browser code/raw | Node code/raw |h
+| C1 | Island resolution | 584-647 | 1142-1190 (+ nexus-standing.ts) | NO. Same mesh ruling, divergent INPUTS: node persists+rereads the admit snapshot (F1), browser does not. Browser adds walk.explicitScope; node adds charter/seal. | mesh `nexus-identity` stage `standIsland(inputs)` returning {pubkey, standing}; inputs read through a `IslandPinStore` port (bootstrap-held snapshot). | 26/64 | 9/49 |
+| C2 | Climb + KEL carry | 649-675, 1243-1246 | 2143-2146, 2200-2204 | YES. Both call mesh climbNexusBoards / carryPersonaKelUpTheGradient. Only realmId differs (browser null: no seal home; node nexusAidOf(readNexusDoc)). | Already in mesh. Residual is a 5-line call; leave. | 5/27 | 6/11 |
+| C3 | Dyads observation | 858-881 | 2085-2121 | YES, near line-for-line (same two log lines, same verifiedFleetOfGroup). Browser wraps in try/catch (never blocks); node does not. | mesh `observeVesselDyads(daemonDoc, edge, log)` beside vesselDyads. | 16/24 | 20/37 |
+| C4 | Catalog | 928-943 | 1085-1120 | NO (F3). Different durability and failure policy. | Do NOT collapse. Leave in the substrate adapter (IDB boot keys / fs file). | 13/16 | 24/36 |
+| C5 | Residency | 1028-1046 | 1802-1816 | Already one factory (makeVesselResidency). Hooks differ on purpose: node narrates cools, parks undeliverable alerts, paces by realm roll; browser warns+drops (no mailbox). | Done. Browser-only push* helpers (966-1027) are a daemon-widget feed, no node twin. | 14/19 | 12/15 |
+| C6 | Fleet shadow read | 552-564, 1385-1415 | edge-shadow-ring.ts 150-260 (foldOnce) | MOSTLY. Same readLedgeredEdgeBoard + readFleetFrontier + writeFrontierPin + raisesSeenThrough. Browser reads ONE fleet and keeps `rolled` but never uses it; siblingAside/deviceAside read `stands===true` only. Node uses edgeStandingAsOf (adds rolled/owing, ABSENCE-IS-NOT-CLEAR across fleets). For the sibling lane with one fleet and a known frontier the verdicts agree; they would differ the day the browser reads two fleets. | mesh stage `fleetShadowRing` (the platform-blind half of edge-shadow-ring.ts: deps already injected: repo, fleetRoots, lineageOfFleet, vesselKey). node-only realm half stays. Port: `EdgeBoardReader`. | 41/44 | ~25/60 |
+| C7 | Face proof + plane registration | 1226-1331 (+1264-1331) | 2123-2185, 2400-2440 | MOSTLY. Same proveFaceFromLog, same refusal text, same provenPlanes/registerInCatalog rules, same joinFaceDocumentsOnArrival. Differences: (a) browser raises the anchor's LEASE via inline readFace().observedLease; node uses raiseAnchorFromSlots (lease-observation.ts) in a separate step; same effect, two spellings. (b) records: browser faceRecordsOf+heldDocOf; node readFacePersonaRecords (persona-act-store.ts, which is platform-blind and sits in node by accident). (c) node adds relay-plane registration (registerFacePlanesForRelay) and CustodyLocked handling; browser has neither (no relay-enabled intents). (d) browser handles a non-founding worn face's intents url from the catalog; node reads bootFacePlanes. | keyhive/mesh stage `proveWornFace` -> {projection, provenPlanes, anchorRaised}; port `FaceAnchorStore` (load/keep) + `PlaneRegistry` (registerInCatalog). | 71/106 | ~85/110 |
+| C8 | Wiki switcher verbs (wiki-switch/hold/release/active) | 1534-1577 | 3202-3235 | NO on one point (F2); otherwise identical. Browser also flips activeSurfaceId and pushes switcher state (a projection feature node lacks: node is headless). Node's `wiki-act` (3049-3067) has no browser twin on main: the browser relies on the dispatcher's worker-side route. Check before assuming a gap. | tw5 verb cap `registerWikiSwitcherVerbs(registry,{wikiActivation, vmManager, onSwitched?})`; browser passes onSwitched to flip surface. Port: `WikiActivationCap` (already the capability). | 41/57 | ~30/50 |
+| C9 | PersonaGroup ring | 1456-1486 | 2605-2643 | YES. Same assemblePersonaGroupRing. Inputs differ legitimately: provenKeyOf reads the relay socket (browser) vs peerIdentifierMap (node); deviceAside differs (browser: one fleet; node adds widenBlocked and seatedDevicesOfFace, because only a node holds an inbound gate). | Glue stays per-vessel; collapse only the shared tail (compose fedGate; composeSiblings with the fleet board url) behind `ring.apply({fedGate, fleetBoardUrls})`. Small. | 16/31 | 19/39 |
+| C10 | Sibling channel | 1488-1517 | 2644-2680 | YES, line-for-line (seal read, JSON.parse guard, lease slots, standSiblingChannel). Differences: node takes herms from opts OR env LAR_SIBLING_HERMS (host-bound; env read) and throws on a missing atom; browser reads opts only. | mesh/keyhive `standFaceSiblingChannel({repo, herms, nexusPubkey, personaKelPrefix, atom, edge, daemonDoc, chain, anchor, onWarn})`. Herm list arrives injected (env stays in node adapter). | 22/30 | 28/37 |
+| C11 | afterDaemon pins | 1737-1757 | 3240-3265 | YES for the first 15 lines (pin catalog, oracle, lares corpus, 4 face planes, daemon bag; replayPinsFromDaemonDoc; startSweeper; attachResidency). Node adds BAG_IDS.lararium pin and the gate/hosting/seat-settler tail. | tw5 vessel-residency-wiring `pinBootResidents(...)`. | 16/21 | ~20/26 (15 shared) |
+| C12 | Pool + event wiring | 1759-1862 | 3330-3420 | Different pools (BrowserVesselIslandPool vs VesselIslandPool); shared only: wireToPool call, islandEventAsk->daemon.placeVerb, resolvePluginCids -> resolveRecipePluginCids (already in mesh; node-plugin-resolution.ts and browser resolveBrowserIslandPluginCids are 2 identical 1-line wrappers, plus nodeOfferingLookup/browserOfferingLookup identical bodies). | Collapse the two offering-lookup bodies into mesh `offeringLookupOf(doc)`; keep pools per substrate. | ~12/104 shared | ~10/91 shared |
+| C13 | Founding / admit | 680-801 | commands/init.ts (admit 296-340; founding via custody/face-route) | SAME ceremony (keyhive runFoundingCeremony/runApplyAdmitPayload), DIFFERENT persistence (IDB rows vs sealed fs custody). Order differs: browser writes archive -> anchor -> bootstrap; node writes anchor -> archive -> identity anchors -> bootstrap. | keyhive stage `foundFace` / `admitFace` over a `FaceCustodyPort` {keepAtomSeed, keepArchive, keepAnchor, mintAddressSecret, rootSigner, keepBootstrap}. Biggest port to design; the order fixes into the stage. | 76/122 | ~110 in init.ts |
+| C14 | Persona/face/circle/custody verbs | 1579-1720 | none in the registry (node: CLI lares persona / handle) | NO TWIN. persona-refresh/mint/wear, custody-clear, face-publish/burn/attest, circle-refresh live only in the browser's main registry. publishHandleBrowser/burnFaceBrowser/attestFaceBrowser already wrap mesh handle-publish. Under the full-peer ruling, node would gain these verbs: a capability ADD, not a collapse. | tw5 verb cap `persona-surface` over mesh `PersonaVault` (both makeBrowserIdbPersonaVault and makeNodeFsPersonaVault implement it) + `CustodyDoor`. | 80/142 | 0 |
+| C15 | wiki-sense supervisor | 1722-1734 | none | Browser-only. Node's sensorium runs py-side (island-behaviors.ts 205). Capability difference, deliberate. Leave. | none | 8/13 | 0 |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-800-measurement`>>
+
+!! The "~800" measurement
+
+* Raw lines in the twin spans, both files, C1-C3, C6-C12 (without C4, C5, C13-C15): browser about 420, node about 410: about 830. The prior reader's "~800" matches this as lines TOUCHED across both files.
+* Net lines REMOVED after the cuts land is smaller: glue code (non-comment) twin lines are about 255 browser + about 270 node = about 525. The shared stages add back about 180-200 code lines. Net deletion about 330 code lines, about 500 raw with the comments that go with them.
+* Add C13 (founding/admit): about 76 browser + about 110 node code, net about -100 once the port stands. Total with C13: about -430 code lines.
+* C14 moves about 80 code lines browser -> tw5 and nets roughly 0 (a lift, not a collapse).
+So: "800 collapsed" overstates by about 2x; "800 touched" is right.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/per-candidate-answers`>>
+
+!! Per-candidate answers (items 3-10, grouped; the batch is one function so most items are shared)
+
+# State read/written: bootUnderLock closes over ~25 lets: relayPeers, fedGate, siblings, siblingGate, fleetShadows, fleetBoardFollowed, fleetRead, fleetMoves, oracleAtBoot, activeSurfaceId, vmManager, portFaceId, wikiActivation, daemon, wikiSense, slotActiveWikiId, crossroadsOfferingsHandle, bootKeys/bootKeyWrites/bootstrap, relayAdapter, replayManifest. Reads: IndexedDB (boot keys, custody rows, face rows), OPFS CAS, Web Lock, console. No wall clock decides anything (fleet read is a causal change-listener). Module globals: none beyond imports.
+# Callers: openBrowserVessel only (-> guardedBoot -> bootUnderLock); openBrowserVessel is called by packages/lararium-web/src/main.ts and 9 browser tests. Callees are listed in the table.
+# Tests: no unit test runs past catalog-ready/bootstrap-kept (wire-vessel-rig.ts BootHalted at "catalog-ready"; browser-device-edge.test.ts at "bootstrap-kept"). So island, climb, found/admit, dyads, catalog are reached through a halted boot; the daemon open, face proof, ring, sibling, verbs, pool, afterLive are reached only by tools/browser-weld/leaf-continuity.mjs and tests/live/two-tab-walk.mjs (real browser), plus source-grep "fault-pin" tests (nexus-board-climb-at-leaf.test.ts 310, 395). The tail has NO fast red today.
+# House laws: no key on a surface (atom seeds zero-filled; vessel key broadcast as presence only, 1868); capability not host (C10 env read and C12 pools are the host-bound parts to keep in adapters); one owner per registry (registerInCatalog is declared twice, once per vessel: collapses into the C7 stage); no global now (fleet read, sibling lease are causal; the two timers stay in the pool); web3-only (n/a); old shapes burn (F1 cure must not add a back-compat read of a pre-snapshot bootstrap: a bootstrap lacking the island pair refuses by name or re-admits; ALPHA LINE).
+# Risk: ORDER. Browser order is fixed by closures: island -> climb -> bootstrap(found/admit) -> pins -> crossing -> catalog -> mesh caps -> loadGenesis -> openDaemon (carry KEL -> face proof -> register planes -> daemonAuth -> plugin resolve -> fleet read -> openBrowserDaemonVm -> ring -> sibling). The ring and sibling need the daemon's `personaKel` and fleetShadows; moving the fleet read after the ring would read every key aside forever (fails closed, boot looks healthy, sibling lane dead). The sibling lane and the ring read `fedGate`/`siblingGate` through live closures (browserShareConfig reads at each decision); a stage that takes gates by value reopens the pre-crossing-null hazard that file's header documents. COLLISIONS: ralias (~/.lares-scratch/ralias/wt) edits open-node-vessel.ts (+72) and tw5 vessel-residency-wiring.ts (+12): C5, C11, C12 and any node-side C-cut must wait for or rebase on ralias. u1 touches keyhive content-key-seat, mesh content-key-holder, node session-sign-door: no overlap with these spans.
+# Red-first shape (per cut): C1/F1: boot-admit-then-reboot rig asserting equal nexusPubkey and a non-throwing KEL read (red today if F1 holds), control: a never-admitted leaf and a founded leaf keep own-key across reboots. C3/C10/C11: a parity law that drives the shared stage with a browser fake and a node fake and demands equal log lines and equal outputs (CLI test-laws pattern: a SEED, not a lone literal). C6: a two-fleet case where `rolled`/owing and ABSENCE differ, control the one-fleet known-frontier case where both agree. C7: forged lease slot raises nothing (control: signed advance raises) under both vessels. C8: an ensureActive refusal must leave activeSurfaceId and place no open-wiki (red today on the browser). C13: stage-order law: archive before bootstrap on both.
+# Verdicts:
+* C2 CUT-READY (already shared; only a name). C3 CUT-READY. C10 CUT-READY (herms injected; env stays in node). C11 CUT-READY after ralias lands. C12 offering-lookup half CUT-READY (trivial); pool half DO-NOT-CUT.
+* C8 CUT-READY (cures F2; browser surface hook injected).
+* C6 NEEDS-RULING: fork = the browser's single-fleet `stands===true` vs node's edgeStandingAsOf/absence-is-not-clear. Lean: adopt the node reading in the shared stage (the stricter law), and say so in the browser witness.
+* C7 NEEDS-RULING: fork = does the browser grow the relay-plane registration and CustodyLocked path (full-peer role) or does the stage take them as optional ports. Lean: optional ports, no browser behaviour change now.
+* C1 NEEDS-RULING: fork = persist the island snapshot in the browser bootstrap (F1 cure) as part of the cut vs ship the cut first. Lean: red F1 first, cure inside the C1 stage; one PR.
+* C13 NEEDS-RULING: fork = the FaceCustodyPort surface and the fixed write order. Lean: archive -> anchor -> bootstrap (the browser's order; the bootstrap names the admit, so it lands last). Largest port; sequence last.
+* C14 NEEDS-RULING: fork = whether node gains persona/face verbs in the same PR (a capability add) or the lift lands browser-first with node later. Lean: lift first, add node after the stage stands.
+* C4 DO-NOT-CUT (F3 is a policy fork, not a twin). C15 DO-NOT-CUT. C5 done.
+
+Suggested stage order: F1 red -> C8 -> C3 -> C10 -> C2/C12-lookup -> C11 -> C6 -> C7 (+C1 with F1 cure) -> C13 -> C14. Each PR deletes its browser twin in the same PR (T13 rule).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cfg1re6ehGeLRGy-s7BBVskCNk5Y_abMFjBCmwqtlAY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

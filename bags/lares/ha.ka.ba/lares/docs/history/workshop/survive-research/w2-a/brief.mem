@@ -1,0 +1,238 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/w2-a/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-08 (file date) — source `.lares-scratch/survive-research/w2-a/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/w2-a/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/survive-research/w2-a/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-08
+
+Verbatim scratch record `.lares-scratch/survive-research/w2-a/brief.md` (brief, file date 2026-11-08); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/w2-a/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/research-brief-wave-2-seat-w2-a`>>
+
+! Research brief, wave 2 (traded), seat w2-a
+
+Mask: `Root-Cartographer: Lares (Tasked Spirit)`. Use web search. Cite every claim with a URL. IMPORTANT: your FINAL MESSAGE is the report (the harness keeps your closing message as final.md and overwrites any file you write by that name). Under 1800 words.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/local-context`>>
+
+!! Local context (you cannot read the repo; these facts come from the controller's code reads)
+
+The Lares stack: a local-first, web3-only "vessel" (Node daemon) that holds an Automerge CRDT store of tiddler-like records ("memes") composed into wikis by RECIPES over BAGS (a TiddlyWiki-like model). Layers top to bottom in a wiki: temp -> draft -> personal -> working -> canon -> kahua (governance) -> library bags -> oracle. Records stay sealed at rest under a custody key (passphrase and/or paper-pin slots). A disk PROJECTOR renders the latest text of some records to plaintext `.mem` files (memetic wikitext) on disk; projection holds latest text only, never CRDT history. An AI agent (Claude Code, Codex) reads and writes memory through an MCP server into the daemon's own wiki.
+
+Layout today: one root ($LAR_ROOT, default ~/.lares; in the container ~/.lares/state mounts at /state) holding XDG-shaped subtrees: data/ (data/lares/{vessel,identity,nexus}, data/lararium/sensoriums/{memory,mesh,memetic-wikitext} with chroma.sqlite3 indexes), state/ (projection, harvest, harvest-stage), cache/ (scratch sensoriums), config/, run/ (sockets), plus bags/ and wikis/ projection folders for house-minted and private bags. The source checkout (git) holds bags/ and wikis/ for canon-sourced bags; those project back into git. Path names repeat semantics (".lares/state/data/lares/identity", ".lares/state/data/lares/vessel/st").
+
+The operator re-founds the hearth often in early alpha (wipe the state root, found fresh keys and a fresh charter, re-seed canon from git). A code read found what a re-found loses:
+* Plaintext that projects only under the state root (the daemon wiki where AI memory lands, house-minted bags, private planes, per-face kahua folders) dies with it.
+* The temp, personal and (by default) draft layers never project at all.
+* All CRDT history (heads, versions, concurrent drafts, signed governance acts) and every key/identity (custody, seat keys, the Nexus AID).
+* Saves held in memory while custody sat locked.
+The memory index (vector sensorium) rebuilds from source transcripts that survive elsewhere.
+
+The operator's direction: (1) the immediate need: essential user data and the AI memory stage reach disk as plaintext projections, even temp layers (behind a flag, with an automated, principled cleanup); (2) a root layout inside ~/.lares split by what survives and how, so a couple of commands bundle/export a backup and re-import it after a re-found. Identity continuity across re-founds, face bundles, emergency recovery and backup restores stay DEFERRED until after a two-operator Nexus stands; note them, don't design them deep.
+
+House laws that bind any proposal: web3-only and local-first (no cloud service in the stack proper; a web2 bridge sits behind a boundary); no credential through a flag, env var or pipe; plaintext on disk carries cleartext only by deliberate projection (the operator owns that choice per bag); a projection stays a deliberate act, not a side-channel.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/wave-1-produced-two-reports-below-you-wrote-neit`>>
+
+!! Wave 1 produced two reports, below. You wrote neither; read both, then:
+
+# Critique the OTHER seat's report hard: claims that misread a source (open the URL and check), weak or missing prior art, steps that break a house law above, anything that would fail on contact with a real re-found.
+# Fill its gaps from fresh web research.
+# Converge both into ONE proposal, focused on: (a) projecting the temp/draft/personal layers and the AI memory stage to plaintext behind per-bag opt-in, with automated cleanup and an audit trail; (b) whether that projection tree sits in the state root, a sibling root, or the git checkout.
+# List the open forks the operator must rule, each with your lean and why.
+
+!!! Report you critique: w1-b
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/draft-keeper-lares`>>
+
+! Draft-Keeper: Lares (Tasked Spirit)
+
+Research brief, wave 1, seat B · 8 November 2026. Recommendations below apply to the supplied architecture, not an independent repository inspection. “Never lose” is an objective with explicit failure boundaries: a projection on the same disk cannot survive destruction of that disk, an unexported whole-root wipe, or a write that was never durably acknowledged. [[SQLite WAL|https://www.sqlite.org/wal.html]]; [[Google offline status|https://support.google.com/docs/answer/6388102?co=GENIE.Platform%3DDesktop&hl=en]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/principles`>>
+
+!! Principles
+
+# ''Preserve unfinished work independently of promotion:'' Vim swap recovery, Emacs auto-save, VS Code hot exit, and JetBrains Local History protect work before the user declares it finished. [[Vim|https://vimhelp.org/recover.txt.html]]; [[Emacs|https://www.gnu.org/software/emacs/manual/pdf/emacs.pdf]]; [[VS Code|https://code.visualstudio.com/docs/editing/codebasics]]; [[JetBrains|https://www.jetbrains.com/help/idea/local-history.html?section=Icons_Reference.xml]].
+# ''Define the acknowledgment and loss window:'' durable commit requires ordering, sync, error reporting, and recovery; debounce alone leaves a window of unflushed work. [[SQLite WAL|https://www.sqlite.org/wal.html]]; [[Vim|https://vimhelp.org/recover.txt.html]].
+# ''Keep a separate recoverable copy outside the wipe boundary:'' offline availability and same-device saves are useful but do not substitute for an independently retained export. [[Google Docs|https://support.google.com/docs/answer/6388102?co=GENIE.Platform%3DDesktop&hl=en]]; [[Notion|https://www.notion.com/help/use-pages-offline]].
+# ''Separate readable content recovery from causal history recovery:'' Automerge's binary document carries its change history, while a plain current-state export does not; Yjs updates are binary and garbage collection affects recoverable old content. [[Automerge format|https://automerge.org/automerge-binary-format-spec/]]; [[Yjs updates|https://docs.yjs.dev/api/document-updates]]; [[Yjs GC|https://docs.yjs.dev/api/y.doc]].
+# ''Make expiry visible and reversible before destruction:'' trash, retention periods, and observable asynchronous lifecycle jobs make cleanup understandable, while Gmail's unrecoverable discarded drafts show the cost of immediate deletion. [[Gmail|https://support.google.com/mail/answer/7015314?co=GENIE.Platform%3DDesktop&hl=en]]; [[S3 lifecycle|https://docs.aws.amazon.com/AmazonS3/latest/userguide/troubleshoot-lifecycle.html?linkId=236887413&sc_campaign=Support&sc_channel=sm&sc_content=Support&sc_country=global&sc_geo=GLOBAL&sc_outcome=AWS+Support&sc_publisher=REDDIT&trk=Support]].
+# ''Keep memory inspectable and indexes replaceable:'' plain text supports ordinary tools and versioning; atomic observations and scoped files make review and selective retrieval practical. [[Plain-text argument|https://bookatgithub.github.io/books/The%20Pragmatic%20Programmer/020161622x_snode31.html]]; [[MCP memory|https://github.com/modelcontextprotocol/servers/blob/main/src/memory/README.md]]; [[Cursor rules|https://docs.cursor.com/context/rules-for-ai]].
+# ''Treat concurrent edits, deduplication, and forgetting as semantic operations, not silent overwrites:'' even offline systems warn about conflicting properties, and temporal facts may need invalidation rather than replacement. [[Notion|https://www.notion.com/help/use-pages-offline]]; [[Zep facts|https://help.getzep.com/facts]].
+# ''Respect the user's confidentiality boundary in every recovery copy:'' auto-save, backups, temporary files, indexes, and trash can all contain the content they protect, so their storage and permissions need the same deliberate policy. [[Emacs|https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html]]; [[MCP file-permissions issue|https://github.com/modelcontextprotocol/servers/issues/4827]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/temp-draft-and-personal-projections`>>
+
+!! Temp, draft and personal projections
+
+''Proposed boundary.'' Under "'`~/.lares/`, separate `durable/projections/` and `durable/trash/` from resettable `state/`, `cache/`, and `run/`; the ordinary re-found command must target only resettable paths and refuse a broader wipe when the durable tree is inside the target. A whole `~/.lares` removal still destroys both: export an independent copy first, verify it, and report the export time and coverage. The reset and export commands described here are proposed interfaces, not existing commands. This follows the distinction between offline copies and actual separate recovery copies. [[Google offline|https://support.google.com/docs/answer/6388102?co=GENIE.Platform%3DDesktop&hl=en]]; [[SQLite durability|https://www.sqlite.org/wal.html]].
+
+''Opt in explicitly.'' A non-secret projection flag enables the feature, but each bag requires an explicit, persistent operator choice; scope includes temp, draft, personal, and the daemon memory bag individually. No decrypted scratch file, swap, audit text, or index escapes that choice. Show the selected paths and warn that plaintext remains after locking custody. The flags contain no credentials. [[Vim swap|https://vimhelp.org/recover.txt.html]]; [[MCP permission example|https://github.com/modelcontextprotocol/servers/issues/4827]].
+
+''Layout and flush.'' Use `durable/projections/<bag-id>/<layer>/<record-id>.mem`; opaque stable IDs, never titles, make paths safe and avoid collisions. A versioned plaintext header records bag, layer, record ID, title, timestamps, content hash and last projected heads; the body is memetic wikitext. Preserve recipe-layer identity and all required record fields in the format, or explicitly list omissions in export coverage. On each accepted write, commit to sealed storage and enqueue projection; use a short debounce, e.g. 250 ms with a 2 s maximum, plus idle and orderly shutdown flush. Status must distinguish //sealed//, //projection pending//, //projected and synced//, and //error//: a durability-sensitive caller waits for the last state. Create a mode-0600 same-directory temporary file in a 0700 directory, write and fsync it, rename atomically, then fsync the directory where supported; serialize per record, retry failures, surface disk-full and never claim success on failure. No shutdown hook can rescue a kill or power failure inside the debounce window. [[SQLite sync tradeoffs|https://www.sqlite.org/wal.html]]; [[MCP atomic save|https://github.com/modelcontextprotocol/servers/blob/main/src/memory/index.ts]].
+
+''Recovery and re-ingest.'' On startup reconcile a durable pending-work marker against projections; never silently overwrite a file changed externally. Import is explicit and dry-run by default: validate format, IDs, bag consent and hashes; import absent records as new CRDT changes, skip identical content, and place diverged file/store versions in a reviewable conflict set, preserving both. Heads are comparison hints only after re-found, not restored ancestry; preserve distinct concurrent values separately when exporting or report the loss. Use idempotent IDs and an import manifest so interruption and repeat imports are safe. Automerge conflict/history behavior makes this distinction essential. [[Automerge history|https://automerge.org/automerge-swift/documentation/automerge/changesandhistory/]]; [[Automerge storage|https://automerge.org/docs/reference/under-the-hood/storage/]].
+
+''Automatic cleanup.'' Proposed defaults: daily and at startup, mark inactive temp records eligible after 30 days; offer promotion or pinning; move eligible unpinned items to private trash with a 30-day recovery window, then purge. Draft and personal records never expire by default. A configurable size cap triggers warnings and blocks new temporary allocations when full; it must not evict unexpired, pinned, unsynced, conflicted, or sole copies. Recheck age, pin, promotion and content hash immediately before each move or purge; retry and log failures. Append a content-free audit event with ID, bag, action, policy, time and outcome, itself bounded and included in export. TTL defines eligibility, not an exact deletion time. A true never-lose promise conflicts with any automatic final purge: clearly disclose this and permit retention to be disabled. [[S3 lifecycle|https://docs.aws.amazon.com/AmazonS3/latest/userguide/lifecycle-expire-general-considerations.html]]; [[Gmail trash|https://support.google.com/mail/answer/7015314?co=GENIE.Platform%3DDesktop&hl=en]].
+
+A local `export` should flush and report omissions, then copy selected projections and manifest to an operator-chosen destination outside the reset tree; a corresponding `import` validates and previews before applying. Verify checksums and test a restore in a fresh disposable state. This is ''content migration'', not identity continuity, CRDT history, signed acts, face bundles, emergency recovery or full backup restore; defer those designs until after the two-operator Nexus. [[Automerge serialization|https://automerge.org/automerge-binary-format-spec/]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ai-memory-stage`>>
+
+!! AI memory stage
+
+Use one opted-in `.mem` per atomic memory in the durable projection tree, with stable ID, body, scope, provenance/source reference, created/updated times, status, and optional validity and supersedes links. The sealed wiki is the live authority while running; its plaintext projection is the portable content recovery source after a re-found, so startup must reconcile edits rather than blindly overwrite either. A derived lexical/vector index can be deleted and rebuilt from these files; record model/version and hashes to detect stale entries. Original transcripts remain separate sources where available. [[MCP observations|https://github.com/modelcontextprotocol/servers/blob/main/src/memory/README.md]]; [[Zep temporal facts|https://help.getzep.com/facts]].
+
+Before adding, exact-normalized matches can be deduplicated deterministically; semantic matches are candidates for review, not proof of equivalence. Keep contradictions and provenance visible; supersede or invalidate old facts with dates rather than silently replacing them, and permit explicit forget with recoverable trash and eventual purge across derived indexes. Treat memory content as untrusted data, not automatic higher-priority instructions. Letta'"'s memory audit and backup before reorganization and Zep's temporal facts support reviewable consolidation. [[Letta|https://github.com/letta-ai/letta-docs-md/blob/main/configuration/memory/index.md]]; [[Zep|https://help.getzep.com/facts]].
+
+Prior art varies: Claude Code uses "'`CLAUDE.md` for standing instructions; Cursor project rules are versioned `.mdc` files, while its generated memories are managed in settings, and the cited documentation does not specify their underlying format. MCP'"'s reference server uses readable JSONL and graph observations; Letta's current MemFS is a Git-backed editable filesystem. Mem0 exposes memory update, deletion and history with a vector store; Zep uses a temporal knowledge graph; LangGraph checkpoint implementations use SQLite or PostgreSQL for execution state, with task-level writes for resumption. These databases serve retrieval or execution recovery and are not inherently portable one-file-per-memory archives. [[Claude Code|https://code.claude.com/docs/en/settings]]; [[Cursor rules|https://docs.cursor.com/context/rules-for-ai]]; [[Cursor memories|https://docs.cursor.com/en/context/memories]]; [[MCP|https://github.com/modelcontextprotocol/servers/blob/main/src/memory/README.md]]; [[Letta|https://github.com/letta-ai/letta-docs-md/blob/main/configuration/memory/index.md]]; [[Mem0|https://github.com/mem0ai/mem0/blob/main/skills/mem0/client/python.md]]; [[Zep|https://help.getzep.com/v2/graphiti/getting-started/overview]]; [[LangGraph|https://github.com/langchain-ai/langgraphjs/blob/main/docs/docs/concepts/persistence.md]]; [[task writes|https://github.com/langchain-ai/docs/blob/main/src/oss/langgraph/checkpointers.mdx]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/risks-and-contrary-evidence`>>
+
+!! Risks and contrary evidence
+
+Plaintext projections expose private content to local accounts with access, malware running as the user, backups, search indexes, and anyone with the unlocked device; full-disk encryption helps against an offline stolen disk but does not protect an unlocked session. Protect directories, avoid unapproved indexing and backup copies, disclose the path and retention, and let the operator opt in per bag. Secure erasure cannot be promised for SSDs, snapshots, or exported copies. [[Apple FileVault|https://support.apple.com/guide/security/filevault-sec4c6dc1b6e/web]]; [[NIST media sanitization|https://csrc.nist.gov/pubs/sp/800/88/r2/final]].
+
+''Contradictions:'' Gmail discards drafts irrecoverably; automatic expiry necessarily sacrifices indefinite preservation. Google Docs and Notion emphasize synchronized service-backed offline caches, which are not portable local-first backups. History-preserving Automerge binary is more complete than latest plaintext; Yjs GC deliberately trades old-content recovery for reduced retained data. CRDT tombstones cannot safely be deleted merely because a wall-clock TTL passed: causal stability and replica membership matter. Finally, locked-custody in-memory writes cannot be both secret and crash durable without an authorized durable encrypted write path; reject or visibly mark them volatile rather than secretly project them. [[Gmail|https://support.google.com/mail/answer/7015314?co=GENIE.Platform%3DDesktop&hl=en]]; [[Notion|https://www.notion.com/help/use-pages-offline]]; [[Automerge|https://automerge.org/automerge-binary-format-spec/]]; [[Yjs|https://docs.yjs.dev/api/y.doc]]; [[CRDT GC|https://perso.lip6.fr/Marc.Shapiro/papers/Comprehensive-CRDTs-RR7506-2011-01.pdf]].
+
+!!! The companion report (context): w1-a
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/survival-layout-and-export-prior-art`>>
+
+! Survival layout and export prior art
+
+//Root-Cartographer: Lares (Tasked Spirit) · Research wave 1, seat A//
+
+The recommended first deliverable is a ''content migration'', not a full backup: deliberately projected, latest-version content can be exported outside the wipe boundary and imported into a newly founded vessel. It cannot restore identities, signed authority, CRDT history, unprojected content, or saves still in memory. These limitations follow from the supplied Lares code-read facts; the contrast between interchange and complete migration is also explicit in [[Zotero's transfer guidance|https://www.zotero.org/support/kb/transferring_a_library]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/principles-2`>>
+
+!! Principles
+
+# Classify each byte by loss consequence and reconstruction source, not by which subsystem wrote it: XDG calls user content data, restart-persistent but less portable material state, nonessential material cache, and login-lifetime sockets runtime. [[XDG|https://specifications.freedesktop.org/basedir/]]
+# A directory name is not a backup: preservation requires an independent copy outside the actual wipe boundary and a tested restore. [[Ink & Switch|https://www.inkandswitch.com/essay/local-first/]], [[Zotero|https://www.zotero.org/support/kb/transferring_a_library]]
+# User-controlled, readable files improve longevity, but a latest-text projection is a lossy view of a CRDT and must be described as such. [[Ango|https://stephango.com/file-over-app]], [[Automerge repository export|https://github.com/automerge/automerge-repo/blob/main/packages/automerge-repo/src/Repo.ts]]
+# Make privacy an explicit per-bag choice; a backup, temporary projection, index, or Git commit must not silently turn sealed records into durable cleartext. [[Ink & Switch|https://www.inkandswitch.com/essay/local-first/]], [[KeePassXC|https://keepassxc.org/docs/KeePassXC_UserGuide]]
+# Capture a consistent point in time, including pending writes, rather than copying live database files piecemeal. [[Zotero data directory|https://www.zotero.org/support/zotero_data]]
+# Specify exactly which records, metadata, attachments, identities and versions an export contains; interchange and full-fidelity recovery are separate contracts. [[Zotero|https://www.zotero.org/support/kb/transferring_a_library]], [[KeePassXC|https://keepassxc.org/docs/KeePassXC_UserGuide]]
+# Keys and encrypted payloads have separate failure modes: an encrypted archive is useless without its recovery secret, while account-bound exports can fail after identity replacement. [[Signal|https://support.signal.org/hc/en-us/articles/360007059752-Backup-and-Restore-Messages]], [[Bitwarden|https://bitwarden.com/pdf/help-export-your-data.pdf]]
+# Restore must detect corruption, incomplete input and conflicts, preserve existing data, and be exercised before destructive reset. [[restic|https://restic.readthedocs.io/en/stable/045_working_with_repos.html]], [[Joplin|https://joplinapp.org/plugins/plugin/io.github.jackgruber.backup/?search=maintainer%3D%22jackgruber%22+max-results%3D20]]
+
+Ink & Switch's seven ideals are speed, multi-device access, offline work, collaboration, longevity, privacy, and user control; its later [[Keyhive work|https://www.inkandswitch.com/keyhive/]] explores access control and encryption for local-first collaboration, so readable files alone do not satisfy the whole set. [[Original essay|https://www.inkandswitch.com/essay/local-first/]]
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/survival-classes`>>
+
+!! Survival classes
+
+| Class | Wipe, export and import policy | Prior art |h
+| Irreplaceable secrets and identity | Wipe destroys continuity; exclude from this content export, report omission; future separately protected recovery needs its own design and independent key. | [[Signal|https://support.signal.org/hc/en-us/articles/360007059752-Backup-and-Restore-Messages]]; [[Element|https://element.io/blog/resetting-the-server-side-key-backup/]]; [[Borg|https://borgbackup.readthedocs.io/_/downloads/en/1.1.6/pdf/]] |
+| Irreplaceable content and provenance | Preserve sealed live store; export only authorized projected content now; import as new content, reporting history and signatures lost. | [[TiddlyWiki|https://tiddlywiki.com/dev/alltiddlers.html]]; [[Zotero|https://www.zotero.org/support/kb/transferring_a_library]] |
+| User configuration | Preserve/export an allowlisted portable subset, flag machine-specific paths; never treat config as all disposable. | [[XDG|https://specifications.freedesktop.org/basedir/]]; [[Obsidian|https://obsidian.md/help/data-storage]] |
+| Re-derivable indexes | Delete on wipe; omit and rebuild only if all original inputs remain available; otherwise classify as content. | [[Zotero full-text index|https://www.zotero.org/support/zotero_data]] |
+| Rebuildable cache | Purge freely; omit and regenerate. | [[Apple|https://developer.apple.com/documentation/foundation/optimizing-your-app-s-data-for-icloud-backup?changes=_7&language=objc]]; [[Android|https://developer.android.com/identity/data/autobackup?authuser=104]] |
+| Runtime and staging | Sockets/locks are disposable; pending or staged //unique// writes are content until durably committed, so block export/reset if they cannot be flushed. | [[XDG|https://specifications.freedesktop.org/basedir/]]; [[Zotero WAL|https://www.zotero.org/support/zotero_data]] |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/layout-proposal`>>
+
+!! Layout proposal
+
+"'`~/.lares` is the ''house root'', not the wipe target. A re-found deletes only `hearth/`; an export must still be copied outside `~/.lares` to survive loss of the house or device. These names are an application convention, not XDG-compliant base directories merely because their names resemble XDG. [[XDG|https://specifications.freedesktop.org/basedir/]]
+
+```text
+~/.lares/
+  hearth/             # disposable as a unit only after preservation checks
+    vessel/           # sealed store, CRDT history
+    identity/         # custody and seat material
+    nexus/            # local Nexus identity/state
+    state/            # operational checkpoints and logs
+    run/              # local sockets and locks
+  projections/        # deliberate plaintext: bags/<id>, wikis/<id>, faces/<id>
+  config/             # house settings, per-bag projection policies
+  indexes/            # rebuildable memory, mesh, memetic-wikitext indexes
+  cache/              # scratch sensoriums
+```
+
+Mapping from the brief: `data/lares/{vessel,identity,nexus}` → `hearth/{vessel,identity,nexus}`; `data/lararium/sensoriums/{memory,mesh,memetic-wikitext}` and their Chroma indexes → `indexes/{memory,mesh,memetic-wikitext}` ''only after confirming the input transcripts survive''; `state/{projection,harvest,harvest-stage}` → `hearth/state/{projection,harvest,harvest-stage}` after separating any unique pending writes; `cache/` → `cache/`; `config/` → `config/`; `run/` → `hearth/run/` or the actual private XDG runtime directory; house/private `bags/`, `wikis/`, and face kahua → `projections/`; canon-sourced checkout projections stay in the checkout. Treat `projections/` as sensitive durable content even though regenerable in normal operation: it may be the sole content surviving re-found. These mappings are recommendations from the supplied Lares facts, informed by [[XDG|https://specifications.freedesktop.org/basedir/]] and [[Apple'"'s directory guidance|https://developer.apple.com/library/content/documentation/FileManagement/Conceptual/FileSystemProgrammingGuide/FileSystemOverview/FileSystemOverview.html]].
+
+For the immediate memory stage, explicitly enable projection for the chosen memory bag and, separately, an opt-in temp-layer flag bound to per-bag consent. Write atomic files into a marked projection subtree; track ownership, source ID and last-written hash; on expiration or disabling, automatically delete only projector-owned, unchanged expired files, quarantine/report edited or conflicting files, and never delete user-created files. State the retention interval and that cleanup cannot erase copies, Git history or backups. A reset/export must report disabled, locked, unprojected and pending content instead of declaring success. [[TiddlyWiki file naming|https://tiddlywiki.com/static/Customising%2520Tiddler%2520File%2520Naming.html]], [[Git bundle scope|https://git-scm.com/docs/git-bundle]]
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/two-command-content-migration`>>
+
+!! Two-command content migration
+
+# "'`lares export /safe/location/house-export` obtains an unlocked, consistent checkpoint, flushes pending writes, then copies ''only already-authorized projected'' bags, including opted-in temp, and explicitly selected portable config into a new directory outside `hearth/`. A versioned manifest records bundle ID, format/schema version, source bag and stable record IDs, layer, filename mapping, recipe/order, applicable metadata and attachments, snapshot time, per-file size and SHA-256; enumerate all omissions and errors. If `.mem` does not preserve required fields, add documented sidecar metadata or fail for those records. Refuse incomplete success when custody is locked or writes cannot flush; do not project a new bag implicitly. [[TiddlyWiki'"'s fields and file formats|https://tiddlywiki.com/static/Customising%2520Tiddler%2520File%2520Naming.html]], [[Zotero's WAL warning|https://www.zotero.org/support/zotero_data]].
+# "'`lares import /safe/location/house-export` verifies schema, counts, hashes, safe relative paths and attachment references before mutation; rejects traversal, links and duplicate IDs; stages changes, previews conflicts, and atomically commits to the freshly founded sealed store. Preserve content IDs and bag/recipe relationships where valid; map old authority to new explicitly rather than replaying signatures. Same bundle ID plus hash is a no-op; changed content at an existing ID is a conflict requiring an explicit choice, never silent overwrite. Record successful import durably and verify counts and representative records after import. This is a design recommendation addressing [[Joplin'"'s documented duplicate imports and broken cross-export links|https://joplinapp.org/plugins/plugin/io.github.jackgruber.backup/?search=maintainer%3D%22jackgruber%22+max-results%3D20]].
+
+The directory is inspectable plaintext; optionally package the same tree as a conventional archive for transport, with the same manifest. Hashes catch accidental corruption, ''not malicious replacement''; authenticity needs an independently trusted signature or MAC, deferred with identity recovery. Keep permissions private, make cleartext explicit, and store an independent copy. If an encrypted transport is later offered, use a standard authenticated format and a separate recovery secret, prompted interactively—not flags, environment, or pipes—and never tie its only decryptor to keys being wiped. [[age recipients and identities|https://github.com/FiloSottile/age/blob/main/doc/age.1.ronn]], [[SOPS|https://github.com/age-sops/sops]], [[Bitwarden|https://bitwarden.com/pdf/help-export-your-data.pdf]].
+
+A future full-fidelity backup could contain consistent Automerge binary saves and encrypted key material under a separately recoverable scheme; "'`Automerge.save`/`load` preserve document history, unlike `.mem`, but historical deleted content can remain visible and compatible document identity, authority and restore semantics need design. Do not advertise this as implemented now. [[Automerge internals|https://github.com/superdev-tech/automerge/blob/main/INTERNALS.md]], [[Automerge repo|https://github.com/automerge/automerge-repo/blob/main/packages/automerge-repo/src/Repo.ts]]. Face bundles, identity continuity, emergency recovery and full backup restore remain deferred until the two-operator Nexus stands.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/checks-against-prior-art`>>
+
+!! Checks against prior art
+
+Obsidian uses a local vault folder with vault-specific `.obsidian` settings and rebuildable metadata cache; Logseq OG uses Markdown graph files, including `pages` and `journals`; Anytype distinguishes native protobuf recovery from Markdown interchange; TiddlyWiki embeds tiddlers in one HTML file or stores individual files plus wiki metadata under Node; Joplin'"'s JEX export is separate from profile settings; Zotero keeps database and attachments together and excludes its rebuildable full-text index. [[Obsidian|https://obsidian.md/help/data-storage]], [[Logseq|https://github.com/logseq/docs/blob/master/pages/How%20to%20create%20a%20Logseq%20graph%20using%20existing%20Markdown%20files.md]], [[Anytype Toolbox|https://docs.anytype-toolbox.org/guides/backup-restore/]], [[TiddlyWiki|https://tiddlywiki.com/static/TiddlyWikiFolders.html]], [[Joplin|https://joplinapp.org/plugins/plugin/io.github.jackgruber.backup/?search=maintainer%3D%22jackgruber%22+max-results%3D20]], [[Zotero|https://www.zotero.org/support/zotero_data]].
+
+''Contradictions:'' First, Zotero expressly advises against export/import for complete migration because formats omit data, break document links and can duplicate items; the proposed fresh-identity text migration must accept that loss. Second, automatic temp plaintext conflicts with the expectation that temp is short-lived and with sealed-at-rest privacy unless explicitly opted in and bounded; cleanup is not secure erasure. Third, Git supports offline history, but a bundle contains reachable committed refs—not uncommitted projections—and retains historical cleartext; it is not an automatic complete or private backup. [[Zotero|https://www.zotero.org/support/kb/transferring_a_library]], [[Apple|https://developer.apple.com/documentation/foundation/using-the-file-system-effectively?changes=latest_minor]], [[Git|https://git-scm.com/docs/git-bundle]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* A read seat writes no file: its final message carries the hand-back. Any other seat writes `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-1XG9MdL21wcDdUHFLdglE4YIA4AbpdjgWLT0dYt1eA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

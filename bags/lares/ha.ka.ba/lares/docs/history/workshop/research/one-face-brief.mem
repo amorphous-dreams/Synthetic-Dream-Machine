@@ -1,0 +1,147 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/one-face-brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-10-25 (file date) — source `.lares-scratch/research/one-face-brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/one-face-brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/one-face-brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! one-face-brief.md — brief, 2026-10-25
+
+Verbatim scratch record `.lares-scratch/research/one-face-brief.md` (brief, file date 2026-10-25); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/one-face-warm-brief`>>
+
+! ONE FACE warm brief (read-only scout, 2026-10-25)
+
+Paths: ROAD = bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem. SC = bags/lares/ha.ka.ba/lares/api/pono/session-contract.mem. O1KIT = bags/lararium/ha.ka.ba/lararium/docs/train-o1-launch.mem. Code lines are on feature/green-jello-dinosaur-5 (Wave D lines are on origin/...&#45;-k15-wave-d). I ran no tests.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/1-what-stands-built`>>
+
+!! 1. What stands built
+Pure modules in mesh (the road calls them "reached by no production caller", ROAD:736, :590-591):
+* Session type, profiles, table: `packages/lararium-mesh/src/session-contract.ts`. Profiles face/verb/ingest/seat at :56; HAND_PROFILES at :69; `SessionTable` :264 with `open` :286, `check` :311, `transition` :324, `advance` (the generation bump a switch uses) :339, `close` :352. Refusal of stale epoch and generation is in the table.
+* Scoped view: `session-document-view.ts`, `SessionDocumentView` :117; verbs announce/fetch/write/catalog/content :49; layers :45; refusals :80.
+* Recipe resolver: `surface-recipe.ts`, `resolveSurfaceRecipe` :175, `facetsOfSurfaceRecipe` :281. No non-test caller (grep).
+* Pool surface door: `vessel-island-pool-core.ts` `mountSurface` :443, view opened at :653, `fenceSession` :523, `closeSession` :511, `_fenceOf` :499. Island keyed by the whole session key.
+* Face supply and signer: `session-face.ts` `supplySessionFace` :143, `openJoinedFaceSession` :195; `session-signer.ts` `mintSessionSigner` :172, `openSignedSession` :221.
+* Island half: `lararium-tw5/src/sovereign-kernel.ts`, `view-channel.ts` (per SC "standing-and-owed").
+
+Reached in production (past what SC says):
+* The dial opens a face session through `openJoinedFaceSession`: node `lararium-node/src/node-face-presentation.ts:48`, browser `lararium-browser/src/browser-face-presentation.ts` (imports it at ~:25). Dial tables: `open-node-vessel.ts:1490`, `:2110`.
+* A narrow production `SessionDocumentView`: `lararium-node/src/face-fleet-view.ts:124`, wired at `open-node-vessel.ts:753`. Its header (:6-27) calls the worn-face books "A BRIDGE UNTIL O1".
+* Browser holder routing and the faceless envelope (ownerEpoch, sessionId, generation): `holder-routes.ts`, `shared-holder-core.ts:72`. `session:open` is handled at :578 but its face-bearing form waits on W4 (ROAD:592).
+* Face address secret: minted once per face, sealed per vessel, delivered by fleet join (`lararium-node/src/fleet-join-custody.ts:4`, `lararium-mesh/src/fleet-join.ts:189`, domain `domains.ts:420`).
+* Control-event leg built (`F8`, ROAD:593; `lar-camera.ts`, `projection-sink.ts`).
+* One vessel-wide selector still stands: `wearPersona` `lararium-mesh/src/persona-vault.ts:192`, `lararium-node/src/node-vessel-identity.ts:817`; browser `persona-wear` verb `open-browser-vessel.ts:1620` ("reboot-to-switch", :1613).
+* Reds already standing: `lararium-mesh/tests/unbuilt-laws.test.ts:379` (surface door attaches through the view) and `:385` (skipped: "NO ISLAND RIDES A BROAD PORT INTO A SESSION"). Tests: `session-contract.test.ts`, `session-document-view.test.ts`, `surface-mount*.test.ts`, `session-face*.test.ts`, `session-signer.test.ts`.
+
+Not in code at all (grep over packages/): the working-address derivation (no `lar/working-address/v1`, no `workingAddress`), and the durability receipt (no `durabilityReceipt`). The O1KIT says both are not yet minted.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/2-what-stays-owed-in-the-roadmap-s-order`>>
+
+!! 2. What stays owed, in the roadmap's order (ROAD:736-748; SC "twelve debts")
+# Scoped view's compose hunks: share verdict caller, leaf one-way gate, hearth twin (`F1`, ROAD:590).
+# Recipe resolver's compose hunks, both platforms; `mountWiki` and the recipe watch retire (`F2`, ROAD:591).
+# Working document's address (`F3`, ROAD:462; law ROAD:236, :385).
+# Node callers move to sessions; receipts bind to the face; verb outcomes follow the working layer (`F4`, ROAD:463; `verb-vm.ts`, `uds-channel.ts`). Also `F12` (draft writer = session face, ROAD:465).
+# Durability receipt, rung 2's node half (`F5`, ROAD:464, :410).
+# Browser holder as owner; `F6` slice four owed (ROAD:592); face-bearing `session:open/call/switch` wait on W4 (ROAD:461).
+# Browser surfaces and control leg (`F8` owes burned-name guard assertions, ROAD:593).
+# The switch; the selector retires (`F9`, ROAD:594). Unblocks `A8` (ROAD:567, :349) and `B2`, rung 3 (ROAD:599, :412).
+# Fleet view and removal (`F10`, ROAD:466).
+Beside the train: `F11` the hands (watcher lease, seat, Mask, door parity; ROAD:467; SC debts 9-12). Sealed-store step 3 (ROAD:402) and step 5 (ROAD:404) wait on the session's face. `P13` recipe leg (ROAD:486).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/3-compose-hunk-or-not`>>
+
+!! 3. Compose hunk or not
+Needs the compose hunk in `open-node-vessel.ts` / `open-browser-vessel.ts` (so after Wave D and K17-R; ROAD:680 puts O1 after W's dials and E on the solo chain; ROAD:300-303 owner law):
+* Steps 1, 2 (callers), 4, 6-7 browser holder owner, 8 (selector retire in both openers), `F4`.
+* Step 3's attach (an attach that cannot stand refuses boot; ROAD:748 "riskiest").
+* Step 5's send (the node must send only after the holder commits).
+Could land earlier as pure modules behind a boundary:
+* Working-address vectors (HMAC-SHA-256, first 16 bytes, length-prefixed tag, `wikiId`, slot kind; ROAD:236). O1KIT "PURE" step says exactly this.
+* Receipt frame shape plus the holder-commit ordering as a pure function (O1KIT walk 1).
+* `F12` attribution from a session face (`parallel-drafts.ts`), if it takes a face as input.
+* Switch state machine (five steps, SC "the-switch"): freeze, preflight, intent, fence, advance, outcome, built as a pure orchestrator over `SessionTable.transition/advance` and the pool's `fenceSession`. Needs a vessel-private intent record, which is a new row (custody census).
+* Browser-side message kinds for `session:switch` (holder-core, not the compose hunk).
+* Watcher lease session (`F11`) if kept in its own module.
+Wiring rule (working-procedures `#/wiring-an-unreached-module`): a pure module counts as "built" only once a caller reaches it, so a pure landing must keep the debt open.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/4-open-rulings-and-contradictions`>>
+
+!! 4. Open rulings and contradictions (not resolved)
+a. O1KIT ground vs O1KIT rulings. Ground: "This contract waits on identity material from N and W; no stand-alone `working-address.ts` lands ahead of that choice." Rulings: "The working address's input contract stands ruled ... O1's pure step builds its vectors to those bytes". ROAD:236 fixes the bytes as a house ruling (flips on a train N face-identity contract naming shared face-secret bytes). The kit's own walk step 1 says "Fix the working-address image with N's identity lead".
+b. SC "no production path calls any of them" (standing-and-owed) vs code: `face-fleet-view.ts:124` constructs a `SessionDocumentView` in production; `node-face-presentation.ts:48` and the browser presentation call `openJoinedFaceSession`. face-proof.mem `#/owed` says the same ("no production path calls any of them"; "Each stays out of its package's barrel until its caller lands") while mesh `index.ts:166` and `:338` export `SessionDocumentView` and `openJoinedFaceSession` from the barrel. The canon predates W's cutover (ROAD:723 "Built").
+c. CLI face. SC "the-cli": "A one-shot CLI command names its face on each invocation ... No vessel-wide default face stands, and a standalone one-shot `persona wear` sets no face for a later command." ROAD:349 and A8: "`persona wear` on a standing vessel waits on the session switch". Code today: one vessel-wide pointer (`persona-vault.ts:192`).
+d. SC says twelve debts; ROAD:736-748 lists nine steps and puts the hands (debts 9-12) under `F11`, "O1" row. The road lists "durability receipt" and "working address" as separate steps; SC folds receipts into debt 5 ("a same-face receipt reads after the CLI that asked has exited") and has no durability-receipt debt at all, only ROAD:410 and O1KIT.
+e. Receipts. SC "receipts": "A request's outcome rests with the face's proof subject and the input's digest". ROAD:463 `F4`: "receipts bind to the face". Both agree; but the SC "house reading, marked as one" (one vessel-wide outcome doc) is unruled in shape.
+f. Rung 2 receipt: ROAD:410 "sent only after the holder commits those heads; no clock in the frame". SC and O1KIT agree. No code to contradict.
+g. Hosting. ROAD:279: "Hosting stays on the worn persona leaf ... The face-switch act inherits it." The "bridge" in `face-fleet-view.ts` assumes one worn face per vessel; O1 must replace it with per-surface facets (header :6-27), and the face-fleet bridge was just reshaped by Wave D (below).
+h. Operator-ruled but contested by nothing yet: daemon "stays face-blind and trusted" (SC "the-owner") vs ROAD:207 "A shared act never makes a shared secret" (per-face custody). Wave D's per-face custody makes the first read as a bound a custody-aware daemon still meets; SC "A flipped bound reopens the design" names this.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/5-reds-a-builder-writes-first`>>
+
+!! 5. Reds a builder writes first
+# Working address: same (secret, wikiId, slot) on two offline vessels gives one id; vary each input alone and the id moves; attach without the secret refuses boot visibly. Behavioural, never pinned to an export name (O1KIT witness). Control: a recipe CID, label or fingerprint change moves nothing.
+# Two CLI sessions wear two faces over one Repo; a copied socket id opens nothing; a cross-face receipt read refuses; a same-face receipt reads after the asker exited (SC debt 5).
+# Unskip `unbuilt-laws.test.ts:385` when the last interactive `mountWiki` caller leaves; unskip `PRODUCTION_SURFACES_USE_SCOPED_VIEW` (`unbuilt-laws.test.ts:533`, a `test.skip`) when both composers mount surfaces (O1KIT).
+# Two faces cannot fetch each other's document or catalog name through the view (O1KIT witness; sealed-store step 3 reuses it).
+# Durability receipt: restart reads a persisted receipt; no receipt sent before the holder commits; no clock in the frame.
+# Switch: one tab's switch leaves the second tab live; an old generation's effect never paints the new face; a failed preflight leaves the old generation live; no boot path reads a vessel-wide active face (SC debt 8).
+# `F12`: a draft's writer reads the session's face, not `modifier` or the Automerge actor.
+# Roster-at-rest control: the owner persists switch acts but never a list of live sessions (SC "the-owner").
+Each needs a control (feedback_red_tests_first).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/6-what-k15-wave-d-changes-under-one-face`>>
+
+!! 6. What K15 Wave D changes under ONE FACE (diff A...origin/...&#45;-k15-wave-d, 120 files, +2928/-935)
+* Per-face custody dir: `faces/<fcid>/` with its own slot tree `fk-slots.bin`, and a floor index `face-index.json` (new `lararium-node/src/face-index.ts`; entries fcid, group digest, ask digest, tombstones; "routes and never decides"). Ordinals never reused.
+* New custody classes `face-hot`/`face-cold` and rows moved into the face directory: veil-archive, face-atom, face-anchor, face-atom-ask (`vault-carriers.ts`). Roster, pet-names, declarations, public handles and recognition book rest one row per face (commit 487c2a42e). The `face-address-secret` row stays `custody: "hot"`, target D, key class `relation` in the Wave D `vault-carriers.ts:408`, so it did NOT move to `face-hot`. It still rests under the vessel key while target D says it belongs to the face. Flag for the K15 owner: this is the working-address secret, a D row O1 will read.
+* FCK in mesh: `fck.ts`, `fck-envelope.ts`, per-face `sealed-writer.ts`.
+* `face-route.ts`: a face founding asks its own route; `lares vault unlock --face N` (`persona.ts` list prints "locked" indices; `custody-frames.ts` unlock frame carries a face index).
+* Worn face becomes session state: `node-vessel-identity.ts` removes `.active-persona-<login>.json` and adds `wornInSession` / `setWornFaceInSession` (the unlock names it, "for the life of the unlock"); with exactly one face unlocked that face is worn; two unlocked with none named wears none; "wearing writes no file" (commit message). This is the vessel-wide selector, now un-persisted but still process-wide.
+* `open-node-vessel.ts` (+23): raise the sealed anchor before the daemon snapshots it; `face-fleet-view` bridge becomes an allow-list (`bridgeBooks(catalog)` replaces `foreignFaceDocs`): worn face reads only non-face books plus its own view; a foreign face plane with no catalog row is shut by default.
+Effects on O1:
+* The selector O1 retires has changed shape: no file to remove, but `setWornFaceInSession` and `loadActivePersonaIndex` become the thing the switch replaces. SC "no boot path reads a vessel-wide active face" is now testable without a file.
+* Per-session face means per-session FCK unlock. SC "the-owner" says a face hint grants nothing; Wave D makes an unlocked face a custody fact. A switch preflight ("target face's custody or delegation") must now include "is the target face unlocked" (`FaceLocked` refusal exists). ROAD:459 already says the browser's tab asks its own face's unlock.
+* The switch intent (a vessel-private record) is a new D-or-F row: Wave D's census must sort it. Plan that with the K15 owner.
+* Wave D reshapes the `face-fleet-view.ts` bridge O1 must remove; a conflict-prone file for O1's first hunk.
+* Wave D does not touch `session-contract.ts`, `session-document-view.ts`, `surface-recipe.ts`, `vessel-island-pool-core.ts` or any browser file (mesh changes: fck, sealed-writer only). So the pure modules in section 3 can rebase clean.
+* K17-R follows Wave D (ROAD:459 "K17's realm leg follows Wave D"); I did not diff it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/warm-start-order-i-would-suggest`>>
+
+!! Warm-start order I would suggest
+Pure working-address vectors and receipt shape first (resolve contradiction 4a with the operator or controller, as the kit leaves it contradictory), then the switch orchestrator as a module, then wait for the compose hunk.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;FRDe8Bd_UwJc7c5HxH3bZJNcjGRPy-Me-JagKGT9-kA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

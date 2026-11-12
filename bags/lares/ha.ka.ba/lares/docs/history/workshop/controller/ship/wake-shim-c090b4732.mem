@@ -1,0 +1,35 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/wake-shim-c090b4732`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-08 (file date) — source `.lares-scratch/controller/ship/wake-shim-c090b4732.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/wake-shim-c090b4732"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/wake-shim-c090b4732"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! wake-shim-c090b4732.md — plan, 2026-11-08
+
+Verbatim scratch record `.lares-scratch/controller/ship/wake-shim-c090b4732.md` (plan, file date 2026-11-08); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ship-wake-shim-c090b4732`>>
+
+! SHIP wake-shim c090b4732
+read: controller (Kiaʻi) read the whole diff; fixed the seat's test (process.env.TMPDIR undefined -> os.tmpdir()); ran the test outside the wall 5/5; live run against real docker reports down in 3.5 s.
+paths: packages/lares-cli/.claude-plugin/hooks/lares-wake-hook.mjs (a SessionStart hook: runs on every session start), its test.
+credential surface: none; no env var; the hook spawns the checkout's own shim, detached, killed by process group at 10 s; it never stands a vessel (observe only).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;579Ir6OO-jGv2G-PUohVfIlhEWjFPd44lGSMgZ0j-9s`>>
+
+<<^ code=`&#x0004;` to=`?`>>

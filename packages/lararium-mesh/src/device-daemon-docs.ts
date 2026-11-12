@@ -3,22 +3,52 @@
  *
  * The control document names the daemon wiki's device slots (`daemon-slot/<kind>/<group>`) and each face's daemon canon
  * (`daemon-canon/<face>`). A slot's group, or a canon's face, owns the document: a group's slot seals under that group's
- * face key, and only while that face stands lit; the floor's slot (`group = floor`) seals beside the control document under
- * the vessel's key, lit or not. A document of a face that does not stand lit now (an earlier face after an in-process face
- * change, or a face not yet lit) maps held: its saves wait in memory and its loads wait, never clear and never under
- * another face's key. A slot the daemon island announces before the control document names it maps held until it does.
+ * face key, and only while that face stands lit. A document of a face that does not stand lit now (an earlier face after an
+ * in-process face change, or a face not yet lit) maps held: its saves wait in memory and its loads wait, never clear and
+ * never under another face's key. A slot the daemon island announces before its registry names it maps held until it does.
  *
- * A document keeps its first owner: a later control entry naming it under another group or face moves nothing.
+ * THE FLOOR'S REGISTRY RESTS IN THE PLACE'S DAEMON DOCUMENT (the-veil-ladder#/the-base-model, in-house ruling 2026-11-12). A
+ * place holds no control document until a face lands (operator ruling 2026-11-09), and the floor stands before any face,
+ * so the floor's own documents take their names where the place already keeps its pointers: the daemon document, under
+ * `FLOOR_REGISTRY_ROOT`. A floor row names a document id and nothing of its content; the document itself seals under the
+ * floor's rest key (`floorRestKey`), lit or not. `readFloor` files those rows; `readControl` files a face's.
+ *
+ * A document keeps its first owner: a later entry naming it under another group or face moves nothing.
  *
  * ONE TABLE, EVERY VESSEL CLASS (operator ruling: idempotent-by-intent and isomorphic-by-intent parity). The node and the
  * browser vessel both file their device documents here, so the two cannot drift on which key seals which document.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/control-home
  */
-import { CONTROL_HOME_ID } from "./lar-uris.js";
+import { CONTROL_HOME_ID, DAEMON_BAG_ID, bagUri } from "./lar-uris.js";
 import { daemonFaceCanonBag, wikiSlotUri } from "./wiki-recipe.js";
 import { tiddlerText, type LarDoc } from "./base-doc.js";
 import { documentIdOfUrl, type SealedBag } from "./sealed-rest.js";
+
+/** Every row of the floor's registry rests under this prefix of the place's daemon document. */
+export const FLOOR_REGISTRY_ROOT = `${DAEMON_BAG_ID}/floor/`;
+/**
+ * THE VEIL FLOOR'S WIKI SLOTS (the-veil-ladder#/the-base-model: every vessel holds "its own local content, no group"). A wiki's
+ * working layer a vessel stands with no face, and the canon document of a wiki it mints there, each rest in a floor document
+ * the daemon document names (`floor/slot/<slug>/<kind>`, kind `working` or `canon`); the vessel owns it, so it seals under
+ * the floor's rest key, on every vessel class, and waits held from its announce until the daemon document names it.
+ */
+export const FLOOR_SLOT_ROOT = `${FLOOR_REGISTRY_ROOT}slot/`;
+/** The daemon wiki's own floor device slots (`floor/daemon-slot/<kind>`): its working, draft and personal memory with no face. */
+export const FLOOR_DAEMON_SLOT_ROOT = `${FLOOR_REGISTRY_ROOT}daemon-slot/`;
+/** The floor row naming the daemon wiki's floor `kind` device slot. */
+export function floorDaemonSlotTitle(kind: string): string { return `${FLOOR_DAEMON_SLOT_ROOT}${kind}`; }
+/** Whether `title` names a row of the floor's registry (the projection withholds each: `isFloorRegistryTitle`). */
+export function isFloorRegistryTitle(title: string): boolean { return title.startsWith(FLOOR_REGISTRY_ROOT); }
+/** The floor row naming the floor's `kind` slot of wiki `slug`. */
+export function floorSlotTitle(slug: string, kind: string): string { return `${FLOOR_SLOT_ROOT}${encodeURIComponent(slug)}/${kind}`; }
+/** The wiki and kind a floor-slot row names, or null where the title names none. */
+export function floorSlotOf(title: string): { readonly slug: string; readonly kind: string } | null {
+  if (!title.startsWith(FLOOR_SLOT_ROOT)) return null;
+  const [slug, kind, ...rest] = title.slice(FLOOR_SLOT_ROOT.length).split("/");
+  if (!slug || !kind || rest.length > 0) return null;
+  try { return { slug: decodeURIComponent(slug), kind }; } catch { return null; }
+}
 
 /** The daemon wiki's device slot bags share this prefix (`wikis/daemon/<kind>`). */
 export const DAEMON_SLOT_PREFIX = wikiSlotUri("daemon", "working").replace(/working$/, "");
@@ -45,8 +75,10 @@ export interface LitDeviceFace {
 export type LitDeviceFaces = readonly LitDeviceFace[];
 
 export interface DeviceDaemonDocs {
-  /** Read every device slot and canon the control document names; answers whether any filing moved. */
+  /** Read every face's device slot and canon the control document names; answers whether any filing moved. */
   readControl(controlDoc: LarDoc | null | undefined): boolean;
+  /** Read every floor document the place's daemon document names (`FLOOR_REGISTRY_ROOT`); answers whether any filing moved. */
+  readFloor(daemonDoc: LarDoc | null | undefined): boolean;
   /** The daemon island announced a device slot's document before its first byte: held until the control document names its owner. */
   announced(bagId: string, documentId: string): boolean;
   /** A face's daemon canon minted (its document named before its first byte), owned by `relation`. */
@@ -60,11 +92,35 @@ export interface DeviceDaemonDocs {
   has(documentId: string): boolean;
   /** Every device document filed here, floor slots included. */
   ids(): string[];
+  /**
+   * Is `documentId` a VEIL FLOOR wiki slot (the vessel's own wiki content, announced or named)? It stays on this vessel like
+   * every device document, and unlike the rest it reaches the house's own WIKI islands too: the wiki island mounts it as the
+   * wiki's working layer. It never reaches a wire peer or a sibling.
+   */
+  floorWiki(documentId: string): boolean;
+  /**
+   * THE LIFT RELEASES A FLOOR DOCUMENT (the-veil-ladder#/the-base-model, in-house Ruling 2): a wiki's canon document the veil
+   * floor minted leaves the vessel's class when a face lifts it with the same document id, so the vessel's sealed map files
+   * it under the face. Only a veil floor's WIKI document releases (never a daemon device slot, a group's slot or a canon of a
+   * face); a released document never files as the floor's again in this process, whatever a stale control row still names.
+   * Answers the bag it stood filed under, or null where nothing released.
+   */
+  release(documentId: string): string | null;
 }
 
-export function deviceDaemonDocs(io: { readonly enrollFloor: (documentId: string, bagId: string) => void }): DeviceDaemonDocs {
+export function deviceDaemonDocs(io: {
+  readonly enrollFloor: (documentId: string, bagId: string) => void;
+  /** A released floor document leaves the vessel's held homes too (`SecretHomeRest.release`). */
+  readonly releaseFloor?: (documentId: string) => void;
+}): DeviceDaemonDocs {
   const owners = new Map<string, { readonly bagId: string; readonly owner: Owner }>();
+  const released = new Set<string>();
+  const floorWikiFiled = (documentId: string): { readonly bagId: string; readonly owner: Owner } | null => {
+    const filed = owners.get(documentId);
+    return filed !== undefined && !filed.bagId.startsWith(DAEMON_SLOT_PREFIX) && (filed.owner.kind === "floor" || filed.owner.kind === "unnamed") ? filed : null;
+  };
   const file = (documentId: string, bagId: string, owner: Owner): boolean => {
+    if (released.has(documentId) && (owner.kind === "floor" || owner.kind === "unnamed")) return false;
     const filed = owners.get(documentId);
     if (filed !== undefined && filed.owner.kind !== "unnamed") return false;
     if (filed !== undefined && owner.kind === "unnamed") return false;
@@ -87,14 +143,33 @@ export function deviceDaemonDocs(io: { readonly enrollFloor: (documentId: string
         if (!documentId) continue;
         if (title.startsWith(slotPrefix)) {
           const [kind, group] = title.slice(slotPrefix.length).split("/");
-          if (!kind || !group) continue;
-          const owner = decodeURIComponent(group);
-          moved = file(documentId, wikiSlotUri("daemon", kind as never), owner === "floor" ? { kind: "floor" } : { kind: "group", group: owner }) || moved;
+          // No control row names the floor: its registry rests in the daemon document (`readFloor`), and no group answers that word.
+          if (!kind || !group || group === "floor") continue;
+          moved = file(documentId, wikiSlotUri("daemon", kind as never), { kind: "group", group: decodeURIComponent(group) }) || moved;
         } else if (title.startsWith(canonPrefix)) {
           const relation = decodeURIComponent(title.slice(canonPrefix.length));
           let bagId: string;
           try { bagId = daemonFaceCanonBag(relation); } catch { continue; }
           moved = file(documentId, bagId, { kind: "canon", relation }) || moved;
+        }
+      }
+      return moved;
+    },
+    readFloor(daemonDoc) {
+      let moved = false;
+      for (const [title, record] of Object.entries(daemonDoc?.tiddlers ?? {})) {
+        if (!title.startsWith(FLOOR_REGISTRY_ROOT)) continue;
+        const documentId = documentIdOfUrl(tiddlerText(record));
+        if (!documentId) continue;
+        if (title.startsWith(FLOOR_DAEMON_SLOT_ROOT)) {
+          const kind = title.slice(FLOOR_DAEMON_SLOT_ROOT.length);
+          if (!kind || kind.includes("/")) continue;
+          moved = file(documentId, wikiSlotUri("daemon", kind as never), { kind: "floor" }) || moved;
+        } else if (title.startsWith(FLOOR_SLOT_ROOT)) {
+          const named = floorSlotOf(title);
+          if (!named) continue;
+          // `canon` names the wiki's own canon bag (`bags/<slug>`); every other kind names that wiki slot.
+          moved = file(documentId, named.kind === "canon" ? bagUri(named.slug) : wikiSlotUri(named.slug, named.kind as never), { kind: "floor" }) || moved;
         }
       }
       return moved;
@@ -108,14 +183,24 @@ export function deviceDaemonDocs(io: { readonly enrollFloor: (documentId: string
     },
     docsOf: (bagId, lit) => [...owners].filter(([, f]) => f.bagId === bagId && ownerIn(f.owner, lit) !== null).map(([id]) => id),
     has: (documentId) => owners.has(documentId),
+    floorWiki: (documentId) => floorWikiFiled(documentId) !== null,
+    release(documentId) {
+      const filed = floorWikiFiled(documentId);
+      if (filed === null) return null;
+      owners.delete(documentId);
+      released.add(documentId);
+      io.releaseFloor?.(documentId);
+      return filed.bagId;
+    },
     ids: () => [...owners.keys()],
   };
 }
 
 /**
  * THE VESSEL-HELD BAG OF A DOCUMENT, in the one order every vessel class reads it: a device document by its owner first (the
- * held homes' table never forgets, so a group's slot never reads from it), then the held homes (the secret home, the control
- * document, the floor's slots, all under the vessel's key). Undefined: neither files it, and the vessel's sealed map decides.
+ * held homes' table never forgets, so a group's slot never reads from it), then the held homes (the secret home and the
+ * control document under the secret home's key, the floor's slots under the floor's rest key). Undefined: neither files it,
+ * and the vessel's sealed map decides.
  */
 export function vesselHeldBagOf(
   device: Pick<DeviceDaemonDocs, "bagOf">, held: { bagOf(documentId: string): SealedBag | null }, lit: LitDeviceFaces, documentId: string,

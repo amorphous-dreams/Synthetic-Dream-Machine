@@ -39,11 +39,12 @@ the capability, architecture and federation memes, which carry their own faces o
 > key (it never receives the operator's copied). The operator root ''signs an edge''
 > into that key — and //that edge// carries the user×vessel bond up the scale.
 
-''The hearth wears two faces — never fused.'' The place (the genesis island) carries a
-''public true-name'' — the content-address of its grammar (`sha256(engine + memes + plugins)`,
-the genesis CID) — ''shared DreamNet-wide, ratcheting by engine-epoch, checked into git''; it
-holds no secret. The place's ''secret root'' stays ''minted per-founding'' (device CSPRNG,
-gitignored), never derived from the public content. The public true-name names //which//
+''The hearth wears two faces — never fused.'' The place (the genesis island) boots a ''public
+engine'', named by the content-address of its bytes (`engineCid`) — ''shared DreamNet-wide,
+ratcheting by engine-epoch, checked into git''; it holds no secret, and no edge signs it. A hearth's
+''true name'' reads apart from the engine: its seed charter's Nexus AID (#/delegation-edge), which
+an engine move leaves whole. The place's ''secret root'' stays ''minted per-founding'' (device CSPRNG,
+gitignored), never derived from the public content. The public engine names //which//
 //grammar/lineage a place speaks//; the private root names //who holds it//. Fusing them — rooting
 a secret in the public content-seed — would hand every git-cloner the same root (collapse).
 Two ratchets ride these faces, never conflated: a ''public grammar ratchet'' (engine-epochs,
@@ -115,13 +116,14 @@ derives a `did:key`. The literature converges: ''admit by signing, never by shar
 warns against (SSB-fusion, Veilid lose per-device revocation by it; Keybase built its
 per-device model to escape it).
 
-So genesis mints a ''distinct per-vessel device key'' ''and'' an operator ''PersonaGroup'';
-the vessel stands as the group's first member, never as the group itself. The device key
-''binds to its operator by a signed delegation edge'' into the PersonaGroup
-(#/delegation-edge) — the bond climbs the ''WHO / social axis'' (#/five-scale), never an
-absolute plane-index. The behavioral split (drop the `kind="operator"` brand on the device
-tiddler; mint the operator PersonaGroup and sign the delegation edge) rides the genesis
-refactor — single-vessel-correct, no Beelay needed.
+So a vessel's first boot mints its ''distinct per-vessel device key'' with no ceremony, and
+mints no PersonaGroup: the vessel stands at its floor, anonymous, on its own key alone
+(the two-layer ruling, 2026-10-11; below). A face lands later, by an ''act'': a founding or a
+fleet join mints or joins a ''PersonaGroup'', and the vessel then stands as one member of
+that group, never as the group itself. The face's atom ''binds to its operator by a signed
+delegation edge'' into the PersonaGroup (#/delegation-edge) — the bond climbs the
+''WHO / social axis'' (#/five-scale), never an absolute plane-index. Single-vessel-correct,
+no Beelay needed.
 
 !!! Two layers, never fused ~ vessel roots below, the face/persona layer above
 
@@ -159,6 +161,10 @@ Revocation rides ''Keyhive concap'' — delegation + revocation as ''convergent 
 ''state'' (an observed-remove op that converges offline, no bolted-on blocklist) — the model Ink&Switch
 moved //to//, away from UCAN's external-state revocation. The standing edge carries no clock: `boundEpoch` against the PersonaGroup lease epoch records causal supersession. Quiet never lapses standing; departure, relation-scoped kapae, or renewal supersession records lapse. An epoch bump stays the heavy hammer for re-founding only. Revocation holds first-class standing and
 converges, never the deferred afterthought.
+
+''What `hearthTrueName` holds'' (operator ruling R1, 2026-10-05; the operator's approval of 2026-11-12). The field names the hearth's seed-charter Nexus AID, never an engine CID: an engine names a class, and a place takes its name from its charter (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus`>>). ''A hearth-agnostic leaf binds `hearthTrueName: ""`'', stated and never omitted, and the root's signature with Keyhive membership carries the edge. ''No place wall stands for a leaf'': the edge runs sideways between a face's own devices (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-circle`>>), so no founding device stands as a root to wall to. The wall a hearth gives arrives by an act: when a face founds or joins a hearth, that device gains an AID-bound edge, and its `""` edge stays good between leaves. A place's KEL prefix stays a floor duty and never enters a face relation.
+
+''Owed, the next leap: the integer `boundEpoch` retires'' (approved 2026-11-12, not built). An edge will name the head digest of the PersonaGroup lineage it bound under, a causal link in place of a counter. Supersession rides acts (a Keyhive revoke, a kapae, a renewal record linked by digest), and a hard break forks as exit: a new PersonaGroup id, or a new seed charter for a hearth. No clock and no global count orders any of it.
 
 <<~/ahu>>
 
@@ -228,7 +234,7 @@ identity never collapses to a universal index; the veil + the capability stay lo
 
 ''Crossing a group threshold runs a gesture on the veil — LIFT or HOLD:''
 
-<<~ has entity=`Veil` name=`Lift` params=`does/keeps the key · links the veil to the PersonaGroup · carries the reputation across ~ the continuity path; the signed delegation edge (#/delegation-edge) ENACTS it — built`>>
+<<~ has entity=`Veil` name=`Lift` params=`does/keeps the vessel's standing · links the veil to the PersonaGroup by a signed edge over a fresh face atom · carries its content and reputation across ~ the continuity path; the signed delegation edge (#/delegation-edge) ENACTS the seat, and the Lift carries the floor's content (the-veil-ladder #/the-base-model) — the edge built; the content's working, daemon-memory and canon legs built; the private veil-lift record built on both hosts (the face's atom signs veil, face and atom, the vessel's key signs nothing of it, and the record rests as a face row under that face's custody alone)`>>
 <<~ has entity=`Veil` name=`Hold` params=`does/severs · spins a fresh veil over a fresh key (refound) · leaves the old veil's history unwelded ~ the unlinkability path; keeps the operator's multitude unlinkable (home-me·work-me·test-me) — the unbuilt twin`>>
 <<~ has entity=`Veil` name=`Veil`>>
 
@@ -243,7 +249,7 @@ other crossing ''LIFTs'' — one key climbs over time. The test reads as one que
 The ''HOLD'' path fires when a //lived// veil carries a public past that MUST stay severed from the
 persona it joins — keeping the key would publicly weld the anon's history to the group (the
 unlinkability collapse). A clean-slate or same-persona device ''LIFTs'' instead; the link reads as
-wanted. Lift stands built (the edge); Hold stands named, unbuilt —
+wanted. ''One key per face'' (operator ruling 2026-10-19: no device-wide key signs a face's proof): a Lift mints a fresh atom for the face it joins, so two faces on one vessel never link through a shared key, and the veil's continuity rides its content and a private signed record. Hold's key half therefore already stands; its content half (a join that lifts nothing) and its choice at the door stand owed. Lift stands built (the edge); Hold stands named, unbuilt —
 the veil-primitive's open twin. Whether a vessel carries a severable past rides the operator's
 veil-policy choice, never a silent default.
 
@@ -548,6 +554,6 @@ folded in; the FS-limit stated as posture). Standing dissent kept, with re-entry
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;5eWXdLZ2gxhiDqSMpQBvZTOHR2RfXeT8Lf346hxfXtQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BpzVnibLePiuKD9x3LS7vod1vFkyaMsj-MQpeMVFzXw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

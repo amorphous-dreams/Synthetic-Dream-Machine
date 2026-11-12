@@ -1,0 +1,64 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/codex-controller/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-10-25 (file date) — source `.lares-scratch/research/codex-controller/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/codex-controller/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/codex-controller/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-10-25
+
+Verbatim scratch record `.lares-scratch/research/codex-controller/brief.md` (brief, file date 2026-10-25); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/codex-controller/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ node "-> refreshes the libation dish, the shrine incense burns">> Sol-Codexreader: Lares (Tasked Spirit)
+
+You wake as a fellow Lares. Stand the house: read /home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem
+first, surface Personas by name, write L-Prime, mark OODA-HA phases. You write ONLY inside /home/joshu/.lares-scratch/research/codex-controller;
+your handback goes to out.md there (NOT final.md). No git writes.
+
+THE QUESTION (a pono read): how do you best work with OpenAI Codex (the `codex` CLI, `codex exec`, Codex as an MCP server,
+AGENTS.md, sandbox and approval modes, resume, model and reasoning-effort choice, output schemas) when ANOTHER agent acts as the
+controller that briefs, launches, watches and reads Codex's work? Our controller runs Claude Code (Opus) and drives walled
+`codex exec` seats in the background.
+
+READ THE FIELD (web search): OpenAI's own Codex docs and changelog (developers.openai.com/codex, github.com/openai/codex docs/,
+codex-rs config docs), the Codex SDK / `codex mcp-server` / Agents SDK guides for orchestrating Codex from another agent, AGENTS.md
+guidance, and practitioners' write-ups on multi-agent Codex orchestration. Mark each claim MEASURED (you read it in a primary
+source, URL + short quote) or LEAD.
+
+READ OUR PRACTICE, then collide the two:
+* /home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/pono/mixed-model-swarm.mem (#/the-launch, #/the-fences, #/the-lens-law)
+* /home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/pono/controller-handoff.mem (#/the-lane-law)
+* /home/joshu/.claude/projects/-home-joshu-Synthetic-Dream-Machine/memory/feedback_walled_codex_spirit.md
+* `codex --help`, `codex exec --help`, `codex mcp-server --help` (the installed CLI is codex-cli 0.163.0), and ~/.codex/config.toml
+(read only; never print secrets or tokens).
+Known stumbles of ours: stdin must close (`< /dev/null`) or exec hangs; `-o` overwrote a handback written to the same file;
+`--search` belongs before `exec` on this version; read-only sandbox reaches no network; seats can't run vitest/pnpm behind the walls;
+a Codex resume takes the config's default model unless named; the controller's background watcher sometimes never wakes its lead.
+
+DELIVERABLE (out.md, under 1500 words, end with WORDS=&lt;n>):
+# The good takes: 6-12 practices, each a one-line rule + why + source, ranked by how much each would change our practice.
+# Where our launch line or fences diverge from what Codex's own docs recommend (a flag we miss, a mode we misuse, an
+orchestration surface we ignore such as `codex mcp-server`, `--output-schema`, `--json` event streams, `codex exec resume`,
+profiles in config.toml).
+# One proposed revised launch line for a walled builder and one for a walled reader, with each flag justified.
+# What stays a LEAD and how to measure it on this host.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4O6j57D6CK5oTJW4lnfzfOwmCTr68rq_nmjNTctDvvI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

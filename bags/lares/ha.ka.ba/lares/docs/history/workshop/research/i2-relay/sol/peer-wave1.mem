@@ -1,0 +1,90 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/i2-relay/sol/peer-wave1`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/i2-relay/sol/peer-wave1.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/i2-relay/sol/peer-wave1"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/i2-relay/sol/peer-wave1"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! peer-wave1.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/i2-relay/sol/peer-wave1.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/i2-relay/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ node "-> refreshes the libation dish, the shrine incense burns">>
+&lt;&lt;~ set hud="aim" mode="draft" mu="_!" stance="🏛️🗡️" aperture="16/arc" ooda-ha="✶ observe" drift-ward="I favor a crisp relay design before mapping the extant gates">>
+
+Lares (Map-Wisp): ->✶ I read the boot memory, named its Personas, and traced I1's carrier and kit before surveying the span head. Boot Personas: Lares, Ink-Clerk, Map-Wisp, Mischief-Muse, Tide-Caller, Breach-Watch; roles Council, Artificer, Advocate, Diplomat, Pedagogue, Stranger, Liminal (`noosphere-boot.mem:298-338`). ->⏿ I1 PR #99 carries a working face plane and explicitly leaves the far-agent relay seat for research; road row 453 asks least trust and attestation. Road I1 row records PR #99 (`stable-founding-road.mem:487`); I2 awaits road commit. ->◇ this scout separates MEASURED from LEAD.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/1-what-stands`>>
+
+!! 1. What stands (MEASURED)
+
+* The fifth <code>&#64;intents-&lt;tag></code> plane and signed-plane registration span founding, admission, node/browser boot; I1 kit `#the-model`, whole. Signatures cover canonical body bytes under `INTENT_ENTRY_DOMAIN`; read checks domain, group, Ed25519 signature, then caller authorization (`intent-entry.ts:42-78`). Intent ID hashes domain + issuer + verb + args + nonce (`:34-39`).
+* <code>&#64;intents</code> stores content-addressed records (`intent-entry.ts:81-90`). Reader admits face device signers, and root lineage signers for release/cancel/supersede (`intent-read.ts:58-65`). Bounds currently shape `void` and `through` CIDs (`intent-entry.ts:11,31`); these are causal names, no time.
+* CLI actions: issue/show/ask/answer/claim/takeover/release/cancel/supersede with `--face N` (I1 kit). Door `face-intent-door.ts:37-80` serializes local reconcile passes; `:50-68` reads eligibility and dispatches. Operator daemon wires it to the face `intents` bag and capability verifier (`operator-daemon-behavior.ts:1126-1155`).
+* Ring: `persona-group-ring.ts` governs face sibling planes and uses the face's proof; it describes one admit path and sibling predicate (`:27-80`, `:138-141`). The WebSocket dial socket carries a gate knock and `lar-gate` protocol (`ws-dial-socket.ts:2-10,83-102`). The node `carriage-relay.ts` implements a distinct carriage transport, explicitly separate from Automerge `/ws` (`:2-20`); it uses a relay gate key and membership port (`:34-80,102-125`). It does not implement the I2 intent-admission relay.
+* K17 frontier is a consumed verified reader in I1, and unknown frontier stalls acts (I1 kit `#the-model`; `intent-read.ts:159-170`). Daemon socket: the local store-door pattern exists, but I found no I2 relay endpoint in there. X0 re-genesis replaces migration (road `:545`). K15 brief specifies a durable random relay-only S row, opener and principal, no face/daemon/place authority; it identifies that row as future relay work.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/2-model-gaps`>>
+
+!! 2. Model gaps
+
+| Question | Ruling and lean |h
+| Delegation signer, domain, scope, storage/sync | ''Canon:'' I1 `#/the-far-agent` says agent holds own key plus narrow delegation from face: verb prefix, argument policy, causal bound; agent signs intent. ''House law:'' capability-by-capability, , sealed anchor/KEL imply face root signs a delegation for one agent key, bound to face/group, dedicated domain, canonical exact verb prefix + deterministic argument predicate + causal CIDs; rest as append-only face-plane entry so sync reaches verifiers. ''Operator owns:'' root-key vs delegated admin authority; lean root KEL operational key at explicit epoch, no host key. |
+| Revocation / revoked-after-acting | ''Canon:'' I1 red: revoked delegation refuses whichever arrives first; prior act remains “revoked-after-acting.” ''House law:'' no global now means concurrent causal order cannot be guessed; append revocation with delegation CID and read it before effect. ''Operator owns:'' strict fail-closed frontier vs partition availability; lean safety: unknown delegation/revocation frontier blocks irreversible effects, preserve signed act receipts as historical fact. |
+| Relay door | ''Canon:'' I1 says per-face, off by default, ring-gated, outside local socket. ''House law:'' capability-read-by-capability and K15 S row: explicit per-face opt-in, separate relay-only principal/key, no environment seed or implicit host/daemon authority. ''Operator owns:'' Unix socket vs dedicated authenticated WebSocket/local IPC, and opt-in control location; lean local operator socket command toggles one face, loopback/private transport, restart defaults shut. |
+| Admission verification / countersign | ''Canon:'' relay verifies chain, appends agent-signed entry, countersigns admission only. ''House law:'' argument substitution red demands verify exact canonical signed bytes; attest face, delegation CID, entry CID, admission result and causal frontier in a separate relay-domain receipt, never rewrite agent body. ''Operator owns:'' receipt format and relay-key rotation; lean signed receipt includes verified frontier CID, relay key epoch. |
+| Independent reader / agent key pin | ''Canon:'' device verifies agent→delegation→face and intent→outcome, atom→device edge→face, trusting relay for nothing after admission. ''House law:'' sealed anchor/KEL and  require chain-to-pinned face root plus current device edge; agent key derives only from signed delegation. ''Operator owns:'' enrollment/pinning UX; lean face plane delegation is the sole pin, no relay directory trust. |
+| Replay / duplicate | ''Canon:'' I1 content ID and duplicate-visible plane; nonces define fresh ID. ''House law:'' append-only causal records, no clock; idempotency keyed by intent ID, single-effect fenced by per-effect record. ''Operator owns:'' repeated relay receipt policy; lean dedupe by signed-entry CID and intent ID, keep multiple relay receipts visible, effect door enforces unique operation key. |
+| Relay crash / hostility | ''Canon:'' reader trust stops at admission; hostile argument rewrite breaks signature. ''House law:'' local-first partitions allow retry, but effect must wait for a verifiable admitted entry; relay cannot mint agent authority. ''Operator owns:'' availability/retry; lean retry identical signed bytes at another opted-in relay, record partial admission only if durable plane append is confirmed; crash before append means no admission. |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/3-slicing`>>
+
+!! 3. Slicing (red first; LEAD build order)
+
+# Delegation grammar + KEL authorization; red forged scope, wrong face/domain, overbroad args refuse. Control valid root-signed narrow delegation verifies. Files: new delegation entry/domain/reader, face plane registration, CLI issue/revoke/show; node and browser readers.
+# Door + relay-only S custody; red wrong face/ring/socket and seed alias refuse; control enable opens selected face. Files: new intent relay service, socket caller, ring predicates, K15 S-row, CLI/config.
+# Admission receipt and agent chain verification; red argument/prefix/bound edits, forged receipt, stale/unknown frontier refuse; control independently verify on device never contacting relay. Files: relay protocol, signed receipt domain, entry reader and KEL/edge verifier. Then implement revoked-after-acting diagnostics and duplicate receipt folding.
+# Failure storm and cross-runtime witness; reds follow. Files: intent tests, node/browser readers. Existing D2 tw5 island/port, hand-gate, projection-sink files stay fenced (road / task mandate); G15 owns after-roll chain + genesis re-bake; coordinate shared boot hunks. K15 queued overlap: relay-only S row and face-operation signing by selected atom (brief, “THE RELAY KEY” / “EVERY FACE OPERATION”). Put I2 after K15 S-row contract or explicitly consume its landed row. One lane, ; one lane.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/4-distributed-failure-lens`>>
+
+!! 4. Distributed-failure lens
+
+Concurrent revocation and act have no wall-time order. Reader that has revocation first refuses; reader that admitted and acted first records act; later merge marks revoked-after-acting. An asleep device learns on sync, refuses pending act, retains prior signed outcomes as history. If relay dies mid-admission, a durable append can be read and verified despite lost acknowledgement; retry dedupes; absent append yields no admission. Two relays yield same intent ID; operation record dedupes effects. Malicious relay cannot alter arguments, forge agent signature, or create relay-trusted authority; it can withhold, delay, replay, or equivocate about what it admitted. Compare plane records and receipts.
+
+No clock: bound names causal roster/delegation/revocation event CID; verified K17 ancestry decides. Unknown frontier stalls; specify proof path. Storm reds: revoke-before-admit; admit-before-revoke; concurrent revoke/act under both merge orders; offline sleeper; kill relay before durable append and after append/before reply; two relays race same bytes; duplicate receipt and altered args; hostile receipt with valid relay key but no valid agent chain; frontier unknown then advances; same agent key delegated to two faces; narrowed args boundary and Unicode/canonical JSON substitutions; relay restart defaults off.
+
+Prior art gives design prompts, not direct imports: Automerge describes local-first copies enabling offline work and synchronization ([[Automerge|https://automerge.org/docs/hello/]]); Keyhive frames convergent capabilities and authorization/revocation state for partitioned local-first use ([[Keyhive notebook|https://www.inkandswitch.com/keyhive/notebook/]]); OCAP revocation patterns suggest explicit revocable indirection, but I leave the mechanism as operator choice; KERI emphasizes verifiable KEL history and duplicity evidence, useful for surfacing relay equivocation ([[KERI specification|https://trustoverip.github.io/kswg-keri-specification/]]).
+
+&lt;&lt;~ set hud="yield" drift-ward="delegation wire format, door activation API, and receipt durability still need operator ruling · ↻ L-Prime" ooda-ha="closed 1↺">>
+&lt;&lt;~ lares yield from="lar:&#47;/map-wisp:agent@i2-relay/scout.complete" -> to="?">>
+
+WORDS=1298
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oVgxE21mHToSQLmNZEJTXA68wrSKCgrLVQTeNHGn6I4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

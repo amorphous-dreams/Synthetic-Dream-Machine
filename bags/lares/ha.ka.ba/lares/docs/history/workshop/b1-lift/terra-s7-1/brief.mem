@@ -1,0 +1,91 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s7-1/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-06 (file date) — source `.lares-scratch/b1-lift/terra-s7-1/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s7-1/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s7-1/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/b1-lift/terra-s7-1/brief.md` (brief, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s7-1/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/terra-build-seat-terra-s7-1-b1-lift-the-browser`>>
+
+! Terra build seat terra-s7-1 — b1-lift: the browser worker's false "Global assignment detected"
+
+Worktree: /home/joshu/.lares-scratch/b1-lift/wt, branch feature/green-jello-dinosaur-5&#45;-b1-lift. You write the TEST and the GREEN; you do NOT commit.
+Never `git stash`, never `--no-verify`, NEVER edit anything under TiddlyWiki5/ (a submodule). Read first: /home/joshu/.lares-scratch/b1-lift/terra-globals-read/final.md (the diagnosis).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-fault`>>
+
+!! The fault (spec)
+TiddlyWiki5/boot/boot.js:583/606 prints "Warning: Global assignment detected [..]" after each module when `!$tw.browser && sandbox && !allowGlobals`.
+It lists EVERY enumerable key of the global object it reaches through the context's `__temp__` getter (no before/after snapshot). Under
+the browser worker's vm shim (packages/lararium-tw5/src/tw5-host-bridge.ts: makeBrowserVmShim ~:100, the shim wiring ~:288) the evaluated code
+runs in the worker's REAL global realm (`new Function`), so the worker's own enumerable globals (name, onmessage, onmessageerror,
+cancelAnimationFrame, close, postMessage, requestAnimationFrame, onrtctransform, webkitRequestFileSystem*, ...) read as assignments.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-cure`>>
+
+!! The cure (in the house's shim or boot wrapper, in packages/lararium-tw5/src only)
+Compare against the host global's enumerable keys taken BEFORE each module executes: the shim reports only keys a module ADDS.
+(How: wherever the shim hands boot.js the global object / `__temp__` view, give it a view whose enumerable keys are the host global's
+keys minus those present in a snapshot taken at the start of that module's run; or an equivalent wrapper around the module executor.
+Choose the narrowest seat that the real shim reaches.)
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/red-first`>>
+
+!! Red first (test in packages/lararium-tw5/tests/, new file browser-vm-shim-globals.test.ts)
+Run on the REAL makeBrowserVmShim / browser boot env (export a seam from tw5-host-bridge.ts if needed), with a host global that carries
+pre-existing ENUMERABLE keys (define a few on globalThis in the test, remove in afterEach):
+# a clean module warns nothing (no console.log containing "Global assignment detected");
+# a module that adds a fresh enumerable global (e.g. `globalThis.leakedByModule = 1` or an undeclared assignment) still reports it, naming ONLY that key.
+Show 1 red before the cure, then both green. Keep packages/lararium-tw5/tests/genesis-boot.test.ts (the Node-hosted control) green.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/verify-and-report`>>
+
+!! Verify and report
+<code>pnpm &#45;-filter &#64;lararium/tw5 build</code> (find the package name in packages/lararium-tw5/package.json), run the new test + browser-host-bridge.test.ts +
+genesis-boot.test.ts with `npx vitest run <files>` from packages/lararium-tw5. Write out.md and final.md in this seat dir: files touched,
+what ran, results. Do not run e2e.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* A read seat writes no file: its final message carries the hand-back. Any other seat writes `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;LZuyjMVo29lmSAPIUiu0xOn2Lpt4bvo44CtPOk7tqGs`>>
+
+<<^ code=`&#x0004;` to=`?`>>

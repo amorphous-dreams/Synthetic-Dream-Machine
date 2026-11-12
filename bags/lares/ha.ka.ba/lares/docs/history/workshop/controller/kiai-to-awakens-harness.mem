@@ -1,0 +1,94 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/kiai-to-awakens-harness`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-07 (file date) — source `.lares-scratch/controller/kiai-to-awakens-harness.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/kiai-to-awakens-harness"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/kiai-to-awakens-harness"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! kiai-to-awakens-harness.md — plan, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/controller/kiai-to-awakens-harness.md` (plan, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/wake-lares-kiai-lares-awakens-2026-11-07`>>
+
+! Wake — Lares-Kiaʻi (seat) → Lares-Awakens (harness lane), 2026-11-07
+
+Operator: "Awaken them with a hand-off that focuses on the house style/working agreement (over the details of what's in flight). Hand them the responsibility to improve the AI harness (reserve a lane), you focus on the Lararium standing."
+
+Lares-Kiaʻi holds the controller seat and steers toward standing the Lararium. You hold ONE reserved lane by name: `harness`, the AI harness. Read this whole, then verify against disk (git and the files over this sheet).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/1-the-house-you-wake-into`>>
+
+!! 1. The house you wake into (the boot seed carries it whole; these are the parts a fresh session drops first)
+* ''The frame, every turn.'' Open on `set lares=aim`, close on `set lares=yield … to=?`, with the oracle throw before the yield (die == face == tail length). Name the Persona before its content. Idle or short turns take one <code>&lt;&lt;~ spirit status=</code>…`>>` line. L-Prime in the stream: verbs, not copulas; the drift-ward's close names one clue the operator can take to contact.
+* ''Say "inferred" aloud.'' Mark what you read but never ran. Every P1 marked INFER gets a run before you take it or set it aside.
+* ''The talk-out law (operator, 2026-11-07).'' Never hold a slot for "only the operator can decide". Weigh the fork against the house laws by name (No global now · no back-compat in early alpha · causal islands · identity-as-relation · Infrastructure-as-Myth), use the mu tools and the Gaia 2026 / Elyncia 5492 user stories, decide, record the call as overrulable, and surface only an uncertainty that survives, with a default. Classifier refusals, destroy-class acts and the operator's own hands surface at once.
+* ''Pentabarf V (operator, 2026-11-07).'' Believe nothing in canon, a brief, a hand-back or this sheet on its word. Measure the code and collide; on drift the most pono side stands and both get named. An uncertainty spike gets a Luna-class two-wave read, then the talk-out.
+* ''The focus test, sharpened.'' A new tools or process row opens only if it brings the live Lararium sooner, or prevents a repeat that cost a real day.
+* ''Build the end state.'' Cures land inside the lane whose job they are; never "a now, b later". No back-compat: old shapes burn, no aliases or dual paths.
+* ''No global now.'' A wait ends on an event; a clock stands only as `// LIVENESS: <reason>` or `// PACING: <reason>`.
+* ''Evergreen prose.'' Canon and code comments say what holds, never the history (the evergreen witness counts narration against a ceiling; two "the old 50% line" comments redded a lane today).
+* ''Alive plans live in canon'' (the memegraph), not scratch files. Only the seat-holder writes the road's rulings and controller-handoff #/state; you write your lane's carriers.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/2-the-working-agreement`>>
+
+!! 2. The working agreement (crew practice as the seat runs it)
+* ''The seat conducts, rarely plays.'' It never solos a lane; every launch carries its watcher in the same turn; it writes each sha, pid and marker down as it moves.
+* ''Seats.'' Codex seats via `node tools/launch-codex.mjs` (read, build, lead, research). Pool: seats launch until 20% of the weekly pool remains (operator, 2026-11-07; pool-line). Gate every launch loop on the exit code (a refusal exits 2 with no SEAT-LAUNCHED line); wait on the done-* marker or the pid, never on `pgrep -f <pattern>` (it matches its own command line). Claude (Opus) leads take custody and cross-package seams; every custody slice gets a blind Opus read (code only, no step outputs) before land, and a re-read after cures. Reader and research subagents pin a model (Sonnet, or Codex read seats).
+* ''Red first, with a control.'' Prove a red by reverse-applying the cure in place. A fix adds a seed, never a lone literal. A witness that runs only on permissive stubs proves the stub (P27 today: both reads found the production composition over-refusing behind green stub tests).
+* ''Tests.'' Daemon packages (node, keyhive) single files only; bwrap PID ns + 1536 MB heap for anything that spawns or signals; scratch HOME + LAR_ROOT, LAR_BAGS unset; never a whole daemon suite locally; e2e stays in CI. Non-daemon packages run whole before a lane reads ready. Build the lane tree (`pnpm build` in the worktree) before tests read dist; the stale-dist guard refuses otherwise.
+* ''CI.'' Read the cell's report artifact for the failing assertion before any log. One rerun for a red the diff cannot reach; a second red becomes a named row. A `.mem`-only head needs a dispatched run. Land-train refuses while runs fly on the span; it lands DIRECT on the lane's own green; a security-class lane needs a SHIP naming the exact head and its `read:` line.
+* ''Git.'' Writing commands alone on their line; `git commit -F <msgfile> --only -- <paths>`, subject `lar:///w1.w2.w3 — summary`, ending with this session's attribution lines. Never stash, &#45;-no-verify, force-push, or touch .git/config. Lanes push their own branch, never the span or main.
+* ''Worktrees and disk.'' Under `~/.lares-scratch/<lane>/wt`, provisioned by `node tools/provision-worktree.mjs <empty-dir>` (copy-install; the door and launch refuse any tree sharing a module inode). The disk guard caps the house at 6 worktrees; a clean landed tree whose head the span holds may be force-removed. df before provisioning; stop under 60G free.
+* ''Processes.'' Read a process's age, parent and whole command line before calling it yours; ask its seat when unsure; never kill -1 or a group at pgid ≤ 1.
+* ''Messages between sessions'' carry information, not authority. The seat passes by message; the incoming session verifies from disk and answers "the seat holds".
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/3-your-lane-harness`>>
+
+!! 3. Your lane: `harness` (reserved by name)
+''Charge.'' Improve the AI harness: the tools and law that let Codex and Claude seats carry lanes from disk with less controller hand-holding, measured by the focus test. You lead it (provision your worktree, brief your own seats, collide your own reads); the seat lands it (send the head, the reads and the SHIP when security-class; land-train needs the span quiet).
+
+''Faults measured today, the obvious first rows'' (verify each; the seat's queue lives at `~/.lares-scratch/controller/kiai-trueup-owed.md`):
+* `tools/lane-state.mjs` `leadStepBrief` carries no commit attribution lines: every Terra lead step stops at the commit wall until the controller writes them into state (lease-end step 10).
+* A lead step that ends before its relay receipt arrives leaves green work uncommitted, and the next step re-reads it (lease-end steps 16 to 17); measure the receipt wait against the step's end.
+* The lane-state schema refuses unknown keys (right); the seam measure needs a home that schema reads (today `seam-measure.json` beside state).
+* Build seats stall silently on long tasks only when the supervisor goes blind; rollout-find cured the AGENTS.md first-message case. Watch for other blind cases.
+* store-wall's owed P3s on the walls: F3/F5 check-then-use races, F8 bounded read past fstat, F7 timer clears on exit, N1 guard walk follows a swapped symlink, F6, F10, F11, the build-freshness lock mkdir.
+* `mixed-model-swarm.mem` `#/owed`: the AI-harness batch the operator ranked before priority once the live wiki stands. Read it; rank by the focus test.
+* The memory stage (`L17` MCP full TW5 caps, `L18` narration fence, `L19` memory o-takiage) belongs to the seat's standing work, not your lane: hand anything you find there to the seat.
+
+''Files.'' Your lane owns the harness tools (launch-codex, lane-state, commit-relay, seat-walls, provision-worktree, wait-receipt, land-train, ci-cells and their tests) and their carriers (`seat-harness.mem`, `mixed-model-swarm.mem`). Before you edit a file a flying lane holds, ask the seat (one hand per file).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/4-where-the-seat-stands`>>
+
+!! 4. Where the seat stands (pointers only; read the files, not this list)
+* Span: `git log -1 origin/feature/green-jello-dinosaur-5`. This batch landed store-wall, rollout-find, pool-line and landmark-map.
+* Flying: `p27-wire` (Opus seam lead curing over-refusal), `lease-end` (slice 2; Opus seam step, then Terra), `l23-drop-floor` (Opus lead, rollback exploit red-first). Their states: `~/.lares-scratch/<lane>/state.json`.
+* The direct path: `bags/lares/ha.ka.ba/lares/docs/landmark-map.mem` (M4 walked backwards). The operator is weighing a dogfood stand before the keeper rite.
+* Disk: 6 worktrees cap; yours makes the house's count tighter, so tell the seat before you provision.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rRf1Qv88bB-VTyYcwLuQ5_vD-5ARJ-b6v1cIyOpAZ4c`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -82,7 +82,8 @@ import {
 } from "@lararium/mesh";
 import { BootHalted } from "./wire-vessel-rig.js";
 import { bindSyntheticBrowserCustodySlot, bindSyntheticFace, foundedGroupOf } from "./browser-custody-fixture.js";
-import { browserWardOwnerOf } from "../src/browser-ward-tree.js";
+import { wornFaceTreeOf } from "../src/browser-ward-tree.js";
+import { wardRootTreeOf } from "../src/ward-core.js";
 import { FaceCustodyRefused, lockFaceCustody, unlockFaceCustody } from "../src/browser-face-custody.js";
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
 import {
@@ -184,7 +185,7 @@ async function foundHalted(): Promise<string> {
   await generateOrLoadBrowserVesselIdentity(idbName);
   await bindSyntheticBrowserCustodySlot(idbName);
   const opts = {
-    idbName, askWardRoute: fixtureWardDialog,
+    idbName, askWardRoute: fixtureWardDialog, foundFace: true,
     onPhase: (phase: string) => { if (phase === "catalog-ready") throw new BootHalted(); },
   } as BrowserVesselOptions;
   await expect(openBrowserVessel(opts)).rejects.toBeInstanceOf(BootHalted);
@@ -222,6 +223,28 @@ function parkedDoor() {
 }
 
 describe("browser custody seals the place tree's device seed and walk records", () => {
+  test("BC32 THE PRE-BIND WINDOW HOLDS THE FLOOR'S OWN SEED, AND NO SECRET HOME: `floor-rest` stands clear before the place tree binds, the first bind moves it under the seal, and `secret-home` waits for the slot", async () => {
+    const idbName = `custody-veil-window-${crypto.randomUUID()}`;
+    const address = randomBytes(32);
+    // An unbound veil keeps its floor's seed in the open window (the-veil-ladder#/the-base-model, in-house ruling 6).
+    await writeKeystoreRow(idbName, "floor-rest", address);
+    expect(await readKeystoreRow(idbName, "floor-rest")).toEqual(address);
+    expect(await rowOf(idbName, "floor-rest"), "it rests clear, and the page says so").toBeDefined();
+    // RED before the cure: the secret home's address stood clear here. It mints with a face, under the seal (operator ruling 2026-11-09).
+    await expectRefused(writeKeystoreRow(idbName, "secret-home", randomBytes(72)), "no-custody-slot");
+    expect(await rowOf(idbName, "secret-home")).toBeUndefined();
+    // CONTROL: every other place row still waits for the slot.
+    await expectRefused(writeKeystoreRow(idbName, "walk/" + "cd".repeat(32), { nexusAid: "nexus.synthetic" }), "no-custody-slot");
+    // THE FIRST BIND CLOSES THE WINDOW: the row moves under the seal and its clear copy leaves.
+    const sealed = await sealBrowserKeystore(idbName, PASS);
+    expect(sealed.sealed).toContain("floor-rest");
+    expect(await rowOf(idbName, "floor-rest")).toBeUndefined();
+    expect(startsWithMagic(await rowOf(idbName, "sealed/floor-rest"))).toBe(true);
+    expect(await readKeystoreRow(idbName, "floor-rest")).toEqual(address);
+    lockBrowserCustody(idbName);
+    await expectRefused(readKeystoreRow(idbName, "floor-rest"), "sealed-locked", "floor-rest");
+  }, SLOW);
+
   test("BC29 every face-secret family refuses without its face tree, then rests under that tree and never under sealed/", async () => {
     const idbName = `custody-secret-families-${crypto.randomUUID()}`;
     const pending = { offer: { kind: "fleet-join-offer" }, request: { kind: "fleet-join-request" }, sealSecret: "ab".repeat(32) };
@@ -308,11 +331,11 @@ describe("browser custody seals the place tree's device seed and walk records", 
     for (const row of [
       "veil-archive-ggroup-main", "face-atom/group", "face-anchor/group", "face-address-secret/group", "vessel-face-tag/group", "fleet-join-pending/group", "promoted/group",
       "kapae/group", "face-root/group", "vessel-face-key/group|nexus|key", "nexus-key/group/aid",
-      "persona-root-h0", "nexus-key/h0/aid", "vessel-face-key/nexus|key", "keyhive-archive", "ward/h0/persona-root",
+      "persona-root-h0", "nexus-key/h0/aid", "vessel-face-key/nexus|key", "keyhive-archive", "ward/h0/persona-root", `ward/root/${"f".repeat(32)}/persona-root`,
       "catalog-url", "veil-archive-h0", "veil-archive-g", "persona-root-hx", "sealed/vessel-key", "custody-slots", "vessel-key2", "walk/", "walk", "",
     ]) expect(isCustodyRow(row), row).toBe(false);
     // A face root rests under its ward: the custody carrier law names it by its refusal, never as a sealed carrier.
-    for (const row of ["persona-root-h0", "persona-root-h12", "face-root/group", "ward/h0/slots", "ward/h0/persona-root"]) {
+    for (const row of ["persona-root-h0", "persona-root-h12", "face-root/group", `ward/root/${"f".repeat(32)}/slots`, `ward/root/${"f".repeat(32)}/persona-root`]) {
       expect(() => sealedCarrierOf(row), row).toThrow(/ward-needs-fresh-unlock/);
     }
     expect(sealedCarrierOf("walk/main")).toEqual({ name: "browser-keystore/walk/main", path: "sealed/walk/main" });
@@ -644,22 +667,22 @@ describe("browser custody seals the place tree's device seed and walk records", 
     expect(await readKeystoreRow(idbName, `veil-archive-g${group}`)).toEqual(archive);
 
     // The same boot, unlocked, opens its bytes; a founding that halted before its bootstrap, run again over a FRESH founder face,
-    // meets the halted face's ward at h0 and refuses `ward-owned-by-another-face` by name: a second face never inherits a root.
-    // CONTROL for BC12b: the halted face stands named in the index (a live owner), so the founding's sweep leaves its ward whole.
-    const haltedOwner = await browserWardOwnerOf(idbName, 0);
-    expect(haltedOwner, "the halted founding's ward names its face's tree").not.toBeNull();
+    // founds a second face under a ward of its own: the halted face's ward stands byte-equal beside it, and neither row names the
+    // other. CONTROL for BC12b: the halted face stands named in the index (a live tree), so the founding's sweep leaves its ward whole.
     const haltedWard = await wardCensus(idbName);
-    const haltedRoster = await listBrowserPersonaRoots(idbName);
+    const haltedTrees = [...new Set(Object.keys(haltedWard).map(wardRootTreeOf).filter((t) => t !== null))];
+    expect(haltedTrees, "the halted founding's ward files under its face's tree").toHaveLength(1);
     await pageLetsGo(idbName);
     await bindSyntheticBrowserCustodySlot(idbName);
     const phases: string[] = [];
     const reboot = await settleOf(openBrowserVessel({
-      idbName, askWardRoute: fixtureWardDialog, onPhase: (p: string) => { phases.push(p); if (p === "catalog-ready") throw new BootHalted(); },
+      idbName, foundFace: true, askWardRoute: fixtureWardDialog, onPhase: (p: string) => { phases.push(p); if (p === "catalog-ready") throw new BootHalted(); },
     } as BrowserVesselOptions));
-    expect((reboot as { reading?: unknown } | null)?.reading, String(reboot)).toBe("ward-owned-by-another-face");
-    expect(await wardCensus(idbName), "CONTROL: a ward whose owner stands live survives the founding's sweep").toEqual(haltedWard);
-    expect(await browserWardOwnerOf(idbName, 0)).toBe(haltedOwner);
-    expect(await listBrowserPersonaRoots(idbName), "CONTROL: its roster line stands").toEqual(haltedRoster);
+    expect(reboot, String(reboot)).toBeInstanceOf(BootHalted);
+    const after = await wardCensus(idbName);
+    for (const [row, bytes] of Object.entries(haltedWard)) expect(after[row], `CONTROL: ${row} survives the second founding byte-equal`).toBe(bytes);
+    const trees = [...new Set(Object.keys(after).map(wardRootTreeOf).filter((t) => t !== null))];
+    expect(trees, "the second founding stands a ward of its own").toHaveLength(2);
     expect(startsWithMagic(await rowOf(idbName, "sealed/vessel-key")), "sealed/vessel-key").toBe(true);
     expect(hex(await placeSeed(idbName)), "the same identity stood").toBe(hex(seed));
   }, SLOW);
@@ -670,8 +693,9 @@ describe("browser custody seals the place tree's device seed and walk records", 
     // THE TORN FOUNDING: the founder face stood unnamed and its root minted under its ward; the ceremony never named the face.
     const torn = await bindSyntheticBrowserCustodySlot(idbName);
     await generateOrLoadBrowserPersonaRoot(idbName, 0, FIXTURE_WARD, torn);
-    const tornTree = await browserWardOwnerOf(idbName, 0);
-    expect(tornTree, "the torn ward names the unnamed founder's tree").not.toBeNull();
+    const tornTree = await wornFaceTreeOf(idbName);
+    expect(tornTree, "the torn ward files under the unnamed founder's tree").not.toBeNull();
+    expect(Object.keys(await wardCensus(idbName)).map(wardRootTreeOf), "the torn mint's rows name that tree").toContain(tornTree);
     expect(await listBrowserPersonaRoots(idbName), "the torn mint left its roster line").toHaveLength(1);
     // THE RELOAD: this thread's seat of the unnamed face and the place unlock leave with the page; no index names the tree.
     lockFaceCustody(idbName, torn);
@@ -680,19 +704,13 @@ describe("browser custody seals the place tree's device seed and walk records", 
     await pageLetsGo(idbName);
     await bindSyntheticBrowserCustodySlot(idbName);
     const reboot = await settleOf(openBrowserVessel({
-      idbName, askWardRoute: fixtureWardDialog, onPhase: (p: string) => { if (p === "catalog-ready") throw new BootHalted(); },
+      idbName, foundFace: true, askWardRoute: fixtureWardDialog, onPhase: (p: string) => { if (p === "catalog-ready") throw new BootHalted(); },
     } as BrowserVesselOptions));
     expect(reboot, String(reboot)).toBeInstanceOf(BootHalted);
-    const owner = await browserWardOwnerOf(idbName, 0);
-    expect(owner, "the founding owns ward/h0").not.toBeNull();
-    expect(owner, "a fresh founder's tree owns it, never the torn one").not.toBe(tornTree);
-    const owners = Object.keys(await wardCensus(idbName)).filter((r) => /^ward\/h\d+\/face-tree$/.test(r));
-    expect(owners, "one ward stands").toEqual(["ward/h0/face-tree"]);
+    const trees = [...new Set(Object.keys(await wardCensus(idbName)).map(wardRootTreeOf).filter((t) => t !== null))];
+    expect(trees, "one ward stands").toHaveLength(1);
+    expect(trees[0], "a fresh founder's tree files it, never the torn one").not.toBe(tornTree);
     expect(await listBrowserPersonaRoots(idbName), "one roster line stands").toHaveLength(1);
-    const io = browserKeystoreCustodyIo(idbName);
-    for (const r of Object.keys(await wardCensus(idbName))) {
-      if (r.endsWith("/face-tree")) expect(new TextDecoder().decode((await io.read(r)) ?? new Uint8Array()), r).not.toBe(tornTree);
-    }
   }, SLOW);
 
   test("BC13 the settle arms: an equal clear row settles on unlock; a different one stays unsettled, both rows intact", async () => {
@@ -1002,8 +1020,8 @@ describe("browser custody seals the place tree's device seed and walk records", 
     expect(await rowOf(v.idbName, "persona-root-roster")).toBeUndefined();
     expect(startsWithMagic(await rowOf(v.idbName, "sealed/persona-root-roster"))).toBe(true);
     for (const row of ["persona-root-h0", "sealed/persona-root-h0"]) expect(await rowOf(v.idbName, row), row).toBeUndefined();
-    expect(startsWithMagic(await rowOf(v.idbName, "ward/h0/persona-root")), "the root is no tree-key seal").toBe(false);
-    expect(new TextDecoder().decode((await rowOf(v.idbName, "ward/h0/persona-root") as Uint8Array).subarray(0, 15))).toBe("lares-ward-seal");
+    expect(startsWithMagic(await rowOf(v.idbName, `ward/root/${await wornFaceTreeOf(v.idbName)}/persona-root`)), "the root is no tree-key seal").toBe(false);
+    expect(new TextDecoder().decode((await rowOf(v.idbName, `ward/root/${await wornFaceTreeOf(v.idbName)}/persona-root`) as Uint8Array).subarray(0, 15))).toBe("lares-ward-seal");
   }, SLOW);
 
   test("BC24 a locked keystore refuses the root's roster before any ward opens, and unlock returns its seed under the ward route", async () => {
@@ -1028,14 +1046,14 @@ describe("browser custody seals the place tree's device seed and walk records", 
     await bindSyntheticBrowserCustodySlot(v.idbName);
     const root = await generateOrLoadBrowserPersonaRoot(v.idbName, 0, FIXTURE_WARD);
     const seed = await loadBrowserPersonaRootSeed(v.idbName, 0, FIXTURE_WARD);
-    const warded = await rowOf(v.idbName, "ward/h0/persona-root");
+    const warded = await rowOf(v.idbName, `ward/root/${await wornFaceTreeOf(v.idbName)}/persona-root`);
     // CONTROL: before clear the roster stands sealed.
     expect(startsWithMagic(await rowOf(v.idbName, "sealed/persona-root-roster"))).toBe(true);
     expect((await clearBrowserCustody(v.idbName, [PASS], () => true)).reading).toBe("cleared");
-    expect(await rowOf(v.idbName, "persona-root-roster")).toEqual({ roots: [{ handleIndex: 0, verifyingKey: root.verifyingKey }] });
+    expect(await rowOf(v.idbName, "persona-root-roster")).toEqual({ roots: [{ tree: await wornFaceTreeOf(v.idbName), verifyingKey: root.verifyingKey }] });
     expect(await rowOf(v.idbName, "sealed/persona-root-roster")).toBeUndefined();
     for (const row of ["persona-root-h0", "sealed/persona-root-h0"]) expect(await rowOf(v.idbName, row), row).toBeUndefined();
-    expect(await rowOf(v.idbName, "ward/h0/persona-root")).toEqual(warded);
+    expect(await rowOf(v.idbName, `ward/root/${await wornFaceTreeOf(v.idbName)}/persona-root`)).toEqual(warded);
     expect(await loadBrowserPersonaRootSeed(v.idbName, 0, FIXTURE_WARD)).toEqual(seed);
   }, SLOW);
 
@@ -1098,7 +1116,7 @@ describe("the ward's two edge refusals (row 7, S2b custody read)", () => {
     };
     const refusal = await rosterRead({ roots: [0] });
     expect((refusal as Error).message).toBe("ward-face-predates: this face predates the ward; found it again");
-    expect(await rosterRead({ roots: [{ handleIndex: 0, verifyingKey: "a".repeat(64) }] })).toEqual([0]);
+    expect(await rosterRead({ roots: [{ tree: "f".repeat(32), verifyingKey: "a".repeat(64) }] })).toEqual([0]);
   }, SLOW);
 
   test("RED: after a clear-password the keystore reads clear while a ward stands, and a PRF wrap refuses `seed-wrap-beside-ward`; CONTROL: a clear keystore with no ward row takes the wrap", async () => {

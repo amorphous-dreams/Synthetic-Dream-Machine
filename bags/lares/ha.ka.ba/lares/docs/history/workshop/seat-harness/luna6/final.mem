@@ -1,0 +1,38 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna6/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-04 (file date) — source `.lares-scratch/seat-harness/luna6/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna6/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/seat-harness/luna6/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-04
+
+Verbatim scratch record `.lares-scratch/seat-harness/luna6/final.md` (hand-back, file date 2026-11-04); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna6/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+''HIGH — Remote URL still comes from lane-controlled Git config.'' [[`commit-relay.mjs:42`|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.mjs:42]] defaults `remoteUrl` to `git remote get-url origin`. The allowlist in [[`seat-broker.mjs:413-426`|/home/joshu/.lares-scratch/seat-harness/wt/tools/seat-broker.mjs:413]] permits lane-chosen SSH, HTTPS, and absolute paths. A lane can redirect the authorized push to an attacker’s server or a local repository; a local receiver may run its hooks. Require a controller-supplied URL.
+
+''HIGH — Hardlinks can expose the check key through `readSafe`.'' [[`seat-broker.mjs:231-240`|/home/joshu/.lares-scratch/seat-harness/wt/tools/seat-broker.mjs:231]] rejects symlinks but accepts regular files with multiple hardlinks. A lane can hardlink a same-owner key into its worktree; the descriptor path check still sees the in-worktree name. Reading or committing that file exposes the key and permits forged receipts.
+
+''MED — Receipts can replay across changed check definitions.'' [[`seat-walls.mjs:55-59`|/home/joshu/.lares-scratch/seat-harness/wt/tools/seat-walls.mjs:55]] signs the tree and check names, not check argv or configuration; [[`seat-broker.mjs:260-274`|/home/joshu/.lares-scratch/seat-harness/wt/tools/seat-broker.mjs:260]] accepts that receipt when names match. A receipt from an earlier, weaker definition with the same name can satisfy updated checks.
+
+The listed fixes otherwise hold: the throwaway repo avoids lane push config and source hooks; alternates still expose Git’s object database as data, not executable lane files. The empty-dir bind hides the protected controller directory. `--ignore-pnpmfile` covers config-dependency hooks; workspace YAML and legacy `package.json` pnpm fields can affect install configuration, but do not by themselves execute hooks with scripts disabled ([[pnpm install docs|https://pnpm.io/cli/install]]).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BDc8jKJSCkOChq169PY98fiJcWYI_2gr_AFaf29o4PU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,416 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b6-exports-homes-bridge`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-10-31 (file date) — source `.lares-scratch/controller/scouts/cut-reads/b6-exports-homes-bridge.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b6-exports-homes-bridge"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b6-exports-homes-bridge"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! b6-exports-homes-bridge.md — plan, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/scouts/cut-reads/b6-exports-homes-bridge.md` (plan, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/b6-exports-homes-bridge-reader-six-lares`>>
+
+! b6-exports-homes-bridge — Reader-Six: Lares (Tasked Spirit)
+Read 2026-10-31 against main checkout HEAD 27bc0cb6b (+ the untracked test-recut-road.mem). Personas: Ink-Clerk (grounds), Map-Wisp (consequence path). Read-only; one report file.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/findings`>>
+
+!! FINDINGS (security / fail-open candidates)
+
+F-1 (medium, identity drift; fails toward a SECOND identity, not open): `readLocalOperatorHint` (packages/lararium-node/src/node-vessel-identity.ts:124) shells `git config --global user.email|user.name` with a 2 s timeout, swallows every error, and its `login` slug NAMES THE CUSTODY FILES: `.vessel-key-<login>.json`, the KEL file, the staged-rotation file, and every persona-root row (`keyFileName`, `kelFileName`, `stagedFileName`, `personaGroupRootFileName(login, …)`). Eleven call sites wrap it `.catch(() => ({login:null,…}))` (dead catch: the function never rejects). Consequences measured by reading: (a) a git timeout under load, a daemon started with no HOME / another HOME / `GIT_CONFIG_GLOBAL` set, or an edited global email makes the SAME vessel read `login = null` or a new slug, so it looks for `.vessel-key.json` instead of `.vessel-key-josh.json`; the loaders refuse "no key file … run lares vessel found", but `generateOrLoadVesselIdentity` (:856) mints a fresh key under the new name when it holds custody. (b) Different callers in one process can read different logins mid-run (only `placeReadingWatch` :337 freezes it "once, at the first read"; `loadPlaceKelChain`, `loadPlaceReading`, `loadPlaceAid`, `rotatePlace`, `reconcilePlaceRotation` each re-shell). Not a key-to-surface leak; it is mutable ambient host state deciding which key a vessel is. It bites the "custody read by capability, never host" law directly. Cure sits in T16 below: resolve the login ONCE at open, record it in the identity dir (or drop the login-suffixed names), inject it.
+
+F-2 (low, note): `verifyWaxStampSig` (mesh/src/wax-stamp.ts:498) is the only verifier of a wax-stamp signature. It has no production caller and NO test (token appears once in the tree). `mintWaxStamp` has no production caller either. No consumer exists to fail open today; road W30 owes the live equivocation plane. Whoever wires stamps must not consume `WaxStamp` without it. Red-first test is owed before any wiring.
+
+F-3 (low, unproven): `cabalInviteId` (mesh/src/cabal-invite.ts:171) docstring promises "a seen-cache, so one vouch admits one joiner one time". No seen-cache consumes it. I did not trace whether one-use rides the epoch bound instead; whoever opens the dead-export lane should read cabal-vouch/cabal-join for that before deleting.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/t4-the-dead-exports`>>
+
+! T4 — the dead exports
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/method`>>
+
+!! Method (regenerated, not copied)
+The scout's script text is not on disk (final.md holds only the count). I regenerated: every `export (function|const|let|class|interface|type|enum)` under packages/*/src (8,385 declarations); a token index over every tracked-or-untracked, non-ignored text file in the workspace (`git ls-files -co`, files under 5 MB: src, tests, tools, scripts, `.tid`, `.mem`, `.md`, `.json`, `.py`, generated plugin files). A name is DEAD when its token occurs exactly ONCE in the whole tree (its declaration). That catches comments, `.mem`, `.tid`, string-keyed spellings of the identifier, and dynamic `import()` sites naming it. Result: ''67 names'' (not 53; the scout's 53 used another counting rule and the tree has moved). Classes also found:
+* 1,089 names occur only in their declaring file (exported but used locally: an "unexport" class, not dead; out of scope).
+* 487 names occur nowhere but a package `index.ts` (the barrel class, below).
+Hidden-consumer sweeps run: string values (`holder:admitted`, `daemon:face-*`, `cas-want-have`, `sibling/*`, tags, filename patterns), package.json `exports` subpaths, `export *` barrels, road/kit `.mem` for owed consumers.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/public-surface-caveat`>>
+
+!! PUBLIC-SURFACE CAVEAT (changes the lean for ~30 names)
+<code>&#64;lararium/mesh</code>, `mempalace` and `sensorium` index.ts use `export * from "./x.js"`; mesh also publishes subpaths (record-port, ffz-project, lar-uris, mirror-paths, face-proof-subjects, session-contract). A name with zero consumers there is still PUBLIC API of a shared cap-stack package that browser vessels import. <code>&#64;lararium/node</code> publishes only `.` with named export lists, so its unlisted names are private. "Delete the 53" therefore changes the d.ts surface of mesh; `tools/evergreen-boundary.mjs` and the typecheck witness are the instruments, and the operator should know the mesh names are API cuts.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-67-one-line-each`>>
+
+!! The 67, one line each (file:line at read time; verdict)
+CUT-READY = no consumer, no hidden consumer found, no road owner. CONSUME = the value is duplicated as a literal elsewhere; cure is import, not delete. NR = needs ruling (fork + lean). DNC = do not cut.
+
+!!! node (private package)
+* CUT-READY cas-wire.ts:49 `CAS_WANT_HAVE` ("cas-want-have" appears only here; its sibling `CAS_HAVE` is live).
+* CUT-READY face-bundle-restore.ts:417 `ImportRefusal` (type; `IMPORT_REFUSALS` array stays, `ImportRefused` takes `reason: string`).
+* CUT-READY shore-verb.ts:41 `ShoreOp` (type; `SHORE_OPS` stays).
+* CUT-READY sensorium.ts:1150 `_liveStructureHolderCount` ("Test-only … proves one holder per palace", no test calls it; sensorium is burned/deferred per memory, but deleting whole-file residue belongs to the next-arc ruling; the helper alone is safe).
+* CUT-READY qr-transport.ts:49 `qrCarriageToTerminalResilient` (+ cascade: `ResilientQr` :34, `ECC_DENSITY_ORDER` :31 and any `QrEcc` use go dead with it; delete in the same commit).
+* CUT-READY lease-charter.ts:60 `leaseLineageOfRealm` (its sibling `leaseLineageOfNexus` has 5 callers).
+* NR realm-frontier-door.ts:13 `readVesselRealmFrontier` and :39 `pinRealmFrontier`. The file is live through other exports (`prepareRealmFrontier`, `registerRealmFrontierInto`, used by cabal-vouch, edge-cosign, edge-kapae-cmd). These two are "the vessel's own ring/admission read + pin raise" of K17-R (landed 2026-10-26, ec96535a8). Fork: burn both, or K17-R's vessel-side wiring is owed to some train. The road names no owner (grep of "frontier" owed-rows found only the mesh half). Lean: burn; the lane brief asks the controller to confirm no K-train row owes the ring read.
+* NR face-index.ts:183 `tombstoneFaceEntry` ("Retire a face"). The READER handles `{tombstone:true}` entries; only the writer is dead. Burning it leaves a reader for a shape nothing writes (the "old shapes burn" law). No road row owns a face-retire verb (grep). Lean: burn the writer and the reader's tombstone arm together, one commit, unless the operator wants the retire verb kept for the face-custody train.
+* CONSUME (4) face-provisional.ts:47 `FACE_PROVISIONAL_FILE`, fleet-join-custody.ts:37 `FACE_ADDRESS_SECRET_FILE`, :41 `FACE_JOIN_RECORD_FILE`, recovery-contact-enrolment.ts:38 `RECOVERY_CONTACT_SET_FILE`. Each is documented "for the carrier table", and vault-carriers.ts:412,420,428,432 re-spells the identical regex inline. Two spellings of one carrier name can drift, and the carrier table is the custody census. Verdict DNC as a delete; cure is the reverse: vault-carriers imports the four constants (red: a census row whose inner pattern differs from the writer's must fail; control: the unchanged table). `FLEET_JOIN_PENDING_FILE` is the live sibling.
+* DNC hosting-mint.ts:35 `serveHostingMint`. The client half is live (`walk-client.ts:300` sends `HOSTING_MINT_SESSION_KIND`; test walk-one-hand). The server half is the walker arm that road :248 says "ship[s] SHUT by name; H opens walkers". Hidden consumer = train H. Cutting it deletes half a protocol.
+
+!!! mesh (public via `export *` and subpaths)
+* CUT-READY anergy-ledger.ts:50 `markStillHolds`; edge-partial.ts:89 `withPartialFrontier`; face-authority.ts:478 `VESSEL_CHAIN_VERDICTS` (the union beside it spells the same strings; no reader); face-boot-proof.ts:19 `FacePlaneName` (type); face-proof-subjects.ts:528 `SESSION_CERTIFICATE_PROFILES` (an alias of `CAPABILITY_PROFILES`; subpath-published file); ffz-project.ts:279 `ffzArcClosed` (a wall-time-free predicate; subpath-published); fleet-join.ts:105 `FLEET_JOIN_FLOOR_PIN_BOUND`; intent-issue.ts:25 `delegationCid` (alias of `intentEntryCid`); lar-event-bus.ts:145 `LarEventType`; lar-uris.ts:278 `INTENTS_NAMESPACE`, :402 `INTENTS_INNER`, :531 `personaMembershipUri` (symmetry siblings of live CIRCLES_*/SESSIONS_*; deleting the pair leaves the plane family uneven, harmless); mesh-palace.ts:62 `ALL_CAPS`; mirror-paths.ts:95 `mirrorStrategyForBag`; offering-announce.ts:131 `readOfferingAnnounces` (compat alias); persona-identity.ts:65 `PERSONA_PATH_DEPTH`; plugin-offering-selector.ts:55 `SelectorOnlyFailureCode`; pronaos.ts:21 `PronaosRouteKind`, :140 `PublicArtifactForbiddenAbility` (types derived from live arrays); purple-minter.ts:47 `LINEAR_SCAN_SOFT_CAP`; realm-frontier.ts:37 `realmFrontierCarriage` (siblings live); record-port.ts:35 `PortVesselKind`, :36 `PortIslandKind` (types); spectral-keel.ts:259 `columnsOf`; verb-tiddler.ts:523 `isVerbTitle`.
+* CONSUME (burn if the operator prefers) island-protocol.ts:561 `mkDaemonFaceSettled`, :562 `isDaemonFaceSettled`, :568 `isDaemonFaceLit`, :569 `isDaemonFaceDrop`. The wire strings `daemon:face-settled|lit|drop` are spelled literally in tw5 daemon-behavior.ts, holder-routes.ts and keyhive operator-daemon-behavior.ts; the live siblings `mkDaemonFaceLit/Drop` exist. Lean: burn the four dead guards (the literal readers are the working spelling); do not invent callers.
+* CONSUME lar-uris.ts:247 `LARARIUM_BAG_MIRROR_TAG`, :250 `LARES_PIN_TAG`; projection-registry.ts:22 `LARARIUM_PROJECTION_TAG`; worldline-edge.ts:28 `WORLDLINE_ADAPTER`. Their string values ("lararium-bag-mirror", "lares-pin", "lararium-projection", "lares-worldline") are spelled literally in tw5 plugin tiddlers, daemon-ui-tiddlers.ts, island-behaviors.ts, cli watch.ts/worldline.ts and sensorium kg_io.py. Constants never read. Lean: burn the constants unless the plugin tiddlers are generated from them (they are not: `plugin-tiddler.generated.ts` holds the literals).
+* DNC sibling-channel.ts:103 `SIBLING_JOIN_KIND`, :106 `SIBLING_FRAME_KIND`. The sibling arm "ships SHUT by name" (road :248; W9 opens it at face scope). The kind strings appear only here; the future caller is owed.
+* DNC session-contract.ts:114 `SessionFaceHoldsReferences`, :116 `SessionFaceWithRootRefuses`. These are compile-time law (<code>&#64;ts-expect-error</code> witnesses the references-only rule). Not dead; they ARE the test. The file is a published subpath.
+* NR wax-stamp.ts:498 `verifyWaxStampSig` (see F-2). Lean: keep; owe the test; wiring rides W30.
+* NR cabal-invite.ts:171 `cabalInviteId` (see F-3). Lean: read the one-use enforcement first.
+
+!!! mempalace / sensorium (public via `export *`)
+* CUT-READY mine-retry.ts:158 `mineWithServoAsync`; spawn-resolve.ts:80 `_resetPythonCache`.
+* NR spawn-resolve.ts:206 `resolveMetaSpawn`, :218 `resolveStructureRouterSpawn`, :230 `resolveFormInductionSpawn`. Their python holders (`meta_io.py`, `structure_router.py`, `form_induction.py`, each with a test) stand in packages/lararium-sensorium/scripts but no TS opens them; `resolveGraphSpawn` and `resolveBandsSpawn` have callers. Memory: sensorium/mempalace BURNED 2026-10-13, NEXT ARC deferred to the founded-Lararium proof. Lean: leave for that ruling (cutting resolvers while the scripts stay leaves half a seam).
+* NR telemetry-writeback.ts:135 `stampKapaeSalience` (shells python; same next-arc family). Lean: same as above.
+
+!!! tw5 / browser / cli
+* CUT-READY tw5 glass-port-adaptor.ts:301 `makeGlassPortStartup` (glass.ts and the census test reach `makeGlassPortAdaptor` directly; no TW5 module title names the factory); tw5 wave-landing.ts:4 `LandingQueueDoor` (an interface nothing names; `WaveLanding` stands without it).
+* DNC tw5 types/tiddlywiki.d.ts:692 `TW5SyncAdaptor` (an ambient mirror of the upstream adaptor type, not a module export; leave).
+* NR tw5 wikirules/lar-sigil-shared.ts:61 `SIGIL_OPEN_MARKS` ("~^"): `opensSigilAt` (next line) hard-codes <code>&lt;&lt;~</code> and <code>&lt;&lt;^</code>, so the constant is the unread twin of a literal. Grammar owner decides (memory: READ GRAMMAR-WATCH before grammar work). Lean: make `opensSigilAt` read it, or burn it.
+* NR browser shared-holder-core.ts:94,100,107 `HolderAdmitted`, `HolderHouseEnded`, `HolderLock`: typed message interfaces; shared-holder.ts posts `"holder:admitted|house-ended|lock"` as bare literals. Fork: type the post sites with them (drift guard) or burn. Lean: burn with the file's other dead types, unless the F6 slice-four owner wants the holder protocol typed.
+* NR lares-cli commands/persona.ts:352 `setRecoveryContactCardPrompt` ("a test installs its own"; no test does). It is a promised seam with no test, so the `recovery-contact view` path (:328) has no test through it. Lean: do NOT cut; write the red-first test that installs it (the card read is a hidden-terminal prompt, so the seam is the only way to test it).
+
+!!! Tally (67, each name carries one verdict above)
+* CUT-READY 35: the node six (CAS_WANT_HAVE, ImportRefusal, ShoreOp, _liveStructureHolderCount, qrCarriageToTerminalResilient, leaseLineageOfRealm), 24 mesh names, mineWithServoAsync, _resetPythonCache, makeGlassPortStartup, LandingQueueDoor. (Mesh ones are public-API cuts, see caveat.)
+* CONSUME (import the value, or burn the constant; never a bare delete of the carrier regexes) 12: the 4 carrier-name regexes (lean consume), 4 daemon-face guards (lean burn), LARARIUM_BAG_MIRROR_TAG, LARES_PIN_TAG, LARARIUM_PROJECTION_TAG, WORLDLINE_ADAPTER (lean burn).
+* NEEDS-RULING 14: readVesselRealmFrontier, pinRealmFrontier, tombstoneFaceEntry, verifyWaxStampSig, cabalInviteId, 3 resolve*Spawn, stampKapaeSalience, SIGIL_OPEN_MARKS, 3 Holder* interfaces, setRecoveryContactCardPrompt. Four lean burn, one leans write-the-test, three wait on the sensorium next-arc.
+* DO-NOT-CUT 6: serveHostingMint, SIBLING_JOIN_KIND, SIBLING_FRAME_KIND, SessionFaceHoldsReferences, SessionFaceWithRootRefuses, TW5SyncAdaptor.
+(35 + 12 + 14 + 6 = 67.) Net: about 35 clean cuts, not 53; the other 32 hide a road owner, a duplicated literal, a type-level witness or a missing test.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/cut-risks`>>
+
+!! Cut risks (whole batch)
+* Mesh deletions change the published d.ts of a shared package; one batch, announced after a controller land.
+* In-flight collisions: u1 touches content-key-seat, operator-daemon-behavior, content-key-holder, session-sign-door (no overlap with the 67). ralias touches face-fleet-view.ts, kahu-realm.ts, open-node-vessel.ts, realm-bag.ts, protected-doc-guard.ts (no overlap with the 67 either; none of my names live in those files).
+* Typecheck is blind to string-keyed use; the token index already covers it, but re-run it the day the lane opens (185 commits a month).
+* Red-first: delete one name that keeps a consumer in a scratch tree and prove the typecheck witness reds before trusting a zero; plant a known-dead name as the control.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-barrel-class`>>
+
+!! The barrel class (no verdict, per brief)
+Regenerated count: 487 declared names occur only in their declaring file plus a package index.ts: lararium-node 200, mesh 119, tw5 84, keyhive 44, browser 29, memetic-frame 11. (The scout's 16 used a narrower rule and its script is not on disk; the exact 16 are not recoverable. The scout's four named examples do not appear in my regenerated barrel-only list; `bagsRoot` and `larRuntimeHome` now carry other consumers or sit outside this class.) The functions/consts/classes among them (96) follow.
+
+```
+lararium-browser/src/browser-genesis.ts genesisCidFromBytes
+lararium-browser/src/browser-vessel-identity.ts SEED_WRAP_STORE
+lararium-browser/src/browser-vessel-identity.ts idbDelete
+lararium-browser/src/browser-vessel-identity.ts writeBrowserSeedWrap
+lararium-browser/src/browser-vessel-identity.ts makeBrowserPersonaDeclarationStore
+lararium-browser/src/secure-context-gate.ts ambientHost
+lararium-browser/src/secure-context-gate.ts ambientStorage
+lararium-browser/src/seed-wrap-prf.ts ambientPrfHost
+lararium-browser/src/shared-holder.ts ambientSharedWorkerHost
+lararium-keyhive/src/face-seat-summons.ts foundingHearthOf
+lararium-keyhive/src/face-seat-summons.ts standingOwnSummons
+lararium-keyhive/src/fleet-join-admit.ts FLEET_JOIN_ADMIT_REFUSALS
+lararium-mesh/src/ciphertext-cas.ts OPEN_PRIVATE_BODY_REFUSALS
+lararium-mesh/src/face-dial.ts FACE_DIAL_REFUSALS
+lararium-mesh/src/fck-envelope.ts FCK_SEAL_TAG_LENGTH
+lararium-mesh/src/floor-announcement.ts FloorAnnouncementRefused
+lararium-mesh/src/gate-bundle.ts GATE_TIERS
+lararium-mesh/src/hearth-floor-pins.ts FLOOR_CARD_KEL_BOUND
+lararium-mesh/src/held-nexus-root.ts SIGNED_ADMIT_BUNDLE_REFUSALS
+lararium-mesh/src/hosting.ts hostingActKey
+lararium-mesh/src/hosting.ts grantInfo
+lararium-mesh/src/hosting.ts INVITE_SCHEME
+lararium-mesh/src/lar-ws-client-adapter.ts LEAF_RETRY_CAP_MS
+lararium-mesh/src/leaf-presentation.ts isPresented
+lararium-mesh/src/nexus-doc-text.ts NEXUS_DOC_FENCES
+lararium-mesh/src/nexus-doc-text.ts nexusDocFenceRe
+lararium-mesh/src/nexus-key-line.ts NEXUS_KEY_HAND_OVER_PREFIX
+lararium-mesh/src/persona-kel-board.ts PERSONA_KEL_ENTRY_PREFIX
+lararium-mesh/src/persona-kel-board.ts personaKelEntryKey
+lararium-mesh/src/place-floor-pin.ts PLACE_FLOOR_PIN_KIND
+lararium-mesh/src/s-envelope.ts S_SEAL_TAG_LENGTH
+lararium-mesh/src/sealed-chunk.ts CHUNK_ROLES
+lararium-mesh/src/sealed-chunk.ts ADDRESS_SOURCES
+lararium-mesh/src/sealed-chunk.ts SEAL_REFUSALS
+lararium-mesh/src/sealed-chunk.ts OPEN_REFUSALS
+lararium-mesh/src/session-switch.ts SESSION_SWITCH_REFUSALS
+lararium-mesh/src/walk-client.ts walkIdentity
+lararium-node/src/carry-bundle.ts CARRY_BUNDLE_KIND
+lararium-node/src/commands/nexus-promote.ts promotionStatementDigest
+lararium-node/src/custody-frames.ts isCustodyFrame
+lararium-node/src/custody-holder.ts UNLOCK_ATTEMPTS_PER_BOOT
+lararium-node/src/custody-holder.ts CustodyAdoptRefused
+lararium-node/src/custody-io.ts CUSTODY_CLAIM_NAME
+lararium-node/src/custody-io.ts vesselCustodyIo
+lararium-node/src/discordian-reader.ts readDdate
+lararium-node/src/discordian-reader.ts ddateAvailable
+lararium-node/src/discordian-reader.ts discordianReading
+lararium-node/src/face-fleet-view.ts viewFederationGate
+lararium-node/src/face-signing-seat.ts FaceSigningRefused
+lararium-node/src/face-slot-ops.ts FaceTreeUnreadable
+lararium-node/src/genesis-artifact.ts readGenesisPluginsCid
+lararium-node/src/lares-config.ts laresConfigPath
+lararium-node/src/node-caps.ts bulbCap
+lararium-node/src/node-cas.ts writeCasPins
+lararium-node/src/owned-store.ts StoreHeldElsewhere
+lararium-node/src/palace-organs.ts materializeMeshSensorium
+lararium-node/src/palace-organs.ts materializeMemeticWikitextSensorium
+lararium-node/src/pronaos-adapter.ts pronaosPublicArtifactRequestHandler
+lararium-node/src/pronaos-adapter.ts pronaosRequestHandler
+lararium-node/src/qr-transport.ts HANDSHAKE_QR_ECC
+lararium-node/src/reserve-transition.ts transitionSignerFromSeed
+lararium-node/src/sealed-acts.ts TEXT_ARG_LIMIT
+lararium-node/src/sense-sensorium.ts defaultSensoriumSearch
+lararium-node/src/sense-stream.ts defaultStreamPlaneSink
+lararium-node/src/sensorium-lifecycle-verbs.ts DEFAULT_HARDENING_HALFLIFE
+lararium-node/src/sensorium-lifecycle-verbs.ts readSensoriumAliases
+lararium-node/src/sensorium-lifecycle-verbs.ts resolveSensoriumTarget
+lararium-node/src/sensorium-petnames.ts PETNAMES_FILE
+lararium-node/src/sensorium-recall.ts verbatimShaOf
+lararium-node/src/sensorium-recall.ts contentKeyOf
+lararium-node/src/sensorium-signal.ts defaultChildSignalReader
+lararium-node/src/sensorium.ts SENSORIUM_MANIFEST
+lararium-node/src/sensorium.ts capDecl
+lararium-node/src/sensorium.ts canonicalDirOf
+lararium-node/src/socket-claim.ts NameReaping
+lararium-node/src/store-door-verbs.ts STORE_DOOR_VERBS
+lararium-node/src/vessel-paths.ts larRuntimeHome
+lararium-node/src/vessel-paths.ts memorySensoriumLenses
+lararium-tw5/src/cabal-realm-verbs.ts makeRealmFeedReactor
+lararium-tw5/src/cabal-realm-verbs.ts makeRealmClockReactor
+lararium-tw5/src/circle-verbs.ts makeCircleAddReactor
+lararium-tw5/src/circle-verbs.ts makeCircleRemoveReactor
+lararium-tw5/src/circle-verbs.ts makeCircleListReactor
+lararium-tw5/src/core-caps.ts wikiSlotCap
+lararium-tw5/src/core-caps.ts poolCap
+lararium-tw5/src/memetic-wikitext-sensorium.ts PULSE_GRAIN
+lararium-tw5/src/sigil-attrs.ts sigilAttr
+lararium-tw5/src/toml-ast.ts patchTomlKey
+lararium-tw5/src/toml-ast.ts lintToml
+lararium-tw5/src/verb-caps.ts VERB_PROVIDER
+lararium-tw5/src/verb-caps.ts VERB_GROUP_PREFIX
+lararium-tw5/src/verb-caps.ts VERB_GROUP
+lararium-tw5/src/wiki-coherence-projection.ts COHERENCE_COALESCE_MS
+lararium-tw5/src/wiki-sense-supervision.ts WIKI_SENSE_VERB
+lararium-tw5/src/wiki-sense-supervision.ts LARES_PROOF_RECORD_TAG
+lararium-tw5/src/wiki-sensorium-cap.ts createWikiSensoriumOverReader
+```
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/t16-the-home-and-env-reads`>>
+
+! T16 — the home and env reads (injected homes)
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/what-readlocaloperatorhint-is`>>
+
+!! What `readLocalOperatorHint` is (node-vessel-identity.ts:124-141, read whole)
+Async, module-private. Runs `git config --global user.name` and `… user.email` through `promisify(execFile)`, 2 s timeout each, catches everything, returns `{ login, displayName }`. `login` = email local-part, non-alnum to `-`, lower-cased. State read: the child process's env (HOME, XDG_CONFIG_HOME, GIT_CONFIG_GLOBAL, PATH) and the host's global git file. Writes none. Clock: the 2 s timeout is a wall-clock decision (a "no global now" tension: a slow `git` flips the answer).
+Callers (all in node-vessel-identity.ts): :315 reconcilePlaceRotation, :322 loadPlaceKelChain, :328 loadPlaceReading, :343 placeReadingWatch (reads once, keeps), :356 loadPlaceAid, :364 rotatePlace, :420 generateOrLoadVesselIdentity, :492 loadVesselIdentity (displayName), :523 loadVesselVerifyingKey, :540 loadVesselSigningSeed, :583 vesselFloorKeyDoor, :856 makeNodeFsPersonaVault (once per vault), :882 loginHint. Thirteen call sites, each a fresh pair of shell-outs.
+Uses of `login`: file NAMES (`keyFileName`, `kelFileName`, `stagedFileName`, `personaGroupRootFileName`, roster rows) and the `gitEmail` informational field in the persisted key. `displayName` feeds `VesselIdentity.displayName` (IdentityTiddler enrichment only).
+Tests: `hermetic-git-global.test.ts`, `node-vessel-identity-sealed.test.ts:89-100` and `place-rotation.test.ts:47-67` each set `GIT_CONFIG_GLOBAL`/`HOME`/`XDG_CONFIG_HOME` by hand; `tests/support/scratch-custody-setup.ts:33` sets `GIT_CONFIG_GLOBAL=/dev/null` process-wide for every node suite (so the hint reads `null` in every suite: the login-suffixed path is exercised by only the few tests that plant a config).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-env-reads-complete`>>
+
+!! The env reads, complete (node, mesh, mempalace, cli; grep of src, bin, scripts, plugin hook)
+* mesh src: NONE (no `process.env`, no `homedir`). The pure side is already clean.
+* mempalace/src/xdg-base.ts:30,57 (LAR_ROOT) and :32,59,72 (XDG_DATA_HOME, homedir): `laresDataHome`, `larariumDataHome`, `mempalaceContentParent`. palace-path.ts:53 MEMPALACE_PALACE_PATH. spawn-resolve.ts:44 homedir (venv python).
+* node/src/vessel-paths.ts (read whole, 445 lines): `larStateHome`:80, `larCacheHome`:87, `larConfigHome`:94, `larRuntimeHome`:101 (LAR_ROOT, XDG_*, tmpdir), `resolveMempalaceExe`:114 (homedir), `larHome`:123 (LAR_ROOT ?? ~/.lares), `larMempalaceDir`:265 (env). Pure derivations on top: `larDataDir` (&lt;lares>/vessel), `larIdentityDir`, `larSealHome`, `larBootstrapPath`, `larProjectionDir`, `larHarvestDir`, sensorium dirs. The file ends at a "Transient runtime" heading with no body.
+* node/src/node-host.ts (21 lines): `REPO_ROOT = repoRoot` (mesh/node, from `repo-root.ts`) and `bagsRoot()` = `daemonBagsDir()`. It reads no env itself.
+* node/src/lares-config.ts:184,190,195 `daemonCorpusRoot` (LAR_ROOT ?? repoRoot), `daemonGenesisDir` (LAR_GENESIS), `daemonBagsDir` (LAR_BAGS); :113 `laresConfigPath` = `larHome()/config.json`, `loadLaresConfig` reads that file with `readFileSync` as a default arg. :201,211 CAS lever.
+* node/src/seal-ceremony.ts:337 `readBackStandsIn` reads LAR_ROOT and a `.lar-test-scratch` marker to let a PRODUCTION function skip the person's card read-back on a staged root. (See the SAFETY note below.)
+* node/src/sovereign-island-model.ts:227 and vessel-island-pool.ts:36: `LAR_CAS ?? LAR_ROOT/cas`, spelled twice (a duplicated resolver; note the comment says `larCasDir()` is the CLI side).
+* cli: found.ts:94, read.ts:160, rotate-place.ts:22 MUTATE `process.env["LAR_ROOT"]` from `--root`; sense.ts:217-360 mutates and restores `HOME`; env.ts:74-97 (LAR_ROOT/LAR_BAGS/LAR_GENESIS); ephemeral.ts:62; scripted.ts:172; capture/harvest.ts:520,620 (homedir: ~/.claude, ~/.codex, ~/.copilot); mempalace.ts:48, mempalace-repave.ts:40; link-bin.ts:26-53; reality-tunnel/homes.ts:41,55, places.ts:10-11, verify.ts:29; tunnel-door.ts:79,141; plugin hook lares-loads-hook.mjs:20.
+* git-global shell-out: exactly the two `git config --global` calls at node-vessel-identity.ts:128,132. No other `--global` in packages.
+* tools/*.mjs set `process.env.LAR_ROOT` in ten witnesses (custody-door, two-phase-boot, seed/unbind/unlock-test-custody, test-scratch-marker, herm-mesh-*), the same mutate/restore pattern as `withLarRoot`.
+
+SAFETY note on `readBackStandsIn` (seal-ceremony.ts:337): a product path decides "the person read their cold cards" from an env var plus a file marker plus a proof under a published passphrase. The code already hardens it (marker alone insufficient; custody must prove under the published test route, spending an unlock attempt on a miss), so I do not file it as a fault. It is host-ambient state steering a ceremony and belongs in the injected record: `{ readBack: "person" | "standsIn" }` decided at the opener, not by env.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/tests-harness-with-lar-root-ts`>>
+
+!! `tests/harness/with-lar-root.ts` (32 lines, read whole)
+`withLarRoot(root, work)` sets `process.env.LAR_ROOT`, awaits `work`, restores in `finally`. Its header states it is not thread-safe against concurrent vessels in one process. 152 call sites: 30 files in packages/lararium-node/tests, 4 in tests/e2e, 2 in tests/harness. It exists ONLY because `identityDir()` and every home resolver read env with no parameter; the header cites the live footgun (`persona-ring-cross-operator-admit.test.ts`).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/how-many-files-reach-a-home-through-the-zero-arg`>>
+
+!! How many files reach a home through the zero-arg resolvers (src, outside vessel-paths)
+`larIdentityDir`: 24 files (custody-root, custody-seat, face-atom-store, face-bundle-restore, face-key-custody, fleet-join-custody, founder-self-certificate, hosting-face, identity-anchors, intent-relay-key-store, node-circle-store, node-vessel-identity, node-walk-store, recovery-share-store, relay-gate-seed, seat-key-store, switch-act-log, vault-carriers, cadence-key-store, cofound-record, init, and cli found/vault/env). `larSealHome`: 35 files (open-node-vessel, nexus-//, seal-ceremony, sealed-acts, roll-circle-//, cabal-*, device-admit, fleet-join, found-hearth, hearth-aid, main, node-daemon-island, and the cli nexus/vault/store-door). `larDataDir`: 19 files. `larBootstrapPath`: 19. Tests naming them: 78 / 38 / 80 / 32 files. 15 of the resolvers are ambient, so every one of those files is a leaf of env.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-seed-of-an-injected-design-already-stands`>>
+
+!! The seed of an injected design already stands
+* `CustodyHomes = { identity, storage, seal }` and `vesselCustodyHomes()` (vault-carriers.ts:123) is the ONE constructor that reads the resolvers. `FsCustodyIo`, plain-rows, main.ts:341 and seven test files already receive or take that record.
+* `sealHome` already travels as a PARAMETER through about 25 calls inside open-node-vessel.ts (:1136 reads `larSealHome()` once, then threads it: carriedSet, readKeptAdmitBundles, kahuProtectedHolder, composeDialPresentation…).
+* `loadLaresConfig(path = laresConfigPath())` and `daemonBagsDir(cfg = loadLaresConfig())` take injectable config. `placeReadingWatch` already freezes the login once.
+* `scratch-custody-setup.ts` refuses unless all three custody homes resolve under the temp dir: the guard for the injected record exists as a test rule.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/what-an-injected-homes-design-replaces`>>
+
+!! What an injected-homes design replaces (map)
+# A `Homes` record (extend `CustodyHomes`): `{ identity, storage, seal, state, cache, config, run, data(lares), lararium, corpusRoot, bags, genesis, cas, operator: { login, displayName } }`, built ONCE at the opener from env/XDG/homedir/git (the only place those are read), then passed down. `vesselCustodyHomes()` becomes the record's custody slice.
+# `identityDir()` (node-vessel-identity.ts) takes the record; the 14 `readLocalOperatorHint` reads become one read of `homes.operator`, taken at open and recorded beside the key (cures F-1).
+# `withLarRoot` (152 sites) and the `GIT_CONFIG_GLOBAL`/`HOME` env stubs retire: a test builds `Homes` over `mkdtemp` and passes it. The "NOT thread-safe" hazard goes with it, which also unblocks `isolate: false` and parallel in-process vessels (C5).
+# The cli `--root` env mutation (found, read, rotate-place, sense HOME swap) becomes an argument to the same constructor.
+# `readBackStandsIn` becomes a record field (safety note above); `LAR_CAS` spelled twice becomes `homes.cas`.
+# Mesh needs nothing (already env-free). mempalace `xdg-base` is the third source of the same LAR_ROOT/XDG logic that vessel-paths duplicates (:80-123 vs xdg-base:30-72); fold into one pure `resolveHomes({ env, home, tmp })` function that both call, with the three env-reading call sites at the edge. This is a capability-named port (homes) with no host name.
+Lift target: substrate adapter (the single env/git/homedir reader) plus pure (`resolveHomes`, the join-only derivations). The `operator` hint is a substrate read behind a named port ("names the local operator"); a browser vessel would supply `{login:null}` or a passkey-derived label.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/house-laws-touched`>>
+
+!! House laws touched
+Capability not host (F-1 is the live violation); no key on a surface (unaffected: the key file name moves, the key does not); no global now (the 2 s `git` timeout decides a login); old shapes burn (the login-suffixed file naming is an old shape: lean to retire it, see fork); web3-only (git config is local truth, not a web2 bridge, fine); one owner per registry (xdg-base and vessel-paths both own the LAR_ROOT/XDG rule).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/risk`>>
+
+!! Risk
+* Hot-file family: open-node-vessel.ts (ralias holds a 72-line hunk, road owner law :312), node-vessel-identity.ts (held by the founding walk), vault-carriers.ts. Needs T2 (fixture) first per the road; fold into T12.
+* Order dependence: `identityDir()` is called before the opener runs in cli verbs (`lares vessel found`); the constructor must run at each verb's edge.
+* Failure-mode flip: today an unset/odd git config silently selects another key file; the injected design must REFUSE (named) when the recorded login differs from the one read, instead of silently adopting either. That is a format cut: existing vessels keyed `.vessel-key-<login>.json` need the login read once and recorded (or the suffix retired in the same commit; alpha line: no back-compat arm).
+* Hidden: about ten tools/*.mjs witnesses mutate LAR_ROOT; they must follow or keep a thin env shim at the CLI edge.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/red-first-shape`>>
+
+!! Red-first shape
+Red: open a vessel with injected homes under a tmp record while the process env points at a poisoned `HOME`/`LAR_ROOT`/`GIT_CONFIG_GLOBAL` (a file naming another login); assert no byte lands under the poisoned homes and the key file name comes from `homes.operator`. Today the same test reds because the resolvers read env. Control: the env-driven path with identical homes stays green until retired; a second control: two vessels in ONE process, concurrent (not sequenced), keep separate identity dirs (today: stomp). Assert the setup took by reading the record inside the test. F-1 vector: `login` changes between two calls in one open; expect a named refusal.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/verdict-t16-needs-ruling`>>
+
+!! Verdict T16: NEEDS-RULING.
+Forks: (1) retire the login suffix on custody file names (lean: yes, one key per identity dir; the dir already is per-operator and per-LAR_ROOT; the suffix serves "shared machines" only) vs record it at open (lean second if the operator keeps shared-machine use); (2) whether `readBackStandsIn` stays env/marker-driven in tests or becomes a record field (lean: field); (3) sequence: fold into the stage-cut (C1) or land first as the T2/T16 pair (lean: land T16 after T2 and before the stage-cut, since the stage-cut's Ports record needs `Homes` as its first member).
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-bridge-catalogforviews-and-bridgebooks`>>
+
+! The bridge — `catalogForViews` and `bridgeBooks`
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/span`>>
+
+!! Span (open-node-vessel.ts, re-found)
+&#58;862 comment "(the bridge until O1, `face-fleet-view`)"; :863 `let catalogForViews: (() => LarDoc | undefined) | null = null;`; :864-865 `faceFleetViews(() => (wornFaceProven ? faceBootTiddlers : null), () => custodyGroup, () => (catalogForViews ? bridgeBooks(catalogForViews(), kahuCanon) : new Set<string>()))`; :866 teardown. The ONE assignment: :2035 inside `openDaemon`: `catalogForViews = () => assembly.catalogHandle.doc() as LarDoc | undefined;`. Only consumer: the closure at :865. I read face-fleet-view.ts whole (≈150 lines) and the call sites.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/what-it-does`>>
+
+!! What it does
+`faceFleetViews(...)` seats one scoped `SessionDocumentView` per same-operator peer session. For the vessel's WORN face (peer's proven PersonaGroup equals `custodyGroup`) the gate answers `view.fetch(doc).ok || books().has(doc)`. `books()` = `bridgeBooks(catalog, kahuCanon)`: the allow-list of every document ID named by an `automerge:` pointer in a non-face-scoped catalog row, plus the Kahu canon docs (<code>&#64;lares</code>, <code>&#64;lararium</code>). Any document not on that list is shut by default. So the mounted face reads the vessel's wikis, drafts, catalog, oracle and realm pointers across the wire; a foreign face reads its own planes only.
+State: `catalogForViews` is a closure-captured `let`, late-bound by `openDaemon` (order dependence: before `openDaemon` runs, `books()` is the empty set, which fails CLOSED; a second `openDaemon` call rebinds to the new assembly's catalog). `bridgeBooks` re-walks the whole catalog on every `mayFederate` call (O(catalog) per document offer; no cache). `wornFaceProven`, `custodyGroup`, `kahuCanon` are also captured lets.
+Tests: `face-fleet-view.test.ts` (:132-177, bridgeBooks directly with CONTROLs: a face-scoped row stays out, a realm pointer comes in, canon with/without alias), `kahu-canon-guard.test.ts:64-70` (the alias/after-removal case). The late-bound `catalogForViews` wiring itself has NO test except through a whole node boot.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/does-a-ruling-retire-it`>>
+
+!! Does a ruling retire it?
+No ruling retires it; the road OWES its replacement and names no ruling that changes the plan.
+* Road F1 (:579): "the face-fleet-view bridge stands as a narrow share caller today, and O1 replaces it with per-surface facets that keep an owner from offering a session island a document beyond them … a wiki island's verbs that read the catalog document move to the view's catalog ask. O1."
+* Road O1 (:760-768), the compose-hunk row: "The scoped document view's compose hunks: the per-surface facets in place of the face-fleet-view bridge (today's narrow share caller), the leaf's one-way gate and the hearth's twin." Status: owed. O1's header says "the browser holder and its surfaces wait on W's cutover", and F6 slice four stays owed.
+* face-fleet-view.ts header: "A BRIDGE UNTIL O1 … O1 replaces the bridge with per-surface facets." Commit f7ea58433 introduced it as deliberate.
+* test-recut-road.mem has no row naming it (grep for bridge/O1/face-fleet: none).
+So the bridge sits on the road as a named, deliberate stopgap whose cure is O1's per-surface-facet compose hunk (owner-law territory), NOT a cut candidate for the test re-cut.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/collision`>>
+
+!! Collision
+ralias (~/.lares-scratch/ralias/wt) edits face-fleet-view.ts (adds `faceOf`, stores the proven face per view), open-node-vessel.ts (+72 lines, wiring `peerFace: faceViews.faceOf(peerId)` and `sessionFace: faceViews.gateFor(peerId)` into a new vessel-private guard) and kahu-realm.ts; it keeps `catalogForViews` untouched. A cut now collides head-on with ralias and with the owner law (road :312). u1 does not touch these files.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/lift-reading`>>
+
+!! Lift reading (capability not host)
+The right stage is a mesh-side cap-stack stage "serves a gate": `SessionDocumentView` is already in mesh; the bridge's two node-only parts are the catalog read (`assembly.catalogHandle.doc()`, a handle) and the Kahu canon ids. Both are ports ("lists the vessel's books", "names the canon docs"). A browser vessel taking a node-like role later would supply the same two. The `let catalogForViews` late bind is a symptom of composing before the assembly exists; a `books: () => ReadonlySet<string>` port supplied by the daemon open would remove the shared `let` without touching the allow-list law.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/security-reading`>>
+
+!! Security reading (no fault found)
+Default shut (null books = empty set; a closed view refuses; the worn-face test uses the caller's custody group, then the bootstrap pin). The allow-list admits every non-face-scoped catalog pointer to the worn face's same-operator sessions, by design ("only the mounted face reads the vessel's wikis, catalog and bags"). The comment concedes a vessel "tags no wiki, catalog or bag document by face today". The standing risk is the one the road already holds: a second face on the same vessel sees none of the books; a document that LATER becomes face-private but keeps a non-face-scoped catalog title would ride the bridge (ralias's vessel-private guard is exactly that fix and is in flight). Not filed as a finding; named so the lane brief watches it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/red-first-shape-2`>>
+
+!! Red-first shape (if O1 ever cuts it)
+Red: a surface mounted under face A offers a document that only face B's wiki holds; today the worn-face bridge lets it through when B's pointer sits in the catalog under a non-scoped title. Control: face A's own plane document passes. Pin `faceFleetViews` with a `books` port stub, not the whole boot.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/verdict-do-not-cut-the-bridge-belongs-to-o1-s-co`>>
+
+!! Verdict: DO-NOT-CUT (now). The bridge belongs to O1's compose hunk under the owner law; ralias is editing the same hunk; no ruling retires it. Row for the road, not the re-cut: add a characterization test of the late-bound wiring (`books()` empty before `openDaemon`, rebinding on a second `openDaemon`) when B1 pins the boot order.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/sources-read-whole`>>
+
+!! Sources read whole
+test-recut-road.mem rows/rulings (T4, T16 lines, #/rulings), COMMON.md, testability/final.md, vessel-paths.ts (445), tests/harness/with-lar-root.ts (32), node-host.ts (21), face-fleet-view.ts, node-vessel-identity.ts :90-175 and every `readLocalOperatorHint` call site span, lares-config.ts :170-215, xdg-base.ts :20-75, seal-ceremony.ts :325-350, scratch-custody-setup.ts :1-60, the ~67 export declarations with their bodies (8-20 lines each), road rows F1, F2, F6, O1, H, W30, :248. NOT read whole: open-node-vessel.ts (about 2,100 lines; I read the bridge span :850-875, :1136, :2025-2040 and grepped the rest), node-vessel-identity.ts outside the cited spans, the cli files in the env list (grep-level).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JoEdsgvxSgbUYbGga0jh_XbYHi8k_C6W1Fp5qE4OiUg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

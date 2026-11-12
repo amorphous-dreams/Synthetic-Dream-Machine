@@ -1,0 +1,92 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/survive-lanes/ontology/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-08 (file date) — source `.lares-scratch/survive-lanes/ontology/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/survive-lanes/ontology/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/survive-lanes/ontology/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-08
+
+Verbatim scratch record `.lares-scratch/survive-lanes/ontology/final.md` (hand-back, file date 2026-11-08); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/survive-lanes/ontology/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/findings`>>
+
+!! Findings
+
+''The brief’s “CRDT-only control plane” description is true of the current layout, but it hides a mismatch:'' `bags/daemon` is both the daemon wiki’s canon bag and the name used for vessel control records. The code explicitly treats every title under that URI as control-plane data and excludes it from disk projection, even when the record sits in another layer. [[lar-uris.ts:345–352|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/lar-uris.ts:345]] [[disk-projector.ts:1520–1528|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/disk-projector.ts:1520]]
+
+!!! 1. Writers and data kinds
+
+Kinds: ''S'' secret or opaque bytes that may contain secrets; ''E'' signed public events/proofs; ''R'' ordinary machine records. A record’s envelope can be R while its payload is unsafe to expose.
+
+| Title family | Production writer(s) | Kind and notes |h
+| `summons`, `outcomes`, `effects` | `verb-tiddler.ts`, `verb-vm.ts`, dispatcher/VM paths | ''R'' envelopes/results; outcomes may embed arbitrary handler results, so their payload is not proven secret-free. `effects` is also excluded by the projector’s separate effect-record filter. [[verb-tiddler.ts:59–65|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/verb-tiddler.ts:59]] [[verb-vm.ts:23–27|/home/joshu/Synthetic-Dream-Machine/packages/lararium-tw5/src/verb-vm.ts:23]] |
+| `receipts` | UDS channel via `buildReceiptFact` | ''R'' request/state/digest metadata; inputs are represented by digests, not copied argument bodies. [[verb-tiddler.ts:110–121,219–239|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/verb-tiddler.ts:110]] |
+| `mailbox` | `vessel-mailbox.ts` | ''R'', request/action/args; arbitrary args mean payload sensitivity is caller-dependent. |
+| `delegate`, `face-row` | `daemon-vm-core.ts` | ''R'' invocation records that include args; likewise not safe to project without payload controls. [[daemon-vm-core.ts:672–682,828–833|/home/joshu/Synthetic-Dream-Machine/packages/lararium-tw5/src/daemon-vm-core.ts:672]] |
+| `cap/<face>/<hash>` | `DaemonEventStore.put` | ''S (conservative)'': stores base64-encoded raw Keyhive event bytes and replays them. The schema does not establish that every variant is secret-free. [[daemon-event-store.ts:58–61,83–110|/home/joshu/Synthetic-Dream-Machine/packages/lararium-keyhive/src/daemon-event-store.ts:58]] |
+| `lease-epoch`, `ledger/proof`, `ledger/ward` | lease frontier; proof/supervision and ward paths | ''E/R'': signed lease/proof or audit facts and their metadata. Keep as public machine records only if their actual fields remain public. [[epoch-lease.ts:9–16|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/epoch-lease.ts:9]] [[wiki-sense-supervision.ts:89–107|/home/joshu/Synthetic-Dream-Machine/packages/lararium-tw5/src/wiki-sense-supervision.ts:89]] |
+| `pin/<bag-url>`, `ledger/residency/<event>` | bag-residency/effect-record paths | ''R'' pin and residency records; effect records are separately filtered from projection. [[bag-residency.ts:509–517|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/bag-residency.ts:509]] [[effect-record.ts:68–80|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/effect-record.ts:68]] |
+| `hearth/{sync-url,gate-key,gate-pin,doc-url,island-kind,island-scope,daemon-url}`, `sentinel/mesh-cabal/doc-id`, `active-wiki` | `hearth-dial-pin.ts`, `lar-uris.ts`, `active-wiki.ts` and their callers | ''R/E'' metadata, URLs, IDs and a public gate key/pin; the cited title definitions do not show private key bytes. [[lar-uris.ts:581–591|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/lar-uris.ts:581]] [[active-wiki.ts:8–42|/home/joshu/Synthetic-Dream-Machine/packages/lararium-tw5/src/active-wiki.ts:8]] |
+| `flows/<name>` | flow URI/flow paths | ''R'' executable flow definition; inspect its cap stack as policy/code, not as a key store. [[lar-uris.ts:386–390|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/lar-uris.ts:386]] |
+| `task/<cid>`, `receipt/<task-cid>` | URI builders only | ''No production writer found'' in the current task/receipt ontology code; it says the live path has not migrated yet. [[verb-tiddler.ts:69–87|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/verb-tiddler.ts:69]] |
+| `draft-bindings`, `working-bindings` | No `bags/daemon` writer found | Binding records are checked/lifted by binding code, but the namespace is persona-scoped; do not relocate them on the basis of this title-family list. |
+
+''Key-shaped content check:'' the definite opaque key-material risk is `cap`, whose stored value is arbitrary serialized event bytes. The other listed schemas show public keys/IDs or ordinary records, but `outcomes`, `mailbox`, `delegate`, and `face-row` carry extensible payloads. Treat them as non-projectable until payload policy is enforced; title family alone does not prove safety.
+
+!!! 2. Readers and name assumptions
+
+A production source scan for `DAEMON_BAG_ID`, `bags/daemon`, `isControlPlaneUri`, and `kahuaFaceFolder` found direct assumptions across these modules:
+
+* ''URI ownership/filtering and composition:'' `lararium-mesh/{lar-uris,wiki-recipe,register-bags,catalog-view,open-vessel-core,flow,epoch-lease,bag-residency,cabal-realm,social-seed}.ts`.
+* ''Verb, request, and result paths:'' `lararium-mesh/verb-tiddler.ts`; `lararium-tw5/{verb-vm,verb-dispatcher,verb-summons,daemon-vm-core,active-wiki,wiki-mint-handlers,worker-data-verbs,verb-local-dispatch,modules/reaction-router,wiki-sense-supervision}.ts`; `lararium-node/{uds-channel,vessel-mailbox}.ts`.
+* ''Keyhive, bindings, and replay:'' `lararium-keyhive/{daemon-event-store,event-store,ceremony-core,operator-daemon-behavior,lease-frontier,resolve-binding,anon-lift,bag-doc-ledger}.ts`.
+* ''Node boot, federation, and disk rules:'' `lararium-node/{bag-paths,disk-projector,hearth-dial-pin,boot-face-planes,open-node-vessel,nexus-client-dial}.ts` and `lararium-node/commands/{init,device-admit,cabal-join,persona-lease}.ts`; also `lararium-browser/open-browser-vessel.ts`, `lares-cli/commands/watch.ts`.
+
+These readers fall into four important groups: event replay and verb processing; bootstrap/admission and sync audience (including `DAEMON_BAG_ID` as the default audience); catalog/binding lookup; and projection/lift filtering. `isControlPlaneUri` resolves title paths before testing the daemon prefix, and `kahua-door` rejects those titles from lifts. [[lar-uris.ts:349–352|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/lar-uris.ts:349]] [[kahua-door.ts:143–146|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/kahua-door.ts:143]]
+
+''Riskiest reader to move first:'' `isControlPlaneUri` and its consumers. It currently makes the entire `bags/daemon/**` title space non-projectable and non-liftable, including outcomes regardless of which composite layer contains them. Renaming only a folder would leave that policy in force.
+
+!!! 3. The three “kahua” meanings
+
+# ''Lift-only bag/stage:'' `bags/kahua`, mounted read-only; a normal edit copies up to the working layer, while a signed lift lands in the stage. [[wiki-recipe.ts:74–76,381–389|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/wiki-recipe.ts:74]]
+# ''Working mirror directory:'' currently `wikis/kahua-<F>`. Its bag/layer identity is still `wikis/daemon/working`; only the projection folder is face-tagged. The stage bag separately projects to `bags/kahua-<F>`. With no face, neither private mirror is listed. [[bag-paths.ts:148–179,186–209|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/bag-paths.ts:148]]
+# ''Memory title namespace:'' a title such as `lar:///ha.ka.ba/kahua/memory/<row-key>` does ''not'' by itself identify the backing bag. `resolveTopmost`/layer ownership does.
+
+''The stage location is not consistently documented.'' The current layer ruling says rows become stage rows at the daemon wiki’s ''working seam'' and readers use working plus canon, not drafts; the working projection is currently `wikis/kahua-<F>`. [[stable-founding-road.mem:382|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:382]] But the earlier L19 description says “kahua working top” and “never the daemon wiki,” then has L21 lift verified batches. [[kahua-memory-stage.mem:257–259|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/pono/kahua-memory-stage.mem:257]] The best reading is that ''stage/proposal rows are working-layer content; lifted canon is in `bags/kahua`'', but those documents conflict on which wiki owns that working layer. I found no production TypeScript writer for the memory rows to settle the conflict. Lift requires the face’s lōkahi capability and an operator root grant; the device atom may propose, but cannot substitute for the grant. [[kahua-door.ts:13–18,143–180|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/kahua-door.ts:13]]
+
+!!! 4. Face binding and canon
+
+A worn face supplies `faceRelation`; `kahuaFaceFolder` validates it and names the private projection folder. No-face compositions omit both the daemon working and kahua-stage mirrors. The daemon bag identity itself remains the vessel’s static `bags/daemon`. [[bag-paths.ts:148–170,186–209|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/bag-paths.ts:148]] [[open-node-vessel.ts:3265–3278|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/open-node-vessel.ts:3265]]
+
+Under the operator’s wiki pattern, a face-bound daemon wiki’s promoted canon would naturally be `bags/daemon-<F>`, with its working mirror at `wikis/daemon-<F>`. ''That is an inference from the pattern'', not the current URI scheme: today the daemon wiki’s own canon is `bags/daemon`, and its working slot is `wikis/daemon/working`. [[wiki-recipe.ts:15–17,83–89|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/wiki-recipe.ts:15]]
+
+Per-vessel records must not silently become face-scoped: the hearth URL, MeshCabal document ID, leases, and vessel control/verb records serve the vessel, which wears no face. The founding law says one Lararium per human and that a session wears a face while the vessel wears none. [[stable-founding-road.mem:157–159|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:157]] It also calls for a floor/face split: vessel floor core versus each face’s daemon wiki content. [[stable-founding-road.mem:338–339|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:338]]
+
+!!! 5. Lean and migration surface
+
+''Inference / proposed lean:'' create a persisted, vessel-scoped `control` layer for R and verified-public E records, with one alpha projection toggle. Keep opaque `cap` bytes and any secret-bearing seals/checkpoints in a never-projected secret home. Restore `bags/daemon[-F]` to the wiki’s promoted canon, use `wikis/daemon-<F>` for its working projection, and reserve `bags/kahua` for the lift-governed stage. Keep vessel-scoped control records distinct from a face-bound wiki’s canon.
+
+The direct production reference inventory above is the code surface a rename/move must audit, not merely rename: URI/type and recipe definitions; registration and catalogs; projection; boot, admission, and sync audience; verb, mailbox, and result readers/writers; event replay and bindings; CLI and browser readers. In particular, review `lar-uris.ts`, `wiki-recipe.ts`, `register-bags.ts`, `bag-paths.ts`, `disk-projector.ts`, `daemon-vm-core.ts`, `open-node-vessel.ts`, `open-browser-vessel.ts`, `daemon-event-store.ts`, `kahua-door.ts`, and generated TW5 bundle `plugin-tiddler.generated.ts`. The busiest/riskiest assumptions are the global prefix filter, composite’s daemon bag mounting, and `DAEMON_BAG_ID` as sync audience.
+
+This move would breach canon law if it created a Lararium/state mount per face or moved vessel-wide control under one face’s authority. Keeping the one vessel and splitting only face-specific wiki content is compatible with the cited law. It must also preserve recipe law: working is the normal write layer; canon changes only by promotion move; kahua accepts only signed lift acts. [[wiki-recipe.ts:15–17,351–356|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/wiki-recipe.ts:15]] [[stable-founding-road.mem:158–159|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:158]]
+
+//Read-only hand-back; no files changed.//
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Q1J8AmEAi-zHE0mXed2SEW_oljesU4mwQ2wMkh9N6i0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

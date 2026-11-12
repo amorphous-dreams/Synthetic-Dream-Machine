@@ -1,0 +1,135 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/cure-2-out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/p27-wire/cure-2-out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/cure-2-out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/p27-wire/cure-2-out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! cure-2-out.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/p27-wire/cure-2-out.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/p27-cure-step-2-share-wright-hand-back`>>
+
+! P27 cure step 2: Share-Wright hand-back
+
+''Outcome:'' pushed `feature/green-jello-dinosaur-5--p27-wire` at ''2d303087a''. The red is `c4a9889f4` and the cure is `2d303087a`. The pre-push gate is GREEN. The 55 node and mesh files from the P27 manifest, plus the touched resolver tests, each run alone in bwrap under a scratch HOME and LAR_ROOT with LAR_BAGS unset. All are green.
+
+''Blocker 1 (plugin CIDs) is CURED. Blocker 2 (browser face planes) is MEASURED RED, and it needs more than this step.''
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/blocker-1-plugin-cids`>>
+
+!! Blocker 1: plugin CIDs (CURED)
+
+* ''The red.'' `packages/lararium-node/tests/p27-plugin-proof.test.ts` drives the node's own resolver (`resolveNodeIslandPluginCids`, recipe `daemon`, `promoted("daemon")`) into the real `makeHeldShareFloor`. It then runs the kernel's sequential plugin loop over the real `islandFloorStack` door. Before the cure, the promoted digest refused `declared-tier-unresolved` even in-process, so the island never stood. The test asserts this fault first, then cures it.
+* ''The controls.''
+** An unproven CID still refuses `declared-tier-unresolved`.
+** A promoted plugin reads `fleet` and withholds from `world` (PERSONAGROUP, the ledger's tier).
+** A later resolution that drops the promotion withdraws the reference.
+** An offered blob reads at its board's tier: `world` when the board is the public crossroads, refused when the board resolves to nothing.
+* ''The cure.''
+** `surface-recipe.ts`: the `resolveRecipePluginCids` verdict now carries `proved: {offered, promoted}`. These are the selected CIDs from the verified selection, and the promoted digests that passed the byte check.
+** `held-share-floor.ts` adds `provePlugins(wikiSlug, {board, offered, promoted})`, one proof per wiki, replaced on each resolve.
+** `documentsForCid` now names the offering board for an offered CID. For a promoted CID it names a `promoted-plugin:<cid>` reference, declared PERSONAGROUP (`PROMOTED_PLUGIN_TIER`) and floored by the proof. That reference never asks the secrets registry.
+** The node's `provenPlugins` wraps both call sites, the daemon and the pool, with board `crossroadsOfferingsHandle.documentId`. The browser does the same at both of its call sites.
+* ''Fixtures.'' The source-shape test in `node-plugin-resolution` now expects `provenPlugins(…)` at both sites. `promote-resolve` asserts the proof.
+* ''Edge to know.'' An oracle-plane (`world`) wiki with a //promoted// plugin still refuses that plugin. Its tier is PERSONAGROUP, and the mount faults by name. Daemon and catalog wikis read in-process and stand. Offered plugins reach `world` through the board. If promotions on oracle-plane wikis matter, that is a ruling on the promote ledger's tier.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/canon`>>
+
+!! Canon (done)
+
+`bags/lararium/ha.ka.ba/lararium/mesh/cap-tier.mem#/the-keystone` (resealed):
+* Repo crossings read the carried declaration, met under the secrets ceiling.
+* The structural crypto floor bites whole at the byte doors (`require`).
+* A non-bag plane answers its declared tier, never an inert null.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/blocker-2-browser-face-planes`>>
+
+!! Blocker 2: browser face planes (MEASURED RED, more than this step)
+
+''The probe'' (`/home/joshu/.lares-scratch/p27-wire/cure1/browser-deadlock-probe.mjs`) runs the built floor with browser-shaped readers: no face catalog bound, and `faceOwns` reading the sealed map:
+
+```
+leaf face plane → sibling fleet: false  secrets-registry-unread: the face's catalog has not bound
+leaf sealed wiki slot → fleet:   false  secrets-registry-unread
+registry.initialize():           SecretsRegistryRefusal secrets-registry-unread
+after init attempt → fleet:      false
+CONTROL leaf in-process:         true
+```
+
+No act clears it. The node's face catalog stands `vesselPrivate`, so the hearth's init row can never sync to a leaf. The leaf needs a face catalog of its own.
+
+''Why it is more than this step.'' The browser stands no split catalog at all: no `makeCatalogView`, `expectFace`, `openFaceCatalog`, `bindFace` or `liftFaceCatalogRows` anywhere in `packages/lararium-browser/src`. The cure is a port of the node's face-catalog arc into the browser:
+# Derive the face catalog with `faceCatalogDocUrl(wornAddressSecret)`.
+# Name `FACE_CATALOG_BAG_ID` in the browser's sealed cells and map, as the node's `docsOf` does.
+# Register the catalog bag with the daemon island's holder, so the sealed doc opens, as `wornFaceWikiBags(lit)` does on the node.
+# Wrap `catalogHandle` in `makeCatalogView`, then `openFaceCatalog` → `bindFace` → `registry.initialize()` → `liftFaceCatalogRows`.
+# Add `faceOwns` for the catalog doc.
+
+Every step crosses the sealed-rest and docstore holder, and the browser face walk can only be measured in the browser runner (CI). A blind port in this step would land unmeasured custody code.
+
+''Fork for the operator.'' Two ways forward:
+* ''(a)'' Run that port as its own lane, measured by the browser face-join walk in CI.
+* ''(b)'' Rule that no gate lets a secrets plane reach a leaf. The secrets store's one door stands on the node, and the browser holds none (`secretsDoorsIn` witness). On a leaf's gated crossings, `world` reaches only the deterministic boards and the hearth's admitted canon, so the CONTRACT ceiling cannot bite there. The leaf would then floor with established absence (`NO_CONTRACT_SECRETS_PLANE`). That is a one-line cure, but it rests on a ruling I do not hold.
+
+Per the operator's split, P27 parks rather than holding the dogfood stand on this fork.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/still-owed`>>
+
+!! Still owed (unchanged from step 1, all ride)
+
+* Realm lane: herm realm books, realm boards and registrations on the wire.
+* F6: the gated sync leg for non-session islands. Narrow the claim to the four crossings.
+* F7b and F9c: a blob whose private doc is not yet ready.
+* F8: worker CAS dirs, and the OPFS claim.
+* F9a: the post-await recheck reuses the earlier audience.
+* Canon-bag blobs asked at `world` (fails closed).
+* `isFaceScopedBag` matches any face's tag (P3).
+* Porch `/cas` cache headers (P3).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/addendum-blocker-2-cured-under-the-seat-s-ruling`>>
+
+!! Addendum: blocker 2 cured under the seat's ruling (b)
+
+The lane head is ''ecb26d4d0'', pushed. The red is `99b89f50b` and the cure is `ecb26d4d0`.
+
+* ''The red.'' `packages/lararium-node/tests/p27-leaf-absence.test.ts` runs over the browser-shaped readers (no face catalog, `faceOwns` read off the sealed map). Before the cure, a leaf face plane asking for sibling `fleet` refused. After the cure it passes. A companion check shows the same plane still withholds from `world`.
+* ''Control 1.'' A leaf plane whose own carrier declares VEIL still refuses `fleet` (`declared-tier-audience`).
+* ''Control 2.'' The node keeps its real registry: it still refuses `secrets-registry-unread` until its catalog binds.
+* ''Control 3.'' An improvised absence plane, anything other than the one constant, refuses with `secrets-absence-unestablished`.
+* ''The cure.'' `makeHeldShareFloor` now takes a named secrets source:
+** the node passes `secrets: { catalog }` (typed `HeldShareFloor<SecretsRegistry>`);
+** a surface passes `secrets: { establishedAbsence: NO_CONTRACT_SECRETS_PLANE }` (`HeldShareFloor<null>`).
+
+`open-browser-vessel.ts` composes the absence and drops the dead `shareCatalog` cell.
+* ''Canon.'' `cap-tier#/the-keystone` names the ruling and cites `stable-founding-road#/rulings` (the stories' leans of 2026-11-07, item 5, and "a page never stands as a vessel", 2026-10-29). The carrier is resealed.
+* ''Checks.'' The P27 manifest, 56 node and mesh files, passes with each file run alone in bwrap. The pre-push gate is green. The browser-runner files ride CI. I added no new browser-runner witness; the node test over the browser-shaped readers carries the red.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gx9oQRq0ek0wfpGiSNNINsQUkipJbXph9Ncp9-Lb-Q0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

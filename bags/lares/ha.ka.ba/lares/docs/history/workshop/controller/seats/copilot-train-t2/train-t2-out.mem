@@ -1,0 +1,869 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/copilot-train-t2/train-t2-out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-10-31 (file date) — source `.lares-scratch/controller/seats/copilot-train-t2/train-t2.out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/copilot-train-t2/train-t2-out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/seats/copilot-train-t2/train-t2-out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! train-t2.out.md — hand-back, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/seats/copilot-train-t2/train-t2.out.md` (hand-back, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/copilot-train-t2/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+I’ll map the exact delta first (seat patches + target source files), then trace each claim against current code with file-line evidence.
+
+/ Search (glob)
+│ "*" in ~/.lares-scratch/controller/seats/copilot-train-t2
+└ 10 files found
+
+/ Search (glob)
+│ "**/*vault-carriers.ts"
+└ 1 file found
+
+/ Search (glob)
+│ "**/*content-key-holder.ts"
+└ 1 file found
+
+/ Search (glob)
+│ "**/*node-vessel-identity.ts"
+└ 1 file found
+
+/ Search (glob)
+│ "**/*worker-handle.ts"
+└ 2 files found
+
+● Read u1-140.patch
+│ ~/.lares-scratch/controller/seats/copilot-train-t2/u1-140.patch
+└ 1 line read
+
+● Read recut-custody-138.patch
+│ ~/.lares-scratch/controller/seats/copilot-train-t2/recut-custody-138.patch
+└ 1 line read
+
+● Read u1-rev.patch
+│ ~/.lares-scratch/controller/seats/copilot-train-t2/u1-rev.patch
+└ 106 lines read
+
+● Read prior-read-excerpt.md
+│ ~/.lares-scratch/controller/seats/copilot-train-t2/prior-read-excerpt.md
+└ 102 lines read
+
+● Read u1-threat-sketch.md
+│ ~/.lares-scratch/controller/seats/copilot-train-t2/u1-threat-sketch.md
+└ 14 lines read
+
+● Read recut-custody-design.md
+│ ~/.lares-scratch/controller/seats/copilot-train-t2/recut-custody-design.md
+└ 81 lines read
+
+I’ve got the threat/design context; next I’m tracing the live repo state (post-`4ca92a0bb`) and the exact code paths for the four questions.
+
+● Get current HEAD short hash (shell)
+│ git &#45;-no-pager rev-parse &#45;-short=12 HEAD
+└ 1 line…
+
+● Show recent commit history (shell)
+│ git &#45;-no-pager log &#45;-oneline &#45;-decorate -n 40
+└ 40 lines…
+
+● Check working tree status (shell)
+│ git &#45;-no-pager status &#45;-short
+└ 2 lines…
+
+● Show referenced baseline commit (shell)
+│ git &#45;-no-pager show &#45;-no-patch &#45;-oneline 4ca92a0bb
+└ 1 line…
+
+● Show relevant file history since baseline (shell)
+│ git &#45;-no-pager log &#45;-oneline &#45;-decorate 4ca92a0bb..HEAD &#45;-
+│ packages/lararium-mesh/src/content-key-holder.ts
+│ packages/lararium-keyhive/tests/content-key-seat.test.ts
+│ packages/lararium-node/src/node-vessel-identity.ts packages/lararium-node/src/vault-carriers.ts
+│ packages/lararium-node/src/worker-handle.ts
+└ No Content
+
+● Find commits for #140/#138 themes (shell)
+│ git &#45;-no-pager log &#45;-oneline &#45;-decorate &#45;-grep '#140\|#138\|custody\|roll-owed\|session-sign' -n
+│ 80
+└ 7 lines…
+
+/ Search (grep)
+│ "raceDuringSeal|A RAISE COUNTED WHILE A SEAL SIGNS|founding|roll-owed|seat-roll"
+│ (packages/lararium-keyhive/tests/content-key-seat.test.ts)
+└ 8 lines found
+
+/ Search (grep)
+│ "sealBlob\(|owedActs|roll-owed|followsRemoval|#sign\("manifest""
+│ (packages/lararium-mesh/src/content-key-holder.ts)
+└ 2 lines found
+
+/ Search (grep)
+│ "vessel-key|persona-group-root|login|git.*email|user\.email|no key
+│ file|keyFile|orphanPersonaRoots|placeFoundingCard|mint|found" in **/*.ts
+│ (packages/lararium-node/src)
+└ 79 lines found
+
+/ Search (grep)
+│ "sealed-|session:sign|sign
+│ door|booking|SessionSigner|session-face-foreign|session-anchor-place|signer-unavailable|summons"
+│ in **/*.{ts,tsx} (packages)
+└ 87 lines found
+
+● Read content-key-holder.ts
+│ packages/lararium-mesh/src/content-key-holder.ts
+└ L430:580 (151 lines read)
+
+Now I’m tracing the #140 authority path end-to-end (`session-sign-door`/`session-signer`/sealed verbs/chain checks), then I’ll check #138 custody naming and cross-lane touch points.
+
+/ Search (glob)
+│ "**/*session-sign-door.ts" in packages
+└ No matches found
+
+/ Search (glob)
+│ "**/*session-anchor-place*.ts" in packages
+└ No matches found
+
+/ Search (glob)
+│ "**/*session-signer.ts" in packages
+└ 1 file found
+
+/ Search (glob)
+│ "**/*content-key-seat.ts" in packages
+└ 1 file found
+
+/ Search (glob)
+│ "**/*face-auth*.ts" in packages
+└ 4 files found
+
+/ Search (glob)
+│ "**/*operator-daemon-behavior.ts" in packages
+└ 1 file found
+
+/ Search (grep)
+│ "session:sign|signer-unavailable|signer-refused|sealed-memory|sealed-rolls|sealed-open|sealed-st
+│ ore|sealed-carry|sealed-drop|sealed-act|sealed-"
+│ (packages/lararium-keyhive/src/operator-daemon-behavior.ts)
+└ 78 lines found
+
+/ Search (grep)
+│ "class SessionSigner|sessionOf|booking|verb|drop|release|idempotent|duplicate"
+│ (packages/lararium-mesh/src/session-signer.ts)
+└ 36 lines found
+
+/ Search (grep)
+│ "session-face-foreign|session-anchor-place|holdsWrite|ownChainStanding|booking|bookingId|book\(|
+│ summons" in **/*.ts (packages/lararium-keyhive/src)
+└ 83 lines found
+
+● Read session-signer.ts
+│ packages/lararium-mesh/src/session-signer.ts
+└ L1:220 (220 lines read)
+
+● Read session-signer.ts
+│ packages/lararium-mesh/src/session-signer.ts
+└ L220:390 (152 lines read)
+
+● Read content-key-seat.ts
+│ packages/lararium-keyhive/src/content-key-seat.ts
+└ L1:280 (185 lines read)
+
+● Read operator-daemon-behavior.ts
+│ packages/lararium-keyhive/src/operator-daemon-behavior.ts
+└ L730:980 (251 lines read)
+
+/ Search (grep)
+│ "session-face-foreign|session-anchor-place|signer-unavailable|bookings?|session-sign|SessionSign
+│ er|requestId|verb" in **/*.ts (packages/lararium-browser/src)
+└ 117 lines found
+
+/ Search (grep)
+│ "sealed-seal|sealed-open|sealed-hand-over|sealed-admit|sealed-parcels|sealed-receive|sealed-serv
+│ e|sealed-memory-cut|sealed-memory-door|sealed-memory-import|sealed-rolls" in **/*.ts
+│ (packages/lararium-keyhive/tests)
+└ No matches found
+
+/ Search (grep)
+│ "SessionTable|openSignedSession|session-proof|sessionOf|book|booking|duplicate|released|dropped|
+│ wrong verb|unknown id" in **/*.ts (packages/lararium-keyhive/tests)
+└ 35 lines found
+
+/ Search (grep)
+│ "session-face-foreign|session-anchor-place|signer-unavailable|session
+│ signer|sessionOf\(|invocation\.face|bookings?|booked|requestId|verb gate|SessionTable" in
+│ **/*.ts (packages/lararium-node/src)
+└ 141 lines found
+
+/ Search (grep)
+│ "sealed-seal|sealed-open|sealed-hand-over|sealed-admit|sealed-memory-cut|sealed-memory-door|seal
+│ ed-memory-import|sealed-rolls|session-face-foreign|session-anchor-place|signer-unavailable|sessi
+│ on-sign-door|booking|booked" in **/*.test.ts (packages)
+└ 104 lines found
+
+● Read content-key-seat.test.ts
+│ packages/lararium-keyhive/tests/content-key-seat.test.ts
+└ L220:440 (221 lines read)
+
+● Find commits mentioning race fix (shell)
+│ git &#45;-no-pager log &#45;-oneline &#45;-decorate &#45;-all &#45;-grep='roll-owed\|A RAISE COUNTED WHILE A SEAL
+│ SIGNS\|commit point\|founds while a raise' -n 200
+└ 8 lines…
+
+✗ List related branches (shell)
+│ git &#45;-no-pager branch &#45;-all &#45;-list '//138//' '//custody//' '//u1//'
+└ Permission to run this tool was denied due to the following rules: `shell(git branch)`
+
+● Show key #140 commit subjects (shell)
+│ git &#45;-no-pager show &#45;-no-patch &#45;-oneline 535b62b30 b26d6bdbf cac93c802 e0a7d18d3
+└ 4 lines…
+
+● Find #138 related commits (shell)
+│ git &#45;-no-pager log &#45;-oneline &#45;-decorate &#45;-all &#45;-grep='recut-custody\|login suffix\|no key
+│ file\|vessel-key\.json' -n 120
+└ 2 lines…
+
+I found the relevant #140/#138 commits on their train lanes; next I’m auditing those commit states directly (not current HEAD), with exact line traces for the race path and custody naming rules.
+
+● Inspect #140 race tests in cure commit (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-keyhive/tests/content-key-seat.test.ts | nl -ba
+│ | sed -n '250,370p'
+└ 121 lines…
+
+● Inspect pre-race-fix sealBlob in #140 base commit (shell)
+│ git &#45;-no-pager show cac93c802:packages/lararium-mesh/src/content-key-holder.ts | nl -ba | sed -n
+│ '470,560p'
+└ 91 lines…
+
+● Inspect #140 cure sealBlob implementation (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-mesh/src/content-key-holder.ts | nl -ba | sed -n
+│ '460,560p'
+└ 101 lines…
+
+● Inspect #140 red test before cure (shell)
+│ git &#45;-no-pager show b26d6bdbf:packages/lararium-keyhive/tests/content-key-seat.test.ts | nl -ba
+│ | sed -n '250,370p'
+└ 121 lines…
+
+● List files changed in #140 green commit (shell)
+│ git &#45;-no-pager show &#45;-name-only &#45;-pretty=format: cac93c802 | sed '/^$/d'
+└ 17 lines…
+
+● List files changed in #140 cold read commit (shell)
+│ git &#45;-no-pager show &#45;-name-only &#45;-pretty=format: e93cdd4ae | sed '/^$/d'
+└ 8 lines…
+
+● List files changed in #140 red commit (shell)
+│ git &#45;-no-pager show &#45;-name-only &#45;-pretty=format: e0a7d18d3 | sed '/^$/d'
+└ 4 lines…
+
+● Inspect session sign door implementation (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/src/session-sign-door.ts | nl -ba | sed -n
+│ '1,320p'
+└ 67 lines…
+
+● Inspect session sign door tests (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/tests/session-sign-door.test.ts | nl -ba |
+│ sed -n '1,340p'
+└ 111 lines…
+
+● Inspect content key seat signer/holdsWrite rules (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-keyhive/src/content-key-seat.ts | nl -ba | sed
+│ -n '1,280p'
+└ 232 lines…
+
+● Inspect island session proof wiring (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-keyhive/src/island-session-proof.ts | nl -ba |
+│ sed -n '1,260p'
+└ 66 lines…
+
+● View sealed verb registration with sessionProof (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-keyhive/src/operator-daemon-behavior.ts | nl -ba
+│ | sed -n '760,940p'
+└ 181 lines…
+
+● View invocation and sessionProof logic (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-keyhive/src/operator-daemon-behavior.ts | nl -ba
+│ | sed -n '520,700p'
+└ 181 lines…
+
+● Locate session-proof enforcement in daemon behavior (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-keyhive/src/operator-daemon-behavior.ts | nl -ba
+│ | rg 'sessionProof|session-face-foreign|session-anchor-place|ownChainStanding|holdsWrite|context
+│ \.local|invocation\.requestId|sessionOf\(|signer\(|sealed-'
+└ 105 lines…
+
+● View setup around content key seat wiring (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-keyhive/src/operator-daemon-behavior.ts | nl -ba
+│ | sed -n '260,380p'
+└ 121 lines…
+
+● Inspect invocation dispatch and booking release (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/src/uds-channel.ts | nl -ba | sed -n
+│ '1040,1415p'
+└ 10 lines…
+
+● Locate booking lifecycle in uds channel (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/src/uds-channel.ts | nl -ba | rg
+│ 'session:call|requestId|hold\(|retireAsk|placeVerb|local|book|session-sign|release|sessionOf|anc
+│ hor|presenter|invocation'
+└ 10 lines…
+
+● Inspect worker handle including session sign door (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/src/worker-handle.ts | nl -ba | sed -n
+│ '1,260p'
+└ 260 lines…
+
+● Inspect UDS session door and sign book integration (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/src/uds-session-door.ts | nl -ba | sed -n
+│ '1,340p'
+└ 174 lines…
+
+✗ Read 1793490109516-copilot-tool-output-2866943-3d2b3d74-c2e2-4bc5-9a4d-fb56ccd788e5.txt
+│ /tmp/1793490109516-copilot-tool-output-2866943-3d2b3d74-c2e2-4bc5-9a4d-fb56ccd788e5.txt
+└ view_range out of bounds
+
+● Read 1793490109529-copilot-tool-output-2866943-21cd0329-83a0-4ef9-96a2-8068b9d928b7.txt
+│ /tmp/1793490109529-copilot-tool-output-2866943-21cd0329-83a0-4ef9-96a2-8068b9d928b7.txt
+└ L260:560 (117 lines read)
+
+● Read 1793490109516-copilot-tool-output-2866943-3d2b3d74-c2e2-4bc5-9a4d-fb56ccd788e5.txt
+│ /tmp/1793490109516-copilot-tool-output-2866943-3d2b3d74-c2e2-4bc5-9a4d-fb56ccd788e5.txt
+└ L1:260 (210 lines read)
+
+● Read 1793490109529-copilot-tool-output-2866943-21cd0329-83a0-4ef9-96a2-8068b9d928b7.txt
+│ /tmp/1793490109529-copilot-tool-output-2866943-21cd0329-83a0-4ef9-96a2-8068b9d928b7.txt
+└ L1:260 (260 lines read)
+
+● Locate sessionProof wiring in node-daemon-island (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/src/node-daemon-island.ts | nl -ba | rg
+│ 'sessionProof|signer\(|SessionSign|local|invocation|requestId|ownChainStanding'
+└ 5 lines…
+
+● Locate session sign book plumbing in main entry (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/src/main.ts | nl -ba | rg
+│ 'sessionProof|session-sign|SessionSignBook|signers|placeVerb|retireAsk'
+└ 4 lines…
+
+● Locate session sign door wiring in open-node-vessel (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/src/open-node-vessel.ts | nl -ba | rg
+│ 'SessionSignBook|sessionProof|signers|setSessionSignDoor|nodeDaemonIsland|session-sign|sessionPr
+│ oof|ownChainStanding|dialAnchorCell'
+└ 11 lines…
+
+● View node-daemon-island options and registry context (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/src/node-daemon-island.ts | nl -ba | sed -n
+│ '360,500p'
+└ No Content
+
+● View sign door setup in open-node-vessel (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/src/open-node-vessel.ts | nl -ba | sed -n
+│ '1660,1735p'
+└ 76 lines…
+
+● View uds server wiring with signers/session proof (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/src/main.ts | nl -ba | sed -n '740,825p'
+└ 86 lines…
+
+● View OpenNodeVesselResult with sessionSigns (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/src/open-node-vessel.ts | nl -ba | sed -n
+│ '520,700p'
+└ 181 lines…
+
+● View node-daemon-island session proof adapter (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/src/node-daemon-island.ts | nl -ba | sed -n
+│ '1,180p'
+└ 139 lines…
+
+● Locate vesselSessionDoor transport implementation (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/src/sovereign-island-model.ts | nl -ba | rg
+│ 'session:sign|vesselSessionDoor|sessionProof|requestId|ask|verb|signer-unavailable|SessionOwnCha
+│ in'
+└ 60 lines…
+
+● View vesselSessionDoor code (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/src/sovereign-island-model.ts | nl -ba |
+│ sed -n '120,190p'
+└ 71 lines…
+
+● List files changed in #138 follow-up commit (shell)
+│ git &#45;-no-pager show &#45;-name-only &#45;-pretty=format: 87e638c49 | sed '/^$/d'
+└ 3 lines…
+
+● Inspect #138 carrier filename matching (shell)
+│ git &#45;-no-pager show 1b7be63b4:packages/lararium-node/src/vault-carriers.ts | nl -ba | sed -n
+│ '220,560p'
+└ 13 lines…
+
+● Inspect #138 node vessel identity naming changes (shell)
+│ git &#45;-no-pager show 1b7be63b4:packages/lararium-node/src/node-vessel-identity.ts | nl -ba | sed
+│ -n '1,260p'
+└ 260 lines…
+
+● List files changed in #138 primary commit (shell)
+│ git &#45;-no-pager show &#45;-name-only &#45;-pretty=format: 1b7be63b4 | sed '/^$/d'
+└ 13 lines…
+
+✗ Read 1793490129371-copilot-tool-output-2866943-0453a7e0-08da-4fbf-b8fb-f75a5defa080.txt
+│ /tmp/1793490129371-copilot-tool-output-2866943-0453a7e0-08da-4fbf-b8fb-f75a5defa080.txt
+└ view_range out of bounds
+
+✗ Read 1793490129371-copilot-tool-output-2866943-0453a7e0-08da-4fbf-b8fb-f75a5defa080.txt
+│ /tmp/1793490129371-copilot-tool-output-2866943-0453a7e0-08da-4fbf-b8fb-f75a5defa080.txt
+└ view_range out of bounds
+
+● Read 1793490129371-copilot-tool-output-2866943-0453a7e0-08da-4fbf-b8fb-f75a5defa080.txt
+│ /tmp/1793490129371-copilot-tool-output-2866943-0453a7e0-08da-4fbf-b8fb-f75a5defa080.txt
+└ L1:260 (203 lines read)
+
+● Read 1793490129371-copilot-tool-output-2866943-0453a7e0-08da-4fbf-b8fb-f75a5defa080.txt
+│ /tmp/1793490129371-copilot-tool-output-2866943-0453a7e0-08da-4fbf-b8fb-f75a5defa080.txt
+└ L260:520 (82 lines read)
+
+● Inspect #138 tests for host-fact filename derivation and old tree behavior (shell)
+│ git &#45;-no-pager show 1b7be63b4:packages/lararium-node/tests/custody-names-read-no-login.test.ts |
+│ nl -ba | sed -n '1,280p'
+└ 105 lines…
+
+● Locate #138 carrier name recognition rules (shell)
+│ git &#45;-no-pager show 1b7be63b4:packages/lararium-node/src/vault-carriers.ts | nl -ba | rg
+│ 'login|faceIndexed|vessel-key|vessel-kel|vessel-rotating|persona-group-root|persona-roster|perso
+│ na-petnames|persona-declarations|persona-public-handles|match|regex|old|suffix'
+└ 115 lines…
+
+● Inspect #138 follow-up custody shape tests (shell)
+│ git &#45;-no-pager show 87e638c49:packages/lararium-node/tests/custody-shape.test.ts | nl -ba | sed
+│ -n '1,280p'
+└ 186 lines…
+
+● Locate #138 identity file naming and mint guards (shell)
+│ git &#45;-no-pager show 1b7be63b4:packages/lararium-node/src/node-vessel-identity.ts | nl -ba | rg
+│ 'KEY_FILE|KEL_FILE|STAGED_FILE|readOperatorDisplayName|user\.email|git config &#45;-global
+│ user\.email|login|placeFiles\(|existsSync\(keyFile\)|no key
+│ file|generateOrLoadVesselIdentity|orphanPersonaRoots|faceFileNames|persona-group-root'
+└ 44 lines…
+
+● View persona row naming and orphan scanning (shell)
+│ git &#45;-no-pager show 1b7be63b4:packages/lararium-node/src/node-vessel-identity.ts | nl -ba | sed
+│ -n '600,980p'
+└ 12 lines…
+
+● Inspect #138 carrier matching tests (shell)
+│ git &#45;-no-pager show 1b7be63b4:packages/lararium-node/tests/vault-carriers.test.ts | nl -ba | sed
+│ -n '1,240p'
+└ 240 lines…
+
+● Inspect #138 place rotation regression test (shell)
+│ git &#45;-no-pager show 1b7be63b4:packages/lararium-node/tests/place-rotation.test.ts | nl -ba | sed
+│ -n '1,220p'
+└ 126 lines…
+
+● View generate/load identity and no-key-file guards (shell)
+│ git &#45;-no-pager show 1b7be63b4:packages/lararium-node/src/node-vessel-identity.ts | nl -ba | sed
+│ -n '360,530p'
+└ 171 lines…
+
+✗ Read 1793490140387-copilot-tool-output-2866943-429b31a2-d014-49bf-a6be-a3852f5b9ae1.txt
+│ /tmp/1793490140387-copilot-tool-output-2866943-429b31a2-d014-49bf-a6be-a3852f5b9ae1.txt
+└ view_range out of bounds
+
+● Read 1793490140387-copilot-tool-output-2866943-429b31a2-d014-49bf-a6be-a3852f5b9ae1.txt
+│ /tmp/1793490140387-copilot-tool-output-2866943-429b31a2-d014-49bf-a6be-a3852f5b9ae1.txt
+└ L220:440 (162 lines read)
+
+● Read 1793490140387-copilot-tool-output-2866943-429b31a2-d014-49bf-a6be-a3852f5b9ae1.txt
+│ /tmp/1793490140387-copilot-tool-output-2866943-429b31a2-d014-49bf-a6be-a3852f5b9ae1.txt
+└ L1:220 (220 lines read)
+
+● Inspect hermetic git global expectations after #138 (shell)
+│ git &#45;-no-pager show 1b7be63b4:packages/lararium-node/tests/hermetic-git-global.test.ts | nl -ba
+│ | sed -n '1,220p'
+└ 27 lines…
+
+● Inspect scratch setup naming assumptions (shell)
+│ git &#45;-no-pager show 1b7be63b4:packages/lararium-node/tests/support/scratch-custody-setup.ts | nl
+│ -ba | sed -n '1,260p'
+└ 108 lines…
+
+● Inspect key class tests for fixed names (shell)
+│ git &#45;-no-pager show 1b7be63b4:packages/lararium-node/tests/key-class.test.ts | nl -ba | sed -n
+│ '1,260p'
+└ 118 lines…
+
+● Inspect old-name boot refusal test (shell)
+│ git &#45;-no-pager show 87e638c49:packages/lararium-node/tests/node-vessel-identity-sealed.test.ts |
+│ nl -ba | sed -n '1,320p'
+└ 9 lines…
+
+✗ Read 1793490146938-copilot-tool-output-2866943-686cb089-4616-4bf3-8c7c-3891e79f4b43.txt
+│ /tmp/1793490146938-copilot-tool-output-2866943-686cb089-4616-4bf3-8c7c-3891e79f4b43.txt
+└ view_range out of bounds
+
+● Read 1793490146938-copilot-tool-output-2866943-686cb089-4616-4bf3-8c7c-3891e79f4b43.txt
+│ /tmp/1793490146938-copilot-tool-output-2866943-686cb089-4616-4bf3-8c7c-3891e79f4b43.txt
+└ L180:360 (141 lines read)
+
+● Read 1793490146938-copilot-tool-output-2866943-686cb089-4616-4bf3-8c7c-3891e79f4b43.txt
+│ /tmp/1793490146938-copilot-tool-output-2866943-686cb089-4616-4bf3-8c7c-3891e79f4b43.txt
+└ L1:180 (180 lines read)
+
+/ Search (grep)
+│ "no key file|old|suffix|vessel-key-|persona-group-root-|mint|mints
+│ nothing|refuse|boot|legacy|stray|created|founding|loadVesselIdentity"
+│ (/tmp/1793490146938-copilot-tool-output-2866943-686cb089-4616-4bf3-8c7c-3891e79f4b43.txt)
+└ 55 lines found
+
+● Locate #140 sealed store/session tests (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/tests/sealed-store-vessel.test.ts | nl -ba
+│ | rg 'unknown|wrong verb|released|duplicate id|book|booking|session-face-foreign|session-anchor-
+│ place|signer-unavailable|non-session|local|session:call|sealed-'
+└ 61 lines…
+
+● Inspect #140 roll and race tests in keyhive seat (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-keyhive/tests/content-key-seat.test.ts | nl -ba
+│ | sed -n '220,350p'
+└ 131 lines…
+
+● Inspect #140 session gate tests in sealed-store-vessel (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/tests/sealed-store-vessel.test.ts | nl -ba
+│ | sed -n '120,260p'
+└ 141 lines…
+
+● Inspect e2e test coverage for sealed session store (shell)
+│ git &#45;-no-pager show 535b62b30:tests/e2e/sealed-session-store.test.ts | nl -ba | sed -n '1,280p'
+└ 88 lines…
+
+● Inspect non-session and signer-unavailable tests (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/tests/sealed-store-vessel.test.ts | nl -ba
+│ | sed -n '250,320p'
+└ 71 lines…
+
+● Locate turn/lock semantics in content key holder (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-mesh/src/content-key-holder.ts | nl -ba | rg
+│ '#inTurn|#rest\(|#turn|mutex|queue|lock|Promise'
+└ 132 lines…
+
+● View continuation of turn logic (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-mesh/src/content-key-holder.ts | nl -ba | sed -n
+│ '200,320p'
+└ 121 lines…
+
+● View supporting methods for mutation path (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-mesh/src/content-key-holder.ts | nl -ba | sed -n
+│ '320,430p'
+└ 111 lines…
+
+● View holder turn and rest implementation (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-mesh/src/content-key-holder.ts | nl -ba | sed -n
+│ '60,200p'
+└ 141 lines…
+
+● View sealBlob cured logic with line numbers (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-mesh/src/content-key-holder.ts | nl -ba | sed -n
+│ '440,545p'
+└ 106 lines…
+
+● View owed roll handling in content key seat (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-keyhive/src/content-key-seat.ts | nl -ba | sed
+│ -n '140,240p'
+└ 93 lines…
+
+● View race regression tests in content key seat (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-keyhive/tests/content-key-seat.test.ts | nl -ba
+│ | sed -n '230,345p'
+└ 116 lines…
+
+● View session sign door tests (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/tests/session-sign-door.test.ts | nl -ba |
+│ sed -n '1,240p'
+└ 111 lines…
+
+● View session sign door source (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/src/session-sign-door.ts | nl -ba
+└ 67 lines…
+
+● View remaining session sign door tests (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/tests/session-sign-door.test.ts | nl -ba |
+│ sed -n '240,420p'
+└ No Content
+
+● View faceScopedId and session context setup (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/src/uds-channel.ts | nl -ba | sed -n
+│ '620,710p'
+└ 91 lines…
+
+● Locate session booking and request-id scoping in uds-channel (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/src/uds-channel.ts | nl -ba | rg 'faceScope
+│ dId|bookSessionSign|release\(|finally|session:call|session:open|session:close|requestId|local'
+└ 194 lines…
+
+● View booking lifecycle and finally release in uds-channel (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/src/uds-channel.ts | nl -ba | sed -n
+│ '1010,1115p'
+└ 106 lines…
+
+✗ Find faceScopedId definition (shell)
+│ git &#45;-no-pager grep -n "export function faceScopedId" -n
+└ fatal: option '-n' must come before non-option arguments
+Failed with exit code 128
+
+● Find faceScopedId definition (shell)
+│ git &#45;-no-pager grep -n "faceScopedId"
+└ 21 lines…
+
+● View faceScopedId hashing scheme (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-mesh/src/face-scoped-id.ts | nl -ba
+└ 14 lines…
+
+● View sessionOf gate and sealed verb registration (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-keyhive/src/operator-daemon-behavior.ts | nl -ba
+│ | sed -n '760,860p'
+└ 101 lines…
+
+● View session proof chain and signer standing logic (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-keyhive/src/island-session-proof.ts | nl -ba |
+│ sed -n '1,190p'
+└ 66 lines…
+
+● View session:sign door in worker-handle (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/src/worker-handle.ts | nl -ba | sed -n
+│ '80,180p'
+└ 101 lines…
+
+● View island class gate for session sign door (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/src/worker-handle.ts | nl -ba | sed -n
+│ '180,275p'
+└ 90 lines…
+
+● View load/mint and no key file checks (shell)
+│ nl -ba packages/lararium-node/src/node-vessel-identity.ts | sed -n '350,530p'
+└ 181 lines…
+
+● View sealed identity and persona path regex (shell)
+│ nl -ba packages/lararium-node/src/node-vessel-identity.ts | sed -n '600,700p'
+└ 101 lines…
+
+● View fixed custody filenames constants (shell)
+│ nl -ba packages/lararium-node/src/node-vessel-identity.ts | sed -n '130,210p'
+└ 81 lines…
+
+● View personal row filename pattern enforcement (shell)
+│ nl -ba packages/lararium-node/src/node-vessel-identity.ts | sed -n '900,970p'
+└ 71 lines…
+
+● Inspect #138 key filename logic at recut commit (shell)
+│ git &#45;-no-pager show 1b7be63b4:packages/lararium-node/src/node-vessel-identity.ts | nl -ba | sed
+│ -n '140,220p'
+└ 81 lines…
+
+● Inspect #138 generate/load no-key-file behavior (shell)
+│ git &#45;-no-pager show 1b7be63b4:packages/lararium-node/src/node-vessel-identity.ts | nl -ba | sed
+│ -n '340,530p'
+└ 191 lines…
+
+● Inspect #138 custody carrier naming table (shell)
+│ git &#45;-no-pager show 1b7be63b4:packages/lararium-node/src/vault-carriers.ts | nl -ba | sed -n
+│ '210,350p'
+└ 141 lines…
+
+● Inspect face-row filename patterns in #138 table (shell)
+│ git &#45;-no-pager show 1b7be63b4:packages/lararium-node/src/vault-carriers.ts | nl -ba | sed -n
+│ '380,500p'
+└ 121 lines…
+
+● View follow-up custody shape tests for fixed names (shell)
+│ git &#45;-no-pager show 87e638c49:packages/lararium-node/tests/custody-shape.test.ts | nl -ba | sed
+│ -n '1,220p'
+└ 186 lines…
+
+● View #138 no-login custody naming tests (shell)
+│ git &#45;-no-pager show 1b7be63b4:packages/lararium-node/tests/custody-names-read-no-login.test.ts |
+│ nl -ba
+└ 105 lines…
+
+● View hermetic git global test for host fact isolation (shell)
+│ git &#45;-no-pager show 1b7be63b4:packages/lararium-node/tests/hermetic-git-global.test.ts | nl -ba
+│ | sed -n '1,220p'
+└ 27 lines…
+
+● View follow-up sealed identity tests in #138 (shell)
+│ git &#45;-no-pager show 87e638c49:packages/lararium-node/tests/node-vessel-identity-sealed.test.ts |
+│ nl -ba | sed -n '1,260p'
+└ 9 lines…
+
+● Search #138 follow-up tests for old-name refusal (shell)
+│ git &#45;-no-pager show 87e638c49:packages/lararium-node/tests/node-vessel-identity-sealed.test.ts |
+│ nl -ba | rg "vessel-key|no key file|login|old|suffix|vessel-kel|rotating"
+└ 76 lines…
+
+● Search rotation tests for fixed filename behavior (shell)
+│ git &#45;-no-pager show 87e638c49:packages/lararium-node/tests/place-rotation.test.ts | nl -ba | rg
+│ "vessel-kel|vessel-key|rotating|login|no key file"
+└ 4 lines…
+
+● Search vault carriers tests for filename expectations (shell)
+│ git &#45;-no-pager show 87e638c49:packages/lararium-node/tests/vault-carriers.test.ts | nl -ba | rg
+│ "vessel-key|vessel-kel|vessel-rotating|persona-roster|persona-group-root|login"
+└ 10 lines…
+
+● View place rotation fixed-name tests (shell)
+│ git &#45;-no-pager show 87e638c49:packages/lararium-node/tests/place-rotation.test.ts | nl -ba | sed
+│ -n '1,130p'
+└ 126 lines…
+
+● View tests that old vessel names are unrecognized (shell)
+│ git &#45;-no-pager show 87e638c49:packages/lararium-node/tests/vault-carriers.test.ts | nl -ba | sed
+│ -n '150,185p'
+└ 36 lines…
+
+✗ Find tests referencing old login-suffixed vessel key names (shell)
+│ git &#45;-no-pager grep -n "vessel-key-" 87e638c49 &#45;- packages/lararium-node/tests
+└
+Failed with exit code 1
+
+● View open-node-vessel identity load path (shell)
+│ nl -ba packages/lararium-node/src/open-node-vessel.ts | sed -n '1,220p'
+└ 220 lines…
+
+● View daemon island setup and sign door composition (shell)
+│ nl -ba packages/lararium-node/src/node-daemon-island.ts | sed -n '1,220p'
+└ 135 lines…
+
+● Trace identity load and session sign door wiring (shell)
+│ git &#45;-no-pager grep -n
+│ "loadVesselSigningSeed\|loadVesselVerifyingKey\|setSessionSignDoor\|SessionSignBook"
+│ packages/lararium-node/src packages/lararium-keyhive/src
+└ 53 lines…
+
+● Locate sign door and identity wiring in open-node-vessel (shell)
+│ nl -ba packages/lararium-node/src/open-node-vessel.ts | rg -n
+│ "setSessionSignDoor|SessionSignBook|nodeSessionDoor|sessionProof|signers|loadVesselIdentity|load
+│ VesselVerifyingKey|vesselPlaceSignerDoor"
+└ 6 lines…
+
+● View identity load in open-node-vessel bootstrap (shell)
+│ nl -ba packages/lararium-node/src/open-node-vessel.ts | sed -n '490,620p'
+└ 131 lines…
+
+● View session door composition and sign book setup (shell)
+│ nl -ba packages/lararium-node/src/open-node-vessel.ts | sed -n '1250,1365p'
+└ 116 lines…
+
+● View session door wiring near return object (shell)
+│ nl -ba packages/lararium-node/src/open-node-vessel.ts | sed -n '3430,3560p'
+└ 131 lines…
+
+✗ Find where session sign door is set (shell)
+│ git &#45;-no-pager grep -n "setSessionSignDoor" packages/lararium-node/src
+└
+Failed with exit code 1
+
+● Trace session sign door usage across core files (shell)
+│ git &#45;-no-pager grep -n "session:sign\|answerSessionSign\|SessionSignBook\|signers"
+│ packages/lararium-node/src/sovereign-island-model.ts
+│ packages/lararium-node/src/open-node-vessel.ts packages/lararium-node/src/uds-channel.ts
+└ 1 line…
+
+● Check #140 commit open-node-vessel for sign door wiring (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/src/open-node-vessel.ts | rg
+│ "setSessionSignDoor|SessionSignBook|session-sign-door|signers" -n
+└ 9 lines…
+
+● View #140 session sign door wiring in open-node-vessel (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/src/open-node-vessel.ts | nl -ba | sed -n
+│ '1678,1720p'
+└ 43 lines…
+
+● Locate sessionSigns passed to UDS channel in #140 (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/src/open-node-vessel.ts | nl -ba | rg
+│ "signers:|sessionSigns|sessionVerbs|socketVerbs|startUdsChannel|serveUdsChannel"
+└ 9 lines…
+
+● View startUdsChannel args including signers in #140 (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/src/open-node-vessel.ts | nl -ba | sed -n
+│ '3628,3675p'
+└ 48 lines…
+
+✗ Find startUdsChannel definition (shell)
+│ git &#45;-no-pager grep -n "function startUdsChannel\|startUdsChannel\(" packages/lararium-node/src
+└ fatal: command line, 'function startUdsChannel\|startUdsChannel\(': Unmatched ( or \(
+Failed with exit code 128
+
+● Find startUdsChannel references (shell)
+│ git &#45;-no-pager grep -n "startUdsChannel" packages/lararium-node/src
+└ 4 lines…
+
+● View UDS options including signers/sessionDoor in #140 (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/src/uds-channel.ts | nl -ba | sed -n
+│ '120,220p'
+└ 101 lines…
+
+● View UdsChannelOptions fields including signers (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/src/uds-channel.ts | nl -ba | sed -n
+│ '70,125p'
+└ 56 lines…
+
+● View continuation of session proof answer handling (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/src/sovereign-island-model.ts | nl -ba |
+│ sed -n '340,430p'
+└ No Content
+
+● Locate island session proof wiring in sovereign-island-model (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/src/sovereign-island-model.ts | nl -ba | rg
+│ "sessionProof|session:sign|ask|signer-unavailable|requestId|local"
+└ 62 lines…
+
+● View session proof implementation in sovereign-island-model (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/src/sovereign-island-model.ts | nl -ba |
+│ sed -n '200,340p'
+└ 121 lines…
+
+● View arbitration before dispatch in uds-channel (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/src/uds-channel.ts | nl -ba | sed -n
+│ '1320,1395p'
+└ 76 lines…
+
+● View session call booking and scoped request id in #140 (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/src/uds-channel.ts | nl -ba | sed -n
+│ '1038,1090p'
+└ 53 lines…
+
+● View sealed-store tests for place/foreign/non-session gating (shell)
+│ git &#45;-no-pager show 535b62b30:packages/lararium-node/tests/sealed-store-vessel.test.ts | nl -ba
+│ | sed -n '180,270p'
+└ 91 lines…
+
+● Inspect host fact usage in #138 for display only (shell)
+│ git &#45;-no-pager show 1b7be63b4:packages/lararium-node/src/node-vessel-identity.ts | nl -ba | sed
+│ -n '112,160p'
+└ 49 lines…
+
+''(a) Race status:'' ''Closed for the prior probe shape'' in commit `535b62b30`. The cure now (i) blocks founding while owed raises exist (`packages/lararium-mesh/src/content-key-holder.ts:497-499`), (ii) re-reads owed raises via callback (`.../content-key-holder.ts:506-507`, fed by `.../content-key-seat.ts:213-216`), and (iii) rechecks at commit point after manifest signing and before first value write (`.../content-key-holder.ts:518-524`). Both founding and already-founded bag races are explicitly covered (`packages/lararium-keyhive/tests/content-key-seat.test.ts:303-313`). ''UNTRACED:'' exhaustive “roll lands at every await inside seal” instrumentation is not present; the harness pause is at first signature (`.../content-key-seat.test.ts:281-287`), not a per-await matrix.
+
+''(b) Other #140 HIGHs:'' none found. Foreign-face sealing/opening/reading is refused (`packages/lararium-keyhive/src/operator-daemon-behavior.ts:789-790`, `packages/lararium-node/tests/sealed-store-vessel.test.ts:225-241`). Booking lifetime is bounded to call/socket and released in `finally` (`packages/lararium-node/src/uds-channel.ts:1075-1087`), with released/unknown/wrong-verb refusals and duplicate-id first-booking behavior enforced (`packages/lararium-node/src/session-sign-door.ts:41-46,54-57`; `.../tests/session-sign-door.test.ts:46-74`). Non-session borrowing of a live booking is blocked by local/session gating plus request-id arbitration (`packages/lararium-keyhive/src/operator-daemon-behavior.ts:783-787`; `packages/lararium-node/src/uds-channel.ts:1359-1389`), and session calls are face-scoped (`.../uds-channel.ts:1076,1081`; `packages/lararium-mesh/src/face-scoped-id.ts:8-13`).
+
+''(c) #138 HIGHs:'' none found in commit `1b7be63b4`/`87e638c49`. Filename selection is fixed-name, not host-fact-derived (`packages/lararium-node/src/node-vessel-identity.ts:138,180-181,384-386`; `packages/lararium-node/src/vault-carriers.ts:308,314,317`), while git config use is display-name only (`.../node-vessel-identity.ts:112-121`). Boot/load on old/unrecognized trees refuses “no key file” and mints nothing (`.../node-vessel-identity.ts:485-489`; `packages/lararium-node/tests/custody-names-read-no-login.test.ts:95-103`).
+
+''(d) Cross-lane meet:'' no unsafe intersection found. The fifth door is an in-memory session-sign bridge (`packages/lararium-node/src/worker-handle.ts:123-154,229-235`) wired from `SessionSignBook` (`packages/lararium-node/src/open-node-vessel.ts` at `535b62b30:1699-1701`); #138 changes custody filename resolution (`node-vessel-identity.ts`, `vault-carriers.ts`) and does not provide a path read by `session:sign`.
+
+| Severity | Finding | File:line |h
+| LOW | ''UNTRACED evidence gap:'' no explicit per-await race harness for `sealBlob`; coverage pauses first signature, not every await site | `packages/lararium-keyhive/tests/content-key-seat.test.ts:281-287` |
+
+''SHIP''
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iVAejXhMRowIYEjf8DM8zvzaMklPxGFt_4pYWbJNUHI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

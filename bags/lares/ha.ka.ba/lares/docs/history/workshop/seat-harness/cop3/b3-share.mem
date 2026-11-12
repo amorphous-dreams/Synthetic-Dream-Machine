@@ -1,0 +1,1314 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/cop3/b3-share`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — session transcript, 2026-11-04 (file date) — source `.lares-scratch/seat-harness/cop3/b3.share.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/cop3/b3-share"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/seat-harness/cop3/b3-share"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! b3.share.md — session transcript, 2026-11-04
+
+Verbatim scratch record `.lares-scratch/seat-harness/cop3/b3.share.md` (session transcript, file date 2026-11-04); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/cop3/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/copilot-cli-session`>>
+
+! Copilot CLI Session
+
+> [!NOTE]
+>* ''Session ID:'' `5686037e-a6c6-42aa-b025-5b0368cdccec`
+>* ''Started:'' 11/4/2026, 11:44:02 AM
+>* ''Duration:'' 1m 9s
+>* ''Exported:'' 11/4/2026, 11:45:11 AM
+
+---
+
+<sub>2s</sub>
+
+!!! User
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/build-row-3-the-compaction-canary-in-tools-launc`>>
+
+! Build: row 3, the compaction canary, in tools/launch-codex.mjs (worktree /home/joshu/.lares-scratch/seat-harness/wt)
+RED tests already stand at the end of tools/launch-codex.test.mjs ("row 3: ..."), plus the updated "lead argv exact" test. Edit ONLY tools/launch-codex.mjs so they pass. You cannot run node:test; read the tests carefully and match them exactly. The lead runs them.
+Required in tools/launch-codex.mjs:
+# `export const COMPACT_LIMIT = 120000; export const TOOL_OUTPUT_LIMIT = 8000;`
+# seatArgs: in the `common` array, right after `"-o", join(seatDir,"final.md")`, add `"-c", \`model_auto_compact_token_limit=${compactLimit ?? COMPACT_LIMIT}\`, "-c", \`tool_output_token_limit=${TOOL_OUTPUT_LIMIT}\&#96;&#96;; seatArgs takes an optional `compactLimit` in its destructured object. Only launcher -c overrides; never touch ~/.codex/config.toml.
+# `export function canaryVerdict(lines)` -> `{fired, events, calls, tokens}`: events = lines whose JSON has top-level type "compacted", or payload.type "context_compacted" or "compaction" (parse each line with JSON.parse in try/catch, skip junk); calls = lines with payload.type "function_call"; tokens = rolloutTokens(lines) (existing; null when none -> the test expects 90 when present); fired = events > 0.
+# `export function canaryBrief()` -> brief text: tells a read-only seat to read /home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs, then tools/launch-codex.test.mjs, then the seat-harness.mem under bags/lares/ha.ka.ba/lares/docs/pono/ of that worktree, in 40-line slices with `sed -n`, "one tool call per slice", about 100 slices in all, no summary until done, then the final message exactly `CANARY DONE <n> calls`.
+# CLI: parse gains boolean flags `--canary` and `--check-canary`. With `--canary` (read mode only; refuse otherwise with a SEAT-REFUSED-style refusal): after preflight and before the law append, write canaryBrief() to `\<seatDir>/brief.md`, and pass `compactLimit: 50000` to seatArgs. With `--check-canary --seat-dir D` (no other flags required: relax the required-keys check for it like `--watch` does): find the seat's rollout with `findRollout(readers.realHome, { cwds: [real(D)], before })` where `before` is the Set from `\<D>/rollouts-before.json` if it exists else an empty Set; no rollout -> err(`no rollout found for ${D}`) and return 2; else verdict = canaryVerdict(lines of the rollout) and log `COMPACTION-FIRED events=\<n> calls=\<n> tokens=\<n>` or `COMPACTION-NOT-FIRED events=0 calls=\<n> tokens=\<n>`, return 0. Update the file's header comment to mention both flags.
+Hand back by your final message: what you changed, anything unclear.
+
+---
+
+<sub>6s</sub>
+
+!!! Copilot
+
+I’ll patch `tools/launch-codex.mjs` to match the red tests exactly, using the existing patterns in that file and its tests as the source of truth.
+
+---
+
+<sub>6s</sub>
+
+!!! `view`
+
+''view the file at /home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs.''
+
+/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs
+
+```
+File too large to read at once (20.7 KB). Consider using the grep tool to search within the file, or view with view_range to read specific sections.
+```
+
+---
+
+<sub>6s</sub>
+
+!!! `view`
+
+''view the file at /home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs.''
+
+/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs
+
+```
+File too large to read at once (31.6 KB). Consider using the grep tool to search within the file, or view with view_range to read specific sections.
+```
+
+---
+
+<sub>10s</sub>
+
+!!! `rg`
+
+''seatArgs|COMPACT_LIMIT|TOOL_OUTPUT_LIMIT|canary|check-canary|rolloutTokens|findRollout|required-keys|watch|brief.md|law append|preflight|SEAT-REFUSED|parse''
+
+"seatArgs|COMPACT_LIMIT|TOOL_OUTPUT_LIMIT|canary|check-canary|rolloutTokens|findRollout|required-keys|watch|brief.md|law append|preflight|SEAT-REFUSED|parse" (tools/launch-codex.mjs)
+
+<details>
+<summary>34 matches</summary>
+
+```
+[grep content: 32 matches across 1 file(s) under /home/joshu/.lares-scratch/seat-harness/wt/tools]
+
+launch-codex.mjs (32 match(es)):
+  7:  * One walled `codex exec`, after a preflight. The brief is `<seat-dir>/brief.md`; the hand-back lands in `final.md`
+  18:  * PREFLIGHT refuses (exit 2, `SEAT-REFUSED: …`): a seat dir outside `<scratch>/<lane>/`, a missing brief, a model absent
+  23:  * watchdog (`--watch`, spawned beside every seat) tails the seat's rollout and stops it at its token ceiling (`--ceiling N`;
+  25:  * `--dry-run` runs the preflight and prints the argument array, spawns nothing and writes nothing.
+  57: export function rolloutTokens(lines) {
+  61:     try { const t = JSON.parse(line)?.payload?.info?.total_token_usage?.total_tokens; if (typeof t === "number") total = t; } catch { /* a torn tail line */ }
+  82: export function findRollout(home, { cwds, before }) {
+  91:       if (cwd === undefined || !cwds.includes(JSON.parse(cwd))) continue;
+  99: /** The watchdog loop over injected readers: stops the seat at its ceiling (SIGTERM, then SIGKILL after `graceTicks` ticks) and writes ceiling.md; returns "ceiling" or "exited". */
+  100: export function watchSeat({ seatDir, pid, ceiling, mode, tokens, alive, kill, sleep, graceTicks = 10 }) {
+  107:       writeFileSync(join(seatDir, "ceiling.md"), `# Ceiling reached\n\nThe ${mode} seat (pid ${pid}) read ${t} total tokens in its rollout (total_token_usage.total_tokens, cached input counted) against a ceiling of ${ceiling}. The watchdog stopped it (SIGTERM, then SIGKILL if it lived).\n`);
+  119: export function seatArgs({ mode, model, effort, seatDir, worktree, gitDir, laneRoot }) {
+  142:     try { d = JSON.parse(line); } catch { continue; }
+  218:     const common = execFileSync("git", ["-C", repo, "rev-parse", "--path-format=absolute", "--git-common-dir"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+  231:     gitCommonDir: (worktree) => execFileSync("git", ["-C", worktree, "rev-parse", "--path-format=absolute", "--git-common-dir"], { encoding: "utf8" }).trim(),
+  239: export function preflight({ mode, model, seatDir, worktree }, readers) {
+  245:   if (!existsSync(join(seatDir, "brief.md"))) throw refuse(`no ${join(seatDir, "brief.md")}`);
+  265: function parse(argv) {
+  270:     else if (argv[i] === "--watch") o.watch = true;
+  274:   if (o.watch) return o;
+  279: /** The detached watchdog entry: tails the seat's rollout every few seconds until the seat exits or crosses its ceiling. */
+  280: function watchMain(o) {
+  281:   const pid = Number(o.pid), cwds = JSON.parse(o.cwds), before = new Set(JSON.parse(readFileSync(o.before, "utf8"))), home = realHome();
+  288:   watchSeat({
+  292:     tokens: () => { file ??= findRollout(home, { cwds, before }); return file ? rolloutTokens(readFileSync(file, "utf8").split("\n")) : null; },
+  300:   try { o = parse(argv); } catch (e) { err(`[launch-codex] ${e.message}`); return 2; }
+  301:   if (o.watch) return watchMain(o);
+  307:     const { pool } = preflight({ ...o, seatDir, worktree }, readers);
+  310:     const args = seatArgs({ ...o, seatDir, worktree, gitDir, laneRoot });
+  315:     const briefPath = join(seatDir, "brief.md");
+  326:     const dog = spawn(process.execPath, [fileURLToPath(import.meta.url), "--watch", "--seat-dir", seatDir, "--pid", String(child.pid), "--ceiling", String(ceiling), "--mode", o.mode, "--cwds", cwds, "--before", beforeFile], { cwd: seatDir, env: { ...process.env, HOME: readers.realHome }, detached: true, stdio: "ignore" });
+  332:     err(`SEAT-REFUSED: ${e.message}`);
+```
+
+</details>
+
+---
+
+<sub>10s</sub>
+
+!!! `rg`
+
+''row 3|lead argv exact|canary|check-canary|COMPACT_LIMIT|TOOL_OUTPUT_LIMIT|seatArgs|canaryVerdict|canaryBrief|COMPACTION''
+
+"row 3|lead argv exact|canary|check-canary|COMPACT_LIMIT|TOOL_OUTPUT_LIMIT|seatArgs|canaryVerdict|canaryBrief|COMPACTION" (tools/launch-codex.test.mjs)
+
+<details>
+<summary>36 matches</summary>
+
+```
+[grep content: 34 matches across 1 file(s) under /home/joshu/.lares-scratch/seat-harness/wt/tools]
+
+launch-codex.test.mjs (34 match(es)):
+  8: import { appendSeatLaw, canaryBrief, canaryVerdict, ceilingFor, COMPACT_LIMIT, TOOL_OUTPUT_LIMIT, distFresh, findRollout, rolloutTokens, watchSeat, mainCheckout, preflight, readPool, realHome, realReaders, run, seatArgs, seatLaw } from "./launch-codex.mjs";
+  40:     const a = seatArgs({ mode, model: "m", effort: "high", seatDir: "/s", worktree: "/w" });
+  48:   const a = seatArgs({ mode: "build", model: "m", effort: "high", seatDir: "/s", worktree: "/w" });
+  59: test("lead argv exact", () => {
+  60:   assert.deepEqual(seatArgs({ mode: "lead", model: "m", effort: "high", seatDir: "/lane/s", worktree: "/w", gitDir: "/g", laneRoot: "/lane" }), ["exec", "-m", "m", "-c", "model_reasoning_effort=high", "-c", 'approval_policy="never"', "--skip-git-repo-check", "-o", "/lane/s/final.md", "-c", `model_auto_compact_token_limit=${COMPACT_LIMIT}`, "-c", `tool_output_token_limit=${TOOL_OUTPUT_LIMIT}`, "-s", "workspace-write", "-c", "sandbox_workspace_write.exclude_slash_tmp=true", "-c", "sandbox_workspace_write.exclude_tmpdir_env_var=true", "-c", "sandbox_workspace_write.network_access=true", "-C", "/w", "--add-dir", "/lane/s", "--add-dir", "/g", "--add-dir", "/lane"]);
+  64:   assert.throws(() => seatArgs({ mode: "lead", model: "m", effort: "high", seatDir: "/s" }), /needs its worktree/);
+  68:   const a = seatArgs({ mode: "read", model: "m", effort: "high", seatDir: "/s", worktree: "/w" });
+  74:   const r = seatArgs({ mode: "research", model: "m", effort: "high", seatDir: "/s" });
+  78:   for (const mode of ["build", "read"]) assert.ok(!seatArgs({ mode, model: "m", effort: "high", seatDir: "/s", worktree: "/w" }).includes("--search"));
+  79:   assert.equal(seatArgs({ mode: "read", model: "m", effort: "high", seatDir: "/s" })[0], "exec");
+  83:   const a = seatArgs({ mode: "read", model: "m", effort: "high", seatDir: "/s" });
+  85:   assert.throws(() => seatArgs({ mode: "write", model: "m", effort: "high", seatDir: "/s" }), /mode must be/);
+  263:   assert.deepEqual(args, ["codex", ...seatArgs({ mode: "lead", model: "gpt-6.1-terra", effort: "high", seatDir: realpathSync(w.seatDir), worktree: realpathSync(w.wt), gitDir: "/common/git", laneRoot: dirname(realpathSync(w.seatDir)) }), "<brief>"]);
+  459: // ---- row 3: the compaction canary ----
+  462: test("row 3: every mode carries the compaction and tool-output limits as -c overrides; an override moves the compaction limit alone", () => {
+  464:     const a = seatArgs({ mode, model: "m", effort: "high", seatDir: "/s", worktree: "/w" });
+  465:     const i = a.indexOf(`model_auto_compact_token_limit=${COMPACT_LIMIT}`), j = a.indexOf(`tool_output_token_limit=${TOOL_OUTPUT_LIMIT}`);
+  469:   const low = seatArgs({ mode: "read", model: "m", effort: "high", seatDir: "/s", compactLimit: 50000 });
+  470:   assert.ok(low.includes("model_auto_compact_token_limit=50000") && low.includes(`tool_output_token_limit=${TOOL_OUTPUT_LIMIT}`));
+  471:   assert.ok(!low.includes(`model_auto_compact_token_limit=${COMPACT_LIMIT}`));
+  474: test("row 3: canaryVerdict reads the rollout's compaction events (compacted, context_compacted, compaction); KNOWN POSITIVE and CONTROL", () => {
+  476:   assert.deepEqual(canaryVerdict(plain), { fired: false, events: 0, calls: 1, tokens: 90 });
+  477:   assert.equal(canaryVerdict([...plain, cevent({ type: "compacted", payload: { message: "" } })]).fired, true);
+  478:   assert.equal(canaryVerdict([...plain, cevent({ type: "event_msg", payload: { type: "context_compacted" } })]).fired, true);
+  479:   const two = canaryVerdict([...plain, cevent({ type: "compacted", payload: {} }), cevent({ type: "event_msg", payload: { type: "context_compacted" } })]);
+  481:   assert.equal(canaryVerdict(["garbage", ""]).fired, false);
+  484: test("row 3: the canary brief demands many separate tool calls in one turn and a closing line", () => {
+  485:   const b = canaryBrief();
+  491: test("row 3: --canary on a read seat writes the canary brief and launches with a lowered compaction limit; --check-canary reports the verdict from the seat's own rollout", () => {
+  496:   assert.equal(run(["--mode", "read", "--model", "gpt-6-luna", "--effort", "low", "--seat-dir", w.seatDir, "--canary"], { readers: w.readers, spawn, log: (s) => out.push(s) }), 0);
+  500:   assert.ok(Number(limit.split("=")[1]) < COMPACT_LIMIT, "the canary runs under a lowered limit so compaction can fire");
+  506:   assert.equal(run(["--check-canary", "--seat-dir", w.seatDir], { readers: w.readers, log: (s) => say.push(s), err: (s) => say.push(s) }), 0);
+  507:   assert.match(say.join("\n"), /COMPACTION-FIRED/);
+  511:   assert.equal(run(["--check-canary", "--seat-dir", none.seatDir], { readers: none.readers, log: (s) => say2.push(s), err: (s) => say2.push(s) }), 2);
+```
+
+</details>
+
+---
+
+<sub>13s</sub>
+
+!!! `view`
+
+''view the file at /home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs.''
+
+/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs (lines 1-220)
+
+<details>
+<summary>205 lines</summary>
+
+```
+#!/usr/bin/env node
+/**
+ * launch-codex — the Codex seat's one launcher (mixed-model-swarm#/the-launch, #/the-seat-law).
+ *
+ *   node tools/launch-codex.mjs --seat-dir <dir> --model <slug> --effort <level> --mode build|lead|read|research [--worktree <dir>] [--dry-run]
+ *
+ * One walled `codex exec`, after a preflight. The brief is `<seat-dir>/brief.md`; the hand-back lands in `final.md`
+ * (`-o`), the log in `run.log`, each attempt in `attempts.log`. The canon seat law or the lead law rides
+ * the brief once, appended here. Hand-back: wait on `until [ -f <seat-dir>/final.md ]`.
+ *
+ *   build    workspace-write in the worktree, network off, both tmp excludes, `-C <worktree> --add-dir <seat-dir>`
+ *   lead     workspace-write in a scratch worktree, network on, with seat, common Git, and lane root dirs added
+ *   read     `-s read-only -C <seat-dir>`
+ *   research workspace-write in the seat dir alone, networked, the only mode with `--search`
+ *
+ * EVERY mode carries `-c approval_policy="never"`, so a step past the wall fails by name instead of being reviewed out
+ * of the sandbox; no mode carries `--ephemeral`, so each seat keeps the rollout the spend tally counts.
+ * PREFLIGHT refuses (exit 2, `SEAT-REFUSED: …`): a seat dir outside `<scratch>/<lane>/`, a missing brief, a model absent
+ * from Codex's models cache, `gpt-6-sol`, a Codex pool line unreadable twice (never read as zero), a pool at or under
+ * its floor (20% for build, lead or research, 0% for read), a build or lead seat on the main checkout, a lead worktree
+ * outside scratch, or a build seat over a stale dist.
+ * Pool-used lines (seat-harness#/the-spend-guard): a lead refuses above 50% used, build or research above 60%. A detached
+ * watchdog (`--watch`, spawned beside every seat) tails the seat's rollout and stops it at its token ceiling (`--ceiling N`;
+ * lead 15M, others 8M), writing `ceiling.md`.
+ * `--dry-run` runs the preflight and prints the argument array, spawns nothing and writes nothing.
+ *
+ * The Codex cache, auth and rollouts live under the PASSWD home (`os.userInfo().homedir`), never `$HOME`: a lead runs
+ * under a scratch HOME. Every reader injects, so a test stands nothing. The tool never writes `~/.codex`.
+ */
+import { execFileSync, spawn as nodeSpawn } from "node:child_process";
+import { appendFileSync, closeSync, existsSync, readSync, mkdirSync, openSync, readdirSync, readFileSync, realpathSync, statSync, writeFileSync } from "node:fs";
+import { userInfo } from "node:os";
+import { basename, dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { globalStampPath, packageStampPath, sourceDigest, workspacePackageDirs } from "./stamp-build.mjs";
+
+const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const CANON = "bags/lares/ha.ka.ba/lares/docs/pono/mixed-model-swarm.mem";
+const FLOOR = 20;
+/** A read seat's own floor: the operator lets readers spend the pool to its end for now (2026-10-31: "temp bump that limit to 0%"; it stood at 5); builders and research keep FLOOR. */
+const READ_FLOOR = 0;
+const MODES = ["build", "lead", "read", "research"];
+/** The pool's used-percent ceiling by mode (seat-harness#/owed row 2): a read seat spends to its own floor. */
+const MAX_USED = { lead: 50, build: 60, research: 60 };
+/** The per-seat token ceiling by mode (row 1): total_token_usage.total_tokens, cached input counted. */
+const CEILINGS = { lead: 15_000_000, build: 8_000_000, read: 8_000_000, research: 8_000_000 };
+
+/** The ceiling for a mode: the default, or a positive-integer override (a number or its digits). */
+export function ceilingFor(mode, override) {
+  if (override === undefined) return CEILINGS[mode];
+  const n = typeof override === "string" && /^[0-9]+$/.test(override) ? Number(override) : override;
+  if (!Number.isInteger(n) || n <= 0) throw refuse(`ceiling must be a positive integer of tokens (got "${override}")`);
+  return n;
+}
+
+/** The last total_token_usage.total_tokens in a rollout's lines, or null when none. */
+export function rolloutTokens(lines) {
+  let total = null;
+  for (const line of lines ?? []) {
+    if (!line.includes('"total_token_usage"')) continue;
+    try { const t = JSON.parse(line)?.payload?.info?.total_token_usage?.total_tokens; if (typeof t === "number") total = t; } catch { /* a torn tail line */ }
+  }
+  return total;
+}
+
+/** Every rollout path under the home's sessions dir. */
+export function listRollouts(home) {
+  const out = [];
+  const walk = (d, depth) => {
+    let es; try { es = readdirSync(d, { withFileTypes: true }); } catch { return; }
+    for (const e of es) {
+      const p = join(d, e.name);
+      if (e.isDirectory() && depth < 5) walk(p, depth + 1);
+      else if (e.isFile() && /^rollout-.*\.jsonl$/.test(e.name)) out.push(p);
+    }
+  };
+  walk(join(home, ".codex", "sessions"), 0);
+  return out;
+}
+
+/** The rollout of one seat: among the files NOT in `before` (the set the launcher listed ahead of the spawn) whose session_meta cwd is one of `cwds`, the one whose session began first. No wall clock decides; the launch order does. */
+export function findRollout(home, { cwds, before }) {
+  let best = null;
+  for (const p of listRollouts(home)) {
+    if (before.has(p)) continue;
+    try {
+      const fd = openSync(p, "r"); const buf = Buffer.alloc(16384);
+      const n = readSync(fd, buf, 0, buf.length, 0); closeSync(fd);
+      const first = buf.toString("utf8", 0, n).split("\n", 1)[0];
+      const cwd = /"cwd":("(?:[^"\\]|\\.)*")/.exec(first)?.[1];
+      if (cwd === undefined || !cwds.includes(JSON.parse(cwd))) continue;
+      const began = /"timestamp":"([^"]+)"/.exec(first)?.[1] ?? "";
+      if (!best || began < best[0]) best = [began, p];
+    } catch { /* unreadable or torn */ }
+  }
+  return best ? best[1] : null;
+}
+
+/** The watchdog loop over injected readers: stops the seat at its ceiling (SIGTERM, then SIGKILL after `graceTicks` ticks) and writes ceiling.md; returns "ceiling" or "exited". */
+export function watchSeat({ seatDir, pid, ceiling, mode, tokens, alive, kill, sleep, graceTicks = 10 }) {
+  while (alive()) {
+    const t = tokens();
+    if (typeof t === "number" && t >= ceiling) {
+      kill("SIGTERM");
+      for (let i = 0; i < graceTicks && alive(); i++) sleep();
+      if (alive()) kill("SIGKILL");
+      writeFileSync(join(seatDir, "ceiling.md"), `# Ceiling reached\n\nThe ${mode} seat (pid ${pid}) read ${t} total tokens in its rollout (total_token_usage.total_tokens, cached input counted) against a ceiling of ${ceiling}. The watchdog stopped it (SIGTERM, then SIGKILL if it lived).\n`);
+      return "ceiling";
+    }
+    sleep();
+  }
+  return "exited";
+}
+
+/** The passwd home, never `$HOME`. */
+export function realHome() { return userInfo().homedir; }
+
+/** The argument array after `codex` and before the brief. */
+export function seatArgs({ mode, model, effort, seatDir, worktree, gitDir, laneRoot }) {
+  if (!MODES.includes(mode)) throw new Error(`mode must be build, lead, read or research (got "${mode}")`);
+  const common = ["exec", "-m", model, "-c", `model_reasoning_effort=${effort}`, "-c", 'approval_policy="never"', "--skip-git-repo-check", "-o", join(seatDir, "final.md")];
+  const tmpWall = ["-c", "sandbox_workspace_write.exclude_slash_tmp=true", "-c", "sandbox_workspace_write.exclude_tmpdir_env_var=true"];
+  if (mode === "build") {
+    if (!worktree) throw new Error("a builder needs its worktree");
+    return [...common, "-s", "workspace-write", ...tmpWall, "-c", "sandbox_workspace_write.network_access=false", "-C", worktree, "--add-dir", seatDir];
+  }
+  if (mode === "lead") {
+    if (!worktree) throw new Error("a lead needs its worktree");
+    return [...common, "-s", "workspace-write", ...tmpWall, "-c", "sandbox_workspace_write.network_access=true", "-C", worktree, "--add-dir", seatDir, ...(gitDir ? ["--add-dir", gitDir] : []), ...(laneRoot ? ["--add-dir", laneRoot] : [])];
+  }
+  if (mode === "research") return ["--search", ...common, "-s", "workspace-write", ...tmpWall, "-c", "sandbox_workspace_write.network_access=true", "-C", seatDir];
+  return [...common, "-s", "read-only", "-C", seatDir];
+}
+
+/** The newest rollout's rate_limits record, from its lines: the pool, or null when no line carries one. */
+export function readPool(lines, mode = "build") {
+  const floor = mode === "read" ? READ_FLOOR : FLOOR;
+  let primary = null;
+  for (const line of lines ?? []) {
+    if (!line.includes('"rate_limits"')) continue;
+    let d;
+    try { d = JSON.parse(line); } catch { continue; }
+    const p = (d?.payload?.rate_limits ?? d?.payload?.info?.rate_limits)?.primary;
+    if (p && typeof p.used_percent === "number" && p.window_minutes && p.resets_at) primary = p;
+  }
+  if (!primary) return null;
+  const left = 100 - primary.used_percent;
+  const above = left > floor;
+  const winDays = Math.floor(primary.window_minutes / 1440);
+  const summary = `codex pool: ${primary.used_percent.toFixed(1)}% used of a ${winDays}-day window, resets ${new Date(primary.resets_at * 1000).toISOString().slice(0, 16)}Z; ${left.toFixed(1)}% left, floor ${floor}% -> ${above ? "ABOVE FLOOR" : "AT OR BELOW FLOOR: launch no new Codex seat"}`;
+  return { used: primary.used_percent, winDays, reset: primary.resets_at, left, above, summary };
+}
+
+/** Whether the tree's dists were built from its source: the global stamp, else every built package's own stamp (a `--pkg` build). */
+export function distFresh(repo) {
+  const digest = (dir) => sourceDigest(dir);
+  const read = (p) => { try { return readFileSync(p, "utf8").trim(); } catch { return null; } };
+  if (read(globalStampPath(repo)) === digest(join(repo, "packages"))) return true;
+  const built = workspacePackageDirs(repo).filter((d) => existsSync(join(repo, "packages", d, "dist")));
+  return built.length > 0 && built.every((d) => read(packageStampPath(repo, d)) === digest(join(repo, "packages", d)));
+}
+
+/** The canon seat-law bullets as the section a brief carries. */
+export function seatLaw(canonText) {
+  const m = /<<~ ahu slot=`#\/the-seat-law`>>([\s\S]*?)<<~\/ahu>>/.exec(canonText);
+  const bullets = m ? m[1].split("\n").filter((l) => l.startsWith("* ")) : [];
+  if (!bullets.length) throw new Error(`no seat-law bullets in ${CANON} #/the-seat-law`);
+  return `## SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)\n${bullets.join("\n")}\n`;
+}
+
+/** The lead's separate wall permits work a builder's canon law forbids. */
+export function leadLaw() {
+  return `## LEAD LAW (appended by tools/launch-codex.mjs to a lead brief; it binds this lead)
+* No \`git stash\` in any form, no \`--no-verify\`, no \`git push -u\`, no force-push, no edit of .git/config.
+* Commit by \`git commit -F <file> --only -- <paths>\` with the \`lar:///w1.w2.w3 — summary\` message convention and the two trailers the session's attribution reminder gives.
+* Never write the main checkout (~/Synthetic-Dream-Machine) or its submodule worktrees; work in your own worktree under ~/.lares-scratch only.
+* Never read a credential file.
+* Never boot a daemon in-tree bare; any boot uses a scratch LAR_ROOT and no global LAR_BAGS.
+* No local e2e loops (unit first; e2e in CI via tools/e2e-shards.mjs or a raw ci/* branch).
+* Launch seats ONLY through tools/launch-codex.mjs; a Sol seat only through the controller.
+* A stop that needs more than this wall names itself in out.md and stops.
+* Report to the controller (final.md) for any push beyond the lane's go, and never push without its go.
+`;
+}
+
+/** Replace sections under the selected law heading, preserving the exact law once. */
+export function appendSeatLaw(brief, law, title = "SEAT LAW") {
+  const escaped = title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const heading = new RegExp(`^## ${escaped}(?: \\(|$)[^\\n]*\\n?`, "gm");
+  if (brief.includes(law) && (brief.match(heading) ?? []).length === 1) return brief;
+  const section = new RegExp(`^## ${escaped}(?: \\(|$)[^\\n]*\\n[\\s\\S]*?(?=^## (?!${escaped}(?: \\(|$))|(?![\\s\\S]))`, "gm");
+  const kept = brief.replace(section, "");
+  return `${kept}${kept.endsWith("\n") ? "" : "\n"}\n${law}`;
+}
+
+function newestRolloutLines(home) {
+  const files = [];
+  const walk = (d, depth) => {
+    let es; try { es = readdirSync(d, { withFileTypes: true }); } catch { return; }
+    for (const e of es) {
+      const p = join(d, e.name);
+      if (e.isDirectory() && depth < 5) walk(p, depth + 1);
+      else if (e.isFile() && /^rollout-.*\.jsonl$/.test(e.name)) { try { files.push([statSync(p).mtimeMs, p]); } catch { /* left mid-walk */ } }
+    }
+  };
+  walk(join(home, ".codex", "sessions"), 0);
+  files.sort((a, b) => b[0] - a[0]);
+  // The NEWEST rollout alone answers: an older record is a stale pool, and a newest one with none reads unreadable.
+  const newest = files[0]?.[1];
+  if (!newest) return null;
+  const lines = readFileSync(newest, "utf8").split("\n").filter((l) => l.includes('"rate_limits"'));
+  return lines.length ? lines : null;
+}
+
+/** The main checkout `repo` belongs to: the git common dir's parent (a lane worktree's launcher still guards the real main). */
+export function mainCheckout(repo) {
+  try {
+    const common = execFileSync("git", ["-C", repo, "rev-parse", "--path-format=absolute", "--git-common-dir"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+    return basename(common) === ".git" ? dirname(realpathSync(common)) : real(repo);
+  } catch { return repo; }
+```
+
+</details>
+
+---
+
+<sub>13s</sub>
+
+!!! `view`
+
+''view the file at /home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs.''
+
+/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs (lines 221-420)
+
+<details>
+<summary>110 lines</summary>
+
+```
+}
+
+/** The real readers; `home` defaults to the passwd home. */
+export function realReaders(home = realHome(), repo = REPO) {
+  return {
+    realHome: home, repo: mainCheckout(repo),
+    modelsCache: () => { try { return readFileSync(join(home, ".codex", "models_cache.json"), "utf8"); } catch { return null; } },
+    rolloutLines: () => { try { return newestRolloutLines(home); } catch { return null; } },
+    distFresh: (wt) => { try { return distFresh(wt); } catch { return false; } },
+    canon: () => readFileSync(join(repo, CANON), "utf8"),
+    gitCommonDir: (worktree) => execFileSync("git", ["-C", worktree, "rev-parse", "--path-format=absolute", "--git-common-dir"], { encoding: "utf8" }).trim(),
+  };
+}
+
+const refuse = (why) => Object.assign(new Error(why), { refused: true });
+const real = (p) => { try { return realpathSync(p); } catch { return resolve(p); } };
+
+/** Throws a refusal naming why a seat must not start; else returns `{ pool }` (the pool summary line). */
+export function preflight({ mode, model, seatDir, worktree }, readers) {
+  // The REAL paths decide: a symlinked seat dir that leaves the lane reads as outside it.
+  const scratch = real(join(readers.realHome, ".lares-scratch"));
+  const there = real(seatDir);
+  const rel = there.startsWith(`${scratch}/`) ? there.slice(scratch.length + 1).split("/") : [];
+  if (rel.length < 2) throw refuse(`seat dir must sit under ${scratch}/<lane>/ (the spend tally reads the lane from it): ${seatDir}`);
+  if (!existsSync(join(seatDir, "brief.md"))) throw refuse(`no ${join(seatDir, "brief.md")}`);
+  if (!MODES.includes(mode)) throw refuse("mode must be build, lead, read or research");
+  if (model === "gpt-6-sol") throw refuse("gpt-6-sol never launches; use gpt-6.1-sol");
+  const cache = readers.modelsCache();
+  if (!cache || !new RegExp(`"slug": *"${model.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"`).test(cache)) throw refuse(`model ${model} is not in Codex's models cache`);
+  // An empty read names itself and reads once more; it never stands in for a pool at zero.
+  const pool = readPool(readers.rolloutLines(), mode) ?? readPool(readers.rolloutLines(), mode);
+  if (!pool) throw refuse("Codex pool line unreadable (no rate_limits record in the newest rollout, read twice); read it by hand before launching");
+  if (!pool.above) throw refuse(`Codex pool at or below its floor: ${pool.summary}`);
+  if (MAX_USED[mode] !== undefined && pool.used > MAX_USED[mode]) throw refuse(`Codex pool used ${pool.used.toFixed(1)}%, above the ${mode} seat's ${MAX_USED[mode]}% used ceiling: ${pool.summary}`);
+  if (mode === "build" || mode === "lead") {
+    const role = mode === "lead" ? "lead" : "builder";
+    if (!worktree) throw refuse(`a ${role} needs its worktree`);
+    if (real(worktree) === real(readers.repo)) throw refuse(`a ${role} never writes the main checkout`);
+    if (mode === "lead" && !real(worktree).startsWith(`${scratch}/`)) throw refuse(`a lead worktree must sit under ${scratch}/: ${worktree}`);
+    if (mode === "build" && !readers.distFresh(worktree)) throw refuse(`the worktree's dist is stale (or unreadable): the lead runs 'pnpm build' in ${worktree} before launching a build seat`);
+  }
+  return { pool: pool.summary };
+}
+
+function parse(argv) {
+  const o = { dryRun: false };
+  const keys = { "--mode": "mode", "--model": "model", "--effort": "effort", "--seat-dir": "seatDir", "--worktree": "worktree", "--ceiling": "ceiling", "--pid": "pid", "--cwds": "cwds", "--before": "before" };
+  for (let i = 0; i < argv.length; i++) {
+    if (argv[i] === "--dry-run") o.dryRun = true;
+    else if (argv[i] === "--watch") o.watch = true;
+    else if (keys[argv[i]]) { if (argv[i + 1] === undefined) throw new Error(`${argv[i]} wants a value`); o[keys[argv[i]]] = argv[++i]; }
+    else throw new Error(`unknown option ${argv[i]}`);
+  }
+  if (o.watch) return o;
+  for (const k of ["mode", "model", "effort", "seatDir"]) if (!o[k]) throw new Error(`--${k === "seatDir" ? "seat-dir" : k} is required`);
+  return o;
+}
+
+/** The detached watchdog entry: tails the seat's rollout every few seconds until the seat exits or crosses its ceiling. */
+function watchMain(o) {
+  const pid = Number(o.pid), cwds = JSON.parse(o.cwds), before = new Set(JSON.parse(readFileSync(o.before, "utf8"))), home = realHome();
+  // The pid's start tick pins its identity: a reused pid reads as a different process and the seat as gone.
+  const startTick = (n) => { try { return readFileSync(`/proc/${n}/stat`, "utf8").replace(/^.*\) /, "").split(" ")[19]; } catch { return null; } };
+  const born = startTick(pid);
+  const alive = () => { try { process.kill(pid, 0); } catch { return false; } return born === null || startTick(pid) === born; };
+  const nap = new Int32Array(new SharedArrayBuffer(4));
+  let file = null;
+  watchSeat({
+    seatDir: o.seatDir, pid, ceiling: Number(o.ceiling), mode: o.mode, alive,
+    kill: (sig) => { try { process.kill(-pid, sig); } catch { try { process.kill(pid, sig); } catch { /* gone */ } } },
+    sleep: () => Atomics.wait(nap, 0, 0, 3000),
+    tokens: () => { file ??= findRollout(home, { cwds, before }); return file ? rolloutTokens(readFileSync(file, "utf8").split("\n")) : null; },
+  });
+  return 0;
+}
+
+/** The launcher over injected readers, spawn and writers; returns the exit code. */
+export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err = console.error } = {}) {
+  let o;
+  try { o = parse(argv); } catch (e) { err(`[launch-codex] ${e.message}`); return 2; }
+  if (o.watch) return watchMain(o);
+  const seatDir = real(o.seatDir);
+  try {
+    const ceiling = ceilingFor(o.mode, o.ceiling);
+    readers ??= realReaders();
+    const worktree = o.worktree ? real(o.worktree) : undefined;
+    const { pool } = preflight({ ...o, seatDir, worktree }, readers);
+    const gitDir = o.mode === "lead" ? readers.gitCommonDir(worktree) : undefined;
+    const laneRoot = o.mode === "lead" ? dirname(seatDir) : undefined;
+    const args = seatArgs({ ...o, seatDir, worktree, gitDir, laneRoot });
+    log(pool);
+    if (o.dryRun) { log(`DRY-RUN ${JSON.stringify(["codex", ...args, "<brief>"])}`); return 0; }
+    const law = o.mode === "lead" ? leadLaw() : seatLaw(readers.canon());
+    mkdirSync(join(seatDir, ".tmp"), { recursive: true });
+    const briefPath = join(seatDir, "brief.md");
+    const brief = appendSeatLaw(readFileSync(briefPath, "utf8"), law, o.mode === "lead" ? "LEAD LAW" : "SEAT LAW");
+    writeFileSync(briefPath, brief);
+    appendFileSync(join(seatDir, "attempts.log"), `attempt model=${o.model} effort=${o.effort} mode=${o.mode}\n`);
+    const fd = openSync(join(seatDir, "run.log"), "w");
+    const env = { ...process.env, HOME: readers.realHome, TMPDIR: join(seatDir, ".tmp"), TMPPREFIX: join(seatDir, ".tmp", "zsh") };
+    const child = spawn("codex", [...args, brief], { cwd: seatDir, env, detached: true, stdio: ["ignore", fd, fd] });
+    child.unref?.();
+    const beforeFile = join(seatDir, "rollouts-before.json");
+    writeFileSync(beforeFile, JSON.stringify(listRollouts(readers.realHome)));
+    const cwds = JSON.stringify([worktree ?? seatDir, seatDir]);
+    const dog = spawn(process.execPath, [fileURLToPath(import.meta.url), "--watch", "--seat-dir", seatDir, "--pid", String(child.pid), "--ceiling", String(ceiling), "--mode", o.mode, "--cwds", cwds, "--before", beforeFile], { cwd: seatDir, env: { ...process.env, HOME: readers.realHome }, detached: true, stdio: "ignore" });
+    dog.unref?.();
+    log(`SEAT-LAUNCHED ${seatDir} (${o.model} ${o.effort} ${o.mode}) pid ${child.pid}; wait on: until [ -f ${join(seatDir, "final.md")} ]`);
+    return 0;
+  } catch (e) {
+    if (!e.refused) throw e;
+    err(`SEAT-REFUSED: ${e.message}`);
+    return 2;
+  }
+}
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) process.exit(run(process.argv.slice(2)));
+```
+
+</details>
+
+---
+
+<sub>13s</sub>
+
+!!! `view`
+
+''view the file at /home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs.''
+
+/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs (lines 430-560)
+
+<details>
+<summary>78 lines</summary>
+
+```
+  assert.deepEqual(signals, []);
+  assert.throws(() => readFileSync(join(seatDir, "ceiling.md")));
+  let up = true;
+  const r2 = watchSeat({ seatDir, pid: 1, ceiling: 100, mode: "read", tokens: () => 500, alive: () => up, kill: (s) => { signals.push(s); up = false; }, sleep() {}, graceTicks: 2 });
+  assert.equal(r2, "ceiling");
+  assert.deepEqual(signals, ["SIGTERM"]);
+});
+
+test("row 1: run launches the watchdog detached beside the seat with the mode's ceiling, or the --ceiling override; a dry run launches none", () => {
+  const w = world();
+  const spawned = [];
+  const spawn = (cmd, args, opts) => { spawned.push({ cmd, args, opts }); return { pid: 4242, unref() {} }; };
+  const base = ["--mode", "build", "--model", "gpt-6.1-terra", "--effort", "high", "--seat-dir", w.seatDir, "--worktree", w.wt];
+  assert.equal(run(base, { readers: w.readers, spawn, log() {} }), 0);
+  const dog = spawned.find((x) => x.cmd !== "codex");
+  assert.ok(dog, "a watchdog spawned");
+  assert.equal(dog.opts.detached, true);
+  assert.ok(dog.args.includes("--watch"));
+  assert.equal(dog.args[dog.args.indexOf("--ceiling") + 1], "8000000");
+  assert.equal(dog.args[dog.args.indexOf("--pid") + 1], "4242");
+  spawned.length = 0;
+  assert.equal(run([...base, "--ceiling", "123"], { readers: w.readers, spawn, log() {} }), 0);
+  assert.equal(spawned.find((x) => x.cmd !== "codex").args[spawned.find((x) => x.cmd !== "codex").args.indexOf("--ceiling") + 1], "123");
+  spawned.length = 0;
+  assert.equal(run([...base, "--dry-run"], { readers: w.readers, spawn, log() {} }), 0);
+  assert.equal(spawned.length, 0);
+  assert.equal(run([...base, "--ceiling", "nope"], { readers: w.readers, spawn, log() {}, err() {} }), 2);
+});
+
+// ---- row 3: the compaction canary ----
+const cevent = (o) => JSON.stringify(o);
+
+test("row 3: every mode carries the compaction and tool-output limits as -c overrides; an override moves the compaction limit alone", () => {
+  for (const mode of ["build", "lead", "read", "research"]) {
+    const a = seatArgs({ mode, model: "m", effort: "high", seatDir: "/s", worktree: "/w" });
+    const i = a.indexOf(`model_auto_compact_token_limit=${COMPACT_LIMIT}`), j = a.indexOf(`tool_output_token_limit=${TOOL_OUTPUT_LIMIT}`);
+    assert.ok(i > 0 && a[i - 1] === "-c", `${mode} lacks the compact limit`);
+    assert.ok(j > 0 && a[j - 1] === "-c", `${mode} lacks the tool output limit`);
+  }
+  const low = seatArgs({ mode: "read", model: "m", effort: "high", seatDir: "/s", compactLimit: 50000 });
+  assert.ok(low.includes("model_auto_compact_token_limit=50000") && low.includes(`tool_output_token_limit=${TOOL_OUTPUT_LIMIT}`));
+  assert.ok(!low.includes(`model_auto_compact_token_limit=${COMPACT_LIMIT}`));
+});
+
+test("row 3: canaryVerdict reads the rollout's compaction events (compacted, context_compacted, compaction); KNOWN POSITIVE and CONTROL", () => {
+  const plain = [cevent({ type: "event_msg", payload: { type: "token_count", info: { total_token_usage: { total_tokens: 90 } } } }), cevent({ type: "response_item", payload: { type: "function_call" } })];
+  assert.deepEqual(canaryVerdict(plain), { fired: false, events: 0, calls: 1, tokens: 90 });
+  assert.equal(canaryVerdict([...plain, cevent({ type: "compacted", payload: { message: "" } })]).fired, true);
+  assert.equal(canaryVerdict([...plain, cevent({ type: "event_msg", payload: { type: "context_compacted" } })]).fired, true);
+  const two = canaryVerdict([...plain, cevent({ type: "compacted", payload: {} }), cevent({ type: "event_msg", payload: { type: "context_compacted" } })]);
+  assert.equal(two.events, 2);
+  assert.equal(canaryVerdict(["garbage", ""]).fired, false);
+});
+
+test("row 3: the canary brief demands many separate tool calls in one turn and a closing line", () => {
+  const b = canaryBrief();
+  assert.match(b, /one tool call per slice/i);
+  assert.match(b, /CANARY DONE/);
+  assert.match(b, /\b(60|80|100)\b/);
+});
+
+test("row 3: --canary on a read seat writes the canary brief and launches with a lowered compaction limit; --check-canary reports the verdict from the seat's own rollout", () => {
+  const w = world();
+  const spawned = [];
+  const spawn = (cmd, args, opts) => { spawned.push({ cmd, args, opts }); return { pid: 9, unref() {} }; };
+  const out = [];
+  assert.equal(run(["--mode", "read", "--model", "gpt-6-luna", "--effort", "low", "--seat-dir", w.seatDir, "--canary"], { readers: w.readers, spawn, log: (s) => out.push(s) }), 0);
+  const codex = spawned.find((x) => x.cmd === "codex");
+  assert.match(readFileSync(join(w.seatDir, "brief.md"), "utf8"), /CANARY DONE/);
+  const limit = codex.args.find((x) => x.startsWith("model_auto_compact_token_limit="));
+  assert.ok(Number(limit.split("=")[1]) < COMPACT_LIMIT, "the canary runs under a lowered limit so compaction can fire");
+  // the check
+  const dir = join(w.home, ".codex", "sessions", "2026", "11", "04");
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, "rollout-x.jsonl"), `${cevent({ timestamp: "2026-11-04T10:00:00Z", type: "session_meta", payload: { cwd: realpathSync(w.seatDir) } })}\n${cevent({ type: "compacted", payload: {} })}\n`);
+  const say = [];
+  assert.equal(run(["--check-canary", "--seat-dir", w.seatDir], { readers: w.readers, log: (s) => say.push(s), err: (s) => say.push(s) }), 0);
+  assert.match(say.join("\n"), /COMPACTION-FIRED/);
+  const none = world();
+  mkdirSync(join(none.home, ".codex", "sessions"), { recursive: true });
+  const say2 = [];
+  assert.equal(run(["--check-canary", "--seat-dir", none.seatDir], { readers: none.readers, log: (s) => say2.push(s), err: (s) => say2.push(s) }), 2);
+  assert.match(say2.join("\n"), /no rollout/);
+});
+```
+
+</details>
+
+---
+
+<sub>16s</sub>
+
+!!! `view`
+
+''view the file at /home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs.''
+
+/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs (lines 1-130)
+
+<details>
+<summary>114 lines</summary>
+
+```
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { execFileSync, spawnSync } from "node:child_process";
+import { mkdtempSync, mkdirSync, readFileSync, realpathSync, symlinkSync, utimesSync, writeFileSync } from "node:fs";
+import { tmpdir, userInfo } from "node:os";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { appendSeatLaw, canaryBrief, canaryVerdict, ceilingFor, COMPACT_LIMIT, TOOL_OUTPUT_LIMIT, distFresh, findRollout, rolloutTokens, watchSeat, mainCheckout, preflight, readPool, realHome, realReaders, run, seatArgs, seatLaw } from "./launch-codex.mjs";
+import { globalStampPath, packageStampPath, sourceDigest } from "./stamp-build.mjs";
+
+const TOOL = fileURLToPath(new URL("./launch-codex.mjs", import.meta.url));
+const CANON = fileURLToPath(new URL("../bags/lares/ha.ka.ba/lares/docs/pono/mixed-model-swarm.mem", import.meta.url));
+
+// A recorded rollout line (the newest rollout's own rate_limits record, 2026-10-30), used 60% of a 7-day window.
+const rate = (used) => `{"timestamp":"2026-10-30T18:16:34.877Z","type":"event_msg","payload":{"type":"token_count","info":{"total_token_usage":{"total_tokens":622660}},"rate_limits":{"limit_id":"codex","primary":{"used_percent":${used},"window_minutes":10080,"resets_at":1793791489},"secondary":null}}}`;
+const CACHE = '{"models":[{"slug": "gpt-6.1-sol"},{"slug": "gpt-6.1-terra"},{"slug": "gpt-6-luna"},{"slug": "gpt-6-sol"}]}';
+
+/** A scratch world: a fake real home, a seat dir with a brief under it, a worktree, a main checkout. */
+function world(over = {}) {
+  const home = mkdtempSync(join(tmpdir(), "launch-codex-"));
+  const repo = join(home, "repo"), wt = join(home, ".lares-scratch", "lane", "wt"), seatDir = join(home, ".lares-scratch", "lane", "seats", "s1");
+  for (const d of [repo, wt, seatDir]) mkdirSync(d, { recursive: true });
+  writeFileSync(join(seatDir, "brief.md"), "# brief\nDo the thing.\n");
+  const calls = { pool: 0 };
+  const readers = {
+    realHome: home, repo,
+    modelsCache: () => CACHE,
+    rolloutLines: () => { calls.pool++; return [rate(40)]; },
+    distFresh: () => true,
+    canon: () => readFileSync(CANON, "utf8"),
+    ...over,
+  };
+  return { home, repo, wt, seatDir, readers, calls };
+}
+const ask = (w, o = {}) => ({ mode: "build", model: "gpt-6.1-terra", effort: "high", seatDir: w.seatDir, worktree: w.wt, ...o });
+const refuses = (w, o, re, readers) => assert.throws(() => preflight(ask(w, o), readers ?? w.readers), re);
+
+test("every mode carries approval never; no mode carries --ephemeral", () => {
+  for (const mode of ["build", "read", "research"]) {
+    const a = seatArgs({ mode, model: "m", effort: "high", seatDir: "/s", worktree: "/w" });
+    assert.ok(a.includes('approval_policy="never"'), `${mode} lacks approval never`);
+    assert.ok(!a.includes("--ephemeral"), `${mode} carries --ephemeral`);
+    assert.ok(a.includes("model_reasoning_effort=high"));
+  }
+});
+
+test("build: workspace-write, network off, both tmp excludes, -C worktree, --add-dir seat; CONTROL: no network_access=true", () => {
+  const a = seatArgs({ mode: "build", model: "m", effort: "high", seatDir: "/s", worktree: "/w" });
+  const j = a.join(" ");
+  assert.match(j, /-s workspace-write/);
+  assert.ok(a.includes("sandbox_workspace_write.network_access=false"));
+  assert.ok(a.includes("sandbox_workspace_write.exclude_slash_tmp=true"));
+  assert.ok(a.includes("sandbox_workspace_write.exclude_tmpdir_env_var=true"));
+  assert.match(j, /-C \/w --add-dir \/s/);
+  assert.ok(!j.includes("network_access=true"));
+  assert.ok(!a.includes("--search"));
+});
+
+test("lead argv exact", () => {
+  assert.deepEqual(seatArgs({ mode: "lead", model: "m", effort: "high", seatDir: "/lane/s", worktree: "/w", gitDir: "/g", laneRoot: "/lane" }), ["exec", "-m", "m", "-c", "model_reasoning_effort=high", "-c", 'approval_policy="never"', "--skip-git-repo-check", "-o", "/lane/s/final.md", "-c", `model_auto_compact_token_limit=${COMPACT_LIMIT}`, "-c", `tool_output_token_limit=${TOOL_OUTPUT_LIMIT}`, "-s", "workspace-write", "-c", "sandbox_workspace_write.exclude_slash_tmp=true", "-c", "sandbox_workspace_write.exclude_tmpdir_env_var=true", "-c", "sandbox_workspace_write.network_access=true", "-C", "/w", "--add-dir", "/lane/s", "--add-dir", "/g", "--add-dir", "/lane"]);
+});
+
+test("lead argv needs worktree", () => {
+  assert.throws(() => seatArgs({ mode: "lead", model: "m", effort: "high", seatDir: "/s" }), /needs its worktree/);
+});
+
+test("read: -s read-only -C seat, no add-dir, no search", () => {
+  const a = seatArgs({ mode: "read", model: "m", effort: "high", seatDir: "/s", worktree: "/w" });
+  assert.match(a.join(" "), /-s read-only -C \/s$/);
+  assert.ok(!a.includes("--add-dir") && !a.includes("--search"));
+});
+
+test("only research searches, and --search rides ahead of exec; research is networked inside its seat dir", () => {
+  const r = seatArgs({ mode: "research", model: "m", effort: "high", seatDir: "/s" });
+  assert.equal(r[0], "--search");
+  assert.equal(r[1], "exec");
+  assert.ok(r.includes("sandbox_workspace_write.network_access=true"));
+  for (const mode of ["build", "read"]) assert.ok(!seatArgs({ mode, model: "m", effort: "high", seatDir: "/s", worktree: "/w" }).includes("--search"));
+  assert.equal(seatArgs({ mode: "read", model: "m", effort: "high", seatDir: "/s" })[0], "exec");
+});
+
+test("the seat's final.md rides -o, and an unknown mode refuses", () => {
+  const a = seatArgs({ mode: "read", model: "m", effort: "high", seatDir: "/s" });
+  assert.match(a.join(" "), /-o \/s\/final\.md/);
+  assert.throws(() => seatArgs({ mode: "write", model: "m", effort: "high", seatDir: "/s" }), /mode must be/);
+});
+
+test("CONTROL: a fresh build seat over a fresh stamp passes preflight, and names its pool", () => {
+  const w = world();
+  const got = preflight(ask(w), w.readers);
+  assert.match(got.pool, /ABOVE FLOOR/);
+  assert.match(got.pool, /60.0% left/);
+});
+
+test("refuses the main checkout as a build worktree; a reader and a researcher need none", () => {
+  const w = world();
+  refuses(w, { worktree: w.repo }, /main checkout/);
+  refuses(w, { worktree: undefined }, /needs its worktree/);
+  assert.ok(preflight(ask(w, { mode: "read", worktree: w.repo }), w.readers));
+});
+
+test("lead preflight main checkout", () => {
+  const w = world();
+  refuses(w, { mode: "lead", worktree: w.repo }, /main checkout/);
+  refuses(w, { mode: "lead", worktree: undefined }, /needs its worktree/);
+});
+
+test("lead preflight scratch boundary", () => {
+  const w = world();
+  const outside = join(w.home, "outside"); mkdirSync(outside);
+  const link = join(w.home, ".lares-scratch", "lane", "escape"); symlinkSync(outside, link);
+  refuses(w, { mode: "lead", worktree: outside }, /worktree.*scratch/);
+  refuses(w, { mode: "lead", worktree: link }, /worktree.*scratch/);
+});
+
+test("refuses a seat dir outside <scratch>/<lane>/, an absent brief, a model absent from the cache, gpt-6-sol", () => {
+  const w = world();
+  const outside = mkdtempSync(join(tmpdir(), "outside-")); writeFileSync(join(outside, "brief.md"), "x");
+  refuses(w, { seatDir: outside }, /seat dir must sit under/);
+  refuses(w, { seatDir: join(w.home, ".lares-scratch", "lane") }, /seat dir must sit under/);
+  const empty = join(w.home, ".lares-scratch", "lane", "nobrief"); mkdirSync(empty);
+  refuses(w, { seatDir: empty }, /no .*brief\.md/);
+  refuses(w, { model: "gpt-6-nope" }, /not in Codex's models cache/);
+  refuses(w, { model: "gpt-6-sol" }, /gpt-6\.1-sol/); // present in the cache, still refused
+  refuses(w, {}, /models cache/, { ...w.readers, modelsCache: () => null });
+});
+
+test("the pool: a pure read of the recorded line; at the floor refuses; CONTROL just above passes", () => {
+  const p = readPool([rate(60)]);
+  assert.equal(p.used, 60); assert.equal(p.winDays, 7); assert.equal(p.reset, 1793791489);
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/build-row-3-the-compaction-canary-in-tools-launc-part-2`>>
+
+</details>
+
+---
+
+<sub>18s</sub>
+
+!!! `rg`
+
+''&#45;-check-canary|&#45;-canary|required|unknown option|watch''
+
+"&#45;-check-canary|&#45;-canary|required|unknown option|watch" (tools/launch-codex.test.mjs)
+
+<details>
+<summary>13 matches</summary>
+
+```
+/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:8:import { appendSeatLaw, canaryBrief, canaryVerdict, ceilingFor, COMPACT_LIMIT, TOOL_OUTPUT_LIMIT, distFresh, findRollout, rolloutTokens, watchSeat, mainCheckout, preflight, readPool, realHome, realReaders, run, seatArgs, seatLaw } from "./launch-codex.mjs";
+/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:409:test("row 1: watchSeat stops a seat at its ceiling (SIGTERM, then SIGKILL when it lives), writes ceiling.md naming the reading and the ceiling; reads no run.log", () => {
+/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:415:  const r = watchSeat({ seatDir, pid: 77, ceiling: 8_000_000, mode: "build", tokens: () => readings.shift() ?? 8_100_000, alive: () => alive, kill: (sig) => { signals.push(sig); if (sig === "SIGKILL") alive = false; }, sleep() {}, graceTicks: 2 });
+/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:424:test("row 1: CONTROL watchSeat under the ceiling leaves the seat alone and writes nothing; a seat that exits on SIGTERM draws no SIGKILL", () => {
+/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:428:  const r = watchSeat({ seatDir, pid: 1, ceiling: 100, mode: "read", tokens: () => 50, alive: () => ++ticks < 4, kill: (s) => signals.push(s), sleep() {}, graceTicks: 2 });
+/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:433:  const r2 = watchSeat({ seatDir, pid: 1, ceiling: 100, mode: "read", tokens: () => 500, alive: () => up, kill: (s) => { signals.push(s); up = false; }, sleep() {}, graceTicks: 2 });
+/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:438:test("row 1: run launches the watchdog detached beside the seat with the mode's ceiling, or the --ceiling override; a dry run launches none", () => {
+/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:445:  assert.ok(dog, "a watchdog spawned");
+/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:447:  assert.ok(dog.args.includes("--watch"));
+/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:491:test("row 3: --canary on a read seat writes the canary brief and launches with a lowered compaction limit; --check-canary reports the verdict from the seat's own rollout", () => {
+/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:496:  assert.equal(run(["--mode", "read", "--model", "gpt-6-luna", "--effort", "low", "--seat-dir", w.seatDir, "--canary"], { readers: w.readers, spawn, log: (s) => out.push(s) }), 0);
+/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:506:  assert.equal(run(["--check-canary", "--seat-dir", w.seatDir], { readers: w.readers, log: (s) => say.push(s), err: (s) => say.push(s) }), 0);
+/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:511:  assert.equal(run(["--check-canary", "--seat-dir", none.seatDir], { readers: none.readers, log: (s) => say2.push(s), err: (s) => say2.push(s) }), 2);
+```
+
+</details>
+
+---
+
+<sub>54s</sub>
+
+!!! Copilot
+
+I’ve located the exact test expectations; next I’m applying a single surgical patch to `tools/launch-codex.mjs` for row-3 canary support and CLI wiring.
+
+---
+
+<sub>54s</sub>
+
+!!! `apply_patch`
+
+<details>
+<summary>Arguments</summary>
+
+```json
+"*** Begin Patch\n*** Update File: /home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs\n@@\n /**\n  * launch-codex — the Codex seat's one launcher (mixed-model-swarm#/the-launch, #/the-seat-law).\n  *\n- *   node tools/launch-codex.mjs --seat-dir <dir> --model <slug> --effort <level> --mode build|lead|read|research [--worktree <dir>] [--dry-run]\n+ *   node tools/launch-codex.mjs --seat-dir <dir> --model <slug> --effort <level> --mode build|lead|read|research [--worktree <dir>] [--dry-run] [--canary]\n+ *   node tools/launch-codex.mjs --check-canary --seat-dir <dir>\n@@\n const FLOOR = 20;\n /** A read seat's own floor: the operator lets readers spend the pool to its end for now (2026-10-31: \"temp bump that limit to 0%\"; it stood at 5); builders and research keep FLOOR. */\n const READ_FLOOR = 0;\n const MODES = [\"build\", \"lead\", \"read\", \"research\"];\n+export const COMPACT_LIMIT = 120000;\n+export const TOOL_OUTPUT_LIMIT = 8000;\n /** The pool's used-percent ceiling by mode (seat-harness#/owed row 2): a read seat spends to its own floor. */\n const MAX_USED = { lead: 50, build: 60, research: 60 };\n /** The per-seat token ceiling by mode (row 1): total_token_usage.total_tokens, cached input counted. */\n const CEILINGS = { lead: 15_000_000, build: 8_000_000, read: 8_000_000, research: 8_000_000 };\n@@\n /** The argument array after `codex` and before the brief. */\n-export function seatArgs({ mode, model, effort, seatDir, worktree, gitDir, laneRoot }) {\n+export function seatArgs({ mode, model, effort, seatDir, worktree, gitDir, laneRoot, compactLimit }) {\n   if (!MODES.includes(mode)) throw new Error(`mode must be build, lead, read or research (got \"${mode}\")`);\n-  const common = [\"exec\", \"-m\", model, \"-c\", `model_reasoning_effort=${effort}`, \"-c\", 'approval_policy=\"never\"', \"--skip-git-repo-check\", \"-o\", join(seatDir, \"final.md\")];\n+  const common = [\"exec\", \"-m\", model, \"-c\", `model_reasoning_effort=${effort}`, \"-c\", 'approval_policy=\"never\"', \"--skip-git-repo-check\", \"-o\", join(seatDir, \"final.md\"), \"-c\", `model_auto_compact_token_limit=${compactLimit ?? COMPACT_LIMIT}`, \"-c\", `tool_output_token_limit=${TOOL_OUTPUT_LIMIT}`];\n   const tmpWall = [\"-c\", \"sandbox_workspace_write.exclude_slash_tmp=true\", \"-c\", \"sandbox_workspace_write.exclude_tmpdir_env_var=true\"];\n   if (mode === \"build\") {\n@@\n   if (mode === \"research\") return [\"--search\", ...common, \"-s\", \"workspace-write\", ...tmpWall, \"-c\", \"sandbox_workspace_write.network_access=true\", \"-C\", seatDir];\n   return [...common, \"-s\", \"read-only\", \"-C\", seatDir];\n }\n+\n+/** Canary verdict from one rollout's lines: compaction signals, function calls and final token reading. */\n+export function canaryVerdict(lines) {\n+  let events = 0;\n+  let calls = 0;\n+  for (const line of lines ?? []) {\n+    let d;\n+    try { d = JSON.parse(line); } catch { continue; }\n+    if (d?.type === \"compacted\" || d?.payload?.type === \"context_compacted\" || d?.payload?.type === \"compaction\") events++;\n+    if (d?.payload?.type === \"function_call\") calls++;\n+  }\n+  const tokens = rolloutTokens(lines);\n+  return { fired: events > 0, events, calls, tokens };\n+}\n+\n+/** The canary brief: force many small read-only tool calls and a fixed completion line. */\n+export function canaryBrief() {\n+  return `# Compaction canary\n+\n+Read-only seat. Do exactly this sequence and nothing else:\n+\n+1. Read /home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs in 40-line slices with \\`sed -n\\`.\n+2. Read /home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs in 40-line slices with \\`sed -n\\`.\n+3. Read /home/joshu/.lares-scratch/seat-harness/wt/bags/lares/ha.ka.ba/lares/docs/pono/seat-harness.mem in 40-line slices with \\`sed -n\\`.\n+4. Keep one tool call per slice.\n+5. Make about 100 slices total (target 100).\n+6. No summary until all slices are done.\n+7. Final message must be exactly:\n+CANARY DONE 100 calls\n+`;\n+}\n@@\n function parse(argv) {\n   const o = { dryRun: false };\n   const keys = { \"--mode\": \"mode\", \"--model\": \"model\", \"--effort\": \"effort\", \"--seat-dir\": \"seatDir\", \"--worktree\": \"worktree\", \"--ceiling\": \"ceiling\", \"--pid\": \"pid\", \"--cwds\": \"cwds\", \"--before\": \"before\" };\n   for (let i = 0; i < argv.length; i++) {\n     if (argv[i] === \"--dry-run\") o.dryRun = true;\n     else if (argv[i] === \"--watch\") o.watch = true;\n+    else if (argv[i] === \"--canary\") o.canary = true;\n+    else if (argv[i] === \"--check-canary\") o.checkCanary = true;\n     else if (keys[argv[i]]) { if (argv[i + 1] === undefined) throw new Error(`${argv[i]} wants a value`); o[keys[argv[i]]] = argv[++i]; }\n     else throw new Error(`unknown option ${argv[i]}`);\n   }\n   if (o.watch) return o;\n+  if (o.checkCanary) {\n+    if (!o.seatDir) throw new Error(\"--seat-dir is required\");\n+    return o;\n+  }\n   for (const k of [\"mode\", \"model\", \"effort\", \"seatDir\"]) if (!o[k]) throw new Error(`--${k === \"seatDir\" ? \"seat-dir\" : k} is required`);\n   return o;\n }\n@@\n export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err = console.error } = {}) {\n   let o;\n   try { o = parse(argv); } catch (e) { err(`[launch-codex] ${e.message}`); return 2; }\n   if (o.watch) return watchMain(o);\n+  if (o.checkCanary) {\n+    const seatDir = real(o.seatDir);\n+    readers ??= realReaders();\n+    const beforePath = join(seatDir, \"rollouts-before.json\");\n+    let before = new Set();\n+    if (existsSync(beforePath)) {\n+      try { before = new Set(JSON.parse(readFileSync(beforePath, \"utf8\"))); } catch { before = new Set(); }\n+    }\n+    const rollout = findRollout(readers.realHome, { cwds: [seatDir], before });\n+    if (!rollout) { err(`no rollout found for ${o.seatDir}`); return 2; }\n+    const verdict = canaryVerdict(readFileSync(rollout, \"utf8\").split(\"\\n\"));\n+    log(`${verdict.fired ? \"COMPACTION-FIRED\" : \"COMPACTION-NOT-FIRED\"} events=${verdict.events} calls=${verdict.calls} tokens=${verdict.tokens}`);\n+    return 0;\n+  }\n   const seatDir = real(o.seatDir);\n   try {\n+    if (o.canary && o.mode !== \"read\") throw refuse(\"--canary only runs with --mode read\");\n     const ceiling = ceilingFor(o.mode, o.ceiling);\n     readers ??= realReaders();\n     const worktree = o.worktree ? real(o.worktree) : undefined;\n     const { pool } = preflight({ ...o, seatDir, worktree }, readers);\n     const gitDir = o.mode === \"lead\" ? readers.gitCommonDir(worktree) : undefined;\n     const laneRoot = o.mode === \"lead\" ? dirname(seatDir) : undefined;\n-    const args = seatArgs({ ...o, seatDir, worktree, gitDir, laneRoot });\n+    if (o.canary) writeFileSync(join(seatDir, \"brief.md\"), canaryBrief());\n+    const args = seatArgs({ ...o, seatDir, worktree, gitDir, laneRoot, compactLimit: o.canary ? 50_000 : undefined });\n     log(pool);\n     if (o.dryRun) { log(`DRY-RUN ${JSON.stringify([\"codex\", ...args, \"<brief>\"])}`); return 0; }\n*** End Patch\n"
+```
+
+</details>
+
+```
+Modified 1 file(s): /home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs
+```
+
+---
+
+<sub>56s</sub>
+
+!!! `bash` — Failed
+
+''Syntax-check updated launcher file''
+
+$ node &#45;-check /home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs
+
+```
+Permission denied because no interactive user response was available. Retry in an interactive session so the user can approve it, or try an alternative that does not require this permission.
+```
+
+---
+
+<sub>59s</sub>
+
+!!! `view`
+
+''view the file at /home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs.''
+
+/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs (lines 1-210)
+
+<details>
+<summary>194 lines</summary>
+
+```
+#!/usr/bin/env node
+/**
+ * launch-codex — the Codex seat's one launcher (mixed-model-swarm#/the-launch, #/the-seat-law).
+ *
+ *   node tools/launch-codex.mjs --seat-dir <dir> --model <slug> --effort <level> --mode build|lead|read|research [--worktree <dir>] [--dry-run] [--canary]
+ *   node tools/launch-codex.mjs --check-canary --seat-dir <dir>
+ *
+ * One walled `codex exec`, after a preflight. The brief is `<seat-dir>/brief.md`; the hand-back lands in `final.md`
+ * (`-o`), the log in `run.log`, each attempt in `attempts.log`. The canon seat law or the lead law rides
+ * the brief once, appended here. Hand-back: wait on `until [ -f <seat-dir>/final.md ]`.
+ *
+ *   build    workspace-write in the worktree, network off, both tmp excludes, `-C <worktree> --add-dir <seat-dir>`
+ *   lead     workspace-write in a scratch worktree, network on, with seat, common Git, and lane root dirs added
+ *   read     `-s read-only -C <seat-dir>`
+ *   research workspace-write in the seat dir alone, networked, the only mode with `--search`
+ *
+ * EVERY mode carries `-c approval_policy="never"`, so a step past the wall fails by name instead of being reviewed out
+ * of the sandbox; no mode carries `--ephemeral`, so each seat keeps the rollout the spend tally counts.
+ * PREFLIGHT refuses (exit 2, `SEAT-REFUSED: …`): a seat dir outside `<scratch>/<lane>/`, a missing brief, a model absent
+ * from Codex's models cache, `gpt-6-sol`, a Codex pool line unreadable twice (never read as zero), a pool at or under
+ * its floor (20% for build, lead or research, 0% for read), a build or lead seat on the main checkout, a lead worktree
+ * outside scratch, or a build seat over a stale dist.
+ * Pool-used lines (seat-harness#/the-spend-guard): a lead refuses above 50% used, build or research above 60%. A detached
+ * watchdog (`--watch`, spawned beside every seat) tails the seat's rollout and stops it at its token ceiling (`--ceiling N`;
+ * lead 15M, others 8M), writing `ceiling.md`.
+ * `--dry-run` runs the preflight and prints the argument array, spawns nothing and writes nothing.
+ *
+ * The Codex cache, auth and rollouts live under the PASSWD home (`os.userInfo().homedir`), never `$HOME`: a lead runs
+ * under a scratch HOME. Every reader injects, so a test stands nothing. The tool never writes `~/.codex`.
+ */
+import { execFileSync, spawn as nodeSpawn } from "node:child_process";
+import { appendFileSync, closeSync, existsSync, readSync, mkdirSync, openSync, readdirSync, readFileSync, realpathSync, statSync, writeFileSync } from "node:fs";
+import { userInfo } from "node:os";
+import { basename, dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { globalStampPath, packageStampPath, sourceDigest, workspacePackageDirs } from "./stamp-build.mjs";
+
+const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const CANON = "bags/lares/ha.ka.ba/lares/docs/pono/mixed-model-swarm.mem";
+const FLOOR = 20;
+/** A read seat's own floor: the operator lets readers spend the pool to its end for now (2026-10-31: "temp bump that limit to 0%"; it stood at 5); builders and research keep FLOOR. */
+const READ_FLOOR = 0;
+const MODES = ["build", "lead", "read", "research"];
+export const COMPACT_LIMIT = 120000;
+export const TOOL_OUTPUT_LIMIT = 8000;
+/** The pool's used-percent ceiling by mode (seat-harness#/owed row 2): a read seat spends to its own floor. */
+const MAX_USED = { lead: 50, build: 60, research: 60 };
+/** The per-seat token ceiling by mode (row 1): total_token_usage.total_tokens, cached input counted. */
+const CEILINGS = { lead: 15_000_000, build: 8_000_000, read: 8_000_000, research: 8_000_000 };
+
+/** The ceiling for a mode: the default, or a positive-integer override (a number or its digits). */
+export function ceilingFor(mode, override) {
+  if (override === undefined) return CEILINGS[mode];
+  const n = typeof override === "string" && /^[0-9]+$/.test(override) ? Number(override) : override;
+  if (!Number.isInteger(n) || n <= 0) throw refuse(`ceiling must be a positive integer of tokens (got "${override}")`);
+  return n;
+}
+
+/** The last total_token_usage.total_tokens in a rollout's lines, or null when none. */
+export function rolloutTokens(lines) {
+  let total = null;
+  for (const line of lines ?? []) {
+    if (!line.includes('"total_token_usage"')) continue;
+    try { const t = JSON.parse(line)?.payload?.info?.total_token_usage?.total_tokens; if (typeof t === "number") total = t; } catch { /* a torn tail line */ }
+  }
+  return total;
+}
+
+/** Every rollout path under the home's sessions dir. */
+export function listRollouts(home) {
+  const out = [];
+  const walk = (d, depth) => {
+    let es; try { es = readdirSync(d, { withFileTypes: true }); } catch { return; }
+    for (const e of es) {
+      const p = join(d, e.name);
+      if (e.isDirectory() && depth < 5) walk(p, depth + 1);
+      else if (e.isFile() && /^rollout-.*\.jsonl$/.test(e.name)) out.push(p);
+    }
+  };
+  walk(join(home, ".codex", "sessions"), 0);
+  return out;
+}
+
+/** The rollout of one seat: among the files NOT in `before` (the set the launcher listed ahead of the spawn) whose session_meta cwd is one of `cwds`, the one whose session began first. No wall clock decides; the launch order does. */
+export function findRollout(home, { cwds, before }) {
+  let best = null;
+  for (const p of listRollouts(home)) {
+    if (before.has(p)) continue;
+    try {
+      const fd = openSync(p, "r"); const buf = Buffer.alloc(16384);
+      const n = readSync(fd, buf, 0, buf.length, 0); closeSync(fd);
+      const first = buf.toString("utf8", 0, n).split("\n", 1)[0];
+      const cwd = /"cwd":("(?:[^"\\]|\\.)*")/.exec(first)?.[1];
+      if (cwd === undefined || !cwds.includes(JSON.parse(cwd))) continue;
+      const began = /"timestamp":"([^"]+)"/.exec(first)?.[1] ?? "";
+      if (!best || began < best[0]) best = [began, p];
+    } catch { /* unreadable or torn */ }
+  }
+  return best ? best[1] : null;
+}
+
+/** The watchdog loop over injected readers: stops the seat at its ceiling (SIGTERM, then SIGKILL after `graceTicks` ticks) and writes ceiling.md; returns "ceiling" or "exited". */
+export function watchSeat({ seatDir, pid, ceiling, mode, tokens, alive, kill, sleep, graceTicks = 10 }) {
+  while (alive()) {
+    const t = tokens();
+    if (typeof t === "number" && t >= ceiling) {
+      kill("SIGTERM");
+      for (let i = 0; i < graceTicks && alive(); i++) sleep();
+      if (alive()) kill("SIGKILL");
+      writeFileSync(join(seatDir, "ceiling.md"), `# Ceiling reached\n\nThe ${mode} seat (pid ${pid}) read ${t} total tokens in its rollout (total_token_usage.total_tokens, cached input counted) against a ceiling of ${ceiling}. The watchdog stopped it (SIGTERM, then SIGKILL if it lived).\n`);
+      return "ceiling";
+    }
+    sleep();
+  }
+  return "exited";
+}
+
+/** The passwd home, never `$HOME`. */
+export function realHome() { return userInfo().homedir; }
+
+/** The argument array after `codex` and before the brief. */
+export function seatArgs({ mode, model, effort, seatDir, worktree, gitDir, laneRoot, compactLimit }) {
+  if (!MODES.includes(mode)) throw new Error(`mode must be build, lead, read or research (got "${mode}")`);
+  const common = ["exec", "-m", model, "-c", `model_reasoning_effort=${effort}`, "-c", 'approval_policy="never"', "--skip-git-repo-check", "-o", join(seatDir, "final.md"), "-c", `model_auto_compact_token_limit=${compactLimit ?? COMPACT_LIMIT}`, "-c", `tool_output_token_limit=${TOOL_OUTPUT_LIMIT}`];
+  const tmpWall = ["-c", "sandbox_workspace_write.exclude_slash_tmp=true", "-c", "sandbox_workspace_write.exclude_tmpdir_env_var=true"];
+  if (mode === "build") {
+    if (!worktree) throw new Error("a builder needs its worktree");
+    return [...common, "-s", "workspace-write", ...tmpWall, "-c", "sandbox_workspace_write.network_access=false", "-C", worktree, "--add-dir", seatDir];
+  }
+  if (mode === "lead") {
+    if (!worktree) throw new Error("a lead needs its worktree");
+    return [...common, "-s", "workspace-write", ...tmpWall, "-c", "sandbox_workspace_write.network_access=true", "-C", worktree, "--add-dir", seatDir, ...(gitDir ? ["--add-dir", gitDir] : []), ...(laneRoot ? ["--add-dir", laneRoot] : [])];
+  }
+  if (mode === "research") return ["--search", ...common, "-s", "workspace-write", ...tmpWall, "-c", "sandbox_workspace_write.network_access=true", "-C", seatDir];
+  return [...common, "-s", "read-only", "-C", seatDir];
+}
+
+/** Canary verdict from one rollout's lines: compaction signals, function calls and final token reading. */
+export function canaryVerdict(lines) {
+  let events = 0;
+  let calls = 0;
+  for (const line of lines ?? []) {
+    let d;
+    try { d = JSON.parse(line); } catch { continue; }
+    if (d?.type === "compacted" || d?.payload?.type === "context_compacted" || d?.payload?.type === "compaction") events++;
+    if (d?.payload?.type === "function_call") calls++;
+  }
+  const tokens = rolloutTokens(lines);
+  return { fired: events > 0, events, calls, tokens };
+}
+
+/** The canary brief: force many small read-only tool calls and a fixed completion line. */
+export function canaryBrief() {
+  return `# Compaction canary
+
+Read-only seat. Do exactly this sequence and nothing else:
+
+1. Read /home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs in 40-line slices with \`sed -n\`.
+2. Read /home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs in 40-line slices with \`sed -n\`.
+3. Read /home/joshu/.lares-scratch/seat-harness/wt/bags/lares/ha.ka.ba/lares/docs/pono/seat-harness.mem in 40-line slices with \`sed -n\`.
+4. Keep one tool call per slice.
+5. Make about 100 slices total (target 100).
+6. No summary until all slices are done.
+7. Final message must be exactly:
+CANARY DONE 100 calls
+`;
+}
+
+/** The newest rollout's rate_limits record, from its lines: the pool, or null when no line carries one. */
+export function readPool(lines, mode = "build") {
+  const floor = mode === "read" ? READ_FLOOR : FLOOR;
+  let primary = null;
+  for (const line of lines ?? []) {
+    if (!line.includes('"rate_limits"')) continue;
+    let d;
+    try { d = JSON.parse(line); } catch { continue; }
+    const p = (d?.payload?.rate_limits ?? d?.payload?.info?.rate_limits)?.primary;
+    if (p && typeof p.used_percent === "number" && p.window_minutes && p.resets_at) primary = p;
+  }
+  if (!primary) return null;
+  const left = 100 - primary.used_percent;
+  const above = left > floor;
+  const winDays = Math.floor(primary.window_minutes / 1440);
+  const summary = `codex pool: ${primary.used_percent.toFixed(1)}% used of a ${winDays}-day window, resets ${new Date(primary.resets_at * 1000).toISOString().slice(0, 16)}Z; ${left.toFixed(1)}% left, floor ${floor}% -> ${above ? "ABOVE FLOOR" : "AT OR BELOW FLOOR: launch no new Codex seat"}`;
+  return { used: primary.used_percent, winDays, reset: primary.resets_at, left, above, summary };
+}
+
+/** Whether the tree's dists were built from its source: the global stamp, else every built package's own stamp (a `--pkg` build). */
+export function distFresh(repo) {
+  const digest = (dir) => sourceDigest(dir);
+  const read = (p) => { try { return readFileSync(p, "utf8").trim(); } catch { return null; } };
+  if (read(globalStampPath(repo)) === digest(join(repo, "packages"))) return true;
+  const built = workspacePackageDirs(repo).filter((d) => existsSync(join(repo, "packages", d, "dist")));
+  return built.length > 0 && built.every((d) => read(packageStampPath(repo, d)) === digest(join(repo, "packages", d)));
+}
+
+/** The canon seat-law bullets as the section a brief carries. */
+export function seatLaw(canonText) {
+  const m = /<<~ ahu slot=`#\/the-seat-law`>>([\s\S]*?)<<~\/ahu>>/.exec(canonText);
+  const bullets = m ? m[1].split("\n").filter((l) => l.startsWith("* ")) : [];
+  if (!bullets.length) throw new Error(`no seat-law bullets in ${CANON} #/the-seat-law`);
+  return `## SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)\n${bullets.join("\n")}\n`;
+}
+
+/** The lead's separate wall permits work a builder's canon law forbids. */
+export function leadLaw() {
+  return `## LEAD LAW (appended by tools/launch-codex.mjs to a lead brief; it binds this lead)
+* No \`git stash\` in any form, no \`--no-verify\`, no \`git push -u\`, no force-push, no edit of .git/config.
+* Commit by \`git commit -F <file> --only -- <paths>\` with the \`lar:///w1.w2.w3 — summary\` message convention and the two trailers the session's attribution reminder gives.
+* Never write the main checkout (~/Synthetic-Dream-Machine) or its submodule worktrees; work in your own worktree under ~/.lares-scratch only.
+```
+
+</details>
+
+---
+
+<sub>59s</sub>
+
+!!! `view`
+
+''view the file at /home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs.''
+
+/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs (lines 240-390)
+
+<details>
+<summary>144 lines</summary>
+
+```
+  walk(join(home, ".codex", "sessions"), 0);
+  files.sort((a, b) => b[0] - a[0]);
+  // The NEWEST rollout alone answers: an older record is a stale pool, and a newest one with none reads unreadable.
+  const newest = files[0]?.[1];
+  if (!newest) return null;
+  const lines = readFileSync(newest, "utf8").split("\n").filter((l) => l.includes('"rate_limits"'));
+  return lines.length ? lines : null;
+}
+
+/** The main checkout `repo` belongs to: the git common dir's parent (a lane worktree's launcher still guards the real main). */
+export function mainCheckout(repo) {
+  try {
+    const common = execFileSync("git", ["-C", repo, "rev-parse", "--path-format=absolute", "--git-common-dir"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+    return basename(common) === ".git" ? dirname(realpathSync(common)) : real(repo);
+  } catch { return repo; }
+}
+
+/** The real readers; `home` defaults to the passwd home. */
+export function realReaders(home = realHome(), repo = REPO) {
+  return {
+    realHome: home, repo: mainCheckout(repo),
+    modelsCache: () => { try { return readFileSync(join(home, ".codex", "models_cache.json"), "utf8"); } catch { return null; } },
+    rolloutLines: () => { try { return newestRolloutLines(home); } catch { return null; } },
+    distFresh: (wt) => { try { return distFresh(wt); } catch { return false; } },
+    canon: () => readFileSync(join(repo, CANON), "utf8"),
+    gitCommonDir: (worktree) => execFileSync("git", ["-C", worktree, "rev-parse", "--path-format=absolute", "--git-common-dir"], { encoding: "utf8" }).trim(),
+  };
+}
+
+const refuse = (why) => Object.assign(new Error(why), { refused: true });
+const real = (p) => { try { return realpathSync(p); } catch { return resolve(p); } };
+
+/** Throws a refusal naming why a seat must not start; else returns `{ pool }` (the pool summary line). */
+export function preflight({ mode, model, seatDir, worktree }, readers) {
+  // The REAL paths decide: a symlinked seat dir that leaves the lane reads as outside it.
+  const scratch = real(join(readers.realHome, ".lares-scratch"));
+  const there = real(seatDir);
+  const rel = there.startsWith(`${scratch}/`) ? there.slice(scratch.length + 1).split("/") : [];
+  if (rel.length < 2) throw refuse(`seat dir must sit under ${scratch}/<lane>/ (the spend tally reads the lane from it): ${seatDir}`);
+  if (!existsSync(join(seatDir, "brief.md"))) throw refuse(`no ${join(seatDir, "brief.md")}`);
+  if (!MODES.includes(mode)) throw refuse("mode must be build, lead, read or research");
+  if (model === "gpt-6-sol") throw refuse("gpt-6-sol never launches; use gpt-6.1-sol");
+  const cache = readers.modelsCache();
+  if (!cache || !new RegExp(`"slug": *"${model.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"`).test(cache)) throw refuse(`model ${model} is not in Codex's models cache`);
+  // An empty read names itself and reads once more; it never stands in for a pool at zero.
+  const pool = readPool(readers.rolloutLines(), mode) ?? readPool(readers.rolloutLines(), mode);
+  if (!pool) throw refuse("Codex pool line unreadable (no rate_limits record in the newest rollout, read twice); read it by hand before launching");
+  if (!pool.above) throw refuse(`Codex pool at or below its floor: ${pool.summary}`);
+  if (MAX_USED[mode] !== undefined && pool.used > MAX_USED[mode]) throw refuse(`Codex pool used ${pool.used.toFixed(1)}%, above the ${mode} seat's ${MAX_USED[mode]}% used ceiling: ${pool.summary}`);
+  if (mode === "build" || mode === "lead") {
+    const role = mode === "lead" ? "lead" : "builder";
+    if (!worktree) throw refuse(`a ${role} needs its worktree`);
+    if (real(worktree) === real(readers.repo)) throw refuse(`a ${role} never writes the main checkout`);
+    if (mode === "lead" && !real(worktree).startsWith(`${scratch}/`)) throw refuse(`a lead worktree must sit under ${scratch}/: ${worktree}`);
+    if (mode === "build" && !readers.distFresh(worktree)) throw refuse(`the worktree's dist is stale (or unreadable): the lead runs 'pnpm build' in ${worktree} before launching a build seat`);
+  }
+  return { pool: pool.summary };
+}
+
+function parse(argv) {
+  const o = { dryRun: false };
+  const keys = { "--mode": "mode", "--model": "model", "--effort": "effort", "--seat-dir": "seatDir", "--worktree": "worktree", "--ceiling": "ceiling", "--pid": "pid", "--cwds": "cwds", "--before": "before" };
+  for (let i = 0; i < argv.length; i++) {
+    if (argv[i] === "--dry-run") o.dryRun = true;
+    else if (argv[i] === "--watch") o.watch = true;
+    else if (argv[i] === "--canary") o.canary = true;
+    else if (argv[i] === "--check-canary") o.checkCanary = true;
+    else if (keys[argv[i]]) { if (argv[i + 1] === undefined) throw new Error(`${argv[i]} wants a value`); o[keys[argv[i]]] = argv[++i]; }
+    else throw new Error(`unknown option ${argv[i]}`);
+  }
+  if (o.watch) return o;
+  if (o.checkCanary) {
+    if (!o.seatDir) throw new Error("--seat-dir is required");
+    return o;
+  }
+  for (const k of ["mode", "model", "effort", "seatDir"]) if (!o[k]) throw new Error(`--${k === "seatDir" ? "seat-dir" : k} is required`);
+  return o;
+}
+
+/** The detached watchdog entry: tails the seat's rollout every few seconds until the seat exits or crosses its ceiling. */
+function watchMain(o) {
+  const pid = Number(o.pid), cwds = JSON.parse(o.cwds), before = new Set(JSON.parse(readFileSync(o.before, "utf8"))), home = realHome();
+  // The pid's start tick pins its identity: a reused pid reads as a different process and the seat as gone.
+  const startTick = (n) => { try { return readFileSync(`/proc/${n}/stat`, "utf8").replace(/^.*\) /, "").split(" ")[19]; } catch { return null; } };
+  const born = startTick(pid);
+  const alive = () => { try { process.kill(pid, 0); } catch { return false; } return born === null || startTick(pid) === born; };
+  const nap = new Int32Array(new SharedArrayBuffer(4));
+  let file = null;
+  watchSeat({
+    seatDir: o.seatDir, pid, ceiling: Number(o.ceiling), mode: o.mode, alive,
+    kill: (sig) => { try { process.kill(-pid, sig); } catch { try { process.kill(pid, sig); } catch { /* gone */ } } },
+    sleep: () => Atomics.wait(nap, 0, 0, 3000),
+    tokens: () => { file ??= findRollout(home, { cwds, before }); return file ? rolloutTokens(readFileSync(file, "utf8").split("\n")) : null; },
+  });
+  return 0;
+}
+
+/** The launcher over injected readers, spawn and writers; returns the exit code. */
+export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err = console.error } = {}) {
+  let o;
+  try { o = parse(argv); } catch (e) { err(`[launch-codex] ${e.message}`); return 2; }
+  if (o.watch) return watchMain(o);
+  if (o.checkCanary) {
+    const seatDir = real(o.seatDir);
+    readers ??= realReaders();
+    const beforePath = join(seatDir, "rollouts-before.json");
+    let before = new Set();
+    if (existsSync(beforePath)) {
+      try { before = new Set(JSON.parse(readFileSync(beforePath, "utf8"))); } catch { before = new Set(); }
+    }
+    const rollout = findRollout(readers.realHome, { cwds: [seatDir], before });
+    if (!rollout) { err(`no rollout found for ${o.seatDir}`); return 2; }
+    const verdict = canaryVerdict(readFileSync(rollout, "utf8").split("\n"));
+    log(`${verdict.fired ? "COMPACTION-FIRED" : "COMPACTION-NOT-FIRED"} events=${verdict.events} calls=${verdict.calls} tokens=${verdict.tokens}`);
+    return 0;
+  }
+  const seatDir = real(o.seatDir);
+  try {
+    if (o.canary && o.mode !== "read") throw refuse("--canary only runs with --mode read");
+    const ceiling = ceilingFor(o.mode, o.ceiling);
+    readers ??= realReaders();
+    const worktree = o.worktree ? real(o.worktree) : undefined;
+    const { pool } = preflight({ ...o, seatDir, worktree }, readers);
+    const gitDir = o.mode === "lead" ? readers.gitCommonDir(worktree) : undefined;
+    const laneRoot = o.mode === "lead" ? dirname(seatDir) : undefined;
+    if (o.canary) writeFileSync(join(seatDir, "brief.md"), canaryBrief());
+    const args = seatArgs({ ...o, seatDir, worktree, gitDir, laneRoot, compactLimit: o.canary ? 50_000 : undefined });
+    log(pool);
+    if (o.dryRun) { log(`DRY-RUN ${JSON.stringify(["codex", ...args, "<brief>"])}`); return 0; }
+    const law = o.mode === "lead" ? leadLaw() : seatLaw(readers.canon());
+    mkdirSync(join(seatDir, ".tmp"), { recursive: true });
+    const briefPath = join(seatDir, "brief.md");
+    const brief = appendSeatLaw(readFileSync(briefPath, "utf8"), law, o.mode === "lead" ? "LEAD LAW" : "SEAT LAW");
+    writeFileSync(briefPath, brief);
+    appendFileSync(join(seatDir, "attempts.log"), `attempt model=${o.model} effort=${o.effort} mode=${o.mode}\n`);
+    const fd = openSync(join(seatDir, "run.log"), "w");
+    const env = { ...process.env, HOME: readers.realHome, TMPDIR: join(seatDir, ".tmp"), TMPPREFIX: join(seatDir, ".tmp", "zsh") };
+    const child = spawn("codex", [...args, brief], { cwd: seatDir, env, detached: true, stdio: ["ignore", fd, fd] });
+    child.unref?.();
+    const beforeFile = join(seatDir, "rollouts-before.json");
+    writeFileSync(beforeFile, JSON.stringify(listRollouts(readers.realHome)));
+    const cwds = JSON.stringify([worktree ?? seatDir, seatDir]);
+    const dog = spawn(process.execPath, [fileURLToPath(import.meta.url), "--watch", "--seat-dir", seatDir, "--pid", String(child.pid), "--ceiling", String(ceiling), "--mode", o.mode, "--cwds", cwds, "--before", beforeFile], { cwd: seatDir, env: { ...process.env, HOME: readers.realHome }, detached: true, stdio: "ignore" });
+    dog.unref?.();
+    log(`SEAT-LAUNCHED ${seatDir} (${o.model} ${o.effort} ${o.mode}) pid ${child.pid}; wait on: until [ -f ${join(seatDir, "final.md")} ]`);
+    return 0;
+  } catch (e) {
+    if (!e.refused) throw e;
+    err(`SEAT-REFUSED: ${e.message}`);
+    return 2;
+  }
+```
+
+</details>
+
+---
+
+<sub>1m 9s</sub>
+
+!!! Copilot
+
+''Outcome:'' `tools/launch-codex.mjs` now implements row-3 compaction canary support exactly as requested, including CLI flags and canary verdict/brief behavior.
+
+I added `export const COMPACT_LIMIT = 120000` and `export const TOOL_OUTPUT_LIMIT = 8000`; updated `seatArgs` to accept optional `compactLimit` and inject both `-c model_auto_compact_token_limit=...` and `-c tool_output_token_limit=...` immediately after `-o <seat>/final.md`; added `canaryVerdict(lines)` (compaction event detection + function-call count + `rolloutTokens`); added `canaryBrief()` with the required read-only/sliced/one-call-per-slice instructions and exact closing line `CANARY DONE 100 calls`; added parse/run support for `--canary` and `--check-canary` with the required behaviors (read-only enforcement/refusal, canary brief write timing, lowered compact limit `50000`, relaxed required args for check mode, rollout discovery via `findRollout(readers.realHome, { cwds: [real(seatDir)], before })`, and exact `COMPACTION-FIRED|COMPACTION-NOT-FIRED ...` reporting). I also updated the file header usage comment to mention both new flags.
+
+''Unclear:'' I could not execute validation locally in this environment (`node --check` was permission-blocked), so this is aligned strictly to the tests/spec text rather than runtime verification.
+
+---
+
+<sub>Generated by [[GitHub Copilot CLI|https://github.com/features/copilot/cli]]</sub>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wiegmeYhuKXAoqeI-pSr0JIzvvsfEIz5MtPpysnuBhE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

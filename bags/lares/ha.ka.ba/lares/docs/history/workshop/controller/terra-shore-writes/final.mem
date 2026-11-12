@@ -1,0 +1,42 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-shore-writes/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-06 (file date) — source `.lares-scratch/controller/terra-shore-writes/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-shore-writes/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/terra-shore-writes/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/terra-shore-writes/final.md` (hand-back, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-shore-writes/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+''INFER — The CI evidence does not distinguish a slow primary-wiki mount from a lost or delayed event.'' It locates the failures before `live`; it does not establish a single cause or a proven minimal cure.
+
+''MEASURED — The wait.'' [[`waitForLivePage`|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/tests/e2e/shore-writes.e2e.test.ts:208]] first waits up to 20 seconds for a `#phases .phase` whose text is `live`. Only then does it wait another 20 seconds for a shown, nonempty mirror. All three logs report phases ending at `vessel-ready` for both failures: [[42234220343:1068|/home/joshu/.lares-scratch/b1-lift/ci-42234220343.log:1068]], [[42197282289:1002|/home/joshu/.lares-scratch/b1-lift/ci-42197282289.log:1002]], [[42205053266:9669|/home/joshu/.lares-scratch/b1-seal/ci-42205053266.log:9669]]. Thus the first wait timed out.
+
+''MEASURED — The product event.'' The page paints each phase as it arrives ([[main.ts:365|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/src/main.ts:365]], [[main.ts:485|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/src/main.ts:485]]). `live` is emitted after `mountPrimaryWiki` completes ([[core-caps.ts:217|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-tw5/src/core-caps.ts:217]]). That mount resolves bindings and waits for the wiki island’s `ready` then `ea` messages ([[vessel-steps.ts:212|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-tw5/src/vessel-steps.ts:212]], [[vessel-island-pool-core.ts:735|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-mesh/src/vessel-island-pool-core.ts:735]]). The island sends `ea` after its seed checkpoint and behavior finish ([[sovereign-kernel.ts:502|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-tw5/src/sovereign-kernel.ts:502]], [[sovereign-kernel.ts:548|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-tw5/src/sovereign-kernel.ts:548]]). Daemon `workerEa` has already resolved before `vessel-ready` ([[core-caps.ts:158|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-tw5/src/core-caps.ts:158]]).
+
+''MEASURED — Candidate delay.'' Slot resolution explicitly handles a sync peer that has not connected yet; it polls every 250 ms and can wait through an 8-second silence budget or 60-second hard cap ([[sovereign-kernel.ts:238|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-tw5/src/sovereign-kernel.ts:238]], [[slot-wait.ts:81|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-tw5/src/slot-wait.ts:81]]). Even a resolved find is observed after a timer tick. The broker checks `controllerchange` and rechecks control after subscribing ([[ceremony-page.ts:32|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/src/ceremony-page.ts:32]]); the logs show custody was asked. Mirror promotion is downstream of the failed first predicate, so it cannot explain that predicate’s absence.
+
+''INFER — Budget and hand-back.'' Twenty seconds bounds a real product wait, but can also expire while an event is delayed or lost; these logs cannot decide which. The printed `faults=` is limited to daemon-fault console lines on the shared page, including when the instruments test uses a separate page ([[test:33|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/tests/e2e/shore-writes.e2e.test.ts:33]], [[test:218|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/tests/e2e/shore-writes.e2e.test.ts:218]]).
+
+''INFER — Red first and candidate cure.'' Add a deterministic socket-free red holding the slot timer while the document-ready event resolves: readiness should settle immediately; control holds the document unresolved and verifies no premature success. It fails against the unconditional sleep. The corresponding product change is to wake slot resolution on its own document/peer events, preserving named silence and refusal outcomes. This fixes that measured timer dependency; instrument the mount’s binding, worker `ready`, slot readiness, seed drain and `ea` milestones before claiming it fixes these CI recurrences. Lead runs any socket-dependent verification.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;E5AfSLy-ksfiYpJsSX2q-GWMHAOgYbrkiNVjhhYkhtE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

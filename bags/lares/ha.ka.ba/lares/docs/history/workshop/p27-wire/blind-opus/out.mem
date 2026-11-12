@@ -1,0 +1,91 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/blind-opus/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/p27-wire/blind-opus/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/blind-opus/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/p27-wire/blind-opus/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/p27-wire/blind-opus/out.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/blind-opus/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ set lares=`aim` from=`lar://kiai:operator@hearth/custody.read.blind` to=`lar://blind-warden-share:agent@hearth/warden.reads.the-floor` mode=`seal` mu=`_!` stance=`🏛️ 🗡️` aperture=`14/arc` ooda-ha=`6/declare-glyphs` drift-ward=`the unit witnesses pass on stub boundaries, which pulls toward "the composition must work too"`>>
+
+Blind-Warden-Share: Lares (Tasked Spirit) — blind custody read of PR #200, head `ed44bf39a`
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/outcome`>>
+
+!! Outcome
+
+''HOLD at `ed44bf39a`.'' The predicate itself (`tightenShare` / `makeShareBoundary`) fails closed, names every refusal, and lets no clock decide. On leaks the lane holds better than it claims: I found no new path that opens. The production composition (`makeHeldShareFloor`) fails the other way, and that blocks the land. Its secrets reading never answers in production, so every crossing that leaves the vessel refuses. Its structural floor reads VEIL for every cleartext face plane, so fleet withholds them even with that reading cured. Every lane witness passes on a permissive stub (`publicShareTiers`, `federatable: () => true`), so nothing tested the real composition. I ran the composition from the built `dist` with node-shaped readers (F1–F3 below).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/findings`>>
+
+!! Findings
+
+''F1 · P1 · MEASURED — the secrets registry never reads in production, so every crossing out of the vessel refuses''
+`packages/lararium-mesh/src/held-share-floor.ts:79` (`secrets: (id) => !genesis(id) && registry.plane.isContractSecretsPlane(id)`), with `structuralFloorFor` reading secrets FIRST at `cap-tier.ts:186-191`. The floor calls the registry RAW for every doc, not through `faceScopedSecrets` (`secrets-registry.ts:200`, exported and never used). No production code calls `registry.initialize()` (grep: only `secrets-registry.ts` and the tests). So the registry throws `secrets-registry-unread` until the face catalog binds, and `secrets-registry-uninitialized` forever after. Probe on `dist`: the public crossroads board gives `allows(true,"crossroads","world") → false` and `"fleet" → false` in both states. Only genesis CIDs pass.
+Scenario: node relay/stranger sync of crossroads, WHO, antigen and KEL boards; sibling fleet sync; the browser leaf ↔ hearth relay (`browserShareConfig` reads the relay as `world`/`fleet`); herm `/cas` (`bulb-read-face.ts:166-181`: every `tiers.allows(…,"world")` throws). All of them refuse.
+Smallest cure: wrap the reading in `faceScopedSecrets(registry.plane, ownsDoc)`, where `ownsDoc` names the docs bound to the face's own bags. Also wire `initialize()` at face-catalog bind on node. Add a witness that runs `makeHeldShareFloor` with node-shaped readers and checks that crossroads reaches `world`.
+
+''F2 · P1 · MEASURED (floor) / INFER (production reach) — fleet withholds every cleartext face plane''
+`held-share-floor.ts:76-80` + `cap-tier.ts:186-191`: neither federatable nor sealed reads `veil`, and `audiencePermits("veil","fleet") = false` (`share-tighten.ts:31-37`). The node's `federatable` reads a fresh `DeterministicFederationGate(nexusPubkey)` (`open-node-vessel.ts:1290`), which holds the five boards and nothing else. It holds no canon bags, persona planes or face-grant planes. Probe with the registry cured: a bag declaring `personagroup`, cleartext, reads `D1: veil withholds from fleet`.
+Scenario: a sibling (`self-slot-share.ts:139-142`), a same-operator session (`:146-148`), a joined face-grant member (it falls to `carrierShareDecision` as `world`, `:161-172`), and a hearth sending canon to its leaf. Each refuses wherever `sealedBagOf(id)` is null. That covers every face that has no Nexus chain, and canon in every case. The comment at `open-node-vessel.ts:1363` says that "the sync wire carries cleartext".
+Smallest cure: the floor's `federatable` reads the gate that actually allowed the crossing (`selfSlotFedGate` / the sibling gate / `crossing.gate`), not a narrower one. The face-grant ring path should prove `fleet`.
+
+''F3 · P1 · MEASURED — the face catalog never reads a manifest''
+`held-share-floor.ts:56-63`: `bag !== \`lar:&#47;&#47;/ha.ka.ba/bags/${fields.bag}\&#96;&#96; fails for `FACE_CATALOG_BAG_ID = lar:///ha.ka.ba/bags/catalog/face` (`register-bags.ts:153`). The node binds it at `open-node-vessel.ts:1297`. Probe: `declared-tier-manifest-unread: bag …/catalog/face`. Every bound doc that carries no tiddler titled with its bag URI, carrying `bag`/`cap-tier`, also refuses every crossing that leaves the vessel. Only `bag-declare.ts` writes that carrier.
+Scenario: face social docs and the catalog stop following the face to its sibling devices.
+Smallest cure: bind non-bag planes (catalog, hosting docs) as `{kind:"non-bag"}` with an explicit floor, or derive their manifest. Witness it with a real catalog row.
+
+''F4 · P1 · INFER — the herm `/cas` checks the wrong document, and contracted carriers lose their hosting docs''
+`open-node-vessel.ts:4533-4535` + `bulb-read-face.ts:175`: the own lane checks `documentForBag(CROSSROADS_DOC_URI)`, which names the canon crossroads BAG doc (`lar-uris.ts:236`) or nothing on a herm, not the board (`hermCrossroads`) that carries the pointer. So the own lane refuses (`declared-tier-unresolved`, or VEIL by F2). Realm books (`:181`) rest unbound on a herm and refuse too. Separately, `hostingDocUrl(...)` docs (`open-node-vessel.ts:1697,1935`) bind no bag and do not federate. `bagOfDoc` gives null and the refusal reads `declared-tier-unresolved`, so a `contracted` carrier (`self-slot-share.ts:158-161`) no longer replicates them.
+Smallest cure: check the doc that carries the reference (the board id), and bind hosting docs as non-bag with a CONTRACT floor.
+
+''F5 · P2 · MEASURED (code) — offered and promoted plugin bytes refuse at the island floor, in-process included''
+`lar-vessel.ts:68-75` requires `documentsForCid(cid)` to return something even for `in-process`. `held-share-floor.ts:92-99` recognizes only `textCid` / `_canonical_uri` / `doc.blobs[].sha256`. A plugin offering rests as JSON in `text` (`offering-announce.ts:48`), and promoted digests rest outside LarDocs, so wiki islands and the daemon cannot load R4 offered or promoted plugins. A browser replica boot with no `genesisSeed` (`open-browser-vessel.ts:1343-1344`) leaves `publicGenesisCids` empty, so an oracle-plane (`world`) wiki cannot load the engine.
+Smallest cure: name the plugin CIDs that resolution already proved (`resolvePluginCids` output, the offering's blob list) as references whose tier comes from their board or promote doc.
+
+''F6 · P2 · MEASURED (code), predates the lane — the audience model splits across crossings, and an island can forge its plane''
+`vessel-island-pool-core.ts:705` + `island-repo.ts:142-155`: every non-session wiki island rides the MAIN repo bare. The node reads it as `houseIslands`, so `in-process` (`open-node-vessel.ts:1357`), and the browser reads it as `in-process` by default (`open-browser-vessel.ts:2401`). The CAS door, by contrast, reads an oracle-plane wiki as `world` (`island-audience.ts:22`). That island can sync the catalog, learn every doc URL, read any VEIL doc over the repo, and write a catalog recipe row for its own slug. That write flips its CAS audience to `in-process` (`island-audience.ts:22`, read live each ask). The claim's "a pool wiki island reads its plane" holds at the CAS door alone.
+Smallest cure: give a non-session wiki island the same scoped/gated sync leg sessions get (`view.attach`), or hand its peer id the audience the CAS reader derives, and gate inbound writes to the catalog.
+
+''F7 · P2 · INFER — HTTP `/cas` side doors stand outside the predicate''
+(a) The hearth floor porch (`floor-porch.ts:89-99`, mounted `serveCas: true` at `open-node-vessel.ts:4409-4412`) serves released-floor CIDs with no `ShareBoundary`, while the herm's same lane now passes one. The verified release chain bounds the risk. (b) The herm own lane never asks whether a CID also appears in a private doc (no `documentsForCid`): a pointer that any peer writes onto the world-writable board names a private blob that the herm holds in `cid/` (write-through), and the herm serves it. This predates the lane, but the claim covers HTTP `/cas`.
+Smallest cure: route both through `tiers.require(id,"world")` for each id from `documentsForCid(cid)`.
+
+''F8 · P2 · INFER — in the browser, the vessel cannot enforce "owns OPFS"''
+`browser-sovereign-island-model.ts:76-80`: wiki workers share the page origin, and any plugin JS can call `navigator.storage.getDirectory()` and read `cas/` directly. Node workers likewise keep fs and still receive `cidDir` / `corpusCasDir` in `workerData` (`vessel-island-pool.ts:96`, `:99`). The gate binds cooperating code only.
+Smallest cure: stop handing `casData` to node workers, and name the limit in the claim or canon (an opaque-origin worker for the browser).
+
+''F9 · P3 · INFER''
+(a) `islandFloorStack`'s post-await recheck reuses the audience it read before the await (`lar-vessel.ts:67-80`), so a face switch mid-read keeps `in-process`. The cure re-derives the audience, or passes a thunk. (b) The browser reads any peer that arrives untagged as relay or sibling as `in-process` (`open-browser-vessel.ts:2401`). The node allowlists `houseIslands` instead. (c) A CID whose private referencing doc has not hydrated while a board doc references it reads as public to `world` islands (`held-share-floor.ts:92-99`, ready handles only). (d) `documentsForCid` and `bindings()` rescan every handle and tiddler on each read, twice per byte read: cost, not a hang.
+
+''Holds, verified:'' a structural deny never resurrects. An audience missing or unknown refuses by name. A torn `capTier` parses VEIL. Multiple carriers that disagree refuse (`held-share-floor.ts:59-61`). A doc bound to two bags refuses. A thrown registry or source refuses. No timer decides anywhere. The class binds at spawn, and no worker payload supplies audience (`vessel-host.ts:54`). Session islands read through `view.content` and get their audience from the host-held `facePlaneId`. Genesis public bytes come from the seed only, and a later private reference to identical bytes leaks nothing, since the same bytes already ride public `/genesis/cas/`.
+
+&lt;&lt;~ oracle throw=`↯15 ✲ ⚃(4) ⁂:🜃⊘〰️⛩`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`F2/F4 production reach rests on which planes sealedBagOf maps on a live face, which I never booted: boot a joined two-device face under scratch LAR_ROOT and watch the sibling sync after curing F1 · ↻ L-Prime` aperture=`14/arc -> 16/arc` ooda-ha=`closed 1↺` from=`lar://blind-warden-share:agent@hearth/floor.holds.closed-past-use/hold-ed44bf39a` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;pVBJ7RAdqQG4F7SyCglKotnV9vgSmUQCHi5VCV9c5nw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

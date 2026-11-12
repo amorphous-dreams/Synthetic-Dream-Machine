@@ -9,7 +9,7 @@
  * Call it on an answer `readFleetJoinAnswer` verified, never on a carried file: the shape checks here guard the
  * founding, and the answer's signature makes the pin the hearth's own.
  */
-import type { FleetJoinAnswer } from "@lararium/mesh";
+import { fleetJoinHearthOf, type FleetJoinAnswer } from "@lararium/mesh";
 import type { CarriedAdmitPayload, DeviceAdmitPayload } from "./index.js";
 import { DEVICE_ADMIT_KIND } from "./device-admit-kind.js";
 
@@ -25,13 +25,18 @@ export function carriedAdmitOfFleetJoin(answer: FleetJoinAnswer): CarriedAdmitPa
   if (edge.personaGroupId !== answer.personaGroup) return { refusal: "edge-other-face" };
   const { islandKind, islandScope, syncUrl } = answer.reach;
   if (islandKind !== null && !ISLAND_KINDS.has(islandKind)) return { refusal: "reach-malformed" };
+  // A ROOT HOLDER THAT STOOD NO GATE carried no hearth's dial (`FleetJoinHearthDial`): the admit then names no gate key,
+  // pin or canon, and the vessel founds the face with nothing to dial until a courier carries it a relay.
+  const hearth = fleetJoinHearthOf(answer);
   return {
     ...edge,
     syncUrl,
-    hearthGatePubKey: answer.carriage.gatePin.signingKey,
-    hearthGatePin:    answer.carriage.gatePin,
-    hearthFloorPins:  answer.floorPins,
-    hearthCanonDocs:  answer.carriage.canon,
+    ...(hearth === null ? {} : {
+      hearthGatePubKey: hearth.carriage.gatePin.signingKey,
+      hearthGatePin:    hearth.carriage.gatePin,
+      hearthFloorPins:  hearth.floorPins,
+      hearthCanonDocs:  hearth.carriage.canon,
+    }),
     ...(islandKind !== null ? { hearthIslandKind: islandKind as NonNullable<CarriedAdmitPayload["hearthIslandKind"]> } : {}),
     ...(islandScope !== null ? { hearthIslandScope: islandScope } : {}),
   };

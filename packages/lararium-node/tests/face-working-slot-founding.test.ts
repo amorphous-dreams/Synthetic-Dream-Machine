@@ -7,6 +7,8 @@
  *
  * Real founding (`runInit`, `runFoundTheFace`) over scratch roots; synthetic names.
  */
+import { readNodeVeilLift } from "../src/node-veil-lift.js";
+import { loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { seatSuiteWard } from "./support/scratch-custody-setup.js";
 // This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
 seatSuiteWard();
@@ -64,6 +66,9 @@ describe("the face's address secret mints at its founding", () => {
     const group = (await loadIdentityAnchors(0))!.personaGroupId;
     const secret = await readFaceAddressSecret(group);
     expect(secret, "the founding minted the face's address secret beside its atom").not.toBeNull();
+    // THE VEIL-LIFT LINK: the founding over the floor keeps the face's private record, signed by the vessel's own key.
+    const link = await readNodeVeilLift(group);
+    expect(link, "the founding kept the face's veil-lift link").toMatchObject({ kind: "veil-lift", face: group, veil: await loadVesselVerifyingKey() });
     const founded = await slotOf(group);
     expect(await slotOf(group), "a second read derives the same address and mints nothing").toBe(founded);
 

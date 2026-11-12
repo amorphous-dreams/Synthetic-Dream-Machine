@@ -16,7 +16,7 @@ import {
 import { SECRET_HOME_ID } from "../src/lar-uris.js";
 import { storedRecord } from "../src/stored-record.js";
 import { attachMessageChannelSync, makeIslandRepo } from "../src/island-repo.js";
-import { islandSecretHome, vesselHeldHomes, enrollBesideSecretHome } from "../src/secret-home.js";
+import { islandSecretHome, vesselHeldHomes, enrollBesideSecretHome, releaseBesideSecretHome } from "../src/secret-home.js";
 import { CONTROL_HOME_ID } from "../src/lar-uris.js";
 
 const WORD = "the-group-secret-seal-rides-here";
@@ -200,5 +200,33 @@ describe("the vessel's secret home rests sealed from its first byte", () => {
     await repo.shutdown();
     expect(restsClear(inner, control)).toBe(false);
     expect(restsClear(inner, home.handle.documentId)).toBe(false);
+  });
+
+  it("THE LIFT RELEASES A FLOOR DOCUMENT: one enrolled beside the home leaves the held homes; the secret home and the control document never do", async () => {
+    const inner = memoryAdapter();
+    const homes = vesselHeldHomes();
+    const refuse = async () => ({ refusal: "signer-unavailable" }) as never;
+    const store = new SealedDocumentStore({ inner, bagOf: (id) => homes.bagOf(id), sessionFace: () => null, sessionOf: () => null, seal: refuse, open: refuse, refuseClearOverSealed: true });
+    const repo = new Repo({ storage: store, network: [] });
+    let moves = 0;
+    bindSecretHomeRest(repo, homes.rest((id) => store.holdsSealed(id), () => { moves++; }));
+    expect(homes.floorKey()).toBeNull();
+    const home = await enrollSecretHome(repo, mintSecretHomeAddress());
+    // The secret home's key stands and the floor's does not: a face's secret home never keys a floor document.
+    expect(homes.floorKey()).toBeNull();
+    const control = mintSecretHomeAddress().documentId, canon = mintSecretHomeAddress().documentId;
+    enrollBesideSecretHome(repo, control, CONTROL_HOME_ID);
+    enrollBesideSecretHome(repo, canon, "lar:///ha.ka.ba/bags/tabs");
+    expect(homes.has(canon)).toBe(true);
+    const before = moves;
+    expect(releaseBesideSecretHome(repo, canon)).toBe(true);
+    expect(homes.has(canon)).toBe(false);
+    expect(homes.bagOf(canon)).toBeNull();
+    expect(moves).toBe(before + 1);
+    expect(releaseBesideSecretHome(repo, canon), "a replay releases nothing").toBe(false);
+    expect(releaseBesideSecretHome(repo, control)).toBe(false);
+    expect(releaseBesideSecretHome(repo, home.handle.documentId)).toBe(false);
+    expect(homes.has(control) && homes.has(home.handle.documentId)).toBe(true);
+    await repo.shutdown();
   });
 });
