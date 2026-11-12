@@ -140,7 +140,7 @@ import type { WikiRecipe }                   from "@lararium/mesh";
 import { waitHandle } from "@lararium/mesh";
 import { holdVesselLock, ambientLocks, type LockHost } from "./vessel-lock.js";
 import { BrowserCustodyRefused, CLEAR_CUSTODY_CLEARS, readBrowserCustody, onBrowserCustodyLock, lockBrowserCustody, refuseSharedTreeFaceRows } from "./browser-custody.js";
-import { nameFace } from "./browser-face-custody.js";
+import { nameFace, faceTreeStands } from "./browser-face-custody.js";
 import { clearCustodyVerb, standFounderFace, type CustodyAsk, type CustodyAnswer } from "./browser-boot-custody.js";
 import { sweepOrphanBrowserWards } from "./browser-ward-tree.js";
 import { guardedBoot, takeDownBoot, BootTeardownRefusal, type BootHold } from "./guarded-boot.js";
@@ -1134,6 +1134,25 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       hearthDaemonUrl: null,   // a vessel that founded its own face IS the hearth
     });
     bootKeyWrites.bootstrap = bootstrap;
+  }
+  // THE BURN'S FALL BACK (the-veil-ladder#/the-base-model: every vessel "MUST always fall back" to its floor). A face whose
+  // custody tree left this browser (the person cleared it: its atom, anchor and every row under it went with the tree) severs
+  // forward: its overlay leaves the record, and where the record booted that face the vessel stands at its floor record
+  // again, wearing none. A tree that stands LOCKED never reads as burned, and a record an earlier line founded together with
+  // its face (no `floor`) keeps refusing by name as it did. Every other face's overlay stays; a hello may still name one.
+  if (!admit && bootstrap.floor) {
+    const burned: string[] = [];
+    for (const group of Object.keys(overlaysOf(bootstrap))) if (!(await faceTreeStands(idbName, group))) burned.push(group);
+    if (burned.length > 0) {
+      const faces = Object.fromEntries(Object.entries(overlaysOf(bootstrap)).filter(([group]) => !burned.includes(group)));
+      const keeps = bootstrap.personaGroupId !== undefined && !burned.includes(bootstrap.personaGroupId);
+      const floor = bootstrap.floor;
+      bootstrap = keeps
+        ? { ...overlayOf(bootstrap), floor, faces }
+        : { daemonUrl: floor.daemonUrl, personaPlanes: [], hearthDaemonUrl: null, floor, ...(Object.keys(faces).length > 0 ? { faces } : {}) };
+      bootKeyWrites.bootstrap = bootstrap;
+      console.log(`[lararium-browser] ${burned.length} face overlay(s) left with their custody; ${keeps ? "the booted face stands" : "the vessel stands at its floor"}`);
+    }
   }
   // THE SESSION'S HELLO NAMES THE FACE IT WEARS: a face this record holds an overlay for boots under that overlay, over the
   // same floor; the record at rest stays as it stood. A face it holds none for still refuses by name below.

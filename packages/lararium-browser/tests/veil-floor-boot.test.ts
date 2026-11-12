@@ -6,6 +6,8 @@
  *        address rests in the open pre-bind window; no slot binds and no place KEL arms.
  *   VF2  the founding act asks for a face (`foundFace`): the face lands OVER that floor; the floor record stays byte-equal.
  *   VF3  an admit overlays the floor: its ceremony meets the floor's own daemon document, and the floor record stays.
+ *   VF5  the burn's fall back: a booted face whose custody left this browser drops its overlay, and the vessel boots at its
+ *        floor record; a locked face never reads as burned; another face's overlay stands.
  *   VF4  a second admit never replaces the first: both overlays stand, keyed by PersonaGroup, neither naming the other; a
  *        hello that names either face boots under it, and a face the record holds no overlay for refuses `face-not-worn`.
  */
@@ -15,6 +17,7 @@ import { bindSyntheticBrowserCustodySlot, bindSyntheticFace, fixtureWardDialog }
 import { openBrowserVessel, readBrowserVesselFaces, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
 import { openVesselIdb, idbKeys, loadBrowserPlaceKel } from "../src/browser-vessel-identity.js";
 import { readBrowserCustody } from "../src/browser-custody.js";
+import { clearFaceCustody, lockFaceCustody } from "../src/browser-face-custody.js";
 
 const met: Array<{ group: string; daemonUrl: string }> = [];
 vi.mock("@lararium/keyhive", async (orig) => {
@@ -113,5 +116,41 @@ describe("the browser's veil floor stands first, and a face lands over it", () =
     await boot({ idbName, face: second.personaGroupId });
     expect(await recordOf(idbName)).toEqual(two);
     await expect(openBrowserVessel(halted({ idbName, face: "c3".repeat(16) }))).rejects.toThrow(/face-not-worn/);
+  }, SLOW);
+
+  test("VF5 THE BURN'S FALL BACK: a face whose custody left this browser severs forward, and the vessel boots at its floor", async () => {
+    const idbName = `veil-burn-${crypto.randomUUID()}`;
+    await boot({ idbName });
+    const floor = await recordOf(idbName);
+    await bindSyntheticBrowserCustodySlot(idbName);
+    const first = admitNaming("cd".repeat(32), {});
+    const second = { ...admitNaming("ce".repeat(32), {}), personaGroupId: "b2".repeat(16) } as typeof first;
+    await bindSyntheticFace(idbName, first.personaGroupId);
+    await boot({ idbName, admit: first });
+    await bindSyntheticFace(idbName, second.personaGroupId);
+    await boot({ idbName, admit: second });
+    const both = await recordOf(idbName);
+    expect(both?.personaGroupId, "the setup took: the record boots the second face").toBe(second.personaGroupId);
+    // CONTROL: a face whose tree stands LOCKED still boots as that face (a lock never reads as a burn).
+    lockFaceCustody(idbName, second.personaGroupId);
+    await boot({ idbName });
+    expect((await recordOf(idbName))?.personaGroupId).toBe(second.personaGroupId);
+    // THE BURN: the person clears the booted face's custody. Its tree and every row under it leave this browser.
+    const cleared = await clearFaceCustody(idbName, second.personaGroupId, [{ kind: "passphrase", passphrase: "browser fixture custody slot" }], () => true);
+    expect(cleared.reading).toBe("cleared");
+    await boot({ idbName });
+    const after = await recordOf(idbName);
+    expect(after?.personaGroupId, "the vessel stands at its floor, wearing no face").toBeUndefined();
+    expect(after?.daemonUrl).toBe(floor!.floor!.daemonUrl);
+    expect(after?.floor, "the floor record stays byte-equal").toEqual(floor!.floor);
+    expect(after?.personaPlanes).toEqual([]);
+    expect(Object.keys(after?.faces ?? {}), "the burned overlay left; the other face's overlay stands").toEqual([first.personaGroupId]);
+    expect(after?.faces?.[first.personaGroupId]).toEqual(both!.faces![first.personaGroupId]);
+    // A hello that names the face still standing boots under it; the burned face refuses by name.
+    await boot({ idbName, face: first.personaGroupId });
+    await expect(openBrowserVessel(halted({ idbName, face: second.personaGroupId }))).rejects.toThrow(/face-not-worn/);
+    // A REPLAY FALLS NOWHERE FURTHER.
+    await boot({ idbName });
+    expect(await recordOf(idbName)).toEqual(after);
   }, SLOW);
 });
