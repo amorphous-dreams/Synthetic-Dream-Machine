@@ -61,7 +61,7 @@ export interface VesselBoot {
   readonly floorAnchor?: FloorAnchor;
   /** The fleet-join landing's admit carriage (`toAdmitCarriage`), taken once off this tab's stash. */
   readonly admitCarriage?: string;
-  /** THE FOUNDING ACT (`?found`): this person asks the vessel to found a face of its own over its veil floor. Absent, the
+  /** THE FOUNDING ACT (the page's founding door, an act on its own surface, never a URL): this person asks the vessel to found a face of its own over its veil floor. Absent, the
    *  vessel stays at its floor until a fleet join overlays a face. */
   readonly foundFace?: true;
   /** The `?mesh=` carry-in: the leaf's coordinate seed and the raw peer list the vessel worker reads (`parseMeshPeer`). */

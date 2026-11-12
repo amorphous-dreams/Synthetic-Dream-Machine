@@ -48,7 +48,7 @@ vi.mock("@lararium/keyhive", async (importOriginal) => {
 
 interface Founder { idbName: string; repo: Repo; root: BrowserRootFace; face: BrowserSeatFace; kelIsland: string; asks: string[] }
 
-/** Browser 1: the founding door (`foundFace`, the page's `?found`) over a veil floor, halted once its boot record rests. */
+/** Browser 1: the founding door (`foundFace`, the page's founding button) over a veil floor, halted once its boot record rests. */
 async function foundFace(): Promise<Founder> {
   const idbName = `browser-fleet-root-${crypto.randomUUID()}`;
   await bindSyntheticBrowserCustodySlot(idbName);

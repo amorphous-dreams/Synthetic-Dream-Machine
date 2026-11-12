@@ -348,7 +348,36 @@ function mountAdmitSurface(verifyingKeyHex: string, vessel: VesselPort): void {
   });
 }
 
+/**
+ * THE FOUNDING DOOR (the-veil-ladder#/the-base-model, in-house ruling 5): a person asks this vessel for a face of its own by
+ * an ACT on the page's own surface (the identity panel's button), never by a URL. A founding lands inside the vessel's boot,
+ * so the act re-enters boot the way a fleet-join landing does: the ask rides this tab's sessionStorage for exactly one boot
+ * (this read removes it) and the page boots again. No query string and no fragment selects a founding, so the address bar
+ * stays the wiki's own.
+ */
+const FOUND_STASH_KEY = "lares:found-face";
+function takeStashedFounding(): boolean {
+  let asked: string | null = null;
+  try { asked = sessionStorage.getItem(FOUND_STASH_KEY); } catch { return false; }
+  if (!asked) return false;
+  try { sessionStorage.removeItem(FOUND_STASH_KEY); } catch { /* the read already holds the ask */ }
+  return true;
+}
+/** Wire the identity panel's founding button: one tap stashes the ask and boots again. */
+function mountFoundingDoor(): void {
+  const button = document.getElementById("found-face");
+  if (!button || button.dataset["larWired"]) return;
+  button.dataset["larWired"] = "1";
+  button.addEventListener("click", () => {
+    try { sessionStorage.setItem(FOUND_STASH_KEY, "1"); }
+    catch { set("status", "✗ this browser withholds sessionStorage, so the founding ask cannot reach boot here.", "err"); return; }
+    location.reload();
+  });
+}
+
 let pendingAdmit: string | null = null;
+/** A founding ask this page took off its stash and has not yet seen stand (a boot retry carries it). */
+let pendingFounding = false;
 /** This tab's place among the origin's tabs: stood once per page, before the first lead or follow. */
 let floorTab: ReturnType<typeof standFloorTab> | null = null;
 function offerBootRetry(): void {
@@ -396,6 +425,10 @@ async function bootVessel(): Promise<void> {
   // The fleet-join landing stashes the admit it carried; this boot takes it and the vessel opens on it.
   const admit = pendingAdmit ?? takeStashedAdmit();
   pendingAdmit = admit;
+  // The founding door stashed its ask; this boot takes it and the vessel founds a face over its floor.
+  const founding = pendingFounding || takeStashedFounding();
+  pendingFounding = founding;
+  mountFoundingDoor();
   // The seed and its CAS blobs come off the hearth's own /genesis alone; no URL key chooses them.
   const genesisCasBaseUrl = genesisSeedBase(location.origin);
   // THE SEED, then THE ANCHOR, before any crossing: a served seed whose CID differs from the one the hearth's own descriptor
@@ -437,7 +470,7 @@ async function bootVessel(): Promise<void> {
   //   entries; one with no key is dropped: nothing to knock on. The browser is a LEAF (no endpoint — carries-in, not dial-able).
   const meshParam = new URLSearchParams(location.search).get("mesh");
   const meshLeaf = meshParam !== null ? { coordSeed: location.origin, peers: meshParam } : undefined;
-  const boot = { paint, relayUrl, floor, floorAnchor, admit, genesisCasBaseUrl, genesisSeed: served.seed as GenesisSeed, meshLeaf };
+  const boot = { paint, relayUrl, floor, floorAnchor, admit, founding, genesisCasBaseUrl, genesisSeed: served.seed as GenesisSeed, meshLeaf };
   const broker = await ceremonyBroker;
   if ("refusal" in broker || !navigator.locks) { await lead(boot); return; }
   if (floorTab) {
@@ -486,8 +519,8 @@ function seedRestLine(status: VesselStatus): { readonly text: string; readonly o
 }
 
 async function lead(boot: { paint: (p: string) => void; relayUrl: string | undefined; floor: ReturnType<typeof floorCardOf>; floorAnchor: ReturnType<typeof floorAnchorOf>;
-  admit: string | null; genesisCasBaseUrl: string; genesisSeed: GenesisSeed; meshLeaf: { coordSeed: string; peers: string } | undefined }, port?: MessagePort): Promise<void> {
-  const { paint, relayUrl, floor, floorAnchor, admit, genesisCasBaseUrl, genesisSeed, meshLeaf } = boot;
+  admit: string | null; founding: boolean; genesisCasBaseUrl: string; genesisSeed: GenesisSeed; meshLeaf: { coordSeed: string; peers: string } | undefined }, port?: MessagePort): Promise<void> {
+  const { paint, relayUrl, floor, floorAnchor, admit, founding, genesisCasBaseUrl, genesisSeed, meshLeaf } = boot;
   $("mirror").setAttribute("data-lar-tab", port ? "follower" : "owner");
   // The mirror stands once the first frame names the surface the page shows; the vessel's word that it stands comes after its open returns.
   let mirrorTrigger: (() => void) | null = null;
@@ -529,8 +562,8 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
     ...(floor ? { floorCard: floor.text } : {}),
     ...(floorAnchor ? { floorAnchor } : {}),
     ...(admit ? { admitCarriage: admit } : {}),
-    // THE FOUNDING ACT ASKS FOR A FACE: the page's own door (`?found`) carries the ask; a bare arrival stands the veil floor.
-    ...(new URLSearchParams(location.search).has("found") ? { foundFace: true as const } : {}),
+    // THE FOUNDING ACT ASKS FOR A FACE: the page's own door (the identity panel's button) carries the ask; a bare arrival stands the veil floor.
+    ...(founding ? { foundFace: true as const } : {}),
     ...(meshLeaf ? { meshLeaf } : {}),
   });
   const outcome = await Promise.race([stood.then((v) => ({ kind: "stood" as const, v })), stopped.then((e) => ({ kind: "ended" as const, e }))]);
@@ -548,6 +581,7 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
   // and the walk's ward act: one ward act over `bytes`, its passphrase asked through the ceremony like every ward act.
   if (__LAR_WALK_DOOR__) (window as Window & { __larWalkWardAct?: (bytes: number[]) => Promise<{ key: string; signature: string }> }).__larWalkWardAct = (bytes: number[]) => vessel.walkWardAct(Uint8Array.from(bytes));
   pendingAdmit = null;
+  pendingFounding = false;
   // Identity custody stays in the browser vessel. The web surface renders the public receipt the vessel reported.
   const did = result.did;
   mountAdmitSurface(result.verifyingKey, vessel);
