@@ -127,7 +127,8 @@ describe("the isomorphic hull — @lararium/mesh carries no platform", () => {
       for (const raw of src.split("\n")) {
         const line = raw.trim();
         if (line.startsWith("//") || line.startsWith("*") || line.startsWith("/*")) continue;
-        const m = PLATFORM_GLOBAL.exec(line);
+        // A string literal names no global: `"./stood-document.js"` carries `-document.` as path text.
+        const m = PLATFORM_GLOBAL.exec(line.replace(/(["'`])(?:\\.|(?!\1).)*\1/g, '""'));
         if (!m) continue;
         const token = (m[1] ?? "").replace(/[.(].*$/, "");
         if (shadowed.has(token)) continue;
