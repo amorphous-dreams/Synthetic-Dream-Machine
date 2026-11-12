@@ -172,9 +172,8 @@ test("served wiki opens the TW5 search dropdown without worker errors", async ()
   assert.deepEqual(wikiWorkerErrors, [], "the served popup walk emits zero [wiki-worker] error lines");
 });
 
-// A tab whose earlier full promotion never landed holds its next boot at skinny (`mirror:began:<wiki>` in sessionStorage),
-// so no promotion snapshot lands after the person acts and nothing re-renders the sidebar. CI reached this tab by timing
-// (the stale-target walk left before its promotion landed); the walk here reaches it on purpose.
+// A tab whose earlier full boot never reached its first painted frame holds its next boot at skinny (`mirror:began:<wiki>` in
+// sessionStorage): the mirror takes its whole handoff at skinny and stays there. The walk reaches that tab on purpose.
 test("a tab held at skinny opens the TW5 search dropdown without worker errors", async () => {
   wikiWorkerErrors.length = 0;
   await page.goto(baseUrl);
@@ -193,7 +192,7 @@ test("a tab held at skinny opens the TW5 search dropdown without worker errors",
     const dropdown = wiki.locator(".tc-search-drop-down");
     await dropdown.waitFor({ state: "visible", timeout: 20_000 });
     // The count button carries `popup=` and the popup-handle class, so it toggles the dropdown the focus opened: its first
-    // click shuts it and its second opens it. A held tab lands no promotion snapshot to re-render the sidebar, so each read holds.
+    // click shuts it and its second opens it. A held tab stays at skinny for its life, so each read holds.
     const count = wiki.locator("button").filter({ hasText: "matches" }).first();
     await count.click();
     await dropdown.waitFor({ state: "hidden", timeout: 20_000 });

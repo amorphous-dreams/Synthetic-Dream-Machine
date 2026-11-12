@@ -55,6 +55,18 @@ test("a person's plugin among the wiki's records boots with the engine when it e
     result.unmount();
   } finally { r.host.remove(); }
 });
+test("a canon record carrying a module-type of its own waits with no alert and no evaluation: no alert covers the page", async () => {
+  const r = await rig({ records: [{ title: "lar:///canon/a-module-record", fields: { "module-type": "library", type: "application/javascript", text: "globalThis.__looseRan = true;" } }] });
+  try {
+    const result = await standMirror(r.options, r.seams) as any;
+    expect(r.host.hasAttribute("data-lar-refused-plugins")).toBe(false);
+    expect(r.host.shadowRoot!.querySelectorAll(".tc-alerts .tc-alert").length).toBe(0);
+    expect(result.tw.modules.titles["lar:///canon/a-module-record"]).toBeUndefined();
+    expect((globalThis as any).__looseRan).toBeUndefined();
+    expect(result.tw.wiki.tiddlerExists("lar:///canon/a-module-record")).toBe(true);
+    result.unmount();
+  } finally { r.host.remove(); }
+});
 test("a theme a person installed in the wiki reaches the mirror as the wiki's own record and styles the pane; CONTROL without the theme pointer the rule stays out", async () => {
   const theme = { title: "$:/themes/person/dusk", fields: { "plugin-type": "theme", type: "application/json", name: "Dusk",
     text: JSON.stringify({ tiddlers: { "$:/themes/person/dusk/base": { title: "$:/themes/person/dusk/base", tags: "$:/tags/Stylesheet", text: ".lar-dusk-marker { color: rgb(1, 2, 3); }" } } }) } };

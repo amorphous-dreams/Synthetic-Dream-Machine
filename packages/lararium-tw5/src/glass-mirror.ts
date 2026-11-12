@@ -68,8 +68,10 @@ const shadowsOf = (text: unknown): Record<string, unknown>[] | null => {
  *                       never replaces bytes the vessel named by CID.
  *   plugin-syncadaptor  a plugin carrying a `syncadaptor` or `saver` shadow, or a loose module of either type: the mirror takes
  *   module-syncadaptor  its truth from the port alone.
- *   plugin-gate         a plugin or a loose module that evaluates JavaScript, on a vessel whose store does not yet rest sealed
- *   module-gate         (`sealedRest`); a plugin that lays only wikitext, styles and data boots at once.
+ *   plugin-gate         a plugin that evaluates JavaScript, on a vessel whose store does not yet rest sealed (`sealedRest`); a
+ *                       plugin that lays only wikitext, styles and data boots at once.
+ *   (loose module)      a record carrying a `module-type` of its own: held with no alert, sealed or not. The island evaluates no
+ *                       such record either (its module gate admits code by grant), so the surface runs none.
  *   (unreadable)        a plugin or module record whose body the port left out (a skinny open) or whose packed text will not
  *                       parse: nothing can read what it would evaluate, so it waits like a gated one.
  *   (module's namesake) a record that shares its title with a module the boot set packs: held with no alert, so the engine's own
@@ -103,9 +105,11 @@ export function censusRecords(records: readonly PortWireRecord[], bootTitles: Re
     const plugin = fields["plugin-type"] !== undefined;
     if (!plugin && moduleType === undefined) { preloaded.push(record); continue; }
     if (!plugin) {
+      // A loose module record never evaluates in the island either (it lands there after the engine boots, and the island's own
+      // module gate admits code by grant alone), so the mirror runs none: held with no alert, whatever the seal reads. House canon
+      // carries such records as plain data.
       if (moduleType === "syncadaptor" || moduleType === "saver") hold("module-syncadaptor");
-      else if (!sealedRest) hold("module-gate");
-      else preloaded.push(record);
+      else held.push(record);
       continue;
     }
     const shadows = record.omitted?.includes("text") ? null : shadowsOf(fields["text"]);

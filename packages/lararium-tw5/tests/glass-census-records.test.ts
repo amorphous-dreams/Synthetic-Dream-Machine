@@ -13,15 +13,16 @@ const kinds = (census: ReturnType<typeof censusRecords>) => Object.fromEntries(c
 const titles = (records: readonly { title: string }[]) => records.map(r => r.title);
 
 describe("the record census ~ which of the wiki's own records the mirror's engine boots with", () => {
-  test("an ordinary record and a plugin that evaluates nothing boot with the engine; a code plugin and a loose module wait on the seal", () => {
+  test("an ordinary record and a plugin that evaluates nothing boot with the engine; a code plugin waits on the seal and a loose module waits whatever the seal", () => {
     const census = censusRecords([record("Note", { text: "n" }), palette, code, loose], boot, false);
     expect(titles(census.preloaded)).toEqual(["Note", "$:/plugins/person/palette"]);
     expect(titles(census.held)).toEqual(["$:/plugins/person/code", "$:/person/macro.js"]);
-    expect(kinds(census)).toEqual({ "$:/plugins/person/code": "plugin-gate", "$:/person/macro.js": "module-gate" });
+    expect(kinds(census)).toEqual({ "$:/plugins/person/code": "plugin-gate" });   // the loose module waits with no alert: the island runs none either
   });
-  test("CONTROL: on a vessel whose store rests sealed, the code plugin and the loose module boot with the engine", () => {
+  test("CONTROL: on a vessel whose store rests sealed, the code plugin boots with the engine; a loose module still waits, as it does in the island", () => {
     const census = censusRecords([code, loose], boot, true);
-    expect(titles(census.preloaded)).toEqual(["$:/plugins/person/code", "$:/person/macro.js"]);
+    expect(titles(census.preloaded)).toEqual(["$:/plugins/person/code"]);
+    expect(titles(census.held)).toEqual(["$:/person/macro.js"]);
     expect(census.refused).toEqual([]);
   });
   test("a syncadaptor or a saver never boots, sealed or not", () => {
