@@ -48,7 +48,9 @@ vi.mock("../src/fleet-join-custody.js", () => ({
 }));
 vi.mock("@noble/ed25519", () => ({}));
 vi.mock("@lararium/keyhive", () => ({ carriedAdmitOfFleetJoin: () => ({ kind: "device-admit" }) }));
-vi.mock("@lararium/mesh", () => ({
+vi.mock("@lararium/mesh", async () => {
+  const { composerOverStubs } = await import("./fixtures/fleet-join-composer-seam.js");
+  const stubs = {
   // The own-property door, as `stored-value.ts` spells it: the bootstrap read asks it by name.
   ownEntry: (map: Record<string, unknown> | null | undefined, key: string) => (map && key !== "__proto__" && Object.hasOwn(map, key) ? map[key] : undefined),
   gateBundleDigest: (pin: unknown) => JSON.stringify(pin),
@@ -65,7 +67,9 @@ vi.mock("@lararium/mesh", () => ({
     personaGroup: "group-two", certificates: [], grants: [], edge: { hearthTrueName: "nexus-a" }, carriage: { gatePin: { signingKey: "k" }, canon: {} },
     reach: { syncUrl: null }, charter: "charter", admit: { admit: { nym: "d" }, lineage: [], salt: "s" }, floorPins: [],
   }, addressSecret: new Uint8Array(32) }),
-}));
+};
+  return { ...stubs, ...composerOverStubs(stubs) };
+});
 
 import { existsSync } from "node:fs";
 import { runFleetJoinLand } from "../src/commands/fleet-join.js";
