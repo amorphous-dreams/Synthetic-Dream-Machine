@@ -9468,7 +9468,7 @@ $ git &#45;-no-pager show 1b7be63b4:packages/lararium-node/tests/key-class.test.
     55        const v = scratch();
     56        try {
     57          const io = new FsCustodyIo(v.homes);
-    58          await foundCustody({ io, homes: v.homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: "census-test-route" }] }] });
+    58          await foundCustody({ io, homes: v.homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: "⟨test passphrase: published fixture, withheld from canon⟩" }] }] });
     59          const rows = await rowsOf(v.homes, { [`faces/${"ab".repeat(16)}/.persona-group-root-h0.json`]: "{}", [`faces/${"ab".repeat(16)}/recovery-device-share-h0.bin`]: "x" });
     60          expect(rows.get("gate-root")).toMatchObject({ keyClass: "device-minted", custody: "hot", reading: "sealed", fault: false });
     61          expect(rows.get("persona-root-h0")).toMatchObject({ keyClass: "seed", custody: "face-cold", reading: "bare", fault: true });
@@ -9587,17 +9587,9 @@ $ git &#45;-no-pager show 1b7be63b4:packages/lararium-node/tests/support/scratch
     33    process.env.GIT_CONFIG_GLOBAL = "/dev/null";
     34
     35    /** The synthetic route (the seat fixture founds under the same string, so either opens the other's tree). */
-```
-
-&nbsp;&nbsp;&nbsp;&nbsp;<code>36    export const SCRATCH_PASSPHRASE = "fixture&#45;custody-passphrase";</code>
-
-```
+    36    export const SCRATCH_PASSPHRASE = "⟨test passphrase: published fixture, withheld from canon⟩";
     37    /** The published test route a harness tool binds a staged root to (`tools/test-custody-route.mjs` spells it). */
-```
-
-&nbsp;&nbsp;&nbsp;&nbsp;<code>38    const STAGED_ROUTE_PASSPHRASE = "test&#45;founding-passphrase";</code>
-
-```
+    38    const STAGED_ROUTE_PASSPHRASE = "⟨test passphrase: published fixture, withheld from canon⟩";
     39
     40    // A write to a face the floor index does not name founds that face under the scratch route, in every suite: the product
     41    // founds each face by its own act and seats no such policy.
@@ -16754,6 +16746,19 @@ $ git &#45;-no-pager show 1b7be63b4:packages/lararium-node/src/node-vessel-ident
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;-YnPEDIBzPuYbW3q3EzF06zbMB9M8NIFo5aN9bpaS0s`>>
+<<~ ahu slot=`#/redactions`>>
+
+!! Redactions
+
+The words of this record stand as written except at the sites below, where a published test credential literal gives way to the named placeholder ⟨test passphrase: published fixture, withheld from canon⟩. The test-credential witness keeps every such literal out of canon, since canon projects into the live Lararium and a literal there trips the K2 spy as a false positive. The source file keeps the literal whole.
+
+|! Source line |! Literal replaced |! Occurrences |h
+| 9499 | the key-class test route (`packages/lararium-node/tests/key-class.test.ts`) | 1 |
+| 9615 | the seat fixture's scratch route (`packages/lararium-node/tests/custody-seat-fixture.ts`) | 1 |
+| 9617 | the published test founding route (`tools/test-custody-route.mjs`) | 1 |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6thUGf8curJi2m9vBK_UvuyTq0fZ52F1wdeAyrN3ggY`>>
 
 <<^ code=`&#x0004;` to=`?`>>
