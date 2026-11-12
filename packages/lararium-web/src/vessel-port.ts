@@ -50,6 +50,7 @@ export interface VesselPortHandlers {
   onPhase?(phase: string): void;
   onFrame?(frame: ProjectionSurfaceFrame): void;
   onControlResult?(surface: string, result: LarMsg_ControlResult): void;
+  onControlPending?(surface: string, eventId: string): void;
   onPortMessage?(binding: string, islandKey: string, msg: unknown): void;
   onStatus?(status: VesselStatus): void;
   /** The vessel asks the person: the page opens the ceremony document, and the answer travels ceremony to vessel, never here. */
@@ -120,6 +121,7 @@ export function standVesselPort(worker: VesselWorkerLike, handlers: VesselPortHa
       case "phase": handlers.onPhase?.(msg.phase); return;
       case "frame": handlers.onFrame?.(msg.frame); return;
       case "control-result": handlers.onControlResult?.(msg.surface, msg.result); return;
+      case "control-pending": handlers.onControlPending?.(msg.surface, msg.eventId); return;
       case "coherence": return;
       case "port-msg": handlers.onPortMessage?.(msg.binding, msg.islandKey, msg.msg); return;
       case "port:refused":

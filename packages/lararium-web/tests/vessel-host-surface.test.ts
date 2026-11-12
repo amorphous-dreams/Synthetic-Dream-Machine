@@ -560,6 +560,14 @@ describe("surface traffic reaches each session over its own port", () => {
     cb.receive({ t: "control-event", surface: "lares", ev: { eventId: "evB" } } as PageToVessel);
     await until("CONTROL: B's own event reaches the vessel", () => v.controlEvents.includes("evB"));
     expect(v.controlEvents, "B's event under A's pending eventId never reaches the vessel").toEqual(["evX", "evB"]);
+    // THE RETRY LAW (dreamdom-port-contract #/retry-law): a resend that meets its act still waiting draws a named, causal reply to its
+    // sender, so the page counts that send as acknowledged; it never reaches the vessel a second time.
+    ca.receive({ t: "control-event", surface: "lares", ev: { eventId: "evX" } } as PageToVessel);
+    const pendings = (t: ReturnType<typeof tab>) => t.heard.filter((m): m is Extract<VesselToPage, { t: "control-pending" }> => m.t === "control-pending").map((m) => m.eventId);
+    await until("A's resend draws the pending reply", () => pendings(a).length > 0);
+    expect(pendings(a), "A's resend of its waiting act hears it pending").toEqual(["evX"]);
+    expect(pendings(b), "B's send under A's pending eventId hears it pending too, and reaches nothing").toEqual(["evX"]);
+    expect(v.controlEvents, "CONTROL: no resend reaches the vessel twice").toEqual(["evX", "evB"]);
 
     v.hooks.onControlResult!("lares", result("evX"));
     v.hooks.onControlResult!("lares", result("evB"));

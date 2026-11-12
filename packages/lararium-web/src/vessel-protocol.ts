@@ -10,6 +10,7 @@
  *   onPhase                           vessel → page  `phase`
  *   onFrame                           vessel → page  `frame`
  *   onControlResult                   vessel → page  `control-result`
+ *   onControlPending                  vessel → page  `control-pending`
  *   onCoherence                       vessel → page  `coherence`
  *   onPortMessage                     vessel → page  `port-msg` (a placement the vessel refused: `port:refused`)
  *   onRest                            vessel → page  `status{rest}`
@@ -150,6 +151,8 @@ export type VesselToPage =
   | { readonly t: "phase"; readonly phase: string }
   | { readonly t: "frame"; readonly frame: ProjectionSurfaceFrame }
   | { readonly t: "control-result"; readonly surface: string; readonly result: LarMsg_ControlResult }
+  /** A resend that met its act still waiting at the vessel (`control-event-pending`): the act stands held, its result to come. */
+  | { readonly t: "control-pending"; readonly surface: string; readonly eventId: string }
   | { readonly t: "coherence"; readonly frame: CoherenceFrameWithRev }
   | { readonly t: "port-msg"; readonly binding: string; readonly islandKey: string; readonly msg: unknown }
   | { readonly t: "port:minted"; readonly wantId: string; readonly port?: MessagePort; readonly refused?: string }

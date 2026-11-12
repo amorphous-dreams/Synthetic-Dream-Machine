@@ -48,9 +48,13 @@ vi.mock("../src/fleet-join-custody.js", () => ({
 }));
 vi.mock("@noble/ed25519", () => ({}));
 vi.mock("@lararium/keyhive", () => ({ carriedAdmitOfFleetJoin: () => ({ kind: "device-admit" }) }));
+// The veil-lift link a landing keeps (node-veil-lift), signed over the atom the join minted.
+vi.mock("../src/node-veil-lift.js", () => ({ keepNodeVeilLift: async () => { seam.writes.push("veil-lift"); } }));
+vi.mock("../src/face-atom-store.js", () => ({ standFaceAtom: async () => new Uint8Array(32) }));
 vi.mock("@lararium/mesh", async () => {
   const { composerOverStubs } = await import("./fixtures/fleet-join-composer-seam.js");
   const stubs = {
+  faceAtomKeyFromSeed: () => ({ key: "c".repeat(64) }),
   // The own-property door, as `stored-value.ts` spells it: the bootstrap read asks it by name.
   ownEntry: (map: Record<string, unknown> | null | undefined, key: string) => (map && key !== "__proto__" && Object.hasOwn(map, key) ? map[key] : undefined),
   gateBundleDigest: (pin: unknown) => JSON.stringify(pin),
