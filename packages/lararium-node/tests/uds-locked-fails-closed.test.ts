@@ -20,7 +20,7 @@ import { Repo, type Chunk, type StorageAdapterInterface, type StorageKey } from 
 import {
   SealedDocumentStore, bindSecretHomeRest, concludeVerb, controlHomeRefusal, controlStoreOf, emptyLarDoc, enrollSecretHome,
   mintSecretHomeAddress, mintVesselDocumentId, nameControlHome, openSecretHome, standControlHome, vesselHeldHomes,
-  OUTCOME_URI_PREFIX, RECEIPT_FACT_URI_PREFIX, VESSEL_LOCKED, type LarDoc,
+  OUTCOME_URI_PREFIX, RECEIPT_FACT_URI_PREFIX, VESSEL_LOCKED, CONTROL_HOME_UNNAMED, type LarDoc,
 } from "@lararium/mesh";
 import { FactLedger, startUdsChannel } from "../src/uds-channel.js";
 import { claimStore } from "../src/owned-store.js";
@@ -65,6 +65,26 @@ describe("a locked hearth fails closed at the verb door", () => {
       expect(titles(opened, RECEIPT_FACT_URI_PREFIX)).toEqual([`${RECEIPT_FACT_URI_PREFIX}tuesday-1`]);
     } finally { await second.close(); }
     await v.repo.shutdown();
+  });
+
+  test("U1 — an unfounded place's verb door refuses `init-wiki` by name in one round trip: no verb places, no wait runs to the bound", async () => {
+    // A place that founded no face names no control document: the stand-in answers `control-home-unnamed`. A verb whose outcome
+    // ledger would rest there refuses at the door, before any placement or outcome wait (CI's W4 hang came from an ask at a socket
+    // no channel served, never from this door).
+    const { repo } = heldRepo(memoryAdapter());
+    const daemon = repo.create<LarDoc>(emptyLarDoc());
+    const control = await standControlHome(repo, daemon);
+    expect(controlHomeRefusal(control)?.refusal).toBe(CONTROL_HOME_UNNAMED);
+    let placed = 0;
+    const gate = await door(control, repo, () => { placed += 1; });
+    try {
+      const t0 = performance.now();
+      const refused = await send(gate.socketPath, { verb: "init-wiki", args: { slug: "veil-own" }, requestedBy: "did:key:veil", requestId: "unfounded-1" });
+      expect(refused["status"]).toBe("error");
+      expect(refused["refusal"]).toEqual({ reason: CONTROL_HOME_UNNAMED });
+      expect(placed, "no verb placed").toBe(0);
+      expect(performance.now() - t0, "one round trip, never the outcome wait's bound").toBeLessThan(2_000);
+    } finally { await gate.close(); await repo.shutdown(); }
   });
 
   test("L2 — RED (midnight petitioner): the receipt ledger over a locked control store answers no fact, durable or absent; it refuses `vessel-locked`", async () => {

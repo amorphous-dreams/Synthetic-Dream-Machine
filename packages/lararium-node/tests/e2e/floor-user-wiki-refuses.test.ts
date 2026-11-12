@@ -30,9 +30,11 @@
  *       channel (`init-wiki`, as `lares wiki init` asks it), stands down, boots again asking for that wiki, and mounts it
  *       with none waiting: the row's `vessel-only` mark carries it across the restart.
  *       HELD, by a named gap CI read: on the node an unfounded place stands no control document ("this place holds no face,
- *       and the control document mints with the face", `control-home-unnamed`), so no unlocked veil stands there to mint, and
- *       the verb channel's answer rides the control document's outcome ledger, so the ask hung to the test's bound instead of
- *       refusing. The vector runs once a node's veil names its control home before a face (`NODE_VEIL_STANDS`).
+ *       and the control document mints with the face", `control-home-unnamed`), so no unlocked veil stands there to mint. The
+ *       verb door itself refuses such an ask by name in one round trip (uds-locked-fails-closed U1); CI's 600s hang came from
+ *       this vector asking `storeClaim.socketPath`, which `openNodeVessel` claims and never serves (main.ts serves the verb
+ *       front). The vector runs once a node's veil names its control home before a face (`NODE_VEIL_STANDS`), and asks through
+ *       a served front.
  *
  * Canon: lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift#/the-slices (slice 5b)
  */
