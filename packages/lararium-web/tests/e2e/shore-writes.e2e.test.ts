@@ -176,18 +176,20 @@ test("served wiki opens the TW5 search dropdown without worker errors", async ()
 // sessionStorage): the mirror takes its whole handoff at skinny and stays there. The walk reaches that tab on purpose.
 test("a tab held at skinny opens the TW5 search dropdown without worker errors", async () => {
   wikiWorkerErrors.length = 0;
-  const shownWikis = (): Promise<string[]> => page.evaluate(() =>
-    Object.keys(sessionStorage).flatMap((key) => key.match(/^mirror:(?:began|full-standing):(.+)$/)?.slice(1) ?? []));
   // ONE BOOT SERVES THIS WALK. The tab the search walk left still shows its full mirror, and that mirror's standing record names
   // the wiki, so the held record plants on the tab as it stands and the one reload below boots held. Two vessel boots do not fit
-  // this test's bound on a CI runner (each takes most of a minute there); a tab that arrives bare boots once first, under the
-  // longer bound this test names.
-  if ((await shownWikis()).length === 0) { await page.goto(baseUrl); await waitForLivePage(); }
-  await page.evaluate(() => {
+  // this test's usual bound on a CI runner (each takes most of a minute there); a tab that arrives bare boots once first, under
+  // the longer bound this test names.
+  const plant = (): Promise<number> => page.evaluate(() => {
     const wikis = Object.keys(sessionStorage).flatMap((key) => key.match(/^mirror:(?:began|full-standing):(.+)$/)?.slice(1) ?? []);
-    if (wikis.length === 0) throw new Error("no mirror evidence names the wiki this tab shows");
     for (const wiki of wikis) sessionStorage.setItem(`mirror:began:${wiki}`, "held-by-test");
+    return wikis.length;
   });
+  if ((await plant()) === 0) {
+    await page.goto(baseUrl);
+    await waitForLivePage();
+    assert.ok((await plant()) > 0, "mirror evidence names the wiki this tab shows");
+  }
   try {
     await page.goto(baseUrl);
     await waitForLivePage();
