@@ -2,7 +2,7 @@
  * nexus-publish — THE OFFERING DOOR: what THIS operator publishes for others to take.
  *
  * ── WHY IT STANDS APART FROM `kahuli` ────────────────────────────────────────────────────────────
- * `kahuli` overturns what the MESH must agree on: `engineCid` (the hearth true-name, signed into every
+ * `kahuli` overturns what the MESH must agree on: `engineCid` (the engine CID, signed into every
  * device-delegation edge) and `grammarCid` (the required memetic-wikitext grammar alone). Both ratchet,
  * and an operator who advances one moves everybody's reading.
  *

@@ -5,11 +5,11 @@ exports[`lares nexus — every verb reaches its door > the three usage surfaces 
 usage: lares nexus kahuli <engine | grammar>
 
   the OVERTURN — advance one ratchet tier of this Nexus's genesis composition:
-    engine   the SLOW ratchet: the hearth true-name (engineCid), signed into every device
+    engine   the SLOW ratchet: the engine CID (engineCid), signed into every device
              delegation edge — it binds MEMBERSHIP. HELD: advancing re-binds the fleet mesh-wide;
              the graceful forward-rebind span (predecessor + both-epoch reads) awaits its rulings.
     grammar  the FAST ratchet: the REQUIRED memetic-wikitext grammar alone (grammarCid) —
-             never the true-name. Reads the current epoch; --apply re-derives the island (the bake).
+             never the engine CID. Reads the current epoch; --apply re-derives the island (the bake).
 
   a read NEVER builds — the deliberate build+push lives behind --apply and in \`nexus rite kahuli\`."
 `;
