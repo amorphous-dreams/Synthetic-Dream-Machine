@@ -159,7 +159,7 @@ describe("r4 · the root rests under the ward from its first write", () => {
     // The founder face stands first on this thread, so the founding asks no first bind and binds the ward over its own route.
     await standFounderFace({ idbName, ask: async () => CUSTODY });
     const asked: unknown[] = [];
-    await expect(openBrowserVessel({ idbName, askWardRoute: async (_act: string, kind?: unknown) => { asked.push(kind); return (WARD as { passphrase: string }).passphrase; },
+    await expect(openBrowserVessel({ idbName, foundFace: true, askWardRoute: async (_act: string, kind?: unknown) => { asked.push(kind); return (WARD as { passphrase: string }).passphrase; },
       onPhase: (phase: string) => { if (phase === "bootstrap-kept") throw new BootHalted(); } } as BrowserVesselOptions)).rejects.toBeInstanceOf(BootHalted);
     expect(asked, "a founding that binds the ward asks the route twice").toEqual(["bind", "retype"]);
     expect(startsWard(await rowOf(idbName, "ward/h0/persona-root"))).toBe(true);
@@ -178,7 +178,7 @@ describe("r4b · a founding's ward binds only over a route retyped alike", () =>
     await standFounderFace({ idbName, ask: async () => CUSTODY });
     const asked: unknown[] = [];
     const typed = (WARD as { passphrase: string }).passphrase;
-    const reading = await openBrowserVessel({ idbName, askWardRoute: async (_act: string, kind?: unknown) => { asked.push(kind); return asked.length === 1 ? typed : `${typed}!`; },
+    const reading = await openBrowserVessel({ idbName, foundFace: true, askWardRoute: async (_act: string, kind?: unknown) => { asked.push(kind); return asked.length === 1 ? typed : `${typed}!`; },
       onPhase: (phase: string) => { if (phase === "bootstrap-kept") throw new BootHalted(); } } as BrowserVesselOptions)
       .then(() => "landed", (e: { reading?: string; message: string }) => e.reading ?? e.message);
     expect(reading).toBe("ward-route-mismatch");

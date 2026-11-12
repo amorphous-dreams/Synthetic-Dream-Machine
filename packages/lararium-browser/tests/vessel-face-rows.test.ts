@@ -47,7 +47,7 @@ async function foundHalted(tag: string): Promise<{ idbName: string; group: strin
   const idbName = `face-rows-${tag}-${crypto.randomUUID()}`;
   const asked: string[] = [];
   const opts = {
-    idbName,
+    idbName, foundFace: true,
     askCustody: async (q: { readonly kind: string }) => { asked.push(q.kind); return ROUTE; },
     onPhase: (phase: string) => { if (phase === "bootstrap-kept") throw new BootHalted(); },
   };
@@ -106,7 +106,7 @@ describe("a face row never rests under the place tree", () => {
     // A persona root keyed by its handle index beside the place seed, under the place tree.
     const db = await openVesselIdb(idbName);
     try { await idbPut(db, "keystore", "sealed/persona-root-h0", new Uint8Array([1, 2, 3])); } finally { db.close(); }
-    const refused = await openBrowserVessel({ idbName, askCustody: async () => ROUTE } as unknown as BrowserVesselOptions).catch((e: unknown) => e);
+    const refused = await openBrowserVessel({ idbName, foundFace: true, askCustody: async () => ROUTE } as unknown as BrowserVesselOptions).catch((e: unknown) => e);
     expect(String(refused)).toMatch(/face-row-shared/);
     expect((refused as { reading?: unknown }).reading).toBe("face-row-shared");
     await expect(readKeystoreRow(idbName, "nexus-key/h0/aid")).rejects.toMatchObject({ reading: "face-names-a-handle" });

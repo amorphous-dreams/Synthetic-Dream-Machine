@@ -12,7 +12,7 @@ import { BrowserArchiveRowUnreadable, loadBrowserVeilArchive, saveBrowserVeilArc
 async function foundHalted(): Promise<{ idbName: string; group: string }> {
   const idbName = `browser-archive-${crypto.randomUUID()}`;
   await bindSyntheticBrowserCustodySlot(idbName);
-  await expect(openBrowserVessel({ idbName, askWardRoute: fixtureWardDialog, onPhase: (phase: string) => { if (phase === "catalog-ready") throw new BootHalted(); } } as BrowserVesselOptions))
+  await expect(openBrowserVessel({ idbName, foundFace: true, askWardRoute: fixtureWardDialog, onPhase: (phase: string) => { if (phase === "catalog-ready") throw new BootHalted(); } } as BrowserVesselOptions))
     .rejects.toBeInstanceOf(BootHalted);
   return { idbName, group: await foundedGroupOf(idbName) };
 }

@@ -172,7 +172,9 @@ export function standVesselHost(env: VesselHostEnv = {}) {
   const seedRestOf = async (idbName: string, face: string | null): Promise<{ seedRest: SeedRest; seedWrapClass?: string }> => {
     const custody = await readBrowserCustody(idbName);
     if (custody.reading === "sealed") return { seedRest: "wrapped-passphrase" };
-    const wrap = face === null ? undefined : await readBrowserSeedWrap(idbName, face);
+    // THE UNBOUND VEIL SAYS SO: no face worn and no slot bound, so the key and the floor's own key rest open (the pre-bind window).
+    if (face === null) return { seedRest: "open-veil" };
+    const wrap = await readBrowserSeedWrap(idbName, face);
     return wrap ? { seedRest: "wrapped-prf", seedWrapClass: wrap.keyClass } : { seedRest: "open" };
   };
 

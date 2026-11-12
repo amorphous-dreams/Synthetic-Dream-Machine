@@ -68,7 +68,9 @@ export interface VesselBoot {
 export type VesselFloor = "floor" | "lighting" | "lit";
 
 /** The seed's resting state, named and never its bytes. */
-export type SeedRest = "absent" | "wrapped-prf" | "wrapped-passphrase" | "open";
+/** `open-veil`: an unbound veil floor: no face worn and no slot bound, so the vessel's key and its floor's own key rest in
+ *  the open pre-bind window (the-veil-ladder#/the-base-model, the throwaway rung). */
+export type SeedRest = "absent" | "wrapped-prf" | "wrapped-passphrase" | "open" | "open-veil";
 
 /** Public readings alone. */
 export interface VesselStatus {
