@@ -13,7 +13,7 @@
  * Meme: lar:///ha.ka.ba/lararium/keyhive/operator-daemon-behavior
  */
 
-import { carriedSeatGrants } from "./carried-seat.js";
+import { seatGrantsReader } from "./carried-seat.js";   // leaf-fleet
 import {
   makeDaemonBehavior, makeWhereReactor, makeResolveReactor, makeListWikisReactor,
   makePinReactor, makeUnpinReactor, makeRegisterColdReactor, registerActionReactors, makeFresherCanonReactor, makeOverrideBasesReactor, makeTw5Deserializer,
@@ -164,7 +164,7 @@ import { makeLitFaceTarget, type LitFace } from "./lit-face-target.js";
 import { type FaceJoinSummons } from "./face-join.js";
 import { answerFleetSeatDuties, type FleetSeatFacts } from "./fleet-seat-duties.js";
 import { announceSeatRoll } from "./seat-duty-executor.js";
-import { FACE_GRANT_PREFIX, verifyFaceGrantRecord, type FaceGrantRecord } from "./face-grant-record.js";
+import { verifyFaceGrantRecord } from "./face-grant-record.js";
 import { makeFaceSeat, makeGroupDocListener, watchFaceSeatFleet, type GroupDocHandle } from "./face-seat.js";
 import { runFaceJoinOperation } from "./face-join-operation.js";
 import { makeFaceIntentDoor } from "./face-intent-door.js";
@@ -1637,26 +1637,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           group, selfVerifyingKey: edge.deviceVerifyingKey, personaRootDid: edge.personaRootDid,
           personaKel: daemonAuth.personaKel,
           knowsAgent: (agent) => veil.knowsAgent(agent),
-          grants: async () => {
-            // ── leaf-fleet (Leaf-Wright): THE CARRIED GRANT, read before the plane. A leaf with no road to the face's hearth
-            // never holds the persona plane; a grant a person carried to it by file rests in this vessel's own secret home
-            // (`carried-seat`), and the seat judges it by the same verifier as a synced one. ──
-            const carried = await carriedSeatGrants(ctx.secretStore, group, edge.deviceVerifyingKey).catch(() => []);
-            if (carried.length > 0) return carried;
-            // ── /leaf-fleet ──
-            const store = await homeStoreOf(catalog, personaBagIdFor(group));
-            if (!store) return [];
-            const prefix = `${FACE_GRANT_PREFIX}${group}/`;
-            const self = edge.deviceVerifyingKey.toLowerCase();
-            const found: { title: string; record: FaceGrantRecord }[] = [];
-            for (const title of await store.listVisible()) {
-              if (!title.startsWith(prefix) || !title.toLowerCase().endsWith(self)) continue;
-              const raw = (await store.get(title))?.tiddler.text;
-              if (typeof raw !== "string") continue;
-              try { found.push({ title, record: JSON.parse(raw) as FaceGrantRecord }); } catch { /* An unreadable record grants nothing. */ }
-            }
-            return found;
-          },
+          // ── leaf-fleet: THE CARRIED GRANT, read before the plane (`seatGrantsReader`, carried-seat). A leaf with no road to the
+          // face's hearth never holds the persona plane; a grant a person carried to it by file rests in this vessel's own
+          // secret home, and the seat judges it by the same verifier as a synced one. ──
+          grants: seatGrantsReader({ carried: ctx.secretStore, plane: () => homeStoreOf(catalog, personaBagIdFor(group)), group, deviceKey: edge.deviceVerifyingKey }),
           // The founder's standing, off this vessel's own fold of the face's fleet board: no reader composed reads nothing as clear.
           founderStanding: async (key) => requireDyadReader(dyadReader(ctx), "the grant founder")(edge.personaRootDid, key),
           verify: verifyFaceGrantRecord,

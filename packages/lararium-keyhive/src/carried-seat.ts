@@ -136,3 +136,36 @@ export async function carriedSeatGrants(store: { listVisible(): Promise<readonly
   if (typeof raw !== "string") return [];
   try { return [{ title, record: JSON.parse(raw) as FaceGrantRecord }]; } catch { return []; }
 }
+
+/** A store the seat's grant sources read: its visible titles and one record's text. */
+type GrantSource = { listVisible(): Promise<readonly string[]>; get(title: string): Promise<{ readonly tiddler: { readonly text?: unknown } } | undefined | null> };
+
+/**
+ * THE SEAT'S GRANT PORT (`makeFaceSeat`'s `grants`): the carried grant in this vessel's own store first, then the face's
+ * persona plane. A leaf with no road never holds the plane (its read faults `document-unavailable`), so a carried grant
+ * answers before the plane is asked, and the unavailable plane cannot fault the pass. With no carried grant, the plane's
+ * grant records for this device answer, and a plane that faults faults the pass as before.
+ */
+export function seatGrantsReader(input: {
+  readonly carried: GrantSource | undefined;
+  readonly plane: () => Promise<GrantSource | null | undefined>;
+  readonly group: string;
+  readonly deviceKey: string;
+}): () => Promise<{ title: string; record: FaceGrantRecord }[]> {
+  return async () => {
+    const carried = await carriedSeatGrants(input.carried as never, input.group, input.deviceKey).catch(() => []);
+    if (carried.length > 0) return carried;
+    const store = await input.plane();
+    if (!store) return [];
+    const prefix = `${FACE_GRANT_PREFIX}${input.group}/`;
+    const self = input.deviceKey.toLowerCase();
+    const found: { title: string; record: FaceGrantRecord }[] = [];
+    for (const title of await store.listVisible()) {
+      if (!title.startsWith(prefix) || !title.toLowerCase().endsWith(self)) continue;
+      const raw = (await store.get(title))?.tiddler.text;
+      if (typeof raw !== "string") continue;
+      try { found.push({ title, record: JSON.parse(raw) as FaceGrantRecord }); } catch { /* An unreadable record grants nothing. */ }
+    }
+    return found;
+  };
+}
