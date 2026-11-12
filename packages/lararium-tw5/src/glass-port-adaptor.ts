@@ -3,7 +3,7 @@ import type { PortIslandToVesselMsg, PortWireRecord, PortWidthName } from "@lara
 export interface GlassWiki {
   addEventListener(type: "change", listener: (changes: Record<string, unknown>) => void): void;
   removeEventListener(type: "change", listener: (changes: Record<string, unknown>) => void): void;
-  getTiddler(title: string): { fields: Record<string, unknown> } | undefined;
+  getTiddler(title: string): { fields: Record<string, unknown>; getFieldStrings?(): Record<string, string> } | undefined;
   addTiddler(tiddler: unknown): void;
   deleteTiddler(title: string): void;
 }
@@ -36,12 +36,29 @@ type Pending = { before: PortWireRecord | null; title: string; optimistic: strin
   peerGeneration: number; record: PortWireRecord; echoed?: true };
 // `$:/info/*` is what this page knows of itself (its URL, its browser, its mode): a session fact, never a record the port carries.
 const LOCAL = ["$:/state", "$:/temp", "$:/status", "$:/info"];
+/** TW5's own date string (`YYYYMMDDHHMMSSmmm`, UTC), as `$tw.utils.stringifyDate` writes it. */
+const tw5Date = (date: Date): string => {
+  const pad = (n: number, width = 2) => String(n).padStart(width, "0");
+  return `${date.getUTCFullYear()}${pad(date.getUTCMonth() + 1)}${pad(date.getUTCDate())}${pad(date.getUTCHours())}` +
+    `${pad(date.getUTCMinutes())}${pad(date.getUTCSeconds())}${pad(date.getUTCMilliseconds(), 3)}`;
+};
+/** TW5's own list string, as `$tw.utils.stringifyList` writes it: a member holding a space rides in brackets. */
+const tw5List = (list: readonly unknown[]): string =>
+  list.map(item => { const s = String(item); return /\s/.test(s) ? `[[${s}]]` : s; }).join(" ");
+/**
+ * A record's fields as TW5's own strings, the form every engine and store reads back. `String(date)` once wrote the host's locale
+ * form ("Wed Nov 11 2026 …"), which no engine parses: the worker read a mirror-written `modified` as an invalid date, and its Recent
+ * timeline painted an empty day where the new tiddler stood. A real TW5 tiddler answers through its own `getFieldStrings`.
+ */
 const ownFields = (wiki: GlassWiki, title: string): Record<string, string> | null => {
   const tiddler = wiki.getTiddler(title);
   if (!tiddler) return null;
+  const own = typeof tiddler.getFieldStrings === "function" ? tiddler.getFieldStrings() : null;
   const fields: Record<string, string> = {};
-  for (const [key, value] of Object.entries(tiddler.fields))
-    if (key !== "title" && value !== undefined) fields[key] = Array.isArray(value) ? value.join(" ") : String(value);
+  for (const [key, value] of Object.entries(own ?? tiddler.fields)) {
+    if (key === "title" || value === undefined) continue;
+    fields[key] = typeof value === "string" ? value : value instanceof Date ? tw5Date(value) : Array.isArray(value) ? tw5List(value) : String(value);
+  }
   return fields;
 };
 const imageOf = (fields: Record<string, string> | null) => JSON.stringify(fields);
