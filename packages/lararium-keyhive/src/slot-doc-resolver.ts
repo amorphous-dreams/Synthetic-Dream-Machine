@@ -59,6 +59,8 @@ export interface SlotDocResolverArgs {
    * files held and seals under the vessel's key (`announceSlotDoc` with `floor`).
    */
   readonly announceFloor?: (slug: string, kind: "working", documentId: string) => void;
+  /** The Lift carried a veil-minted wiki's canon in place: tell the vessel, which re-files its seal under the face (`announceLiftedDoc`). */
+  readonly announceLifted?: (slug: string, documentId: string) => void;
   /** The daemon-bag composite — binding records live here. */
   readonly daemonStore: CompositeStore;
   /** Absent at the faceless floor: a floor document carries no Keyhive registration. */
@@ -361,6 +363,8 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
         ...(args.control && args.workbenchRealm ? { working: { control: args.control, workbench: async (slug: string) => (await workingDoc(slug, true))!.url } } : {}),
         // THE DAEMON WIKI'S FLOOR MEMORY lifts into the face's own device slot of each kind (face-private).
         ...(args.control ? { daemon: { control: args.control, faceSlot: async (kind: "working" | "personal" | "draft") => (await deviceSlot(kind, true))!.url } } : {}),
+        // THE CANON OF A WIKI THE VEIL MINTED stays where it stands; the vessel re-files its seal on this word.
+        ...(args.control ? { canon: { control: args.control, lifted: (slug: string, documentId: string) => { args.announceLifted?.(slug, documentId); } } } : {}),
         traceOf: async (slug) => {
           const url = await args.catalog?.urlOf(wikiBagUri(slug)).catch(() => null);
           if (!url) return null;

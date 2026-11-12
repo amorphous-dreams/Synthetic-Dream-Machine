@@ -162,4 +162,25 @@ describe("a veil floor's wiki slot reaches the house's wiki islands; a daemon de
     expect(docs.floorWiki("tabs-canon"), "the wiki island mounts its canon").toBe(true);
     expect(docs.bagOf("tabs-canon", lit(G1, F1, FACE1)), "no lit face seals it").toBeUndefined();
   });
+
+  test("V1e: the Lift RELEASES a floor wiki's canon: it leaves the vessel's class, and a stale control row never files it again", () => {
+    const gone: string[] = [];
+    const docs = deviceDaemonDocs({ enrollFloor: () => {}, releaseFloor: (id) => { gone.push(id); } });
+    const row = control({ [floorSlotTitle("tabs", "canon")]: "tabs-canon", [slot("floor")]: "floor-memory" });
+    docs.readControl(row);
+    expect(docs.floorWiki("tabs-canon")).toBe(true);
+    expect(docs.release("tabs-canon")).toBe("lar:///ha.ka.ba/bags/tabs");
+    expect(gone).toEqual(["tabs-canon"]);
+    expect(docs.has("tabs-canon")).toBe(false);
+    expect(docs.floorWiki("tabs-canon")).toBe(false);
+    // A control document that still names the row (the vessel's read lags the Lift) files nothing, and an announce files nothing.
+    expect(docs.readControl(row)).toBe(false);
+    expect(docs.announced("lar:///ha.ka.ba/bags/tabs", "tabs-canon")).toBe(false);
+    expect(docs.has("tabs-canon")).toBe(false);
+    // A replay releases nothing; a daemon device slot and an unknown document never release.
+    expect(docs.release("tabs-canon")).toBeNull();
+    expect(docs.release("floor-memory")).toBeNull();
+    expect(docs.release("unknown")).toBeNull();
+    expect(gone).toEqual(["tabs-canon"]);
+  });
 });

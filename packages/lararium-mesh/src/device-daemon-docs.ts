@@ -83,11 +83,29 @@ export interface DeviceDaemonDocs {
    * wiki's working layer. It never reaches a wire peer or a sibling.
    */
   floorWiki(documentId: string): boolean;
+  /**
+   * THE LIFT RELEASES A FLOOR DOCUMENT (the-veil-ladder#/the-base-model, in-house Ruling 2): a wiki's canon document the veil
+   * floor minted leaves the vessel's class when a face lifts it with the same document id, so the vessel's sealed map files
+   * it under the face. Only a veil floor's WIKI document releases (never a daemon device slot, a group's slot or a canon of a
+   * face); a released document never files as the floor's again in this process, whatever a stale control row still names.
+   * Answers the bag it stood filed under, or null where nothing released.
+   */
+  release(documentId: string): string | null;
 }
 
-export function deviceDaemonDocs(io: { readonly enrollFloor: (documentId: string, bagId: string) => void }): DeviceDaemonDocs {
+export function deviceDaemonDocs(io: {
+  readonly enrollFloor: (documentId: string, bagId: string) => void;
+  /** A released floor document leaves the vessel's held homes too (`SecretHomeRest.release`). */
+  readonly releaseFloor?: (documentId: string) => void;
+}): DeviceDaemonDocs {
   const owners = new Map<string, { readonly bagId: string; readonly owner: Owner }>();
+  const released = new Set<string>();
+  const floorWikiFiled = (documentId: string): { readonly bagId: string; readonly owner: Owner } | null => {
+    const filed = owners.get(documentId);
+    return filed !== undefined && !filed.bagId.startsWith(DAEMON_SLOT_PREFIX) && (filed.owner.kind === "floor" || filed.owner.kind === "unnamed") ? filed : null;
+  };
   const file = (documentId: string, bagId: string, owner: Owner): boolean => {
+    if (released.has(documentId) && (owner.kind === "floor" || owner.kind === "unnamed")) return false;
     const filed = owners.get(documentId);
     if (filed !== undefined && filed.owner.kind !== "unnamed") return false;
     if (filed !== undefined && owner.kind === "unnamed") return false;
@@ -136,9 +154,14 @@ export function deviceDaemonDocs(io: { readonly enrollFloor: (documentId: string
     },
     docsOf: (bagId, lit) => [...owners].filter(([, f]) => f.bagId === bagId && ownerIn(f.owner, lit) !== null).map(([id]) => id),
     has: (documentId) => owners.has(documentId),
-    floorWiki: (documentId) => {
-      const filed = owners.get(documentId);
-      return filed !== undefined && !filed.bagId.startsWith(DAEMON_SLOT_PREFIX) && (filed.owner.kind === "floor" || filed.owner.kind === "unnamed");
+    floorWiki: (documentId) => floorWikiFiled(documentId) !== null,
+    release(documentId) {
+      const filed = floorWikiFiled(documentId);
+      if (filed === null) return null;
+      owners.delete(documentId);
+      released.add(documentId);
+      io.releaseFloor?.(documentId);
+      return filed.bagId;
     },
     ids: () => [...owners.keys()],
   };

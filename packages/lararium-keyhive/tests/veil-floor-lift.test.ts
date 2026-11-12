@@ -10,7 +10,7 @@
  *   V5 — a title the workbench already holds otherwise stays at the floor and gets named; a replay still moves nothing
  */
 import { describe, test, expect } from "vitest";
-import { makeIslandRepo } from "@lararium/mesh";
+import { makeIslandRepo, liftFaceCatalogRows, catalogRowHalf } from "@lararium/mesh";
 import {
   CompositeStore, CONTROL_HOME_ID, DAEMON_BAG_ID, PERSONAL_BINDINGS_PREFIX, computeRecipeFingerprint, didFromVerifyingKey, emptyLarDoc,
   floorSlotTitle, mutableLarRecord, wikiBagUri, wikiSlotUri, realmWorkbenchDocUrl, privateCabalRealmId, ledgerWorkbenches, materializeSharedLarDoc, workbenchKeyDocs,
@@ -53,16 +53,18 @@ async function house(opts: { control?: CompositeStore } = {}) {
   // The veil floor: no face.
   const floor = makeSlotDocResolver({ ...base, faceSeated: async () => false,
     announceFloor: (slug, kind, documentId) => { order.push(`announce:${slug}:${kind}:${documentId}`); } });
+  const lifted: string[] = [];
   // The same vessel once a face's seat lands.
   const faced = () => makeSlotDocResolver({ ...base, personaGroupId: group.groupId, faceSeated: async () => true,
     faceDoor: makeFaceBagDoor({ face: kh, groupId: group.groupId }) as never, workbenchRealm,
+    announceLifted: (slug: string, documentId: string) => { lifted.push(`${slug}:${documentId}`); },
     workbenchDoc: (url: string) => materializeSharedLarDoc(repo, url as never, "board:workbench") });
   const trace = { wikiDocId: wikiHandle.url, libraryBagDocIds: [] as readonly string[] };
   const fingerprint = await computeRecipeFingerprint(trace);
   const write = async (url: string, title: string, text: string) => { const h = await repo.find<LarDoc>(url as never); await h.whenReady(); h.change((doc) => { doc.tiddlers[title] = mutableLarRecord(title, { text }, "test"); }); };
   const read = async (url: string, title: string) => { const h = await repo.find<LarDoc>(url as never); await h.whenReady(); const r = h.doc()?.tiddlers[title]; return r ? tiddlerText(r) : null; };
   const done = async () => { await kh.dispose(); await repo.shutdown(); };
-  return { kh, group, repo, control, daemon, ledger, floor, faced, trace, fingerprint, order, write, read, done };
+  return { kh, group, repo, control, daemon, ledger, floor, faced, trace, fingerprint, order, write, read, done, catalogHandle, lifted };
 }
 
 describe("★ the veil floor stands its own wiki content, and a seat's landing lifts it ★", () => {
@@ -183,4 +185,49 @@ describe("★ the veil floor stands its own wiki content, and a seat's landing l
     expect(lifted.moved.filter((t) => t.includes("/control/"))).toEqual([]);
     await h.done();
   });
+
+  test("RED V8 — a wiki the veil minted: its CANON stays where it stands (same URL), its row's mark leaves, its seal's release gets named once; draft and personal still resolve", async () => {
+    const h = await house();
+    // THE VEIL'S MINT (`init-wiki` at the floor): a canon document, its marked catalog row, and the control row that files it.
+    const canon = h.repo.create<LarDoc>(emptyLarDoc());
+    const key = wikiBagUri("tabs");
+    const mark = { "face-reach": "vessel-only", "minted-by": VERIFYING_KEY };
+    h.catalogHandle.change((d) => { (d.tiddlers as Record<string, LarTiddlerRecord>)[key] = mutableLarRecord(key, { text: canon.url, kind: "oracle", "mirror-root": "wikis/tabs", ...mark }, "test"); });
+    await h.control.put(mutableLarRecord(floorSlotTitle("tabs", "canon"), { text: canon.url, kind: "oracle", ...mark }, "test"), { kind: "lares-verb", requestId: "t" });
+    await h.write(canon.url, "Canon Note", "minted at the floor");
+    const trace = { wikiDocId: canon.url, libraryBagDocIds: [] as readonly string[] };
+    const fingerprint = await computeRecipeFingerprint(trace);
+    const atFloor = await h.floor.bindings(fingerprint, trace, "tabs");
+    await h.write(atFloor.workingUrl!, "Working Note", "written at the floor");
+    expect(catalogRowHalf(key, h.catalogHandle.doc()!.tiddlers[key] as never), "the setup took: the row rests on the floor's half").toBe("floor");
+
+    const faced = h.faced();
+    const out = await faced.liftFloor();
+    expect(out.moved).toContain(floorSlotTitle("tabs", "canon"));
+    // THE CANON DID NOT MOVE: the row names the same URL, the document reads, and the recipe fingerprint stays.
+    const row = h.catalogHandle.doc()!.tiddlers[key]!;
+    expect(tiddlerText(row)).toBe(canon.url);
+    expect(await h.read(canon.url, "Canon Note")).toBe("minted at the floor");
+    expect(String(row.tiddler["face-reach"])).toBe("face");
+    expect(String(row.tiddler["keyhive-doc-id"] ?? "")).not.toBe("");
+    expect(h.kh.docIdOfBag(key), "the face holds the canon bag's cap").not.toBeNull();
+    // THE ROW LIFTS WITH THE SAME URL (`liftFaceCatalogRows`): it now classes to the face's half.
+    expect(catalogRowHalf(key, row as never)).toBe("face");
+    const faceCatalog = h.repo.create<LarDoc>(emptyLarDoc());
+    expect(liftFaceCatalogRows(h.catalogHandle as never, faceCatalog as never)).toContain(key);
+    expect(tiddlerText(faceCatalog.doc()!.tiddlers[key]!)).toBe(canon.url);
+    // THE SEAL'S RE-FILE GETS NAMED ONCE, after the control row left.
+    expect(await h.control.get(floorSlotTitle("tabs", "canon"))).toBeFalsy();
+    expect(h.lifted).toEqual([`tabs:${canon.documentId}`]);
+    // DRAFT AND PERSONAL STILL RESOLVE under the same fingerprint, and the working rows rest in the face's workbench.
+    const after = await faced.bindings(await computeRecipeFingerprint({ wikiDocId: tiddlerText(row)!, libraryBagDocIds: [] }), trace, "tabs");
+    expect(after.personalUrl).toMatch(/^automerge:/);
+    expect(after.draftUrl).toMatch(/^automerge:/);
+    expect(await h.read(after.workingUrl!, "Working Note")).toBe("written at the floor");
+    // A REPLAY RE-FILES NOTHING.
+    const again = await faced.liftFloor();
+    expect(again.moved).toEqual([]);
+    expect(h.lifted).toEqual([`tabs:${canon.documentId}`]);
+    await h.done();
+  }, 30_000);
 });

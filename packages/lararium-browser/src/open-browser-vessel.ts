@@ -707,7 +707,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     const handle = documentId ? (repo.handles as Record<string, { isReady(): boolean; doc(): unknown } | undefined>)[documentId] : undefined;
     return handle?.isReady() ? A.save(handle.doc() as A.Doc<unknown>) : null;
   }, {
-    onSlot: (bagId, documentId, floor) => {
+    onSlot: (bagId, documentId, floor, lifted) => {
+      // THE LIFT CARRIED A FLOOR WIKI'S CANON IN PLACE (the node's one order, Ruling 2): the document leaves the vessel's
+      // class and files under the face's bag below, where `sealMapped` re-files its seal from the vessel's key to the face's.
+      if (lifted && deviceDocs.release(documentId) !== null) { sealedRest.store.mapMoved(); reverdict(); }
       // A daemon device slot named before its first byte files by the group the control document names for it, never by
       // the face lit as it announces: it waits held (never clear, never under another face's key) until then.
       // A VEIL FLOOR'S WIKI SLOT (`floor`) files the same way (the node's one order): the vessel owns it, so it waits held and
@@ -745,6 +748,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   const sealedRest = composeSealedRest<BrowserSaveSession>({
     inner: shoreStorage(new IndexedDBStorageAdapter(`${idbName}:repo`)),
     bagOf: sealedBagOf,
+    vesselKey: () => secretHomes.key(),
     sessionFace: () => sealedCells.face(),
     door: docStoreDoor,
     flushRepo: async () => { await repo.flush(); },

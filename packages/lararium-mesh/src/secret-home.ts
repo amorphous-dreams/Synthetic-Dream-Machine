@@ -52,6 +52,9 @@ export interface SecretHomeRest {
   controlId?(): string | null;
   /** The held bag `documentId` stands filed under on this rest, or null where none holds it. */
   homeOf?(documentId: string): string | null;
+  /** A document enrolled beside the home leaves the held homes (the Lift re-files a floor wiki's canon under a face). The
+   *  secret home and the control document never release. Answers whether one left. */
+  release?(documentId: string): boolean;
 }
 
 /**
@@ -68,6 +71,9 @@ export interface VesselHeldHomes {
   ids(): readonly string[];
   /** The rest this table answers through: `restsSealed` reads the holder's store; `moved` tells it the map moved. */
   rest(restsSealed: (documentId: string) => Promise<boolean>, moved?: () => void, standKey?: () => Promise<boolean>): SecretHomeRest;
+  /** The vessel's held key where it stands open, or null: a lifted floor document's values open with it one last time
+   *  (`SealedDocumentPorts.vesselKey`). */
+  key(): HeldRestKey | null;
   /** Overwrite every held key (the holder stands down). */
   wipe(): void;
 }
@@ -92,6 +98,7 @@ export function vesselHeldHomes(): VesselHeldHomes {
     },
     has: (documentId) => homes.has(documentId),
     ids: () => [...homes.keys()],
+    key: () => vesselKey,
     rest(restsSealed, moved, standKey) {
       return {
         ...(standKey ? { standKey: async () => vesselKey !== null || await standKey() } : {}),
@@ -116,6 +123,13 @@ export function vesselHeldHomes(): VesselHeldHomes {
         },
         controlId: () => custodyControl,
         homeOf: (documentId) => homes.get(documentId) ?? null,
+        release(documentId) {
+          const filed = homes.get(documentId);
+          if (filed === undefined || filed === SECRET_HOME_ID || filed === CONTROL_HOME_ID) return false;
+          homes.delete(documentId);
+          moved?.();
+          return true;
+        },
         holdsKey: () => vesselKey !== null,
         whenKeyed(cb) { if (vesselKey !== null) { cb(); return () => {}; } keyed.add(cb); return () => { keyed.delete(cb); }; },
         restsSealed: async (documentId) => homes.has(documentId) && await restsSealed(documentId),
@@ -128,6 +142,11 @@ export function vesselHeldHomes(): VesselHeldHomes {
 /** Classify a vessel document beside the secret home on `repo`'s rest (`SecretHomeRest.enrollBeside`): true once mapped. */
 export function enrollBesideSecretHome(repo: Repo, documentId: string, bagId: string): boolean {
   return secretHomeRestOf(repo)?.enrollBeside(documentId, bagId) ?? false;
+}
+
+/** A document enrolled beside the secret home leaves `repo`'s held homes (`SecretHomeRest.release`): true where one left. */
+export function releaseBesideSecretHome(repo: Repo, documentId: string): boolean {
+  return secretHomeRestOf(repo)?.release?.(documentId) ?? false;
 }
 
 /** The capability a Keyhive writer asks before every secret write: true only once the rest confirms sealed rest. */

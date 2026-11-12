@@ -130,6 +130,13 @@ export interface SealedDocumentPorts {
    *  for, whose rest already holds a sealed value, refuses a clear save by name (`bag-unmapped`), so no clear byte
    *  ever lands beside a sealed one. Read once per document. */
   readonly refuseClearOverSealed?: boolean;
+  /**
+   * THE VESSEL'S OWN HELD KEY, where it stands open (the-veil-ladder#/the-base-model, the Lift): a face's bag whose rest still
+   * holds a value sealed under this key (a document the veil floor minted, lifted into the face with the same document id)
+   * opens that value with it, and `refileHeld` seals it again under the face. Absent or null: such a value refuses
+   * `pointer-malformed`, as any byte run this store never wrote.
+   */
+  vesselKey?(): HeldRestKey | null;
   /** Told once per save the store holds back unsealed (`save-unbooked`), naming its document alone. */
   onHeld?(held: { readonly refusal: "save-unbooked" | "save-unmapped" | "save-unsealed"; readonly documentId: string }): void;
   /** A vessel's store (P1): a document that rests sealed, or mapped sealed once this process, keeps its rest class
@@ -266,6 +273,31 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     this.#swept.delete(documentId);
     await this.#inTurn(() => this.#sweep(bag, documentId, clear[0]!.data, session));
     return true;
+  }
+
+  /**
+   * THE LIFT RE-FILES A SEAL, NEVER A DOCUMENT: each value of `documentId` that still rests sealed under the vessel's held key
+   * (it rested at the veil floor before a face's bag mapped it) opens under that key and seals again under the bag's face,
+   * through the session that books it now, at the same storage key. Answers how many re-filed. A value already under the
+   * face stays as it rests, so a replay re-files nothing; with no vessel key in reach, or no session of the bag's face, none moves.
+   */
+  async refileHeld(documentId: string): Promise<number> {
+    const bag = this.#ports.bagOf(documentId);
+    const held = this.#ports.vesselKey?.() ?? null;
+    if (bag === null || isKeyed(bag) || held === null) return 0;
+    const under = (await this.#ports.inner.loadRange([documentId])).filter((c): c is Chunk & { data: Uint8Array } => ROLES[c.key[1] ?? ""] !== undefined && c.data !== undefined && readsSealed(c.data));
+    if (under.length === 0) return 0;
+    const session = this.#ports.sessionOf(documentId);
+    if (session === null || !this.#wears(bag.face, session.subject)) return 0;
+    this.#classedSealed.add(documentId);
+    let refiled = 0;
+    for (const chunk of under) {
+      const opened = openHeld({ bagId: bag.bagId, held, role: ROLES[chunk.key[1]!]!, ref: logicalRefOf(chunk.key), sealed: chunk.data });
+      if (!("plaintext" in opened)) continue;
+      await this.#inTurn(() => this.#seal(bag, chunk.key, opened.plaintext, session));
+      refiled++;
+    }
+    return refiled;
   }
 
   /**
@@ -512,6 +544,13 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     // sweeps it (`#sweep`); any other byte run names no pointer this store wrote.
     if (readPointer(rested) === null) {
       if (readsClear(rested)) return rested;
+      // A value the veil floor sealed under the vessel's own key, in a document a face lifted with the same id: it opens with
+      // that key while it stands in reach, and `refileHeld` moves its seal to the face.
+      const held = readsSealed(rested) ? this.#ports.vesselKey?.() ?? null : null;
+      if (held !== null) {
+        const lifted = openHeld({ bagId: bag.bagId, held, role, ref: logicalRefOf(key), sealed: rested });
+        if ("plaintext" in lifted) return lifted.plaintext;
+      }
       throw new SealedDocumentRefusal("pointer-malformed");
     }
     const opened = await this.#ports.open({ bagId: bag.bagId, role, ref: logicalRefOf(key) });

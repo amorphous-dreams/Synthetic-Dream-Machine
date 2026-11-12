@@ -24,6 +24,16 @@
  * every row burns and its control row leaves; one that keeps rows stays, holding those rows alone. This leg reads no retired
  * format: the floor and the workbench both stand in the living design, and every vessel that ever joins a face runs it.
  *
+ * ── A WIKI'S CANON STAYS WHERE IT STANDS ────────────────────────────────────────────────────────
+ * The one exception to the move, by ruling (the-veil-ladder#/the-base-model, in-house Ruling 2): a wiki the veil minted keeps
+ * its canon document and its URL, so the recipe fingerprint its draft and personal bindings hang on stays. That document
+ * never left this vessel (it rested under the vessel's key and reached no peer), so no copy stands elsewhere. The Lift
+ * registers the canon bag's cap under the face, clears the catalog row's `vessel-only` mark (the row then classes to the
+ * face's half and `liftFaceCatalogRows` carries it with the same URL), removes the control row that filed the document as
+ * the vessel's, and only then tells the vessel, which re-files the seal from its own key to the face's. A crash before the
+ * control row leaves replays the whole leg; one after it leaves a document the face's map already names, whose floor values
+ * open under the vessel's key until the re-file runs.
+ *
  * ── IDEMPOTENT IN D ─────────────────────────────────────────────────────────────────────────────
  * The mark rests with the binding, in the daemon bag: `lifted-from` (a digest of the floor key) and, until the burn finishes,
  * `lifted-from-url`. The floor index keeps no mark and no link to the face: once the lift lands the floor record is gone. A pass
@@ -31,7 +41,7 @@
  */
 import {
   CONTROL_HOME_ID, ControlHomeUnavailable, DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, canonicalJson, emptyLarDoc,
-  mutableLarRecord, tiddlerText, FLOOR_SLOT_ROOT, floorSlotOf, sha256HexBytesSync, utf8Bytes, wikiDraftDocKey, requireLarDid, plainEntries, storedRecord,
+  mutableLarRecord, tiddlerText, FLOOR_SLOT_ROOT, floorSlotOf, sha256HexBytesSync, utf8Bytes, wikiBagUri, wikiDraftDocKey, requireLarDid, plainEntries, storedRecord,
   type ChangeOrigin, type CompositeStore, type LarDoc, ownEntry, DOCUMENT_READY_TIMEOUT_MS} from "@lararium/mesh";
 import type { CatalogAccessor } from "@lararium/tw5";
 import type { FaceBagDoor } from "./face-bag-door.js";
@@ -67,6 +77,15 @@ export interface LiftArgs {
   readonly daemon?: {
     readonly control: CompositeStore;
     readonly faceSlot: (kind: "working" | "personal" | "draft") => Promise<string>;
+  };
+  /**
+   * THE CANON OF A WIKI THE VEIL MINTED (in-house Ruling 2): the control store that names it (`floor-slot/<slug>/canon`) and
+   * the word the vessel hears once a canon stands under the face (`announceLiftedDoc`: its seal re-files from the vessel's
+   * key to the face's). The document never moves.
+   */
+  readonly canon?: {
+    readonly control: CompositeStore;
+    readonly lifted: (slug: string, documentId: string) => void;
   };
   /** The binding slot a wiki's draft floor belongs to: its fingerprint and trace, or null where the wiki is unregistered. */
   readonly traceOf: (slug: string) => Promise<{ readonly fingerprint: string; readonly recipeTrace: { readonly wikiDocId: string; readonly libraryBagDocIds: readonly string[] } } | null>;
@@ -323,6 +342,31 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
       if (!floorUrl) continue;
       try { await carryFloor(daemon.control, title, floorUrl, await daemon.faceSlot(kind), `daemon/${kind}`); }
       catch (error) { if (error instanceof FloorDocumentUnavailable) { held(error, title); continue; } throw error; }
+    }
+  }
+  // 5 — THE CANON OF EACH WIKI THE VEIL MINTED stays where it stands: the cap, the row's mark, the control row, then the word.
+  const canon = args.canon;
+  if (canon) {
+    for (const { title, record } of await controlEntries(canon.control)) {
+      const named = title.startsWith(FLOOR_SLOT_ROOT) ? floorSlotOf(title) : null;
+      const fields = fieldsOf(record);
+      const url = tiddlerText(record);
+      if (!named || named.kind !== "canon" || !fields || !url || !url.startsWith("automerge:") || fields["face-reach"] !== "vessel-only" || !mintedHere(args, fields["minted-by"])) continue;
+      const key = wikiBagUri(named.slug);
+      const { docId } = await args.faceDoor.mint(key, "admin");
+      const handle = await args.catalog?.handle();
+      const row = handle ? ownEntry(handle.doc()?.tiddlers, key) : undefined;
+      const rowFields = fieldsOf(row as { tiddler?: unknown } | undefined);
+      // Only the row this canon stands under lifts: a row naming another document stays as it reads.
+      if (handle && rowFields && rowFields["text"] === url && rowFields["face-reach"] === "vessel-only") {
+        handle.change((doc) => {
+          const { ["minted-by"]: _by, ...rest } = rowFields;
+          doc.tiddlers[key] = storedRecord(mutableLarRecord(key, { ...carried(rest), "face-reach": "face", "keyhive-doc-id": docId, "lifted-from": digestOf(title) }, "anon-lift"));
+        });
+      }
+      await canon.control.remove(title, originFor(`canon-${named.slug.slice(0, 12)}`));
+      canon.lifted(named.slug, url.slice("automerge:".length));
+      moved.push(title);
     }
   }
   return { moved, finished, skipped, skippedDocs, ...(kept.length > 0 ? { kept } : {}) };

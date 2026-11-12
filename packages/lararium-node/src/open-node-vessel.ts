@@ -17,7 +17,7 @@
  * in sovereign islands (daemon + wiki). FPI-5 (trim tab): all Node-specific code lives here.
  */
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
-import { receiptInStore, WardRefused, wornAtOf, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, bindSecretHomeRest, vesselHeldHomes, enrollBesideSecretHome, SecretHomeUnavailable, type SecretHome, type SealedBag, type BookedSession, type SessionOwnChain, preparePlaceFace, signAsFaceAtom } from "@lararium/mesh";
+import { receiptInStore, WardRefused, wornAtOf, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, bindSecretHomeRest, vesselHeldHomes, enrollBesideSecretHome, releaseBesideSecretHome, SecretHomeUnavailable, type SecretHome, type SealedBag, type BookedSession, type SessionOwnChain, preparePlaceFace, signAsFaceAtom } from "@lararium/mesh";
 import * as A from "@automerge/automerge";
 
 /** A summoned panel verb's ward: the ref the CLI parked, spent only on the verb and arguments it was bound to. */
@@ -896,7 +896,10 @@ async function prepareNodeBootOn(
   // daemon wiki's device slots and the face's daemon canon, the AI's memory on this device. Each files by the face that OWNS
   // it (`device-daemon-docs`): a group's slot or a face's canon seals under that face's key while it stands lit and waits
   // held otherwise; a floor's own slot seals beside the control document under the vessel's key, held until the key opens.
-  const deviceDocs = deviceDaemonDocs({ enrollFloor: (documentId, bagId) => { if (!secretHomes.has(documentId)) enrollBesideSecretHome(repo, documentId, bagId); } });
+  const deviceDocs = deviceDaemonDocs({
+    enrollFloor: (documentId, bagId) => { if (!secretHomes.has(documentId)) enrollBesideSecretHome(repo, documentId, bagId); },
+    releaseFloor: (documentId) => { releaseBesideSecretHome(repo, documentId); },
+  });
   // THE LIT SET (stable-founding-road #/rulings: each face hive isolated; a shut face waits by name): every face open on this
   // vessel now, by PersonaGroup. The worn face's entry answers its subject live (the dial's Nexus subject or its place
   // subject, `sealedCells.face`); a sibling face lit beside it (`lightFace`, the boot's joined faces) answers its own place
@@ -957,7 +960,11 @@ async function prepareNodeBootOn(
     for (const named of slotDocsNamed.values()) for (const documentId of named) sealNowMapped(documentId);
     for (const documentId of deviceDocs.ids()) sealNowMapped(documentId);
   };
-  const onSlotNamed = (bagId: string, documentId: string, floor = false): void => {
+  const onSlotNamed = (bagId: string, documentId: string, floor = false, lifted = false): void => {
+    // THE LIFT CARRIED A FLOOR WIKI'S CANON IN PLACE (the-veil-ladder#/the-base-model, Ruling 2): the document leaves the
+    // vessel's class (the device table and the held homes release it) and files under the face's bag below, where
+    // `sealNowMapped` re-files its seal from the vessel's key to the face's. A document the vessel never held releases nothing.
+    if (lifted && deviceDocs.release(documentId) !== null) { sealedRest.store.mapMoved(); reverdictLater(); }
     // THE HOST'S WORKING LAYER FOLLOWS THE ISLAND'S: a main-side write to the daemon wiki lands on the document the island
     // reads (the seat's lift moves it to the face's). The outcome ledger rests in the control document, never here.
     if (bagId === DAEMON_WORKING_SLOT) followHostWorking(documentId);
@@ -1025,6 +1032,7 @@ async function prepareNodeBootOn(
   const sealedRest = composeSealedRest<NodeSaveSession>({
     inner: new DurableNodeFSStorageAdapter(storageDir),
     bagOf: sealedBagOf,
+    vesselKey: () => secretHomes.key(),
     sessionFace: () => sealedCells.face(),
     openFaces: openFaceSubjects,
     wornAt: (face, subject) => sealedCells.wornAt(face, subject),
