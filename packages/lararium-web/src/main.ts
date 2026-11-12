@@ -326,7 +326,7 @@ function mountAdmitSurface(verifyingKeyHex: string, vessel: VesselPort): void {
             // leaf-fleet (Leaf-Wright): the request also shows as a file to save and QR codes for the root holder's lens.
             const shown = document.getElementById("admit-carriage");
             if (shown) showCarriage(shown, { text: request.text, fileName: "request.json", label: "this browser's fleet-join request" });
-            statusEl.textContent = "✓ request minted — carry it back to the root holder: `lares fleet join answer <request-file>`, then paste the answer here.";
+            statusEl.textContent = "✓ request minted — carry it back to the root holder (its page's fleet door takes it by paste, file or camera; a node takes `lares fleet join answer <request-file>`), then paste the answer here.";
             statusEl.className = "ok";
             return;
           }
@@ -556,7 +556,7 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
   // ── /leaf-fleet ──
   if (relayUrl) {
     console.log(`[vessel] this leaf's key: ${did}`);
-    console.log("[vessel] to join a face's fleet, on the root holder: lares fleet join offer --out offer.json, then paste the offer here");
+    console.log("[vessel] to join a face's fleet: on the root holder, offer the face (a browser's fleet door, or a node's `lares fleet join offer --out offer.json`), then paste the offer here");
   }
   void readFloor(vessel.readFloor);           // the vessel stands, so it reads and verifies the hearth's floor
   // Arm the interactivity RETURN leg (click and text halves): each event carries its source surface.
