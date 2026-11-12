@@ -7,7 +7,7 @@
  * of its place rows.
  *
  * NEVER THE PLACE KEL SEED. A browser arms pre-rotation on its place KEL, and a rotation would strand every floor document
- * sealed under a key the old seed derived. The floor's seed stands apart and never rotates with the place.
+ * its seed had sealed. The floor's seed stands apart and never rotates with the place.
  *
  * THE THROWAWAY RUNG'S PRICE (the-veil-ladder#/the-base-model, in-house ruling 6). Before the place tree binds, the row rests
  * clear beside the place seed, and the page says so; the first bind moves it under the seal. A sealed keystore this page

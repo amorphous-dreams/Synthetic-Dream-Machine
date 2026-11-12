@@ -1465,11 +1465,12 @@ async function prepareNodeBootOn(
   // hearth derives none (`vessel-locked`), and a place the operator asked to stand as a herm derives none and registers
   // none (`floor-unkeyed`). The custody's open stands it for the saves that wait; the daemon island's gate reads the answer
   // this composition began with, and an unlock composes again.
-  const standFloorKey = (opened = false): "stands" | "vessel-locked" | "floor-unkeyed" => {
+  const standFloorKey = (): "stands" | "vessel-locked" | "floor-unkeyed" => {
     if (opts.askedHerm) return "floor-unkeyed";
+    // ONE READING WITH THE CONTROL DOCUMENT: the floor's key stands wherever this home's custody stands open, as the control
+    // document reads there, whatever rows this composition was handed. A founded node composed at its floor over an open
+    // custody keeps its daemon wiki's floor slot, and its host working layer mounts on it.
     if (floorKeyStandsOn(repo)) return "stands";
-    // A composition handed no sovereign rows reads no private row, the custody root among them.
-    if (!sovereign && !opened) return "vessel-locked";
     let key: HeldRestKey;
     try { key = floorRestKey(custodyFloorKeyDoor()); }
     catch (e) { if (e instanceof CustodyLocked) return "vessel-locked"; throw e; }
@@ -1477,7 +1478,7 @@ async function prepareNodeBootOn(
     return "stands";
   };
   const floorKeyGrant = standFloorKey();
-  const stopFloorKeyOpened = standingCustody()?.onOpened?.(() => { try { standFloorKey(true); } catch (e) { console.warn(`[floor] the floor's rest key did not stand at the custody's open: ${e instanceof Error ? e.message : String(e)}`); } }) ?? null;
+  const stopFloorKeyOpened = standingCustody()?.onOpened?.(() => { try { standFloorKey(); } catch (e) { console.warn(`[floor] the floor's rest key did not stand at the custody's open: ${e instanceof Error ? e.message : String(e)}`); } }) ?? null;
   stood.push({ what: "the floor key watch", down: () => { stopFloorKeyOpened?.(); } });
   // R2's booking, by the change's own writer (T4): a save of a sealed bag's document reads its change's actor off its
   // bytes; a change this replica made books the session whose call stands, and a peer's change books its peer writer
