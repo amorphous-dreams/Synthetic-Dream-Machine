@@ -27,11 +27,7 @@ const admitLine = async (page) => ((await page.locator("#admit-status").textCont
 
 /** Join the node's face through the page's paste door, and report what the page did with the answer. */
 async function join(page) {
-  const params = new URL(URL_).searchParams;
-  if (!params.get("relay")) {
-    console.error(`JoinNeedsCrossing: LARES_URL must name ?relay=<ws url> (the hearth's banner prints it); got ${URL_}`);
-    return 1;
-  }
+  // The page dials the relay its own origin answers with: a join needs LARES_URL to name a hearth's own page (its banner prints it).
   const key = (await page.locator("#vessel-key").innerText()).trim();
   let answer;
   try { ({ answer } = await joinThroughPage(page, { timeoutMs: TIMEOUT })); }

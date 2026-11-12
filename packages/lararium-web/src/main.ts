@@ -19,7 +19,7 @@ declare const __LAR_WALK_DOOR__: boolean;
  * the vessel always runs in this browser; the origin is a static host, never an authority.
  */
 import { mountFleetRootDoor, mountFleetSeatDoor } from "./fleet/fleet-root-door.js";
-import { showCarriage } from "./fleet/carriage-panel.js";
+import { showCarriage, takeCarriage } from "./fleet/carriage-panel.js";
 import { createLoafBuffer } from "./loaf-buffer.js";
 import {
   DAEMON_SURFACE_ID, requestDurableStorage, storageFloorReport, vesselLockName, type HearthFloorRead,
@@ -30,14 +30,14 @@ import type { VesselStatus } from "./vessel-protocol.js";
 import { openCeremony, standCeremonyBroker } from "./ceremony-page.js";
 import type { GenesisSeed } from "@lararium/mesh";
 import { LAR_WHOLE_VALUE_MAX_CHARS } from "@lararium/mesh/lar-camera";
-import { readHearthFloorCard } from "@lararium/mesh/hearth-floor-pins";
+import { readFloorCardCarriage, readHearthFloorCard } from "@lararium/mesh/hearth-floor-pins";
 import { createProjectionSink } from "./projection-sink.js";
 import { pageLifeOf, paintRest } from "./page-life.js";
 import { pagePortDelivery, standPagePort } from "./page-port.js";
 import { standPageMirror } from "./page-mirror.js";
 import { paintPaneLabel } from "./pane-label.js";
 import { standFloorTab } from "./floor-tab.js";
-import { defaultReadFace, floorAnchorOf, floorCardOf, mountLiveStatus, flowElsewhereNote, resolveRelayUrl, sameOriginRelayUrl, arrivalRelayUrl } from "./live-status.js";
+import { defaultReadFace, keptFloorOf, readFloorCarriage, mountLiveStatus, flowElsewhereNote, sameOriginRelayUrl, arrivalRelayUrl } from "./live-status.js";
 // The materialize-fresh boot artifact: the PLAIN-DATA oracle seed (seed.json), read off the genesis base the page's URL names
 // (the hearth's Pronaos serves its own). The page carries no seed of its own, and checks the one it reads against the hearth's
 // arrival descriptor before it crosses (`genesis-anchor.ts`).
@@ -180,7 +180,7 @@ type FloorReader = (baseUrl: string) => Promise<HearthFloorRead>;
 async function readFloor(read: FloorReader): Promise<void> {
   const params = new URLSearchParams(location.search);
   const readFace = params.get("flow") ?? defaultReadFace(location);
-  const elsewhere = flowElsewhereNote(params.get("flow"), resolveRelayUrl(params));
+  const elsewhere = flowElsewhereNote(params.get("flow"), dialledRelay);
   const say = (text: string, cls = ""): void => set("floor-status", elsewhere ? `${text} — ${elsewhere}` : text, cls);
   say(`reading the porch at ${readFace} …`);
   try {
@@ -239,6 +239,45 @@ function keptFloorAnchor(): { readonly aid: string; readonly via: "transfer" } |
 }
 function keepFloorAnchor(anchor: { readonly aid: string }): void {
   try { localStorage.setItem(`${FLOOR_ANCHOR_KEY}:${location.origin}`, anchor.aid); } catch { /* nothing kept */ }
+}
+
+/**
+ * The hearth's floor card a person carried in at the carriage door, kept per origin beside the anchor so the next arrival reads
+ * under it without carrying it again. A public, signed claim: it opens nothing, and it files only against the anchor.
+ */
+const FLOOR_CARD_KEY = "lares:floor-card";
+function keptFloorCard(): string | null {
+  try { return localStorage.getItem(`${FLOOR_CARD_KEY}:${location.origin}`); } catch { return null; }
+}
+function keepFloorCard(text: string): boolean {
+  try { localStorage.setItem(`${FLOOR_CARD_KEY}:${location.origin}`, text); return true; } catch { return false; }
+}
+/** The relay this page dialled at its last boot (its own origin's, or none): the floor read's `?flow=` note compares against it. */
+let dialledRelay: string | undefined;
+
+/**
+ * THE FLOOR'S CARRIAGE DOOR: the hearth's floor card and the place AID reach this device by a person's hand (paste, file or QR off
+ * the hearth's banner), each by its own act, and never by a URL (the fragment stays the wiki's own permalink). A card or an
+ * anchor that reads rests per origin and the page boots again under it.
+ */
+function mountFloorCarriageDoor(): void {
+  const host = document.getElementById("floor-carriage-door");
+  if (!host || host.dataset["larWired"]) return;
+  host.dataset["larWired"] = "1";
+  const said = document.getElementById("floor-carriage-status");
+  const say = (text: string, cls: string): void => { if (said) { said.textContent = text; said.className = cls; } };
+  takeCarriage(host, {
+    label: "the hearth's floor card, or its place AID",
+    onText: (text) => {
+      const carried = readFloorCarriage(text, { file: readFloorCardCarriage, card: readHearthFloorCard });
+      if (carried === null) { say("✗ neither a floor card file nor a place AID: carry the card the hearth's banner prints, then the AID on its own line.", "err"); return; }
+      if (carried.kind === "card" && carried.card === null) { say("✗ the floor card does not read: carry the whole card the hearth's banner prints.", "err"); return; }
+      const kept = carried.kind === "card" ? keepFloorCard(carried.text) : (keepFloorAnchor(carried), keptFloorAnchor()?.aid === carried.aid);
+      if (!kept) { say("✗ this browser withholds storage, so nothing carried rests here.", "err"); return; }
+      say(carried.kind === "card" ? "✓ floor card kept · booting under it" : "✓ place anchor kept · booting under it", "ok");
+      location.reload();
+    },
+  });
 }
 
 /** The fleet-join file a paste carries, by its `kind`: an offer to request against, an answer to land, or neither. */
@@ -416,17 +455,15 @@ async function bootVessel(): Promise<void> {
   };
 
   set("status", "booting…");
-  // ?relay=ws://host:port/ws → the node↔browser spore crossing (opt-in; absent = pure local boot).
-  const relayParams = new URLSearchParams(location.search);
-  // No `?relay=`: an origin that answers as a lararium's Pronaos is dialled at its own relay; any other origin keeps the local boot.
-  // While the probe pends, a "boot local" button is the person's own word: its press resolves the race and the boot goes local.
-  const relayUrl = resolveRelayUrl(relayParams) ?? await probeArrivalWithLocalButton();
-  // #floor=<card> → the hearth's flow floor card, carried by hand off its banner: what a device at the floor reads under.
-  const floor = floorCardOf(location.hash, readHearthFloorCard);
-  // #anchor=<aid> → the place AID handed across apart from the card (a deliberate transfer), kept for the next arrival; the card
-  // alone never anchors, so without one the card files nothing and says so.
-  const floorAnchor = floorAnchorOf(location.hash, keptFloorAnchor());
-  if (floorAnchor?.via === "transfer") keepFloorAnchor(floorAnchor);
+  // THE RELAY: an origin that answers as a lararium's Pronaos is dialled at its own relay; any other origin keeps the local boot.
+  // No URL names a relay. While the probe pends, a "boot local" button is the person's own word: its press resolves the race.
+  const relayUrl = await probeArrivalWithLocalButton();
+  dialledRelay = relayUrl;
+  // THE FLOOR CARD AND ITS ANCHOR come in at the carriage door (paste, file or QR), each by its own act, and rest per origin: the
+  // card is what a device at the floor reads under, and the place AID is conveyed apart from it (the card alone never anchors, so
+  // without one the card files nothing and says so). The address bar carries neither: its fragment stays the wiki's permalink.
+  const { floor, anchor: floorAnchor } = keptFloorOf({ card: keptFloorCard(), anchor: keptFloorAnchor() }, readHearthFloorCard);
+  mountFloorCarriageDoor();
   // The fleet-join landing stashes the admit it carried; this boot takes it and the vessel opens on it.
   const admit = pendingAdmit ?? takeStashedAdmit();
   pendingAdmit = admit;
@@ -463,12 +500,12 @@ async function bootVessel(): Promise<void> {
   // absent crossing that reports nothing reads exactly like a crossing that worked.
   if (relayUrl) {
     console.log(`[vessel] CROSSING → ${relayUrl}`);
-    if (floor && floor.card === null) console.warn("[vessel] the floor card this URL carries does not read: open the URL the hearth's banner prints");
-    else if (floor && !floorAnchor) console.warn("[vessel] the floor card carries no weight alone: hand the place AID the hearth's banner prints beside it (#anchor=<aid>)");
+    if (floor && floor.card === null) console.warn("[vessel] the floor card this browser kept does not read: carry the card the hearth's banner prints in at the carriage door again");
+    else if (floor && !floorAnchor) console.warn("[vessel] the floor card carries no weight alone: carry the place AID the hearth's banner prints on its own line in at the carriage door");
   } else {
     console.log(
       "[vessel] PURE LOCAL BOOT — no node vessel dialled.\n" +
-      "         To cross: open the URL a hearth's banner prints (`?relay=…#floor=…`); this device stands at its floor, and a face joins it by the fleet-join door.",
+      "         To cross: open the page a hearth's banner prints (the hearth's own origin answers with its relay); this device stands at its floor, and a face joins it by the fleet-join door.",
     );
   }
   // ?mesh=<readface%23gatekey,…> → carry-in as a mesh LEAF, bootstrapping the FLOW-map from peer flow
@@ -524,7 +561,7 @@ function seedRestLine(status: VesselStatus): { readonly text: string; readonly o
   return { text: seedRestStatus(wrap), ok: wrap !== null };
 }
 
-async function lead(boot: { paint: (p: string) => void; relayUrl: string | undefined; floor: ReturnType<typeof floorCardOf>; floorAnchor: ReturnType<typeof floorAnchorOf>;
+async function lead(boot: { paint: (p: string) => void; relayUrl: string | undefined; floor: ReturnType<typeof keptFloorOf>["floor"]; floorAnchor: ReturnType<typeof keptFloorOf>["anchor"];
   admit: string | null; founding: boolean; foundingAsk: FoundingAsk | null; genesisCasBaseUrl: string; genesisSeed: GenesisSeed; meshLeaf: { coordSeed: string; peers: string } | undefined }, port?: MessagePort): Promise<void> {
   const { paint, relayUrl, floor, floorAnchor, admit, founding, foundingAsk, genesisCasBaseUrl, genesisSeed, meshLeaf } = boot;
   $("mirror").setAttribute("data-lar-tab", port ? "follower" : "owner");

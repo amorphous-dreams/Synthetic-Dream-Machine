@@ -415,7 +415,7 @@ export type { ChannelSocket, ChannelCloseReason, GateChannelBounds, GateSessionC
 // client adapter files it, and the fleet-join answer carries it signed (house ruling "The admit's gate pin").
 export {
   HEARTH_FLOOR_PINS_SESSION_KIND, HEARTH_FLOOR_PIN_BOUND, FLOOR_CARD_KEL_BOUND, readHearthFloorPins, hearthFloorPinsBody, readHearthFloorPinsBody,
-  readHearthFloorProofBody, fileSessionClaims, HEARTH_FLOOR_CARD_ROUTE, hearthFloorCardText, readHearthFloorCard, verifyHearthFloorCard,
+  readHearthFloorProofBody, fileSessionClaims, HEARTH_FLOOR_CARD_ROUTE, hearthFloorCardText, readHearthFloorCard, FLOOR_CARD_CARRIAGE_KIND, floorCardCarriageText, readFloorCardCarriage, verifyHearthFloorCard,
   fileHearthFloorCard, lastSyncNote,
 } from "./hearth-floor-pins.js";
 export type { ClaimDoor, HearthFloorCard, HearthFloorProof, FloorAnchor, VerifiedFloorCard, FloorCardFiling } from "./hearth-floor-pins.js";

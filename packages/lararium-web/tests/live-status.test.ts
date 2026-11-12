@@ -1,16 +1,22 @@
 import { describe, expect, test } from "vitest";
 import type { BrowserConnectionSnapshot, BrowserConnectionState } from "@lararium/browser";
-import { connectionData, connectionPresentation, defaultReadFace, floorAnchorOf, floorCardOf, mountLiveStatus, flowElsewhereNote, resolveRelayUrl } from "../src/live-status.js";
+import mainSource from "../src/main.ts?raw";
+import statusSource from "../src/live-status.ts?raw";
+import sinkSource from "../src/projection-sink.ts?raw";
+import { connectionData, connectionPresentation, defaultReadFace, keptFloorOf, mountLiveStatus, flowElsewhereNote, readFloorCarriage } from "../src/live-status.js";
 
 describe("served-origin crossing", () => {
   test("the read face carries the page origin including its actual port", () => {
     expect(defaultReadFace({ origin: "http://localhost:5417" })).toBe("http://localhost:5417");
   });
 
-  test("the page dials the relay its URL names, and a URL that names none is a pure local boot", () => {
-    expect(resolveRelayUrl(new URLSearchParams("relay=ws%3A%2F%2Fnode%3A5440%2Fws"))).toBe("ws://node:5440/ws");
-    expect(resolveRelayUrl(new URLSearchParams("relay="))).toBeUndefined();
-    expect(resolveRelayUrl(new URLSearchParams())).toBeUndefined();
+  test("RED: no URL names the relay, the floor card or the anchor: the page's arrival sources read no query key and no fragment for them", () => {
+    for (const [name, src] of [["main.ts", mainSource], ["live-status.ts", statusSource]] as const) {
+      expect(src.includes("location.hash"), `${name} reads the fragment nowhere (TW5's permalink owns it)`).toBe(false);
+      expect(/\.get\("(relay|floor|anchor)"\)/.test(src), `${name} reads no relay, floor or anchor key off a URL`).toBe(false);
+    }
+    // CONTROL: the fragment keeps one reader on the wiki's page, the mirror's own permalink door.
+    expect(sinkSource).toContain("location.hash");
   });
 
   test("connection state names local, refusal and the authenticated peer", () => {
@@ -53,18 +59,37 @@ describe("served-origin crossing", () => {
   });
 });
 
-describe("the floor card the arrival URL carries", () => {
+describe("the floor card the carriage door takes", () => {
   const card = { claim: { kind: "place-floor-pin", aid: "aa".repeat(32), seq: 0, head: "bb".repeat(32), pin: { tier: "floor", nexus: "6e", route: "/flow", transportKey: "aa", signingKey: "bb" }, sig: "cc".repeat(64) }, kel: [] } as never;
   const read = (text: string) => (text === "Y2FyZA" ? card : null);
+  const AID = "ab".repeat(32);
+  // The mesh's file reader, as the page hands it in (one kind, one key beside it; a second key refuses the file whole).
+  const file = (text: string): string | null => {
+    try { const v = JSON.parse(text) as Record<string, unknown>; return Object.keys(v).length === 2 && v["kind"] === "floor-card" && typeof v["card"] === "string" ? v["card"] : null; } catch { return null; }
+  };
+  const floorCardCarriageText = (card: string): string => JSON.stringify({ kind: "floor-card", card });
+  const door = { file, card: read };
 
-  test("CONTROL: a card in the fragment reaches the one reader, and reads back", () => {
-    expect(floorCardOf("#floor=Y2FyZA", read)).toEqual({ text: "Y2FyZA", card });
+  test("CONTROL: a carried floor card file reaches the one reader, and reads back", () => {
+    expect(readFloorCarriage(floorCardCarriageText("Y2FyZA"), door)).toEqual({ kind: "card", text: "Y2FyZA", card });
   });
 
-  test("no fragment carries no card, and a torn one reads none", () => {
-    expect(floorCardOf("", read)).toBeNull();
-    expect(floorCardOf("#relay=x", read)).toBeNull();
-    expect(floorCardOf("#floor=torn", read)).toEqual({ text: "torn", card: null });
+  test("a torn card reads as a card that does not read; text of another kind reads as nothing", () => {
+    expect(readFloorCarriage(floorCardCarriageText("torn"), door)).toEqual({ kind: "card", text: "torn", card: null });
+    expect(readFloorCarriage("", door)).toBeNull();
+    expect(readFloorCarriage("#floor=Y2FyZA", door), "a fragment's spelling carries nothing").toBeNull();
+    expect(readFloorCarriage(JSON.stringify({ kind: "fleet-join-offer" }), door)).toBeNull();
+  });
+
+  test("the place AID, carried alone, reads as an anchor handed apart from the card; a card file never carries one", () => {
+    expect(readFloorCarriage(` ${AID}\n`, door)).toEqual({ kind: "anchor", aid: AID });
+    expect(readFloorCarriage(JSON.stringify({ kind: "floor-card", card: "Y2FyZA", anchor: AID }), door), "an anchor riding the card's own file refuses the whole file").toBeNull();
+  });
+
+  test("what this origin kept: the card and the anchor each read alone, and the card never anchors itself", () => {
+    expect(keptFloorOf({ card: "Y2FyZA", anchor: null }, read)).toEqual({ floor: { text: "Y2FyZA", card }, anchor: null });
+    expect(keptFloorOf({ card: null, anchor: { aid: AID, via: "admit" } }, read)).toEqual({ floor: null, anchor: { aid: AID, via: "admit" } });
+    expect(keptFloorOf({ card: "torn", anchor: { aid: "short", via: "transfer" } }, read)).toEqual({ floor: { text: "torn", card: null }, anchor: null });
   });
 });
 
@@ -112,28 +137,11 @@ describe("the connection row publishes its mount as data", () => {
 
 describe("an ?flow= naming another hearth says what the browser reads", () => {
   test("RED: a host other than the relay's draws the note; CONTROL: the relay's host, or no ?flow=, draws none", () => {
-    const relay = "ws://node:5440/ws";
+    const relay = "ws://node:5440/ws";   // the relay the page's own origin answered with
     expect(flowElsewhereNote("http://other:5441", relay)).toContain("only its own hearth's flow");
     expect(flowElsewhereNote("http://other:5441", undefined)).toContain("only its own hearth's flow");
     expect(flowElsewhereNote("http://node:5440", relay)).toBeNull();
     expect(flowElsewhereNote(null, relay)).toBeNull();
     expect(flowElsewhereNote("not a url", relay)).toContain("only its own hearth's flow");
-  });
-});
-
-describe("the place anchor conveyed apart from the floor card", () => {
-  const AID = "ab".repeat(32);
-
-  test("CONTROL: an #anchor= in the fragment is a deliberate transfer; the card beside it adds nothing to it", () => {
-    expect(floorAnchorOf(`#anchor=${AID}`)).toEqual({ aid: AID, via: "transfer" });
-    expect(floorAnchorOf(`#floor=Y2FyZA&anchor=${AID}`)).toEqual({ aid: AID, via: "transfer" });
-    expect(floorAnchorOf("#floor=Y2FyZA")).toBeNull();                          // the card alone never anchors
-  });
-
-  test("a kept anchor (an earlier transfer or an authenticated admit) anchors the next arrival; a torn one reads none", () => {
-    expect(floorAnchorOf("", { aid: AID, via: "admit" })).toEqual({ aid: AID, via: "admit" });
-    expect(floorAnchorOf("#anchor=zz", null)).toBeNull();
-    expect(floorAnchorOf("#anchor=abc", { aid: "short", via: "transfer" })).toBeNull();
-    expect(floorAnchorOf(`#anchor=${AID}`, { aid: "cd".repeat(32), via: "admit" })).toEqual({ aid: AID, via: "transfer" });   // a fresh transfer wins
   });
 });
