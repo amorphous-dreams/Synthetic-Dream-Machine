@@ -75,6 +75,7 @@ describe("a wiki island holds no custody document", () => {
     expect(browser).toMatch(/wikiIslands = wikiIslandPeersOf\(repo\)/);
     expect(browser).toMatch(/restsSealed: \(documentId\) => sealedRest\.restsSealed\(documentId\)/);
     const node = SOURCES["../../lararium-node/src/open-node-vessel.ts"] ?? "";
-    expect(node).toMatch(/houseIslands\.has\(p\) && !wikiIslands\.has\(p\)/);
+    // A wiki island receives no custody document; the one vessel-held class it mounts stands as the veil floor's own wiki slot.
+    expect(node).toMatch(/houseIslands\.has\(p\) && \(!wikiIslands\.has\(p\) \|\| \(documentId !== undefined && deviceDocs\.floorWiki\(documentId\)\)\)/);
   });
 });
