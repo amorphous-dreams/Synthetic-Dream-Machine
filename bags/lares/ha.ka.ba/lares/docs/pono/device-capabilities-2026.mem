@@ -124,7 +124,7 @@ Columns: capability · status per engine (Chromium / WebKit / Gecko) · the quot
 
 !! Device seats ~ what each stands as under the 2026 field
 
-The house names four standings a device may hold: a ''full vessel'' (islands, CAS, keys, an inbound gate), a ''leaf'' (a laptop browser, a phone or a tablet, each joined through its own device key and a signed delegation edge — <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook#/gather-the-fleet`>>; "BIND BY EDGE, NEVER BY SEED", <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/first-realm-arc#/the-arc`>>), a ''herm'' (the relay that carries and never reads), and a ''probe'' (a surface that reads a seat it never holds). One capability decides each.
+The house names four standings a device may hold: a ''full vessel'' (islands, CAS, keys, an inbound gate), a ''leaf'' (a laptop browser, a phone or a tablet, each joined through its own device key and a signed delegation edge — <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook#/gather-the-fleet`>>; "BIND BY EDGE, NEVER BY SEED", <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/first-realm-arc#/the-arc`>>), a ''herm'' (the relay that carries and never reads), and a ''probe'' (a surface that reads a seat it never holds). One capability decides each. A leaf arrives as a ''veil'' before it holds any face (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/the-veil-ladder`>> #/the-base-model): its browser stands a place on its own device key, asks nobody, writes under a vessel-held key that rests open until a slot binds, and gains a face only as an overlay (a fleet join, or the founding ask). The edge binds the face that lands; the veil beneath it persists.
 
 ''A page never stands as a vessel'' (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> #/rulings). On every seat a browser page holds a ''surface'' with a port onto a vessel: the node's vessel when the browser sits on a node's own box, or the device's own browser vessel, whose islands and opened key live in its workers and never in page memory. A user-class cap-stack holds no node infrastructure and stands an anon-device browser vessel or a fleet of equivalent vessels; the page reads the same in each.
 
@@ -238,6 +238,6 @@ Owed measurements: owner-kill, one-tab lock fallback, long background, PRF deriv
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;00Ok1lE4tE37ky5cIyWkzudOHhgfVOZz9ZocW_RoFrY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UnWrmlbY_2pspM5KYZD8xFfHJQp8fOUDmjyoo9uBZa0`>>
 
 <<^ code=`&#x0004;` to=`?`>>
