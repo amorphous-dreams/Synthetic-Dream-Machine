@@ -511,7 +511,14 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
           by = await placeAdmission(s, a);
         }
         if (!sessions.has(sessionId)) throw new VesselSessionRefused("lock-ended", "the session closed while it admitted");
-        if (own === null && lighting) throw new VesselSessionRefused("face-lighting");
+        // A FACELESS SESSION OVER A LIGHT IN FLIGHT waits for it. A light that stands a face (a founding, another tab's unlock)
+        // refuses this session by name as before: it wears none, and admits by its own unlock of that face. A light that
+        // stands the VEIL FLOOR wears no face, so no unlock stands between this session and it, and it admits below.
+        if (own === null && lighting) {
+          const stood = await lighting.catch(() => null);
+          if (stood === null || (typeof stood.face === "string" && stood.face.length > 0)) throw new VesselSessionRefused("face-lighting");
+          if (!sessions.has(sessionId)) throw new VesselSessionRefused("lock-ended", "the session closed while the floor lit");
+        }
         if (own === null && lit && typeof lit.face === "string" && lit.face.length > 0) {
           wear = lit.face;
           seats(wear);

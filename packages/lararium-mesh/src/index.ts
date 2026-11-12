@@ -251,6 +251,7 @@ export { DEFAULT_FEDERATION_POSTURE } from "./federation-gate.js";
 export * from "./quorum-entry.js";
 export * from "./sealed-box.js";
 export * from "./ed25519-door.js";
+export * from "./veil-lift.js";
 export * from "./kapae-antigen.js";
 export { antigenEntriesFromBoard, writeAntigenEntry, antigenEntryKey, ANTIGEN_ENTRY_PREFIX } from "./antigen-board.js";
 // The operator MEMBERS-registry — the Kapae-antigen's ALLOW-twin (members{} ⊥ blocked{}); contracts, never identities.

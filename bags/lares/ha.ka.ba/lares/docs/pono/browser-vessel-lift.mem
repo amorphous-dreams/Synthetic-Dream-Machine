@@ -134,6 +134,7 @@ The order follows the dependencies: 0, 1, 2, 1b, 3 with 5a, 3b, 5b, 6, 7, then t
 !! The founding path after the cut
 
 # The page connects its port; the vessel worker reads its stores and stands the floor (the place key).
+# A bare arrival ends here: the vessel stands as a veil (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/the-veil-ladder`>> #/the-base-model), asks nothing, mounts its floor wiki and writes under the vessel-held key; the steps below run where the founding ask (`?found`, `VesselBoot.foundFace`) or a fleet join rides the arrival.
 # The vessel asks `bind-first`; the ceremony document takes the secret and sends the bytes down its brokered port; the slot binds and the root mints under the ward from the same route, zeroed after.
 # The ceremony mints the atom, the anchor and the bootstrap; the daemon island builds with its record; frames reach the mirror.
 # The join: `join:offer` raises an ask and answers `join:request`; `join:answer` hands the vessel the admit, which it lands and re-enters.
@@ -156,7 +157,7 @@ The order follows the dependencies: 0, 1, 2, 1b, 3 with 5a, 3b, 5b, 6, 7, then t
 
 ''Carried constraints, every slice.''
 * The secure-context wall: a service worker and WebAuthn need a secure context, so a plain `http://192.168.x.x` page refuses by name.
-* `seedRest=open` names the pre-bind window alone (only the place seed and the veil Archives stand clear before a slot binds; `bind-first` names that window and its close); PRF-wrapped custody replaces the cleartext resting form.
+* `seedRest=open` names the pre-bind window alone (only the place seed and the veil Archives stand clear before a slot binds; `bind-first` names that window and its close); PRF-wrapped custody replaces the cleartext resting form. A veil with no face and no slot reads `seedRest=open-veil`: the window then holds the place seed and the `secret-home` address row (the key the floor's own documents seal under), the page words it as the throwaway rung, and the first bind moves both rows under the seal.
 * The ward stays passphrase-only: never a passkey, one act one unlock, no route or key cached between acts, zeroed after use.
 * The broker stands as no boundary between same-origin scripts: hostile same-origin code can take a Web Lock or approach the SharedWorker, and the `store-owned` refusal stays loud.
 * A face switch reads as the five-step fence that advances a generation (row `B8`); each session binds one (face, Nexus), and a face hint grants nothing.
@@ -203,6 +204,6 @@ The order follows the dependencies: 0, 1, 2, 1b, 3 with 5a, 3b, 5b, 6, 7, then t
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;EXBYxj2SNPtB6rhXtuT1Ll9MouniwJqo7E9nUdBS-gk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zX176I0aphzv60kz6KF6m3C08AOODt-GJ8I8PzsPW0A`>>
 
 <<^ code=`&#x0004;` to=`?`>>

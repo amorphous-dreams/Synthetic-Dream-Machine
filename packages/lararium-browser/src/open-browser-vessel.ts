@@ -28,6 +28,7 @@ import { browserDeviceFiling } from "./browser-device-filing.js";
 import { writeBrowserFaceLabel } from "./browser-face-labels.js";
 import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, sealedBagMap, vesselDocStoreDoor, bindSecretHomeRest, nameControlHome, daemonFaceCanonBag, SecretHomeUnavailable, DAEMON_SLOT_PREFIX, DAEMON_WIKI_SLOT_BAGS, type LitDeviceFaces, type SecretHome, type SealedBag } from "@lararium/mesh";
 import { openBrowserSecretHome, standBrowserSecretHome } from "./browser-secret-home.js";
+import { keepBrowserVeilLift } from "./browser-veil-lift.js";
 import * as A from "@automerge/automerge";
 import type { DocHandle, AutomergeUrl, PeerId } from "@automerge/automerge-repo";
 import {
@@ -140,7 +141,7 @@ import type { WikiRecipe }                   from "@lararium/mesh";
 import { waitHandle } from "@lararium/mesh";
 import { holdVesselLock, ambientLocks, type LockHost } from "./vessel-lock.js";
 import { BrowserCustodyRefused, CLEAR_CUSTODY_CLEARS, readBrowserCustody, onBrowserCustodyLock, lockBrowserCustody, refuseSharedTreeFaceRows } from "./browser-custody.js";
-import { nameFace } from "./browser-face-custody.js";
+import { nameFace, faceTreeStands } from "./browser-face-custody.js";
 import { clearCustodyVerb, standFounderFace, type CustodyAsk, type CustodyAnswer } from "./browser-boot-custody.js";
 import { sweepOrphanBrowserWards } from "./browser-ward-tree.js";
 import { guardedBoot, takeDownBoot, BootTeardownRefusal, type BootHold } from "./guarded-boot.js";
@@ -992,6 +993,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     wearFaceOfVessel(idbName, admit.personaGroupId);
     const atomSeed = await standBrowserFaceAtomSeed(idbName, admit.personaGroupId);
     let a: Awaited<ReturnType<typeof runApplyAdmitPayload>>;
+    let joineeAtomKey: string;
     try {
       // The veil-archive row and atom both rest by PersonaGroup. B's hive restores only from an Archive that
       // belongs to B's atom; any other offers it nothing.
@@ -1023,9 +1025,13 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         nexusPubkey,
         ...(keptAtomArchive ? { archiveBytes: keptAtomArchive } : {}),
       });
+      joineeAtomKey = faceAtomKeyFromSeed(atomSeed, admit.personaGroupId).key;
     } finally { atomSeed.fill(0); }
     // The face Archive rests before the bootstrap that names this admit.
     await saveBrowserVeilArchive(idbName, admit.personaGroupId, a.archive);
+    // THE VEIL-LIFT LINK (ruling 1): the vessel's own key signs {veil, face, atom} once, and the record rests under this
+    // face's tree alone. It names no other face, and no board, plane or boot record carries it.
+    await keepBrowserVeilLift(idbName, admit.personaGroupId, joineeAtomKey);
     // THE SEALED ANCHOR: admission writes it (sync never does), keeping the frontier this device already knew.
     {
       const priorAnchor = await loadBrowserFaceAnchor(idbName, admit.personaGroupId);
@@ -1115,7 +1121,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     await nameFace(idbName, founder, f.personaGroupId);
     wearFaceOfVessel(idbName, f.personaGroupId);
     // THE FACE'S ATOM RESTS BEFORE ITS BOOTSTRAP: the founding minted a random seed, and the face's own custody row keeps it.
-    try { await keepBrowserFaceAtomSeed(idbName, f.personaGroupId, f.atomSeed); } finally { f.atomSeed.fill(0); }
+    let foundedAtomKey: string;
+    try { await keepBrowserFaceAtomSeed(idbName, f.personaGroupId, f.atomSeed); foundedAtomKey = faceAtomKeyFromSeed(f.atomSeed, f.personaGroupId).key; } finally { f.atomSeed.fill(0); }
+    // THE VEIL-LIFT LINK: a founding over the floor links the veil to its first face the same way a join does.
+    await keepBrowserVeilLift(idbName, f.personaGroupId, foundedAtomKey);
     // THE FACE'S ADDRESS SECRET MINTS BESIDE ITS ATOM, so the face's catalog document derives its address from the first boot.
     await mintBrowserFaceAddressSecret(idbName, f.personaGroupId);
     // THE FACE ARCHIVE RESTS BEFORE ITS BOOTSTRAP. The ceremony's provider left with the act; the key
@@ -1137,6 +1146,25 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       hearthDaemonUrl: null,   // a vessel that founded its own face IS the hearth
     });
     bootKeyWrites.bootstrap = bootstrap;
+  }
+  // THE BURN'S FALL BACK (the-veil-ladder#/the-base-model: every vessel "MUST always fall back" to its floor). A face whose
+  // custody tree left this browser (the person cleared it: its atom, anchor and every row under it went with the tree) severs
+  // forward: its overlay leaves the record, and where the record booted that face the vessel stands at its floor record
+  // again, wearing none. A tree that stands LOCKED never reads as burned, and a record an earlier line founded together with
+  // its face (no `floor`) keeps refusing by name as it did. Every other face's overlay stays; a hello may still name one.
+  if (!admit && bootstrap.floor) {
+    const burned: string[] = [];
+    for (const group of Object.keys(overlaysOf(bootstrap))) if (!(await faceTreeStands(idbName, group))) burned.push(group);
+    if (burned.length > 0) {
+      const faces = Object.fromEntries(Object.entries(overlaysOf(bootstrap)).filter(([group]) => !burned.includes(group)));
+      const keeps = bootstrap.personaGroupId !== undefined && !burned.includes(bootstrap.personaGroupId);
+      const floor = bootstrap.floor;
+      bootstrap = keeps
+        ? { ...overlayOf(bootstrap), floor, faces }
+        : { daemonUrl: floor.daemonUrl, personaPlanes: [], hearthDaemonUrl: null, floor, ...(Object.keys(faces).length > 0 ? { faces } : {}) };
+      bootKeyWrites.bootstrap = bootstrap;
+      console.log(`[lararium-browser] ${burned.length} face overlay(s) left with their custody; ${keeps ? "the booted face stands" : "the vessel stands at its floor"}`);
+    }
   }
   // THE SESSION'S HELLO NAMES THE FACE IT WEARS: a face this record holds an overlay for boots under that overlay, over the
   // same floor; the record at rest stays as it stood. A face it holds none for still refuses by name below.
