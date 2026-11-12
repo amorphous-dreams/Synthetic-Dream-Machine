@@ -42,7 +42,7 @@ declare const __LAR_WALK_DOOR__: boolean;
 import {
   openBrowserVessel, readBrowserCustody, readBrowserSeedWrap,
   parseAdmitCarriage, toAdmitCarriage, readBrowserCustodyPasskeys, readFaceCustodyPasskeys, browserWardSign,
-  browserFleetRootDoor, openBrowserSecretHome,
+  browserFleetRootDoor, openBrowserSecretHome, browserSeatGrant, browserSeatRequest, browserSeatGrantLand, browserJoinedFaces,
   browserFleetJoinRequest, browserFleetJoinLand, browserFleetJoinSettle, browserFleetJoinAbandon, BrowserFleetJoinRefused,
   standVesselHouse, sessionLifetimeLock, VesselSessionRefused, readBrowserVesselFaces, wardAskWords,
   type BrowserVesselResult, type ProjectionSurfaceFrame, type CustodyAnswer, type CustodyAsk, type HouseAsk, type PageLife, type VesselHouse, type VesselSession, type LockHost, type WardAskKind,
@@ -511,6 +511,13 @@ export function standVesselHost(env: VesselHostEnv = {}) {
               const answer = await h.faceAct(s.sessionId, msg.personaGroup, async () => (await fleetRoot(conn)).answer(msg.personaGroup, JSON.parse(msg.text) as unknown));
               return { kind: "answer", text: JSON.stringify(answer) };
             }); return;
+            case "fleet-root:seat": reply(msg.callId, async () => { const v = await litFaceVessel(); return { kind: "seat-grant", text: JSON.stringify(await browserSeatGrant({ idbName, repo: v.repo, request: JSON.parse(msg.text) as unknown })) }; }); return;
+            case "fleet-seat:faces": reply(msg.callId, async () => ({ kind: "faces", faces: await browserJoinedFaces(idbName) })); return;
+            case "fleet-seat:request": reply(msg.callId, async () => { const v = await vessel(); return { kind: "seat-request", text: JSON.stringify(await browserSeatRequest({ idbName, repo: v.repo, personaGroup: msg.personaGroup })) }; }); return;
+            case "fleet-seat:land": reply(msg.callId, async () => { const v = await vessel(); const face = (await browserSeatGrantLand({ idbName, repo: v.repo, grant: JSON.parse(msg.text) as unknown })).personaGroup;
+              // THE SEAT READS ITS GRANT AT ITS FIRST PASS: the daemon island restarts in place (the session stays unlocked, the page stays), and its seat finds the carried grant.
+              await v.restartDaemonIsland("a carried seat grant landed");
+              return { kind: "seat-kept", face }; }); return;
             // ── /leaf-fleet ──
             case "walk:restart":
               // A harness-only door, compiled out of every default build.

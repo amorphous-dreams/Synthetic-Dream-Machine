@@ -28,6 +28,8 @@ export interface FleetRootPort {
   offer(personaGroup: string): Promise<string>;
   /** The answer to one request, as the file the joining vessel lands. The vessel asks the face's unlock by the ceremony door. */
   answer(personaGroup: string, request: string): Promise<string>;
+  /** THE CARRIED SEAT: the grant for one seat request a joined device shows after it lands the answer. Absent on a port that seats by sync alone. */
+  seat?(request: string): Promise<string>;
 }
 
 const words = (err: unknown): string => (err instanceof Error ? err.message : String(err));
@@ -55,7 +57,10 @@ export function mountFleetRootDoor(host: HTMLElement, port: FleetRootPort, opts:
     const shown = document.createElement("div");
     const requestHost = document.createElement("div");
     const answerHost = document.createElement("div");
-    section.append(heading, offer, shown, requestHost, answerHost);
+    const seatHost = document.createElement("div");
+    const grantHost = document.createElement("div");
+    let takingSeat: { stop(): void } | null = null;
+    section.append(heading, offer, shown, requestHost, answerHost, seatHost, grantHost);
 
     const answer = (request: string): void => {
       say("answering: unlock this face in the ceremony window when it asks…", "busy");
@@ -63,7 +68,19 @@ export function mountFleetRootDoor(host: HTMLElement, port: FleetRootPort, opts:
         (text) => {
           showCarriage(answerHost, { text, fileName: "answer.json", label: "the fleet-join answer" });
           answerHost.dataset["larFleetStep"] = "answer";
-          say("✓ answered. Carry the answer to the other device; it lands the face there.", "ok");
+          say("✓ answered. Carry the answer to the other device; it lands the face there." + (port.seat ? " Then bring back the seat request it shows, and this face seats it." : ""), "ok");
+          if (port.seat) {
+            const seat = port.seat.bind(port);
+            seatHost.dataset["larFleetStep"] = "seat-request";
+            takingSeat?.stop();
+            takingSeat = takeCarriage(seatHost, { label: "the seat request the other device shows after it lands", ...(opts.cameraHost ? { cameraHost: opts.cameraHost } : {}), onText: (seatRequest) => {
+              say("seating…", "busy");
+              seat(seatRequest).then(
+                (grant) => { showCarriage(grantHost, { text: grant, fileName: "seat-grant.json", label: "the seat grant" }); grantHost.dataset["larFleetStep"] = "seat-grant"; say("✓ seated. Carry the seat grant to the other device; it reads what this face seals from then on.", "ok"); },
+                (err: unknown) => { say(`✗ ${words(err)}`, "refused"); },
+              );
+            } });
+          }
         },
         (err: unknown) => { say(`✗ ${words(err)}`, "refused"); },
       );
@@ -98,4 +115,69 @@ export function mountFleetRootDoor(host: HTMLElement, port: FleetRootPort, opts:
   };
   void refresh();
   return { refresh, dispose: () => { taking?.stop(); host.replaceChildren(); } };
+}
+
+/** The joined leaf's seat verbs as the page reaches them. */
+export interface FleetSeatPort {
+  /** The faces this browser joined and holds no root for. */
+  faces(): Promise<readonly { readonly personaGroup: string; readonly label: string }[]>;
+  /** This browser's seat request for one joined face, as a file. */
+  request(personaGroup: string): Promise<string>;
+  /** Keep a carried seat grant; answers the face it seats. The vessel's seat reads it at its next boot. */
+  land(grant: string): Promise<string>;
+}
+
+/**
+ * THE JOINED LEAF's seat door: with no road to the vessel that holds the face, this browser shows its seat request and
+ * takes the grant back by the same hands that carried the join. `onKept` runs once a grant rests and the vessel's seat has
+ * been woken to read it.
+ */
+export function mountFleetSeatDoor(host: HTMLElement, port: FleetSeatPort, opts: { readonly onKept: (face: string) => void; readonly cameraHost?: CameraHost }): { refresh(): Promise<void> } {
+  host.dataset["larFleetDoor"] = "seat";
+  const status = document.createElement("div");
+  status.setAttribute("role", "status");
+  status.dataset["larFleetStatus"] = "";
+  const body = document.createElement("div");
+  host.replaceChildren(body, status);
+  const say = (text: string, state: "idle" | "busy" | "ok" | "refused"): void => { status.textContent = text; host.dataset["larFleetState"] = state; };
+  const paint = (face: { readonly personaGroup: string; readonly label: string }): HTMLElement => {
+    const section = document.createElement("section");
+    section.dataset["larFleetFace"] = face.personaGroup;
+    const ask = document.createElement("button");
+    ask.type = "button";
+    ask.dataset["larFleetSeatAsk"] = "";
+    ask.textContent = `ask face ${face.label} for this device's seat, by file`;
+    const shown = document.createElement("div");
+    const grantHost = document.createElement("div");
+    section.append(ask, shown, grantHost);
+    ask.addEventListener("click", () => {
+      say("composing the seat request…", "busy");
+      port.request(face.personaGroup).then(
+        (text) => {
+          showCarriage(shown, { text, fileName: "seat-request.json", label: "this device's seat request" });
+          shown.dataset["larFleetStep"] = "seat-request";
+          grantHost.dataset["larFleetStep"] = "seat-grant";
+          takeCarriage(grantHost, { label: "the seat grant the root holder shows", ...(opts.cameraHost ? { cameraHost: opts.cameraHost } : {}), onText: (grant) => {
+            port.land(grant).then(
+              (kept) => { say("✓ seat grant kept. This browser's daemon restarted in place and takes its seat.", "ok"); opts.onKept(kept); },
+              (err: unknown) => { say(`✗ ${words(err)}`, "refused"); },
+            );
+          } });
+          say("✓ seat request shown. Carry it to the root holder's fleet door, then bring its seat grant back here.", "ok");
+        },
+        (err: unknown) => { say(`✗ ${words(err)}`, "refused"); },
+      );
+    });
+    return section;
+  };
+  const refresh = async (): Promise<void> => {
+    try {
+      const faces = await port.faces();
+      body.replaceChildren(...faces.map(paint));
+      host.dataset["larFleetFaces"] = String(faces.length);
+      say("", "idle");
+    } catch (err) { body.replaceChildren(); say(`✗ ${words(err)}`, "refused"); }
+  };
+  void refresh();
+  return { refresh };
 }

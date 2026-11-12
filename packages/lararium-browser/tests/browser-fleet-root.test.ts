@@ -125,8 +125,9 @@ describe("a leaf fleet: a browser that founded a face offers and answers, with n
     expect(landed.admit.personaGroupId).toBe(group);
     expect(landed.admit.hearthGatePin).toBeUndefined();
     expect(landed.admit.hearthTrueName).toBe("");
-    // The joinee stands on the founder's own island, so the two key one set of boards.
-    expect(admittedJoineeIsland({ hearthGatePubKey: landed.admit.hearthGatePubKey, hearthIslandKind: landed.admit.hearthIslandKind, hearthIslandScope: landed.admit.hearthIslandScope, ownVesselKey: "ab".repeat(32) })).toBe(founder.kelIsland);
+    // The admit names the founder's own island (`own`), and the joinee resolves ITS OWN island from it, as each later boot does.
+    expect(landed.admit.hearthIslandKind).toBe("own");
+    expect(admittedJoineeIsland({ hearthGatePubKey: landed.admit.hearthGatePubKey, hearthIslandKind: landed.admit.hearthIslandKind, hearthIslandScope: landed.admit.hearthIslandScope, ownVesselKey: "ab".repeat(32) })).toBe("ab".repeat(32));
     const [mine, theirs] = [await readBrowserFaceAddressSecret(founder.idbName, group), await readBrowserFaceAddressSecret(leaf, group)];
     expect(mine).not.toBeNull();
     expect(Array.from(theirs ?? [])).toEqual(Array.from(mine ?? []));

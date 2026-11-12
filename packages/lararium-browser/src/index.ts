@@ -97,6 +97,8 @@ export {
 } from "./browser-fleet-join.js";
 // THE FLEET-JOIN DOOR's ROOT-HOLDER half: a face this browser founded offers and answers, with no node in the walk.
 export { openBrowserSecretHome } from "./browser-secret-home.js";
+// THE CARRIED SEAT: the second round of two files that seats a joined leaf with no road.
+export { browserSeatRequest, browserSeatGrant, browserSeatGrantLand, browserJoinedFaces } from "./browser-fleet-seat.js";
 export {
   browserFleetJoinOffer, browserFleetJoinAnswer, browserSeatDevice, browserRootFaces, browserFleetRootDoor, browserStandingFaceScopes, BrowserFleetRootRefused, issuedRow,
   type BrowserRootFace, type BrowserSeatFace, type BrowserSeatInput,

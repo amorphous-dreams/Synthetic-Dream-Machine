@@ -34,7 +34,7 @@ import {
   fleetRaiseCids, hex, leaseEpochPrefix, materializeSharedLarDoc, personaActRecordsOfGroup, personaBagIdFor, personaKelBoardDocUrl,
   personaKelChainForPrefix, readControlHome, readFace, readFleetFrontier, readFrontierPins, readLedgeredEdgeBoard, seatDeviceInFace,
   tiddlerText, writePersonaAct,
-  type FaceScope, type FleetJoinAnswer, type FleetJoinOffer, type FleetJoinRequest, type FleetJoinSeat, type LarDoc, type SignedAct,
+  type DeviceDelegationTiddler, type FaceScope, type FleetJoinAnswer, type FleetJoinOffer, type FleetJoinRequest, type FleetJoinSeat, type LarDoc, type SignedAct,
 } from "@lararium/mesh";
 import { runDeviceAdmitEdge, type DeviceAdmitPayload } from "@lararium/keyhive";
 import type { WardRoute } from "./ward-core.js";
@@ -236,7 +236,7 @@ export async function browserSeatDevice(input: BrowserSeatInput): Promise<FleetJ
       }),
     });
     if (seat.appended.length) personaHandle.change((draft) => { for (const act of seat.appended) writePersonaAct(draft, act as SignedAct); });
-    // THE ISLAND THE JOINEE STANDS ON: this root holder's own (its private Nexus of one), so both vessels key one set of boards.
+    // THE ISLAND THIS ROOT HOLDER STANDS ON, named (`own`, its key): the joinee reads from it that no shared Nexus stands, and resolves its own.
     return { edge: seat.payload, reach: { syncUrl: input.syncUrl, islandKind: "own", islandScope: input.kelIsland.toLowerCase() }, hearth: null };
   } finally { atomSeed.fill(0); }
 }
@@ -244,10 +244,17 @@ export async function browserSeatDevice(input: BrowserSeatInput): Promise<FleetJ
 // ── The door a vessel host stands over its live vessel ──────────────────────────────────────────
 
 /** One face's overlay as the boot record keeps it (`open-browser-vessel` `BrowserBootstrap.faces`), read for the pins a seat needs. */
-interface KeptOverlay { readonly personaGroupId?: string; readonly meshCabalDocIdHex?: string; readonly signerDid?: string; readonly personaKelPrefix?: string; readonly personaUrl?: string; readonly daemonUrl?: string }
+export interface KeptOverlay {
+  readonly personaGroupId?: string; readonly meshCabalDocIdHex?: string; readonly signerDid?: string; readonly personaKelPrefix?: string;
+  readonly personaUrl?: string; readonly daemonUrl?: string; readonly intentsUrl?: string;
+  /** This vessel's own key-agreement card for the face, minted at its landing or founding. */
+  readonly contactCard?: string;
+  /** This vessel's own edge in the face, the root's half countersigned by its atom. */
+  readonly deviceEdge?: DeviceDelegationTiddler;
+}
 
 /** Every face overlay this browser's boot record holds, by PersonaGroup: the map, and a record's own top-level face. */
-async function keptOverlays(idbName: string): Promise<Record<string, KeptOverlay>> {
+export async function keptOverlays(idbName: string): Promise<Record<string, KeptOverlay>> {
   const db = await openVesselIdb(idbName);
   try {
     const record = await idbGet<KeptOverlay & { readonly faces?: Readonly<Record<string, KeptOverlay>> }>(db, "bootstrap", "social-bootstrap");

@@ -13,6 +13,7 @@
  * Meme: lar:///ha.ka.ba/lararium/keyhive/operator-daemon-behavior
  */
 
+import { carriedSeatGrants } from "./carried-seat.js";
 import {
   makeDaemonBehavior, makeWhereReactor, makeResolveReactor, makeListWikisReactor,
   makePinReactor, makeUnpinReactor, makeRegisterColdReactor, registerActionReactors, makeFresherCanonReactor, makeOverrideBasesReactor, makeTw5Deserializer,
@@ -1637,6 +1638,12 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           personaKel: daemonAuth.personaKel,
           knowsAgent: (agent) => veil.knowsAgent(agent),
           grants: async () => {
+            // ── leaf-fleet (Leaf-Wright): THE CARRIED GRANT, read before the plane. A leaf with no road to the face's hearth
+            // never holds the persona plane; a grant a person carried to it by file rests in this vessel's own secret home
+            // (`carried-seat`), and the seat judges it by the same verifier as a synced one. ──
+            const carried = await carriedSeatGrants(ctx.secretStore, group, edge.deviceVerifyingKey).catch(() => []);
+            if (carried.length > 0) return carried;
+            // ── /leaf-fleet ──
             const store = await homeStoreOf(catalog, personaBagIdFor(group));
             if (!store) return [];
             const prefix = `${FACE_GRANT_PREFIX}${group}/`;

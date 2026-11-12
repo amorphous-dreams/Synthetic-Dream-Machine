@@ -104,7 +104,8 @@ export type JoinOfferReply = { readonly kind: "request"; readonly text: string }
 /** `face` names the PersonaGroup the landed join joins: the tab selects it, so its next hello wears it. */
 /** leaf-fleet (Leaf-Wright): the root holder's replies. `faces` lists the faces this browser holds a root for; a file reply carries one file's text. */
 export type FleetRootFacesReply = { readonly kind: "faces"; readonly faces: readonly { readonly personaGroup: string; readonly label: string }[] };
-export type FleetRootFileReply = { readonly kind: "offer" | "answer"; readonly text: string };
+export type FleetRootFileReply = { readonly kind: "offer" | "answer" | "seat-request" | "seat-grant"; readonly text: string };
+export type FleetSeatLandReply = { readonly kind: "seat-kept"; readonly face: string };
 export type JoinAnswerReply = { readonly kind: "landed"; readonly carriage: string; readonly signerDid: string; readonly face: string };
 
 export type PageToVessel =
@@ -129,6 +130,11 @@ export type PageToVessel =
   | { readonly t: "fleet-root:faces"; readonly callId: string }
   | { readonly t: "fleet-root:offer"; readonly callId: string; readonly personaGroup: string }
   | { readonly t: "fleet-root:answer"; readonly callId: string; readonly personaGroup: string; readonly text: string }
+  // THE CARRIED SEAT (a second round of two files): the root holder grants a carried seat request; the joined leaf asks and lands.
+  | { readonly t: "fleet-root:seat"; readonly callId: string; readonly text: string }
+  | { readonly t: "fleet-seat:faces"; readonly callId: string }
+  | { readonly t: "fleet-seat:request"; readonly callId: string; readonly personaGroup: string }
+  | { readonly t: "fleet-seat:land"; readonly callId: string; readonly text: string }
   // ── /leaf-fleet ──
   | { readonly t: "spawned"; readonly spawnId: string; readonly port?: MessagePort; readonly refused?: string }
   | { readonly t: "walk:restart"; readonly callId: string; readonly reason: string }

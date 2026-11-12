@@ -18,7 +18,7 @@ declare const __LAR_WALK_DOOR__: boolean;
  * story), verifying every step on the vessel worker's thread. Location-agnostic: served from localhost / LAN / elyncia.app,
  * the vessel always runs in this browser; the origin is a static host, never an authority.
  */
-import { mountFleetRootDoor } from "./fleet/fleet-root-door.js";
+import { mountFleetRootDoor, mountFleetSeatDoor } from "./fleet/fleet-root-door.js";
 import { showCarriage } from "./fleet/carriage-panel.js";
 import { createLoafBuffer } from "./loaf-buffer.js";
 import {
@@ -553,6 +553,9 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
   // ── leaf-fleet (Leaf-Wright): the root holder's door. It paints a face only where this browser holds that face's root. ──
   const fleetRootHost = document.getElementById("fleet-root-door");
   if (fleetRootHost) mountFleetRootDoor(fleetRootHost, vessel.fleetRoot);
+  // THE CARRIED SEAT: a face this browser joined asks its seat by file; a kept grant restarts the daemon island in place, and its seat reads it.
+  const fleetSeatHost = document.getElementById("fleet-seat-door");
+  if (fleetSeatHost) mountFleetSeatDoor(fleetSeatHost, vessel.fleetSeat, { onKept: (face) => console.log(`[vessel] a carried seat grant rests for face ${face.slice(0, 12)}…; the daemon island restarted and its seat reads it`) });
   // ── /leaf-fleet ──
   if (relayUrl) {
     console.log(`[vessel] this leaf's key: ${did}`);

@@ -1,0 +1,112 @@
+/**
+ * carried-seat — THE SEAT RIDES THE FILES: a joined leaf takes its seat in a face's key agreement with no road between
+ * it and the vessel that holds the face (device-capabilities-2026#/device-seats, ruling 7).
+ *
+ * A fleet join's three files pin the face on the joining vessel. Its SEAT (the group taking the new device, so the device
+ * reads what the face seals) rides a summons on the face's intents plane and a grant on its persona plane, and both
+ * planes cross by sync. Two leaves with no relay hold no such crossing, so the same two records cross by hand instead:
+ *
+ *   SEAT-REQUEST  the joined leaf's own `face-join` intent, signed by its atom and pinned to the founding hearth: the
+ *                 very entry `requestFaceJoin` writes on the plane, carrying its key-agreement card and the edge the root
+ *                 signed for it. The card mints at the landing, so this file follows the answer.
+ *   SEAT-GRANT    the hearth's signed `FaceGrantRecord`, as its intent door wrote it on the persona plane: the group's
+ *                 admitting events under the founder's atom and its root-signed edge.
+ *
+ * NOTHING NEW DECIDES. The root holder's vessel lays the carried intent on its own intents plane and its standing door
+ * answers it through the one gate (`faceJoinEffect`); the joined leaf keeps the carried grant beside its other carried
+ * records, and its standing seat reads it there, verifies it as it verifies a synced one, ingests it and runs the Lift.
+ * These helpers shape and check the two files and move them between a file and a document. They sign nothing.
+ *
+ * Meme: lar:///ha.ka.ba/lararium/keyhive/carried-seat
+ */
+import {
+  buildIntent, faceIntentVerbs, intentEntryCid, storedLarRecord, tiddlerText, writeIntentEntry,
+  type DeviceDelegationTiddler, type DocHandle, type IntentSigner, type LarDoc, type SignedIntentEntry,
+} from "@lararium/mesh";
+import { faceJoinNonce } from "./face-intent-door.js";
+import { FACE_GRANT_PREFIX, faceGrantTitle, type FaceGrantRecord } from "./face-grant-record.js";
+import type { FaceJoinSummons } from "./face-join.js";
+
+export interface FleetSeatRequest { readonly kind: "fleet-seat-request"; readonly personaGroup: string; readonly entry: SignedIntentEntry }
+export interface FleetSeatGrant { readonly kind: "fleet-seat-grant"; readonly personaGroup: string; readonly title: string; readonly record: FaceGrantRecord }
+
+export const CARRIED_SEAT_REFUSALS = [
+  "seat-request-malformed", "seat-request-other-face", "seat-request-other-verb",
+  "seat-grant-malformed", "seat-grant-other-face", "seat-grant-other-device",
+] as const;
+export type CarriedSeatRefusalName = (typeof CARRIED_SEAT_REFUSALS)[number];
+export class CarriedSeatRefused extends Error {
+  override readonly name = "CarriedSeatRefused";
+  constructor(readonly refusal: CarriedSeatRefusalName | string, detail: string) { super(`${refusal}: ${detail}`); }
+}
+
+const bare = (key: string): string => key.trim().toLowerCase().replace(/^0x/, "");
+const record = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
+
+/** The joined leaf's seat request: its own `face-join` intent, pinned to the founding hearth's atom, as a file. */
+export async function composeSeatRequest(input: {
+  readonly group: string; readonly atom: IntentSigner; readonly hearthAtom: string;
+  readonly contactCard: string; readonly deviceEdge: DeviceDelegationTiddler;
+}): Promise<FleetSeatRequest> {
+  const summons: FaceJoinSummons = { kind: "face-join", contactCard: input.contactCard, deviceEdge: input.deviceEdge };
+  const audience = { mode: "pinned" as const, atom: bare(input.hearthAtom) };
+  const entry = await buildIntent({ group: input.group, signer: input.atom, verb: "face-join", args: { summons }, nonce: faceJoinNonce(input.atom.key, audience), audience, verbs: faceIntentVerbs() });
+  return { kind: "fleet-seat-request", personaGroup: input.group, entry };
+}
+
+/** Read a carried seat request for `group`: its shape alone. The intent door judges its signature, edge and standing. */
+export function readSeatRequest(value: unknown, group: string): FleetSeatRequest {
+  if (!record(value) || value["kind"] !== "fleet-seat-request" || !record(value["entry"]) || !record((value["entry"] as Record<string, unknown>)["body"])) throw new CarriedSeatRefused("seat-request-malformed", "the file does not read as a seat request.");
+  if (value["personaGroup"] !== group) throw new CarriedSeatRefused("seat-request-other-face", "the seat request names another face.");
+  const entry = value["entry"] as unknown as SignedIntentEntry;
+  const body = entry.body as unknown as Record<string, unknown>;
+  if (body["verb"] !== "face-join" || body["entry"] !== "intent" || body["group"] !== group) throw new CarriedSeatRefused("seat-request-other-verb", "the carried intent asks something other than this face's seat.");
+  return { kind: "fleet-seat-request", personaGroup: group, entry };
+}
+
+/** The device a seat request asks a seat for: the key its presented edge delegates to. */
+export function seatRequestDevice(request: FleetSeatRequest): string {
+  const summons = ((request.entry.body as unknown as { args?: { summons?: FaceJoinSummons } }).args)?.summons;
+  const key = summons?.deviceEdge?.deviceVerifyingKey;
+  if (typeof key !== "string" || !/^[0-9a-fA-F]{64}$/.test(key)) throw new CarriedSeatRefused("seat-request-malformed", "the seat request presents no device edge.");
+  return key.toLowerCase();
+}
+
+/** Lay a carried seat request on the root holder's intents plane, exactly where a synced leaf's own would land. Answers its entry's id. */
+export function placeSeatRequest(plane: DocHandle<LarDoc>, request: FleetSeatRequest): string {
+  plane.change((draft) => writeIntentEntry(draft, request.entry));
+  return intentEntryCid(request.entry);
+}
+
+/** The grant the hearth's door wrote for `device` on its persona plane, as a file; null while none stands there. */
+export function seatGrantOnPlane(plane: LarDoc | undefined | null, group: string, device: string): FleetSeatGrant | null {
+  const title = faceGrantTitle(group, device);
+  const raw = tiddlerText(plane?.tiddlers?.[title]);
+  if (typeof raw !== "string") return null;
+  try { return { kind: "fleet-seat-grant", personaGroup: group, title, record: JSON.parse(raw) as FaceGrantRecord }; } catch { return null; }
+}
+
+/** Read a carried seat grant on the joined leaf: its face and its device. The seat's own verifier judges the signature and the founder's standing. */
+export function readSeatGrant(value: unknown, self: { readonly group: string; readonly deviceKey: string }): FleetSeatGrant {
+  if (!record(value) || value["kind"] !== "fleet-seat-grant" || typeof value["title"] !== "string" || !record(value["record"])) throw new CarriedSeatRefused("seat-grant-malformed", "the file does not read as a seat grant.");
+  const rec = value["record"] as unknown as FaceGrantRecord;
+  if (rec.kind !== "face-join-grant" || !Array.isArray(rec.capEvents) || typeof rec.sig !== "string") throw new CarriedSeatRefused("seat-grant-malformed", "the file carries no signed grant.");
+  if (value["personaGroup"] !== self.group || rec.groupId !== self.group) throw new CarriedSeatRefused("seat-grant-other-face", "the seat grant seats another face.");
+  if (value["title"] !== faceGrantTitle(self.group, self.deviceKey) || !bare(String(rec.joineeAgentIdHex)).endsWith(bare(self.deviceKey))) throw new CarriedSeatRefused("seat-grant-other-device", "the seat grant seats another device than this one.");
+  return { kind: "fleet-seat-grant", personaGroup: self.group, title: value["title"], record: rec };
+}
+
+/** Keep a carried grant in a document this vessel holds (its secret home), at the grant's own title. */
+export function keepCarriedSeatGrant(home: DocHandle<LarDoc>, grant: FleetSeatGrant): void {
+  home.change((draft) => { draft.tiddlers[grant.title] = storedLarRecord(grant.title, { text: JSON.stringify(grant.record) }, "carried-seat"); });
+}
+
+/** The carried grants a vessel's own store holds for one device of one face: the seat's second source, read before the plane. */
+export async function carriedSeatGrants(store: { listVisible(): Promise<readonly string[]>; get(title: string): Promise<{ readonly tiddler: { readonly text?: string } } | undefined | null> } | undefined, group: string, deviceKey: string): Promise<{ title: string; record: FaceGrantRecord }[]> {
+  if (!store) return [];
+  const title = faceGrantTitle(group, deviceKey);
+  if (!title.startsWith(FACE_GRANT_PREFIX) || !(await store.listVisible()).includes(title)) return [];
+  const raw = (await store.get(title))?.tiddler.text;
+  if (typeof raw !== "string") return [];
+  try { return [{ title, record: JSON.parse(raw) as FaceGrantRecord }]; } catch { return []; }
+}

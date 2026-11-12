@@ -225,9 +225,10 @@ export function admittedJoineeIsland(opts: {
   return nexusScopeOrThrow(
     opts.hearthIslandKind === "charter" && opts.hearthIslandScope
       ? nexusIdentity({ genesisEpochCid: opts.hearthIslandScope, ownVesselKey: opts.ownVesselKey })
-      // A ROOT HOLDER THAT STOOD NO GATE names no gate key: its `own` island's scope (its own key, the private Nexus of one it
-      // founded the face on) names the board its joinee stands on, as a gate key does below a charter.
-      : nexusIdentity({ anchorGateKey: opts.hearthGatePubKey ?? (opts.hearthIslandKind === "own" && opts.hearthIslandScope ? opts.hearthIslandScope : null), ownVesselKey: opts.ownVesselKey }),
+      // A ROOT HOLDER THAT STOOD NO GATE names no gate key and its own island (`own`): the joinee then resolves ITS OWN
+      // island here, exactly as its every later boot does with no hearth pin at rest, so the carried KEL chain seeds the
+      // board that boot reads. Two leaves share no board until a road joins them; a connect re-keys the boards then.
+      : nexusIdentity({ anchorGateKey: opts.hearthGatePubKey ?? null, ownVesselKey: opts.ownVesselKey }),
   );
 }
 

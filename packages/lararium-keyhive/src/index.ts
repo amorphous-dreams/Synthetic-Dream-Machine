@@ -110,6 +110,7 @@ export {
 export type { FoundedWorkbench, LedgerDoc, WorkbenchMember, LandWorkbenchPorts, LandedWorkbench } from "./workbench-realm.js";
 export { forkCabalRealm } from "./fork-realm-ceremony.js";
 // THE FLEET-JOIN ANSWER'S ADMIT: the one shape the node's `runInit` and the browser's admit boot found a face by.
+export * from "./carried-seat.js";
 export { carriedAdmitOfFleetJoin, FLEET_JOIN_ADMIT_REFUSALS, type FleetJoinAdmitRefusalName } from "./fleet-join-admit.js";
 export type { ForkCabalRealmOpts } from "./fork-realm-ceremony.js";
 
