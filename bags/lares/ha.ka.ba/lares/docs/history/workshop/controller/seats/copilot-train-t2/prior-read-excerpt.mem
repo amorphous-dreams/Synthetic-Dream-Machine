@@ -1,0 +1,133 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/copilot-train-t2/prior-read-excerpt`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-31 (file date) — source `.lares-scratch/controller/seats/copilot-train-t2/prior-read-excerpt.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/copilot-train-t2/prior-read-excerpt"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/seats/copilot-train-t2/prior-read-excerpt"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! prior-read-excerpt.md — research, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/seats/copilot-train-t2/prior-read-excerpt.md` (research, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/copilot-train-t2/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+codex
+The in-memory booking probe refused unknown ids, wrong verbs, released bookings, and dropped sessions. A duplicate id retained the first signer. I also found that the F7 guard exempts a newly founded bag. I’ll test whether a roll arriving during founding can leave a removed reader wrapped into that new key.
+
+exec
+/usr/bin/zsh -lc "TMPDIR='/home/joshu/.lares-scratch/controller/seats/sol-train-t1/.tmp' TMPPREFIX='/home/joshu/.lares-scratch/controller/seats/sol-train-t1/.tmp/' node &#45;-experimental-vm-modules -e '
+const fs = require(\"node:fs\"), path = require(\"node:path\"), vm = require(\"node:vm\");
+const {stripTypeScriptTypes, createRequire} = require(\"node:module\");
+const {pathToFileURL} = require(\"node:url\");
+const root = \"/home/joshu/Synthetic-Dream-Machine\";
+const seat = \"/home/joshu/.lares-scratch/controller/seats/sol-train-t1\";
+const patches = [\"u1-140.patch\",\"recut-custody-138.patch\"].map(n=>fs.readFileSync(path.join(seat,n),\"utf8\"));
+function source(rel) {
+let src = fs.existsSync(path.join(root,rel)) ? fs.readFileSync(path.join(root,rel),\"utf8\") : \"\";
+for(const patch of patches) {
+const section = patch.split(\"diff &#45;-git \").slice(1).find(x=>x.split(\"\\n\")[0] === \"a/\"+rel+\" b/\"+rel);
+if("'!section) continue;
+let old=src.split("'"\\n\"), out=[], pos=0;
+const ls=section.split(\"\\n\");
+for(let i=0;i&lt;ls.length;i++) {
+const h=ls[i].match(/"'^&#64;@ -('"\\d+)(?:,(\\d+))? \\+(\\d+)(?:,(\\d+))? &#64;@/);
+if("'!h) continue;
+let start=Number(h[1]); start=start===0?0:start-1;
+out.push(...old.slice(pos,start)); pos=start;
+for(i++;i&lt;ls.length && !ls[i].startsWith("&#64;@ ");i++) {
+const l=ls[i];
+if(l.startsWith(" ")) {if(old[pos]!==l.slice(1))throw Error("patch context "+rel+":"+pos); out.push(old[pos++]);}
+else if(l.startsWith("-")) {if(old[pos]!==l.slice(1))throw Error("patch delete "+rel+":"+pos);pos++;}
+else if(l.startsWith("+"))out.push(l.slice(1));
+}
+i&#45;-;
+}
+out.push(...old.slice(pos)); src=out.join("'"\\n\");
+}
+return src;
+}
+const cache=new Map(), mocks=new Map();
+function moduleFor(rel) {
+const file=path.join(root,rel);
+if(cache.has(file))return cache.get(file);
+const code=stripTypeScriptTypes(source(rel), {mode:\"transform\",sourceUrl:file});
+const m=new vm.SourceTextModule(code,{identifier:file,initializeImportMeta(meta){meta.url=pathToFileURL(file).href; meta.dirname=path.dirname(file);}});
+cache.set(file,m);return m;
+}
+async function linker(spec,from){
+if(mocks.has(spec))return mocks.get(spec);
+if(spec.startsWith(\".\")) {
+const f=path.resolve(path.dirname(from.identifier),spec).replace(/\\.js"'$/,".ts");
+return moduleFor(path.relative(root,f));
+}
+if(spec.startsWith("@lararium/"))throw Error("dist import refused: "+spec);
+const native=createRequire(from.identifier);
+const target=spec.startsWith("node:")?spec:pathToFileURL(native.resolve(spec)).href;
+if(cache.has(target))return cache.get(target);
+const ns=await import(target);
+const names=Object.keys(ns);const m=new vm.SyntheticModule(names,function(){for(const n of names)this.setExport(n,ns[n]);},{identifier:target});
+cache.set(target,m);return m;
+}
+async function load(rel) {const m=moduleFor(rel);if(m.status==="unlinked")await m.link(linker);if(m.status==="linked")await m.evaluate();return m.namespace;}
+function synthetic(name,ns){const m=new vm.SyntheticModule(Object.keys(ns),function(){for(const [k,v]of Object.entries(ns))this.setExport(k,v);},{identifier:name});mocks.set(name,m);return m;}
+
+(async()=>{
+const f=await load("packages/lararium-mesh/tests/content-key-fixture.ts");
+const {ContentKeyHolder}=await load("packages/lararium-mesh/src/content-key-holder.ts");
+const {SealedStore}=await load("packages/lararium-mesh/src/sealed-store-rest.ts");
+const {contentKeyRollSink}=await load("packages/lararium-mesh/src/content-key-lineage.ts");
+synthetic("@lararium/mesh",{ContentKeyHolder,SealedStore,contentKeyRollSink,verifiedSeatRoll:()=>{throw Error("unused");}});
+let shoreNow;
+synthetic("./keyhive-lockbox.js",{keyhiveLockboxShore:()=>shoreNow});
+synthetic("./seat-duty-executor.js",{subscribeSeatRolls:()=>()=>{}});
+const {seatContentKeys}=await load("packages/lararium-keyhive/src/content-key-seat.ts");
+const BAG="lar:&#47;&#47;/ha.ka.ba/@test/bags/race", SCOPE="ab".repeat(32);
+for(const foundingRace of [true,false]){
+const w=f.world(), a=await f.vessel(w,"a"), removed=await f.vessel(w,"removed"); f.introduce(a,removed); shoreNow=a.shore;
+const provider={async groupMembers(){return [...w.group];},async verifyGroupMembership(){return {ok:true};}};
+const seat=seatContentKeys({providers:[provider],rest:a.rest,values:{read:async id=>a.values.get(id)??null,write:async(id,bytes)=>{a.values.set(id,bytes);}},restArchive:async()=>{},group:{groupId:"group",scope:SCOPE},bags:()=>[BAG],standingOf:member=>w.aside.get(a.id)?.has(member)?"aside":"clear",session:{signer:()=>null,standing:{holdsWrite:()=>true}},subscribe:()=>()=>{}});
+a.holder=seat.holder;
+let before;
+if(!foundingRace){before=await seat.seal({bagId:BAG,plaintext:new TextEncoder().encode("before"),signer:a.signer});await f.carry(a,removed,BAG);}
+let signal,release; const paused=new Promise(r=>signal=r),resume=new Promise(r=>release=r);let signs=0;
+const slow={certificate:a.signer.certificate,async sign(purpose,payload){signs++;if(signs===1){signal();await resume;}return a.signer.sign(purpose,payload);}};
+const sealing=seat.seal({bagId:BAG,plaintext:new TextEncoder().encode("private after removal"),signer:slow});
+await paused;
+f.counts(w,a,"raise-race"); f.setsAside(w,a,removed);
+const rolling=seat.sink({kind:"seat-roll",scope:SCOPE,edgeId:"edge-r",raiseCids:["raise-race"],how:"revoked",seat:{group:"group",member:removed.id}}).then&#40;()=>"settled",()=>"owed");
+console.log(foundingRace?"FOUNDING":"EXISTING","owed while seal paused",seat.owedFor(BAG));
+release();const sealed=await sealing;
+console.log("seal result",f.said(sealed),"version",sealed.body?.keyVersion,"same as before",before?.body?.keyVersion===sealed.body?.keyVersion);
+console.log("roll result",await rolling,"owed after",seat.owedFor(BAG));
+if(sealed.body){await f.carry(a,removed,BAG);const opened=await removed.holder.openBlob({bagId:BAG,ref:sealed.body.ref});console.log("REMOVED READER",opened.plaintext?f.text(opened.plaintext):f.said(opened));}
+}
+})().catch(e=>{console.error(e);process.exitCode=1});
+'"' &lt; /dev/null" in /home/joshu/Synthetic-Dream-Machine
+succeeded in 841ms:
+(Use `node --trace-warnings ...` to show where the warning was created)
+FOUNDING owed while seal paused [ 'raise-race' ]
+seal result OK version d539ebc50e69afd5302ceacec5ad97c386b6ee230d8fe764edcd44208e50e732 same as before false
+roll result owed owed after [ 'raise-race' ]
+REMOVED READER private after removal
+EXISTING owed while seal paused [ 'raise-race' ]
+seal result OK version c7f8fbc47b268a824ffe6c0976ff8871573790b44b6faa45d43dbd4d44651e2a same as before true
+roll result owed owed after [ 'raise-race' ]
+REMOVED READER private after removal
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-1gU5O1X1_tY559ClKEOgtx7fLNzZiHksgwryDMrQMc`>>
+
+<<^ code=`&#x0004;` to=`?`>>

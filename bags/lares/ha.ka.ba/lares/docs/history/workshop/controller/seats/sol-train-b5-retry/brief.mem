@@ -1,0 +1,51 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-b5-retry/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-10-31 (file date) — source `.lares-scratch/controller/seats/sol-train-b5-retry/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-b5-retry/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-b5-retry/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/seats/sol-train-b5-retry/brief.md` (brief, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-b5-retry/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Train-Reader II: Lares (Tasked Spirit), the re-read of a train after its revisions (operator: Sol reads whole trains, not lanes; the pool stands at about 10%, so this read covers only what changed).
+
+The prior train read (prior-train-read.md beside this brief) held on: (1) HIGH ralias, the catalog bridge admitting aliases into another face's private plane; (2) HIGH rcx, the self-recovery key not excluded at reveal in the KEL verifier; (3) a cross-lane LEAD, porch5 x ralias, the wiki mount resolving through a catalog pointer into an in-house island. porch5 has since landed on the span.
+The revisions: rcx-rev.patch (the self-key exclusion at reveal) and ralias-rev.patch (ownership by document id before any gate; the wiki resolution refusing every vessel-private id). The repo at /home/joshu/Synthetic-Dream-Machine holds the span; read files there for context.
+
+Answer: does each of the three close, MEASURED where you can probe? Does either revision open a new HIGH or a new cross-lane interaction with the span as it stands (porch5 landed: the typed bag-not-registered refusal, the delegation book)? End with SHIP or HOLD.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* Write `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;NfYnC3fHpKb7ZYmPcwUrHOErwQFQb5gfoGX4LuYKNi4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

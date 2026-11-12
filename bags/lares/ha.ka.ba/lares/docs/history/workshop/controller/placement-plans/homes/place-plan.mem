@@ -1,0 +1,64 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/place-plan`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-10 (file date) — source `.lares-scratch/controller/placement-plans/homes/PLACE-PLAN.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/place-plan"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/place-plan"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! PLACE-PLAN.md — plan, 2026-11-10
+
+Verbatim scratch record `.lares-scratch/controller/placement-plans/homes/PLACE-PLAN.md` (plan, file date 2026-11-10); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/place-plan-the-placement-over-patterns-leap-rema`>>
+
+! PLACE-PLAN — the placement-over-patterns leap, remaining work (controller-trued 2026-11-09)
+
+Rulings (operator, verbatim):
+* "Approve placement over patterns; launch a Terra worker to enact and build."
+* "Full feature lands now before founding, no more 'build step 1 now, the rest later'."
+* "Approve the moʻolelo, hand it to Terra." — the moʻolelo stands at the end of PLACE-RULING.md (persona plane = private-synced home; vessel SECRET document sealed before its first write; vessel CONTROL document; acts leave the browsing recipe, proof readers keep direct access; the daemon wiki mirror stays lit and the leap lands only once every control writer has left `wikis/daemon-<F>`).
+
+Read first: PLACE-RULING.md (whole, moʻolelo last), PLACE-MEASURE.md (the family inventory: every writer/reader/home), PLACE-STEP-1..5.md, PLACE-HANDBACK.md (the prior session's state). The tree in this worktree carries the prior sessions' uncommitted work (81 files): build on it, never reset it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/state-as-handed-back`>>
+
+!! State as handed back
+DONE: step 1 (directory LOAD omits only its catalog-owned root manifest); step 2 inventory; step 4's projector (effect records skip by record kind; title residency gates removed; structural source-to-mirror check; control/secret homes refuse LOAD by name); step 5 witness (tools/placement-residency-witness.*) wired, canon and adapter paragraph trued; Keyhive fails closed without a secret handle + sealed-rest grant (keyhive suite 560/560; mesh 5,117 pass).
+RED NOW: node full suite 221 failing tests / 82 files (founding and face tests: `secret-home-unavailable`); tw5 and cli full suites not rerun after vendor-core generation and carry edits.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/remaining-in-order`>>
+
+!! Remaining, in order (each with red tests first)
+A. SECRET DOCUMENT, sealed. The vessel's sealed-bag map classifies `SECRET_HOME_ID`; the secret document enters the existing `SealedDocumentStore` and opens its save session BEFORE its first write. Wire the handle and grant through: founding (node commands/init.ts and the found &#45;-hearth path: order = card read-back -> custody -> secret enrollment -> first seal/dyad/cap write), admission (commands/device-admit.ts), replay (boot-daemon-keyhive), peer sync, browser construction. No plaintext fallback ever. Exit: the founding and face tests read green again, with a red test on the enrollment order.
+B. CONTROL DOCUMENT. One vessel-scoped document (handle in the vessel store beside the daemon document), never in a recipe, never mirrored. Move every control family named in PLACE-MEASURE.md (summons, outcomes + effect index, receipt facts / FactLedger, ward audits, mailbox, delegate, face-row, lease-epoch, ledger/*, swarm controls) with every reader (verb-dispatcher, uds-channel, verb-vm, worker-data-verbs, swarm-wiki, commands/swarm, vessel-mailbox, daemon-vm-core, epoch-lease, CLI readers). Exit: no control writer touches `wikis/daemon-<F>` or `bags/daemon`.
+C. DAEMON CANON PER FACE. Mint `bags/daemon-<F>` at persona/face creation; the daemon wiki recipe reads working `wikis/daemon-<F>` -> `bags/daemon-<F>` -> `bags/kahua` (per face). `bags/daemon` keeps no canon role; carry/observe/kahua lift read the new canon.
+D. PERSONA PLANE OFF THE BROWSING RECIPE. The page/tiddler recipe stops mounting the persona plane; browser boot's proof readers and Keyhive replay keep direct document access (a face still seats).
+E. CARRY IMPORT through the mirror (controller-trued 2026-11-09): the import restores each wave's files into the destination's own mirror directory (never overwriting a different file standing there), then ingests from that mirror, so the placement ward reads a source under the bag's granted mirror and INGEST keeps its kāpae and conflict semantics. (LOAD-then-MOVE would drop those.) A Terra seat builds it on branch …&#45;-placement-carry as a test of implementation-first instructions.
+F. RESTORE THE DAEMON MIRROR: `wikis/daemon-<F>` (and the face's daemon canon) project again once B holds; the witness reads red if a control-shaped record could reach that mirror by placement.
+G. VERIFY, all five packages (mesh, node, tw5, keyhive, lares-cli): build + stamp + typecheck; FULL vitest suites green (node 0 failing); tw5 and cli rerun after generation; Python sensorium suite if a mirrored contract moved; `node tools/evergreen-boundary.mjs`, the placement witness and every witness reading touched files; `git diff --check`. Name every e2e file the change touches (load-tw5-filetypes, corpus-feed, residency-create, the carry e2e, founding/stage-walk if founding moved).
+
+CPU note: the operator's machine has 10 cores; run one package's full suite at a time (`--maxWorkers=4`), not several in parallel.
+
+Hand-back: true PLACE-STEP-&lt;n>.md for each lettered item and a fresh PLACE-HANDBACK.md (under 900 words): state per item, suites with counts, witnesses, e2e files, rulings. No commits, no pushes, no stash; never touch ~/.lares or docker.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;AGU_6Kd70husU6rBoa_UnVuCd9Q5D68cRHAFBfomBTo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

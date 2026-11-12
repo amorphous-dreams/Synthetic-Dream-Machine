@@ -1,0 +1,211 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/testability/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-10-31 (file date) — source `.lares-scratch/controller/scouts/testability/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/testability/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/scouts/testability/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/scouts/testability/final.md` (hand-back, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/testability/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/pono-testability-refined-report`>>
+
+! Pono testability: refined report (cold read of Kilo-Scout waves 1+2)
+
+Quill-Reader: Lares (Tasked Spirit), 2026-10-31. Repo read-only; no suites, no Stryker, no edits. Stands alone; the scout's files are untouched.
+Persona: Ink-Clerk (grounds, cites, marks testimony) with Council for the ranking.
+Ruling folded: operator, 2026-10-31, verbatim "Approve lifting the test re-cut ordering to before founding". The 2026-10-29 "re-cut after the founding" ruling (road lines 268, 849) no longer binds; the road edit rides the next record batch. Every BEFORE tag in the scout's report loses its "needs the lift" clause.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/tl-dr`>>
+
+!! TL;DR
+
+# Ratio: tests outnumber code ''1.39-1.41 : 1'' non-comment, ''1.08-1.10 : 1'' raw. Not 1.66. I reproduced the test side to the line (204,872 vs the scout's 204,871; 1,819 test files). Nearest 1.66-ish figure anyone gets: comment-stripped source against raw tests (1.81).
+# The Stryker verdict "activates no mutants" has a ''primary-source cause and a shipped fix'': PR #6214 (merged 2026-10-23), in v10.1.0, re-released as 10.1.1. Corrected: the scout cited issue #6262 as the fix's anchor, but #6262 closed as a duplicate of #6210; #6214 is the fix. Source-verified, ''not run-verified'' against vitest 5.0.3: a probe decides.
+# The scout missed the sharpest collision: the road gives ''one named owner per step the one compose hunk in `open-node-vessel.ts`'' (road line 312), and that file took ''185 commits since 2026-10-01''. A stage-cut of `prepareNodeBootOn` fights every slice. The road plans no stage-cut (grep: zero hits); the scout's "N/W/H trains already reshape boot" has no support in the road.
+# Minimum first lane that earns the early start, touching no hot file: (a) Stryker 10.1.1 probe in a throwaway worktree, (b) one shared scratch fixture piloted on node tests, (c) `LandedLedger.whenLanded`, (d) the real dead-export set (53, not 69). Then characterization tests of the boot sequence, then the stage-cut as a single-owner step.
+# Cut from the scout: the fake-timer ban reads as house practice, but 23 files already use fake timers; the `isolate: false` blocker is smaller than stated (8 `stubEnv/stubGlobal` hits in 3 files; the 74 module registries remain the real blocker).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/verified-numbers`>>
+
+!! Verified numbers (re-run by me)
+
+| Claim | My result | Verdict |h
+| Test non-comment LOC | 204,872 (own script, same filter) vs 204,871 | verified |
+| Test files | 1,819 | verified |
+| Source non-comment | 147,888 vs scout's 145,127 (my filter admits a few more tools/src files) | verified within 2% |
+| Ratio non-comment / raw | 1.39 / 1.08 (scout 1.41 / 1.10) | verified within 2% |
+| `prepareNodeBootOn` span | starts `open-node-vessel.ts:709`, `composeNodeVesselOn` at :3557, `openNodeVessel` doc comment ~:3540; body about 2,830 lines | verified (the scout's "709-3546" holds to a few lines) |
+| File length | 3,770 lines | verified |
+| `mkdtemp` | 1,057 sites in 392 files (scout 1,032 / 389; tree drifted, scope differs by `tools/`) | verified, order right |
+| vitest pin | `"vitest": "5.0.3"` in all 10 package.json that name it | verified |
+| Stryker in repo | `git ls-files | grep -ci stryker` = 0 | verified |
+| Road lines 268, 849 | 268 is the heading + one-line ruling; 849 the full "total refactor" bullet with its three named inputs | verified (now superseded) |
+| `LandedLedger` is a bare Map, no event | 14-line class, `landedOf/set/delete/clear` only | verified |
+| `setImmediate` | 105 hits in 54 files across packages+tests+tools, 0 in `packages/*/src` (scout: 77/44, tests only) | scope differs; direction holds |
+| "turn &lt; N" poll loops | 26 lines (scout 44 lines in 27 files); regex differs | order right, ''unverified exact'' |
+| Dead exports | ''69 by the scout's script; 53 when I grep the whole tree'' (excluding `.mem`) | ''corrected'' (below) |
+
+Dead-export sample (7 checked with a whole-tree `git grep -w`): `bagsRoot`, `larRuntimeHome`, `vesselCustodyIo`, `walkIdentity` are re-exported from package `index.ts` barrels (public API, the scout's script excluded barrels as consumers and then called them dead). `serveHostingMint`, `cabalInviteId`, `verifyWaxStampSig` appear nowhere but their declaration. Across all 69: 16 appear elsewhere in code (barrel or other use), 53 nowhere. The 53 stay candidates: `.mem` docs and external consumers sit outside the grep.
+
+Not re-run: the 350 test-only export figure (needs the scout's script semantics; I read the script, it is regex-only and skips barrels), the 54 witness count, the e2e shard weights, CI data.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/internet-claims-verified-corrected-unverified`>>
+
+!! Internet claims: verified, corrected, unverified
+
+| Claim | Source I opened | Verdict |h
+| vitest 5 joins suite chain with ` > `, Stryker 10.0.0 joined with a space, so the per-mutant name filter matched nothing; mutants under `describe` report Survived, 0 tests | issue #6262 (read), issue #6210 (read), PR #6214 (read) | ''verified'' |
+| Fix is "v10.1.0/10.1.1 fixes #6262" | #6262 closed 2026-10-23 as duplicate of #6210; #6210 closed by PR #6214 "match Vitest 5 test name separator", merged 2026-10-23; a commenter says it shipped in 10.1.0 | ''corrected'': anchor on #6210 / #6214, not #6262 |
+| Release notes: 10.1.0 "support vitest v5 (#6214)", "name filter fix (#6246)", pool options (#6268), 10.1.1 provenance re-release, all 2026-10-23 | releases page (read) | ''verified''; but #6246 fixes a different bug (a test selected when its name merely //starts with// the filter), not the separator |
+| 10.1.1 on npm, peer `vitest >=2.0.0` | <code>npm view &#64;stryker-mutator/vitest-runner</code> (ran; reads the registry only) | ''verified'': versions end `10.0.0, 10.1.1`; 10.1.0 is absent from the registry list (it was re-released as 10.1.1), modified 2026-10-23 |
+| It works against vitest 5.0.3 in this repo | none | ''unverified''. Stryker's own dev dependency is vitest 4.1.11 and the PR's tests are unit tests of the separator and version gate; no report of a full run on vitest 5 was found. Commenters validated the //approach// by hand-patching 10.0.0 on 5.0.4. The probe is the test. |
+| `inPlace` default false, sandbox in `.stryker-tmp`; `perTest` default; `incrementalFile` default `reports/stryker-incremental.json`; `ignoreStatic` default false; `mutate` accepts `file:start-end` ranges; reporters default `clear-text, progress, html` (dashboard NOT default) | configuration docs (read) | ''verified''. Note: the dashboard stays off unless added, so web3-only holds by default, not just by choice. |
+| Runner ignores `coverageAnalysis`, always `perTest`; no browser mode | vitest-runner docs (read) | ''verified'' |
+| Runner pool support | same page says both "`vitest.pool` since v10.1.0, default threads" and "only threads supported" | ''conflict inside the source''; matters because this repo's heavy node suites bind listeners and nested Workers |
+| #6256 (no covering test reports Survived, not NoCoverage) | issue (read): open, PR #6275 open; reported on 10.0.0 + vitest 4.1.11 | ''verified open''; 10.1.x status unknown. It bears on any "zero-kill test" list: Survived-without-coverage would pollute it. |
+| #6240 (per-test coverage misattributed), #6272 (debug-log crash) | scout's issue-search page; I did not reopen | ''unverified by me'' |
+| Google: raw score hard to act on, surface surviving mutants in review; dynamic subsumption cut runtime 52.5% | search-level only (scout); not opened by me | ''still search-level'' |
+| `test.extend` supports teardown after `use()`, `onCleanup`, file/worker scope, auto fixtures | vitest.dev/guide/test-context (read) | ''verified'' |
+| `isolate: false` per project is possible; unsafe with stubEnv/stubGlobal/module state | vitest.dev/config/isolate (read) | ''half verified'': per-project and the side-effects caveat yes; the page names no stub APIs, so the stubEnv/stubGlobal warning is ''unverified'' |
+| Vitest `--shard` splits by file hash, not cost | search-level (scout) | ''still search-level'' |
+| Bernhardt (functional core), Feathers (seams), DocHandle `whenReady`/heads event | secondary or search-level (scout) | ''still search-level''; DocHandle semantics at `automerge-repo 2.6.0-alpha.5` unchecked |
+| Ratio norms, fast-check migration numbers | none found | ''stay unverified''; the ratio has no outside norm |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/what-the-scout-missed-or-overstated`>>
+
+!! What the scout missed or overstated
+
+# ''Hot-file collision.'' Road line 312 ("the owner law": one named owner per step commits the one compose hunk in `open-node-vessel.ts` and `open-browser-vessel.ts`) plus lines 398 and 352 make that file the road's shared bottleneck; 185 commits in 31 days. Any lane that edits it competes with the road; the scout tagged the stage-cut FOLDED without finding this.
+# ''No planned stage-cut exists in the road.'' "Fold into the N/W/H trains" is unsupported. The stage-cut would be new road work, an operator decision.
+# ''Fake timers.'' 23 files already use `useFakeTimers`/fake-timers (`git grep -l`). The no-global-now law governs product code and decisions ("a wall clock never decides"); a blanket ban on fake timers in tests reads as a new rule. Lean: keep fake timers for third-party timers; for house waits add the event. Do not write "forbidden" into a lane brief.
+# ''Dead exports'' shrink 69 to 53, and the barrel-re-exported ones are public API (see above).
+# ''Rec 8 (incremental mutation in CI)'' sits well past the pilot; the incremental file is `reports/...` and untracked-by-design; CI cost unknown. Park until the probe numbers exist.
+# ''Rec 10 (`isolate: false`)'' blocker stated as "74 registries + stub uses": the stubs are 8 hits in 3 files; registries are the real work. Also `tests/vitest.config.ts:23-29` states `isolate: true` on purpose.
+# ''Rec 2 store-ack on the unlock door'' probably lands in or beside the compose hunk (the unlock door sits behind `custody-frames.ts` and the vessel opener). The scout gave it "cost S, BEFORE" without checking which file it touches. Treat as owner-coordinated.
+# The scout's ranking put the characterization tests fifth; with the lift, they are the gate for the one L item and belong in the first wave.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ranked-recommendations-as-lanes`>>
+
+!! Ranked recommendations as lanes (re-cut starts now, runs beside the road)
+
+Size: S under a day of lane time, M days, L a train. "Red-first shape" follows `working-procedures.mem`: vector before cure in its own commit, a nonsense control beside each red, assert the setup took. Battery: `mixed-model-swarm.mem #/the-battery` holds (touched packages whole, `lararium-mesh` always, ONE e2e, one heavy battery at a time via `tools/battery.sh`, scratch `HOME`/`LAR_ROOT`, `LAR_BAGS` unset). Large batches per the road until the road edit lands.
+
+!!! Wave A: the minimum first lanes (parallel, none touches `open-node-vessel.ts`)
+
+''A1. Stryker 10.1.1 probe.'' Size S. Throwaway worktree under `~/.lares-scratch/<lane>/wt`; `df` first (WSL VHD law); sandbox mode (default), never `inPlace: true`; local reporters only (never `dashboard`); smallest package first (`memetic-frame` or `mempalace`); sandbox must carry `dist/` (vitest-dist-guard). Question set: does a mutant under `describe` get killed on vitest 5.0.3; does the runner's pool handling survive the repo's config (threads vs forks); per-test kill data present; wall time; disk. Red-first shape: plant ONE known-killable mutant (a flipped comparison in a function with a test) as the red vector and ONE mutant in an uncovered line as the nonsense control; the probe passes only if the first reads Killed and the second reads NoCoverage (watch #6256: a Survived-with-0-tests control means the tool still lies). Files: none tracked (config lives in the throwaway). House law: web3-only (no dashboard), no live-tree mutation. Needs the operator's go for any mutation run (my fence forbade it, not the house); lean yes. Tag: BEFORE, now.
+
+''A2. Shared scratch fixture.'' Size M. `test.extend` fixture with `onCleanup` that makes the temp dir, sets scratch `HOME`, `LAR_ROOT`, `GIT_CONFIG_GLOBAL=/dev/null` and restores them. Pilot on ~20 node test files, measure the LOC drop, then codemod by package (1,057 `mkdtemp` sites). Files: `packages/lararium-node/tests/support/scratch-custody-setup.ts` (108 lines, the one existing seed), `tests/harness/with-lar-root.ts` (its header names the env-mutation and "NOT thread-safe" hazard), the pilot test files. Red-first shape: a test that leaks (sets `LAR_ROOT` and forgets restore, or reads the real `homedir`) is the red; the control is a fixture-using twin that stays green; assert the setup took by reading the env inside the test. Touches no product file. Tag: BEFORE, now.
+
+''A3. `LandedLedger.whenLanded` and the poll sweep it enables.'' Size S. Files: `packages/lararium-tw5/src/landed-ledger.ts` (14 lines), `packages/lararium-tw5/tests/wiki-shore-draft-road.test.ts` (:463, :466, :633 poll loops) and the other `wiki-shore-*` tests. Red-first shape: a vector where the landing arrives late (deferred past the old 2 s poll) reds the poll form; the cure is the event; the control is a title that never lands, which must time out with a named refusal, not hang. Clock stays injected; no `useFakeTimers` needed. Tag: BEFORE, now. Collision: none with the stage-cut.
+
+''A4. Dead-export sweep, one batch.'' Size S. Delete the 53 nowhere-referenced exports (list in this report's section above; regenerate from a fresh tree before the lane starts since 185 commits a month move it). Keep barrel re-exports unless the operator rules the barrel surface. Red-first shape: the existing typecheck witness plus `tools/evergreen-boundary.mjs` is the control; the red is a compile of the tree with the delete applied to a name that still has a consumer (prove the instrument bites before trusting its zero). Files: about 45 `src/*.ts` across mesh, node, mempalace, tw5, cli, sensorium (none in `open-node-vessel.ts`). Collision: merge noise with in-flight lanes; land as a single batch right after a controller land, announce it. Tag: BEFORE, now.
+
+!!! Wave B: after A2/A3 land, still beside the road
+
+''B1. Characterization tests of the boot sequence.'' Size M. Test-only: pin the observable order and outputs of `prepareNodeBootOn` / `composeNodeVesselOn` (stages, teardown on refuse, what listeners and store names exist after) and the same for `open-browser-vessel.ts`. Files: new tests under `packages/lararium-node/tests/` and `packages/lararium-browser/tests/`; reads `open-node-vessel.ts`, never edits it. Red-first shape: this IS the red-first control for the later cut: each pin lands with a mutant that breaks the order (run via the A1 probe or the hand-catalog pattern `tools/law-mutants.mjs`) and the pin must go red; the control stays red after the cut (per `working-procedures.mem`). Risk: other slices legitimately change boot behavior and red the pins. Pin stage order and port contracts, not every field, and let the compose-hunk owner update a pin in the same commit. Tag: BEFORE the stage-cut; collision: none with the file, but it couples to every slice that changes boot.
+
+''B2. Eventful seams for the other flake families.'' Size S each. (i) TW5 dropdown: ready attribute from the served page after the worker settles plus failure artifacts (`browserConsole`, mirror DOM) in `packages/lararium-web/tests/e2e/shore-writes.e2e.test.ts:150-164`. (ii) Browser two-tab unlock: event in `browser-tab-custody` test. (iii) Staged-unlock store-ack: the door and `tests/harness/instance.ts`. ''(iii) probably touches the compose hunk or `custody-frames.ts`: route it through the compose-hunk owner.'' Red-first shape per item: a late-event vector reds the fixed-wait form, a never-event control must fail loudly and name the missing edge. Tag: BEFORE, now (i, ii); (iii) coordinate.
+
+''B3. Test-only export list and `testing` subpath.'' Size S (list), M (moves). Compiler-based list (the scout's regex list stays candidates). Moves ride module cuts, so they cannot ride the stage-cut lane; do per package after the owner window. Tag: list now, moves FOLDED into whichever lane cuts that module.
+
+!!! Wave C: the L item and what waits
+
+''C1. Stage-cut `prepareNodeBootOn`'' (and `open-browser-vessel.ts`) into typed stages with a `Ports` record. Size L. Land whole, never half-injected ("Full models land early", and "Old shapes burn": no second shape, no shim). ''Collides with the road's owner law and 185 recent commits.'' It cannot run beside slices that edit the compose hunk; it needs the compose-hunk owner seat for a window, or it belongs to the first quiet step between slices. Lean: schedule as one named road step after B1, owner = this lane, every other lane stops at module boundaries for its duration. Whether it runs before the founding is the operator's call; it stays out of Wave A/B either way. Files: `packages/lararium-node/src/open-node-vessel.ts`, `packages/lararium-browser/src/open-browser-vessel.ts`, B1's pins.
+
+''C2. Inject homes and the operator hint'' (identity/storage/seal dirs, `readLocalOperatorHint`), retiring `withLarRoot` env mutation and the git-global shell-out. Size M. Needs A2 first. ''Touches the opener's options and `node-host.ts`/`vessel-paths.ts`: sequence with C1'' (same file family) or fold into it. Files: `open-node-vessel.ts`, `vessel-paths.ts`, `node-host.ts`, `tests/harness/with-lar-root.ts`. Red-first shape: a test that opens a vessel with injected homes and asserts the real home stays untouched (the leak is the red; a control with the env path stays green until retired).
+
+''C3. Mutation as an inspection list.'' Size M. After A1 reads green. Per package `mutate` ranges, `perTest`, local `html`/`json` reporters; read surviving mutants, list zero-kill tests as a review list, whitelist controls and seeds, never auto-delete. Watch #6256 (NoCoverage reported as Survived). Tag: AFTER the probe, may run beside the road; no CI wiring until A1 reports cost.
+
+''C4. Extend the law pattern'' (fast-check + seeds + control + named mutants) to `tw5` wiki-shore vectors and `mesh` face-gate / content-key-holder (test files of 1,000-1,300 lines). Size M per package. One pilot may start as soon as A1 lands, so a real runner scores it; fixed seed stays.
+
+''C5. Unit shards and `isolate: false`.'' Size M. Blocked by the 74 module-level Maps/Sets (the stub APIs are minor). Extend `tools/e2e-shards.mjs` for timed unit shards. After C1/C2 (registries move to the composition root).
+
+''C6. Witness consolidation.'' Size S-M. Low value; park.
+
+''C7. Report the ratio as non-comment; add runtime per claim, co-change churn, flake sightings per test.'' Size 0. Now.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/operator-asks-each-with-a-lean`>>
+
+!! Operator asks, each with a lean
+
+# ''Reorg before the founding?'' Yes for the seam-opening work (Waves A and B) and the characterization tests: they touch no hot file, change no product shape, and earn the early start. The stage-cut (C1) is the real question: lean yes only as a single-owner road step with a freeze on the compose hunk; no, if the road would stall for it. Minimum set that earns the early start: A1 + A2 + A3 + B1.
+# ''Lift the road ruling?'' Done (2026-10-31). Left to edit: road lines 268 and 849 (record batch). Nothing else in the scout's plan needs a lift.
+# ''Go for a mutation run?'' The house law allows it in a sandbox in a throwaway worktree; my fence did not. Lean: approve A1 as scoped (one small package, sandbox, local reporters, `df` first).
+# ''Stage-cut in the road?'' The road names none. Needs a ruling: does the compose-hunk owner law (road :312) give the cut a window, and who owns it? Lean: a named step after B1.
+# ''Delete the barrel-re-exported unused exports?'' Barrel names are public surface. Lean: delete the 53 nowhere names now; rule the 16 barrel/other-used ones separately (they may be intended API for the second operator).
+# ''Fake timers.'' Lean: no new ban; the rule is "a house wait gets an event; fake timers only for timers the house does not own".
+# ''The 1.66 figure.'' Not reproduced; give the operator 1.39-1.41 non-comment as the number, and note the ratio has no outside norm. Do not make 1.66 a target.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/corrections-log-against-report-md`>>
+
+!! Corrections log against report.md
+
+| report.md says | Corrected to | Why |h
+| Fix anchored on issue #6262 | Fix is PR #6214 (closes #6210); #6262 closed as duplicate | Read #6262, #6210, #6214 directly |
+| v10.1.0/10.1.1 "fixes it" (stated as established) | Fixed at source; run against vitest 5.0.3 unproven | PR tests are unit tests; Stryker's own dev vitest is 4.1.11 |
+| 10.1.0 and 10.1.1 both released | npm lists only 10.1.1 (10.1.0 re-released) | `npm view` |
+| #6246 part of the separator fix (implied) | A different prefix-match bug | Release notes text |
+| Pool question not raised | Runner docs conflict on pool; the repo's heavy suites need non-trivial pool support | Docs page says both |
+| 69 dead exports | 53 appear nowhere; 16 appear elsewhere (barrels, other code) | Whole-tree `git grep -w` over all 69 |
+| Stage-cut FOLDED into N/W/H trains | The road holds no stage-cut; the owner law makes the file a shared bottleneck (185 commits in 31 days) | Road :312, 398, git log |
+| Characterization tests fifth | First wave; they gate the L item | Collision with the owner law |
+| Fake timers framed as rejected by the house | 23 files already use them; use event instead of fake timers for house waits, no ban | `git grep` |
+| `isolate: false` blocked by registries and `stubEnv/stubGlobal` | Registries the blocker; stubs 8 hits in 3 files | `git grep` |
+| Recs 1-5 and 12 "need the lift" | Moot: the operator lifted the re-cut ordering | Ruling, 2026-10-31 |
+| Ratio 1.41 non-comment, 1.10 raw | Reproduced at 1.39 / 1.08 (my filter admits slightly more source) | Own script; test side exact |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/sources-read-vs-search-only`>>
+
+!! Sources: read vs search-only
+
+Read by me: `stable-founding-road.mem` lines 262-275, 308-314, 849; `open-node-vessel.ts` outline; `landed-ledger.ts`; `tests/harness/with-lar-root.ts` header; `mixed-model-swarm.mem #/the-battery`; vitest configs (node, tests); wave1.md, wave2.md, report.md whole; github.com/stryker-mutator/stryker-js issues #6262, #6210, #6256, PR #6214, releases page; stryker-mutator.io configuration and vitest-runner docs; vitest.dev test-context and config/isolate; npm registry via `npm view`.
+Search-only (scout, not reopened by me): Google "State of Mutation Testing", Guimaraes ICST 2020, incremental-mode blog, Fowler/Seemann coverage posts, Feathers/Bernhardt secondary pieces, DocHandle API page, Automerge sync protocol vignette, Sync Chaos Lab, fast-check docs, vitest sharding/performance page, <code>&#64;tryinget/ts-mutate</code>.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/testimony`>>
+
+!! Testimony (not verified)
+
+* Where 1.66 came from; the prior scout's 233 method; the Stryker version that produced canon's "no mutants" verdict (very likely 10.0.0).
+* The ~350 strict test-only exports and ~1,198 loose; the 54-witness and overlap claims; `contract-witness.sh` vs `nexus-two-root` overlap.
+* Whether 10.1.1 runs clean on this repo's vitest 5.0.3, and whether it handles the heavy suites' pool.
+* DocHandle event semantics at automerge-repo 2.6.0-alpha.5.
+* Cost sizes S/M/L in this report: my estimates from file counts and touched surfaces, no timing data.
+* The compose-hunk collision severity: 185 commits is a count of commits touching the file, not of conflicts; the lane owner can measure real conflict rate before choosing C1's window.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;U-t-zbnWF-_0ziriB4p7qa25fC_wOTONgQ3QNoKllK8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

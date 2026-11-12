@@ -1,0 +1,185 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b1-pure-readers`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-31 (file date) — source `.lares-scratch/controller/scouts/cut-reads/b1-pure-readers.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b1-pure-readers"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b1-pure-readers"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! b1-pure-readers.md — research, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/scouts/cut-reads/b1-pure-readers.md` (research, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/b1-pure-readers-reader-one-lares-cold-read-row-t`>>
+
+! b1-pure-readers — Reader-One: Lares (Tasked Spirit), cold read, row T5
+Read-only. File: packages/lararium-node/src/open-node-vessel.ts (3770 lines, main checkout, HEAD 27bc0cb6b). Line numbers below are main's; lane `ralias` adds ~+44 lines, nearly all before line 1900, so the later spans shift down.
+Personas: Ink-Clerk (cites grounds), Map-Wisp (consequence path). Nothing run; every claim below comes from reading source, not from a suite.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/finding-a-carried-nexus-s-posture-is-read-from-a`>>
+
+!! FINDING (top): a carried Nexus's posture is read from a sweep snapshot, so a demotion lags
+* `postureOf` (1241) reads a carried Nexus's posture from `gateReadings` (1228), which only `gateNexuses` (1485-1490) writes (grep: lines 1228, 1245, 1487 only).
+* `vessel-gates.ts:28` documents `posture` as "read fresh at every sort". For the vessel's OWN Nexus it is fresh (`readNexusDoc(sealHome)` on each call). For a CARRIED Nexus it is as-of-last-sweep.
+* The refold order (makeNexusMembership onRefold, 1275-1279) is `reverdict(); dropNoLongerHeld(); sweepSameOperator?.(); void resweepGates?.()`. So `dropNoLongerHeld` (1258-1269) runs on the OLD `gateReadings`, then the resweep refreshes them, and nothing re-runs the drop.
+* Consequence by reading: a carried Nexus that tightens open -> private leaves already-seated stranger sockets up until some later refold (`answersStrangers` still reads true), and a fresh knock in the async-sweep window sorts on the old posture. The tightening direction fails open by one refold. Loosening only fails late.
+* Scale: strangers draw the public shelf only, so the leak is bounded to public-read. Still a revocation that lags.
+* Unmeasured. A red would be: a refold flips a carried charter to private; assert the stranger socket closes in that same refold.
+* Minor, same site: `gateNexuses` dedups raw `aid` strings while `postureOf` lowercases, so a case-differing own/carried aid could stand two gates for one Nexus.
+
+No key-on-a-surface or cross-face leak found in any of the seven. The atom seed crosses to the daemon island (a VM, by design); the sign closures keep the key on the main thread.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shared-facts`>>
+
+!! Shared facts (apply to several candidates)
+* SOURCE-REGEX WITNESSES read open-node-vessel.ts as text. Any cut must retarget them in the same commit: tests/faced-boot-requires-proof.test.ts (lines 91-101 index `const daemonAuth = {` and the exact `faceAnchor: standingAnchor` string), tests/kahu-canon-wiring.test.ts (lines 27-34, the diskMirror grant text), plus ~15 sibling tests that read the file (floor-fleet-lanes, same-operator-refold, intent-relay-wired, flow-floor-resweep, wire-floor-porch, dyad-door, nexus-board-climb, mesh unbuilt-laws, face-reading-census, and others). I grepped those for my candidates' keywords; only the two above bite.
+* In-flight: u1 touches no part of this file. ralias (`diff 27bc0cb6b`) edits this file in 12 hunks: it REPLACES the bootstrap parse (see item 1) and does not touch daemonAuth, diskMirrorGrant, pins, posture/gate, wiki-act or the backup door.
+* Whole-boot only: openNodeVessel "cannot stand in a unit test" (kahu-canon-wiring.test.ts header). Every candidate's closure form is reachable only through a real boot (e2e / two-phase-boot.test.mjs) or by source regex.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/1-bootstrap-parse-torn-face-check`>>
+
+!! 1. Bootstrap parse + torn-face check (1889-1938, in `keel.loadGenesis`)
+# Span: parse 1897-1904; `faceBootTiddlers = bootstrapTiddlers` 1905; `bootDaemonUrl`/`bootFacePlanes` calls 1906-1911; daemon-required throw 1916; torn check 1921-1929; `bootstrap = {...}` assembly 1930-1938.
+# Does: reads the cleartext bootstrap file with both parses guarded (a tear reads `{}`), resolves daemon url and the worn face's planes, refuses a half-lit face (some of 6 parts present, not all), and fills the forward-ref `bootstrap`.
+# State: reads `bootstrapPath`, `wornMount`, fs. Writes closure lets `faceBootTiddlers` (before either throw) and `bootstrap`. No clock.
+# Callers/callees: callee `bootFacePlanes`/`bootDaemonUrl` (boot-face-planes.ts, already pure, 64 lines). Sole caller is the keel. `faceBootTiddlers` feeds faceFleetViews and the otherFace read (2429). Other bootstrap readers: hearth-dial-pin.ts:85, fleet-join-land-face ("bootstrap-torn"), init packer.
+# Tests: parse and daemon/planes via boot-face-planes.test.ts (pure, good). The TORN check has NO test (grep: no test names it; "reads TORN" hits are charter tests). Torn parse has no direct test either.
+# Lift: parse -> ALREADY LIFTED by ralias as `readBootTiddlers(bootstrapPath)` in vessel-private.ts (same semantics, existsSync dropped). Torn check -> pure in boot-face-planes.ts (e.g. `faceTear(planes): string[] | null`). Browser has NO twin of the torn check (grep found none): a parity gap, and the check is capability-shaped, so mesh-shared is a later option.
+# Laws: fail-closed refusal of a half face (confused-deputy); no-global-now untouched; old shapes n/a.
+# Risk: parse overlaps ralias directly (hunk -1897,8); torn check sits 15 lines away, a clean textual merge but one function, so land after ralias. Preserve that `faceBootTiddlers` assigns before the throws. Message text is not witnessed by any test.
+# Red-first: table over the six parts (all absent -> ok; all present -> ok; each single missing, each single present -> refuses naming the missing parts in fixed order). Control: the floor (no planes) boots; daemon-url-absent still throws first.
+# Verdict: parse = DO-NOT-CUT SEPARATELY (subsumed by ralias; drop from T5 once it lands). Torn check = CUT-READY after ralias.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/2-daemonauth-builder`>>
+
+!! 2. `daemonAuth` builder (2527-2563, in `openDaemon` 2034-~2800)
+# Span: 2527-2563 (object literal), passed at 2600 to `openDaemonVm`.
+# Does: assembles the manifest's `daemonAuth`: place key, atom (hex seed + key), veil archive, outbox key, joined faces, and the face pins (group, anchor, address secret, signer, persona KEL, device edge) only when `faceLit`; `registerBags` via `deriveRegisterBags`.
+# State read (all consts/lets of openDaemon unless noted): joinedFaces, vesselIdentity.verifyingKey (outer), workingFloorAnchor, opens, activeAtom (outer let), atomSeed, veilArchiveBytes, faceLit, personaGroupId, standingAnchor (a `let`, read BY VALUE at literal creation), faceAddressSecret, meshCabalDocIdHex, personaGroupId/wornFaceProved, assembly.catalogHandle.doc() (live), slot, kahuCanon (outer let set during loadGenesis), signerDid, personaKelPrefix/Chain, deviceEdge, outboxKey. Writes nothing.
+# Consumers: open-daemon-vm.ts:77/158 -> daemon-vm-core.ts:699 (adds CROSSROADS to registerBags) -> island manifest. Type: `IslandMsg_Manifest["daemonAuth"]` (lararium-mesh island-protocol.ts:251). Browser has a hand-built twin at open-browser-vessel.ts:1333 (always-lit, zeroes the seed, no outbox/joinedFaces).
+# Tests: no test builds the NODE literal. stand-founded-island.ts, register-mounted-face-bags.test.ts and others hand-build their own daemonAuth. Only source-regex (faced-boot-requires-proof 91-101) pins ORDER: the lease raise (2496-2501) precedes `const daemonAuth = {`, which precedes `daemonVm = await openDaemonVm(`.
+# Lift: a typed pure `daemonAuthFor(inputs)` returning the mesh type; shared cap-stack stage (mesh, beside `deriveRegisterBags`) with the browser as later adopter, port = "the daemon island's manifest auth". Sorting by capability: lit-vs-floor is a capability state, not a host.
+# Laws: no key on a surface (seed goes to the island only; the node does not zero `atomSeed` after build, the browser does -> note); floor buys fewer caps, never a softer gate (pins ride only with `faceLit`).
+# Risk: ORDER (the by-value `standingAnchor` snapshot after the raise); a call-site that gathers inputs early would read an older anchor (the exact bug the comment at 2492 and test 91-101 guard). `kahuCanon` must be read after loadGenesis. `catalogHandle.doc()` is a live read. Source-regex witness must be retargeted in the same commit. No ralias hunk here.
+# Red-first: decision table (floor / lit / lit+joinedFaces / herm no slot / kahu canon either / no personaKel prefix) over the pure builder; control: keep the order witness, re-aimed at the call. Mutant: build before the raise -> stale anchor must fail.
+# Verdict: NEEDS-RULING. Fork: node-local builder now vs shared mesh builder both vessels adopt. Lean: shared mesh builder, node adopts first, browser in its own lane; either way retarget the order witness with the cut.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/3-diskmirrorgrant`>>
+
+!! 3. `diskMirrorGrant` (3332-3366, in `makePool`)
+# Span: 3331-3366 (`workerRootDir = corpusRoot` then the grant array), consumed at 3394.
+# Does: lists the disk-write mirrors the pool MAY project: `bags/lares` and `bags/lararium` only where the keel named that Kahu document; crossroads with a charter-only nexus-handle guard; virtual `working` (-> wikis/) and `self` (-> bags/) slot grants.
+# State read: `kahuCanon` (outer let, snapshot at pool construction), `corpusRoot` (const), `nexusStanding.kind`, node:path `join`, URI consts. No writes.
+# Consumers: `new VesselIslandPool({diskMirrorGrant})` -> vessel-island-pool.ts:75/100 -> `resolveDiskMirrors` (mesh vessel-island-pool-core.ts:213, well tested by disk-mirrors.test.ts). The pool's own option type (vessel-island-pool.ts:75) is a THIRD inline copy of the grant type that omits `wikiSlot` and `guardNexusHandles`.
+# Tests: `resolveDiskMirrors` is table-tested; the grant itself only by source-regex in kahu-canon-wiring.test.ts:30-34 (also forbids a bare `{ bagId: LARES_DOC_URI,` literal at line start).
+# Lift: pure `systemMirrorGrant({root, kahu, charterOnly})` beside `resolveDiskMirrors` in mesh; `join` injected (the fs root is the only host part); port = "disk mirror grant" (disk-write capability). Replace the pool's inline type with `DiskMirrorGrant`. The same predicate `nexusStanding.kind !== "charter"` also feeds `guardCrossroadsNexusHandles` at 2606: one owner for that rule.
+# Laws: nothing outside the Kahu's vessel writes under bags/lares or bags/lararium; capability-by-grant.
+# Risk: kahuCanon is snapshotted at pool build, so a canon admitted later grants nothing until restart (by existing design; keep). Order of entries is consumed in order by the resolver. The witness regexes need retargeting. No ralias hunk here.
+# Red-first: table over kahu {none, lares, lararium, both} x kind {charter, other}, asserting entries, order, flags, roots; control: crossroads/working/self always present, no literal system grant when canon absent.
+# Verdict: CUT-READY (retarget the kahu-canon-wiring regexes in the same commit).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/4-boot-pin-list`>>
+
+!! 4. Boot pin list (3247-3266, `afterDaemon`)
+# Span: 3247-3266 pins; the sweeper/gates/hosting tail 3268-3296 is a different concern and not part of this candidate.
+# Does: pins catalog, oracle, lararium, lares (if handle), the worn face's four sibling planes, daemon; replays durable pins; starts the sweeper; attaches residency to the composite.
+# State: reads `residency`, `assembly.laresHandle`, outer `bootstrap.personaBagId`, `daemonVm.daemonHandle`. Writes residency pin state (pinReason is stored and observable).
+# Callers: orchestration `afterDaemon`. Browser twin: open-browser-vessel.ts:1737-1749.
+# Tests: none reach the names (no test greps `boot:`); residency-pin-durability.test.ts tests only `replayPinsFromDaemonDoc`.
+# Lift: a shared pure `bootPins(assembly, personaBagId)` returning `{bag, reason}[]` in tw5 vessel-residency-wiring.ts (the factory both vessels already share); port = bag-residency pin.
+# Laws: one owner per registry (two hand-kept lists now).
+# Risk: the lists DIVERGE: node reason "boot:oracle-island" vs browser "boot:lararium-island"; node pins `BAG_IDS.lararium` unconditionally while lares is guarded by `assembly.laresHandle` (and `assembly.larariumHandle` exists); the browser pins no lararium. `void residency.pin(...)` is unawaited, and `pin` awaits `onHydrate`, so a rejection would be unhandled (unmeasured). Cold pin of a bag no one mounted: unmeasured.
+# Red-first: table of the list for {with/without lares, with/without face}; control: node and browser lists produce identical shared members.
+# Verdict: NEEDS-RULING. Fork: are the pin reason strings and the unconditional lararium pin canon, or drift? Lean: unify, guard lararium by its handle like lares, one reason vocabulary.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/5-postureof-contractholds-gatenexuses`>>
+
+!! 5. `postureOf` (1241) / `contractHolds` (1248) / `gateNexuses` (1485)
+# Spans: 1241-1246, 1248-1254, 1485-1490 (their sole consumer `dropNoLongerHeld` 1258-1269).
+# Do: `postureOf` -> herm = open (`ownPlacePosture`), own Nexus = its charter, carried = last swept reading, else private. `contractHolds` -> membership holds the peer, or its key sits in the board's carriers. `gateNexuses` -> reads every carried Nexus, filters by place class, caches into `gateReadings`, returns own + carried aids.
+# State: reads placeClass (param), sealHome, `readNexusDoc` (disk), `gateReadings` (let), `nexusMembershipHolder` (late let, null -> false/closed), `peerIdentifierMap`, `readEveryCarried`. `gateNexuses` WRITES `gateReadings` (not pure).
+# Callers: `postureOf` -> gateDeps.posture (1447), dropNoLongerHeld; `gateNexuses` -> floorGates (1498), standSyncGates (1525). Pure cores already exist and are tested: `ownPlacePosture`/`socketsNoLongerHeld` (socket-sorter.test.ts), `gateReadingsFor` (herm-carriage-relay.test.ts).
+# Tests: the cores yes; the closures only via boot (two-phase-boot.test.mjs mentions gateNexuses in a comment). The 4-way branch of `postureOf` and the set-union of `gateNexuses` have no test.
+# Lift: pure `postureOf(placeClass, ownAid, ownCharter, readings, nexus)`, `gateNexusSet(placeClass, ownAid, readings)`, `contractHeld(...)` node-local beside socket-sorter.ts; the `gateReadings` cell becomes one owner with a `refresh()`.
+# Laws: fail-closed defaults (null holder false, unknown private); one owner per registry; no global now (as-of-last-sweep is honest, but the drop must follow the sweep).
+# Risk: THE FINDING. Cutting the pure parts is safe; moving the cell changes refold ordering, which flips open/closed behaviour. Case-fold mismatch (finding, minor). No lane touches it.
+# Red-first: 4-row posture table + union table (pure); red: demote a carried Nexus, same-refold stranger drop; control: own-Nexus flip and herm-open unchanged.
+# Verdict: pure readers CUT-READY. The cell/ordering = NEEDS-RULING: fork = sweep-then-drop in one refold (lean) vs leave the lag. Lean: refresh readings first, then drop, in one owned step.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/6-wiki-act-slot-routing-in-wireverbs`>>
+
+!! 6. Wiki-act slot routing in `wireVerbs` (3049-3070; `wireVerbs` 3037-3244)
+# Span: the `wiki-act` handler 3047-3070, with the local `slot` predicate at 3054.
+# Does: picks the target wiki (explicit `args.wiki`, else a MOVE's source slot, else the destination slot for LOAD/MOVE/COPY/ADD, else the active wiki), ensures it active, places the verb.
+# State: `wikiActivation` (late let), `vmManager` (late let), `slotActiveWikiId` (let, set in wikiSlot). Writes via ensureActive only.
+# Callers: the registry (daemon routes `wiki-act` to main). ''A SECOND COPY of the same selection already exists'' in lararium-tw5: `routedWikiSlug` (verb-local-dispatch.ts:98-117), used by verb-dispatcher.ts:356 to decide which wiki to mount first. Its comment says "by the same reading the main handler uses". Not exported from the tw5 index.
+# Tests: `routedWikiSlug` yes (wiki-act-mounts-its-wiki.test.ts). The node handler: none directly, only tests/e2e/working-loop.test.ts through a whole boot. Nothing asserts the two agree.
+# Lift: one pure aim function in tw5 beside `routedWikiSlug`; the node handler keeps only `ensureActive` + `placeWikiVerb`. Port: wiki-activation (mesh `WikiActivationCap`).
+# Laws: one owner per registry; the daemon wiki stands on its own reach.
+# Risk: they DIFFER on an explicit `wiki:"daemon"` (node routes to "daemon"; `routedWikiSlug` returns null) and the node falls back to `slotActiveWikiId` where the dispatcher mounts nothing. A naive swap changes the explicit-daemon behaviour. A drift today means mount wiki A, act in wiki B. No lane touches it.
+# Red-first: a seed table (verb x from/to bag class x explicit wiki) run through the shared function, asserting parity with `routedWikiSlug` everywhere except the named explicit-daemon row; control: LOAD/MOVE/COPY/ADD slot rows.
+# Verdict: CUT-READY. Lean: preserve the node's explicit-daemon passthrough as a named parameter rather than silently changing it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/7-backup-door-s-three-askislandmemory-getters`>>
+
+!! 7. Backup door's three `askIslandMemory` getters (3466-3527; also 1379-1389)
+# Span: `get cutMemory` 3477-3494, `get memoryDoor` 3498-3512, `get importMemory` 3513-3526.
+# Do: each returns null while no daemon island stands, else an async function that asks the island's memory verb (cut/door/import) signed as the vessel, then shapes the answer.
+# State: reads `daemonVm` (late let, read at getter access), `activeAtom` (read at CALL time, both `vesselKey` and `sign`). The same `sign` closure also appears in `askSeatDutiesAsVessel` (1384-1387): FOUR copies of the two `{if(!activeAtom) throw...}` lines and the `placeVerb: o => vm.placeVerb({...o, origin:"channel"})` shim.
+# Callers: main.ts:690/958 pass `backupDoor` whole; face-bundle-cut.ts:178-198 and face-bundle-restore.ts:452-459 read `door.cutMemory` etc. at call time. Callees: `askIslandMemory` (island-verb-ask.ts:154).
+# Tests: face-bundle-* use FAKE doors (never these getters); sealed-memory-vessel.test.ts signs asks by hand. `askIslandMemory` itself has no direct test (grep: none); `askSeatDuties` does (seat-duties-ask.test.ts). The getters are reached only through a whole boot.
+# Lift: one node-local helper in island-verb-ask.ts, e.g. `vesselAsker({daemonVm: () => ..., atom: () => ...})` yielding `ask(act, facts)`; port = "vessel-signed island ask". Substrate adapter, node-only (browser has no backup door).
+# Laws: no key on a surface (key stays in the main-thread closure); the ask carries only the signature.
+# Risk: the getters MUST stay getters (a spread or snapshot of `backupDoor` would freeze the null from before the daemon stood); `atom` and `daemonVm` must read lazily at call time, not at helper construction. No lane touches it.
+# Red-first: table over the three acts asserting verb, facts, `requestedBy`, null-before-daemon; control: getter re-reads after `daemonVm` is set, and a missing atom throws "this face holds no atom" at call, not at access.
+# Verdict: CUT-READY (fold `askSeatDutiesAsVessel` into the same helper in the same lane).
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/tally`>>
+
+!! Tally
+CUT-READY: torn-face check (after ralias), diskMirrorGrant, wiki-act routing, askIslandMemory getters, pure readers of item 5.
+NEEDS-RULING: daemonAuth (shared vs node-local), boot pin list (reasons / lararium pin), gate-readings cell ordering (the FINDING).
+DO-NOT-CUT (separately): bootstrap parse, subsumed by ralias.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;c8UfK250Pv1oIqUY0A0TWxMlbiUBf3H8rlIGtjakNjs`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,55 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-unwired-review/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-05 (file date) — source `.lares-scratch/controller/terra-unwired-review/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-unwired-review/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/terra-unwired-review/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-05
+
+Verbatim scratch record `.lares-scratch/controller/terra-unwired-review/brief.md` (brief, file date 2026-11-05); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-unwired-review/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Terra-Unwired-Reviewer: Lares (Tasked Spirit). A ZERO-TRUST critical review, read-only, of production code that nothing in production calls. Repo: /home/joshu/Synthetic-Dream-Machine (the span head). Read code and canon (bags/**/*.mem) directly; write nothing. Trust no comment, no test, no canon claim until the code and the house's present rulings bear it out.
+THE ITEMS (from a scout):
+# `reconstructAndReadmit` (packages/lararium-node/src/recovery-keel.ts ~45) and `runReadmitEdge` (packages/lararium-keyhive/src/recovery-core.ts ~49): the recovery readmit — test-only.
+# `rollEnrolments` (packages/lararium-mesh/src/persona-group-secret.ts ~227): sealed enrolments for devices at key rotation — test-only.
+# `capTierShareDecision` (packages/lararium-mesh/src/federation-gate.ts ~550): declared-tier restrictions at the share gate — test-only.
+# `makeContractSecretsRegistry` and `NO_CONTRACT_SECRETS_PLANE` (packages/lararium-node/src/plane-secrets.ts ~61, ~39): the secret-bearing plane registry — test-only.
+# `KeyhiveIdentitySlot` (packages/lararium-keyhive/src/keyhive-identity-slot.ts ~158) and its orphan `deriveActorId` (~301): the identity-sharing capability barrier — production constructs none.
+FOR EACH ITEM decide, with evidence: (a) LEGIT-OLD — a design the house's present rulings retired or superseded (cite the ruling, e.g. the road's #/rulings: mana triad retired; capability, not account; custody by capability never host; a shared act never makes a shared secret; the per-face random tag secret; the island capability record composing floor then lift; the recovery contact ruling K18), so it should burn, not wire; or (b) PONO-UNFINISHED — sound against every present ruling, missing only its last steps (name exactly which: the caller, the door, the verb, the composition point), so it should wire; or (c) PONO-BUT-WRONG-SHAPE — the intent stands but the code's shape breaks a present law (name the law and the shape it must take); or (d) UNSURE. Then a critical review of the code itself: correctness, fail-closed behavior, key handling (zeroing, no key across a port, no key at rest in the clear), refusals by name, clock use (no wall clock decides), test seams reachable from product, and whether its tests test production behavior or a fixture.
+OUTPUT (final message, under 1000 words): per item: verdict (a/b/c/d) with cites, the critical findings (P1/P2/P3, file:line, MEASURED vs INFER), and — for b/c — the minimal wiring plan (where it plugs in, which reds must fail first). End with a recommended order.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* A read seat writes no file: its final message carries the hand-back. Any other seat writes `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;74t5wqxrjh1S1Hte1vW_Dpj3XJ5XSwdMJh-CQ_aBM0o`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/harness-373a9e0eb5cd282ceb7cb0906f45ddd4021436a2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-07 (file date) — source `.lares-scratch/controller/ship/harness-373a9e0eb5cd282ceb7cb0906f45ddd4021436a2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/harness-373a9e0eb5cd282ceb7cb0906f45ddd4021436a2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/harness-373a9e0eb5cd282ceb7cb0906f45ddd4021436a2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! harness-373a9e0eb5cd282ceb7cb0906f45ddd4021436a2.md — plan, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/controller/ship/harness-373a9e0eb5cd282ceb7cb0906f45ddd4021436a2.md` (plan, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+SHIP harness 373a9e0eb5cd282ceb7cb0906f45ddd4021436a2
+read: blind Opus (Blind-Read, code only, no messages or hand-backs) over 0a1683a0c..879b9b641: LAND-AFTER-CURES, two P2 MEASURED (F1 superviseChild wedge on a handed-off pipe; F2 planted-dir claim crashes the broker), three P3. Re-read over 879b9b641..9f5c2c586: F1 and F2 CURED MEASURED (holder probe 327 ms, was 8036 ms; planted dir no throw), F4/F5 cured, F3 partial (self-harm), new N1 (one-line fd leak, my slip). N1 and F3 >= cured at 18651adf7; the two stale lead-capability lines (launch-codex header, seat-spec table) trued at 80af79bb2; rebased onto eacb354a5 as 373a9e0eb with a byte-identical tree to 80af79bb2. Lead ran every red and its reverse-applied control; walls-b1 (Terra build seat) built F3/F5/N1/F11a red-first with controls, re-run green outside its sandbox. Full pre-push gate GREEN on 18651adf7 (gate6) and on 80af79bb2 (gate7), whose tree 373a9e0eb carries unchanged.
+owed: F3 remainder (a queued request's cap counts from submit, documented in seat-harness); N2 (a drained door's answer may carry truncated output; reaches only the lead); the check list is not validated at broker boot; F11b workspace-yaml fence parked in seat-harness #/owed with re-entry key; the blind read's F1 rating rests on the walled lead being able to listen on a unix socket in its worktree, never run inside the real Codex wall.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3U9ZeDfDS0mMBzn4U4xhGiy8JhilrKR_SRFyHavMGsM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

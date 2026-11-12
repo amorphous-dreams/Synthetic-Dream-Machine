@@ -1,0 +1,56 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-vault-civic/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-06 (file date) — source `.lares-scratch/controller/terra-vault-civic/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-vault-civic/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/terra-vault-civic/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/terra-vault-civic/final.md` (hand-back, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-vault-civic/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+''The central gap is custody after a recipient changes.'' The proposed floor and authenticated key delivery control future reads; they do not revoke a foreign token already opened by a device or person. ''INFER:'' The store needs an explicit recipient, recovery and rotation lifecycle before it can satisfy its end state. The projection lane can remain later, but it must inherit that lifecycle.
+
+The first slots are POEE Bluesky at CONTRACT, empty Facebook and Discord placeholders at PERSONAGROUP, and an empty node-only Porkbun placeholder at VEIL. Onboarding is on an unlocked, chained node; the browser never holds a credential. ''MEASURED'' ([[brief.md:80|/home/joshu/.lares-scratch/secrets-store/brief.md:80]], [[brief.md:85|/home/joshu/.lares-scratch/secrets-store/brief.md:85]]).
+
+* ''BLOCKS-THE-STORE — Lost household device.'' The operator removes a laptop that opened a Facebook token. A reader that sees removal refuses the device, but the far side can still accept the copied token. ''INFER:'' Stop delivery and accepted acts at each reader’s verified frontier; rotate the bag key for remaining recipients, and show that the foreign token needs revocation/replacement at Facebook. Do not claim old plaintext was recalled. There is also a design conflict to resolve: PERSONAGROUP is described as reaching the fleet, but browsers are forbidden credentials. Define the eligible node recipient set explicitly. ''MEASURED'' ([[road:309|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:309]], [[cap-tier:86|/home/joshu/Synthetic-Dream-Machine/bags/lararium/ha.ka.ba/lararium/mesh/cap-tier.mem:86]], [[reach-plane:120|/home/joshu/Synthetic-Dream-Machine/bags/lararium/ha.ka.ba/lararium/mesh/reach-plane.mem:120]]).
+
+* ''BLOCKS-THE-STORE — The household ward.'' The operator pastes a token or changes its recipients; an unattended act could widen exposure. ''INFER:'' Specify which operations read the persona root or change face trust and therefore trigger the existing ward; widening a tier also needs the operator-root declassification act. Do not assert that every paste is automatically warded: the named rule’s predicates must be applied to the implementation. ''MEASURED'' ([[road:293|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:293]], [[cap-tier:86|/home/joshu/Synthetic-Dream-Machine/bags/lararium/ha.ka.ba/lararium/mesh/cap-tier.mem:86]]).
+
+* ''BLOCKS-THE-STORE — Recovery.'' After losing her node, the operator recovers her face but finds no clear answer about the vault. ''INFER:'' Specify whether surviving sealed catalog, lockboxes and recipient authority restore access; otherwise report loss and require reauthorization. K18’s contacts hold recovery keys, not vault credentials or an automatic right to receive them. ''MEASURED:'' exactly two of three contacts recover the face; contacts are separate from Nexus authority ([[road:247|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:247]], [[membership-doctrine:84|/home/joshu/Synthetic-Dream-Machine/bags/lararium/ha.ka.ba/lararium/mesh/membership-doctrine.mem:84]]).
+
+* ''BEFORE-FIRST-USE — A POEE member leaves.'' Several hands voice the house Bluesky account; a departed hand retains a working token. ''INFER:'' The house needs a named authorized rotation act: remove the hand from future recipient sets, rekey, revoke the foreign token and distribute its replacement only to remaining holders. Until the far side confirms revocation, show exposure as unresolved. Removal is local to readers’ observed frontiers, not a global instant. ''MEASURED'' ([[reach-plane:150|/home/joshu/Synthetic-Dream-Machine/bags/lararium/ha.ka.ba/lararium/mesh/reach-plane.mem:150]], [[road:309|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:309]]).
+
+* ''BEFORE-FIRST-USE — Two cabals share one account; one contract ends.'' A house lends an account to a neighboring cabal, then their agreement ends. ''INFER:'' Name each contracted recipient relation and its ending, rather than treating CONTRACT as an unqualified group. On withdrawal, rekey and rotate the far-side credential for any remaining holders; if no authorized holder can rotate it, report that explicitly. Whether a shared set may cross a Nexus boundary needs a ruling: reach doctrine says credentials never cross one. ''MEASURED'' ([[reach-plane:120|/home/joshu/Synthetic-Dream-Machine/bags/lararium/ha.ka.ba/lararium/mesh/reach-plane.mem:120]], [[bounded-reach-contract:58|/home/joshu/Synthetic-Dream-Machine/bags/lararium/ha.ka.ba/lararium/mesh/bounded-reach-contract.mem:58]]).
+
+* ''LATER — Attribution when POEE posts.'' A house member posts an embarrassing message and the others need to know whose hand moved. ''INFER:'' Before the first emission, record a contract-private, content-addressed receipt binding the content, surface, credential and emitting vessel, with enough verified evidence to identify the hand; avoid publishing that association. The brief defers emission, but the receipt must precede its first use. ''MEASURED'' ([[reach-plane:190|/home/joshu/Synthetic-Dream-Machine/bags/lararium/ha.ka.ba/lararium/mesh/reach-plane.mem:190]], [[brief.md:35|/home/joshu/.lares-scratch/secrets-store/brief.md:35]]).
+
+* ''BEFORE-FIRST-USE — Crossroads or temple succession.'' A district institution’s steward leaves while its civic account must continue. ''INFER:'' Seat the credential under an explicit institution/contract holder set, name the authority that changes stewards, and rotate on departure; a shrine’s wider carriage radius grants no read right by itself. ''MEASURED'' ([[dreamnet-architecture:134|/home/joshu/Synthetic-Dream-Machine/bags/lararium/ha.ka.ba/lararium/mesh/dreamnet-architecture.mem:134]], [[membership-doctrine:129|/home/joshu/Synthetic-Dream-Machine/bags/lararium/ha.ka.ba/lararium/mesh/membership-doctrine.mem:129]]).
+
+* ''BEFORE-FIRST-USE — Libation pool across operators.'' An operator offers infrastructure and another person wants their own provider key hosted there. ''INFER:'' The existing pool example covers the offering operator’s key, not consent to custody of other people’s credentials. Require an explicit custody contract, holder set, exit and rotation path; otherwise keep each key on its owner’s node. A herm or lamplighter receives no vault read-cap: a keyholder’s scoped bridge-warden can perform the call while the herm carries sealed traffic. ''MEASURED'' ([[libation-pool:40|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/libation-pool.mem:40]], [[lamplighters:369|/home/joshu/Synthetic-Dream-Machine/bags/lararium/ha.ka.ba/lararium/mesh/lamplighters.mem:369]]).
+
+* ''BEFORE-FIRST-USE — Porkbun while the node is locked.'' A certificate needs renewal but the VEIL key is sealed. ''INFER:'' Define whether renewal waits for the operator or uses a separately authorized, narrowly scoped certificate capability; do not silently unlock the vault or sync the DNS key. Scope DNS authority to the smallest supported challenge zone and expose impending expiry. ''MEASURED'' ([[brief.md:89|/home/joshu/.lares-scratch/secrets-store/brief.md:89]], [[nexus-topology:64|/home/joshu/Synthetic-Dream-Machine/bags/lararium/ha.ka.ba/lararium/mesh/nexus-topology.mem:64]]).
+
+* ''LATER — Refresh, refusal and leaks.'' A token expires during a partition, or a provider rejects a leaked token. ''INFER:'' A future Kairos needs a narrow refresh capability, explicit custody and conflict handling for rotating refresh tokens; provider time remains at the web2 edge, not a global membership clock. Stop on authentication refusal, surface health, let an authorized person revoke and replace the credential, and retain scoped incident/use receipts without token bytes. Detection cannot promise knowledge of every leak. ''MEASURED'' ([[reach-plane:150|/home/joshu/Synthetic-Dream-Machine/bags/lararium/ha.ka.ba/lararium/mesh/reach-plane.mem:150]], [[reach-plane:250|/home/joshu/Synthetic-Dream-Machine/bags/lararium/ha.ka.ba/lararium/mesh/reach-plane.mem:250]], [[road:139|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:139]]).
+
+* ''LATER — Reuse across faces and the shore.'' A person uses one named account from several personas and Nexuses; an index could reveal their associations. ''INFER:'' Resolve an explicitly presented credential capability within its authorized scope, without a per-persona credential index; show the chosen account and aligned pet-name before emission. Cross-Nexus credential delivery remains constrained by the no-federation rule, so DreamNet-wide //naming// must not imply DreamNet-wide secret distribution. Foreign services remain outward bridges, never identity or core authority. ''MEASURED'' ([[reach-plane:216|/home/joshu/Synthetic-Dream-Machine/bags/lararium/ha.ka.ba/lararium/mesh/reach-plane.mem:216]], [[reach-plane:70|/home/joshu/Synthetic-Dream-Machine/bags/lararium/ha.ka.ba/lararium/mesh/reach-plane.mem:70]]).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vRh_863AFAcltRCsq-XLuaCcaxbr-1n69G3CEB6107c`>>
+
+<<^ code=`&#x0004;` to=`?`>>

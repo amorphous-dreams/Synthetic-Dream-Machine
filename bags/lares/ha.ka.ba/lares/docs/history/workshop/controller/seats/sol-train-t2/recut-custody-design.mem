@@ -1,0 +1,143 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t2/recut-custody-design`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-10-31 (file date) — source `.lares-scratch/controller/seats/sol-train-t2/recut-custody-design.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t2/recut-custody-design"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t2/recut-custody-design"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! recut-custody-design.md — plan, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/seats/sol-train-t2/recut-custody-design.md` (plan, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t2/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/recut-custody-design-custody-wright-2026-10-31`>>
+
+! recut-custody design (T20, the login suffix) — Custody-Wright, 2026-10-31
+
+Worktree `~/.lares-scratch/recut-custody/wt` at a39b1f5df, provisioned (install, build, grammar wasm green; TiddlyWiki5 submodule by reference; `mempalace` failed: the reference path `.git/modules/mempalace` reads "not a local repository" and the fallback dials GitHub over ssh. No suite here needs it.)
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-threat-one-line`>>
+
+!! The threat, one line
+An OS host fact (git global `user.email`, read by a 2 s shell-out that swallows every error) picks WHICH custody file a vessel reads. Flip the fact and the same vessel reads as empty, and two mint paths answer "empty" by minting: a second persona root (open custody alone, no card) and, on `found`, a second place key + KEL (card-guarded, but the card guards the mint, not the uniqueness). This breaks "custody read by capability, never host".
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/authority-inputs`>>
+
+!! Authority inputs
+| input | source today | proves it | law lives | after the cut |h
+| which identity dir | `larIdentityDir()` (LAR_ROOT/XDG env) | nothing: env | `vessel-paths.ts` | unchanged here (T16 injects homes) |
+| which file inside it | `login` slug from git global email | nothing: host fact, wall-clock timeout | 13 call sites, each re-shells | FIXED names; no input at all |
+| which face's rows | `faces/<fcid>/` via the floor index | the face index row | `vault-carriers` faceRow | unchanged; already isolates per face |
+| key/KEL agree | KEL inception signs the key | `proveStandingKey` | verifier | unchanged |
+| a mint may run | `openedCustody()` (+ founding-card read-back for the place key) | the card's read-back; custody holder | `generateOrLoadVesselIdentity` minting store | unchanged; uniqueness now holds by the single name + `exclusiveCustody`'s `existsSync(keyFile)` |
+| root ↔ roster agree | roster line `{handleIndex, verifyingKey}` | `openCommittedRoot` names-another-key | verifier | unchanged |
+
+Fails closed after the cut: a vessel whose files carry an old suffix reads "no key file" at boot (refusal already standing); sealed persona rows cannot open without the place key, so no root mints beside an un-founded place. Probe this in red phase (step loop), never on real custody.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-cut`>>
+
+!! The cut (one commit after the reds)
+* Names: `.vessel-key.json`, `.vessel-kel.json`, `.vessel-rotating.json`, and per face `.persona-group-root-hN.json`, `.persona-roster-hN.json`, `.persona-petnames-hN.json`, `.persona-declarations-hN.json`, `.persona-public-handles-hN.json`. (The brief named the first four families; the census found four more login-keyed persona rows.)
+* `loginHint()` and the `login` parameter retire whole: nothing replaces them. `readLocalOperatorHint`'s email half burns, with its 11 dead `.catch` wrappers; `placeReadingWatch`'s "freeze the login" burns (nothing left to freeze; the KEL path stays fixed).
+* `gitEmail` stops landing in the key file, the staged-rotation publish and every root row (no reader exists; a host fact written into a sealed row).
+* Roster row key: UNCHANGED (`{handleIndex, verifyingKey}`; the login only ever lived in the filename).
+* Founding-card read-back: UNCHANGED. It never keyed by login (`opts.placeFoundingCard` / `readBackStandsIn()`); the KEL it arms simply lands at the fixed name.
+* Converges node onto the browser's shape (`browser-vessel-identity.ts` keys `vessel-key`, `persona-petnames`… with no login).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/every-reader-writer-of-a-suffixed-name`>>
+
+!! Every reader/writer of a suffixed name (census)
+Source: `node-vessel-identity.ts` (all writers; 13 hint sites; the `orphanPersonaRoots` regex; header doc :42-46, :112-117, :663, :850, :987-1004) · `vault-carriers.ts:234-237` `loginKeyed`/`faceLoginKeyed`, rows :310/316/319/397-404/471 → `exact`-style matchers · `face-bundle-cut.ts`, `realm-steward.ts`, `signer-class.ts` name row/class ids only (no change).
+Python (sensorium): `lares_uds.py:110` globs `.vessel-key-*.json` — matches ONLY suffixed names, so it breaks on the cut; becomes `.vessel-key.json`. `worldline_veil.py:44` globs `.persona-group-root-*.json` at the identity top level and reads a clear `signingKey`; the root now rests sealed per face, so it already reads nothing today (flag, out of slice).
+Tools/e2e/CLI: `tools/contract-witness.sh:239` `.vessel-key*.json` (still matches) · `tools/mesh-scenarios.sh:1592` and `tests/e2e/vessel-sealed.test.ts:78` roster regex with optional login (tighten) · `tests/e2e/herm-floor.test.ts:288` (prefix, fine) · `packages/lares-cli/tests/vault-door.test.ts:219-229` plants `.vessel-key-x.json` (→ `.vessel-key.json`) · `vessel-rotate-door.test.ts:85` (prefix, fine) · `tools/s-vocabulary.mjs:8` comment.
+Seed census (`tools/seed-census.mjs`): no login handling, nothing to move. Custody census (`tools/custody-census*.mjs`): row ids only, nothing to move.
+Tests pinning the bug: `place-rotation.test.ts:56-60` asserts the flipped read REJECTS (the bug as control) → retarget to "a flip moves nothing"; `vault-carriers.test.ts:86,101-104` fixtures `-joshua-h0` → bare; `hermetic-git-global.test.ts` header text (its law, a null global for suites, stays while displayName reads git).
+Canon text naming the suffix (hand to controller, lanes edit no canon): `docs/pono/heraldry.mem`, `lararium/mesh/mookuauhau.mem` (history meme stays as history).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/reds`>>
+
+!! Reds (after ruling)
+# Persona: scratch LAR_ROOT, `GIT_CONFIG_GLOBAL`→file a@x, mint h0; rewrite to b@x; `generateOrLoadPersonaGroupRoot(0)` → `created:false`, same verifyingKey, one root file. Today: `created:true`, a second key. Control: unchanged config → `created:false`.
+# Found: same rig, `generateOrLoadVesselIdentity({placeFoundingCard})` under a@x, flip, again → same key, one `.vessel-key*` + one KEL. Today: a second key + KEL. Control: unchanged config loads.
+# Retarget the place-rotation control in the cure commit (it pins today's flip-rejects).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/forks`>>
+
+!! Forks (each talked two rounds; lean given)
+F1 old-name refusal. Brief + 10-25 ruling say "old names refuse for one commit, then burn"; the 10-28 ruling says "never add a refusal or reader for a retired shape; a format cut re-founds". Round 2: the census's generic `outsideTheTable` already names a stale suffixed private file with no shape-specific code, and boot already refuses "no key file". LEAN: write NO old-name refusal; prove fail-closed with a probe test on a scratch root holding only suffixed files (boot refuses, no mint lands). Survives to controller only because the brief text asks for the one-commit refusal.
+F2 displayName. `readLocalOperatorHint` also reads `user.name` → `vesselDisplayName` at founding and the boot IdentityTiddler. Not custody-naming. LEAN: keep the `user.name` read in this slice, renamed `readOperatorDisplayName`, called once per act and never touching a filename; T16 injects it with homes. (End-state alternative: burn it now and found with "operator"; rejected because T16 owns the git-global retirement.)
+F3 `lares_uds.py` sits in a burned sensorium arc. LEAN: one-line glob fix in the cut commit (it breaks otherwise); `worldline_veil.py`'s already-dead clear-root read goes to the controller as a finding, out of slice.
+Settled in-house (no controller ask): roster row key unchanged; card read-back unchanged; `gitEmail` field burns.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/operator-fence`>>
+
+!! Operator fence
+Unverified by design (this lane never reads real custody): an operator vessel founded with a git email set carries suffixed names today. After this lands, that vessel boots to "no key file" until the operator-witnessed re-found (or a hand rename). The controller must name this in the land notice. This lane never reads or moves those files.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/origin-and-the-pono-path`>>
+
+!! Origin and the pono path (controller re-ask, 2026-10-31)
+
+!!! Archaeology
+* `91a6a9390` (PR #36, 2026-05-14) gave birth to the suffix: `keyFileName(login)` → `.operator-key-${login}.json`, the login taken from a ''GitHub OAuth receipt'' (`gh auth token` → `api.github.com/user`, `LarAuthReceipt provider:"github-vscode"`). Doc line: "Key file is named by GitHub login for local dev — different developers on the same machine each hold separate keys. Falls back to a shared file when offline." The key then answered for a PERSON (the "operator key"), and it rested in the repo-relative `dataDir`, which every developer on the box shared.
+* `e7852a4b4` (2026-05-25) cut the web2 GitHub call under the web3-only law and stood up `readLocalOperatorHint` (git `user.email`) in the same slot. It kept the suffix and lost the account behind it.
+* `95edf181c` (06-22) moved identity out of the repo's wipe zone into the XDG/`LAR_ROOT` home. `eb20e8b31` (06-24) renamed operator-key to vessel-identity: the key now answers for the PLACE.
+* `973716b6c` (06-24) copied the pattern onto the PersonGroup root, carrying no rationale of its own. Later commits carried it onto the roster, pet names, declarations and public handles.
+
+!!! The need, and whether it still stands
+The need: two people sharing one repo-relative key store, each wanting their own person key. Three later cuts each dissolved it:
+# The store moved to a per-OS-user home (XDG), and `LAR_ROOT` selects a home explicitly.
+# The key moved from person to place: a place holds one key whoever sits at it.
+# Persons became faces (K15): per-face folders keyed by fcid, each sealed under its own face key. That carries the person-separation the suffix once faked.
+Today's canon (one operator per machine; the second operator on her own machine; a scratch `LAR_ROOT` per vessel in tests) leaves the suffix no case to serve. The browser vessel carries no login analogue. Verdict: a leftover of a web2 account receipt. It covered no live bug; it MAKES one.
+
+!!! Precedent
+* [[OpenSSH|https://www.simplified.guide/_export/xhtml/ssh/identity-file-per-host]]: fixed default names (`~/.ssh/id_ed25519`) under the user's home; more identities come only by explicit `IdentityFile`.
+* [[GnuPG|https://www.manpagez.com/info/gnupg/gnupg-2.4.6/GPG_Configuration.php]]: `--homedir`/`GNUPGHOME` selects the store; inside it, files take the key's own fingerprint as their name.
+* [[Signal Desktop|https://0xacab.org/team-friendo/signalboost/-/commit/cdf2b2028a2137bc5cb6b42dabc293c1334f28bd]]: one profile per data folder, chosen explicitly with `--user-data-dir`.
+Common law: an explicit act picks the HOME, and inside the home a name stays fixed or derives from the key itself. None of these derives a name from mutable ambient config: that turns an edit, a timeout or an env var into a silent identity swap. These sources came from one search each; I did not open official OpenSSH or GnuPG manuals.
+
+!!! Options weighed
+* (a) Fixed names under one home. The home already comes from an explicit choice (`LAR_ROOT`/XDG, which T16 injects). One owner per registry holds, custody reads by capability, no wall clock decides, and it matches the browser vessel. ''Lean.''
+* (b) A home keyed by the place key's digest: finding the key would need the key, or a pointer file (a second owner of "which vessel"). The face layer already keys by fcid where many-of exists. Reject for the place; the persona side already stands this way.
+* (c) Explicit profiles recorded at found: a second selector beside `LAR_ROOT`. That breaks one owner per registry, and T16's injected homes supply the profile anyway. Reject.
+
+!!! Stories
+* Gaia: two siblings share a family laptop. Each logs into her own OS account (her own home) and founds her own place there, and each lives in the household Nexus as her own face. Nobody's git email ever decides whose key opens.
+* Elyncia: a district shrine's orichalcum figure binds to the niche, not to the name of whoever lit the incense. When the keeper changes her name in the ledger, the Lar does not wake as a stranger. A new keeper tends it as a new face; a second shrine means a second niche (a second home), never a second figure hidden in the first.
+
+!!! Red set
+Unchanged. Both reds pin "a host fact never picks the file", and (a) cures both.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;AJjNcgctIOIrKQc25Oh8IFPuiRQfDGrYmbVP_M_fEj8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

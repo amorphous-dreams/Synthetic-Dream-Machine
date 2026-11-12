@@ -1,0 +1,42 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/place-step-1`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-10 (file date) — source `.lares-scratch/controller/placement-plans/PLACE-STEP-1.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/place-step-1"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/place-step-1"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! PLACE-STEP-1.md — plan, 2026-11-10
+
+Verbatim scratch record `.lares-scratch/controller/placement-plans/PLACE-STEP-1.md` (plan, file date 2026-11-10); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/placement-step-1`>>
+
+! Placement step 1
+
+Directory LOAD omits a source root `meta.mem` only when its parsed title names that source directory's bag declaration, which the catalog owns. Unrelated root `meta.mem` files, nested `meta.mem` files and other carriers still travel to the existing ingestion ward. Single-file LOAD retains its existing behavior.
+
+The new wire-level regression first failed with `catalog declaration` in the dispatched carriers, then passed after the exclusion. A second regression first failed when an unrelated root `meta.mem` was omitted, then passed after narrowing the exclusion. At Step 1, `never-projected-never-ingests.test.ts` passed all eight checks, including the then-current forged receipt refusal. Step 4 retires that title-based ward under the operator's later placement ruling; the replacement asserts a receipt-shaped title lands as ordinary content only in the selected, granted bag.
+
+Validation: recursive build and build stamp passed; CLI typecheck passed; `act-load-effect-split.test.ts` passed 11 tests; node `never-projected-never-ingests.test.ts` passed 8 tests; `tools/seed-census-witness.sh` passed (1154 files, 77 consumers, no open or stale); `tools/evergreen-boundary.mjs` passed. The full CLI suite before the final scope narrowing passed 1,823 of 1,824 tests; one `port-control.test.ts` grace-period test timed out under concurrent load. Its isolated rerun passed all 22 tests. The focused suite and typecheck passed after the final narrowing.
+
+Relevant end-to-end candidates: `tests/e2e/load-tw5-filetypes.test.ts`, `tests/e2e/corpus-feed.test.ts`, and `tests/e2e/residency-create.test.ts`. These have not been run for this step.
+
+Suggested commit subject: `lar:///placement.seed.excludes/root-manifest`
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5YxooORALhw0tNkscl7zpX1eRx1jFQnAxSz4KO___0g`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/slot-wake-0ab69b5310ce460fc2e55a593058beb5a5f10778`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-06 (file date) — source `.lares-scratch/controller/ship/slot-wake-0ab69b5310ce460fc2e55a593058beb5a5f10778.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/slot-wake-0ab69b5310ce460fc2e55a593058beb5a5f10778"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/slot-wake-0ab69b5310ce460fc2e55a593058beb5a5f10778"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! slot-wake-0ab69b5310ce460fc2e55a593058beb5a5f10778.md — plan, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/ship/slot-wake-0ab69b5310ce460fc2e55a593058beb5a5f10778.md` (plan, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+SHIP slot-wake 0ab69b5310ce460fc2e55a593058beb5a5f10778
+read: the controller (Lares-Kiaʻi) read the lane's whole diff over the span ed193feee: packages/lararium-tw5/src/slot-wait.ts (with an onWake subscription the wait wakes on the find settling, inbound sync and peer arrival, its timers bounding silence and the hard cap alone; without one the poll races the find's own settle), sovereign-kernel.ts (the one caller passes onWake: the sync-heard hook and the network's peer event, both unsubscribed in a finally; tick("slot-ready"/"seed-drain"/"ea") breath phases), core-caps.ts (the security-class path: two console.info milestone lines around the worker-ready await, no capability moved), vessel-steps.ts (three console.info milestone lines naming the wiki id), and the red slot-wait-event.test.ts.
+verdict: no capability, key, custody or gate moves; milestones log ids only. CI green at 0ab69b5310ce460fc2e55a593058beb5a5f10778.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;H3M8UZVDCSOEKElKueya4YX_colq4jcRfIm0MaGTWoI`>>
+
+<<^ code=`&#x0004;` to=`?`>>
