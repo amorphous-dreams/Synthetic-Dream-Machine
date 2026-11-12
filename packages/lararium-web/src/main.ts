@@ -523,6 +523,8 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
     ...(floor ? { floorCard: floor.text } : {}),
     ...(floorAnchor ? { floorAnchor } : {}),
     ...(admit ? { admitCarriage: admit } : {}),
+    // THE FOUNDING ACT ASKS FOR A FACE: the page's own door (`?found`) carries the ask; a bare arrival stands the veil floor.
+    ...(new URLSearchParams(location.search).has("found") ? { foundFace: true as const } : {}),
     ...(meshLeaf ? { meshLeaf } : {}),
   });
   const outcome = await Promise.race([stood.then((v) => ({ kind: "stood" as const, v })), stopped.then((e) => ({ kind: "ended" as const, e }))]);

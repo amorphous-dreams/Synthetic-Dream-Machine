@@ -853,8 +853,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // stood asks the card again, and a KEL that stands is kept). The card's ceremony rides the vessel's own thread.
   // THE VEIL FLOOR ARMS NO PLACE KEL (the-veil-ladder#/the-base-model, in-house ruling U3): an unbound veil stands at canon's
   // throwaway rung on its bare device key, with no card to write down. The place KEL arms, and its card reads back, at the
-  // first join (an admit rides this boot); a KEL that already stands is kept.
-  const founding = placeFoundingCard !== undefined && admit !== undefined;
+  // first join or founding (an admit or the founding ask rides this boot); a KEL that already stands is kept.
+  const founding = placeFoundingCard !== undefined && (admit !== undefined || opts.foundFace === true);
   const vesselIdentity = await generateOrLoadBrowserVesselIdentity(idbName, displayName, founding ? { placeFoundingCard } : {});
   const vesselVerifyingKey      = vesselIdentity.verifyingKey;
 

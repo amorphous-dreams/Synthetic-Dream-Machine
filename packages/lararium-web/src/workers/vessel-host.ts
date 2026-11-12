@@ -234,6 +234,7 @@ export function standVesselHost(env: VesselHostEnv = {}) {
       ...(b.floorCard ? { floorCard: b.floorCard } : {}),
       ...(b.floorAnchor ? { floorAnchor: b.floorAnchor } : {}),
       ...(admit ? { admit } : {}),
+      ...(b.foundFace ? { foundFace: true } : {}),
       ...(b.meshLeaf ? { meshLeaf: { coordSeed: b.meshLeaf.coordSeed, peers: b.meshLeaf.peers.split(",").map((s) => parseMeshPeer(s.trim())).filter((p): p is MeshPeer => p !== null) } } : {}),
     });
     litVessel = result;
