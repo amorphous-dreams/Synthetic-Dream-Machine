@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-b10/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-06 (file date) — source `.lares-scratch/b1-lift/terra-b10/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-b10/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-b10/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/b1-lift/terra-b10/out.md` (hand-back, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-b10/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/terra-b10-hand-back`>>
+
+! Terra-B10 hand-back
+
+# Glass tabs: preserved the test name and sequence, named the mirror and owner-role barriers, captured each settled mirror result before its assertion, and routed later navigations through a helper so the witness can associate each marker with the sequence. `node tools/barrier-witness.mjs` passed: 64 files, backlog 0/0, 0 allowances, 0 bare markers.
+# Capability inventory: regenerated `tools/capability-inventory.json`; the diff removes two `main.ts: SharedWorker` entries. `bash tools/capability-inventory-witness.sh` passed.
+
+No build, browser-mode test, socket, commit, or git write ran.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;U_imdTjPR7iJEymlSHMcQzph-777xv28Yg6FqkUZp-o`>>
+
+<<^ code=`&#x0004;` to=`?`>>

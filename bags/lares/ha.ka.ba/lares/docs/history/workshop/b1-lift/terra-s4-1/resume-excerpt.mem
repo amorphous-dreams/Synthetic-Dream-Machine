@@ -1,0 +1,75 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-1/resume-excerpt`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — resume, 2026-11-06 (file date) — source `.lares-scratch/b1-lift/terra-s4-1/resume-excerpt.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-1/resume-excerpt"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-1/resume-excerpt"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! resume-excerpt.md — resume, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/b1-lift/terra-s4-1/resume-excerpt.md` (resume, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-1/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/b1-lift-slice-4-resume`>>
+
+! b1-lift slice 4 — resume (Lift-Wright, 2026-11-06)
+
+Head: 2eead34b5 on feature/green-jello-dinosaur-5&#45;-b1-lift (local, NOT pushed; slice not yet a feature). Tree clean but for this.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/done-this-step`>>
+
+!! Done this step (red only)
+`packages/lararium-web/tests/floor-broker.test.ts` — FB1/FB2/FB3 RED + CONTROL, run on the broker's real served bytes
+(`public/ceremony-broker.js?raw` evaluated against a stand-in SW scope, real MessageChannels). Local: chromium + firefox
+3 red / control green each (WebKit refused on host, CI runs it). Reds fail for the right reason: no `vessel:*` routes.
+
+Protocol the reds fix (floor, no SharedWorker):
+* follower page → broker `vessel:claim{tabSession}`
+* broker → every OTHER window client (never claimant, never /ceremony.html) `vessel:want{claimId, tabSession}`
+* owner page (its vessel worker mints a MessageChannel, `connect`s one end as that tab's own session, hands the other
+end to its page unread) → broker `vessel:offer{claimId}` [port]
+* broker → claimant alone `vessel:port{tabSession}` [port], unstarted; a claim spends once
+* ceremony doc claim → `vessel:absent{tabSession}`; an offer from it, or for an unclaimed id, hands nothing
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/next-steps`>>
+
+!! Next steps (in order)
+# Build to green (Terra seat fits: mechanical): `public/ceremony-broker.js` grows the vessel routes above (held claims
+keyed by a broker-minted claimId → claimant client id; `clients.matchAll({type:"window"})` for the want,
+`clients.get(id)` for the hand; waitUntil until hand); types in `src/ceremony-protocol.ts` (PageToBroker etc.).
+# Red FB4 (vessel-host project, `tests/vessel-host-*.test.ts` style, see vessel-host-faces.test.ts `tab()`): a follower
+tab whose scope rides a brokered port opens its OWN session, its ceremony answer reaches the host on its own ceremony
+port, and the broker's log of everything it saw holds no `answer`/ArrayBuffer. Needs a host message
+`port:want{tabSession}` → `port:minted` (vessel-protocol.ts) on the owner's page port.
+# Red: a second SharedWorker host over a held store refuses `store-owned` (VS4 covers dedicated; add a SharedWorker
+fixture in lararium-browser tests/fixtures beside vessel-house.worker.ts). Engine facts unmeasured stay probe items.
+# The "two-tab reds that waited on the broker": NOT found named in the handoff (controller-handoff.mem line 127 only
+names slice 4's scope). Ask the controller which reds; candidates: lararium-web tests/e2e/glass-tabs.e2e.test.ts,
+glass-tab-follower/-fence page tests (G4 leader/follower dissolves), lararium-browser tests/live/two-tab-walk.mjs.
+design.md:41 ("floor followers hold no session") stands superseded by the 2026-11-06 ruling; true it.
+# Then: SharedWorker entry (`vessel.shared-worker.ts`, `connect` → host.connect), page picks by capability, `?holder`
+and shared-holder.worker.ts go, Pronaos route inventory (minimal named hunk), readiness waits on SW control (never the
+broker's hand), carrier order line (line 111) trues to 4, 5b, 6, 7, X0b, the joined gate in the canon commit.
+
+Leave alone: b1-seal (lararium-node composer, sealed store), secrets-store.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qe7WiVNrBFA_0aeJYrq2JUU40-8ZtCjUtPMq1pjozG4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

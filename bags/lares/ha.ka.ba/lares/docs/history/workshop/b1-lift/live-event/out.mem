@@ -1,0 +1,45 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/live-event/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-06 (file date) — source `.lares-scratch/b1-lift/live-event/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/live-event/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/live-event/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/b1-lift/live-event/out.md` (hand-back, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/live-event/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/hand-back`>>
+
+! Hand-back
+
+Changed only `waitForLivePage` in `packages/lararium-web/tests/e2e/shore-writes.e2e.test.ts`: both arrival waits use `timeout: 0`, observe terminal DOM signals, and race console/page-error events. Failures retain the `phases=` and `faults=` diagnostics. The mirror-inputs-absent state stays pending because the next frame can retry it.
+
+Terminal signals traced:
+* Phase words pass through `packages/lararium-web/src/vessel-port.ts:120` and paint at `packages/lararium-web/src/main.ts:365-367,486`. The canonical `LarOpenPhase` at `packages/lararium-mesh/src/lararium-vessel.ts:9-20` contains no refusal or fault phase today; the helper detects such words if emitted.
+* Seed and crossing refusals paint `#status.err` at `packages/lararium-web/src/main.ts:390-401`; vessel-ended paths paint `#status.err` or `#status.warn` at `packages/lararium-web/src/main.ts:501-504,516-520`, delivered by `packages/lararium-web/src/vessel-port.ts:151`. Custody refusals originate at `packages/lararium-web/src/workers/vessel-host.ts:242-248`.
+* Ceremony broker refusal paints `.ceremony-ask[data-refusal]` at `packages/lararium-web/src/main.ts:127-130,142-143`.
+* Mirror floor outcomes paint `data-lar-mirror=none:<reason>` at `packages/lararium-web/src/page-mirror.ts:20-30`; `mirror-inputs-absent` may recover on a later frame (`packages/lararium-web/src/main.ts:562-566`). A thrown stand logs `[mirror] stand refused:` at `packages/lararium-web/src/main.ts:568` without resetting the standing flag.
+* Daemon faults log `[daemon-island:fault]` at `packages/lararium-tw5/src/daemon-vm-core.ts:550-553`. Playwright `pageerror` carries uncaught page errors; the existing main-page collector stands at `packages/lararium-web/tests/e2e/shore-writes.e2e.test.ts:37`.
+
+Product / observability rows: a mirror whose inputs remain absent indefinitely has no terminal signal: `packages/lararium-web/src/page-mirror.ts:27`, `packages/lararium-web/src/main.ts:565-566`. A thrown mirror stand logs only to the console and leaves no persistent DOM signal (`main.ts:568`); on the separately created boot page, console or page errors emitted before the helper attaches cannot be recovered. Likewise an unresolved vessel open has no terminal signal in the `stood`/`stopped` race (`main.ts:483-484,516`). No product code changed.
+
+Validation: `git diff --check` passed. No browser or e2e ran (lead runs). `packages/lararium-web/tsconfig.json:16` includes only `src` and `vite.config.ts`; no repository tsconfig found that includes this e2e file, so no covering file typecheck ran. No commit or git write.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;NMC7AltuyZQvTJfXALDBl1y-mQZCkk1eIhJ6L9zMbPE`>>
+
+<<^ code=`&#x0004;` to=`?`>>
