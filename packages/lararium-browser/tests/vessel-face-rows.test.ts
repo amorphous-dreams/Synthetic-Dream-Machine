@@ -76,7 +76,7 @@ describe("a production founding keeps its face's rows under the face's own tree"
       fcid = index.entries[0]!.fcid;
     } finally { db.close(); }
     const under = keys.filter((k) => k.startsWith(`face-sealed/${fcid}/`)).map((k) => k.slice(`face-sealed/${fcid}/`.length)).sort();
-    expect(under, "the face's rows rest under its own tree").toEqual(["anchor", "face-address-secret", "face-anchor", "face-atom", "veil-archive", "vessel-face-tag"]);
+    expect(under, "the face's rows rest under its own tree").toEqual(["anchor", "face-address-secret", "face-anchor", "face-atom", "veil-archive", "veil-lift", "vessel-face-tag"]);
     expect(keys, "the face's tree stands").toContain(`face-slots/${fcid}`);
     // The face's root rests under its own ward, never under a custody tree; the ward's public roster rests beside the place seed.
     expect(keys, "the face's root rests under its ward").toContain("ward/h0/persona-root");

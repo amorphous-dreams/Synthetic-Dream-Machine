@@ -17,7 +17,7 @@
  * THE FACE ROWS rest under their own face's tree (`browser-face-custody.ts`, `face-sealed/<fcid>/<row>`), each named by the
  * face's PersonaGroup and never by a handle index: `veil-archive-g<G>`, `face-atom/<G>`, `face-anchor/<G>`,
  * `face-address-secret/<G>`, `vessel-face-tag/<G>`, `fleet-join-pending/<G>`, `vessel-face-key/<G>|<nexus>|<faceKey>`,
- * `nexus-key/<G>/<aid>`, `promoted/<G>` and `kapae/<G>`. A face row never rests under the place tree, and no face's row
+ * `nexus-key/<G>/<aid>`, `promoted/<G>`, `kapae/<G>` and `veil-lift/<G>`. A face row never rests under the place tree, and no face's row
  * rests before its own tree binds (`no-custody-slot`). Every other keystore row (`catalog-url`, public by construction)
  * stays as it stood.
  *
@@ -97,6 +97,8 @@ const FACE_ROWS: readonly (readonly [RegExp, (m: RegExpExecArray) => string])[] 
   [/^fleet-join-pending\/(.+)$/, () => "fleet-join-pending"],
   [/^promoted\/(.+)$/, () => "promoted"],
   [/^kapae\/(.+)$/, () => "kapae"],
+  // The face's private link to the veil that joined it (`browser-veil-lift.ts`): under its own tree alone.
+  [/^veil-lift\/(.+)$/, () => "veil-lift"],
   [/^vessel-face-key\/([^|]+)\|([^|]+)\|([^|]+)$/, (m) => `vessel-face-key/${hexUtf8(m[2]!)}/${m[3]!.toLowerCase()}`],
   [/^nexus-key\/([^/]+)\/(.+)$/, (m) => `nexus-key/${hexUtf8(m[2]!)}`],
 ];

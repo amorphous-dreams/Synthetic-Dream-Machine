@@ -28,6 +28,7 @@ import { browserDeviceFiling } from "./browser-device-filing.js";
 import { writeBrowserFaceLabel } from "./browser-face-labels.js";
 import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, sealedBagMap, vesselDocStoreDoor, bindSecretHomeRest, nameControlHome, daemonFaceCanonBag, SecretHomeUnavailable, DAEMON_SLOT_PREFIX, DAEMON_WIKI_SLOT_BAGS, type LitDeviceFaces, type SecretHome, type SealedBag } from "@lararium/mesh";
 import { openBrowserSecretHome, standBrowserSecretHome } from "./browser-secret-home.js";
+import { keepBrowserVeilLift } from "./browser-veil-lift.js";
 import * as A from "@automerge/automerge";
 import type { DocHandle, AutomergeUrl, PeerId } from "@automerge/automerge-repo";
 import {
@@ -989,6 +990,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     wearFaceOfVessel(idbName, admit.personaGroupId);
     const atomSeed = await standBrowserFaceAtomSeed(idbName, admit.personaGroupId);
     let a: Awaited<ReturnType<typeof runApplyAdmitPayload>>;
+    let joineeAtomKey: string;
     try {
       // The veil-archive row and atom both rest by PersonaGroup. B's hive restores only from an Archive that
       // belongs to B's atom; any other offers it nothing.
@@ -1020,9 +1022,13 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         nexusPubkey,
         ...(keptAtomArchive ? { archiveBytes: keptAtomArchive } : {}),
       });
+      joineeAtomKey = faceAtomKeyFromSeed(atomSeed, admit.personaGroupId).key;
     } finally { atomSeed.fill(0); }
     // The face Archive rests before the bootstrap that names this admit.
     await saveBrowserVeilArchive(idbName, admit.personaGroupId, a.archive);
+    // THE VEIL-LIFT LINK (ruling 1): the vessel's own key signs {veil, face, atom} once, and the record rests under this
+    // face's tree alone. It names no other face, and no board, plane or boot record carries it.
+    await keepBrowserVeilLift(idbName, admit.personaGroupId, joineeAtomKey);
     // THE SEALED ANCHOR: admission writes it (sync never does), keeping the frontier this device already knew.
     {
       const priorAnchor = await loadBrowserFaceAnchor(idbName, admit.personaGroupId);
@@ -1112,7 +1118,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     await nameFace(idbName, founder, f.personaGroupId);
     wearFaceOfVessel(idbName, f.personaGroupId);
     // THE FACE'S ATOM RESTS BEFORE ITS BOOTSTRAP: the founding minted a random seed, and the face's own custody row keeps it.
-    try { await keepBrowserFaceAtomSeed(idbName, f.personaGroupId, f.atomSeed); } finally { f.atomSeed.fill(0); }
+    let foundedAtomKey: string;
+    try { await keepBrowserFaceAtomSeed(idbName, f.personaGroupId, f.atomSeed); foundedAtomKey = faceAtomKeyFromSeed(f.atomSeed, f.personaGroupId).key; } finally { f.atomSeed.fill(0); }
+    // THE VEIL-LIFT LINK: a founding over the floor links the veil to its first face the same way a join does.
+    await keepBrowserVeilLift(idbName, f.personaGroupId, foundedAtomKey);
     // THE FACE'S ADDRESS SECRET MINTS BESIDE ITS ATOM, so the face's catalog document derives its address from the first boot.
     await mintBrowserFaceAddressSecret(idbName, f.personaGroupId);
     // THE FACE ARCHIVE RESTS BEFORE ITS BOOTSTRAP. The ceremony's provider left with the act; the key

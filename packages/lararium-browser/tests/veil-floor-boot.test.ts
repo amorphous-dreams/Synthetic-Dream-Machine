@@ -8,6 +8,8 @@
  *   VF3  an admit overlays the floor: its ceremony meets the floor's own daemon document, and the floor record stays.
  *   VF5  the burn's fall back: a booted face whose custody left this browser drops its overlay, and the vessel boots at its
  *        floor record; a locked face never reads as burned; another face's overlay stands.
+ *   VF6  each face keeps its own veil-lift link: signed by the vessel's key, naming the join's fresh atom, resting under that
+ *        face's tree alone, and never naming another face.
  *   VF4  a second admit never replaces the first: both overlays stand, keyed by PersonaGroup, neither naming the other; a
  *        hello that names either face boots under it, and a face the record holds no overlay for refuses `face-not-worn`.
  */
@@ -18,6 +20,10 @@ import { openBrowserVessel, readBrowserVesselFaces, type BrowserVesselOptions } 
 import { openVesselIdb, idbKeys, loadBrowserPlaceKel } from "../src/browser-vessel-identity.js";
 import { readBrowserCustody } from "../src/browser-custody.js";
 import { clearFaceCustody, lockFaceCustody } from "../src/browser-face-custody.js";
+import { verifyVeilLift, type VeilLiftRecord } from "@lararium/mesh";
+import { keepBrowserVeilLift, readBrowserVeilLift } from "../src/browser-veil-lift.js";
+import { readBrowserFaceAtom } from "../src/browser-face-atom.js";
+import { generateOrLoadBrowserVesselIdentity } from "../src/browser-vessel-identity.js";
 
 const met: Array<{ group: string; daemonUrl: string }> = [];
 vi.mock("@lararium/keyhive", async (orig) => {
@@ -152,5 +158,43 @@ describe("the browser's veil floor stands first, and a face lands over it", () =
     // A REPLAY FALLS NOWHERE FURTHER.
     await boot({ idbName });
     expect(await recordOf(idbName)).toEqual(after);
+  }, SLOW);
+
+  test("VF6 each face keeps its own veil-lift link, signed by the vessel's key, under its own tree, naming no other face", async () => {
+    const idbName = `veil-link-${crypto.randomUUID()}`;
+    await boot({ idbName });
+    await bindSyntheticBrowserCustodySlot(idbName);
+    const first = admitNaming("cd".repeat(32), {});
+    const second = { ...admitNaming("ce".repeat(32), {}), personaGroupId: "b2".repeat(16) } as typeof first;
+    const links: Record<string, VeilLiftRecord> = {};
+    for (const admit of [first, second]) {
+      await bindSyntheticFace(idbName, admit.personaGroupId);
+      await boot({ idbName, admit });
+      const link = await readBrowserVeilLift(idbName, admit.personaGroupId);
+      expect(link, `${admit.personaGroupId} holds its link`).not.toBeNull();
+      expect(await verifyVeilLift(link), "the vessel's key signed it").toEqual(link);
+      expect(link!.face).toBe(admit.personaGroupId);
+      expect(link!.atom, "it names the fresh atom this join minted").toBe((await readBrowserFaceAtom(idbName, admit.personaGroupId))!.key);
+      links[admit.personaGroupId] = link!;
+    }
+    const a = links[first.personaGroupId]!, b = links[second.personaGroupId]!;
+    // ONE VEIL, TWO FACES: the records share the veil's key and nothing else, and each atom differs from the veil's key.
+    expect(a.veil).toBe(b.veil);
+    expect(a.veil).toBe((await generateOrLoadBrowserVesselIdentity(idbName)).verifyingKey);
+    expect(a.atom).not.toBe(b.atom);
+    expect(a.atom).not.toBe(a.veil);
+    expect(JSON.stringify(a)).not.toContain(second.personaGroupId);
+    expect(JSON.stringify(b)).not.toContain(first.personaGroupId);
+    // EACH RESTS UNDER ITS OWN FACE'S TREE ALONE: no clear row, no row under the place tree, none in the boot record.
+    const rows = await keystoreRows(idbName);
+    expect(rows.filter((row) => row.includes("veil-lift") && !row.startsWith("face-sealed/"))).toEqual([]);
+    expect(rows.filter((row) => row.startsWith("face-sealed/") && row.endsWith("/veil-lift"))).toHaveLength(2);
+    expect(JSON.stringify(await recordOf(idbName))).not.toContain(a.signature);
+    // A REPLAYED LANDING KEEPS THE LINK IT HOLDS (the rig's admit carries no real Archive, so the replay runs at the keep itself).
+    expect(await keepBrowserVeilLift(idbName, second.personaGroupId, b.atom)).toEqual(b);
+    expect(await readBrowserVeilLift(idbName, second.personaGroupId)).toEqual(b);
+    // A LOCKED FACE'S LINK READS FOR NO ONE.
+    lockFaceCustody(idbName, first.personaGroupId);
+    await expect(readBrowserVeilLift(idbName, first.personaGroupId)).rejects.toMatchObject({ reading: "face-locked" });
   }, SLOW);
 });
