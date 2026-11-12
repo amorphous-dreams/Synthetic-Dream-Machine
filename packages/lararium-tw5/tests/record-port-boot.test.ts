@@ -27,7 +27,7 @@ async function island(extra: Record<string, unknown> = {}) {
 describe("port:boot ~ the island hands a booting projection its boot set ahead of the snapshot", () => {
   test("port-boot-hands-the-set-whole: every member, in boot order, chunked, verbatim, before the first snapshot chunk", async () => {
     const r = await island();
-    await r.send({ ...open, boot: true }); await handed(r);
+    await r.send({ ...open, boot: true } as { type: string }); await handed(r);
     const types = r.messages.map(m => m.type).filter(type => type === "port:boot" || type === "port:snapshot");
     expect(types.lastIndexOf("port:boot")).toBeLessThan(types.indexOf("port:snapshot"));
     const boots = ofType(r.messages, "port:boot" as never) as any[];
@@ -55,7 +55,7 @@ describe("port:boot ~ the island hands a booting projection its boot set ahead o
   test("port-boot-corrupt-member-never-leaves: bytes that hash to another value send nothing, and the reader names the member it never received", async () => {
     const bent = new Uint8Array(plugin); bent[0] = bent[0]! ^ 1;
     const r = await island({ resolveByCid: async (cid: string) => (cid === bootSet.pluginCids[0] ? bent : cas.get(cid) ?? null) });
-    await r.send({ ...open, boot: true }); await handed(r);
+    await r.send({ ...open, boot: true } as { type: string }); await handed(r);
     const hand = makeBootHandoff({ coreCid: bootSet.engineCid, pluginCids: bootSet.pluginCids }, "p", cidOf);
     for (const message of r.messages) hand.take(message as never);
     expect(() => hand.inputs()).toThrow(`mirror-boot-member-missing:${bootSet.pluginCids[0]}`);
