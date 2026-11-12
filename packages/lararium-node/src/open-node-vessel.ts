@@ -957,13 +957,15 @@ async function prepareNodeBootOn(
     for (const named of slotDocsNamed.values()) for (const documentId of named) sealNowMapped(documentId);
     for (const documentId of deviceDocs.ids()) sealNowMapped(documentId);
   };
-  const onSlotNamed = (bagId: string, documentId: string): void => {
+  const onSlotNamed = (bagId: string, documentId: string, floor = false): void => {
     // THE HOST'S WORKING LAYER FOLLOWS THE ISLAND'S: a main-side write to the daemon wiki lands on the document the island
     // reads (the seat's lift moves it to the face's). The outcome ledger rests in the control document, never here.
     if (bagId === DAEMON_WORKING_SLOT) followHostWorking(documentId);
     // A DAEMON DEVICE SLOT files by the group the control document names for it, never by the face lit as it announces: it
     // maps held (never clear, never under another face's key) until the control document names its owner.
-    if (bagId.startsWith(DAEMON_SLOT_PREFIX)) {
+    // A VEIL FLOOR'S WIKI SLOT (`floor`) files the same way: the vessel owns it, so it waits held until the control document
+    // names it and then seals beside the control document under the vessel's key, never under a lit face's.
+    if (bagId.startsWith(DAEMON_SLOT_PREFIX) || floor) {
       if (deviceDocs.announced(bagId, documentId)) { sealedRest.store.mapMoved(); reverdictLater(); }
       sealNowMapped(documentId);
       return;
@@ -1354,7 +1356,7 @@ async function prepareNodeBootOn(
       // house's own proven islands alone, never a wire peer, sibling or other device, whatever lane would otherwise admit them.
       // It reads BY BAG as well as by name: a device-private document any boot-time source files (a held home, an announced
       // device slot, a catalog row) stays here before the control document hydrates and while its custody row cannot read.
-      const vesselVerdict = vesselOnlyShareVerdict(vesselOnlyClass({ named: vesselOnly, held: secretHomes, device: deviceDocs, catalog: () => sealedCells.catalog() }), { has: (p) => houseIslands.has(p) && !wikiIslands.has(p) }, peerId, documentId, !!wsSocket, Boolean(siblings?.provenKeyOf(peerId as PeerId)));
+      const vesselVerdict = vesselOnlyShareVerdict(vesselOnlyClass({ named: vesselOnly, held: secretHomes, device: deviceDocs, catalog: () => sealedCells.catalog() }), { has: (p) => houseIslands.has(p) && (!wikiIslands.has(p) || (documentId !== undefined && deviceDocs.floorWiki(documentId))) }, peerId, documentId, !!wsSocket, Boolean(siblings?.provenKeyOf(peerId as PeerId)));
       if (vesselVerdict !== undefined) return vesselVerdict;
       // OUTER peer-admission gate (unchanged): a WS peer whose session no face gate opened is not in
       // `peerIdentifierMap` → deny; an in-process island peer (no WS socket) is a house member → admit.

@@ -310,7 +310,7 @@ export function answerLiveDocAsks(port: Port, liveOf: (bagId: string) => Promise
  */
 export function docStorePortCell(liveOf: (bagId: string) => Promise<Uint8Array | null>, opts: {
   /** V3: the island's slot resolver named `documentId` as `bagId`'s document (`announceSlotDoc`). */
-  readonly onSlot?: (bagId: string, documentId: string) => void;
+  readonly onSlot?: (bagId: string, documentId: string, floor: boolean) => void;
   /** The attached island's door stood (`docstore:answering`): what waited on it (a hydration, a held save) asks again. */
   readonly onReady?: () => void;
 } = {}): {
@@ -348,7 +348,8 @@ export function docStorePortCell(liveOf: (bagId: string) => Promise<Uint8Array |
 }
 
 /** Island → vessel (V3): the slot resolver named `documentId` as the document of the wiki slot `bagId`. */
-export interface DocStoreMsg_Slot { readonly type: "docstore:slot"; readonly bagId: string; readonly documentId: string }
+/** `floor`: the vessel itself owns the document (a veil floor's wiki slot); it files held and seals under the vessel's key. */
+export interface DocStoreMsg_Slot { readonly type: "docstore:slot"; readonly bagId: string; readonly documentId: string; readonly floor?: true }
 
 /**
  * THE SLOT RESOLVER NAMES EACH DOCUMENT IT ANSWERS (V3). A wiki's working and draft documents resolve in the daemon
@@ -356,16 +357,16 @@ export interface DocStoreMsg_Slot { readonly type: "docstore:slot"; readonly bag
  * catalog row names either. So the island tells the vessel each slot document it answers, before any write into it, and
  * the vessel's bag map names it sealed with its bag.
  */
-export function announceSlotDoc(port: Pick<Port, "post">, bagId: string, documentId: string): void {
-  try { port.post({ type: "docstore:slot", bagId, documentId } satisfies DocStoreMsg_Slot); } catch { /* the vessel went away */ }
+export function announceSlotDoc(port: Pick<Port, "post">, bagId: string, documentId: string, floor = false): void {
+  try { port.post({ type: "docstore:slot", bagId, documentId, ...(floor ? { floor: true as const } : {}) } satisfies DocStoreMsg_Slot); } catch { /* the vessel went away */ }
 }
 
 /** The vessel hears each slot notice. Returns the unsubscribe. */
-export function answerSlotNotices(port: Port, onSlot: (bagId: string, documentId: string) => void): () => void {
+export function answerSlotNotices(port: Port, onSlot: (bagId: string, documentId: string, floor: boolean) => void): () => void {
   return port.listen((raw) => {
     const m = raw as Partial<DocStoreMsg_Slot> | null;
     if (!m || m.type !== "docstore:slot" || typeof m.bagId !== "string" || typeof m.documentId !== "string") return;
-    try { onSlot(m.bagId, m.documentId); } catch { /* a listener's fault never reaches the island */ }
+    try { onSlot(m.bagId, m.documentId, m.floor === true); } catch { /* a listener's fault never reaches the island */ }
   });
 }
 

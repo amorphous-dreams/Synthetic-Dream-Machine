@@ -15,8 +15,12 @@
  *   working  — EVERY WIKI BUT THE DAEMON'S rests its working layer in the wiki's REALM WORKBENCH (cabal-realm#/the-workbench):
  *              the face's first stand founds a private cabal of one (`workbenchRealm`, mint) and the vessel ledger notes it;
  *              the slot then reads the realm's fixed address (`realmWorkbenchDocUrl`). A share seats more faces in the same
- *              Document and never moves the address. A face stands it, a floor stands none: a vessel with no face refuses
- *              `no-face`. The daemon wiki keeps its face-private device slot (`deviceScoped`), the AI-memory ruling.
+ *              Document and never moves the address. A face stands the workbench. A vessel with no face stands
+ *              the VEIL FLOOR's own document instead, where its control document reads (`floor-slot/<slug>/working`,
+ *              the-veil-ladder#/the-base-model), sealed under the vessel's key; where it does not read (a locked floor, a
+ *              herm that holds none) no working layer stands and a mint refuses `no-face`. A seat that lands lifts the
+ *              floor's rows into the workbench (`liftFloor`). The daemon wiki keeps its face-private device slot
+ *              (`deviceScoped`), the AI-memory ruling.
  *   personal — the PersonaGroup × fingerprint binding when seated, the vessel's own when not
  *
  * Lives in @lararium/keyhive because the mint sequence needs keyhive (`registerBag` + `delegate`).
@@ -26,7 +30,7 @@
 
 import {
   CONTROL_HOME_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX,
-  computeRecipeFingerprint, emptyLarDoc, realmWorkbenchDocUrl, mintVesselDocumentId, storedLarRecord, mutableLarRecord, resolveSlotDoc, tiddlerText,
+  computeRecipeFingerprint, emptyLarDoc, floorSlotTitle, realmWorkbenchDocUrl, mintVesselDocumentId, storedLarRecord, mutableLarRecord, resolveSlotDoc, tiddlerText,
   wikiBagUri, wikiDraftDocKey, requireLarDid, didFromVerifyingKey,
   type CompositeStore, type LarDoc, type SlotReach, type WikiSlotKind,
 } from "@lararium/mesh";
@@ -50,6 +54,11 @@ export interface SlotDocResolverArgs {
   readonly control?: CompositeStore;
   /** Name a device slot's document to the vessel's sealed map BEFORE its first byte moves (`announceSlotDoc`). */
   readonly announceDevice?: (kind: Exclude<WikiSlotKind, "temp">, documentId: string) => void;
+  /**
+   * Name a VEIL FLOOR wiki slot's document to the vessel's sealed map before its first byte moves: the vessel owns it, so it
+   * files held and seals under the vessel's key (`announceSlotDoc` with `floor`).
+   */
+  readonly announceFloor?: (slug: string, kind: "working", documentId: string) => void;
   /** The daemon-bag composite — binding records live here. */
   readonly daemonStore: CompositeStore;
   /** Absent at the faceless floor: a floor document carries no Keyhive registration. */
@@ -177,7 +186,9 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
    */
   const workingDoc = async (slug: string, mint: boolean): Promise<SlotDoc | null> => {
     if (!args.personaGroupId || !args.workbenchRealm) {
-      if (!mint) return null;
+      // No face: the veil floor's own document where the control document reads, and none where it does not.
+      const floorDoc = await floorWorking(slug, mint);
+      if (floorDoc || !mint) return floorDoc;
       throw new WorkingSlotRefusal("no-face", `"${slug}" rests its working layer in a realm workbench, and a realm seats a face: this vessel wears none`);
     }
     const realmId = await args.workbenchRealm(slug, mint);
@@ -245,6 +256,49 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
     try { return await created; } finally { deviceMints.delete(title); }
   };
 
+  /**
+   * THE VEIL FLOOR'S WORKING LAYER (the-veil-ladder#/the-base-model; the one slot-doc law: "never refuses for want of a
+   * group"). A vessel that wears no face and whose control document reads stands a wiki's working layer in a floor document
+   * the control document names (`floor-slot/<slug>/working`), named before its first byte, exactly as the daemon wiki's
+   * floor device slot stands. A vessel whose control document does not read (a locked floor, a herm that holds none) stands
+   * none and answers null. The Lift moves its rows into the face's realm workbench when a seat lands (`anon-lift`).
+   */
+  const floorMints = new Map<string, Promise<SlotDoc | null>>();
+  const floorWorking = async (slug: string, mint: boolean): Promise<SlotDoc | null> => {
+    const control = args.control;
+    if (!control) return null;
+    const title = floorSlotTitle(slug, "working");
+    let named: string | null;
+    try { named = tiddlerText(await control.get(title)); } catch { return null; }   // the control document does not read: no floor stands
+    if (named) return { url: named, reach: "vessel-only" };
+    if (!mint) return null;
+    const pending = floorMints.get(title);
+    if (pending) return pending;
+    const created = (async (): Promise<SlotDoc | null> => {
+      const again = tiddlerText(await control.get(title));
+      if (again) return { url: again, reach: "vessel-only" };
+      const record = (url: string) => mutableLarRecord(title, { text: url, kind: "oracle", "face-reach": "vessel-only", "minted-by": args.mintedByHex() }, "slot-doc:floor");
+      const minter = args.repo;
+      if (typeof minter.import !== "function") {
+        const doc = minter.create<LarDoc>(emptyLarDoc());
+        args.announceFloor?.(slug, "working", doc.documentId);
+        await control.put(record(doc.url), { kind: "lares-verb", requestId: "slot-doc:floor" });
+        await doc.whenReady?.();
+        await minter.flush([doc.documentId]);
+        return { url: doc.url, reach: "vessel-only" };
+      }
+      const documentId = mintVesselDocumentId();
+      args.announceFloor?.(slug, "working", documentId);
+      await control.put(record(`automerge:${documentId}`), { kind: "lares-verb", requestId: "slot-doc:floor" });
+      const handle = minter.import(A.save(A.from(emptyLarDoc() as unknown as Record<string, unknown>)), { docId: documentId as never });
+      await handle.whenReady?.();
+      await args.repo.flush([handle.documentId]);
+      return { url: handle.url, reach: "vessel-only" };
+    })();
+    floorMints.set(title, created);
+    try { return await created; } finally { floorMints.delete(title); }
+  };
+
   const slotDoc = async (slug: string, kind: WikiSlotKind, opts?: { mint?: boolean }): Promise<SlotDoc | null> => {
     await args.seatSettled?.();
     if (kind === "temp") return null;
@@ -280,9 +334,10 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
       }
       const personal = await binding("personal", fingerprint, recipeTrace);
       const draft    = await draftDoc(slug, fingerprint, recipeTrace);
-      // THE FACELESS FLOOR MOUNTS NO WORKING LAYER: a realm seats a face, so the floor's own wiki (a floor row) boots on its
-      // canon, draft and personal alone, with no default writable, and its public reads stand. Only a face stands a workbench.
-      if (!args.personaGroupId || !args.workbenchRealm) return { personalUrl: personal.url, draftUrl: draft.url, workingUrl: null };
+      // THE FACELESS FLOOR: a realm seats a face, so no workbench stands here. Where the vessel's control document reads, the
+      // veil floor stands the wiki's working layer in its own floor document (`floorWorking`); where it does not (a locked
+      // floor, a herm that holds none), the wiki boots on its canon, draft and personal alone with no default writable.
+      if (!args.personaGroupId || !args.workbenchRealm) return { personalUrl: personal.url, draftUrl: draft.url, workingUrl: (await floorWorking(slug, true))?.url ?? null };
       const working  = (await workingDoc(slug, true))!;
       return { personalUrl: personal.url, draftUrl: draft.url, workingUrl: working.url };
     },
@@ -297,6 +352,8 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
         mintedByHex: args.mintedByHex(), vesselDid: String(await args.vesselDid()),
         ...(args.liftReadBoundMs !== undefined ? { readBoundMs: args.liftReadBoundMs } : {}),
         ...(args.floorMinter ? { floor: args.floorMinter() } : {}),
+        // THE WORKING FLOOR lifts into the face's realm workbench, stood on ask (`workingDoc` with mint).
+        ...(args.control && args.workbenchRealm ? { working: { control: args.control, workbench: async (slug: string) => (await workingDoc(slug, true))!.url } } : {}),
         traceOf: async (slug) => {
           const url = await args.catalog?.urlOf(wikiBagUri(slug)).catch(() => null);
           if (!url) return null;

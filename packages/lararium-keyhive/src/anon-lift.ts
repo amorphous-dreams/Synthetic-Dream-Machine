@@ -11,10 +11,18 @@
  *
  * ── THE SET IS DERIVED, NEVER LISTED ────────────────────────────────────────────────────────────
  * Every record this vessel minted at the floor and has not yet moved: daemon-bag binding records reading `vessel-only` (personal
- * and draft kinds alike) and the catalog's floor draft records keyed by this vessel's DID. A wiki's WORKING layer never rests
- * at the floor: it rests in the wiki's realm workbench, which only a face stands (cabal-realm#/the-workbench), so no working
- * document waits here to lift. Another vessel's records never match (`minted-by`),
+ * and draft kinds alike) the catalog's floor draft records keyed by this vessel's DID, and the control document's
+ * floor WORKING slots (`floor-slot/<slug>/working`, the veil floor's own wiki content). Another vessel's records never match (`minted-by`),
  * and a record that already reads `face` never matches.
+ *
+ * ── THE WORKING FLOOR GOES TO THE FACE'S REALM WORKBENCH ────────────────────────────────────────
+ * The veil floor stands a wiki's working layer in a document of its own (the-veil-ladder#/the-base-model: "its own local
+ * content, no group"). The Lift carries that document's rows into the face's realm workbench for the wiki
+ * (cabal-realm#/the-workbench: the address derives from the face and the slug, so every device of the face reaches it),
+ * ADDITIVELY: a title the workbench lacks moves; a title it already holds alike moves nothing; a title it holds otherwise
+ * STAYS at the floor and the result names it (`kept`), so no lift overwrites a face's row. A floor document that carried
+ * every row burns and its control row leaves; one that keeps rows stays, holding those rows alone. This leg reads no retired
+ * format: the floor and the workbench both stand in the living design, and every vessel that ever joins a face runs it.
  *
  * ── IDEMPOTENT IN D ─────────────────────────────────────────────────────────────────────────────
  * The mark rests with the binding, in the daemon bag: `lifted-from` (a digest of the floor key) and, until the burn finishes,
@@ -23,7 +31,7 @@
  */
 import {
   DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, canonicalJson, emptyLarDoc,
-  mutableLarRecord, tiddlerText, sha256HexBytesSync, utf8Bytes, wikiDraftDocKey, requireLarDid, plainEntries, storedRecord,
+  mutableLarRecord, tiddlerText, FLOOR_SLOT_ROOT, floorSlotOf, sha256HexBytesSync, utf8Bytes, wikiDraftDocKey, requireLarDid, plainEntries, storedRecord,
   type ChangeOrigin, type CompositeStore, type LarDoc, ownEntry, DOCUMENT_READY_TIMEOUT_MS} from "@lararium/mesh";
 import type { CatalogAccessor } from "@lararium/tw5";
 import type { FaceBagDoor } from "./face-bag-door.js";
@@ -47,6 +55,14 @@ export interface LiftArgs {
   readonly readBoundMs?: number;
   /** The labels a faceless floor gave its documents (the public place key and its DID): a lit face lifts those too. */
   readonly floor?: { readonly mintedByHex: string; readonly vesselDid: string };
+  /**
+   * THE WORKING FLOOR: the control store that names the floor's working slots, and the face's realm workbench for a wiki
+   * (stood on ask). Absent, no working floor lifts (a vessel with no control document held none).
+   */
+  readonly working?: {
+    readonly control: CompositeStore;
+    readonly workbench: (slug: string) => Promise<string>;
+  };
   /** The binding slot a wiki's draft floor belongs to: its fingerprint and trace, or null where the wiki is unregistered. */
   readonly traceOf: (slug: string) => Promise<{ readonly fingerprint: string; readonly recipeTrace: { readonly wikiDocId: string; readonly libraryBagDocIds: readonly string[] } } | null>;
 }
@@ -58,7 +74,11 @@ export interface LiftArgs {
  */
 export interface SkippedDoc { readonly url: string; readonly waits: "arrival" | "rest" }
 /** `skipped`: the records a silent floor document held back this pass; `skippedDocs` names, per skip, the document whose arrival or rest wakes the next pass. */
-export interface LiftResult { readonly moved: readonly string[]; readonly finished: readonly string[]; readonly skipped: readonly string[]; readonly skippedDocs: readonly SkippedDoc[] }
+export interface LiftResult {
+  readonly moved: readonly string[]; readonly finished: readonly string[]; readonly skipped: readonly string[]; readonly skippedDocs: readonly SkippedDoc[];
+  /** Per wiki, the floor working titles the face's workbench already held otherwise: they stay at the floor, named, never overwritten. */
+  readonly kept?: readonly { readonly slug: string; readonly titles: readonly string[] }[];
+}
 
 const PREFIXES = [
   { prefix: PERSONAL_BINDINGS_PREFIX, kind: "personal-binding" },
@@ -182,8 +202,10 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
       "lifted-from": digestOf(title), "lifted-from-url": oldUrl,
     }, `bind-${title.slice(-8)}`);
     await burn(args, oldUrl);
+    // The burn landed: the pending mark leaves with it, so a replay finds nothing to finish.
+    const { ["lifted-from-url"]: _burned, ...settled } = carried(fieldsOf(await args.daemonStore.get(title)) ?? {});
     await putBinding(args, title, {
-      ...carried(fieldsOf(await args.daemonStore.get(title)) ?? {}), text: next.url, "face-reach": "face", "keyhive-doc-id": next.keyhiveDocId,
+      ...settled, text: next.url, "face-reach": "face", "keyhive-doc-id": next.keyhiveDocId,
       "lifted-from": digestOf(title),
     }, `done-${title.slice(-8)}`);
     moved.push(title);
@@ -235,7 +257,52 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
       moved.push(floorKey);
     }
   }
-  return { moved, finished, skipped, skippedDocs };
+
+  // 4 — the veil floor's working slots, named by the control document: each wiki's rows go to the face's realm workbench.
+  const kept: { slug: string; titles: string[] }[] = [];
+  const working = args.working;
+  if (working) {
+    for (const { title, record } of await working.control.entries()) {
+      const named = title.startsWith(FLOOR_SLOT_ROOT) ? floorSlotOf(title) : null;
+      const fields = fieldsOf(record);
+      const floorUrl = tiddlerText(record);
+      if (!named || named.kind !== "working" || !fields || !floorUrl || fields["face-reach"] !== "vessel-only" || !mintedHere(args, fields["minted-by"])) continue;
+      try {
+        const floor = await boundedRead(args, floorUrl, "arrival", async () => { const h = await args.repo.find(floorUrl); await h.whenReady?.(); return h; });
+        const source = plainEntries(floor.doc()?.tiddlers);
+        const benchUrl = await working.workbench(named.slug);
+        const bench = await boundedRead(args, benchUrl, "arrival", async () => { const h = await args.repo.find(benchUrl); await h.whenReady?.(); return h; });
+        const same = (a: unknown, b: unknown): boolean => canonicalJson(textFieldsOf(a as Record<string, unknown>)) === canonicalJson(textFieldsOf(b as Record<string, unknown>));
+        const stays: string[] = [];
+        const lifts: string[] = [];
+        const standing = bench.doc()?.tiddlers;
+        for (const [rowTitle, row] of source) {
+          const there = ownEntry(standing, rowTitle);
+          if (there === undefined) lifts.push(rowTitle);
+          else if (!same((there as { tiddler?: unknown }).tiddler ?? {}, (row as { tiddler?: unknown }).tiddler ?? {})) stays.push(rowTitle);
+        }
+        if (lifts.length > 0) {
+          const carry = new Set(lifts);
+          bench.change((doc) => { for (const [rowTitle, row] of source) if (carry.has(rowTitle) && ownEntry(doc.tiddlers, rowTitle) === undefined) doc.tiddlers[rowTitle] = storedRecord(row); });
+        }
+        await boundedRead(args, benchUrl, "rest", () => args.repo.flush([bench.documentId]));
+        if (stays.length === 0) {
+          // Every row rests in the workbench: the floor document burns, then its control row leaves.
+          await burn(args, floorUrl);
+          await working.control.remove(title, originFor(`work-${named.slug.slice(0, 12)}`));
+        } else {
+          // The rows the workbench holds otherwise stay, alone, so a replay reads the same floor and moves nothing.
+          const stay = new Set(stays);
+          floor.change((doc) => { for (const rowTitle of Object.keys(doc.tiddlers)) if (!stay.has(rowTitle)) delete doc.tiddlers[rowTitle]; });
+          await boundedRead(args, floorUrl, "rest", () => args.repo.flush([floor.documentId]));
+          kept.push({ slug: named.slug, titles: stays.sort() });
+          console.warn(`[anon-lift] ${named.slug}: ${stays.length} floor row(s) stay at the floor; the face's workbench holds each title otherwise (${stays.slice(0, 5).join(", ")}${stays.length > 5 ? ", …" : ""})`);
+        }
+        if (lifts.length > 0 || stays.length === 0) moved.push(title);
+      } catch (error) { if (error instanceof FloorDocumentUnavailable) { held(error, title); continue; } throw error; }
+    }
+  }
+  return { moved, finished, skipped, skippedDocs, ...(kept.length > 0 ? { kept } : {}) };
 }
 
 /** Remove the catalog floor record whose key digests to `digest`, if one still stands. */

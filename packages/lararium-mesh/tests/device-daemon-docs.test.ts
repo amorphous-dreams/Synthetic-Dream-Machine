@@ -7,7 +7,7 @@
  * document names it waits held until the control document names its owner. A later entry never re-files a document.
  */
 import { describe, expect, test } from "vitest";
-import { CONTROL_HOME_ID, daemonFaceCanonBag, deviceDaemonDocs, emptyLarDoc, storedLarRecord, wikiSlotUri, type LarDoc, type LitDeviceFace, type LitDeviceFaces } from "../src/index.js";
+import { CONTROL_HOME_ID, daemonFaceCanonBag, deviceDaemonDocs, floorSlotOf, floorSlotTitle, emptyLarDoc, storedLarRecord, wikiSlotUri, type LarDoc, type LitDeviceFace, type LitDeviceFaces } from "../src/index.js";
 
 const WORKING = wikiSlotUri("daemon", "working");
 const G1 = "group-one", G2 = "group-two";
@@ -117,5 +117,41 @@ describe("the lit set: each open face's device documents file under their own fa
     expect(docs.bagOf("g1-doc", afterLock)?.face).toBe(FACE1);
     expect(docs.bagOf("g2-doc", afterLock)?.face).toBeNull();
     expect(docs.bagOf("g2-doc", [])?.face).toBeNull();
+  });
+});
+
+describe("the veil floor's wiki slot seals under the vessel's key (the-veil-ladder#/the-base-model)", () => {
+  const GARDEN = wikiSlotUri("garden", "working");
+  test("RED V1: a floor wiki slot waits held from its announce, then files as the vessel's own once the control document names it", () => {
+    const { docs, floor } = table();
+    docs.announced(GARDEN, "garden-floor");
+    // Announced and unnamed: held (no face), never clear, with or without a lit face.
+    expect(docs.bagOf("garden-floor", UNLIT)).toEqual({ bagId: GARDEN, face: null });
+    expect(docs.bagOf("garden-floor", lit(G1, F1, FACE1))).toEqual({ bagId: GARDEN, face: null });
+    expect(docs.readControl(control({ [floorSlotTitle("garden", "working")]: "garden-floor" }))).toBe(true);
+    expect(floor).toEqual([["garden-floor", GARDEN]]);
+    // The held homes answer it (the vessel's key); no face of the lit set ever seals it.
+    expect(docs.bagOf("garden-floor", lit(G1, F1, FACE1))).toBeUndefined();
+    expect(docs.docsOf(GARDEN, lit(G1, F1, FACE1))).toEqual([]);
+    expect(docs.has("garden-floor")).toBe(true);
+  });
+  test("V1b: a floor-slot row reads its wiki and kind back, and a torn title names none", () => {
+    expect(floorSlotOf(floorSlotTitle("my wiki/β", "working"))).toEqual({ slug: "my wiki/β", kind: "working" });
+    expect(floorSlotOf(`${CONTROL_HOME_ID}/floor-slot/garden`)).toBeNull();
+    expect(floorSlotOf(`${CONTROL_HOME_ID}/daemon-slot/working/floor`)).toBeNull();
+  });
+});
+
+describe("a veil floor's wiki slot reaches the house's wiki islands; a daemon device slot never does", () => {
+  test("RED V1c: floorWiki reads true for an announced or named floor wiki slot, false for every daemon slot and group document", () => {
+    const { docs } = table();
+    const GARDEN = wikiSlotUri("garden", "working");
+    docs.announced(GARDEN, "garden-floor");
+    expect(docs.floorWiki("garden-floor"), "announced, not yet named").toBe(true);
+    docs.readControl(control({ [floorSlotTitle("garden", "working")]: "garden-floor", [slot("floor")]: "daemon-floor", [slot(G1)]: "group-doc" }));
+    expect(docs.floorWiki("garden-floor")).toBe(true);
+    expect(docs.floorWiki("daemon-floor"), "the daemon wiki's floor slot stays with the daemon island").toBe(false);
+    expect(docs.floorWiki("group-doc")).toBe(false);
+    expect(docs.floorWiki("unknown")).toBe(false);
   });
 });

@@ -707,10 +707,12 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     const handle = documentId ? (repo.handles as Record<string, { isReady(): boolean; doc(): unknown } | undefined>)[documentId] : undefined;
     return handle?.isReady() ? A.save(handle.doc() as A.Doc<unknown>) : null;
   }, {
-    onSlot: (bagId, documentId) => {
+    onSlot: (bagId, documentId, floor) => {
       // A daemon device slot named before its first byte files by the group the control document names for it, never by
       // the face lit as it announces: it waits held (never clear, never under another face's key) until then.
-      if (bagId.startsWith(DAEMON_SLOT_PREFIX)) {
+      // A VEIL FLOOR'S WIKI SLOT (`floor`) files the same way (the node's one order): the vessel owns it, so it waits held and
+      // then seals beside the control document under the vessel's key, never under a lit face's.
+      if (bagId.startsWith(DAEMON_SLOT_PREFIX) || floor) {
         if (deviceDocs.announced(bagId, documentId)) { sealedRest.store.mapMoved(); reverdict(); }
         const session = sealedCells.session;
         if (session !== null) void sealedRest.sealMapped(documentId, session).catch(() => { /* it seals at its next booked save */ });
@@ -761,7 +763,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       gate: () => siblingGate,
       // THE DYAD'S SHADOW (kapae#/reach): a sibling whose device the fleet root set aside reaches nothing.
       aside: (peerId) => siblingAside(peerId),
-    }, { has: (id) => vesselOnly.has(id) || secretHomes.has(id) }, { has: (peerId) => houseIslands.has(peerId) }, { has: (peerId) => wikiIslands.has(peerId) }),
+    }, { has: (id) => vesselOnly.has(id) || secretHomes.has(id) }, { has: (peerId) => houseIslands.has(peerId) }, { has: (peerId) => wikiIslands.has(peerId) }, { has: (id) => deviceDocs.floorWiki(id) }),
   });
   // THE SECRET HOME'S REST, bound to this Repo: an enrollment or an open maps the home before its first byte.
   bindSecretHomeRest(repo, secretHomes.rest((documentId) => sealedRest.restsSealed(documentId), () => {
@@ -2512,12 +2514,14 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
  * A SIBLING — a peer the sibling channel proved — never reads as a house member: `siblings` hands it to the
  * sibling gate, the ring's sibling path, and nothing else reaches it.
  */
-export function browserShareConfig(relayPeers: ReadonlySet<string>, fedGateOf: () => FederationGate | null, siblings?: SiblingShare | null, vesselOnly?: { has(id: string): boolean }, islands?: { has(id: string): boolean }, wikiIslands?: { has(id: string): boolean }) {
+export function browserShareConfig(relayPeers: ReadonlySet<string>, fedGateOf: () => FederationGate | null, siblings?: SiblingShare | null, vesselOnly?: { has(id: string): boolean }, islands?: { has(id: string): boolean }, wikiIslands?: { has(id: string): boolean }, floorWiki?: { has(id: string): boolean }) {
   // `siblings.aside` carries the dyad's shadow: mesh's one law reads it ahead of the sibling gate.
   // VESSEL-ONLY DOCUMENTS (the secret home, the control document and what it names) reach only this vessel's own DAEMON
   // island: a wiki island renders pages and never needs a custody document, so it never receives one (`wikiIslands`).
+  // A VEIL FLOOR'S WIKI SLOT (`floorWiki`) alone reaches a wiki island too: it holds the wiki's own working layer, the vessel's
+  // own content, and the wiki island mounts it. It still reaches no relay peer and no sibling.
   return shareConfigOf(async (peerId, documentId) => {
-    if (documentId && vesselOnly?.has(documentId)) return !relayPeers.has(peerId) && !siblings?.isSibling(peerId) && !!islands?.has(peerId) && !wikiIslands?.has(peerId);
+    if (documentId && vesselOnly?.has(documentId)) return !relayPeers.has(peerId) && !siblings?.isSibling(peerId) && !!islands?.has(peerId) && (!wikiIslands?.has(peerId) || !!floorWiki?.has(documentId));
     return federationShareDecision(relayPeers, fedGateOf(), peerId, documentId, siblings ?? null);
   });
 }

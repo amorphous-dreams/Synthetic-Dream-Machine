@@ -20,6 +20,23 @@ import { daemonFaceCanonBag, wikiSlotUri } from "./wiki-recipe.js";
 import { tiddlerText, type LarDoc } from "./base-doc.js";
 import { documentIdOfUrl, type SealedBag } from "./sealed-rest.js";
 
+/**
+ * THE VEIL FLOOR'S WIKI SLOTS (the-veil-ladder#/the-base-model: every vessel holds "its own local content, no group"). A wiki's
+ * working layer a vessel stands with no face rests in a floor document the control document names
+ * (`floor-slot/<slug>/<kind>`); the vessel owns it, so it seals beside the control document under the vessel's key, on
+ * every vessel class, and waits held from its announce until the control document names it.
+ */
+export const FLOOR_SLOT_ROOT = `${CONTROL_HOME_ID}/floor-slot/`;
+/** The control row naming the floor's `kind` slot of wiki `slug`. */
+export function floorSlotTitle(slug: string, kind: string): string { return `${FLOOR_SLOT_ROOT}${encodeURIComponent(slug)}/${kind}`; }
+/** The wiki and kind a floor-slot control row names, or null where the title names none. */
+export function floorSlotOf(title: string): { readonly slug: string; readonly kind: string } | null {
+  if (!title.startsWith(FLOOR_SLOT_ROOT)) return null;
+  const [slug, kind, ...rest] = title.slice(FLOOR_SLOT_ROOT.length).split("/");
+  if (!slug || !kind || rest.length > 0) return null;
+  try { return { slug: decodeURIComponent(slug), kind }; } catch { return null; }
+}
+
 /** The daemon wiki's device slot bags share this prefix (`wikis/daemon/<kind>`). */
 export const DAEMON_SLOT_PREFIX = wikiSlotUri("daemon", "working").replace(/working$/, "");
 
@@ -60,6 +77,12 @@ export interface DeviceDaemonDocs {
   has(documentId: string): boolean;
   /** Every device document filed here, floor slots included. */
   ids(): string[];
+  /**
+   * Is `documentId` a VEIL FLOOR wiki slot (the vessel's own wiki content, announced or named)? It stays on this vessel like
+   * every device document, and unlike the rest it reaches the house's own WIKI islands too: the wiki island mounts it as the
+   * wiki's working layer. It never reaches a wire peer or a sibling.
+   */
+  floorWiki(documentId: string): boolean;
 }
 
 export function deviceDaemonDocs(io: { readonly enrollFloor: (documentId: string, bagId: string) => void }): DeviceDaemonDocs {
@@ -90,6 +113,10 @@ export function deviceDaemonDocs(io: { readonly enrollFloor: (documentId: string
           if (!kind || !group) continue;
           const owner = decodeURIComponent(group);
           moved = file(documentId, wikiSlotUri("daemon", kind as never), owner === "floor" ? { kind: "floor" } : { kind: "group", group: owner }) || moved;
+        } else if (title.startsWith(FLOOR_SLOT_ROOT)) {
+          const named = floorSlotOf(title);
+          if (!named) continue;
+          moved = file(documentId, wikiSlotUri(named.slug, named.kind as never), { kind: "floor" }) || moved;
         } else if (title.startsWith(canonPrefix)) {
           const relation = decodeURIComponent(title.slice(canonPrefix.length));
           let bagId: string;
@@ -108,6 +135,10 @@ export function deviceDaemonDocs(io: { readonly enrollFloor: (documentId: string
     },
     docsOf: (bagId, lit) => [...owners].filter(([, f]) => f.bagId === bagId && ownerIn(f.owner, lit) !== null).map(([id]) => id),
     has: (documentId) => owners.has(documentId),
+    floorWiki: (documentId) => {
+      const filed = owners.get(documentId);
+      return filed !== undefined && !filed.bagId.startsWith(DAEMON_SLOT_PREFIX) && (filed.owner.kind === "floor" || filed.owner.kind === "unnamed");
+    },
     ids: () => [...owners.keys()],
   };
 }

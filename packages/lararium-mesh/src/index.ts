@@ -660,7 +660,7 @@ export * from "./lockbox-wrap.js";
 export * from "./content-key-holder.js";
 export * from "./sealed-doc-store.js";
 export * from "./sealed-rest.js";
-export { deviceDaemonDocs, vesselHeldBagOf, DAEMON_SLOT_PREFIX, type DeviceDaemonDocs, type LitDeviceFace, type LitDeviceFaces } from "./device-daemon-docs.js";
+export { deviceDaemonDocs, vesselHeldBagOf, DAEMON_SLOT_PREFIX, FLOOR_SLOT_ROOT, floorSlotTitle, floorSlotOf, type DeviceDaemonDocs, type LitDeviceFace, type LitDeviceFaces } from "./device-daemon-docs.js";
 export * from "./published-bag-key.js";
 export * from "./held-rest-key.js";
 export * from "./secret-home.js";

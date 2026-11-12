@@ -486,6 +486,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         gateCleared ? undefined : gateClear, islandHeadsOf(ctx.repo, ids))) : ctx.repo,
       deviceScoped: (slug) => slug === DAEMON_WIKI_SLUG, control: controlOf(ctx),
       ...(docStoreDoor ? { announceDevice: (kind: Exclude<WikiSlotKind, "temp">, documentId: string) => announceSlotDoc(docStoreDoor, wikiSlotUri(DAEMON_WIKI_SLUG, kind), documentId) } : {}),
+      // THE VEIL FLOOR'S WIKI SLOT names itself to the vessel as the vessel's own, before its first byte (it seals under the vessel's key).
+      ...(docStoreDoor ? { announceFloor: (slug: string, kind: "working", documentId: string) => announceSlotDoc(docStoreDoor, wikiSlotUri(slug, kind), documentId, true) } : {}),
       daemonStore: ctx.composite, ...(kh ? { keyhive: kh } : {}),
       catalog: ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl, ctx.faceCatalogUrl) : null,
       vesselDid: () => didFromVerifyingKey(mintedByHex),
