@@ -39,6 +39,20 @@ written           = "2026-10-22"
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/boot`>>
+
+!! The boot handoff ~ a projection that boots its own engine receives the island's boot set first
+
+* `port:open{boot: true}` asks for it. The island posts `port:boot{cid, role, member, members, i, n, bytesBase64}` chunks ahead of the first snapshot chunk: the engine blob (`role: "engine"`, member 1), then each plugin blob in the island's own boot order, verbatim from its CAS, 196,608 raw bytes a chunk at most.
+* The island re-hashes each member against its CID before a byte leaves. A member its CAS cannot answer true sends nothing more of the set, and the snapshot still follows: the projection names the member it never received.
+* The projection joins the chunks, hashes each member against the CIDs its vessel named and reads the tiddlers; the vessel names, the island sends, and neither alone decides what the engine evaluates.
+* The snapshot's stable base holds across the handoff: the port buffers live changes while the members resolve, exactly as it does while the store reads (#/snapshot).
+* A later open on the same engine (a reset, the one step down, a new leader's fresh snapshot) asks no boot set.
+* Reds: `port-boot-hands-the-set-whole`, `port-boot-corrupt-member-never-leaves`, and the reader's `mirror-boot-member-mismatch`, `-unnamed`, `-missing`. Control: an open that asks no boot receives the snapshot alone.
+* Owed: `port:boot` rides outside the lag byte budget and carries no ack of its own; a relay with a narrow frame wants its own chunk bound.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/reset`>>
 
 !! Q2 ~ a cursor resets by name, never by skipping
@@ -174,6 +188,6 @@ What stays owed, each by name:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;qaCqUTp3td5tx3OijuOirJPkJQ9tECo3vS8m2_2GUNs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;aA99hdwidC8boVf_UogK2yrXyO6FmKd7yZmeWQdqVHQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

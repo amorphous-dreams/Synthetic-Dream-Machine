@@ -32,7 +32,7 @@ import { workerTraceInitScript } from "./worker-trace.mjs";
 import { awaitPage, waitForWitness } from "./page-wait.mjs";
 import { readFileSync, existsSync } from "node:fs";
 import { randomUUID } from "node:crypto";
-import { contentReading, labelReading, settleOf, styledReadings, unbakedSources } from "./mirror-read.mjs";
+import { contentReading, handoffReading, labelReading, settleOf, styledReadings, unbakedSources } from "./mirror-read.mjs";
 
 const WEB = process.env.WELD_WEB_URL ?? "http://localhost:5173";
 
@@ -380,7 +380,7 @@ const UNBAKED = new URL("../../genesis/unbaked.json", import.meta.url);
 /**
  * The mirror vectors. M1 waits on the product's own settle (`full`, or `skinny` with a named reason) through `settleOf`, whose
  * source the page evaluates, so one implementation decides on both sides. M2-M4 read the shown mirror's shadow root and the
- * engine's read-only reading (`larMirrorReading`). M5 types through Playwright's real mouse and keyboard into the mirror and
+ * engine's read-only reading (`larMirrorReading`); M6 reads off it that the engine booted from the port's own handoff. M5 types through Playwright's real mouse and keyboard into the mirror and
  * reads the saved title back off the worker-rendered floor, the worker's own render of the same wiki.
  */
 async function readMirror(page) {
@@ -427,6 +427,7 @@ async function readMirror(page) {
   for (const reading of styledReadings(probe, unbaked)) report(reading);
   report(contentReading(probe.firstTitle, probe.reading, unbaked));
   report(labelReading(probe.paneWiki, probe.cardWiki));
+  report(handoffReading(probe.reading?.handed ?? null));
 
   // M5: a new tiddler typed through real input. Playwright's locators pierce the open shadow root; its clicks and keys are real
   // input events, never a synthetic dispatch on a hidden node.

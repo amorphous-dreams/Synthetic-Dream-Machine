@@ -90,6 +90,7 @@ export async function standMirror(options: {
   const emit = (event: MirrorEvent) => { for (const listener of listeners) listener(event); };
   let endedWhy = "";
   let mirror: Awaited<ReturnType<typeof bootGlass>> | null = null;
+  let handed = { members: 0, records: 0 };
 
   // The standing record follows the page's own leave: `pagehide` clears it, a back-forward restore (`pageshow` persisted) writes it again.
   let standingOn = false;
@@ -176,6 +177,7 @@ export async function standMirror(options: {
         portId, opened: { records: hand.records() }, ...(options.door ? { door: options.door } : {}), seams: { ...mirrorSeams, ...(landed ? { landed } : {}), refused }, deferPaint: true });
     } catch (error) { return quit({ why: reasonOf(error), capacity: capacity(error) }); }
     if (bootFault || ended) { const failure = bootFault ?? { why: endedWhy, capacity: false }; mirror.unmount(); mirror = null; return failure; }
+    handed = { members: hand.members(), records: hand.records().length };
     return null;
   };
 
@@ -209,6 +211,8 @@ export async function standMirror(options: {
     kind: "mirror" as const,
     get width() { return width; },
     settled,
+    /** What the port handed before the engine stood: the boot members it carried whole, and the records in the store at boot. */
+    get handed() { return handed; },
     /** The mirror's engine, for the page's own reads (its goldens, its tooling); the person's edits cross the port, never this handle. */
     get tw() { return mirror!.tw; },
     /** How many writes the mirror sent and holds no answer for: the page holds its leave while this reads above zero. */

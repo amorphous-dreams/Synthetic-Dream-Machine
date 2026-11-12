@@ -59,7 +59,7 @@ export async function standPageMirror(root: {
   Object.defineProperty(root.host, "larMirrorWritesSent", { configurable: true, get: () => result.writesSent() });
   Object.defineProperty(root.host, "larMirrorQuiescent", { configurable: true, get: () => result.quiescent() });
   // A read-only reading for the weld: the story the mirror opened, the wiki's own default story, and the palette its sheet reads.
-  Object.defineProperty(root.host, "larMirrorReading", { configurable: true, get: () => mirrorReading(result.tw as unknown as ReadableEngine) });
+  Object.defineProperty(root.host, "larMirrorReading", { configurable: true, get: () => ({ ...mirrorReading(result.tw as unknown as ReadableEngine), handed: result.handed }) });
   // THE PAGE HOLDS ITS LEAVE while a mirror write waits for its answer (the answer comes once the write rests), the law the
   // worker-rendered view kept for a confirmed edit. The browser's own prompt carries it; the pending count at the moment of the leave decides.
   const hold = (event: BeforeUnloadEvent): void => { if (result.pending() > 0) { event.preventDefault(); event.returnValue = ""; } };

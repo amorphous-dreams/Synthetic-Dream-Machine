@@ -55,6 +55,8 @@ export function makeBootHandoff(names: GlassBootNames | null, portId: string, ha
       }
       return records !== null;
     },
+    /** How many boot members the port carried whole. */
+    members(): number { return [...members.values()].filter(member => member.parts.size === member.n).length; },
     /** The records of the first whole snapshot, in the island's order. */
     records(): PortWireRecord[] { return records ?? []; },
     /** Messages that arrived after the snapshot, in order; the adaptor takes them once it stands. */

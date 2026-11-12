@@ -4,7 +4,7 @@
  */
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { contentReading, labelReading, rgbOf, settleOf, sidebarInPane, styledReadings, unbakedSources } from "./browser-weld/mirror-read.mjs";
+import { contentReading, handoffReading, labelReading, rgbOf, settleOf, sidebarInPane, styledReadings, unbakedSources } from "./browser-weld/mirror-read.mjs";
 
 const THEME = "packages/lararium-tw5/plugins/tiddlywiki-vanilla.json";
 const SHADOWS = "packages/lararium-tw5/plugins/lararium-boot-shadows.json";
@@ -87,4 +87,11 @@ test("RED: a pane that names the summon target or nothing fails the label; CONTR
 test("unbakedSources reads the declaration's sources, and an absent file declares nothing", () => {
   assert.deepEqual(unbakedSources(null), []);
   assert.deepEqual(unbakedSources(JSON.stringify({ format: "lararium-genesis-unbaked", unbaked: [{ source: THEME, sha256: "a", why: "b" }] })), [THEME]);
+});
+
+test("M6: the mirror boots from the port's handoff; a mirror that names none, a set short of a plugin, or a store with no record reads red", () => {
+  assert.equal(handoffReading({ members: 5, records: 5600 }).status, "ok");
+  assert.equal(handoffReading(null).status, "bad");
+  assert.match(handoffReading({ members: 1, records: 10 }).message, /1 boot member/);
+  assert.match(handoffReading({ members: 5, records: 0 }).message, /none of the wiki's records/);
 });

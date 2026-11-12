@@ -18,6 +18,7 @@ test("the whole handoff: the page boots from what the island hands over the port
     expect(result.tw.wiki.getTiddlerText("$:/SiteTitle")).toBe("The Handed Wiki");
     expect(result.tw.wiki.getTiddlerText("Landed1")).toBe("t");
     expect(r.messages.filter(m => m.type === "port:write")).toEqual([]);             // a booted record never posts itself
+    expect(result.handed).toEqual({ members: 2, records: 2 });                       // the engine and the house plugin, and both records
     result.unmount();
   } finally { r.host.remove(); }
 });

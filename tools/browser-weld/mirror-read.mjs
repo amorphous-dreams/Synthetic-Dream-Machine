@@ -125,3 +125,16 @@ export function labelReading(paneWiki, cardWiki) {
   if (paneWiki && cardWiki && paneWiki === cardWiki) return { name, status: "ok", message: `the pane names "${paneWiki}", the vessel card's wiki` };
   return { name, status: "bad", message: `the pane names "${paneWiki ?? "(nothing)"}"; the vessel card names "${cardWiki ?? "(nothing)"}"` };
 }
+
+/**
+ * THE HANDOFF READING: the mirror's engine booted from what the vessel's island handed it over the port (the engine blob, each
+ * plugin blob, and the wiki's records in the store before the engine stood), never from a store the page read itself. `handed`
+ * comes off the mirror's own read-only reading: the members the port carried and verified, and the records the engine booted with.
+ */
+export function handoffReading(handed) {
+  const name = "M6 mirror-boots-handed";
+  if (!handed) return { name, status: "bad", message: "the mirror names no handoff: its engine booted from something the port never carried" };
+  if (!(handed.members >= 2)) return { name, status: "bad", message: `the port handed ${handed.members ?? 0} boot member(s): an engine and at least one plugin blob make a boot set` };
+  if (!(handed.records >= 1)) return { name, status: "bad", message: "the engine booted with none of the wiki's records: the snapshot landed after boot, so TW5 unpacked no record at boot" };
+  return { name, status: "ok", message: `the island handed ${handed.members} boot members and ${handed.records} records over the port before the engine stood` };
+}
