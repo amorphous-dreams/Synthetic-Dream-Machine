@@ -498,6 +498,7 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
     onPhase: (p) => { paint(p); projectionSink.setBreath("lares", { phase: p }); },
     onFrame: (frame) => { if (projectionSink.apply(frame) === "painted" && frame.keys.some((key) => key.key === "lar:surface")) { reportFirstPaint(); mirrorTrigger?.(); } mirrorShownSync?.(); },
     onControlResult: (_surface, result) => { projectionSink.applyResult(result); },
+    onControlPending: (_surface, eventId) => { projectionSink.applyPending(eventId); },
     onPortMessage: (binding, islandKey, msg) => pagePortDelivery.onPortMessage(binding, islandKey, msg),
     onStatus: (status) => {
       if (status.rest) paintRest(document, status.rest);

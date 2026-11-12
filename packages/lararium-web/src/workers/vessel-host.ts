@@ -447,14 +447,18 @@ export function standVesselHost(env: VesselHostEnv = {}) {
               return;
             case "control-event": {
               const sessionId = conn.session?.sessionId;
+              const eventId = msg.ev.eventId;
+              // AN EVENTID NAMES ONE PENDING ACT: a second event under it would take the first one's result. The resend draws a
+              // named, causal reply instead (dreamdom-port-contract #/retry-law): the act still waits here, so the page's retry
+              // bound counts that send as acknowledged. The act holds its id from the moment it arrives, before the lit vessel
+              // answers, so a resend that lands while the first send still waits on the light reads it pending too.
+              if (controlSenders.has(eventId)) { conn.post({ t: "control-pending", surface: msg.surface, eventId }); return; }
+              controlSenders.set(eventId, conn);
+              const release = (): void => { if (controlSenders.get(eventId) === conn) controlSenders.delete(eventId); };
               void litFaceVessel().then((v) => {
                 if (!sessionId || conn.session?.sessionId !== sessionId) throw new VesselSessionRefused("session-unadmitted");
-                // AN EVENTID NAMES ONE PENDING ACT: a second event under it would take the first one's result.
-                if (controlSenders.has(msg.ev.eventId)) throw new Error(`control-event-pending: the event ${msg.ev.eventId} already waits on its result`);
-                controlSenders.set(msg.ev.eventId, conn);
-                try { v.sendControlEvent(msg.surface, msg.ev); }
-                catch (err) { if (controlSenders.get(msg.ev.eventId) === conn) controlSenders.delete(msg.ev.eventId); throw err; }
-              }).catch(refusedQuietly("a control event"));
+                v.sendControlEvent(msg.surface, msg.ev);
+              }).catch((err: unknown) => { release(); refusedQuietly("a control event")(err); });
               return;
             }
             case "set-surface": void litFaceVessel().then((v) => v.setActiveSurface(msg.surface)).catch(refusedQuietly("a surface switch")); return;
