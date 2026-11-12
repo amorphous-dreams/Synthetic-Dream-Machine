@@ -14,10 +14,11 @@
  */
 import type { AutomergeUrl, Repo } from "@automerge/automerge-repo";
 import {
-  DOCUMENT_HANG_BOUND_MS, ed25519SignerFromSeed, faceAtomKeyFromSeed, personaActRecordsOfGroup, tiddlerText, type LarDoc,
+  DOCUMENT_HANG_BOUND_MS, ed25519SignerFromSeed, faceAtomKeyFromSeed, personaActRecordsOfGroup, type EdgeStanding, type HandLineage, type LarDoc,
 } from "@lararium/mesh";
 import {
-  CarriedSeatRefused, carriedSeatGrants, composeSeatRequest, keepCarriedSeatGrant, placeSeatRequest, readSeatGrant, readSeatRequest, seatGrantAnswering, type FleetSeatGrant, type FleetSeatRequest,
+  CarriedSeatRefused, boardDyadReader, composeSeatRequest, dropCarriedSeatGrant, keepCarriedSeatGrant, keptSeatGrant, placeSeatRequest, readSeatGrant, readSeatRequest, seatGrantAnswering, verifyCarriedSeatGrant,
+  type FaceGrantVerdict, type FleetSeatGrant, type FleetSeatRequest, type FounderLineage,
 } from "@lararium/keyhive";
 import { requireBrowserFaceAtomSeed } from "./browser-face-atom.js";
 import { browserRootFaces, keptOverlays } from "./browser-fleet-root.js";
@@ -83,38 +84,70 @@ export async function browserSeatGrant(opts: { readonly idbName: string; readonl
 }
 
 /** Keep a carried seat grant on the joined leaf. The next boot's seat reads it; answers the face it seats. */
-export async function browserSeatGrantLand(opts: { readonly idbName: string; readonly repo: Repo; readonly grant: unknown }): Promise<{ readonly personaGroup: string }> {
+export async function browserSeatGrantLand(opts: { readonly idbName: string; readonly repo: Repo; readonly grant: unknown; readonly ground: SeatVerifyGround | null }): Promise<{ readonly personaGroup: string }> {
   const group = (opts.grant as { personaGroup?: unknown } | null)?.personaGroup;
   if (typeof group !== "string") return refuse("seat-grant-malformed", "the file names no face.");
   const overlay = (await keptOverlays(opts.idbName))[group];
   if (!overlay?.deviceEdge) return refuse("seat-grant-other-face", "this browser landed no join of that face.");
   const grant = readSeatGrant(opts.grant, { group, deviceKey: overlay.deviceEdge.deviceVerifyingKey });
+  // THE FULL VERIFICATION FIRST: a grant that fails it never rests where the boot or the seat reads it.
+  if (opts.ground === null) return refuse("seat-grant-unverified", "this boot holds no pinned root or persona-KEL to verify the grant against.");
+  const verdict = await browserVerifySeat({ idbName: opts.idbName, repo: opts.repo, grant, ground: opts.ground });
+  if (!verdict.ok) return refuse("seat-grant-unverified", `the grant did not verify: ${verdict.reason}`);
   const home = await openBrowserSecretHome(opts.idbName, opts.repo);
   keepCarriedSeatGrant(home.handle, grant);
   await opts.repo.flush([home.handle.documentId]);
   return { personaGroup: group };
 }
 
+/** What the full verification of a carried grant reads, all of it held by this vessel before any road: the root it pinned,
+ *  the face's persona-KEL off its own board, and the face's lineage for the founder's standing off its fleet board. */
+export interface SeatVerifyGround {
+  readonly personaRootDid: string;
+  readonly personaKel: FounderLineage;
+  readonly lineage: HandLineage | null;
+}
+
 /**
- * Does this browser keep the root holder's carried seat grant for its own device of `personaGroup`? It reads the grant at its
- * own title in the secret home and checks it names this face and this device (`readSeatGrant`). The daemon island's seat
- * judges its signature and the founder's standing; a grant that fails there seats nothing. A secret home that does not open
- * (a locked keystore) reads as no grant.
+ * THE FULL VERIFICATION OF A CARRIED GRANT on this browser (`verifyCarriedSeatGrant`): the grant answers this leaf's own
+ * request (the leaf composes it again from its landing's card and edge), and its record verifies under the pinned root, the
+ * persona-KEL head and the founder's standing, read off this vessel's own fold of the face's fleet board.
  */
-export async function browserSeatKept(idbName: string, repo: Repo, personaGroup: string): Promise<boolean> {
-  const overlay = (await keptOverlays(idbName))[personaGroup];
-  if (!overlay?.deviceEdge) return false;
-  const self = { group: personaGroup, deviceKey: overlay.deviceEdge.deviceVerifyingKey };
-  try {
-    const home = await openBrowserSecretHome(idbName, repo);
-    const [kept] = await carriedSeatGrants({
-      listVisible: async () => Object.keys(home.handle.doc()?.tiddlers ?? {}),
-      get: async (title) => { const text = tiddlerText(home.handle.doc()?.tiddlers?.[title]); return typeof text === "string" ? { tiddler: { text } } : null; },
-    }, self.group, self.deviceKey);
-    if (!kept) return false;
-    readSeatGrant({ kind: "fleet-seat-grant", personaGroup, title: kept.title, record: kept.record }, self);
-    return true;
-  } catch { return false; }
+export async function browserVerifySeat(opts: { readonly idbName: string; readonly repo: Repo; readonly grant: FleetSeatGrant; readonly ground: SeatVerifyGround }): Promise<FaceGrantVerdict> {
+  const group = opts.grant.personaGroup;
+  const overlay = (await keptOverlays(opts.idbName))[group];
+  if (!overlay?.deviceEdge) return { ok: false, reason: "this browser landed no join of that face" };
+  let request: FleetSeatRequest;
+  try { request = await browserSeatRequest({ idbName: opts.idbName, repo: opts.repo, personaGroup: group }); }
+  catch (error) { return { ok: false, reason: `this leaf cannot compose its own seat request: ${error instanceof Error ? error.message : String(error)}` }; }
+  const founderKey = opts.grant.record.founderEdge?.deviceVerifyingKey;
+  const scope = opts.ground.personaRootDid.trim().toLowerCase().replace(/^0x/, "");
+  const standing: EdgeStanding = typeof founderKey === "string"
+    ? await boardDyadReader(opts.repo, undefined, undefined, undefined, undefined, scope, opts.ground.lineage)(opts.ground.personaRootDid, founderKey)
+    : "unknown";
+  return verifyCarriedSeatGrant({ grant: opts.grant, request, ctx: {
+    personaRootDid: opts.ground.personaRootDid, personaKel: opts.ground.personaKel, selfVerifyingKey: overlay.deviceEdge.deviceVerifyingKey, groupId: group,
+    dyad: (asked) => (typeof founderKey === "string" && asked.toLowerCase() === founderKey.toLowerCase() ? standing : "unknown"),
+  } });
+}
+
+/**
+ * Does this browser keep a VERIFIED carried seat grant for its own device of `personaGroup`? Only a grant that passes the
+ * full verification reads kept, and a kept grant that now fails it (never a pending one) leaves the secret home, so the
+ * daemon island's seat never reads it either. A secret home that does not open reads as no grant.
+ */
+export async function browserSeatKept(opts: { readonly idbName: string; readonly repo: Repo; readonly personaGroup: string; readonly ground: SeatVerifyGround | null }): Promise<{ readonly kept: boolean; readonly reason?: string }> {
+  const overlay = (await keptOverlays(opts.idbName))[opts.personaGroup];
+  if (!overlay?.deviceEdge) return { kept: false };
+  let home: Awaited<ReturnType<typeof openBrowserSecretHome>>;
+  try { home = await openBrowserSecretHome(opts.idbName, opts.repo); } catch { return { kept: false }; }
+  const grant = keptSeatGrant(home.handle.doc(), opts.personaGroup, overlay.deviceEdge.deviceVerifyingKey);
+  if (grant === null) return { kept: false };
+  if (opts.ground === null) return { kept: false, reason: "this boot holds no pinned root or persona-KEL to verify the kept grant against" };
+  const verdict = await browserVerifySeat({ idbName: opts.idbName, repo: opts.repo, grant, ground: opts.ground });
+  if (verdict.ok) return { kept: true };
+  if (!verdict.pending) { dropCarriedSeatGrant(home.handle, grant.title); await opts.repo.flush([home.handle.documentId]); }
+  return { kept: false, reason: verdict.reason };
 }
 
 /** The faces this browser JOINED (it holds their edge and no root): each may ask its seat by file. */

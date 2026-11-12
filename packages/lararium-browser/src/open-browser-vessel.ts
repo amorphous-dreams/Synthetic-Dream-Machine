@@ -29,7 +29,7 @@ import { browserDeviceFiling } from "./browser-device-filing.js";
 import { writeBrowserFaceLabel } from "./browser-face-labels.js";
 import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, sealedBagMap, vesselDocStoreDoor, bindSecretHomeRest, nameControlHome, daemonFaceCanonBag, SecretHomeUnavailable, DAEMON_SLOT_PREFIX, DAEMON_WIKI_SLOT_BAGS, type LitDeviceFaces, type SecretHome, type SealedBag } from "@lararium/mesh";
 import { openBrowserSecretHome, standBrowserSecretHome } from "./browser-secret-home.js";
-import { browserSeatKept } from "./browser-fleet-seat.js";   // leaf-fleet (Leaf-Finisher)
+import { browserSeatKept, type SeatVerifyGround } from "./browser-fleet-seat.js";   // leaf-fleet (Leaf-Finisher)
 import { keepBrowserVeilLift } from "./browser-veil-lift.js";
 import * as A from "@automerge/automerge";
 import type { DocHandle, AutomergeUrl, PeerId } from "@automerge/automerge-repo";
@@ -447,6 +447,8 @@ export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPoo
    */
   close: () => Promise<void>;
   restartDaemonIsland: (reason: string) => Promise<{ restarts: number }>;
+  /** leaf-fleet: what a carried seat grant verifies against on this boot, or null at the floor. */
+  seatGround: () => SeatVerifyGround | null;
   /**
    * Has this vessel crossed? True once the hearth it dials answered with a verdict signed by the pinned gate key
    * (a fleet device, a contracted member, or a walker); false while it has not — never pinned, unanswered, or
@@ -694,6 +696,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // standing, never the house: it never shares freely, and only `siblingGate` (the ring's sibling path over the
   // public boards) decides what reaches it. Null denies every doc.
   let   siblings: SiblingNetworkAdapter | null = null;
+  // leaf-fleet (Leaf-Finisher): what a carried seat grant verifies against, set once the face's pins read (none at the floor).
+  let seatGround: () => SeatVerifyGround | null = () => null;
   let   siblingGate: FederationGate | null = null;
   // ONE SOCKET, ONE RING. The PersonaGroup identity ring composes ONTO `fedGate` itself (the assembly
   // below, once the daemon island boots), so the share verdict reads one gate and the ring has no second
@@ -1985,9 +1989,15 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       held.stood.push({ what: "the island's floor", down: () => islandFloor.dispose() });
       // The lift's lock-and-flush, once a lift stands: the stand-down runs it again ahead of the daemon worker (P2-3).
       let flushLift: (() => Promise<void>) | null = null;
+      // leaf-fleet (Leaf-Finisher): WHAT A CARRIED GRANT VERIFIES AGAINST, all held before any road: the root this face pinned, its
+      // persona-KEL off this island's board, and its lineage for the founder's standing.
+      seatGround = () => (daemonAuth.deviceEdge && daemonAuth.personaKel
+        ? { personaRootDid: daemonAuth.deviceEdge.personaRootDid, personaKel: { prefix: daemonAuth.personaKel.prefix, chain: daemonAuth.personaKel.chain }, lineage: readFace(daemonAuth.personaKel.chain)?.lineage ?? null }
+        : null);
       // THE SESSION THE LIFT STANDS ON: the joined face's Nexus presentation, else the self-founded face's place session.
       let unlocked: { readonly session: BrowserUnlockedSession; readonly close: () => void } | null = null;
       let placeReading: PlaceLiftReading | null = null;
+      let seatReading: { readonly kept: boolean; readonly reason?: string } | null = null;
       if (facePresentation !== null) {
         const certificate = facePresentation.certificate;
         unlocked = { session: { signer: facePresentation.signer, chain: { scope: certificate.scope, vesselFaceKey: certificate.vesselFaceKey } }, close: () => {} };
@@ -1996,7 +2006,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         joined: faceJoined || Boolean(admit) || Boolean(social.hearthDaemonUrl),
         rootHeld: await browserPersonaRootHeld(idbName, wornMount?.handleIndex ?? FOUNDING_PERSONA_INDEX).catch(() => false),
         // leaf-fleet (Leaf-Finisher): a joined face whose carried seat grant this browser keeps lifts at its own place, roadless.
-        seatKept: await browserSeatKept(idbName, repo, wornGroup),
+        seatKept: (seatReading = await browserSeatKept({ idbName, repo, personaGroup: wornGroup, ground: seatGround() })).kept,
         proved: provenWornPlaneUrl !== null,
         placeStands: placeKel?.ok === true,
       })) {
@@ -2005,7 +2015,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         else unlocked = minted;
       }
       // A joined face holds no root here and lifts at its place only on a kept seat grant: a face that lifts nowhere names why.
-      if (unlocked === null && placeReading !== null && !placeReading.rootHeld) console.log(`[sealed-rest] the joined face lifts at no place (seat grant ${placeReading.seatKept ? "kept" : "absent"}, proved ${placeReading.proved}, place ${placeReading.placeStands ? "stands" : "absent"}): its saves wait in memory, never clear`);
+      if (unlocked === null && placeReading !== null && !placeReading.rootHeld) console.log(`[sealed-rest] the joined face lifts at no place (seat grant ${placeReading.seatKept ? "verified" : seatReading?.reason ? `refused: ${seatReading.reason}` : "absent"}, proved ${placeReading.proved}, place ${placeReading.placeStands ? "stands" : "absent"}): its saves wait in memory, never clear`);
       // THE VEIL FLOOR STANDS NO LIFT: no face signs here, so no session books a face's save. The floor's own documents
       // seal under the vessel-held key with no session (the held homes), and every face-half bag stays unmapped.
       if (unlocked !== null && wornGroup !== null) {
@@ -2587,6 +2597,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       drop: async (face: string) => { if (face === bootedFace && bootedAtomKey) await daemon.dropFace(bootedAtomKey); },
     },
     restartDaemonIsland: (reason: string) => daemonHolder.restart(reason),
+    seatGround: () => seatGround(),   // leaf-fleet (Leaf-Finisher): read by the carried seat's land
     pool: result.pool,
     repo,
     store: result.assembly.composite,
