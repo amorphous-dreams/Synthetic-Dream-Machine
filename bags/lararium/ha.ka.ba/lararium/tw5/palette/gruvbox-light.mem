@@ -5,11 +5,22 @@
 
 ```toml meta
 l-space  = "adjacent"
-role     = "Gruvbox Light color palette for TW5 theme engine"
-tags     = ["$:/tags/Palette"]
+role     = "the Gruvbox Light palette: its colours ride the #/palette slot as a TW5 palette dictionary, the title $:/palette names"
 title    = "lar:///ha.ka.ba/lararium/tw5/palette/gruvbox-light"
 type     = "text/memetic-wikitext+tiddlywiki"
 uri-path = "ha.ka.ba/lararium/tw5/palette/gruvbox-light"
+```
+
+The Gruvbox Light colours, as TiddlyWiki reads a palette: one `name: colour` row per line in the `#/palette` slot, typed `application/x-tiddler-dictionary` and tagged `$:/tags/Palette`, so `$:/palette` names the slot and `<<colour …>>` resolves through it.
+
+<<~ ahu slot=`#/palette`>>
+
+```toml meta
+color-scheme = "light"
+description  = "Gruvbox Light (the house palette)"
+name         = "Gruvbox Light"
+tags         = ["$:/tags/Palette"]
+type         = "application/x-tiddler-dictionary"
 ```
 
 background: #fbf1c7
@@ -101,6 +112,8 @@ wikilist-item: #ebdbb2
 wikilist-toolbar-background: #f2e5bc
 wikilist-toolbar-foreground: #3c3836
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;DVp681AJCdf6r-YiVmzWini2uoA4DcK4rLRKGuufr4Y`>>
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;db8tN53_V1j1uOzKoepq-ipBC_LLPhkBGp2LU3ynp5U`>>
 
 <<^ code=`&#x0004;` to=`?`>>

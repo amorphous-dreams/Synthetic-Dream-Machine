@@ -13,7 +13,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { computeEngineCid, computePluginsCid, buildGenesisDoc, type GenesisPluginEntry, type GenesisInputs } from "../src/genesis-doc.js";
+import { computeEngineCid, computePluginsCid, buildGenesisDoc, isStockTw5PluginTitle, type GenesisPluginEntry, type GenesisInputs } from "../src/genesis-doc.js";
 import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "../src/lar-uris.js";
 
 describe("genesis region content-CIDs — bytes name the region, labels never do", () => {
@@ -101,6 +101,28 @@ describe("the GRAMMAR region — the ratchet folds the grammar alone", () => {
     expect(withBase.engineCid,  "base seed is not the engine").toBe(without.engineCid);
     // …and it SHIPS regardless: a required blob, carried and attested, naming no epoch.
     expect(withBase.casEntries.length).toBeGreaterThan(without.casEntries.length);
+  });
+
+  it("★ a STOCK TW5 theme moves NEITHER region — it ships beside the core, and an operator's epoch never reads it ★", () => {
+    // The vanilla and snowwhite themes pack from the core's own TW5 revision (build-tw5-themes.ts), so they ship in the boot set
+    // and fold into no epoch. CONTROL: the same blob declared an operator's plugin moves the plugins region.
+    const grammar = entry(GRAMMAR, "11".repeat(32));
+    const operatorPlugin = entry("$:/plugins/sq/streams", "22".repeat(32));
+    const stock: GenesisPluginEntry = { ...entry("$:/themes/tiddlywiki/vanilla", "55".repeat(32)), kind: "stock" };
+
+    const without = buildGenesisDoc(inputsWith([grammar, operatorPlugin]));
+    const withStock = buildGenesisDoc(inputsWith([grammar, operatorPlugin, stock]));
+    expect(withStock.pluginsCid, "a stock theme is not an operator plugin").toBe(without.pluginsCid);
+    expect(withStock.grammarCid).toBe(without.grammarCid);
+    expect(withStock.engineCid).toBe(without.engineCid);
+    expect(withStock.casEntries.length).toBeGreaterThan(without.casEntries.length);
+    const asPlugin = buildGenesisDoc(inputsWith([grammar, operatorPlugin, { ...stock, kind: "plugin" }]));
+    expect(asPlugin.pluginsCid).not.toBe(without.pluginsCid);
+    // The class reads from the title's TW5-reserved namespace, never from a list of names.
+    expect(isStockTw5PluginTitle("$:/themes/tiddlywiki/snowwhite")).toBe(true);
+    expect(isStockTw5PluginTitle("$:/plugins/tiddlywiki/markdown")).toBe(true);
+    expect(isStockTw5PluginTitle("$:/plugins/sq/streams")).toBe(false);
+    expect(isStockTw5PluginTitle("$:/themes/someone/dark")).toBe(false);
   });
 
   it("★ the two regions are INDEPENDENT — an operator's collection never overturns the grammar ★", () => {

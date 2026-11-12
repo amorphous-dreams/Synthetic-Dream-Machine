@@ -62,3 +62,28 @@ test("the mirror host shows when the mirror stands and the none projection stays
     expect(r.host.getAttribute("data-lar-shown")).toBe("floor");
   } finally { projection.remove(); r.host.remove(); }
 });
+
+test("a mirror the tab's evidence holds at skinny names why on the host; CONTROL: a mirror at full carries no why", async () => {
+  const full = await rig();
+  try {
+    const result = await standPageMirror({ port: full.port, host: full.host, actor: "a", surface: () => "lares",
+      mirrorInputs: async () => ({ coreCid: "0".repeat(64), pluginCids: [] }) }, full.seams) as any;
+    await result.settled;
+    expect(attr(full.host)).toBe("full");
+    expect(full.host.hasAttribute("data-lar-mirror-why")).toBe(false);
+    result.unmount();
+  } finally { full.host.remove(); }
+  sessionStorage.setItem("mirror:began:lares", "an earlier full boot never finished");
+  const held = await rig();
+  try {
+    const result = await standPageMirror({ port: held.port, host: held.host, actor: "a", surface: () => "lares",
+      mirrorInputs: async () => ({ coreCid: "0".repeat(64), pluginCids: [] }) }, held.seams) as any;
+    await result.settled;
+    expect(attr(held.host)).toBe("skinny");
+    expect(held.host.getAttribute("data-lar-mirror-why")).toBe("full-promotion-unfinished");
+    // The weld's read-only reading: the open story, the wiki's default story, and the palette pointer.
+    expect((held.host as any).larMirrorReading).toMatchObject({ story: expect.any(Array), defaults: expect.any(Array), palette: expect.any(String) });
+    result.unmount();
+    expect(held.host.hasAttribute("data-lar-mirror-why")).toBe(false);
+  } finally { held.host.remove(); }
+});

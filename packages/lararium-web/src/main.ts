@@ -33,6 +33,7 @@ import { createProjectionSink } from "./projection-sink.js";
 import { pageLifeOf, paintRest } from "./page-life.js";
 import { pagePortDelivery, standPagePort } from "./page-port.js";
 import { standPageMirror } from "./page-mirror.js";
+import { paintPaneLabel } from "./pane-label.js";
 import { standFloorTab } from "./floor-tab.js";
 import { defaultReadFace, floorAnchorOf, floorCardOf, mountLiveStatus, flowElsewhereNote, resolveRelayUrl, sameOriginRelayUrl, arrivalRelayUrl } from "./live-status.js";
 // The materialize-fresh boot artifact: the PLAIN-DATA oracle seed (seed.json), read off the genesis base the page's URL names
@@ -555,6 +556,7 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
   let mirrorStanding = false;
   // The person reads the mirror only while the surface it serves is the surface shown: a summon of another surface (the daemon) shows the floor, and the way back shows the mirror again.
   mirrorShownSync = () => {
+    paintPaneLabel($("projection-wiki"), projectionSink.surface());
     const host = $("mirror");
     const word = host.getAttribute("data-lar-mirror");
     const standing = word === "skinny" || word === "full";

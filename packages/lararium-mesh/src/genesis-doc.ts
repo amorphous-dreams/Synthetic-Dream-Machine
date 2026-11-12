@@ -145,7 +145,18 @@ export type GenesisBlobKind =
   | "grammar"   // the memetic-wikitext grammar — REQUIRED, and kāhuli's GRAMMAR tier
   | "base"      // required base seed (API/shadow tiddlers) — ships, ratchets nothing
   | "plugin"   // an operator's own offering, layered on top of the required base
+  | "stock"    // a stock TW5 plugin (the vanilla and snowwhite themes) packed from the core's own TW5 revision — ships, ratchets nothing
   | "floor";   // history-free corpus snapshots and their manifest
+
+/**
+ * THE STOCK CLASS READS FROM THE TITLE'S OWN NAMESPACE. TiddlyWiki reserves `$:/themes/tiddlywiki/`, `$:/plugins/tiddlywiki/` and
+ * `$:/languages/` for the plugins its own tree ships; a blob the bake packs under one of them came from the vendored TW5 the core
+ * blob renders from (`build-tw5-themes.ts`), so it rides the engine's revision and moves no operator's plugin epoch. One site holds
+ * the rule, because the mint and the verify both reach it.
+ */
+export function isStockTw5PluginTitle(title: string): boolean {
+  return title.startsWith("$:/themes/tiddlywiki/") || title.startsWith("$:/plugins/tiddlywiki/") || title.startsWith("$:/languages/");
+}
 
 export interface GenesisPluginEntry {
   readonly id:          string;
@@ -508,7 +519,7 @@ const isBaseSeed = (p: RegionEntry): boolean => p.kind === "base";
  * A plugin added here moves THIS operator's plugin epoch and nothing further.
  */
 export function computePluginsCid(plugins: readonly RegionEntry[]): string {
-  return foldRegion("lararium-plugins", plugins.filter((p) => !isGrammar(p) && !isBaseSeed(p) && p.kind !== "floor"));
+  return foldRegion("lararium-plugins", plugins.filter((p) => !isGrammar(p) && !isBaseSeed(p) && p.kind !== "floor" && p.kind !== "stock"));
 }
 
 /**
@@ -519,6 +530,9 @@ export function computePluginsCid(plugins: readonly RegionEntry[]): string {
  * earns its own epoch, held apart from whatever plugins an operator happens to offer. Folding the two
  * together let one operator's extra plugin overturn EVERYBODY's grammar: the same false schism the region
  * CIDs were split to prevent, arriving through the composition instead of through a version label.
+ *
+ * STOCK TW5 PLUGINS SIT IN NEITHER: the vendored themes ride the core's own TW5 revision, so a bump that moves them moves the
+ * engine blob (the slow ratchet) beside them, and an operator's plugin epoch never reads them.
  *
  * BASE SEED SITS IN NEITHER. `lararium-boot-shadows` is not a plugin at all — it is the API/shadow tiddler
  * seed that rides beside the lares + lararium bags. It ships as a required blob, attested by its manifest

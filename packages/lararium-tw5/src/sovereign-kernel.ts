@@ -74,6 +74,7 @@ import {
 import { IslandKernel } from "./island-kernel.js";
 import { waitForSlotDocument } from "./slot-wait.js";
 import { buildIslandRecipe, seedDrained } from "./island-recipe.js";
+import { openDefaultStory } from "./default-story.js";
 import { preloadsFromCasBlob } from "./cas-preloads.js";
 import { makeCatalogAccessor, libraryDocUrl } from "./catalog-accessor.js";
 import { librarySlotUrl, liveKahuaFace } from "./kahua-layer.js";
@@ -582,6 +583,9 @@ export function runSovereignKernel(
               // landed by the shore's queue in host-task slices.
               tick("seed-drain");
               await seedDrained(tw5);
+              // THE STORY OPENS AT THE ISLAND'S FIRST WHOLE SNAPSHOT, never inside engine boot: the wiki's own landing has landed
+              // by now, and a personal `$:/StoryList` the seed carried stays (`default-story.ts`).
+              openDefaultStory(tw5.$tw as never, { keepLanded: true });
 
               // Isomorphic base: the catalog registry's grant rides into ctx (access entry, NOT a
               // load slot — the catalog registry is absent from expandRecipe). Worker behaviors build

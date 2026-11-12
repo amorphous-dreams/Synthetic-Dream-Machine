@@ -27,6 +27,7 @@ import { repoRoot } from "@lararium/mesh/node";
 import {
   sha256HexBytesSync,
   LARES_MEMETIC_WIKITEXT_PLUGIN_URI,
+  isStockTw5PluginTitle,
   buildGenesisDoc,
   computeEngineCid,
   computeGrammarCid,
@@ -89,7 +90,8 @@ function readPluginAttestations(): Map<string, PluginBuildAttestation> {
  * seed overturned an operator's plugin epoch.
  *
  * So the class reads from the DECLARATION, never the path: a plugin declares a plugin envelope (an object
- * with a `title`); anything else is base seed. The grammar is then recognised by its own canonical URI.
+ * with a `title`); anything else is base seed. The grammar is then recognised by its own canonical URI, and a stock TW5
+ * plugin (`build-tw5-themes.ts`) by its title's TW5-reserved namespace (`isStockTw5PluginTitle`).
  */
 async function collectPlugins(attestations: Map<string, PluginBuildAttestation>): Promise<GenesisPluginEntry[]> {
   const entries: GenesisPluginEntry[] = [];
@@ -114,6 +116,9 @@ async function collectPlugins(attestations: Map<string, PluginBuildAttestation>)
       if (typeof meta["source"]  === "string") source  = meta["source"];
     } catch { /* unparseable — it declares nothing, so it stands as base seed */ }
     if (id === LARES_MEMETIC_WIKITEXT_PLUGIN_URI) kind = "grammar";
+    // A stock TW5 plugin (the vanilla and snowwhite themes, packed from the core's own revision) declares itself by its title's
+    // TW5-reserved namespace: it ships in the boot set and folds into no epoch region.
+    if (kind === "plugin" && isStockTw5PluginTitle(id)) kind = "stock";
 
     const att = attestations.get(id);
     if (att && att.pluginJsonSha256 !== sha) {
