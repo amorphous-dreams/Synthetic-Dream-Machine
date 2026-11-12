@@ -156,7 +156,8 @@ describe("golden 01 on the whole road: a staged hearth, the page it serves, a re
   test("W1 — the world stands: alpha carries the three targets, beta waits closed, the story holds alpha alone", async () => {
     await page!.goto(bannerUrl);
     await awaitLive(page!);
-    await closeTiddler("GettingStarted");
+    // The island opens the wiki's own default story (its landing, not stock's GettingStarted since the floor replays): close whatever it opened.
+    for (const title of await story()) await closeTiddler(title);
     await makeTiddler(BETA, golden.world.tiddlers[1]!.text);
     await closeTiddler(BETA);
     await makeTiddler(ALPHA, golden.world.tiddlers[0]!.text.replace("[ext[outside|https://example.test/]]", "[[outside|https://example.test/]]"));
