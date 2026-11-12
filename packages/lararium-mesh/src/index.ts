@@ -160,6 +160,7 @@ export * from "./composite-store.js";
 export * from "./carrier-form.js";
 export * from "./override-base.js";
 export * from "./find-or-throw.js";
+export { stoodDocumentBytes, landStoodDocument, landBindingDocuments } from "./stood-document.js";
 export * from "./sensorium-consistency.js";
 export * from "./sensorium-contract.js";
 export * from "./sensorium-fusion.js";

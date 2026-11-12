@@ -644,6 +644,13 @@ export interface DaemonMsg_ResolveBindingResult {
   personalUrl?: string;
   draftUrl?: string;
   workingUrl?: string;
+  /**
+   * THE STOOD WORKING DOCUMENT, carried with its name (cabal-realm#/the-workbench): the bytes of the realm workbench the island
+   * stood at its DERIVED address. The island asked the vessel for that address before standing it, and the vessel answered
+   * `unavailable`; the vessel lands these bytes at `workingUrl` (`landBindingDocuments`) before the mount reads it, so the
+   * name never reaches the vessel ahead of the document it names.
+   */
+  workingDoc?: Uint8Array;
   error?: string;
 }
 
@@ -1485,6 +1492,7 @@ export function mkDaemonResolveBindingResult(opts: {
   personalUrl?: string;
   draftUrl?:    string;
   workingUrl?:  string;
+  workingDoc?:  Uint8Array;
   error?:       string;
 }): DaemonMsg_ResolveBindingResult {
   const msg: DaemonMsg_ResolveBindingResult = {
@@ -1494,6 +1502,7 @@ export function mkDaemonResolveBindingResult(opts: {
   if (opts.personalUrl !== undefined) msg.personalUrl = opts.personalUrl;
   if (opts.draftUrl    !== undefined) msg.draftUrl    = opts.draftUrl;
   if (opts.workingUrl  !== undefined) msg.workingUrl  = opts.workingUrl;
+  if (opts.workingDoc  !== undefined) msg.workingDoc  = opts.workingDoc;
   if (opts.error       !== undefined) msg.error       = opts.error;
   return msg;
 }

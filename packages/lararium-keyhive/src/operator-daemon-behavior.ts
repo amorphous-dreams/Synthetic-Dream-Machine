@@ -34,7 +34,7 @@ import {
 import { applyShares } from "./share-apply.js";
 import { adoptWorkbench, landWorkbench, projectWorkbenchRoster, standWorkbench, type LedgerDoc } from "./workbench-realm.js";
 import { ledgerWorkbenchRealm, workbenchKeyDocs, bagUri as meshBagUri } from "@lararium/mesh";
-import { DAEMON_WIKI_SLUG, ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, recipeLayerIndex, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, ControlHomeUnavailable, faceCatalogDocUrl, canonOfferDocUrl, type ChangeOrigin } from "@lararium/mesh";
+import { DAEMON_WIKI_SLUG, stoodDocumentBytes, ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, recipeLayerIndex, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, ControlHomeUnavailable, faceCatalogDocUrl, canonOfferDocUrl, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor, VerbTable } from "@lararium/tw5";
 import type { IslandMsg_Manifest, JoinedFaceAuth } from "@lararium/mesh";
 import { boardDyadReader, intentDoorStandings } from "./board-dyad-reader.js";
@@ -1866,6 +1866,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         if (faceDoor() && await kh!.knowsAgent(daemonAuth.personaGroupId!)) await faceDoor()!.mint(bag, "admin");
         else if (kh) await kh.registerBag(bag);
         else floorBags.add(bag);
+      }
+      // A WIKI'S WORKING DOCUMENT STANDS AT A DERIVED ADDRESS (its realm workbench), stood here after this island asked the
+      // vessel for it, and the vessel answered `unavailable`. Its bytes cross with its name (`stood-document`), so the vessel
+      // holds the document before its mount reads it. The daemon wiki's device slot mints at a fresh id no peer was asked for.
+      if (wikiSlug !== DAEMON_WIKI_SLUG && bindings.workingUrl) {
+        const stood = await findOrThrow(ctx.repo, bindings.workingUrl, `${wikiSlotUri(wikiSlug, "working")} (the stood workbench)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS });
+        return { ...bindings, workingDoc: stoodDocumentBytes(stood) };
       }
       return bindings;
     },

@@ -91,6 +91,7 @@ import {
   type IslandMsg_Ea,
   type IslandMsg_TeardownAck,
   isTeardownFault,
+  landBindingDocuments,
 } from "@lararium/mesh";
 import { runLocalVerb } from "./verb-local-dispatch.js";
 import type { SessionWorn, VerbTable } from "./verb-dispatcher.js";
@@ -616,7 +617,13 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       const msg = raw as DaemonMsg_ResolveBindingResult;
       if (msg.error) settleAsk(msg.requestId, undefined, msg.error);
       // An absent working url reads as the faceless floor's answer: it stands no wiki working layer (`no-face`).
-      else if (msg.personalUrl && msg.draftUrl) settleAsk(msg.requestId, { personalUrl: msg.personalUrl, draftUrl: msg.draftUrl, workingUrl: msg.workingUrl ?? null });
+      else if (msg.personalUrl && msg.draftUrl) {
+        // THE STOOD DOCUMENT LANDS BEFORE ITS NAME SETTLES: a working document the island stood at a derived address rides this
+        // answer, and lands in the vessel's repo here, so the mount that reads `workingUrl` meets the document, never the
+        // `unavailable` the vessel gave the island's earlier ask (`stood-document`).
+        landBindingDocuments(repo, msg);
+        settleAsk(msg.requestId, { personalUrl: msg.personalUrl, draftUrl: msg.draftUrl, workingUrl: msg.workingUrl ?? null });
+      }
       else settleAsk(msg.requestId, undefined, "resolve-binding-result missing urls");
       return;
     }
