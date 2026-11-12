@@ -146,7 +146,7 @@ export interface DeviceAdmitPayload {
    *  sibling proofs and channel tags run on. REQUIRED: an enrolment that delivers no secret leaves the joinee
    *  unable to meet a single sibling, so `runApplyAdmitPayload` refuses a payload without one. */
   readonly groupSecretSeal:        GroupSecretSeal;
-  /** The hearth true-name (engine CID) the joinee binds TO. */
+  /** The hearth true name the joinee's edge binds TO (the root holder's seed-charter Nexus AID; "" from a gateless leaf). */
   readonly hearthTrueName:         string;
   /** Founder sentinel oracle IDs — for the founding sentinel dance + the future affiliation layer. */
   readonly personaGroupId:    string;

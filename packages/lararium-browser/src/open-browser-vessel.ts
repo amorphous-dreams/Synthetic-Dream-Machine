@@ -1002,7 +1002,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     // (operator ruling 2026-11-09, whole on both hosts): each mints with the face, where its founding or its admit lands.
     // No PersonaGroup, no root, no ward, no card and no passphrase ask: a face lands later as an overlay (the fleet-join
     // door), and its landing lifts what this floor wrote.
-    const place = await foundThePlace({ repo, hearthTrueName: "" });
+    const place = await foundThePlace({ repo });
     bootstrap = { daemonUrl: place.daemonUrl, personaPlanes: [], hearthDaemonUrl: null, floor: { daemonUrl: place.daemonUrl } };
     bootKeyWrites.bootstrap = bootstrap;
   }
@@ -1037,7 +1037,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       const firstOverlay = facedBootstrap(bootstrap) === null;
       const standing = firstOverlay ? await repo.find<LarDoc>(bootstrap.daemonUrl as AutomergeUrl) : null;
       if (standing) await standing.whenReady();
-      const place = standing ? { daemonHandle: standing as unknown as Awaited<ReturnType<typeof foundThePlace>>["daemonHandle"] } : await foundThePlace({ repo, hearthTrueName: admit.hearthTrueName });
+      const place = standing ? { daemonHandle: standing as unknown as Awaited<ReturnType<typeof foundThePlace>>["daemonHandle"] } : await foundThePlace({ repo });
       // The control document minted beside the home: the daemon document names it, for a locked boot's stand.
       if (secret.controlUrl) nameControlHome(place.daemonHandle, secret.controlUrl);
       a = await runApplyAdmitPayload({

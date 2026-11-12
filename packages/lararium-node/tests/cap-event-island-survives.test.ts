@@ -25,7 +25,7 @@ const SEED = new Uint8Array(32).fill(9);
 async function foundedFace() {
   const repo = new Repo({ sharePolicy: async () => true });
   const treeKey = hex(await ed.getPublicKeyAsync(SEED));
-  const place = withMemorySecretHome(await foundThePlace({ repo, vesselSeed: SEED, hearthTrueName: "" }), repo);
+  const place = withMemorySecretHome(await foundThePlace({ repo, vesselSeed: SEED }), repo);
   const face = await foundTheFace({ vesselTag: testVesselTagDoor(1), repo, daemonHandle: place.daemonHandle, secretHandle: place.secretHandle, secretRest: { assertSealed: async () => true }, vesselSeed: SEED, placeVerifyingKey: treeKey,
     vesselDisplayName: "Island Witness",
     binding: { mode: "self-stood", signerSeed: new Uint8Array(32).fill(1) },

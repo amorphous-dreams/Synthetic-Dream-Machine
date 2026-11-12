@@ -146,28 +146,6 @@ export function GENESIS_ENGINE_CID(genesisDir?: string): string | undefined {
 }
 
 // ---------------------------------------------------------------------------
-// hearthTrueName — the hearth's PUBLIC true-name (the place's public face).
-// ---------------------------------------------------------------------------
-//
-// The hearth wears two faces, never fused (lar:///ha.ka.ba/lares/api/pono/
-// lararium-identity#head). The PUBLIC face = the content-address of the place's
-// GRAMMAR — the engine content-CID ALONE (G-D3), the TW5 core + version, NOT the
-// plugins. Plugins compose per-operator (DreamNet-offered) and ride their own fast
-// ratchet, so a plugin change MUST NEVER perturb the true-name. The engine face is
-// shared DreamNet-wide, ratchets by engine-epoch, checked into git, holds NO secret.
-// The PRIVATE face = a secret root minted per-founding (node-vessel-identity,
-// gitignored), NEVER derived from this public content. This accessor surfaces the
-// public engine face ONLY.
-//
-// Under capability-is-identity + petnames (#capability-and-petnames), this is the
-// hearth's canonical STABLE petname — a content-addressed name for "which grammar/
-// lineage this place speaks," legible across the mesh with no registry. It returns
-// `undefined` when the genesis artifact is absent (mirrors GENESIS_ENGINE_CID).
-export function hearthTrueName(genesisDir?: string): string | undefined {
-  return GENESIS_ENGINE_CID(genesisDir);
-}
-
-// ---------------------------------------------------------------------------
 // loadOrMaterializeOracle — the slice-2 boot path (no Automerge-binary seed)
 // ---------------------------------------------------------------------------
 //

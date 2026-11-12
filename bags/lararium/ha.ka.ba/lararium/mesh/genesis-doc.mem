@@ -139,7 +139,7 @@ The genesis doc seeds the ''`@oracle` runtime system island'' — the protocol s
 
 ''THE HAZARD BELONGS TO THE GRAMMAR ALONE, AND SAYING SO TAKES A THIRD REGION.'' A single `pluginsCid` that folded the required grammar together with whatever plugins an operator vendored would force this warning over the whole composition — over-broad in exactly the way that matters, since an operator's own plugin collection would move the digest and change NOBODY's reading. So three regions stand, and only two of them ratchet:
 
-* ''`engineCid`'' — the TW5 core; the hearth true-name, the SLOW ratchet, and the one that binds membership because it rides inside every signed delegation preimage.
+* ''`engineCid`'' — the TW5 core; the engine a place boots and the SLOW ratchet. No delegation preimage carries it: an edge's `hearthTrueName` names the hearth's seed-charter Nexus AID (operator ruling R1), so an engine move leaves every edge whole.
 * ''`grammarCid`'' — the REQUIRED memetic-wikitext grammar ALONE, the region whose roll can make two readers parse one carrier differently; at most it hints which formal-register snapshot a carrier's author wrote against. Marked to RETIRE as a ratchet: the grammar holds no versions and lives by use (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/contract`>>), so its retirement stands owed in code, pending a scout's measurement of its consumers.
 * ''`pluginsCid`'' — a region, never a tier (STREAMS RETIREMENT, operator ruling 2026-10-10). The checked-in seed packs the BOOT SET ALONE — the required grammar plus the boot shadows. `computePluginsCid` folds the packed entries that stand neither as grammar nor as base seed, so that seed's `pluginsCid` folds no optional entry, and the region moves with no ratchet act because it names nothing operator-specific. UNBUILT: a guard that enforces boot-set-only inputs — the collector accepts every top-level JSON file, and the builder ships every plugin it receives. An operator's own collection travels a DIFFERENT road entirely: a signed `PluginOffering` announced on the Crossroads board (`plugin-offering.ts`, `offering-announce.ts`) and selected per wiki RECIPE (`wiki-recipe.ts`'s `pluginOfferings`, R3 — "plugins load by recipe"), verified and byte-checked at mount, never baked into the immutable seed at all.
 
@@ -160,7 +160,7 @@ Worse for a shelter brief: an implementation hash ''mandates a monoculture'', an
 
 ''So the pair names the HEARTH'' — this place's own true-name and its own composition — and a Nexus reads off the PARSE (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture`>>).
 
-''NO VERSION LABEL ENTERS AN ENGINE OR REGION CID PREIMAGE.'' Folding a version string in beside the digest would make a pure RE-TAG — identical bytes, renamed — mint a fresh true-name, manufacturing a schism out of an editorial act that reads identical to a real change. The sha256 already binds every byte the label could describe: ''a false difference and no true one''. The label rides the blob descriptor for a human to read, where a wrong one misleads nobody's identity.
+''NO VERSION LABEL ENTERS AN ENGINE OR REGION CID PREIMAGE.'' Folding a version string in beside the digest would make a pure RE-TAG — identical bytes, renamed — mint a fresh engine name, manufacturing a schism out of an editorial act that reads identical to a real change. The sha256 already binds every byte the label could describe: ''a false difference and no true one''. The label rides the blob descriptor for a human to read, where a wrong one misleads nobody's identity.
 
 ''Two stretches stay open.'' The model version binds at FOUNDING (a device delegation names the genesis `engineCid`) and nothing consults it ''when two replicas merge'' — precisely where the law bites. And this doc's own deferred case, two peers materializing fresh from different engine versions, ''names the disjoint-station-set break'': where two frames share no co-observed points, no transformation exists at all, only translation by assertion.
 
@@ -196,6 +196,6 @@ Worse for a shelter brief: an implementation hash ''mandates a monoculture'', an
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;UnMwK_uMXC6nGMmIOKY71wT5Ej6zr6Bk_L_J_rXonbs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MTGDAZI2Oy2GfbGf3s-POyueCoTcQ64MpR3LrQ_llq8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

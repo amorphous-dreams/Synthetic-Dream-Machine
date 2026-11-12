@@ -108,6 +108,15 @@ describe("the gate — a signature, never a list", () => {
     expect(p.calls.received).toBe(0);
   });
 
+  test("a LEAF joinee clears against the root's stated-empty hearth; an edge naming a hearth refuses there, and a leaf's edge refuses at a hearth", async () => {
+    // A gateless leaf binds `hearthTrueName: ""` by design: no seed-charter Nexus stands there. The root signature
+    // carries the wall, and the hearth check still separates a leaf's fleet from a hearth's in both directions.
+    const leaf = { ...(await ctxFor()), hearthTrueName: "" };
+    expect(await gateFaceJoin({ edge: await edgeFor({ hearth: "" }), ctx: leaf })).toEqual({ ok: true });
+    expect(await gateFaceJoin({ edge: await edgeFor(), ctx: leaf })).toMatchObject({ ok: false, reason: expect.stringMatching(/different hearth/) });
+    expect(await gateFaceJoin({ edge: await edgeFor({ hearth: "" }), ctx: await ctxFor() })).toMatchObject({ ok: false, reason: expect.stringMatching(/different hearth/) });
+  });
+
   test("a VALID edge presented with somebody ELSE'S card → refused, and no seat is granted", async () => {
     const ctx = await ctxFor();
     // The card resolves to a different key than the edge licenses — the impersonation this binding exists for.

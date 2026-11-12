@@ -32,7 +32,7 @@ test("a scratch root founds on the build's shipped genesis with no hand copy, an
     // A declared genesis dir holding no seed never falls back to the shipped one, so the refusal stays reachable.
     const refusal = run(unseeded, ["vessel", "found", "--root", unseeded, "--skip-build"], { LAR_GENESIS: join(unseeded, "no-genesis") });
     assert.notEqual(refusal.status, 0);
-    assert.match(refusal.stderr, /hearth true-name \(engine CID\) absent/);
+    assert.match(refusal.stderr, /genesis engine CID reads absent/);
 
     stageDoor(root);
     assert.ok(existsSync(join(repo, "genesis", "seed.json")));

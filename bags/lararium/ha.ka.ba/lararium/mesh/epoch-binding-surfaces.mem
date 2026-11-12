@@ -35,7 +35,8 @@ a wrong answer here reads identically to a right one until a founding breaks.
 !! The five surfaces, and what each binds TO
 
 <<~ has entity=`Surface` name=`Seal-epoch` params=```binds/seated-keys + threshold moved-by/a-roster-or-quorum-change ~ the Nexus AID (`nexus-…`, the genesis epoch address) — carries NO dependency, NO blob, NO version```>>
-<<~ has entity=`Surface` name=`Hearth-true-name` params=`binds/the-TW5-core-blob-sha256 moved-by/a-TW5-submodule-bump ~ engineCid, and it rides INSIDE every signed delegation preimage`>>
+<<~ has entity=`Surface` name=`Engine` params=`binds/the-TW5-core-blob-sha256 moved-by/a-TW5-submodule-bump ~ engineCid, the engine every vessel of a mesh boots; no delegation preimage carries it`>>
+<<~ has entity=`Surface` name=`Hearth-true-name` params=`binds/the-seed-charter-Nexus-AID moved-by/a-new-seed-charter ~ hearthTrueName, and it rides INSIDE every signed delegation preimage; a gateless leaf states it empty`>>
 <<~ has entity=`Surface` name=`Plugins-CID` params=`binds/the-built-plugin-blob-shas moved-by/THIS-REPO'S-OWN-SOURCE ~ 23 modules + 115 tiddlers packed from our TS; verified at BUILD time by verifyGenesisArtifact — LOCAL integrity, never a membership criterion, and no peer path reads it (#/the-real-mover)`>>
 <<~ has entity=`Surface` name=`On-disk-serde` params=`binds/automerge + keyhive byte formats moved-by/a-RUNTIME-dep-bump ~ the only npm-movable surface`>>
 
@@ -111,17 +112,21 @@ those marks gives the same false assurance as a green count beside a check that 
 
 !!! ★ THE ONE MOST EASILY MISSED ★
 
-''For a hearth-bound edge, `hearthTrueName` carries the genesis `engineCid`; a hearth-agnostic edge
-carries `""`. The field rides inside the SIGNED preimage of every device-delegation edge'':
+''For a hearth-bound edge, `hearthTrueName` carries the hearth's seed-charter Nexus AID (operator ruling R1,
+2026-10-05); a hearth-agnostic leaf's edge carries `""`, stated and never omitted. The field rides inside the
+SIGNED preimage of every device-delegation edge'':
 
 ```
 {domain}|{personaRootDid}|{deviceDid}|{deviceVerifyingKey}|{hearthTrueName}|{boundEpoch}
 ```
 
-''So every vessel joined to a named hearth SIGNED that hearth's engine CID.'' Move it and every edge names a hearth true-name
-that fails to match — the Binding Gate refuses, and the refusal reads as a fleet-wide eviction nobody
-performed. ''The binding PAIRS (vessel × hearthTrueName)'': the engine CID serves as no version label; it holds the
-''PLACE'' half of the two-key atom.
+''So every vessel joined to a named hearth SIGNED that hearth's Nexus AID, and none signed an engine CID.'' An engine
+move leaves every edge byte-identical, a leaf's and a hearth's alike; a weld holds the law (no source hands an engine
+CID to an edge, a founding or a place). ''The binding PAIRS (vessel × hearthTrueName)'': the Nexus AID holds the
+''PLACE'' half of the two-key atom, and a place alone writes no true name until a face lands. An earlier reading of
+this carrier seated the engine CID in that field; the passages below that still price an engine roll as a fleet-wide
+re-bind read against that earlier field and wait for their own true-up (what admits an engine into a Nexus's rolling
+window stands unbuilt).
 
 <<~/ahu>>
 
@@ -240,6 +245,6 @@ count as acts, never upgrades''.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;7hFvlaGUhJ0Q9BNlHfH3mLhHXL2iAhs7AedP5BlSKpY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0_VaNdTHKwZcfvvMfQjUb9ay6MZTyEXa941V65ea258`>>
 
 <<^ code=`&#x0004;` to=`?`>>

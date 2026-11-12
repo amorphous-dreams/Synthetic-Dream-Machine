@@ -39,11 +39,12 @@ the capability, architecture and federation memes, which carry their own faces o
 > key (it never receives the operator's copied). The operator root ''signs an edge''
 > into that key — and //that edge// carries the user×vessel bond up the scale.
 
-''The hearth wears two faces — never fused.'' The place (the genesis island) carries a
-''public true-name'' — the content-address of its grammar (`sha256(engine + memes + plugins)`,
-the genesis CID) — ''shared DreamNet-wide, ratcheting by engine-epoch, checked into git''; it
-holds no secret. The place's ''secret root'' stays ''minted per-founding'' (device CSPRNG,
-gitignored), never derived from the public content. The public true-name names //which//
+''The hearth wears two faces — never fused.'' The place (the genesis island) boots a ''public
+engine'', named by the content-address of its bytes (`engineCid`) — ''shared DreamNet-wide,
+ratcheting by engine-epoch, checked into git''; it holds no secret, and no edge signs it. A hearth's
+''true name'' reads apart from the engine: its seed charter's Nexus AID (#/delegation-edge), which
+an engine move leaves whole. The place's ''secret root'' stays ''minted per-founding'' (device CSPRNG,
+gitignored), never derived from the public content. The public engine names //which//
 //grammar/lineage a place speaks//; the private root names //who holds it//. Fusing them — rooting
 a secret in the public content-seed — would hand every git-cloner the same root (collapse).
 Two ratchets ride these faces, never conflated: a ''public grammar ratchet'' (engine-epochs,
@@ -553,6 +554,6 @@ folded in; the FS-limit stated as posture). Standing dissent kept, with re-entry
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ivzYT_zbEyv-d2Yu2AzMY2q-Xkmanehk9byB9pMBUnk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BpzVnibLePiuKD9x3LS7vod1vFkyaMsj-MQpeMVFzXw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

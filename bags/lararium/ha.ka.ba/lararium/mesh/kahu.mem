@@ -89,9 +89,10 @@ protects nothing against a cadence shipping correctly to a mesh that cannot keep
 
 !!! The engine cadence stands its own joint ~ never carriage, never the kahu quorum
 
-''THE ENGINE BINDS MEMBERSHIP, through a rolling WINDOW.'' TW5 core plus the house code, by CID,
-names a hearth's true-name (`hearthTrueName` = `engineCid`), and every device-delegation edge signs
-it. A Nexus admits a rolling window of engine epochs, never one engine CID, so its hearths need not
+''THE ENGINE BINDS WHO-CAN-TALK, through a rolling WINDOW.'' TW5 core plus the house code, by CID,
+names the engine a hearth boots (`engineCid`). No device-delegation edge signs it: an edge's
+`hearthTrueName` names the hearth's seed-charter Nexus AID (#/seed-and-nexus; operator ruling R1), so an
+engine move leaves every edge whole. A Nexus admits a rolling window of engine epochs, never one engine CID, so its hearths need not
 all run one engine. ''A Nexus's engine cadence comes OFFERED by a cadence threshold seated apart from
 its kahu quorum'', held by those who bear the reboot cost (operators whose places run the engine), and
 that threshold advances the window (the cadence lineage, below). ''Each device moves only by its own adoption'' — a reboot onto the offered
@@ -697,6 +698,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;F7Qxh_r_JDuSgkMVuHfb8FxS33opfThJoyp3CwSLAtU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bNczLPLY8M8Meqgt2a5LPqNor6VtcChsRGxS_BMINRQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

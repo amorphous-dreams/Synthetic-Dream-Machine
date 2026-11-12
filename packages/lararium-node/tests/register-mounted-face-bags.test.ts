@@ -73,7 +73,7 @@ async function founderForSecondFace() {
   const atomSeed = new Uint8Array(32).fill(93);
   const founderKey = faceAtomKeyFromSeed(vesselSeed, "founder-vessel").key;
   const hearthTrueName = "hearth-for-second-face";
-  const place = withMemorySecretHome(await foundThePlace({ repo: founderRepo, vesselSeed, hearthTrueName }), founderRepo);
+  const place = withMemorySecretHome(await foundThePlace({ repo: founderRepo, vesselSeed }), founderRepo);
   const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
     repo: founderRepo,
     daemonHandle: place.daemonHandle, secretHandle: place.secretHandle, secretRest: { assertSealed: async () => true },
