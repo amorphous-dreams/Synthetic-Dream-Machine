@@ -359,6 +359,8 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
         ...(args.floorMinter ? { floor: args.floorMinter() } : {}),
         // THE WORKING FLOOR lifts into the face's realm workbench, stood on ask (`workingDoc` with mint).
         ...(args.control && args.workbenchRealm ? { working: { control: args.control, workbench: async (slug: string) => (await workingDoc(slug, true))!.url } } : {}),
+        // THE DAEMON WIKI'S FLOOR MEMORY lifts into the face's own device slot of each kind (face-private).
+        ...(args.control ? { daemon: { control: args.control, faceSlot: async (kind: "working" | "personal" | "draft") => (await deviceSlot(kind, true))!.url } } : {}),
         traceOf: async (slug) => {
           const url = await args.catalog?.urlOf(wikiBagUri(slug)).catch(() => null);
           if (!url) return null;

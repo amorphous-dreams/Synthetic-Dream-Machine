@@ -30,7 +30,7 @@
  * that finds a binding still holding `lifted-from-url` finishes the burn and moves nothing a second time.
  */
 import {
-  DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, canonicalJson, emptyLarDoc,
+  CONTROL_HOME_ID, ControlHomeUnavailable, DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, canonicalJson, emptyLarDoc,
   mutableLarRecord, tiddlerText, FLOOR_SLOT_ROOT, floorSlotOf, sha256HexBytesSync, utf8Bytes, wikiDraftDocKey, requireLarDid, plainEntries, storedRecord,
   type ChangeOrigin, type CompositeStore, type LarDoc, ownEntry, DOCUMENT_READY_TIMEOUT_MS} from "@lararium/mesh";
 import type { CatalogAccessor } from "@lararium/tw5";
@@ -62,6 +62,11 @@ export interface LiftArgs {
   readonly working?: {
     readonly control: CompositeStore;
     readonly workbench: (slug: string) => Promise<string>;
+  };
+  /** THE DAEMON WIKI'S FLOOR SLOTS: the control store that names them, and the face's own device slot of a kind (stood on ask). */
+  readonly daemon?: {
+    readonly control: CompositeStore;
+    readonly faceSlot: (kind: "working" | "personal" | "draft") => Promise<string>;
   };
   /** The binding slot a wiki's draft floor belongs to: its fingerprint and trace, or null where the wiki is unregistered. */
   readonly traceOf: (slug: string) => Promise<{ readonly fingerprint: string; readonly recipeTrace: { readonly wikiDocId: string; readonly libraryBagDocIds: readonly string[] } } | null>;
@@ -258,48 +263,66 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
     }
   }
 
-  // 4 — the veil floor's working slots, named by the control document: each wiki's rows go to the face's realm workbench.
+  // 4 — the veil floor's own documents the control document names: each wiki's working rows go to the face's realm
+  // workbench, and the daemon wiki's floor memory goes to the face's own daemon device slot (face-private, never a workbench).
   const kept: { slug: string; titles: string[] }[] = [];
   const working = args.working;
+  /** Carry one floor document's rows into `intoUrl` additively; burn it and drop its control row where every row rests there. */
+  const carryFloor = async (control: CompositeStore, title: string, floorUrl: string, intoUrl: string, slug: string): Promise<void> => {
+    const floor = await boundedRead(args, floorUrl, "arrival", async () => { const h = await args.repo.find(floorUrl); await h.whenReady?.(); return h; });
+    const source = plainEntries(floor.doc()?.tiddlers);
+    const bench = await boundedRead(args, intoUrl, "arrival", async () => { const h = await args.repo.find(intoUrl); await h.whenReady?.(); return h; });
+    const same = (a: unknown, b: unknown): boolean => canonicalJson(textFieldsOf(a as Record<string, unknown>)) === canonicalJson(textFieldsOf(b as Record<string, unknown>));
+    const stays: string[] = [];
+    const lifts: string[] = [];
+    const standing = bench.doc()?.tiddlers;
+    for (const [rowTitle, row] of source) {
+      const there = ownEntry(standing, rowTitle);
+      if (there === undefined) lifts.push(rowTitle);
+      else if (!same((there as { tiddler?: unknown }).tiddler ?? {}, (row as { tiddler?: unknown }).tiddler ?? {})) stays.push(rowTitle);
+    }
+    if (lifts.length > 0) {
+      const carry = new Set(lifts);
+      bench.change((doc) => { for (const [rowTitle, row] of source) if (carry.has(rowTitle) && ownEntry(doc.tiddlers, rowTitle) === undefined) doc.tiddlers[rowTitle] = storedRecord(row); });
+    }
+    await boundedRead(args, intoUrl, "rest", () => args.repo.flush([bench.documentId]));
+    if (stays.length === 0) {
+      // Every row rests above: the floor document burns, then its control row leaves.
+      await burn(args, floorUrl);
+      await control.remove(title, originFor(`work-${slug.slice(0, 12)}`));
+    } else {
+      // The rows held otherwise above stay, alone, so a replay reads the same floor and moves nothing.
+      const stay = new Set(stays);
+      floor.change((doc) => { for (const rowTitle of Object.keys(doc.tiddlers)) if (!stay.has(rowTitle)) delete doc.tiddlers[rowTitle]; });
+      await boundedRead(args, floorUrl, "rest", () => args.repo.flush([floor.documentId]));
+      kept.push({ slug, titles: stays.sort() });
+      console.warn(`[anon-lift] ${slug}: ${stays.length} floor row(s) stay at the floor; the face holds each title otherwise (${stays.slice(0, 5).join(", ")}${stays.length > 5 ? ", …" : ""})`);
+    }
+    if (lifts.length > 0 || stays.length === 0) moved.push(title);
+  };
+  // A control document that refuses by name (a locked hearth, a place that names none) holds no floor to lift: the legs skip.
+  const controlEntries = async (control: CompositeStore) => { try { return await control.entries(); } catch (error) { if (error instanceof ControlHomeUnavailable) return []; throw error; } };
+  const controlText = async (control: CompositeStore, title: string) => { try { return tiddlerText(await control.get(title)); } catch (error) { if (error instanceof ControlHomeUnavailable) return null; throw error; } };
   if (working) {
-    for (const { title, record } of await working.control.entries()) {
+    for (const { title, record } of await controlEntries(working.control)) {
       const named = title.startsWith(FLOOR_SLOT_ROOT) ? floorSlotOf(title) : null;
       const fields = fieldsOf(record);
       const floorUrl = tiddlerText(record);
       if (!named || named.kind !== "working" || !fields || !floorUrl || fields["face-reach"] !== "vessel-only" || !mintedHere(args, fields["minted-by"])) continue;
-      try {
-        const floor = await boundedRead(args, floorUrl, "arrival", async () => { const h = await args.repo.find(floorUrl); await h.whenReady?.(); return h; });
-        const source = plainEntries(floor.doc()?.tiddlers);
-        const benchUrl = await working.workbench(named.slug);
-        const bench = await boundedRead(args, benchUrl, "arrival", async () => { const h = await args.repo.find(benchUrl); await h.whenReady?.(); return h; });
-        const same = (a: unknown, b: unknown): boolean => canonicalJson(textFieldsOf(a as Record<string, unknown>)) === canonicalJson(textFieldsOf(b as Record<string, unknown>));
-        const stays: string[] = [];
-        const lifts: string[] = [];
-        const standing = bench.doc()?.tiddlers;
-        for (const [rowTitle, row] of source) {
-          const there = ownEntry(standing, rowTitle);
-          if (there === undefined) lifts.push(rowTitle);
-          else if (!same((there as { tiddler?: unknown }).tiddler ?? {}, (row as { tiddler?: unknown }).tiddler ?? {})) stays.push(rowTitle);
-        }
-        if (lifts.length > 0) {
-          const carry = new Set(lifts);
-          bench.change((doc) => { for (const [rowTitle, row] of source) if (carry.has(rowTitle) && ownEntry(doc.tiddlers, rowTitle) === undefined) doc.tiddlers[rowTitle] = storedRecord(row); });
-        }
-        await boundedRead(args, benchUrl, "rest", () => args.repo.flush([bench.documentId]));
-        if (stays.length === 0) {
-          // Every row rests in the workbench: the floor document burns, then its control row leaves.
-          await burn(args, floorUrl);
-          await working.control.remove(title, originFor(`work-${named.slug.slice(0, 12)}`));
-        } else {
-          // The rows the workbench holds otherwise stay, alone, so a replay reads the same floor and moves nothing.
-          const stay = new Set(stays);
-          floor.change((doc) => { for (const rowTitle of Object.keys(doc.tiddlers)) if (!stay.has(rowTitle)) delete doc.tiddlers[rowTitle]; });
-          await boundedRead(args, floorUrl, "rest", () => args.repo.flush([floor.documentId]));
-          kept.push({ slug: named.slug, titles: stays.sort() });
-          console.warn(`[anon-lift] ${named.slug}: ${stays.length} floor row(s) stay at the floor; the face's workbench holds each title otherwise (${stays.slice(0, 5).join(", ")}${stays.length > 5 ? ", …" : ""})`);
-        }
-        if (lifts.length > 0 || stays.length === 0) moved.push(title);
-      } catch (error) { if (error instanceof FloorDocumentUnavailable) { held(error, title); continue; } throw error; }
+      try { await carryFloor(working.control, title, floorUrl, await working.workbench(named.slug), named.slug); }
+      catch (error) { if (error instanceof FloorDocumentUnavailable) { held(error, title); continue; } throw error; }
+    }
+  }
+  // THE DAEMON WIKI'S FLOOR MEMORY (operator ruling 2026-10-22, "all its keyed material"; the AI-memory ruling keeps it
+  // face-private): each floor device slot (`daemon-slot/<kind>/floor`) carries into the face's own slot of that kind.
+  const daemon = args.daemon;
+  if (daemon) {
+    for (const kind of ["working", "personal", "draft"] as const) {
+      const title = `${CONTROL_HOME_ID}/daemon-slot/${kind}/floor`;
+      const floorUrl = await controlText(daemon.control, title);
+      if (!floorUrl) continue;
+      try { await carryFloor(daemon.control, title, floorUrl, await daemon.faceSlot(kind), `daemon/${kind}`); }
+      catch (error) { if (error instanceof FloorDocumentUnavailable) { held(error, title); continue; } throw error; }
     }
   }
   return { moved, finished, skipped, skippedDocs, ...(kept.length > 0 ? { kept } : {}) };

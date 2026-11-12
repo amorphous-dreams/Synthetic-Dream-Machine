@@ -49,7 +49,7 @@ async function house(opts: { control?: CompositeStore } = {}) {
     return (await workbenchFaceHolds(kh, slug, await kh.whoami(), "read")) ? held : null;
   };
   const order: string[] = [];
-  const base = { repo, daemonStore: daemon, control, keyhive: kh, catalog: makeCatalogAccessor(repo, catalogHandle.url), vesselDid: () => DID, mintedByHex: () => VERIFYING_KEY };
+  const base = { repo, daemonStore: daemon, control, keyhive: kh, deviceScoped: (slug: string) => slug === "daemon", catalog: makeCatalogAccessor(repo, catalogHandle.url), vesselDid: () => DID, mintedByHex: () => VERIFYING_KEY };
   // The veil floor: no face.
   const floor = makeSlotDocResolver({ ...base, faceSeated: async () => false,
     announceFloor: (slug, kind, documentId) => { order.push(`announce:${slug}:${kind}:${documentId}`); } });
@@ -152,6 +152,35 @@ describe("★ the veil floor stands its own wiki content, and a seat's landing l
     const again = await faced.liftFloor();
     expect(again.moved).toEqual([]);
     expect(again.kept).toEqual([{ slug: "garden", titles: ["Tabs"] }]);
+    await h.done();
+  });
+
+  test("RED V6 — the daemon wiki's floor memory lifts into the face's own daemon working slot (face-private), once", async () => {
+    const h = await house();
+    const floorSlot = `${CONTROL_HOME_ID}/daemon-slot/working/floor`;
+    const at = (await h.floor.slotDoc("daemon", "working"))!;
+    expect(tiddlerText(await h.control.get(floorSlot))).toBe(at.url);
+    await h.write(at.url, "Memory", "the veil remembers");
+    const faced = h.faced();
+    const lifted = await faced.liftFloor();
+    expect(lifted.moved).toContain(floorSlot);
+    // The face's daemon slot stays a device slot of that face: the control document names it under the face's group, and no realm founds.
+    const faceSlot = (await faced.slotDoc("daemon", "working"))!;
+    expect(tiddlerText(await h.control.get(`${CONTROL_HOME_ID}/daemon-slot/working/${encodeURIComponent(h.group.groupId)}`))).toBe(faceSlot.url);
+    expect(faceSlot.url).not.toBe(at.url);
+    expect(await h.read(faceSlot.url, "Memory")).toBe("the veil remembers");
+    expect(await h.control.get(floorSlot), "the floor's daemon slot row leaves").toBeNull();
+    expect(ledgerWorkbenches(h.ledger.doc()).filter((b) => b.slug === "daemon"), "the daemon wiki never rests in a workbench").toEqual([]);
+    const again = await faced.liftFloor();
+    expect(again.moved).toEqual([]);
+    expect(await h.read(faceSlot.url, "Memory")).toBe("the veil remembers");
+    await h.done();
+  });
+
+  test("V7 — a seated lift over a control document that refuses by name skips its floor legs and still lifts the bindings", async () => {
+    const h = await house({ control: refusingControlStore(vesselLockedRefusal()) });
+    const lifted = await h.faced().liftFloor();
+    expect(lifted.moved.filter((t) => t.includes("/control/"))).toEqual([]);
     await h.done();
   });
 });
