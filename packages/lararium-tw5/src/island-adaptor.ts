@@ -654,6 +654,27 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   }
 
   /**
+   * Whether a save of `title` would land in a layer this composition mounts (at or above its working layer), asked without
+   * raising anything: a probe stands no alert and writes no console line. A caller that opens engine-local state (the
+   * island's own default story) asks first, so a composition with no layer for that state keeps it in the engine and
+   * never owes a save it cannot make.
+   */
+  routesSave(title: string): boolean {
+    try { return this._settle(title, this._routeBag(title), true) !== null; }
+    catch (err) { if (err instanceof UnroutedSaveRefusal) return false; throw err; }
+  }
+
+  /**
+   * Hold `title`'s present wiki value as landed with no bag: the engine keeps it, no store hears it, and the bridge reads the
+   * notification the write raised as foam, so no save stands owed. Called in the same synchronous turn as the write, before
+   * TW5 dispatches its `change`. A title a hand already holds stays with that hand.
+   */
+  keepInEngine(title: string): void {
+    if (this.holdsHand(title)) return;
+    this.ledger.set(title, { tiddler: this.tw5.$tw.wiki.getTiddler(title) ?? null });
+  }
+
+  /**
    * Act on a cascade verdict: a slot the composition mounts at or above the working layer lands there, a
    * named withholding skips (null), a gap falls to the write layer, and every other answer THROWS the named
    * refusal after raising it on the alert rail: a rule that routes through an empty pointer, a gap while
@@ -664,11 +685,14 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
    * the working layer and the layers above it. The composition's own layer order answers which those are,
    * so no wiki tiddler, edited by hand or by a peer, lands a save beneath the working layer.
    */
-  private _settle(title: string, verdict: RouteVerdict): SlotUri | null {
+  private _settle(title: string, verdict: RouteVerdict, probe = false): SlotUri | null {
+    // A PROBE ASKS WHERE A SAVE WOULD LAND and raises nothing: the refusal it throws stands on no alert rail and in no console.
+    const refuse = (rule: string, reference: string, why?: string): UnroutedSaveRefusal =>
+      probe ? new UnroutedSaveRefusal(title, rule, reference, why) : this._refuseUnrouted(title, rule, reference, why);
     if (verdict.kind === "withheld") {
       const reference = ROUTES_BY_REFERENCE.exec(verdict.rule)?.[1];
       if (reference === undefined) return null;
-      throw this._refuseUnrouted(title, verdict.rule, reference);
+      throw refuse(verdict.rule, reference);
     }
     let uri: string;
     let rule: string;
@@ -679,22 +703,22 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       reference = ROUTES_BY_REFERENCE.exec(verdict.rule)?.[1] ?? verdict.uri;
     } else {
       const fallback = this.tw5.$tw.wiki.getTiddlerText?.(CURRENT_WIKI_BAG, "") ?? "";
-      console.warn(
+      if (!probe) console.warn(
         `[island-adaptor] no cascade rule routes "${title}" (${verdict.why}) — ` +
         (fallback ? `writing to the write layer ${fallback}. ` : "and no write layer resolves. ") +
         `Add a rule to ${BAG_PATHS_CONFIG}; a save must never vanish for want of one.`,
       );
       rule = `(no rule: ${verdict.why})`;
       reference = CURRENT_WIKI_BAG;
-      if (!fallback) throw this._refuseUnrouted(title, rule, reference);
+      if (!fallback) throw refuse(rule, reference);
       uri = fallback;
     }
     const working = this.store.defaultWritableBagId();
-    if (!working && reference === CURRENT_WIKI_BAG) throw this._refuseUnrouted(title, rule, reference, "this wiki mounts no working layer");
+    if (!working && reference === CURRENT_WIKI_BAG) throw refuse(rule, reference, "this wiki mounts no working layer");
     const index = this.store.layerIndexOf(uri);
-    if (index < 0) throw this._refuseUnrouted(title, rule, reference, `it names ${uri}, a bag this wiki does not mount`);
+    if (index < 0) throw refuse(rule, reference, `it names ${uri}, a bag this wiki does not mount`);
     if (working && index < this.store.layerIndexOf(working)) {
-      throw this._refuseUnrouted(title, rule, reference, `it names ${uri}, a layer beneath this wiki's working layer; a bag changes only by a residency move`);
+      throw refuse(rule, reference, `it names ${uri}, a layer beneath this wiki's working layer; a bag changes only by a residency move`);
     }
     return uri as SlotUri;
   }
