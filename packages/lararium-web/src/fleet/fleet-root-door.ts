@@ -34,8 +34,17 @@ export interface FleetRootPort {
 
 const words = (err: unknown): string => (err instanceof Error ? err.message : String(err));
 
-/** Mount the door into `host`. It paints nothing until the vessel names a face this browser holds a root for. */
-export function mountFleetRootDoor(host: HTMLElement, port: FleetRootPort, opts: { readonly cameraHost?: CameraHost } = {}): { refresh(): Promise<void>; dispose(): void } {
+/**
+ * THE FIRST OFFER FOUNDS THE FACE (the-veil-ladder#/the-base-model). A veil that offers a face to another device holds no
+ * face yet, so its first offer founds one inside the act: `ask` carries the person's tap to the page's founding door (the
+ * one-boot ask; the boot founds the face: card, bind, place KEL, then the Lift), and the boot that founded for an offer
+ * mounts this door with `resume`, so the founded face's offer shows with no second tap. `resume` reads one boot's consumed
+ * ask and never a stored width: a later boot mounts without it and offers nothing by itself.
+ */
+export interface FleetFoundingDoor { ask(): void; readonly resume: boolean }
+
+/** Mount the door into `host`. It paints a face's offer where this browser holds that face's root, and a founding offer where it holds none and the page hands it a founding door. */
+export function mountFleetRootDoor(host: HTMLElement, port: FleetRootPort, opts: { readonly cameraHost?: CameraHost; readonly found?: FleetFoundingDoor } = {}): { refresh(): Promise<void>; dispose(): void } {
   host.dataset["larFleetDoor"] = "root";
   const status = document.createElement("div");
   status.setAttribute("role", "status");
@@ -103,14 +112,41 @@ export function mountFleetRootDoor(host: HTMLElement, port: FleetRootPort, opts:
     return section;
   };
 
+  /** A veil's founding offer: one tap asks the page's founding door, once. */
+  const paintFounding = (found: FleetFoundingDoor): HTMLElement => {
+    const section = document.createElement("section");
+    section.dataset["larFleetFace"] = "";
+    const first = document.createElement("button");
+    first.type = "button";
+    first.dataset["larFleetFoundOffer"] = "";
+    first.textContent = "offer a face to another device (this founds your face here first)";
+    first.addEventListener("click", () => {
+      if (first.disabled) return;
+      first.disabled = true;
+      say("founding your face: the ceremony asks a first passphrase and shows a place card, then the offer shows here…", "busy");
+      found.ask();
+    });
+    section.append(first);
+    return section;
+  };
+
+  // The founding boot's offer runs once for this mount: a repaint replays nothing.
+  let resumed = false;
   const refresh = async (): Promise<void> => {
     taking?.stop(); taking = null;
     try {
       const faces = await port.faces();
-      body.replaceChildren(...faces.map(paintFace));
+      const sections = faces.map(paintFace);
+      const founding = faces.length === 0 && opts.found ? paintFounding(opts.found) : null;
+      body.replaceChildren(...sections, ...(founding ? [founding] : []));
       host.dataset["larFleetFaces"] = String(faces.length);
-      if (faces.length === 0) say("this browser holds no face's root: a face founded here, or on another vessel that offers it, grows its fleet.", "idle");
+      if (faces.length === 0) say(founding ? "this browser stands as a veil: its first offer founds a face here, and that face grows its fleet." : "this browser holds no face's root: a face founded here, or on another vessel that offers it, grows its fleet.", "idle");
       else say("", "idle");
+      // The boot founded for an offer: the one face it founded offers now. More than one face names no single offer to resume.
+      if (opts.found?.resume && !resumed && faces.length === 1) {
+        resumed = true;
+        sections[0]!.querySelector<HTMLButtonElement>("[data-lar-fleet-offer]")?.click();
+      }
     } catch (err) { body.replaceChildren(); say(`✗ ${words(err)}`, "refused"); }
   };
   void refresh();

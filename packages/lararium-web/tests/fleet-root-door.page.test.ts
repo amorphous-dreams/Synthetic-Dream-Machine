@@ -13,7 +13,7 @@ const OFFER = JSON.stringify({ kind: "fleet-join-offer", personaGroup: GROUP, ro
 const REQUEST = JSON.stringify({ kind: "fleet-join-request", nonce: "ab".repeat(32), atomKey: "cd".repeat(32), signature: "ef".repeat(64) });
 const ANSWER = JSON.stringify({ kind: "fleet-join-answer", nonce: "ab".repeat(32), body: "0123456789abcdef".repeat(400) });
 
-function rig(over: Partial<FleetRootPort> = {}) {
+function rig(over: Partial<FleetRootPort> = {}, more: { found?: { ask(): void; resume: boolean } } = {}) {
   const calls: Array<[string, ...unknown[]]> = [];
   const port: FleetRootPort = {
     faces: async () => [{ personaGroup: GROUP, label: "home" }],
@@ -23,7 +23,7 @@ function rig(over: Partial<FleetRootPort> = {}) {
   };
   const host = document.createElement("div");
   document.body.append(host);
-  const door = mountFleetRootDoor(host, port, { cameraHost: { isSecureContext: true, mediaDevices: undefined, BarcodeDetector: undefined } });
+  const door = mountFleetRootDoor(host, port, { cameraHost: { isSecureContext: true, mediaDevices: undefined, BarcodeDetector: undefined }, ...more });
   return { host, port, calls, door };
 }
 const settle = async (host: HTMLElement, state: string): Promise<void> => { await expect.poll(() => host.dataset["larFleetState"]).toBe(state); };
@@ -143,5 +143,45 @@ describe("the root holder's fleet-join door", () => {
     q<HTMLButtonElement>(denied, "[data-lar-carriage-camera]").click();
     await expect.poll(() => denied.dataset["larCameraRefusal"]).toBe("camera-denied");
     expect(taken).toEqual([]);
+  });
+  test("RED: a veil's first offer founds the face inside the offer: one ask, no offer before a face stands", async () => {
+    const asks: string[] = [];
+    const { host, calls } = rig({ faces: async () => [] }, { found: { ask: () => { asks.push("found-then-offer"); }, resume: false } });
+    await expect.poll(() => host.dataset["larFleetFaces"]).toBe("0");
+    const first = q<HTMLButtonElement>(host, "[data-lar-fleet-found-offer]");
+    expect(host.querySelector("[data-lar-fleet-offer]"), "no face stands, so no face's offer paints").toBeNull();
+    first.click();
+    expect(asks, "the first offer asks one founding").toEqual(["found-then-offer"]);
+    expect(first.disabled, "the act never fires twice from one tap").toBe(true);
+    first.click();
+    expect(asks).toEqual(["found-then-offer"]);
+    expect(calls, "the vessel hears no offer until a face stands").toEqual([]);
+    expect(q<HTMLElement>(host, "[data-lar-fleet-status]").textContent).toContain("founding");
+  });
+
+  test("RED: the boot that founded for an offer offers that face once; a replay offers and founds nothing more", async () => {
+    const asks: string[] = [];
+    const { host, calls, door } = rig({}, { found: { ask: () => { asks.push("found"); }, resume: true } });
+    await settle(host, "ok");
+    expect(calls, "the founded face's offer runs with no second tap").toEqual([["offer", GROUP]]);
+    expect(q<HTMLTextAreaElement>(q<HTMLElement>(host, "[data-lar-fleet-step='offer']"), "[data-lar-carriage-text]").value).toBe(OFFER);
+    expect(host.querySelector("[data-lar-fleet-found-offer]"), "a face stands: the founding offer leaves the door").toBeNull();
+    await door.refresh();
+    await expect.poll(() => host.dataset["larFleetFaces"]).toBe("1");
+    expect(calls, "a repaint replays no offer").toEqual([["offer", GROUP]]);
+    expect(asks, "and founds nothing").toEqual([]);
+  });
+
+  test("RED: a second offer under a standing face founds nothing new", async () => {
+    const asks: string[] = [];
+    const { host, calls } = rig({}, { found: { ask: () => { asks.push("found"); }, resume: false } });
+    await expect.poll(() => host.dataset["larFleetFaces"]).toBe("1");
+    expect(calls, "no resume, no offer on arrival").toEqual([]);
+    q<HTMLButtonElement>(host, "[data-lar-fleet-offer]").click();
+    await settle(host, "ok");
+    q<HTMLButtonElement>(host, "[data-lar-fleet-offer]").click();
+    await expect.poll(() => calls.length).toBe(2);
+    expect(calls).toEqual([["offer", GROUP], ["offer", GROUP]]);
+    expect(asks).toEqual([]);
   });
 });

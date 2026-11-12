@@ -356,11 +356,20 @@ function mountAdmitSurface(verifyingKeyHex: string, vessel: VesselPort): void {
  * stays the wiki's own.
  */
 const FOUND_STASH_KEY = "lares:found-face";
-function takeStashedFounding(): boolean {
+/** What the person's founding act asked for: a face alone (the identity panel's button), or a face and then its first fleet offer. */
+type FoundingAsk = "face" | "offer";
+function takeStashedFounding(): FoundingAsk | null {
   let asked: string | null = null;
-  try { asked = sessionStorage.getItem(FOUND_STASH_KEY); } catch { return false; }
-  if (!asked) return false;
+  try { asked = sessionStorage.getItem(FOUND_STASH_KEY); } catch { return null; }
+  if (!asked) return null;
   try { sessionStorage.removeItem(FOUND_STASH_KEY); } catch { /* the read already holds the ask */ }
+  return asked === "offer" ? "offer" : "face";
+}
+/** Carry a person's founding act across one boot. Answers false where this browser withholds the stash. */
+function askFounding(ask: FoundingAsk): boolean {
+  try { sessionStorage.setItem(FOUND_STASH_KEY, ask); }
+  catch { set("status", "✗ this browser withholds sessionStorage, so the founding ask cannot reach boot here.", "err"); return false; }
+  location.reload();
   return true;
 }
 /** Wire the identity panel's founding button: one tap stashes the ask and boots again. */
@@ -368,16 +377,12 @@ function mountFoundingDoor(): void {
   const button = document.getElementById("found-face");
   if (!button || button.dataset["larWired"]) return;
   button.dataset["larWired"] = "1";
-  button.addEventListener("click", () => {
-    try { sessionStorage.setItem(FOUND_STASH_KEY, "1"); }
-    catch { set("status", "✗ this browser withholds sessionStorage, so the founding ask cannot reach boot here.", "err"); return; }
-    location.reload();
-  });
+  button.addEventListener("click", () => { askFounding("face"); });
 }
 
 let pendingAdmit: string | null = null;
 /** A founding ask this page took off its stash and has not yet seen stand (a boot retry carries it). */
-let pendingFounding = false;
+let pendingFounding: FoundingAsk | null = null;
 /** This tab's place among the origin's tabs: stood once per page, before the first lead or follow. */
 let floorTab: ReturnType<typeof standFloorTab> | null = null;
 function offerBootRetry(): void {
@@ -426,8 +431,9 @@ async function bootVessel(): Promise<void> {
   const admit = pendingAdmit ?? takeStashedAdmit();
   pendingAdmit = admit;
   // The founding door stashed its ask; this boot takes it and the vessel founds a face over its floor.
-  const founding = pendingFounding || takeStashedFounding();
-  pendingFounding = founding;
+  const foundingAsk = pendingFounding ?? takeStashedFounding();
+  pendingFounding = foundingAsk;
+  const founding = foundingAsk !== null;
   mountFoundingDoor();
   // The seed and its CAS blobs come off the hearth's own /genesis alone; no URL key chooses them.
   const genesisCasBaseUrl = genesisSeedBase(location.origin);
@@ -470,7 +476,7 @@ async function bootVessel(): Promise<void> {
   //   entries; one with no key is dropped: nothing to knock on. The browser is a LEAF (no endpoint — carries-in, not dial-able).
   const meshParam = new URLSearchParams(location.search).get("mesh");
   const meshLeaf = meshParam !== null ? { coordSeed: location.origin, peers: meshParam } : undefined;
-  const boot = { paint, relayUrl, floor, floorAnchor, admit, founding, genesisCasBaseUrl, genesisSeed: served.seed as GenesisSeed, meshLeaf };
+  const boot = { paint, relayUrl, floor, floorAnchor, admit, founding, foundingAsk, genesisCasBaseUrl, genesisSeed: served.seed as GenesisSeed, meshLeaf };
   const broker = await ceremonyBroker;
   if ("refusal" in broker || !navigator.locks) { await lead(boot); return; }
   if (floorTab) {
@@ -519,8 +525,8 @@ function seedRestLine(status: VesselStatus): { readonly text: string; readonly o
 }
 
 async function lead(boot: { paint: (p: string) => void; relayUrl: string | undefined; floor: ReturnType<typeof floorCardOf>; floorAnchor: ReturnType<typeof floorAnchorOf>;
-  admit: string | null; founding: boolean; genesisCasBaseUrl: string; genesisSeed: GenesisSeed; meshLeaf: { coordSeed: string; peers: string } | undefined }, port?: MessagePort): Promise<void> {
-  const { paint, relayUrl, floor, floorAnchor, admit, founding, genesisCasBaseUrl, genesisSeed, meshLeaf } = boot;
+  admit: string | null; founding: boolean; foundingAsk: FoundingAsk | null; genesisCasBaseUrl: string; genesisSeed: GenesisSeed; meshLeaf: { coordSeed: string; peers: string } | undefined }, port?: MessagePort): Promise<void> {
+  const { paint, relayUrl, floor, floorAnchor, admit, founding, foundingAsk, genesisCasBaseUrl, genesisSeed, meshLeaf } = boot;
   $("mirror").setAttribute("data-lar-tab", port ? "follower" : "owner");
   // The mirror stands once the first frame names the surface the page shows; the vessel's word that it stands comes after its open returns.
   let mirrorTrigger: (() => void) | null = null;
@@ -581,13 +587,14 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
   // and the walk's ward act: one ward act over `bytes`, its passphrase asked through the ceremony like every ward act.
   if (__LAR_WALK_DOOR__) (window as Window & { __larWalkWardAct?: (bytes: number[]) => Promise<{ key: string; signature: string }> }).__larWalkWardAct = (bytes: number[]) => vessel.walkWardAct(Uint8Array.from(bytes));
   pendingAdmit = null;
-  pendingFounding = false;
+  pendingFounding = null;
   // Identity custody stays in the browser vessel. The web surface renders the public receipt the vessel reported.
   const did = result.did;
   mountAdmitSurface(result.verifyingKey, vessel);
   // ── leaf-fleet (Leaf-Wright): the root holder's door. It paints a face only where this browser holds that face's root. ──
   const fleetRootHost = document.getElementById("fleet-root-door");
-  if (fleetRootHost) mountFleetRootDoor(fleetRootHost, vessel.fleetRoot);
+  // THE FIRST OFFER FOUNDS THE FACE: a veil's offer asks the founding door, and the boot that founded for it shows the offer.
+  if (fleetRootHost) mountFleetRootDoor(fleetRootHost, vessel.fleetRoot, { found: { ask: () => { askFounding("offer"); }, resume: foundingAsk === "offer" } });
   // THE CARRIED SEAT: a face this browser joined asks its seat by file; a kept grant restarts the daemon island in place, and its seat reads it.
   // A READ-ONLY INSTRUMENT (leaf-fleet): the active wiki's working layer as this vessel mounted it, beside `larMirrorReading`.
   // Two leaves of one face read one workbench address for one slug; live convergence between them still needs a road.
