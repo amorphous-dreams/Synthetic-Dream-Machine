@@ -197,7 +197,7 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
   const finished: string[] = [];
   const skipped: string[] = [];
   const skippedDocs: SkippedDoc[] = [];
-  const held = (error: FloorDocumentUnavailable, key: string): void => { console.warn(error.message); skipped.push(key); skippedDocs.push({ url: error.url, waits: error.waits }); };
+  const held = (error: FloorDocumentUnavailable, key: string): void => { console.warn(`${error.message} (the record it held: ${key})`); skipped.push(key); skippedDocs.push({ url: error.url, waits: error.waits }); };
   const entries = await args.daemonStore.entries();
 
   // 1 — a burn a crash left: a binding still holding its floor URL finishes the burn, moving nothing.

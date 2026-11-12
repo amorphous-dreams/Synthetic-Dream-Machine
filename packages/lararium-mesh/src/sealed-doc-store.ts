@@ -481,6 +481,9 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     if (bag === null) return this.#unmapped(await this.#ports.inner.load(key));
     if (isPublic(bag)) return this.#openPublic(bag, key, await this.#ports.inner.load(key));
     if (isHeld(bag)) return this.#openHeld(bag, key, await this.#ports.inner.load(key));
+    // A KEY THAT NAMES NO SEALED ROLE (the engine's per-peer sync state) never rests for a sealed bag (`save` drops it), so
+    // its load answers nothing at once, with no session asked: a session the face has not stood never holds a peer's sync.
+    if (ROLES[key[1] ?? ""] === undefined) return undefined;
     const face = this.#face(bag);
     const waiting = this.#waiting.get(nameOf(key));
     return waiting ? Uint8Array.from(waiting.data) : this.#open(bag, key, face);
