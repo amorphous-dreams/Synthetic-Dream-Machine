@@ -339,7 +339,7 @@ export async function mountWikiSlot(
   if (composite.hasBag(slot.wikiBagId)) composite.removeLayer(slot.wikiBagId);
   const workingUrl = await resolveWorking(wikiHandle.url);
   const workingSlot = wikiSlotUri(slot.wikiSlug, "working");
-  const workingHandle = workingUrl === null ? null : await findOrThrow(repo, workingUrl, `${workingSlot} (working layer)`, { refusal: WorkingDocumentUnavailableRefusal, timeoutMs: DOCUMENT_HANG_BOUND_MS });
+  const workingHandle = workingUrl === null ? null : await findOrThrow(repo, workingUrl, `${workingSlot} (working layer)`, { refusal: WorkingDocumentUnavailableRefusal, timeoutMs: DOCUMENT_HANG_BOUND_MS, islandNamed: true });
   const flags = (bagId: string) => slotLayerFlags(bagId, slot.wikiSlug);
   composite.addLayer({ bagId: slot.wikiBagId, store: new AutomergeDocStore(wikiHandle, slot.wikiBagId), ...flags(slot.wikiBagId) });
   if (workingHandle) composite.addLayer({ bagId: workingSlot, store: new AutomergeDocStore(workingHandle, workingSlot), ...flags(workingSlot) });

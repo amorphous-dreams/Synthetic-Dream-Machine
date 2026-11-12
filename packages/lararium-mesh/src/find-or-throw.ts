@@ -43,11 +43,58 @@ export interface FindOrThrowOptions {
   readonly timeoutMs?: number;
   /** The refusal class to raise; defaults to {@link DocumentUnavailableRefusal}. */
   readonly refusal?: typeof DocumentUnavailableRefusal;
+  /**
+   * THE VESSEL'S OWN ISLAND NAMED THIS DOCUMENT, and stood it before naming it. An island that stands a document at a DERIVED
+   * address (`materializeSharedLarDoc`: a realm workbench) asks every peer first, this repo among them, and this repo answers
+   * `unavailable` and keeps that answer; the island's push of the stood document then races its reply on another port. So where
+   * this repo ALREADY answered the url `unavailable` (the island asked here first), that answer reads as stale: the
+   * resolve waits for the island's copy until the bound, and refuses by name (`waitedMs` set) where none arrives. A url this
+   * repo was never asked about resolves as any other (an absence still refuses fast), and a `failed` load refuses at once.
+   * Never a blank document.
+   */
+  readonly islandNamed?: boolean;
+}
+
+/**
+ * This repo already answered `unavailable` for `url` (a peer asked here before it stood the document): the repo's find progress
+ * reads that verdict at once, before any new ask. A url never asked reads `loading` here and resolves as any other.
+ */
+function askedUnavailable(repo: Repo, url: string): boolean {
+  try { return repo.findWithProgress(url as AutomergeUrl).peek().state === "unavailable"; } catch { return false; }
+}
+
+/** Wait for `url` to read ready, through any `unavailable` sighting, until `timeoutMs`; null where it never does. */
+function readyThroughUnavailable(repo: Repo, url: string, timeoutMs: number): Promise<{ handle: DocHandle<LarDoc> | null; failure?: unknown }> {
+  const progress = repo.findWithProgress<LarDoc>(url as AutomergeUrl);
+  return new Promise((resolve) => {
+    let done = false;
+    let unsub: (() => void) | undefined;
+    const finish = (out: { handle: DocHandle<LarDoc> | null; failure?: unknown }): void => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      unsub?.();
+      resolve(out);
+    };
+    // LIVENESS: the island's copy may never arrive; the bound refuses by name.
+    const timer = setTimeout(() => finish({ handle: null }), timeoutMs);
+    const read = (s: { state: string; handle?: DocHandle<LarDoc>; error?: unknown }): void => {
+      if (s.state === "ready" && s.handle) finish({ handle: s.handle });
+      else if (s.state === "failed") finish({ handle: null, failure: s.error ?? new Error(`document ${url} failed to load`) });
+    };
+    unsub = progress.subscribe(read as never);
+    read(progress.peek() as never);
+  });
 }
 
 export async function findOrThrow(repo: Repo, url: string, what: string, opts: FindOrThrowOptions = {}): Promise<DocHandle<LarDoc>> {
   const timeoutMs = opts.timeoutMs ?? DOCUMENT_READY_TIMEOUT_MS;
   const Refusal = opts.refusal ?? DocumentUnavailableRefusal;
+  if (opts.islandNamed && askedUnavailable(repo, url)) {
+    const { handle, failure } = await readyThroughUnavailable(repo, url, timeoutMs);
+    if (handle) return handle;
+    throw new Refusal(url, what, failure === undefined ? timeoutMs : null, failure);
+  }
   let timer: ReturnType<typeof setTimeout> | undefined;
   let failure: unknown;
   try {
