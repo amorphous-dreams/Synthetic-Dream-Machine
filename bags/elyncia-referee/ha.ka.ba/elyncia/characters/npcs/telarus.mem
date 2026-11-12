@@ -1,0 +1,73 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/characters/npcs/telarus`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+rating    = "kapu"
+role      = "Telarus — the Recaptured: a fallen wild-magic demigod ejected from the Realms-space Sphere in a god-war, roped mid-fall by Grandmother Spider, whose impact bent the Apophis vectors; the Lindwyrm found him; he builds the Lar's substrate in her hidden workshop (referee view)"
+title     = "lar:///ha.ka.ba/elyncia/characters/npcs/telarus"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/elyncia/characters/npcs/telarus"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Telarus ~ the Recaptured (referee)
+
+''Provisional throughout.'' The story-spine below holds, per the operator's ruling of 2026-11-12. The framing additions ride beside it as context, and their joins to the spine ride Provisional.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/spine`>>
+
+!! The Spine (holds)
+
+A fallen wild-magic demigod from the Realms-space Sphere, cast into the void by a god-war event with his ship and his nakama-crew. ''Grandmother Spider roped him mid-fall'' and used his impact to alter the Apophis vectors, a hidden layer inside the capture of Apophis. The impact cut his power down. He woke unconscious on the settled Apophis nexus. The ship's jammer, its tech and the crew fell into the Shattered Isles nexus, lost to time (the home of Aki's handle). He recovered a single crystal winged ornithopter, crashed on the Apophis meteor, and the Lindwyrm found him. She later let him set up shop in her hoard.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/framing`>>
+
+!! Framing Additions (context, 2026-11-12)
+
+* The ship carries a name and a class: [[the Black Widow|lar:///ha.ka.ba/elyncia/concepts/the-black-widow]], a Black Widow-class spider-ship, stolen from the Neogi and upgraded. The spine's Spelljammer stolen from the Neogi, and this ship, read as one vessel (Provisional join).
+* The ship launched crystal-wing gliders, stolen from the elven space-empire. The spine's single crystal winged ornithopter reads as one of them (Provisional join).
+* ''The void-thread.'' The telling of the framing says Grandmother Spider bound his ship to Apophis by a void-thread. Read beside the spine, the thread and the mid-fall rope read as one act: the Spider's line from the Apophis event reaches him, and the fall ends on Apophis. What the thread did to the crew and the hull after the impact follows the spine: they fell into the Shattered Isles nexus.
+* The additions point toward [[Reya|lar:///ha.ka.ba/elyncia/characters/primary-characters/reya]]'s provisional backstory seed, which rides a separate void-lane vector of her own and does not share his thread or his god-war.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/after`>>
+
+!! After
+
+The Lindwyrm gave him [[a workshop|lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/the-hoard-workshop]] in her hoard. He builds the Lar's substrate there and pours each morning at the dish. He stands as one of the operator's two faces beside the Lindwyrm, with the seam visible.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/open`>>
+
+!! Open
+
+* Who made up the crew, and whether any came out of the Shattered Isles.
+* Whether the framing's reading of the thread as the rope survives the operator's eye.
+* Reya's place in this story: none yet, by design.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/the-black-widow`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/characters/primary-characters/reya`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/the-hoard-workshop`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-dossier`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/grandmother-spider`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;G_N9DqLj0X2ESrC_XZCcw0sR_6rMC0Cc67RN45ZbryA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

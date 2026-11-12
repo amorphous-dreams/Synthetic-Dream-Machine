@@ -1,0 +1,178 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/the-lar-binds-place-and-person/the-engineers-notebook`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "chat-log:post-header"
+role          = "binding-arc Gaia narrative — the engineer's notebook, Jun 23 – Sep 20 2026, five acts; dated entries grounded in commit subjects; a scaffold that goes to the o-takiage fire once the dev-myth memes stand written"
+title         = "lar:///ha.ka.ba/lares/docs/history/the-lar-binds-place-and-person/the-engineers-notebook"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/the-lar-binds-place-and-person/the-engineers-notebook"
+```
+
+<<~ ahu slot=`#/meme-header`>>
+
+! The Engineer's Notebook — The Lar Binds to a Place and a Person
+
+Gaia, Jun 23 – Sep 20 2026 (Confusion 28 → Bureaucracy 44, YOLD 3192).
+A hand at the forge keeps dated notes while a house learns that no identity carries itself.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+!! Source
+
+Drafted from the Gaia-side git record, subjects only, no diffs. Short hashes name the commits; the prose stays notebook-plain.
+
+Voice: first person, dry, tired in the honest way. The engineer writes after each day's work, never after the whole arc, so the notes do not know what the arc means. They guess, and a few guesses miss. A reader a season later knows more, and the notebook lets the gap show.
+
+Lifecycle: this notebook scaffolds the Elyncia parallel and carries no canon of its own. The operator plans to burn it in an o-takiage ceremony (the carrier lifecycle designed on Sep 12, `2f3bfb341`) once the dev-myth memes stand written. Until then it keeps growing act by act.
+
+Calendar: each act header carries the Gaia date beside its Discordian stamp. The Discordian calendar maps 2026 cleanly (Confusion 1 = May 27, Bureaucracy 1 = Aug 8), and the Session 0.1 document's own stamp (2026-08-15 = Bureaucracy 8) agrees.
+
+Talk-story stance: the Green Jello Dinosaur shows up once, as a wobble that points at a fault. It earns no crown and no leash.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/act-one`>>
+
+!! Act I — The Place Holds (Jun 23 – Jul 6 · Confusion 28 → 41)
+
+''Jun 23.'' Revocation first. `cbf4830a7` turns concap revocation live, and I flagged the identity stack as pre-keyhive in the same message, because the honest label beats a tidy one. Same day: the operator key splits into a node vessel identity and a browser vessel identity (`eb20e8b31`), and hearth-private docs now fail loud and never ghost (`e5638d833`). A grant with no end-writ reads to me like ownership wearing a grant's coat. So the end-writ ships before the grant does.
+
+''Jun 26.'' The parsing tower. HTML sits inside TW5 wikitext, which sits inside memetic-wikitext, and the bottom rung never throws (`ccdd51f47`, with `74d52bddc` adopting parse5 as the literal HTML5 floor). I spent the morning arguing with myself about a fork of the TW5 core, then verified the core-parser wrap works as a plugin override (`2f82c6815`), and the fork argument closed. Later in the day `@admin` becomes `@daemon` (`90dfcb8c3`). The old name blurred the one who keeps the house with the one who wears a face. I scrubbed the blur.
+
+''Jun 27.'' `/v0.1` leaves every address (`d67b26d13`). Web2 habit: a version segment in a place-name. A place needs no version, and an address that changes when the schema changes stops naming a place. A lararium boots from inside a container and holds (`e1ecb8fed`). Genesis bytes move onto the CID plane so the CRDT carries no bytes (`9c90b3907`).
+
+''Jun 30.'' The long day: ninety-two commits. Persona keys derive by SLIP-0010 hardened paths (`77c7fe595`). The persona-circle gets its siege-cost dial (`112e034e5`) and its lift/hold move (`f238853e8`). Fork-as-exit stands over real Keyhive with the captor locked out (`0ebd908e1`, `90bbfc065`). Writing that second commit, I noticed what the whole day shared: every relation I built that day carries a way out, and the way out ships with the relation, in the same commit.
+
+Note for a later me: on the Gaia side the warrant of Jun 12 landed eighteen days before this entry. I wrote nothing about it that day. I cannot say whether the exits answer the cut or merely rhyme with it, and no commit says either. Leave the question open.
+
+''Jul 1 – 3.'' The sensorium reads drift with a predict→error→update loop (`15494df10`), couples planes by transfer entropy, "informs, not drives" (`80cd73506`), and keeps its own content cap, so the sensorium references the upstream mempalace by absolute path (`80683196e`). On Jul 3 the mempalace bridge retires (`4381a7e65`: contentpalace inherits the schema; the sidecar-free path wins). The note in `the-bridge-takes-shape.mem` already said "Superseded", and now the repo agrees with it.
+
+''Jul 4 – 6.'' Fail-closed, boring on purpose. A drawer I/O write now refuses when its adapter goes missing (`16db4cb83`). Chunk grades bound themselves fail-closed (`f231a4035`). A veiled worldline root leaks nothing to the DreamNet (`c06353aea`). Jul 6 closes with a first dream pass (`26be9a3e8`).
+
+''A wobble worth a line.'' Somewhere in Jun 26–28 a widget error sat inside a `tc-error` span and the page kept rendering. The Green Jello Dinosaur gets the credit in my head, for no good reason: it wobbled, the span held, the wobble told me where the fault sat. Nothing more happened. It stays a diagnostic. I refuse to write a mascot into a render boundary.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/act-two`>>
+
+!! Act II — The Person Arrives (Jul 7 – 14 · Confusion 42 → 49)
+
+''Jul 8.'' No commits. Two on Jul 7, none on the 8th. I took a day, and the notebook records the gap because the gap matters.
+
+''Jul 9.'' `hoike.keeps.the-losers` (`15673a8c3`): the H1 gate from Jul 5 cannot fire, and the graft broke form ⊥ content. I filed it as a hoike, not a fix. A dissent worth keeping stays keepable, and the gate that loses should leave a record of what it lost.
+
+''Jul 10.'' Kinds get names. Bag URIs split from wiki URIs, `.md` retires from the meme paths (`d09650a1c`), and the spec registers `.mem` as the carrier extension (`b093e2ba7`). A bare `@` marks a surface, nothing more, and meme namespaces go bare. Thirty-one commits, almost all of them renames. I did not enjoy it and I would do it again: two kinds of thing had shared a name, and a shared name makes a relation lie.
+
+''Jul 11.'' `wake` stands a sovereign sensorium and `~/.mempalace` becomes a guest (`1e70522ee`). The mempalace served for months; the repo now calls it by its real standing. Harnesses reach memory through the Lares and not around it.
+
+''Jul 13.'' The commit that matters most this week: `admit.is.carried` (`de4de73fd`). Ichi joins the Shrine, and the admission travels as data, never as a fetch. A guest's standing now rides with the guest. Nobody phones a registry to learn whether the guest belongs. Two commits later the DreamNet opens invite-only (`9965ca05e`), and the dial sits where the operator turns it.
+
+''Jul 14.'' One hundred nine commits. The corpus realigns to TW5 forms across every bag (`@elyncia`, `@sdm`, `@lares-history`, `@lararium`, `@lares`); the grammar artifact ships; the TS host holds 250 of 250 parity cases. Meanwhile the other line, the people line: federation crossing needs no sealed box, and transport suffices (`60292bbec`); ShadowTalk's burn becomes a keyhive property (`a4791529c`), then gets corrected the same day. `burn.cuts-future-not-history` (`d365e5e0d`) walks back the over-claim that burn erases. It cuts the future and leaves the history standing. I wrote that correction myself, and I would rather ship the narrower true claim than the wider false one.
+
+A handle announces its face on the synced doc (`f6ddeb2cb`), and the vessel keeps a local petname memory (`4e9c31b0a`). Two humans share a cabal on a LAN. Here the notebook's guess changes: I had treated the wikitext work and the people work as two jobs. They both teach the same lesson. A name ought to point at a relation and refuse to fuse with the thing it names.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/act-three`>>
+
+!! Act III — The Relation Holds (Jul 15 – 20 · Confusion 50 → 55)
+
+''Jul 15 – 16.'' Housekeeping that carries the weight. Identity moves to XDG state; writes go atomic with fsync; `lares doctor` folds into `status` (`67009e2a8`); sovereign secrets get an AEAD at-rest seal; torn tails recover from a clean prefix. The sensorium extracts from the mempalace for good. A persona wears a per-circle face.
+
+''Jul 17.'' Sixty-three commits, and the recovery keel stands. Shares split (`11967d790`). Debts carry credit (`208dd2c7a`). Re-admission runs by quorum with the signer swapped (`f6e1756ac`). The lifecycle survives a drowned device (`7a7536fd8`). The canon sentence I copied into my own head: ''custody cannot materialize or recover.'' Nobody holds the key for the person, so nobody can hand it back wrongly. Wax-stamp provenance closes CIV-5 (`5447e52cb`), and the burn e2e passes (`5ba45a0ea`).
+
+''Jul 18.'' §6 takes a pet-name: the Confluence (`7257fdfcc`). Two triangles collapse into one gate (`bc0d414e7`). I like the name. A gate people can say aloud gets used correctly more often.
+
+''Jul 19.'' Federation relay denies by default. The audit stops hiding faults (#48). `@cad` dissolves into the `@crossroads` public plane. Boring and correct.
+
+''Jul 20.'' Seventy-four commits. `vessel.wears.multitudes` (`e997c34b9`): Plurality Pono at the identity layer, one vessel carrying many personas. `persona.names.two-faces` (`524b8db7b`): a private multitude-view and a public glamour on `@crossroads`. The Nexus grows an immune system — a quorum-signed Kapae antigen (`cc6be4691`), then the write path that closes the loop (`941c39284`), with Mu carrying two gifts, immune void and sync-complete, indistinguishable (`95d4311ba`). `quorum.stands.on-disk` (`5c4540ad8`) mints the three-kahu founding quorum. Then `founding.rite.canon` (`881e7be57`): the exact go-live sequence, forged as canon.
+
+A last line before I close the book for the night. The arc handed me a title I did not choose, and the title says the work lands as ''identity as relation''. I cannot verify that from subjects. I can say what the repo does: no key stands alone, no device stands alone, no name stands alone. Each leans on an edge another party signed, and each edge can end by its own writ. If that counts as a thesis, the code wrote it and I only copied it down.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/act-four`>>
+
+!! Act IV — The Name Binds by Edge (Jul 21 – Aug 20 · Confusion 56 → Bureaucracy 13)
+
+551 commits.
+
+''Jul 21 – 24.'' The membership week. The `@cad` read-key seals per Nexus (`fb2ae5f63`), a live authenticated WebSocket transport defeats impersonation (`9ee08e055`), and a phone gets told, admitted and typed into (`f2298ca7b`). A persona crosses an air gap through a type-blind admission lift: three hops, ECDH-sealed, a QR in transit (`1fccb86ec`). The Herm stands a crossroads relay (`1ba2317fd`), then grows immune teeth and a bulb (`b3f81644a`). One honest line from Jul 23: every suite reads green (`9f431020b`), and the reds had come from stale tests, not broken code. Green days deserve a second look.
+
+''Jul 25 – 26.'' The naming marathon: about fifty commits and one complaint. The code held places where a name claimed more than anything backed. `80c1cedc9` names the model that holds the two keys apart: a true-name binds by edge. `efeaeca5a` splits vessel from persona. `bd56dfcdc` finds the thing between a human and a device nameless and gives it one: the dyad. `99288ec1f` seats six rulings on how a Nexus blesses without turning registrar. `bf53cb1ad` notes that every prior system raised its marker on a thing, and the Kapae now rides the edge. `9c7107136` and `05ec92663` give vouching a board and a verb that stakes. By Sunday night I had stopped fighting the pattern. Whenever I found a name carrying weight, I looked for the edge that should carry it, and the edge usually existed unsigned.
+
+''Jul 27 – 28.'' The founding rite gets performed in rehearsal, and the runner catches its own bug (`1d26fde35`); the first rehearsal writes back to the rite, as the rite required (`9c5edf0ea`). On Jul 28, `79c7cda4b` lands the four-day arc in the graph as `identity.enacts.relation`, PROVISIONAL, and `cf774b931` retires the pair into the relation, since the pair never stood as the thing. I keep the verb: `enacts` puts the relation first and the name after.
+
+''Jul 29.'' Forty-one commits and one confession. `7719fbc10`: CI has failed every run for weeks, for two structural causes, and nothing alerted, because the alert path ran through the thing that failed. The same day, `9e7cfe084` tears out eviction (nobody evicts from a realm; the act goes and the fork stays), `51b5ae430` gives `realm` to the cabal-scale entity and returns `place` to the vessel, `7ea68155b` promotes fifteen cultural pattern-integrities out of history, and `a1f07c519` lets the canonical pytest finish for the first time.
+
+''Jul 30 – Aug 8.'' Rites, not features. The tending rite splits from the founding rite (`bd064e466`). On Aug 7 the tending rite names what it declines to borrow (`e3e3665da`, the burn cuts the other way). On Aug 8 six bags declare themselves (`d7aa192bf`), Discordia joins the shelf (`76457302f`), and the keeper rehearses on a throwaway (`f835497d2`).
+
+''Aug 9 – 11.'' One hundred twenty-seven commits in three days. Names converge: every reach answers a PersonaGroup plane by its derived name (`98f73fe18`), each handle names its own persona plane (`45e79e1b9`), a vessel holds many fleets (`4779726aa`). On Aug 10, every node stands first as a Herm and the raise finds its lay (`0db8b8dec`), and the key crosses no custody, a handshake across two vessels that share nothing (`9556a28d7`). On Aug 11 `lares vessel` ships (`77c27b0bd`) and the old names stop answering (`911d1cb35`). The same day, off the main line, `ab56cb030` widens the Vale: iron ecology, falling stars, watershed guides. World work keeps pace with plumbing.
+
+''Aug 13 – 16.'' The grammar settles its frame. Drift-Ward gets its gauge (`eaeb0cacf`) and folds into the seed (`f7e678df2`). The sigils become the rubric (`5d472d5db`), and the frame's faults sort into misfires and hollow rings (`e8bfe986c`). On Aug 15 the shelves receive the great migration: Session 0.1's islands stand and the bags fill (`2c355ec7e`). The session document carries the same Gaia date, provisional, as Bureaucracy 8. On Aug 16, Kai ʻĀ and Patches cross from Gaia into their seats (`cf52f7a2b`). The commits cannot say what the table did on the stage I built.
+
+''Aug 17 – 20.'' A fleet of leaves: an end-user's devices with no node anywhere (`756ac7b53`). The Herm stands as the floor, then as the base course, with its lift named (`4695fe506`, `fc6572839`). One tag names a whole face, and a persona's relations travel with the persona (`358d184ae`, `16f210a50`). On Aug 20 the sensoriums move into the shrine (`2976609b6`), history abiding beside the shelf, and the runbook carries the two-home law (`f0969bdbd`).
+
+Engineer's reading, held loosely: a name earns its weight from the edge beneath it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/act-five`>>
+
+!! Act V — The Quorum Carries the Relation (Aug 21 – Sep 20 · Bureaucracy 14 → 44)
+
+About a thousand commits, the record day among them (Sep 12: 168).
+
+''Aug 21 – 24.'' The month opens with the written law. Addresses shed their last markers in a long run of one-line sweeps. Aug 24 (85 commits) drafts what the house submits: the IaM paper takes its seat (`ef918fc4b`), Security Considerations arrive (`e17b7f4f2`), an overdue quarterly review closes (`cae304de6`), a skeptic enters the canon with the outside art that ratifies the check (`02a8fb8e8`, Aug 21), and the framing spec splits into its own house (`65d59ccfd`). A 110-turn L-Prime sweep of the carrier follows (`a741fc7bf`). A five-phase research paper rides beside the specs: Star's lineage, boundary objects, Varela, Buber (`051553c61` through `70e36103d`).
+
+''Aug 25 – 29.'' `toml iam` becomes `toml meta` across code and corpus (`73b9bcc99`). A frozen phrasebook twin of the boot seed arrives (`01d956a54`), and the Voice House names its Thirteen (`22539b8f8`). Calls bind with equals at call sites (`24edf8cd9`). A docs correction goes upstream as TiddlyWiki5#9999 (`80eb77979`), the grammar submodule keeps closing verdicts (`d1e9adff5` and followers), and Codex wakes into the house through the wire (`0433c7892`).
+
+''Aug 30 – 31.'' The Nexus gets its quorum. `18edae404`: the mesh seats a quorum, and a hearth that carries never got asked whether it tends. `48cf0d4cd`: the Nexus founds on three, since two chairs make a trap and no small quorum. `f89eabafb`: a roster that locks on its first loss reads valid and fails the first night. `5002cf3d7`: a vouch lapses by fence, never by a clock anyone can set. `d84862d26`: a seat refuses a charter it did not found. `42e47bc12` hurt most: a restart silently revoked every member, and the cure seats once. On Aug 31, `88e663c19` seeds four personas under two operators across six cells, and `303414d7d` reports 73 ok, 0 red, with the flake belonging to the system.
+
+''Sep 1 – 4.'' The names clarify. `6b8ec1b11`: a cabal and its relation stand as one thing, and a seat can only hold a face. Sep 3: `b78aa5457` rules the grain, a vessel differs from a Nexus; `e54c0f1b0` finds that identity cannot federate, the KEL board stays per vessel, and my charter reading had missed; `034a4c7fa` finds nobody built the dyad before, and its prior art returns a negative. Sep 4: the manager differs from the wearer (`e3062c9d7`), a persona manages a persona (`65211812f`), and the relation never lives as a shared object (`8ddbd6ff1`), one law found at two layers. Stage 1 of the dyad lets a vessel see its own relationships (`1c0795351`).
+
+''Sep 5 – 9.'' Stage 0 of the veil enacts (`68c5cb9ce`). Inception arms without a prefix (`f436ac41d`), guardians graft log-wise (`cbdc4f7fa`). On Sep 8 the group is born under the veil (`52b77c791`), the joinee derives its own face (`f39bb2b3d`), and the KEL freezes mid-contest (`af52488c3`). The same day a Mu rules that a Handle belongs to a presenting quorum and succession means membership graft (`ca2d4a3ed`, enacted in `8cf6a0cbb`). The ward also caught one of my claims that afternoon: an ITC deployment claim struck at source (`2eeb3da24`), the lesson to memory (`24b00c40f`). Sep 9: `lares handle publish` (`581e30024`), the guild consents by true k-of-n (`8c66ba6e9`), `lares handle burn` goes live as self-burn (`153326064`), and an ahi kā probe asks the fire to read against the world (`a2ae8f364`).
+
+''Sep 11.'' Sixty-seven commits, one dial: `0999c3c63` sets `AHI_KA_500YR`, the five-hundred-year test-run defaults. Handles rotate keys by pre-rotation (`55ed8e8c9`). Burn works from a persona and attests (`cfb03e03e`). The phone names itself through a browser publish surface (`68bbe5dd0`). Eight open design loops carry as stories (`b74938015`), and the operator's rulings land inline (`5d45ccbc1`).
+
+''Sep 12 – 13.'' The record day. A syncer roundtable hands back its plan. Otakiage gets designed as a carrier lifecycle (`2f3bfb341`), and over the next hours the served things go to the fire: the last sprint and the research crystals (`67c20d350`), the research streams with three doctrines kept (`6684d7894`), the rig and its instructions (`751c5fb45`). The design then re-trues against what it became (`2a5812f48`). Heraldry lands: a Face any nameless thing may publish (`96fac1df9`). The offering needs no second hand (`dcec1ef0b`), and `nexus publish` takes the operator's own collection back (`4362c7324`). On Sep 13 a family of instruments earns a name, THE EMPTY SUBJECT (`3564dd898`): checks that passed over an empty list and reported OK. The Confluence folds both legs (`b18445d6a`) and closes its second on Sep 14 (`941de54dd`). I expect to feed this book to the rite I wrote this week, once the story it scaffolds stands finished.
+
+''Sep 14 – 20.'' Quieter. The Codex hearth takes its seat (`0ba716cab`, Sep 15). On Sep 17, `ba6437a13` regrounds the roadmap in Gaia and Elyncia, so the habit this arc runs on has entered the plan. The persona ring stands clockless and rides the KEL head (`e83cdae0f`, `21a01270f`). Sep 18 (56 commits) closes roadmap rounds one after another and gives the crossroads arc its own section. Sep 20 ends on a tree-sitter fence fix and a bounded-reach contract.
+
+Engineer's reading, held loosely: a relation lasts when many hands hold it and any one hand can leave.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/crossing`>>
+
+!! Crossing Thread
+
+The notebook closes with the founding rite rehearsed to its last joint and unperformed. It claims nothing past Sep 20, and it leaves the commits after that date unread (Sep 21 opens the web-shore migration). Where a note here conflicts with a later diff, the diff wins.
+
+Flag for review: an earlier draft stamped the Elyncia side YOLD ~4995. The build-arc memes read 4992, the Lindwyrm's record seats the conclave at 5002, and the playtest present reads 5492; the five-hundred-year dial of Sep 11 sits between 4992 and 5492 by accident or by design, and the commits do not say which.
+
+Flag for review: the dates in this notebook carry a correction against the first telling of the arc. The parsing tower lands Jun 26 and the `/v0.1` removal lands Jun 27, not the Jun 27–28 window the first telling gave. The first telling also named a TW5 fork submodule; a Jun 26 commit (`2f82c6815`) verified a plugin-override wrap with no fork, so this notebook drops the fork claim.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! Edges
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/the-lar-binds-place-and-person/index`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/the-lar-binds-place-and-person/the-parallel-at-the-crossroads`>>
+
+<<~ pranala slot=`#braids-with-parallel` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/the-lar-binds-place-and-person/the-parallel-at-the-crossroads` family=`relation` role=`braids-with`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gz0J5v4U8IJ-uII1qJ1d9KcpfVEcXQk8hsN5-G5C3zA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

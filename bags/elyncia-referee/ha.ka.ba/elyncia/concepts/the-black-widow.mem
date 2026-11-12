@@ -1,0 +1,57 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/concepts/the-black-widow`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+rating    = "kapu"
+role      = "the Black Widow — Telarus's upgraded Black Widow-class spider-ship, stolen from the Neogi, with crystal-wing glider launchables stolen from the elven space-empire; framing context for the story-spine's lost Spelljammer (referee view)"
+title     = "lar:///ha.ka.ba/elyncia/concepts/the-black-widow"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/elyncia/concepts/the-black-widow"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! The Black Widow (referee)
+
+''Provisional throughout.'' The operator gave these seats on 2026-11-12 as framing context. The story-spine of [[Telarus|lar:///ha.ka.ba/elyncia/characters/npcs/telarus]] holds, and the joins below ride Provisional.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ship`>>
+
+!! The Ship
+
+A ''Black Widow-class spider-ship'', stolen from the Neogi and upgraded by Telarus. It launches ''crystal-wing gliders'', stolen from the elven space-empire. It carried Telarus and his nakama-crew out of the Realms-space Sphere in the god-war event.
+
+''Joins with the spine (Provisional).'' The spine's Spelljammer stolen from the Neogi, a spider-ship, reads as this vessel. After the impact on Apophis, the spine sends the jammer, the tech and the crew into the Shattered Isles nexus, lost to time. The single crystal winged ornithopter Telarus recovered reads as one of the gliders.
+
+''Reading, Provisional:'' a spider-ship stolen from spiders' enemies, caught by a Spider's thread. The hull keeps the joke and the debt in one object.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/open`>>
+
+!! Open
+
+* The ship's present berth: a wreck among the Shattered Isles, or something else the Isles keep.
+* How many gliders survived beyond the one ornithopter.
+* The crew roster.
+* The ship's own sheet under the FTLS rules.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/characters/npcs/telarus`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/grandmother-spider`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/the-hoard-workshop`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;eH_C9tHToLksKXv1idYezliRpLGjD1xDL9Cc3cboSEE`>>
+
+<<^ code=`&#x0004;` to=`?`>>
