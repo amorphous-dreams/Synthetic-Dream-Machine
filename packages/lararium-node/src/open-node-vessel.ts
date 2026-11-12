@@ -574,6 +574,8 @@ async function standDown(stood: Stood): Promise<void> {
 export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonVmCore> {
   /** THE CAPABILITY RECORD this vessel handed its islands, read as they read it: the members standing now. */
   readonly islandCaps: Readonly<CapabilityRecord>;
+  /** The floor's rest key as this composition began with it: `stands` on an unlocked vessel, else the floor's refusal. */
+  readonly floorKey: "stands" | "vessel-locked" | "floor-unkeyed";
   restartWiki: (wiki: string) => Promise<void>;
   /** The promote and kapae session acts in flight: main begins each one, the channel ends it once the reply left. */
   promoteActs: PromoteActGate;
@@ -4740,6 +4742,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     sealedRestLock:  p.sealedRestLock,
     sealedRestStandDown: p.sealedRestStandDown,
     heldSaves:       p.heldSaves,
+    floorKey:        p.floorKey,
     backupDoor:      p.backupDoor,
     oracleDocUrl:     result.assembly.islandHandle.url,
     larariumDocUrl:   result.assembly.larariumHandle?.url ?? null,

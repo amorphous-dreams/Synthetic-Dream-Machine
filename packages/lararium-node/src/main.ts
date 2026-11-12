@@ -808,6 +808,8 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   front.attach(makeUdsSeat({
     controlHandle: result.daemon.controlHandle,
     control:      result.daemon.control,
+    // One reading on every composition: where no control document stands and the floor's rest key does, the veil's four verbs pass.
+    floorVerbs:   floorVerbsFor(result.floorKey === "stands"),
     placeVerb:    (o) => result.daemon.placeVerb(o),
     retireAsk:    (requestId) => result.daemon.retireAsk(requestId),
     claim:        floor.storeClaim,
