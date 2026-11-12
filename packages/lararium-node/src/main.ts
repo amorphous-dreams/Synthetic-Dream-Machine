@@ -60,6 +60,7 @@ import { deriveMeshSelf } from "./node-caps.js";
 import { parseMeshPeer } from "@lararium/mesh";
 import { ratedReceiptRing, ratedReceiptRingBytes } from "@lararium/mesh";
 import { makeUdsSeat, serveUdsFront, type UdsChannelOptions, type UdsFront } from "./uds-channel.js";
+import { floorVerbsFor } from "./floor-verbs.js";
 import { nodeSwitchActLog } from "./switch-act-log.js";
 import { STORE_DOOR_HAND_CODES, STORE_DOOR_HAND_ONLY_ACTS, REALM_KEY_VERBS, REALM_SESSION_ACTS, STORE_DOOR_FACE_ROWS, faceRowAnswer } from "./store-door-verbs.js";
 import { makeCustodyHolder } from "./custody-holder.js";
@@ -562,6 +563,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
     // floor under its own name, and calling it a wayfarer would tell its operator they built the wrong thing.
     hostId:     askedStanding === "herm" ? "lares-viales" : "lararium-node",
     floor,
+    askedHerm:  askedStanding === "herm",
     sovereign,
     wikiId,
     storageDir,
@@ -668,6 +670,8 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
   front.attach(makeUdsSeat({
     controlHandle: herm.daemon.controlHandle,
     control:      herm.daemon.control,
+    // A veil floor (its rest key stands) also answers the wiki-minting and composing verbs, as the veil.
+    floorVerbs:   floorVerbsFor(herm.floorKey === "stands"),
     placeVerb:    (o) => herm.daemon.placeVerb(o),
     claim:        floor.storeClaim,
     repo:         herm.repo,

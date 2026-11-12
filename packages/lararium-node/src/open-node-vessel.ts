@@ -17,7 +17,7 @@
  * in sovereign islands (daemon + wiki). FPI-5 (trim tab): all Node-specific code lives here.
  */
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
-import { receiptInStore, WardRefused, wornAtOf, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, bindSecretHomeRest, vesselHeldHomes, enrollBesideSecretHome, releaseBesideSecretHome, SecretHomeUnavailable, type SecretHome, type SealedBag, type BookedSession, type SessionOwnChain, preparePlaceFace, signAsFaceAtom } from "@lararium/mesh";
+import { receiptInStore, WardRefused, wornAtOf, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, bindSecretHomeRest, vesselHeldHomes, enrollBesideSecretHome, releaseBesideSecretHome, standFloorKeyOn, floorKeyStandsOn, floorRestKey, type HeldRestKey, SecretHomeUnavailable, type SecretHome, type SealedBag, type BookedSession, type SessionOwnChain, preparePlaceFace, signAsFaceAtom } from "@lararium/mesh";
 import * as A from "@automerge/automerge";
 
 /** A summoned panel verb's ward: the ref the CLI parked, spent only on the verb and arguments it was bound to. */
@@ -159,7 +159,7 @@ import { loadFaceAnchorOfGroup, keepFaceAnchorOfGroup } from "./face-anchor-stor
 import { raiseAnchorFromSlots } from "./lease-observation.js";
 import { readFacePersonaRecords } from "./persona-act-store.js";
 import { CustodyLocked, WardNeedsFreshUnlock } from "./custody-holder.js";
-import { standingCustody } from "./custody-seat.js";
+import { standingCustody, custodyFloorKeyDoor } from "./custody-seat.js";
 import { joinedFaceAuth, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
 import { fleetLineageOf } from "./fleet-lineage.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
@@ -443,6 +443,9 @@ export interface NodeVesselOptions extends LarariumVesselOptions {
    *  read and nothing private is minted. Absent: the seated custody's rows when this process holds its vessel key,
    *  the floor otherwise. */
   sovereign?: SovereignReaders | null;
+  /** THE OPERATOR ASKED A HERM (`--recipe herm`): a public crossroads that never unlocks. It derives no floor key and
+   *  registers no floor row, whatever its custody reads (the-veil-ladder#/the-base-model, in-house ruling 7). */
+  askedHerm?: boolean;
 }
 
 /**
@@ -657,6 +660,8 @@ export interface NodeHermResult {
   backupDoor:      BackupDoor;
   /** The census of saves this herm's sealed rest holds in memory, by document and never by body (`lares vessel census`). */
   heldSaves:       () => readonly HeldSaves[];
+  /** The floor's rest key as this composition began with it: `stands` on an unlocked veil floor, else the floor's refusal. */
+  floorKey:        "stands" | "vessel-locked" | "floor-unkeyed";
   /** M15: which social planes mounted live vs degraded vs PENDING — see `NodeVesselResult.mountManifest`. */
   mountManifest:    MountManifest;
   /** Tear down the read-face + the daemon island, then the composed vessel (reverse build order). */
@@ -716,6 +721,8 @@ interface NodeBootPrep {
   sealedRestStandDown: () => Promise<number>;
   /** The census of saves the sealed rest holds in memory, by document and never by body. */
   heldSaves: () => readonly HeldSaves[];
+  /** The floor's rest key as this composition began with it (`standFloorKey`). */
+  floorKey: "stands" | "vessel-locked" | "floor-unkeyed";
   /** THE SESSION SIGN LIFT, built and seated by the lift alone: each call stands a fresh book and its door over this
    *  prep's chain and fleet fold, and stands nothing itself. The Lararium lift seats `door` on `islandCaps.sessionSign`
    *  and owns `down`; a herm never calls it, so a herm's record signs nothing (`session-sign-door.ts`). */
@@ -1032,7 +1039,7 @@ async function prepareNodeBootOn(
   const sealedRest = composeSealedRest<NodeSaveSession>({
     inner: new DurableNodeFSStorageAdapter(storageDir),
     bagOf: sealedBagOf,
-    vesselKey: () => secretHomes.key(),
+    vesselKey: () => secretHomes.floorKey(),
     sessionFace: () => sealedCells.face(),
     openFaces: openFaceSubjects,
     wornAt: (face, subject) => sealedCells.wornAt(face, subject),
@@ -1451,6 +1458,25 @@ async function prepareNodeBootOn(
     // The key stands where this vessel's custody stands open; a locked vessel answers false and its control writes wait held.
     try { await openVesselSecretHome(repo); return true; } catch { return false; }
   }));
+  // THE FLOOR'S REST KEY (the-veil-ladder#/the-base-model, in-house ruling 7): one child of the custody root, stood on this
+  // Repo's rest where the custody stands unlocked, so every floor document seals with no secret home and no face. A locked
+  // hearth derives none (`vessel-locked`), and a place the operator asked to stand as a herm derives none and registers
+  // none (`floor-unkeyed`). The custody's open stands it for the saves that wait; the daemon island's gate reads the answer
+  // this composition began with, and an unlock composes again.
+  const standFloorKey = (opened = false): "stands" | "vessel-locked" | "floor-unkeyed" => {
+    if (opts.askedHerm) return "floor-unkeyed";
+    if (floorKeyStandsOn(repo)) return "stands";
+    // A composition handed no sovereign rows reads no private row, the custody root among them.
+    if (!sovereign && !opened) return "vessel-locked";
+    let key: HeldRestKey;
+    try { key = floorRestKey(custodyFloorKeyDoor()); }
+    catch (e) { if (e instanceof CustodyLocked) return "vessel-locked"; throw e; }
+    try { standFloorKeyOn(repo, key); } finally { key.fill(0); }
+    return "stands";
+  };
+  const floorKeyGrant = standFloorKey();
+  const stopFloorKeyOpened = standingCustody()?.onOpened?.(() => { try { standFloorKey(true); } catch (e) { console.warn(`[floor] the floor's rest key did not stand at the custody's open: ${e instanceof Error ? e.message : String(e)}`); } }) ?? null;
+  stood.push({ what: "the floor key watch", down: () => { stopFloorKeyOpened?.(); } });
   // R2's booking, by the change's own writer (T4): a save of a sealed bag's document reads its change's actor off its
   // bytes; a change this replica made books the session whose call stands, and a peer's change books its peer writer
   // and rests as received under that session.
@@ -2498,7 +2524,21 @@ async function prepareNodeBootOn(
   // ONE BASES KEEPER PER LIT SIBLING: each keeps its own face's sidecar off its own working slots (the lit set).
   const siblingBasesKeepers = new Map<string, { stop(): void; refresh(): void }>();
 
-  // The vessel's control document, named by the daemon document (`control-home`): minted at founding beside the secret home.
+  // THE FLOOR'S REGISTRY rests in the place's daemon document (`device-daemon-docs` `readFloor`): each row files a floor
+  // document under the floor's rest key and keeps it on this vessel, with no control document standing.
+  let floorWatched = false;
+  const watchFloorRegistry = async (): Promise<void> => {
+    if (floorWatched) return;
+    const daemon = await readDaemonDoc();
+    floorWatched = true;
+    const refresh = () => {
+      vesselOnly.refreshFloor(daemon.doc());
+      if (deviceDocs.readFloor(daemon.doc())) { rebookWaiting(standingSaveSession(), "the daemon document named a floor document"); reverdictLater(); }
+    };
+    refresh();
+    daemon.on("change", refresh);
+  };
+  // The vessel's control document, named by the daemon document (`control-home`): minted with the face, beside the secret home.
   const readControlDoc = async (): Promise<DocHandle<LarDoc>> => {
     const handle = await standControlHome(repo, await readDaemonDoc());
     if (controlDocId !== handle.documentId) {
@@ -3397,8 +3437,10 @@ async function prepareNodeBootOn(
     placeFace = faceLit && !!personaGroupId && wornFaceProved && activeAtom !== null && placeAid !== null
       ? placeProofSubjectRef({ atomKey: activeAtom.key, place: placeAid } as never) : null;
     await standPlaceSession(placeFace !== null && personaGroupId && activeAtom ? { group: personaGroupId, atomKey: activeAtom.key } : null);
-    // The control document stands before the daemon island opens over it, and the map names it from here on.
+    // The control document stands before the daemon island opens over it, and the map names it from here on; the floor's
+    // registry files beside it off the daemon document.
     readDeviceDaemonDocs((await readControlDoc()).doc());
+    await watchFloorRegistry();
     sealedRest.store.mapMoved();
     // A sibling's planes need their own face proof before registration; joinedFaceAuth hands each sibling the vessel ground alone.
     const siblingKel = sovereign ? makePersonaKelRingHolder({ repo, nexusPubkey }) : null;
@@ -3542,6 +3584,8 @@ async function prepareNodeBootOn(
           islandUrl: assembly.islandHandle.url,
           // The daemon island's OWN bag (daemon = wikiBagUri("daemon"), one-recipe model).
           wikiUrl:   bootstrap.daemonUrl,
+          // The floor's rest key as this composition holds it: the floor registry's gate in the island.
+          floorKey:  floorKeyGrant,
           // ACCESS grant, not a LOAD slot — the catalog registry is absent from expandRecipe,
           // so the kernel never layers it; the worker reaches it via the accessor.
           catalogUrl: catalogHandle.url,
@@ -4492,6 +4536,7 @@ async function prepareNodeBootOn(
       return waiting;
     },
     heldSaves: () => sealedRest.store.held(),
+    floorKey: floorKeyGrant,
     backupDoor: {
       wornFace: () => litFace,
       ownEdgeShadowed: async () => {
@@ -4853,6 +4898,7 @@ async function composeNodeHermOn(
     hostingDoor:      p.hostingDoor,
     backupDoor:      p.backupDoor,
     heldSaves:        p.heldSaves,
+    floorKey:         p.floorKey,
     mountManifest:    herm.assembly.mountManifest,
     dispose,
     teardown: async () => {

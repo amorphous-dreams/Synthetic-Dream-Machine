@@ -222,23 +222,26 @@ function parkedDoor() {
 }
 
 describe("browser custody seals the place tree's device seed and walk records", () => {
-  test("BC32 THE PRE-BIND WINDOW HOLDS THE VEIL'S OWN KEY: `secret-home` stands clear before the place tree binds, and the first bind moves it under the seal", async () => {
+  test("BC32 THE PRE-BIND WINDOW HOLDS THE FLOOR'S OWN SEED, AND NO SECRET HOME: `floor-rest` stands clear before the place tree binds, the first bind moves it under the seal, and `secret-home` waits for the slot", async () => {
     const idbName = `custody-veil-window-${crypto.randomUUID()}`;
-    const address = randomBytes(72);
-    // RED before the cure: `no-custody-slot`. An unbound veil keeps its floor's key in the open window (the-veil-ladder#/the-base-model, U6).
-    await writeKeystoreRow(idbName, "secret-home", address);
-    expect(await readKeystoreRow(idbName, "secret-home")).toEqual(address);
-    expect(await rowOf(idbName, "secret-home"), "it rests clear, and the page says so").toBeDefined();
+    const address = randomBytes(32);
+    // An unbound veil keeps its floor's seed in the open window (the-veil-ladder#/the-base-model, in-house ruling 6).
+    await writeKeystoreRow(idbName, "floor-rest", address);
+    expect(await readKeystoreRow(idbName, "floor-rest")).toEqual(address);
+    expect(await rowOf(idbName, "floor-rest"), "it rests clear, and the page says so").toBeDefined();
+    // RED before the cure: the secret home's address stood clear here. It mints with a face, under the seal (operator ruling 2026-11-09).
+    await expectRefused(writeKeystoreRow(idbName, "secret-home", randomBytes(72)), "no-custody-slot");
+    expect(await rowOf(idbName, "secret-home")).toBeUndefined();
     // CONTROL: every other place row still waits for the slot.
     await expectRefused(writeKeystoreRow(idbName, "walk/" + "cd".repeat(32), { nexusAid: "nexus.synthetic" }), "no-custody-slot");
     // THE FIRST BIND CLOSES THE WINDOW: the row moves under the seal and its clear copy leaves.
     const sealed = await sealBrowserKeystore(idbName, PASS);
-    expect(sealed.sealed).toContain("secret-home");
-    expect(await rowOf(idbName, "secret-home")).toBeUndefined();
-    expect(startsWithMagic(await rowOf(idbName, "sealed/secret-home"))).toBe(true);
-    expect(await readKeystoreRow(idbName, "secret-home")).toEqual(address);
+    expect(sealed.sealed).toContain("floor-rest");
+    expect(await rowOf(idbName, "floor-rest")).toBeUndefined();
+    expect(startsWithMagic(await rowOf(idbName, "sealed/floor-rest"))).toBe(true);
+    expect(await readKeystoreRow(idbName, "floor-rest")).toEqual(address);
     lockBrowserCustody(idbName);
-    await expectRefused(readKeystoreRow(idbName, "secret-home"), "sealed-locked", "secret-home");
+    await expectRefused(readKeystoreRow(idbName, "floor-rest"), "sealed-locked", "floor-rest");
   }, SLOW);
 
   test("BC29 every face-secret family refuses without its face tree, then rests under that tree and never under sealed/", async () => {

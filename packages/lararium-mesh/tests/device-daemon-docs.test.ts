@@ -1,13 +1,13 @@
 /**
  * device-daemon-docs — a per-device daemon document seals by the face that OWNS it, never by the face lit as it announces.
  *
- * The floor's slot (`daemon-slot/<kind>/floor`) seals beside the control document under the vessel's key, lit or not; a
+ * The floor's slot (`floor/daemon-slot/<kind>` in the place's daemon document) seals under the floor's rest key, lit or not; a
  * group's slot seals under that group's face, and only while it stands lit; an earlier face's documents after an
  * in-process face change wait held, never under the new face's key. A slot the island announces before the control
  * document names it waits held until the control document names its owner. A later entry never re-files a document.
  */
 import { describe, expect, test } from "vitest";
-import { CONTROL_HOME_ID, daemonFaceCanonBag, deviceDaemonDocs, floorSlotOf, floorSlotTitle, emptyLarDoc, storedLarRecord, wikiSlotUri, type LarDoc, type LitDeviceFace, type LitDeviceFaces } from "../src/index.js";
+import { CONTROL_HOME_ID, DAEMON_BAG_ID, daemonFaceCanonBag, deviceDaemonDocs, floorDaemonSlotTitle, floorOnlyDocIds, isFloorRegistryTitle, makeVesselOnlyDocs, floorSlotOf, floorSlotTitle, emptyLarDoc, storedLarRecord, wikiSlotUri, type LarDoc, type LitDeviceFace, type LitDeviceFaces } from "../src/index.js";
 
 const WORKING = wikiSlotUri("daemon", "working");
 const G1 = "group-one", G2 = "group-two";
@@ -24,6 +24,8 @@ function control(entries: Record<string, string>): LarDoc {
   return doc as LarDoc;
 }
 const slot = (group: string, kind = "working") => `${CONTROL_HOME_ID}/daemon-slot/${kind}/${encodeURIComponent(group)}`;
+/** The place's daemon document, carrying floor rows. */
+const daemon = control;
 
 function table() {
   const floor: Array<[string, string]> = [];
@@ -31,13 +33,16 @@ function table() {
 }
 
 describe("a device daemon document seals by its owner's group, whatever the lit state", () => {
-  test("RED: the floor's slot announced while a face stands lit seals under the vessel's key, never under that face", () => {
+  test("RED: the floor's slot announced while a face stands lit seals under the floor's key, never under that face", () => {
     const { docs, floor } = table();
     const now = lit(G1, F1, FACE1);
     docs.announced(WORKING, "floor-doc");
     // Announced, not yet named: it waits held (no face), never under the lit face's key.
     expect(docs.bagOf("floor-doc", now)).toEqual({ bagId: WORKING, face: null });
-    expect(docs.readControl(control({ [slot("floor")]: "floor-doc" }))).toBe(true);
+    // The control document names no floor: a `floor` group row there files nothing (the registry rests in the daemon document).
+    expect(docs.readControl(control({ [slot("floor")]: "floor-doc" }))).toBe(false);
+    expect(floor).toEqual([]);
+    expect(docs.readFloor(daemon({ [floorDaemonSlotTitle("working")]: "floor-doc" }))).toBe(true);
     expect(floor).toEqual([["floor-doc", WORKING]]);
     // The held homes answer it from here on (the vessel's key); the device table names no face for it.
     expect(docs.bagOf("floor-doc", now)).toBeUndefined();
@@ -70,7 +75,8 @@ describe("a device daemon document seals by its owner's group, whatever the lit 
   test("a document keeps its first owner: a later entry naming it under another group moves nothing", () => {
     const { docs, floor } = table();
     docs.readControl(control({ [slot(G1)]: "g1-doc" }));
-    expect(docs.readControl(control({ [slot("floor")]: "g1-doc", [slot(G2, "draft")]: "g1-doc" }))).toBe(false);
+    expect(docs.readControl(control({ [slot(G2, "draft")]: "g1-doc" }))).toBe(false);
+    expect(docs.readFloor(daemon({ [floorDaemonSlotTitle("working")]: "g1-doc" }))).toBe(false);
     expect(floor).toEqual([]);
     expect(docs.bagOf("g1-doc", lit(G2, null, FACE2))).toEqual({ bagId: WORKING, face: null });
   });
@@ -122,13 +128,14 @@ describe("the lit set: each open face's device documents file under their own fa
 
 describe("the veil floor's wiki slot seals under the vessel's key (the-veil-ladder#/the-base-model)", () => {
   const GARDEN = wikiSlotUri("garden", "working");
-  test("RED V1: a floor wiki slot waits held from its announce, then files as the vessel's own once the control document names it", () => {
+  test("RED V1: a floor wiki slot waits held from its announce, then files as the vessel's own once the daemon document names it", () => {
     const { docs, floor } = table();
     docs.announced(GARDEN, "garden-floor");
     // Announced and unnamed: held (no face), never clear, with or without a lit face.
     expect(docs.bagOf("garden-floor", UNLIT)).toEqual({ bagId: GARDEN, face: null });
     expect(docs.bagOf("garden-floor", lit(G1, F1, FACE1))).toEqual({ bagId: GARDEN, face: null });
-    expect(docs.readControl(control({ [floorSlotTitle("garden", "working")]: "garden-floor" }))).toBe(true);
+    expect(docs.readControl(control({ [floorSlotTitle("garden", "working")]: "garden-floor" })), "a control document files no floor row").toBe(false);
+    expect(docs.readFloor(daemon({ [floorSlotTitle("garden", "working")]: "garden-floor" }))).toBe(true);
     expect(floor).toEqual([["garden-floor", GARDEN]]);
     // The held homes answer it (the vessel's key); no face of the lit set ever seals it.
     expect(docs.bagOf("garden-floor", lit(G1, F1, FACE1))).toBeUndefined();
@@ -137,8 +144,11 @@ describe("the veil floor's wiki slot seals under the vessel's key (the-veil-ladd
   });
   test("V1b: a floor-slot row reads its wiki and kind back, and a torn title names none", () => {
     expect(floorSlotOf(floorSlotTitle("my wiki/β", "working"))).toEqual({ slug: "my wiki/β", kind: "working" });
-    expect(floorSlotOf(`${CONTROL_HOME_ID}/floor-slot/garden`)).toBeNull();
-    expect(floorSlotOf(`${CONTROL_HOME_ID}/daemon-slot/working/floor`)).toBeNull();
+    expect(floorSlotOf(`${DAEMON_BAG_ID}/floor/slot/garden`)).toBeNull();
+    expect(floorSlotOf(floorDaemonSlotTitle("working"))).toBeNull();
+    expect(floorSlotOf(`${CONTROL_HOME_ID}/floor-slot/garden/working`), "no control row names a floor slot").toBeNull();
+    expect(isFloorRegistryTitle(floorSlotTitle("garden", "working")) && isFloorRegistryTitle(floorDaemonSlotTitle("draft"))).toBe(true);
+    expect(floorSlotTitle("garden", "working").startsWith(`${DAEMON_BAG_ID}/`), "the registry rests in the daemon document").toBe(true);
   });
 });
 
@@ -148,7 +158,8 @@ describe("a veil floor's wiki slot reaches the house's wiki islands; a daemon de
     const GARDEN = wikiSlotUri("garden", "working");
     docs.announced(GARDEN, "garden-floor");
     expect(docs.floorWiki("garden-floor"), "announced, not yet named").toBe(true);
-    docs.readControl(control({ [floorSlotTitle("garden", "working")]: "garden-floor", [slot("floor")]: "daemon-floor", [slot(G1)]: "group-doc" }));
+    docs.readFloor(daemon({ [floorSlotTitle("garden", "working")]: "garden-floor", [floorDaemonSlotTitle("working")]: "daemon-floor" }));
+    docs.readControl(control({ [slot(G1)]: "group-doc" }));
     expect(docs.floorWiki("garden-floor")).toBe(true);
     expect(docs.floorWiki("daemon-floor"), "the daemon wiki's floor slot stays with the daemon island").toBe(false);
     expect(docs.floorWiki("group-doc")).toBe(false);
@@ -157,24 +168,24 @@ describe("a veil floor's wiki slot reaches the house's wiki islands; a daemon de
 
   test("V1d: a floor-minted wiki's CANON row files its document under the wiki's canon bag, as the vessel's own", () => {
     const { docs, floor } = table();
-    expect(docs.readControl(control({ [floorSlotTitle("tabs", "canon")]: "tabs-canon" }))).toBe(true);
+    expect(docs.readFloor(daemon({ [floorSlotTitle("tabs", "canon")]: "tabs-canon" }))).toBe(true);
     expect(floor).toEqual([["tabs-canon", "lar:///ha.ka.ba/bags/tabs"]]);
     expect(docs.floorWiki("tabs-canon"), "the wiki island mounts its canon").toBe(true);
     expect(docs.bagOf("tabs-canon", lit(G1, F1, FACE1)), "no lit face seals it").toBeUndefined();
   });
 
-  test("V1e: the Lift RELEASES a floor wiki's canon: it leaves the vessel's class, and a stale control row never files it again", () => {
+  test("V1e: the Lift RELEASES a floor wiki's canon: it leaves the vessel's class, and a stale floor row never files it again", () => {
     const gone: string[] = [];
     const docs = deviceDaemonDocs({ enrollFloor: () => {}, releaseFloor: (id) => { gone.push(id); } });
-    const row = control({ [floorSlotTitle("tabs", "canon")]: "tabs-canon", [slot("floor")]: "floor-memory" });
-    docs.readControl(row);
+    const row = daemon({ [floorSlotTitle("tabs", "canon")]: "tabs-canon", [floorDaemonSlotTitle("working")]: "floor-memory" });
+    docs.readFloor(row);
     expect(docs.floorWiki("tabs-canon")).toBe(true);
     expect(docs.release("tabs-canon")).toBe("lar:///ha.ka.ba/bags/tabs");
     expect(gone).toEqual(["tabs-canon"]);
     expect(docs.has("tabs-canon")).toBe(false);
     expect(docs.floorWiki("tabs-canon")).toBe(false);
-    // A control document that still names the row (the vessel's read lags the Lift) files nothing, and an announce files nothing.
-    expect(docs.readControl(row)).toBe(false);
+    // A daemon document that still names the row (the vessel's read lags the Lift) files nothing, and an announce files nothing.
+    expect(docs.readFloor(row)).toBe(false);
     expect(docs.announced("lar:///ha.ka.ba/bags/tabs", "tabs-canon")).toBe(false);
     expect(docs.has("tabs-canon")).toBe(false);
     // A replay releases nothing; a daemon device slot and an unknown document never release.
@@ -182,5 +193,25 @@ describe("a veil floor's wiki slot reaches the house's wiki islands; a daemon de
     expect(docs.release("floor-memory")).toBeNull();
     expect(docs.release("unknown")).toBeNull();
     expect(gone).toEqual(["tabs-canon"]);
+  });
+});
+
+describe("the floor's registry stands with no control document (the-veil-ladder#/the-base-model, in-house ruling 7)", () => {
+  test("RED FR1: floor documents stay vessel-only off the daemon document alone, with no control document named", () => {
+    const rows = daemon({ [floorSlotTitle("garden", "working")]: "garden-floor", [floorSlotTitle("tabs", "canon")]: "tabs-canon", [floorDaemonSlotTitle("working")]: "daemon-floor", [`${DAEMON_BAG_ID}/hearth/daemon-url`]: "not-a-floor-row" });
+    expect(floorOnlyDocIds(rows)).toEqual(new Set(["garden-floor", "tabs-canon", "daemon-floor"]));
+    let grew = 0;
+    const only = makeVesselOnlyDocs({ onGrow: () => { grew++; } });
+    // No control document stands (a faceless place): the control read names nothing.
+    expect(only.refresh(null, null)).toBe(false);
+    expect(only.has("garden-floor")).toBe(false);
+    expect(only.refreshFloor(rows)).toBe(true);
+    expect(grew).toBe(1);
+    expect(only.has("garden-floor") && only.has("tabs-canon") && only.has("daemon-floor")).toBe(true);
+    expect(only.has("not-a-floor-row")).toBe(false);
+    // A control read that names nothing never drops the floor's names.
+    only.refresh(null, null);
+    expect(only.has("garden-floor")).toBe(true);
+    expect(only.refreshFloor(rows), "the same rows again grow nothing").toBe(false);
   });
 });

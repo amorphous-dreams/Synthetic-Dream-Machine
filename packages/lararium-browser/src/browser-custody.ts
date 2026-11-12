@@ -78,9 +78,9 @@ export const SEALED_ROW_PREFIX = "sealed/";
 export const KEYSTORE_CARRIER_PREFIX = "browser-keystore/";
 
 const DEVICE_SEED_ROW = "vessel-key";
-/** The vessel's secret-home address row (`browser-secret-home.ts` `SECRET_HOME_ROW`). */
-const VEIL_HOME_ROW = "secret-home";
-const CUSTODY_ROW = /^(?:vessel-key|persona-root-roster|secret-home|walk\/.+)$/;
+/** The floor's rest seed row (`browser-floor-key.ts` `FLOOR_REST_ROW`): 32 random bytes the floor's rest key derives from. */
+const FLOOR_REST_ROW = "floor-rest";
+const CUSTODY_ROW = /^(?:vessel-key|floor-rest|persona-root-roster|secret-home|walk\/.+)$/;
 
 /** Is `row` one the place tree wraps: the place seed, the ward's public roster or a walk. */
 export function isCustodyRow(row: string): boolean { return CUSTODY_ROW.test(row); }
@@ -454,7 +454,7 @@ const personaRosterCodec: RowCodec = {
 const codecOf = (row: string): RowCodec =>
   row === DEVICE_SEED_ROW ? deviceSeedCodec
     : row === "persona-root-roster" ? personaRosterCodec
-    : row.startsWith("nexus-key/") || row.startsWith("vessel-face-key/") || row.startsWith("face-atom/") || row.startsWith("vessel-face-tag/") ? key32Codec
+    : row === FLOOR_REST_ROW || row.startsWith("nexus-key/") || row.startsWith("vessel-face-key/") || row.startsWith("face-atom/") || row.startsWith("vessel-face-tag/") ? key32Codec
     : row.startsWith("face-anchor/") ? archiveCodec
     : row.startsWith("fleet-join-pending/") ? pendingCodec
     : row.startsWith("walk/") ? walkCodec : archiveCodec;
@@ -544,10 +544,11 @@ async function writeKeystoreRowHeld(idbName: string, row: string, value: unknown
     const st = await rowState(idbName, row);
     if (st.tree === undefined) {
       if (st.sealed !== undefined) throw new BrowserCustodyRefused("torn-without-tree", idbName, row);
-      // THE PRE-BIND WINDOW: the place seed and the vessel's own secret-home address (the veil floor's held key,
-      // the-veil-ladder#/the-base-model, in-house ruling U6) stand clear before the place tree binds, and the first bind
-      // moves both under the seal (`settleClearRows`). The page reports that window as open. A walk takes the slot first.
-      if (row !== DEVICE_SEED_ROW && row !== VEIL_HOME_ROW) throw new BrowserCustodyRefused("no-custody-slot", idbName, row);
+      // THE PRE-BIND WINDOW: the place seed and the floor's rest seed (the veil floor's own key, the-veil-ladder#/the-base-model,
+      // in-house ruling 6) stand clear before the place tree binds, and the first bind moves both under the seal
+      // (`settleClearRows`). The page reports that window as open. The secret home's address never stands here: it mints
+      // with a face, under the seal (operator ruling 2026-11-09). A walk takes the slot first.
+      if (row !== DEVICE_SEED_ROW && row !== FLOOR_REST_ROW) throw new BrowserCustodyRefused("no-custody-slot", idbName, row);
       return putClearWhileNoTree(idbName, row, value);
     }
     treeOrRefuse(idbName, st.tree, row);

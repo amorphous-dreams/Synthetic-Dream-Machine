@@ -210,9 +210,10 @@ describe("the vessel's secret home rests sealed from its first byte", () => {
     const repo = new Repo({ storage: store, network: [] });
     let moves = 0;
     bindSecretHomeRest(repo, homes.rest((id) => store.holdsSealed(id), () => { moves++; }));
-    expect(homes.key()).toBeNull();
+    expect(homes.floorKey()).toBeNull();
     const home = await enrollSecretHome(repo, mintSecretHomeAddress());
-    expect(homes.key()).not.toBeNull();
+    // The secret home's key stands and the floor's does not: a face's secret home never keys a floor document.
+    expect(homes.floorKey()).toBeNull();
     const control = mintSecretHomeAddress().documentId, canon = mintSecretHomeAddress().documentId;
     enrollBesideSecretHome(repo, control, CONTROL_HOME_ID);
     enrollBesideSecretHome(repo, canon, "lar:///ha.ka.ba/bags/tabs");

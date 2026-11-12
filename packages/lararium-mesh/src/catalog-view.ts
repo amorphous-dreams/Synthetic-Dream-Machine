@@ -68,7 +68,7 @@ export function isPublicBagRow(title: string, row: StoredLarRecord | null | unde
  * slot documents already carry). It names the vessel's OWN content (the-veil-ladder#/the-base-model: "its own local content,
  * no group"), so it rests on the floor's half, mounts with no face worn, and no face's catalog ever lifts it. Only the exact
  * value reads; anything else fails toward the face. THE MARK AND THE SEAL TRAVEL TOGETHER: whoever stamps it files the row's
- * document under the vessel's key in the same act (a `floor-slot` control row, `device-daemon-docs`), since the sealed map
+ * document under the floor's rest key in the same act (a `floor/slot` row of the place's daemon document, `device-daemon-docs`), since the sealed map
  * holds a face-half document and leaves a floor-half one to its filing.
  */
 export function isVeilBagRow(title: string, row: StoredLarRecord | null | undefined): boolean {

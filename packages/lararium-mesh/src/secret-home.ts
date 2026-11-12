@@ -55,11 +55,21 @@ export interface SecretHomeRest {
   /** A document enrolled beside the home leaves the held homes (the Lift re-files a floor wiki's canon under a face). The
    *  secret home and the control document never release. Answers whether one left. */
   release?(documentId: string): boolean;
+  /** STAND THE FLOOR'S REST KEY (`held-rest-key` `floorRestKey`): every floor-filed document answers it from here on. The
+   *  first key holds; the same key again changes nothing, and another refuses by throwing. Answers whether it stood now. */
+  standFloorKey?(key: HeldRestKey): boolean;
+  /** Does the floor's rest key stand on this rest now? */
+  holdsFloorKey?(): boolean;
 }
 
 /**
  * THE VESSEL'S HELD HOMES, one table per store holder: the secret home and every vessel document classified beside it
  * (`enrollBeside`). A holder's bag map reads it first (`bagOf`); its share verdict keeps every one on the vessel (`has`).
+ *
+ * TWO KEYS, NEVER ONE (the-veil-ladder#/the-base-model). The secret home and the control document answer the SECRET
+ * home's random key, which mints with a face. Every other document filed here belongs to the FLOOR (a wiki's floor working
+ * layer and canon, the daemon wiki's floor memory) and answers the FLOOR's rest key (`floorRestKey`), which a vessel
+ * holds with no face at all. Neither key opens the other's documents.
  */
 export interface VesselHeldHomes {
   /** The held bag a document belongs to. `held` absent: the document rests sealed under the vessel's key, which has not
@@ -71,9 +81,9 @@ export interface VesselHeldHomes {
   ids(): readonly string[];
   /** The rest this table answers through: `restsSealed` reads the holder's store; `moved` tells it the map moved. */
   rest(restsSealed: (documentId: string) => Promise<boolean>, moved?: () => void, standKey?: () => Promise<boolean>): SecretHomeRest;
-  /** The vessel's held key where it stands open, or null: a lifted floor document's values open with it one last time
+  /** The floor's rest key where it stands, or null: a lifted floor document's values open with it one last time
    *  (`SealedDocumentPorts.vesselKey`). */
-  key(): HeldRestKey | null;
+  floorKey(): HeldRestKey | null;
   /** Overwrite every held key (the holder stands down). */
   wipe(): void;
 }
@@ -82,7 +92,10 @@ export function vesselHeldHomes(): VesselHeldHomes {
   const homes = new Map<string, string>();
   const keyed = new Set<() => void>();
   let vesselKey: HeldRestKey | null = null;
+  let floorKey: HeldRestKey | null = null;
   let custodyControl: string | null = null;
+  // The key a filing answers: the secret home and the control document the secret home's key, every floor filing the floor's.
+  const keyOf = (bagId: string): HeldRestKey | null => bagId === SECRET_HOME_ID || bagId === CONTROL_HOME_ID ? vesselKey : floorKey;
   // A HOME KEEPS ITS FILING: the secret home and the control document never re-file under another bag (a re-file would seal
   // the one under the other's content key, or hand the secret home to a control writer). The secret home's own enroll and
   // the custody row's control name file them; nothing else moves them.
@@ -94,11 +107,12 @@ export function vesselHeldHomes(): VesselHeldHomes {
     bagOf(documentId) {
       const bagId = homes.get(documentId);
       if (bagId === undefined) return null;
-      return vesselKey ? { bagId, face: null, held: vesselKey } : { bagId, face: null };
+      const held = keyOf(bagId);
+      return held ? { bagId, face: null, held } : { bagId, face: null };
     },
     has: (documentId) => homes.has(documentId),
     ids: () => [...homes.keys()],
-    key: () => vesselKey,
+    floorKey: () => floorKey,
     rest(restsSealed, moved, standKey) {
       return {
         ...(standKey ? { standKey: async () => vesselKey !== null || await standKey() } : {}),
@@ -113,8 +127,18 @@ export function vesselHeldHomes(): VesselHeldHomes {
           if (bagId === SECRET_HOME_ID || fixed(documentId, bagId)) return false;
           if (bagId === CONTROL_HOME_ID && custodyControl !== null && documentId !== custodyControl) return false;
           if (homes.get(documentId) !== bagId) { homes.set(documentId, bagId); moved?.(); }
-          return vesselKey !== null;
+          return keyOf(bagId) !== null;
         },
+        standFloorKey(key) {
+          if (floorKey !== null) {
+            if (!floorKey.every((b, i) => b === key[i])) throw new SecretHomeUnavailable("another floor key already stands on this rest; a vessel holds one floor key");
+            return false;
+          }
+          floorKey = Uint8Array.from(key) as HeldRestKey;
+          moved?.();
+          return true;
+        },
+        holdsFloorKey: () => floorKey !== null,
         nameControl(documentId) {
           if (fixed(documentId, CONTROL_HOME_ID)) return false;
           custodyControl = documentId;
@@ -135,8 +159,19 @@ export function vesselHeldHomes(): VesselHeldHomes {
         restsSealed: async (documentId) => homes.has(documentId) && await restsSealed(documentId),
       };
     },
-    wipe() { vesselKey?.fill(0); homes.clear(); vesselKey = null; custodyControl = null; keyed.clear(); },
+    wipe() { vesselKey?.fill(0); floorKey?.fill(0); homes.clear(); vesselKey = null; floorKey = null; custodyControl = null; keyed.clear(); },
   };
+}
+
+/** Stand the floor's rest key on `repo`'s rest (`SecretHomeRest.standFloorKey`): true where it stood now. A Repo whose
+ *  holder bound no rest stands none. */
+export function standFloorKeyOn(repo: Repo, key: HeldRestKey): boolean {
+  return secretHomeRestOf(repo)?.standFloorKey?.(key) ?? false;
+}
+
+/** Does the floor's rest key stand on `repo`'s rest? */
+export function floorKeyStandsOn(repo: Repo): boolean {
+  return secretHomeRestOf(repo)?.holdsFloorKey?.() ?? false;
 }
 
 /** Classify a vessel document beside the secret home on `repo`'s rest (`SecretHomeRest.enrollBeside`): true once mapped. */

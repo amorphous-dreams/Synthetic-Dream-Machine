@@ -20,7 +20,9 @@ import { openBrowserVessel, readBrowserVesselFaces, type BrowserVesselOptions } 
 import { openVesselIdb, idbKeys, loadBrowserPlaceKel } from "../src/browser-vessel-identity.js";
 import { readBrowserCustody } from "../src/browser-custody.js";
 import { clearFaceCustody, lockFaceCustody } from "../src/browser-face-custody.js";
-import { verifyVeilLift, type VeilLiftRecord } from "@lararium/mesh";
+import { controlHomeUrlOf, verifyVeilLift, type LarDoc, type VeilLiftRecord } from "@lararium/mesh";
+import { Repo } from "@automerge/automerge-repo";
+import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
 import { keepBrowserVeilLift, readBrowserVeilLift } from "../src/browser-veil-lift.js";
 import { readBrowserFaceAtom } from "../src/browser-face-atom.js";
 import { generateOrLoadBrowserVesselIdentity } from "../src/browser-vessel-identity.js";
@@ -49,6 +51,12 @@ async function keystoreRows(idbName: string): Promise<string[]> {
   const idb = await openVesselIdb(idbName);
   try { return (await idbKeys(idb, "keystore")).map(String).sort(); } finally { idb.close(); }
 }
+/** The place's daemon document as it rests (clear) in this browser's own store, read through a Repo of the test's own. */
+async function daemonDocOf(idbName: string, daemonUrl: string): Promise<LarDoc | undefined> {
+  const repo = new Repo({ storage: new IndexedDBStorageAdapter(`${idbName}:repo`), network: [] });
+  try { const handle = await repo.find<LarDoc>(daemonUrl as never); await handle.whenReady(); return handle.doc(); }
+  finally { await repo.shutdown(); }
+}
 const halted = (extra: Partial<BrowserVesselOptions>): BrowserVesselOptions =>
   ({ onPhase: (phase: string) => { if (phase === "bootstrap-kept") throw new BootHalted(); }, ...extra }) as BrowserVesselOptions;
 const boot = (extra: Partial<BrowserVesselOptions>) => expect(openBrowserVessel(halted(extra))).rejects.toBeInstanceOf(BootHalted);
@@ -66,9 +74,12 @@ describe("the browser's veil floor stands first, and a face lands over it", () =
     expect(floor?.faces).toBeUndefined();
     expect(floor?.personaPlanes).toEqual([]);
     expect(await readBrowserVesselFaces(idbName)).toEqual([]);
-    // THE PRE-BIND WINDOW, OPEN: the vessel's key and its secret home's address rest clear, no slot stands, no place KEL arms.
+    // THE PRE-BIND WINDOW, OPEN: the vessel's key and its floor's rest seed rest clear, no slot stands, no place KEL arms.
     expect((await readBrowserCustody(idbName)).reading).toBe("clear");
-    expect(await keystoreRows(idbName)).toEqual(expect.arrayContaining(["secret-home", "vessel-key"]));
+    expect(await keystoreRows(idbName)).toEqual(expect.arrayContaining(["floor-rest", "vessel-key"]));
+    // RED (the 2026-11-09 ruling, whole on the browser): a veil boot mints NO secret home and NO control document.
+    expect(await keystoreRows(idbName), "no secret-home row at the floor").not.toContain("secret-home");
+    expect(controlHomeUrlOf((await daemonDocOf(idbName, floor!.daemonUrl))), "the floor's daemon document names no control document").toBeNull();
     expect((await keystoreRows(idbName)).some((row) => row.startsWith("sealed/"))).toBe(false);
     expect(await loadBrowserPlaceKel(idbName)).toBeNull();
     // A SECOND BOOT READS THE SAME FLOOR (it founds nothing twice).
@@ -77,8 +88,12 @@ describe("the browser's veil floor stands first, and a face lands over it", () =
 
     // VF2: the founding act asks for a face, and its first bind closes the window.
     await bindSyntheticBrowserCustodySlot(idbName);
-    expect((await keystoreRows(idbName))).toContain("sealed/secret-home");
+    expect((await keystoreRows(idbName))).toContain("sealed/floor-rest");
+    expect(await keystoreRows(idbName)).not.toContain("sealed/secret-home");
     await boot({ idbName, foundFace: true, askWardRoute: fixtureWardDialog });
+    // THE FACE MINTS BOTH: its secret home's address lands under the seal, and the daemon document names its control document.
+    expect(await keystoreRows(idbName)).toContain("sealed/secret-home");
+    expect(controlHomeUrlOf((await daemonDocOf(idbName, floor!.daemonUrl)))).toMatch(/^automerge:/);
     const faced = await recordOf(idbName);
     expect(faced?.personaGroupId).toMatch(/^(0x)?[0-9a-f]+$/);
     expect(faced?.floor, "the floor record stays byte-equal").toEqual(floor!.floor);

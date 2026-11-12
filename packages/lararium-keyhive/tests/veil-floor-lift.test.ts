@@ -1,9 +1,10 @@
 /**
  * THE VEIL FLOOR AND ITS LIFT (the-veil-ladder#/the-base-model; lararium-identity#/the-veil; operator ruling 2026-10-22).
  *
- *   V2 — a vessel that wears no face and whose control document reads stands a wiki's working layer in a floor document the
- *        control document names (`floor-slot/<slug>/working`), announced as the vessel's own BEFORE the control row lands
- *   V2b — a control document that does not read (a locked floor) stands none: the mount answers no working url
+ *   V2 — a vessel that wears no face and whose FLOOR KEY stands stands a wiki's working layer in a floor document the floor
+ *        registry names (`floor/slot/<slug>/working` in the place's daemon document), announced as the vessel's own BEFORE
+ *        the floor row lands; no control document stands or gets asked
+ *   V2b — a floor whose key stays shut (a locked floor) stands none: the mount answers no working url
  *   V3 — a seat that lands lifts the floor's rows into the face's realm workbench at its derived address; the floor document
  *        and its control row leave; the personal margin lifts under the face beside it
  *   V4 — a replayed lift moves nothing
@@ -14,8 +15,8 @@ import { makeIslandRepo, liftFaceCatalogRows, catalogRowHalf } from "@lararium/m
 import {
   CompositeStore, CONTROL_HOME_ID, DAEMON_BAG_ID, PERSONAL_BINDINGS_PREFIX, computeRecipeFingerprint, didFromVerifyingKey, emptyLarDoc,
   floorSlotTitle, mutableLarRecord, wikiBagUri, wikiSlotUri, realmWorkbenchDocUrl, privateCabalRealmId, ledgerWorkbenches, materializeSharedLarDoc, workbenchKeyDocs,
-  refusingControlStore, vesselLockedRefusal, tiddlerText, floorAnswerStore, ControlHomeUnavailable, CONTROL_HOME_UNNAMED,
-  type LarDoc, type LarTiddlerRecord,
+  tiddlerText, floorAnswerStore, ControlHomeUnavailable, CONTROL_HOME_UNNAMED, floorRegistryOf, floorDaemonSlotTitle, FLOOR_UNKEYED, VESSEL_LOCKED,
+  type FloorKeyRefusal, type LarDoc, type LarTiddlerRecord,
 } from "@lararium/mesh";
 import { MemoryTiddlerStore, makeCatalogAccessor } from "@lararium/tw5";
 import { KeyhiveProvider } from "../src/keyhive-provider.js";
@@ -28,7 +29,7 @@ const VERIFYING_KEY = "ab".repeat(32);
 const DID = didFromVerifyingKey(VERIFYING_KEY);
 type Ledger = { d: LarDoc; doc(): LarDoc; change(fn: (d: LarDoc) => void): void };
 
-async function house(opts: { control?: CompositeStore } = {}) {
+async function house(opts: { control?: CompositeStore; floorKey?: FloorKeyRefusal | null; daemon?: CompositeStore } = {}) {
   const kh = new KeyhiveProvider();
   await kh.init({ seed: new Uint8Array(32).fill(5), eventStore: noopStore });
   const group = await kh.createGroup();
@@ -36,8 +37,10 @@ async function house(opts: { control?: CompositeStore } = {}) {
   const catalogHandle = repo.create<LarDoc>(emptyLarDoc());
   const wikiHandle = repo.create<LarDoc>(emptyLarDoc());
   catalogHandle.change((d) => { (d.tiddlers as Record<string, LarTiddlerRecord>)[wikiBagUri("garden")] = mutableLarRecord(wikiBagUri("garden"), { text: wikiHandle.url, kind: "oracle" }, "test"); });
-  const daemon = new CompositeStore();
-  daemon.addLayer({ bagId: DAEMON_BAG_ID, store: new MemoryTiddlerStore(DAEMON_BAG_ID), writable: true });
+  const daemon = opts.daemon ?? new CompositeStore();
+  if (!opts.daemon) daemon.addLayer({ bagId: DAEMON_BAG_ID, store: new MemoryTiddlerStore(DAEMON_BAG_ID), writable: true });
+  // The floor's registry over the daemon composite, gated on the floor's rest key (it stands unless a test says otherwise).
+  const floorRegistry = floorRegistryOf(daemon, () => opts.floorKey ?? null);
   const control = opts.control ?? (() => { const s = new CompositeStore(); s.addLayer({ bagId: CONTROL_HOME_ID, store: new MemoryTiddlerStore(CONTROL_HOME_ID), writable: true, defaultWritable: true }); return s; })();
   const d = { tiddlers: {} } as LarDoc;
   const ledger: Ledger = { d, doc: () => d, change: (fn) => fn(d) };
@@ -49,7 +52,7 @@ async function house(opts: { control?: CompositeStore } = {}) {
     return (await workbenchFaceHolds(kh, slug, await kh.whoami(), "read")) ? held : null;
   };
   const order: string[] = [];
-  const base = { repo, daemonStore: daemon, control, keyhive: kh, deviceScoped: (slug: string) => slug === "daemon", catalog: makeCatalogAccessor(repo, catalogHandle.url), vesselDid: () => DID, mintedByHex: () => VERIFYING_KEY };
+  const base = { repo, daemonStore: daemon, control, floor: floorRegistry, keyhive: kh, deviceScoped: (slug: string) => slug === "daemon", catalog: makeCatalogAccessor(repo, catalogHandle.url), vesselDid: () => DID, mintedByHex: () => VERIFYING_KEY };
   // The veil floor: no face.
   const floor = makeSlotDocResolver({ ...base, faceSeated: async () => false,
     announceFloor: (slug, kind, documentId) => { order.push(`announce:${slug}:${kind}:${documentId}`); } });
@@ -72,11 +75,12 @@ async function house(opts: { control?: CompositeStore } = {}) {
 }
 
 describe("★ the veil floor stands its own wiki content, and a seat's landing lifts it ★", () => {
-  test("RED V2 — no face, a reading control document: the working layer rests in a floor document the control document names", async () => {
-    const h = await house();
+  test("RED V2 — no face, NO control document, the floor key standing: the working layer rests in a floor document the daemon document names", async () => {
+    // The very store a faceless place's daemon island holds: no control document stands, and every control fact refuses.
+    const h = await house({ control: floorAnswerStore(new ControlHomeUnavailable("this place names no control document", CONTROL_HOME_UNNAMED)) });
     const out = await h.floor.bindings(h.fingerprint, h.trace, "garden");
     expect(out.workingUrl, "the floor stands its own working layer").toMatch(/^automerge:/);
-    const row = await h.control.get(floorSlotTitle("garden", "working"));
+    const row = await h.daemon.get(floorSlotTitle("garden", "working"));
     expect(tiddlerText(row)).toBe(out.workingUrl);
     expect(row?.tiddler["face-reach"]).toBe("vessel-only");
     expect(row?.tiddler["minted-by"]).toBe(VERIFYING_KEY);
@@ -88,29 +92,31 @@ describe("★ the veil floor stands its own wiki content, and a seat's landing l
     await h.done();
   });
 
-  test("RED V2b — a control document that does not read stands no floor working layer", async () => {
-    const h = await house({ control: refusingControlStore(vesselLockedRefusal()) });
+  test("RED V2b — a locked floor (its key stays shut) refuses the floor key: no floor working layer stands", async () => {
+    const h = await house({ floorKey: VESSEL_LOCKED });
     const out = await h.floor.bindings(h.fingerprint, h.trace, "garden");
     expect(out.workingUrl).toBeNull();
     expect(h.order).toEqual([]);
     await h.done();
   });
 
-  test("RED V2c — a HERM's composition stands no floor working slot: its control stand-in refuses `control-home-unnamed`, and nothing mints", async () => {
-    // The very store a faceless place's daemon island holds (control-home `standIn` + `controlStoreOf`): a herm never unlocks.
-    const h = await house({ control: floorAnswerStore(new ControlHomeUnavailable("this place names no control document", CONTROL_HOME_UNNAMED)) });
+  test("RED V2c — a HERM derives no floor key: its composition stands no floor working slot, registers no floor row, and nothing mints", async () => {
+    // A herm never unlocks, so its vessel grants no floor key (`floor-unkeyed`); its control stand-in refuses beside it.
+    const h = await house({ floorKey: FLOOR_UNKEYED, control: floorAnswerStore(new ControlHomeUnavailable("this place names no control document", CONTROL_HOME_UNNAMED)) });
     const out = await h.floor.bindings(h.fingerprint, h.trace, "garden");
     expect(out.workingUrl, "a herm gains no writable layer").toBeNull();
     expect(h.order, "nothing announces").toEqual([]);
     expect(await h.floor.slotDoc("garden", "working", { mint: false })).toBeNull();
     await expect(h.floor.slotDoc("garden", "working")).rejects.toThrow(/no-face/);
+    expect((await h.daemon.listVisible()).filter((t) => t.includes("/floor/")), "a herm registers no floor row").toEqual([]);
+    await expect(h.floor.slotDoc("daemon", "working"), "its daemon wiki's floor slot refuses by the floor's own name").rejects.toMatchObject({ name: "FloorUnavailable", refusal: FLOOR_UNKEYED });
     await h.done();
   });
 
-  test("RED V2d — only the control document's own refusal reads as no floor; any other fault of the control store surfaces", async () => {
+  test("RED V2d — only the floor key's own refusal reads as no floor; any other fault of the registry's store surfaces", async () => {
     const broken = new CompositeStore();
-    broken.addLayer({ bagId: CONTROL_HOME_ID, writable: true, defaultWritable: true, store: Object.assign(Object.create(new MemoryTiddlerStore(CONTROL_HOME_ID)), { get: async () => { throw new Error("disk-torn"); } }) as never });
-    const h = await house({ control: broken });
+    broken.addLayer({ bagId: DAEMON_BAG_ID, writable: true, store: Object.assign(Object.create(new MemoryTiddlerStore(DAEMON_BAG_ID)), { get: async (title: string) => { if (title.includes("/floor/")) throw new Error("disk-torn"); return null; } }) as never });
+    const h = await house({ daemon: broken });
     await expect(h.floor.bindings(h.fingerprint, h.trace, "garden")).rejects.toThrow(/disk-torn/);
     await h.done();
   });
@@ -128,7 +134,7 @@ describe("★ the veil floor stands its own wiki content, and a seat's landing l
     const bench = realmWorkbenchDocUrl(privateCabalRealmId(h.group.groupId, "garden"), "garden");
     expect((await faced.slotDoc("garden", "working"))?.url).toBe(bench);
     expect(await h.read(bench, "Tabs")).toBe("C F G7");
-    expect(await h.control.get(floorSlotTitle("garden", "working")), "the floor's control row leaves").toBeNull();
+    expect(await h.daemon.get(floorSlotTitle("garden", "working")), "the floor's row leaves the registry").toBeNull();
     // The private margin lifted under the face beside it.
     const personal = await h.daemon.get(`${PERSONAL_BINDINGS_PREFIX}/${h.fingerprint}`);
     expect(personal?.tiddler["face-reach"]).toBe("face");
@@ -163,9 +169,9 @@ describe("★ the veil floor stands its own wiki content, and a seat's landing l
 
   test("RED V6 — the daemon wiki's floor memory lifts into the face's own daemon working slot (face-private), once", async () => {
     const h = await house();
-    const floorSlot = `${CONTROL_HOME_ID}/daemon-slot/working/floor`;
+    const floorSlot = floorDaemonSlotTitle("working");
     const at = (await h.floor.slotDoc("daemon", "working"))!;
-    expect(tiddlerText(await h.control.get(floorSlot))).toBe(at.url);
+    expect(tiddlerText(await h.daemon.get(floorSlot))).toBe(at.url);
     await h.write(at.url, "Memory", "the veil remembers");
     const faced = h.faced();
     const lifted = await faced.liftFloor();
@@ -175,7 +181,7 @@ describe("★ the veil floor stands its own wiki content, and a seat's landing l
     expect(tiddlerText(await h.control.get(`${CONTROL_HOME_ID}/daemon-slot/working/${encodeURIComponent(h.group.groupId)}`))).toBe(faceSlot.url);
     expect(faceSlot.url).not.toBe(at.url);
     expect(await h.read(faceSlot.url, "Memory")).toBe("the veil remembers");
-    expect(await h.control.get(floorSlot), "the floor's daemon slot row leaves").toBeNull();
+    expect(await h.daemon.get(floorSlot), "the floor's daemon slot row leaves").toBeNull();
     expect(ledgerWorkbenches(h.ledger.doc()).filter((b) => b.slug === "daemon"), "the daemon wiki never rests in a workbench").toEqual([]);
     const again = await faced.liftFloor();
     expect(again.moved).toEqual([]);
@@ -190,10 +196,10 @@ describe("★ the veil floor stands its own wiki content, and a seat's landing l
     const h = await house();
     const pinned = h.pinned();
     const daemonAt = (await pinned.slotDoc("daemon", "working"))!;
-    expect(tiddlerText(await h.control.get(`${CONTROL_HOME_ID}/daemon-slot/working/floor`)), "the daemon wiki keeps the floor's slot").toBe(daemonAt.url);
+    expect(tiddlerText(await h.daemon.get(floorDaemonSlotTitle("working"))), "the daemon wiki keeps the floor's slot").toBe(daemonAt.url);
     expect(await h.control.get(`${CONTROL_HOME_ID}/daemon-slot/working/${encodeURIComponent(h.group.groupId)}`), "no slot of the face mints").toBeNull();
     const out = await pinned.bindings(h.fingerprint, h.trace, "garden");
-    expect(out.workingUrl, "the wiki's working layer stands at the floor").toBe(tiddlerText(await h.control.get(floorSlotTitle("garden", "working"))));
+    expect(out.workingUrl, "the wiki's working layer stands at the floor").toBe(tiddlerText(await h.daemon.get(floorSlotTitle("garden", "working"))));
     expect(ledgerWorkbenches(h.ledger.doc()), "no workbench realm founds while the face stands unseated").toEqual([]);
     await h.write(daemonAt.url, "Memory", "pinned words");
     await h.write(out.workingUrl!, "Note", "written while pinned");
@@ -208,10 +214,10 @@ describe("★ the veil floor stands its own wiki content, and a seat's landing l
     await h.done();
   });
 
-  test("V7 — a seated lift over a control document that refuses by name skips its floor legs and still lifts the bindings", async () => {
-    const h = await house({ control: refusingControlStore(vesselLockedRefusal()) });
+  test("V7 — a seated lift over a floor whose key stays shut skips its floor legs and still lifts the bindings", async () => {
+    const h = await house({ floorKey: VESSEL_LOCKED });
     const lifted = await h.faced().liftFloor();
-    expect(lifted.moved.filter((t) => t.includes("/control/"))).toEqual([]);
+    expect(lifted.moved.filter((t) => t.includes("/floor/"))).toEqual([]);
     await h.done();
   });
 
@@ -222,7 +228,7 @@ describe("★ the veil floor stands its own wiki content, and a seat's landing l
     const key = wikiBagUri("tabs");
     const mark = { "face-reach": "vessel-only", "minted-by": VERIFYING_KEY };
     h.catalogHandle.change((d) => { (d.tiddlers as Record<string, LarTiddlerRecord>)[key] = mutableLarRecord(key, { text: canon.url, kind: "oracle", "mirror-root": "wikis/tabs", ...mark }, "test"); });
-    await h.control.put(mutableLarRecord(floorSlotTitle("tabs", "canon"), { text: canon.url, kind: "oracle", ...mark }, "test"), { kind: "lares-verb", requestId: "t" });
+    await h.daemon.put(mutableLarRecord(floorSlotTitle("tabs", "canon"), { text: canon.url, kind: "oracle", ...mark }, "test"), { kind: "lares-verb", requestId: "t" }, { bag: DAEMON_BAG_ID });
     await h.write(canon.url, "Canon Note", "minted at the floor");
     const trace = { wikiDocId: canon.url, libraryBagDocIds: [] as readonly string[] };
     const fingerprint = await computeRecipeFingerprint(trace);
@@ -247,7 +253,7 @@ describe("★ the veil floor stands its own wiki content, and a seat's landing l
     expect(liftFaceCatalogRows(h.catalogHandle as never, faceCatalog as never)).toContain(key);
     expect(tiddlerText(faceCatalog.doc()!.tiddlers[key]!)).toBe(canon.url);
     // THE SEAL'S RE-FILE GETS NAMED ONCE, after the control row left.
-    expect(await h.control.get(floorSlotTitle("tabs", "canon"))).toBeFalsy();
+    expect(await h.daemon.get(floorSlotTitle("tabs", "canon"))).toBeFalsy();
     expect(h.lifted).toEqual([`tabs:${canon.documentId}`]);
     // DRAFT AND PERSONAL STILL RESOLVE under the same fingerprint, and the working rows rest in the face's workbench.
     const after = await faced.bindings(await computeRecipeFingerprint({ wikiDocId: tiddlerText(row)!, libraryBagDocIds: [] }), trace, "tabs");

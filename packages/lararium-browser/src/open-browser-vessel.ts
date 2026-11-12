@@ -29,6 +29,7 @@ import { browserDeviceFiling } from "./browser-device-filing.js";
 import { writeBrowserFaceLabel } from "./browser-face-labels.js";
 import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, sealedBagMap, vesselDocStoreDoor, bindSecretHomeRest, nameControlHome, daemonFaceCanonBag, SecretHomeUnavailable, DAEMON_SLOT_PREFIX, DAEMON_WIKI_SLOT_BAGS, type LitDeviceFaces, type SecretHome, type SealedBag } from "@lararium/mesh";
 import { openBrowserSecretHome, standBrowserSecretHome } from "./browser-secret-home.js";
+import { standBrowserFloorKey } from "./browser-floor-key.js";
 import { browserSeatKept, type SeatVerifyGround } from "./browser-fleet-seat.js";   // leaf-fleet (Leaf-Finisher)
 import { keepBrowserVeilLift } from "./browser-veil-lift.js";
 import * as A from "@automerge/automerge";
@@ -799,7 +800,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   const sealedRest = composeSealedRest<BrowserSaveSession>({
     inner: shoreStorage(new IndexedDBStorageAdapter(`${idbName}:repo`)),
     bagOf: sealedBagOf,
-    vesselKey: () => secretHomes.key(),
+    vesselKey: () => secretHomes.floorKey(),
     sessionFace: () => sealedCells.face(),
     door: docStoreDoor,
     flushRepo: async () => { await repo.flush(); },
@@ -829,6 +830,12 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     // The key stands where this browser's keystore stands open; a locked keystore answers false and control writes wait held.
     try { await openBrowserSecretHome(idbName, repo); return true; } catch { return false; }
   }));
+  // THE FLOOR'S REST KEY (the-veil-ladder#/the-base-model, in-house rulings 6 and 7): derived from this browser's own
+  // `floor-rest` seed row and stood on this Repo's rest, so every floor document seals with no secret home and no face. The
+  // row rests clear before the place tree binds and under the seal after; a sealed keystore with no unlock yet answers
+  // `vessel-locked`, and the daemon island's open asks again once the boot's unlock stood.
+  const standFloorKey = () => standBrowserFloorKey(idbName, repo);
+  let floorKeyGrant = await standFloorKey();
   // THE DEVICE DAEMON DOCUMENTS the control document names, filed by their owners (answers whether any filing moved): the
   // map re-reads, and the lifted session seals what now maps to its face.
   const classDeviceDaemonDocs = (controlDoc: LarDoc | undefined): void => {
@@ -840,6 +847,21 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   };
   houseIslands = islandPeersOf(repo);
   wikiIslands = wikiIslandPeersOf(repo);
+  // THE FLOOR'S REGISTRY rests in the place's daemon document (`device-daemon-docs` `readFloor`): each row files a floor
+  // document under the floor's rest key and keeps it on this vessel, with no control document standing.
+  const floorWatched = new Set<string>();
+  const watchFloorRegistry = (daemon: DocHandle<LarDoc>): void => {
+    if (floorWatched.has(daemon.documentId)) return;
+    floorWatched.add(daemon.documentId);
+    const refresh = () => {
+      vesselOnly.refreshFloor(daemon.doc());
+      if (!deviceDocs.readFloor(daemon.doc())) return;
+      sealedRest.store.mapMoved();
+      reverdict();
+    };
+    refresh();
+    daemon.on("change", refresh);
+  };
   let watchedControl: DocHandle<LarDoc> | null = null;
   const watchControl = async (daemon: DocHandle<LarDoc>): Promise<DocHandle<LarDoc>> => {
     const handle = await standControlHome(repo, daemon);
@@ -973,13 +995,12 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   if (!bootstrap) {
     // THE VEIL FLOOR (the-veil-ladder#/the-base-model: "every vessel stands anon at its floor … its own veiled-key, its own
     // local content, no group"). No admit and no record: the place stands on the vessel's own key and asks nobody. The
-    // secret home and its control document enroll on this vessel's sealed rest under the vessel-held key (the pre-bind
-    // window, `browser-custody`), the place's daemon document seeds, and the control document takes its name. No
-    // PersonaGroup, no root, no ward, no card and no passphrase ask: a face lands later as an overlay (the fleet-join
-    // door), and its admit lifts what this floor wrote.
-    const secret = await standBrowserSecretHome(idbName, repo);
+    // place's daemon document seeds, and the floor's rest key (stood above from the `floor-rest` seed, the pre-bind
+    // window, `browser-custody`) seals what the floor writes. THE PLACE MINTS NO SECRET HOME AND NO CONTROL DOCUMENT
+    // (operator ruling 2026-11-09, whole on both hosts): each mints with the face, where its founding or its admit lands.
+    // No PersonaGroup, no root, no ward, no card and no passphrase ask: a face lands later as an overlay (the fleet-join
+    // door), and its landing lifts what this floor wrote.
     const place = await foundThePlace({ repo, hearthTrueName: "" });
-    if (secret.controlUrl) nameControlHome(place.daemonHandle, secret.controlUrl);
     bootstrap = { daemonUrl: place.daemonUrl, personaPlanes: [], hearthDaemonUrl: null, floor: { daemonUrl: place.daemonUrl } };
     bootKeyWrites.bootstrap = bootstrap;
   }
@@ -1104,6 +1125,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       const secret = await standBrowserSecretHome(idbName, repo);
       const floorDaemon = await repo.find<LarDoc>(floor.daemonUrl as AutomergeUrl);
       await floorDaemon.whenReady();
+      // THE CONTROL DOCUMENT MINTS WITH THE FACE, beside its secret home, and the place's daemon document takes its name here.
+      if (secret.controlUrl) nameControlHome(floorDaemon, secret.controlUrl);
       f = { daemonUrl: floor.daemonUrl, secretUrl: secret.handle.url as string, ...await foundTheFace({
         repo,
         daemonHandle: floorDaemon as unknown as Parameters<typeof foundTheFace>[0]["daemonHandle"],
@@ -2091,6 +2114,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         recipe: { wikiSlug: "daemon" } satisfies WikiRecipe,
         faceRelation: wornRelation,
         grants: {
+          // The floor's rest key as this boot holds it: the floor registry's gate in the island.
+          floorKey:  floorKeyGrant,
           islandUrl: assembly.islandHandle.url,
           // The daemon island's OWN bag (daemon = wikiBagUri("daemon"), one-recipe model).
           wikiUrl:   social.daemonUrl,
@@ -2103,6 +2128,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         daemonAuth,
       });
       await watchControl(await repo.find<LarDoc>(social.daemonUrl as AutomergeUrl));
+      // The boot's unlock stood by now where the keystore rests sealed: the floor's key stands, and its registry files.
+      floorKeyGrant = await standFloorKey();
+      watchFloorRegistry(await repo.find<LarDoc>((bootstrap?.floor?.daemonUrl ?? social.daemonUrl) as AutomergeUrl));
+      watchFloorRegistry(await repo.find<LarDoc>(social.daemonUrl as AutomergeUrl));
       daemonHolder = holdDaemonVm({ vm: await openOnce(await resolveDaemonPlugins()), prepare: async () => {
         // A tab attached to the shared holder shares ONE island with every other tab: a restart here would close the port it reuses and tear down the shared island under the others (Sol train #7), so it refuses by name before anything moves.
         if (holder?.kind === "attached") throw new Error("daemon-restart-shared-holder: this tab shares its daemon island with the holder's other tabs, so it cannot restart it; reload this page");

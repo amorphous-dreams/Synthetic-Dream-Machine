@@ -11,8 +11,8 @@
  *
  * ── THE SET IS DERIVED, NEVER LISTED ────────────────────────────────────────────────────────────
  * Every record this vessel minted at the floor and has not yet moved: daemon-bag binding records reading `vessel-only` (personal
- * and draft kinds alike) the catalog's floor draft records keyed by this vessel's DID, and the control document's
- * floor WORKING slots (`floor-slot/<slug>/working`, the veil floor's own wiki content). Another vessel's records never match (`minted-by`),
+ * and draft kinds alike) the catalog's floor draft records keyed by this vessel's DID, and the floor registry's
+ * WORKING slots (`floor/slot/<slug>/working` in the place's daemon document, the veil floor's own wiki content). Another vessel's records never match (`minted-by`),
  * and a record that already reads `face` never matches.
  *
  * ── THE WORKING FLOOR GOES TO THE FACE'S REALM WORKBENCH ────────────────────────────────────────
@@ -21,7 +21,7 @@
  * (cabal-realm#/the-workbench: the address derives from the face and the slug, so every device of the face reaches it),
  * ADDITIVELY: a title the workbench lacks moves; a title it already holds alike moves nothing; a title it holds otherwise
  * STAYS at the floor and the result names it (`kept`), so no lift overwrites a face's row. A floor document that carried
- * every row burns and its control row leaves; one that keeps rows stays, holding those rows alone. This leg reads no retired
+ * every row burns and its floor row leaves; one that keeps rows stays, holding those rows alone. This leg reads no retired
  * format: the floor and the workbench both stand in the living design, and every vessel that ever joins a face runs it.
  *
  * ── A WIKI'S CANON STAYS WHERE IT STANDS ────────────────────────────────────────────────────────
@@ -29,10 +29,10 @@
  * its canon document and its URL, so the recipe fingerprint its draft and personal bindings hang on stays. That document
  * never left this vessel (it rested under the vessel's key and reached no peer), so no copy stands elsewhere. The Lift
  * registers the canon bag's cap under the face, clears the catalog row's `vessel-only` mark (the row then classes to the
- * face's half and `liftFaceCatalogRows` carries it with the same URL), removes the control row that filed the document as
- * the vessel's, and only then tells the vessel, which re-files the seal from its own key to the face's. A crash before the
- * control row leaves replays the whole leg; one after it leaves a document the face's map already names, whose floor values
- * open under the vessel's key until the re-file runs.
+ * face's half and `liftFaceCatalogRows` carries it with the same URL), removes the floor row that filed the document as
+ * the vessel's, and only then tells the vessel, which re-files the seal from the floor's key to the face's. A crash before the
+ * floor row leaves replays the whole leg; one after it leaves a document the face's map already names, whose floor values
+ * open under the floor's key until the re-file runs.
  *
  * ── IDEMPOTENT IN D ─────────────────────────────────────────────────────────────────────────────
  * The mark rests with the binding, in the daemon bag: `lifted-from` (a digest of the floor key) and, until the burn finishes,
@@ -40,9 +40,9 @@
  * that finds a binding still holding `lifted-from-url` finishes the burn and moves nothing a second time.
  */
 import {
-  CONTROL_HOME_ID, ControlHomeUnavailable, DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, canonicalJson, emptyLarDoc,
+  FloorUnavailable, floorDaemonSlotTitle, DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, canonicalJson, emptyLarDoc,
   mutableLarRecord, tiddlerText, FLOOR_SLOT_ROOT, floorSlotOf, sha256HexBytesSync, utf8Bytes, wikiBagUri, wikiDraftDocKey, requireLarDid, plainEntries, storedRecord,
-  type ChangeOrigin, type CompositeStore, type LarDoc, ownEntry, DOCUMENT_READY_TIMEOUT_MS} from "@lararium/mesh";
+  type ChangeOrigin, type CompositeStore, type FloorRegistry, type LarDoc, ownEntry, DOCUMENT_READY_TIMEOUT_MS} from "@lararium/mesh";
 import type { CatalogAccessor } from "@lararium/tw5";
 import type { FaceBagDoor } from "./face-bag-door.js";
 
@@ -66,25 +66,25 @@ export interface LiftArgs {
   /** The labels a faceless floor gave its documents (the public place key and its DID): a lit face lifts those too. */
   readonly floor?: { readonly mintedByHex: string; readonly vesselDid: string };
   /**
-   * THE WORKING FLOOR: the control store that names the floor's working slots, and the face's realm workbench for a wiki
-   * (stood on ask). Absent, no working floor lifts (a vessel with no control document held none).
+   * THE WORKING FLOOR: the floor registry that names the floor's working slots, and the face's realm workbench for a wiki
+   * (stood on ask). Absent, no working floor lifts. A registry whose floor key does not stand holds no floor to lift.
    */
   readonly working?: {
-    readonly control: CompositeStore;
+    readonly floor: FloorRegistry;
     readonly workbench: (slug: string) => Promise<string>;
   };
-  /** THE DAEMON WIKI'S FLOOR SLOTS: the control store that names them, and the face's own device slot of a kind (stood on ask). */
+  /** THE DAEMON WIKI'S FLOOR SLOTS: the floor registry that names them, and the face's own device slot of a kind (stood on ask). */
   readonly daemon?: {
-    readonly control: CompositeStore;
+    readonly floor: FloorRegistry;
     readonly faceSlot: (kind: "working" | "personal" | "draft") => Promise<string>;
   };
   /**
-   * THE CANON OF A WIKI THE VEIL MINTED (in-house Ruling 2): the control store that names it (`floor-slot/<slug>/canon`) and
-   * the word the vessel hears once a canon stands under the face (`announceLiftedDoc`: its seal re-files from the vessel's
+   * THE CANON OF A WIKI THE VEIL MINTED (in-house Ruling 2): the floor registry that names it (`floor/slot/<slug>/canon`) and
+   * the word the vessel hears once a canon stands under the face (`announceLiftedDoc`: its seal re-files from the floor's
    * key to the face's). The document never moves.
    */
   readonly canon?: {
-    readonly control: CompositeStore;
+    readonly floor: FloorRegistry;
     readonly lifted: (slug: string, documentId: string) => void;
   };
   /** The binding slot a wiki's draft floor belongs to: its fingerprint and trace, or null where the wiki is unregistered. */
@@ -282,12 +282,12 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
     }
   }
 
-  // 4 — the veil floor's own documents the control document names: each wiki's working rows go to the face's realm
+  // 4 — the veil floor's own documents the floor registry names: each wiki's working rows go to the face's realm
   // workbench, and the daemon wiki's floor memory goes to the face's own daemon device slot (face-private, never a workbench).
   const kept: { slug: string; titles: string[] }[] = [];
   const working = args.working;
-  /** Carry one floor document's rows into `intoUrl` additively; burn it and drop its control row where every row rests there. */
-  const carryFloor = async (control: CompositeStore, title: string, floorUrl: string, intoUrl: string, slug: string): Promise<void> => {
+  /** Carry one floor document's rows into `intoUrl` additively; burn it and drop its floor row where every row rests there. */
+  const carryFloor = async (registry: FloorRegistry, title: string, floorUrl: string, intoUrl: string, slug: string): Promise<void> => {
     const floor = await boundedRead(args, floorUrl, "arrival", async () => { const h = await args.repo.find(floorUrl); await h.whenReady?.(); return h; });
     const source = plainEntries(floor.doc()?.tiddlers);
     const bench = await boundedRead(args, intoUrl, "arrival", async () => { const h = await args.repo.find(intoUrl); await h.whenReady?.(); return h; });
@@ -306,9 +306,9 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
     }
     await boundedRead(args, intoUrl, "rest", () => args.repo.flush([bench.documentId]));
     if (stays.length === 0) {
-      // Every row rests above: the floor document burns, then its control row leaves.
+      // Every row rests above: the floor document burns, then its floor row leaves.
       await burn(args, floorUrl);
-      await control.remove(title, originFor(`work-${slug.slice(0, 12)}`));
+      await registry.remove(title, `anon-lift-work-${slug.slice(0, 12)}`);
     } else {
       // The rows held otherwise above stay, alone, so a replay reads the same floor and moves nothing.
       const stay = new Set(stays);
@@ -319,35 +319,35 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
     }
     if (lifts.length > 0 || stays.length === 0) moved.push(title);
   };
-  // A control document that refuses by name (a locked hearth, a place that names none) holds no floor to lift: the legs skip.
-  const controlEntries = async (control: CompositeStore) => { try { return await control.entries(); } catch (error) { if (error instanceof ControlHomeUnavailable) return []; throw error; } };
-  const controlText = async (control: CompositeStore, title: string) => { try { return tiddlerText(await control.get(title)); } catch (error) { if (error instanceof ControlHomeUnavailable) return null; throw error; } };
+  // A floor whose rest key does not stand (a locked hearth, a place that derives none) holds no floor to lift: the legs skip.
+  const floorEntries = async (registry: FloorRegistry) => { try { return await registry.entries(); } catch (error) { if (error instanceof FloorUnavailable) return []; throw error; } };
+  const floorText = async (registry: FloorRegistry, title: string) => { try { return await registry.get(title); } catch (error) { if (error instanceof FloorUnavailable) return null; throw error; } };
   if (working) {
-    for (const { title, record } of await controlEntries(working.control)) {
+    for (const { title, record } of await floorEntries(working.floor)) {
       const named = title.startsWith(FLOOR_SLOT_ROOT) ? floorSlotOf(title) : null;
       const fields = fieldsOf(record);
       const floorUrl = tiddlerText(record);
       if (!named || named.kind !== "working" || !fields || !floorUrl || fields["face-reach"] !== "vessel-only" || !mintedHere(args, fields["minted-by"])) continue;
-      try { await carryFloor(working.control, title, floorUrl, await working.workbench(named.slug), named.slug); }
+      try { await carryFloor(working.floor, title, floorUrl, await working.workbench(named.slug), named.slug); }
       catch (error) { if (error instanceof FloorDocumentUnavailable) { held(error, title); continue; } throw error; }
     }
   }
   // THE DAEMON WIKI'S FLOOR MEMORY (operator ruling 2026-10-22, "all its keyed material"; the AI-memory ruling keeps it
-  // face-private): each floor device slot (`daemon-slot/<kind>/floor`) carries into the face's own slot of that kind.
+  // face-private): each floor device slot (`floor/daemon-slot/<kind>`) carries into the face's own slot of that kind.
   const daemon = args.daemon;
   if (daemon) {
     for (const kind of ["working", "personal", "draft"] as const) {
-      const title = `${CONTROL_HOME_ID}/daemon-slot/${kind}/floor`;
-      const floorUrl = await controlText(daemon.control, title);
+      const title = floorDaemonSlotTitle(kind);
+      const floorUrl = await floorText(daemon.floor, title);
       if (!floorUrl) continue;
-      try { await carryFloor(daemon.control, title, floorUrl, await daemon.faceSlot(kind), `daemon/${kind}`); }
+      try { await carryFloor(daemon.floor, title, floorUrl, await daemon.faceSlot(kind), `daemon/${kind}`); }
       catch (error) { if (error instanceof FloorDocumentUnavailable) { held(error, title); continue; } throw error; }
     }
   }
-  // 5 — THE CANON OF EACH WIKI THE VEIL MINTED stays where it stands: the cap, the row's mark, the control row, then the word.
+  // 5 — THE CANON OF EACH WIKI THE VEIL MINTED stays where it stands: the cap, the row's mark, the floor row, then the word.
   const canon = args.canon;
   if (canon) {
-    for (const { title, record } of await controlEntries(canon.control)) {
+    for (const { title, record } of await floorEntries(canon.floor)) {
       const named = title.startsWith(FLOOR_SLOT_ROOT) ? floorSlotOf(title) : null;
       const fields = fieldsOf(record);
       const url = tiddlerText(record);
@@ -364,7 +364,7 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
           doc.tiddlers[key] = storedRecord(mutableLarRecord(key, { ...carried(rest), "face-reach": "face", "keyhive-doc-id": docId, "lifted-from": digestOf(title) }, "anon-lift"));
         });
       }
-      await canon.control.remove(title, originFor(`canon-${named.slug.slice(0, 12)}`));
+      await canon.floor.remove(title, `anon-lift-canon-${named.slug.slice(0, 12)}`);
       canon.lifted(named.slug, url.slice("automerge:".length));
       moved.push(title);
     }
