@@ -386,6 +386,62 @@ tools/lares-container.sh import /lar/config/carry/bundle-one --apply
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/the-three-face-rite`>>
+
+!! 11b · The three-face dogfood rite
+
+One human, three faces, one passphrase: the steward `joshua-fontany` (face 0, the Kahu chair), the engineer (face 1) and the referee (face 2). The rite stands the hearth, writes memory, shares a wiki, moves canon through the offering door, crosses a browser in, and carries everything across a re-founding. Run it on a span head CI holds green, after `tools/lares-container.sh build` stamps the image at that head and `$LARES_HOUSE/hearth` stands empty.
+
+''Stand.''
+
+```sh
+lares found --hearth --name 'joshua-fontany' --chair 'dreamnet-kahu-0'   # the veil floor first, then face 0 lands over it; its seed charter AID names the hearth
+lares up                                                                  # up unlocks on the attached terminal
+lares persona new 1 --name 'joshua-fontany-engineer'                      # the same passphrase; no --seat (the engineer holds no Kahu chair)
+lares persona new 2 --name 'joshua-fontany-referee'                       # the same passphrase
+lares vault unlock --all --face 1                                         # opens all three, wears the engineer
+lares vessel seed --apply --yes                                           # canon, then every mirror
+lares vessel floor status                                                 # the pin reads the genesis floor
+```
+
+''Memory.'' The `lares` MCP server runs inside the standing container (`docker compose exec`), so `/mcp` connects only after `up`. Reconnect `/mcp`, and the AI writes memories into the worn face's daemon wiki. The AI stages a row for the fleet (`lares kahua stage <title> --face 1 --text …`); the hand lifts it: `lares kahua lift <title> --face 1 --taint none` prints the staged row and lifts only on its digest's first 8 hex typed back (a bare `--yes` lifts nothing). To write as the referee: `lares vault unlock --face 2`, then reconnect `/mcp`.
+
+''A shared workbench.''
+
+```sh
+lares wiki init notes
+lares wiki share notes --write joshua-fontany-engineer --read joshua-fontany-referee --face 0
+lares wiki share notes --list
+```
+
+Write from two faces and watch one merged working layer; each face's `personal` margin stays its own.
+
+''Offer, promote, release, accept.'' Wearing the engineer: `lares meme offer <uri> --bag lares` (canon stays unmoved). Wearing the steward (`lares vault unlock --face 0`): `lares meme offer list --bag lares`, then `lares meme offer promote <cid>`, then `lares nexus release <file> --cut` with its approval. Then `lares vessel floor accept`; every accept raises the reboot alert until a live floor swap lands.
+
+''A browser crosses in.'' Open the page URL the banner prints (it carries no query and no fragment). The page boots a veil with no ask. Carry the banner's floor card in at the page's carriage door (paste or file), and the anchor as its own act. To join the engineer: `lares fleet join offer --face 1 --out offer.json` → paste the offer → the page answers a request file → `lares fleet join answer request.json --out answer.json` → paste the answer. The browser's veil wikis lift into the face, and the mirror opens full, styled, on the welcome landing.
+
+''Carry across a re-founding'' (11a's law; this walk adds the three faces):
+
+```sh
+lares export ~/.lares/config/carry-2
+lares down && lares reset
+lares found --hearth --name 'joshua-fontany' --chair 'dreamnet-kahu-0'
+lares up
+lares persona new 1 --name 'joshua-fontany-engineer'                      # the same names, the same passphrase
+lares persona new 2 --name 'joshua-fontany-referee'
+lares vault unlock --all --face 1
+lares vessel seed --apply --yes                                           # adopts the engineer; names the steward and referee: wear each and seed again
+lares vault unlock --face 0 && lares vessel seed --apply --yes
+lares vault unlock --face 2 && lares vessel seed --apply --yes
+lares vessel seed --apply --lift-kahua <N>                                # the kahua items the seed previewed, on their count alone
+```
+
+Read back per face: each face's memories through `/mcp`, the shared wiki, the promoted record on the floor. Then `lares import ~/.lares/config/carry-2 --apply` lands nothing, and a final seed lands nothing.
+
+''Proves'': three faces of one human stand on one hearth, write face-private memory, share one workbench, move canon by offer and release, take a browser in by carried files, and carry all of it across a re-founding by content.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/key-replacement-cost`>>
 
 !! Key replacement cost
@@ -440,6 +496,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;4CuH31FNEfEKwfAV-_b4hxWuvwno8GveCbaXmLWtKQU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_Esose03BqIoAu3s4uFX8UzLkLZnMSnF_8atO3SYIhQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>
