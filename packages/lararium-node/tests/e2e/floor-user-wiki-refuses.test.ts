@@ -17,6 +17,16 @@
  *       names none waiting.
  *   W0  CONTROL: a floor node asked for a floor row's wiki (`lares`) boots at the floor and names none waiting.
  *
+ * THE VEIL SPLIT (the-veil-ladder#/the-base-model, in-house rulings of 2026-11-12). "A floor" names three states now, and W0-W3
+ * read two of them. A LOCKED floor (W2: a founded node before its unlock) and a HERM cannot seal, so each still refuses a
+ * wiki that needs a face and mints none. A floor that asks for a wiki NO vessel minted (W1: `floor-user` holds no row) waits
+ * the same way: a title with no row in hand classes to the face. The third state stands outside these vectors: an UNLOCKED
+ * VEIL (no face, its control document reads) mints a wiki as the vessel's own (`init-wiki`, the row marked
+ * `face-reach = vessel-only`), and that wiki mounts with no face worn. Its proofs rest below this e2e: keyhive
+ * veil-floor-verbs G1-G3 (the unlocked veil mints; the locked floor and the herm refuse all four verbs), mesh catalog-view
+ * RED VEIL (the marked row rests on the floor's half, so `facelessWikiWaits` mounts it). A W4 here (an unlocked veil mints a
+ * wiki, restarts, and boots on it with none waiting) stays owed.
+ *
  * Canon: lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift#/the-slices (slice 5b)
  */
 import { afterEach, describe, expect, test } from "vitest";

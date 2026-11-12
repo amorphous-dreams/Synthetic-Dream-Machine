@@ -184,7 +184,7 @@ async function foundHalted(): Promise<string> {
   await generateOrLoadBrowserVesselIdentity(idbName);
   await bindSyntheticBrowserCustodySlot(idbName);
   const opts = {
-    idbName, askWardRoute: fixtureWardDialog,
+    idbName, askWardRoute: fixtureWardDialog, foundFace: true,
     onPhase: (phase: string) => { if (phase === "catalog-ready") throw new BootHalted(); },
   } as BrowserVesselOptions;
   await expect(openBrowserVessel(opts)).rejects.toBeInstanceOf(BootHalted);
@@ -673,7 +673,7 @@ describe("browser custody seals the place tree's device seed and walk records", 
     await bindSyntheticBrowserCustodySlot(idbName);
     const phases: string[] = [];
     const reboot = await settleOf(openBrowserVessel({
-      idbName, askWardRoute: fixtureWardDialog, onPhase: (p: string) => { phases.push(p); if (p === "catalog-ready") throw new BootHalted(); },
+      idbName, foundFace: true, askWardRoute: fixtureWardDialog, onPhase: (p: string) => { phases.push(p); if (p === "catalog-ready") throw new BootHalted(); },
     } as BrowserVesselOptions));
     expect((reboot as { reading?: unknown } | null)?.reading, String(reboot)).toBe("ward-owned-by-another-face");
     expect(await wardCensus(idbName), "CONTROL: a ward whose owner stands live survives the founding's sweep").toEqual(haltedWard);
@@ -699,7 +699,7 @@ describe("browser custody seals the place tree's device seed and walk records", 
     await pageLetsGo(idbName);
     await bindSyntheticBrowserCustodySlot(idbName);
     const reboot = await settleOf(openBrowserVessel({
-      idbName, askWardRoute: fixtureWardDialog, onPhase: (p: string) => { if (p === "catalog-ready") throw new BootHalted(); },
+      idbName, foundFace: true, askWardRoute: fixtureWardDialog, onPhase: (p: string) => { if (p === "catalog-ready") throw new BootHalted(); },
     } as BrowserVesselOptions));
     expect(reboot, String(reboot)).toBeInstanceOf(BootHalted);
     const owner = await browserWardOwnerOf(idbName, 0);

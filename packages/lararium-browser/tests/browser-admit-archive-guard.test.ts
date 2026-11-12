@@ -46,7 +46,7 @@ describe("an admit and the archive row by PersonaGroup", () => {
   test("G1 — founded solo as A, then admitted into B: the ceremony meets B's own atom and no byte of A's Archive", { timeout: 120_000 }, async () => {
     const idbName = `admit-guard-${crypto.randomUUID()}`;
     await bindSyntheticBrowserCustodySlot(idbName);
-    await expect(openBrowserVessel(halted({ idbName }))).rejects.toBeInstanceOf(BootHalted);   // the solo founding: face A
+    await expect(openBrowserVessel(halted({ idbName, foundFace: true }))).rejects.toBeInstanceOf(BootHalted);   // the solo founding: face A
     const keptA = await loadBrowserVeilArchive(idbName, await foundedGroup(idbName));
     expect(keptA, "face A's atom Archive rests under A").toBeDefined();
 

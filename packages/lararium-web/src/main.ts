@@ -473,6 +473,9 @@ function standVessel(handlers: Parameters<typeof standVesselPort>[1], port?: Mes
 function seedRestLine(status: VesselStatus): { readonly text: string; readonly ok: boolean } | null {
   if (status.seedRest === undefined) return null;
   if (status.seedRest === "wrapped-passphrase") return { text: "sealed under this browser's passphrase slot", ok: true };
+  // THE VEIL FLOOR, SAID PLAINLY (the-veil-ladder: the throwaway rung): nothing asked this person for a passphrase, so nothing
+  // here outlives this browser's storage or resists someone who reads it.
+  if (status.seedRest === "open-veil") return { text: "open: an unbound veil at the throwaway rung. This browser's key and what it writes rest under no passphrase; join a face or bind a slot to keep them.", ok: false };
   const wrap = status.seedRest === "wrapped-prf" ? { keyClass: status.seedWrapClass ?? "unnamed" } : null;
   return { text: seedRestStatus(wrap), ok: wrap !== null };
 }
@@ -520,6 +523,8 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
     ...(floor ? { floorCard: floor.text } : {}),
     ...(floorAnchor ? { floorAnchor } : {}),
     ...(admit ? { admitCarriage: admit } : {}),
+    // THE FOUNDING ACT ASKS FOR A FACE: the page's own door (`?found`) carries the ask; a bare arrival stands the veil floor.
+    ...(new URLSearchParams(location.search).has("found") ? { foundFace: true as const } : {}),
     ...(meshLeaf ? { meshLeaf } : {}),
   });
   const outcome = await Promise.race([stood.then((v) => ({ kind: "stood" as const, v })), stopped.then((e) => ({ kind: "ended" as const, e }))]);
