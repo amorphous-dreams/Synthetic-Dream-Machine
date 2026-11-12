@@ -1,4 +1,5 @@
 import { browserPromoteStores, browserPromoteCas } from "./browser-promoted-store.js";
+import { mirrorInputsAt } from "./mirror-rest-verdict.js";
 import { browserWardBindRoute, BrowserWardRefused, browserWardSigner, type WardAskKind } from "./browser-ward.js";
 import type { WardRoute } from "./ward-core.js";
 import { holdDaemonVm, DaemonRestarting, KAPAE_EMERGENCY_REASON, type DaemonVmHolder } from "@lararium/tw5";
@@ -482,7 +483,7 @@ export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPoo
   sendControlEvent: (surface: string, ev: LarMsg_ControlEvent) => ReturnLegVerdict;
   ports: { place(surface: string, binding: string, msg: unknown): PortPlacement; close(binding: string): void };
   /** The core hash and plugin CIDs a mounted wiki surface boots from, for the page's mirror; null for the daemon, an unmounted surface, or inputs the vessel cannot name. */
-  mirrorInputs: (surface: string) => Promise<{ coreCid: string; pluginCids: readonly string[] } | null>;
+  mirrorInputs: (surface: string) => Promise<{ coreCid: string; pluginCids: readonly string[]; sealedRest?: true } | null>;
   /** Ask a surface's island to paint whole under a fresh mount epoch (`lar:resend`). */
   resend: (surface: string) => ReturnLegVerdict;
   /** The surface id the projection gate shows now: the daemon's, or a wiki's slug. */
@@ -2616,7 +2617,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         ? { ok: false, reason: "surface-unknown" } : vmManager.placePort(surface, binding, msg),
       close: (binding) => vmManager.closePortBinding(binding),
     },
-    mirrorInputs: (surface) => surface === DAEMON_SURFACE_ID || !vmManager.has(surface) ? Promise.resolve(null) : vmManager.mountInputsOf(surface),
+    // The mirror's sealed-rest word passes the floor's guard: a veil floor's mirror runs no person-authored code. No sealed-rest
+    // reading is wired yet, so every answer carries none; the first wiring passes its reading here (`mirror-rest-verdict`).
+    mirrorInputs: (surface) => surface === DAEMON_SURFACE_ID || !vmManager.has(surface) ? Promise.resolve(null)
+      : vmManager.mountInputsOf(surface).then((inputs) => mirrorInputsAt(inputs, { face: sealedCells.face(), restsSealed: false })),
     resend: (surface: string) => returnLeg.resend(surface),
     activeSurface: () => activeSurfaceId,
     // The uniform pin-selector: flip the live gate synchronously (mount-then-flip — daemon + the pinned wiki
