@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { bootSetTitles, censusRecords } from "../src/glass-mirror.js";
+import { bootSetModuleTitles, bootSetTitles, censusRecords } from "../src/glass-mirror.js";
 
 const packed = (shadows: Record<string, Record<string, string>>) => JSON.stringify({ tiddlers: shadows });
 const record = (title: string, fields: Record<string, string>, omitted?: string[]) => ({ title, fields, ...(omitted ? { omitted } : {}) });
@@ -48,6 +48,16 @@ describe("the record census ~ which of the wiki's own records the mirror's engin
       record("$:/note", { tags: "Notes", text: "$:/tags/StartupAction" }), record("$:/near", { tags: "$:/tags/StartupActionX", text: "x" })], boot, true);
     expect(titles(census.held)).toEqual(["$:/on-start", "$:/on-browser"]);
     expect(titles(census.preloaded)).toEqual(["$:/note", "$:/near"]);
+    expect(census.refused).toEqual([]);
+  });
+  test("a record sharing its title with a module the boot set packs waits out the boot with no alert, so the engine's module stays defined; CONTROL a record over a plain shadow boots", () => {
+    const house = { title: "house", "plugin-type": "plugin", text: packed({ "lar:///modules/deserializer": { "module-type": "library", type: "application/javascript", text: "" }, "$:/config/x": { text: "shadow" } }) };
+    const modules = bootSetModuleTitles([house, { title: "$:/loose.js", "module-type": "utils", text: "" }]);
+    expect([...modules].sort()).toEqual(["$:/loose.js", "lar:///modules/deserializer"]);
+    const census = censusRecords([record("lar:///modules/deserializer", { text: "the carrier canon keeps under the module's own name" }), record("$:/config/x", { text: "a person's override" }),
+      record("$:/core/modules/widgets/list.js", { text: "x" })], bootSetTitles([house]), true, [], modules);
+    expect(titles(census.held)).toEqual(["lar:///modules/deserializer", "$:/core/modules/widgets/list.js"]);
+    expect(titles(census.preloaded)).toEqual(["$:/config/x"]);
     expect(census.refused).toEqual([]);
   });
 });

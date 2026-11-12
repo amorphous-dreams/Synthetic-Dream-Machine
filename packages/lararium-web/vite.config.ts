@@ -128,6 +128,11 @@ export default defineConfig({
   },
 
   optimizeDeps: {
+    // THE SCAN READS THE WORKERS TOO. Left to the page alone, the dev scanner learns the worker graphs' dependencies only when a
+    // worker first asks for them, optimizes again, and reloads the page under a vessel worker whose own import then dies
+    // ("Failed to fetch dynamically imported module"). Naming the worker entries lets one scan settle every dependency before the
+    // first request, so a cold cache boots like a warm one.
+    entries: ["index.html", "src/workers/*.ts"],
     // MANDATORY: esbuild pre-bundling would emit a SECOND copy of the automerge-wasm
     // JS wrapper, double-initializing its module-level heap tracker (dev-only heap
     // corruption). Excluding it keeps a single wrapper instance.

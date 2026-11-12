@@ -72,6 +72,9 @@ const shadowsOf = (text: unknown): Record<string, unknown>[] | null => {
  *   module-gate         (`sealedRest`); a plugin that lays only wikitext, styles and data boots at once.
  *   (unreadable)        a plugin or module record whose body the port left out (a skinny open) or whose packed text will not
  *                       parse: nothing can read what it would evaluate, so it waits like a gated one.
+ *   (module's namesake) a record that shares its title with a module the boot set packs: held with no alert, so the engine's own
+ *                       module stays defined (the core's modules ride `$:/core` in the engine blob and take the same hold by the
+ *                       `$:/core/modules/` prefix).
  *   (startup action)    a record tagged `$:/tags/StartupAction` (or a tag beneath it): TW5 runs those during boot, and the
  *                       island's own gate decides which of a wiki's startup actions run; the mirror runs none a second time.
  *                       Held with no alert: nothing was refused, the act belongs to the island.
@@ -80,7 +83,8 @@ const shadowsOf = (text: unknown): Record<string, unknown>[] | null => {
  * and registers a plugin's modules during boot alone, so a record that lands after boot evaluates nothing; TW5's own ordering
  * keeps the gate, and no field of the record changes.
  */
-export function censusRecords(records: readonly PortWireRecord[], bootTitles: ReadonlySet<string>, sealedRest: boolean, localFilter: readonly string[] = []) {
+export function censusRecords(records: readonly PortWireRecord[], bootTitles: ReadonlySet<string>, sealedRest: boolean, localFilter: readonly string[] = [],
+  bootModules: ReadonlySet<string> = new Set()) {
   const preloaded: PortWireRecord[] = [];
   const held: PortWireRecord[] = [];
   const refused: { title: string; kind: string }[] = [];
@@ -89,6 +93,10 @@ export function censusRecords(records: readonly PortWireRecord[], bootTitles: Re
     const fields = record.fields;
     const hold = (kind: string): void => { held.push(record); refused.push({ title: record.title, kind }); };
     if (bootTitles.has(record.title)) { hold("boot-set-shadow"); continue; }
+    // A record that shares its title with a MODULE the boot set packs (house canon names a carrier and its module alike) waits out
+    // the boot: TW5 defines no shadow module an ordinary tiddler overrides, so the record in the boot store would unseat the
+    // engine's own code. Landed after boot it overrides the shadow's text and the module stands, exactly as in the island.
+    if (bootModules.has(record.title) || record.title.startsWith("$:/core/modules/") || record.title.startsWith("$:/boot/")) { held.push(record); continue; }
     // A record's StartupAction runs where the island's own gate admits it, never a second time on a surface: it lands after boot.
     if (STARTUP_ACTION.test(fields["tags"] ?? "")) { held.push(record); continue; }
     const moduleType = fields["module-type"];
@@ -109,7 +117,19 @@ export function censusRecords(records: readonly PortWireRecord[], bootTitles: Re
   }
   return { preloaded, held, refused };
 }
-/** Every title the boot set lays: each preload's own title and the shadows a plugin packs. */
+/** Every module the boot set defines: each shadow a boot-set plugin packs with a `module-type`, and each loose preload carrying one. */
+export function bootSetModuleTitles(preloads: readonly Record<string, unknown>[]): Set<string> {
+  const titles = new Set<string>();
+  for (const preload of preloads) {
+    if (preload["plugin-type"] === undefined) { if (preload["module-type"] !== undefined && typeof preload["title"] === "string") titles.add(preload["title"]); continue; }
+    try {
+      const packed = (JSON.parse(String(preload["text"] ?? "{}")) as { tiddlers?: Record<string, Record<string, unknown>> }).tiddlers ?? {};
+      for (const [title, shadow] of Object.entries(packed)) if (shadow && shadow["module-type"] !== undefined) titles.add(title);
+    } catch { /* a plugin whose text will not parse packs nothing */ }
+  }
+  return titles;
+}
+/** The titles a record may never take in the boot store: each boot-set preload's own title, and the kernel's. */
 export function bootSetTitles(preloads: readonly Record<string, unknown>[]): Set<string> {
   const titles = new Set<string>(["$:/core", "$:/boot/boot.js", "$:/boot/bootprefix.js", "$:/library/sjcl.js"]);
   for (const preload of preloads) if (typeof preload["title"] === "string") titles.add(preload["title"]);
@@ -159,7 +179,7 @@ export async function openMirror(options: Omit<GlassPortOptions, "wiki" | "Tiddl
       await seams.bootEngine?.();
       const census = censusPreloads(options.inputs.preloadedTiddlers, options.inputs.sealedRest === true);
       const sealed = options.inputs.sealedRest === true;
-      wikiCensus = options.opened ? censusRecords(options.opened.records, bootSetTitles(census.accepted), sealed, options.localFilter) : null;
+      wikiCensus = options.opened ? censusRecords(options.opened.records, bootSetTitles(census.accepted), sealed, options.localFilter, bootSetModuleTitles(census.accepted)) : null;
       // THE STORE A SERVER HANDS A BROWSER: the verified boot set, then the wiki's own records, all in `$tw.preloadTiddlers`
       // before TW5 unpacks a plugin or defines a module.
       const store = [...census.accepted, ...(wikiCensus?.preloaded ?? []).map(record => ({ ...record.fields, title: record.title }))];

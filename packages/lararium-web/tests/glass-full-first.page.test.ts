@@ -75,6 +75,26 @@ test("a theme a person installed in the wiki reaches the mirror as the wiki's ow
     result.unmount();
   } finally { bare.host.remove(); }
 });
+test("a canon record that carries a house module's own name leaves the engine's module defined, and the record still shows; CONTROL the module stands without it", async () => {
+  const NAME = "lar:///ha.ka.ba/lararium/tw5/modules/deserializer";
+  const faults = (tw: any): string[] => tw.wiki.filterTiddlers("[prefix[$:/temp/lares/alert/boot-fault/]]");
+  const bare = await rig();
+  try {
+    const result = await standMirror(bare.options, bare.seams) as any;
+    expect(result.tw.modules.titles[NAME]).toBeDefined();                                   // CONTROL
+    result.unmount();
+  } finally { bare.host.remove(); }
+  forgetEvidence();
+  const r = await rig({ records: [{ title: NAME, fields: { text: "the carrier canon keeps under the module's own name", type: "text/memetic-wikitext+tiddlywiki" } }] });
+  try {
+    const result = await standMirror(r.options, r.seams) as any;
+    expect(result.tw.modules.titles[NAME]).toBeDefined();                                   // the record never unseated the module
+    expect(faults(result.tw)).toEqual([]);                                                  // and no module that requires it died at boot
+    expect(result.tw.wiki.getTiddlerText(NAME)).toBe("the carrier canon keeps under the module's own name");   // the record landed after boot
+    expect(r.messages.filter(m => m.type === "port:write")).toEqual([]);
+    result.unmount();
+  } finally { r.host.remove(); }
+});
 test("the mirror opens full on one port; the evidence record stands while full boots and clears once full has painted", async () => {
   const r = await rig(); let during: string | null = null;
   r.onPlace(msg => { if (msg.type === "port:open") during = sessionStorage.getItem(KEY); });
