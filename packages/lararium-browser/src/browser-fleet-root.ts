@@ -31,14 +31,14 @@ import type { AutomergeUrl, DocHandle, Repo } from "@automerge/automerge-repo";
 import {
   AutomergeDocStore, FLEET_HAND, FleetJoinRootRefused, DeviceSeatRefused, buildDeviceDelegationRootHalf, composeFleetJoinAnswer,
   composeFleetJoinOffer, deviceEdgeId, faceAtomKeyFromSeed, fleetEdgeAuthority, fleetEdgeBoardDocUrl, fleetFrontierCarriage,
-  fleetRaiseCids, hex, leaseEpochPrefix, materializeSharedLarDoc, personaActRecordsOfGroup, personaBagIdFor, personaKelBoardDocUrl,
+  fleetRaiseCids, hex, leaseEpochPrefix, materializeSharedLarDoc, faceRecordsOf, personaBagIdFor, personaKelBoardDocUrl,
   personaKelChainForPrefix, readControlHome, readFace, readFleetFrontier, readFrontierPins, readLedgeredEdgeBoard, seatDeviceInFace,
   tiddlerText, writePersonaAct,
   type DeviceDelegationTiddler, type FaceScope, type FleetJoinAnswer, type FleetJoinOffer, type FleetJoinRequest, type FleetJoinSeat, type LarDoc, type SignedAct,
 } from "@lararium/mesh";
 import { runDeviceAdmitEdge, type DeviceAdmitPayload } from "@lararium/keyhive";
 import type { WardRoute } from "./ward-core.js";
-import { browserPersonaRootHeld, generateOrLoadBrowserPersonaRoot, listBrowserPersonaRoots, loadBrowserPersonaRootSeed, FLEET_JOIN_STORE, idbGet, idbPut, openVesselIdb } from "./browser-vessel-identity.js";
+import { browserPersonaRootHeld, listBrowserPersonaRoots, readBrowserPersonaRootKey, loadBrowserPersonaRootSeed, FLEET_JOIN_STORE, idbGet, idbPut, openVesselIdb } from "./browser-vessel-identity.js";
 import { loadBrowserFaceAnchor } from "./browser-face-anchor.js";
 import { readBrowserFaceAddressSecret, requireBrowserFaceAtomSeed } from "./browser-face-atom.js";
 
@@ -63,7 +63,9 @@ async function heldRootKey(idbName: string, face: BrowserRootFace): Promise<stri
   if (!(await browserPersonaRootHeld(idbName, face.handleIndex))) {
     throw new BrowserFleetRootRefused("root-absent", "this browser holds no root for that face; the vessel that founded the face answers its fleet joins.");
   }
-  return bare((await generateOrLoadBrowserPersonaRoot(idbName, face.handleIndex, undefined, face.personaGroup)).verifyingKey);
+  const key = await readBrowserPersonaRootKey(idbName, face.handleIndex, face.personaGroup);
+  if (key === null) throw new BrowserFleetRootRefused("root-absent", "this browser holds no root for that face; the vessel that founded the face answers its fleet joins.");
+  return bare(key);
 }
 
 /**
@@ -197,7 +199,7 @@ export async function browserSeatDevice(input: BrowserSeatInput): Promise<FleetJ
   }
 
   const personaHandle: DocHandle<LarDoc> = await repo.find<LarDoc>(face.personaUrl as AutomergeUrl);
-  const records = [personaHandle.doc(), ...(input.extraDocs ?? [])].flatMap((doc) => personaActRecordsOfGroup(doc, group));
+  const records = faceRecordsOf([personaHandle.doc(), ...(input.extraDocs ?? [])], group);
   const atomSeed = await requireBrowserFaceAtomSeed(idbName, group);
   try {
     const fleetRoot = bare(hex(await ed25519.getPublicKeyAsync(signerSeed)));
@@ -275,7 +277,7 @@ export async function browserRootFaces(idbName = "lares:vessel"): Promise<readon
     const { meshCabalDocIdHex, signerDid, personaKelPrefix, personaUrl, daemonUrl } = overlay;
     if (!signerDid || !personaKelPrefix || !personaUrl || !daemonUrl || meshCabalDocIdHex === undefined) continue;
     for (const handleIndex of roots) {
-      const key = await generateOrLoadBrowserPersonaRoot(idbName, handleIndex, undefined, personaGroup).then((r) => bare(r.verifyingKey), () => null);
+      const key = await readBrowserPersonaRootKey(idbName, handleIndex, personaGroup).then((k) => (k === null ? null : bare(k)), () => null);
       if (key === null || key !== bare(signerDid)) continue;
       out.push({ personaGroup, handleIndex, seat: { personaGroupId: personaGroup, meshCabalDocIdHex, personaKelPrefix, personaUrl, daemonUrl } });
       break;

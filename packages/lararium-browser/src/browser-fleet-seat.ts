@@ -14,7 +14,7 @@
  */
 import type { AutomergeUrl, Repo } from "@automerge/automerge-repo";
 import {
-  DOCUMENT_HANG_BOUND_MS, ed25519SignerFromSeed, faceAtomKeyFromSeed, personaActRecordsOfGroup, type EdgeStanding, type HandLineage, type LarDoc,
+  DOCUMENT_HANG_BOUND_MS, ed25519SignerFromSeed, faceAtomKeyFromSeed, faceRecordsOf, type EdgeStanding, type HandLineage, type LarDoc,
 } from "@lararium/mesh";
 import {
   CarriedSeatRefused, boardDyadReader, composeSeatRequest, dropCarriedSeatGrant, keepCarriedSeatGrant, keptSeatGrant, placeSeatRequest, readSeatGrant, readSeatRequest, seatGrantAnswering, verifyCarriedSeatGrant,
@@ -30,7 +30,7 @@ const refuse = (refusal: string, detail: string): never => { throw new CarriedSe
  *  intent door of the vessel that takes the request answers only an intent pinned to its own atom, so a wrong reading
  *  here earns silence there and seats nobody. */
 function carriedFoundingAtom(home: LarDoc | undefined, group: string): string | null {
-  const admissions = personaActRecordsOfGroup(home, group)
+  const admissions = faceRecordsOf([home], group)
     .map((r) => (r as { body?: { act?: unknown; seq?: unknown; deviceKey?: unknown } } | null)?.body)
     .filter((b): b is { act: "admission"; seq: number; deviceKey: string } => b?.act === "admission" && typeof b.seq === "number" && typeof b.deviceKey === "string")
     .sort((a, b) => a.seq - b.seq);

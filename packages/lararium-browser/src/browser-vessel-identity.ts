@@ -576,6 +576,23 @@ export async function generateOrLoadBrowserPersonaRoot(idbName = "lares:vessel",
 }
 
 /**
+ * READ the public key of the root this vessel holds at `handleIndex`, never minting one: the roster's line, under the same
+ * custody, worn-face and ward checks the minting door reads. Null where the roster names none. A reader (the fleet root's door,
+ * its face listing) asks here, so only the founding doors call the minting function (persona-root-writers).
+ */
+export async function readBrowserPersonaRootKey(idbName = "lares:vessel", handleIndex = 0, face?: string): Promise<string | null> {
+  assertHandleIndex(handleIndex);
+  refuseOtherHandle(idbName, handleIndex);
+  const custody = await readBrowserCustody(idbName);
+  if (custody.reading !== "sealed") throw new BrowserCustodyRefused("no-custody-slot", idbName, `persona-root-h${handleIndex}`);
+  const line = await rosterLineOf(idbName, handleIndex);
+  await refuseUnwornFace(idbName, handleIndex, face);
+  if (!line) return null;
+  await refuseWardOfAnotherFace(idbName, handleIndex);
+  return line.verifyingKey;
+}
+
+/**
  * Load the PersonaGroup-root 32-byte Ed25519 SIGNING seed at `handleIndex` (founder-only), for ONE act whose mesh code derives
  * from the seed: the face's ward opens fresh from `ward` and zeroes after. SECURITY: the returned bytes ARE the operator-root
  * private key; the caller zero-fills them when its act ends. No route refuses `ward-needs-fresh-unlock`.

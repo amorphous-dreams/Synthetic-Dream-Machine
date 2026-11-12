@@ -20,7 +20,7 @@
  * Meme: lar:///ha.ka.ba/lararium/keyhive/carried-seat
  */
 import {
-  buildIntent, faceIntentVerbs, intentEntryCid, intentEntryRecordsOfGroup, intentId, readIntentEntry, storedLarRecord, tiddlerText, writeIntentEntry,
+  buildIntent, faceIntentVerbs, intentEntryCid, intentEntryRecordsOfGroup, intentId, ownEntry, readIntentEntry, storedLarRecord, tiddlerText, writeIntentEntry,
   type DeviceDelegationTiddler, type DocHandle, type IntentSigner, type LarDoc, type SignedIntentEntry,
 } from "@lararium/mesh";
 import { faceJoinNonce } from "./face-intent-door.js";
@@ -83,7 +83,7 @@ export function placeSeatRequest(plane: DocHandle<LarDoc>, request: FleetSeatReq
 /** The grant the hearth's door wrote for `device` on its persona plane, as a file; null while none stands there. */
 export function seatGrantOnPlane(plane: LarDoc | undefined | null, group: string, device: string): FleetSeatGrant | null {
   const title = faceGrantTitle(group, device);
-  const raw = tiddlerText(plane?.tiddlers?.[title]);
+  const raw = tiddlerText(ownEntry(plane?.tiddlers, title));
   if (typeof raw !== "string") return null;
   try { return { kind: "fleet-seat-grant", personaGroup: group, title, record: JSON.parse(raw) as FaceGrantRecord }; } catch { return null; }
 }
@@ -140,10 +140,10 @@ const ANSWER_SUFFIX = "#answer";
 /** The carried grant this vessel keeps for one device of one face, with the outcome it answers, or null. */
 export function keptSeatGrant(home: LarDoc | undefined | null, group: string, deviceKey: string): FleetSeatGrant | null {
   const title = faceGrantTitle(group, deviceKey);
-  const raw = tiddlerText(home?.tiddlers?.[title]);
+  const raw = tiddlerText(ownEntry(home?.tiddlers, title));
   if (typeof raw !== "string") return null;
   try {
-    const answer = tiddlerText(home?.tiddlers?.[`${title}${ANSWER_SUFFIX}`]);
+    const answer = tiddlerText(ownEntry(home?.tiddlers, `${title}${ANSWER_SUFFIX}`));
     return { kind: "fleet-seat-grant", personaGroup: group, title, record: JSON.parse(raw) as FaceGrantRecord,
       ...(typeof answer === "string" ? { outcome: JSON.parse(answer) as SignedIntentEntry } : {}) };
   } catch { return null; }

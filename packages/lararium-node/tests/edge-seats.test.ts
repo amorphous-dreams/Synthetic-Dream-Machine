@@ -163,7 +163,8 @@ describe("the root's admit door reads the dyad's shadow", () => {
   it("the admit ceremony asks before it signs", () => {
     const src = readFileSync(join(import.meta.dirname, "..", "src", "commands", "device-admit.ts"), "utf8");
     const ask = src.indexOf("await assertDyadBinds(repo, opts.joineeVerifyingKey, face)");
-    const sign = src.indexOf("await runDeviceAdmitEdge(");
+    // The edge signs inside the one seat core's callback (`seatDeviceInFace`), after the ask.
+    const sign = src.indexOf("return runDeviceAdmitEdge(");
     expect(ask).toBeGreaterThan(0);
     expect(sign).toBeGreaterThan(ask);
   });
