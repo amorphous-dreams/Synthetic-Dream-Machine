@@ -125,6 +125,8 @@ export interface FleetSeatPort {
   request(personaGroup: string): Promise<string>;
   /** Keep a carried seat grant; answers the face it seats. The vessel's seat reads it at its next boot. */
   land(grant: string): Promise<string>;
+  /** A read-only instrument: the active wiki's working layer as this vessel mounted it. */
+  workbench(): Promise<{ readonly slug: string; readonly bagId: string; readonly documentUrl: string | null }>;
 }
 
 /**

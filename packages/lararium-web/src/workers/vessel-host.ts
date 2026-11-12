@@ -47,7 +47,7 @@ import {
   standVesselHouse, sessionLifetimeLock, VesselSessionRefused, readBrowserVesselFaces, wardAskWords,
   type BrowserVesselResult, type ProjectionSurfaceFrame, type CustodyAnswer, type CustodyAsk, type HouseAsk, type PageLife, type VesselHouse, type VesselSession, type LockHost, type WardAskKind,
 } from "@lararium/browser";
-import { didFromVerifyingKey, foldLarFrame, parseMeshPeer, readLarFrame, type MeshPeer } from "@lararium/mesh";
+import { didFromVerifyingKey, foldLarFrame, mountedDocumentId, parseMeshPeer, readLarFrame, slugFromUri, wikiSlotUri, type MeshPeer } from "@lararium/mesh";
 import type { PageToVessel, SeedRest, VesselBoot, VesselError, VesselStatus, VesselToPage } from "../vessel-protocol.js";
 import { CeremonyRefused, standCeremonyDoor } from "./ceremony-door.js";
 import { ceremonyPlaceCard, PlaceCardRefused } from "./place-card.js";
@@ -518,6 +518,13 @@ export function standVesselHost(env: VesselHostEnv = {}) {
               // THE SEAT READS ITS GRANT AT THE NEXT BOOT: the kept grant lifts the face at this browser's place (its session stands only at
               // boot, so the page re-enters it), and the daemon island's seat finds the grant at its first pass.
               return { kind: "seat-kept", face }; }); return;
+            case "fleet-seat:workbench": reply(msg.callId, async () => {
+              const v = await vessel();
+              const slug = slugFromUri(v.activeWikiId);
+              const bagId = wikiSlotUri(slug, "working");
+              const documentId = v.store.hasBag(bagId) ? mountedDocumentId(v.store.storeForBag(bagId)) : null;
+              return { kind: "workbench", slug, bagId, documentUrl: documentId ? `automerge:${documentId}` : null };
+            }); return;
             // ── /leaf-fleet ──
             case "walk:restart":
               // A harness-only door, compiled out of every default build.

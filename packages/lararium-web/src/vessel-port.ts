@@ -10,7 +10,7 @@ import type { LarMsg_ControlEvent, LarMsg_ControlResult } from "@lararium/mesh";
 import type { PortTransportDoors } from "./port-transport.js";
 import type { CeremonyAskKind } from "./ceremony-protocol.js";
 import type {
-  FleetRootFacesReply, FleetRootFileReply, FleetSeatLandReply, JoinAnswerReply, JoinOfferReply, PageToVessel, VesselBoot, VesselError, VesselStatus, VesselToPage,
+  FleetRootFacesReply, FleetRootFileReply, FleetSeatLandReply, WorkbenchReadingReply, JoinAnswerReply, JoinOfferReply, PageToVessel, VesselBoot, VesselError, VesselStatus, VesselToPage,
 } from "./vessel-protocol.js";
 
 /** An ask as the page hears it: public words alone. The page opens the ceremony document for it and takes no answer. */
@@ -198,6 +198,7 @@ export function standVesselPort(worker: VesselWorkerLike, handlers: VesselPortHa
       faces: async () => (await call<FleetRootFacesReply>((callId) => ({ t: "fleet-seat:faces", callId }))).faces,
       request: async (personaGroup: string) => (await call<FleetRootFileReply>((callId) => ({ t: "fleet-seat:request", callId, personaGroup }))).text,
       land: async (text: string) => (await call<FleetSeatLandReply>((callId) => ({ t: "fleet-seat:land", callId, text }))).face,
+      workbench: async () => { const { slug, bagId, documentUrl } = await call<WorkbenchReadingReply>((callId) => ({ t: "fleet-seat:workbench", callId })); return { slug, bagId, documentUrl }; },
     },
     // ── /leaf-fleet ──
     restartDaemonIsland: (reason: string) => call<{ restarts: number; leg: string }>((callId) => ({ t: "walk:restart", callId, reason })),

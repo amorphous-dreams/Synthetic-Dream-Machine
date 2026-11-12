@@ -554,6 +554,9 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
   const fleetRootHost = document.getElementById("fleet-root-door");
   if (fleetRootHost) mountFleetRootDoor(fleetRootHost, vessel.fleetRoot);
   // THE CARRIED SEAT: a face this browser joined asks its seat by file; a kept grant restarts the daemon island in place, and its seat reads it.
+  // A READ-ONLY INSTRUMENT (leaf-fleet): the active wiki's working layer as this vessel mounted it, beside `larMirrorReading`.
+  // Two leaves of one face read one workbench address for one slug; live convergence between them still needs a road.
+  Object.defineProperty($("vessel"), "larWorkbenchReading", { configurable: true, value: () => vessel.fleetSeat.workbench() });
   const fleetSeatHost = document.getElementById("fleet-seat-door");
   if (fleetSeatHost) mountFleetSeatDoor(fleetSeatHost, vessel.fleetSeat, { onKept: (face) => {
     // The kept grant lifts the face at this browser's place, and the place session stands only at boot: re-enter it.
