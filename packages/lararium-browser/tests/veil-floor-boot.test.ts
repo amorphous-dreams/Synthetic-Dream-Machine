@@ -24,7 +24,7 @@ import { controlHomeUrlOf, verifyVeilLift, type LarDoc, type VeilLiftRecord } fr
 import { Repo } from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
 import { keepBrowserVeilLift, readBrowserVeilLift } from "../src/browser-veil-lift.js";
-import { readBrowserFaceAtom } from "../src/browser-face-atom.js";
+import { readBrowserFaceAtom, standBrowserFaceAtomSeed } from "../src/browser-face-atom.js";
 import { generateOrLoadBrowserVesselIdentity } from "../src/browser-vessel-identity.js";
 
 const met: Array<{ group: string; daemonUrl: string }> = [];
@@ -187,7 +187,7 @@ describe("the browser's veil floor stands first, and a face lands over it", () =
       await boot({ idbName, admit });
       const link = await readBrowserVeilLift(idbName, admit.personaGroupId);
       expect(link, `${admit.personaGroupId} holds its link`).not.toBeNull();
-      expect(await verifyVeilLift(link), "the vessel's key signed it").toEqual(link);
+      expect(await verifyVeilLift(link), "the face's atom signed it").toEqual(link);
       expect(link!.face).toBe(admit.personaGroupId);
       expect(link!.atom, "it names the fresh atom this join minted").toBe((await readBrowserFaceAtom(idbName, admit.personaGroupId))!.key);
       links[admit.personaGroupId] = link!;
@@ -206,7 +206,7 @@ describe("the browser's veil floor stands first, and a face lands over it", () =
     expect(rows.filter((row) => row.startsWith("face-sealed/") && row.endsWith("/veil-lift"))).toHaveLength(2);
     expect(JSON.stringify(await recordOf(idbName))).not.toContain(a.signature);
     // A REPLAYED LANDING KEEPS THE LINK IT HOLDS (the rig's admit carries no real Archive, so the replay runs at the keep itself).
-    expect(await keepBrowserVeilLift(idbName, second.personaGroupId, b.atom)).toEqual(b);
+    { const again = await standBrowserFaceAtomSeed(idbName, second.personaGroupId); expect(await keepBrowserVeilLift(idbName, second.personaGroupId, b.veil, again)).toEqual(b); }
     expect(await readBrowserVeilLift(idbName, second.personaGroupId)).toEqual(b);
     // A LOCKED FACE'S LINK READS FOR NO ONE.
     lockFaceCustody(idbName, first.personaGroupId);

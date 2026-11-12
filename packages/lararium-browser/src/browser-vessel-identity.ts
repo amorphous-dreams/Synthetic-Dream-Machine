@@ -17,8 +17,6 @@
 import {
   generateOrLoadKeypair,
   signingSeedFromHex,
-  signVeilLift,
-  type VeilLiftRecord,
   readIdentityAnchors,
   loadPersonaRootSeed,
   assertHandleIndex,
@@ -420,15 +418,6 @@ async function loadBrowserSigningSeed(idbName = "lares:vessel"): Promise<Uint8Ar
     throw new Error("[browser-vessel-identity] no keypair in IDB — call generateOrLoadBrowserVesselIdentity first");
   }
   return signingSeedFromHex(existing.signingKey);
-}
-
-/**
- * Sign a face's VEIL-LIFT link under this vessel's own key (`@lararium/mesh` `veil-lift`): the one image the device key signs
- * for a face, under its own domain, naming the face and the fresh atom the join minted. The seed never leaves this module.
- */
-export async function signBrowserVeilLift(idbName: string, face: string, atom: string): Promise<VeilLiftRecord> {
-  const seed = await loadBrowserSigningSeed(idbName);
-  try { return await signVeilLift({ veilSeed: seed, face, atom }); } finally { seed.fill(0); }
 }
 
 // ── PersonaGroup root custody — the IDB-backed PersonaVault (over @lararium/mesh) ────────────────

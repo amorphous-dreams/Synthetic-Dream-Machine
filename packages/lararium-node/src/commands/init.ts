@@ -19,7 +19,6 @@
  */
 
 import { keepNodeVeilLift } from "../node-veil-lift.js";
-import { faceAtomKeyFromSeed } from "@lararium/mesh";
 import { wardCredentialOfRoute, type WardCredential } from "../ward-credential.js";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import type { Repo } from "@automerge/automerge-repo";
@@ -700,7 +699,7 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   await settleFaceCustody(askDigest, face.personaGroupId, async () => {
     await keepAndRetireFoundingSeed(face.personaGroupId, foundingAsk, atomSeed);
     // THE VEIL-LIFT LINK: a founding over the floor links the veil to its first face as a join does, under the face's custody alone.
-    await keepNodeVeilLift(face.personaGroupId, faceAtomKeyFromSeed(atomSeed, face.personaGroupId).key);
+    await keepNodeVeilLift(face.personaGroupId, atomSeed);
     await settleFoundingVesselFaceTag(askDigest, face.personaGroupId);
   });
   // THE FACE'S ADDRESS SECRET MINTS AT ITS FOUNDING, beside its atom and behind its custody: the face's catalog document

@@ -428,7 +428,7 @@ export async function runFleetJoinLand(opts: { readonly repo: Repo; readonly ans
   // rests under this face's custody alone. It names no other face, and no board, plane or boot record carries it.
   {
     const atomSeed = await standFaceAtom(answer.personaGroup);
-    try { await keepNodeVeilLift(answer.personaGroup, faceAtomKeyFromSeed(atomSeed, answer.personaGroup).key); } finally { atomSeed.fill(0); }
+    try { await keepNodeVeilLift(answer.personaGroup, atomSeed); } finally { atomSeed.fill(0); }
   }
   await runInit({ repo: opts.repo, force: true, admitPayload: admit, custody: { slots: [] } });
   await clearPendingFleetJoin(offer.personaGroup, request.nonce);

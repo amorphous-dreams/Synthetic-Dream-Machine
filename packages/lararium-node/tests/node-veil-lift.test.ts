@@ -10,7 +10,7 @@
 import { seatSuiteWard } from "./support/scratch-custody-setup.js";
 seatSuiteWard();
 import { beforeEach, describe, expect } from "vitest";
-import { faceAtomKeyFromSeed, verifyVeilLift } from "@lararium/mesh";
+import { canonicalJsonBytes, ed25519VerifyHex, verifyVeilLift } from "@lararium/mesh";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { keepNodeVeilLift, readNodeVeilLift, veilLiftGroupFile } from "../src/node-veil-lift.js";
 import { carrierTable } from "../src/vault-carriers.js";
@@ -23,21 +23,24 @@ beforeEach(async () => {
 });
 
 describe("the node's veil-lift link", () => {
-  it("NV1-NV2: the vessel's key signs the face's atom, the record reads back, and a replay keeps the standing record", async () => {
+  it("NV1-NV2 RED: the face's ATOM signs the link over the vessel's public key, the record reads back, and a replay keeps the standing record", async () => {
     const atom = await seedFaceAtom(0, "group-veil-a");
-    const kept = await keepNodeVeilLift("group-veil-a", atom.key);
+    const kept = await keepNodeVeilLift("group-veil-a", await atomSeedOf(0));
     expect(kept).toMatchObject({ kind: "veil-lift", veil: await loadVesselVerifyingKey(), face: "group-veil-a", atom: atom.key });
     expect(await verifyVeilLift(kept)).toEqual(kept);
     expect(await readNodeVeilLift("group-veil-a")).toEqual(kept);
-    expect(await keepNodeVeilLift("group-veil-a", atom.key), "a replay answers the standing record").toEqual(kept);
+    // THE PLACE KEY SIGNED NOTHING THAT NAMES A FACE: the signature holds under the atom and fails under the vessel's key.
+    const image = new Uint8Array([...new TextEncoder().encode("lararium/veil-lift\n"), ...canonicalJsonBytes({ kind: "veil-lift", veil: kept.veil, face: kept.face, atom: kept.atom })]);
+    expect(await ed25519VerifyHex(kept.signature, image, kept.atom)).toBe(true);
+    expect(await ed25519VerifyHex(kept.signature, image, kept.veil).catch(() => false)).toBe(false);
+    expect(await keepNodeVeilLift("group-veil-a", await atomSeedOf(0)), "a replay answers the standing record").toEqual(kept);
   });
 
   it("NV3: two faces hold two records that share the veil's key and nothing else", async () => {
     await seedFaceAtom(0, "group-veil-a");
     await seedFaceAtom(1, "group-veil-b");
-    const keyOf = async (index: number, group: string) => faceAtomKeyFromSeed(await atomSeedOf(index), group).key;
-    const a = await keepNodeVeilLift("group-veil-a", await keyOf(0, "group-veil-a"));
-    const b = await keepNodeVeilLift("group-veil-b", await keyOf(1, "group-veil-b"));
+    const a = await keepNodeVeilLift("group-veil-a", await atomSeedOf(0));
+    const b = await keepNodeVeilLift("group-veil-b", await atomSeedOf(1));
     expect(a.veil).toBe(b.veil);
     expect(a.atom).not.toBe(b.atom);
     expect(JSON.stringify(a)).not.toContain("group-veil-b");

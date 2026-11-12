@@ -49,7 +49,6 @@
  * Mode 0o600 at write time; caller must ensure the identity dir is not world-readable.
  */
 
-import { signVeilLift, type VeilLiftRecord } from "@lararium/mesh";
 import { createPrivateKey, createPublicKey, generateKeyPairSync, hkdfSync } from "node:crypto";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
@@ -513,17 +512,6 @@ async function loadVesselSigningSeed(): Promise<Uint8Array> {
   }
   proveStandingKey(join(identityDir(), KEL_FILE), raw);
   return signingSeedFromHex(raw.signingKey);
-}
-
-/**
- * THE VEIL-LIFT DOOR: the vessel's own key signs one veil-lift link ({veil, face, atom}, `@lararium/mesh` veil-lift) after the key
- * proves at the current KEL head, and the seed never leaves this module. The record's domain (`lararium/veil-lift`) reads as nothing
- * else the vessel's key signs.
- */
-export async function vesselVeilLiftDoor(face: string, atom: string): Promise<VeilLiftRecord> {
-  const seed = await loadVesselSigningSeed();
-  try { return await signVeilLift({ veilSeed: seed, face, atom }); }
-  finally { seed.fill(0); }
 }
 
 /** Open only the five framed place duties after proving the key at the current KEL head. */
