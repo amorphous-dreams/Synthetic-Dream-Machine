@@ -12,7 +12,7 @@
  *   R7  the same vessel under another atom refuses `vessel-already-admitted`: the tag law holds on a leaf's root
  */
 import { describe, expect, test, vi } from "vitest";
-import { heldDocOf, personaActRecordsOfGroup, readFleetJoinOffer, fleetJoinHearthOf, type FleetJoinAnswer, type FleetJoinRequest, type LarDoc } from "@lararium/mesh";
+import { admittedJoineeIsland, heldDocOf, personaActRecordsOfGroup, readFleetJoinOffer, fleetJoinHearthOf, type FleetJoinAnswer, type FleetJoinRequest, type LarDoc } from "@lararium/mesh";
 import type { Repo } from "@automerge/automerge-repo";
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
 import { generateOrLoadBrowserVesselIdentity } from "../src/browser-vessel-identity.js";
@@ -112,7 +112,7 @@ describe("a leaf fleet: a browser that founded a face offers and answers, with n
     const answer = await answerOf(founder, JSON.parse(JSON.stringify(request)));
     expect(fleetJoinHearthOf(answer)).toBeNull();
     expect((answer.edge as { hearthTrueName: string }).hearthTrueName).toBe("");
-    expect(answer.reach).toEqual({ syncUrl: null, islandKind: null, islandScope: null });
+    expect(answer.reach).toEqual({ syncUrl: null, islandKind: "own", islandScope: founder.kelIsland });
     expect(answer.certificates).toEqual([]);
     expect(actsOf(founder, "admission", request.atomKey)).toBe(1);
     expect(actsOf(founder, "device-edge", request.atomKey)).toBe(1);
@@ -125,6 +125,8 @@ describe("a leaf fleet: a browser that founded a face offers and answers, with n
     expect(landed.admit.personaGroupId).toBe(group);
     expect(landed.admit.hearthGatePin).toBeUndefined();
     expect(landed.admit.hearthTrueName).toBe("");
+    // The joinee stands on the founder's own island, so the two key one set of boards.
+    expect(admittedJoineeIsland({ hearthGatePubKey: landed.admit.hearthGatePubKey, hearthIslandKind: landed.admit.hearthIslandKind, hearthIslandScope: landed.admit.hearthIslandScope, ownVesselKey: "ab".repeat(32) })).toBe(founder.kelIsland);
     const [mine, theirs] = [await readBrowserFaceAddressSecret(founder.idbName, group), await readBrowserFaceAddressSecret(leaf, group)];
     expect(mine).not.toBeNull();
     expect(Array.from(theirs ?? [])).toEqual(Array.from(mine ?? []));

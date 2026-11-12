@@ -236,7 +236,8 @@ export async function browserSeatDevice(input: BrowserSeatInput): Promise<FleetJ
       }),
     });
     if (seat.appended.length) personaHandle.change((draft) => { for (const act of seat.appended) writePersonaAct(draft, act as SignedAct); });
-    return { edge: seat.payload, reach: { syncUrl: input.syncUrl, islandKind: null, islandScope: null }, hearth: null };
+    // THE ISLAND THE JOINEE STANDS ON: this root holder's own (its private Nexus of one), so both vessels key one set of boards.
+    return { edge: seat.payload, reach: { syncUrl: input.syncUrl, islandKind: "own", islandScope: input.kelIsland.toLowerCase() }, hearth: null };
   } finally { atomSeed.fill(0); }
 }
 

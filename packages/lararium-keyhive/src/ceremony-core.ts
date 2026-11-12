@@ -990,7 +990,8 @@ export async function runApplyAdmitPayload(
   // never write a half-bound daemon doc (the confused-deputy / mycelium-PCD hole). The persona-KEL PREFIX
   // is part of that authority now: the joinee's Binding Gate pins it, so a payload with no pin would admit a
   // vessel that boots with nothing to walk (a fail-closed halt) — refuse it here, precisely, instead.
-  if (!payload.signerDid || !payload.deviceEdge || !payload.hearthTrueName || !payload.personaKelPrefix) {
+  // leaf-fleet (Leaf-Wright): the true name rides STATED, a hearth's name or "" where the root holder stood no gate; absent still refuses.
+  if (!payload.signerDid || !payload.deviceEdge || typeof payload.hearthTrueName !== "string" || !payload.personaKelPrefix) {
     throw new Error("[ceremony] runApplyAdmitPayload: payload lacks signerDid/deviceEdge/hearthTrueName/personaKelPrefix — refusing to admit.");
   }
   // The KEL chain and shared document are required for a joined face.

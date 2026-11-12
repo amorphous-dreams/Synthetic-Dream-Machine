@@ -203,8 +203,8 @@ export interface FleetJoinAnswer {
 /**
  * THE HEARTH'S DIAL an answer carries: the gate pin and canon list, the charter, the face's admit there and the floor
  * pins. ONE CAPABILITY DECIDES IT: a root holder that stands an inbound gate carries its dial whole; a root holder that
- * stands none (a browser, a phone: a leaf) carries none, and its answer names no hearth true name, no island and no
- * floor pin. The four fields stand together or not at all, inside the root's signature either way.
+ * stands none (a browser, a phone: a leaf) carries none, and its answer names no hearth true name, no floor pin, and no
+ * island but the holder's own. The four fields stand together or not at all, inside the root's signature either way.
  */
 export interface FleetJoinHearthDial {
   readonly carriage:  AdmitCarriage;
@@ -503,8 +503,11 @@ function readAnswerSigned(value: unknown, args: {
     let floorPins: readonly GateBundlePin[] = Object.freeze([]);
     let charter: string | null = null;
     if (carriage === null) {
-      // NO HEARTH, NO NEXUS: the edge names no true name, the reach no island, and no floor pin rides.
-      if (edgeNexus !== null || reach.islandKind !== null || reach.islandScope !== null) return refuse("answer-hearthless-names-nexus");
+      // NO HEARTH, NO NEXUS: the edge names no true name and no floor pin rides. The reach names no island, or the root
+      // holder's OWN one (`own`, its key: the private Nexus of one whose boards the joinee stands beside it on); a charter,
+      // an anchor or an explicit island names a Nexus a gateless answer cannot carry the dial for.
+      const ownIsland = reach.islandKind === "own" && isKey(reach.islandScope);
+      if (edgeNexus !== null || (!ownIsland && (reach.islandKind !== null || reach.islandScope !== null))) return refuse("answer-hearthless-names-nexus");
       if (!Array.isArray(value["floorPins"]) || value["floorPins"].length !== 0) return refuse("answer-hearthless-names-nexus");
     } else {
       // AN ANSWER NAMES ITS NEXUS: every Nexus-bound check below (the floor pins, the admit's face) reads at it, so an answer

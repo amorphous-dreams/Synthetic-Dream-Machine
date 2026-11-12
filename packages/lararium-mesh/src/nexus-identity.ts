@@ -225,7 +225,9 @@ export function admittedJoineeIsland(opts: {
   return nexusScopeOrThrow(
     opts.hearthIslandKind === "charter" && opts.hearthIslandScope
       ? nexusIdentity({ genesisEpochCid: opts.hearthIslandScope, ownVesselKey: opts.ownVesselKey })
-      : nexusIdentity({ anchorGateKey: opts.hearthGatePubKey ?? null, ownVesselKey: opts.ownVesselKey }),
+      // A ROOT HOLDER THAT STOOD NO GATE names no gate key: its `own` island's scope (its own key, the private Nexus of one it
+      // founded the face on) names the board its joinee stands on, as a gate key does below a charter.
+      : nexusIdentity({ anchorGateKey: opts.hearthGatePubKey ?? (opts.hearthIslandKind === "own" && opts.hearthIslandScope ? opts.hearthIslandScope : null), ownVesselKey: opts.ownVesselKey }),
   );
 }
 

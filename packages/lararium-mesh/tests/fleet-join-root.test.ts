@@ -127,6 +127,11 @@ describe("the root holder's half composes once, over the vessel's doors", () => 
     expect(read(await resigned(bare))).toEqual({ refusal: "answer-hearthless-names-nexus" });
     const noName = { ...bare, edge: { kind: "device-admit", hearthTrueName: "" } };
     expect(read(await resigned(noName))).toEqual({ refusal: "answer-hearthless-names-nexus" });
+    // The root holder's OWN island rides a dial-less answer; any other kind names a Nexus it carries no dial for.
+    const gateless = { ...bare, edge: { kind: "device-admit", hearthTrueName: "" } };
+    expect("refusal" in read(await resigned({ ...gateless, reach: { syncUrl: null, islandKind: "own", islandScope: rig.root.key } }))).toBe(false);
+    expect(read(await resigned({ ...gateless, reach: { syncUrl: null, islandKind: "own", islandScope: "not-a-key" } }))).toEqual({ refusal: "answer-hearthless-names-nexus" });
+    expect(read(await resigned({ ...gateless, reach: { syncUrl: null, islandKind: "anchor", islandScope: rig.root.key } }))).toEqual({ refusal: "answer-hearthless-names-nexus" });
     // CONTROL: a courier that strips the dial from a signed answer leaves bytes the root never signed.
     expect(read({ ...whole, carriage: null, charter: null, admit: null, floorPins: [], reach: { syncUrl: null, islandKind: null, islandScope: null }, edge: { kind: "device-admit", hearthTrueName: "" } })).toEqual({ refusal: "answer-unsigned" });
   });
