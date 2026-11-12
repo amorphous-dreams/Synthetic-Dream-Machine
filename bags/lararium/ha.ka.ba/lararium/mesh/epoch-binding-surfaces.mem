@@ -8,7 +8,7 @@ cacheable  = true
 l-space    = "lararium"
 namespace  = "&#x2695;"
 revised-on = "2026-08-10"
-role       = "WHAT A DEPENDENCY BUMP COSTS AN ALREADY-FOUNDED NEXUS — the five surfaces that bind to an epoch, measured rather than assumed. The engine CID is NOT the only one: hearthTrueName rides INSIDE every signed device-delegation preimage, and the pluginsCid tracks blobs built from THIS REPO'S OWN SOURCE. CORRECTED 2026-08-09 against the code, replacing this meme's own earlier over-claim: the pluginsCid rides as a LOCAL build-time integrity witness, never a membership criterion — the epoch binds to the ENGINE alone (hearthTrueName = engineCid, the slow ratchet), and the served-plugin layer composes per-operator beneath it on its own fast ratchet. Measured 2026-08-08: a runtime dep bump (automerge · noble · ws) touches exactly ONE surface (the on-disk serde, cured identity-safe by `lares vessel rite rebuild`) and moves NO epoch binding, because the engine blob is vendored TW5 and the built plugin carries zero automerge references. The word names ONE mechanism — a monotone frontier that only rolls forward — in TWO carriers. An INTEGER max-register held as per-writer slots where the writer-set is fixed (`epoch-lease`; grants bind with `boundEpoch`), and a HASH-LINKED chain head where the writer-set itself rotates (`sealLineage`, head `sealEpochCid`). The third draft shape, a rolling WINDOW of markers for a vessel's raise, REFUTED: a set cannot answer //is this newer//, its far end hides a retention policy, and a list of valid markers makes a roster of moments. A raise ends by NON-RENEWAL like every other grant"
+role       = "WHAT A DEPENDENCY BUMP COSTS AN ALREADY-FOUNDED NEXUS — the five surfaces that bind to an epoch, measured rather than assumed. The engine CID is NOT the only one: hearthTrueName rides INSIDE every signed device-delegation preimage, and the pluginsCid tracks blobs built from THIS REPO'S OWN SOURCE. CORRECTED 2026-08-09 against the code, replacing this meme's own earlier over-claim: the pluginsCid rides as a LOCAL build-time integrity witness, never a membership criterion — the engine CID alone rides the slow ratchet (it rides no delegation edge: hearthTrueName carries the seed-charter Nexus AID, ruling R1), and the served-plugin layer composes per-operator beneath it on its own fast ratchet. Measured 2026-08-08: a runtime dep bump (automerge · noble · ws) touches exactly ONE surface (the on-disk serde, cured identity-safe by `lares vessel rite rebuild`) and moves NO epoch binding, because the engine blob is vendored TW5 and the built plugin carries zero automerge references. The word names ONE mechanism — a monotone frontier that only rolls forward — in TWO carriers. An INTEGER max-register held as per-writer slots where the writer-set is fixed (`epoch-lease`; grants bind with `boundEpoch`), and a HASH-LINKED chain head where the writer-set itself rotates (`sealLineage`, head `sealEpochCid`). The third draft shape, a rolling WINDOW of markers for a vessel's raise, REFUTED: a set cannot answer //is this newer//, its far end hides a retention policy, and a list of valid markers makes a roster of moments. A raise ends by NON-RENEWAL like every other grant"
 tags       = ["mesh/genesis-doc", "mesh/kahu"]
 title      = "lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces"
 type       = "text/memetic-wikitext+tiddlywiki"
@@ -57,7 +57,7 @@ a wrong answer here reads identically to a right one until a founding breaks.
 | the word | owner | what it names there | our rule |
 | ''epoch'' (bare) | ''ours'' | the monotone fencing frontier — `epoch-lease`, bound by `boundEpoch` | RESERVED. Bare //epoch// names this and nothing else (the rule `epoch-handlers` already set) |
 | ''seal epoch'' | ''ours'', shape from KERI/TUF | the charter's hash-linked lineage, head = `sealEpochCid` | always QUALIFIED. Same law as the fence, at a grain where the writer-set itself rotates |
-| ''engine epoch'' / ''kāhuli epoch'' | ''ours'' | the `hearthTrueName` = `engineCid` roll — a hearth's forward-rebind onto a new engine content-CID inside its Nexus's rolling window (the kāhuli motion) | always QUALIFIED. It names the PLACE half rolling forward, NEVER the bare //epoch// (the lease frontier); a grep for the fence reads past it |
+| ''engine epoch'' / ''kāhuli epoch'' | ''ours'' | the `engineCid` roll — a hearth moving onto a new engine content-CID inside its Nexus's rolling window (the kāhuli motion); it moves no edge's `hearthTrueName` | always QUALIFIED. It names the PLACE half rolling forward, NEVER the bare //epoch// (the lease frontier); a grep for the fence reads past it |
 | ''grammar epoch'' | ''ours'', marked to RETIRE | the `grammarCid` roll under `nexus kahuli grammar` (ʻōlelo kāhuli, the overturned-grammar state) — a code surface, never a ratchet the grammar holds; read at most as a hint of which formal-register snapshot a carrier followed | RETIRING. The grammar holds no versions: it lives and drifts by use, and the corpus-kahu curate it (kahu#/contract). `grammarCid`, this word and `kahuli grammar` retire in code, owed pending a scout's measurement of their consumers. It binds no membership: the Nexus's engine window decides who may talk. An operator's own `pluginsCid` collection names no epoch here at all |
 | ''CGKA epoch'' | ''Keyhive / BeeKEM'', upstream MLS RFC 9420 | a group-key generation; concurrent rolls ''merge by BLANKING'' and hold NO root secret until a later non-concurrent commit | NEVER ours to rule. Keeps its upstream spelling, always qualified. A max-register picks a winner and this does not — carrying our fence onto it costs FORWARD SECRECY (cabal-realm#the-tie-break) |
 | ''compaction epoch'' | ''DXOS'', borrowed for `bag-compact` | a snapshot-restart that cuts history behind | always QUALIFIED. It bounds //state-history growth//, never //who may act// — a cut, not a fence |
@@ -170,11 +170,11 @@ because a meme that quietly grows a right answer teaches nothing about how the w
 ''WHAT THE CODE ACTUALLY DOES.'' `pluginsCid` appears in three files, and it gets COMPARED in exactly one
 place — `verifyGenesisArtifact`, called from `build-genesis-island.ts`. That runs at BUILD time and asks a
 purely local question: does the plugins region recompute to the witness this artifact stored? ''Integrity,
-never membership.'' No peer path reads it: the device-delegation preimage carries `hearthTrueName`'s value
-and nothing else from the genesis region, and no join, gate or verify compares one vessel's plugins digest
+never membership.'' No peer path reads it: the device-delegation preimage carries nothing from the genesis region (its
+`hearthTrueName` names the seed-charter Nexus AID), and no join, gate or verify compares one vessel's plugins digest
 against another's.
 
-''AND THE DOCTRINE SAID SO ALREADY, in the source, in plain words'' (`genesis-artifact#hearthTrueName`):
+''AND THE DOCTRINE SAID SO ALREADY, in the source, in plain words'' (the genesis artifact's engine reader, which carried the name `hearthTrueName` until the true name moved to the Nexus AID):
 
 > The PUBLIC face = the engine content-CID ''ALONE'' — the TW5 core + version, ''NOT the plugins''. Plugins
 > compose ''per-operator'' (DreamNet-offered) and ride their own fast ratchet, so a plugin change ''MUST
@@ -183,8 +183,8 @@ against another's.
 ''So the epoch rides the genesis ENGINE, and beneath it THREE tiers stand named, and only the
 engine ratchets'' — the standing cut //engine universal, corpus content// (`bag-wiki-uri-split`):
 
-* ''ENGINE'' (`engineCid` = `hearthTrueName`) — the SLOW ratchet. Signed into every
-  device-delegation edge, it BINDS MEMBERSHIP through the Nexus's rolling window of admitted engines, and it advances by ACT (a TW5-submodule roll, never
+* ''ENGINE'' (`engineCid`) — the SLOW ratchet. It rides no device-delegation edge; it would bind who-can-talk
+  through the Nexus's rolling window of admitted engines (unbuilt), and it advances by ACT (a TW5-submodule roll, never
   an upgrade — #/the-rule).
 * ''GRAMMAR'' — LIVING, with no version and no ratchet. It drifts by use, like a natural language,
   and the corpus-kahu curate it as lexicographers, never legislators (kahu#/contract). The built
@@ -200,10 +200,10 @@ a corpus each edits live, an engine all share by hash.
 ''INVARIANT: grammar drift alone does not separate Nexuses — the ENGINE window binds who-can-talk.''
 Two hearths on the SAME engine speaking DIFFERENT dialects still interoperate — intelligibility
 grades, and graceful parsing with the quoteblock floor carries what a reader lacks — because the
-grammar lives in use and never touches the `hearthTrueName` each device-delegation edge signed. Only
+grammar lives in use and touches neither the engine CID nor the `hearthTrueName` each device-delegation edge signed. Only
 a DIFFERENT engine reaches the disjoint-station-set break below (no transformation, only translation by
 assertion). The engine epoch names the slow ratchet; the Nexus's rolling window of admitted engine epochs stands
-UNBUILT (the founding compares true-names directly), and `nexus kahuli engine` stands HELD pending its
+UNBUILT (no join, gate or verify compares engine CIDs today), and `nexus kahuli engine` stands HELD pending its
 forward-rebind rulings (kahu#/contract); the grammar never determines who-can-talk.
 
 ''THE SHAPE OF THE ERROR, kept as the useful part.'' Two CIDs sat side by side in one manifest, so the meme
@@ -232,7 +232,7 @@ They move when the operator bumps the TW5 submodule or when this repo's source c
 count as acts, never upgrades''.
 
 <<~ has entity=`Rule` name=`Runtime-deps` params=`when/before-founding cost/a-rebuild-if-skipped surface/serde-only ~ automerge · noble · ws · vite`>>
-<<~ has entity=`Rule` name=`TW5-submodule` params=`when/an-ACT-never-an-upgrade cost/every-delegation-edge surface/hearthTrueName ~ moves the PLACE half of the atom`>>
+<<~ has entity=`Rule` name=`TW5-submodule` params=`when/an-ACT-never-an-upgrade cost/no-delegation-edge surface/engineCid ~ moves the engine every vessel boots, and re-binds no edge`>>
 <<~ has entity=`Rule` name=`Our-own-source` params=`when/a-per-operator-ACT cost/LOCAL-integrity-only surface/pluginsCid ~ a parser rebuild moves a local witness and composes per-operator, NEVER perturbs the true-name, NEVER a membership criterion (#/the-real-mover)`>>
 
 <<~/ahu>>
@@ -245,6 +245,6 @@ count as acts, never upgrades''.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;0_VaNdTHKwZcfvvMfQjUb9ay6MZTyEXa941V65ea258`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wgUwfc7eUkAAsx82-hOQJrJVZcN1rGt2SQ5mSYvAnWk`>>
 
 <<^ code=`&#x0004;` to=`?`>>
