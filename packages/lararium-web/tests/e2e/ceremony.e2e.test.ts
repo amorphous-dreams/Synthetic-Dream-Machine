@@ -163,8 +163,10 @@ test("K2 RED — the page's thread holds no route byte while a vessel founds, un
     assert.ok(spy.notices >= 1, `load ${i}: the spy saw the ask's notice`);
   };
   try {
-    // FOUND: a fresh vessel asks bind-first; the ceremony takes the first passphrase.
-    await page.goto(baseUrl);
+    // FOUND: the founding act asks for a face (`?found`; a bare arrival stands a veil floor and asks nothing). A fresh vessel
+    // then asks bind-first, and the ceremony takes the first passphrase. The reload below keeps the door on its URL, and a
+    // vessel that already boots a face ignores it.
+    await page.goto(`${baseUrl}/?found`);
     await live(page);
     reads.push(await readSpy());
     judge(0, reads[0]!);
