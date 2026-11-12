@@ -24,7 +24,7 @@
  * ── A FACE'S ROOT AND WARD KEY REST UNDER ITS WARD ───────────────────────────────────────────────
  * A face's ROOT, and a face's WARD KEY (the co-sign signer), rest elsewhere: each under a ward of its own (`browser-ward-tree.ts`,
  * `ward-core.ts`, seat-harness#/the-ward), whose key no slot of any tree here wraps. No door here reads, writes, moves or removes
- * one: each refuses `ward-needs-fresh-unlock` by name. The ward's roster (`persona-root-roster`: each held root's index and its
+ * one: each refuses `ward-needs-fresh-unlock` by name. The ward's roster (`persona-root-roster`: each held root's face tree and its
  * PUBLIC key, no seed) rests sealed under the place tree beside it.
  *
  * ── A FACE ROW NEVER RESTS UNDER THE PLACE TREE ──────────────────────────────────────────────────
@@ -427,22 +427,22 @@ const deviceSeedCodec: RowCodec = {
   },
 };
 
-/** The roster: one line per held root, its index and its PUBLIC key, so a possession check or a signer's key reads no seed. */
+/** The roster: one line per held root, its face's custody tree and its PUBLIC key, so a possession check or a signer's key reads no seed. */
 const personaRosterCodec: RowCodec = {
   toBytes(value) {
     const roots = (value as { roots?: unknown } | null)?.roots;
     const line = (l: unknown): boolean => {
-      const { handleIndex, verifyingKey } = (l ?? {}) as { handleIndex?: unknown; verifyingKey?: unknown };
-      return Number.isSafeInteger(handleIndex) && (handleIndex as number) >= 0 && typeof verifyingKey === "string" && /^[0-9a-f]{64}$/.test(verifyingKey);
+      const { tree, verifyingKey } = (l ?? {}) as { tree?: unknown; verifyingKey?: unknown };
+      return typeof tree === "string" && /^[0-9a-f]{32}$/.test(tree) && typeof verifyingKey === "string" && /^[0-9a-f]{64}$/.test(verifyingKey);
     };
     // A ROSTER OF BARE INDICES (`{ roots: [0] }`) predates the ward: refuse by name with its cure.
     if (Array.isArray(roots) && roots.length > 0 && roots.every((r) => typeof r === "number")) {
       throw new BrowserWardRefused("ward-face-predates", "this face predates the ward; found it again");
     }
     if (!Array.isArray(roots) || !roots.every(line)) {
-      throw new Error("[browser-custody] the persona-root roster holds no { roots: [{ handleIndex, verifyingKey }] } record");
+      throw new Error("[browser-custody] the persona-root roster holds no { roots: [{ tree, verifyingKey }] } record");
     }
-    return new TextEncoder().encode(JSON.stringify({ roots: roots.map((l: { handleIndex: number; verifyingKey: string }) => ({ handleIndex: l.handleIndex, verifyingKey: l.verifyingKey })) }));
+    return new TextEncoder().encode(JSON.stringify({ roots: roots.map((l: { tree: string; verifyingKey: string }) => ({ tree: l.tree, verifyingKey: l.verifyingKey })) }));
   },
   fromBytes(bytes) {
     const value = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)) as unknown;

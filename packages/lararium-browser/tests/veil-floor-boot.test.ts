@@ -102,6 +102,50 @@ describe("the browser's veil floor stands first, and a face lands over it", () =
     expect(await readBrowserVesselFaces(idbName)).toEqual([faced!.personaGroupId]);
   }, SLOW);
 
+  test("VF2b RED a second face founds through the door with its own root and atom, and neither row names the other — CONTROL: the founding ask run again founds nothing twice", async () => {
+    const idbName = `veil-second-${crypto.randomUUID()}`;
+    await boot({ idbName });
+    const floor = await recordOf(idbName);
+    await bindSyntheticBrowserCustodySlot(idbName);
+    await boot({ idbName, foundFace: true, askWardRoute: fixtureWardDialog });
+    const one = await recordOf(idbName);
+    const first = one!.personaGroupId!;
+    const wardsOf = async () => (await keystoreRows(idbName)).filter((r) => r.startsWith("ward/root/"));
+    const firstWard = await wardsOf();
+    expect(firstWard.length, "CONTROL: the first face's root rests under one ward").toBe(3);
+    // A FACE FOUNDED AGAIN COLLIDES WITH NOTHING: the same ask over the record it already founded reads that record back.
+    await boot({ idbName, foundFace: true, askWardRoute: fixtureWardDialog });
+    expect(await recordOf(idbName), "the first founding's ask, run again, founds nothing").toEqual(one);
+    expect(await wardsOf()).toEqual(firstWard);
+    // THE SECOND FACE: the door's ask names the faces the person saw standing, and the founding lays a second overlay beside them.
+    await bindSyntheticBrowserCustodySlot(idbName);
+    await boot({ idbName, foundFace: { beside: [first] }, askWardRoute: fixtureWardDialog });
+    const two = await recordOf(idbName);
+    const second = two!.personaGroupId!;
+    expect(second).not.toBe(first);
+    expect(Object.keys(two?.faces ?? {}).sort()).toEqual([first, second].sort());
+    expect(two?.faces?.[first], "the first face's overlay stands as it stood").toEqual(one!.faces![first]);
+    expect(two?.floor, "the floor record stays byte-equal").toEqual(floor!.floor);
+    expect(two?.daemonUrl, "the second face keeps its pins in a daemon document of its own").not.toBe(floor!.daemonUrl);
+    const a = JSON.stringify(two!.faces![first]), b = JSON.stringify(two!.faces![second]);
+    expect(a.includes(second), "the first face's overlay names nothing of the second").toBe(false);
+    expect(b.includes(first), "the second face's overlay names nothing of the first").toBe(false);
+    // TWO ROOTS, EACH UNDER ITS OWN FACE'S TREE; TWO ATOMS, EACH UNDER ITS OWN GROUP.
+    const wards = await wardsOf();
+    expect(wards.length, "two wards stand").toBe(6);
+    expect(wards.filter((r) => firstWard.includes(r)), "the first face's ward rows stand where they stood").toEqual(firstWard);
+    expect(await readBrowserVesselFaces(idbName)).toEqual(expect.arrayContaining([first, second]));
+    const atomOne = await readBrowserFaceAtom(idbName, first), atomTwo = await readBrowserFaceAtom(idbName, second);
+    expect(atomOne, "each face holds an atom").toBeDefined();
+    expect(atomTwo).toBeDefined();
+    expect(JSON.stringify(atomTwo)).not.toBe(JSON.stringify(atomOne));
+    // THE SAME ASK RUN AGAIN names a set of faces that no longer matches what stands, so it founds nothing more.
+    await bindSyntheticBrowserCustodySlot(idbName);
+    await boot({ idbName, foundFace: { beside: [first] }, askWardRoute: fixtureWardDialog });
+    expect(Object.keys((await recordOf(idbName))?.faces ?? {}).sort(), "the second founding's ask, run again, founds no third face").toEqual([first, second].sort());
+    expect((await wardsOf()).length).toBe(6);
+  }, SLOW);
+
   test("VF3 · VF4 an admit overlays the floor, and a second admit never replaces the first", async () => {
     const idbName = `veil-overlay-${crypto.randomUUID()}`;
     await boot({ idbName });

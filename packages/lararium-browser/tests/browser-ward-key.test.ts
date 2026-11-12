@@ -13,7 +13,7 @@
  * Controls: the ward worker signs a valid pop and approve under a fresh route; a passkey refuses; S2b's root rows stay as they stood.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness#/the-swarm-slices
  */
-import { bindFirstFaceSlot } from "../src/browser-face-custody.js";
+import { bindFirstFaceSlot, faceTreeIdOf } from "../src/browser-face-custody.js";
 import { afterEach, expect, test } from "vitest";
 import { seatWardWorkerSpawn } from "../src/testing.js";
 import { ed25519SignerFromSeed, signingSeedFromHex, verifyEd25519, wardAnswerImage, wardKeyPopHolds, wardKeyPopImage, wardPublicKeyOf } from "@lararium/mesh";
@@ -129,7 +129,8 @@ test("CONTROL: the face root's S2b ward rows stand byte for byte across the ward
   wearFaceOfVessel(idbName, G);   // the face whose tree stands, worn (the ward mint's face gate)
   await generateOrLoadBrowserPersonaRoot(idbName, 0, PASS);
   const io = browserKeystoreCustodyIo(idbName);
-  const rootRows = ["ward/h0/slots", "ward/h0/persona-root", "ward/h0/public-key"];
+  const rootTree = (await faceTreeIdOf(idbName, G))!;
+  const rootRows = ["slots", "persona-root", "public-key"].map((r) => `ward/root/${rootTree}/${r}`);
   const before = await Promise.all(rootRows.map((r) => io.read(r)));
   expect(before.every((b) => b instanceof Uint8Array)).toBe(true);
   const me = await keyed(84);

@@ -3,10 +3,10 @@
  * the keystore's tree key, and opens only fresh from the face's human route for one act.
  *
  * ── WHAT RESTS WHERE ─────────────────────────────────────────────────────────────────────────────
- * The keystore keeps, per face `h<N>`, the ward tree at `ward/h<N>/slots` (a keyslot tree over the face's human routes: a
- * passphrase or a paper sheet, never a passkey) and the root at `ward/h<N>/persona-root`, sealed in the ward's own frame. The
- * sealed roster (`persona-root-roster`, under the keystore's tree key) names each held root by index and PUBLIC key, so a
- * possession check reads no seed, and `ward/h<N>/public-key` carries the same public key beside the ward, so a ward act's signer
+ * The keystore keeps, per face custody tree `<fcid>`, the ward tree at `ward/root/<fcid>/slots` (a keyslot tree over the face's human
+ * routes: a passphrase or a paper sheet, never a passkey) and the root at `ward/root/<fcid>/persona-root`, sealed in the ward's own frame. The
+ * sealed roster (`persona-root-roster`, under the keystore's tree key) names each held root by its face's tree and PUBLIC key, so a
+ * possession check reads no seed, and `ward/root/<fcid>/public-key` carries the same public key beside the ward, so a ward act's signer
  * names its key while the page's custody stands locked (a signature under any other key refuses). No door of `browser-custody` reads, writes, moves or removes a ward row.
  *
  * ── ONE ACT, ONE UNLOCK ──────────────────────────────────────────────────────────────────────────
@@ -27,16 +27,9 @@ import {
   writeWardCarrier, WardRefused, type Credential, type SlotTree, type WardKey,
 } from "@lararium/mesh";
 import { browserKeystoreCustodyIo, BrowserCustodyRefused, readBrowserCustody, withCustodyRows } from "./browser-custody.js";
-import { openWardedRoot, wardCredentialOf, wardKeyRowOf, wardOwnerRowOf, wardPinOf, wardRootCarrier, wardRootRowOf, wardTreeRowOf, type WardRoute } from "./ward-core.js";
+import { openWardedRoot, wardCredentialOf, wardPinOf, wardRootCarrier, wardRootRowsOf, wardRootTreeOf, type WardRoute } from "./ward-core.js";
 import { faceOfVessel, openVesselIdb } from "./browser-vessel-identity.js";
 import { faceTreeIdLive, faceTreeIdOf } from "./browser-face-custody.js";
-import { BrowserWardRefused } from "./browser-custody.js";
-
-/** The opaque id of the face tree the ward at `handleIndex` belongs to, or null where no owner row stands. */
-export async function browserWardOwnerOf(idbName: string, handleIndex: number): Promise<string | null> {
-  const bytes = await browserKeystoreCustodyIo(idbName).read(wardOwnerRowOf(handleIndex));
-  return bytes === null ? null : new TextDecoder().decode(bytes);
-}
 
 /** The opaque tree id of the face this session wears, or null where it wears none or its tree does not stand. */
 export async function wornFaceTreeOf(idbName: string): Promise<string | null> {
@@ -44,46 +37,33 @@ export async function wornFaceTreeOf(idbName: string): Promise<string | null> {
   return worn ? faceTreeIdOf(idbName, worn) : null;
 }
 
-/**
- * THE WARD ANSWERS ONE FACE: a ward act, a held-root read and a re-mint at `handleIndex` refuse `ward-owned-by-another-face` unless
- * the face this session wears is the face whose tree the ward's owner row names (a second face neither inherits nor collides).
- */
-export async function refuseWardOfAnotherFace(idbName: string, handleIndex: number): Promise<void> {
-  const [worn, owner] = await Promise.all([wornFaceTreeOf(idbName), browserWardOwnerOf(idbName, handleIndex)]);
-  if (worn === null || owner !== worn) throw new BrowserWardRefused("ward-owned-by-another-face", `the ward at h${handleIndex} belongs to another face than the one this session wears`);
-}
-
 export const PERSONA_ROSTER_ROW = "persona-root-roster";
 
 /**
- * THE FOUNDING SWEEPS A WARD NO FACE CAN EVER ANSWER: a ward whose owner row names a face tree that stands in no index entry and
- * no seat on this thread (a founding torn before its ceremony named the face, read after a reload; a clear torn before its owner
- * row went) leaves with its roster line, its owner row last, so a torn sweep resumes. A ward whose owner stands live never
- * sweeps: its rows may carry signed history, and its face resumes it or the founding refuses `ward-owned-by-another-face`.
- * The place tree must stand unlocked (the roster rests under it). Answers the handles swept.
+ * THE FOUNDING SWEEPS A WARD NO FACE CAN EVER ANSWER: a ward filed under a face tree that stands in no index entry and no seat on
+ * this thread (a founding torn before its ceremony named the face, read after a reload; a clear torn partway) leaves with its
+ * roster line. A ward whose tree stands live never sweeps: its rows may carry signed history, and its face resumes it.
+ * The place tree must stand unlocked (the roster rests under it). Answers the face trees swept.
  */
-export async function sweepOrphanBrowserWards(idbName: string): Promise<number[]> {
+export async function sweepOrphanBrowserWards(idbName: string): Promise<string[]> {
   const io = browserKeystoreCustodyIo(idbName);
-  const orphaned: number[] = [];
+  const orphaned: string[] = [];
   for (const r of await io.list()) {
-    const m = /^ward\/h(\d+)\/face-tree$/.exec(r);
-    if (!m) continue;
-    const owner = new TextDecoder().decode((await io.read(r)) ?? new Uint8Array());
-    if (!(await faceTreeIdLive(idbName, owner))) orphaned.push(Number(m[1]));
+    const tree = wardRootTreeOf(r);
+    if (tree === null || orphaned.includes(tree)) continue;
+    if (!(await faceTreeIdLive(idbName, tree))) orphaned.push(tree);
   }
   if (orphaned.length === 0) return [];
   await withCustodyRows(idbName, async (rows) => {
     const roster = await readBrowserPersonaRoster(rows.read);
-    if (roster.some((l) => orphaned.includes(l.handleIndex))) await rows.write(PERSONA_ROSTER_ROW, { roots: roster.filter((l) => !orphaned.includes(l.handleIndex)) });
-    const wardRows = (await io.list()).filter((r) => orphaned.some((h) => r.startsWith(`ward/h${h}/`)));
-    for (const r of wardRows) if (!r.endsWith("/face-tree")) await io.remove(r);
-    for (const r of wardRows) if (r.endsWith("/face-tree")) await io.remove(r);
+    if (roster.some((l) => orphaned.includes(l.tree))) await rows.write(PERSONA_ROSTER_ROW, { roots: roster.filter((l) => !orphaned.includes(l.tree)) });
+    for (const r of await io.list()) { const tree = wardRootTreeOf(r); if (tree !== null && orphaned.includes(tree)) await io.remove(r); }
   });
   return orphaned;
 }
 
-/** One roster line: a held root's index and its public key. */
-export interface PersonaRosterLine { readonly handleIndex: number; readonly verifyingKey: string }
+/** One roster line: the custody tree of the face a held root belongs to, and the root's public key. */
+export interface PersonaRosterLine { readonly tree: string; readonly verifyingKey: string }
 
 /** The ward acts a page may miss before it refuses every one until it reloads: the node holder's own bound, per keystore. */
 export const WARD_ATTEMPTS_PER_PAGE = 3;
@@ -99,25 +79,27 @@ export async function chargeWardAttempt<T>(idbName: string, act: () => Promise<T
 }
 
 /** A face's ward rows as raw bytes (they open nothing). A face with no ward tree or no warded root refuses `ward-absent`. */
-export async function readBrowserWardRows(idbName: string, handleIndex: number): Promise<{ readonly tree: Uint8Array; readonly sealedRoot: Uint8Array }> {
+export async function readBrowserWardRows(idbName: string, faceTree: string): Promise<{ readonly tree: Uint8Array; readonly sealedRoot: Uint8Array }> {
   const io = browserKeystoreCustodyIo(idbName);
-  const [tree, sealedRoot] = await Promise.all([io.read(wardTreeRowOf(handleIndex)), io.read(wardRootRowOf(handleIndex))]);
-  if (tree === null || sealedRoot === null) throw new WardRefused("ward-absent", `face h${handleIndex} holds no warded root in this browser`);
+  const at = wardRootRowsOf(faceTree);
+  const [tree, sealedRoot] = await Promise.all([io.read(at.tree), io.read(at.root)]);
+  if (tree === null || sealedRoot === null) throw new WardRefused("ward-absent", "that face holds no warded root in this browser");
   return { tree, sealedRoot };
 }
 
-/** The public key standing beside face `handleIndex`'s ward, or `ward-absent`. Public bytes: it opens nothing. */
-export async function readBrowserWardKey(idbName: string, handleIndex: number): Promise<string> {
-  const bytes = await browserKeystoreCustodyIo(idbName).read(wardKeyRowOf(handleIndex));
+/** The public key standing beside the ward of the face on `faceTree`, or `ward-absent`. Public bytes: it opens nothing. */
+export async function readBrowserWardKey(idbName: string, faceTree: string): Promise<string> {
+  const bytes = await browserKeystoreCustodyIo(idbName).read(wardRootRowsOf(faceTree).key);
   const key = bytes === null ? "" : new TextDecoder().decode(bytes);
-  if (!/^[0-9a-f]{64}$/.test(key)) throw new WardRefused("ward-absent", `face h${handleIndex} holds no warded root in this browser`);
+  if (!/^[0-9a-f]{64}$/.test(key)) throw new WardRefused("ward-absent", "that face holds no warded root in this browser");
   return key;
 }
 
-/** Whether face `handleIndex`'s warded root stands: its tree reads and its row carries the ward's frame. Opens nothing. */
-export async function browserWardStands(idbName: string, handleIndex: number): Promise<boolean> {
+/** Whether the warded root of the face on `faceTree` stands: its tree reads and its row carries the ward's frame. Opens nothing. */
+export async function browserWardStands(idbName: string, faceTree: string): Promise<boolean> {
   const io = browserKeystoreCustodyIo(idbName);
-  const [tree, root] = await Promise.all([io.read(wardTreeRowOf(handleIndex)), io.read(wardRootRowOf(handleIndex))]);
+  const at = wardRootRowsOf(faceTree);
+  const [tree, root] = await Promise.all([io.read(at.tree), io.read(at.root)]);
   return decodeSlotTree(tree).reading === "readable" && readWardCarrier(root) === "sealed";
 }
 
@@ -136,20 +118,20 @@ async function openWardFresh(idbName: string, tree: SlotTree, credential: Creden
 }
 
 /**
- * Open face `handleIndex`'s root for ONE act on the page main thread (road row `B1` owes the vessel's own worker), under a fresh unlock of its ward from `route`, then
+ * Open the root of the face on `faceTree` for ONE act on the page main thread (road row `B1` owes the vessel's own worker), under a fresh unlock of its ward from `route`, then
  * zero the ward key. For an act whose mesh code derives from the seed; a signing act rides the per-act worker instead.
  */
-export async function openBrowserWardedRoot(idbName: string, handleIndex: number, route: WardRoute): Promise<{ readonly verifyingKey: string; readonly signingKey: string }> {
+export async function openBrowserWardedRoot(idbName: string, faceTree: string, route: WardRoute): Promise<{ readonly verifyingKey: string; readonly signingKey: string }> {
   const credential = wardCredentialOf(route);
-  const { tree, sealedRoot } = await readBrowserWardRows(idbName, handleIndex);
+  const { tree, sealedRoot } = await readBrowserWardRows(idbName, faceTree);
   const key = await openWardFresh(idbName, treeOf(tree), credential);
-  try { return openWardedRoot(key, handleIndex, sealedRoot); } finally { key.fill(0); }
+  try { return openWardedRoot(key, faceTree, sealedRoot); } finally { key.fill(0); }
 }
 
-/** The roster's lines, ascending; [] where none stands. Reads under the keystore's unlock and names no seed. */
+/** The roster's lines, ordered by face tree; [] where none stands. Reads under the keystore's unlock and names no seed. */
 export async function readBrowserPersonaRoster(read: (row: string) => Promise<unknown>): Promise<PersonaRosterLine[]> {
   const raw = await read(PERSONA_ROSTER_ROW) as { roots?: readonly PersonaRosterLine[] } | undefined;
-  return [...(raw?.roots ?? [])].sort((a, b) => a.handleIndex - b.handleIndex);
+  return [...(raw?.roots ?? [])].sort((a, b) => (a.tree < b.tree ? -1 : a.tree > b.tree ? 1 : 0));
 }
 
 const pinOf = wardPinOf;
@@ -176,30 +158,26 @@ export async function landBrowserWardRows(idbName: string, rows: readonly (reado
 }
 
 /**
- * Land `keypair` as face `handleIndex`'s root under its ward, bound over `route`, and record its roster line, in ONE custody act.
- * Answers the keypair that stands (an earlier torn mint's root is adopted). The keystore must stand sealed and unlocked: the
- * roster rests under its tree. A passkey route, or a route that opens a standing ward tree to nothing, writes nothing.
+ * Land `keypair` as the root of the face on `faceTree` under its ward, bound over `route`, and record its roster line, in ONE
+ * custody act. Answers the keypair that stands (an earlier torn mint's root is adopted). The keystore must stand sealed and
+ * unlocked: the roster rests under its tree. A passkey route, or a route that opens a standing ward tree to nothing, writes nothing.
+ * The rows rest under the face's own tree, so no other face's mint reaches them.
  */
-export async function mintBrowserWardedRoot(idbName: string, handleIndex: number, route: WardRoute, keypair: { readonly verifyingKey: string; readonly signingKey: string }, ownerTree: string): Promise<{ readonly verifyingKey: string; readonly signingKey: string }> {
+export async function mintBrowserWardedRoot(idbName: string, faceTree: string, route: WardRoute, keypair: { readonly verifyingKey: string; readonly signingKey: string }): Promise<{ readonly verifyingKey: string; readonly signingKey: string }> {
   const custody = await readBrowserCustody(idbName);
-  if (custody.reading !== "sealed") throw new BrowserCustodyRefused("no-custody-slot", idbName, `persona-root-h${handleIndex}`);
-  if (!custody.unlocked) throw new BrowserCustodyRefused("sealed-locked", idbName, `persona-root-h${handleIndex}`);
+  if (custody.reading !== "sealed") throw new BrowserCustodyRefused("no-custody-slot", idbName, "persona-root");
+  if (!custody.unlocked) throw new BrowserCustodyRefused("sealed-locked", idbName, "persona-root");
   const credential = wardCredentialOf(route);
   const pin = pinOf(credential);
+  const at = wardRootRowsOf(faceTree);
   return withCustodyRows(idbName, async (rows) => {
     const roster = await readBrowserPersonaRoster(rows.read);
-    const line = roster.find((l) => l.handleIndex === handleIndex);
+    const line = roster.find((l) => l.tree === faceTree);
     const io = browserKeystoreCustodyIo(idbName);
-    const treePath = wardTreeRowOf(handleIndex);
-    const carrier = wardRootCarrier(handleIndex);
-    const standingTree = await io.read(treePath);
-    // THE OWNER BEFORE ANY BYTE: a ward another face's tree owns (or an unowned standing ward) refuses and writes nothing; a fresh
-    // ward names its owner first, so a mint torn after resumes owned.
-    const standingOwner = await io.read(wardOwnerRowOf(handleIndex));
-    if (standingOwner !== null ? new TextDecoder().decode(standingOwner) !== ownerTree : (standingTree !== null || line !== undefined)) {
-      throw new BrowserWardRefused("ward-owned-by-another-face", `the ward at h${handleIndex} belongs to another face than the one this mint names`);
-    }
-    if (standingOwner === null) await io.write(wardOwnerRowOf(handleIndex), new TextEncoder().encode(ownerTree));
+    const carrier = wardRootCarrier(faceTree);
+    const standingTree = await io.read(at.tree);
+    // A ROSTER LINE WITH NO WARD BESIDE IT names a root this browser cannot open: refuse, and write nothing over it.
+    if (standingTree === null && line !== undefined) throw new WardRefused("ward-root-names-another-key", "the roster names a root for this face and no ward stands beside it");
     let key: WardKey;
     if (standingTree !== null) key = await openWardFresh(idbName, treeOf(standingTree), credential);
     else {
@@ -210,21 +188,18 @@ export async function mintBrowserWardedRoot(idbName: string, handleIndex: number
         const back = await openWardKey(treeOf(encodeSlotTree(tree)), [credential], nobleKdf);
         if (back.reading !== "opens") throw new WardRefused("ward-no-slot-opens", "the route does not reopen the ward it just bound; nothing was written");
         back.treeKey.fill(0);
-        await commitWardTree({ io, path: treePath, expected: null, key, tree, carriers: [carrier] });
+        await commitWardTree({ io, path: at.tree, expected: null, key, tree, carriers: [carrier] });
       } catch (e) { key.fill(0); throw e; }
     }
     try {
       const standingRoot = await io.read(carrier.path);
-      const kept = standingRoot !== null ? openWardedRoot(key, handleIndex, standingRoot) : keypair;
+      const kept = standingRoot !== null ? openWardedRoot(key, faceTree, standingRoot) : keypair;
       if (standingRoot === null) {
-        await writeWardCarrier({ io, key, treePath, carrier, plaintext: new TextEncoder().encode(JSON.stringify({ verifyingKey: keypair.verifyingKey, signingKey: keypair.signingKey })) });
+        await writeWardCarrier({ io, key, treePath: at.tree, carrier, plaintext: new TextEncoder().encode(JSON.stringify({ verifyingKey: keypair.verifyingKey, signingKey: keypair.signingKey })) });
       }
-      if (line && line.verifyingKey !== kept.verifyingKey) throw new WardRefused("ward-root-names-another-key", `the roster names another root at h${handleIndex}`);
-      await io.write(wardKeyRowOf(handleIndex), new TextEncoder().encode(kept.verifyingKey));
-      if (!line) {
-        const next = [...roster, { handleIndex, verifyingKey: kept.verifyingKey }].sort((a, b) => a.handleIndex - b.handleIndex);
-        await rows.write(PERSONA_ROSTER_ROW, { roots: next });
-      }
+      if (line && line.verifyingKey !== kept.verifyingKey) throw new WardRefused("ward-root-names-another-key", "the roster names another root for this face");
+      await io.write(at.key, new TextEncoder().encode(kept.verifyingKey));
+      if (!line) await rows.write(PERSONA_ROSTER_ROW, { roots: [...roster, { tree: faceTree, verifyingKey: kept.verifyingKey }] });
       return kept;
     } finally { key.fill(0); }
   });

@@ -79,7 +79,7 @@ describe("a production founding keeps its face's rows under the face's own tree"
     expect(under, "the face's rows rest under its own tree").toEqual(["anchor", "face-address-secret", "face-anchor", "face-atom", "veil-archive", "veil-lift", "vessel-face-tag"]);
     expect(keys, "the face's tree stands").toContain(`face-slots/${fcid}`);
     // The face's root rests under its own ward, never under a custody tree; the ward's public roster rests beside the place seed.
-    expect(keys, "the face's root rests under its ward").toContain("ward/h0/persona-root");
+    expect(keys, "the face's root rests under its ward").toContain(`ward/root/${fcid}/persona-root`);
     expect(keys.filter((k) => k.startsWith("sealed/")), "CONTROL: the shared tree keeps the place seed, the floor's rest seed, the ward's public roster and the vessel's secret home's address alone").toEqual(["sealed/floor-rest", "sealed/persona-root-roster", "sealed/secret-home", "sealed/vessel-key"]);
   }, SLOW);
 

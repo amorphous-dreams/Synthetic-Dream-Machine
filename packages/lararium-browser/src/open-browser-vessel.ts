@@ -377,8 +377,12 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
    * boot stands the veil floor and asks nobody. With this set, a vessel whose record names no face founds its first face OVER
    * that floor in the same boot (its ward, root and bind ask through `askCustody`). Absent, the vessel stays at its floor
    * until an admit overlays a face.
+   *
+   * A SECOND FACE FOUNDS THROUGH THE SAME DOOR ("a human carries multiple faces"): `{ beside }` names the faces the person saw
+   * standing when they acted, and the vessel founds one more face (its own tree, ward, root, atom and daemon document) only where
+   * exactly those faces stand. The ask run again over the record it wrote names a set that no longer matches, and founds nothing.
    */
-  foundFace?: boolean;
+  foundFace?: boolean | { readonly beside: readonly string[] };
   /** URL of the compiled browser wiki Worker script. */
   workerScriptUrl?: URL;
   /**
@@ -888,7 +892,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // THE VEIL FLOOR ARMS NO PLACE KEL (the-veil-ladder#/the-base-model, in-house ruling U3): an unbound veil stands at canon's
   // throwaway rung on its bare device key, with no card to write down. The place KEL arms, and its card reads back, at the
   // first join or founding (an admit or the founding ask rides this boot); a KEL that already stands is kept.
-  const founding = placeFoundingCard !== undefined && (admit !== undefined || opts.foundFace === true);
+  const founding = placeFoundingCard !== undefined && (admit !== undefined || (opts.foundFace !== undefined && opts.foundFace !== false));
   const vesselIdentity = await generateOrLoadBrowserVesselIdentity(idbName, displayName, founding ? { placeFoundingCard } : {});
   const vesselVerifyingKey      = vesselIdentity.verifyingKey;
 
@@ -1090,7 +1094,14 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     });
     bootKeyWrites.bootstrap = bootstrap;
   }
-  if (!admit && opts.foundFace === true && facedBootstrap(bootstrap) === null) {
+  // THE FOUNDING ASK NAMES WHAT STOOD WHEN THE PERSON ACTED: `true` founds a first face where the record boots none, and
+  // `{ beside }` founds one more face where exactly the named faces stand. Run again over the record it already wrote, either ask
+  // matches nothing and founds nothing (no counter, no clock: the standing set itself answers).
+  const standingFaces = Object.keys(overlaysOf(bootstrap)).sort();
+  const besideAsked = typeof opts.foundFace === "object" && opts.foundFace !== null ? [...opts.foundFace.beside].sort() : null;
+  const foundsFirst = opts.foundFace === true && facedBootstrap(bootstrap) === null;
+  const foundsBeside = besideAsked !== null && besideAsked.length > 0 && besideAsked.length === standingFaces.length && besideAsked.every((g, i) => g === standingFaces[i]);
+  if (!admit && (foundsFirst || foundsBeside)) {
     const floor: BrowserBootstrap = bootstrap;
     // FOUND, BY ASK (`foundFace`). The founding act asks for a face; no host trait founds one. The floor above stands first,
     // and the face lands OVER it (`foundTheFace` on the floor's own daemon document, the composition the node's
@@ -1112,7 +1123,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     wearFaceOfVessel(idbName, founder);
     // A FOUNDING TORN BEFORE ITS CEREMONY NAMED ITS FACE left a ward no face answers again: it sweeps before the root mints.
     await sweepOrphanBrowserWards(idbName);
-    const founding = "found this browser's first face";
+    const founding = foundsFirst ? "found this browser's first face" : "found another face in this browser";
     const wardRoute: WardRoute = bornUnder ?? (await browserPersonaRootHeld(idbName, FOUNDING_PERSONA_INDEX) ? await wardRouteFor(founding) : await wardBindRouteFor(founding));
     await generateOrLoadBrowserPersonaRoot(idbName, FOUNDING_PERSONA_INDEX, wardRoute, founder);
     const signerSeed = await loadBrowserPersonaRootSeed(idbName, FOUNDING_PERSONA_INDEX, wardRoute);
@@ -1123,11 +1134,15 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // THE SECRET HOME STANDS BEFORE THE FACE'S FIRST SEAL, DYAD OR CAP EVENT: the root's slot stood above, so the place
       // tree holds its address row; its document maps on this vessel's sealed rest before its first byte.
       const secret = await standBrowserSecretHome(idbName, repo);
-      const floorDaemon = await repo.find<LarDoc>(floor.daemonUrl as AutomergeUrl);
+      // THE FIRST FACE LANDS IN THE FLOOR'S OWN DAEMON DOCUMENT. A FACE FOUNDED BESIDE ANOTHER keeps its pins in a daemon document
+      // of its own (as a later admit does), so no document carries two faces' pins and neither face's rows name the other.
+      const floorDaemon = foundsFirst
+        ? await repo.find<LarDoc>(floor.daemonUrl as AutomergeUrl)
+        : (await foundThePlace({ repo })).daemonHandle as unknown as DocHandle<LarDoc>;
       await floorDaemon.whenReady();
-      // THE CONTROL DOCUMENT MINTS WITH THE FACE, beside its secret home, and the place's daemon document takes its name here.
+      // THE CONTROL DOCUMENT MINTS WITH THE FACE, beside its secret home, and the face's daemon document takes its name here.
       if (secret.controlUrl) nameControlHome(floorDaemon, secret.controlUrl);
-      f = { daemonUrl: floor.daemonUrl, secretUrl: secret.handle.url as string, ...await foundTheFace({
+      f = { daemonUrl: floorDaemon.url as string, secretUrl: secret.handle.url as string, ...await foundTheFace({
         repo,
         daemonHandle: floorDaemon as unknown as Parameters<typeof foundTheFace>[0]["daemonHandle"],
         secretHandle: secret.handle,
@@ -1166,8 +1181,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       personaGroup: f.personaGroupId, personaKelPrefix: f.personaKelPrefix,
       personaRootDid: f.founderEdge.personaRootDid, edge: f.founderEdge, leaseEpoch: 0,
     }));
+    // A face founded beside another carries none of that face's fields into its own overlay: only its own pins ride it.
     bootstrap = overlayFace(floor, {
-      ...floor,
+      ...(foundsFirst ? floor : {}),
       identitiesUrl: f.identitiesUrl, circlesUrl: f.circlesUrl, sessionsUrl: f.sessionsUrl, intentsUrl: f.intentsUrl, daemonUrl: f.daemonUrl, personaUrl: f.personaUrl, personaBagId: f.personaBagId,
       personaPlanes: [{ personaGroupId: f.personaGroupId, url: f.personaUrl }],
       personaGroupId: f.personaGroupId, meshCabalDocIdHex: f.meshCabalDocIdHex,

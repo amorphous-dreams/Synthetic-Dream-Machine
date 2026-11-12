@@ -45,9 +45,9 @@ import { assertCanMint } from "./secure-context-gate.js";
 import { BrowserCustodyRefused, BrowserWardRefused, browserKeystoreCustodyIo, readBrowserCustody, readKeystoreRow, writeKeystoreRow } from "./browser-custody.js";
 import { checkFaceName, faceCustodyHeld, faceTreeStands, FaceCustodyRefused, readFaceCustody } from "./browser-face-custody.js";
 import {
-  browserWardStands, mintBrowserWardedRoot, openBrowserWardedRoot, readBrowserPersonaRoster, refuseWardOfAnotherFace, wornFaceTreeOf, type PersonaRosterLine,
+  browserWardStands, mintBrowserWardedRoot, openBrowserWardedRoot, readBrowserPersonaRoster, wornFaceTreeOf, type PersonaRosterLine,
 } from "./browser-ward-tree.js";
-import type { WardRoute } from "./ward-core.js";
+import { WARD_ROOT_PREFIX, type WardRoute } from "./ward-core.js";
 const KEY_RECORD = "vessel-key";
 
 /**
@@ -241,15 +241,20 @@ export function wearFaceOfVessel(idbName: string, face: string): void { vesselFa
 /** The face this vessel wears on this thread, or null before the boot names one. */
 export function faceOfVessel(idbName: string): string | null { return vesselFaces.get(idbName) ?? null; }
 
-/** A root stands only at the founding handle: the face this vessel wears. Every other handle refuses by name. */
+/**
+ * THE VAULT PORT'S ORDINAL: the mesh `PersonaVault` names a root by handle index, and this browser's vault serves ONE face, the one
+ * the session wears, at the founding ordinal. No row files under it (a root rests under its face's own custody tree), so any other
+ * ordinal names no root here and refuses by name.
+ */
 function refuseOtherHandle(idbName: string, handleIndex: number): void {
-  if (handleIndex !== 0) throw new BrowserCustodyRefused("face-names-a-handle", idbName, `h${handleIndex}`, "a root rests only under its own face, and a vessel wears one face per founding");
+  if (handleIndex !== 0) throw new BrowserCustodyRefused("face-names-a-handle", idbName, `h${handleIndex}`, "a root rests under its own face's tree, and this vault serves the worn face alone");
 }
 
 /**
  * THE WARD MINT'S FACE GATE: a root mints only for the face this vessel wears on this thread, whose own tree stands and whose key
  * this thread holds. No worn face refuses `face-absent`; a mint naming another face `face-not-worn`; a worn face with no tree
- * `no-custody-slot`; a worn face locked here `face-locked`. Reads only: nothing binds or writes before the gate passes.
+ * `no-custody-slot`; a worn face locked here `face-locked`. Reads only: nothing binds or writes before the gate passes. Answers the
+ * worn face's custody tree, the name its root files under.
  */
 async function refuseUnwornFace(idbName: string, handleIndex: number, face: string | undefined): Promise<string> {
   refuseOtherHandle(idbName, handleIndex);
@@ -264,24 +269,24 @@ async function refuseUnwornFace(idbName: string, handleIndex: number, face: stri
 }
 
 /**
- * A persona-root slot rides the face's WARD (`browser-ward-tree.ts`), never the keystore's row door: a load opens the root fresh
- * under `ward` for one act and a save lands it under a ward bound over `ward`. With no route, a held root refuses
- * `ward-needs-fresh-unlock`; a root the roster names nowhere loads as absent.
+ * A persona-root slot rides the worn face's WARD (`browser-ward-tree.ts`), never the keystore's row door: a load opens the root
+ * fresh under `ward` for one act and a save lands it under a ward bound over `ward`. With no route, a held root refuses
+ * `ward-needs-fresh-unlock`; a face the roster names no root for loads as absent.
  */
 function idbPersonaRootSlot(idbName: string, handleIndex: number, ward: WardRoute | undefined): KeypairStore {
   return {
     async load() {
       refuseOtherHandle(idbName, handleIndex);
-      if (!(await rosterLineOf(idbName, handleIndex))) return undefined;
-      await refuseWardOfAnotherFace(idbName, handleIndex);
-      if (ward === undefined) throw new BrowserWardRefused("ward-needs-fresh-unlock", `the root at h${handleIndex} opens only fresh from its face's ward route, for one act`);
-      return openBrowserWardedRoot(idbName, handleIndex, ward);
+      const line = await wornRosterLine(idbName);
+      if (!line) return undefined;
+      if (ward === undefined) throw new BrowserWardRefused("ward-needs-fresh-unlock", "the worn face's root opens only fresh from its ward route, for one act");
+      return openBrowserWardedRoot(idbName, line.tree, ward);
     },
     async save(kp) {
-      const owner = await refuseUnwornFace(idbName, handleIndex, undefined);
-      if (ward === undefined) throw new BrowserWardRefused("ward-needs-fresh-unlock", `a root mints at h${handleIndex} only under a ward bound over the route given for it`);
-      const kept = await mintBrowserWardedRoot(idbName, handleIndex, ward, kp, owner);
-      if (kept.verifyingKey !== kp.verifyingKey) throw new BrowserWardRefused("ward-root-names-another-key", `another root already stands under the ward at h${handleIndex}`);
+      const tree = await refuseUnwornFace(idbName, handleIndex, undefined);
+      if (ward === undefined) throw new BrowserWardRefused("ward-needs-fresh-unlock", "a root mints only under a ward bound over the route given for it");
+      const kept = await mintBrowserWardedRoot(idbName, tree, ward, kp);
+      if (kept.verifyingKey !== kp.verifyingKey) throw new BrowserWardRefused("ward-root-names-another-key", "another root already stands under this face's ward");
     },
   };
 }
@@ -434,17 +439,23 @@ async function loadBrowserSigningSeed(idbName = "lares:vessel"): Promise<Uint8Ar
 // (custody-by-type): each root rests under its own face's tree through the keystore's row door.
 //
 // ROOT-ON-FOUNDER: the founding ceremony mints founder-side only; a joinee's vault holds anchors at its
-// admitted index with NO matching root (listRoots()=[]). ONE ROOT PER FACE: the founding handle names the
-// face the vessel wears, and the roster reads that face's root row; no roster row rests anywhere.
+// admitted index with NO matching root (listRoots()=[]). ONE ROOT PER FACE: the vault port's founding ordinal
+// names the face the vessel wears, and the roster reads that face's line by its custody tree; no row files under a handle index.
 
-/** Read the persona-root roster's held indices (ascending), or [] when none stands. */
-async function readPersonaRoster(idbName: string): Promise<number[]> {
-  return (await readBrowserPersonaRoster((row) => readKeystoreRow(idbName, row))).map((l) => l.handleIndex);
+/** The roster line of the face this session wears (its root's public key), or undefined where it wears none or holds no root for it. */
+async function wornRosterLine(idbName: string): Promise<PersonaRosterLine | undefined> {
+  const tree = await wornFaceTreeOf(idbName);
+  if (tree === null) return undefined;
+  return (await readBrowserPersonaRoster((row) => readKeystoreRow(idbName, row))).find((l) => l.tree === tree);
 }
 
-/** The roster line for `handleIndex` (its public key), or undefined where this vessel holds no root there. */
-async function rosterLineOf(idbName: string, handleIndex: number): Promise<PersonaRosterLine | undefined> {
-  return (await readBrowserPersonaRoster((row) => readKeystoreRow(idbName, row))).find((l) => l.handleIndex === handleIndex);
+/**
+ * The vault port's held ordinals: `[0]` where the worn face holds a root, and `[]` where it holds none. A thread that wears no face
+ * yet answers `[0]` where any root rests in this browser (a possession read before the boot names its face).
+ */
+async function readPersonaRoster(idbName: string): Promise<number[]> {
+  if (faceOfVessel(idbName) !== null) return (await wornRosterLine(idbName)) ? [0] : [];
+  return (await readBrowserPersonaRoster((row) => readKeystoreRow(idbName, row))).length > 0 ? [0] : [];
 }
 
 /**
@@ -555,12 +566,12 @@ export async function generateOrLoadBrowserPersonaRoot(idbName = "lares:vessel",
   refuseOtherHandle(idbName, handleIndex);
   const custody = await readBrowserCustody(idbName);
   if (custody.reading !== "sealed") throw new BrowserCustodyRefused("no-custody-slot", idbName, `persona-root-h${handleIndex}`);
-  const line = await rosterLineOf(idbName, handleIndex);
-  const owner = await refuseUnwornFace(idbName, handleIndex, face);
-  if (line) { await refuseWardOfAnotherFace(idbName, handleIndex); return { verifyingKey: line.verifyingKey, created: false }; }
-  if (ward === undefined) throw new BrowserWardRefused("ward-needs-fresh-unlock", `a root mints at h${handleIndex} only under a ward bound over the route given for it`);
+  const tree = await refuseUnwornFace(idbName, handleIndex, face);
+  const line = await wornRosterLine(idbName);
+  if (line) return { verifyingKey: line.verifyingKey, created: false };
+  if (ward === undefined) throw new BrowserWardRefused("ward-needs-fresh-unlock", "a root mints only under a ward bound over the route given for it");
   const fresh = await browserKeypairCrypto.generate();
-  const kept = await mintBrowserWardedRoot(idbName, handleIndex, ward, fresh, owner);
+  const kept = await mintBrowserWardedRoot(idbName, tree, ward, fresh);
   return { verifyingKey: kept.verifyingKey, created: kept.verifyingKey === fresh.verifyingKey };
 }
 
@@ -574,11 +585,8 @@ export async function readBrowserPersonaRootKey(idbName = "lares:vessel", handle
   refuseOtherHandle(idbName, handleIndex);
   const custody = await readBrowserCustody(idbName);
   if (custody.reading !== "sealed") throw new BrowserCustodyRefused("no-custody-slot", idbName, `persona-root-h${handleIndex}`);
-  const line = await rosterLineOf(idbName, handleIndex);
   await refuseUnwornFace(idbName, handleIndex, face);
-  if (!line) return null;
-  await refuseWardOfAnotherFace(idbName, handleIndex);
-  return line.verifyingKey;
+  return (await wornRosterLine(idbName))?.verifyingKey ?? null;
 }
 
 /**
@@ -596,8 +604,9 @@ export async function loadBrowserPersonaRootSeed(idbName = "lares:vessel", handl
  */
 export async function browserPersonaRootHeld(idbName = "lares:vessel", handleIndex = 0): Promise<boolean> {
   assertHandleIndex(handleIndex);
-  if ((await rosterLineOf(idbName, handleIndex)) === undefined || !(await browserWardStands(idbName, handleIndex))) return false;
-  return refuseWardOfAnotherFace(idbName, handleIndex).then(() => true, () => false);
+  if (handleIndex !== 0) return false;
+  const line = await wornRosterLine(idbName);
+  return line !== undefined && browserWardStands(idbName, line.tree);
 }
 
 /** Read the opt-in PRF wrap standing beside `face`'s root (its PersonaGroup), or undefined (no wrap). */
@@ -616,11 +625,9 @@ export async function writeBrowserSeedWrap(idbName: string, face: string, wrap: 
   if ((await readFaceCustody(idbName, named)).reading !== "absent") {
     throw new Error("ward-passkey-refused: this face's root rests warded under its own tree's human routes; a PRF wrap would open it by a passkey");
   }
-  // A clear-password leaves the keystore reading clear while the face's ward rows stand: any `ward/h0/` row (the founding
-  // handle, the face this vessel wears) refuses the wrap too.
-  const wardPrefix = "ward/h0/";
-  if ((await browserKeystoreCustodyIo(idbName).list()).some((row) => row.startsWith(wardPrefix))) {
-    throw new BrowserWardRefused("seed-wrap-beside-ward", "a ward stands at h0; a PRF wrap would open its root by a passkey");
+  // A clear-password leaves the keystore reading clear while a face's ward rows stand: any root ward row refuses the wrap too.
+  if ((await browserKeystoreCustodyIo(idbName).list()).some((row) => row.startsWith(WARD_ROOT_PREFIX))) {
+    throw new BrowserWardRefused("seed-wrap-beside-ward", "a root ward stands in this browser; a PRF wrap would open its root by a passkey");
   }
   const db = await openVesselIdb(idbName);
   try { await idbPut(db, SEED_WRAP_STORE, seedWrapKey(named), wrap); } finally { db.close(); }
