@@ -33,7 +33,11 @@ vi.mock("../src/fleet-join-custody.js", () => ({
 }));
 vi.mock("@noble/ed25519", () => ({}));
 vi.mock("@lararium/keyhive", () => ({ carriedAdmitOfFleetJoin: () => ({ kind: "device-admit" }) }));
+// The veil-lift link a landing keeps (node-veil-lift), signed over the atom the join minted.
+vi.mock("../src/node-veil-lift.js", () => ({ keepNodeVeilLift: async () => { seam.writes.push("veil-lift"); } }));
+vi.mock("../src/face-atom-store.js", () => ({ standFaceAtom: async () => new Uint8Array(32) }));
 vi.mock("@lararium/mesh", () => ({
+  faceAtomKeyFromSeed: () => ({ key: "c".repeat(64) }),
   // The own-property door, as `stored-value.ts` spells it: the bootstrap read asks it by name.
   ownEntry: (map: Record<string, unknown> | null | undefined, key: string) => (map && key !== "__proto__" && Object.hasOwn(map, key) ? map[key] : undefined),
   gateBundleDigest: (pin: unknown) => JSON.stringify(pin),
@@ -66,7 +70,7 @@ describe("a landing keeps the face a joined vessel wears", () => {
   test("CONTROL: a bare place lands the face", async () => {
     bootstrapNaming(null);
     await runFleetJoinLand({ repo: {} as never, answer: { personaGroup: "group-two" } });
-    expect(seam.writes).toEqual(["charter", "bundle", "floor-pins", "secret", "record", "init", "clear"]);
+    expect(seam.writes).toEqual(["charter", "bundle", "floor-pins", "secret", "record", "veil-lift", "init", "clear"]);
   });
 
   test("CONTROL: the same face lands again", async () => {
@@ -78,7 +82,7 @@ describe("a landing keeps the face a joined vessel wears", () => {
   test("LAND_KEEPS_THE_WORN_FACE: another face's answer lands beside the worn face", async () => {
     bootstrapNaming("group-zero");
     await runFleetJoinLand({ repo: {} as never, answer: { personaGroup: "group-two" } });
-    expect(seam.writes).toEqual(["charter", "bundle", "floor-pins", "secret", "record", "init", "clear"]);
+    expect(seam.writes).toEqual(["charter", "bundle", "floor-pins", "secret", "record", "veil-lift", "init", "clear"]);
   });
 
   test("a torn bootstrap refuses bootstrap-torn and writes nothing", async () => {

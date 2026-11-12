@@ -65,6 +65,7 @@ import {
 import { loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { loadIdentityAnchors } from "../identity-anchors.js";
 import { standFaceAtom } from "../face-atom-store.js";
+import { keepNodeVeilLift } from "../node-veil-lift.js";
 import { ensureFaceCustodyOfGroup } from "../face-route.js";
 import { larBootstrapPath, larSealHome } from "../vessel-paths.js";
 import { DeviceAdmitTagRefused, runDeviceAdmit } from "./device-admit.js";
@@ -415,6 +416,12 @@ export async function runFleetJoinLand(opts: { readonly repo: Repo; readonly ans
   // this face's own. The bootstrap carries the pin to dial with; only this sealed row says which act wrote it.
   await keepFaceJoinRecord({ personaGroup: answer.personaGroup, rootKey: offer.rootKey, certificates: answer.certificates, grants: answer.grants,
     hearthPin: admitGatePinDigest(answer.carriage.gatePin) });
+  // THE VEIL-LIFT LINK (ruling 1): the vessel's own key signs {veil, face, atom} once, over the atom this join minted, and the record
+  // rests under this face's custody alone. It names no other face, and no board, plane or boot record carries it.
+  {
+    const atomSeed = await standFaceAtom(answer.personaGroup);
+    try { await keepNodeVeilLift(answer.personaGroup, faceAtomKeyFromSeed(atomSeed, answer.personaGroup).key); } finally { atomSeed.fill(0); }
+  }
   await runInit({ repo: opts.repo, force: true, admitPayload: admit, custody: { slots: [] } });
   await clearPendingFleetJoin(offer.personaGroup, request.nonce);
   return answer;
