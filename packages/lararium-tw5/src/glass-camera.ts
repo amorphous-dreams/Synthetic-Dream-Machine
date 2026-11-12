@@ -1,6 +1,8 @@
 import type { TW5ChangeRecord, TW5FakeElement, TW5Instance } from "./types/tiddlywiki.js";
 import { TW5_PAGE_STYLESHEET, TW5_ROOT_TEMPLATE } from "./tw5-camera.js";
 import { shadowSheet } from "./glass-sheet.js";
+import { installGlassRoot, makePaneScroller } from "./glass-root.js";
+import type { GlassDoor } from "./glass-root.js";
 
 /** The parts of a TW5 widget the camera reads to find the editor a person types in. */
 type EditorWidget = { children?: EditorWidget[]; editTitle?: string; editField?: string; editIndex?: string;
@@ -39,55 +41,76 @@ const editorWidgets = function* (widget: EditorWidget | undefined): Generator<Ed
  * TW5's own focus law, so a new editor still takes focus at its title.
  */
 export function mountGlassCamera({ tw, shadowRoot, template = TW5_ROOT_TEMPLATE,
-  stylesheet = TW5_PAGE_STYLESHEET, keepsFocus }: {
+  stylesheet = TW5_PAGE_STYLESHEET, keepsFocus, door }: {
   tw: TW5Instance; shadowRoot: ShadowRoot; template?: string; stylesheet?: string;
   keepsFocus?: (changes: Record<string, TW5ChangeRecord>) => boolean;
+  /** The surface's host doors (clipboard, download, route, ...); absent, every door ask refuses by name. */
+  door?: GlassDoor;
 }): { unmount(): void } {
   const doc = shadowRoot.ownerDocument;
   const style = doc.createElement("style");
+  // THE PANE'S DOCUMENT SHAPE mirrors a stock page: `container` stands where `body.tc-body` stands (the theme's ground and fonts
+  // reach it, `glass-sheet.ts`), `page` stands where stock's `$tw.pageContainer` stands (its first child), and modals and
+  // notifications append beside `page`, as stock appends them to the body.
   const container = doc.createElement("div");
-  // The container stands where a page's `body.tc-body` stands, so the theme's ground and fonts reach it (`glass-sheet.ts`).
   container.className = "lar-mirror tc-body";
+  const page = doc.createElement("div");
+  page.className = "tc-page-container-wrapper";
+  container.append(page);
   shadowRoot.append(style, container);
   // Setup is one act: a throw anywhere below gives back every assignment made so far.
   const twAny = tw as unknown as Record<string, any>;
-  const priorBrowser = twAny.browser;
-  const lent: string[] = [];
+  const lent: Array<[string, unknown]> = [];
+  const lend = (name: string, value: unknown): void => { lent.push([name, twAny[name]]); twAny[name] = value; };
+  const priorRoot = tw.rootWidget;
   let root: ReturnType<typeof tw.wiki.makeWidget> | undefined;
   let widget: { removeChildDomNodes?: () => void; render: (...args: any[]) => void; refresh: (changes: any) => void } | undefined;
   let styleWidget: typeof widget;
   let onChange: ((changes: Record<string, TW5ChangeRecord>) => void) | undefined;
+  let uninstallRoot: (() => void) | undefined;
+  let keys: { manager: Record<string, any>; stock: unknown } | undefined;
+  let mounted = false;
   const release = (): void => {
     if (onChange) tw.wiki.removeEventListener("change", onChange);
+    uninstallRoot?.();
+    if (keys) keys.manager["handleKeydownEvent"] = keys.stock;
     widget?.removeChildDomNodes?.();
     styleWidget?.removeChildDomNodes?.();
     container.remove();
     style.remove();
-    for (const name of lent) delete twAny[name];
-    twAny.browser = priorBrowser;
-    if (root && tw.rootWidget === root) tw.rootWidget = undefined as never;
+    for (const [name, prior] of lent.reverse()) { if (prior === undefined) delete twAny[name]; else twAny[name] = prior; }
+    if (tw.rootWidget !== priorRoot) tw.rootWidget = priorRoot as never;
   };
   try {
-  // The third runtime has no browser startup root; create a real widget root deliberately.
-  root = tw.wiki.makeWidget(tw.wiki.parseText("text/vnd.tiddlywiki", ""), { document: doc as never });
-  tw.rootWidget = root;
-  // Core's browser startup builds the scroller, popup layer and focus handler the story views read; the third runtime
-  // skips that startup, so the glass builds the same three over its own container.
-  // Widgets read `$tw.browser` for their real-DOM branches (scrolling, framed editing, popups) long after startup
-  // has finished, so the glass sets it once it mounts and gives it back at unmount.
-  const agent = doc.defaultView?.navigator?.userAgent ?? "";
-  twAny.browser = { isFirefox: /Firefox/.test(agent), isSafari: /Safari/.test(agent) && !/Chrome/.test(agent), isIE: false,
-    isMobile: /Mobile|Android/.test(agent), hasTouch: "ontouchstart" in (doc.defaultView ?? {}) };
-  const lend = (name: string, value: unknown): void => { twAny[name] = value; lent.push(name); };
-  if (twAny.utils?.PageScroller) {
-    lend("pageScroller", new twAny.utils.PageScroller());
-    root.addEventListener("tm-scroll", (event: unknown) => twAny.pageScroller.handleEvent(event));
+  // A browser-mode boot built `$tw.rootWidget` over the page's document, and the house's own startup modules already bound their
+  // root listeners on it (`lar-story`): the camera renders beneath that root. An engine with no root gets one minted.
+  root = (tw.rootWidget as typeof root | undefined) ?? tw.wiki.makeWidget(tw.wiki.parseText("text/vnd.tiddlywiki", ""), { document: doc as never });
+  if (tw.rootWidget !== root) tw.rootWidget = root as never;
+  // Widgets read `$tw.browser` for their real-DOM branches (scrolling, framed editing, popups) long after startup has finished;
+  // an engine that booted without it gets it for the camera's life.
+  if (!twAny.browser) {
+    const agent = doc.defaultView?.navigator?.userAgent ?? "";
+    lend("browser", { isFirefox: /Firefox/.test(agent), isSafari: /Safari/.test(agent) && !/Chrome/.test(agent), isIE: false,
+      isMobile: /Mobile|Android/.test(agent), hasTouch: "ontouchstart" in (doc.defaultView ?? {}) });
   }
+  // The scroller, the popup layer, the modal, the notifier and the root `tm-*` listeners stock builds in its browser startup
+  // (kept out of the mirror's boot), each over the pane.
+  const scroller = makePaneScroller(tw, container, shadowRoot);
+  lend("pageScroller", scroller);
   if (twAny.utils?.Popup) lend("popup", new twAny.utils.Popup({ rootElement: container }));
-  root.addEventListener("tm-focus-selector", (event: { param?: string; paramObject?: FocusOptions }) => {
-    const target = event.param ? shadowRoot.querySelector<HTMLElement>(event.param) : null;
-    target?.focus?.(event.paramObject);
-  });
+  lend("pageContainer", page);
+  uninstallRoot = installGlassRoot({ tw, root: root as never, shadowRoot, body: container, scroller, ...(door ? { door } : {}) });
+  // Stock listens for shortcuts on the whole document. The mirror owns its pane alone: a key reaches the wiki's shortcuts only
+  // while it travels through the pane, and never after the camera leaves.
+  const manager = twAny.keyboardManager as Record<string, any> | undefined;
+  if (manager && typeof manager["handleKeydownEvent"] === "function") {
+    const stock = manager["handleKeydownEvent"] as (event: KeyboardEvent, options?: unknown) => unknown;
+    keys = { manager, stock };
+    manager["handleKeydownEvent"] = function (this: unknown, event: KeyboardEvent, options?: unknown): unknown {
+      if (!mounted || !(event.composedPath?.() ?? []).includes(shadowRoot.host)) return false;
+      return stock.call(this, event, options);
+    };
+  }
   widget = tw.wiki.makeTranscludeWidget(template, { document: doc, parentWidget: root });
   styleWidget = tw.wiki.makeTranscludeWidget(stylesheet, { document: doc, parentWidget: root });
   // The sheet renders into a detached holder; its text lands in the shadow root's one <style>, as core's own page render does,
@@ -96,7 +119,9 @@ export function mountGlassCamera({ tw, shadowRoot, template = TW5_ROOT_TEMPLATE,
   styleWidget.render(sheet as unknown as TW5FakeElement, null);
   let rendered = sheet.textContent ?? "";
   style.textContent = shadowSheet(rendered);
-  widget.render(container as unknown as TW5FakeElement, null);
+  widget.render(page as unknown as TW5FakeElement, null);
+  lend("pageWidgetNode", widget);
+  twAny.hooks?.invokeHook?.("th-page-refreshed");
   const hold = (): HeldEdit | null => {
     const node = focusedIn(shadowRoot);
     if (!textControl(node)) return null;
@@ -129,14 +154,16 @@ export function mountGlassCamera({ tw, shadowRoot, template = TW5_ROOT_TEMPLATE,
   };
   onChange = (changes: Record<string, TW5ChangeRecord>) => {
     const held = keepsFocus?.(changes) ? hold() : null;
+    twAny.hooks?.invokeHook?.("th-page-refreshing");
     widget!.refresh(changes);
+    twAny.hooks?.invokeHook?.("th-page-refreshed");
     if (held) giveBack(held);
     styleWidget!.refresh(changes);
     if (rendered !== (sheet.textContent ?? "")) { rendered = sheet.textContent ?? ""; style.textContent = shadowSheet(rendered); }
   };
   tw.wiki.addEventListener("change", onChange);
   } catch (error) { release(); throw error; }
-  let mounted = true;
+  mounted = true;
   return { unmount() {
     if (!mounted) return;
     mounted = false;

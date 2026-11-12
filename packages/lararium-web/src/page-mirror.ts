@@ -1,4 +1,5 @@
 import { standMirror, type MirrorState } from "./glass/stand.js";
+import { makeMirrorDoor } from "./glass/doors.js";
 import type { ReturnTypeOfPagePort } from "./glass/transport-type.js";
 
 type Stand = Parameters<typeof standMirror>[1];
@@ -29,6 +30,8 @@ export async function standPageMirror(root: {
   /** The vessel's names for the surface's boot set; the bytes come from its island over the port. */
   mirrorInputs: (surface: string) => Promise<{ coreCid: string; pluginCids: readonly string[]; sealedRest?: boolean } | null>;
   onState?: (state: MirrorState) => void;
+  /** Boot the mirror afresh (the `route` door's `reload`): the caller unmounts this mirror and stands another. */
+  reload?: () => void | Promise<void>;
 }, seams: Stand = {}) {
   // `data-lar-mirror` names the width; `data-lar-shown` names which surface the person reads: the mirror once it stands, else the floor.
   // `data-lar-mirror-why` carries the named reason a mirror holds or steps to skinny (`full-promotion-unfinished`, a capacity error), and
@@ -43,10 +46,15 @@ export async function standPageMirror(root: {
   if (surface === null) { mark("none:surface-unknown"); return NONE("surface-unknown"); }
   const inputs = await root.mirrorInputs(surface);
   if (!inputs) { mark("none:mirror-inputs-absent"); return NONE("mirror-inputs-absent"); }
-  const result = await standMirror({ host: root.host, port: root.port, inputs, wikiUri: surface, actor: root.actor,
+  // The mirror's host doors: the page's own, with `route` moving this mirror's life and never TW5's hash.
+  let story = (): readonly string[] => [];
+  const door = makeMirrorDoor({ host: root.host, story: () => story(),
+    route: { reload: () => { if (!root.reload) throw new Error("no reload"); return root.reload(); } } });
+  const result = await standMirror({ host: root.host, port: root.port, inputs, wikiUri: surface, actor: root.actor, door,
     ...(root.onState ? { onState: root.onState } : {}) }, seams);
   if (result.kind === "floor") { mark(`none:${result.why}`); return result; }
   mark(result.width);
+  story = () => (result.tw as unknown as ReadableEngine).wiki.getTiddlerList("$:/StoryList");
   // A read-only reading for tests: true once no mirror write waits for its answer and no edit waits behind one.
   Object.defineProperty(root.host, "larMirrorWritesSent", { configurable: true, get: () => result.writesSent() });
   Object.defineProperty(root.host, "larMirrorQuiescent", { configurable: true, get: () => result.quiescent() });

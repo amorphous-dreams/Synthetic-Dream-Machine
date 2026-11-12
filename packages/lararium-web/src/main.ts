@@ -554,6 +554,7 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
   // The mirror: unprivileged, fed by this binding alone, booted from the inputs the vessel names for the shown surface.
   // A floor leaves the none projection beneath exactly as it stands; the host element carries the outcome in `data-lar-mirror`.
   let mirrorStanding = false;
+  let standingMirror: { pending(): number; unmount(): void } | null = null;
   // The person reads the mirror only while the surface it serves is the surface shown: a summon of another surface (the daemon) shows the floor, and the way back shows the mirror again.
   mirrorShownSync = () => {
     paintPaneLabel($("projection-wiki"), projectionSink.surface());
@@ -568,9 +569,16 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
     mirrorStanding = true;
     mirrorSurface = shown;
     void standPageMirror({ port: pageBinding, host: $("mirror"), actor: did, surface: () => mirrorSurface,
-      mirrorInputs: vessel.mirrorInputs, onState: (state) => console.warn(`[mirror] ${state.kind}`, state) })
+      mirrorInputs: vessel.mirrorInputs, onState: (state) => console.warn(`[mirror] ${state.kind}`, state),
+      // Stock's "refresh" boots the mirror afresh from a new handoff; the page itself stays. A write still waiting holds it, as it holds a leave.
+      reload: () => {
+        if (!standingMirror) throw new Error("no mirror stands");
+        if (standingMirror.pending() > 0) throw new Error("a write still waits for its answer");
+        standingMirror.unmount(); standingMirror = null; mirrorStanding = false; mirrorSurface = null;
+        queueMicrotask(() => mirrorTrigger?.());
+      } })
       .then((stood) => {
-        if (stood.kind !== "floor") return;
+        if (stood.kind !== "floor") { standingMirror = stood; return; }
         console.warn(`[mirror] the none projection stays: ${stood.why}`);
         // Nothing to mirror yet (the daemon shows, or the vessel names no inputs): the next painted frame asks again.
         if (stood.why === "mirror-inputs-absent") { mirrorStanding = false; mirrorSurface = null; }

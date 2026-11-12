@@ -3,6 +3,7 @@ import { MIRROR_TOKEN } from "./glass-token.js";
 import { glassLocalTitle, makeGlassPortAdaptor } from "./glass-port-adaptor.js";
 import type { GlassPortOptions } from "./glass-port-adaptor.js";
 import type { PortWireRecord } from "@lararium/mesh/record-port";
+import type { GlassDoor } from "./glass-root.js";
 import { mountGlassCamera } from "./glass-camera.js";
 import { openDefaultStory } from "./default-story.js";
 
@@ -51,6 +52,7 @@ export function censusPreloads(preloads: Record<string, unknown>[], sealedRest: 
   return { accepted, refused };
 }
 
+const STARTUP_ACTION = /(^|\s|\[\[)\$:\/tags\/StartupAction(\/[^\s\]]*)?(\]\]|\s|$)/;
 const shadowsOf = (text: unknown): Record<string, unknown>[] | null => {
   try {
     const tiddlers = (JSON.parse(String(text ?? "{}")) as { tiddlers?: Record<string, unknown> }).tiddlers ?? {};
@@ -70,6 +72,9 @@ const shadowsOf = (text: unknown): Record<string, unknown>[] | null => {
  *   module-gate         (`sealedRest`); a plugin that lays only wikitext, styles and data boots at once.
  *   (unreadable)        a plugin or module record whose body the port left out (a skinny open) or whose packed text will not
  *                       parse: nothing can read what it would evaluate, so it waits like a gated one.
+ *   (startup action)    a record tagged `$:/tags/StartupAction` (or a tag beneath it): TW5 runs those during boot, and the
+ *                       island's own gate decides which of a wiki's startup actions run; the mirror runs none a second time.
+ *                       Held with no alert: nothing was refused, the act belongs to the island.
  *
  * A held record still LANDS, after boot, as an ordinary record: the person sees it, edits it, deletes it. TW5 defines a module
  * and registers a plugin's modules during boot alone, so a record that lands after boot evaluates nothing; TW5's own ordering
@@ -84,6 +89,8 @@ export function censusRecords(records: readonly PortWireRecord[], bootTitles: Re
     const fields = record.fields;
     const hold = (kind: string): void => { held.push(record); refused.push({ title: record.title, kind }); };
     if (bootTitles.has(record.title)) { hold("boot-set-shadow"); continue; }
+    // A record's StartupAction runs where the island's own gate admits it, never a second time on a surface: it lands after boot.
+    if (STARTUP_ACTION.test(fields["tags"] ?? "")) { held.push(record); continue; }
     const moduleType = fields["module-type"];
     const plugin = fields["plugin-type"] !== undefined;
     if (!plugin && moduleType === undefined) { preloaded.push(record); continue; }
@@ -121,6 +128,8 @@ export async function openMirror(options: Omit<GlassPortOptions, "wiki" | "Tiddl
   deferPaint?: boolean;
   /** The first whole snapshot the boot's handoff read off the already-open port: the engine boots with these records. */
   opened?: { records: readonly PortWireRecord[] };
+  /** The surface's host doors; the camera lends them to the engine's root. */
+  door?: GlassDoor;
 }, seams: MirrorSeams = {}) {
   const engine = new TW5Engine();
   let adaptor: Adaptor | undefined;
@@ -142,7 +151,7 @@ export async function openMirror(options: Omit<GlassPortOptions, "wiki" | "Tiddl
   };
   const paint = () => {
     if (camera || closed) return;
-    try { seams.paint?.(); camera = mountGlassCamera({ tw: engine.$tw, shadowRoot: options.shadowRoot, keepsFocus }); }
+    try { seams.paint?.(); camera = mountGlassCamera({ tw: engine.$tw, shadowRoot: options.shadowRoot, keepsFocus, ...(options.door ? { door: options.door } : {}) }); }
     catch (error) { options.shadowRoot.replaceChildren(); throw new Error(`mirror-paint-threw:${nameOf(error)}`); }
   };
   try {
@@ -163,7 +172,7 @@ export async function openMirror(options: Omit<GlassPortOptions, "wiki" | "Tiddl
       if (runtime.syncer !== undefined || runtime.syncadaptor !== undefined) throw new Error("syncer-stood");
     } catch (error) { if (error instanceof Error && error.message === "syncer-stood") throw error; throw new Error(`mirror-engine-refused:${nameOf(error)}`); }
     const tw = engine.$tw;
-    const { opened: _opened, ...portOptions } = options;
+    const { opened: _opened, door: _door, ...portOptions } = options;
     adaptor = makeGlassPortAdaptor({ ...portOptions, wiki: tw.wiki, Tiddler: tw.Tiddler,
       ...(wikiCensus ? { opened: { preloaded: wikiCensus.preloaded, held: wikiCensus.held } } : {}) });
     adaptor.onLanded(noteLanding);

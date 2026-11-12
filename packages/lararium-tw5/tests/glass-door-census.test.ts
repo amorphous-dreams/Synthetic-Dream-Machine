@@ -14,8 +14,8 @@ describe("mirror door source census", () => {
   });
   // R5: no clock decides anything in the mirror's own code. `requestAnimationFrame` is a frame signal (the browser says a frame ran), not a clock: no duration or deadline rides on it. The pattern proves itself on a planted line first.
   const clock = /\b(Date\.now|performance\.now|setTimeout|setInterval|requestIdleCallback)\b|new Date\(/;
-  const glassSources = ["../src/glass-mirror.ts", "../src/glass-port-adaptor.ts", "../src/glass-camera.ts", "../src/glass-token.ts",
-    ...["stand", "boot", "cas", "cid", "leader", "tab-bus"].map(name => `../../lararium-web/src/glass/${name}.ts`)];
+  const glassSources = ["../src/glass-mirror.ts", "../src/glass-port-adaptor.ts", "../src/glass-camera.ts", "../src/glass-token.ts", "../src/glass-handoff.ts", "../src/glass-root.ts",
+    ...["stand", "boot", "doors", "leader", "tab-bus"].map(name => `../../lararium-web/src/glass/${name}.ts`)];
   test("R5 CONTROL: the clock pattern catches a planted clock read", () => {
     expect(clock.test("const t = Date.now();")).toBe(true);
     expect(clock.test("await new Promise(r => setTimeout(r, 5));")).toBe(true);
@@ -24,7 +24,7 @@ describe("mirror door source census", () => {
     expect(readFileSync(source(file), "utf8")).not.toMatch(clock);
   });
   // One pattern for boot, width and caps: no setting, URL value or stored value picks a width. The glass sources read storage only for the two evidence keys.
-  const widthSources = ["stand", "boot", "cas", "cid", "leader", "tab-bus"].map(name => `../../lararium-web/src/glass/${name}.ts`).concat("../../lararium-web/src/page-mirror.ts");
+  const widthSources = ["stand", "boot", "doors", "leader", "tab-bus"].map(name => `../../lararium-web/src/glass/${name}.ts`).concat("../../lararium-web/src/page-mirror.ts");
   test("CONTROL: the width-source pattern catches a planted setting read", () => {
     expect(/localStorage|location\.search|URLSearchParams/.test("const w = localStorage.getItem('width');")).toBe(true);
   });
@@ -36,5 +36,16 @@ describe("mirror door source census", () => {
     const reads = [...text.matchAll(/store\.(?:getItem|setItem|removeItem)\(([^,)]+)/g)].map(match => match[1]);
     expect(reads.length).toBeGreaterThan(0);
     for (const key of reads) expect(key).toMatch(/^(evidenceKey|standingKey)$/);
+  });
+  // The page reads no store of its own: every byte the mirror's engine evaluates came over the port (`glass-handoff.ts`).
+  test("CONTROL: the page-store pattern catches a planted store read", () => {
+    expect(/readCasBlobFromOpfs|navigator\.storage|indexedDB|caches\.open/.test("const b = await readCasBlobFromOpfs(cid);")).toBe(true);
+  });
+  test.each([...glassSources, "../../lararium-web/src/page-mirror.ts"])("%s reads no page store: the boot set rides the port", file => {
+    expect(readFileSync(source(file), "utf8")).not.toMatch(/readCasBlobFromOpfs|navigator\.storage|indexedDB|caches\.open/);
+  });
+  test("no CAS reader module remains on the page", () => {
+    expect(existsSync(source("../../lararium-web/src/glass/cas.ts"))).toBe(false);
+    expect(readFileSync(source("../../lararium-browser/src/page.ts"), "utf8")).not.toContain("readCasBlobFromOpfs");
   });
 });

@@ -8,3 +8,4 @@ export { preloadsFromCasBlob } from "./cas-preloads.js";
 
 export { openMirror } from "./glass-mirror.js";
 export type { MirrorSeams } from "./glass-mirror.js";
+export type { GlassDoor } from "./glass-root.js";

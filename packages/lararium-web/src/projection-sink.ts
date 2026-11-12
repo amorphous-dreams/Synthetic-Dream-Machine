@@ -37,6 +37,7 @@
  *     door per act, and only for a kind the manifest the surface opened with names; any other answers by name,
  *     with the words beside the control the person acted on. Every ask gets its `lar:service-result`.
  */
+import { PAGE_DOORS } from "./page-doors.js";
 import { Idiomorph } from "idiomorph";
 // The contract module carries no imports of its own; its own subpath keeps the mesh barrel (and its wasm) out of
 // the page sink.
@@ -1113,27 +1114,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
   let activation: { readonly at: number; readonly surface: string; readonly target: string } | null = null;
   const manifestKinds: readonly LarServiceKind[] = opts.services ?? LAR_SURFACE_DEFAULT_SERVICES;
   const carried = new Set<LarServiceKind>(manifestKinds);
-  const pageDoors: Partial<Record<LarServiceKind, LarHostDoor>> = {
-    clipboard: async (args) => { await navigator.clipboard.writeText(String(args["text"] ?? "")); },
-    download: (args) => {
-      const url = URL.createObjectURL(new Blob([String(args["text"] ?? "")], { type: String(args["type"] ?? "text/plain") }));
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = String(args["filename"] ?? "download.txt");
-      a.click();
-      // PACING: defer URL cleanup to the next task so the download can start.
-      setTimeout(() => URL.revokeObjectURL(url), 0);
-    },
-    print: () => { window.print(); },
-    fullscreen: async (args, at) => {
-      const mode = String(args["mode"] ?? "toggle");
-      if (mode === "exit" || (mode === "toggle" && document.fullscreenElement)) await document.exitFullscreen();
-      else await at.requestFullscreen();
-    },
-    "open-external": (args) => {
-      if (!window.open(String(args["url"] ?? ""), String(args["windowName"] ?? "_blank"), "noopener,noreferrer")) throw new Error("the browser opened no window");
-    },
-  };
+  const pageDoors = PAGE_DOORS;
   const doorFor = (kind: LarServiceKind): LarHostDoor | undefined => opts.doors?.[kind] ?? pageDoors[kind];
   // LIVENESS: this window bounds how long an unspent act licenses a door. The token already spends once (one act opens one
   // door) and a later act replaces it, but an act that no ask ever claims has no event that ends it

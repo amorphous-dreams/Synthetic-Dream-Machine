@@ -54,6 +54,26 @@ test("a person's plugin among the wiki's records boots with the engine when it e
     result.unmount();
   } finally { r.host.remove(); }
 });
+test("a theme a person installed in the wiki reaches the mirror as the wiki's own record and styles the pane; CONTROL without the theme pointer the rule stays out", async () => {
+  const theme = { title: "$:/themes/person/dusk", fields: { "plugin-type": "theme", type: "application/json", name: "Dusk",
+    text: JSON.stringify({ tiddlers: { "$:/themes/person/dusk/base": { title: "$:/themes/person/dusk/base", tags: "$:/tags/Stylesheet", text: ".lar-dusk-marker { color: rgb(1, 2, 3); }" } } }) } };
+  const sheet = (host: HTMLElement) => host.shadowRoot!.querySelector("style")!.textContent ?? "";
+  const worn = await rig({ records: [theme, { title: "$:/theme", fields: { text: "$:/themes/person/dusk" } }] });
+  try {
+    const result = await standMirror(worn.options, worn.seams) as any;
+    expect(result.tw.wiki.isShadowTiddler("$:/themes/person/dusk/base")).toBe(true);     // TW5's own theme manager registered it at boot
+    expect(sheet(worn.host)).toContain(".lar-dusk-marker");
+    expect(result.tw.wiki.tiddlerExists("$:/temp/lares/alert/refused/plugin-gate/$:/themes/person/dusk")).toBe(false);   // it evaluates nothing: no gate holds it
+    result.unmount();
+  } finally { worn.host.remove(); }
+  forgetEvidence();
+  const bare = await rig({ records: [theme] });
+  try {
+    const result = await standMirror(bare.options, bare.seams) as any;
+    expect(sheet(bare.host)).not.toContain(".lar-dusk-marker");
+    result.unmount();
+  } finally { bare.host.remove(); }
+});
 test("the mirror opens full on one port; the evidence record stands while full boots and clears once full has painted", async () => {
   const r = await rig(); let during: string | null = null;
   r.onPlace(msg => { if (msg.type === "port:open") during = sessionStorage.getItem(KEY); });

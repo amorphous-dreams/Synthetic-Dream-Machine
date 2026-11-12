@@ -1,5 +1,5 @@
 import { glassPortOpen, makeBootHandoff } from "@lararium/tw5/glass";
-import type { GlassBootInputs, GlassBootNames, GlassTransport } from "@lararium/tw5/glass";
+import type { GlassBootInputs, GlassBootNames, GlassDoor, GlassTransport } from "@lararium/tw5/glass";
 import { sha256HexBytesSync } from "@lararium/mesh/crypto";
 import type { ReturnTypeOfPagePort } from "./transport-type.js";
 import { bootGlass } from "./boot.js";
@@ -51,6 +51,8 @@ type Fault = { why: string; capacity: boolean };
 export async function standMirror(options: {
   host: HTMLElement; port: ReturnTypeOfPagePort; inputs: GlassBootNames; wikiUri: string; actor: string;
   onState?: (state: MirrorState) => void; evidence?: Evidence;
+  /** The surface's host doors (`doors.ts`); absent, every door ask refuses by name on the alert rail. */
+  door?: GlassDoor;
 }, seams: Seams = {}) {
   let shadowRoot: ShadowRoot;
   try { shadowRoot = options.host.shadowRoot ?? (seams.attachShadow?.(options.host) ?? options.host.attachShadow({ mode: "open" })); }
@@ -171,7 +173,7 @@ export async function standMirror(options: {
     };
     try {
       mirror = await bootGlass({ shadowRoot, inputs, port: options.port, wikiUri: options.wikiUri, actor: options.actor, width: at, transport: facade,
-        portId, opened: { records: hand.records() }, seams: { ...mirrorSeams, ...(landed ? { landed } : {}), refused }, deferPaint: true });
+        portId, opened: { records: hand.records() }, ...(options.door ? { door: options.door } : {}), seams: { ...mirrorSeams, ...(landed ? { landed } : {}), refused }, deferPaint: true });
     } catch (error) { return quit({ why: reasonOf(error), capacity: capacity(error) }); }
     if (bootFault || ended) { const failure = bootFault ?? { why: endedWhy, capacity: false }; mirror.unmount(); mirror = null; return failure; }
     return null;

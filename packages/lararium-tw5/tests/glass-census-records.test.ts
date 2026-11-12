@@ -43,4 +43,11 @@ describe("the record census ~ which of the wiki's own records the mirror's engin
     const census = censusRecords([record("$:/StoryList", { list: "A" }), record("$:/state/x", { text: "1" }), { title: "Gone", fields: {}, deleted: true as const }], boot, false);
     expect(census.preloaded).toEqual([]); expect(census.held).toEqual([]);
   });
+  test("a record's StartupAction waits out the boot with no alert; CONTROL a record that only mentions the tag in its text boots", () => {
+    const census = censusRecords([record("$:/on-start", { tags: "$:/tags/StartupAction", text: "x" }), record("$:/on-browser", { tags: "Other [[$:/tags/StartupAction/Browser]]", text: "x" }),
+      record("$:/note", { tags: "Notes", text: "$:/tags/StartupAction" }), record("$:/near", { tags: "$:/tags/StartupActionX", text: "x" })], boot, true);
+    expect(titles(census.held)).toEqual(["$:/on-start", "$:/on-browser"]);
+    expect(titles(census.preloaded)).toEqual(["$:/note", "$:/near"]);
+    expect(census.refused).toEqual([]);
+  });
 });
