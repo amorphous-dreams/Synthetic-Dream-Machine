@@ -380,7 +380,7 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
    *
    * A SECOND FACE FOUNDS THROUGH THE SAME DOOR ("a human carries multiple faces"): `{ beside }` names the faces the person saw
    * standing when they acted, and the vessel founds one more face (its own tree, ward, root, atom and daemon document) only where
-   * exactly those faces stand. The ask run again over the record it wrote names a set that no longer matches, and founds nothing.
+   * exactly those faces stand. The ask run again over the record it wrote names a set that differs from the faces standing, and founds nothing.
    */
   foundFace?: boolean | { readonly beside: readonly string[] };
   /** URL of the compiled browser wiki Worker script. */
