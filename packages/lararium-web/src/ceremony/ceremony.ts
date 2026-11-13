@@ -6,6 +6,9 @@
  * brokered port (the public label and digest, the face, the kind), takes the secret, and sends its bytes down that port to
  * the vessel worker. The surface page never holds them: the page opened this window with no opener, and the port reached
  * this document through the service worker.
+ *
+ * A RESET ASK (`#reset=<askId>`, browser-vessel-lift#/the-reset) stands here too, and it takes no secret and no port: this
+ * document takes one typed confirmation and burns the place itself (`reset-core.ts`).
  */
 import { RESET_CHANNEL, type BrokerToCeremony, type CeremonyAsk, type CeremonyToBroker, type ResetSignal, type VesselToCeremony } from "../ceremony-protocol.js";
 import { askIdOf, ceremonyRefusal, evalRuns, resetAskOf, sendDecline, sendPasskey, sendPassphrase } from "./ceremony-core.js";

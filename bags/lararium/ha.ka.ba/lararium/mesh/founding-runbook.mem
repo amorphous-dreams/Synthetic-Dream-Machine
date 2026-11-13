@@ -418,7 +418,7 @@ Write from two faces and watch one merged working layer; each face's `personal` 
 
 ''Offer, promote, release, accept.'' Wearing the engineer: `lares meme offer <uri> --bag lares` (canon stays unmoved). Wearing the steward (`lares vault unlock --face 0`): `lares meme offer list --bag lares`, then `lares meme offer promote <cid>`, then `lares nexus release <file> --cut` with its approval. Then `lares vessel floor accept`; every accept raises the reboot alert until a live floor swap lands.
 
-''A browser crosses in.'' Open the page URL the banner prints (it carries no query and no fragment). The page boots a veil with no ask. Carry the banner's floor card in at the page's carriage door (paste or file), and the anchor as its own act. To join the engineer: `lares fleet join offer --face 1 --out offer.json` → paste the offer → the page answers a request file → `lares fleet join answer request.json --out answer.json` → paste the answer. The browser's veil wikis lift into the face, and the mirror opens full, styled, on the welcome landing.
+''A browser crosses in.'' Open the page URL the banner prints (it carries no query and no fragment). The page boots a veil with no ask. Carry the banner's floor card in at the page's carriage door (paste or file), and the anchor as its own act. To join the engineer: `lares fleet join offer --face 1 --out offer.json` → paste the offer → the page answers a request file → `lares fleet join answer request.json --out answer.json` → paste the answer. The browser's veil wikis lift into the face, and the mirror opens full, styled, on the welcome landing. At any point the browser's console answers the CLI's own read verbs (`lares("help")`, `lares("vessel", "read")`, `lares("vault", "status")`): `vessel read` names the standing, the faces joined and worn, the relay, the floor pin and every ask the page still waits on. To walk the browser leg again from nothing, `lares("vessel", "reset")` or the page's "Reset this browser's vessel" button raises the reset ask; its ceremony takes the typed words `reset this browser` and returns every tab of the site to the anon floor (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift`>> #/the-console-door, #/the-reset).
 
 ''Carry across a re-founding'' (11a's law; this walk adds the three faces):
 
@@ -487,6 +487,7 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> founding acts, order and household road
 <<~ loulou uri=`lar:///ha.ka.ba/lares/cli/vessel-door`>> vessel command doors and host shim surface
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026`>> browser capability measurements and device limits
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift`>> the browser vessel's console door and its reset
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/bag-home-axes`>> bag read tier, residency and byte home, declared on disk
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/siege-resilience`>> compromise resistance and what nothing reconstructs
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/first-realm-arc`>> the joins beyond one vessel: fleet, realm, dwelling
@@ -496,6 +497,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;_Esose03BqIoAu3s4uFX8UzLkLZnMSnF_8atO3SYIhQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wBgjtHO1aEcOScdf_ztgUPwRcKOFJW_612IQapOsa5Y`>>
 
 <<^ code=`&#x0004;` to=`?`>>

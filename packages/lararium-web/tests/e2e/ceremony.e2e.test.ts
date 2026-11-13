@@ -15,6 +15,12 @@
  *               verifies under the key it names. CONTROL: the spy read the vessel's asks and the page's own port hand-offs,
  *               so a zero reads from a live instrument; the barrier for each claim is the far side's own answer (the phase
  *               `live`, the ward act's signature).
+ *   K3 RED      THE CONSOLE DOOR AND THE RESET, on two tabs of one origin (browser-vessel-lift#/the-console-door, #/the-reset):
+ *               `lares("help")` from the page's console lists the page's and the vessel's rows, and `lares("vessel", "read")`
+ *               names the veil's standing and its key; `lares("vessel", "reset")` burns nothing by itself and paints the reset
+ *               ask; the ceremony's wrong words burn nothing (the key reads unchanged); its typed confirmation returns BOTH
+ *               tabs to a fresh anon floor under a NEW key, with no word from either tab. CONTROL: the door refuses a host
+ *               shim verb by name, and a word past a verb's path refuses `usage`.
  */
 import assert from "node:assert/strict";
 import { execFileSync, spawn } from "node:child_process";
@@ -192,5 +198,63 @@ test("K2 RED — the page's thread holds no route byte while a vessel founds, un
 
     assert.ok((reads[1]!.kinds["worker-in:ask"] ?? 0) >= 2, "the second load asked twice (the unlock, the ward act)");
     assert.deepEqual(faults, [], "no page error through the founding, the unlock and the ward act");
+  } finally { await context.close(); }
+});
+
+test("K3 RED — the console door reads the vessel, and the reset ceremony's typed words return every tab to a fresh anon floor", { timeout: 300_000 }, async () => {
+  const context = await browser.newContext();
+  type Answer = { ok: boolean; data?: { entries?: { verb: string; holder: string }[]; vessel?: { standing?: string; vessel?: { did: string } | null; absent?: string }; page?: { asks: { kind: string }[]; tab: string }; askId?: string }; error?: { code: string; message: string } };
+  const lares = (page: Page, ...argv: string[]): Promise<Answer> => page.evaluate((words) => (window as unknown as { lares: (...a: string[]) => Promise<Answer> }).lares(...words), argv);
+  /** The veil key this tab's vessel reads, once its session stands admitted on the lit vessel. */
+  const keyOf = async (page: Page): Promise<string> => {
+    for (let i = 0; i < 360; i++) {
+      const read = await lares(page, "vessel", "read").catch(() => null);
+      const did = read?.data?.vessel?.vessel?.did;
+      if (typeof did === "string") return did;
+      await new Promise((r) => setTimeout(r, 250));
+    }
+    throw new Error(`the tab's vessel named no key within 90 s: ${JSON.stringify(await lares(page, "vessel", "read").catch((e: unknown) => String(e)))}`);
+  };
+  try {
+    const first = await context.newPage();
+    const faults: string[] = [];
+    first.on("pageerror", (e) => faults.push(`[first] ${e.message}`));
+    await first.goto(`${baseUrl}/`);
+    await live(first);
+    const second = await context.newPage();
+    second.on("pageerror", (e) => faults.push(`[second] ${e.message}`));
+    await second.goto(`${baseUrl}/`);
+
+    // THE DOOR: help lists both holders' rows, and the read names the veil.
+    const help = await lares(first, "help");
+    assert.deepEqual(help.data?.entries?.map((e) => `${e.holder}:${e.verb}`), ["page:help", "vessel:vault status", "page:vessel read", "page:vessel reset"]);
+    const before = await keyOf(first);
+    assert.equal(await keyOf(second), before, "two tabs of one origin read one vessel's key");
+    assert.equal((await lares(first, "vessel", "read")).data?.vessel?.standing, "lit");
+    // CONTROL: a host shim verb refuses by name, and a word past a path refuses usage.
+    assert.equal((await lares(first, "up")).error?.code, "host-shim-verb");
+    assert.equal((await lares(first, "vault", "status", "a-word")).error?.code, "usage");
+
+    // THE RESET ASK: the door's own call burns nothing and paints the ask; the read names it.
+    const asked = await lares(first, "vessel", "reset");
+    assert.equal(asked.ok, true);
+    assert.deepEqual((await lares(first, "vessel", "read")).data?.page?.asks.map((a) => a.kind), ["reset"]);
+    assert.equal(await keyOf(first), before, "the door's call burned nothing");
+    const [rite] = await Promise.all([context.waitForEvent("page"), first.locator(".ceremony-ask[data-ask=\"reset\"] button.ceremony-open").first().click()]);
+    await rite.waitForSelector("#ceremony-form:not([hidden])", { timeout: WAIT });
+    assert.equal(await rite.evaluate(() => window.opener), null, "the reset ceremony's window carries no opener");
+    // WRONG WORDS burn nothing.
+    await rite.locator("#ceremony-pass").fill("reset");
+    await rite.locator("#ceremony-go").click();
+    await rite.waitForFunction(() => document.getElementById("ceremony-state")?.textContent?.includes("nothing burned"), undefined, { timeout: WAIT });
+    assert.equal(await keyOf(first), before, "wrong words burned nothing");
+    // THE TYPED CONFIRMATION burns the place, and both tabs boot afresh.
+    await rite.locator("#ceremony-pass").fill("reset this browser");
+    await Promise.all([first.waitForEvent("load", { timeout: WAIT }), second.waitForEvent("load", { timeout: WAIT }), rite.locator("#ceremony-go").click()]);
+    const after = await keyOf(first);
+    assert.notEqual(after, before, "the reset burned the place: the vessel stands under a new veil key");
+    assert.equal(await keyOf(second), after, "the second tab stands on the same fresh floor");
+    assert.deepEqual((await lares(first, "vessel", "read")).data?.page?.asks, [], "no ask stands after the reset");
+    assert.deepEqual(faults, [], "no page error through the door and the reset");
   } finally { await context.close(); }
 });

@@ -88,6 +88,30 @@ The road rules that the browser vessel "takes an unlock ceremony the surface can
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/the-console-door`>>
+!! The console door ~ the CLI's own verbs, from the browser's console
+
+A person at the browser's console calls `lares("vessel", "read")`: the CLI's own argv, one word per string, answered by a Promise of the shape `lares <verb> --json` prints (`{ok, data}`, or `{ok: false, error: {code, message}}`). The door never rejects, so a console prints a refusal as it prints an answer. One call form stands: the page holds no shell, so no quoting law parses a single spaced string, and that string refuses `usage` and names the form.
+
+* ''The door holds no list.'' Its rows come from two tables read at the call: the page's own (`vessel read`, which composes the page's reading beside the vessel's, and `vessel reset`) and the vessel worker's (`vessel read`, `vault status`), asked over the page's one port by a `verb` message that the port's own `reply` answers. `lares("help")` prints both, with each row's holder, and prints under `waits` any row a table holds and cannot run at that standing.
+* ''The vessel answers before any unlock.'' The rows read public standing alone, so the vessel worker answers them for a session still asking. `vessel read` names the place AID, the standing, the faces named, joined and worn, the relay dialled, the floor pin, custody at rest, and every ask the vessel still waits on with its kind, beside the asks the page itself still shows.
+* ''No secret rides the console.'' The page's heap hosts the mirror, so the door takes no passphrase, seed or key as a word: a held verb's exact path alone crosses the port, a word past a path refuses `usage`, and no refusal reads a caller's word back. A verb that needs a hand raises its ask on the page and the ceremony document takes the secret.
+* ''A verb this vessel cannot hold refuses by name.'' The host shim's verbs (`up`, `down`, `build`, `found`, `logs`) refuse `host-shim-verb`; a verb that stands a listening socket refuses `needs-inbound-socket`; the vault's hand acts refuse `hand-needed`; `vault lock` refuses `locks-by-leaving` (each tab holds its own unlock, and the vessel returns to its floor as its face's last tab leaves); `export` and `import` refuse `syncs-by-join`; any other word refuses `verb-not-held`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-reset`>>
+!! The reset ~ the holder's return to the anon floor
+
+Every vessel "MUST always return" to its floor (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/dreamnet-rhizome`>> #/the-ground), and the device's holder owns that return. No ward and no passphrase stands before it, and it runs while the vessel rests locked, half-founded or down, so the reset asks nothing of the vessel worker.
+
+* ''The page burns nothing.'' `lares("vessel", "reset")`, and the page's own button for a device with no console, paint the reset ask at the top of the page in the idiom of every other ask. Its button opens the ceremony document at `#reset=<askId>`; no port and no broker moves, since no secret crosses.
+* ''The ceremony document burns the place.'' It takes one typed confirmation (`reset this browser`), then burns from its own clean heap: every IndexedDB database the origin names, the origin-private file system, the caches, the storage keys the vessel owns (`lares:`), and the service worker's registration. It needs neither a secure context nor a broker; a frame and a policy out of force refuse by name. An engine that names no database list refuses `reset-census-absent` before anything moves.
+* ''Every tab lets go first.'' The ceremony speaks on one BroadcastChannel (`lares:reset`). On `reset:stand-down` each tab of the origin stands its vessel worker down; on `reset:burned` each clears its own session keys and boots afresh at the anon floor. A second tab never refuses the reset: a tab that does not hear holds its store until it closes, the ceremony names that store to the person, and no clock gives up for it.
+* ''What ends.'' A face that also lives on another vessel lives on there and joins here again by carried files. A face that lives only in this browser ends with the reset, and the ceremony says so before the typed words.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/the-slices`>>
 !! The slices ~ every one lands before the rite
 
@@ -201,9 +225,10 @@ The order follows the dependencies: 0, 1, 2, 1b, 3 with 5a, 3b, 5b, 6, 7, then t
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/secure-context`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/dreamnet-rhizome`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;pPjUhbClCQeHW0fTqB1WYw8UT-5LJdmWgtBVWgOEPac`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;85s7_GPVT3L_gnVuXxwIQhyh7Zh7rLel9a07FKtEoYw`>>
 
 <<^ code=`&#x0004;` to=`?`>>
