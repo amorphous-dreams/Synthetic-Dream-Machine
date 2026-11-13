@@ -296,3 +296,70 @@ def test_meme_delete_stale_base_reads_conflict_and_moves_nothing(daemon):
     with pytest.raises(ValueError, match="no-container"):
         _delete(uri=_URI, recipe="sdm", bag="lares")
     assert len(daemon.lines) == 1                                    # the refused call never reached the wire
+
+
+# ─── THE SEAT'S OWN ANSWER ───────────────────────────────────────────────────────────────────────────────
+# Every test above calls a tool's python body. These cross the SERVER: an in-memory MCP client asks the real
+# `tools/call` handler, and each assertion reads the `CallToolResult` a harness (and the model behind it) receives.
+
+
+def _seat_call(name: str, args: dict, mcp=None):
+    from mcp import Client
+
+    server = mcp or build_mcp(DaemonCoordinator(wing="w"))
+
+    async def ask():
+        async with Client(server) as client:
+            return await client.call_tool(name, args)
+
+    return asyncio.run(ask())
+
+
+def _said(result) -> str:
+    return " ".join(c.text for c in result.content if getattr(c, "text", None))
+
+
+def test_a_refused_write_reaches_the_caller_naming_decision_reason_and_live_hash(daemon):
+    daemon.output = dict(_PUT_OUTPUT, decision="conflict", reason="both-moved", landed=[], canonicalHash="sha256-live")
+    result = _seat_call("meme_put", {"uri": _URI, "text": "the body", "recipe": "sdm", "base": "sha256-stale"})
+    assert result.is_error
+    assert "meme-put conflict" in _said(result) and "both-moved" in _said(result) and "sha256-live" in _said(result)
+    daemon.output = dict(_PUT_OUTPUT, decision="refuse", landed=[], warnings=["row-key-missing: the stage row names no row-key"])
+    result = _seat_call("meme_put", {"uri": _URI, "text": "the body", "recipe": "default"})
+    assert result.is_error and "meme-put refuse" in _said(result) and "row-key-missing" in _said(result)
+
+
+def test_every_refusal_family_reaches_the_caller_by_name(daemon, monkeypatch):
+    # The seat's own refusal (`vessel-locked`), a tool's pre-wire refusal (`no-container`), a HITL guard, a shaping this
+    # seat never routes, and an absent daemon: each answers isError AND carries its own words.
+    daemon.error = {"errorMessage": "control-home-unavailable: vessel-locked: the vessel's key stays shut",
+                    "refusal": {"reason": "vessel-locked"}}
+    locked = _seat_call("meme_get", {"uri": _URI, "recipe": "default"})
+    assert locked.is_error and "vessel-locked" in _said(locked) and "lares vault unlock" in _said(locked)
+    bare = _seat_call("meme_list", {})
+    assert bare.is_error and "no-container" in _said(bare)
+    guarded = _seat_call("purge", {"name": "x"})
+    assert guarded.is_error and "HITL" in _said(guarded)
+    unshaped = _seat_call("pour", {"surface": "claude-code", "pointer": "p", "dry_run": True})
+    assert unshaped.is_error and "carries no writeback/preview shaping" in _said(unshaped)
+    monkeypatch.setattr(uds, "socket_path", lambda: "/nonexistent/lares.sock")
+    absent = _seat_call("meme_get", {"uri": _URI, "recipe": "default"})
+    assert absent.is_error and "no lares daemon" in _said(absent)
+
+
+def test_a_landed_write_answers_unchanged_and_an_internal_fault_stays_unnamed(daemon):
+    # CONTROL, both sides: a write that landed answers its receipt and no error; a fault the seat never named (a bug in
+    # a tool body) still answers the bare line, carrying neither its own text nor a traceback.
+    daemon.output = _PUT_OUTPUT
+    landed = _seat_call("meme_put", {"uri": _URI, "text": "the body", "recipe": "sdm"})
+    assert not landed.is_error and json.loads(_said(landed)) == _PUT_OUTPUT
+
+    mcp = build_mcp(DaemonCoordinator(wing="w"))
+
+    @mcp.tool()
+    def faulty() -> dict:
+        return {}["the-secret-key-inside"]
+
+    crashed = _seat_call("faulty", {}, mcp)
+    assert crashed.is_error and _said(crashed) == "Error executing tool faulty"
+    assert "the-secret-key-inside" not in _said(crashed) and "Traceback" not in _said(crashed)

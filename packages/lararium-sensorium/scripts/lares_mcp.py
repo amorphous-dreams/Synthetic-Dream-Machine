@@ -225,6 +225,12 @@ def seat_of(verb: str) -> str:
     return "HOTL" if (reversible and not trust_crossing) else "HITL"
 
 
+# THE REFUSAL FAMILIES this seat raises by name: the vessel's own refusal and an absent daemon (`lares_uds`), an unnamed
+# house root (a RuntimeError), a tool's argument guard (ValueError), the HITL guard (PermissionError), and a verb this
+# seat never runs (RuntimeError, NotImplementedError). `build_mcp`'s seat hands each to the caller in its own words.
+REFUSALS = (uds.LaresVerbError, uds.LaresDaemonUnreachable, ValueError, PermissionError, RuntimeError)
+
+
 def guard_hitl(verb: str, approval=None) -> None:
     """Gate a verb by its seat: a HOTL verb passes freely; an HITL verb needs a truthy operator-approval
     capability (the @daemon grants it out-of-band). Raise when an HITL verb rides without one."""
@@ -749,8 +755,24 @@ def build_mcp(coordinator: LaresCoordinator):
     forces the gate until the tool calls it. The @daemon (holding this cap in its wiki-island VM worker)
     supplies the approval capability out-of-band (ask→confirm→cap→wiki-audit)."""
     from mcp.server.mcpserver import MCPServer
+    from mcp.server.mcpserver.exceptions import ToolError, UnexpectedToolError
 
-    mcp = MCPServer("lares")
+    class _Seat(MCPServer):
+        """THE SEAT SPEAKS ITS REFUSALS. The SDK reads any exception outside its own `ToolError` family as a crash and
+        answers the bare `Error executing tool <name>`, keeping the words server-side. A refusal this house NAMED
+        (`REFUSALS`: the vessel's, the wire's, a tool's own guard) is no crash: it crosses to the caller as a
+        `ToolError` carrying its own words, on every tool, through this one door. Anything else stays a crash and
+        stays unnamed."""
+
+        async def call_tool(self, name, arguments, context=None):
+            try:
+                return await super().call_tool(name, arguments, context)
+            except UnexpectedToolError as crash:
+                if isinstance(crash.__cause__, REFUSALS):
+                    raise ToolError(f"Error executing tool {name}: {crash.__cause__}") from crash.__cause__
+                raise
+
+    mcp = _Seat("lares")
 
     # The addressed-sensorium shore: an AI names a sensorium; the tool resolves the name to its root and
     # threads it up the @daemon cap-ladder (the routed recall/capture/refresh verbs pick the holder by
