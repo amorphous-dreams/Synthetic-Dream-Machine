@@ -31,7 +31,7 @@ import {
   type LarDoc,
   type LarTiddlerRecord,
   type LarTiddlerStore, ownEntry, plainField} from "@lararium/mesh";
-import { catalogRowHalf, isHouseCanonBag, litFaceCatalogOf, makeCatalogView, plainRecordOrNull, realmStandingDocUrl } from "@lararium/mesh";
+import { catalogRowHalf, houseCanonUrl, litFaceCatalogOf, makeCatalogView, plainRecordOrNull, realmStandingDocUrl, resolveHouseCanon, wikiCanonAddress } from "@lararium/mesh";
 
 export interface CatalogAccessor {
   /** The `catalog` registry doc itself, resolved + cached (the floor with the face's rows laid over it, U1). */
@@ -154,14 +154,30 @@ function accessorOver(handle: () => Promise<DocHandle<LarDoc>>, catalogUrl: stri
   return { handle, floor: floorHandle ?? handle, urlOf, recordOf, find, storeOf, homeOf, homeStoreOf };
 }
 
+/** The door `resolveHouseCanon` reads a bag through over this catalog: the Kahu realm's standing registration (read off the
+ *  catalog's floor half, where the realm's rows rest), then the bag's own registry row. */
+function catalogCanonDoor(catalog: CatalogAccessor, bagUri: string): { realm: (bag: string) => Promise<string | null>; row: () => Promise<string | null> } {
+  return {
+    realm: async (bag) => realmStandingDocUrl((await (catalog.floor ?? catalog.handle)()).doc(), bag),
+    row: () => catalog.urlOf(bagUri),
+  };
+}
+
 /**
- * The document a recipe's LIBRARY bag mounts from: the registry's entry, else — for a house canon bag (`isHouseCanonBag`),
- * which no registry row names — the Kahu realm's standing registration read off this catalog. It names a
- * url and grants no reach: every write into the document clears the Kahu predicate at its own door.
+ * The document a recipe's LIBRARY bag mounts from, by the one order (`resolveHouseCanon`): for a house canon bag, the Kahu
+ * realm's standing registration read off this catalog, ahead of any registry row; a registry row only where the realm names
+ * none, and for every other bag. It names a url and grants no reach: every write into the document clears the Kahu predicate
+ * at its own door.
  */
 export async function libraryDocUrl(catalog: CatalogAccessor, bagUri: string): Promise<string | null> {
   if (plainField(await catalog.recordOf(bagUri), "kind") === "private-synced") return null;
-  const row = await catalog.urlOf(bagUri);
-  if (row !== null || !isHouseCanonBag(bagUri)) return row;
-  return realmStandingDocUrl((await (catalog.floor ?? catalog.handle)()).doc(), bagUri);
+  return houseCanonUrl(await resolveHouseCanon<string>(bagUri, catalogCanonDoor(catalog, bagUri)));
+}
+
+/**
+ * The address a wiki's canon keys on, read off this catalog for a wiki the session has not mounted (`wikiCanonAddress`): the
+ * document `resolveHouseCanon` names; for a house canon bag no document answers, its floor address; else null.
+ */
+export async function catalogCanonAddress(catalog: CatalogAccessor, bagUri: string): Promise<string | null> {
+  return wikiCanonAddress(bagUri, catalogCanonDoor(catalog, bagUri));
 }

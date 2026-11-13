@@ -35,7 +35,7 @@ import {
   type CompositeStore, type FloorRegistry, type LarDoc, type SlotReach, type WikiSlotKind,
 } from "@lararium/mesh";
 import * as A from "@automerge/automerge";
-import type { CatalogAccessor } from "@lararium/tw5";
+import { catalogCanonAddress, type CatalogAccessor } from "@lararium/tw5";
 import type { CapabilityProvider } from "./capability-provider.js";
 import type { FaceBagDoor } from "./face-bag-door.js";
 import { resolveOrMintBinding, type BindingKind, type DocMinter } from "./resolve-binding.js";
@@ -145,7 +145,9 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
 
   const wikiUrlOf = async (slug: string): Promise<string> => {
     const key = wikiBagUri(slug);
-    const url = (await args.catalog?.urlOf(key).catch(() => null)) ?? null;
+    // A house canon wiki keys on the Kahu realm's standing document, or on its floor address where the vessel holds none
+    // (`catalogCanonAddress`): no catalog row names house canon.
+    const url = args.catalog ? await catalogCanonAddress(args.catalog, key).catch(() => null) : null;
     if (!url) throw new Error(`slot-doc: wiki "${slug}" registers no canon doc in any registry plane — run \`lares wiki init ${slug}\` first`);
     return url;
   };
@@ -411,21 +413,14 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
         ...(args.floor && args.workbenchRealm ? { working: { floor: args.floor, workbench: async (slug: string) => (await workingDoc(slug, true))!.url } } : {}),
         // THE FLOOR'S DRAFT AND PERSONAL MARGIN lift into the face's own binding of that kind, stood on ask.
         ...(args.floor ? { margins: { floor: args.floor, faceSlot: async (slug: string, kind: "draft" | "personal") => {
-          const url = await args.catalog?.urlOf(wikiBagUri(slug)).catch(() => null);
-          if (!url) return null;
-          const recipeTrace = { wikiDocId: url, libraryBagDocIds: [] as readonly string[] };
-          return (await binding(kind, await computeRecipeFingerprint(recipeTrace), recipeTrace)).url;
+          const trace = await traceOf(slug).catch(() => null);   // the mount's trace where this session mounted the wiki
+          return trace ? (await binding(kind, trace.fingerprint, trace.recipeTrace)).url : null;
         } } } : {}),
         // THE DAEMON WIKI'S FLOOR MEMORY lifts into the face's own device slot of each kind (face-private).
         ...(args.floor ? { daemon: { floor: args.floor, faceSlot: async (kind: "working" | "personal" | "draft") => (await deviceSlot(kind, true))!.url } } : {}),
         // THE CANON OF A WIKI THE VEIL MINTED stays where it stands; the vessel re-files its seal on this word.
         ...(args.floor ? { canon: { floor: args.floor, lifted: (slug: string, documentId: string) => { args.announceLifted?.(slug, documentId); } } } : {}),
-        traceOf: async (slug) => {
-          const url = await args.catalog?.urlOf(wikiBagUri(slug)).catch(() => null);
-          if (!url) return null;
-          const recipeTrace = { wikiDocId: url, libraryBagDocIds: [] as readonly string[] };
-          return { fingerprint: await computeRecipeFingerprint(recipeTrace), recipeTrace };
-        },
+        traceOf: (slug) => traceOf(slug).catch(() => null),
       });
     },
   };

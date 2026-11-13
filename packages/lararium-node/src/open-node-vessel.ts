@@ -4734,7 +4734,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     restartDaemonIsland: p.restartDaemonIsland,
     daemonIslandState: p.daemonIslandState,
     lightFace: p.lightFace, dropFace: p.dropFace, wornOrdinal: p.wornOrdinal, restartWiki: p.restartWiki, promoteActs: p.promoteActs,
-    wikiDocUrl:       result.wikiHandle.url,
+    wikiDocUrl:       result.wikiHandle?.url ?? null,
     catalogHandleUrl: p.catalogHandle.url,
     daemonDocUrl:     p.daemonDocUrl(),
     // A node hearth carries and serves its own face; when it was ADMITTED instead, its bootstrap names the

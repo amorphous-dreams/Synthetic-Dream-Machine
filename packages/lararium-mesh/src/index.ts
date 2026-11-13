@@ -477,6 +477,7 @@ export * from "./chartered-classes.js";
 export * from "./promotion-approval.js";
 export * from "./kahu-cabal-admission.js";
 export * from "./kahu-canon-reach.js";
+export * from "./house-canon-doc.js";
 export * from "./floor-release.js";
 export * from "./floor-answer.js";
 export * from "./floor-pin.js";

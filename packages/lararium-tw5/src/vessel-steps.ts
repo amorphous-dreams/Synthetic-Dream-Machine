@@ -28,7 +28,7 @@ import {
   type SlotUri,
   type WikiRecipe,
   type WikiMountSpec,
-  type IslandGrants, ownEntry, litFaceCatalogOf} from "@lararium/mesh";
+  type IslandGrants, ownEntry, litFaceCatalogOf, isFloorCanonAddress} from "@lararium/mesh";
 import type { VerbTable } from "./verb-dispatcher.js";
 import { effectiveRecipe } from "./recipe-planes.js";
 
@@ -100,7 +100,9 @@ export interface PrimaryMountInputs {
   coreHash:     string | null;
   /** lararium island doc url. */
   islandUrl:    string;
-  /** primary wiki doc url. */
+  /** The primary wiki's canon address: its document url, or a house canon bag's floor address (`floorCanonAddress`) where
+   *  the vessel holds no live document for it. The slot bindings key on it; the island's `wikiUrl` grant carries it only
+   *  where it names a document. */
   wikiUrl:      string;
   /** catalog registry doc url — the island's ACCESS grant (recipe-watch + library
    *  resolution live island-side; without this the island cannot watch its recipe). */
@@ -175,7 +177,7 @@ export async function buildWikiMountSpec(
     islandUrl:  inputs.islandUrl,
     catalogUrl: inputs.catalogUrl,
     ...(faceCatalogUrl ? { faceCatalogUrl } : {}),
-    wikiUrl:    inputs.wikiUrl,
+    ...(isFloorCanonAddress(inputs.wikiUrl) ? {} : { wikiUrl: inputs.wikiUrl }),
     ...(personalUrl     ? { personalUrl } : {}),
     ...(draftUrl        ? { draftUrl    } : {}),
     ...(workingUrl      ? { workingUrl  } : {}),

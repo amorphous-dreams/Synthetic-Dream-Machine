@@ -1,5 +1,6 @@
 import type { AutomergeUrl } from "@lararium/mesh";
 import type { ChangeOrigin, LarTiddlerRecord } from "@lararium/mesh";
+import { houseCanonUrl, resolveHouseCanon } from "@lararium/mesh";
 import { ACTIVE_WIKI_URI, buildActiveWikiRecord, readActiveWikiSlug } from "./active-wiki.js";
 import {
   DAEMON_BAG_ID,
@@ -31,7 +32,7 @@ export function makeInitWikiReactor(opts: WikiMintHandlerOptions): VerbReactor {
     const wikiKey = wikiBagUri(slug);            // canon (bags/{slug}); identity rides wikis/{slug}
     // A system wiki's live canon doc rests in the Kahu realm (the vessel's `systemCanonUrl`); its default recipe stands in the oracle.
     if (SYSTEM_BAGS.has(wikiKey)) {
-      const wikiDocUrl = (await opts.catalog.urlOf(wikiKey)) ?? (await opts.systemCanonUrl?.(wikiKey)) ?? null;
+      const wikiDocUrl = houseCanonUrl(await resolveHouseCanon<string>(wikiKey, { realm: opts.systemCanonUrl, row: () => opts.catalog.urlOf(wikiKey) }));
       const defaultRec = opts.oracle ? await opts.oracle.recordOf(recipeUri("oracle", slug)).catch(() => null) : null;
       const effective = wikiDocUrl && defaultRec && defaultRec.meta?.deleted !== true
         ? await effectiveRecipeOf(slug, { catalog: opts.catalog, oracle: opts.oracle })

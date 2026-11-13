@@ -19,7 +19,7 @@
  */
 
 import type { CompositeStore, Repo, DocHandle, LarDoc, LarOpenPhase, VesselKeel, VesselCoreAssembly } from "@lararium/mesh";
-import { assembleVessel, mountWikiSlot, LARES_DOC_URI, composeVessel, recipeFromRecord, type CapModule } from "@lararium/mesh";
+import { assembleVessel, mountWikiSlot, LARES_DOC_URI, LARARIUM_DOC_URI, composeVessel, recipeFromRecord, type CapModule } from "@lararium/mesh";
 import { mountPrimaryWiki, recipeRecordOf, resolveSlotDocs, type PrimaryMountPool, type BindingResolver } from "./vessel-steps.js";
 import { VerbTable } from "./verb-dispatcher.js";
 
@@ -65,7 +65,7 @@ export interface VesselOrchestration<TPool extends PrimaryMountPool> {
   /** Build the island pool (platform: VesselIslandPool ↔ BrowserVesselIslandPool). */
   makePool:     (daemon: VesselDaemonVm, assembly: VesselCoreAssembly) => TPool | Promise<TPool>;
   /** Capability hook AFTER `live` (browser: broadcast presence). */
-  afterLive?:   (ctx: { pool: TPool; assembly: VesselCoreAssembly; wikiHandle: DocHandle<LarDoc> }) => void;
+  afterLive?:   (ctx: { pool: TPool; assembly: VesselCoreAssembly; wikiHandle: DocHandle<LarDoc> | null }) => void;
 }
 
 export interface VesselCoreResult<TPool extends PrimaryMountPool> {
@@ -73,13 +73,17 @@ export interface VesselCoreResult<TPool extends PrimaryMountPool> {
   assembly:     VesselCoreAssembly;
   pool:         TPool;
   daemon:        VesselDaemonVm;
-  wikiHandle:   DocHandle<LarDoc>;
+  /** The wiki's canon document; null where a house canon wiki stands on the floor alone (`mountWikiSlot`). */
+  wikiHandle:   DocHandle<LarDoc> | null;
   draftHandle:  DocHandle<LarDoc>;
 }
 
 /** The wiki-slot layers the wiki cap exposes (the write + draft handles). */
 export interface WikiSlotComponent {
-  readonly wikiHandle:  DocHandle<LarDoc>;
+  /** The wiki's canon document; null where a house canon wiki stands on the floor alone (`mountWikiSlot`). */
+  readonly wikiHandle:  DocHandle<LarDoc> | null;
+  /** The address the slot bindings key on: the canon document's url, or the bag's floor address (`floorCanonAddress`). */
+  readonly canonAddress: string;
   readonly draftHandle: DocHandle<LarDoc>;
 }
 
@@ -156,20 +160,22 @@ export function wikiCap<TPool extends PrimaryMountPool>(o: VesselOrchestration<T
       const assembly = resolve<VesselCoreAssembly>(CORE_CAP.substrate);
       const slot     = resolve<VesselWikiSlot>(CORE_CAP.wikislot);
       const daemon   = resolve<VesselDaemonVm>(CORE_CAP.daemon);
-      const presetWiki = slot.wikiBagId === LARES_DOC_URI ? assembly.laresHandle ?? undefined : undefined;
+      // A house canon wiki seats the Kahu realm's live document where the keel holds it; where it holds none, the mount lays
+      // no canon layer and keys the slot bindings on the bag's floor address (`mountWikiSlot`).
+      const presetWiki = (slot.wikiBagId === LARES_DOC_URI ? assembly.laresHandle : slot.wikiBagId === LARARIUM_DOC_URI ? assembly.larariumHandle : null) ?? undefined;
       console.info("[mount] awaiting worker ready");
       await daemon.workerEa;
       console.info("[mount] worker ready");
       let slotDocs: ReturnType<typeof resolveSlotDocs> | undefined;
-      const resolveSlots = (wikiUrl: string) => slotDocs ??= resolveSlotDocs(daemon.resolveBinding, { wikiSlug: slot.wikiSlug, wikiUrl });
-      const resolveDraft = async (wikiUrl: string): Promise<string> =>
-        (await resolveSlots(wikiUrl)).draftUrl;
-      const resolveWorking = async (wikiUrl: string): Promise<string | null> =>
-        (await resolveSlots(wikiUrl)).workingUrl;
-      const { wikiHandle, draftHandle } = await mountWikiSlot(o.keel, assembly.composite, slot, resolveDraft, resolveWorking, presetWiki);
+      const resolveSlots = (canonAddress: string) => slotDocs ??= resolveSlotDocs(daemon.resolveBinding, { wikiSlug: slot.wikiSlug, wikiUrl: canonAddress });
+      const resolveDraft = async (canonAddress: string): Promise<string> =>
+        (await resolveSlots(canonAddress)).draftUrl;
+      const resolveWorking = async (canonAddress: string): Promise<string | null> =>
+        (await resolveSlots(canonAddress)).workingUrl;
+      const { wikiHandle, canonAddress, draftHandle } = await mountWikiSlot(o.keel, assembly.composite, slot, resolveDraft, resolveWorking, presetWiki);
       emit("wiki-ready");
       emit("vessel-ready");
-      return { wikiHandle, draftHandle };
+      return { wikiHandle, canonAddress, draftHandle };
     },
   };
 }
@@ -200,7 +206,7 @@ export function mountCap<TPool extends PrimaryMountPool>(o: VesselOrchestration<
       const assembly = resolve<VesselCoreAssembly>(CORE_CAP.substrate);
       const slot     = resolve<VesselWikiSlot>(CORE_CAP.wikislot);
       const daemon   = resolve<VesselDaemonVm>(CORE_CAP.daemon);
-      const { wikiHandle } = resolve<WikiSlotComponent>(CORE_CAP.wiki);
+      const { wikiHandle, canonAddress } = resolve<WikiSlotComponent>(CORE_CAP.wiki);
       const pool     = resolve<TPool>(CORE_CAP.pool);
 
       // ── daemon-first sovereignty gate → primary-wiki mount ──
@@ -223,7 +229,7 @@ export function mountCap<TPool extends PrimaryMountPool>(o: VesselOrchestration<
         wikiSlug:     slot.wikiSlug,
         coreHash:     assembly.coreHash,
         islandUrl:    assembly.islandHandle.url,
-        wikiUrl:      wikiHandle.url,
+        wikiUrl:      canonAddress,
         catalogUrl:   assembly.catalogHandle.url,
         ...(libraryBags ? { libraryBags } : {}),
         ...(pluginOfferings ? { pluginOfferings } : {}),

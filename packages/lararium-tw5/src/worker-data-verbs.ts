@@ -15,7 +15,7 @@
  */
 
 import { tiddlerText, mkDaemonResidencyOp, mkDaemonWikiAlert, bagStackFromRec, recipeUri, SYSTEM_BAGS, wikiBagUri, wikiSlotUri, WARD_AUDIT_URI_PREFIX, type CompositeStore, type DaemonMsg_ResidencyOp, type DaemonMsg_WikiAlert, type LarDoc, type LarTiddlerRecord, type Repo, type WikiSlotKind, ownEntry } from "@lararium/mesh";
-import { plainEntries, plainField, storedDeleted, houseCanonBagsSeated } from "@lararium/mesh";
+import { plainEntries, plainField, storedDeleted, houseCanonBagsSeated, houseCanonUrl, resolveHouseCanon } from "@lararium/mesh";
 import { ACTIVE_WIKI_URI } from "./active-wiki.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import { findOrThrow, makeCatalogAccessor, type CatalogAccessor } from "./catalog-accessor.js";
@@ -190,7 +190,7 @@ export function makeListWikisReactor(catalog: CatalogAccessor, sysPlane?: Catalo
         if (!slug || slug.includes("/")) continue;
         const bagUri = wikiBagUri(slug);
         const own = catTiddlers[recipeUri("catalog", slug)];
-        const row: (typeof wikis)[number] = { slug, uri: bagUri, automergeUrl: (await catalog.urlOf(bagUri)) ?? (await systemCanonUrl?.(bagUri)) ?? null, kind: "system", composition: "default" };
+        const row: (typeof wikis)[number] = { slug, uri: bagUri, automergeUrl: houseCanonUrl(await resolveHouseCanon<string>(bagUri, { realm: systemCanonUrl, row: () => catalog.urlOf(bagUri) })), kind: "system", composition: "default" };
         if (own && !own.meta?.deleted) {
           row.composition = "own";
           row.defaultDiffers = bagStackFromRec(own).join(" ") !== bagStackFromRec(rec).join(" ");

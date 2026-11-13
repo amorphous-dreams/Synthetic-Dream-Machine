@@ -32,7 +32,7 @@ import {
   makeWikiActivationCap,
   slugFromUri, wikiBagUri, tiddlerText, recipeUri, deriveWikiRecipe,
   DEFAULT_HOT_CAP, DEFAULT_IDLE_MS, DEFAULT_SWEEP_INTERVAL_MS,
-  pinTiddlerUri, pinTiddlerRecord, scanPinTiddlers, ownEntry} from "@lararium/mesh";
+  pinTiddlerUri, pinTiddlerRecord, scanPinTiddlers, ownEntry, realmStandingDocUrl, wikiCanonAddress} from "@lararium/mesh";
 import { plainRecordOrNull, plainField, storedRecord } from "@lararium/mesh";
 import type {
   ActivationPool, WikiActivationCap, ResolveWikiSpec,
@@ -208,8 +208,13 @@ export function makeVesselResidency(
     //    ACCESS, so no vessel-composite layer mount is needed here. ──
     const resolveWikiSpec: ResolveWikiSpec = async (wikiId) => {
       const slug    = slugFromUri(wikiId);
+      // The wiki's canon address by the one order (`wikiCanonAddress`): a house canon wiki keys on the Kahu realm's standing
+      // document, or on its floor address where the vessel holds none; a user wiki keys on its catalog row.
       const row = ownEntry(catalogHandle.doc()?.tiddlers, wikiBagUri(slug));
-      const wikiUrl = plainField(row, "kind") === "private-synced" ? null : tiddlerText(row) ?? null;
+      const wikiUrl = plainField(row, "kind") === "private-synced" ? null : await wikiCanonAddress(wikiBagUri(slug), {
+        realm: (bag) => realmStandingDocUrl(catalogHandle.doc(), bag),
+        row: () => tiddlerText(row) ?? null,
+      });
       // The libraries AND the plugin offerings the wiki's recipe record names lay at boot
       // (`recipeFromRecord`) — R3: this grain's OWN recipe, never the vessel-wide floor.
       const rec = plainRecordOrNull(ownEntry(catalogHandle.doc()?.tiddlers, recipeUri("catalog", slug)));

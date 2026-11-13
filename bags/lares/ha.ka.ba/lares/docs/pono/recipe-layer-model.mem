@@ -198,7 +198,7 @@ The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/larar
 
 ''What remains'' (owed, named):
 
-* ''A stand-in row for house canon.'' No registry row names a house-canon bag by law, and the live documents rest in the Kahu realm (`standKahuCanon`). One mount still files one: the `lares` wiki mounted with no realm document named (the faceless floor's wiki) mints a blank canon document and writes its url under `bags/lares` in the catalog (`mountWikiSlot` through `resolveCatalogRow`). The action door, the meme door and the offer doors read past that row to the realm's document where the vessel names one (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/offering`>> #/the-canon-offer); the library resolver (`libraryDocUrl`), `list-wikis` and `wiki init` answer the row first. Retiring the row, and turning those three reads, stay owed.
+* ''A stale catalog row for house canon.'' No mount files a row for a house-canon bag: a wiki standing on one mounts the Kahu realm's standing document where the vessel holds it, and where it holds none `mountWikiSlot` mints no document, lays no canon layer, and keys the slot bindings on the bag's floor address (`floorCanonAddress`). One resolver (`resolveHouseCanon`) answers every door, the realm's standing document first (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/offering`>> #/the-canon-offer). A vessel that booted under the earlier mount may still hold a `bags/lares` row in its catalog; it answers no door where the realm names a document, and it still answers where the realm names none. Burning that row stays owed.
 * ''Disk legs for non-meme files:'' the siting cascades ride (#/tw5-surfaces); binaries under `bags/` read OPEN (talk-story).
 
 <<~/ahu>>
@@ -305,6 +305,6 @@ The spiral walked every carrier the #/as-written table names and evergreened the
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;BgB1_K2OHMm2zB2fEF9CbSUuyLJPCZ3kSORDbfP1wxI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;EcNSMeJsgTeHbq2HuOuFyhTMUVH-NcxgqpFT1wOIGyc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

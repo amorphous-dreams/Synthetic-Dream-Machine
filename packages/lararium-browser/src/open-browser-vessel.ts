@@ -2597,7 +2597,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // Presence — ephemeral, does not travel via CRDT. The PLACE announces itself, never a face:
       // being-as-place costs nothing civic, so a vessel key is the right thing to be seen by here.
       // Carried in the canonical DID form (`0x` + verifying key) so the field holds what it names.
-      wikiHandle.broadcast({ did: `0x${vesselVerifyingKey}` });
+      wikiHandle?.broadcast({ did: `0x${vesselVerifyingKey}` });
       // Boot DEMOTED to a pin (browser gradient): the daemon surface stays always-live
       // on its own; the home wiki registers in the ONE collector as a PINNED `wiki` grain
       // (the single rotatable pin this constrained vessel grants besides the daemon bag).
@@ -2616,7 +2616,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
 
   // The connection snapshot carries the actual mounted document alongside the crossing verdict, so a
   // served page can report which node wiki it rendered instead of treating a live socket as mount proof.
-  connectionState.setWikiDocUrl(result.wikiHandle.url);
+  if (result.wikiHandle) connectionState.setWikiDocUrl(result.wikiHandle.url);
 
   const bootedFace = social.personaGroupId ?? null;
   // THE VESSEL'S FLOOR PIN on the browser (w26-floor-lane#/the-vessel-pin): the same Nexus the porch read names, the control
@@ -2651,7 +2651,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     activeWikiId:     slotActiveWikiId,
     activeWikiSource: wikiAwaitsFace ? "floor" : "boot-arg",
     wikiAwaitsFace,
-    wikiDocUrl:       result.wikiHandle.url,
+    wikiDocUrl:       result.wikiHandle?.url ?? null,
     catalogHandleUrl: catalogHandle.url,
     daemonDocUrl:     social.daemonUrl,
     hearthDaemonUrl:  social.hearthDaemonUrl ?? null,

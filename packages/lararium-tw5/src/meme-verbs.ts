@@ -59,7 +59,7 @@
  */
 
 import {
-  AutomergeDocStore, NoWorkingLayerRefusal, VerbRefusal, requireKahuReach, isHouseCanonBag, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf,
+  AutomergeDocStore, NoWorkingLayerRefusal, VerbRefusal, requireKahuReach, resolveHouseCanon, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf,
   REALM_ID_TIDDLER, realmDocPointer, realmDocUrl, realmStewardPointer, realmStandingPointer, readRealmStanding, mayWriteRealmBag, tiddlerText,
   type ChangeOrigin, type CompositeStore, type KahuReachSource, type LarTiddlerRecord, type LarTiddlerStore, type WikiSlotKind,
 } from "@lararium/mesh";
@@ -131,18 +131,20 @@ export function memeVerbOptions(
       // HOUSE CANON'S ONE DOCUMENT: where the vessel names the Kahu realm's standing document for the bag, that document
       // answers ahead of every registry plane; a registry row that names another document for the bag answers only where the
       // realm names none (a rig, a vessel outside every realm).
-      if (systemCanonUrl && isHouseCanonBag(bag)) {
-        const url = await systemCanonUrl(bag).catch(() => null);
-        if (url) {
-          const handle = await findOrThrow(ctx.repo, url, bag).catch(() => null);
-          return handle ? new AutomergeDocStore(handle, bag) : null;
-        }
-      }
-      for (const accessor of planes) {
-        const handle = await accessor.find(key).catch(() => null);
-        if (handle) return new AutomergeDocStore(handle, bag);
-      }
-      return null;
+      const answer = await resolveHouseCanon<LarTiddlerStore>(bag, {
+        realm: systemCanonUrl ? (b) => systemCanonUrl(b).catch(() => null) : undefined,
+        row: async () => {
+          for (const accessor of planes) {
+            const handle = await accessor.find(key).catch(() => null);
+            if (handle) return new AutomergeDocStore(handle, bag);
+          }
+          return null;
+        },
+      });
+      if (answer === null) return null;
+      if ("row" in answer) return answer.row;
+      const handle = await findOrThrow(ctx.repo, answer.realm, bag).catch(() => null);
+      return handle ? new AutomergeDocStore(handle, bag) : null;
     },
     // The realm's WRITE answer: the standing registration's doc as a writable store, for a steward alone.
     realmWritable: async (bag, namedRealm) => {

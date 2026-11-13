@@ -43,7 +43,7 @@ import type {
   ResidencyAction, AddAction, CopyAction, MoveAction, ClearAction, DropAction, LoadAction, IngestAction, CreateAction,
   WikiSlotKind,
 } from "@lararium/mesh";
-import { isHouseCanonBag, holdsKahuReach, plainRecordOrNull, requireKahuReach, ownEntry } from "@lararium/mesh";
+import { isHouseCanonBag, holdsKahuReach, plainRecordOrNull, requireKahuReach, resolveHouseCanon, ownEntry } from "@lararium/mesh";
 import type { KahuReachSource } from "@lararium/mesh";
 import {
   ACTION_VERBS, type ActionVerb, AutomergeDocStore,
@@ -371,27 +371,34 @@ export function makeBagAccess(opts: ActionHandlerOptions): BagAccess {
       // names one, THAT document answers ahead of every registry plane (the document the keel mounts, the mirror projects, the
       // retire and the floor cut read), so a registry row that names another document for the bag never takes a canon write.
       // A realm document that fails to arrive refuses by name; it never falls to a row.
-      let realmNamed = false;
-      if (!store && reach.systemCanonUrl && isHouseCanonBag(bag)) {
-        const url = await reach.systemCanonUrl(bag).catch(() => null);
-        realmNamed = !!url;
-        const handle = url ? await findOrThrow(reach.repo, url, bag).catch((err: unknown) => {
-          causes.set(bag, [...(causes.get(bag) ?? []), `realm: ${err instanceof Error ? err.message : String(err)}`]);
-          return null;
-        }) : null;
-        store = handle ? new AutomergeDocStore(handle, bag) : null;
-      }
-      if (!store && !realmNamed) {
-        const held: string[] = [];
-        for (const { name, accessor } of planes) {
-          try {
-            store = await accessor.storeOf(bag);
-            if (store) break;
-          } catch (err) {
-            held.push(`${name}: ${err instanceof Error ? err.message : String(err)}`);
-          }
+      // The one order (`resolveHouseCanon`): the registry planes are walked only where the realm names none.
+      if (!store) {
+        const realm = reach.systemCanonUrl;
+        const answer = await resolveHouseCanon<LarTiddlerStore>(bag, {
+          realm: realm ? (b) => realm(b).catch(() => null) : undefined,
+          row: async () => {
+            const held: string[] = [];
+            for (const { name, accessor } of planes) {
+              try {
+                const found = await accessor.storeOf(bag);
+                if (found) return found;
+              } catch (err) {
+                held.push(`${name}: ${err instanceof Error ? err.message : String(err)}`);
+              }
+            }
+            if (held.length > 0) causes.set(bag, held);
+            return null;
+          },
+        });
+        if (answer && "realm" in answer) {
+          const handle = await findOrThrow(reach.repo, answer.realm, bag).catch((err: unknown) => {
+            causes.set(bag, [...(causes.get(bag) ?? []), `realm: ${err instanceof Error ? err.message : String(err)}`]);
+            return null;
+          });
+          store = handle ? new AutomergeDocStore(handle, bag) : null;
+        } else if (answer) {
+          store = answer.row;
         }
-        if (!store && held.length > 0) causes.set(bag, held);
       }
       // A wiki's instance slot (`wikis/<slug>/<kind>`) — the doc THE ONE resolver names, the same
       // doc its island mounts; reached by access, never mounted here.

@@ -665,7 +665,7 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
   mountLiveStatus(vesselEl, vessel.connectionState);
   row(vesselEl, "wiki", result.activeWikiId);
   if (result.wikiAwaits) row(vesselEl, "wiki awaits", result.wikiAwaits, "warn");
-  row(vesselEl, "wiki doc", result.wikiDocUrl);
+  row(vesselEl, "wiki doc", result.wikiDocUrl ?? "(the floor: no live canon document on this vessel)");
   row(vesselEl, "oracle doc", result.oracleDocUrl ?? "(local genesis)");
   showPageInstruments();
   // THE SEVEN-DAY CLOCK, REPORTED — the eviction class + estimate() as one line (never a fault), and the

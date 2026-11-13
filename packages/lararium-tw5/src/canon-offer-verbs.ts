@@ -15,7 +15,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/offering#/the-canon-offer
  */
 import {
-  AutomergeDocStore, CanonOfferRefused, VerbRefusal, bagUri, findOrThrow, isHouseCanonBag, offerCanonRecords, promoteCanonOffer, readCanonOffers, requireKahuReach,
+  AutomergeDocStore, CanonOfferRefused, VerbRefusal, bagUri, findOrThrow, isHouseCanonBag, offerCanonRecords, resolveHouseCanon, promoteCanonOffer, readCanonOffers, requireKahuReach,
   showCanonOffer, workingLayerOfCanon,
   type CanonOfferBoard, type CanonOfferPorts, type LarTiddlerStore, type OfferSigner,
 } from "@lararium/mesh";
@@ -62,11 +62,10 @@ async function portsOf(opts: CanonOfferVerbOptions, args: Readonly<Record<string
  */
 async function canonStoreOf(opts: CanonOfferVerbOptions, bag: string): Promise<LarTiddlerStore | null> {
   const reach = opts.reach;
-  if (reach?.systemCanonUrl && isHouseCanonBag(bag)) {
-    const url = await reach.systemCanonUrl(bag);
-    if (url) return new AutomergeDocStore(await findOrThrow(reach.repo, url, `${bag} (the Kahu realm's live canon)`), bag);
-  }
-  return makeBagAccess(opts).read(bag);
+  const answer = await resolveHouseCanon<LarTiddlerStore>(bag, { realm: reach?.systemCanonUrl, row: () => makeBagAccess(opts).read(bag) });
+  if (answer === null) return null;
+  if ("row" in answer) return answer.row;
+  return new AutomergeDocStore(await findOrThrow(reach!.repo, answer.realm, `${bag} (the Kahu realm's live canon)`), bag);
 }
 
 /** Run a door, answering a named refusal as data (`refusal`, `why`), the way the action verbs answer theirs. */

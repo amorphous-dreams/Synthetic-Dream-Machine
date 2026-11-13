@@ -96,7 +96,7 @@ export interface VesselStatus {
     readonly activeWikiId: string;
     /** The wiki the vessel stands in for on its floor wiki, waiting on a face: its own line (`wiki-awaits-face`), or absent. */
     readonly wikiAwaits?: string;
-    readonly wikiDocUrl: string;
+    readonly wikiDocUrl: string | null;
     readonly oracleDocUrl: string | null;
   };
 }

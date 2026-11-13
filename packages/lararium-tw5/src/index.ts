@@ -224,7 +224,7 @@ export type { RestampBagTierOptions } from "./bag-tier-restamp.js";
 export type { EpochHandlerOptions, RotateRecipeOptions } from "./compaction-handlers.js";
 export { makeResidencyStatsReactor } from "./residency-handlers.js";
 export type { ResidencyHandlerOptions } from "./residency-handlers.js";
-export { makeCatalogAccessor, makeCatalogAccessorOver, findOrThrow } from "./catalog-accessor.js";
+export { makeCatalogAccessor, makeCatalogAccessorOver, findOrThrow, catalogCanonAddress } from "./catalog-accessor.js";
 export type { CatalogAccessor } from "./catalog-accessor.js";
 export { RECIPE_PLANES, effectiveRecipe, effectiveRecipeOf } from "./recipe-planes.js";
 export type { RecipePlane, EffectiveRecipe } from "./recipe-planes.js";

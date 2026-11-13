@@ -9,7 +9,7 @@
  */
 import { describe, test, expect } from "vitest";
 import type { Verb } from "@lararium/mesh";
-import { BAG_IDS, bagUri } from "@lararium/mesh";
+import { BAG_IDS, bagUri, storedLarRecord, REALM_ID_TIDDLER, REALM_BAG_DOMAIN, realmDocPointer, realmDocUrl, realmStandingPointer } from "@lararium/mesh";
 import { gateRoutedVerb, routedInnerBags } from "../src/verb-local-dispatch.js";
 import { requireKahuReach, type CapabilityVerifier } from "@lararium/mesh";
 import { kahuHand, strangerHand } from "../../lararium-mesh/tests/kahu-reach-fixture.js";
@@ -35,7 +35,7 @@ describe("a routed envelope's system bags reach the Kahu gate", () => {
   });
 });
 
-describe("a recipe's library bag mounts from the registry row, else from the Kahu realm for a system bag", () => {
+describe("a recipe's library bag mounts from the Kahu realm's standing document for a house canon bag, else from its registry row", () => {
   const accessor = (rows: Record<string, string>, doc: unknown): CatalogAccessor => ({
     urlOf: async (bag) => rows[bag] ?? null,
     recordOf: async () => null,
@@ -47,6 +47,19 @@ describe("a recipe's library bag mounts from the registry row, else from the Kah
     expect(await libraryDocUrl(empty, bagUri("garden"))).toBe("automerge:garden");
     expect(await libraryDocUrl(empty, bagUri("orchard"))).toBeNull();
     expect(await libraryDocUrl(empty, BAG_IDS.lararium)).toBeNull();
+  });
+
+  test("a house canon library mounts from the realm's standing document while a registry row names another (CONTROL: with no realm standing, the row answers; a user bag reads its row beside a realm)", async () => {
+    const REALM = "ab".repeat(32);
+    const tiddlers: Record<string, unknown> = {};
+    const put = (k: string, text: string) => { tiddlers[k] = storedLarRecord(k, { text }, "test"); };
+    put(REALM_ID_TIDDLER, REALM);
+    put(realmDocPointer(REALM), realmDocUrl(REALM));
+    put(realmStandingPointer(REALM), JSON.stringify([{ kind: REALM_BAG_DOMAIN, realmId: REALM, bagUri: BAG_IDS.lares, docUrl: "automerge:lares-live", keptBy: ["cd".repeat(32)], readTier: "contract", signatures: [{ signer: "cd".repeat(32), sig: "00".repeat(64) }] }]));
+    const rows = { [BAG_IDS.lares]: "automerge:stray", [bagUri("garden")]: "automerge:garden" };
+    expect(await libraryDocUrl(accessor(rows, { tiddlers }), BAG_IDS.lares)).toBe("automerge:lares-live");
+    expect(await libraryDocUrl(accessor(rows, { tiddlers }), bagUri("garden"))).toBe("automerge:garden");
+    expect(await libraryDocUrl(accessor(rows, { tiddlers: {} }), BAG_IDS.lares)).toBe("automerge:stray");
   });
 });
 
