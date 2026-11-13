@@ -555,7 +555,7 @@ function storeDoorRowsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     // only counts where a charter seat sealed it, and the seat keys rest beside this door, never in the island that wrote canon.
     "offer-retire": (args) => answer("offer-retire", async () => ({
       ...(await runOfferRetire({
-        repo, sealHome, cid: need("offer-retire", args, "cid"), ...opt("aid", str(args["aid"])),
+        repo, sealHome, cid: need("offer-retire", args, "cid"), ...opt("aid", str(args["aid"])), ...(args["check"] === true ? { check: true } : {}),
         ...(Array.isArray(args["over"]) ? { over: (args["over"] as unknown[]).filter((o): o is { title: string; canon: string | null } =>
           typeof o === "object" && o !== null && typeof (o as { title?: unknown }).title === "string") } : {}),
       })),

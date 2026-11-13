@@ -488,17 +488,27 @@ export interface CanonOfferOutcome { readonly offer: CanonOffer; readonly landed
  * else: no canon read gates it and no canon document moves.
  */
 export async function offerCanonRecords(ports: CanonOfferPorts & {
-  readonly source: OfferRecordReader;
+  readonly source: OfferRecordReader & { listVisible?(): Promise<string[]> };
   readonly signer: OfferSigner;
   readonly face:   string;
 }, args: { readonly bag: string; readonly titles: readonly string[] }): Promise<CanonOfferOutcome> {
   const bag = bagOf(args.bag);
   if (!isHouseCanonBag(bag)) throw new CanonOfferRefused("offer-not-canon", `${bag} names no house-canon bag; an offer goes toward house canon alone`);
   for (const title of args.titles) if (offerWithheldTitle(title)) throw new CanonOfferRefused("offer-withheld-title", `"${title}" stays home (a withheld or cap/** title never leaves it)`);
+  // A NAMED TITLE CARRIES ITS FRAGMENTS. A meme rests as a root record that calls its slot records (`<root>#/<slot>`), so a
+  // root offered alone lands in canon as calls with nothing behind them. Every live record the source holds under `<title>#`
+  // rides with the title that names it; a fragment a person also named rides once.
+  const visible = ports.source.listVisible ? await ports.source.listVisible() : [];
+  const titles = [...new Set(args.titles.flatMap((title) => [title, ...visible.filter((t) => t.startsWith(`${title}#`)).sort()]))];
+  const doubled = args.titles.find((t, i) => args.titles.indexOf(t) !== i);
+  if (doubled !== undefined) throw new CanonOfferRefused("offer-title-doubled", `"${doubled}" named twice`);
   const records: Array<{ record: LarTiddlerRecord; base: string | null }> = [];
-  for (const title of args.titles) {
+  for (const title of titles) {
     const record = await ports.source.get(title);
-    if (!record || record.meta?.deleted === true) throw new CanonOfferRefused("offer-not-in-source", `the working layer holds no live record of "${title}"`);
+    if (!record || record.meta?.deleted === true) {
+      if (!args.titles.includes(title)) continue;   // a fragment tombstoned since the listing
+      throw new CanonOfferRefused("offer-not-in-source", `the working layer holds no live record of "${title}"`);
+    }
     records.push({ record, base: overrideBaseOf(record) });
   }
   const body = openCanonOffer({ nexus: ports.nexus, bag, face: ports.face, offerer: ports.signer.key, records });
@@ -609,6 +619,27 @@ export async function promoteCanonOffer(ports: CanonOfferPorts & {
   return { moved: true, cid: s.offer.cid, bag: s.offer.body.bag, wrote: decision.writes.map((r) => r.title), already: decision.landed.map((r) => r.title), over: decision.over };
 }
 
+/** The steward's key stands a seat of the Nexus's charter at its epoch, proven off the lineage it carries; else `offer-retire-unseated`. */
+function requireCharterSeat(ports: { readonly nexus: string; readonly steward: OfferSteward }): void {
+  const proven = rosterOfLineage(ports.nexus, ports.steward.lineage, ports.steward.epoch);
+  if (!proven.ok || !proven.roster.keys.includes(ports.steward.key)) {
+    throw new CanonOfferRefused("offer-retire-unseated", `the key ${ports.steward.key.slice(0, 16)}… stands no seat of this Nexus's charter at that epoch, so it retires nothing`);
+  }
+}
+
+/**
+ * THE SEAT CHECK A PROMOTION RUNS FIRST. A promotion lands as two acts on two doors: the canon write under the Kahu reach, then
+ * the retire under a charter seat. A vessel that could never seal the retire learns so here, before canon moves: the offer must
+ * count on the table (`offer-unknown`) and the steward's key must stand a seat (`offer-retire-unseated`). It reads alone, and
+ * answers whether the offer still stands open.
+ */
+export async function readyCanonOfferRetire(ports: CanonOfferPorts & { readonly steward: OfferSteward }, args: { readonly cid: string }):
+  Promise<{ readonly cid: string; readonly standing: "open" | "retired" }> {
+  const s = standingOf(ports, args.cid);
+  requireCharterSeat(ports);
+  return { cid: s.offer.cid, standing: s.retired === null ? "open" : "retired" };
+}
+
 export type CanonRetireOutcome =
   | { readonly retired: false; readonly cid: string; readonly retire: string; readonly why: "retired" }
   | { readonly retired: true; readonly cid: string; readonly retire: string };
@@ -619,17 +650,27 @@ export type CanonRetireOutcome =
  * land it keyed to the offer's CID and its own. A seat the lineage does not prove refuses `offer-retire-unseated` before it signs.
  * A replay meets the standing retire and lands nothing.
  */
-export async function retireCanonOffer(ports: CanonOfferPorts & { readonly steward: OfferSteward },
+export async function retireCanonOffer(ports: CanonOfferPorts & {
+  readonly steward: OfferSteward;
+  /**
+   * THE WAIT FOR A TRAILING REPLICA. The canon write lands in the island that holds the Kahu reach; the seat's door reads its own
+   * replica of the same document, which the write reaches a moment later. Asked while a record still reads unlanded: resolve
+   * true to read again (after whatever pause the host keeps), false once the wait runs out. Absent: one read decides.
+   */
+  readonly settle?: () => Promise<boolean>;
+},
   args: { readonly cid: string; readonly over?: ReadonlyArray<{ readonly title: string; readonly canon: string | null }> }): Promise<CanonRetireOutcome> {
   const s = standingOf(ports, args.cid);
   if (s.retired !== null) return { retired: false, cid: s.offer.cid, retire: s.retired.cid, why: "retired" };
-  const proven = rosterOfLineage(ports.nexus, ports.steward.lineage, ports.steward.epoch);
-  if (!proven.ok || !proven.roster.keys.includes(ports.steward.key)) {
-    throw new CanonOfferRefused("offer-retire-unseated", `the key ${ports.steward.key.slice(0, 16)}… stands no seat of this Nexus's charter at that epoch, so it retires nothing`);
-  }
-  const canon = await ports.canon(s.offer.body.bag);
-  const unlanded: string[] = [];
-  for (const r of s.offer.body.records) if (!sameDigest(canonDigestOf(canon ? await canon.get(r.title) : null), r.digest)) unlanded.push(r.title);
+  requireCharterSeat(ports);
+  const unlandedNow = async (): Promise<string[]> => {
+    const canon = await ports.canon(s.offer.body.bag);
+    const out: string[] = [];
+    for (const r of s.offer.body.records) if (!sameDigest(canonDigestOf(canon ? await canon.get(r.title) : null), r.digest)) out.push(r.title);
+    return out;
+  };
+  let unlanded = await unlandedNow();
+  while (unlanded.length > 0 && ports.settle !== undefined && await ports.settle()) unlanded = await unlandedNow();
   if (unlanded.length > 0) throw new CanonOfferRefused("offer-not-landed", `canon does not yet carry ${unlanded.join(", ")}; promote first, then retire`);
   const retire = await signCanonOfferRetire({
     kind: CANON_OFFER_RETIRE_DOMAIN, nexus: ports.nexus, offer: s.offer.cid, steward: ports.steward.key, epoch: ports.steward.epoch,

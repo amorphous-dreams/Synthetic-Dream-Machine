@@ -415,6 +415,7 @@ The same law carries a second gift: records, not plugins. A face that holds no s
 !!! The offer — a signed, immutable record keyed by its CID
 
 * The offering face's atom signs `{kind, nexus, bag, face, offerer, records}`; each record carries its fields, its carrier digest (`carrierHashOf`, the identity every carrier already carries — "memes already have hashes") and its ''fork base'': the canon carrier its working copy forked from (`overrideBase`), or none for a new title.
+* ''A named title carries its fragments.'' A meme rests as a root record that calls its slot records (`<root>#/<slot>`); the offer takes every live record the working layer holds under `<title>#` with the title that names it, so a promoted meme reads back in canon as the text the working layer read before the offer. A root offered alone would land as calls with nothing behind them.
 * The CID names the body's canonical bytes. No clock, counter or arrival order rides it, so the same offer twice keys one row: ''a replay lands nothing''.
 * A withheld title (the projection filter's base), a control or secret home row, and every `cap/**` row under a bag home refuse to leave home (`offer-withheld-title`); a row forged past the door carrying one never counts on the board.
 
@@ -428,7 +429,8 @@ One board per Nexus (`canonOfferDocUrl`). Appending a self-certifying row grants
 * Freshness ''warns'', never refuses a read: a record whose base no longer names canon's carrier reads "canon is fresher" in every listing. A promotion over it takes the steward's explicit choice (`--over-fresher`); the retire records the fresher canon digests it overrode. No auto-merge.
 * The promotion writes the offered bytes; until a retire lands, the offer reads open and a replayed promotion writes nothing (every record reads `landed`).
 * ''The retire seals under a seat of the Nexus's charter'' (`retireCanonOffer`), and only once canon carries every offered digest (`offer-not-landed` otherwise). It carries the charter's epoch lineage, as a floor release does, so every reader proves the seat off the record alone: the genesis epoch's address IS the Nexus AID, each step verifies under the prior threshold, and the signer stands a seat of the named epoch. A retire any other key sealed reads `retire-unauthorised`, retires nothing, and `offer show` names it. The row keys to the offer's CID and then its own (`<offer cid>/<retire cid>`), so a forgery written first takes no key the steward needs. The offer row stays; never a deletion.
-* The seat keys rest in the steward's vault beside the store door, never in the daemon island that writes canon: the canon write rides the daemon verb `offer-promote` (under the Kahu reach), and the retire rides the store-door row `offer-retire`. `lares meme offer promote` runs both.
+* The seat keys rest in the steward's vault beside the store door, never in the daemon island that writes canon: the canon write rides the daemon verb `offer-promote` (under the Kahu reach), and the retire rides the store-door row `offer-retire`. `lares meme offer promote` runs both as one outcome: the seat answers first (`readyCanonOfferRetire`, the row's `check`), so a vessel that holds no charter seat refuses by name before canon moves, having written nothing; then the canon write; then the retire, which waits briefly while its own replica of canon takes the write.
+* ''One canon document.'' The offer doors read and write the Kahu realm's standing document for the bag wherever the vessel names one, the document the retire and the floor cut read; a registry row that names another document for the bag never answers a promotion.
 
 !!! The release wiring
 
@@ -512,6 +514,6 @@ One board per Nexus (`canonOfferDocUrl`). Appending a self-certifying row grants
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;9BYv7M4ggJ6Qd1h-LfYTb2Gg9qYo9DYf79a4HUDqaBU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_YNqBELqRmzQUt2oCWd2fBY1if3v5PHSl7PlzfFO4CU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

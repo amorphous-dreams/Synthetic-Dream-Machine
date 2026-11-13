@@ -1202,33 +1202,82 @@ export function offerPlan(args: ParsedArgs): { readonly verb: "offer-make" | "of
 
 type OfferRow = { cid: string; bag: string; face: string; retired: { steward: string } | null; refusedRetires?: Array<{ retire: string; reason: string; steward?: string }>; fresher: boolean; records: Array<{ title: string; freshness: string }> };
 
+/** A daemon offer verb refused: the code, the message and the named refusal its answer carried. */
+class OfferVerbRefused extends Error {
+  constructor(readonly code: "cap-denied" | "verb-error", message: string, readonly requestId: string, readonly refusal?: string) { super(message); }
+}
+
+/** The doors one promotion walks: the charter seat's check and retire on the store door, the canon write on the daemon's. */
+export interface OfferPromoteDoors {
+  /** The seat check (`offer-retire { check }`): throws where this vessel could seal no retire. It writes nothing. */
+  readonly seat:    () => Promise<Record<string, unknown>>;
+  /** The canon write (`offer-promote`); a refusal throws. */
+  readonly promote: () => Promise<Record<string, unknown>>;
+  /** The retire (`offer-retire`), given the fresher canon digests the promotion chose to override. */
+  readonly retire:  (over: unknown) => Promise<Record<string, unknown>>;
+}
+
+export type OfferPromoteOutcome =
+  | { readonly ok: true; readonly out: Record<string, unknown>; readonly retire: Record<string, unknown> | null }
+  | { readonly ok: false; readonly wrote: boolean; readonly message: string; readonly out?: Record<string, unknown>; readonly retire?: Record<string, unknown> };
+
+/**
+ * ONE PROMOTION, ONE OUTCOME (offering#/the-canon-offer). The canon write and the retire ride two doors, so the seat that seals
+ * the retire answers FIRST: a vessel that holds no charter seat refuses by name before canon moves, having written nothing. Then
+ * the canon write, then the retire. A retire that still refuses after the write names both halves and the act that completes it:
+ * a second promote writes nothing canon already carries and retires.
+ */
+export async function promoteThenRetire(doors: OfferPromoteDoors): Promise<OfferPromoteOutcome> {
+  const said = (err: unknown): string => (err instanceof Error ? err.message : String(err));
+  try { await doors.seat(); }
+  catch (err) { return { ok: false, wrote: false, message: `nothing was written: this vessel can seal no retire for the offer (${said(err)})` }; }
+  const out = await doors.promote();
+  if (out["moved"] !== true) return { ok: true, out, retire: null };
+  try { return { ok: true, out, retire: await doors.retire(out["over"] ?? []) }; }
+  catch (err) {
+    const retire = { refused: said(err) };
+    return { ok: false, wrote: true, out, retire, message: `the canon write landed; the retire did not: ${retire.refused}; run the promote again to retire it (canon already carries the bytes, so it writes nothing)` };
+  }
+}
+
 async function memeOffer(args: ParsedArgs): Promise<number> {
   const plan = offerPlan(args);
-  const result = await runVerb(plan.verb, plan.args, await vesselDid());
-  const outcome = readVerbOutcome(result);
-  const out = outcome.output;
-  if (!outcome.ok || out["ok"] === false) {
-    const message = outcome.error ?? String(out["why"] ?? out["refusal"] ?? "the verb refused");
-    const code = /kahu-reach/.test(message) ? "cap-denied" : /cap-denied/.test(message) ? "cap-denied" : "verb-error";
-    emit(args, { ok: false, requestId: result.requestId, error: { code, message, ...(typeof out["refusal"] === "string" ? { refusal: out["refusal"] } : {}) }, human: () => console.error(`lares meme offer: ${message}`) });
-    return exitFor(code);
-  }
-  const short = (cid: unknown): string => `${String(cid).slice(0, 16)}…`;
-  // THE RETIRE (offering#/the-canon-offer): once canon carries the bytes, a seat of the charter held in this vault retires the
-  // offer on the store door; a retire no seat sealed counts nothing to any reader. A vessel holding no seat says so, and the offer
-  // reads open until a seat's vessel retires it.
+  let requestId = "";
+  const daemon = async (): Promise<Record<string, unknown>> => {
+    const result = await runVerb(plan.verb, plan.args, await vesselDid());
+    requestId = result.requestId;
+    const outcome = readVerbOutcome(result);
+    const answer = outcome.output;
+    if (!outcome.ok || answer["ok"] === false) {
+      const message = outcome.error ?? String(answer["why"] ?? answer["refusal"] ?? "the verb refused");
+      throw new OfferVerbRefused(/kahu-reach|cap-denied/.test(message) ? "cap-denied" : "verb-error", message, result.requestId, typeof answer["refusal"] === "string" ? answer["refusal"] : undefined);
+    }
+    return answer;
+  };
+  let out: Record<string, unknown>;
   let retire: Record<string, unknown> | null = null;
-  if (plan.verb === "offer-promote" && out["moved"] === true) {
-    try {
-      const { output } = await storeVerb("offer-retire", { cid: plan.args["cid"], over: out["over"] ?? [] });
-      retire = output;
-    } catch (err) { retire = { refused: err instanceof Error ? err.message : String(err) }; }
+  try {
+    if (plan.verb === "offer-promote") {
+      // THE RETIRE (offering#/the-canon-offer): a seat of the charter held in this vault retires the offer on the store door; a
+      // retire no seat sealed counts nothing to any reader. The seat answers before canon moves (`promoteThenRetire`).
+      const promoted = await promoteThenRetire({
+        seat:    async () => (await storeVerb("offer-retire", { cid: plan.args["cid"], check: true })).output,
+        promote: daemon,
+        retire:  async (over) => (await storeVerb("offer-retire", { cid: plan.args["cid"], over })).output,
+      });
+      if (!promoted.ok) {
+        emit(args, { ok: false, requestId, ...(promoted.out ? { data: { ...promoted.out, retire: promoted.retire } } : {}), error: { code: "verb-error", message: promoted.message }, human: () => console.error(`lares meme offer promote: ${promoted.message}`) });
+        return exitFor("verb-error");
+      }
+      out = promoted.out; retire = promoted.retire;
+    } else out = await daemon();
+  } catch (err) {
+    if (!(err instanceof OfferVerbRefused)) throw err;
+    emit(args, { ok: false, requestId: err.requestId, error: { code: err.code, message: err.message, ...(err.refusal !== undefined ? { refusal: err.refusal } : {}) }, human: () => console.error(`lares meme offer: ${err.message}`) });
+    return exitFor(err.code);
   }
-  if (retire !== null && typeof retire["refused"] === "string") {
-    const message = `the canon write landed; the retire did not: ${retire["refused"]}`;
-    emit(args, { ok: false, requestId: result.requestId, data: { ...out, retire }, error: { code: "verb-error", message }, human: () => console.error(`lares meme offer promote: ${message}`) });
-    return exitFor("verb-error");
-  }
+  const result = { requestId };
+  const short = (cid: unknown): string => `${String(cid).slice(0, 16)}…`;
   emit(args, {
     ok: true, requestId: result.requestId, data: retire !== null ? { ...out, retire } : out,
     human: () => {

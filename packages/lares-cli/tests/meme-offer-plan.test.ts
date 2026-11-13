@@ -4,7 +4,7 @@
  * `offer-promote` (the explicit `--over-fresher` choice riding only when named). A malformed act refuses before any socket.
  */
 import { describe, expect, test } from "vitest";
-import { offerPlan } from "../src/commands/meme.js";
+import { offerPlan, promoteThenRetire } from "../src/commands/meme.js";
 import { parseArgs } from "../src/parse-args.js";
 
 const plan = (...argv: string[]) => offerPlan(parseArgs(["meme", "offer", ...argv]));
@@ -24,5 +24,36 @@ describe("lares meme offer", () => {
     expect(() => plan("lar:///ha.ka.ba/x")).toThrow(/--bag/);
     expect(() => plan("promote", "nope")).toThrow(/64 hex/);
     expect(() => plan("not-a-uri", "--bag", "lares")).toThrow(/lar: uris/);
+  });
+});
+
+describe("lares meme offer promote", () => {
+  const doors = (over: Partial<Parameters<typeof promoteThenRetire>[0]> = {}) => {
+    const calls: string[] = [];
+    return { calls, doors: {
+      seat:    async () => { calls.push("seat"); return { standing: "open" }; },
+      promote: async () => { calls.push("promote"); return { moved: true, over: [] as unknown[] }; },
+      retire:  async () => { calls.push("retire"); return { retired: true, retire: "b".repeat(64) }; },
+      ...over,
+    } };
+  };
+
+  test("a vessel that can seal no retire refuses before the canon write: the promote door never opens", async () => {
+    const d = doors({ seat: async () => { throw new Error("offer-retire-unseated: this vessel holds no seat of the charter"); } });
+    const out = await promoteThenRetire(d.doors);
+    expect(out).toMatchObject({ ok: false, wrote: false });
+    expect((out as { message: string }).message).toMatch(/nothing was written.*offer-retire-unseated/);
+    expect(d.calls).toEqual([]);
+    // CONTROL: a seated vessel walks seat check, canon write, retire, in that order, as one outcome.
+    const seated = doors();
+    expect(await promoteThenRetire(seated.doors)).toMatchObject({ ok: true, retire: { retired: true } });
+    expect(seated.calls).toEqual(["seat", "promote", "retire"]);
+  });
+
+  test("a retire that refuses after the canon write names both halves and the act that completes it", async () => {
+    const d = doors({ retire: async () => { throw new Error("offer-not-landed: canon does not yet carry x"); } });
+    const out = await promoteThenRetire(d.doors);
+    expect(out).toMatchObject({ ok: false, wrote: true });
+    expect((out as { message: string }).message).toMatch(/the canon write landed; the retire did not: offer-not-landed.*run the promote again/);
   });
 });

@@ -5,7 +5,8 @@
  *
  *   · `source`      — the face's own working layer for the canon bag's wiki (`wikis/<slug>/working`, its realm workbench),
  *                     reached by access, never mounted; the face's read cap on it gates the offer;
- *   · `canon`       — the house-canon bag's live document, read by access (a read asks nothing);
+ *   · `canon`       — the house-canon bag's live document: the Kahu realm's standing document where the vessel names one
+ *                     (`canonStoreOf`), read by access otherwise (a read asks nothing);
  *   · `canonWrite`  — the same document, written ONLY after `requireKahuReach` clears for the bag (the vessel's Kahu source);
  *   · `board`       — the Nexus's offer table (`canonOfferDocUrl`), beside the Kahu realm and never in it; the Nexus reads off
  *                     the shore's charter (node), else the call's own `nexus` (a browser page, whose island reads no charter);
@@ -14,9 +15,9 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/offering#/the-canon-offer
  */
 import {
-  CanonOfferRefused, VerbRefusal, bagUri, isHouseCanonBag, offerCanonRecords, promoteCanonOffer, readCanonOffers, requireKahuReach,
+  AutomergeDocStore, CanonOfferRefused, VerbRefusal, bagUri, findOrThrow, isHouseCanonBag, offerCanonRecords, promoteCanonOffer, readCanonOffers, requireKahuReach,
   showCanonOffer, workingLayerOfCanon,
-  type CanonOfferBoard, type CanonOfferPorts, type OfferSigner,
+  type CanonOfferBoard, type CanonOfferPorts, type LarTiddlerStore, type OfferSigner,
 } from "@lararium/mesh";
 import { makeBagAccess, type ActionHandlerOptions } from "./action-handler.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
@@ -50,8 +51,22 @@ async function portsOf(opts: CanonOfferVerbOptions, args: Readonly<Record<string
   if (shore !== null && named !== null && named !== shore) throw new CanonOfferRefused("offer-foreign-nexus", `this vessel's charter stands in ${shore.slice(0, 18)}…, not ${named.slice(0, 18)}…`);
   const nexus = shore ?? named;
   if (nexus === null) throw new CanonOfferRefused("offer-no-nexus", "this vessel stands in no Nexus charter and the call named none, so it reaches no offer table");
-  const access = makeBagAccess(opts);
-  return { nexus, board: await opts.board(nexus), canon: async (bag) => access.read(bag).catch(() => null) };
+  return { nexus, board: await opts.board(nexus), canon: async (bag) => canonStoreOf(opts, bag).catch(() => null) };
+}
+
+/**
+ * HOUSE CANON'S ONE DOCUMENT. Where the vessel names the Kahu realm's standing document for a bag (`reach.systemCanonUrl`), the
+ * offer doors read and write THAT document: the one the charter seat's retire and the floor cut read (`nodeCanonStore`). A
+ * registry row that names another document for the bag never answers here, so a promotion never lands where its retire cannot
+ * see it. A vessel whose realm names none (a rig, a page with no realm reach) reaches the bag by access, as every action verb does.
+ */
+async function canonStoreOf(opts: CanonOfferVerbOptions, bag: string): Promise<LarTiddlerStore | null> {
+  const reach = opts.reach;
+  if (reach?.systemCanonUrl && isHouseCanonBag(bag)) {
+    const url = await reach.systemCanonUrl(bag);
+    if (url) return new AutomergeDocStore(await findOrThrow(reach.repo, url, `${bag} (the Kahu realm's live canon)`), bag);
+  }
+  return makeBagAccess(opts).read(bag);
 }
 
 /** Run a door, answering a named refusal as data (`refusal`, `why`), the way the action verbs answer theirs. */
@@ -110,13 +125,12 @@ export function makeOfferPromoteReactor(opts: CanonOfferVerbOptions): VerbReacto
   return async (args, ctx) => answered(async () => {
     const cid = typeof args["cid"] === "string" ? args["cid"] : "";
     const ports = await portsOf(opts, args);
-    const access = makeBagAccess(opts);
     const requestId = String((ctx.invocation as { requestId?: unknown }).requestId ?? "offer-promote");
     const out = await promoteCanonOffer({
       ...ports,
       requireReach: (bag) => requireKahuReach(bag, opts.kahuReach, "offer promote"),
       canonWrite: async (bag) => {
-        const store = await access.write(bag);
+        const store = await canonStoreOf(opts, bag);
         return store ? { put: (record) => store.put(record, { kind: "lares-verb", requestId }) } : null;
       },
     }, { cid, overFresher: args["overFresher"] === true });

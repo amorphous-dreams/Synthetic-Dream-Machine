@@ -15,6 +15,20 @@ import type { KahuReachSource, OfferSigner } from "@lararium/mesh";
 import { makeOfferMakeReactor, makeOfferListReactor, makeOfferPromoteReactor, makeOfferShowReactor, type CanonOfferVerbOptions } from "../src/canon-offer-verbs.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 import { kahuHand, strangerHand } from "../../lararium-mesh/tests/kahu-reach-fixture.js";
+import { placeMeme, readMeme } from "../src/place-meme.js";
+import { storeMemeSink } from "../src/meme-sinks.js";
+import { storedLarRecord } from "@lararium/mesh";
+
+/** A meme of two slots: its root record calls two slot records, so the root alone renders hollow. */
+const MEME_URI = "lar:///ha.ka.ba/lares/docs/pono/offered-whole";
+const MEME = [
+  "<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>", "",
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${MEME_URI}\`>>`, "<<^ code=`&#x0002;`>>", "",
+  "```toml meta", `title = "${MEME_URI}"`, 'type  = "text/memetic-wikitext+tiddlywiki"', "```", "",
+  "<<~ ahu slot=`#/head`>>", "", "! The head", "", "The first slot speaks.", "", "<<~/ahu>>", "",
+  "<<~ ahu slot=`#/what-crossed`>>", "", "!! What crossed", "", "The second slot speaks.", "", "<<~/ahu>>", "",
+  "<<^ code=`&#x0003;`>>", "", "<<^ code=`&#x0004;` to=`?`>>", "",
+].join("\n");
 
 const LARES = bagUri("lares");
 const WORKING = "lar:///ha.ka.ba/wikis/lares/working";
@@ -83,6 +97,49 @@ describe("the offer verbs", () => {
       const after = r.canon.headsNow();
       expect(await makeOfferPromoteReactor(r.opts(await kahuHand(), h0))({ cid }, ctxOf(r.composite))).toMatchObject({ ok: true, moved: true, wrote: [], already: [T] });
       expect(r.canon.headsNow()).toEqual(after);
+    } finally { await r.repo.shutdown(); }
+  });
+
+  test("RED: an offered meme of several slots arrives in canon whole: canon reads back the text the working layer read before the offer", async () => {
+    const r = await rig();
+    try {
+      const origin = { kind: "lares-verb", requestId: "put" } as const;
+      const placed = await placeMeme({ uri: MEME_URI, text: MEME }, storeMemeSink(r.working, WORKING, origin));
+      expect(placed.landed.length).toBeGreaterThan(1);   // the root and its slot records
+      const before = await readMeme(MEME_URI, storeMemeSink(r.working, WORKING, origin));
+      expect(before?.text).toContain("The second slot speaks.");
+      const made = await makeOfferMakeReactor(r.opts(undefined, await atom(41)))({ bag: "lares", titles: [MEME_URI] }, ctxOf(r.composite));
+      expect((made["records"] as Array<{ title: string }>).map((x) => x.title).sort()).toEqual([...placed.landed].sort());
+      const promoted = await makeOfferPromoteReactor(r.opts(await kahuHand(), await atom(40)))({ cid: made["cid"] }, ctxOf(r.composite));
+      expect(promoted).toMatchObject({ ok: true, moved: true });
+      expect(await readMeme(MEME_URI, storeMemeSink(r.canon, LARES, origin))).toEqual(before);
+      // CONTROL: the working copy stands as it stood; a promotion reads the offer's own bytes and clears nothing.
+      expect(await readMeme(MEME_URI, storeMemeSink(r.working, WORKING, origin))).toEqual(before);
+    } finally { await r.repo.shutdown(); }
+  });
+
+  test("RED: a promotion lands in the Kahu realm's standing document, the one the retire reads, never in a document a registry row names for the bag", async () => {
+    const r = await rig();
+    try {
+      // The island mounts no canon layer; a catalog row names a stray document for the bag, and the realm names its own.
+      const island = new CompositeStore();
+      const realm = r.repo.create<LarDoc>(emptyLarDoc()), stray = r.repo.create<LarDoc>(emptyLarDoc());
+      const catalog = r.repo.create<LarDoc>(emptyLarDoc());
+      for (const doc of [realm, stray]) await new AutomergeDocStore(doc, LARES).put({ tiddler: { title: T, text: "canon says" } }, hand);
+      const workingDoc = r.repo.create<LarDoc>(emptyLarDoc());
+      await new AutomergeDocStore(workingDoc, WORKING).put((await r.working.get(T))!, hand);
+      catalog.change((d) => { d.tiddlers[LARES] = storedLarRecord(LARES, { text: stray.url, kind: "oracle" }, "test"); });
+      const reach = { repo: r.repo, catalogUrl: catalog.url, oracleUrl: null, systemCanonUrl: async () => realm.url, slotDocUrl: async () => workingDoc.url };
+      const opts = (hand: KahuReachSource | undefined, face: OfferSigner): CanonOfferVerbOptions => ({ ...r.opts(hand, face), composite: island, reach } as CanonOfferVerbOptions);
+      const made = await makeOfferMakeReactor(opts(undefined, await atom(41)))({ bag: "lares", titles: [T] }, ctxOf(island));
+      expect(made).toMatchObject({ ok: true, landed: true });
+      const promoted = await makeOfferPromoteReactor(opts(await kahuHand(), await atom(40)))({ cid: made["cid"] }, ctxOf(island));
+      expect(promoted).toMatchObject({ ok: true, moved: true, wrote: [T] });
+      expect((await new AutomergeDocStore(realm, LARES).get(T))?.tiddler.text).toBe("the engineer says");
+      // CONTROL: the stray document takes no byte, and the listing reads the record landed off the realm's document.
+      expect((await new AutomergeDocStore(stray, LARES).get(T))?.tiddler.text).toBe("canon says");
+      const listed = await makeOfferListReactor(opts(undefined, await atom(41)))({ bag: "lares" }, ctxOf(island));
+      expect((listed["offers"] as Array<{ records: Array<{ freshness: string }> }>)[0]!.records[0]!.freshness).toBe("landed");
     } finally { await r.repo.shutdown(); }
   });
 
