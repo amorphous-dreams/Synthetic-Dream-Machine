@@ -294,6 +294,6 @@ When reporting back, use OODA-HA receipts: observe facts, orient boundary, decid
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;C6pS_rgDbwGmjSYbF-4CugmpaqAm8K7Fo6FRfkUiJJ4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;RHcQXnQVjO9VR6VhL3gXnReeOAofe6sUtVggBK3cbcE`>>
 
 <<^ code=`&#x0004;` to=`?`>>
