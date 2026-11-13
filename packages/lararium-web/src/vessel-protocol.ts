@@ -66,9 +66,6 @@ export interface VesselBoot {
   /** THE FOUNDING ACT (the page's founding door, an act on its own surface, never a URL): this person asks the vessel to found a face of its own over its veil floor. Absent, the
    *  vessel stays at its floor until a fleet join overlays a face. */
   readonly foundFace?: true;
-  /** The mesh carry-in as a leaf: the leaf's coordinate seed and the raw peer list the vessel worker reads (`parseMeshPeer`). No page door hands one in
-   *  yet, and the page's address never does (its query and fragment stay TW5's own). */
-  readonly meshLeaf?: { readonly coordSeed: string; readonly peers: string };
 }
 
 /** The vessel's floor state, a public enum: `floor` (locked: public readings alone, `signer-unavailable` on asks), `lighting`, `lit`. */

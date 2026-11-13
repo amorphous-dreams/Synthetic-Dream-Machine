@@ -7,6 +7,17 @@ describe("served-origin crossing", () => {
     expect(defaultReadFace({ origin: "http://localhost:5417" })).toBe("http://localhost:5417");
   });
 
+  test("no source carries a mesh-leaf seam: the hello and the browser vessel name no peer list while no page door hands one in", () => {
+    // The mesh-leaf door stands owed as a file kind at the page's carriage door; until it lands, no half-seam waits for a sender.
+    const web = import.meta.glob("../src/**/*.ts", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
+    const browser = import.meta.glob("../../lararium-browser/src/**/*.ts", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
+    const carriers = Object.entries({ ...web, ...browser }).filter(([, src]) => /meshLeaf|parseMeshPeer|deriveMeshLeaf/.test(src)).map(([name]) => name).sort();
+    expect(carriers, "sources that carry the mesh-leaf seam").toEqual([]);
+    // CONTROL: the census reads both trees, the hello's source among them.
+    expect(Object.keys(web)).toContain("../src/vessel-protocol.ts");
+    expect(Object.keys(browser)).toContain("../../lararium-browser/src/open-browser-vessel.ts");
+  });
+
   test("the page's address belongs to TW5: no vessel source reads the query, and the fragment keeps its named readers alone", () => {
     // Every source the page and its workers run. A read of the address names itself here or the census reads red.
     const sources = import.meta.glob("../src/**/*.ts", { query: "?raw", import: "default", eager: true }) as Record<string, string>;

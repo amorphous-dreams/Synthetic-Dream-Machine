@@ -50,7 +50,7 @@ import {
   standVesselHouse, sessionLifetimeLock, VesselSessionRefused, readBrowserVesselFaces, wardAskWords,
   type BrowserVesselResult, type ProjectionSurfaceFrame, type CustodyAnswer, type CustodyAsk, type HouseAsk, type PageLife, type VesselHouse, type VesselSession, type LockHost, type WardAskKind,
 } from "@lararium/browser";
-import { didFromVerifyingKey, foldLarFrame, mountedDocumentId, parseMeshPeer, readLarFrame, slugFromUri, wikiSlotUri, type MeshPeer } from "@lararium/mesh";
+import { didFromVerifyingKey, foldLarFrame, mountedDocumentId, readLarFrame, slugFromUri, wikiSlotUri } from "@lararium/mesh";
 import type { PageToVessel, SeedRest, VesselBoot, VesselError, VesselStatus, VesselToPage } from "../vessel-protocol.js";
 import { CeremonyRefused, standCeremonyDoor } from "./ceremony-door.js";
 import { ceremonyPlaceCard, PlaceCardRefused } from "./place-card.js";
@@ -241,7 +241,6 @@ export function standVesselHost(env: VesselHostEnv = {}) {
       ...(b.floorAnchor ? { floorAnchor: b.floorAnchor } : {}),
       ...(admit ? { admit } : {}),
       ...(b.foundFace ? { foundFace: true } : {}),
-      ...(b.meshLeaf ? { meshLeaf: { coordSeed: b.meshLeaf.coordSeed, peers: b.meshLeaf.peers.split(",").map((s) => parseMeshPeer(s.trim())).filter((p): p is MeshPeer => p !== null) } } : {}),
     });
     litVessel = result;
     } catch (err) {

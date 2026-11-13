@@ -46,7 +46,6 @@ import {
   standSiblingChannel, siblingRefusalLine, groupSecretSealTitle, verifyGroupSecretSeal,
   leaseEpochPrefix, controlHomeUrlOf, tiddlerText, vesselOnlyBook, islandPeersOf, wikiIslandPeersOf, type SiblingNetworkAdapter, type SiblingShare, type SiblingChannelStatus,
   BAG_IDS, slugFromUri, islandEventAsk, bagStackFromRec, recipeHostFacets, type WikiActivationCap,
-  carriageStack, deriveMeshLeaf, type MeshPeer,
   materializeGenesisIsland, genesisCasManifestFromSeed, genesisCasCidsFromOracle, sha256HexBytesSync,
   whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl, publicationDocUrl, whoBoardDocUrl, registerCrossroadsPointer,
   personaKelBoardDocUrl, personaKelChainForPrefix,
@@ -401,26 +400,6 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
    *  frame) from the hot wiki island. The web surface applies it to a DOM coherence indicator via
    *  The web surface's DOM sink may render it over the tiddler-view. */
   onCoherence?:    (frame: CoherenceFrameWithRev) => void;
-  /**
-   * Mesh-LEAF standing — the browser carries-in the FLOW-map as a LEAF: it navigates
-   * the mesh (pulls peers' public meshpalace docs + re-ranks by l-space proximity) WITHOUT serving or
-   * dialing. A browser holds no listening socket, so a leaf advertises NO endpoint and seeds no
-   * self-dial (`deriveMeshLeaf` → no endpoint; `meshSelfSeed` → []). The mirror of the node's `meshSelf`,
-   * the leaf tier. ABSENT → the browser composes NO carriage (exactly today's behavior). PRESENT → it
-   * carries-in via the read-face fetch (isomorphic global `fetch`; the peers' read-faces serve CORS `*`).
-   */
-  meshLeaf?: {
-    /** A stable self-identifier (the vessel's origin / relay URL) hashed to the leaf's chart coord +
-     *  bearing — content-blind, names where this leaf sits on the routing chart. */
-    coordSeed: string;
-    /** Bootstrap peers the leaf carries-in from — each read-face base URL (`https://…`) with the gate key it
-     *  pins there; the carriage UNIONs these with the dials it discovers off the carried FLOW-map. */
-    peers:     readonly MeshPeer[];
-    /** Optional radial standing override (default 1 — a rim leaf). */
-    radius?:   number;
-    /** Max peer read-faces pulled per carriage cycle (default 16). */
-    maxFanout?: number;
-  };
 }
 
 export { DAEMON_SURFACE_ID } from "./daemon-surface.js";
@@ -631,7 +610,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     genesisSeed,
     genesisCasBaseUrl,
     daemonWorkerUrl, sharedHolderUrl, workerScriptUrl, onFrame, onControlResult, onCoherence, relayUrl, relayDial, floorCard, floorAnchor,
-    meshLeaf, admit, walkInvite, siblingHerms,
+    admit, walkInvite, siblingHerms,
   } = opts;
   const emit = (p: LarOpenPhase) => onPhase?.(p);
   /** One ward act's route, asked of the page's ward dialog for this act alone; no dialog refuses by name. */
@@ -1486,33 +1465,12 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   );
   const residency = residencyWiring.residency;
 
-  // ── The mesh carriage as a LEAF ───────────────────────────────
-  // PRESENT → derive the leaf standing and compose the carriage ALONGSIDE the wiki core: meshpalace
-  // (a writable meshpalace FLOW-map, seeded with NO self-dial — `meshSelfSeed([leaf])` is [] for a
-  // leaf) + carriage (pulls peers' public read-faces, re-ranks by l-space proximity). A LEAF has no
-  // endpoint → it carries-in but is NOT dial-able (a browser holds no listening socket). ABSENT → [],
-  // the browser composes no carriage (today's behavior, unchanged). The mirror of openNodeVessel.
-  const meshExtraCaps = meshLeaf ? (() => {
-    const leaf = deriveMeshLeaf(
-      meshLeaf.coordSeed, meshLeaf.peers,
-      ...(meshLeaf.radius !== undefined ? [{ radius: meshLeaf.radius }] : []),
-    );
-    // The SAME pair a node hearth and a Herm compose — a leaf differs only in the standing it hands in.
-    // `deriveMeshLeaf` yields a self with NO endpoint, so the stack seeds no dial and announces nothing:
-    // this vessel carries-in and is never dial-able (the endpoint-absent leaf↔full tier).
-    return [...carriageStack({
-      repo, residency, self: leaf,
-      cadenceKey: vesselVerifyingKey,   // public place id steers this vessel's pull cadence
-      onLog: (l) => console.log(`[lararium-browser] ${l}`),
-    })];
-  })() : [];
-
   // ── The WHO plane as a LEAF — RESOLVE the per-Nexus crossroads board; announce NOTHING ──
   // Networked only: the board needs the relay to sync, and the island key (`nexusPubkey`) scopes the
   // causal island so a human's two vessels resolve the SAME board. Boot composes whoFaceCap with NO card: it
   // resolves the island's WHO board through the deterministic crossroads address and layers it writable so
   // the relay syncs, giving this vessel RECOGNITION (it reads every peer's card) while publishing none of its
-  // own. The identity sibling of the carriage leaf above (WHO ⊥ WHERE, the two-key atom). No relay/gate → [].
+  // own. The identity half of the two-key atom (WHO ⊥ WHERE); the mesh carriage as a leaf (WHERE) composes here once the page's carriage door hands in a peer list (the mesh-leaf door, owed). No relay/gate → [].
   //
   // NO BOOT-TIME FACE, by construction rather than by gate. Canon never collapses binding-the-vessels into
   // announcing-the-identity, so publishing rides a deliberate holder act through the component's `announce` —
@@ -2604,7 +2562,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // mountPrimaryWiki already mounted + spec-retained it → onHydrate no-ops.
       if (slotActiveWikiId) void residency.pin(slotActiveWikiId, "boot:home-wiki", "wiki");
     },
-  }, [...meshExtraCaps, ...whoExtraCaps]);
+  }, whoExtraCaps);
 
   const returnLeg = makeSurfaceReturnLeg({
     daemonSurfaceId: DAEMON_SURFACE_ID,
