@@ -5,7 +5,7 @@
  *   GET /floor/<Nexus AID>   → the porch answer (`floor-answer`): the release rows this vessel's publication board carries,
  *                              each with the charter's epoch lineage riding its record. Public by construction: the
  *                              answer holds signatures and public keys, and a reader verifies every step itself.
- *   GET /cas/<cid>           → a floor blob the chain's HEAD release names (its manifest and the two snapshots) and
+ *   GET /cas/<cid>           → a floor blob the chain's HEAD release names (its manifest and each snapshot it names) and
  *                              nothing else, re-hashed on the way out (a hearth mounts this route; a herm already
  *                              carries `/cas` in its bulb face and lends it the same lane through `publicCasShore`).
  *
@@ -31,7 +31,7 @@ import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
 /** The porch route a Nexus's answer rides, as the SERVER matches it: one AID, captured. */
 export const FLOOR_ROUTE_RE = /^\/floor\/(nexus-[0-9a-f]{64})$/;
 
-/** The cids the chain's head release names: its manifest and the two snapshots the manifest names. Empty while no release counts. */
+/** The cids the chain's head release names: its manifest and each snapshot the manifest names (one per house-canon bag). Empty while no release counts. */
 export async function releasedFloorCids(opts: {
   readonly board:  LarDoc | undefined | null;
   readonly nexus:  string;

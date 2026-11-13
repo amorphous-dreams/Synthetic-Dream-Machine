@@ -11,7 +11,7 @@
  *   3. each release: its CID re-derives, its steward seals as a seat of ITS epoch's roster, and the cabal's approval
  *      counts over the manifest's exact bytes at that roster's threshold;
  *   4. the chain: a release counts through an unbroken chain to the Nexus's first, and two heads read `unsettled`;
- *   5. the floor: the head's manifest and its two snapshots, each fetched by CID and re-hashed.
+ *   5. the floor: the head's manifest and every snapshot it names (one per house-canon bag), each fetched by CID and re-hashed.
  *
  * It signs nothing and keeps no pin: the reader records no acceptance (the VESSEL accepts a release by its own act, `floor-pin`).
  * It is isomorphic: the caller supplies `fetchCas`, and both a browser and a node read the floor through it.

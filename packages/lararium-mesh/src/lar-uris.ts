@@ -604,8 +604,8 @@ export const DRAFT_BINDINGS_PREFIX    = `${PERSONA_NAMESPACE}/draft-bindings`;
  * Per-wiki recipe slots (`temp`, `draft`, `@<wiki-slug>`, library bags) live
  * in `wiki-recipe.ts` — slot URIs in the same lar:///ha.ka.ba/bags/<name>
  * namespace. Structural slots arrive as typed IslandGrants on the manifest;
- * the lares bag rides the lararium doc's well-known tiddlers; library bags resolve
- * island-side from the catalog registry.
+ * the live `lares` and `lararium` documents rest in the Kahu realm (the realm's standing registration names them, no
+ * registry row does); every other library bag resolves island-side from the catalog registry.
  */
 export const BAG_IDS = {
   oracle:     ORACLE_DOC_URI,

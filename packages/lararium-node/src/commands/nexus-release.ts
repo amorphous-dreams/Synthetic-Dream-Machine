@@ -66,7 +66,7 @@ export async function runFloorRelease(opts: {
   readonly repo: Repo; readonly sealHome: string; readonly manifestFile: string; readonly approval: unknown;
   readonly aid?: string; readonly vesselKey?: string;
   /** This hearth's CAS dir. Present: the manifest is staged there, and the floor it names must stand WHOLE in it (the
-   *  manifest and both snapshots, each re-hashed) before a release names it, since the porch serves what this CAS holds. */
+   *  manifest and every snapshot it names, each re-hashed) before a release names it, since the porch serves what this CAS holds. */
   readonly casDir?: string;
 }): Promise<NexusReleaseResult> {
   let manifestBytes: Uint8Array;

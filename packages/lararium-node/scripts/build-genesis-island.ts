@@ -5,9 +5,11 @@
  * Layer B (mesh):      buildGenesisDoc(inputs) — platform-neutral Automerge construction.
  * Layer C (this file): write artifact bytes to disk.
  *
- * Corpus memes (bags/lares, bags/lararium) load at runtime via the bag store
- * recipe stack. Oracle tiddlers (runtime DocUrls) write after repo.import() in
- * reconcileWellKnownTiddlers(). Neither belongs here.
+ * THE FLOOR RIDES THE BAKE. `cutGenesisFloor` cuts one history-free snapshot per house-canon bag from the checkout's
+ * tracked carriers (`bags/lares` and `bags/lararium` always, every other holding but the public board `crossroads`), and the
+ * seed names their manifest by CID: the static floor every wiki's recipe composes read-only through `@oracle`. The LIVE
+ * house-canon documents stay outside the bake: they rest in the Kahu realm, a founding mints them, and no seed row or
+ * catalog row names one.
  *
  * Determinism invariant:
  *   The KUPONO law (`genesis-actor-seed`): actorSeed folds ONLY what every Lararium shares and boots
